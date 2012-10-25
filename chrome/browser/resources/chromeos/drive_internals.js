@@ -3,6 +3,23 @@
 // found in the LICENSE file.
 
 /**
+ * Updates the Drive related Flags section.
+ * @param {Array} flags List of dictionaries describing flags information.
+ */
+function updateDriveRelatedFlags(flags) {
+  var ul = $('drive-related-flags');
+  for (var i = 0; i < flags.length; i++) {
+    var flag = flags[i];
+    var text = flag.key;
+    if (flags.value != '')
+      text += ': ' + flag.value;
+
+    var li = createElementFromText('li', text);
+    ul.appendChild(li);
+  }
+}
+
+/**
  * Updates the Authentication Status section.
  * @param {Object} authStatus Dictionary containing auth status.
  */

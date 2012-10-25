@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_vector.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -182,6 +184,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void OnPageLoaded(const base::ListValue* args);
 
   // Updates respective sections.
+  void UpdateDriveRelatedFlagsSection();
   void UpdateAuthStatusSection(
       google_apis::DriveServiceInterface* drive_service);
   void UpdateAccountMetadataSection(
@@ -317,6 +320,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   drive::DriveCache* cache = system_service->cache();
   DCHECK(cache);
 
+  UpdateDriveRelatedFlagsSection();
   UpdateAuthStatusSection(drive_service);
   UpdateAccountMetadataSection(drive_service);
   UpdateInFlightOperationsSection(drive_service);
@@ -324,6 +328,28 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateFileSystemContentsSection(drive_service);
   UpdateCacheContentsSection(cache);
   UpdateLocalStorageUsageSection();
+}
+
+void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
+  const char* kDriveRelatedFlags[] = {
+    switches::kDisableDrive,
+    switches::kDisableDrivePrefetch,
+    switches::kEnableDriveV2Api,
+  };
+
+  base::ListValue flags;
+  for (size_t i = 0; i < arraysize(kDriveRelatedFlags); ++i) {
+    const std::string key = kDriveRelatedFlags[i];
+    std::string value = "(not set)";
+    if (CommandLine::ForCurrentProcess()->HasSwitch(key))
+      value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(key);
+    base::DictionaryValue* flag = new DictionaryValue;
+    flag->SetString("key", key);
+    flag->SetString("value", value);
+    flags.Append(flag);
+  }
+
+  web_ui()->CallJavascriptFunction("updateDriveRelatedFlags", flags);
 }
 
 void DriveInternalsWebUIHandler::UpdateAuthStatusSection(
