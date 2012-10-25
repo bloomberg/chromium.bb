@@ -34,6 +34,12 @@ PROXIED_IFACE(PPB_X509Certificate_Private,
               PPB_X509CERTIFICATE_PRIVATE_INTERFACE_0_1,
               PPB_X509Certificate_Private_0_1)
 
+PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_0_1,
+              PPB_NetAddress_Private_0_1)
+PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_1_0,
+              PPB_NetAddress_Private_1_0)
+PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_1_1,
+              PPB_NetAddress_Private_1_1)
 PROXIED_IFACE(NoAPIName, PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2,
               PPB_NetworkList_Private_0_2)
 PROXIED_IFACE(PPB_NetworkMonitor_Private,
@@ -66,12 +72,6 @@ PROXIED_IFACE(PPB_Instance, PPB_FLASHFULLSCREEN_INTERFACE_0_1,
               PPB_FlashFullscreen_0_1)
 PROXIED_IFACE(PPB_Instance, PPB_FLASHFULLSCREEN_INTERFACE_1_0,
               PPB_FlashFullscreen_0_1)
-PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_0_1,
-              PPB_NetAddress_Private_0_1)
-PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_1_0,
-              PPB_NetAddress_Private_1_0)
-PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_1_1,
-              PPB_NetAddress_Private_1_1)
 PROXIED_IFACE(PPB_Talk_Private, PPB_TALK_PRIVATE_INTERFACE_1_0,
               PPB_Talk_Private_1_0)
 

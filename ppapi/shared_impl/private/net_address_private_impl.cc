@@ -6,8 +6,10 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#include <winsock2.h>
 #include <ws2tcpip.h>
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_NACL)
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #endif
@@ -19,7 +21,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -49,170 +50,132 @@ namespace ppapi {
 
 namespace {
 
+// Define our own net-host-net conversion, rather than reuse the one in
+// base/sys_byteorder.h, to simplify the NaCl port. NaCl has no byte swap
+// primitives.
+uint16 ConvertNetEndian16(uint16 x) {
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+  return (x << 8) | (x >> 8);
+#else
+  return x;
+#endif
+}
+
 static const size_t kIPv4AddressSize = 4;
 static const size_t kIPv6AddressSize = 16;
 
-bool IPEndPointToSockaddr(const std::vector<unsigned char>& address,
-                          int port,
-                          sockaddr* sa) {
-  DCHECK(sa);
-  switch (address.size()) {
-    case kIPv4AddressSize: {
-      struct sockaddr_in* addr = reinterpret_cast<struct sockaddr_in*>(sa);
-      memset(addr, 0, sizeof(struct sockaddr_in));
-      addr->sin_family = AF_INET;
-      addr->sin_port = base::HostToNet16(port);
-      memcpy(&addr->sin_addr, &address[0], static_cast<int>(address.size()));
-      break;
-    }
-    case kIPv6AddressSize: {
-      struct sockaddr_in6* addr6 =
-          reinterpret_cast<struct sockaddr_in6*>(sa);
-      memset(addr6, 0, sizeof(struct sockaddr_in6));
-      addr6->sin6_family = AF_INET6;
-      addr6->sin6_port = base::HostToNet16(port);
-      memcpy(&addr6->sin6_addr, &address[0], static_cast<int>(address.size()));
-      break;
-    }
-    default:
-      return false;
-  }
-  return true;
-}
+// This structure is a platform-independent representation of a network address.
+// It is a private format that we embed in PP_NetAddress_Private and is NOT part
+// of the stable Pepper API.
+struct NetAddress {
+  bool is_valid;
+  bool is_ipv6;  // if true, IPv6, otherwise IPv4.
+  uint16_t port;  // host order, not network order.
+  int32_t flow_info;  // 0 for IPv4
+  int32_t scope_id;   // 0 for IPv4
+  // IPv4 addresses are 4 bytes. IPv6 are 16 bytes. Addresses are stored in net
+  // order (big-endian), which only affects IPv6 addresses, which consist of 8
+  // 16-bit components. These will be byte-swapped on small-endian hosts.
+  uint8_t address[kIPv6AddressSize];
+};
 
-bool SockaddrToIPEndPoint(const sockaddr& sa,
-                          std::vector<unsigned char>* address,
-                          int* port) {
-  DCHECK(address);
-  DCHECK(port);
-  switch (sa.sa_family) {
-    case AF_INET: {
-      const struct sockaddr_in* addr =
-          reinterpret_cast<const struct sockaddr_in*>(&sa);
-      *port = base::NetToHost16(addr->sin_port);
-      const char* bytes = reinterpret_cast<const char*>(&addr->sin_addr);
-      address->assign(&bytes[0], &bytes[kIPv4AddressSize]);
-      break;
-    }
-    case AF_INET6: {
-      const struct sockaddr_in6* addr =
-          reinterpret_cast<const struct sockaddr_in6*>(&sa);
-      *port = base::NetToHost16(addr->sin6_port);
-      const char* bytes = reinterpret_cast<const char*>(&addr->sin6_addr);
-      address->assign(&bytes[0], &bytes[kIPv6AddressSize]);
-      break;
-    }
-    default:
-      return false;
-  }
-  return true;
-}
+// Make sure that sizeof(NetAddress) is the same for all compilers. This ensures
+// that the alignment is the same on both sides of the NaCl proxy, which is
+// important because we serialize and deserialize PP_NetAddress_Private by
+// simply copying the raw bytes.
+COMPILE_ASSERT(sizeof(NetAddress) == 28,
+               NetAddress_different_for_compiler);
 
-// This assert fails on OpenBSD for an unknown reason at the moment.
-#if !defined(OS_OPENBSD)
 // Make sure the storage in |PP_NetAddress_Private| is big enough. (Do it here
 // since the data is opaque elsewhere.)
 COMPILE_ASSERT(sizeof(reinterpret_cast<PP_NetAddress_Private*>(0)->data) >=
-               sizeof(sockaddr_storage), PP_NetAddress_Private_data_too_small);
-#endif
+               sizeof(NetAddress),
+               PP_NetAddress_Private_data_too_small);
 
-sa_family_t GetFamilyInternal(const PP_NetAddress_Private* addr) {
-  return reinterpret_cast<const sockaddr*>(addr->data)->sa_family;
+size_t GetAddressSize(const NetAddress* net_addr) {
+  return net_addr->is_ipv6 ? kIPv6AddressSize : kIPv4AddressSize;
+}
+
+// Convert to embedded struct if it has been initialized.
+NetAddress* ToNetAddress(PP_NetAddress_Private* addr) {
+  if (!addr || addr->size != sizeof(NetAddress))
+    return NULL;
+  return reinterpret_cast<NetAddress*>(addr->data);
+}
+
+const NetAddress* ToNetAddress(const PP_NetAddress_Private* addr) {
+  return ToNetAddress(const_cast<PP_NetAddress_Private*>(addr));
+}
+
+// Initializes the NetAddress struct embedded in a PP_NetAddress_Private struct.
+// Zeroes the memory, so net_addr->is_valid == false.
+NetAddress* InitNetAddress(PP_NetAddress_Private* addr) {
+  addr->size = sizeof(NetAddress);
+  NetAddress* net_addr = ToNetAddress(addr);
+  DCHECK(net_addr);
+  memset(net_addr, 0, sizeof(NetAddress));
+  return net_addr;
+}
+
+bool IsValid(const NetAddress* net_addr) {
+  return net_addr && net_addr->is_valid;
 }
 
 PP_NetAddressFamily_Private GetFamily(const PP_NetAddress_Private* addr) {
-  switch (GetFamilyInternal(addr)) {
-    case AF_INET:
-      return PP_NETADDRESSFAMILY_IPV4;
-    case AF_INET6:
-      return PP_NETADDRESSFAMILY_IPV6;
-    default:
-      return PP_NETADDRESSFAMILY_UNSPECIFIED;
-  }
+  const NetAddress* net_addr = ToNetAddress(addr);
+  if (!IsValid(net_addr))
+    return PP_NETADDRESSFAMILY_UNSPECIFIED;
+  return net_addr->is_ipv6 ?
+         PP_NETADDRESSFAMILY_IPV6 : PP_NETADDRESSFAMILY_IPV4;
 }
 
 uint16_t GetPort(const PP_NetAddress_Private* addr) {
-  switch (GetFamilyInternal(addr)) {
-    case AF_INET: {
-      const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
-      return base::NetToHost16(a->sin_port);
-    }
-    case AF_INET6: {
-      const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
-      return base::NetToHost16(a->sin6_port);
-    }
-    default:
-      return 0;
-  }
+  const NetAddress* net_addr = ToNetAddress(addr);
+  if (!IsValid(net_addr))
+    return 0;
+  return net_addr->port;
 }
 
 PP_Bool GetAddress(const PP_NetAddress_Private* addr,
                    void* address,
                    uint16_t address_size) {
-  switch (GetFamilyInternal(addr)) {
-    case AF_INET: {
-      const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
-      if (address_size >= sizeof(a->sin_addr.s_addr)) {
-        memcpy(address, &(a->sin_addr.s_addr), sizeof(a->sin_addr.s_addr));
-        return PP_TRUE;
-      }
-      break;
-    }
-    case AF_INET6: {
-      const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
-      if (address_size >= sizeof(a->sin6_addr.s6_addr)) {
-        memcpy(address, &(a->sin6_addr.s6_addr), sizeof(a->sin6_addr.s6_addr));
-        return PP_TRUE;
-      }
-      break;
-    }
-    default:
-      break;
-  }
-
-  return PP_FALSE;
+  const NetAddress* net_addr = ToNetAddress(addr);
+  if (!IsValid(net_addr))
+    return PP_FALSE;
+  size_t net_addr_size = GetAddressSize(net_addr);
+  // address_size must be big enough.
+  if (net_addr_size > address_size)
+    return PP_FALSE;
+  memcpy(address, net_addr->address, net_addr_size);
+  return PP_TRUE;
 }
 
 uint32_t GetScopeID(const PP_NetAddress_Private* addr) {
-  switch (GetFamilyInternal(addr)) {
-    case AF_INET6: {
-      const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
-      return a->sin6_scope_id;
-    }
-    default:
-      return 0;
-  }
+  const NetAddress* net_addr = ToNetAddress(addr);
+  if (!IsValid(net_addr))
+    return 0;
+  return net_addr->scope_id;
 }
 
 PP_Bool AreHostsEqual(const PP_NetAddress_Private* addr1,
                       const PP_NetAddress_Private* addr2) {
-  if (!NetAddressPrivateImpl::ValidateNetAddress(*addr1) ||
-      !NetAddressPrivateImpl::ValidateNetAddress(*addr2))
+  const NetAddress* net_addr1 = ToNetAddress(addr1);
+  const NetAddress* net_addr2 = ToNetAddress(addr2);
+  if (!IsValid(net_addr1) || !IsValid(net_addr2))
     return PP_FALSE;
 
-  sa_family_t addr1_family = GetFamilyInternal(addr1);
-  if (addr1_family != GetFamilyInternal(addr2))
+  if ((net_addr1->is_ipv6 != net_addr2->is_ipv6) ||
+      (net_addr1->flow_info != net_addr2->flow_info) ||
+      (net_addr1->scope_id != net_addr2->scope_id))
     return PP_FALSE;
 
-  switch (addr1_family) {
-    case AF_INET: {
-      const sockaddr_in* a1 = reinterpret_cast<const sockaddr_in*>(addr1->data);
-      const sockaddr_in* a2 = reinterpret_cast<const sockaddr_in*>(addr2->data);
-      return PP_FromBool(a1->sin_addr.s_addr == a2->sin_addr.s_addr);
-    }
-    case AF_INET6: {
-      const sockaddr_in6* a1 =
-          reinterpret_cast<const sockaddr_in6*>(addr1->data);
-      const sockaddr_in6* a2 =
-          reinterpret_cast<const sockaddr_in6*>(addr2->data);
-      return PP_FromBool(a1->sin6_flowinfo == a2->sin6_flowinfo &&
-                         memcmp(&a1->sin6_addr, &a2->sin6_addr,
-                                sizeof(a1->sin6_addr)) == 0 &&
-                         a1->sin6_scope_id == a2->sin6_scope_id);
-    }
-    default:
+  size_t net_addr_size = GetAddressSize(net_addr1);
+  for (size_t i = 0; i < net_addr_size; i++) {
+    if (net_addr1->address[i] != net_addr2->address[i])
       return PP_FALSE;
   }
+
+  return PP_TRUE;
 }
 
 PP_Bool AreEqual(const PP_NetAddress_Private* addr1,
@@ -222,34 +185,20 @@ PP_Bool AreEqual(const PP_NetAddress_Private* addr1,
   if (!AreHostsEqual(addr1, addr2))
     return PP_FALSE;
 
-  // Note: Here, we know that |addr1| and |addr2| have the same family.
-  switch (GetFamilyInternal(addr1)) {
-    case AF_INET: {
-      const sockaddr_in* a1 = reinterpret_cast<const sockaddr_in*>(addr1->data);
-      const sockaddr_in* a2 = reinterpret_cast<const sockaddr_in*>(addr2->data);
-      return PP_FromBool(a1->sin_port == a2->sin_port);
-    }
-    case AF_INET6: {
-      const sockaddr_in6* a1 =
-          reinterpret_cast<const sockaddr_in6*>(addr1->data);
-      const sockaddr_in6* a2 =
-          reinterpret_cast<const sockaddr_in6*>(addr2->data);
-      return PP_FromBool(a1->sin6_port == a2->sin6_port);
-    }
-    default:
-      return PP_FALSE;
-  }
+  // AreHostsEqual has validated these net addresses.
+  const NetAddress* net_addr1 = ToNetAddress(addr1);
+  const NetAddress* net_addr2 = ToNetAddress(addr2);
+  return PP_FromBool(net_addr1->port == net_addr2->port);
 }
 
-std::string ConvertIPv4AddressToString(const sockaddr_in* a,
+std::string ConvertIPv4AddressToString(const NetAddress* net_addr,
                                        bool include_port) {
-  unsigned ip = base::NetToHost32(a->sin_addr.s_addr);
-  unsigned port = base::NetToHost16(a->sin_port);
   std::string description = base::StringPrintf(
       "%u.%u.%u.%u",
-      (ip >> 24) & 0xff, (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff);
+      net_addr->address[0], net_addr->address[1],
+      net_addr->address[2], net_addr->address[3]);
   if (include_port)
-    base::StringAppendF(&description, ":%u", port);
+    base::StringAppendF(&description, ":%u", net_addr->port);
   return description;
 }
 
@@ -264,24 +213,24 @@ std::string ConvertIPv4AddressToString(const sockaddr_in* a,
 //  - If the address is an IPv4 address embedded IPv6 (per RFC 4291), then the
 //    mixed format is used, e.g., "::ffff:192.168.1.2". This is optional per RFC
 //    5952, but consistent with |getnameinfo()|.
-std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
+std::string ConvertIPv6AddressToString(const NetAddress* net_addr,
                                        bool include_port) {
-  unsigned port = base::NetToHost16(a->sin6_port);
-  unsigned scope = a->sin6_scope_id;
   std::string description(include_port ? "[" : "");
 
+  const uint16_t* address16 =
+      reinterpret_cast<const uint16_t*>(net_addr->address);
   // IPv4 address embedded in IPv6.
-  if (a->sin6_addr.s6_addr16[0] == 0 && a->sin6_addr.s6_addr16[1] == 0 &&
-      a->sin6_addr.s6_addr16[2] == 0 && a->sin6_addr.s6_addr16[3] == 0 &&
-      a->sin6_addr.s6_addr16[4] == 0 &&
-      (a->sin6_addr.s6_addr16[5] == 0 || a->sin6_addr.s6_addr16[5] == 0xffff)) {
+  if (address16[0] == 0 && address16[1] == 0 &&
+      address16[2] == 0 && address16[3] == 0 &&
+      address16[4] == 0 &&
+      (address16[5] == 0 || address16[5] == 0xffff)) {
     base::StringAppendF(
         &description,
-        a->sin6_addr.s6_addr16[5] == 0 ? "::%u.%u.%u.%u" : "::ffff:%u.%u.%u.%u",
-        static_cast<unsigned>(a->sin6_addr.s6_addr[12]),
-        static_cast<unsigned>(a->sin6_addr.s6_addr[13]),
-        static_cast<unsigned>(a->sin6_addr.s6_addr[14]),
-        static_cast<unsigned>(a->sin6_addr.s6_addr[15]));
+        address16[5] == 0 ? "::%u.%u.%u.%u" : "::ffff:%u.%u.%u.%u",
+        net_addr->address[12],
+        net_addr->address[13],
+        net_addr->address[14],
+        net_addr->address[15]);
 
   // "Real" IPv6 addresses.
   } else {
@@ -291,7 +240,7 @@ std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
     int curr_start = 0;
     int curr_length = 0;
     for (int i = 0; i < 8; i++) {
-      if (base::NetToHost16(a->sin6_addr.s6_addr16[i]) != 0) {
+      if (address16[i] != 0) {
         curr_length = 0;
       } else {
         if (!curr_length)
@@ -311,7 +260,7 @@ std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
         need_sep = false;
         i += longest_length;
       } else {
-        unsigned v = base::NetToHost16(a->sin6_addr.s6_addr16[i]);
+        uint16_t v = ConvertNetEndian16(address16[i]);
         base::StringAppendF(&description, need_sep ? ":%x" : "%x", v);
         need_sep = true;
         i++;
@@ -320,11 +269,11 @@ std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
   }
 
   // Nonzero scopes, e.g., 123, are indicated by appending, e.g., "%123".
-  if (scope != 0)
-    base::StringAppendF(&description, "%%%u", scope);
+  if (net_addr->scope_id != 0)
+    base::StringAppendF(&description, "%%%u", net_addr->scope_id);
 
   if (include_port)
-    base::StringAppendF(&description, "]:%u", port);
+    base::StringAppendF(&description, "]:%u", net_addr->port);
 
   return description;
 }
@@ -332,94 +281,66 @@ std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
 PP_Var Describe(PP_Module /*module*/,
                 const struct PP_NetAddress_Private* addr,
                 PP_Bool include_port) {
-  if (!NetAddressPrivateImpl::ValidateNetAddress(*addr))
+  const NetAddress* net_addr = ToNetAddress(addr);
+  if (!IsValid(net_addr))
     return PP_MakeUndefined();
 
-  // On Windows, |NetAddressToString()| doesn't work in the sandbox. On Mac,
-  // the output isn't consistent with RFC 5952, at least on Mac OS 10.6:
-  // |getnameinfo()| collapses length-one runs of zeros (and also doesn't
-  // display the scope).
-  switch (GetFamilyInternal(addr)) {
-    case AF_INET: {
-      const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
-      return StringVar::StringToPPVar(
-          ConvertIPv4AddressToString(a, !!include_port));
-    }
-    case AF_INET6: {
-      const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
-      return StringVar::StringToPPVar(
-          ConvertIPv6AddressToString(a, !!include_port));
-    }
-    default:
-      NOTREACHED();
-      break;
+  std::string description;
+  if (net_addr->is_ipv6) {
+    description = ConvertIPv6AddressToString(net_addr,
+                                             PP_ToBool(include_port));
+  } else {
+    description = ConvertIPv4AddressToString(net_addr,
+                                             PP_ToBool(include_port));
   }
-  return PP_MakeUndefined();
+  return StringVar::StringToPPVar(description);
 }
 
 PP_Bool ReplacePort(const struct PP_NetAddress_Private* src_addr,
                     uint16_t port,
                     struct PP_NetAddress_Private* dest_addr) {
-  if (!NetAddressPrivateImpl::ValidateNetAddress(*src_addr))
+  const NetAddress* src_net_addr = ToNetAddress(src_addr);
+  if (!IsValid(src_net_addr) || !dest_addr)
     return PP_FALSE;
-
-  switch (GetFamilyInternal(src_addr)) {
-    case AF_INET: {
-      memmove(dest_addr, src_addr, sizeof(*src_addr));
-      reinterpret_cast<sockaddr_in*>(dest_addr->data)->sin_port =
-          base::HostToNet16(port);
-      return PP_TRUE;
-    }
-    case AF_INET6: {
-      memmove(dest_addr, src_addr, sizeof(*src_addr));
-      reinterpret_cast<sockaddr_in6*>(dest_addr->data)->sin6_port =
-          base::HostToNet16(port);
-      return PP_TRUE;
-    }
-    default:
-      return PP_FALSE;
-  }
+  dest_addr->size = sizeof(NetAddress);  // make sure 'size' is valid.
+  NetAddress* dest_net_addr = ToNetAddress(dest_addr);
+  *dest_net_addr = *src_net_addr;
+  dest_net_addr->port = port;
+  return PP_TRUE;
 }
 
 void GetAnyAddress(PP_Bool is_ipv6, PP_NetAddress_Private* addr) {
-  memset(addr->data, 0, arraysize(addr->data) * sizeof(addr->data[0]));
-  if (is_ipv6) {
-    sockaddr_in6* a = reinterpret_cast<sockaddr_in6*>(addr->data);
-    addr->size = sizeof(*a);
-    a->sin6_family = AF_INET6;
-    a->sin6_addr = in6addr_any;
-  } else {
-    sockaddr_in* a = reinterpret_cast<sockaddr_in*>(addr->data);
-    addr->size = sizeof(*a);
-    a->sin_family = AF_INET;
-    a->sin_addr.s_addr = INADDR_ANY;
+  if (addr) {
+    NetAddress* net_addr = InitNetAddress(addr);
+    net_addr->is_valid = true;
+    net_addr->is_ipv6 = (is_ipv6 == PP_TRUE);
   }
 }
 
 void CreateFromIPv4Address(const uint8_t ip[4],
                            uint16_t port,
-                           struct PP_NetAddress_Private* addr_out) {
-  memset(addr_out->data, 0,
-         arraysize(addr_out->data) * sizeof(addr_out->data[0]));
-  sockaddr_in* a = reinterpret_cast<sockaddr_in*>(addr_out->data);
-  addr_out->size = sizeof(*a);
-  a->sin_family = AF_INET;
-  memcpy(&(a->sin_addr), ip, sizeof(a->sin_addr));
-  a->sin_port = htons(port);
+                           struct PP_NetAddress_Private* addr) {
+  if (addr) {
+    NetAddress* net_addr = InitNetAddress(addr);
+    net_addr->is_valid = true;
+    net_addr->is_ipv6 = false;
+    net_addr->port = port;
+    memcpy(net_addr->address, ip, kIPv4AddressSize);
+  }
 }
 
 void CreateFromIPv6Address(const uint8_t ip[16],
                            uint32_t scope_id,
                            uint16_t port,
-                           struct PP_NetAddress_Private* addr_out) {
-  memset(addr_out->data, 0,
-         arraysize(addr_out->data) * sizeof(addr_out->data[0]));
-  sockaddr_in6* a = reinterpret_cast<sockaddr_in6*>(addr_out->data);
-  addr_out->size = sizeof(*a);
-  a->sin6_family = AF_INET6;
-  memcpy(&(a->sin6_addr), ip, sizeof(a->sin6_addr));
-  a->sin6_port = htons(port);
-  a->sin6_scope_id = scope_id;
+                           struct PP_NetAddress_Private* addr) {
+  if (addr) {
+    NetAddress* net_addr = InitNetAddress(addr);
+    net_addr->is_valid = true;
+    net_addr->is_ipv6 = true;
+    net_addr->port = port;
+    net_addr->scope_id = scope_id;
+    memcpy(net_addr->address, ip, kIPv6AddressSize);
+  }
 }
 
 const PPB_NetAddress_Private_0_1 net_address_private_interface_0_1 = {
@@ -476,71 +397,105 @@ GetPPB_NetAddress_Private_1_1_Thunk() {
 
 }  // namespace thunk
 
+// For the NaCl target, all we need are the API functions and the thunk.
+#if !defined(OS_NACL)
 // static
 const PP_NetAddress_Private NetAddressPrivateImpl::kInvalidNetAddress = { 0 };
 
 // static
 bool NetAddressPrivateImpl::ValidateNetAddress(
     const PP_NetAddress_Private& addr) {
-  if (addr.size < sizeof(reinterpret_cast<sockaddr*>(0)->sa_family))
-    return false;
-
-  // TODO(viettrungluu): more careful validation?
-  switch (GetFamilyInternal(&addr)) {
-    case AF_INET:
-      // Just do a size check for AF_INET.
-      if (addr.size >= sizeof(sockaddr_in))
-        return true;
-      break;
-    case AF_INET6:
-      // Ditto for AF_INET6.
-      if (addr.size >= sizeof(sockaddr_in6))
-        return true;
-      break;
-    default:
-      break;
-  }
-
-  // Reject everything else.
-  return false;
+  return IsValid(ToNetAddress(&addr));
 }
 
 // static
 bool NetAddressPrivateImpl::SockaddrToNetAddress(
     const sockaddr* sa,
     uint32_t sa_length,
-    PP_NetAddress_Private* net_addr) {
-  if (!sa || sa_length == 0 || !net_addr)
+    PP_NetAddress_Private* addr) {
+  if (!sa || sa_length == 0 || !addr)
     return false;
 
-  CHECK_LE(sa_length, sizeof(net_addr->data));
-  net_addr->size = sa_length;
-  memcpy(net_addr->data, sa, net_addr->size);
-  return true;
-}
+  // Our platform neutral format stores ports in host order, not net order,
+  // so convert them here.
+  NetAddress* net_addr = InitNetAddress(addr);
+  switch (sa->sa_family) {
+    case AF_INET: {
+      const struct sockaddr_in* addr4 =
+          reinterpret_cast<const struct sockaddr_in*>(sa);
+      net_addr->is_valid = true;
+      net_addr->is_ipv6 = false;
+      net_addr->port = ConvertNetEndian16(addr4->sin_port);
+      memcpy(net_addr->address, &addr4->sin_addr.s_addr, kIPv4AddressSize);
+      break;
+    }
+    case AF_INET6: {
+      const struct sockaddr_in6* addr6 =
+          reinterpret_cast<const struct sockaddr_in6*>(sa);
+      net_addr->is_valid = true;
+      net_addr->is_ipv6 = true;
+      net_addr->port = ConvertNetEndian16(addr6->sin6_port);
+      net_addr->flow_info = addr6->sin6_flowinfo;
+      net_addr->scope_id = addr6->sin6_scope_id;
+      memcpy(net_addr->address, addr6->sin6_addr.s6_addr, kIPv6AddressSize);
+      break;
+    }
+    default:
+      // InitNetAddress sets net_addr->is_valid to false.
+      return false;
+  }
+  return true;}
 
 // static
 bool NetAddressPrivateImpl::IPEndPointToNetAddress(
     const std::vector<unsigned char>& address,
     int port,
-    PP_NetAddress_Private* net_addr) {
-  sockaddr_storage storage;
-  sockaddr* sa = reinterpret_cast<sockaddr*>(&storage);
-  if (!IPEndPointToSockaddr(address, port, sa))
+    PP_NetAddress_Private* addr) {
+  if (!addr)
     return false;
-  return SockaddrToNetAddress(sa, sizeof(storage), net_addr);
+
+  NetAddress* net_addr = InitNetAddress(addr);
+  switch (address.size()) {
+    case kIPv4AddressSize: {
+      net_addr->is_valid = true;
+      net_addr->is_ipv6 = false;
+      net_addr->port = static_cast<uint16_t>(port);
+      std::copy(address.begin(), address.end(), net_addr->address);
+      break;
+    }
+    case kIPv6AddressSize: {
+      net_addr->is_valid = true;
+      net_addr->is_ipv6 = true;
+      net_addr->port = static_cast<uint16_t>(port);
+      std::copy(address.begin(), address.end(), net_addr->address);
+      break;
+    }
+    default:
+      // InitNetAddress sets net_addr->is_valid to false.
+      return false;
+  }
+
+  return true;
 }
 
 // static
 bool NetAddressPrivateImpl::NetAddressToIPEndPoint(
-    const PP_NetAddress_Private& net_addr,
+    const PP_NetAddress_Private& addr,
     std::vector<unsigned char>* address,
     int* port) {
-  if (!address || !port || !ValidateNetAddress(net_addr))
+  if (!address || !port)
     return false;
 
-  return SockaddrToIPEndPoint(
-      reinterpret_cast<const sockaddr&>(*net_addr.data), address, port);
+  const NetAddress* net_addr = ToNetAddress(&addr);
+  if (!IsValid(net_addr))
+    return false;
+
+  *port = net_addr->port;
+  size_t address_size = GetAddressSize(net_addr);
+  address->assign(&net_addr->address[0], &net_addr->address[address_size]);
+
+  return true;
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace ppapi
