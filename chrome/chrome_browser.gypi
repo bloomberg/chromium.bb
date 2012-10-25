@@ -1952,6 +1952,8 @@
         'browser/sync/user_selectable_sync_type.h',
         'browser/sync_file_system/drive_metadata_store.cc',
         'browser/sync_file_system/drive_metadata_store.h',
+        'browser/sync_file_system/drive_sync_client.cc',
+        'browser/sync_file_system/drive_sync_client.h',
         'browser/sync_file_system/change_observer_interface.h',
         'browser/sync_file_system/local_change_processor.h',
         'browser/sync_file_system/local_file_sync_service.cc',
