@@ -37,7 +37,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
   # and V8 without interference from each other.
-  "webrtc_revision": "2961",
+  "webrtc_revision": "2974",
   "jsoncpp_revision": "248",
   "nss_revision": "163113",
 }
@@ -275,7 +275,7 @@ deps = {
         Var("nacl_tools_revision"),
 
   "src/third_party/webrtc":
-    (Var("googlecode_url") % "webrtc") + "/stable/src@" + Var("webrtc_revision"),
+    (Var("googlecode_url") % "webrtc") + "/stable/webrtc@" + Var("webrtc_revision"),
 
   "src/third_party/jsoncpp/source/include":
     (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
@@ -311,7 +311,7 @@ deps = {
     "/trunk/deps/third_party/undoview@119694",
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@157441",
+    "/trunk/tools/deps2git@163971",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@501",
