@@ -64,7 +64,9 @@ bool MenuHostRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
 ui::EventResult MenuHostRootView::OnGestureEvent(
     const ui::GestureEvent& event) {
-  RootView::OnGestureEvent(event);
+  ui::EventResult result = RootView::OnGestureEvent(event);
+  if (result != ui::ER_UNHANDLED)
+    return result;
   // ChromeOS uses MenuController to forward events like other
   // mouse events.
   if (!GetMenuController())
