@@ -102,7 +102,15 @@ class ParsedDataPresenter : public UploadDataPresenter {
   virtual bool Succeeded() OVERRIDE;
   virtual scoped_ptr<base::Value> Result() OVERRIDE;
 
+  // Allows to create ParsedDataPresenter without the URLRequest. Uses the
+  // parser for "application/x-www-form-urlencoded" form encoding. Only use this
+  // in tests.
+  static scoped_ptr<ParsedDataPresenter> CreateForTests();
+
  private:
+  // This constructor is used in CreateForTests.
+  explicit ParsedDataPresenter(const std::string& form_type);
+
   // Clears resources and the success flag.
   void Abort();
   scoped_ptr<FormDataParser> parser_;

@@ -29,7 +29,7 @@ ListValue* GetOrCreateList(DictionaryValue* dictionary,
   ListValue* list = NULL;
   if (!dictionary->GetList(key, &list)) {
     list = new ListValue();
-    dictionary->Set(key, list);
+    dictionary->SetWithoutPathExpansion(key, list);
   }
   return list;
 }
@@ -80,7 +80,7 @@ scoped_ptr<Value> RawDataPresenter::Result() {
 void RawDataPresenter::AppendResultWithKey(
     ListValue* list, const char* key, Value* value) {
   DictionaryValue* dictionary = new DictionaryValue;
-  dictionary->Set(key, value);
+  dictionary->SetWithoutPathExpansion(key, value);
   list->Append(dictionary);
 }
 
@@ -141,6 +141,18 @@ scoped_ptr<Value> ParsedDataPresenter::Result() {
     return scoped_ptr<Value>();
 
   return dictionary_.PassAs<Value>();
+}
+
+// static
+scoped_ptr<ParsedDataPresenter> ParsedDataPresenter::CreateForTests() {
+  const std::string form_type("application/x-www-form-urlencoded");
+  return scoped_ptr<ParsedDataPresenter>(new ParsedDataPresenter(form_type));
+}
+
+ParsedDataPresenter::ParsedDataPresenter(const std::string& form_type)
+  : parser_(FormDataParser::Create(&form_type)),
+    success_(parser_.get() != NULL),
+    dictionary_(success_ ? new DictionaryValue() : NULL) {
 }
 
 void ParsedDataPresenter::Abort() {

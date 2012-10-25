@@ -6,6 +6,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
+#include "net/base/upload_element.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::BinaryValue;
@@ -17,10 +18,32 @@ namespace keys = extension_web_request_api_constants;
 
 namespace extensions {
 
-// ParsedDataPresenter is tested on these places:
-//  * The underlying parser in WebRequestFormDataParserTest.
-//  * The extraction of data from URLRequest in
-//    ExtensionWebRequestTest.AccessRequestBodyData.
+// This only tests the handling of dots in keys. Other functionality is covered
+// by ExtensionWebRequestTest.AccessRequestBodyData and
+// WebRequestFormDataParserTest.
+TEST(WebRequestUploadDataPresenterTest, ParsedData) {
+  // Input.
+  const char block[] = "key.with.dots=value";
+  net::UploadElement element;
+  element.SetToBytes(block, sizeof(block) - 1);
+
+  // Expected output.
+  scoped_ptr<ListValue> values(new ListValue);
+  values->Append(Value::CreateStringValue("value"));
+  DictionaryValue expected_form;
+  expected_form.SetWithoutPathExpansion("key.with.dots", values.release());
+
+  // Real output.
+  scoped_ptr<ParsedDataPresenter> parsed_data_presenter(
+      ParsedDataPresenter::CreateForTests());
+  ASSERT_TRUE(parsed_data_presenter.get() != NULL);
+  parsed_data_presenter->FeedNext(element);
+  EXPECT_TRUE(parsed_data_presenter->Succeeded());
+  scoped_ptr<Value> result = parsed_data_presenter->Result();
+  ASSERT_TRUE(result.get() != NULL);
+
+  EXPECT_TRUE(result->Equals(&expected_form));
+}
 
 TEST(WebRequestUploadDataPresenterTest, RawData) {
   // Input.
