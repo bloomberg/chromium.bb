@@ -25,7 +25,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
@@ -65,7 +67,8 @@ const wchar_t kChromeRegVersion[] = L"pv";
 const wchar_t kNoChromeOfferUntil[] =
     L"SOFTWARE\\Google\\No Chrome Offer Until";
 
-const wchar_t kChromeWindowClass[] = L"Chrome_WidgetWin_0";
+// Prefix used to match the window class for Chrome windows.
+const wchar_t kChromeWindowClassPrefix[] = L"Chrome_WidgetWin_";
 
 // Return the company name specified in the file version info resource.
 bool GetCompanyName(const wchar_t* filename, wchar_t* buffer, DWORD out_len) {
@@ -320,6 +323,58 @@ bool GetUserIdForProcess(size_t pid, wchar_t** user_sid) {
   ::CloseHandle(process_handle);
   return result;
 }
+
+// Locate a window that matches kChromeWindowClassPrefix and is a child
+// of |parent_handle|. |parent_handle| may by NULL in which case the window
+// found will be a top-level window. This currently only checks for
+// windows that match the prefix plus 0-4 and this is quite fragile against
+// changes to Chrome's UI code.
+HWND FindChromeWindowClass(HWND parent_handle) {
+  HWND window = NULL;
+  for (int suffix = 4; !window && suffix >= 0; --suffix) {
+    string16 wnd_class(kChromeWindowClassPrefix);
+    wnd_class.append(base::IntToString16(suffix));
+    window = FindWindowEx(parent_handle, NULL, wnd_class.c_str(), NULL);
+  }
+  return window;
+}
+
+struct SetWindowPosParams {
+  int x;
+  int y;
+  int width;
+  int height;
+  DWORD flags;
+  HWND window_insert_after;
+  bool success;
+};
+
+BOOL CALLBACK ChromeWindowEnumProc(HWND hwnd, LPARAM lparam) {
+  wchar_t window_class[MAX_PATH] = {};
+
+  if (::GetClassName(hwnd, window_class, arraysize(window_class))) {
+    if (StartsWith(window_class, kChromeWindowClassPrefix, false)) {
+      // Found a chrome window, now see if it has a child window that is also
+      // of the Chrome window class.
+      if (FindChromeWindowClass(hwnd)) {
+        // This one has child windows, is probably a UI window. Apply the
+        // SetWindowPos params to it.
+        SetWindowPosParams* params =
+            reinterpret_cast<SetWindowPosParams*>(lparam);
+        if (::SetWindowPos(hwnd, params->window_insert_after, params->x,
+                           params->y, params->width, params->height,
+                           params->flags)) {
+          params->success = true;
+        }
+      }
+    }
+  }
+
+  // Return TRUE to ensure we hit all possible top-level Chrome windows as per
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/ms633498.aspx
+  return TRUE;
+}
+
 }  // namespace
 
 BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
@@ -374,7 +429,11 @@ BOOL __stdcall LaunchGoogleChrome() {
 
   // Now grab the uninstall string from the appropriate ClientState key
   // and use that as the base for a path to chrome.exe.
-  FilePath chrome_exe_path(chrome_launcher_support::GetAnyChromePath());
+  FilePath chrome_exe_path(
+      chrome_launcher_support::GetChromePathForInstallationLevel(
+          install_key == HKEY_LOCAL_MACHINE ?
+              chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION :
+              chrome_launcher_support::USER_LEVEL_INSTALLATION));
   if (chrome_exe_path.empty()) {
     return false;
   }
@@ -465,39 +524,29 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
   if (!LaunchGoogleChrome())
     return false;
 
-  HWND handle = NULL;
-  int seconds_elapsed = 0;
+  HWND hwnd_insert_after = in_background ? HWND_BOTTOM : NULL;
+  DWORD set_window_flags = in_background ? SWP_NOACTIVATE : SWP_NOZORDER;
+  SetWindowPosParams enum_params = { x, y, width, height, set_window_flags,
+                                     hwnd_insert_after, false };
 
   // Chrome may have been launched, but the window may not have appeared
   // yet. Wait for it to appear for 10 seconds, but exit if it takes longer
   // than that.
-  while (!handle && seconds_elapsed < 10) {
-    handle = FindWindowEx(NULL, handle, kChromeWindowClass, NULL);
-    if (!handle) {
-      Sleep(1000);
-      seconds_elapsed++;
-    }
+  int seconds_elapsed = 0;
+  while (seconds_elapsed < 10) {
+    // At this point, there will be many top-level Chrome windows
+    // but we only want to act on windows that have child windows.
+    // Enum all top-level windows that match this and modify them appropriately.
+    ::EnumWindows(ChromeWindowEnumProc, reinterpret_cast<LPARAM>(&enum_params));
+
+    if (enum_params.success)
+      return true;
+
+    Sleep(1000);
+    seconds_elapsed++;
   }
 
-  if (!handle)
-    return false;
-
-  // At this point, there are several top-level Chrome windows
-  // but we only want the window that has child windows.
-
-  // This loop iterates through all of the top-level Windows named
-  // kChromeWindowClass, and looks for the first one with any children.
-  while (handle && !FindWindowEx(handle, NULL, kChromeWindowClass, NULL)) {
-    // Get the next top-level Chrome window.
-    handle = FindWindowEx(NULL, handle, kChromeWindowClass, NULL);
-  }
-
-  HWND set_window_hwnd_insert_after = in_background ? HWND_BOTTOM : NULL;
-  DWORD set_window_flags = in_background ? SWP_NOACTIVATE : SWP_NOZORDER;
-
-  return (handle &&
-          SetWindowPos(handle, set_window_hwnd_insert_after, x, y,
-                       width, height, set_window_flags));
+  return false;
 }
 
 int __stdcall GoogleChromeDaysSinceLastRun() {
