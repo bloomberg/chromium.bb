@@ -718,6 +718,17 @@ void SandboxMountPointProvider::AddSyncableFileChangeObserver(
   syncable_change_observers_ = ChangeObserverList(observer_source);
 }
 
+LocalFileSystemOperation*
+SandboxMountPointProvider::CreateFileSystemOperationForSync(
+    FileSystemContext* file_system_context) {
+  scoped_ptr<FileSystemOperationContext> operation_context(
+      new FileSystemOperationContext(file_system_context));
+  operation_context->set_update_observers(update_observers_);
+  operation_context->set_access_observers(access_observers_);
+  return new LocalFileSystemOperation(file_system_context,
+                                      operation_context.Pass());
+}
+
 FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type) const {
   FilePath base_path =

@@ -68,7 +68,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // Otherwise it disables writes, marks the |url| syncing and returns
   // the current change set made on |url|.
   // This method must be called on UI thread.
-  void PrepareForSync(const FileSystemURL& url,
+  void PrepareForSync(FileSystemContext* file_system_context,
+                      const FileSystemURL& url,
                       const ChangeListCallback& callback);
 
   // Registers |url| to wait until sync is enabled for |url|.
@@ -82,6 +83,15 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // This method must be called on UI thread.
   void RegisterURLForWaitingSync(const FileSystemURL& url,
                                  const base::Closure& on_syncable_callback);
+
+  // Applies a remote change.
+  // This method must be called on UI thread.
+  void ApplyRemoteChange(
+      FileSystemContext* file_system_context,
+      const FileChange& change,
+      const FilePath& local_path,
+      const FileSystemURL& url,
+      const StatusCallback& callback);
 
   // OperationRunner is accessible only on IO thread.
   base::WeakPtr<SyncableFileOperationRunner> operation_runner() const;
@@ -122,8 +132,13 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
 
   // Helper routines for PrepareForSync.
   void DidDisabledWritesForPrepareForSync(
+      FileSystemContext* file_system_context,
       const FileSystemURL& url,
       const ChangeListCallback& callback);
+
+  void DidApplyRemoteChange(
+      const StatusCallback& callback_on_ui,
+      base::PlatformFileError file_error);
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -146,11 +161,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // Accessed only on UI thread.
   std::map<FileSystemContext*, StatusCallbackQueue>
       pending_initialize_callbacks_;
-
-  // Origin to context map. (Assuming that as far as we're in the same
-  // profile single origin wouldn't belong to multiple FileSystemContexts.)
-  // Accessed only on UI thread.
-  std::map<GURL, FileSystemContext*> origin_to_contexts_;
 
   // A URL and associated callback waiting for sync is enabled.
   // Accessed only on IO thread.

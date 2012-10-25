@@ -31,6 +31,7 @@ class QuotaManagerProxy;
 
 namespace fileapi {
 
+class LocalFileSystemOperation;
 class ObfuscatedFileUtil;
 class SandboxQuotaObserver;
 
@@ -166,6 +167,11 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
                                      base::SequencedTaskRunner* task_runner);
   void AddSyncableFileChangeObserver(FileChangeObserver* observer,
                                      base::SequencedTaskRunner* task_runner);
+
+  // Returns a LocalFileSystemOperation that can be used to apply changes
+  // to the syncable filesystem.
+  LocalFileSystemOperation* CreateFileSystemOperationForSync(
+      FileSystemContext* file_system_context);
 
  private:
   friend class SandboxQuotaObserver;

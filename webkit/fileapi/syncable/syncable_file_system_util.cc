@@ -4,8 +4,11 @@
 
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
+#include "webkit/fileapi/file_observers.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
 
@@ -58,6 +61,13 @@ bool DeserializeSyncableFileSystemURL(
 
   *url = deserialized_url;
   return true;
+}
+
+LocalFileSystemOperation*
+CreateFileSystemOperationForSync(FileSystemContext* file_system_context) {
+  DCHECK(file_system_context);
+  return file_system_context->sandbox_provider()->
+      CreateFileSystemOperationForSync(file_system_context);
 }
 
 }  // namespace fileapi

@@ -13,6 +13,9 @@
 
 namespace fileapi {
 
+class FileSystemContext;
+class LocalFileSystemOperation;
+
 // Registers a syncable filesystem with the given |service_name|.
 WEBKIT_STORAGE_EXPORT bool RegisterSyncableFileSystem(
     const std::string& service_name);
@@ -67,6 +70,16 @@ WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
 // See the comment of SerializeSyncableFileSystemURL() for more details.
 WEBKIT_STORAGE_EXPORT bool DeserializeSyncableFileSystemURL(
     const std::string& serialized_url, FileSystemURL* url);
+
+
+// Returns a new FileSystemOperation that can be used to apply changes
+// for sync.  The operation returned by this method:
+// * does NOT notify the file change tracker, but
+// * notifies the regular sandboxed quota observer
+// therefore quota will be updated appropriately without bothering the
+// change tracker.
+WEBKIT_STORAGE_EXPORT LocalFileSystemOperation*
+CreateFileSystemOperationForSync(FileSystemContext* file_system_context);
 
 }  // namespace fileapi
 

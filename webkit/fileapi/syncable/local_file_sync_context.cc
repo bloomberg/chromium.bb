@@ -11,9 +11,11 @@
 #include "base/task_runner_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 namespace fileapi {
 
@@ -36,9 +38,6 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
     const StatusCallback& callback) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   if (ContainsKey(file_system_contexts_, file_system_context)) {
-    DCHECK(!ContainsKey(origin_to_contexts_, source_url) ||
-           origin_to_contexts_[source_url] == file_system_context);
-    origin_to_contexts_[source_url] = file_system_context;
     // The context has been already initialized. Just dispatch the callback
     // with SYNC_STATUS_OK.
     ui_task_runner_->PostTask(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
@@ -67,6 +66,7 @@ void LocalFileSyncContext::ShutdownOnUIThread() {
 }
 
 void LocalFileSyncContext::PrepareForSync(
+    FileSystemContext* file_system_context,
     const FileSystemURL& url,
     const ChangeListCallback& callback) {
   // This is initially called on UI thread and to be relayed to IO thread.
@@ -74,7 +74,8 @@ void LocalFileSyncContext::PrepareForSync(
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&LocalFileSyncContext::PrepareForSync, this, url, callback));
+        base::Bind(&LocalFileSyncContext::PrepareForSync, this,
+                   make_scoped_refptr(file_system_context), url, callback));
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -88,7 +89,7 @@ void LocalFileSyncContext::PrepareForSync(
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::DidDisabledWritesForPrepareForSync,
-                 this, url, callback));
+                 this, make_scoped_refptr(file_system_context), url, callback));
 }
 
 void LocalFileSyncContext::RegisterURLForWaitingSync(
@@ -111,6 +112,39 @@ void LocalFileSyncContext::RegisterURLForWaitingSync(
   }
   url_waiting_sync_on_io_ = url;
   url_syncable_callback_ = on_syncable_callback;
+}
+
+void LocalFileSyncContext::ApplyRemoteChange(
+    FileSystemContext* file_system_context,
+    const FileChange& change,
+    const FilePath& local_path,
+    const FileSystemURL& url,
+    const StatusCallback& callback) {
+  if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::ApplyRemoteChange, this,
+                   make_scoped_refptr(file_system_context),
+                   change, local_path, url, callback));
+    return;
+  }
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  LocalFileSystemOperation* operation = CreateFileSystemOperationForSync(
+      file_system_context);
+  DCHECK(operation);
+  FileSystemOperation::StatusCallback operation_callback =
+      base::Bind(&LocalFileSyncContext::DidApplyRemoteChange,
+                 this, callback);
+  switch (change.change()) {
+    case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
+      // TODO(kinuko): implement. (crbug.com/156599)
+      NOTIMPLEMENTED();
+      break;
+    case FileChange::FILE_CHANGE_DELETE:
+      operation->Remove(url, true /* recursive */, operation_callback);
+      break;
+  }
 }
 
 base::WeakPtr<SyncableFileOperationRunner>
@@ -229,9 +263,6 @@ void LocalFileSyncContext::DidInitialize(
 
   file_system_contexts_.insert(file_system_context);
 
-  DCHECK(!ContainsKey(origin_to_contexts_, source_url));
-  origin_to_contexts_[source_url] = file_system_context;
-
   StatusCallbackQueue& callback_queue =
       pending_initialize_callbacks_[file_system_context];
   for (StatusCallbackQueue::iterator iter = callback_queue.begin();
@@ -242,6 +273,7 @@ void LocalFileSyncContext::DidInitialize(
 }
 
 void LocalFileSyncContext::DidDisabledWritesForPrepareForSync(
+    FileSystemContext* file_system_context,
     const FileSystemURL& url,
     const ChangeListCallback& callback) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -249,14 +281,22 @@ void LocalFileSyncContext::DidDisabledWritesForPrepareForSync(
     callback.Run(SYNC_STATUS_ABORT, FileChangeList());
     return;
   }
-  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
-  FileSystemContext* context = origin_to_contexts_[url.origin()];
-  DCHECK(context);
-  DCHECK(context->change_tracker());
+  DCHECK(file_system_context);
+  DCHECK(file_system_context->change_tracker());
 
   FileChangeList changes;
-  context->change_tracker()->GetChangesForURL(url, &changes);
+  file_system_context->change_tracker()->GetChangesForURL(url, &changes);
   callback.Run(SYNC_STATUS_OK, changes);
+}
+
+void LocalFileSyncContext::DidApplyRemoteChange(
+    const StatusCallback& callback_on_ui,
+    base::PlatformFileError file_error) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback_on_ui,
+                 PlatformFileErrorToSyncStatusCode(file_error)));
 }
 
 }  // namespace fileapi
