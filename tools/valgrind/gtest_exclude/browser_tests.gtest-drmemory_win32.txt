@@ -124,3 +124,7 @@ AutomationTabHelperBrowserTest.*
 PageCyclerBrowserTest.*
 PrerenderBrowserTestWithExtensions.*
 NotificationsPermissionTest.*
+
+# crashes under drmemory:
+# http://crbug.com/157682
+SafeBrowsingDatabaseTest.*

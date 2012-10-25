@@ -27,8 +27,3 @@ SSLClientSocketTest.ConnectMismatched
 # http://crbug.com/157132
 *SpdyNetworkTransactionSpdy2Test.*
 
-# crashes under drmemory:
-# http://crbug.com/157682
-SignatureUtilWinTest.*
-SafeBrowsingDatabaseTest.*
-
