@@ -437,14 +437,6 @@
       }, extensionId, contextType);
     });
 
-    // TODO(mihaip): remove this alias once the webstore stops calling
-    // beginInstallWithManifest2.
-    // See http://crbug.com/100242
-    if (chrome.webstorePrivate) {
-      chrome.webstorePrivate.beginInstallWithManifest2 =
-          chrome.webstorePrivate.beginInstallWithManifest3;
-    }
-
     if (chrome.test)
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
   });
