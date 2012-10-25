@@ -145,6 +145,11 @@ class BaseParser(object):
           help="Override the calculated chromeos cache directory; "
           "typically defaults to '$REPO/.cache' .")
 
+  def SetupLogging(self, opts):
+    value = opts.log_level.upper()
+    logging.getLogger().setLevel(getattr(logging, value))
+    return value
+
   def DoPostParseSetup(self, opts, args):
     """Method called to handle post opts/args setup.
 
@@ -156,10 +161,9 @@ class BaseParser(object):
       (opts, args), w/ whatever modification done.
     """
     if self.logging_enabled:
-      value = opts.log_level.upper()
-      logging.getLogger().setLevel(getattr(logging, value))
+      value = self.SetupLogging(opts)
       if self.debug_enabled:
-        opts.debug = value == "DEBUG"
+        opts.debug = (value == "DEBUG")
 
     if self.caching:
       func = self.FindCacheDir if not callable(self.caching) else self.caching
@@ -330,6 +334,8 @@ def ScriptWrapperMain(find_target_func, argv=None,
     print >> sys.stderr, ("%s: Unhandled exception:" % (name,))
     sys.stderr.flush()
     raise
+  finally:
+    logging.shutdown()
 
   if ret is None:
     ret = 0
