@@ -9,9 +9,13 @@
 
 import Queue
 import os
+import sys
 import threading
 
 _NUMBER_OF_WRITER_THREADS = 10
+
+_HOME_ENV_NAME = 'HOMEPATH' if 'win32' == sys.platform else 'HOME'
+_WORKING_DIR = os.path.join(os.environ[_HOME_ENV_NAME], 'webrtc_video_quality')
 
 # I couldn't think of other way to handle this but through a global variable
 g_frame_number_counter = 0
@@ -40,23 +44,21 @@ class FrameWriterThread(threading.Thread):
 
   The frames are named in the format frame_xxxx, where xxxx is the 0-padded
   frame number. The frames and their numbers are obtained from a synchronized
-  queue. The frames are written in the directory specified in the environment
-  variable PYWS_DIR_FOR_HANDLER_OUTPUT.
+  queue. The frames are written in the directory specified by _WORKING_DIR.
   """
   def __init__(self, queue):
     threading.Thread.__init__(self)
-    self.queue = queue
+    self._queue = queue
 
   def run(self):
     while True:
-      frame_number, frame_data = self.queue.get()
+      frame_number, frame_data = self._queue.get()
       file_name = 'frame_' + frame_number.zfill(4)
-      file_name = os.path.join(os.environ['PYWS_DIR_FOR_HANDLER_OUTPUT'],
-                               file_name)
+      file_name = os.path.join(_WORKING_DIR, file_name)
       frame = open(file_name, "wb")
       frame.write(frame_data)
       frame.close()
-      self.queue.task_done()
+      self._queue.task_done()
 
 
 def start_threads():

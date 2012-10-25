@@ -15,6 +15,15 @@ import webrtc_test_base
 # If you change the port number, don't forget to modify video_extraction.js too.
 _PYWEBSOCKET_PORT_NUMBER = '12221'
 
+_HOME_ENV_NAME = 'HOMEPATH' if pyauto.PyUITest.IsWin() else 'HOME'
+_WORKING_DIR = os.path.join(os.environ[_HOME_ENV_NAME], 'webrtc_video_quality')
+
+# This is the reference file that is being played by the virtual web camera.
+_REFERENCE_YUV_FILE = os.path.join(_WORKING_DIR, 'reference_video.yuv')
+
+# The YUV file is the file produced by rgba_to_i420_converter.
+_OUTPUT_YUV_FILE = os.path.join(_WORKING_DIR, 'captured_video.yuv')
+
 
 class MissingRequiredToolException(Exception):
   pass
@@ -23,24 +32,32 @@ class MissingRequiredToolException(Exception):
 class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
   """Test the video quality of the WebRTC output.
 
-  Prerequisites: This test case must run on a machine with a webcam, either
-  fake or real, and with some kind of audio device. You must make the
-  peerconnection_server target before you run.
+  Prerequisites: This test case must run on a machine with a virtual webcam that
+  plays video from the reference file located in the location defined by
+  _REFERENCE_YUV_FILE. You must also compile the peerconnection_server target
+  before you run this test.
 
   The test case will launch a custom binary (peerconnection_server) which will
   allow two WebRTC clients to find each other.
 
   The test also runs several other custom binaries - rgba_to_i420 converter and
-  frame_analyzer. Both tools can be found under third/party/webrtc/tools. The
-  test also runs a standalone Python implementation of a WebSocket server
+  frame_analyzer. Both tools can be found under third_party/webrtc/tools. The
+  test also runs a stand alone Python implementation of a WebSocket server
   (pywebsocket) and a barcode_decoder script.
   """
 
   def setUp(self):
     pyauto.PyUITest.setUp(self)
+    if not os.path.exists(_WORKING_DIR):
+      self.fail('Cannot find the working directory for the reference video and '
+                'the temporary files: %s' % _WORKING_DIR)
+    if not os.path.exists(_REFERENCE_YUV_FILE):
+      self.fail('Cannot find the reference file to be used for video quality '
+                'comparison: %s' % _REFERENCE_YUV_FILE)
     self.StartPeerConnectionServer()
 
   def tearDown(self):
+    self._StopPywebsocketServer()
     self.StopPeerConnectionServer()
 
     pyauto.PyUITest.tearDown(self)
@@ -94,9 +111,7 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     self.EstablishCall(from_tab_with_index=0)
 
     # Wait for JavaScript to capture all the frames. In the HTML file we specify
-    # how many seconds to capture frames. The default for retry_sleep is 0.25
-    # but there is no need to ask this often whether we are done capturing the
-    # frames. It seems that 1 second is more reasonable retry time.
+    # how many seconds to capture frames.
     done_capturing = self.WaitUntil(
         function=lambda: self.ExecuteJavascript('doneFrameCapturing()',
                                                 tab_index=1),
@@ -124,12 +139,10 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     to use the original input video as a reference video. We take the name of
     this file from an environment variable that the bots set.
     """
-    ref_file = os.environ['PYAUTO_REFERENCE_FILE']
     self._StartVideoQualityTest(test_page='webrtc_video_quality_test.html',
                                 helper_page='webrtc_jsep01_test.html',
-                                reference_yuv=ref_file, width=640,
+                                reference_yuv=_REFERENCE_YUV_FILE, width=640,
                                 height=480, barcode_height=32)
-
 
   def _StartVideoQualityTest(self, reference_yuv,
                              test_page='webrtc_video_quality_test.html',
@@ -163,21 +176,22 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
 
     # Wait for JavaScript to send all the frames to the server. The test will
     # have quite a lot of frames to send, so it will take at least several
-    # seconds. Thus there is no need to ask whether there are more frames to
-    # send every fourth of a second.
+    # seconds.
     no_more_frames = self.WaitUntil(
         function=lambda: self.ExecuteJavascript('haveMoreFramesToSend()',
                                                 tab_index=1),
-        expect_retval='no-more-frames', retry_sleep=0.5, timeout=150)
+        expect_retval='no-more-frames', retry_sleep=1, timeout=150)
     self.assertTrue(no_more_frames,
                     msg='Timed out while waiting for frames to send.')
 
-    self._StopPywebsocketServer()
-
     self.assertTrue(self._RunRGBAToI420Converter(width, height))
-    self.assertTrue(self._RunBarcodeDecoder(width, height, barcode_height))
 
-    analysis_result = self._RunFrameAnalyzer(width, height, reference_yuv)
+    stats_file = os.path.join(_WORKING_DIR, 'pyauto_stats.txt')
+    self.assertTrue(self._RunBarcodeDecoder(width, height, barcode_height,
+                                            _OUTPUT_YUV_FILE, stats_file))
+
+    analysis_result = self._RunFrameAnalyzer(width, height, reference_yuv,
+                                             _OUTPUT_YUV_FILE, stats_file)
     self._ProcessPsnrAndSsimOutput(analysis_result)
     self._ProcessFramesCountOutput(analysis_result)
 
@@ -187,8 +201,8 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     path_to_base = os.path.join(self.BrowserPath(), '..', '..')
 
     # Pywebsocket source directory.
-    path_pyws_dir = os.path.join(path_to_base, 'third_party', 'WebKit',
-                                 'Tools', 'Scripts', 'webkitpy', 'thirdparty')
+    path_pyws_dir = os.path.join(path_to_base, 'third_party', 'pywebsocket',
+                                 'src')
 
     # Pywebsocket standalone server.
     path_to_pywebsocket= os.path.join(path_pyws_dir, 'mod_pywebsocket',
@@ -210,8 +224,6 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     # Set PYTHONPATH to include the pywebsocket base directory.
     env['PYTHONPATH'] = (path_pyws_dir + os.path.pathsep +
                          env.get('PYTHONPATH', ''))
-    handler_output_path = os.path.join(path_to_base, '..', '..')
-    env['PYWS_DIR_FOR_HANDLER_OUTPUT'] = os.path.abspath(handler_output_path)
 
     # Start the pywebsocket server. The server will not start instantly, so the
     # code opening websockets to it should take this into account.
@@ -220,20 +232,21 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
   def _StopPywebsocketServer(self):
     """Stops the running instance of pywebsocket server."""
     print 'Stopping pywebsocket server.'
-    assert self._pywebsocket_server
-    self._pywebsocket_server.kill()
+    if self._pywebsocket_server:
+      self._pywebsocket_server.kill()
 
   def _RunRGBAToI420Converter(self, width, height):
     """Runs the RGBA to I420 converter.
 
-    The rgba_to_i420_converter is part of the webrtc_pyauto_tools target which
+    The rgba_to_i420_converter is part of the webrtc_test_tools target which
     should be build prior to running this test. The resulting binary should live
     next to Chrome.
 
     Args:
       width(int): The width of the frames to be converted and stitched together.
       height(int): The height of the frames to be converted and stitched.
-    Return:
+
+    Returns:
       (bool): True if the conversion is successful, false otherwise.
     """
     path_to_rgba_converter = os.path.join(self.BrowserPath(),
@@ -244,16 +257,12 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     if not os.path.exists(path_to_rgba_converter):
       raise webrtc_test_base.MissingRequiredBinaryException(
           'Could not locate rgba_to_i420_converter! Did you build the '
-          'webrtc_pyauto_tools target?')
-
-    # This is where the pywebsocket handler writes the captured frames.
-    frames_dir = os.environ['PYWS_DIR_FOR_HANDLER_OUTPUT']
+          'webrtc_test_tools target?')
 
     # We produce an output file that will later be used as an input to the
     # barcode decoder and frame analyzer tools.
-    output_file = os.path.join(frames_dir, 'pyauto_output.yuv')
-    start_cmd = [path_to_rgba_converter, '--frames_dir=%s' % frames_dir,
-                 '--output_file=%s' % output_file, '--width=%d' % width,
+    start_cmd = [path_to_rgba_converter, '--frames_dir=%s' % _WORKING_DIR,
+                 '--output_file=%s' % _OUTPUT_YUV_FILE, '--width=%d' % width,
                  '--height=%d' % height, '--delete_frames']
     print 'Start command: ', ' '.join(start_cmd)
     rgba_converter = subprocess.Popen(start_cmd, stdout=subprocess.PIPE)
@@ -263,16 +272,17 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
       return False
     return True
 
-  def _RunBarcodeDecoder(self, width, height, barcode_height):
+  def _RunBarcodeDecoder(self, width, height, barcode_height,
+                         captured_video_filename, stats_filename):
     """Runs the barcode decoder.
 
-    The barcode decoder decodes the barcode overlaid into every frame of the
-    YUV file produced by rgba_to_i420_converter. It writes the relation between
-    the frame number in this output file and the frame number (the decoded
-    barcode value) in the original input file.
+    The barcode decoder decodes the captured video containing barcodes overlaid
+    into every frame of the video (produced by rgba_to_i420_converter). It
+    produces a set of PNG images and a stats file that describes the relation
+    between the filenames and the (decoded) frame number of each frame.
 
-    The barcode decoder uses a big java library for decoding the barcodes called
-    Zxing (Zebra crossing). It is checked in the webrtc-tools repo which isn't
+    The barcode decoder uses a big Java library for decoding the barcodes called
+    Zxing (Zebra crossing). It is checked in WebRTC's tools/ repo which isn't
     synced in Chrome. That's why we check it out next to Chrome using a
     modified version of the .gclient file and than build the necessary jars for
     the library to be usable.
@@ -282,7 +292,13 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
       height(int): The frames height of the video to be decoded.
       barcode_height(int): The height of the barcodes overlaid on top of every
         frame.
-    Return:
+      captured_video_filename(string): The captured video file we want to
+        extract frame images and decode frame numbers from.
+      stats_filename(string): Filename for the output file containing
+        data that shows the relation between each frame filename and the
+        reference file's frame numbers.
+
+    Returns:
       (bool): True if the decoding was successful, False otherwise.
     """
     # The barcode decoder lives in folder barcode_tools next to src.
@@ -299,17 +315,14 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
           'to Chrome\' src by modifying the .gclient file. Than build the '
           'necessary jar files for the library to become usable. You can build '
           'them by running the build_zxing.py script.')
-    # The YUV file is the file produced by rgba_to_i420_converter.
-    yuv_file = os.path.join(os.environ['PYWS_DIR_FOR_HANDLER_OUTPUT'],
-                            'pyauto_output.yuv')
-    stats_file = os.path.join(os.environ['PYWS_DIR_FOR_HANDLER_OUTPUT'],
-                            'pyauto_stats.txt')
+
     python_interp = sys.executable
-    start_cmd = [python_interp, path_to_decoder, '--yuv_file=%s' % yuv_file,
+    start_cmd = [python_interp, path_to_decoder,
+                 '--yuv_file=%s' % captured_video_filename,
                  '--yuv_frame_width=%d' % width,
                  '--yuv_frame_height=%d' % height,
                  '--barcode_height=%d' % barcode_height,
-                 '--stats_file=%s' % stats_file]
+                 '--stats_file=%s' % stats_filename]
     print 'Start command: ', ' '.join(start_cmd)
 
     barcode_decoder = subprocess.Popen(start_cmd, stderr=subprocess.PIPE)
@@ -319,10 +332,11 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
       return False
     return True
 
-  def _RunFrameAnalyzer(self, width, height, reference_yuv):
+  def _RunFrameAnalyzer(self, width, height, reference_video_file,
+                        captured_video_file, stats_file):
     """Runs the frame analyzer tool for PSNR and SSIM analysis.
 
-    The frame analyzer is also part of the webrtc_pyauto_target. It should be
+    The frame analyzer is also part of the webrtc_test_tools. It should be
     built before running this test. We assume that the binary will end up next
     to Chrome.
 
@@ -332,9 +346,14 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     Args:
       width(int): The width of the video frames to be analyzed.
       height(int): The height of the video frames to be analyzed.
-      reference_yuv(string): The name of the reference video to be used as a
-        reference during the analysis.
-    Return:
+      reference_video_file(string): Filename of the video to be used as a
+         reference during the analysis.
+      captured_video_file(string): Filename for the video containing the
+        captured frames.
+      stats_file(string): Filename for the file that contains frame
+        synchronization data for the captured frames.
+
+    Returns:
       (string): The output from the frame_analyzer.
     """
     path_to_analyzer = os.path.join(self.BrowserPath(), 'frame_analyzer')
@@ -345,18 +364,11 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     if not os.path.exists(path_to_analyzer):
       raise webrtc_test_base.MissingRequiredBinaryException(
           'Could not locate frame_analyzer! Did you build the '
-          'webrtc_pyauto_tools target?')
+          'webrtc_test_tools target?')
 
-    # We assume that the reference file(s) will be in the same directory where
-    # the captured frames, the output and stats files are written.
-    ref_file = os.path.join(os.environ['PYWS_DIR_FOR_HANDLER_OUTPUT'],
-                            reference_yuv)
-    test_file = os.path.join(os.environ['PYWS_DIR_FOR_HANDLER_OUTPUT'],
-                            'pyauto_output.yuv')
-    stats_file = os.path.join(os.environ['PYWS_DIR_FOR_HANDLER_OUTPUT'],
-                            'pyauto_stats.txt')
-    start_cmd = [path_to_analyzer, '--reference_file=%s' % ref_file,
-                 '--test_file=%s' % test_file, '--stats_file=%s' % stats_file,
+    start_cmd = [path_to_analyzer, '--reference_file=%s' % reference_video_file,
+                 '--test_file=%s' % captured_video_file,
+                 '--stats_file=%s' % stats_file,
                  '--width=%d' % width, '--height=%d' % height]
     print 'Start command: ', ' '.join(start_cmd)
 
