@@ -13,11 +13,14 @@
 #include "base/stl_util.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window_property.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/rect.h"
@@ -360,6 +363,12 @@ const gfx::Display& MultiDisplayManager::GetDisplayMatching(
 
 std::string MultiDisplayManager::GetDisplayNameFor(
     const gfx::Display& display) {
+  if (HasInternalDisplay() && IsInternalDisplayId(display.id())) {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    return UTF16ToUTF8(
+        bundle.GetLocalizedString(IDS_ASH_INTERNAL_DISPLAY_NAME));
+  }
+
 #if defined(USE_X11)
   std::vector<XID> outputs;
   if (display.id() != gfx::Display::kInvalidDisplayID &&

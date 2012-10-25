@@ -488,6 +488,9 @@ Press Search or Shift to cancel.
       <message name="IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING" desc="An error message to show that the system failed to enter the mirroring mode.">
 	Can't duplicate image on attached monitors. No matching resolution found.
       </message>
+      <message name="IDS_ASH_INTERNAL_DISPLAY_NAME" desc="The name of the internal display which is shown in the display settings.">
+	Internal Display
+      </message>
     </messages>
   </release>
 </grit>
