@@ -426,8 +426,13 @@ class ThreadedCompositorTest : public GpuFeatureTest {
   }
 };
 
-// disabled in http://crbug.com/123503
-IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, ThreadedCompositor) {
+#if defined(OS_LINUX)
+// http://crbug.com/157985: test fails on Linux
+#define MAYBE_ThreadedCompositor DISABLED_ThreadedCompositor
+#else
+#define MAYBE_ThreadedCompositor ThreadedCompositor
+#endif
+IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, MAYBE_ThreadedCompositor) {
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, true);
 }
