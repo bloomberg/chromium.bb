@@ -104,6 +104,7 @@ class MockOAuthFetcherFactory : public net::URLFetcherFactory,
 const std::string kTestAccessToken = "1/fFAGRNJru1FTz70BzhT3Zg";
 const std::string kTestRefreshToken =
     "1/6BMfW9j53gdGImsixUH6kU5RsR4zwI9lUVX-tqf8JXQ";
+const std::string kTestUserEmail = "a_user@gmail.com";
 const int kTestExpiresIn = 3920;
 
 const std::string kDummyGetTokensResult =
@@ -114,6 +115,9 @@ const std::string kDummyGetTokensResult =
 const std::string kDummyRefreshTokenResult =
   "{\"access_token\":\"" + kTestAccessToken + "\","
   "\"expires_in\":" + base::IntToString(kTestExpiresIn) + "}";
+
+const std::string kDummyUserInfoResult =
+  "{\"email\":\"" + kTestUserEmail + "\"}";
 }
 
 namespace gaia {
@@ -133,9 +137,11 @@ class MockGaiaOAuthClientDelegate : public gaia::GaiaOAuthClient::Delegate {
   ~MockGaiaOAuthClientDelegate() {}
 
   MOCK_METHOD3(OnGetTokensResponse, void(const std::string& refresh_token,
-      const std::string& access_token, int expires_in_seconds));
+                                         const std::string& access_token,
+                                         int expires_in_seconds));
   MOCK_METHOD2(OnRefreshTokenResponse, void(const std::string& access_token,
-      int expires_in_seconds));
+                                            int expires_in_seconds));
+  MOCK_METHOD1(OnGetUserInfoResponse, void(const std::string& user_email));
   MOCK_METHOD0(OnOAuthError, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
 };
@@ -243,6 +249,25 @@ TEST_F(GaiaOAuthClientTest, RefreshTokenSuccess) {
   client_info.redirect_uri = "test_redirect_uri";
   GaiaOAuthClient auth(kGaiaOAuth2Url,
                        profile_.GetRequestContext());
-  auth.GetTokensFromAuthCode(client_info, "auth_code", -1, &delegate);
+  auth.RefreshToken(client_info, "refresh_token", -1, &delegate);
 }
+
+TEST_F(GaiaOAuthClientTest, GetUserInfo) {
+  MockGaiaOAuthClientDelegate delegate;
+  EXPECT_CALL(delegate, OnGetUserInfoResponse(kTestUserEmail)).Times(1);
+
+  TestingProfile profile;
+
+  MockOAuthFetcherFactory factory;
+  factory.set_results(kDummyUserInfoResult);
+
+  OAuthClientInfo client_info;
+  client_info.client_id = "test_client_id";
+  client_info.client_secret = "test_client_secret";
+  client_info.redirect_uri = "test_redirect_uri";
+  GaiaOAuthClient auth(kGaiaOAuth2Url,
+                       profile_.GetRequestContext());
+  auth.GetUserInfo("access_token", 1, &delegate);
+}
+
 }  // namespace gaia
