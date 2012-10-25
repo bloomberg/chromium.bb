@@ -15,7 +15,10 @@ import tempfile
 from proc_maps import ProcMaps
 
 
-def _dump_command_result(command, output_dir_path, basename, suffix, log):
+LOGGER = logging.getLogger('prepare_symbol_info')
+
+
+def _dump_command_result(command, output_dir_path, basename, suffix):
   handle_out, filename_out = tempfile.mkstemp(
       suffix=suffix, prefix=basename + '.', dir=output_dir_path)
   handle_err, filename_err = tempfile.mkstemp(
@@ -31,10 +34,10 @@ def _dump_command_result(command, output_dir_path, basename, suffix, log):
     os.close(handle_out)
 
   if os.path.exists(filename_err):
-    if log.getEffectiveLevel() <= logging.DEBUG:
+    if LOGGER.getEffectiveLevel() <= logging.DEBUG:
       with open(filename_err, 'r') as f:
         for line in f:
-          log.debug(line.rstrip())
+          LOGGER.debug(line.rstrip())
     os.remove(filename_err)
 
   if os.path.exists(filename_out) and (
@@ -48,15 +51,33 @@ def _dump_command_result(command, output_dir_path, basename, suffix, log):
   return filename_out
 
 
-def prepare_symbol_info(maps_path, output_dir_path=None, loglevel=logging.WARN):
-  log = logging.getLogger('prepare_symbol_info')
-  log.setLevel(loglevel)
-  handler = logging.StreamHandler()
-  handler.setLevel(loglevel)
-  formatter = logging.Formatter('%(message)s')
-  handler.setFormatter(formatter)
-  log.addHandler(handler)
+def prepare_symbol_info(maps_path, output_dir_path=None, use_tempdir=False):
+  """Prepares (collects) symbol information files for find_runtime_symbols.
 
+  1) If |output_dir_path| is specified, it tries collecting symbol information
+  files in the given directory |output_dir_path|.
+  1-a) If |output_dir_path| doesn't exist, create the directory and use it.
+  1-b) If |output_dir_path| is an empty directory, use it.
+  1-c) If |output_dir_path| is a directory which has 'files.json', assumes that
+       files are already collected and just ignores it.
+  1-d) Otherwise, depends on |use_tempdir|.
+
+  2) If |output_dir_path| is not specified, it tries to create a new directory
+  depending on 'maps_path'.
+
+  If it cannot create a new directory, creates a temporary directory depending
+  on |use_tempdir|.  If |use_tempdir| is False, returns None.
+
+  Args:
+      maps_path: A path to a file which contains '/proc/<pid>/maps'.
+      output_dir_path: A path to a directory where files are prepared.
+      use_tempdir: If True, it creates a temporary directory when it cannot
+          create a new directory.
+
+  Returns:
+      A pair of a path to the prepared directory and a boolean representing
+      if it created a temporary directory or not.
+  """
   if not output_dir_path:
     matched = re.match('^(.*)\.maps$', os.path.basename(maps_path))
     if matched:
@@ -66,42 +87,59 @@ def prepare_symbol_info(maps_path, output_dir_path=None, loglevel=logging.WARN):
     if matched:
       output_dir_path = matched.group(1) + '.pre'
   if not output_dir_path:
-    output_dir_prefix = os.path.basename(maps_path) + '.pre'
+    output_dir_path = os.path.basename(maps_path) + '.pre'
   # TODO(dmikurube): Find another candidate for output_dir_path.
 
-  log.info('Data for profiling will be collected in "%s".' % output_dir_path)
-  output_dir_path_exists = False
+  used_tempdir = False
+  LOGGER.info('Data for profiling will be collected in "%s".' % output_dir_path)
   if os.path.exists(output_dir_path):
     if os.path.isdir(output_dir_path) and not os.listdir(output_dir_path):
-      log.warn('Using an empty directory existing at "%s".' % output_dir_path)
+      LOGGER.warn('Using an empty existing directory "%s".' % output_dir_path)
     else:
-      log.warn('A file or a directory exists at "%s".' % output_dir_path)
-      output_dir_path_exists = True
+      LOGGER.warn('A file or a directory exists at "%s".' % output_dir_path)
+      if os.path.exists(os.path.join(output_dir_path, 'files.json')):
+        LOGGER.warn('Using the existing directory "%s".' % output_dir_path)
+        return output_dir_path, used_tempdir
+      else:
+        if use_tempdir:
+          output_dir_path = tempfile.mkdtemp()
+          used_tempdir = True
+          LOGGER.warn('Using a temporary directory "%s".' % output_dir_path)
+        else:
+          LOGGER.warn('The directory "%s" is not available.' % output_dir_path)
+          return None, used_tempdir
   else:
-    log.info('Creating a new directory at "%s".' % output_dir_path)
-    os.mkdir(output_dir_path)
-
-  if output_dir_path_exists:
-    return 1
+    LOGGER.info('Creating a new directory "%s".' % output_dir_path)
+    try:
+      os.mkdir(output_dir_path)
+    except OSError, e:
+      LOGGER.warn('A directory "%s" cannot be created.' % output_dir_path)
+      if use_tempdir:
+        output_dir_path = tempfile.mkdtemp()
+        used_tempdir = True
+        LOGGER.warn('Using a temporary directory "%s".' % output_dir_path)
+      else:
+        LOGGER.warn('The directory "%s" is not available.' % output_dir_path)
+        return None, used_tempdir
 
   shutil.copyfile(maps_path, os.path.join(output_dir_path, 'maps'))
 
   with open(maps_path, mode='r') as f:
     maps = ProcMaps.load(f)
 
-  log.debug('Listing up symbols.')
+  LOGGER.debug('Listing up symbols.')
   files = {}
   for entry in maps.iter(ProcMaps.executable):
-    log.debug('  %016x-%016x +%06x %s' % (
+    LOGGER.debug('  %016x-%016x +%06x %s' % (
         entry.begin, entry.end, entry.offset, entry.name))
     nm_filename = _dump_command_result(
         'nm -n --format bsd %s | c++filt' % entry.name,
-        output_dir_path, os.path.basename(entry.name), '.nm', log)
+        output_dir_path, os.path.basename(entry.name), '.nm')
     if not nm_filename:
       continue
     readelf_e_filename = _dump_command_result(
         'readelf -eW %s' % entry.name,
-        output_dir_path, os.path.basename(entry.name), '.readelf-e', log)
+        output_dir_path, os.path.basename(entry.name), '.readelf-e')
     if not readelf_e_filename:
       continue
 
@@ -116,8 +154,8 @@ def prepare_symbol_info(maps_path, output_dir_path=None, loglevel=logging.WARN):
   with open(os.path.join(output_dir_path, 'files.json'), 'w') as f:
     json.dump(files, f, indent=2, sort_keys=True)
 
-  log.info('Collected symbol information at "%s".' % output_dir_path)
-  return 0
+  LOGGER.info('Collected symbol information at "%s".' % output_dir_path)
+  return output_dir_path, used_tempdir
 
 
 def main():
@@ -125,17 +163,24 @@ def main():
     sys.stderr.write('This script work only on Linux.')
     return 1
 
+  LOGGER.setLevel(logging.DEBUG)
+  handler = logging.StreamHandler()
+  handler.setLevel(logging.INFO)
+  formatter = logging.Formatter('%(message)s')
+  handler.setFormatter(formatter)
+  LOGGER.addHandler(handler)
+
   if len(sys.argv) < 2:
     sys.stderr.write("""Usage:
 %s /path/to/maps [/path/to/output_data_dir/]
 """ % sys.argv[0])
     return 1
   elif len(sys.argv) == 2:
-    sys.exit(prepare_symbol_info(sys.argv[1], loglevel=logging.INFO))
+    result, _ = prepare_symbol_info(sys.argv[1])
   else:
-    sys.exit(prepare_symbol_info(sys.argv[1], sys.argv[2],
-                                 loglevel=logging.INFO))
-  return 0
+    result, _ = prepare_symbol_info(sys.argv[1], sys.argv[2])
+
+  return not result
 
 
 if __name__ == '__main__':
