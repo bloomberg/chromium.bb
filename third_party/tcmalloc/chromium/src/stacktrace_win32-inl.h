@@ -87,4 +87,5 @@ PERFTOOLS_DLL_DECL int GetStackFrames(void** /* pcs */,
   assert(0 == "Not yet implemented");
   return 0;
 }
+
 #endif  // BASE_STACKTRACE_WIN32_INL_H_
