@@ -2152,7 +2152,10 @@ void RenderViewImpl::showContextMenu(
   // selection. If that's the case, update the render view's state just prior
   // to showing the context menu.
   // TODO(asvitkine): http://crbug.com/152432
-  if (params.selection_text != selection_text_) {
+  const string16 selection_text =
+      selection_text_.substr(selection_range_.GetMin() - selection_text_offset_,
+                             selection_range_.length());
+  if (params.selection_text != selection_text) {
     selection_text_ = params.selection_text;
     // TODO(asvitkine): Text offset and range is not available in this case.
     selection_text_offset_ = 0;
