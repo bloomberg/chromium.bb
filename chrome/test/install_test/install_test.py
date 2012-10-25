@@ -11,8 +11,12 @@ tests. Currently the only platform it supports is Windows.
 """
 
 import atexit
+import logging
+import optparse
 import os
 import platform
+import re
+import shutil
 import stat
 import sys
 import tempfile
@@ -218,3 +222,87 @@ class InstallTest(unittest.TestCase):
     url = '%s%s/%s/%s/chromedriver.exe' % (base_url, build, system,
                                            'chrome-win32.test')
     InstallTest._Download(url, InstallTest._chrome_driver)
+
+
+class Main(object):
+  """Main program for running Updater tests."""
+
+  def __init__(self):
+    self._SetLoggingConfiguration()
+    self._ParseArgs()
+    self._Run()
+
+  def _ParseArgs(self):
+    """Parses command line arguments."""
+    parser = optparse.OptionParser()
+    parser.add_option(
+        '-u', '--url', type='string', default='', dest='url',
+        help='Specifies the build url, without the build number.')
+    parser.add_option(
+        '-o', '--options', type='string', default='',
+        help='Specifies any additional Chrome options (i.e. --system-level).')
+    parser.add_option(
+        '--install-build', type='string', default='', dest='install_build',
+        help='Specifies the build to be used for fresh install testing.')
+    parser.add_option(
+        '--update-builds', type='string', default='', dest='update_builds',
+        help='Specifies the builds to be used for updater testing.')
+    parser.add_option(
+        '--install-type', type='string', default='user', dest='install_type',
+        help='Type of installation (i.e., user, system, or both)')
+    self._opts, self._args = parser.parse_args()
+    self._ValidateArgs()
+    if(self._opts.install_type == 'system' or
+       self._opts.install_type == 'user'):
+      install_type = ({
+          'system' : chrome_installer_win.InstallationType.SYSTEM,
+          'user' : chrome_installer_win.InstallationType.USER}).get(
+              self._opts.install_type)
+      InstallTest.SetInstallType(install_type)
+    update_builds = (self._opts.update_builds.split(',') if
+                     self._opts.update_builds else [])
+    options = self._opts.options.split(',') if self._opts.options else []
+    InstallTest.InitTestFixture(self._opts.install_build,
+                                update_builds,
+                                self._opts.url,
+                                options)
+
+  def _ValidateArgs(self):
+    """Verifies the sanity of the command arguments.
+
+    Confirms that all specified builds have a valid version number, and the
+    build urls are valid.
+    """
+    builds = []
+    if self._opts.install_build:
+      builds.append(self._opts.install_build)
+    if self._opts.update_builds:
+      builds.extend(self._opts.update_builds.split(','))
+    builds = list(frozenset(builds))
+    for build in builds:
+      if not re.match('\d+\.\d+\.\d+\.\d+', build):
+        raise RuntimeError('Invalid build number: %s' % build)
+      if not pyauto_utils.DoesUrlExist('%s/%s/' % (self._opts.url, build)):
+        raise RuntimeError('Could not locate build no. %s' % build)
+
+  def _SetLoggingConfiguration(self):
+    """Sets the basic logging configuration."""
+    log_format = '%(asctime)s %(levelname)-8s %(message)s'
+    logging.basicConfig(level=logging.INFO, format=log_format)
+
+  def _GetTests(self):
+    """Returns a list of unittests from the calling script."""
+    mod_name = [os.path.splitext(os.path.basename(sys.argv[0]))[0]]
+    if os.path.dirname(sys.argv[0]) not in sys.path:
+      sys.path.append(os.path.dirname(sys.argv[0]))
+    return unittest.defaultTestLoader.loadTestsFromNames(mod_name)
+
+  def _Run(self):
+    """Runs the unit tests."""
+    tests = self._GetTests()
+    result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
+    del(tests)
+    if not result.wasSuccessful():
+      print >>sys.stderr, ('Not all tests were successful.')
+      sys.exit(1)
+    sys.exit(0)
