@@ -487,7 +487,7 @@ SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
         zoomed.hidden = true;
         thumbnails.push(zoomed);
         function onFirstThumbnailLoaded(img, transform) {
-          if (self.decorateThumbnailZoom_(zoomed, img, transform)) {
+          if (img && self.decorateThumbnailZoom_(zoomed, img, transform)) {
             zoomed.hidden = false;
             thumbnailsHaveZoom = true;
           }

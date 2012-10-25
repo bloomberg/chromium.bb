@@ -1515,6 +1515,13 @@ DialogType.isModal = function(type) {
       box.className = 'img-container';
     }
 
+    if (entry.isDirectory) {
+      box.setAttribute('generic-thumbnail', 'folder');
+      if (opt_imageLoadCallback)
+        setTimeout(opt_imageLoadCallback, 0, null /* callback parameter */);
+      return box;
+    }
+
     var imageUrl = entry.toURL();
 
     // Failing to fetch a thumbnail likely means that the thumbnail URL
