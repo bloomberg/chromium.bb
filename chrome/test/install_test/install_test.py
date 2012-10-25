@@ -99,6 +99,7 @@ class InstallTest(unittest.TestCase):
   _installer_paths = {}
   _chrome_driver = ''
   _installer_options = []
+  _install_type = chrome_installer_win.InstallationType.USER
 
   def __init__(self, methodName='runTest'):
     unittest.TestCase.__init__(self, methodName)
@@ -130,8 +131,13 @@ class InstallTest(unittest.TestCase):
     """
     self._driver = webdriver.Remote(self._service.service_url, caps)
 
-  def Install(self, build):
-    """Helper method that installs the specified Chrome build."""
+  def Install(self, build, master_pref=None):
+    """Helper method that installs the specified Chrome build.
+
+    Args:
+      build: Chrome version number that will be used for installation.
+      master_pref: Location of the master preferences file.
+    """
     if self._driver:
       try:
         self._driver.quit()
@@ -141,6 +147,8 @@ class InstallTest(unittest.TestCase):
     options.extend(self._installer_options)
     if self._install_type == chrome_installer_win.InstallationType.SYSTEM:
       options.append('--system-level')
+    if master_pref:
+      options.append('--installerdata="%s"' % master_pref)
     self._installation = chrome_installer_win.Install(
         self._installer_paths[build],
         self._install_type,

@@ -66,13 +66,8 @@ class Main(object):
         help='Filter that specifies the test or testsuite to run.')
     self._opts, self._args = parser.parse_args()
     self._ValidateArgs()
-    if(self._opts.install_type == 'system' or
-       self._opts.install_type == 'user'):
-      install_type = ({
-          'system' : chrome_installer_win.InstallationType.SYSTEM,
-          'user' : chrome_installer_win.InstallationType.USER}).get(
-              self._opts.install_type)
-      InstallTest.SetInstallType(install_type)
+    if self._opts.install_type == 'system':
+      InstallTest.SetInstallType(chrome_installer_win.InstallationType.SYSTEM)
     update_builds = (self._opts.update_builds.split(',') if
                      self._opts.update_builds else [])
     options = self._opts.options.split(',') if self._opts.options else []
@@ -189,6 +184,10 @@ class Main(object):
     all_tests = unittest.defaultTestLoader.loadTestsFromModule(sample_updater)
     tests = self._FilterTestSuite(all_tests, self._opts.filter)
     result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
+    # Run tests again if installation type is 'both'(i.e., user and system).
+    if self._opts.install_type == 'both':
+      InstallTest.SetInstallType(chrome_installer_win.InstallationType.SYSTEM)
+      result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
     del(tests)
     if not result.wasSuccessful():
       print >>sys.stderr, ('Not all tests were successful.')
