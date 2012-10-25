@@ -397,7 +397,7 @@ TEST_F(HttpPipeliningCompatibilityClientTest, OldHttpVersion) {
   ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
-TEST_F(HttpPipeliningCompatibilityClientTest, MultipleRequests) {
+TEST_F(HttpPipeliningCompatibilityClientTest, DISABLED_MultipleRequests) {
   std::vector<RequestInfo> requests;
 
   RequestInfo info1;
@@ -460,7 +460,7 @@ TEST_F(HttpPipeliningCompatibilityClientTest, StatsIndifferentToOrder) {
   ExpectHistogramCount(1, 1, FIELD_HTTP_1_1);
 }
 
-TEST_F(HttpPipeliningCompatibilityClientTest, StatsBadField) {
+TEST_F(HttpPipeliningCompatibilityClientTest, DISABLED_StatsBadField) {
   EXPECT_EQ(internal::PipelineTestRequest::STATUS_CORRUPT_STATS,
             internal::ProcessStatsResponse(
                 "foo:3,were_all_requests_http_1_1:1"));
