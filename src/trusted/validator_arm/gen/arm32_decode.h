@@ -130,9 +130,6 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_simd_dp_3same(
       const Instruction inst) const;
 
-  inline const ClassDecoder& decode_simd_load_store_l0(
-      const Instruction inst) const;
-
   inline const ClassDecoder& decode_synchronization_primitives(
       const Instruction inst) const;
 
@@ -188,7 +185,6 @@ class Arm32DecoderState : DecoderState {
   const MoveDoubleVfpRegisterOp MoveDoubleVfpRegisterOp_instance_;
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
-  const NotImplemented NotImplemented_instance_;
   const PreloadRegisterPairOp PreloadRegisterPairOp_instance_;
   const PreloadRegisterPairOpWAndRnNotPc PreloadRegisterPairOpWAndRnNotPc_instance_;
   const Roadblock Roadblock_instance_;
@@ -247,14 +243,18 @@ class Arm32DecoderState : DecoderState {
   const VectorBinary3RegisterSameLengthDQI16_32 VectorBinary3RegisterSameLengthDQI16_32_instance_;
   const VectorBinary3RegisterSameLengthDQI8P VectorBinary3RegisterSameLengthDQI8P_instance_;
   const VectorBinary3RegisterSameLengthDQI8_16_32 VectorBinary3RegisterSameLengthDQI8_16_32_instance_;
-  const VectorStoreMultiple1 VectorStoreMultiple1_instance_;
-  const VectorStoreMultiple2 VectorStoreMultiple2_instance_;
-  const VectorStoreMultiple3 VectorStoreMultiple3_instance_;
-  const VectorStoreMultiple4 VectorStoreMultiple4_instance_;
-  const VectorStoreSingle1 VectorStoreSingle1_instance_;
-  const VectorStoreSingle2 VectorStoreSingle2_instance_;
-  const VectorStoreSingle3 VectorStoreSingle3_instance_;
-  const VectorStoreSingle4 VectorStoreSingle4_instance_;
+  const VectorLoadSingle1AllLanes VectorLoadSingle1AllLanes_instance_;
+  const VectorLoadSingle2AllLanes VectorLoadSingle2AllLanes_instance_;
+  const VectorLoadSingle3AllLanes VectorLoadSingle3AllLanes_instance_;
+  const VectorLoadSingle4AllLanes VectorLoadSingle4AllLanes_instance_;
+  const VectorLoadStoreMultiple1 VectorLoadStoreMultiple1_instance_;
+  const VectorLoadStoreMultiple2 VectorLoadStoreMultiple2_instance_;
+  const VectorLoadStoreMultiple3 VectorLoadStoreMultiple3_instance_;
+  const VectorLoadStoreMultiple4 VectorLoadStoreMultiple4_instance_;
+  const VectorLoadStoreSingle1 VectorLoadStoreSingle1_instance_;
+  const VectorLoadStoreSingle2 VectorLoadStoreSingle2_instance_;
+  const VectorLoadStoreSingle3 VectorLoadStoreSingle3_instance_;
+  const VectorLoadStoreSingle4 VectorLoadStoreSingle4_instance_;
   const VectorUnary2RegisterDup VectorUnary2RegisterDup_instance_;
   const VfpMrsOp VfpMrsOp_instance_;
   const VfpOp VfpOp_instance_;

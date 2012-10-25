@@ -80,16 +80,12 @@ GEN_TABLES = ["ARMv7",
               "simd_dp_2misc",
               "simd_dp_1imm",
               "advanced_simd_element_or_structure_load_store_instructions",
-              "simd_load_store_l0",
-              "simd_load_store_l1",
               ]
 
 # The list of (NEON) tables that we have turned off. That is, no instructions
 # in the corresponding table will be accepted by the NACL ARM validator.
 # TODO(karl): Remove this list when NEON tables are ready.
-TURNED_OFF_TABLES = [
-    'simd_load_store_l1',
-    ]
+TURNED_OFF_TABLES = []
 
 # Changes table name to test name.
 def _TableTestName(tbl):

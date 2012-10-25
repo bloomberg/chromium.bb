@@ -2374,7 +2374,7 @@ class DuplicateToAdvSIMDRegistersTester : public CondAdvSIMDOpTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToAdvSIMDRegistersTester);
 };
 
-// Implements a decoder tester for VectorStoreMultiple.
+// Implements a decoder tester for VectorLoadStoreMultiple.
 // Models an advanced SIMD vector store multiple elements.
 // +------------------+--+----+--------+--------+--------+----+----+--------+
 // |313029282726252423|22|2120|19181716|15141312|1110 9 8| 7 6| 5 4| 3 2 1 0|
@@ -2393,22 +2393,22 @@ class DuplicateToAdvSIMDRegistersTester : public CondAdvSIMDOpTester {
 // # uses ignores FPRs. It only models GPRs.
 // uses := { m if wback else None , n };
 // arch := ASIMD;
-class VectorStoreMultipleTester : public UncondDecoderTester {
+class VectorLoadStoreMultipleTester : public UncondDecoderTester {
  public:
-  explicit VectorStoreMultipleTester(const NamedClassDecoder& decoder)
+  explicit VectorLoadStoreMultipleTester(const NamedClassDecoder& decoder)
       : UncondDecoderTester(decoder) {}
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
  protected:
-  nacl_arm_dec::VectorStoreMultiple expected_decoder_;
+  nacl_arm_dec::VectorLoadStoreMultiple expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreMultipleTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorLoadStoreMultipleTester);
 };
 
-// Implements a decoder tester for VectorStoreSingle.
+// Implements a decoder tester for VectorLoadStoreSingle.
 // Models an advanced SIMD vector store single elements.
 // +------------------+--+----+--------+--------+----+----+-----------+--------+
 // |313029282726252423|22|2120|19181716|15141312|1110| 9 8| 7 6 5 4   | 3 2 1 0|
@@ -2435,19 +2435,53 @@ class VectorStoreMultipleTester : public UncondDecoderTester {
 //   # uses ignores FPRs. It only models GPRs.
 //   uses := { m if wback else None , n };
 //   arch := ASIMD;
-class VectorStoreSingleTester : public UncondDecoderTester {
+class VectorLoadStoreSingleTester : public UncondDecoderTester {
  public:
-  explicit VectorStoreSingleTester(const NamedClassDecoder& decoder)
+  explicit VectorLoadStoreSingleTester(const NamedClassDecoder& decoder)
       : UncondDecoderTester(decoder) {}
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
  protected:
-  nacl_arm_dec::VectorStoreSingle expected_decoder_;
+  nacl_arm_dec::VectorLoadStoreSingle expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreSingleTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorLoadStoreSingleTester);
+};
+
+// Implements a decoder tester for VectorLoadSingleAllLanes.
+// Implements a VLD1, VLD2, VLD3, VLD4 single instruction to all langes.
+// +------------------+--+----+--------+--------+--------+----+--+--+--------+
+// |313029282726252423|22|2120|19181716|15141312|1110 9 8| 7 6| 5| 4| 3 2 1 0|
+// +------------------+--+----+--------+--------+--------+----+--+--+--------+
+// |                  | D|    |   Rn   |   Vd   |        |size| T| a|   Rm   |
+// +------------------+--+----+--------+--------+--------+----+--+--+--------+
+//   ebytes := 1 << size; elements = 8 / ebytes;
+//   d := D:Vd; n := Rn; m := Rm;
+//   wback := (m != Pc); register_index := (m != Pc & m != Sp);
+//   base := n;
+//   # defs ignores FPRs. It only models GPRs and conditions.
+//   defs := { base } if wback else {};
+//   # Note: register_index defines if Rm is used (rather than a small
+//   # constant).
+//   imm_defs := { base } if not register_index else {};
+//   # uses ignores FPRs. It only models GPRs.
+//   uses := { m if wback else None , n };
+//   arch := ASIMD;
+class VectorLoadSingleAllLanesTester : public UncondDecoderTester {
+ public:
+  explicit VectorLoadSingleAllLanesTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorLoadSingleAllLanes expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorLoadSingleAllLanesTester);
 };
 
 // Implements a decoder tester for BarrierInst

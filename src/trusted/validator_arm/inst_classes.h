@@ -456,6 +456,17 @@ class Imm6Bits16To21Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm6Bits16To21Interface);
 };
 
+// Interface class to pull out value in bit 4
+class FlagBit4Interface {
+ public:
+  static bool IsDefined(const Instruction& i) {
+    return i.Bit(4);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit4Interface);
+};
+
 // Interface class to pull out value in bit 5
 class FlagBit5Interface {
  public:

@@ -987,10 +987,6 @@ class MoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646
     : public MoveVfpRegisterOpWithTypeSel {
 };
 
-class NotImplemented_None
-    : public NotImplemented {
-};
-
 class PreloadRegisterImm12Op_Pld_Rule_117_A1_P236
     : public PreloadRegisterImm12Op {
 };
@@ -1819,36 +1815,84 @@ class VectorBinary3RegisterSameLengthDQI8_16_32_VTST
     : public VectorBinary3RegisterSameLengthDQI8_16_32 {
 };
 
-class VectorStoreMultiple1_VST1_multiple_single_elements
-    : public VectorStoreMultiple1 {
+class VectorLoadSingle1AllLanes_VLD1_single_element_to_all_lanes
+    : public VectorLoadSingle1AllLanes {
 };
 
-class VectorStoreMultiple2_VST2_multiple_2_element_structures
-    : public VectorStoreMultiple2 {
+class VectorLoadSingle2AllLanes_VLD2_single_2_element_structure_to_all_lanes
+    : public VectorLoadSingle2AllLanes {
 };
 
-class VectorStoreMultiple3_VST3_multiple_3_element_structures
-    : public VectorStoreMultiple3 {
+class VectorLoadSingle3AllLanes_VLD3_single_3_element_structure_to_all_lanes
+    : public VectorLoadSingle3AllLanes {
 };
 
-class VectorStoreMultiple4_VST4_multiple_4_element_structures
-    : public VectorStoreMultiple4 {
+class VectorLoadSingle4AllLanes_VLD4_single_4_element_structure_to_all_lanes
+    : public VectorLoadSingle4AllLanes {
 };
 
-class VectorStoreSingle1_VST1_single_element_from_one_lane
-    : public VectorStoreSingle1 {
+class VectorLoadStoreMultiple1_VLD1_multiple_single_elements
+    : public VectorLoadStoreMultiple1 {
 };
 
-class VectorStoreSingle2_VST2_single_2_element_structure_from_one_lane
-    : public VectorStoreSingle2 {
+class VectorLoadStoreMultiple1_VST1_multiple_single_elements
+    : public VectorLoadStoreMultiple1 {
 };
 
-class VectorStoreSingle3_VST3_single_3_element_structure_from_one_lane
-    : public VectorStoreSingle3 {
+class VectorLoadStoreMultiple2_VLD2_multiple_2_element_structures
+    : public VectorLoadStoreMultiple2 {
 };
 
-class VectorStoreSingle4_VST4_single_4_element_structure_form_one_lane
-    : public VectorStoreSingle4 {
+class VectorLoadStoreMultiple2_VST2_multiple_2_element_structures
+    : public VectorLoadStoreMultiple2 {
+};
+
+class VectorLoadStoreMultiple3_VLD3_multiple_3_element_structures
+    : public VectorLoadStoreMultiple3 {
+};
+
+class VectorLoadStoreMultiple3_VST3_multiple_3_element_structures
+    : public VectorLoadStoreMultiple3 {
+};
+
+class VectorLoadStoreMultiple4_VLD4_multiple_4_element_structures
+    : public VectorLoadStoreMultiple4 {
+};
+
+class VectorLoadStoreMultiple4_VST4_multiple_4_element_structures
+    : public VectorLoadStoreMultiple4 {
+};
+
+class VectorLoadStoreSingle1_VLD1_single_element_to_one_lane
+    : public VectorLoadStoreSingle1 {
+};
+
+class VectorLoadStoreSingle1_VST1_single_element_from_one_lane
+    : public VectorLoadStoreSingle1 {
+};
+
+class VectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane
+    : public VectorLoadStoreSingle2 {
+};
+
+class VectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane
+    : public VectorLoadStoreSingle2 {
+};
+
+class VectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane
+    : public VectorLoadStoreSingle3 {
+};
+
+class VectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane
+    : public VectorLoadStoreSingle3 {
+};
+
+class VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane
+    : public VectorLoadStoreSingle4 {
+};
+
+class VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane
+    : public VectorLoadStoreSingle4 {
 };
 
 class VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592
@@ -5842,18 +5886,6 @@ class NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646);
 };
 
-class NamedNotImplemented_None
-    : public NamedClassDecoder {
- public:
-  NamedNotImplemented_None()
-    : NamedClassDecoder(decoder_, "NotImplemented None")
-  {}
-
- private:
-  nacl_arm_dec::NotImplemented_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedNotImplemented_None);
-};
-
 class NamedPreloadRegisterImm12Op_Pld_Rule_117_A1_P236
     : public NamedClassDecoder {
  public:
@@ -8338,100 +8370,244 @@ class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VTST
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VTST);
 };
 
-class NamedVectorStoreMultiple1_VST1_multiple_single_elements
+class NamedVectorLoadSingle1AllLanes_VLD1_single_element_to_all_lanes
     : public NamedClassDecoder {
  public:
-  NamedVectorStoreMultiple1_VST1_multiple_single_elements()
-    : NamedClassDecoder(decoder_, "VectorStoreMultiple1 VST1_multiple_single_elements")
+  NamedVectorLoadSingle1AllLanes_VLD1_single_element_to_all_lanes()
+    : NamedClassDecoder(decoder_, "VectorLoadSingle1AllLanes VLD1_single_element_to_all_lanes")
   {}
 
  private:
-  nacl_arm_dec::VectorStoreMultiple1_VST1_multiple_single_elements decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStoreMultiple1_VST1_multiple_single_elements);
+  nacl_arm_dec::VectorLoadSingle1AllLanes_VLD1_single_element_to_all_lanes decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadSingle1AllLanes_VLD1_single_element_to_all_lanes);
 };
 
-class NamedVectorStoreMultiple2_VST2_multiple_2_element_structures
+class NamedVectorLoadSingle2AllLanes_VLD2_single_2_element_structure_to_all_lanes
     : public NamedClassDecoder {
  public:
-  NamedVectorStoreMultiple2_VST2_multiple_2_element_structures()
-    : NamedClassDecoder(decoder_, "VectorStoreMultiple2 VST2_multiple_2_element_structures")
+  NamedVectorLoadSingle2AllLanes_VLD2_single_2_element_structure_to_all_lanes()
+    : NamedClassDecoder(decoder_, "VectorLoadSingle2AllLanes VLD2_single_2_element_structure_to_all_lanes")
   {}
 
  private:
-  nacl_arm_dec::VectorStoreMultiple2_VST2_multiple_2_element_structures decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStoreMultiple2_VST2_multiple_2_element_structures);
+  nacl_arm_dec::VectorLoadSingle2AllLanes_VLD2_single_2_element_structure_to_all_lanes decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadSingle2AllLanes_VLD2_single_2_element_structure_to_all_lanes);
 };
 
-class NamedVectorStoreMultiple3_VST3_multiple_3_element_structures
+class NamedVectorLoadSingle3AllLanes_VLD3_single_3_element_structure_to_all_lanes
     : public NamedClassDecoder {
  public:
-  NamedVectorStoreMultiple3_VST3_multiple_3_element_structures()
-    : NamedClassDecoder(decoder_, "VectorStoreMultiple3 VST3_multiple_3_element_structures")
+  NamedVectorLoadSingle3AllLanes_VLD3_single_3_element_structure_to_all_lanes()
+    : NamedClassDecoder(decoder_, "VectorLoadSingle3AllLanes VLD3_single_3_element_structure_to_all_lanes")
   {}
 
  private:
-  nacl_arm_dec::VectorStoreMultiple3_VST3_multiple_3_element_structures decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStoreMultiple3_VST3_multiple_3_element_structures);
+  nacl_arm_dec::VectorLoadSingle3AllLanes_VLD3_single_3_element_structure_to_all_lanes decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadSingle3AllLanes_VLD3_single_3_element_structure_to_all_lanes);
 };
 
-class NamedVectorStoreMultiple4_VST4_multiple_4_element_structures
+class NamedVectorLoadSingle4AllLanes_VLD4_single_4_element_structure_to_all_lanes
     : public NamedClassDecoder {
  public:
-  NamedVectorStoreMultiple4_VST4_multiple_4_element_structures()
-    : NamedClassDecoder(decoder_, "VectorStoreMultiple4 VST4_multiple_4_element_structures")
+  NamedVectorLoadSingle4AllLanes_VLD4_single_4_element_structure_to_all_lanes()
+    : NamedClassDecoder(decoder_, "VectorLoadSingle4AllLanes VLD4_single_4_element_structure_to_all_lanes")
   {}
 
  private:
-  nacl_arm_dec::VectorStoreMultiple4_VST4_multiple_4_element_structures decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStoreMultiple4_VST4_multiple_4_element_structures);
+  nacl_arm_dec::VectorLoadSingle4AllLanes_VLD4_single_4_element_structure_to_all_lanes decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadSingle4AllLanes_VLD4_single_4_element_structure_to_all_lanes);
 };
 
-class NamedVectorStoreSingle1_VST1_single_element_from_one_lane
+class NamedVectorLoadStoreMultiple1_VLD1_multiple_single_elements
     : public NamedClassDecoder {
  public:
-  NamedVectorStoreSingle1_VST1_single_element_from_one_lane()
-    : NamedClassDecoder(decoder_, "VectorStoreSingle1 VST1_single_element_from_one_lane")
+  NamedVectorLoadStoreMultiple1_VLD1_multiple_single_elements()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreMultiple1 VLD1_multiple_single_elements")
   {}
 
  private:
-  nacl_arm_dec::VectorStoreSingle1_VST1_single_element_from_one_lane decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStoreSingle1_VST1_single_element_from_one_lane);
+  nacl_arm_dec::VectorLoadStoreMultiple1_VLD1_multiple_single_elements decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreMultiple1_VLD1_multiple_single_elements);
 };
 
-class NamedVectorStoreSingle2_VST2_single_2_element_structure_from_one_lane
+class NamedVectorLoadStoreMultiple1_VST1_multiple_single_elements
     : public NamedClassDecoder {
  public:
-  NamedVectorStoreSingle2_VST2_single_2_element_structure_from_one_lane()
-    : NamedClassDecoder(decoder_, "VectorStoreSingle2 VST2_single_2_element_structure_from_one_lane")
+  NamedVectorLoadStoreMultiple1_VST1_multiple_single_elements()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreMultiple1 VST1_multiple_single_elements")
   {}
 
  private:
-  nacl_arm_dec::VectorStoreSingle2_VST2_single_2_element_structure_from_one_lane decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStoreSingle2_VST2_single_2_element_structure_from_one_lane);
+  nacl_arm_dec::VectorLoadStoreMultiple1_VST1_multiple_single_elements decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreMultiple1_VST1_multiple_single_elements);
 };
 
-class NamedVectorStoreSingle3_VST3_single_3_element_structure_from_one_lane
+class NamedVectorLoadStoreMultiple2_VLD2_multiple_2_element_structures
     : public NamedClassDecoder {
  public:
-  NamedVectorStoreSingle3_VST3_single_3_element_structure_from_one_lane()
-    : NamedClassDecoder(decoder_, "VectorStoreSingle3 VST3_single_3_element_structure_from_one_lane")
+  NamedVectorLoadStoreMultiple2_VLD2_multiple_2_element_structures()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreMultiple2 VLD2_multiple_2_element_structures")
   {}
 
  private:
-  nacl_arm_dec::VectorStoreSingle3_VST3_single_3_element_structure_from_one_lane decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStoreSingle3_VST3_single_3_element_structure_from_one_lane);
+  nacl_arm_dec::VectorLoadStoreMultiple2_VLD2_multiple_2_element_structures decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreMultiple2_VLD2_multiple_2_element_structures);
 };
 
-class NamedVectorStoreSingle4_VST4_single_4_element_structure_form_one_lane
+class NamedVectorLoadStoreMultiple2_VST2_multiple_2_element_structures
     : public NamedClassDecoder {
  public:
-  NamedVectorStoreSingle4_VST4_single_4_element_structure_form_one_lane()
-    : NamedClassDecoder(decoder_, "VectorStoreSingle4 VST4_single_4_element_structure_form_one_lane")
+  NamedVectorLoadStoreMultiple2_VST2_multiple_2_element_structures()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreMultiple2 VST2_multiple_2_element_structures")
   {}
 
  private:
-  nacl_arm_dec::VectorStoreSingle4_VST4_single_4_element_structure_form_one_lane decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStoreSingle4_VST4_single_4_element_structure_form_one_lane);
+  nacl_arm_dec::VectorLoadStoreMultiple2_VST2_multiple_2_element_structures decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreMultiple2_VST2_multiple_2_element_structures);
+};
+
+class NamedVectorLoadStoreMultiple3_VLD3_multiple_3_element_structures
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreMultiple3_VLD3_multiple_3_element_structures()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreMultiple3 VLD3_multiple_3_element_structures")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreMultiple3_VLD3_multiple_3_element_structures decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreMultiple3_VLD3_multiple_3_element_structures);
+};
+
+class NamedVectorLoadStoreMultiple3_VST3_multiple_3_element_structures
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreMultiple3_VST3_multiple_3_element_structures()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreMultiple3 VST3_multiple_3_element_structures")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreMultiple3_VST3_multiple_3_element_structures decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreMultiple3_VST3_multiple_3_element_structures);
+};
+
+class NamedVectorLoadStoreMultiple4_VLD4_multiple_4_element_structures
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreMultiple4_VLD4_multiple_4_element_structures()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreMultiple4 VLD4_multiple_4_element_structures")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreMultiple4_VLD4_multiple_4_element_structures decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreMultiple4_VLD4_multiple_4_element_structures);
+};
+
+class NamedVectorLoadStoreMultiple4_VST4_multiple_4_element_structures
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreMultiple4_VST4_multiple_4_element_structures()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreMultiple4 VST4_multiple_4_element_structures")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreMultiple4_VST4_multiple_4_element_structures decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreMultiple4_VST4_multiple_4_element_structures);
+};
+
+class NamedVectorLoadStoreSingle1_VLD1_single_element_to_one_lane
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreSingle1_VLD1_single_element_to_one_lane()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreSingle1 VLD1_single_element_to_one_lane")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreSingle1_VLD1_single_element_to_one_lane decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle1_VLD1_single_element_to_one_lane);
+};
+
+class NamedVectorLoadStoreSingle1_VST1_single_element_from_one_lane
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreSingle1_VST1_single_element_from_one_lane()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreSingle1 VST1_single_element_from_one_lane")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreSingle1_VST1_single_element_from_one_lane decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle1_VST1_single_element_from_one_lane);
+};
+
+class NamedVectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreSingle2 VLD2_single_2_element_structure_to_one_lane")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane);
+};
+
+class NamedVectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreSingle2 VST2_single_2_element_structure_from_one_lane")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane);
+};
+
+class NamedVectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreSingle3 VLD3_single_3_element_structure_to_one_lane")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane);
+};
+
+class NamedVectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreSingle3 VST3_single_3_element_structure_from_one_lane")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane);
+};
+
+class NamedVectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreSingle4 VLD4_single_4_element_structure_to_one_lane")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane);
+};
+
+class NamedVectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane
+    : public NamedClassDecoder {
+ public:
+  NamedVectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane()
+    : NamedClassDecoder(decoder_, "VectorLoadStoreSingle4 VST4_single_4_element_structure_form_one_lane")
+  {}
+
+ private:
+  nacl_arm_dec::VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane);
 };
 
 class NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592

@@ -237,14 +237,18 @@ class VectorBinary2RegisterShiftAmount_N16_32_64R
 class VectorBinary2RegisterShiftAmount_N16_32_64RS
         : VectorBinary2RegisterShiftAmount
 class VectorBinary2RegisterShiftAmount_CVT : VectorBinary2RegisterShiftAmount
-class VectorStoreMultiple1 : VectorStoreMultiple
-class VectorStoreMultiple2 : VectorStoreMultiple
-class VectorStoreMultiple3 : VectorStoreMultiple
-class VectorStoreMultiple4 : VectorStoreMultiple
-class VectorStoreSingle1 : VectorStoreSingle
-class VectorStoreSingle2 : VectorStoreSingle
-class VectorStoreSingle3 : VectorStoreSingle
-class VectorStoreSingle4 : VectorStoreSingle
+class VectorLoadStoreMultiple1 : VectorLoadStoreMultiple
+class VectorLoadStoreMultiple2 : VectorLoadStoreMultiple
+class VectorLoadStoreMultiple3 : VectorLoadStoreMultiple
+class VectorLoadStoreMultiple4 : VectorLoadStoreMultiple
+class VectorLoadStoreSingle1 : VectorLoadStoreSingle
+class VectorLoadStoreSingle2 : VectorLoadStoreSingle
+class VectorLoadStoreSingle3 : VectorLoadStoreSingle
+class VectorLoadStoreSingle4 : VectorLoadStoreSingle
+class VectorLoadSingle1AllLanes : VectorLoadSingleAllLanes
+class VectorLoadSingle2AllLanes : VectorLoadSingleAllLanes
+class VectorLoadSingle3AllLanes : VectorLoadSingleAllLanes
+class VectorLoadSingle4AllLanes : VectorLoadSingleAllLanes
 class Vector1RegisterImmediate_MOV : Vector1RegisterImmediate
 class Vector1RegisterImmediate_BIT : Vector1RegisterImmediate
 class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
@@ -2653,16 +2657,9 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 +--
 
 +-- advanced_simd_element_or_structure_load_store_instructions (See Section A7.7)
-# This "table" is the first paragraph in A7.7.
-| L(21)
-| 0    ->simd_load_store_l0
-| 1    ->simd_load_store_l1
-+--
-
-+-- simd_load_store_l0 (See Section A7.7, Table A7-20)
-*VSM
+*VLSM
    { D(22), Rn(19:16), Vd(15:12), type(11:8), size(7:6), align(5:4), Rm(3:0) }
-   baseline := VectorStoreMultiple;
+   baseline := VectorLoadStoreMultiple;
    alignment := 1 if align=00 else 4 << align;
    ebytes := 1 << size; esize := 8 * ebytes; elements := 8 / ebytes;
    d := D:Vd; n := Rn; m := Rm;
@@ -2675,8 +2672,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # uses ignores FPRs. It only models GPRs.
    uses := { m if wback else None , n };
    arch := ASIMD;
-*VSM1 *VSM
-   baseline := VectorStoreMultiple1;
+*VLSM1 *VLSM
+   baseline := VectorLoadStoreMultiple1;
    regs := 1 if type=0111 else
            2 if type=1010 else
            3 if type=0110 else
@@ -2687,8 +2684,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              type=0110 & align(1)=1 => UNDEFINED &
              not type in bitset {0111, 1010, 0110, 0010} => DECODER_ERROR &
              n == Pc | d + regs > 32 => UNPREDICTABLE;
-*VSM2 *VSM
-   baseline := VectorStoreMultiple2;
+*VLSM2 *VLSM
+   baseline := VectorLoadStoreMultiple2;
    regs := 1 if type in bitset {1000, 1001} else 2;
    inc  := 1 if type=1000 else 2;
    d2 := d + inc;
@@ -2696,24 +2693,24 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              type in bitset {1000, 1001} & align=11 => UNDEFINED &
              not type in bitset {1000, 1001, 0011} => DECODER_ERROR &
              n == Pc | d2 + regs > 32 => UNPREDICTABLE;
-*VSM3 *VSM
-   baseline := VectorStoreMultiple3;
+*VLSM3 *VLSM
+   baseline := VectorLoadStoreMultiple3;
    inc := 1 if type=0100 else 2;
    alignment := 1 if align(0)=0 else 8;
    d2 := d + inc; d3 := d2 + inc;
    safety := size=11 | align(1)=1 => UNDEFINED &
              not type in bitset {0100, 0101} => DECODER_ERROR &
              n == Pc | d3 > 31 => UNPREDICTABLE;
-*VSM4 *VSM
-   baseline := VectorStoreMultiple4;
+*VLSM4 *VLSM
+   baseline := VectorLoadStoreMultiple4;
    inc := 1 if type=0000 else 2;
    d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
    safety := size=11 => UNDEFINED &
              not type in bitset {0000, 0001} => DECODER_ERROR &
              n == Pc | d4 > 31 => UNPREDICTABLE;
-*VSS
+*VLSS
    { D(22), Rn(19:16), Vd(15:12), size(11:10), index_align(7:4), Rm(3:0) }
-   baseline := VectorStoreSingle;
+   baseline := VectorLoadStoreSingle;
    ebytes := 1 << size; esize := 8 * ebytes;
    index := index_align(3:1) if size=00 else
             index_align(3:2) if size=01 else
@@ -2733,8 +2730,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # uses ignores FPRs. It only models GPRs.
    uses := { m if wback else None , n };
    arch := ASIMD;
-*VSS1 *VSS
-   baseline := VectorStoreSingle1;
+*VLSS1 *VLSS
+   baseline := VectorLoadStoreSingle1;
    alignment := 1 if size=00 else
                 (1 if index_align(0)=0 else 2) if size=01 else
                 (1 if index_align(1:0)=00 else 4) if size=10 else
@@ -2746,8 +2743,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              size=10 & index_align(1:0)=~00
                      & index_align(1:0)=~11 => UNDEFINED &
              n == Pc => UNPREDICTABLE;
-*VSS2 *VSS
-   baseline := VectorStoreSingle2;
+*VLSS2 *VLSS
+   baseline := VectorLoadStoreSingle2;
    alignment := (1 if index_align(0)=0 else 2) if size=00 else
                 (1 if index_align(0)=0 else 4) if size=01 else
                 (1 if index_align(0)=0 else 8) if size=10 else
@@ -2756,8 +2753,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    safety := size=11 => UNDEFINED &
              size=10 & index_align(1)=~0 => UNDEFINED &
              n == Pc | d2 > 31 => UNPREDICTABLE;
-*VSS3 *VSS
-   baseline := VectorStoreSingle3;
+*VLSS3 *VLSS
+   baseline := VectorLoadStoreSingle3;
    alignment := 1;
    d2 := d + inc; d3 := d2 + inc;
    safety := size=11 => UNDEFINED &
@@ -2765,8 +2762,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              size=01 & index_align(0)=~0 => UNDEFINED &
              size=10 & index_align(1:0)=~00 => UNDEFINED &
              n == Pc | d3 > 31 => UNPREDICTABLE;
-*VSS4 *VSS
-   baseline := VectorStoreSingle4;
+*VLSS4 *VLSS
+   baseline := VectorLoadStoreSingle4;
    d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
    alignment := (1 if index_align(0)=0 else 4) if size=00 else
                 (1 if index_align(0)=0 else 8) if size=01 else
@@ -2776,62 +2773,124 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    safety := size=11 => UNDEFINED &
              size=10 & index_align(1:0)=11 => UNDEFINED &
              n == Pc | d4 > 31 => UNPREDICTABLE;
+*VLSA
+   { D(22), Rn(19:16), Vd(15:12), size(7:6), T(5), a(4), Rm(3:0) }
+   baseline := VectorLoadSingleAllLanes;
+   ebytes := 1 << size; elements := 8 / ebytes;
+   d := D:Vd; n := Rn; m := Rm;
+   wback := (m != Pc); register_index := (m != Pc & m != Sp);
+   base := n;
+   # defs ignores FPRs. It only models GPRs and conditions.
+   defs := { base } if wback else {};
+   # Note: register_index defines if Rm is used (rather than a small constant).
+   imm_defs := { base } if not register_index else {};
+   # uses ignores FPRs. It only models GPRs.
+   uses := { m if wback else None , n };
+   arch := ASIMD;
+*VLS1A *VLSA
+   baseline := VectorLoadSingle1AllLanes;
+   alignment := 1 if a=0 else ebytes;
+   regs := 1 if T=0 else 2;
+   safety := size=11 | (size=00 & a=1) => UNDEFINED &
+             n == Pc | d + regs > 32 => UNPREDICTABLE;
+*VLS2A *VLSA
+   baseline := VectorLoadSingle2AllLanes;
+   alignment := 1 if a=0 else 2 * ebytes;
+   inc := 1 if T=0 else 2;
+   d2 := d + inc;
+   safety := size=11 => UNDEFINED &
+             n == Pc | d2 > 31 => UNPREDICTABLE;
+*VLS3A *VLSA
+   baseline := VectorLoadSingle3AllLanes;
+   inc := 1 if T=0 else 2;
+   alignment := 1;
+   d2 := d + inc; d3 := d2 + inc;
+   safety := size=11 | a=1 => UNDEFINED &
+             n == Pc | d3 > 31 => UNPREDICTABLE;
+*VLS4A *VLSA
+   baseline := VectorLoadSingle4AllLanes;
+   alignment := 16 if size=11 else
+                (1 if a=0 else 8) if size=10 else
+                (1 if a=0 else 4 * ebytes);
+   inc := 1 if T=0 else 2;
+   d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
+   safety := size=11 & a=0 => UNDEFINED &
+             n == Pc | d4 > 31 => UNPREDICTABLE;
 +--
-| A(23) B(11:8)
-| 0     0010    = *VSM1
-                  pattern := 111101000d00nnnnddddttttssaammmm;
-                  rule := VST1_multiple_single_elements;
-| "     011x    "
-| "     1010    "
-| "     0011    = *VSM2
-                  pattern := 111101000d00nnnnddddttttssaammmm;
-                  rule := VST2_multiple_2_element_structures;
-| "     100x    "
-| "     010x    = *VSM3
-                  pattern := 111101000d00nnnnddddttttssaammmm;
-                  rule := VST3_multiple_3_element_structures;
-| "     000x    = *VSM4
-                  pattern := 111101000d00nnnnddddttttssaammmm;
-                  rule := VST4_multiple_4_element_structures;
-| 1     0x00    = *VSS1
-                  pattern := 111101001d00nnnnddddss00aaaammmm;
-                  rule := VST1_single_element_from_one_lane;
-| "     1000    "
-| "     0x01    = *VSS2
-                  pattern := 111101001d00nnnnddddss01aaaammmm;
-                  rule := VST2_single_2_element_structure_from_one_lane;
-| "     1001    "
-| "     0x10    = *VSS3
-                  pattern := 111101001d00nnnnddddss10aaaammmm;
-                  rule := VST3_single_3_element_structure_from_one_lane;
-| "     1010    "
-| "     0x11    = *VSS4
-                  pattern := 111101001d00nnnnddddss11aaaammmm;
-                  rule := VST4_single_4_element_structure_form_one_lane;
-| "     1011    "
-| else:         = Undefined
-+--
-
-+-- simd_load_store_l1 (See Section A7.7, Table A7-21)
-| A(23) B(11:8)
-| 0     0010    =VectorLoad  # VLD1(multiple)
-| "     011x    "
-| "     1010    "
-| "     0011    =VectorLoad  # VLD2(multiple)
-| "     100x    "
-| "     010x    =VectorLoad  # VLD3(multiple)
-| "     000x    =VectorLoad  # VLD4(multiple)
-| 1     0x00    =VectorLoad  # VLD1(single)
-| "     1000    "
-| "     1100    =VectorLoad  # VLD1(single, all lanes)
-| "     0x01    =VectorLoad  # VLD2(single)
-| "     1001    "
-| "     1101    =VectorLoad  # VLD2(single, all lanes)
-| "     0x10    =VectorLoad  # VLD3(single)
-| "     1010    "
-| "     1110    =VectorLoad  # VLD3(single, all lanes)
-| "     0x11    =VectorLoad  # VLD4(single)
-| "     1011    "
-| "     1111    =VectorLoad  # VLD4(single, all lanes)
-| else:         =Undefined   # Note on page A7-27
+| L(21) A(23) B(11:8)
+| 0 0     0010    = *VLSM1
+                    pattern := 111101000d00nnnnddddttttssaammmm;
+                    rule := VST1_multiple_single_elements;
+| " "     011x    "
+| " "     1010    "
+| " "     0011    = *VLSM2
+                    pattern := 111101000d00nnnnddddttttssaammmm;
+                    rule := VST2_multiple_2_element_structures;
+| " "     100x    "
+| " "     010x    = *VLSM3
+                    pattern := 111101000d00nnnnddddttttssaammmm;
+                    rule := VST3_multiple_3_element_structures;
+| " "     000x    = *VLSM4
+                    pattern := 111101000d00nnnnddddttttssaammmm;
+                    rule := VST4_multiple_4_element_structures;
+| " 1     0x00    = *VLSS1
+                    pattern := 111101001d00nnnnddddss00aaaammmm;
+                    rule := VST1_single_element_from_one_lane;
+| " "     1000    "
+| " "     0x01    = *VLSS2
+                    pattern := 111101001d00nnnnddddss01aaaammmm;
+                    rule := VST2_single_2_element_structure_from_one_lane;
+| " "     1001    "
+| " "     0x10    = *VLSS3
+                    pattern := 111101001d00nnnnddddss10aaaammmm;
+                    rule := VST3_single_3_element_structure_from_one_lane;
+| " "     1010    "
+| " "     0x11    = *VLSS4
+                    pattern := 111101001d00nnnnddddss11aaaammmm;
+                    rule := VST4_single_4_element_structure_form_one_lane;
+| " "     1011    "
+| 1 0     0010    = *VLSM1
+                    pattern := 111101000d10nnnnddddttttssaammmm;
+                    rule := VLD1_multiple_single_elements;
+| " "     011x    "
+| " "     1010    "
+| " "     0011    = *VLSM2
+                    pattern := 111101000d10nnnnddddttttssaammmm;
+                    rule := VLD2_multiple_2_element_structures;
+| " "     100x    "
+| " "     010x    = *VLSM3
+                    pattern := 111101000d10nnnnddddttttssaammmm;
+                    rule := VLD3_multiple_3_element_structures;
+| " "     000x    = *VLSM4
+                    pattern := 111101000d10nnnnddddttttssaammmm;
+                    rule := VLD4_multiple_4_element_structures;
+| " 1     0x00    = *VLSS1
+                    pattern := 111101001d10nnnnddddss00aaaammmm;
+                    rule := VLD1_single_element_to_one_lane;
+| " "     1000    "
+| " "     1100    = *VLS1A
+                    pattern := 111101001d10nnnndddd1100sstammmm;
+                    rule := VLD1_single_element_to_all_lanes;
+| " "     0x01    = *VLSS2
+                    pattern := 111101001d10nnnnddddss01aaaammmm;
+                    rule := VLD2_single_2_element_structure_to_one_lane;
+| " "     1001    "
+| " "     1101    = *VLS2A
+                    pattern := 111101001d10nnnndddd1101sstammmm;
+                    rule := VLD2_single_2_element_structure_to_all_lanes;
+| " "     0x10    = *VLSS3
+                    pattern := 111101001d10nnnnddddss10aaaammmm;
+                    rule := VLD3_single_3_element_structure_to_one_lane;
+| " "     1010    "
+| " "     1110    = *VLS3A
+                    pattern := 111101001d10nnnndddd1110sstammmm;
+                    rule := VLD3_single_3_element_structure_to_all_lanes;
+| " "     0x11    = *VLSS4
+                    pattern := 111101001d10nnnnddddss11aaaammmm;
+                    rule := VLD4_single_4_element_structure_to_one_lane;
+| " "     1011    "
+| " "     1111    = *VLS4A
+                    pattern := 111101001d10nnnndddd1111sstammmm;
+                    rule := VLD4_single_4_element_structure_to_all_lanes;
+| else:           = Undefined
 +--
