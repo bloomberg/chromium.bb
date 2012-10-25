@@ -6108,9 +6108,16 @@
   fun:_ZN21VisitedLinkEventsTest5SetUpEv
 }
 {
-   bug_157808
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8remoting10AutoThread14CreateWithTypeEPKc13scoped_refptrINS_20AutoThreadTaskRunnerEEN11MessageLoop4TypeE
-   fun:_ZN8remoting18DesktopProcessTest5SetUpEv
+  bug_157808a
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN8remoting10AutoThread14CreateWithTypeEPKc13scoped_refptrINS_20AutoThreadTaskRunnerEEN11MessageLoop4TypeE
+  fun:_ZN8remoting18DesktopProcessTest5SetUpEv
+}
+{
+  bug_157808b
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN8remoting10AutoThread14CreateWithTypeEPKc13scoped_refptrINS_20AutoThreadTaskRunnerEEN11MessageLoop4TypeE
+  fun:_ZN8remoting14DesktopProcess3RunEv
 }
