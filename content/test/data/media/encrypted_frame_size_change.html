@@ -17,7 +17,7 @@
       }
 
       function loadVideo(video) {
-        loadEncryptedMediaFromURL(video);
+        var mediaSource = loadEncryptedMediaFromURL(video);
 
         video.addEventListener('playing', function() {
           // Make sure the video plays for a bit.
@@ -30,6 +30,7 @@
 
         video.addEventListener('pause', function() {
           video.addEventListener('seeked', function() {
+            mediaSource.endOfStream();
             if (!firstVideoSeek) {
               setDocTitle('One video seeked.');
               firstVideoSeek = true;

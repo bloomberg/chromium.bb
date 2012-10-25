@@ -45,7 +45,7 @@ function installTitleEventHandler(element, event) {
 }
 
 function loadEncryptedMediaFromURL(video) {
-  loadEncryptedMedia(video, mediaFile, keySystem, KEY);
+  return loadEncryptedMedia(video, mediaFile, keySystem, KEY);
 }
 
 function loadEncryptedMedia(video, mediaFile, keySystem, key) {
@@ -104,4 +104,5 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
   video.addEventListener('webkitkeyerror', failTest);
   video.addEventListener('webkitkeyadded', onKeyAdded);
   installTitleEventHandler(video, 'error');
+  return mediaSource;
 }

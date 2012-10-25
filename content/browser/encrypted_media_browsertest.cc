@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback) {
                                              GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_FrameChangeVideo) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
