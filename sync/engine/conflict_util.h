@@ -13,6 +13,8 @@ namespace syncable {
 class MutableEntry;
 }
 
+namespace conflict_util {
+
 // Marks the item as no longer requiring sync, allowing the server's version
 // to 'win' during the next update application step.
 void IgnoreLocalChanges(syncable::MutableEntry* entry);
@@ -26,6 +28,7 @@ void OverwriteServerChanges(syncable::MutableEntry* entry);
 // into a conflicting state.
 void IgnoreConflict(syncable::MutableEntry *trans);
 
+}  // namespace conflict_util
 }  // namespace syncer
 
 #endif  // SYNC_ENGINE_CONFLICT_UTIL_H_

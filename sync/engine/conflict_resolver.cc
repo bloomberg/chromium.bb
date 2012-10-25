@@ -193,7 +193,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
         !needs_reinsertion) {
       DVLOG(1) << "Resolving simple conflict, everything matches, ignoring "
                << "changes for: " << entry;
-      IgnoreConflict(&entry);
+      conflict_util::IgnoreConflict(&entry);
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 CHANGES_MATCH,
                                 CONFLICT_RESOLUTION_SIZE);
@@ -201,12 +201,12 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       DVLOG(1) << "Resolving simple conflict, ignoring server encryption "
                << " changes for: " << entry;
       status->increment_num_server_overwrites();
-      OverwriteServerChanges(&entry);
+      conflict_util::OverwriteServerChanges(&entry);
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 IGNORE_ENCRYPTION,
                                 CONFLICT_RESOLUTION_SIZE);
     } else if (entry_deleted || !name_matches || !parent_matches) {
-      OverwriteServerChanges(&entry);
+      conflict_util::OverwriteServerChanges(&entry);
       status->increment_num_server_overwrites();
       DVLOG(1) << "Resolving simple conflict, overwriting server changes "
                << "for: " << entry;
@@ -216,7 +216,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     } else {
       DVLOG(1) << "Resolving simple conflict, ignoring local changes for: "
                << entry;
-      IgnoreLocalChanges(&entry);
+      conflict_util::IgnoreLocalChanges(&entry);
       status->increment_num_local_overwrites();
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 OVERWRITE_LOCAL,
@@ -246,7 +246,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     // The entry is deleted on the server but still exists locally.
     // We undelete it by overwriting the server's tombstone with the local
     // data.
-    OverwriteServerChanges(&entry);
+    conflict_util::OverwriteServerChanges(&entry);
     status->increment_num_server_overwrites();
     DVLOG(1) << "Resolving simple conflict, undeleting server entry: "
              << entry;

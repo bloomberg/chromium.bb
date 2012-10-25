@@ -15,6 +15,8 @@ using syncable::SERVER_VERSION;
 
 using syncable::MutableEntry;
 
+namespace conflict_util {
+
 // Allow the server's changes to take precedence.
 // This will take effect during the next ApplyUpdates step.
 void IgnoreLocalChanges(MutableEntry* entry) {
@@ -48,4 +50,5 @@ void IgnoreConflict(MutableEntry* entry) {
   entry->Put(IS_UNSYNCED, false);
 }
 
+}  // namespace conflict_util
 }  // namespace syncer

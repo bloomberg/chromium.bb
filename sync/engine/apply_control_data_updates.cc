@@ -149,7 +149,7 @@ bool ApplyNigoriUpdates(syncable::WriteTransaction* trans,
     DVLOG(1) << "Resolving simple conflict, merging nigori nodes: "
              << nigori_node;
 
-    OverwriteServerChanges(&nigori_node);
+    conflict_util::OverwriteServerChanges(&nigori_node);
 
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                               ConflictResolver::NIGORI_MERGE,
