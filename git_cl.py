@@ -150,6 +150,19 @@ def add_git_similarity(parser):
   parser.parse_args = Parse
 
 
+def is_dirty_git_tree(cmd):
+  # Make sure index is up-to-date before running diff-index.
+  RunGit(['update-index', '--refresh', '-q'], error_ok=True)
+  dirty = RunGit(['diff-index', '--name-status', 'HEAD'])
+  if dirty:
+    print 'Cannot %s with a dirty tree. You must commit locally first.' % cmd
+    print 'Uncommitted files: (git diff-index --name-status HEAD)'
+    print dirty[:4096]
+    if len(dirty) > 4096:
+      print '... (run "git diff-index --name-status HEAD" to see full output).'
+    return True
+  return False
+
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   """Return the corresponding git ref if |base_url| together with |glob_spec|
   matches the full |url|.
@@ -997,12 +1010,8 @@ def CMDpresubmit(parser, args):
                     help='Run checks even if tree is dirty')
   (options, args) = parser.parse_args(args)
 
-  # Make sure index is up-to-date before running diff-index.
-  RunGit(['update-index', '--refresh', '-q'], error_ok=True)
-  if not options.force and RunGit(['diff-index', 'HEAD']):
-    # TODO(maruel): Is this really necessary?
-    print ('Cannot presubmit with a dirty tree.\n'
-          'You must commit locally first (or use --force).')
+  if not options.force and is_dirty_git_tree('presubmit'):
+    print 'use --force to check even if tree is dirty.'
     return 1
 
   cl = Changelist()
@@ -1199,10 +1208,7 @@ def CMDupload(parser, args):
         'In the near future, -m or --message will send a message instead.\n'
         'See http://goo.gl/JGg0Z for details.\n')
 
-  # Make sure index is up-to-date before running diff-index.
-  RunGit(['update-index', '--refresh', '-q'], error_ok=True)
-  if RunGit(['diff-index', 'HEAD']):
-    print 'Cannot upload with a dirty tree.  You must commit locally first.'
+  if is_dirty_git_tree('upload'):
     return 1
 
   cl = Changelist()
@@ -1272,10 +1278,7 @@ def SendUpstream(parser, args, cmd):
   base_branch = args[0]
   base_has_submodules = IsSubmoduleMergeCommit(base_branch)
 
-  # Make sure index is up-to-date before running diff-index.
-  RunGit(['update-index', '--refresh', '-q'], error_ok=True)
-  if RunGit(['diff-index', 'HEAD']):
-    print 'Cannot %s with a dirty tree.  You must commit locally first.' % cmd
+  if is_dirty_git_tree(cmd):
     return 1
 
   # This rev-list syntax means "show all commits not in my branch that
