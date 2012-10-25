@@ -105,6 +105,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'chrome/common/extensions/docs/examples': [  # http://crbug.com/98092
         'UNKNOWN',
     ],
+    'chrome/test/data/gpu/vt': [
+        'UNKNOWN',
+    ],
     'chrome/test/data/layout_tests/LayoutTests': [
         'UNKNOWN',
     ],
