@@ -80,14 +80,6 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
   localized_strings->SetString("optionsPageTitle",
       l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
 
-  // Managed prefs
-  localized_strings->SetString("policyManagedPrefsBannerText",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_POLICY_MANAGED_PREFS));
-  localized_strings->SetString("extensionManagedPrefsBannerText",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_EXTENSION_MANAGED_PREFS));
-  localized_strings->SetString("policyAndExtensionManagedPrefsBannerText",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS));
-
   // Controlled settings bubble.
   localized_strings->SetString("controlledSettingPolicy",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));

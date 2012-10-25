@@ -324,19 +324,19 @@ bool GetProxyPrefValue(Profile* profile,
       data = base::Value::CreateIntegerValue(1);
     }
     switch (config.state) {
-       case ProxyPrefs::CONFIG_POLICY:
-         controlled_by = "policyManagedPrefsBannerText";
-         break;
-       case ProxyPrefs::CONFIG_EXTENSION:
-         controlled_by = "extensionManagedPrefsBannerText";
-         break;
-       case ProxyPrefs::CONFIG_OTHER_PRECEDE:
-         controlled_by = "unmodifiablePrefsBannerText";
-         break;
-       default:
-         if (!config.user_modifiable)
-           controlled_by = "enableSharedProxiesBannerText";
-         break;
+      case ProxyPrefs::CONFIG_POLICY:
+        controlled_by = "policy";
+        break;
+      case ProxyPrefs::CONFIG_EXTENSION:
+        controlled_by = "extension";
+        break;
+      case ProxyPrefs::CONFIG_OTHER_PRECEDE:
+        controlled_by = "other";
+        break;
+      default:
+        if (!config.user_modifiable)
+          controlled_by = "shared";
+        break;
     }
   } else if (path == kProxySingle) {
     data = base::Value::CreateBooleanValue(config.mode ==

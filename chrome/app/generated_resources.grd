@@ -10324,18 +10324,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Import bookmarks and settings...
       </message>
 
-      <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in the settings UI when there are policy-managed options the user won't be able to change.">
-        Some settings are managed by your administrator.
-      </message>
-      <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
-        Some settings are managed by an extension.
-      </message>
-      <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
-        Some settings have been disabled by your administrator and others are managed by an extension.
-      </message>
-      <message name="IDS_OPTIONS_UNMODIFIABLE_PREFS" desc="Banner displayed in case there are options that the user won't be able to change.">
-        Some settings cannot be modified by the user.
-      </message>
       <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by policy.">
         This setting is enforced by your administrator.
       </message>

@@ -2,11 +2,10 @@
   "-- Template --": {
     "intro": "Top-level entries map a policy name to its test parameters, described below.",
 
-    "os": ["List of operating systems that support this policy. Valid values:", "win", "linux", "mac", "chromeos"],
+    "os": ["List of operating systems that support this policy. Valid values:", "win", "linux", "mac", "chromeos", "Defaults to empty if not specified."],
     "official_only": "Whether this policy exists in official builds only. Defaults to |false| if not specified.",
     "can_be_recommended": "Whether a recommended value may be set for the policy. Defaults to |false| if not specified.",
-    "test_policy": "A policy dictionary that should trigger the managed banner in the settings UI. Usually just sets the current policy.",
-    "settings_pages": ["A list of settings pages where the banner should be visible when this policy is set."],
+    "test_policy": "A policy dictionary that should make the preferences affected by this policy become policy-controlled. Usually just sets the current policy. Defaults to an empty dictionary if not specified.",
     "note": "If the policy affects any preferences, the following array should be specified with one entry per such preference.",
     "pref_mappings": [
       { "pref": "The affected preference's name.",
@@ -29,7 +28,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "HomepageLocation": "http://chromium.org" },
-    "settings_pages": ["chrome://settings-frame/homePageOverlay"],
     "pref_mappings": [
       { "pref": "homepage",
         "indicator_tests": [
@@ -46,7 +44,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "HomepageIsNewTabPage": true },
-    "settings_pages": ["chrome://settings-frame/homePageOverlay"],
     "pref_mappings": [
       { "pref": "homepage_is_newtabpage",
         "indicator_tests": [
@@ -62,21 +59,17 @@
   "DefaultBrowserSettingEnabled": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "DefaultBrowserSettingEnabled": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "browser.default_browser_setting_enabled",
         "local_state": true
       }
-    ],
-
-    "note": "TODO(joaodasilva): Couldn't verify on linux."
+    ]
   },
 
   "ApplicationLocaleValue": {
     "os": ["win"],
     "can_be_recommended": true,
     "test_policy": { "ApplicationLocaleValue": "fr" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "intl.app_locale",
         "local_state": true
@@ -88,7 +81,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "AlternateErrorPagesEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "alternate_error_pages.enabled",
         "indicator_tests": [
@@ -102,7 +94,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "SearchSuggestEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "search.suggest_enabled",
         "indicator_tests": [
@@ -116,7 +107,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "DnsPrefetchingEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "dns_prefetching.enabled",
         "indicator_tests": [
@@ -129,7 +119,6 @@
   "DisableSpdy": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisableSpdy": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "spdy.disabled" }
     ]
@@ -138,7 +127,6 @@
   "DisabledSchemes": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisabledSchemes": ["file"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "protocol.disabled_schemes",
         "local_state": true
@@ -149,7 +137,6 @@
   "JavascriptEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "JavascriptEnabled": false },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.javascript",
         "indicator_selector": "[content-setting=javascript]",
@@ -164,7 +151,6 @@
   "IncognitoEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "IncognitoEnabled": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "incognito.mode_availability" }
     ]
@@ -173,7 +159,6 @@
   "IncognitoModeAvailability": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "IncognitoModeAvailability": 1 },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "incognito.mode_availability" }
     ]
@@ -182,22 +167,17 @@
   "SavingBrowserHistoryDisabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "SavingBrowserHistoryDisabled": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "history.saving_disabled" }
     ]
   },
 
   "RemoteAccessClientFirewallTraversal": {
-    "os": [],
-    "test_policy": { "RemoteAccessClientFirewallTraversal": true },
-    "settings_pages": []
   },
 
   "RemoteAccessHostFirewallTraversal": {
     "os": [],
     "test_policy": { "RemoteAccessHostFirewallTraversal": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "remote_access.host_firewall_traversal" }
     ],
@@ -208,7 +188,6 @@
   "RemoteAccessHostRequireTwoFactor": {
     "os": [],
     "test_policy": { "RemoteAccessHostRequireTwoFactor": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "remote_access.host_require_two_factor" }
     ]
@@ -217,7 +196,6 @@
   "RemoteAccessHostDomain": {
     "os": [],
     "test_policy": { "RemoteAccessHostDomain": "" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "remote_access.host_domain" }
     ]
@@ -226,7 +204,6 @@
   "RemoteAccessHostTalkGadgetPrefix": {
     "os": [],
     "test_policy": { "RemoteAccessHostTalkGadgetPrefix": "chromoting-host" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "remote_access.host_talkgadget_prefix" }
     ]
@@ -235,7 +212,6 @@
   "RemoteAccessHostRequireCurtain": {
     "os": [],
     "test_policy": { "RemoteAccessHostRequireCurtain": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "remote_access.host_require_curtain" }
     ]
@@ -244,7 +220,6 @@
   "PrintingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PrintingEnabled": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "printing.enabled" }
     ]
@@ -253,7 +228,6 @@
   "CloudPrintProxyEnabled": {
     "os": [],
     "test_policy": { "CloudPrintProxyEnabled": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "cloud_print.enabled" }
     ]
@@ -262,7 +236,6 @@
   "CloudPrintSubmitEnabled": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "CloudPrintSubmitEnabled": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "cloud_print.submit_enabled" }
     ]
@@ -272,7 +245,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "SafeBrowsingEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "safebrowsing.enabled",
         "indicator_tests": [
@@ -287,7 +259,6 @@
     "official_only": true,
     "can_be_recommended": true,
     "test_policy": { "MetricsReportingEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "user_experience_metrics.reporting_enabled",
         "local_state": true,
@@ -302,7 +273,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "PasswordManagerEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "profile.password_manager_enabled",
         "indicator_tests": [
@@ -315,19 +285,15 @@
   "PasswordManagerAllowShowPasswords": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PasswordManagerAllowShowPasswords": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "profile.password_manager_allow_show_passwords" }
-    ],
-
-    "note": "TODO(joaodasilva): Should be chrome://settings-frame/passwords. http://crbug.com/97749"
+    ]
   },
 
   "AutoFillEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "AutoFillEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "autofill.enabled",
         "indicator_tests": [
@@ -340,7 +306,6 @@
   "DisabledPlugins": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisabledPlugins": ["Flash"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "plugins.plugins_disabled" }
     ]
@@ -349,7 +314,6 @@
   "EnabledPlugins": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "EnabledPlugins": ["Flash"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "plugins.plugins_enabled" }
     ]
@@ -358,7 +322,6 @@
   "DisabledPluginsExceptions": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisabledPluginsExceptions": ["Flash"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "plugins.plugins_disabled_exceptions" }
     ]
@@ -367,7 +330,6 @@
   "DisablePluginFinder": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisablePluginFinder": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "plugins.disable_plugin_finder",
         "local_state": true
@@ -378,24 +340,18 @@
   "SyncDisabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "SyncDisabled": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "sync.managed" }
-    ],
-
-    "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
+    ]
   },
 
   "UserDataDir": {
-    "os": ["win", "mac"],
-    "test_policy": { "UserDataDir": "${users}/${user_name}/chrome-test" },
-    "settings_pages": []
+    "note": "TODO(joaodasilva): To test that this policy works correctly, it would need to be set before the browser is launched. PolicyPrefsTest should be refactored to support this and a test for this policy added."
   },
 
   "DiskCacheDir": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "DiskCacheDir": "${user_home}/test-cache" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "browser.disk_cache_dir" }
     ]
@@ -404,7 +360,6 @@
   "DiskCacheSize": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "DiskCacheSize": 100 },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "browser.disk_cache_size" }
     ]
@@ -413,7 +368,6 @@
   "MediaCacheSize": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "MediaCacheSize": 200 },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "browser.media_cache_size" }
     ]
@@ -423,7 +377,6 @@
     "os": ["win", "mac", "linux"],
     "can_be_recommended": true,
     "test_policy": { "DownloadDirectory": "${user_home}/test-downloads" },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "download.default_directory",
         "indicator_tests": [
@@ -441,7 +394,6 @@
   "ClearSiteDataOnExit": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ClearSiteDataOnExit": true },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.cookies",
         "indicator_selector": "[content-setting=cookies]",
@@ -458,37 +410,30 @@
   "ProxyMode": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "ProxyMode": "direct" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "proxy",
         "indicator_tests": [
           { "policy": { "ProxyMode": "direct" } }
         ]
       }
-    ],
-
-    "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
+    ]
   },
 
   "ProxyServerMode": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "ProxyServerMode": 0 },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "proxy",
         "indicator_tests": [
           { "policy": { "ProxyServerMode": 0 } }
         ]
       }
-    ],
-
-    "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
+    ]
   },
 
   "ProxyServer": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "ProxyMode": "fixed_servers", "ProxyServer": "http://localhost:8080" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "proxy",
         "indicator_tests": [
@@ -501,7 +446,6 @@
   "ProxyPacUrl": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "ProxyMode": "pac_script", "ProxyPacUrl": "http://localhost:8080/proxy.pac" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "proxy",
         "indicator_tests": [
@@ -514,7 +458,6 @@
   "ProxyBypassList": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "ProxyMode": "fixed_servers", "ProxyServer": "http://localhost:8080", "ProxyBypassList": "localhost" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "proxy",
         "indicator_tests": [
@@ -527,7 +470,6 @@
   "ProxySettings": {
     "os": ["linux", "win"],
     "test_policy": { "ProxySettings": { "ProxyMode": "direct" } },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "proxy",
         "indicator_tests": [
@@ -540,7 +482,6 @@
   "EnableOriginBoundCerts": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "EnableOriginBoundCerts": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "ssl.origin_bound_certs.enabled",
         "local_state": true
@@ -551,7 +492,6 @@
   "DisableSSLRecordSplitting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisableSSLRecordSplitting": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "ssl.ssl_record_splitting.disabled",
         "local_state": true
@@ -562,7 +502,6 @@
   "EnableOnlineRevocationChecks": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "EnableOnlineRevocationChecks": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "ssl.rev_checking.enabled",
         "local_state": true
@@ -573,7 +512,6 @@
   "AuthSchemes": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AuthSchemes": "AuthSchemes" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "auth.schemes",
         "local_state": true
@@ -584,7 +522,6 @@
   "DisableAuthNegotiateCnameLookup": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisableAuthNegotiateCnameLookup": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "auth.disable_negotiate_cname_lookup",
         "local_state": true
@@ -595,7 +532,6 @@
   "EnableAuthNegotiatePort": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "EnableAuthNegotiatePort": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "auth.enable_negotiate_port",
         "local_state": true
@@ -606,7 +542,6 @@
   "AuthServerWhitelist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AuthServerWhitelist": "localhost" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "auth.server_whitelist",
         "local_state": true
@@ -617,7 +552,6 @@
   "AuthNegotiateDelegateWhitelist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AuthNegotiateDelegateWhitelist": "localhost" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "auth.negotiate_delegate_whitelist",
         "local_state": true
@@ -628,7 +562,6 @@
   "GSSAPILibraryName": {
     "os": ["mac", "linux"],
     "test_policy": { "GSSAPILibraryName": "libwhatever.so" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "auth.gssapi_library_name",
         "local_state": true
@@ -639,7 +572,6 @@
   "AllowCrossOriginAuthPrompt": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "AllowCrossOriginAuthPrompt": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "auth.allow_cross_origin_prompt",
         "local_state": true
@@ -650,7 +582,6 @@
   "ExtensionInstallBlacklist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ExtensionInstallBlacklist": ["*"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "extensions.install.denylist" }
     ]
@@ -659,7 +590,6 @@
   "ExtensionInstallWhitelist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ExtensionInstallWhitelist": ["lcncmkcnkcdbbanbjakcencbaoegdjlp"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "extensions.install.allowlist" }
     ]
@@ -668,7 +598,6 @@
   "ExtensionInstallForcelist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ExtensionInstallForcelist": ["lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "extensions.install.forcelist" }
     ]
@@ -677,7 +606,6 @@
   "ExtensionInstallSources": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ExtensionInstallSources": ["https://www.corp.monkey.net/*"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "extensions.allowed_install_sites" }
     ]
@@ -687,7 +615,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "ShowHomeButton": true },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "browser.show_home_button",
         "indicator_tests": [
@@ -700,7 +627,6 @@
   "DeveloperToolsDisabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DeveloperToolsDisabled": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "devtools.disabled" }
     ]
@@ -710,7 +636,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "RestoreOnStartup": 4 },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "session.restore_on_startup",
         "indicator_tests": [
@@ -729,38 +654,31 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "RestoreOnStartupURLs": ["chromium.org"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "session.urls_to_restore_on_startup",
         "indicator_tests": [
           { "policy": { "RestoreOnStartupURLs": ["chromium.org"] } }
         ]
       }
-    ],
-
-    "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
+    ]
   },
 
   "BlockThirdPartyCookies": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "BlockThirdPartyCookies": true },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.block_third_party_cookies",
         "indicator_tests": [
           { "policy": { "BlockThirdPartyCookies": true } }
         ]
       }
-    ],
-
-    "note": "TODO(joaodasilva): The banner is out of place. http://crbug.com/77791"
+    ]
   },
 
   "DefaultSearchProviderEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderEnabled": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.enabled",
         "indicator_tests": [
@@ -768,15 +686,12 @@
           { "policy": { "DefaultSearchProviderEnabled": true, "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}" } }
         ]
       }
-    ],
-
-    "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
+    ]
   },
 
   "DefaultSearchProviderName": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderName": "google.com" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.name" }
     ]
@@ -785,7 +700,6 @@
   "DefaultSearchProviderKeyword": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.keyword" }
     ]
@@ -794,7 +708,6 @@
   "DefaultSearchProviderSearchURL": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.search_url",
         "indicator_selector": "[setting=search-engine]",
@@ -802,15 +715,12 @@
           { "policy": { "DefaultSearchProviderEnabled": true, "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}" } }
         ]
       }
-    ],
-
-    "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
+    ]
   },
 
   "DefaultSearchProviderSuggestURL": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderSuggestURL": "http://www.google.com/suggest?q={searchTerms}" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.suggest_url" }
     ]
@@ -819,7 +729,6 @@
   "DefaultSearchProviderInstantURL": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderInstantURL": "http://www.google.com/instant?q={searchTerms}" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.instant_url" }
     ]
@@ -828,7 +737,6 @@
   "DefaultSearchProviderIconURL": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderIconURL": "http://www.google.com/favicon.ico" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.icon_url" }
     ]
@@ -837,7 +745,6 @@
   "DefaultSearchProviderEncodings": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderEncodings": ["UTF-8"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.encodings" }
     ]
@@ -846,7 +753,6 @@
   "DefaultSearchProviderAlternateURLs": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderAlternateURLs": ["http://www.google.com/#q={searchTerms}", "http://www.google.com/search#q={searchTerms}"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "default_search_provider.alternate_urls" }
     ]
@@ -855,7 +761,6 @@
   "DefaultCookiesSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultCookiesSetting": 2 },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.cookies",
         "indicator_selector": "[content-setting=cookies]",
@@ -876,7 +781,6 @@
   "DefaultImagesSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultImagesSetting": 2 },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.images",
         "indicator_selector": "[content-setting=images]",
@@ -895,7 +799,6 @@
   "DefaultJavaScriptSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultJavaScriptSetting": 2 },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.javascript",
         "indicator_selector": "[content-setting=javascript]",
@@ -914,7 +817,6 @@
   "DefaultPluginsSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultPluginsSetting": 2 },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.plugins",
         "indicator_selector": "[content-setting=plugins]",
@@ -935,7 +837,6 @@
   "DefaultPopupsSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultPopupsSetting": 2 },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.popups",
         "indicator_selector": "[content-setting=popups]",
@@ -954,7 +855,6 @@
   "DefaultNotificationsSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultNotificationsSetting": 2 },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.notifications",
         "indicator_selector": "[content-setting=notifications]",
@@ -975,7 +875,6 @@
   "DefaultGeolocationSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultGeolocationSetting": 2 },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.geolocation",
         "indicator_selector": "[content-setting=location]",
@@ -996,7 +895,6 @@
   "DefaultMediaStreamSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultMediaStreamSetting": 2 },
-    "settings_pages": ["chrome://settings-frame/content"],
     "pref_mappings": [
       { "pref": "profile.managed_default_content_settings.media_stream",
         "indicator_selector": "[content-setting=media-stream]",
@@ -1017,7 +915,6 @@
   "AutoSelectCertificateForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AutoSelectCertificateForUrls": ["{'pattern':'https://example.com','filter':{'ISSUER':{'CN': 'issuer-name'}}}"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_auto_select_certificate_for_urls" }
     ],
@@ -1028,7 +925,6 @@
   "CookiesAllowedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "CookiesAllowedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_cookies_allowed_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=cookies]').click();",
@@ -1045,7 +941,6 @@
   "CookiesBlockedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "CookiesBlockedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_cookies_blocked_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=cookies]').click();",
@@ -1062,7 +957,6 @@
   "CookiesSessionOnlyForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "CookiesSessionOnlyForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_cookies_sessiononly_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=cookies]').click();",
@@ -1079,7 +973,6 @@
   "ImagesAllowedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ImagesAllowedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_images_allowed_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=images]').click();",
@@ -1096,7 +989,6 @@
   "ImagesBlockedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ImagesBlockedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_images_blocked_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=images]').click();",
@@ -1113,7 +1005,6 @@
   "JavaScriptAllowedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "JavaScriptAllowedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_javascript_allowed_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=javascript]').click();",
@@ -1130,7 +1021,6 @@
   "JavaScriptBlockedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "JavaScriptBlockedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_javascript_blocked_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=javascript]').click();",
@@ -1147,7 +1037,6 @@
   "PluginsAllowedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PluginsAllowedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_plugins_allowed_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=plugins]').click();",
@@ -1164,7 +1053,6 @@
   "PluginsBlockedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PluginsBlockedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_plugins_blocked_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=plugins]').click();",
@@ -1181,7 +1069,6 @@
   "PopupsAllowedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PopupsAllowedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_popups_allowed_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=popups]').click();",
@@ -1198,7 +1085,6 @@
   "PopupsBlockedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PopupsBlockedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_popups_blocked_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=popups]').click();",
@@ -1215,7 +1101,6 @@
   "NotificationsAllowedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "NotificationsAllowedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_notifications_allowed_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=notifications]').click();",
@@ -1232,7 +1117,6 @@
   "NotificationsBlockedForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "NotificationsBlockedForUrls": ["[*.]google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "profile.managed_notifications_blocked_for_urls",
         "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=notifications]').click();",
@@ -1249,7 +1133,6 @@
   "Disable3DAPIs": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "Disable3DAPIs": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "disable_3d_apis" }
     ]
@@ -1259,7 +1142,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "InstantEnabled": true },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "instant.enabled",
         "indicator_tests": [
@@ -1273,7 +1155,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "TranslateEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "translate.enabled",
         "indicator_tests": [
@@ -1286,7 +1167,6 @@
   "AllowOutdatedPlugins": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AllowOutdatedPlugins": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "plugins.allow_outdated" }
     ]
@@ -1295,7 +1175,6 @@
   "AlwaysAuthorizePlugins": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AlwaysAuthorizePlugins": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "plugins.always_authorize" }
     ]
@@ -1305,7 +1184,6 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "BookmarkBarEnabled": true },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "bookmark_bar.show_on_all_tabs",
         "indicator_tests": [
@@ -1318,7 +1196,6 @@
   "EditBookmarksEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "EditBookmarksEnabled": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "bookmarks.editing_enabled" }
     ]
@@ -1327,7 +1204,6 @@
   "AllowFileSelectionDialogs": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "AllowFileSelectionDialogs": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "select_file_dialogs.allowed",
         "local_state": true
@@ -1344,7 +1220,6 @@
     "os": ["win", "mac", "linux"],
     "can_be_recommended": true,
     "test_policy": { "ImportBookmarks": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "import_bookmarks",
         "indicator_tests": [
@@ -1358,7 +1233,6 @@
     "os": ["win", "mac", "linux"],
     "can_be_recommended": true,
     "test_policy": { "ImportHistory": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "import_history",
         "indicator_tests": [
@@ -1371,7 +1245,6 @@
   "ImportHomepage": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "ImportHomepage": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "import_home_page" }
     ]
@@ -1381,7 +1254,6 @@
     "os": ["win", "mac", "linux"],
     "can_be_recommended": true,
     "test_policy": { "ImportSearchEngine": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "import_search_engine",
         "indicator_tests": [
@@ -1395,7 +1267,6 @@
     "os": ["win", "mac", "linux"],
     "can_be_recommended": true,
     "test_policy": { "ImportSavedPasswords": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "import_saved_passwords",
         "indicator_tests": [
@@ -1408,7 +1279,6 @@
   "MaxConnectionsPerProxy": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "MaxConnectionsPerProxy": 16 },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "net.max_connections_per_proxy",
         "local_state": true
@@ -1417,15 +1287,11 @@
   },
 
   "HideWebStorePromo": {
-    "os": [],
-    "test_policy": { "HideWebStorePromo": null },
-    "settings_pages": []
   },
 
   "URLBlacklist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "URLBlacklist": ["google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "policy.url_blacklist" }
     ]
@@ -1434,7 +1300,6 @@
   "URLWhitelist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "URLWhitelist": ["google.com"] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "policy.url_whitelist" }
     ]
@@ -1443,7 +1308,6 @@
   "EnterpriseWebStoreURL": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "EnterpriseWebStoreURL": "http://example.com/webstore" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "webstore.enterprise_store_url" }
     ]
@@ -1452,7 +1316,6 @@
   "EnterpriseWebStoreName": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "EnterpriseWebStoreName": "Example Webstore" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "webstore.enterprise_store_name" }
     ]
@@ -1461,7 +1324,6 @@
   "EnableMemoryInfo": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "EnableMemoryInfo": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "enable_memory_info" }
     ]
@@ -1470,7 +1332,6 @@
   "DisablePrintPreview": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "DisablePrintPreview": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "printing.print_preview_disabled" }
     ]
@@ -1480,7 +1341,6 @@
     "os": ["win", "linux"],
     "can_be_recommended": true,
     "test_policy": { "BackgroundModeEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "background_mode.enabled",
         "local_state": true,
@@ -1494,7 +1354,6 @@
   "RestrictSigninToPattern": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "RestrictSigninToPattern": ".*@google.com" },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "google.services.username_pattern",
         "local_state": true
@@ -1505,7 +1364,6 @@
   "DisableSafeBrowsingProceedAnyway": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisableSafeBrowsingProceedAnyway": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "safebrowsing.proceed_anyway_disabled" }
     ]
@@ -1516,7 +1374,6 @@
     "official_only": true,
     "can_be_recommended": true,
     "test_policy": { "SpellCheckServiceEnabled": false },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "spellcheck.use_spelling_service",
         "indicator_tests": [
@@ -1529,7 +1386,6 @@
   "DisableScreenshots": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisableScreenshots": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "disable_screenshots" }
     ]
@@ -1541,7 +1397,6 @@
     "os": ["chromeos"],
     "can_be_recommended": true,
     "test_policy": { "ChromeOsLockOnIdleSuspend": true },
-    "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "settings.enable_screen_lock",
         "indicator_tests": [
@@ -1554,7 +1409,6 @@
   "PolicyRefreshRate": {
     "os": ["chromeos"],
     "test_policy": { "PolicyRefreshRate": 300000 },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "policy.user_refresh_rate",
         "local_state": true
@@ -1563,15 +1417,11 @@
   },
 
   "OpenNetworkConfiguration": {
-    "os": ["chromeos"],
-    "test_policy": { "OpenNetworkConfiguration": "" },
-    "settings_pages": []
   },
 
   "DriveDisabled": {
     "os": ["chromeos"],
     "test_policy": { "DriveDisabled": false },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "gdata.disabled" }
     ]
@@ -1580,7 +1430,6 @@
   "DriveDisabledOverCellular": {
     "os": ["chromeos"],
     "test_policy": { "DriveDisabledOverCellular": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "gdata.cellular.disabled" }
     ]
@@ -1590,7 +1439,6 @@
     "os": ["chromeos"],
     "can_be_recommended": true,
     "test_policy": { "PinnedLauncherApps": [] },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "pinned_launcher_apps" }
     ]
@@ -1599,7 +1447,6 @@
   "ExternalStorageDisabled": {
     "os": ["chromeos"],
     "test_policy": { "ExternalStorageDisabled": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "hardware.external_storage_disabled" }
     ]
@@ -1608,7 +1455,6 @@
   "AudioOutputAllowed": {
     "os": ["chromeos"],
     "test_policy": { "AudioOutputAllowed": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "hardware.audio_output_enabled",
         "local_state": true }
@@ -1618,7 +1464,6 @@
   "AudioCaptureAllowed": {
     "os": ["chromeos"],
     "test_policy": { "AudioCaptureAllowed": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "hardware.audio_capture_enabled",
         "local_state": true }
@@ -1630,7 +1475,6 @@
   "DevicePolicyRefreshRate": {
     "os": ["chromeos"],
     "test_policy": { "DevicePolicyRefreshRate": 300000 },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "policy.device_refresh_rate",
         "local_state": true }
@@ -1638,76 +1482,42 @@
   },
 
   "ChromeOsReleaseChannel": {
-    "os": ["chromeos"],
-    "test_policy": { "ChromeOsReleaseChannel": "stable-channel" },
-    "settings_pages": []
   },
 
   "ChromeOsReleaseChannelDelegated": {
-    "os": ["chromeos"],
-    "test_policy": { "ChromeOsReleaseChannelDelegated": false },
-    "settings_pages": []
   },
 
   "DeviceOpenNetworkConfiguration": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceOpenNetworkConfiguration": "" },
-    "settings_pages": []
   },
 
   "ReportDeviceVersionInfo": {
-    "os": ["chromeos"],
-    "test_policy": { "ReportDeviceVersionInfo": true },
-    "settings_pages": []
   },
 
   "ReportDeviceActivityTimes": {
-    "os": ["chromeos"],
-    "test_policy": { "ReportDeviceActivityTimes": true },
-    "settings_pages": []
   },
 
   "ReportDeviceBootMode": {
-    "os": ["chromeos"],
-    "test_policy": { "ReportDeviceBootMode": true },
-    "settings_pages": []
   },
 
   "DeviceAllowNewUsers": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceAllowNewUsers": true },
-    "settings_pages": []
   },
 
   "DeviceUserWhitelist": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceUserWhitelist": [] },
-    "settings_pages": []
   },
 
   "DeviceGuestModeEnabled": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceGuestModeEnabled": true },
-    "settings_pages": []
   },
 
   "DeviceShowUserNamesOnSignin": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceShowUserNamesOnSignin": true },
-    "settings_pages": []
   },
 
   "DeviceDataRoamingEnabled": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceDataRoamingEnabled": true },
-    "settings_pages": []
   },
 
   "DeviceMetricsReportingEnabled": {
     "os": ["chromeos"],
     "official_only": true,
     "test_policy": { "DeviceMetricsReportingEnabled": true },
-    "settings_pages": [],
     "pref_mappings": [
       { "pref": "cros.metrics.reportingEnabled",
         "indicator_test_setup_js": "Preferences.getInstance().addEventListener('alternate_error_pages.enabled', function(event) { Preferences.prefsChangedCallback(['cros.metrics.reportingEnabled', {value: event.value.value, controlledBy: event.value.controlledBy, disabled: event.value.disabled}]); });",
@@ -1721,118 +1531,61 @@
   },
 
   "DeviceEphemeralUsersEnabled": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceEphemeralUsersEnabled": true },
-    "settings_pages": []
   },
 
   "DeviceIdleLogoutTimeout": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceIdleLogoutTimeout": 60000 },
-    "settings_pages": []
   },
 
   "DeviceIdleLogoutWarningDuration": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceIdleLogoutWarningDuration": 15000 },
-    "settings_pages": []
   },
 
   "DeviceLoginScreenSaverId": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceLoginScreenSaverId": "lcncmkcnkcdbbanbjakcencbaoegdjlp" },
-    "settings_pages": []
   },
 
   "DeviceLoginScreenSaverTimeout": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceLoginScreenSaverTimeout": 30000 },
-    "settings_pages": []
   },
 
   "DeviceStartUpUrls": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceStartUpUrls": ["http://google.com"] },
-    "settings_pages": []
   },
 
   "DeviceAppPack": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceAppPack": [] },
-    "settings_pages": []
   },
 
   "DeviceAutoUpdateDisabled": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceAutoUpdateDisabled": true },
-    "settings_pages": []
   },
 
   "DeviceTargetVersionPrefix": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceTargetVersionPrefix": "1412." },
-    "settings_pages": []
   },
 
   "DeviceUpdateScatterFactor": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceUpdateScatterFactor": "7200" },
-    "settings_pages": []
   },
 
   "DeviceUpdateAllowedConnectionTypes": {
-    "os": ["chromeos"],
-    "test_policy": { "DeviceUpdateAllowedConnectionTypes": [] },
-    "settings_pages": []
   },
 
   "ReportDeviceLocation": {
-    "os": ["chromeos"],
-    "test_policy": { "ReportDeviceLocation": false },
-    "settings_pages": []
   },
 
   "SystemTimezone": {
-    "os": ["chromeos"],
-    "test_policy": { "SystemTimezone": "Europe/Brussels" },
-    "settings_pages": []
   },
 
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
-    "os": [],
-    "test_policy": { "ChromeFrameRendererSettings": 0 },
-    "settings_pages": []
   },
 
   "RenderInChromeFrameList": {
-    "os": [],
-    "test_policy": { "RenderInChromeFrameList": ["google.com"] },
-    "settings_pages": []
   },
 
   "RenderInHostList": {
-    "os": [],
-    "test_policy": { "RenderInHostList": ["google.com"] },
-    "settings_pages": []
   },
 
   "ChromeFrameContentTypes": {
-    "os": [],
-    "test_policy": { "ChromeFrameContentTypes": ["text/xml"] },
-    "settings_pages": []
   },
 
   "GCFUserDataDir": {
-    "os": [],
-    "test_policy": { "GCFUserDataDir": "${user_name}/test-frame" },
-    "settings_pages": []
   },
 
   "AdditionalLaunchParameters": {
-    "os": [],
-    "test_policy": { "AdditionalLaunchParameters": "--enable-media-stream" },
-    "settings_pages": []
   }
 }

@@ -1165,7 +1165,16 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON" desc="In settings Internet options, the button to configure proxy settings.">
     Change proxy settings...
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT" desc="In settings Internet options, when proxy can't be changed, the hint for user to do so by enabling the setting for IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES.">
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_POLICY" desc="In settings Internet options, banner displayed when the proxy settings are enforced by a policy.">
+    The proxy is enforced by your administrator.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_EXTENSION" desc="In settings Internet options, banner displayed when the proxy settings are enforced by an extension.">
+    The proxy is enforced by an extension.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_OTHER_PRECEDE" desc="In settings Internet options, banner displayed when the proxy settings cannot be changed as they are enforced by a higher-precedence source.">
+    The proxy cannot be modified by the user.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_ENABLE_SHARED_HINT" desc="In settings Internet options, banner displayed when the proxy settings cannot be changed as the user needs to enable the setting for IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES first.">
     To change proxy, enable "<ph name="USE_SHARED_PROXIES">$1<ex>Allow proxies for shared networks</ex></ph>" setting.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS" desc="In settings Internet options, the label hardware address.">

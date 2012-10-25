@@ -76,7 +76,7 @@ body.uber-frame header > h1 {
 }
 
 /* Create a border under the h1 (but before anything that gets appended
- * to the end of the header, such as the managed prefs banner). */
+ * to the end of the header). */
 body.uber-frame header > h1::after {
   -webkit-margin-end: 20px;
   background-color: #eee;
@@ -131,8 +131,7 @@ body.uber-frame section > div:only-of-type {
   -webkit-box-flex: 1;
 }
 
-/* Styles for a hideable notification banner at the top of a page.
- * See the Options page .managed-prefs-banner for a usage example. */
+/* Styles for a hideable notification banner at the top of a page. */
 .page.showing-banner {
   margin-top: 45px;
 }

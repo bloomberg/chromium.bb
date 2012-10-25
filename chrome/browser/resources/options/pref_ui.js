@@ -65,7 +65,6 @@ cr.define('options', function() {
         self.updateStateFromPref_(event);
         updateDisabledState_(self, 'notUserModifiable', event.value.disabled);
         self.controlledBy = event.value.controlledBy;
-        OptionsPage.updateManagedBannerVisibility();
       });
     },
 
@@ -489,7 +488,6 @@ cr.define('options', function() {
         updateDisabledState_(self, 'notUserModifiable',
                              event.value.disabled && !event.value.value);
         self.controlledBy = event.value.controlledBy;
-        OptionsPage.updateManagedBannerVisibility();
       });
     },
 

@@ -380,9 +380,10 @@ cr.define('options.internet', function() {
         bannerDiv.hidden = true;
       } else {
         bannerDiv.hidden = false;
-        // controlledBy must match strings loaded in proxy_handler.cc and
-        // set in proxy_cros_settings_provider.cc.
-        $('banner-text').textContent = loadTimeData.getString(controlledBy);
+        // The possible banner texts are loaded in proxy_handler.cc.
+        var bannerText = 'proxyBanner' + controlledBy.charAt(0).toUpperCase() +
+                         controlledBy.slice(1);
+        $('banner-text').textContent = loadTimeData.getString(bannerText);
       }
     },
 

@@ -280,7 +280,7 @@ html[dir='rtl'] #extension-settings .trash {
 
 /* Managed mode */
 
-.page:not(.managed-mode) #managed-mode-banner {
+.page:not(.managed-mode) .managed-mode-banner {
   display: none;
 }
 

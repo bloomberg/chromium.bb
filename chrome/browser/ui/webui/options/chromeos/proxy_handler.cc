@@ -48,16 +48,18 @@ void ProxyHandler::GetLocalizedValues(
     { "removeHost", IDS_PROXY_REMOVE_HOST },
     { "proxyPort", IDS_PROXY_PORT },
     { "proxyBypass", IDS_PROXY_BYPASS },
-    { "policyManagedPrefsBannerText", IDS_OPTIONS_POLICY_MANAGED_PREFS },
-    { "extensionManagedPrefsBannerText", IDS_OPTIONS_EXTENSION_MANAGED_PREFS },
-    { "unmodifiablePrefsBannerText", IDS_OPTIONS_UNMODIFIABLE_PREFS }
+    { "proxyBannerPolicy", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_POLICY },
+    { "proxyBannerExtension",
+       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_EXTENSION },
+    { "proxyBannerOther",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_OTHER_PRECEDE }
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
-  localized_strings->SetString("enableSharedProxiesBannerText",
+  localized_strings->SetString("proxyBannerShared",
       l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT,
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_ENABLE_SHARED_HINT,
           l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES)));
 }
 

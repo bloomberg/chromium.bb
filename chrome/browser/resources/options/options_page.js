@@ -418,15 +418,6 @@ cr.define('options', function() {
   };
 
   /**
-   * Updates managed banner visibility state based on the topmost page.
-   */
-  OptionsPage.updateManagedBannerVisibility = function() {
-    var topPage = this.getTopmostVisiblePage();
-    if (topPage)
-      topPage.updateManagedBannerVisibility();
-  };
-
-  /**
    * Shows the tab contents for the given navigation tab.
    * @param {!Element} tab The tab that the user clicked.
    */
@@ -715,59 +706,6 @@ cr.define('options', function() {
     initializePage: function() {},
 
     /**
-     * Updates managed banner visibility state. This function iterates over
-     * all input fields of a page and if any of these is marked as managed
-     * it triggers the managed banner to be visible. The banner can be enforced
-     * being on through the managed flag of this class but it can not be forced
-     * being off if managed items exist.
-     */
-    updateManagedBannerVisibility: function() {
-      var bannerDiv = this.pageDiv.querySelector('.managed-prefs-banner');
-      // Create a banner for the overlay if we don't have one.
-      if (!bannerDiv) {
-        bannerDiv = $('managed-prefs-banner').cloneNode(true);
-        bannerDiv.id = null;
-
-        if (this.isOverlay) {
-          var content = this.pageDiv.querySelector('.content-area');
-          content.parentElement.insertBefore(bannerDiv, content);
-        } else {
-          bannerDiv.classList.add('main-page-banner');
-          var header = this.pageDiv.querySelector('header');
-          header.appendChild(bannerDiv);
-        }
-      }
-
-      var controlledByPolicy = false;
-      var controlledByExtension = false;
-      var inputElements = this.pageDiv.querySelectorAll('input[controlled-by]');
-      for (var i = 0; i < inputElements.length; i++) {
-        if (inputElements[i].controlledBy == 'policy')
-          controlledByPolicy = true;
-        else if (inputElements[i].controlledBy == 'extension')
-          controlledByExtension = true;
-      }
-
-      if (!controlledByPolicy && !controlledByExtension) {
-        this.pageDiv.classList.remove('showing-banner');
-      } else {
-        this.pageDiv.classList.add('showing-banner');
-
-        var text = bannerDiv.querySelector('#managed-prefs-text');
-        if (controlledByPolicy && !controlledByExtension) {
-          text.textContent =
-              loadTimeData.getString('policyManagedPrefsBannerText');
-        } else if (!controlledByPolicy && controlledByExtension) {
-          text.textContent =
-              loadTimeData.getString('extensionManagedPrefsBannerText');
-        } else if (controlledByPolicy && controlledByExtension) {
-          text.textContent = loadTimeData.getString(
-              'policyAndExtensionManagedPrefsBannerText');
-        }
-      }
-    },
-
-    /**
      * Gets the container div for this page if it is an overlay.
      * @type {HTMLElement}
      */
@@ -892,7 +830,6 @@ cr.define('options', function() {
      */
     onVisibilityChanged_: function() {
       OptionsPage.updateRootPageFreezeState();
-      OptionsPage.updateManagedBannerVisibility();
 
       if (this.isOverlay && !this.visible)
         OptionsPage.updateScrollPosition_();

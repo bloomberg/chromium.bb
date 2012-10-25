@@ -1260,7 +1260,6 @@ cr.define('options', function() {
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
-    'updateManagedBannerVisibility',
     'updateSearchEngines',
     'updateStartupPages',
     'updateSyncState',

@@ -125,7 +125,6 @@ cr.define('options', function() {
       for (var i = 0; i < indicators.length; i++)
         indicators[i].handlePrefChange(event);
     }
-    OptionsPage.updateManagedBannerVisibility();
   };
 
   /**
