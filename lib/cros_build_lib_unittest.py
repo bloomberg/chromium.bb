@@ -406,7 +406,19 @@ class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
 
 
-class TestRunCommandWithRetries(cros_test_lib.MoxTestCase):
+class TestRetries(cros_test_lib.MoxTestCase):
+
+  def testRetryReturn(self):
+    source = iter(xrange(5)).next
+    tested_source = iter(xrange(5)).next
+    def f(val):
+      self.assertEqual(val, source())
+      return val < 4
+    self.assertRaises(cros_build_lib.RetriesExhausted,
+                      cros_build_lib.RetryReturned, f, 3, tested_source)
+    self.assertEqual(4, cros_build_lib.RetryReturned(f, 1, tested_source))
+    self.assertRaises(StopIteration,
+                      cros_build_lib.RetryReturned, f, 3, tested_source)
 
   @osutils.TempDirDecorator
   def testBasicRetry(self):

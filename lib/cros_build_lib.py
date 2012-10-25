@@ -1548,6 +1548,113 @@ def GetHostDomain():
   return domain if domain else None
 
 
+class RetriesExhausted(Exception):
+  "Exception thrown when all retry attempts are exhausted and no error occured"
+
+
+def RetryInvocation(return_handler, exc_handler, max_retry, functor, *args,
+                    **kwds):
+  """Generic retry loop w/ optional break out depending on exceptions.
+
+  Generally speaking you likely want RetryException or RetryReturned
+  rather than this; they're wrappers around this and are friendlier for
+  end usage.
+
+  Arguments:
+    return_handler: A functor invoked with the returned results from
+      functor(*args, **kwds).  If it returns True, then a retry
+      is attempted.  If False, the result is returned.
+      If this value is None, then no retries are attempted for
+      non-excepting invocations of functor(*args, **kwds) .
+    exc_handler: A functor invoked w/ the exception instance that
+      functor(*args, **kwds) threw.  If it returns True, then a
+      retry is attempted.  If False, the exception is re-raised.
+      If this value is None, then no exception based retries will
+      occur.
+    max_retry: A positive integer representing how many times to retry
+      the command before giving up.  Worst case, the command is invoked
+      (max_retry + 1) times before failing.
+    functor: A callable to pass args and kargs to.
+    args: Positional args passed to functor.
+    kwds: Optional args passed to functor.
+    sleep: Optional keyword.  Multiplier for how long to sleep between
+      retries; will delay (1*sleep) the first time, then (2*sleep),
+      continuing via attempt * sleep.
+  Returns:
+    Whatever functor(*args, **kwds) returns.
+  Raises:
+    Exception:  Whatever exceptions functor(*args, **kwds) throws and
+      isn't suppressed is raised.  Note that the first exception encountered
+      is what's thrown; in the absense of an exception (meaning ran out
+      of retries based on testing the result), a generic RetriesExhausted
+      exception is thrown.
+  """
+
+  if max_retry < 0:
+    raise ValueError("max_retry needs to be zero or more: %s" % max_retry)
+  sleep = kwds.pop('sleep', 0)
+
+  stopper = lambda x: False
+  return_handler = stopper if return_handler is None else return_handler
+  exc_handler = stopper if exc_handler is None else exc_handler
+
+  exc_info = None
+  for attempt in xrange(max_retry + 1):
+    if attempt and sleep:
+      time.sleep(sleep * attempt)
+    try:
+      ret = functor(*args, **kwds)
+      if not return_handler(ret):
+        return ret
+    #pylint: disable=W0703
+    except Exception, e:
+      # Note we're not snagging BaseException, so MemoryError/KeyboardInterrupt
+      # and friends don't enter this except block.
+      if not exc_handler(e):
+        raise
+      # We intentionally ignore any failures in later attempts since we'll
+      # throw the original failure if all retries fail.
+      if exc_info is None:
+        exc_info = sys.exc_info()
+
+  #pylint: disable=E0702
+  if exc_info is None:
+    raise RetriesExhausted(max_retry, functor, args, kwds)
+  raise exc_info[0], exc_info[1], exc_info[2]
+
+
+def RetryReturned(ret_retry, max_retry, functor, *args, **kwds):
+  """Convience wrapper for RetryInvocation based on the returned value.
+
+  Specifically:
+  return RetryInvocation(ret_retry, None, max_retry, functor, *args, **kwds)
+
+  For details of arguments, exceptions, etc, see RetryInvocation.
+  """
+  return RetryInvocation(ret_retry, None, max_retry, functor, *args, **kwds)
+
+
+def RetryException(exc_retry, max_retry, functor, *args, **kwds):
+  """Convience wrapper for RetryInvocation base on exceptions.
+
+  Specifically:
+  return RetryInvocation(None, exc_retry, max_retry, functor, *args, **kwds)
+
+  Args:
+    exc_retry: Either a class (or tuple of classes), or a callable
+      that is given the raised exception.  If the raise exception
+      is the given class(es) or exc_retry(exc) results in True, a
+      retry will be attempted.  If False for either, the exception is
+      raised.
+    *: See RetryInvocation.
+  """
+  if isinstance(exc_retry, (tuple, type)):
+    #pylint: disable=E0102
+    def exc_retry(exc, values=exc_retry):
+      return isinstance(exc, values)
+  return RetryInvocation(None, exc_retry, max_retry, functor, *args, **kwds)
+
+
 def RetryCommand(functor, max_retry, *args, **kwds):
   """Wrapper for RunCommand that will retry a command
 
@@ -1571,31 +1678,10 @@ def RetryCommand(functor, max_retry, *args, **kwds):
   Raises:
     Exception:  Raises RunCommandError on error with optional error_message.
   """
-  if max_retry < 0:
-    raise ValueError("max_retry needs to be zero or more: %s" % max_retry)
-  sleep = kwds.pop('sleep', 0)
-  retry_on = kwds.pop('retry_on', set(xrange(255)))
-  exc_info = None
-  for attempt in xrange(max_retry + 1):
-    if attempt:
-      time.sleep(sleep * attempt)
-    try:
-      return functor(*args, **kwds)
-    except TerminateRunCommandError:
-      # Unfortunately, there is no right answer for this case- do we expose
-      # the original error?  Or do we indicate we were told to die?
-      # Right now we expose that we were sigtermed, this is open for debate.
-      raise
-    except RunCommandError, e:
-      if e.result.returncode not in retry_on:
-        raise
-      # We intentionally ignore any failures in later attempts since we'll
-      # throw the original failure if all retries fail.
-      if exc_info is None:
-        exc_info = sys.exc_info()
-
-  #pylint: disable=E0702
-  raise exc_info[0], exc_info[1], exc_info[2]
+  values = kwds.pop('retry_on', set(xrange(255)))
+  def do_retry(exc):
+    return isinstance(exc, RunCommandError) and exc.result.returncode in values
+  return RetryException(do_retry, max_retry, functor, *args, **kwds)
 
 
 def RunCommandWithRetries(max_retry, *args, **kwds):
