@@ -3,3 +3,6 @@ ben@chromium.org
 per-file DEPS=*
 per-file AUTHORS=*
 per-file WATCHLISTS=*
+per-file Android.mk=benm@chromium.org
+per-file Android.mk=joth@chromium.org
+per-file Android.mk=torne@chromium.org
