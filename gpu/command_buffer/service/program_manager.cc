@@ -531,7 +531,7 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
 
   if (link) {
     before_time = TimeTicks::HighResNow();
-    if (cache && gfx::g_GL_ARB_get_program_binary) {
+    if (cache && gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary) {
       glProgramParameteri(service_id(),
                           PROGRAM_BINARY_RETRIEVABLE_HINT,
                           GL_TRUE);

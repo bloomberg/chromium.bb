@@ -219,12 +219,14 @@ void* GLContextGLX::GetHandle() {
 
 void GLContextGLX::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
-  if (HasExtension("GLX_EXT_swap_control") && glXSwapIntervalEXT) {
+  if (HasExtension("GLX_EXT_swap_control") &&
+      g_driver_glx.fn.glXSwapIntervalEXTFn) {
     glXSwapIntervalEXT(
         display_,
         glXGetCurrentDrawable(),
         interval);
-  } else if (HasExtension("GLX_MESA_swap_control") && glXSwapIntervalMESA) {
+  } else if (HasExtension("GLX_MESA_swap_control") &&
+             g_driver_glx.fn.glXSwapIntervalMESAFn) {
     glXSwapIntervalMESA(interval);
   } else {
     if(interval == 0)

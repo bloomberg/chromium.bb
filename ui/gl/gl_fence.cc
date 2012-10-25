@@ -82,9 +82,9 @@ GLFence::~GLFence() {
 
 // static
 GLFence* GLFence::Create() {
-  if (gfx::g_GL_NV_fence) {
+  if (gfx::g_driver_gl.ext.b_GL_NV_fence) {
     return new GLFenceNVFence();
-  } else if (gfx::g_GL_ARB_sync) {
+  } else if (gfx::g_driver_gl.ext.b_GL_ARB_sync) {
     return new GLFenceARBSync();
   } else {
     return NULL;
@@ -93,7 +93,8 @@ GLFence* GLFence::Create() {
 
 // static
 bool GLFence::IsContextLost() {
-  if (!gfx::g_GL_ARB_robustness && !gfx::g_GL_EXT_robustness)
+  if (!gfx::g_driver_gl.ext.b_GL_ARB_robustness &&
+      !gfx::g_driver_gl.ext.b_GL_EXT_robustness)
     return false;
 
   if (!gfx::GLContext::GetCurrent() ||
