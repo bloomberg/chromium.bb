@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -52,6 +53,8 @@ const char* kSettingsPages[] = {
   "chrome://settings-frame/accounts",
 #endif
 };
+
+const char kCrosSettingsPrefix[] = "cros.";
 
 // Contains the details of a single test case verifying that the controlled
 // setting indicators for a pref affected by a policy work correctly. This is
@@ -504,6 +507,11 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, PolicyToPrefsMapping) {
            pref_mapping = pref_mappings.begin();
        pref_mapping != pref_mappings.end();
        ++pref_mapping) {
+    // Skip Chrome OS preferences that use a different backend and cannot be
+    // retrieved through the prefs mechanism.
+    if (StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix, true))
+      continue;
+
     PrefService* prefs = (*pref_mapping)->is_local_state() ?
         g_browser_process->local_state() : browser()->profile()->GetPrefs();
     // The preference must have been registered.
@@ -581,12 +589,6 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
         indicator_test_cases = (*pref_mapping)->indicator_test_cases();
     if (indicator_test_cases.empty())
       continue;
-    PrefService* prefs = (*pref_mapping)->is_local_state() ?
-        g_browser_process->local_state() : browser()->profile()->GetPrefs();
-    // The preference must have been registered.
-    const PrefService::Preference* pref =
-        prefs->FindPreference((*pref_mapping)->pref().c_str());
-    ASSERT_TRUE(pref);
 
     ui_test_utils::NavigateToURL(browser(), GURL(kSettingsPages[0]));
     if (!(*pref_mapping)->indicator_test_setup_js().empty()) {
@@ -617,8 +619,17 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
                                         (*indicator_test_case)->value(),
                                         "policy",
                                         (*indicator_test_case)->readonly());
+
       if (!policy_test_case->can_be_recommended())
         continue;
+
+      PrefService* prefs = (*pref_mapping)->is_local_state() ?
+          g_browser_process->local_state() : browser()->profile()->GetPrefs();
+      // The preference must have been registered.
+      const PrefService::Preference* pref =
+          prefs->FindPreference((*pref_mapping)->pref().c_str());
+      ASSERT_TRUE(pref);
+
       // Check that the appropriate controlled setting indicator is shown when a
       // value is recommended by policy and the user has not overridden the
       // recommendation.

@@ -27,11 +27,17 @@
 
 <if expr="pp_ifdef('chromeos')">
     <div class="checkbox">
-      <label>
+      <span class="controlled-setting-with-label">
         <input id="enable-screen-lock" type="checkbox"
             pref="settings.enable_screen_lock">
-        <span i18n-content="enableScreenlock"></span>
-      </label>
+        <span>
+          <label for=enable-screen-lock" i18n-content="enableScreenlock">
+          </label>
+          <span class="controlled-setting-indicator"
+              pref="settings.enable_screen_lock">
+          </span>
+        </span>
+      </span>
     </div>
   </div>
 </if>  <!-- pp_ifdef('chromeos') -->

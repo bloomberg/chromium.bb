@@ -41,17 +41,15 @@ cr.define('options', function() {
       options.accounts.UserNameEdit.decorate(userNameEdit);
       userNameEdit.addEventListener('add', this.handleAddUser_);
 
-      // If the current user is not the owner, show some warning,
-      // and do not show the user list.
+      // If the current user is not the owner, do not show the user list.
+      // If the current user is not the owner, or the device is enterprise
+      // managed, show a warning that settings cannot be modified.
       this.showWhitelist_ = UIAccountTweaks.currentUserIsOwner();
       if (this.showWhitelist_) {
         options.accounts.UserList.decorate(userList);
       } else {
-        if (!AccountsOptions.whitelistIsManaged()) {
-          $('ownerOnlyWarning').hidden = false;
-        } else {
-          this.managed = true;
-        }
+        $('ownerOnlyWarning').hidden = false;
+        this.managed = AccountsOptions.whitelistIsManaged();
       }
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);

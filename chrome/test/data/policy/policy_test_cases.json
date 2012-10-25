@@ -1535,21 +1535,31 @@
     ]
   },
 
-  "----- Chrome OS policies ------------------------------------------------": {
-    "note": "TODO(frankf): Add prefs for these after crosbug.com/28756 is fixed.",
-    "note 2": "TODO(joaodasilva): that bug is now obsolete and these tests can be expanded to chromeos."
-  },
+  "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {
     "os": ["chromeos"],
+    "can_be_recommended": true,
     "test_policy": { "ChromeOsLockOnIdleSuspend": true },
-    "settings_pages": ["chrome://settings-frame"]
+    "settings_pages": ["chrome://settings-frame"],
+    "pref_mappings": [
+      { "pref": "settings.enable_screen_lock",
+        "indicator_tests": [
+          { "policy": { "ChromeOsLockOnIdleSuspend": true } }
+        ]
+      }
+    ]
   },
 
   "PolicyRefreshRate": {
     "os": ["chromeos"],
     "test_policy": { "PolicyRefreshRate": 300000 },
-    "settings_pages": []
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "policy.user_refresh_rate",
+        "local_state": true
+      }
+    ]
   },
 
   "OpenNetworkConfiguration": {
@@ -1560,38 +1570,59 @@
 
   "DriveDisabled": {
     "os": ["chromeos"],
-    "test_policy": { "DriveDisabled": true },
-    "settings_pages": []
+    "test_policy": { "DriveDisabled": false },
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "gdata.disabled" }
+    ]
   },
 
   "DriveDisabledOverCellular": {
     "os": ["chromeos"],
     "test_policy": { "DriveDisabledOverCellular": true },
-    "settings_pages": []
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "gdata.cellular.disabled" }
+    ]
   },
 
   "PinnedLauncherApps": {
     "os": ["chromeos"],
+    "can_be_recommended": true,
     "test_policy": { "PinnedLauncherApps": [] },
-    "settings_pages": []
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "pinned_launcher_apps" }
+    ]
   },
 
   "ExternalStorageDisabled": {
     "os": ["chromeos"],
     "test_policy": { "ExternalStorageDisabled": true },
-    "settings_pages": []
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "hardware.external_storage_disabled" }
+    ]
   },
 
   "AudioOutputAllowed": {
     "os": ["chromeos"],
     "test_policy": { "AudioOutputAllowed": true },
-    "settings_pages": []
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "hardware.audio_output_enabled",
+        "local_state": true }
+    ]
   },
 
   "AudioCaptureAllowed": {
     "os": ["chromeos"],
     "test_policy": { "AudioCaptureAllowed": true },
-    "settings_pages": []
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "hardware.audio_capture_enabled",
+        "local_state": true }
+    ]
   },
 
   "----- Chrome OS device policies ---------------------------------------": {},
@@ -1599,7 +1630,11 @@
   "DevicePolicyRefreshRate": {
     "os": ["chromeos"],
     "test_policy": { "DevicePolicyRefreshRate": 300000 },
-    "settings_pages": []
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "policy.device_refresh_rate",
+        "local_state": true }
+    ]
   },
 
   "ChromeOsReleaseChannel": {
@@ -1670,8 +1705,19 @@
 
   "DeviceMetricsReportingEnabled": {
     "os": ["chromeos"],
+    "official_only": true,
     "test_policy": { "DeviceMetricsReportingEnabled": true },
-    "settings_pages": []
+    "settings_pages": [],
+    "pref_mappings": [
+      { "pref": "cros.metrics.reportingEnabled",
+        "indicator_test_setup_js": "Preferences.getInstance().addEventListener('alternate_error_pages.enabled', function(event) { Preferences.prefsChangedCallback(['cros.metrics.reportingEnabled', {value: event.value.value, controlledBy: event.value.controlledBy, disabled: event.value.disabled}]); });",
+        "indicator_tests": [
+          { "policy": { "AlternateErrorPagesEnabled": true } }
+        ]
+      }
+    ],
+
+    "note": "TODO(bartfab): The |indicator_test_setup_js| above is a hack that makes |cros.metrics.reportingEnabled| track the status of the entirely unrelated |alternate_error_pages.enabled| pref. This is because cros settings cannot currently be made policy-controlled in browser tests. Remove this hack once that restriction is lifted."
   },
 
   "DeviceEphemeralUsersEnabled": {
