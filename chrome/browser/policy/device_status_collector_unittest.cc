@@ -333,7 +333,9 @@ TEST_F(DeviceStatusCollectorTest, Times) {
   EXPECT_EQ(3 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
 }
 
-TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
+// Fails after after WebKit roll [132375:132450]
+// http://crbug.com/157848
+TEST_F(DeviceStatusCollectorTest, DISABLED_MaxStoredPeriods) {
   IdleState test_states[] = {
     IDLE_STATE_ACTIVE,
     IDLE_STATE_IDLE
