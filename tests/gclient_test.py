@@ -321,6 +321,9 @@ class GclientTest(trial_dir.TestCase):
         'solutions = [\n'
         '  { "name": "foo",\n'
         '    "url": "svn://example.com/foo",\n'
+        '  },\n'
+        '  { "name": "bar",\n'
+        '    "url": "svn://example.com/bar",\n'
         '  }]\n')
     write(
         os.path.join('foo', 'DEPS'),
@@ -329,6 +332,13 @@ class GclientTest(trial_dir.TestCase):
         '  "unix": { "foo/unix": "/unix", },\n'
         '  "baz": { "foo/baz": "/baz", },\n'
         '  "jaz": { "foo/jaz": "/jaz", },\n'
+        '}')
+    write(
+        os.path.join('bar', 'DEPS'),
+        'deps_os = {\n'
+        '  "unix": { "bar/unix": "/unix", },\n'
+        '  "baz": { "bar/baz": "/baz", },\n'
+        '  "jaz": { "bar/jaz": "/jaz", },\n'
         '}')
 
     parser = gclient.Parser()
@@ -340,6 +350,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(['unix'], sorted(obj.enforced_os))
     self.assertEquals(
         [
+          'svn://example.com/bar',
+          'svn://example.com/bar/unix',
           'svn://example.com/foo',
           'svn://example.com/foo/baz',
           'svn://example.com/foo/unix',
