@@ -7,11 +7,22 @@
 # submodule-based checkout.  Fetches latest commits for top-level solutions;
 # updates submodules; and runs post-sync hooks.
 
-j=10
+export GIT_MERGE_AUTOEDIT=0
+
 ECHO=
 pull=pull
 pull_args=
 hooks=yes
+j=10
+crup_runner="crup-runner.sh"
+
+kernel_name=$(uname -s)
+if [ "${kernel_name:0:5}" = "MINGW" -o "${kernel_name:0:6}" = "CYGWIN" ]; then
+  GIT_EXE=git.exe
+else
+  GIT_EXE=git
+fi
+export GIT_EXE
 
 if ( echo test | xargs --max-lines=1 true 2>/dev/null ); then
   max_lines="--max-lines=1"
@@ -19,24 +30,31 @@ else
   max_lines="-L 1"
 fi
 
+if ( echo test | xargs -I bar true 2>/dev/null ); then
+  replace_arg="-I replace_arg"
+else
+  replace_arg="-ireplace_arg"
+fi
+
 usage() {
-  cat <<EOF 1>&2
+  cat <<EOF
 Usage: git-crup [-n|--dry-run] [--fetch] [-j|--jobs [jobs]]
     [--no-hooks] [<args to git-pull or git-fetch>]
 EOF
 }
 
-parallel_update() {
-  ( echo Entering "$1"
-    cd "$1"
-    $ECHO git $pull $pull_args origin
-    $ECHO git submodule sync
-    if test "$xargs_parallel" = "yes"; then
-      git ls-files -s | grep ^160000 | awk '{print $4}' |
-      xargs $max_lines -P "$j" $ECHO git submodule update --init
-    else
-      $ECHO git submodule update --init
-    fi )
+serial_update() {
+  ( cd "$1"
+    $GIT_EXE $pull $pull_args -q origin | sed "s/^/[$1] /g"
+    if [ $? -ne 0 ]; then
+      return $?
+    fi
+    $GIT_EXE submodule --quiet sync
+    $GIT_EXE ls-files -s | grep ^160000 | awk '{print $4}' |
+    while read submod; do
+      $GIT_EXE submodule update --init "$submod" | sed "s|^|[$1/$submod] |g"
+    done
+  )
 }
 
 while test $# -ne 0; do
@@ -68,7 +86,7 @@ while test $# -ne 0; do
     --fetch)
       pull=fetch
       ;;
-    --no-hooks)
+    --no-hooks|--nohooks)
       hooks=no
       ;;
     *)
@@ -99,10 +117,27 @@ else
   xargs_parallel=no
 fi
 
-ls -d */.git |
-while read gitdir; do
-  parallel_update `dirname $gitdir`
-done
+set -o pipefail
 
-gclient_spec="solutions=[{'name':'src','url':None,'deps_file':'.DEPS.git'}]"
-test "$hooks" = "yes" && gclient runhooks --spec="$gclient_spec"
+if test "$xargs_parallel" = "yes"; then
+  ( ls -d */.git | sed 's/\/\.git$//' |
+   xargs $max_lines $replace_arg -P "$j" \
+      "$crup_runner" replace_arg $GIT_EXE $pull $pull_args -q origin |
+   xargs $max_lines -P "$j" "$crup_runner" )
+else 
+  ls -d */.git |
+  while read gitdir; do
+    serial_update "${gitdir%%/.git}"
+  done
+fi
+
+status=$?
+
+if [ "$hooks" = "yes" -a "$status" -eq 0 ]; then
+  gclient_spec="solutions=[{'name':'src','url':None,'deps_file':'.DEPS.git'}]"
+  gclient runhooks --spec="$gclient_spec"
+  status=$?
+fi
+
+echo
+exit $status
