@@ -98,32 +98,5 @@
         },
       ],
     }],
-    ['nacl_standalone==0', {
-      'targets': [
-        # ----------------------------------------------------------------
-        {
-          'target_name': 'nonnacl_util_chrome',
-          'type': 'static_library',
-          'dependencies': [
-            'sel_ldr_launcher',
-          ],
-        },
-      ],
-    }],
-    ['OS=="win" and nacl_standalone==0', {
-      'targets': [
-        # ----------------------------------------------------------------
-        {
-          'target_name': 'nonnacl_util_chrome64',
-          'type': 'static_library',
-          'variables': {
-            'win_target': 'x64',
-          },
-          'dependencies': [
-            'sel_ldr_launcher64',
-          ],
-        },
-      ],
-    }],
   ],
 }
