@@ -4,39 +4,39 @@
 
 #include "config.h"
 
-#include "caching_bitmap_canvas_layer_updater.h"
+#include "caching_bitmap_content_layer_updater.h"
 
 #include "cc/layer_painter.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace cc {
 
-scoped_refptr<CachingBitmapCanvasLayerUpdater>
-CachingBitmapCanvasLayerUpdater::Create(
+scoped_refptr<CachingBitmapContentLayerUpdater>
+CachingBitmapContentLayerUpdater::Create(
     scoped_ptr<LayerPainter> painter) {
-  return make_scoped_refptr(new CachingBitmapCanvasLayerUpdater(
+  return make_scoped_refptr(new CachingBitmapContentLayerUpdater(
       painter.Pass()));
 }
 
-CachingBitmapCanvasLayerUpdater::CachingBitmapCanvasLayerUpdater(
+CachingBitmapContentLayerUpdater::CachingBitmapContentLayerUpdater(
     scoped_ptr<LayerPainter> painter)
-    : BitmapCanvasLayerUpdater(painter.Pass()),
+    : BitmapContentLayerUpdater(painter.Pass()),
       pixels_did_change_(false) {
 }
 
-CachingBitmapCanvasLayerUpdater::
-  ~CachingBitmapCanvasLayerUpdater()
+CachingBitmapContentLayerUpdater::
+  ~CachingBitmapContentLayerUpdater()
 {
 }
 
-void CachingBitmapCanvasLayerUpdater::prepareToUpdate(
+void CachingBitmapContentLayerUpdater::prepareToUpdate(
     const IntRect& content_rect,
     const IntSize& tile_size,
     float contents_width_scale,
     float contents_height_scale,
     IntRect& resulting_opaque_rect,
     RenderingStats& stats) {
-  BitmapCanvasLayerUpdater::prepareToUpdate(content_rect,
+  BitmapContentLayerUpdater::prepareToUpdate(content_rect,
                                                    tile_size,
                                                    contents_width_scale,
                                                    contents_height_scale,
@@ -57,7 +57,7 @@ void CachingBitmapCanvasLayerUpdater::prepareToUpdate(
     new_bitmap.deepCopyTo(&cached_bitmap_, new_bitmap.config());
 }
 
-bool CachingBitmapCanvasLayerUpdater::pixelsDidChange() const
+bool CachingBitmapContentLayerUpdater::pixelsDidChange() const
 {
   return pixels_did_change_;
 }

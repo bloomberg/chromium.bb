@@ -8,8 +8,8 @@
 
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "cc/bitmap_canvas_layer_updater.h"
-#include "cc/bitmap_skpicture_canvas_layer_updater.h"
+#include "cc/bitmap_content_layer_updater.h"
+#include "cc/bitmap_skpicture_content_layer_updater.h"
 #include "cc/content_layer_client.h"
 #include "cc/layer_painter.h"
 #include "cc/layer_tree_host.h"
@@ -88,11 +88,11 @@ void ContentLayer::createUpdaterIfNeeded()
         return;
     scoped_ptr<LayerPainter> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainter>();
     if (layerTreeHost()->settings().acceleratePainting)
-        m_updater = SkPictureCanvasLayerUpdater::create(painter.Pass());
+        m_updater = SkPictureContentLayerUpdater::create(painter.Pass());
     else if (Settings::perTilePaintingEnabled())
-        m_updater = BitmapSkPictureCanvasLayerUpdater::create(painter.Pass());
+        m_updater = BitmapSkPictureContentLayerUpdater::create(painter.Pass());
     else
-        m_updater = BitmapCanvasLayerUpdater::create(painter.Pass());
+        m_updater = BitmapContentLayerUpdater::create(painter.Pass());
     m_updater->setOpaque(contentsOpaque());
 
     GLenum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;

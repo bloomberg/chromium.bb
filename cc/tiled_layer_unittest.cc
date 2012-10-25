@@ -6,7 +6,7 @@
 
 #include "cc/tiled_layer.h"
 
-#include "cc/bitmap_canvas_layer_updater.h"
+#include "cc/bitmap_content_layer_updater.h"
 #include "cc/layer_painter.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/rendering_stats.h"
@@ -1549,7 +1549,7 @@ public:
     {
         scoped_ptr<TrackingLayerPainter> trackingLayerPainter(TrackingLayerPainter::create());
         m_trackingLayerPainter = trackingLayerPainter.get();
-        m_layerUpdater = BitmapCanvasLayerUpdater::create(trackingLayerPainter.PassAs<LayerPainter>());
+        m_layerUpdater = BitmapContentLayerUpdater::create(trackingLayerPainter.PassAs<LayerPainter>());
     }
 
     TrackingLayerPainter* trackingLayerPainter() const { return m_trackingLayerPainter; }
@@ -1561,7 +1561,7 @@ protected:
 
 private:
     TrackingLayerPainter* m_trackingLayerPainter;
-    scoped_refptr<BitmapCanvasLayerUpdater> m_layerUpdater;
+    scoped_refptr<BitmapContentLayerUpdater> m_layerUpdater;
 };
 
 TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringPaint)

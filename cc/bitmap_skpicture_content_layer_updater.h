@@ -2,41 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BitmapSkPictureCanvasLayerUpdater_h
-#define BitmapSkPictureCanvasLayerUpdater_h
+#ifndef BitmapSkPictureContentLayerUpdater_h
+#define BitmapSkPictureContentLayerUpdater_h
 
-#include "cc/skpicture_canvas_layer_updater.h"
+#include "cc/skpicture_content_layer_updater.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {
 
 // This class records the contentRect into an SkPicture, then software rasterizes
 // the SkPicture into bitmaps for each tile. This implements Settings::perTilePainting.
-class BitmapSkPictureCanvasLayerUpdater : public SkPictureCanvasLayerUpdater {
+class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
 public:
-    class Resource : public CanvasLayerUpdater::Resource {
+    class Resource : public ContentLayerUpdater::Resource {
     public:
-        Resource(BitmapSkPictureCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
+        Resource(BitmapSkPictureContentLayerUpdater*, scoped_ptr<PrioritizedTexture>);
 
         virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
     private:
-        BitmapSkPictureCanvasLayerUpdater* updater() { return m_updater; }
+        BitmapSkPictureContentLayerUpdater* updater() { return m_updater; }
 
         SkBitmap m_bitmap;
-        BitmapSkPictureCanvasLayerUpdater* m_updater;
+        BitmapSkPictureContentLayerUpdater* m_updater;
     };
 
-    static scoped_refptr<BitmapSkPictureCanvasLayerUpdater> create(scoped_ptr<LayerPainter>);
+    static scoped_refptr<BitmapSkPictureContentLayerUpdater> create(scoped_ptr<LayerPainter>);
 
     virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedTextureManager*) OVERRIDE;
     void paintContentsRect(SkCanvas*, const IntRect& sourceRect, RenderingStats&);
 
 private:
-    explicit BitmapSkPictureCanvasLayerUpdater(scoped_ptr<LayerPainter>);
-    virtual ~BitmapSkPictureCanvasLayerUpdater();
+    explicit BitmapSkPictureContentLayerUpdater(scoped_ptr<LayerPainter>);
+    virtual ~BitmapSkPictureContentLayerUpdater();
 };
 
 }  // namespace cc
 
-#endif  // BitmapSkPictureCanvasLayerUpdater_h
+#endif  // BitmapSkPictureContentLayerUpdater_h

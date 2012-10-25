@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/bitmap_skpicture_canvas_layer_updater.h"
+#include "cc/bitmap_skpicture_content_layer_updater.h"
 
 #include "base/time.h"
 #include "cc/layer_painter.h"
@@ -15,13 +15,13 @@
 
 namespace cc {
 
-BitmapSkPictureCanvasLayerUpdater::Resource::Resource(BitmapSkPictureCanvasLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
-    : CanvasLayerUpdater::Resource(texture.Pass())
+BitmapSkPictureContentLayerUpdater::Resource::Resource(BitmapSkPictureContentLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+    : ContentLayerUpdater::Resource(texture.Pass())
     , m_updater(updater)
 {
 }
 
-void BitmapSkPictureCanvasLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats& stats)
+void BitmapSkPictureContentLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats& stats)
 {
     m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, sourceRect.width(), sourceRect.height());
     m_bitmap.allocPixels();
@@ -40,26 +40,26 @@ void BitmapSkPictureCanvasLayerUpdater::Resource::update(TextureUpdateQueue& que
         queue.appendFullUpload(upload);
 }
 
-scoped_refptr<BitmapSkPictureCanvasLayerUpdater> BitmapSkPictureCanvasLayerUpdater::create(scoped_ptr<LayerPainter> painter)
+scoped_refptr<BitmapSkPictureContentLayerUpdater> BitmapSkPictureContentLayerUpdater::create(scoped_ptr<LayerPainter> painter)
 {
-    return make_scoped_refptr(new BitmapSkPictureCanvasLayerUpdater(painter.Pass()));
+    return make_scoped_refptr(new BitmapSkPictureContentLayerUpdater(painter.Pass()));
 }
 
-BitmapSkPictureCanvasLayerUpdater::BitmapSkPictureCanvasLayerUpdater(scoped_ptr<LayerPainter> painter)
-    : SkPictureCanvasLayerUpdater(painter.Pass())
-{
-}
-
-BitmapSkPictureCanvasLayerUpdater::~BitmapSkPictureCanvasLayerUpdater()
+BitmapSkPictureContentLayerUpdater::BitmapSkPictureContentLayerUpdater(scoped_ptr<LayerPainter> painter)
+    : SkPictureContentLayerUpdater(painter.Pass())
 {
 }
 
-scoped_ptr<LayerUpdater::Resource> BitmapSkPictureCanvasLayerUpdater::createResource(PrioritizedTextureManager* manager)
+BitmapSkPictureContentLayerUpdater::~BitmapSkPictureContentLayerUpdater()
+{
+}
+
+scoped_ptr<LayerUpdater::Resource> BitmapSkPictureContentLayerUpdater::createResource(PrioritizedTextureManager* manager)
 {
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
 }
 
-void BitmapSkPictureCanvasLayerUpdater::paintContentsRect(SkCanvas* canvas, const IntRect& sourceRect, RenderingStats& stats)
+void BitmapSkPictureContentLayerUpdater::paintContentsRect(SkCanvas* canvas, const IntRect& sourceRect, RenderingStats& stats)
 {
     // Translate the origin of contentRect to that of sourceRect.
     canvas->translate(contentRect().x() - sourceRect.x(),

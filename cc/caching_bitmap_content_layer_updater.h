@@ -6,14 +6,14 @@
 #define CACHING_BITMAP_CANVAS_LAYER_UPDATER_H_
 
 #include "base/compiler_specific.h"
-#include "cc/bitmap_canvas_layer_updater.h"
+#include "cc/bitmap_content_layer_updater.h"
 
 namespace cc {
 
-class CachingBitmapCanvasLayerUpdater
-    : public BitmapCanvasLayerUpdater {
+class CachingBitmapContentLayerUpdater
+    : public BitmapContentLayerUpdater {
  public:
-  static scoped_refptr<CachingBitmapCanvasLayerUpdater> Create(
+  static scoped_refptr<CachingBitmapContentLayerUpdater> Create(
       scoped_ptr<LayerPainter>);
 
   virtual void prepareToUpdate(const IntRect& content_rect,
@@ -26,9 +26,9 @@ class CachingBitmapCanvasLayerUpdater
   bool pixelsDidChange() const;
 
  private:
-  explicit CachingBitmapCanvasLayerUpdater(
+  explicit CachingBitmapContentLayerUpdater(
       scoped_ptr<LayerPainter> painter);
-  virtual ~CachingBitmapCanvasLayerUpdater();
+  virtual ~CachingBitmapContentLayerUpdater();
 
   bool pixels_did_change_;
   SkBitmap cached_bitmap_;

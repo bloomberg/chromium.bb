@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/bitmap_canvas_layer_updater.h"
+#include "cc/bitmap_content_layer_updater.h"
 
 #include "cc/layer_painter.h"
 #include "cc/resource_update.h"
@@ -13,42 +13,42 @@
 
 namespace cc {
 
-BitmapCanvasLayerUpdater::Resource::Resource(BitmapCanvasLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+BitmapContentLayerUpdater::Resource::Resource(BitmapContentLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
     : LayerUpdater::Resource(texture.Pass())
     , m_updater(updater)
 {
 }
 
-BitmapCanvasLayerUpdater::Resource::~Resource()
+BitmapContentLayerUpdater::Resource::~Resource()
 {
 }
 
-void BitmapCanvasLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
+void BitmapContentLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
 {
     updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
-scoped_refptr<BitmapCanvasLayerUpdater> BitmapCanvasLayerUpdater::create(scoped_ptr<LayerPainter> painter)
+scoped_refptr<BitmapContentLayerUpdater> BitmapContentLayerUpdater::create(scoped_ptr<LayerPainter> painter)
 {
-    return make_scoped_refptr(new BitmapCanvasLayerUpdater(painter.Pass()));
+    return make_scoped_refptr(new BitmapContentLayerUpdater(painter.Pass()));
 }
 
-BitmapCanvasLayerUpdater::BitmapCanvasLayerUpdater(scoped_ptr<LayerPainter> painter)
-    : CanvasLayerUpdater(painter.Pass())
+BitmapContentLayerUpdater::BitmapContentLayerUpdater(scoped_ptr<LayerPainter> painter)
+    : ContentLayerUpdater(painter.Pass())
     , m_opaque(false)
 {
 }
 
-BitmapCanvasLayerUpdater::~BitmapCanvasLayerUpdater()
+BitmapContentLayerUpdater::~BitmapContentLayerUpdater()
 {
 }
 
-scoped_ptr<LayerUpdater::Resource> BitmapCanvasLayerUpdater::createResource(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::createResource(PrioritizedTextureManager* manager)
 {
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
 }
 
-void BitmapCanvasLayerUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)
+void BitmapContentLayerUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)
 {
     if (m_canvasSize != contentRect.size()) {
         m_canvasSize = contentRect.size();
@@ -58,7 +58,7 @@ void BitmapCanvasLayerUpdater::prepareToUpdate(const IntRect& contentRect, const
     paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
 }
 
-void BitmapCanvasLayerUpdater::updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+void BitmapContentLayerUpdater::updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
 {
     ResourceUpdate upload = ResourceUpdate::Create(
         texture,
@@ -72,7 +72,7 @@ void BitmapCanvasLayerUpdater::updateTexture(TextureUpdateQueue& queue, Prioriti
         queue.appendFullUpload(upload);
 }
 
-void BitmapCanvasLayerUpdater::setOpaque(bool opaque)
+void BitmapContentLayerUpdater::setOpaque(bool opaque)
 {
     if (opaque != m_opaque) {
         m_canvas.reset();

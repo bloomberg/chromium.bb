@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 
-#ifndef SkPictureCanvasLayerUpdater_h
-#define SkPictureCanvasLayerUpdater_h
+#ifndef SkPictureContentLayerUpdater_h
+#define SkPictureContentLayerUpdater_h
 
-#include "cc/canvas_layer_updater.h"
+#include "cc/content_layer_updater.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 class SkCanvas;
@@ -17,32 +17,32 @@ class LayerPainter;
 
 // This class records the contentRect into an SkPicture. Subclasses, provide
 // different implementations of tile updating based on this recorded picture.
-// The BitmapSkPictureCanvasLayerUpdater and
-// FrameBufferSkPictureCanvasLayerUpdater are two examples of such
+// The BitmapSkPictureContentLayerUpdater and
+// FrameBufferSkPictureContentLayerUpdater are two examples of such
 // implementations.
-class SkPictureCanvasLayerUpdater : public CanvasLayerUpdater {
+class SkPictureContentLayerUpdater : public ContentLayerUpdater {
 public:
     class Resource : public LayerUpdater::Resource {
     public:
-        Resource(SkPictureCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
+        Resource(SkPictureContentLayerUpdater*, scoped_ptr<PrioritizedTexture>);
         virtual ~Resource();
 
         virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
     private:
-        SkPictureCanvasLayerUpdater* updater() { return m_updater; }
+        SkPictureContentLayerUpdater* updater() { return m_updater; }
 
-        SkPictureCanvasLayerUpdater* m_updater;
+        SkPictureContentLayerUpdater* m_updater;
     };
 
-    static scoped_refptr<SkPictureCanvasLayerUpdater> create(scoped_ptr<LayerPainter>);
+    static scoped_refptr<SkPictureContentLayerUpdater> create(scoped_ptr<LayerPainter>);
 
     virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedTextureManager*) OVERRIDE;
     virtual void setOpaque(bool) OVERRIDE;
 
 protected:
-    explicit SkPictureCanvasLayerUpdater(scoped_ptr<LayerPainter>);
-    virtual ~SkPictureCanvasLayerUpdater();
+    explicit SkPictureContentLayerUpdater(scoped_ptr<LayerPainter>);
+    virtual ~SkPictureContentLayerUpdater();
 
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
     void drawPicture(SkCanvas*);
@@ -58,4 +58,4 @@ private:
 };
 
 } // namespace cc
-#endif // SkPictureCanvasLayerUpdater_h
+#endif // SkPictureContentLayerUpdater_h
