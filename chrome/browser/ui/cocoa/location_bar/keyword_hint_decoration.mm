@@ -148,10 +148,11 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     const CGFloat suffix_width =
         [hint_suffix_ sizeWithAttributes:attributes_].width;
 
-    // Right-justify the text within the remaining space, so it
-    // doesn't get too close to the image relative to a following
-    // decoration.
-    suffix_rect.origin.x = NSMaxX(suffix_rect) - suffix_width;
+    // Draw the text kHintImagePadding away from [tab] icon so that
+    // equal amount of space is maintained on either side of the icon.
+    // This also ensures that suffix text is at the same distance
+    // from [tab] icon in different web pages.
+    suffix_rect.origin.x += kHintImagePadding;
     DCHECK_GE(NSWidth(suffix_rect), suffix_width);
     [hint_suffix_ drawInRect:suffix_rect withAttributes:attributes_];
   }
