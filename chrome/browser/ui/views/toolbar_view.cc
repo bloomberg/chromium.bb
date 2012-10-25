@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/search/search_view_controller.h"
+#include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -449,6 +450,13 @@ void ToolbarView::LayoutForSearch() {
   // If the two bounds don't intersect, set bounds of |location_bar_container_|
   // to 0.
   location_bar_container_->SetBoundsRect(intersect_rect);
+}
+
+views::View* ToolbarView::GetBookmarkBubbleAnchor() {
+  views::View* star_view = location_bar()->star_view();
+  if (star_view && star_view->visible())
+    return star_view;
+  return app_menu_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

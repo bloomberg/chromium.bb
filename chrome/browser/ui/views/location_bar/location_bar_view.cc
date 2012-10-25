@@ -573,10 +573,6 @@ void LocationBarView::SetStarToggled(bool on) {
   }
 }
 
-void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
-  chrome::ShowBookmarkBubbleView(star_view_, profile_, url, newly_bookmarked);
-}
-
 void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   DCHECK(zoom_view_);
   RefreshZoomView();

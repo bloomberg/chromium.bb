@@ -92,6 +92,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // some toolbar children views change in visibility.
   void LayoutForSearch();
 
+  // Returns the view to which the bookmark bubble should be anchored.
+  views::View* GetBookmarkBubbleAnchor();
+
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }

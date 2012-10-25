@@ -1115,7 +1115,8 @@ void BrowserView::ShowBackgroundPages() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);
+  chrome::ShowBookmarkBubbleView(GetToolbarView()->GetBookmarkBubbleAnchor(),
+                                 browser_->profile(), url, !already_bookmarked);
 }
 
 void BrowserView::ShowChromeToMobileBubble() {

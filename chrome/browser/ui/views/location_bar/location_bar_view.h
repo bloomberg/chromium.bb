@@ -203,8 +203,8 @@ class LocationBarView : public LocationBar,
   // Toggles the star on or off.
   void SetStarToggled(bool on);
 
-  // Shows the bookmark bubble.
-  void ShowStarBubble(const GURL& url, bool newly_bookmarked);
+  // Returns the star view. It may not be visible.
+  StarView* star_view() { return star_view_; }
 
   // Shows the Chrome To Mobile bubble.
   void ShowChromeToMobileBubble();
