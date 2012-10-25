@@ -116,7 +116,7 @@ cr.define('login', function() {
      */
     set showGuestButton(value) {
       this.showGuest_ = value;
-      $('guest-user-header-bar-item').hidden = !value;
+      this.updateUI_();
     },
 
     /**
@@ -125,11 +125,31 @@ cr.define('login', function() {
      * @type {boolean}
      */
     set signinUIActive(value) {
-      $('add-user-header-bar-item').hidden = false;
-      $('add-user-button').hidden = value;
-      $('cancel-add-user-button').hidden = !value;
-      $('guest-user-header-bar-item').hidden = value || !this.showGuest_;
+      this.signinUIActive_ = value;
+      this.updateUI_();
     },
+
+    /**
+     * Whether the Cancel button is enabled during Gaia sign-in.
+     * @type {boolean}
+     */
+    set allowCancel(value) {
+      this.allowCancel_ = value;
+      this.updateUI_();
+    },
+
+    /**
+     * Updates visibility state of action buttons.
+     * @private
+     */
+    updateUI_: function() {
+      $('add-user-header-bar-item').hidden = false;
+      $('add-user-button').hidden = this.signinUIActive_;
+      $('cancel-add-user-button').hidden =
+          !this.signinUIActive_ || !this.allowCancel_;
+      $('guest-user-header-bar-item').hidden =
+          this.signinUIActive_ || !this.showGuest_;
+    }
   };
 
   /**

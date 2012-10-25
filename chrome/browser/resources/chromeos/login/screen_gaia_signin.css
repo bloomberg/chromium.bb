@@ -43,6 +43,10 @@ html[oobe=new] #signin-right {
   -webkit-margin-start: 30px;
 }
 
+html[oobe=new] .no-right-panel #signin-right {
+  display: none;
+}
+
 .signin-text {
   color: #666;
   margin-top: 20px;
@@ -67,6 +71,10 @@ html[oobe=old] #signin-frame {
 html[oobe=new] #signin-frame {
   background-color: transparent;
   border-right: 1px solid lightgray;
+}
+
+html[oobe=new] .no-right-panel #signin-frame {
+  border: none;
 }
 
 /* Position to be aligned with the login box in iframe  */

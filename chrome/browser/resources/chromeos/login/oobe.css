@@ -488,6 +488,10 @@ html[oobe=new] #gaia-signin {
   width: 722px;
 }
 
+html[oobe=new] #gaia-signin.no-right-panel {
+  width: 522px;
+}
+
 html[oobe=new] #user-image {
   min-height: 443px;
   padding: 70px 17px 21px;

@@ -462,7 +462,7 @@ void SigninScreenHandler::OnDnsCleared() {
 }
 
 void SigninScreenHandler::ShowSigninScreenIfReady() {
-  if (!dns_cleared_ || !cookies_cleared_)
+  if (!dns_cleared_ || !cookies_cleared_ || !delegate_)
     return;
 
   if (gaia_silent_load_ &&

@@ -223,7 +223,7 @@ cr.define('cr.ui.login', function() {
       }
 
       // Adjust inner container height based on new step's height.
-      this.updateInnerContainerSize_(newStep);
+      this.updateScreenSize(newStep);
 
       var innerContainer = $('inner-container');
       if (this.currentStep_ != nextStepIndex &&
@@ -347,7 +347,7 @@ cr.define('cr.ui.login', function() {
      * Should be executed on screen change / screen size change.
      * @param {!HTMLElement} screen Screen that is being shown.
      */
-    updateInnerContainerSize_: function(screen) {
+    updateScreenSize: function(screen) {
       // Have to reset any previously predefined screen size first
       // so that screen contents would define it instead (offsetHeight/width).
       // http://crbug.com/146539
@@ -401,7 +401,7 @@ cr.define('cr.ui.login', function() {
 
       var currentScreenId = this.screens_[this.currentStep_];
       var currentScreen = $(currentScreenId);
-      this.updateInnerContainerSize_(currentScreen);
+      this.updateScreenSize(currentScreen);
 
       // This screen is a special case as it's not registered with the rest of
       // the screens.
