@@ -27,6 +27,11 @@ class TimeFormat {
   // Returns times in remaining-format: "3 mins left", "2 days left".
   static string16 TimeRemaining(const base::TimeDelta& delta);
 
+  // Returns times in remaining-long-format: "3 minutes left", "2 days left".
+  // Currently, this only affects the minutes in long format, the rest
+  // of the time units are formatted the same as TimeRemaining does.
+  static string16 TimeRemainingLong(const base::TimeDelta& delta);
+
   // Returns times in short-format: "3 mins", "2 days".
   static string16 TimeRemainingShort(const base::TimeDelta& delta);
 

@@ -445,7 +445,7 @@ void ChromeShellDelegate::HandleMediaPrevTrack() {
 }
 
 string16 ChromeShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
-  return TimeFormat::TimeRemaining(delta);
+  return TimeFormat::TimeRemainingLong(delta);
 }
 
 void ChromeShellDelegate::SaveScreenMagnifierScale(double scale) {
