@@ -1283,7 +1283,6 @@ bool GetOutputDeviceData(XID output,
   const unsigned int kDescriptorLength = 18;
   // The specifier types.
   const unsigned char kMonitorNameDescriptor = 0xfc;
-  const unsigned char kUnspecifiedTextDescriptor = 0xfe;
 
   if (manufacturer_id) {
     if (nitems < kManufacturerOffset + kManufacturerLength) {
@@ -1310,7 +1309,6 @@ bool GetOutputDeviceData(XID output,
     return true;
   }
 
-  std::string name_candidate;
   human_readable_name->clear();
   for (unsigned int i = 0; i < kNumDescriptors; ++i) {
     if (nitems < kDescriptorOffset + (i + 1) * kDescriptorLength) {
@@ -1332,21 +1330,9 @@ bool GetOutputDeviceData(XID output,
             reinterpret_cast<char*>(desc_buf + 5), kDescriptorLength - 5);
         TrimWhitespaceASCII(found_name, TRIM_TRAILING, human_readable_name);
         break;
-      } else if (desc_buf[3] == kUnspecifiedTextDescriptor &&
-                 name_candidate.empty()) {
-        // Sometimes the default display of a laptop device doesn't have "FC"
-        // ("Monitor name") descriptor, but has some human readable text with
-        // "FE" ("Unspecified text"). Thus here use this value as the fallback
-        // if "FC" is missing. Note that multiple descriptors may have "FE",
-        // and the first one is the monitor name.
-        std::string found_name(
-            reinterpret_cast<char*>(desc_buf + 5), kDescriptorLength - 5);
-        TrimWhitespaceASCII(found_name, TRIM_TRAILING, &name_candidate);
       }
     }
   }
-  if (human_readable_name->empty() && !name_candidate.empty())
-    *human_readable_name = name_candidate;
 
   XFree(prop);
 
