@@ -16,6 +16,8 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
+#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
+#include "chrome/common/spellcheck_common.h"
 #include "content/public/browser/notification_observer.h"
 
 class Profile;
@@ -57,10 +59,13 @@ class SpellCheckProfile : public SpellCheckProfileProvider,
   void StartRecordingMetrics(bool spellcheck_enabled);
 
   // SpellCheckProfileProvider implementation.
-  virtual void SpellCheckHostInitialized(CustomWordList* custom_words) OVERRIDE;
-  virtual const CustomWordList& GetCustomWords() const OVERRIDE;
+  virtual void SpellCheckHostInitialized(
+      chrome::spellcheck_common::WordList* custom_words) OVERRIDE;
+  virtual const chrome::spellcheck_common::WordList&
+      GetCustomWords() const OVERRIDE;
   virtual void CustomWordAddedLocally(const std::string& word) OVERRIDE;
-  virtual void LoadCustomDictionary(CustomWordList* custom_words) OVERRIDE;
+  virtual void LoadCustomDictionary(
+      chrome::spellcheck_common::WordList* custom_words) OVERRIDE;
   virtual void WriteWordToCustomDictionary(const std::string& word) OVERRIDE;
 
   // ProfileKeyedService implementation.
@@ -119,8 +124,6 @@ class SpellCheckProfile : public SpellCheckProfileProvider,
       const std::string& language,
       net::URLRequestContextGetter* request_context);
 
-  const FilePath& GetCustomDictionaryPath();
-
   PrefChangeRegistrar pref_change_registrar_;
 
   Profile* profile_;
@@ -132,14 +135,10 @@ class SpellCheckProfile : public SpellCheckProfileProvider,
   // finished.
   bool host_ready_;
 
-  // In-memory cache of the custom words file.
-  scoped_ptr<CustomWordList> custom_words_;
-
   // A directory path of profile.
   FilePath profile_dir_;
 
-  // A path for custom dictionary per profile.
-  scoped_ptr<FilePath> custom_dictionary_path_;
+  scoped_ptr<SpellcheckCustomDictionary> custom_dictionary_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckProfile);
 };
