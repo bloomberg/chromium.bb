@@ -751,6 +751,10 @@ class Segment {
   // returned by the Add track functions.
   bool CuesTrack(uint64 track_number);
 
+  // This will force the muxer to create a new Cluster when the next frame is
+  // added.
+  void ForceNewClusterOnNextFrame();
+
   // Writes out any frames that have not been written out. Finalizes the last
   // cluster. May update the size and duration of the segment. May output the
   // Cues element. May finalize the SeekHead element. Returns true on success.
@@ -888,6 +892,9 @@ class Segment {
 
   // Track number that is associated with the cues element for this segment.
   uint64 cues_track_;
+
+  // Tells the muxer to force a new cluster on the next Block.
+  bool force_new_cluster_;
 
   // List of stored audio frames. These variables are used to store frames so
   // the muxer can follow the guideline "Audio blocks that contain the video

@@ -1461,6 +1461,7 @@ Segment::Segment()
       cluster_list_capacity_(0),
       cluster_list_size_(0),
       cues_track_(0),
+      force_new_cluster_(false),
       frames_(NULL),
       frames_capacity_(0),
       frames_size_(0),
@@ -1695,7 +1696,7 @@ bool Segment::AddFrame(const uint8* frame,
   // If the segment has a video track hold onto audio frames to make sure the
   // audio that is associated with the start time of a video key-frame is
   // muxed into the same cluster.
-  if (has_video_ && tracks_.TrackIsAudio(track_number)) {
+  if (has_video_ && tracks_.TrackIsAudio(track_number) && !force_new_cluster_) {
     Frame* const new_frame = new Frame();
     if (!new_frame->Init(frame, length))
       return false;
@@ -1875,6 +1876,10 @@ bool Segment::CuesTrack(uint64 track_number) {
   return true;
 }
 
+void Segment::ForceNewClusterOnNextFrame() {
+  force_new_cluster_ = true;
+}
+
 Track* Segment::GetTrackByNumber(uint64 track_number) const {
   return tracks_.GetTrackByNumber(track_number);
 }
@@ -1938,6 +1943,9 @@ bool Segment::WriteSegmentHeader() {
 int Segment::TestFrame(uint64 track_number,
                        uint64 frame_timestamp_ns,
                        bool is_key) const {
+  if (force_new_cluster_)
+    return 1;
+
   // If no clusters have been created yet, then create a new cluster
   // and write this frame immediately, in the new cluster.  This path
   // should only be followed once, the first time we attempt to write
@@ -2090,9 +2098,12 @@ bool Segment::DoNewClusterProcessing(uint64 track_number,
     if (result < 0)  // error
       return false;
 
-    // A non-zero result means create a new cluster.
-    if (result > 0 && !MakeNewCluster(frame_timestamp_ns))
-      return false;
+  // Always set force_new_cluster_ to false after TestFrame.
+  force_new_cluster_ = false;
+
+  // A non-zero result means create a new cluster.
+  if (result > 0 && !MakeNewCluster(frame_timestamp_ns))
+    return false;
 
     // Write queued (audio) frames.
     const int frame_count = WriteFramesAll();
