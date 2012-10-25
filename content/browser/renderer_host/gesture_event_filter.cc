@@ -96,8 +96,9 @@ bool GestureEventFilter::ShouldForwardForBounceReduction(
       debouncing_deferral_queue_.clear();
       return true;
     case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::GesturePinchUpdate:
       // TODO(rjkroege): Debounce pinch (http://crbug.com/147647)
-      scrolling_in_progress_ = false;
       return true;
     default:
       if (scrolling_in_progress_) {
