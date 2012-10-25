@@ -72,6 +72,7 @@ TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
             entry_proto.file_specific_info().file_md5());
   EXPECT_EQ("https://file_link_resumable_edit_media/",
             entry_proto.upload_url());
+  EXPECT_FALSE(entry_proto.file_info().is_directory());
 }
 
 TEST(DocumentEntryConversionTest,
@@ -89,6 +90,7 @@ TEST(DocumentEntryConversionTest,
 
   EXPECT_EQ("Document 1",  entry_proto.title());
   EXPECT_EQ("Document 1.gdoc",  entry_proto.base_name());  // The suffix added.
+  EXPECT_EQ(".gdoc", entry_proto.file_specific_info().document_extension());
   EXPECT_EQ("document:5_document_resource_id",  entry_proto.resource_id());
   EXPECT_EQ("https://3_document_content/",  entry_proto.content_url());
   EXPECT_EQ("https://3_document_self_link/document:5_document_resource_id",
@@ -154,6 +156,7 @@ TEST(DocumentEntryConversionTest,
 
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0,  entry_proto.file_info().size());
+  EXPECT_FALSE(entry_proto.file_info().is_directory());
 }
 
 TEST(DocumentEntryConversionTest,
@@ -229,6 +232,8 @@ TEST(DocumentEntryConversionTest,
   // Directory should have this.
   EXPECT_EQ("https://2_folder_resumable_create_media_link/",
             entry_proto.upload_url());
+
+  EXPECT_TRUE(entry_proto.file_info().is_directory());
 }
 
 TEST(DocumentEntryConversionTest,

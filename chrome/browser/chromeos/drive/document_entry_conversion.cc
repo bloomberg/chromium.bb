@@ -63,14 +63,15 @@ DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
       // files as hosted documents are not uploadable.
       const google_apis::Link* upload_link = doc.GetLinkByType(
           google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA);
-      if (upload_link)
+      if (upload_link && upload_link->href().is_valid())
         entry_proto.set_upload_url(upload_link->href().spec());
     } else if (doc.is_hosted_document()) {
       // Attach .g<something> extension to hosted documents so we can special
       // case their handling in UI.
-      // TODO(zelidrag): Figure out better way how to pass entry info like kind
+      // TODO(satorux): Figure out better way how to pass entry info like kind
       // to UI through the File API stack.
       const std::string document_extension = doc.GetHostedDocumentExtension();
+      file_specific_info->set_document_extension(document_extension);
       entry_proto.set_base_name(
           util::EscapeUtf8FileName(entry_proto.title() + document_extension));
 
@@ -78,6 +79,7 @@ DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
       // is has no effect on the quota.
       file_info->set_size(0);
     }
+    file_info->set_is_directory(false);
     file_specific_info->set_content_mime_type(doc.content_mime_type());
     file_specific_info->set_is_hosted_document(doc.is_hosted_document());
 
@@ -96,12 +98,14 @@ DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
     if (share_link)
       file_specific_info->set_share_url(share_link->href().spec());
   } else if (doc.is_folder()) {
+    file_info->set_is_directory(true);
     const google_apis::Link* upload_link = doc.GetLinkByType(
         google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
     if (upload_link)
       entry_proto.set_upload_url(upload_link->href().spec());
   } else {
-    NOTREACHED() << "Unknown google_apis::DocumentEntry type";
+    // Some document entries don't map into files (i.e. sites).
+    return DriveEntryProto();
   }
 
   return entry_proto;
