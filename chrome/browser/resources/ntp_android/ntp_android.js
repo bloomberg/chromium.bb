@@ -160,27 +160,27 @@ cr.define('ntp', function() {
   var activeItemDelayTimerId;
 
   /**
-   * Enum for the different send notification types based on whether NTP has
-   * loaded sent notification.
+   * Enum for the different load states based on the initialization of the NTP.
    * @enum {number}
    */
-  var SendNotificationType = {
+  var LoadStatusType = {
     LOAD_NOT_DONE: 0,
-    LOAD_DONE_NOTIFICATION_NOT_SENT: 1,
-    LOAD_DONE_NOTIFICATION_SENT: 2
+    LOAD_IMAGES_COMPLETE: 1,
+    LOAD_BOOKMARKS_FINISHED: 2,
+    LOAD_COMPLETE: 3  // An OR'd combination of all necessary states.
   };
 
   /**
-   * Whether to send notification when page is done loading
-   * @type {boolean}
+   * The current loading status for the NTP.
+   * @type {LoadStatusType}
    */
-  var finishedLoadingSendNotification = SendNotificationType.LOAD_NOT_DONE;
+  var loadStatus_ = LoadStatusType.LOAD_NOT_DONE;
 
   /**
-   * Time the page load finished notification was last sent out
+   * Whether the loading complete notification has been sent.
    * @type {boolean}
    */
-  var timeLastSendNotification = 0;
+  var finishedLoadingNotificationSent_ = false;
 
   /**
    * Whether the NTP is in incognito mode or not.
@@ -243,10 +243,6 @@ cr.define('ntp', function() {
    * @type {string}
    */
   var promoInjectedComputerLastSyncedText = '';
-
-  function setIncognitoMode(incognito) {
-    isIncognito = incognito;
-  }
 
   /**
    * The different sections that are displayed.
@@ -369,6 +365,10 @@ cr.define('ntp', function() {
    */
   var bookmarkShortcutMode = false;
 
+  function setIncognitoMode(incognito) {
+    isIncognito = incognito;
+  }
+
   /**
    * Flag set to true when the page is loading its initial set of images. This
    * is set to false after all the initial images have loaded.
@@ -380,8 +380,7 @@ cr.define('ntp', function() {
         imagesBeingLoaded.splice(i, 1);
         if (imagesBeingLoaded.length == 0) {
           // To send out the NTP loading complete notification.
-          finishedLoadingSendNotification =
-              SendNotificationType.LOAD_DONE_NOTIFICATION_NOT_SENT;
+          loadStatus_ |= LoadStatusType.LOAD_IMAGES_COMPLETE;
           sendNTPNotification();
         }
       }
@@ -393,8 +392,11 @@ cr.define('ntp', function() {
    * we inform the browser via a hash change.
    */
   function trackImageLoad(url) {
-    if (finishedLoadingSendNotification != SendNotificationType.LOAD_NOT_DONE)
+    if ((loadStatus_ & LoadStatusType.LOAD_IMAGES_COMPLETE) ==
+        LoadStatusType.LOAD_IMAGES_COMPLETE) {
       return;
+    }
+
     for (var i = 0; i < imagesBeingLoaded.length; ++i) {
       if (imagesBeingLoaded[i].src == url)
         return;
@@ -468,16 +470,13 @@ cr.define('ntp', function() {
    * Notifies the chrome process of the status of the NTP.
    */
   function sendNTPNotification() {
-    var now = new Date();
-    if (finishedLoadingSendNotification ==
-        SendNotificationType.LOAD_DONE_NOTIFICATION_NOT_SENT) {
-      finishedLoadingSendNotification ==
-          SendNotificationType.LOAD_DONE_NOTIFICATION_SENT;
-      timeLastSendNotification = now.getTime();
+    if (loadStatus_ != LoadStatusType.LOAD_COMPLETE)
+      return;
+
+    if (!finishedLoadingNotificationSent_) {
+      finishedLoadingNotificationSent_ = true;
       chrome.send('notifyNTPReady');
-    } else if (finishedLoadingSendNotification ==
-        SendNotificationType.LOAD_DONE_NOTIFICATION_SENT ||
-            ((now.getTime() - timeLastSendNotification) > 100)) {
+    } else {
       // Navigating after the loading complete notification has been sent
       // might break tests.
       chrome.send('NTPUnexpectedNavigation');
@@ -1005,6 +1004,12 @@ cr.define('ntp', function() {
 
     // update the shadows on the  breadcrumb bar
     computeDynamicLayout();
+
+    if ((loadStatus_ & LoadStatusType.LOAD_BOOKMARKS_FINISHED) !=
+        LoadStatusType.LOAD_BOOKMARKS_FINISHED) {
+      loadStatus_ |= LoadStatusType.LOAD_BOOKMARKS_FINISHED;
+      sendNTPNotification();
+    }
   }
 
   /**
