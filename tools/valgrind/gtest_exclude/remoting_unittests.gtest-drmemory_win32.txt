@@ -7,3 +7,6 @@ DecoderVp8Test.EncodeAndDecode
 BreakpadWinDeathTest.TestAccessViolation
 BreakpadWinDeathTest.TestInvalidParameter
 BreakpadWinDeathTest.TestDebugbreak
+
+# crbug.com/157886; This test fails under Dr. Memory.
+DesktopProcessTest.ConnectNetworkChannel
