@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 #if defined(OS_WIN)

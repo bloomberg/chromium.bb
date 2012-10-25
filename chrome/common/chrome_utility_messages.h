@@ -14,7 +14,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/serialized_script_value.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"

@@ -21,7 +21,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "v8/include/v8.h"
 
@@ -30,7 +29,6 @@ using WebKit::WebElement;
 using WebKit::WebDOMEvent;
 using WebKit::WebDOMMessageEvent;
 using WebKit::WebPluginContainer;
-using WebKit::WebSerializedScriptValue;
 using WebKit::WebString;
 
 namespace content {

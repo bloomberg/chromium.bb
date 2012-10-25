@@ -13,7 +13,6 @@
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
-using WebKit::WebSerializedScriptValue;
 
 namespace content {
 

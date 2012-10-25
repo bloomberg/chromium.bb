@@ -15,7 +15,6 @@
 #include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/utility/content_utility_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(TOOLKIT_GTK)

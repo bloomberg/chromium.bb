@@ -10,10 +10,6 @@
 #include "ppapi/shared_impl/resource.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-namespace WebKit {
-class WebSerializedScriptValue;
-}
-
 namespace content {
 
 class BrowserPlugin;

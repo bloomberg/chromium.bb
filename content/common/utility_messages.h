@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/serialized_script_value.h"
 #include "ipc/ipc_message_macros.h"
 #include "webkit/plugins/webplugininfo.h"
 
