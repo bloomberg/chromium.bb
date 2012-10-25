@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@303ed94c698ecf43e8f0df0d3e4ea92dac316f33'
+         '@7233e2b3fa9e8d2feb0f6531b3d6bd76a0835eaf'
 }
 
 deps = {
@@ -98,11 +98,11 @@ deps = {
     'src/third_party/sfntly/cpp/src':
         Var('git_url') + '/external/sfntly/cpp/src.git@cfb2f1743f0169ad8d01035458617bce97107539',
     'src/third_party/skia/gyp':
-        Var('git_url') + '/external/skia/gyp.git@48837bf5c1cc46d60d387df7a706233f0f49ace9',
+        Var('git_url') + '/external/skia/gyp.git@22f501f5cd06405cae58e17b91a1967797352a1c',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@09ffbb106dd663a40d6b0d582fc9a7e28e6911c1',
+        Var('git_url') + '/external/skia/include.git@fecf89ef9433a88c7f6e75bbde914bfb38b3d738',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@0d5a451acab7e568636a0fffa8b414550947b1b4',
+        Var('git_url') + '/external/skia/src.git@2522d1e0f9a63fb226a8bd6e21264e5809420ed6',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@6895dced6534c9a041ceba5cabed231d3b2d8518',
     'src/third_party/snappy/src':
@@ -214,9 +214,9 @@ deps_os = {
         'src/third_party/WebKit/Source':
             None,
         'src/third_party/WebKit/Source/Platform/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@b7a39b1ac3e0557bf108c92ce561c22f0d08ee19',
+            Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@3f3aa4a67cf80620e87692f418e70bc4f2d8741a',
         'src/third_party/WebKit/Source/WebKit/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@00b5f55eba70cebd813316a845d8bca89f836faf',
+            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@6a7e85181bad198fdba703340912cf19198acf5c',
         'src/third_party/WebKit/Tools/DumpRenderTree':
             None,
         'src/third_party/WebKit/Tools/Scripts':
