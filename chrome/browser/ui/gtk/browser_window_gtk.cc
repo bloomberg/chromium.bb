@@ -610,6 +610,10 @@ void BrowserWindowGtk::ShowInactive() {
   gtk_widget_show(GTK_WIDGET(window_));
 }
 
+void BrowserWindowGtk::Hide() {
+  // Not implemented.
+}
+
 void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds,
                                      bool exterior,
                                      bool move) {

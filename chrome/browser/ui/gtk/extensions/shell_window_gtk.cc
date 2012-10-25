@@ -168,6 +168,10 @@ void ShellWindowGtk::ShowInactive() {
   gtk_widget_show(GTK_WIDGET(window_));
 }
 
+void ShellWindowGtk::Hide() {
+  gtk_widget_hide(GTK_WIDGET(window_));
+}
+
 void ShellWindowGtk::Close() {
   shell_window_->SaveWindowPosition();
 

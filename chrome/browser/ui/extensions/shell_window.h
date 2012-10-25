@@ -68,6 +68,9 @@ class ShellWindow : public content::NotificationObserver,
 
     // The process ID of the process that requested the create.
     int32 creator_process_id;
+
+    // If true, don't show the window after creation.
+    bool hidden;
   };
 
   static ShellWindow* Create(Profile* profile,

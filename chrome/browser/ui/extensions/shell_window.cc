@@ -71,7 +71,7 @@ ShellWindow::CreateParams::CreateParams()
   : frame(ShellWindow::CreateParams::FRAME_CHROME),
     bounds(-1, -1, kDefaultWidth, kDefaultHeight),
     restore_position(true), restore_size(true),
-    creator_process_id(0) {
+    creator_process_id(0), hidden(false) {
 }
 
 ShellWindow::CreateParams::~CreateParams() {
@@ -114,6 +114,9 @@ void ShellWindow::Init(const GURL& url,
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
   native_window_.reset(NativeShellWindow::Create(this, params));
+
+  if (!params.hidden)
+    GetBaseWindow()->Show();
 
   if (!params.window_key.empty()) {
     window_key_ = params.window_key;

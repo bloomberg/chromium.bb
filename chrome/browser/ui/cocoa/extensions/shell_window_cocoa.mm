@@ -397,6 +397,10 @@ void ShellWindowCocoa::ShowInactive() {
   [window() orderFront:window_controller_];
 }
 
+void ShellWindowCocoa::Hide() {
+  [window() orderOut:window_controller_];
+}
+
 void ShellWindowCocoa::Close() {
   [window() performClose:nil];
 }

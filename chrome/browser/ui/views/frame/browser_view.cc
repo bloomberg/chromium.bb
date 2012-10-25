@@ -618,6 +618,10 @@ void BrowserView::ShowInactive() {
   frame_->ShowInactive();
 }
 
+void BrowserView::Hide() {
+  // Not implemented.
+}
+
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
   ExitFullscreen();
   GetWidget()->SetBounds(bounds);

@@ -353,8 +353,6 @@ ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
           shell_window_));
 
   OnViewWasResized();
-
-  window_->Show();
 }
 
 views::View* ShellWindowViews::GetInitiallyFocusedView() {
@@ -453,6 +451,10 @@ void ShellWindowViews::ShowInactive() {
   if (window_->IsVisible())
     return;
   window_->ShowInactive();
+}
+
+void ShellWindowViews::Hide() {
+  window_->Hide();
 }
 
 void ShellWindowViews::Close() {

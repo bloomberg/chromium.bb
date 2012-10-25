@@ -145,6 +145,10 @@ void BrowserWindowCocoa::ShowInactive() {
   [window() orderFront:controller_];
 }
 
+void BrowserWindowCocoa::Hide() {
+  // Not implemented.
+}
+
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect real_bounds = [controller_ enforceMinWindowSize:bounds];
 

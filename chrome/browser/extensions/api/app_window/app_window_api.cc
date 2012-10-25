@@ -179,6 +179,9 @@ bool AppWindowCreateFunction::RunImpl() {
       create_params.bounds.set_height(maximum_size.height());
     if (create_params.bounds.height() < minimum_size.height())
       create_params.bounds.set_height(minimum_size.height());
+
+    if (options->hidden.get())
+      create_params.hidden = *options->hidden.get();
   }
 
   create_params.creator_process_id =
@@ -186,7 +189,6 @@ bool AppWindowCreateFunction::RunImpl() {
 
   ShellWindow* shell_window =
       ShellWindow::Create(profile(), GetExtension(), url, create_params);
-  shell_window->GetBaseWindow()->Show();
 
   content::RenderViewHost* created_view =
       shell_window->web_contents()->GetRenderViewHost();

@@ -68,4 +68,16 @@ bool AppCurrentWindowInternalClearAttentionFunction::RunWithWindow(
   return true;
 }
 
+bool AppCurrentWindowInternalShowFunction::RunWithWindow(
+    ShellWindow* window) {
+  window->GetBaseWindow()->Show();
+  return true;
+}
+
+bool AppCurrentWindowInternalHideFunction::RunWithWindow(
+    ShellWindow* window) {
+  window->GetBaseWindow()->Hide();
+  return true;
+}
+
 }  // namespace extensions

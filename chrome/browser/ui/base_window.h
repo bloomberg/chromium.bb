@@ -46,6 +46,9 @@ class BaseWindow {
   // Shows the window, or activates it if it's already visible.
   virtual void Show() = 0;
 
+  // Hides the window.
+  virtual void Hide() = 0;
+
   // Show the window, but do not activate it. Does nothing if window
   // is already visible.
   virtual void ShowInactive() = 0;

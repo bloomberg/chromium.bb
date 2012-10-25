@@ -419,6 +419,10 @@ void Panel::ShowInactive() {
   native_panel_->ShowPanelInactive();
 }
 
+void Panel::Hide() {
+  // Not implemented.
+}
+
 void Panel::SetBounds(const gfx::Rect& bounds) {
   // Ignore bounds position as the panel manager controls all positioning.
   if (!panel_strip_)

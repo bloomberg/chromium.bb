@@ -82,6 +82,26 @@ class AppCurrentWindowInternalClearAttentionFunction
   virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
 };
 
+class AppCurrentWindowInternalShowFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.show");
+
+ protected:
+  virtual ~AppCurrentWindowInternalShowFunction() {}
+  virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
+};
+
+class AppCurrentWindowInternalHideFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.hide");
+
+ protected:
+  virtual ~AppCurrentWindowInternalHideFunction() {}
+  virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_APP_CURRENT_WINDOW_INTERNAL_APP_CURRENT_WINDOW_INTERNAL_API_H_

@@ -50,6 +50,10 @@ namespace app.window {
 
     // Frame type: 'none' or 'chrome' (defaults to 'chrome').
     DOMString? frame;
+
+    // If true, the window will be created in a hidden state. Call show() on
+    // the window to show it once it has been created. Defaults to false.
+    boolean? hidden;
   };
 
   callback CreateWindowCallback =
@@ -82,6 +86,12 @@ namespace app.window {
 
     // Close the window.
     static void close();
+
+    // Show the window. Does nothing if the window is already visible.
+    static void show();
+
+    // Hide the window. Does nothing if the window is already hidden.
+    static void hide();
 
     // The JavaScript 'window' object for the created child.
     [instanceOf=global] object contentWindow;
