@@ -49,7 +49,7 @@ TEST_F(QueryTest, GetErrorBasic) {
   EXPECT_EQ(static_cast<uint32>(GL_INVALID_ENUM), query_status);
 }
 
-TEST_F(QueryTest, LatencyQueryBasic) {
+TEST_F(QueryTest, DISABLED_LatencyQueryBasic) {
   EXPECT_TRUE(GLTestHelper::HasExtension(
                   "GL_CHROMIUM_command_buffer_latency_query"));
 
