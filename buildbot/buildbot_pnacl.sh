@@ -118,9 +118,14 @@ tc-archive-translator-pexes() {
   echo @@@BUILD_STEP archive_translator_pexe@@@
   # NOTE: the build script needs an absolute pathname
   local tarball="$(pwd)/pnacl-translator-pexe.tar.bz2"
-  ${PNACL_BUILD} translator-archive-universal-pexes ${tarball}
+  ${PNACL_BUILD} translator-archive-pexes ${tarball}
   ${UP_DOWN_LOAD} UploadArchivedPexesTranslator \
       ${BUILDBOT_GOT_REVISION} ${tarball}
+}
+
+tc-prune-translator-pexes() {
+  echo @@@BUILD_STEP prune_translator_pexe@@@
+  ${PNACL_BUILD} translator-prune
 }
 
 tc-archive-translator() {
@@ -157,6 +162,7 @@ tc-build-all() {
     tc-build-translator
     if ! ${is_try} ; then
       tc-archive-translator-pexes
+      tc-prune-translator-pexes
       tc-archive-translator
     fi
   fi

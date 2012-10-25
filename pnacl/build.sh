@@ -241,13 +241,20 @@ GetInstallDir() {
 # build a `fat` translator which can target all supported
 # architectures. This translator is built as a .pexe
 # which can then be translated to each individual architecture.
-SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
+SBTC_PRODUCTION=${SBTC_PRODUCTION:-true}
 
-# Which toolchain to use for each arch.
-SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
+# Which arches to build for our sandboxed toolchain.
+SBTC_ARCHES_ALL=${SBTC_ARCHES_ALL:-"armv7 i686 x86_64"}
+
+get-sbtc-llvm-arches() {
+# For LLVM i686 brings in both i686 and x86_64.  De-dupe that.
+  echo ${SBTC_ARCHES_ALL} \
+    | sed 's/x86_64/i686/' | sed 's/i686\(.*\)i686/i686\1/'
+}
+SBTC_ARCHES_LLVM=$(get-sbtc-llvm-arches)
+
 
 # Current milestones in each repo
-
 readonly BINUTILS_REV=95a4e0cd6450
 readonly GOLD_REV=7950ff8c12d1
 
@@ -667,23 +674,56 @@ everything-translator() {
 }
 
 #@ translator-archive-pexes <tarball> -archive gold and llc pexes
-#@                           <tarball> should be an absolute pathname
-translator-archive-universal-pexes() {
+#@                      <tarball> should be an absolute pathname,
+#@                      and should have tar.bz2 as the suffix (as that is
+#@                      what will be produced).
+#@
+#@                      This must run before pexes are pruned.
+translator-archive-pexes() {
   local tarball=$1
-  local prefix="${NACL_ROOT}/pnacl/build/translator-universal-srpc-newlib"
-  local pexe_ld="${prefix}/binutils-gold-sb/gold/ld-new"
-  local pexe_llc="${prefix}/llvm-sb/Release+Asserts/bin/llc"
+  # Assume this will only ever get used for "srpc" mode.
+  # This helps us identify the install location.
+  SB_SRPCMODE=srpc
 
-  ${PNACL_STRIP} --strip-all ${pexe_ld} -o ${pexe_ld}.strip-all
-  ${PNACL_STRIP} --strip-all ${pexe_llc} -o ${pexe_llc}.strip-all
+  if [[ "${tarball#*.}" != "tar.bz2" ]]; then
+    echo "translator-archive-pexes: ${tarball} not named with .tar.bz2 suffix"
+    exit 1
+  fi
+  local tarball_no_bz2=${tarball%.*}
 
-  local all="${pexe_ld} ${pexe_ld}.strip-all ${pexe_llc} ${pexe_llc}.strip-all"
+  # Clear tarball before appending files to it.
+  rm -f ${tarball}
 
-  file ${all}
-  ls -l ${all}
+  # Archive LD
+  for arch in ${SBTC_ARCHES_ALL} ; do
+    local pexe_dir="$(GetTranslatorInstallDir ${arch})/bin"
+    echo "pexe_dir is ${pexe_dir}"
+    # Label the pexes by architecture.
+    local pexe_ld="${pexe_dir}/ld.${arch}.pexe"
+    cp "${pexe_dir}/ld.pexe" "${pexe_ld}"
+    ${PNACL_STRIP} --strip-all ${pexe_ld} -o ${pexe_ld}.strip-all
+    local all="${pexe_ld} ${pexe_ld}.strip-all"
+    file ${all}
+    ls -l ${all}
+    # strip all path components
+    tar rf ${tarball_no_bz2}  --transform 's!^.*/!!' ${all}
+  done
 
-  # strip all path components
-  tar cjf ${tarball}  --transform 's!^.*/!!' ${all}
+  # Archive LLC (which combines x86 and x86_64).
+  for arch in ${SBTC_ARCHES_LLVM} ; do
+    local pexe_dir="$(GetTranslatorInstallDir ${arch})/bin"
+    echo "pexe_dir is ${pexe_dir}"
+    # Label the pexes by architecture.
+    local pexe_llc="${pexe_dir}/llc.${arch}.pexe"
+    cp "${pexe_dir}/llc.pexe" ${pexe_llc}
+    ${PNACL_STRIP} --strip-all ${pexe_llc} -o ${pexe_llc}.strip-all
+    local all="${pexe_llc} ${pexe_llc}.strip-all"
+    file ${all}
+    ls -l ${all}
+    # strip all path components
+    tar rf ${tarball_no_bz2}  --transform 's!^.*/!!' ${all}
+  done
+  bzip2 ${tarball_no_bz2}
 }
 
 
@@ -694,7 +734,10 @@ translator-clean-all() {
   rm -rf "${INSTALL_TRANSLATOR}"*
 }
 
+#@ translator-all   -  Build and install all of the translators.
 translator-all() {
+  StepBanner \
+    "SANDBOXED TC [prod=${SBTC_PRODUCTION}] [arches=${SBTC_ARCHES_ALL}]"
   local srpc_kind=srpc
   local libmode=newlib
 
@@ -712,13 +755,22 @@ translator-all() {
   if ${SBTC_PRODUCTION}; then
     # Build each architecture separately.
     local arch
-    for arch in ${SBTC_BUILD_WITH_PNACL} ; do
-      translator ${arch} srpc newlib
+    for arch in ${SBTC_ARCHES_LLVM} ; do
+      llvm-sb ${arch} ${srpc_kind} ${libmode}
+    done
+    for arch in ${SBTC_ARCHES_ALL} ; do
+      binutils-gold-sb ${arch} ${srpc_kind} ${libmode}
     done
   else
     # Using arch `universal` builds the sandboxed tools from a single
     # .pexe which support all targets.
-    translator universal srpc newlib
+    llvm-sb universal ${srpc_kind} ${libmode}
+    binutils-gold-sb universal ${srpc_kind} ${libmode}
+    if ${PNACL_PRUNE}; then
+      # The universal pexes have already been translated.
+      # They don't need to stick around.
+      rm -rf "${SB_INSTALL_DIR}"
+    fi
   fi
 
   # Copy native libs to translator install dir.
@@ -731,6 +783,15 @@ translator-all() {
   fi
 }
 
+
+#+ translator-prune    Remove leftover files like pexes from pnacl_translator
+#+                     build and from translator-archive-pexes.
+translator-prune() {
+  find "${INSTALL_TRANSLATOR}" -name "*.pexe" -exec "rm" {} +
+  find "${INSTALL_TRANSLATOR}" -name "*.pexe.strip-all" -exec "rm" {} +
+}
+
+
 #+ translator-clean <arch> <srpcmode> <libmode> -
 #+     Clean one translator install/build
 translator-clean() {
@@ -738,35 +799,6 @@ translator-clean() {
   StepBanner "TRANSLATOR" "Clean ${SB_LABEL}"
   rm -rf "${SB_INSTALL_DIR}"
   rm -rf "${SB_OBJDIR}"
-}
-
-#+ translator            - Build a sandboxed translator.
-translator() {
-  StepBanner "SANDBOXED TRANSLATORS"
-
-  sb-setup "$@"
-
-  # Building the sandboxed tools requires the SDK
-  # For now, only build the newlib-based translator in the combined build.
-  if ! [ -d "$(GetInstallDir ${SB_LIBMODE})/sdk/lib" ]; then
-    echo "ERROR: SDK must be installed to build translators."
-    echo "You can install the SDK by running: $0 sdk ${libmode}"
-    exit -1
-  fi
-
-  llvm-sb
-  # Note: for the binutils case below we need to force
-  # the "setup" which is done by passing through "$@"
-  # TODO(robertm): investigate less complicated solutions
-  binutils-gold-sb "$@"
-
-  if ${PNACL_PRUNE}; then
-    if [ "${SB_ARCH}" == universal ]; then
-      # The universal pexes have already been translated.
-      # They don't need to stick around.
-      rm -rf "${SB_INSTALL_DIR}"
-    fi
-  fi
 }
 
 newlib-shared() {
@@ -1272,6 +1304,7 @@ llvm-configure() {
 
   llvm-link-clang
   # The --with-binutils-include is to allow llvm to build the gold plugin
+  # re: --enable-targets  "x86" brings in both i686 and x86_64.
   local binutils_include="${TC_SRC_BINUTILS}/binutils-2.20/include"
   RunWithLog "llvm.configure" \
       env -i PATH=/usr/bin/:/bin \
@@ -1282,7 +1315,7 @@ llvm-configure() {
              --enable-shared \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
-             --enable-targets=x86,x86_64,arm \
+             --enable-targets=x86,arm \
              --target=${CROSS_TARGET_ARM} \
              --prefix="${LLVM_INSTALL_DIR}" \
              --program-prefix= \
@@ -2240,11 +2273,12 @@ llvm-sb-configure() {
   local objdir="${LLVM_SB_OBJDIR}"
   local installdir="${SB_INSTALL_DIR}"
   local targets=""
+  # For LLVM, "x86" brings in both i686 and x86_64.
   case ${SB_ARCH} in
     i686) targets=x86 ;;
-    x86_64) targets=x86_64 ;;
+    x86_64) targets=x86 ;;
     armv7) targets=arm ;;
-    universal) targets=x86,x86_64,arm ;;
+    universal) targets=x86,arm ;;
   esac
 
   spushd "${objdir}"
@@ -2314,24 +2348,27 @@ llvm-sb-install() {
     mv -f ${toolname} ${toolname}.nexe
   else
     mv -f ${toolname} ${toolname}.pexe
-    translate-sb-tool ${toolname}
-    install-sb-tool ${toolname}
+    if [[ "${SB_ARCH}" == "universal" ]]; then
+      translate-sb-tool ${toolname} "${SBTC_ARCHES_ALL}"
+      install-sb-tool ${toolname} "${SBTC_ARCHES_ALL}"
+    elif [[ "${SB_ARCH}" == "i686" ]]; then
+      # LLVM does not separate the i686 and x86_64 backends.
+      translate-sb-tool ${toolname} "i686 x86_64"
+      install-sb-tool ${toolname} "i686 x86_64"
+    else
+      translate-sb-tool ${toolname} "${SB_ARCH}"
+      install-sb-tool ${toolname} "${SB_ARCH}"
+    fi
   fi
   spopd
 }
 
-# translate-tool <toolname>
+# translate-sb-tool <toolname> <arches>
 #
 # Translate <toolname>.pexe to <toolname>.<arch>.nexe in the current directory.
-# If SB_ARCH is universal, translates to every arch in SBTC_BUILD_WITH_PNACL.
 translate-sb-tool() {
   local toolname=$1
-  local arches
-  if [ "${SB_ARCH}" == "universal" ]; then
-    arches="${SBTC_BUILD_WITH_PNACL}"
-  else
-    arches="${SB_ARCH}"
-  fi
+  local arches=$2
   local pexe="${toolname}.pexe"
   ${PNACL_STRIP} "${pexe}"
 
@@ -2368,16 +2405,13 @@ translate-sb-tool() {
   StepBanner "TRANSLATE" "Done."
 }
 
+# install-sb-tool <toolname> <arches>
+#
 # Install <toolname>.<arch>.nexe from the current directory
 # into the right location (as <toolname>.nexe)
 install-sb-tool() {
   local toolname="$1"
-  local arches
-  if [ "${SB_ARCH}" == "universal" ]; then
-    arches="${SBTC_BUILD_WITH_PNACL}"
-  else
-    arches="${SB_ARCH}"
-  fi
+  local arches="$2"
   local tarch
   for tarch in ${arches}; do
     local installbin="$(GetTranslatorInstallDir ${tarch})"/bin
@@ -2712,8 +2746,13 @@ binutils-gold-sb-install() {
   cp "${objdir}"/gold/ld-new ld.pexe
 
   # Translate and install
-  translate-sb-tool ld
-  install-sb-tool ld
+  if [[ "${SB_ARCH}" == "universal" ]]; then
+    translate-sb-tool ld "${SBTC_ARCHES_ALL}"
+    install-sb-tool ld "${SBTC_ARCHES_ALL}"
+  else
+    translate-sb-tool ld "${SB_ARCH}"
+    install-sb-tool ld "${SB_ARCH}"
+  fi
   spopd
 }
 
