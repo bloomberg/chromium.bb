@@ -1,12 +1,10 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 /* This file defines styles for form controls. The order of rule blocks is
  * important as there are some rules with equal specificity that rely on order
- * as a tiebreaker. These are marked with OVERRIDE.
- */
+ * as a tiebreaker. These are marked with OVERRIDE. */
 
 /* Default state **************************************************************/
 
