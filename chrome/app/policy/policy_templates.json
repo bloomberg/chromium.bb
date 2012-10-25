@@ -2424,10 +2424,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:15-'],
-      'features': {
-        'dynamic_refresh': True,
-        'can_be_recommended': True,
-      },
+      'features': {'dynamic_refresh': True},
       'example_value': True,
       'id': 99,
       'caption': '''Import of homepage from default browser on first run''',
@@ -3152,7 +3149,10 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:22-', 'chrome_os:0.22-'],
-      'features': {'dynamic_refresh': True},
+      'features': {
+        'dynamic_refresh': True,
+        'can_be_recommended': True,
+      },
       'example_value': False,
       'id': 151,
       'caption': '''Enable or disable spell checking web service''',

@@ -69,11 +69,21 @@
             i18n-content="changeHomePage"></button>
       </div>
     </div>
-    <div class="checkbox" guest-visibility="disabled"><label>
-        <input type="checkbox" pref="bookmark_bar.show_on_all_tabs"
+    <div class="checkbox" guest-visibility="disabled">
+      <span class="controlled-setting-with-label">
+        <input id="show-bookmark-bars" type="checkbox"
+            pref="bookmark_bar.show_on_all_tabs"
             metric="Options_ShowBookmarksBar">
-        <span i18n-content="toolbarShowBookmarksBar"></span>
-    </label></div>
+        <span>
+          <label for="show-bookmark-bars"
+              i18n-content="toolbarShowBookmarksBar">
+          </label>
+          <span class="controlled-setting-indicator"
+              pref="bookmark_bar.show_on_all_tabs">
+          </span>
+        </span>
+      </span>
+    </div>
 <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
     <div class="checkbox"><label>
         <input id="show-window-decorations" type="checkbox"
@@ -133,14 +143,22 @@
           </button>
         </div>
         <div class="checkbox" guest-visibility="disabled">
-          <label id="instant-label">
+          <span class="controlled-setting-with-label">
             <!-- TODO(estade): metric? -->
             <input id="instant-enabled-control" type="checkbox"
                 pref="instant.enabled" dialog-pref>
-            <!-- TODO(estade) There's a link in here which should not be inside
-                 a <label>. -->
-            <span i18n-values=".innerHTML:instantPrefAndWarning"></span>
-          </label>
+            <span>
+              <!-- TODO(estade) There's a link in here which should not be
+                   inside a <label>. -->
+              <label for="instant-enabled-control"
+                  i18n-values=".innerHTML:instantPrefAndWarning">
+              </label>
+              <span id="instant-enabled-indicator"
+                  class="controlled-setting-indicator" pref="instant.enabled"
+                  dialog-pref>
+              </span>
+            </span>
+          </span>
         </div>
       </div>
   </section>
@@ -281,11 +299,18 @@
       </div>
 <if expr="pp_ifdef('_google_chrome')">
       <div class="checkbox">
-        <label id="spelling-label">
+        <span class="controlled-setting-with-label">
           <input id="spelling-enabled-control" type="checkbox"
               pref="spellcheck.use_spelling_service" dialog-pref>
-          <span i18n-content="spellingPref"></span>
-        </label>
+          <span>
+            <label for="spelling-enabled-control" i18n-content="spellingPref">
+            </label>
+            <span id="spelling-enabled-indicator"
+                class="controlled-setting-indicator"
+                pref="spellcheck.use_spelling_service" dialog-pref>
+            </span>
+          </span>
+        </span>
       </div>
       <div id="metricsReportingSetting" class="checkbox">
         <span class="controlled-setting-with-label">
@@ -451,11 +476,16 @@
           i18n-content="languageAndSpellCheckSettingsButton"></button>
     </div>
     <div class="checkbox">
-      <label>
+      <span class="controlled-setting-with-label">
         <input id="enableTranslate" pref="translate.enabled"
             metric="Options_Translate" type="checkbox">
-        <span i18n-content="translateEnableTranslate"></span>
-      </label>
+        <span>
+          <label for="enableTranslate"i18n-content="translateEnableTranslate">
+          </label>
+          <span class="controlled-setting-indicator" pref="translate.enabled">
+          </span>
+        </span>
+      </span>
     </div>
   </section>
   <section>
@@ -610,11 +640,18 @@
   <section id="background-section">
     <h3 i18n-content="advancedSectionTitleBackground"></h3>
     <div class="checkbox">
-      <label>
+      <span class="controlled-setting-with-label">
         <input id="backgroundModeCheckbox" pref="background_mode.enabled"
             type="checkbox">
-        <span i18n-content="backgroundModeCheckbox"></span>
-      </label>
+        <span>
+          <label for="backgroundModeCheckbox"
+              i18n-content="backgroundModeCheckbox">
+          </label>
+          <span class="controlled-setting-indicator"
+              pref="background_mode.enabled">
+          </span>
+        </span>
+      </span>
     </div>
   </section>
 </if>

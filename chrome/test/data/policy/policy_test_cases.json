@@ -1257,19 +1257,29 @@
 
   "InstantEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
     "test_policy": { "InstantEnabled": true },
     "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
-      { "pref": "instant.enabled" }
+      { "pref": "instant.enabled",
+        "indicator_tests": [
+          { "policy": { "InstantEnabled": true } }
+        ]
+      }
     ]
   },
 
   "TranslateEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
     "test_policy": { "TranslateEnabled": false },
     "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
-      { "pref": "translate.enabled" }
+      { "pref": "translate.enabled",
+        "indicator_tests": [
+          { "policy": { "TranslateEnabled": true } }
+        ]
+      }
     ]
   },
 
@@ -1293,10 +1303,15 @@
 
   "BookmarkBarEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
     "test_policy": { "BookmarkBarEnabled": true },
     "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
-      { "pref": "bookmark_bar.show_on_all_tabs" }
+      { "pref": "bookmark_bar.show_on_all_tabs",
+        "indicator_tests": [
+          { "policy": { "BookmarkBarEnabled": true } }
+        ]
+      }
     ]
   },
 
@@ -1316,25 +1331,40 @@
     "pref_mappings": [
       { "pref": "select_file_dialogs.allowed",
         "local_state": true
+      },
+      { "pref": "download.prompt_for_download",
+        "indicator_tests": [
+          { "policy": { "AllowFileSelectionDialogs": false } }
+        ]
       }
     ]
   },
 
   "ImportBookmarks": {
     "os": ["win", "mac", "linux"],
+    "can_be_recommended": true,
     "test_policy": { "ImportBookmarks": false },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "import_bookmarks" }
+      { "pref": "import_bookmarks",
+        "indicator_tests": [
+          { "policy": { "ImportBookmarks": false } }
+        ]
+      }
     ]
   },
 
   "ImportHistory": {
     "os": ["win", "mac", "linux"],
+    "can_be_recommended": true,
     "test_policy": { "ImportHistory": false },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "import_history" }
+      { "pref": "import_history",
+        "indicator_tests": [
+          { "policy": { "ImportHistory": false } }
+        ]
+      }
     ]
   },
 
@@ -1349,19 +1379,29 @@
 
   "ImportSearchEngine": {
     "os": ["win", "mac", "linux"],
+    "can_be_recommended": true,
     "test_policy": { "ImportSearchEngine": false },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "import_search_engine" }
+      { "pref": "import_search_engine",
+        "indicator_tests": [
+          { "policy": { "ImportSearchEngine": false } }
+        ]
+      }
     ]
   },
 
   "ImportSavedPasswords": {
     "os": ["win", "mac", "linux"],
+    "can_be_recommended": true,
     "test_policy": { "ImportSavedPasswords": false },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "import_saved_passwords" }
+      { "pref": "import_saved_passwords",
+        "indicator_tests": [
+          { "policy": { "ImportSavedPasswords": false } }
+        ]
+      }
     ]
   },
 
@@ -1438,11 +1478,15 @@
 
   "BackgroundModeEnabled": {
     "os": ["win", "linux"],
+    "can_be_recommended": true,
     "test_policy": { "BackgroundModeEnabled": false },
     "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
       { "pref": "background_mode.enabled",
-        "local_state": true
+        "local_state": true,
+        "indicator_tests": [
+          { "policy": { "BackgroundModeEnabled": false } }
+        ]
       }
     ]
   },
@@ -1470,10 +1514,15 @@
   "SpellCheckServiceEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "official_only": true,
+    "can_be_recommended": true,
     "test_policy": { "SpellCheckServiceEnabled": false },
     "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
-      { "pref": "spellcheck.use_spelling_service" }
+      { "pref": "spellcheck.use_spelling_service",
+        "indicator_tests": [
+          { "policy": { "SpellCheckServiceEnabled": false } }
+        ]
+      }
     ]
   },
 
