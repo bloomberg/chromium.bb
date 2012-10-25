@@ -49,6 +49,8 @@ class IirFilterInterpreter : public FilterInterpreter, public PropertyDelegate {
     bool operator==(const IoHistory& that) const;
     bool operator!=(const IoHistory& that) const { return !(*this == that); }
 
+    void WarpBy(float dx, float dy);
+
    private:
     size_t NextOutHead() const {
       return (out_head + kOutSize - 1) % kOutSize;
@@ -87,6 +89,8 @@ class IirFilterInterpreter : public FilterInterpreter, public PropertyDelegate {
   // If position change between 2 frames is less than iir_dist_thresh_,
   // IIR filter is applied, otherwise rolling average is applied.
   DoubleProperty iir_dist_thresh_;
+  // Whether to adjust the IIR history when finger WARP is detected.
+  BoolProperty adjust_iir_on_warp_;
   // Whether IIR filter should be used. Put as a member varible for
   // unittest purpose.
   bool using_iir_;

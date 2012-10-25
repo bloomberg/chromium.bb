@@ -39,6 +39,7 @@ IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
       a1_(prop_reg, "IIR a1", -1.1429805025399, this),
       a2_(prop_reg, "IIR a2", 0.412801598096189, this),
       iir_dist_thresh_(prop_reg, "IIR Distance Threshold", 10, this),
+      adjust_iir_on_warp_(prop_reg, "Adjust IIR History On Warp", 0),
       using_iir_(true),
       is_semi_mt_device_(false) {
   InitName();
@@ -70,6 +71,18 @@ Gesture* IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     // existing finger, apply filter
     IoHistory* hist = &(*history).second;
 
+    // Finger WARP detected, adjust the IO history
+    if (adjust_iir_on_warp_.val_) {
+      float dx = 0.0, dy = 0.0;
+
+      if (fs->flags & GESTURES_FINGER_WARP_X_MOVE)
+        dx = fs->position_x - hist->PrevIn(0)->position_x;
+      if (fs->flags & GESTURES_FINGER_WARP_Y_MOVE)
+        dy = fs->position_y - hist->PrevIn(0)->position_y;
+
+      hist->WarpBy(dx, dy);
+    }
+
     float dx = fs->position_x - hist->PrevOut(0)->position_x;
     float dy = fs->position_y - hist->PrevOut(0)->position_y;
 
@@ -93,6 +106,21 @@ Gesture* IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
         hist->NextOut()->pressure = fs->pressure;
         continue;
       }
+
+      if (adjust_iir_on_warp_.val_) {
+        if (field == &FingerState::position_x &&
+            (fs->flags & GESTURES_FINGER_WARP_X_MOVE)) {
+          hist->NextOut()->position_x = fs->position_x;
+          continue;
+        }
+
+        if (field == &FingerState::position_y &&
+            (fs->flags & GESTURES_FINGER_WARP_Y_MOVE)) {
+          hist->NextOut()->position_y = fs->position_y;
+          continue;
+        }
+      }
+
       if (using_iir_) {
         hist->NextOut()->*field =
             b3_.val_ * hist->PrevIn(2)->*field +
@@ -128,6 +156,18 @@ void IirFilterInterpreter::SetHardwarePropertiesImpl(
 
 void IirFilterInterpreter::DoubleWasWritten(DoubleProperty* prop) {
   histories_.clear();
+}
+
+void IirFilterInterpreter::IoHistory::WarpBy(float dx, float dy) {
+  for (size_t i = 0; i < kInSize; i++) {
+    PrevIn(i)->position_x += dx;
+    PrevIn(i)->position_y += dy;
+  }
+
+  for (size_t i = 0; i < kOutSize; i++) {
+    PrevOut(i)->position_x += dx;
+    PrevOut(i)->position_y += dy;
+  }
 }
 
 }  // namespace gestures
