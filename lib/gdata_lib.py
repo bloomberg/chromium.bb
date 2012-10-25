@@ -345,7 +345,7 @@ class TrackerComm(object):
     """Find all Tracker Issues that contain the text search_text."""
     if not full_text:
       search_text = 'summary:' + search_text
-    query = gdata.projecthosting.client.Query(query=search_text)
+    query = gdata.projecthosting.client.Query(text_query=search_text)
     feed = self._QueryTracker(query)
     if feed:
       return [self._CreateIssue(tissue) for tissue in feed.entry]
