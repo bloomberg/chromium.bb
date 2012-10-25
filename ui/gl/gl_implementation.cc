@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace gfx {
 
@@ -61,6 +62,25 @@ bool ExportsCoreFunctionsFromGetProcAddress(GLImplementation implementation) {
 }
 
 }
+
+GLApi* g_current_gl_context;
+OSMESAApi* g_current_osmesa_context;
+
+#if defined(OS_WIN)
+
+EGLApi* g_current_egl_context;
+WGLApi* g_current_wgl_context;
+
+#elif defined(USE_X11)
+
+EGLApi* g_current_egl_context;
+GLXApi* g_current_glx_context;
+
+#elif defined(OS_ANDROID)
+
+EGLApi* g_current_egl_context;
+
+#endif
 
 GLImplementation GetNamedGLImplementation(const std::string& name) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGLImplementationNamePairs); ++i) {

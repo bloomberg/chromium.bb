@@ -9,7 +9,10 @@
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_egl_api_implementation.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_osmesa_api_implementation.h"
 
 namespace gfx {
 
@@ -83,8 +86,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
 
       // These two functions take single precision float rather than double
       // precision float parameters in GLES.
-      ::gfx::g_glClearDepth = MarshalClearDepthToClearDepthf;
-      ::gfx::g_glDepthRange = MarshalDepthRangeToDepthRangef;
+      ::gfx::g_driver_gl.fn.glClearDepthFn = MarshalClearDepthToClearDepthf;
+      ::gfx::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
       break;
     }
     case kGLImplementationMockGL: {

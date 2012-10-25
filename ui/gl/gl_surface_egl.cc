@@ -200,12 +200,13 @@ bool NativeViewGLSurfaceEGL::Initialize() {
   };
 
   // Create a surface for the native window.
-  surface_ = eglCreateWindowSurface(GetDisplay(),
-                                    GetConfig(),
-                                    window_,
-                                    gfx::g_EGL_NV_post_sub_buffer ?
-                                        egl_window_attributes_sub_buffer :
-                                        NULL);
+  surface_ = eglCreateWindowSurface(
+      GetDisplay(),
+      GetConfig(),
+      window_,
+      gfx::g_driver_egl.ext.b_EGL_NV_post_sub_buffer ?
+          egl_window_attributes_sub_buffer :
+          NULL);
 
   if (!surface_) {
     LOG(ERROR) << "eglCreateWindowSurface failed with error "
@@ -490,10 +491,10 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
   NOTREACHED();
   return NULL;
 #else
-  if (!g_EGL_ANGLE_query_surface_pointer)
+  if (!gfx::g_driver_egl.ext.b_EGL_ANGLE_query_surface_pointer)
     return NULL;
 
-  if (!g_EGL_ANGLE_surface_d3d_texture_2d_share_handle)
+  if (!gfx::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle)
     return NULL;
 
   void* handle;

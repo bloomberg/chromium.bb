@@ -25,9 +25,9 @@ GLContextWGL::~GLContextWGL() {
 
 std::string GLContextWGL::GetExtensions() {
   const char* extensions = NULL;
-  if (wglGetExtensionsStringARB)
+  if (g_driver_wgl.fn.wglGetExtensionsStringARBFn)
     extensions = wglGetExtensionsStringARB(GLSurfaceWGL::GetDisplayDC());
-  else if (wglGetExtensionsStringEXT)
+  else if (g_driver_wgl.fn.wglGetExtensionsStringEXTFn)
     extensions = wglGetExtensionsStringEXT();
 
   if (extensions)
@@ -129,7 +129,7 @@ void* GLContextWGL::GetHandle() {
 
 void GLContextWGL::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
-  if (gfx::g_WGL_EXT_swap_control) {
+  if (gfx::g_driver_wgl.ext.b_WGL_EXT_swap_control) {
     wglSwapIntervalEXT(interval);
   } else {
       LOG(WARNING) <<
