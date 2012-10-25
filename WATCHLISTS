@@ -537,7 +537,7 @@
     'instant': ['sreeram@chromium.org', 'gideonwald@chromium.org',
                 'dcblack@chromium.org', 'jered@chromium.org',
                 'shishir@chromium.org', 'dominich@chromium.org',
-                'samarth@chromium.org'],
+                'samarth@chromium.org', 'melevin@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'labs': ['thakis@chromium.org'],
     'linux-sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
