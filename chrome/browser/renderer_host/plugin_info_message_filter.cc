@@ -113,17 +113,21 @@ void PluginInfoMessageFilter::PluginsLoaded(
     const std::vector<WebPluginInfo>& plugins) {
   ChromeViewHostMsg_GetPluginInfo_Output output;
   // This also fills in |actual_mime_type|.
-  if (!context_.FindEnabledPlugin(params.render_view_id, params.url,
-                                  params.top_origin_url, params.mime_type,
-                                  &output.status, &output.plugin,
-                                  &output.actual_mime_type)) {
-    ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, output);
-    Send(reply_msg);
-    return;
+  scoped_ptr<PluginMetadata> plugin_metadata;
+  if (context_.FindEnabledPlugin(params.render_view_id, params.url,
+                                 params.top_origin_url, params.mime_type,
+                                 &output.status, &output.plugin,
+                                 &output.actual_mime_type,
+                                 &plugin_metadata)) {
+    context_.DecidePluginStatus(params, output.plugin, plugin_metadata.get(),
+                                &output.status);
   }
 
-  context_.DecidePluginStatus(params, output.plugin, &output.status,
-                              &output.group_identifier, &output.group_name);
+  if (plugin_metadata) {
+    output.group_identifier = plugin_metadata->identifier();
+    output.group_name = plugin_metadata->name();
+  }
+
   ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, output);
   Send(reply_msg);
 }
@@ -131,20 +135,14 @@ void PluginInfoMessageFilter::PluginsLoaded(
 void PluginInfoMessageFilter::Context::DecidePluginStatus(
     const GetPluginInfo_Params& params,
     const WebPluginInfo& plugin,
-    ChromeViewHostMsg_GetPluginInfo_Status* status,
-    std::string* group_identifier,
-    string16* group_name) const {
-  scoped_ptr<PluginMetadata> plugin_metadata(
-      PluginFinder::GetInstance()->GetPluginMetadata(plugin));
-  *group_name = plugin_metadata->name();
-  *group_identifier = plugin_metadata->identifier();
-
+    const PluginMetadata* plugin_metadata,
+    ChromeViewHostMsg_GetPluginInfo_Status* status) const {
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   bool uses_default_content_setting = true;
   // Check plug-in content settings. The primary URL is the top origin URL and
   // the secondary URL is the plug-in URL.
   GetPluginContentSetting(plugin, params.top_origin_url, params.url,
-                          *group_identifier, &plugin_setting,
+                          plugin_metadata->identifier(), &plugin_setting,
                           &uses_default_content_setting);
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
@@ -198,42 +196,46 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     const std::string& mime_type,
     ChromeViewHostMsg_GetPluginInfo_Status* status,
     WebPluginInfo* plugin,
-    std::string* actual_mime_type) const {
+    std::string* actual_mime_type,
+    scoped_ptr<PluginMetadata>* plugin_metadata) const {
   bool allow_wildcard = true;
   std::vector<WebPluginInfo> matching_plugins;
   std::vector<std::string> mime_types;
   PluginService::GetInstance()->GetPluginInfoArray(
       url, mime_type, allow_wildcard, &matching_plugins, &mime_types);
+  if (matching_plugins.empty()) {
+    status->value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
+    return false;
+  }
+
   content::PluginServiceFilter* filter =
       PluginService::GetInstance()->GetFilter();
-  bool found = false;
-  for (size_t i = 0; i < matching_plugins.size(); ++i) {
-    bool enabled = !filter || filter->ShouldUsePlugin(render_process_id_,
-                                                      render_view_id,
-                                                      resource_context_,
-                                                      url,
-                                                      top_origin_url,
-                                                      &matching_plugins[i]);
-    if (!found || enabled) {
-      *plugin = matching_plugins[i];
-      *actual_mime_type = mime_types[i];
-      if (enabled) {
-        // We have found an enabled plug-in. Return immediately.
-        return true;
-      }
-      // We have found a plug-in, but it's disabled. Keep looking for an
-      // enabled one.
-      found = true;
+  size_t i = 0;
+  for (; i < matching_plugins.size(); ++i) {
+    if (!filter || filter->ShouldUsePlugin(render_process_id_,
+                                           render_view_id,
+                                           resource_context_,
+                                           url,
+                                           top_origin_url,
+                                           &matching_plugins[i])) {
+      break;
     }
   }
 
-  // If we're here and have previously found a plug-in, it must have been
-  // disabled.
-  if (found)
+  // If we broke out of the loop, we have found an enabled plug-in.
+  bool enabled = i < matching_plugins.size();
+  if (!enabled) {
+    // Otherwise, we only found disabled plug-ins, so we take the first one.
+    i = 0;
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kDisabled;
-  else
-    status->value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
-  return false;
+  }
+
+  *plugin = matching_plugins[i];
+  *actual_mime_type = mime_types[i];
+  if (plugin_metadata)
+    *plugin_metadata = PluginFinder::GetInstance()->GetPluginMetadata(*plugin);
+
+  return enabled;
 }
 
 void PluginInfoMessageFilter::Context::GetPluginContentSetting(
