@@ -15,11 +15,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_egl_api_implementation.h"
-#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_osmesa_api_implementation.h"
-#include "ui/gl/gl_wgl_api_implementation.h"
 
 #if defined(ENABLE_SWIFTSHADER)
 #include "software_renderer.h"
@@ -28,7 +24,6 @@
 namespace gfx {
 
 namespace {
-
 // This is the D3DX_SDK_VERSION for the last 'separate' DirectX SDK which
 // is from June 2010. Since June 2012 Microsoft includes DirectX in the regular
 // Windows SDK and the D3DX library has been deprecated.
@@ -186,8 +181,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
 
       // These two functions take single precision float rather than double
       // precision float parameters in GLES.
-      ::gfx::g_driver_gl.fn.glClearDepthFn = MarshalClearDepthToClearDepthf;
-      ::gfx::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
+      ::gfx::g_glClearDepth = MarshalClearDepthToClearDepthf;
+      ::gfx::g_glDepthRange = MarshalDepthRangeToDepthRangef;
       break;
     }
     case kGLImplementationDesktopGL: {

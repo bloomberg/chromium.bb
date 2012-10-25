@@ -10,9 +10,7 @@
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_osmesa_api_implementation.h"
 
 namespace gfx {
 namespace {

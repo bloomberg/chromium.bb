@@ -7,8 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_gl_api_implementation.h"
-#include "ui/gl/gl_wgl_api_implementation.h"
 
 namespace gfx {
 
@@ -308,7 +306,7 @@ PbufferGLSurfaceWGL::~PbufferGLSurfaceWGL() {
 bool PbufferGLSurfaceWGL::Initialize() {
   DCHECK(!device_context_);
 
-  if (!gfx::g_driver_wgl.fn.wglCreatePbufferARBFn) {
+  if (!wglCreatePbufferARB) {
     LOG(ERROR) << "wglCreatePbufferARB not available.";
     Destroy();
     return false;

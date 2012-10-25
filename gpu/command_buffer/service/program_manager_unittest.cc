@@ -1287,7 +1287,7 @@ class ProgramManagerWithCacheTest : public testing::Test {
 
   void SetExpectationsForProgramLink(GLuint service_program_id) {
     TestHelper::SetupShader(gl_.get(), NULL, 0, NULL, 0, service_program_id);
-    if (gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary) {
+    if (gfx::g_GL_ARB_get_program_binary) {
       EXPECT_CALL(*gl_.get(),
                   ProgramParameteri(service_program_id,
                                     PROGRAM_BINARY_RETRIEVABLE_HINT,
