@@ -401,7 +401,13 @@ TEST_F(ExtendedDesktopTest, MoveWindow) {
   EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
 }
 
-TEST_F(ExtendedDesktopTest, MoveWindowToDisplay) {
+// This test fails on the "Win Aura" bot: <http://crbug.com/157817>.
+#if defined(OS_WIN)
+#define MAYBE_MoveWindowToDisplay DISABLED_MoveWindowToDisplay
+#else
+#define MAYBE_MoveWindowToDisplay MoveWindowToDisplay
+#endif
+TEST_F(ExtendedDesktopTest, MAYBE_MoveWindowToDisplay) {
   UpdateDisplay("1000x1000,1000x1000");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
