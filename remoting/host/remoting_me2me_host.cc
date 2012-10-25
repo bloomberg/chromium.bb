@@ -103,10 +103,6 @@ const char kVersionSwitchName[] = "version";
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
 
-const char kUnofficialOAuth2ClientId[] =
-    "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com";
-const char kUnofficialOAuth2ClientSecret[] = "W2ieEsG-R1gIA4MMurGrgMc_";
-
 void QuitMessageLoop(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
