@@ -624,7 +624,7 @@ void SpecialPopupRow::Layout() {
   bounds.set_height(content_bounds.height());
   gfx::Rect container_bounds = content_bounds;
   container_bounds.ClampToCenteredSize(bounds.size());
-  container_bounds.set_x(content_bounds.width() - bounds.width());
+  container_bounds.set_x(content_bounds.width() - container_bounds.width());
   button_container_->SetBoundsRect(container_bounds);
 
   bounds = content_->bounds();
