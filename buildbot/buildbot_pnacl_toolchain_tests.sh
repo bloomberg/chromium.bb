@@ -96,12 +96,13 @@ handle-error() {
 #### Support for running arm sbtc tests on this bot, since we have
 # less coverage on the main waterfall now:
 # http://code.google.com/p/nativeclient/issues/detail?id=2581
-readonly SCONS_COMMON="./scons --verbose bitcode=1"
+readonly SCONS_COMMON="./scons --verbose bitcode=1 -j${PNACL_CONCURRENCY}"
+readonly SCONS_COMMON_SLOW="./scons --verbose bitcode=1"
+
 build-sbtc-prerequisites() {
   local platform=$1
   ${SCONS_COMMON} ${SCONS_PICK_TC} platform=${platform} \
-    sel_ldr sel_universal irt_core \
-    -j ${PNACL_CONCURRENCY}
+    sel_ldr sel_universal irt_core
 }
 
 
@@ -109,8 +110,7 @@ scons-tests-pic() {
   local platform=$1
 
   echo "@@@BUILD_STEP scons-tests-pic [${platform}]@@@"
-  local extra="--mode=opt-host,nacl \
-               -j${PNACL_CONCURRENCY} -k \
+  local extra="--mode=opt-host,nacl -k \
                nacl_pic=1  pnacl_generate_pexe=0"
   ${SCONS_COMMON} ${SCONS_PICK_TC} ${extra} \
     platform=${platform} smoke_tests || handle-error
@@ -120,33 +120,46 @@ scons-tests-pic() {
 scons-tests-translator() {
   local platform=$1
 
-  echo "@@@BUILD_STEP scons-sb-translator [${platform}] [prereq]@@@"
+  echo "@@@BUILD_STEP scons-sb-trans [${platform}] [prereq]@@@"
   build-sbtc-prerequisites ${platform}
 
-  local flags="--mode=opt-host,nacl \
-               -j${PNACL_CONCURRENCY} \
-               use_sandboxed_translator=1 \
-               platform=${platform} \
-               -k"
+  local flags="--mode=opt-host,nacl use_sandboxed_translator=1 \
+               platform=${platform} -k"
   local targets="small_tests medium_tests large_tests"
 
-  echo "@@@BUILD_STEP scons-sb-translator [${platform}] [${targets}]@@@"
-  ${SCONS_COMMON} ${SCONS_PICK_TC} \
-    ${flags} ${targets} translate_in_build_step=0 \
-    do_not_run_tests=1 || handle-error
-  ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} ${targets} -j1 || handle-error
+  # ROUND 1: regular builds
+  # generate pexes with full parallelism
+  echo "@@@BUILD_STEP scons-sb-trans-pexe [${platform}] [${targets}]@@@"
+  ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} ${targets} \
+      translate_in_build_step=0 do_not_run_tests=1 || handle-error
 
-  echo "@@@BUILD_STEP scons-sb-translator [fast] [${platform}] [${targets}]@@@"
-  ${SCONS_COMMON} ${SCONS_PICK_TC} \
-    ${flags} translate_fast=1 translate_in_build_step=0 \
-    do_not_run_tests=1 ${targets} || handle-error
-  ${SCONS_COMMON} ${SCONS_PICK_TC} \
-    ${flags} translate_fast=1 -j1 ${targets} || handle-error
+  # translate pexes (one at a time)
+  # TODO(robertm): maybe speed this up for non-arm
+  echo "@@@BUILD_STEP scons-sb-trans-trans [${platform}] [${targets}]@@@"
+  ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
+      do_not_run_tests=1 || handle-error
+
+  # finally run the tests
+  echo "@@@BUILD_STEP scons-sb-trans-run [${platform}] [${targets}]@@@"
+  ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} || handle-error
+
+  # ROUND 2: builds with "fast translation"
+  flags="${flags} translate_fast=1"
+  echo "@@@BUILD_STEP scons-sb-trans-pexe [fast] [${platform}] [${targets}]@@@"
+  ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} ${targets} \
+      translate_in_build_step=0 do_not_run_tests=1 || handle-error
+
+  echo "@@@BUILD_STEP scons-sb-trans-trans [fast] [${platform}] [${targets}]@@@"
+  ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
+       do_not_run_tests=1 || handle-error
+
+  echo "@@@BUILD_STEP scons-sb-trans-run [fast] [${platform}] [${targets}]@@@"
+  ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} || handle-error
 }
 
 scons-tests-x86-64-zero-based-sandbox() {
   echo "@@@BUILD_STEP hello_world (x86-64 zero-based sandbox)@@@"
-  local flags="--mode=opt-host,nacl bitcode=1 platform=x86-64 \
+  local flags="--mode=opt-host,nacl platform=x86-64 \
                x86_64_zero_based_sandbox=1"
   ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} "run_hello_world_test"
 }
@@ -171,15 +184,14 @@ archived-frontend-test() {
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
         rev ${ARCHIVED_TOOLCHAIN_REV} BUILD IRT@@@"
   ${SCONS_COMMON} ${SCONS_PICK_TC} --mode=opt-host,nacl platform=${arch} \
-    bitcode=1 -j${PNACL_CONCURRENCY} irt_core || handle-error
+    irt_core || handle-error
 
 
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
         rev ${ARCHIVED_TOOLCHAIN_REV} BUILD@@@"
   local targets="small_tests medium_tests large_tests"
-  local flags="--mode=opt-host,nacl bitcode=1 platform=${arch} \
-               translate_in_build_step=0 -j${PNACL_CONCURRENCY} \
-               skip_trusted_tests=1"
+  local flags="--mode=opt-host,nacl platform=${arch} \
+               translate_in_build_step=0 skip_trusted_tests=1"
 
   rm -rf scons-out/nacl-${arch}*
 
