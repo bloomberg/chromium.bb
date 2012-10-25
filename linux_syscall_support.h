@@ -1586,8 +1586,8 @@ struct kernel_statfs {
         struct { long __a1; long __a6; } __s = { (long)arg1, (long) arg6 };   \
         __asm__ __volatile__("push %%ebp\n"                                   \
                              "push %%ebx\n"                                   \
-                             "movl 4(%2),%%ebp\n"                             \
-                             "movl 0(%2), %%ebx\n"                            \
+                             "leal 4(%2),%%ebp\n"                             \
+                             "movl 0(%2),%%ebx\n"                             \
                              "movl %1,%%eax\n"                                \
                              LSS_ENTRYPOINT                                   \
                              "pop  %%ebx\n"                                   \
