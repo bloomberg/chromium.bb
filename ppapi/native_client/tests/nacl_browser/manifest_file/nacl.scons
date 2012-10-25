@@ -32,7 +32,6 @@ node = env.PPAPIBrowserTester(
     url='pm_manifest_file_test.html',
     nmfs=['pm_manifest_file.nmf'],
     files=env.ExtractPublishedFiles(pm_mf_nexe_name),
-    args=['--debug'],
 #    osenv=['NACLVERBOSITY=4,pp_weak_ref=4,weak_ref=4']
     )
 
@@ -70,7 +69,6 @@ node = env.PPAPIBrowserTester(
     url='pm_pre_init_manifest_file_test.html',
     nmfs=['pm_pre_init_manifest_file.nmf'],
     files=env.ExtractPublishedFiles(pm_pi_mf_nexe_name),
-    args=['--debug'],
 #    osenv=['NACLVERBOSITY=4,pp_weak_ref=4,weak_ref=4']
     )
 env.AddNodeToTestSuite(node,
@@ -100,7 +98,6 @@ node = env.PPAPIBrowserTester(
     url='irt_manifest_file_test.html',
     nmfs=['irt_manifest_file.nmf'],
     files=env.ExtractPublishedFiles(irt_mf_nexe_name),
-    args=['--debug'],
     )
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

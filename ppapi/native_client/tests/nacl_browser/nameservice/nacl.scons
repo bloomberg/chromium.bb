@@ -31,7 +31,6 @@ node = env.PPAPIBrowserTester(
     url='pm_nameservice_test.html',
     nmf_names=['pm_nameservice_test'],
     files=env.ExtractPublishedFiles(pm_ns_nexe_name),
-    args=['--debug'],
     osenv=['NACLVERBOSITY=0:pp_weak_ref=0:weak_ref=0']
     )
 
