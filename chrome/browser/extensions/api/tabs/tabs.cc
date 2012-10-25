@@ -805,6 +805,13 @@ bool RemoveWindowFunction::RunImpl() {
   if (!GetWindowFromWindowID(this, window_id, &controller))
     return false;
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // In Windows 8 metro mode, an existing Browser instance is reused for
+  // hosting the extension tab. We should not be closing it as we don't own it.
+  if (base::win::IsMetroProcess())
+    return false;
+#endif
+
   WindowController::Reason reason;
   if (!controller->CanClose(&reason)) {
     if (reason == WindowController::REASON_NOT_EDITABLE)
