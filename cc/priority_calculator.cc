@@ -27,6 +27,10 @@ static const int visibleOnlyPriorityCutoff = 4;
 static const int notVisibleBasePriority = 1000000;
 static const int notVisibleLimitPriority = 1900000;
 
+// Arbitrarily define "nearby" to be 2000 pixels. A better estimate
+// would be percent-of-viewport or percent-of-screen.
+static const int visibleAndNearbyPriorityCutoff = notVisibleBasePriority + 2000;
+
 // Small animated layers are treated as though they are 512 pixels
 // from being visible.
 static const int smallAnimatedLayerPriority = notVisibleBasePriority + 512;
@@ -113,6 +117,12 @@ int PriorityCalculator::allowNothingCutoff()
 int PriorityCalculator::allowVisibleOnlyCutoff()
 {
     return visibleOnlyPriorityCutoff;
+}
+
+// static
+int PriorityCalculator::allowVisibleAndNearbyCutoff()
+{
+    return visibleAndNearbyPriorityCutoff;
 }
 
 // static

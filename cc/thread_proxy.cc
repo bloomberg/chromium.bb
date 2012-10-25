@@ -368,6 +368,16 @@ bool ThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int
     return true;
 }
 
+void ThreadProxy::sendManagedMemoryStats()
+{
+    DCHECK(isImplThread());
+    if (m_layerTreeHostImpl.get() && m_layerTreeHostImpl->renderer())
+        m_layerTreeHostImpl->renderer()->sendManagedMemoryStats(
+            m_layerTreeHost->contentsTextureManager()->memoryVisibleBytes(),
+            m_layerTreeHost->contentsTextureManager()->memoryVisibleAndNearbyBytes(),
+            m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
+}
+
 void ThreadProxy::setNeedsRedraw()
 {
     DCHECK(isMainThread());

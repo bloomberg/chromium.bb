@@ -25,6 +25,10 @@ PrioritizedTextureManager::PrioritizedTextureManager(size_t maxMemoryLimitBytes,
     , m_memoryAvailableBytes(0)
     , m_pool(pool)
     , m_backingsTailNotSorted(false)
+    , m_memoryVisibleBytes(0)
+    , m_memoryVisibleAndNearbyBytes(0)
+    , m_memoryVisibleLastPushedBytes(0)
+    , m_memoryVisibleAndNearbyLastPushedBytes(0)
 {
 }
 
@@ -40,6 +44,18 @@ PrioritizedTextureManager::~PrioritizedTextureManager()
     DCHECK(m_backings.empty());
 }
 
+size_t PrioritizedTextureManager::memoryVisibleBytes() const
+{
+    DCHECK(Proxy::isImplThread());
+    return m_memoryVisibleLastPushedBytes;
+}
+
+size_t PrioritizedTextureManager::memoryVisibleAndNearbyBytes() const
+{
+    DCHECK(Proxy::isImplThread());
+    return m_memoryVisibleAndNearbyLastPushedBytes;
+}
+
 void PrioritizedTextureManager::prioritizeTextures()
 {
     TRACE_EVENT0("cc", "PrioritizedTextureManager::prioritizeTextures");
@@ -52,9 +68,17 @@ void PrioritizedTextureManager::prioritizeTextures()
     TextureVector& sortedTextures = m_tempTextureVector;
     sortedTextures.clear();
 
-    // Copy all textures into a vector and sort them.
-    for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it)
-        sortedTextures.push_back(*it);
+    // Copy all textures into a vector, sort them, and collect memory requirements statistics.
+    m_memoryVisibleBytes = 0;
+    m_memoryVisibleAndNearbyBytes = 0;
+    for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
+        PrioritizedTexture* texture = (*it);
+        sortedTextures.push_back(texture);
+        if (PriorityCalculator::priorityIsHigher(texture->requestPriority(), PriorityCalculator::allowVisibleOnlyCutoff()))
+            m_memoryVisibleBytes += texture->bytes();
+        if (PriorityCalculator::priorityIsHigher(texture->requestPriority(), PriorityCalculator::allowVisibleAndNearbyCutoff()))
+            m_memoryVisibleAndNearbyBytes += texture->bytes();        
+    }
     std::sort(sortedTextures.begin(), sortedTextures.end(), compareTextures);
 
     // Compute a priority cutoff based on memory pressure
@@ -118,6 +142,10 @@ void PrioritizedTextureManager::pushTexturePrioritiesToBackings()
         (*it)->updatePriority();
     sortBackings();
     assertInvariants();
+
+    // Push memory requirements to the impl thread structure.
+    m_memoryVisibleLastPushedBytes = m_memoryVisibleBytes;
+    m_memoryVisibleAndNearbyLastPushedBytes = m_memoryVisibleAndNearbyBytes;
 }
 
 void PrioritizedTextureManager::updateBackingsInDrawingImplTree()

@@ -36,6 +36,8 @@ public:
 
     virtual void setVisible(bool) OVERRIDE;
 
+    virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE  { }
+
 protected:
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
     virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedTexture*, const gfx::Rect& framebufferRect) OVERRIDE;

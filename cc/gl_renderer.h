@@ -56,6 +56,8 @@ public:
 
     virtual void setVisible(bool) OVERRIDE;
 
+    virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE;
+
 protected:
     GLRenderer(RendererClient*, ResourceProvider*);
 

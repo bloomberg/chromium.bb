@@ -184,6 +184,11 @@ void GLRenderer::setVisible(bool visible)
     enforceMemoryPolicy();
 }
 
+void GLRenderer::sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated)
+{
+    // This message cannot reach the GPU process until WebKit changes land.
+}
+
 void GLRenderer::releaseRenderPassTextures()
 {
     m_renderPassTextures.clear();

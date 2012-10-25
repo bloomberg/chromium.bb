@@ -27,6 +27,7 @@ public:
 
     static int allowNothingCutoff();
     static int allowVisibleOnlyCutoff();
+    static int allowVisibleAndNearbyCutoff();
     static int allowEverythingCutoff();
 };
 

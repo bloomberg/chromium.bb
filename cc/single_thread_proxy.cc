@@ -286,6 +286,16 @@ bool SingleThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitByte
     return m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(limitBytes, priorityCutoff, m_layerTreeHostImpl->resourceProvider());
 }
 
+void SingleThreadProxy::sendManagedMemoryStats()
+{
+    DCHECK(Proxy::isImplThread());
+    if (m_layerTreeHostImpl.get() && m_layerTreeHostImpl->renderer())
+        m_layerTreeHostImpl->renderer()->sendManagedMemoryStats(
+            m_layerTreeHost->contentsTextureManager()->memoryVisibleBytes(),
+            m_layerTreeHost->contentsTextureManager()->memoryVisibleAndNearbyBytes(),
+            m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
+}
+
 // Called by the legacy scheduling path (e.g. where render_widget does the scheduling)
 void SingleThreadProxy::compositeImmediately()
 {

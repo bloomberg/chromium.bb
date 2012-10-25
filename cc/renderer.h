@@ -67,6 +67,8 @@ public:
 
     virtual void setVisible(bool) = 0;
 
+    virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) = 0;
+
 protected:
     explicit Renderer(RendererClient* client)
         : m_client(client)

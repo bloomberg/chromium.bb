@@ -43,6 +43,7 @@ public:
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, double wallClockTime) = 0;
     // Returns true if resources were deleted by this call.
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) = 0;
+    virtual void sendManagedMemoryStats() = 0;
 };
 
 // PinchZoomViewport models the bounds and offset of the viewport that is used during a pinch-zoom operation.

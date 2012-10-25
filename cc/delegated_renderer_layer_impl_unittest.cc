@@ -52,6 +52,7 @@ public:
     virtual void setNeedsCommitOnImplThread() OVERRIDE { }
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, double wallClockTime) OVERRIDE { }
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return true; }
+    virtual void sendManagedMemoryStats() OVERRIDE { }
 
 protected:
     scoped_ptr<GraphicsContext> createContext()

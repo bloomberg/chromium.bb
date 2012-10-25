@@ -69,6 +69,10 @@ public:
     // than this cutoff will be allowed.
     void setExternalPriorityCutoff(int priorityCutoff) { m_externalPriorityCutoff = priorityCutoff; }
 
+    // Return the amount of texture memory required at particular cutoffs.
+    size_t memoryVisibleBytes() const;
+    size_t memoryVisibleAndNearbyBytes() const;
+
     void prioritizeTextures();
     void clearPriorities();
 
@@ -173,6 +177,14 @@ private:
     BackingList m_evictedBackings;
 
     TextureVector m_tempTextureVector;
+
+    // Statistics about memory usage at priority cutoffs, computed at prioritizeTextures.
+    size_t m_memoryVisibleBytes;
+    size_t m_memoryVisibleAndNearbyBytes;
+
+    // Statistics copied at the time of pushTexturePrioritiesToBackings.
+    size_t m_memoryVisibleLastPushedBytes;
+    size_t m_memoryVisibleAndNearbyLastPushedBytes;
 
     DISALLOW_COPY_AND_ASSIGN(PrioritizedTextureManager);
 };

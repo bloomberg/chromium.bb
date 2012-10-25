@@ -642,4 +642,67 @@ TEST_F(PrioritizedTextureTest, clearUploadsToEvictedResources)
 
 }
 
+TEST_F(PrioritizedTextureTest, usageStatistics)
+{
+    const size_t maxTextures = 5;
+    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<PrioritizedTexture> textures[maxTextures];
+
+    for (size_t i = 0; i < maxTextures; ++i)
+        textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
+
+    textures[0]->setRequestPriority(PriorityCalculator::allowVisibleOnlyCutoff() - 1);
+    textures[1]->setRequestPriority(PriorityCalculator::allowVisibleOnlyCutoff());
+    textures[2]->setRequestPriority(PriorityCalculator::allowVisibleAndNearbyCutoff() - 1);
+    textures[3]->setRequestPriority(PriorityCalculator::allowVisibleAndNearbyCutoff());
+    textures[4]->setRequestPriority(PriorityCalculator::allowVisibleAndNearbyCutoff() + 1);
+
+    // Set max limit to 2 textures.
+    textureManager->setMaxMemoryLimitBytes(texturesMemorySize(2));
+    prioritizeTexturesAndBackings(textureManager.get());
+
+    // The first two textures should be available, others should not.
+    for (size_t i = 0; i < 2; ++i)
+        EXPECT_TRUE(validateTexture(textures[i], false));
+    for (size_t i = 2; i < maxTextures; ++i)
+        EXPECT_FALSE(validateTexture(textures[i], false));
+
+    // Validate the statistics.
+    {
+        DebugScopedSetImplThread implThread;
+        EXPECT_EQ(texturesMemorySize(2), textureManager->memoryUseBytes());
+        EXPECT_EQ(texturesMemorySize(1), textureManager->memoryVisibleBytes());
+        EXPECT_EQ(texturesMemorySize(3), textureManager->memoryVisibleAndNearbyBytes());
+    }
+
+    // Re-prioritize the textures, but do not push the values to backings.
+    textures[0]->setRequestPriority(PriorityCalculator::allowVisibleOnlyCutoff() - 1);
+    textures[1]->setRequestPriority(PriorityCalculator::allowVisibleOnlyCutoff() - 1);
+    textures[2]->setRequestPriority(PriorityCalculator::allowVisibleOnlyCutoff() - 1);
+    textures[3]->setRequestPriority(PriorityCalculator::allowVisibleAndNearbyCutoff() - 1);
+    textures[4]->setRequestPriority(PriorityCalculator::allowVisibleAndNearbyCutoff());
+    textureManager->prioritizeTextures();
+
+    // Verify that we still see the old values.
+    {
+        DebugScopedSetImplThread implThread;
+        EXPECT_EQ(texturesMemorySize(2), textureManager->memoryUseBytes());
+        EXPECT_EQ(texturesMemorySize(1), textureManager->memoryVisibleBytes());
+        EXPECT_EQ(texturesMemorySize(3), textureManager->memoryVisibleAndNearbyBytes());
+    }
+
+    // Push priorities to backings, and verify we see the new values.
+    {
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        textureManager->pushTexturePrioritiesToBackings();
+        EXPECT_EQ(texturesMemorySize(2), textureManager->memoryUseBytes());
+        EXPECT_EQ(texturesMemorySize(3), textureManager->memoryVisibleBytes());
+        EXPECT_EQ(texturesMemorySize(4), textureManager->memoryVisibleAndNearbyBytes());
+    }
+
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    textureManager->clearAllMemory(resourceProvider());
+}
+
+
 } // namespace

@@ -259,6 +259,7 @@ void LayerTreeHostImpl::commitComplete()
     // Recompute max scroll position; must be after layer content bounds are
     // updated.
     updateMaxScrollPosition();
+    m_client->sendManagedMemoryStats();
 }
 
 bool LayerTreeHostImpl::canDraw()
@@ -648,6 +649,7 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
         m_client->setNeedsCommitOnImplThread();
         m_client->onCanDrawStateChanged(canDraw());
     }
+    m_client->sendManagedMemoryStats();
 }
 
 void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
