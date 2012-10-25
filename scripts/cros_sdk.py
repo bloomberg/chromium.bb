@@ -8,6 +8,7 @@
 
 import errno
 import os
+import sys
 import urlparse
 
 from chromite.buildbot import constants
@@ -16,7 +17,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
 from chromite.lib import osutils
-from chromite.lib import sudo
 
 cros_build_lib.STRICT_SUDO = True
 
@@ -34,7 +34,7 @@ MAKE_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/make_chroot.sh')]
 ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
 
 # We need these tools to run. Very common tools (tar,..) are ommited.
-NEEDED_TOOLS = ('curl', 'xz')
+NEEDED_TOOLS = ('curl', 'xz', 'unshare')
 
 
 def GetSdkConfig():
@@ -117,7 +117,7 @@ def FetchRemoteTarballs(storage_dir, urls):
   if os.path.exists(tarball_dest):
     current_size = os.path.getsize(tarball_dest)
     if current_size > content_length:
-      osutils.SafeUnlink(tarball_dest, sudo=True)
+      osutils.SafeUnlink(tarball_dest)
       current_size = 0
 
   if current_size < content_length:
@@ -134,7 +134,7 @@ def FetchRemoteTarballs(storage_dir, urls):
       continue
 
     print 'Cleaning up old tarball: %s' % (filename,)
-    osutils.SafeUnlink(os.path.join(storage_dir, filename), sudo=True)
+    osutils.SafeUnlink(os.path.join(storage_dir, filename))
 
   return tarball_dest
 
@@ -164,14 +164,6 @@ def DeleteChroot(chroot_path):
     raise SystemExit('Running %r failed!' % cmd)
 
 
-def _CreateLockFile(path):
-  """Create a lockfile via sudo that is writable by current user."""
-  cros_build_lib.SudoRunCommand(['touch', path], print_cmd=False)
-  cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), path],
-                                print_cmd=False)
-  cros_build_lib.SudoRunCommand(['chmod', '644', path], print_cmd=False)
-
-
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
                 additional_args):
   """Enters an existing SDK chroot"""
@@ -193,6 +185,37 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
   if ret.returncode != 0 and additional_args:
     raise SystemExit('Running %r failed with exit code %i'
                      % (cmd, ret.returncode))
+
+
+def _SudoCommand():
+  """Get the 'sudo' command, along with all needed environment variables."""
+
+  # Pass in the ENVIRONMENT_WHITELIST variable so that scripts in the chroot
+  # know what variables to pass through.
+  cmd = ['sudo']
+  for key in constants.CHROOT_ENVIRONMENT_WHITELIST:
+    value = os.environ.get(key)
+    if value is not None:
+      cmd += ['%s=%s' % (key, value)]
+
+  # Pass in the path to the depot_tools so that users can access them from
+  # within the chroot.
+  gclient = osutils.Which('gclient')
+  if gclient is not None:
+    cmd += ['DEPOT_TOOLS=%s' % os.path.realpath(os.path.dirname(gclient))]
+
+  return cmd
+
+
+def _ReExecuteAsRootIfNeeded(argv):
+  """Re-execute cros_sdk as root.
+
+  Also unshare the mount namespace so as to ensure that processes outside
+  the chroot can't mess with our mounts.
+  """
+  if os.geteuid() != 0:
+    cmd = _SudoCommand()
+    os.execvp(cmd[0], cmd + ['--', 'unshare', '-m', '--'] + argv)
 
 
 def main(argv):
@@ -262,6 +285,8 @@ If given args those are passed to the chroot environment, and executed."""
   if cros_build_lib.IsInsideChroot():
     parser.error("This needs to be ran outside the chroot")
 
+  _ReExecuteAsRootIfNeeded([sys.argv[0]] + argv)
+
   host = os.uname()[4]
 
   if host != 'x86_64':
@@ -324,55 +349,52 @@ If given args those are passed to the chroot environment, and executed."""
   lock_path = os.path.dirname(options.chroot)
   lock_path = os.path.join(lock_path,
                            '.%s_lock' % os.path.basename(options.chroot))
-  with sudo.SudoKeepAlive(ttyless_sudo=False):
-    with cgroups.SimpleContainChildren('cros_sdk'):
-      _CreateLockFile(lock_path)
-      with locking.FileLock(lock_path, 'chroot lock') as lock:
+  with cgroups.SimpleContainChildren('cros_sdk'):
+    with locking.FileLock(lock_path, 'chroot lock') as lock:
 
-        if options.delete and os.path.exists(options.chroot):
-          lock.write_lock()
-          DeleteChroot(options.chroot)
+      if options.delete and os.path.exists(options.chroot):
+        lock.write_lock()
+        DeleteChroot(options.chroot)
 
-        sdk_cache = os.path.join(options.cache_dir, 'sdks')
-        distfiles_cache = os.path.join(options.cache_dir, 'distfiles')
-        osutils.SafeMakedirs(options.cache_dir)
+      sdk_cache = os.path.join(options.cache_dir, 'sdks')
+      distfiles_cache = os.path.join(options.cache_dir, 'distfiles')
+      osutils.SafeMakedirs(options.cache_dir)
 
-        for target in (sdk_cache, distfiles_cache):
-          src = os.path.join(SRC_ROOT, os.path.basename(target))
-          if not os.path.exists(src):
-            osutils.SafeMakedirs(target)
-            continue
-          lock.write_lock(
-              "Upgrade to %r needed but chroot is locked; please exit "
-              "all instances so this upgrade can finish." % src)
-          if not os.path.exists(src):
-            # Note that while waiting for the write lock, src may've vanished;
-            # it's a rare race during the upgrade process that's a byproduct
-            # of us avoiding taking a write lock to do the src check.  If we
-            # took a write lock for that check, it would effectively limit
-            # all cros_sdk for a chroot to a single instance.
-            osutils.SafeMakedirs(target)
-          elif not os.path.exists(target):
-            # Upgrade occurred, but a reversion, or something whacky
-            # occurred writing to the old location.  Wipe and continue.
-            cros_build_lib.SudoRunCommand(
-                ['mv', '--', src, target], print_cmd=False)
-          else:
-            # Upgrade occurred once already, but either a reversion or
-            # some before/after separate cros_sdk usage is at play.
-            # Wipe and continue.
-            osutils.RmDir(src, sudo=True)
+      for target in (sdk_cache, distfiles_cache):
+        src = os.path.join(SRC_ROOT, os.path.basename(target))
+        if not os.path.exists(src):
+          osutils.SafeMakedirs(target)
+          continue
+        lock.write_lock(
+            "Upgrade to %r needed but chroot is locked; please exit "
+            "all instances so this upgrade can finish." % src)
+        if not os.path.exists(src):
+          # Note that while waiting for the write lock, src may've vanished;
+          # it's a rare race during the upgrade process that's a byproduct
+          # of us avoiding taking a write lock to do the src check.  If we
+          # took a write lock for that check, it would effectively limit
+          # all cros_sdk for a chroot to a single instance.
+          osutils.SafeMakedirs(target)
+        elif not os.path.exists(target):
+          # Upgrade occurred, but a reversion, or something whacky
+          # occurred writing to the old location.  Wipe and continue.
+          os.rename(src, target)
+        else:
+          # Upgrade occurred once already, but either a reversion or
+          # some before/after separate cros_sdk usage is at play.
+          # Wipe and continue.
+          osutils.RmDir(src)
 
-        if options.download:
-          lock.write_lock()
-          sdk_tarball = FetchRemoteTarballs(sdk_cache, urls)
+      if options.download:
+        lock.write_lock()
+        sdk_tarball = FetchRemoteTarballs(sdk_cache, urls)
 
-        if options.create:
-          lock.write_lock()
-          CreateChroot(options.chroot, sdk_tarball, options.cache_dir,
-                       nousepkg=(options.bootstrap or options.nousepkg))
+      if options.create:
+        lock.write_lock()
+        CreateChroot(options.chroot, sdk_tarball, options.cache_dir,
+                     nousepkg=(options.bootstrap or options.nousepkg))
 
-        if options.enter:
-          lock.read_lock()
-          EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
-                      options.chrome_root_mount, chroot_command)
+      if options.enter:
+        lock.read_lock()
+        EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
+                    options.chrome_root_mount, chroot_command)

@@ -125,7 +125,12 @@ def SudoRunCommand(cmd, user='root', **kwds):
   """
   sudo_cmd = ['sudo']
 
-  if kwds.pop("strict", True) and STRICT_SUDO:
+  strict = kwds.pop('strict', True)
+
+  if user == 'root' and os.geteuid() == 0:
+    return RunCommand(cmd, **kwds)
+
+  if strict and STRICT_SUDO:
     if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
       raise RunCommandError(
           'We were invoked in a strict sudo non - interactive context, but no '

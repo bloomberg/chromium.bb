@@ -196,5 +196,29 @@ DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
 # locations and standardize.
 KNOWN_ACL_FILES = {'slave': os.path.expanduser('~/slave_archive_acl')}
 
-# Environment variables that should be exposed to all children process.
+# Environment variables that should be exposed to all children processes
+# invoked via cros_build_lib.RunCommand.
 ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR)
+
+# List of variables to proxy into the chroot from the host, and to
+# have sudo export if existent. Anytime this list is modified, a new
+# chroot_version_hooks.d upgrade script that symlinks to 45_rewrite_sudoers.d
+# should be created.
+CHROOT_ENVIRONMENT_WHITELIST = (
+  'CHROMEOS_OFFICIAL',
+  'CHROMEOS_VERSION_AUSERVER',
+  'CHROMEOS_VERSION_DEVSERVER',
+  'CHROMEOS_VERSION_TRACK',
+  'GCC_GITHASH',
+  'GIT_PROXY_COMMAND',
+  'GIT_SSH',
+  'RSYNC_PROXY',
+  'SSH_AGENT_PID',
+  'SSH_AUTH_SOCK',
+  'USE',
+  'all_proxy',
+  'ftp_proxy',
+  'http_proxy',
+  'https_proxy',
+  'no_proxy',
+)
