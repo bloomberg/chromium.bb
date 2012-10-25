@@ -34,7 +34,6 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
-using content::ChildProcessSecurityPolicyImpl;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemMountPointProvider;
 using fileapi::FileSystemOperation;

@@ -10,17 +10,17 @@
 
 #include "content/public/browser/browser_message_filter.h"
 
-namespace content {
-
 // This class sends and receives trace messages on the browser process.
 // See also: trace_controller.h
 // See also: child_trace_message_filter.h
-class TraceMessageFilter : public BrowserMessageFilter {
+class TraceMessageFilter : public content::BrowserMessageFilter {
  public:
   TraceMessageFilter();
 
-  // BrowserMessageFilter overrides.
+  // content::BrowserMessageFilter override.
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+
+  // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
@@ -55,6 +55,5 @@ class TraceMessageFilter : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(TraceMessageFilter);
 };
 
-}  // namespace content
-
 #endif  // CONTENT_BROWSER_TRACE_MESSAGE_FILTER_H_
+

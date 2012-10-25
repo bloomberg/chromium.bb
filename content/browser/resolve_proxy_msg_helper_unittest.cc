@@ -13,7 +13,8 @@
 #include "net/proxy/proxy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+using content::BrowserThread;
+using content::BrowserThreadImpl;
 
 // This ProxyConfigService always returns "http://pac" as the PAC url to use.
 class MockProxyConfigService : public net::ProxyConfigService {
@@ -234,5 +235,3 @@ TEST_F(ResolveProxyMsgHelperTest, CancelPendingRequests) {
   // It should also be the case that msg1, msg2, msg3 were deleted by the
   // cancellation. (Else will show up as a leak in Valgrind).
 }
-
-}  // namespace content

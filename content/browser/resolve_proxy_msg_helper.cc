@@ -12,8 +12,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-namespace content {
-
 ResolveProxyMsgHelper::ResolveProxyMsgHelper(
     net::URLRequestContextGetter* getter)
     : context_getter_(getter),
@@ -99,5 +97,3 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   if (result != net::ERR_IO_PENDING)
     OnResolveProxyCompleted(result);
 }
-
-}  // namespace content

@@ -27,6 +27,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class ChildProcessSecurityPolicyImpl;
 class SkBitmap;
 class ViewMsg_Navigate;
 struct AccessibilityHostMsg_NotificationParams;
@@ -49,7 +50,6 @@ struct SelectedFileInfo;
 
 namespace content {
 
-class ChildProcessSecurityPolicyImpl;
 #if defined(OS_ANDROID)
 class MediaPlayerManagerAndroid;
 #endif

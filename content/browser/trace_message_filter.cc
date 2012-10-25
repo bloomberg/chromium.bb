@@ -7,12 +7,14 @@
 #include "content/browser/trace_controller_impl.h"
 #include "content/common/child_process_messages.h"
 
-namespace content {
+using content::BrowserMessageFilter;
+using content::BrowserThread;
+using content::TraceControllerImpl;
 
-TraceMessageFilter::TraceMessageFilter()
-    : has_child_(false),
-      is_awaiting_end_ack_(false),
-      is_awaiting_buffer_percent_full_ack_(false) {
+TraceMessageFilter::TraceMessageFilter() :
+    has_child_(false),
+    is_awaiting_end_ack_(false),
+    is_awaiting_buffer_percent_full_ack_(false) {
 }
 
 void TraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
@@ -124,4 +126,3 @@ void TraceMessageFilter::OnTraceBufferPercentFullReply(float percent_full) {
   }
 }
 
-}  // namespace content

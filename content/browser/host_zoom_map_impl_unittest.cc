@@ -10,16 +10,14 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
-
 class HostZoomMapTest : public testing::Test {
  public:
-  HostZoomMapTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
+  HostZoomMapTest() : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
  protected:
   MessageLoop message_loop_;
-  TestBrowserThread ui_thread_;
+  content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(HostZoomMapTest, GetSetZoomLevel) {
@@ -31,5 +29,3 @@ TEST_F(HostZoomMapTest, GetSetZoomLevel) {
   EXPECT_DOUBLE_EQ(host_zoom_map.GetZoomLevel("normal.com"), 0);
   EXPECT_DOUBLE_EQ(host_zoom_map.GetZoomLevel("zoomed.com"), zoomed);
 }
-
-}  // namespace content

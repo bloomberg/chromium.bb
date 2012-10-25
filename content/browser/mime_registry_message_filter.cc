@@ -7,7 +7,7 @@
 #include "content/common/mime_registry_messages.h"
 #include "net/base/mime_util.h"
 
-namespace content {
+using content::BrowserThread;
 
 MimeRegistryMessageFilter::MimeRegistryMessageFilter() {
 }
@@ -51,5 +51,3 @@ void MimeRegistryMessageFilter::OnGetPreferredExtensionForMimeType(
     const std::string& mime_type, FilePath::StringType* extension) {
   net::GetPreferredExtensionForMimeType(mime_type, extension);
 }
-
-}  // namespace content

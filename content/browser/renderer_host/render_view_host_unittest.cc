@@ -17,7 +17,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/webdropdata.h"
 
-using content::ChildProcessSecurityPolicyImpl;
 using content::RenderViewHostImplTestHarness;
 using content::TestWebContents;
 

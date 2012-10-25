@@ -8,11 +8,12 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
+class NotificationServiceImpl;
+
 namespace content {
 
 class ContentClient;
 class MockRenderProcessHostFactory;
-class NotificationServiceImpl;
 class TestContentBrowserClient;
 class TestRenderViewHostFactory;
 

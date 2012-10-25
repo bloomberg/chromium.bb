@@ -14,9 +14,9 @@
 #include "content/public/browser/trace_controller.h"
 
 class CommandLine;
+class TraceMessageFilter;
 
 namespace content {
-class TraceMessageFilter;
 
 class TraceControllerImpl : public TraceController {
  public:
@@ -56,7 +56,7 @@ class TraceControllerImpl : public TraceController {
   typedef std::set<scoped_refptr<TraceMessageFilter> > FilterMap;
 
   friend struct base::DefaultLazyInstanceTraits<TraceControllerImpl>;
-  friend class TraceMessageFilter;
+  friend class ::TraceMessageFilter;
 
   TraceControllerImpl();
   virtual ~TraceControllerImpl();

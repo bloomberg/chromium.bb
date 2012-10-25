@@ -6,8 +6,6 @@
 
 #include "base/memory/singleton.h"
 
-namespace content {
-
 bool CrossSiteRequestManager::HasPendingCrossSiteRequest(int renderer_id,
                                                          int render_view_id) {
   base::AutoLock lock(lock_);
@@ -38,5 +36,3 @@ CrossSiteRequestManager::~CrossSiteRequestManager() {}
 CrossSiteRequestManager* CrossSiteRequestManager::GetInstance() {
   return Singleton<CrossSiteRequestManager>::get();
 }
-
-}  // namespace content

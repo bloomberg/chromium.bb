@@ -23,7 +23,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 
-using content::ChildProcessSecurityPolicyImpl;
 using content::RenderViewHostImpl;
 using content::WebContents;
 using content::WebUIController;

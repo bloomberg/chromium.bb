@@ -19,7 +19,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using content::BrowserContext;
-using content::ChildProcessSecurityPolicyImpl;
 using content::RenderProcessHost;
 using content::RenderProcessHostImpl;
 using content::SiteInstance;
