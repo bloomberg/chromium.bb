@@ -205,17 +205,6 @@ class TabStripModel : public content::NotificationObserver {
   // user to confirm closure).
   bool CloseTabContentsAt(int index, uint32 close_types);
 
-  // Replaces the entire state of a the tab at index by switching in a
-  // different NavigationController. This is used through the recently
-  // closed tabs list, which needs to replace a tab's current state
-  // and history with another set of contents and history.
-  //
-  // The old NavigationController is deallocated and this object takes
-  // ownership of the passed in controller.
-  // XXXPINK This API is weird and wrong. Remove it or change it or rename it?
-  void ReplaceNavigationControllerAt(int index,
-                                     TabContents* contents);
-
   // Replaces the tab contents at |index| with |new_contents|. The
   // TabContents that was at |index| is returned and ownership returns
   // to the caller.

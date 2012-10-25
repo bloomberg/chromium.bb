@@ -147,9 +147,14 @@ void ReplaceRestoredTab(
       &entries);
   DCHECK_EQ(0u, entries.size());
 
-  browser->tab_strip_model()->ReplaceNavigationControllerAt(
-      browser->active_index(),
-      tab_contents);
+  // ReplaceTabContentsAt won't animate in the restoration, so do it manually.
+  int insertion_index = browser->active_index();
+  browser->tab_strip_model()->InsertTabContentsAt(
+      insertion_index + 1,
+      tab_contents,
+      TabStripModel::ADD_ACTIVE | TabStripModel::ADD_INHERIT_GROUP);
+  browser->tab_strip_model()->CloseTabContentsAt(
+      insertion_index, TabStripModel::CLOSE_NONE);
 }
 
 }  // namespace chrome
