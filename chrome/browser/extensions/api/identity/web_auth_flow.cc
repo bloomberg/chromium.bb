@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
@@ -29,8 +30,10 @@
 
 using content::LoadNotificationDetails;
 using content::NavigationController;
+using content::RenderViewHost;
 using content::ResourceRedirectDetails;
 using content::WebContents;
+using content::WebContentsObserver;
 
 namespace {
 
@@ -61,9 +64,16 @@ WebAuthFlow::WebAuthFlow(
 }
 
 WebAuthFlow::~WebAuthFlow() {
-  if (tab_contents_) {
+  // Set the delegate to NULL to avoid reporting results twice.
+  delegate_ = NULL;
+
+  // Stop listening to notifications first since some of the code
+  // below may generate notifications.
+  registrar_.RemoveAll();
+
+  if (tab_contents_)
     tab_contents_->web_contents()->Close();
-  }
+
   if (contents_) {
     contents_->Stop();
     // Tell message loop to delete contents_ instead of deleting it
@@ -75,6 +85,7 @@ WebAuthFlow::~WebAuthFlow() {
 
 void WebAuthFlow::Start() {
   contents_ = CreateWebContents();
+  WebContentsObserver::Observe(contents_);
 
   NavigationController* controller = &(contents_->GetController());
 
@@ -82,19 +93,7 @@ void WebAuthFlow::Start() {
   // redirect URLs.
   registrar_.Add(
       this,
-      content::NOTIFICATION_LOAD_START,
-      content::Source<NavigationController>(controller));
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(controller));
-  registrar_.Add(
-      this,
       content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      content::Source<WebContents>(contents_));
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<WebContents>(contents_));
 
   controller->LoadURL(
@@ -119,8 +118,9 @@ void WebAuthFlow::ShowAuthFlowPopup() {
   params.disposition = CURRENT_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
-  // Observe method will be called before URLs are loaded. That is where
-  // we check for redirect to the right URL.
+  // Observe method and WebContentsObserver::* methods will be called
+  // for varous navigation events. That is where we check for redirect
+  // to the right URL.
 }
 
 bool WebAuthFlow::BeforeUrlLoaded(const GURL& url) {
@@ -150,20 +150,6 @@ void WebAuthFlow::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_LOAD_START: {
-      LoadNotificationDetails* load_details =
-          content::Details<LoadNotificationDetails>(details).ptr();
-      if (load_details != NULL)
-        BeforeUrlLoaded(load_details->url);
-    }
-    break;
-    case content::NOTIFICATION_LOAD_STOP: {
-      LoadNotificationDetails* load_details =
-          content::Details<LoadNotificationDetails>(details).ptr();
-      if (load_details != NULL)
-        AfterUrlLoaded();
-    }
-    break;
     case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
       ResourceRedirectDetails* redirect_details =
           content::Details<ResourceRedirectDetails>(details).ptr();
@@ -171,18 +157,28 @@ void WebAuthFlow::Observe(int type,
         BeforeUrlLoaded(redirect_details->new_url);
     }
     break;
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
-      // User closed the auth flow window; report a failure.
-      contents_ = NULL;
-      tab_contents_ = NULL;
-      ReportResult(GURL());
-    }
-    break;
     default:
       NOTREACHED() << "Got a notification that we did not register for: "
                    << type;
       break;
   }
+}
+
+void WebAuthFlow::ProvisionalChangeToMainFrameUrl(
+    const GURL& url,
+    const GURL& opener_url,
+    RenderViewHost* render_view_host) {
+  BeforeUrlLoaded(url);
+}
+
+void WebAuthFlow::DidStopLoading(RenderViewHost* render_view_host) {
+  AfterUrlLoaded();
+}
+
+void WebAuthFlow::WebContentsDestroyed(WebContents* web_contents) {
+  contents_ = NULL;
+  tab_contents_ = NULL;
+  ReportResult(GURL());
 }
 
 void WebAuthFlow::ReportResult(const GURL& url) {

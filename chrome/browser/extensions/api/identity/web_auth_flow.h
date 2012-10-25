@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
@@ -36,7 +37,8 @@ namespace extensions {
 // The provider can show any UI to the user if needed before redirecting
 // to an appropriate URL.
 // TODO(munjal): Add link to the design doc here.
-class WebAuthFlow : public content::NotificationObserver {
+class WebAuthFlow : public content::NotificationObserver,
+                    public content::WebContentsObserver {
  public:
   enum Mode {
     INTERACTIVE,  // Show UI to the user if necessary.
@@ -83,6 +85,16 @@ class WebAuthFlow : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // WebContentsObserver implementation.
+  virtual void ProvisionalChangeToMainFrameUrl(
+      const GURL& url,
+      const GURL& opener_url,
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
   bool BeforeUrlLoaded(const GURL& url);
   void AfterUrlLoaded();
