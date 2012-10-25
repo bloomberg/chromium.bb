@@ -34,7 +34,9 @@ class GpuWatchdogThread;
 // commands to the GPU.
 class GpuChildThread : public ChildThread {
  public:
-  explicit GpuChildThread(bool dead_on_arrival, const GPUInfo& gpu_info);
+  explicit GpuChildThread(GpuWatchdogThread* gpu_watchdog_thread,
+                          bool dead_on_arrival,
+                          const GPUInfo& gpu_info);
 
   // For single-process mode.
   explicit GpuChildThread(const std::string& channel_id);

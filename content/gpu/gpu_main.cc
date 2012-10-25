@@ -19,11 +19,13 @@
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_process.h"
+#include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_switching_option.h"
 #include "content/public/common/main_function_params.h"
 #include "crypto/hmac.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -45,6 +47,8 @@
 #if defined(OS_LINUX)
 #include "content/public/common/sandbox_init.h"
 #endif
+
+const int kGpuTimeout = 10000;
 
 namespace content {
 namespace {
@@ -95,6 +99,46 @@ int GpuMain(const MainFunctionParams& parameters) {
   // we defer tearing down the GPU process until receiving the
   // GpuMsg_Initialize message from the browser.
   bool dead_on_arrival = false;
+
+  MessageLoop::Type message_loop_type = MessageLoop::TYPE_IO;
+#if defined(OS_WIN)
+  // Unless we're running on desktop GL, we don't need a UI message
+  // loop, so avoid its use to work around apparent problems with some
+  // third-party software.
+  if (command_line.HasSwitch(switches::kUseGL) &&
+      command_line.GetSwitchValueASCII(switches::kUseGL) ==
+          gfx::kGLImplementationDesktopName) {
+      message_loop_type = MessageLoop::TYPE_UI;
+  }
+#elif defined(OS_LINUX)
+  message_loop_type = MessageLoop::TYPE_DEFAULT;
+#endif
+
+  MessageLoop main_message_loop(message_loop_type);
+  base::PlatformThread::SetName("CrGpuMain");
+
+  // In addition to disabling the watchdog if the command line switch is
+  // present, disable the watchdog on valgrind because the code is expected
+  // to run slowly in that case.
+  bool enable_watchdog =
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuWatchdog) &&
+      !RunningOnValgrind();
+
+  // Disable the watchdog in debug builds because they tend to only be run by
+  // developers who will not appreciate the watchdog killing the GPU process.
+#ifndef NDEBUG
+  enable_watchdog = false;
+#endif
+
+  scoped_refptr<GpuWatchdogThread> watchdog_thread;
+
+  // Start the GPU watchdog only after anything that is expected to be time
+  // consuming has completed, otherwise the process is liable to be aborted.
+  if (enable_watchdog) {
+    watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
+    watchdog_thread->Start();
+  }
 
   GPUInfo gpu_info;
   // Get vendor_id, device_id, driver_version from browser process through
@@ -147,6 +191,15 @@ int GpuMain(const MainFunctionParams& parameters) {
     dead_on_arrival = true;
   }
 
+  // OSMesa is expected to run very slowly, so disable the watchdog in that
+  // case.
+  if (enable_watchdog &&
+      gfx::GetGLImplementation() == gfx::kGLImplementationOSMesaGL) {
+    watchdog_thread->Stop();
+
+    watchdog_thread = NULL;
+  }
+
   {
     const bool should_initialize_gl_context = !initialized_gl_context &&
                                               !dead_on_arrival;
@@ -186,26 +239,10 @@ int GpuMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  MessageLoop::Type message_loop_type = MessageLoop::TYPE_IO;
-#if defined(OS_WIN)
-  // Unless we're running on desktop GL, we don't need a UI message
-  // loop, so avoid its use to work around apparent problems with some
-  // third-party software.
-  if (command_line.HasSwitch(switches::kUseGL) &&
-      command_line.GetSwitchValueASCII(switches::kUseGL) ==
-          gfx::kGLImplementationDesktopName) {
-      message_loop_type = MessageLoop::TYPE_UI;
-  }
-#elif defined(OS_LINUX)
-  message_loop_type = MessageLoop::TYPE_DEFAULT;
-#endif
-
-  MessageLoop main_message_loop(message_loop_type);
-  base::PlatformThread::SetName("CrGpuMain");
-
   GpuProcess gpu_process;
 
-  GpuChildThread* child_thread = new GpuChildThread(dead_on_arrival, gpu_info);
+  GpuChildThread* child_thread = new GpuChildThread(watchdog_thread.get(),
+                                                    dead_on_arrival, gpu_info);
 
   child_thread->Init(start_time);
 
