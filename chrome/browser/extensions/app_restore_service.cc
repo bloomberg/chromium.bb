@@ -58,17 +58,16 @@ void AppRestoreService::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       const Extension* extension = host->extension();
-      if (extension && extension->is_platform_app()) {
+      if (extension && extension->is_platform_app())
         RecordAppStart(extension->id());
-      }
       break;
     }
 
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-      if (host->extension()->is_platform_app()) {
-        RecordAppStop(host->extension()->id());
-      }
+      const Extension* extension = host->extension();
+      if (extension && extension->is_platform_app())
+        RecordAppStop(extension->id());
       break;
     }
 
