@@ -128,6 +128,7 @@ const char kSessionManagerHandleLockScreenShown[] = "HandleLockScreenShown";
 const char kSessionManagerUnlockScreen[] = "UnlockScreen";
 const char kSessionManagerHandleLockScreenDismissed[] =
     "HandleLockScreenDismissed";
+const char kSessionManagerHandleLivenessConfirmed[] = "HandleLivenessConfirmed";
 // Signals
 const char kSessionManagerSessionStateChanged[] = "SessionStateChanged";
 const char kScreenIsLockedSignal[] = "ScreenIsLocked";
@@ -151,13 +152,14 @@ const char kChromiumInterface[] = "org.chromium.Chromium";
 // ScreenLock signals.
 const char kLockScreenSignal[] = "LockScreen";
 const char kUnlockScreenSignal[] = "UnlockScreen";
-// Text-to-speech service signals
+// Text-to-speech service signals.
 const char kTTSReadySignal[] = "TTSReady";
 const char kTTSFailedSignal[] = "TTSFailed";
-// Ownership API signals
+// Ownership API signals.
 const char kOwnerKeySetSignal[] = "SetOwnerKeyComplete";
 const char kPropertyChangeCompleteSignal[] = "PropertyChangeComplete";
-const char kWhitelistChangeCompleteSignal[] = "WhitelistChangeComplete";
+// Liveness detection signals.
+const char kLivenessRequestedSignal[] = "LivenessRequested";
 }  // namespace chromium
 
 namespace power_manager {
