@@ -318,6 +318,8 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
                                             audio_device_));
     if (factory.get())
       pc_factory_ = factory.release();
+    else
+      audio_device_ = NULL;
   }
   return pc_factory_.get() != NULL;
 }
