@@ -1608,3 +1608,8 @@
    fun:BrowserWithTestWindowTest::AddTab
    fun:::ChromeToMobileServiceTest_RequirementsToEnable_Test::TestBody
 }
+{
+   bug_157885
+   Heapcheck:Leak
+   fun:dom_storage::DomStorageContext::CreateSessionNamespace
+}
