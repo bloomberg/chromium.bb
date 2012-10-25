@@ -387,11 +387,13 @@ AudioPlayer.prototype.syncHeight_ = function() {
       Math.min(this.urls_.length, 3) * AudioPlayer.TRACK_HEIGHT;
   this.trackList_.style.height = expandedListHeight + 'px';
 
+  var targetClientHeight = AudioPlayer.CONTROLS_HEIGHT +
+      (this.isCompact_() ?
+      AudioPlayer.TRACK_HEIGHT :
+      AudioPlayer.HEADER_HEIGHT + expandedListHeight);
+
   chrome.mediaPlayerPrivate.setWindowHeight(
-    (this.isCompact_() ?
-        AudioPlayer.TRACK_HEIGHT :
-        AudioPlayer.HEADER_HEIGHT + expandedListHeight) +
-    AudioPlayer.CONTROLS_HEIGHT);
+      targetClientHeight - this.container_.clientHeight);
 };
 
 

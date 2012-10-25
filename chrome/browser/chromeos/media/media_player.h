@@ -22,8 +22,8 @@ class MediaPlayer {
 
   virtual ~MediaPlayer();
 
-  // Sets the mediaplayer window height.
-  void SetWindowHeight(int height);
+  // Adjusts the mediaplayer window height.
+  void AdjustWindowHeight(int height_diff);
 
   // Forces the mediaplayer window to be closed.
   void CloseWindow();

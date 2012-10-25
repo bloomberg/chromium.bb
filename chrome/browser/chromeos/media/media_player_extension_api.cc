@@ -62,11 +62,13 @@ bool GetPlaylistMediaplayerFunction::RunImpl() {
   return true;
 }
 
+// TODO(kaznacheev): rename the API method to adjustWindowHeight here and in
+// media_player_private.json.
 bool SetWindowHeightMediaplayerFunction::RunImpl() {
-  int height;
-  if (!args_->GetInteger(0, &height))
+  int height_diff;
+  if (!args_->GetInteger(0, &height_diff))
     return false;
-  MediaPlayer::GetInstance()->SetWindowHeight(height);
+  MediaPlayer::GetInstance()->AdjustWindowHeight(height_diff);
   return true;
 }
 
