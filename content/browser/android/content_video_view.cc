@@ -134,7 +134,6 @@ void ContentVideoView::ExitFullscreen(
 void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
                                   jobject surface) {
   manager_->SetVideoSurface(surface);
-  ReleaseSurface(surface);
 }
 
 void ContentVideoView::UpdateMediaMetadata(JNIEnv* env, jobject obj) {

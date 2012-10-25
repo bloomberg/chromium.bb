@@ -50,32 +50,39 @@ bool MediaPlayerManagerAndroid::OnMessageReceived(const IPC::Message& msg) {
 
 void MediaPlayerManagerAndroid::FullscreenPlayerPlay() {
   MediaPlayerBridge* player = GetFullscreenPlayer();
-  player->Start();
-  Send(new MediaPlayerMsg_DidMediaPlayerPlay(
-      routing_id(), fullscreen_player_id_));
+  if (player) {
+    player->Start();
+    Send(new MediaPlayerMsg_DidMediaPlayerPlay(
+        routing_id(), fullscreen_player_id_));
+  }
 }
 
 void MediaPlayerManagerAndroid::FullscreenPlayerPause() {
   MediaPlayerBridge* player = GetFullscreenPlayer();
-  player->Pause();
-  Send(new MediaPlayerMsg_DidMediaPlayerPause(
-      routing_id(), fullscreen_player_id_));
+  if (player) {
+    player->Pause();
+    Send(new MediaPlayerMsg_DidMediaPlayerPause(
+        routing_id(), fullscreen_player_id_));
+  }
 }
 
 void MediaPlayerManagerAndroid::FullscreenPlayerSeek(int msec) {
   MediaPlayerBridge* player = GetFullscreenPlayer();
-  player->SeekTo(base::TimeDelta::FromMilliseconds(msec));
+  if (player)
+    player->SeekTo(base::TimeDelta::FromMilliseconds(msec));
 }
 
 void MediaPlayerManagerAndroid::ExitFullscreen(bool release_media_player) {
   Send(new MediaPlayerMsg_DidExitFullscreen(
       routing_id(), fullscreen_player_id_));
   MediaPlayerBridge* player = GetFullscreenPlayer();
+  fullscreen_player_id_ = -1;
+  if (!player)
+    return;
   if (release_media_player)
     player->Release();
   else
     player->SetVideoSurface(NULL);
-  fullscreen_player_id_ = -1;
 }
 
 void MediaPlayerManagerAndroid::SetVideoSurface(jobject surface) {
