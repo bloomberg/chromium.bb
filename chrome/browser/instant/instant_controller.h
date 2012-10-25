@@ -16,7 +16,6 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
-#include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/instant/instant_model.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/common/page_transition_types.h"
@@ -26,12 +25,15 @@
 
 struct AutocompleteMatch;
 class AutocompleteProvider;
-class InstantControllerDelegate;
 class InstantLoader;
 class PrefService;
 class Profile;
 class TabContents;
 class TemplateURL;
+
+namespace chrome {
+class BrowserInstantController;
+}
 
 // InstantController maintains a WebContents that is intended to give a
 // preview of search results. InstantController is owned by Browser via
@@ -39,17 +41,11 @@ class TemplateURL;
 //
 // At any time the WebContents maintained by InstantController may be hidden
 // from view by way of Hide(), which may result in a change in the model's
-// display state and subsequent change in model observers. Similarly the preview
-// may be committed at any time by invoking CommitCurrentPreview(), which
-// results in CommitInstant() being invoked on the delegate.
-class InstantController : public InstantLoaderDelegate {
+// display state and subsequent change in model observers. Similarly, the
+// preview may be committed at any time by invoking CommitCurrentPreview(),
+// which results in CommitInstant() being invoked on the browser.
+class InstantController {
  public:
-  // Amount of time to wait before starting the animation for suggested text.
-  static const int kInlineAutocompletePauseTimeMS = 1000;
-
-  // Duration of the suggested text animation in which the colors change.
-  static const int kInlineAutocompleteFadeInTimeMS = 300;
-
   // InstantController may operate in one of these modes:
   //   EXTENDED: The default search engine is preloaded when the omnibox gets
   //       focus. Queries are issued as the user types. Predicted queries are
@@ -58,17 +54,10 @@ class InstantController : public InstantLoaderDelegate {
   //       within the search results preview.
   //   INSTANT: Same as EXTENDED, without URL previews. Search suggestions are
   //       rendered by the omnibox drop down, and not by the preview page.
-  //   SUGGEST: Same as INSTANT, without visible previews.
-  //   HIDDEN: Same as SUGGEST, without the inline autocompletion.
-  //   SILENT: Same as HIDDEN, without issuing queries as the user types. The
-  //       query is sent only after the user presses <Enter>.
   //   DISABLED: Instant is disabled.
   enum Mode {
     EXTENDED,
     INSTANT,
-    SUGGEST,
-    HIDDEN,
-    SILENT,
     DISABLED,
   };
 
@@ -78,17 +67,15 @@ class InstantController : public InstantLoaderDelegate {
   // |profile| pointer is not cached, so the underlying profile object need not
   // live beyond this call. ***NOTE***: May return NULL, which means that
   // Instant is disabled in this profile.
-  static InstantController* CreateInstant(Profile* profile,
-                                          InstantControllerDelegate* delegate);
+  static InstantController* CreateInstant(
+      Profile* profile,
+      chrome::BrowserInstantController* browser);
 
   // Returns true if Instant is enabled and supports the extended API.
   static bool IsExtendedAPIEnabled(Profile* profile);
 
   // Returns true if Instant is enabled in a visible, preview-showing mode.
   static bool IsInstantEnabled(Profile* profile);
-
-  // Returns true if Instant will provide autocomplete suggestions.
-  static bool IsSuggestEnabled(Profile* profile);
 
   // Registers Instant related preferences.
   static void RegisterUserPrefs(PrefService* prefs);
@@ -130,7 +117,7 @@ class InstantController : public InstantLoaderDelegate {
   // we've processed the last Update() and we know the loader supports Instant.
   bool IsCurrent() const;
 
-  // Commits the preview. Calls CommitInstant() on the delegate.
+  // Commits the preview. Calls CommitInstant() on the browser.
   void CommitCurrentPreview(InstantCommitType type);
 
   // The autocomplete edit that was initiating the current Instant session has
@@ -154,32 +141,45 @@ class InstantController : public InstantLoaderDelegate {
     return last_transition_type_;
   }
 
-  // InstantLoaderDelegate:
-  virtual void SetSuggestions(
-      InstantLoader* loader,
-      const std::vector<InstantSuggestion>& suggestions) OVERRIDE;
-  virtual void CommitInstantLoader(InstantLoader* loader) OVERRIDE;
-  virtual void ShowInstantPreview(InstantLoader* loader,
-                                  InstantShownReason reason,
-                                  int height,
-                                  InstantSizeUnits units) OVERRIDE;
-  virtual void InstantLoaderPreviewLoaded(InstantLoader* loader) OVERRIDE;
-  virtual void InstantSupportDetermined(InstantLoader* loader,
-                                        bool supports_instant) OVERRIDE;
-  virtual void SwappedTabContents(InstantLoader* loader) OVERRIDE;
-  virtual void InstantLoaderContentsFocused(InstantLoader* loader) OVERRIDE;
+  const InstantModel* model() const { return &model_; }
+
+  // Invoked by InstantLoader when it has suggested text.
+  void SetSuggestions(InstantLoader* loader,
+                      const std::vector<InstantSuggestion>& suggestions);
+
+  // Invoked by InstantLoader to commit the preview.
+  void CommitInstantLoader(InstantLoader* loader);
+
+  // Invoked by InstantLoader to request that the preview be shown.
+  void ShowInstantPreview(InstantLoader* loader,
+                          InstantShownReason reason,
+                          int height,
+                          InstantSizeUnits units);
+
+  // Invoked by InstantLoader to notify that the Instant URL completed loading.
+  void InstantLoaderPreviewLoaded(InstantLoader* loader);
+
+  // Invoked by InstantLoader when it has determined whether or not the page
+  // supports the Instant API.
+  void InstantSupportDetermined(InstantLoader* loader, bool supports_instant);
+
+  // Invoked by InstantLoader when it has swapped a different TabContents into
+  // the preview, usually because a prerendered page was navigated to.
+  void SwappedTabContents(InstantLoader* loader);
+
+  // Invoked by InstantLoader when the preview gains focus, usually due to the
+  // user clicking on it.
+  void InstantLoaderContentsFocused(InstantLoader* loader);
 
 #if defined(UNIT_TEST)
   // Accessors used only in tests.
   InstantLoader* loader() const { return loader_.get(); }
 #endif
 
-  const InstantModel* model() const { return &model_; }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
 
-  InstantController(InstantControllerDelegate* delegate, Mode mode);
+  InstantController(chrome::BrowserInstantController* browser, Mode mode);
 
   // Creates a new loader if necessary (for example, if the |instant_url| has
   // changed since the last time we created the loader).
@@ -201,7 +201,7 @@ class InstantController : public InstantLoaderDelegate {
   // Destroys the |loader_| and its preview contents.
   void DeleteLoader();
 
-  // Counterpart to Hide(). Asks the |delegate_| to display the preview with
+  // Counterpart to Hide(). Asks the |browser_| to display the preview with
   // the given |height|.
   void Show(int height, InstantSizeUnits units);
 
@@ -220,7 +220,7 @@ class InstantController : public InstantLoaderDelegate {
   // Update() was for a URL and not a search query, or the user switched tabs.
   bool IsOutOfDate() const;
 
-  InstantControllerDelegate* const delegate_;
+  chrome::BrowserInstantController* const browser_;
 
   InstantModel model_;
 
@@ -289,7 +289,7 @@ class InstantController : public InstantLoaderDelegate {
   // up in autocomplete history matches.
   GURL url_for_history_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantController);
+  DISALLOW_COPY_AND_ASSIGN(InstantController);
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_

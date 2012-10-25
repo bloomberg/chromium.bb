@@ -966,9 +966,8 @@ gfx::NativeView OmniboxViewWin::GetRelativeWindowForPopup() const {
   return GetRelativeWindowForNativeView(GetNativeView());
 }
 
-void OmniboxViewWin::SetInstantSuggestion(const string16& suggestion,
-                                          bool animate_to_complete) {
-  parent_view_->SetInstantSuggestion(suggestion, animate_to_complete);
+void OmniboxViewWin::SetInstantSuggestion(const string16& suggestion) {
+  parent_view_->SetInstantSuggestion(suggestion);
 }
 
 int OmniboxViewWin::TextWidth() const {

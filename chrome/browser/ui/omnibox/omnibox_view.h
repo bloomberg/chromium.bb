@@ -184,10 +184,8 @@ class OmniboxView {
   // the top-most window is the relative window.
   virtual gfx::NativeView GetRelativeWindowForPopup() const = 0;
 
-  // Shows the instant suggestion text. If |animate_to_complete| is true the
-  // view should start an animation that when done commits the text.
-  virtual void SetInstantSuggestion(const string16& input,
-                                    bool animate_to_complete) = 0;
+  // Shows the instant suggestion text.
+  virtual void SetInstantSuggestion(const string16& input) = 0;
 
   // Returns the current instant suggestion text.
   virtual string16 GetInstantSuggestion() const = 0;

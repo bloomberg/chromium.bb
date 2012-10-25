@@ -63,7 +63,7 @@ class InstantModel {
   // Observers.
   mutable ObserverList<InstantModelObserver> observers_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantModel);
+  DISALLOW_COPY_AND_ASSIGN(InstantModel);
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_MODEL_H_

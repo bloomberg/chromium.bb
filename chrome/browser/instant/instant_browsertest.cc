@@ -54,7 +54,7 @@ class InstantTestModelObserver : public InstantModelObserver {
   const InstantModel* const model_;
   base::RunLoop run_loop_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantTestModelObserver);
+  DISALLOW_COPY_AND_ASSIGN(InstantTestModelObserver);
 };
 
 class InstantTest : public InProcessBrowserTest {
@@ -429,51 +429,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNow) {
   // Get what's showing in the omnibox, and what's highlighted.
   string16 text = omnibox()->GetText();
   size_t start = 0, end = 0;
-  omnibox()->GetSelectionBounds(&start, &end);
-  if (start > end)
-    std::swap(start, end);
-
-  EXPECT_EQ(ASCIIToUTF16("query suggestion"), text);
-  EXPECT_EQ(ASCIIToUTF16(" suggestion"), text.substr(start, end - start));
-  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
-}
-
-#if defined(OS_MACOSX)
-// The "delayed" completion behavior is not implemented on the Mac. Strange.
-#define MAYBE_SuggestionIsCompletedDelayed DISABLED_SuggestionIsCompletedDelayed
-#else
-#define MAYBE_SuggestionIsCompletedDelayed SuggestionIsCompletedDelayed
-#endif
-// Test that the INSTANT_COMPLETE_DELAYED behavior works as expected.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SuggestionIsCompletedDelayed) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  FocusOmniboxAndWaitForInstantSupport();
-
-  // Tell the JS to request the given behavior.
-  EXPECT_TRUE(ExecuteScript("behavior = 'delayed'"));
-
-  // Type a query, causing the hardcoded "query suggestion" to be returned.
-  SetOmniboxTextAndWaitForInstantToShow("query");
-
-  content::WindowedNotificationObserver instant_updated_observer(
-      chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
-      content::NotificationService::AllSources());
-
-  // Get what's showing in the omnibox, and what's highlighted.
-  string16 text = omnibox()->GetText();
-  size_t start = 0, end = 0;
-  omnibox()->GetSelectionBounds(&start, &end);
-  if (start > end)
-    std::swap(start, end);
-
-  EXPECT_EQ(ASCIIToUTF16("query"), text);
-  EXPECT_EQ(ASCIIToUTF16(""), text.substr(start, end - start));
-  EXPECT_EQ(ASCIIToUTF16(" suggestion"), omnibox()->GetInstantSuggestion());
-
-  // Wait for the animation to complete, which causes the omnibox to update.
-  instant_updated_observer.Wait();
-
-  text = omnibox()->GetText();
   omnibox()->GetSelectionBounds(&start, &end);
   if (start > end)
     std::swap(start, end);

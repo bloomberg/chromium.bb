@@ -13,9 +13,6 @@ enum InstantCompleteBehavior {
   // Autocomplete the suggestion immediately.
   INSTANT_COMPLETE_NOW,
 
-  // Autocomplete the suggestion after a delay.
-  INSTANT_COMPLETE_DELAYED,
-
   // Do not autocomplete the suggestion. The suggestion may still be displayed
   // in the omnibox, but not made a part of the omnibox text by default (e.g.,
   // by displaying the suggestion as non-highlighted, non-selected gray text).

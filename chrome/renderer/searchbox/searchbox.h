@@ -84,7 +84,7 @@ class SearchBox : public content::RenderViewObserver,
   bool is_focused_;
   bool active_tab_is_ntp_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBox);
+  DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };
 
 #endif  // CHROME_RENDERER_SEARCHBOX_SEARCHBOX_H_

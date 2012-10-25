@@ -11,7 +11,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 
@@ -220,8 +218,6 @@ IN_PROC_BROWSER_TEST_F(SearchViewControllerTest,
                        MAYBE(NTPToInstantSuggestions)) {
   AVOID_TEST_ON_BRANDED_CHROME();
 
-  PrefService* service = browser()->profile()->GetPrefs();
-  service->SetBoolean(prefs::kInstantEnabled, true);
   EXPECT_TRUE(InstantController::IsInstantEnabled(browser()->profile()));
 
   // Initial state.

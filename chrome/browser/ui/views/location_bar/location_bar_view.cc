@@ -47,7 +47,6 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #include "chrome/browser/ui/views/location_bar/web_intents_button_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
@@ -616,21 +615,22 @@ gfx::Point LocationBarView::GetLocationEntryOrigin() const {
   return origin;
 }
 
-void LocationBarView::SetInstantSuggestion(const string16& text,
-                                           bool animate_to_complete) {
+void LocationBarView::SetInstantSuggestion(const string16& text) {
   // Don't show the suggested text if inline autocomplete is prevented.
   if (!text.empty()) {
     if (!suggested_text_view_) {
-      suggested_text_view_ = new SuggestedTextView(
-          location_entry_->model(), instant_extended_api_enabled_);
+      suggested_text_view_ = new views::Label();
+      suggested_text_view_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      suggested_text_view_->SetAutoColorReadabilityEnabled(false);
+      suggested_text_view_->SetEnabledColor(LocationBarView::GetColor(
+          instant_extended_api_enabled_, ToolbarModel::NONE,
+          LocationBarView::DEEMPHASIZED_TEXT));
       suggested_text_view_->SetText(text);
       suggested_text_view_->SetFont(location_entry_->GetFont());
       AddChildView(suggested_text_view_);
     } else if (suggested_text_view_->text() != text) {
       suggested_text_view_->SetText(text);
     }
-    if (animate_to_complete && !location_entry_->IsImeComposing())
-      suggested_text_view_->StartAnimation();
   } else if (suggested_text_view_) {
     delete suggested_text_view_;
     suggested_text_view_ = NULL;
@@ -1155,8 +1155,6 @@ void LocationBarView::OnChanged() {
 }
 
 void LocationBarView::OnSelectionBoundsChanged() {
-  if (suggested_text_view_)
-    suggested_text_view_->StopAnimation();
 }
 
 void LocationBarView::OnInputInProgress(bool in_progress) {

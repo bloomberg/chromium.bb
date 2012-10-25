@@ -691,10 +691,9 @@ gfx::NativeView OmniboxViewViews::GetRelativeWindowForPopup() const {
   return GetWidget()->GetTopLevelWidget()->GetNativeView();
 }
 
-void OmniboxViewViews::SetInstantSuggestion(const string16& input,
-                                            bool animate_to_complete) {
+void OmniboxViewViews::SetInstantSuggestion(const string16& input) {
 #if defined(OS_WIN) || defined(USE_AURA)
-  location_bar_view_->SetInstantSuggestion(input, animate_to_complete);
+  location_bar_view_->SetInstantSuggestion(input);
 #endif
 }
 

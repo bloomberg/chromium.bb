@@ -700,7 +700,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     extras->GetList("google:suggesttype", &types);
 
     // Only accept relevance suggestions if Instant is disabled.
-    if (!is_keyword && !InstantController::IsSuggestEnabled(profile_)) {
+    if (!is_keyword && !InstantController::IsInstantEnabled(profile_)) {
       // Discard this list if its size does not match that of the suggestions.
       if (extras->GetList("google:suggestrelevance", &relevances) &&
           relevances->GetSize() != results->GetSize())
@@ -1258,5 +1258,5 @@ void SearchProvider::UpdateDone() {
   // pending, and we're not waiting on instant.
   done_ = (!timer_.IsRunning() && (suggest_results_pending_ == 0) &&
            (instant_finalized_ ||
-            !InstantController::IsSuggestEnabled(profile_)));
+            !InstantController::IsInstantEnabled(profile_)));
 }

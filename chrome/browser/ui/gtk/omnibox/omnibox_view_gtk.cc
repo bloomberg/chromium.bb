@@ -40,7 +40,6 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "third_party/undoview/undo_view.h"
-#include "ui/base/animation/multi_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_compat.h"
@@ -404,14 +403,6 @@ void OmniboxViewGtk::Init() {
 
   AdjustVerticalAlignmentOfInstantView();
 
-  ui::MultiAnimation::Parts parts;
-  parts.push_back(ui::MultiAnimation::Part(
-      InstantController::kInlineAutocompletePauseTimeMS, ui::Tween::ZERO));
-  parts.push_back(ui::MultiAnimation::Part(
-      InstantController::kInlineAutocompleteFadeInTimeMS, ui::Tween::EASE_IN));
-  instant_animation_.reset(new ui::MultiAnimation(parts));
-  instant_animation_->set_continuous(false);
-
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
@@ -712,24 +703,14 @@ gfx::NativeView OmniboxViewGtk::GetRelativeWindowForPopup() const {
   return toplevel;
 }
 
-void OmniboxViewGtk::SetInstantSuggestion(const string16& suggestion,
-                                          bool animate_to_complete) {
+void OmniboxViewGtk::SetInstantSuggestion(const string16& suggestion) {
   std::string suggestion_utf8 = UTF16ToUTF8(suggestion);
 
   gtk_label_set_text(GTK_LABEL(instant_view_), suggestion_utf8.c_str());
 
-  StopAnimation();
-
   if (suggestion.empty()) {
     gtk_widget_hide(instant_view_);
     return;
-  }
-  bool animate = animate_to_complete;
-  if (supports_pre_edit_)
-    animate = animate && pre_edit_.empty();
-  if (animate) {
-    instant_animation_->set_delegate(this);
-    instant_animation_->Start();
   }
 
   gtk_widget_show(instant_view_);
@@ -799,18 +780,6 @@ void OmniboxViewGtk::Observe(int type,
   SetBaseColor();
 }
 
-void OmniboxViewGtk::AnimationEnded(const ui::Animation* animation) {
-  model()->CommitSuggestedText(false);
-}
-
-void OmniboxViewGtk::AnimationProgressed(const ui::Animation* animation) {
-  UpdateInstantViewColors();
-}
-
-void OmniboxViewGtk::AnimationCanceled(const ui::Animation* animation) {
-  UpdateInstantViewColors();
-}
-
 void OmniboxViewGtk::SetBaseColor() {
   DCHECK(text_view_);
 
@@ -875,50 +844,15 @@ void OmniboxViewGtk::SetBaseColor() {
 }
 
 void OmniboxViewGtk::UpdateInstantViewColors() {
-  SkColor selection_text, selection_bg;
-  GdkColor faded_text, normal_bg;
-
-  bool use_gtk = theme_service_->UsingNativeTheme();
-  if (use_gtk) {
+  GdkColor faded_text;
+  if (theme_service_->UsingNativeTheme()) {
     GtkStyle* style = gtk_rc_get_style(instant_view_);
-
     faded_text = gtk_util::AverageColors(
         style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
-    normal_bg = style->base[GTK_STATE_NORMAL];
-
-    selection_text = gfx::GdkColorToSkColor(style->text[GTK_STATE_SELECTED]);
-    selection_bg = gfx::GdkColorToSkColor(style->base[GTK_STATE_SELECTED]);
   } else {
     gdk_color_parse(kTextBaseColor, &faded_text);
-
-    normal_bg = LocationBarViewGtk::kBackgroundColor;
-    selection_text =
-        theme_service_->get_active_selection_fg_color();
-    selection_bg =
-        theme_service_->get_active_selection_bg_color();
   }
-
-  double alpha = instant_animation_->is_animating() ?
-      instant_animation_->GetCurrentValue() : 0.0;
-  GdkColor text = gfx::SkColorToGdkColor(color_utils::AlphaBlend(
-      selection_text,
-      gfx::GdkColorToSkColor(faded_text),
-      alpha * 0xff));
-  GdkColor bg = gfx::SkColorToGdkColor(color_utils::AlphaBlend(
-      selection_bg,
-      gfx::GdkColorToSkColor(normal_bg),
-      alpha * 0xff));
-
-  if (alpha > 0.0) {
-    gtk_label_select_region(GTK_LABEL(instant_view_), 0, -1);
-    // ACTIVE is the state for text that is selected, but not focused.
-    gtk_widget_modify_text(instant_view_, GTK_STATE_ACTIVE, &text);
-    gtk_widget_modify_base(instant_view_, GTK_STATE_ACTIVE, &bg);
-  } else {
-    // When the text is unselected, fg is used for text color, the state
-    // is NORMAL, and the background is transparent.
-    gtk_widget_modify_fg(instant_view_, GTK_STATE_NORMAL, &text);
-  }
+  gtk_widget_modify_fg(instant_view_, GTK_STATE_NORMAL, &faded_text);
 }
 
 void OmniboxViewGtk::HandleBeginUserAction(GtkTextBuffer* sender) {
@@ -1353,8 +1287,6 @@ void OmniboxViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
       mark != gtk_text_buffer_get_selection_bound(text_buffer_)) {
     return;
   }
-
-  StopAnimation();
 
   // If we are here, that means the user may be changing the selection
   selection_suggested_ = false;
@@ -1941,13 +1873,6 @@ bool OmniboxViewGtk::IsCaretAtEnd() const {
   const CharRange selection = GetSelection();
   return selection.cp_min == selection.cp_max &&
       selection.cp_min == GetOmniboxTextLength();
-}
-
-void OmniboxViewGtk::StopAnimation() {
-  // Clear the animation delegate so we don't get an AnimationEnded() callback.
-  instant_animation_->set_delegate(NULL);
-  instant_animation_->Stop();
-  UpdateInstantViewColors();
 }
 
 void OmniboxViewGtk::SavePrimarySelection(const std::string& selected_text) {

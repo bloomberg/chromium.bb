@@ -50,7 +50,7 @@ class InstantUnloadHandler::WebContentsDelegateImpl
   // it at this index.
   const int index_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(WebContentsDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDelegateImpl);
 };
 
 InstantUnloadHandler::InstantUnloadHandler(Browser* browser)

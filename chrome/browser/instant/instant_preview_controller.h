@@ -36,7 +36,7 @@ class InstantPreviewController : public InstantModelObserver,
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantPreviewController);
+  DISALLOW_COPY_AND_ASSIGN(InstantPreviewController);
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_PREVIEW_CONTROLLER_H_

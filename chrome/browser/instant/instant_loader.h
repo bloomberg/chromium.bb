@@ -18,7 +18,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 struct InstantAutocompleteResult;
-class InstantLoaderDelegate;
+class InstantController;
 class TabContents;
 
 namespace content {
@@ -32,10 +32,10 @@ class Rect;
 }
 
 // InstantLoader is created with an "Instant URL". It loads the URL and tells
-// its delegate (usually InstantController) of all interesting events. For
-// example, it determines if the page actually supports the Instant API
-// (http://dev.chromium.org/searchbox) and forwards messages (such as queries
-// and autocomplete suggestions) between the page and the delegate.
+// the InstantController of all interesting events. For example, it determines
+// if the page supports the Instant API (http://dev.chromium.org/searchbox) and
+// forwards messages (such as queries and autocomplete suggestions) between the
+// page and the controller.
 class InstantLoader : public content::NotificationObserver {
  public:
   // Returns the Instant loader for |web_contents| if it's used for Instant.
@@ -46,7 +46,7 @@ class InstantLoader : public content::NotificationObserver {
   // potentially replace. |instant_url| is typically the instant_url field of
   // the default search engine's TemplateURL, with the "{searchTerms}" parameter
   // replaced with an empty string.
-  InstantLoader(InstantLoaderDelegate* delegate,
+  InstantLoader(InstantController* controller,
                 const std::string& instant_url,
                 const TabContents* tab_contents);
   virtual ~InstantLoader();
@@ -89,7 +89,7 @@ class InstantLoader : public content::NotificationObserver {
 
   // Releases the preview TabContents passing ownership to the caller. This
   // should be called when the preview is committed. Notifies the page but not
-  // the delegate. |text| is the final omnibox text being committed. NOTE: The
+  // the controller. |text| is the final omnibox text being committed. NOTE: The
   // caller should destroy this loader object right after this method, since
   // none of the other methods will work once the preview has been released.
   TabContents* ReleasePreviewContents(InstantCommitType type,
@@ -131,7 +131,7 @@ class InstantLoader : public content::NotificationObserver {
   void ReplacePreviewContents(content::WebContents* old_contents,
                               content::WebContents* new_contents);
 
-  InstantLoaderDelegate* const loader_delegate_;
+  InstantController* const controller_;
 
   // See comments on the getter above.
   scoped_ptr<TabContents> preview_contents_;
@@ -152,7 +152,7 @@ class InstantLoader : public content::NotificationObserver {
   // See comments on the getter above.
   history::HistoryAddPageArgs last_navigation_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantLoader);
+  DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_

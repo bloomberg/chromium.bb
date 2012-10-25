@@ -5,7 +5,7 @@
 #include "chrome/browser/instant/instant_loader.h"
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/instant/instant_loader_delegate.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -36,7 +36,7 @@ class InstantLoaderUserData : public base::SupportsUserData::Data {
 
  private:
   InstantLoader* loader_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantLoaderUserData);
+  DISALLOW_COPY_AND_ASSIGN(InstantLoaderUserData);
 };
 
 }
@@ -108,7 +108,7 @@ class InstantLoader::WebContentsDelegateImpl
   // True if the mouse or a touch pointer is down from an activate.
   bool is_pointer_down_from_activate_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(WebContentsDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDelegateImpl);
 };
 
 InstantLoader::WebContentsDelegateImpl::WebContentsDelegateImpl(
@@ -148,7 +148,7 @@ void InstantLoader::WebContentsDelegateImpl::LostCapture() {
 
 void InstantLoader::WebContentsDelegateImpl::WebContentsFocused(
     content::WebContents* contents) {
-  loader_->loader_delegate_->InstantLoaderContentsFocused(loader_);
+  loader_->controller_->InstantLoaderContentsFocused(loader_);
 }
 
 bool InstantLoader::WebContentsDelegateImpl::CanDownload(
@@ -197,7 +197,7 @@ void InstantLoader::WebContentsDelegateImpl::DidFinishLoad(
   if (is_main_frame) {
     if (!loader_->supports_instant_)
       Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
-    loader_->loader_delegate_->InstantLoaderPreviewLoaded(loader_);
+    loader_->controller_->InstantLoaderPreviewLoaded(loader_);
   }
 }
 
@@ -224,7 +224,7 @@ void InstantLoader::WebContentsDelegateImpl::OnSetSuggestions(
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID()) {
     MaybeSetAndNotifyInstantSupportDetermined(true);
-    loader_->loader_delegate_->SetSuggestions(loader_, suggestions);
+    loader_->controller_->SetSuggestions(loader_, suggestions);
   }
 }
 
@@ -250,8 +250,7 @@ void InstantLoader::WebContentsDelegateImpl::OnShowInstantPreview(
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID()) {
     MaybeSetAndNotifyInstantSupportDetermined(true);
-    loader_->loader_delegate_->ShowInstantPreview(loader_,
-                                                  reason, height, units);
+    loader_->controller_->ShowInstantPreview(loader_, reason, height, units);
   }
 }
 
@@ -259,7 +258,7 @@ void InstantLoader::WebContentsDelegateImpl
     ::CommitFromPointerReleaseIfNecessary() {
   if (is_pointer_down_from_activate_) {
     is_pointer_down_from_activate_ = false;
-    loader_->loader_delegate_->CommitInstantLoader(loader_);
+    loader_->controller_->CommitInstantLoader(loader_);
   }
 }
 
@@ -278,8 +277,7 @@ void InstantLoader::WebContentsDelegateImpl
   }
 
   loader_->supports_instant_ = supports_instant;
-  loader_->loader_delegate_->InstantSupportDetermined(loader_,
-                                                      supports_instant);
+  loader_->controller_->InstantSupportDetermined(loader_, supports_instant);
 }
 
 // InstantLoader ---------------------------------------------------------------
@@ -292,10 +290,10 @@ InstantLoader* InstantLoader::FromWebContents(
   return data ? data->loader() : NULL;
 }
 
-InstantLoader::InstantLoader(InstantLoaderDelegate* delegate,
+InstantLoader::InstantLoader(InstantController* controller,
                              const std::string& instant_url,
                              const TabContents* tab_contents)
-    : loader_delegate_(delegate),
+    : controller_(controller),
       preview_contents_(
           TabContents::Factory::CreateTabContents(
               content::WebContents::CreateWithSessionStorage(
@@ -475,5 +473,5 @@ void InstantLoader::ReplacePreviewContents(content::WebContents* old_contents,
   ignore_result(preview_contents_.release());
   preview_contents_.reset(TabContents::FromWebContents(new_contents));
   SetupPreviewContents();
-  loader_delegate_->SwappedTabContents(this);
+  controller_->SwappedTabContents(this);
 }

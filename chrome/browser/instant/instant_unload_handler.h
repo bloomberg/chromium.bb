@@ -43,7 +43,7 @@ class InstantUnloadHandler {
 
   ScopedVector<WebContentsDelegateImpl> delegates_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InstantUnloadHandler);
+  DISALLOW_COPY_AND_ASSIGN(InstantUnloadHandler);
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_UNLOAD_HANDLER_H_

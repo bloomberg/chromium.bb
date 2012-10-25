@@ -58,8 +58,7 @@ class TestingOmniboxView : public OmniboxView {
   virtual gfx::NativeView GetRelativeWindowForPopup() const OVERRIDE {
     return NULL;
   }
-  virtual void SetInstantSuggestion(const string16& input,
-                                    bool animate_to_complete) OVERRIDE {}
+  virtual void SetInstantSuggestion(const string16& input) OVERRIDE {}
   virtual string16 GetInstantSuggestion() const OVERRIDE { return string16(); }
   virtual int TextWidth() const OVERRIDE { return 0; }
   virtual bool IsImeComposing() const OVERRIDE { return false; }

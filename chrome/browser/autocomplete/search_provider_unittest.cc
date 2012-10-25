@@ -211,7 +211,7 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
   QueryForInput(text, string16(), false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
   ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
-  EXPECT_NE(InstantController::IsSuggestEnabled(&profile_), provider_->done());
+  EXPECT_NE(InstantController::IsInstantEnabled(&profile_), provider_->done());
   if (!wyt_match)
     return;
   ASSERT_GE(provider_->matches().size(), 1u);

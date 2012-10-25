@@ -59,9 +59,6 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// BrowserInstantController, InstantControllerDelegate implementation:
-
 void BrowserInstantController::CommitInstant(TabContents* preview,
                                              bool in_new_tab) {
   if (in_new_tab) {

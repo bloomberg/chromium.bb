@@ -229,7 +229,7 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> Show(const v8::Arguments& args);
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtensionWrapper);
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
 
 SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
@@ -449,8 +449,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
         behavior = INSTANT_COMPLETE_NOW;
       } else if (complete_value->Equals(v8::String::New("never"))) {
         behavior = INSTANT_COMPLETE_NEVER;
-      } else if (complete_value->Equals(v8::String::New("delayed"))) {
-        behavior = INSTANT_COMPLETE_DELAYED;
       } else if (complete_value->Equals(v8::String::New("replace"))) {
         behavior = INSTANT_COMPLETE_REPLACE;
       } else {

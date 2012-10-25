@@ -195,25 +195,18 @@ void OmniboxEditModel::SetInstantSuggestion(
     const InstantSuggestion& suggestion) {
   switch (suggestion.behavior) {
     case INSTANT_COMPLETE_NOW:
-      view_->SetInstantSuggestion(string16(), false);
+      view_->SetInstantSuggestion(string16());
       if (!suggestion.text.empty())
         FinalizeInstantQuery(view_->GetText(), suggestion, false);
       break;
 
-    case INSTANT_COMPLETE_DELAYED:
-      DCHECK_EQ(INSTANT_SUGGESTION_SEARCH, suggestion.type);
-      // Starts out as gray text (i.e., INSTANT_COMPLETE_NEVER) and animates to
-      // completed blue text by way of CommitSuggestedText().
-      view_->SetInstantSuggestion(suggestion.text, true);
-      break;
-
     case INSTANT_COMPLETE_NEVER:
       DCHECK_EQ(INSTANT_SUGGESTION_SEARCH, suggestion.type);
-      view_->SetInstantSuggestion(suggestion.text, false);
+      view_->SetInstantSuggestion(suggestion.text);
       break;
 
     case INSTANT_COMPLETE_REPLACE:
-      view_->SetInstantSuggestion(string16(), false);
+      view_->SetInstantSuggestion(string16());
       has_temporary_text_ = true;
       is_temporary_text_set_by_instant_ = true;
       view_->SetWindowTextAndCaretPos(suggestion.text, suggestion.text.size(),
@@ -230,7 +223,7 @@ bool OmniboxEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
   if (suggestion.empty())
     return false;
 
-  // Assume delayed commits are always search suggestions.
+  // Assume that the gray text we are committing is a search suggestion.
   FinalizeInstantQuery(view_->GetText(),
                        InstantSuggestion(suggestion,
                                          INSTANT_COMPLETE_NOW,
@@ -292,7 +285,7 @@ void OmniboxEditModel::OnChanged() {
     }
 
     // Hide any suggestions we might be showing.
-    view_->SetInstantSuggestion(string16(), false);
+    view_->SetInstantSuggestion(string16());
 
     // No need to wait any longer for instant.
     FinalizeInstantQuery(string16(), InstantSuggestion(), false);

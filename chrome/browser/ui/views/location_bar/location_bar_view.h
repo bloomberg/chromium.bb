@@ -46,7 +46,6 @@ class PageActionImageView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
-class SuggestedTextView;
 class TabContents;
 class TemplateURLService;
 class WebIntentsButtonView;
@@ -60,6 +59,7 @@ class SearchModel;
 
 namespace views {
 class BubbleDelegateView;
+class Label;
 class Widget;
 }
 
@@ -214,8 +214,7 @@ class LocationBarView : public LocationBar,
   gfx::Point GetLocationEntryOrigin() const;
 
   // Invoked from OmniboxViewWin to show the instant suggestion.
-  void SetInstantSuggestion(const string16& text,
-                            bool animate_to_complete);
+  void SetInstantSuggestion(const string16& text);
 
   // Returns the current instant suggestion text.
   string16 GetInstantSuggestion() const;
@@ -515,7 +514,7 @@ class LocationBarView : public LocationBar,
 
   // View responsible for showing suggested text. This is NULL when there is no
   // suggested text.
-  SuggestedTextView* suggested_text_view_;
+  views::Label* suggested_text_view_;
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView* keyword_hint_view_;

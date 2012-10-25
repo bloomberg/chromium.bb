@@ -524,7 +524,7 @@ void OmniboxViewMac::OnStartingIME() {
   // Reset the suggest text just before starting an IME composition session,
   // otherwise the IME composition may be interrupted when the suggest text
   // gets reset by the IME composition change.
-  SetInstantSuggestion(string16(), false);
+  SetInstantSuggestion(string16());
 }
 
 bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(
@@ -624,8 +624,7 @@ gfx::NativeView OmniboxViewMac::GetRelativeWindowForPopup() const {
   return NULL;
 }
 
-void OmniboxViewMac::SetInstantSuggestion(const string16& suggest_text,
-                                          bool animate_to_complete) {
+void OmniboxViewMac::SetInstantSuggestion(const string16& suggest_text) {
   NSString* text = GetNonSuggestTextSubstring();
   bool needs_update = (suggest_text_length_ > 0);
 
@@ -691,7 +690,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
     // Reset the suggest text for any change other than key right or tab.
     // TODO(rohitrao): This is here to prevent complications when editing text.
     // See if this can be removed.
-    SetInstantSuggestion(string16(), false);
+    SetInstantSuggestion(string16());
   }
 
   if (cmd == @selector(deleteForward:))
