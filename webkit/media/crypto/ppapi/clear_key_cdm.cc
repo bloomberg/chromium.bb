@@ -17,7 +17,16 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "media/base/media.h"
+#include "webkit/media/crypto/ppapi/ffmpeg_cdm_audio_decoder.h"
 #include "webkit/media/crypto/ppapi/ffmpeg_cdm_video_decoder.h"
+
+// Include FFmpeg avformat.h for av_register_all().
+extern "C" {
+// Temporarily disable possible loss of data warning.
+MSVC_PUSH_DISABLE_WARNING(4244);
+#include <libavformat/avformat.h>
+MSVC_POP_WARNING();
+}  // extern "C"
 
 // TODO(tomfinegan): When COMPONENT_BUILD is not defined an AtExitManager must
 // exist before the call to InitializeFFmpegLibraries(). This should no longer
@@ -34,6 +43,11 @@ static bool InitializeFFmpegLibraries() {
   FilePath file_path;
   CHECK(PathService::Get(base::DIR_EXE, &file_path));
   CHECK(media::InitializeMediaLibrary(file_path));
+
+  // TODO(tomfinegan): Add and implement cdm::InitializeCdmModule(),
+  // and call |av_register_all()| from there.
+  av_register_all();
+
   return true;
 }
 
@@ -269,15 +283,23 @@ cdm::Status ClearKeyCdm::Decrypt(
 
 cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig& audio_decoder_config) {
-#if !defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  NOTIMPLEMENTED();
-  return cdm::kSessionError;
-#else
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  if (!audio_decoder_)
+    audio_decoder_.reset(new webkit_media::FFmpegCdmAudioDecoder(allocator_));
+
+  if (!audio_decoder_->Initialize(audio_decoder_config))
+    return cdm::kSessionError;
+
+  return cdm::kSuccess;
+#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   channel_count_ = audio_decoder_config.channel_count;
   bits_per_channel_ = audio_decoder_config.bits_per_channel;
   samples_per_second_ = audio_decoder_config.samples_per_second;
   return cdm::kSuccess;
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
+#else
+  NOTIMPLEMENTED();
+  return cdm::kSessionError;
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
@@ -300,31 +322,45 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
 }
 
 void ClearKeyCdm::ResetDecoder(cdm::StreamType decoder_type) {
-#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+  DVLOG(1) << "ResetDecoder()";
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  switch (decoder_type) {
+    case cdm::kStreamTypeVideo:
+      video_decoder_->Reset();
+      break;
+    case cdm::kStreamTypeAudio:
+      audio_decoder_->Reset();
+      break;
+    default:
+      NOTREACHED() << "ResetDecoder(): invalid cdm::StreamType";
+  }
+#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   if (decoder_type == cdm::kStreamTypeAudio) {
     last_timestamp_ = media::kNoTimestamp();
     last_duration_ = media::kInfiniteDuration();
   }
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
-
-#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  if (decoder_type == cdm::kStreamTypeVideo)
-    video_decoder_->Reset();
-#endif
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
 void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
-#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+  DVLOG(1) << "DeinitializeDecoder()";
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  switch (decoder_type) {
+    case cdm::kStreamTypeVideo:
+      video_decoder_->Deinitialize();
+      break;
+    case cdm::kStreamTypeAudio:
+      audio_decoder_->Deinitialize();
+      break;
+    default:
+      NOTREACHED() << "DeinitializeDecoder(): invalid cdm::StreamType";
+  }
+#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   if (decoder_type == cdm::kStreamTypeAudio) {
     last_timestamp_ = media::kNoTimestamp();
     last_duration_ = media::kInfiniteDuration();
   }
-#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
-
-#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  if (decoder_type == cdm::kStreamTypeVideo)
-    video_decoder_->Deinitialize();
-#endif
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
@@ -370,10 +406,14 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
   if (status != cdm::kSuccess)
     return status;
 
-#if !defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  NOTIMPLEMENTED();
-  return cdm::kDecodeError;
-#else
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  DCHECK(status == cdm::kSuccess);
+  DCHECK(buffer);
+  return audio_decoder_->DecodeBuffer(buffer.get()->GetData(),
+                                      buffer->GetDataSize(),
+                                      encrypted_buffer.timestamp,
+                                      audio_frames);
+#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   if (buffer->IsEndOfStream()) {
     // Upon the first EOS frame, return a frame with |last_duration_|.
     if (last_duration_ != media::kInfiniteDuration()) {

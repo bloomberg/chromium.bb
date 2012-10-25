@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
-#include "media/ffmpeg/ffmpeg_common.h"
 #include "webkit/media/crypto/ppapi/content_decryption_module.h"
 
 // Include FFmpeg header files.
@@ -124,11 +123,6 @@ bool FFmpegCdmVideoDecoder::Initialize(const cdm::VideoDecoderConfig& config) {
     LOG(ERROR) << "Initialize(): Already initialized.";
     return false;
   }
-
-  av_register_all();
-
-  // Release existing resources if necessary.
-  ReleaseFFmpegResources();
 
   // Initialize AVCodecContext structure.
   codec_context_ = avcodec_alloc_context3(NULL);

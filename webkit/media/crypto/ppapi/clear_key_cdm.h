@@ -35,6 +35,7 @@ class DecoderBuffer;
 
 namespace webkit_media {
 
+class FFmpegCdmAudioDecoder;
 class FFmpegCdmVideoDecoder;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
@@ -160,6 +161,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  scoped_ptr<FFmpegCdmAudioDecoder> audio_decoder_;
   scoped_ptr<FFmpegCdmVideoDecoder> video_decoder_;
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 

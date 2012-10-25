@@ -16,7 +16,7 @@ namespace webkit_media {
 
 class FFmpegCdmVideoDecoder {
  public:
-  FFmpegCdmVideoDecoder(cdm::Allocator* allocator);
+  explicit FFmpegCdmVideoDecoder(cdm::Allocator* allocator);
   ~FFmpegCdmVideoDecoder();
   bool Initialize(const cdm::VideoDecoderConfig& config);
   void Deinitialize();

@@ -117,6 +117,8 @@
             '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
           ],
           'sources': [
+            'crypto/ppapi/ffmpeg_cdm_audio_decoder.cc',
+            'crypto/ppapi/ffmpeg_cdm_audio_decoder.h',
             'crypto/ppapi/ffmpeg_cdm_video_decoder.cc',
             'crypto/ppapi/ffmpeg_cdm_video_decoder.h',
           ],
