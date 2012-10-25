@@ -1276,8 +1276,11 @@ gfx::Size RenderWidgetHostViewAura::GetMinimumSize() const {
 
 void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                                const gfx::Rect& new_bounds) {
-  // We don't care about this one, we are always sized via SetSize() or
-  // SetBounds().
+  // We care about this only in fullscreen mode, where there is no
+  // WebContentsViewAura. We are sized via SetSize() or SetBounds() by
+  // WebContentsViewAura in other cases.
+  if (is_fullscreen_)
+    SetSize(new_bounds.size());
 }
 
 void RenderWidgetHostViewAura::OnFocus(aura::Window* old_focused_window) {
