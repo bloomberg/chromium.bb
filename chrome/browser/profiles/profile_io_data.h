@@ -45,6 +45,7 @@ class ProxyConfigService;
 class ProxyService;
 class SSLConfigService;
 class TransportSecurityState;
+class URLRequestJobFactoryImpl;
 }  // namespace net
 
 namespace policy {
@@ -223,7 +224,7 @@ class ProfileIOData {
   void ApplyProfileParamsToContext(ChromeURLRequestContext* context) const;
 
   void SetUpJobFactoryDefaults(
-      net::URLRequestJobFactory* job_factory,
+      net::URLRequestJobFactoryImpl* job_factory,
       scoped_ptr<net::URLRequestJobFactory::Interceptor>
           protocol_handler_interceptor,
       net::NetworkDelegate* network_delegate,

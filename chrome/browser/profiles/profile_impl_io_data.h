@@ -160,7 +160,7 @@ class ProfileImplIOData : public ProfileIOData {
   virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const OVERRIDE;
 
-  void SetUpJobFactory(net::URLRequestJobFactory* job_factory,
+  void SetUpJobFactory(net::URLRequestJobFactoryImpl* job_factory,
                        scoped_ptr<net::URLRequestJobFactory::Interceptor>
                            protocol_handler_interceptor,
                        net::NetworkDelegate* network_delegate,

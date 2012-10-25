@@ -66,6 +66,7 @@
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/managed_mode.h"
@@ -586,7 +587,7 @@ void ProfileIOData::ApplyProfileParamsToContext(
 }
 
 void ProfileIOData::SetUpJobFactoryDefaults(
-    net::URLRequestJobFactory* job_factory,
+    net::URLRequestJobFactoryImpl* job_factory,
     scoped_ptr<net::URLRequestJobFactory::Interceptor>
         protocol_handler_interceptor,
     net::NetworkDelegate* network_delegate,

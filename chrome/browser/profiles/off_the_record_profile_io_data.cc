@@ -240,15 +240,18 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   main_context->set_chrome_url_data_manager_backend(
       chrome_url_data_manager_backend());
 
-  main_job_factory_.reset(new net::URLRequestJobFactoryImpl());
-  extensions_job_factory_.reset(new net::URLRequestJobFactoryImpl());
+  scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
+      new net::URLRequestJobFactoryImpl());
+  scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
+      new net::URLRequestJobFactoryImpl());
 
   SetUpJobFactoryDefaults(
-      main_job_factory_.get(),
+      main_job_factory.get(),
       profile_params->protocol_handler_interceptor.Pass(),
       network_delegate(),
       main_context->ftp_transaction_factory(),
       main_context->ftp_auth_cache());
+  main_job_factory_ = main_job_factory.Pass();
   // TODO(shalev): The extensions_job_factory has a NULL NetworkDelegate.
   // Without a network_delegate, this protocol handler will never
   // handle file: requests, but as a side effect it makes
@@ -256,11 +259,12 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   // handle the protocol externally. We pass NULL in to
   // SetUpJobFactoryDefaults() to get this effect.
   SetUpJobFactoryDefaults(
-      extensions_job_factory_.get(),
+      extensions_job_factory.get(),
       scoped_ptr<net::URLRequestJobFactoryImpl::Interceptor>(NULL),
       NULL,
       extensions_context->ftp_transaction_factory(),
       extensions_context->ftp_auth_cache());
+  extensions_job_factory_ = extensions_job_factory.Pass();
 
   main_context->set_job_factory(main_job_factory_.get());
   extensions_context->set_job_factory(extensions_job_factory_.get());
@@ -292,14 +296,14 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
 
   context->SetHttpTransactionFactory(app_http_cache.Pass());
 
-  scoped_ptr<net::URLRequestJobFactory> job_factory(
+  scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
   SetUpJobFactoryDefaults(job_factory.get(),
                           protocol_handler_interceptor.Pass(),
                           network_delegate(),
                           context->ftp_transaction_factory(),
                           context->ftp_auth_cache());
-  context->SetJobFactory(job_factory.Pass());
+  context->SetJobFactory(job_factory.PassAs<net::URLRequestJobFactory>());
   return context;
 }
 
