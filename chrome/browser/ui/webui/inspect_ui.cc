@@ -117,8 +117,10 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   std::string title;
   std::string target_type = is_tab ? kPageTargetType : "";
+  GURL url;
   GURL favicon_url;
   if (web_contents) {
+    url = web_contents->GetURL();
     title = UTF16ToUTF8(web_contents->GetTitle());
     content::NavigationController& controller = web_contents->GetController();
     content::NavigationEntry* entry = controller.GetActiveEntry();
@@ -130,7 +132,7 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
     if (profile) {
       ExtensionService* extension_service = profile->GetExtensionService();
       const extensions::Extension* extension = extension_service->
-          extensions()->GetByID(web_contents->GetURL().host());
+          extensions()->GetByID(url.host());
       if (extension) {
         target_type = kExtensionTargetType;
         title = extension->name();
@@ -140,7 +142,7 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
 
   return BuildTargetDescriptor(target_type,
                                HasClientHost(rvh),
-                               web_contents->GetURL(),
+                               url,
                                title,
                                favicon_url,
                                rvh->GetProcess()->GetID(),
