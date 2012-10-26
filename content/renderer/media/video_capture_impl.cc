@@ -166,6 +166,9 @@ void VideoCaptureImpl::DoStartCaptureOnCaptureThread(
   } else {
     handler->OnStarted(this);
     if (state_ == video_capture::kStarted) {
+      // TODO(wjia): Temporarily disable restarting till client supports
+      // resampling.
+#if 0
       if (capability.width > current_params_.width ||
           capability.height > current_params_.height) {
         StopDevice();
@@ -174,6 +177,8 @@ void VideoCaptureImpl::DoStartCaptureOnCaptureThread(
                  << "after started, try to restart.";
         clients_pending_on_restart_[handler] = capability;
       } else {
+#endif
+      {
         if (device_info_available_) {
           handler->OnDeviceInfoReceived(this, device_info_);
         }

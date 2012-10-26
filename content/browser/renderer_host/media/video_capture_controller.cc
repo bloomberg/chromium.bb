@@ -104,6 +104,8 @@ void VideoCaptureController::StartCapture(
                                                   render_process, params);
   // In case capture has been started, need to check different condtions.
   if (state_ == video_capture::kStarted) {
+  // TODO(wjia): Temporarily disable restarting till client supports resampling.
+#if 0
     // This client has higher resolution than what is currently requested.
     // Need restart capturing.
     if (params.width > current_params_.width ||
@@ -115,6 +117,7 @@ void VideoCaptureController::StartCapture(
       pending_clients_.push_back(client);
       return;
     }
+#endif
 
     // This client's resolution is no larger than what's currently requested.
     // When frame_info has been returned by device, send them to client.
