@@ -367,22 +367,6 @@ class CdmHost {
   virtual double GetCurrentWallTimeMs() = 0;
 };
 
-// Represents a decrypted block that has not been decoded.
-class DecryptedBlock {
- public:
-  virtual void set_buffer(Buffer* buffer) = 0;
-  virtual Buffer* buffer() = 0;
-
-  // TODO(tomfinegan): Figure out if timestamp is really needed. If it is not,
-  // we can just pass Buffer pointers around.
-  virtual void set_timestamp(int64_t timestamp) = 0;
-  virtual int64_t timestamp() const = 0;
-
- protected:
-  DecryptedBlock() {}
-  virtual ~DecryptedBlock() {}
-};
-
 // Represents a key message sent by the CDM.
 class KeyMessage {
  public:
@@ -400,6 +384,22 @@ class KeyMessage {
  protected:
   KeyMessage() {}
   virtual ~KeyMessage() {}
+};
+
+// Represents a decrypted block that has not been decoded.
+class DecryptedBlock {
+ public:
+  virtual void set_buffer(Buffer* buffer) = 0;
+  virtual Buffer* buffer() = 0;
+
+  // TODO(tomfinegan): Figure out if timestamp is really needed. If it is not,
+  // we can just pass Buffer pointers around.
+  virtual void set_timestamp(int64_t timestamp) = 0;
+  virtual int64_t timestamp() const = 0;
+
+ protected:
+  DecryptedBlock() {}
+  virtual ~DecryptedBlock() {}
 };
 
 class VideoFrame {
