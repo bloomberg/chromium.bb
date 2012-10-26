@@ -957,9 +957,11 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 
     case media::PIPELINE_ERROR_DECRYPT:
       // Decrypt error.
-      UMA_HISTOGRAM_COUNTS(
-          kMediaEme + KeySystemNameForUMA(current_key_system_) +
-          ".DecryptError", 1);
+      base::Histogram::FactoryGet(
+          (kMediaEme + KeySystemNameForUMA(current_key_system_) +
+           ".DecryptError"),
+          1, 1000000, 50,
+          base::Histogram::kUmaTargetedHistogramFlag)->Add(1);
       // TODO(xhwang): Change to use NetworkStateDecryptError once it's added in
       // Webkit (see http://crbug.com/124486).
       SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
@@ -1000,8 +1002,10 @@ void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,
                                     const std::string& session_id) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  UMA_HISTOGRAM_COUNTS(
-      kMediaEme + KeySystemNameForUMA(key_system) + ".KeyAdded", 1);
+  base::Histogram::FactoryGet(
+      kMediaEme + KeySystemNameForUMA(key_system) + ".KeyAdded",
+      1, 1000000, 50,
+      base::Histogram::kUmaTargetedHistogramFlag)->Add(1);
 
   GetClient()->keyAdded(WebString::fromUTF8(key_system),
                         WebString::fromUTF8(session_id));
