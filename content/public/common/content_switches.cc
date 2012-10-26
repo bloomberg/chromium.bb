@@ -741,4 +741,7 @@ const char kEnableFixedPositionCreatesStackingContext[]
 const char kDisableFixedPositionCreatesStackingContext[]
     = "disable-fixed-position-creates-stacking-context";
 
+// Defer image decoding in WebKit until painting.
+const char kEnableDeferredImageDecoding[] = "enable-deferred-image-decoding";
+
 }  // namespace switches

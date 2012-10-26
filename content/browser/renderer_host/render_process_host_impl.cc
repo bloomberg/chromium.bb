@@ -791,6 +791,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableEncryptedMedia,
     switches::kEnableExperimentalWebKitFeatures,
     switches::kEnableFixedLayout,
+    switches::kEnableDeferredImageDecoding,
     switches::kEnableGPUServiceLogging,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuBenchmarking,

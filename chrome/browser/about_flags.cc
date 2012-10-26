@@ -1001,6 +1001,17 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kCrashOnGpuHang)
   },
   {
+    "enable-deferred-image-decoding",
+    IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME,
+    IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION,
+#if defined(USE_SKIA)
+    kOsMac | kOsLinux | kOsCrOS,
+#else
+    0,
+#endif
+    SINGLE_VALUE_TYPE(switches::kEnableDeferredImageDecoding)
+  },
+  {
     "performance-monitor-gathering",
     IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME,
     IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION,

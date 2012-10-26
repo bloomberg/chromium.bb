@@ -641,6 +641,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.apply_page_scale_factor_in_compositor =
       command_line.HasSwitch(cc::switches::kEnablePinchInCompositor);
 
+  prefs.deferred_image_decoding_enabled =
+      command_line.HasSwitch(switches::kEnableDeferredImageDecoding);
+
   GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 
   // Disable compositing in guests until we have compositing path implemented

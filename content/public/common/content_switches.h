@@ -209,6 +209,7 @@ extern const char kMaxUntiledLayerWidth[];
 extern const char kMaxUntiledLayerHeight[];
 CONTENT_EXPORT extern const char kEnableFixedPositionCreatesStackingContext[];
 CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];
+CONTENT_EXPORT extern const char kEnableDeferredImageDecoding[];
 
 extern const char kEnableVisualWordMovement[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];

@@ -121,6 +121,7 @@ WebPreferences::WebPreferences()
       max_untiled_layer_height(512),
       fixed_position_creates_stacking_context(false),
       sync_xhr_in_documents_enabled(true),
+      deferred_image_decoding_enabled(false),
       number_of_cpu_cores(1),
       cookie_enabled(true),
       apply_page_scale_factor_in_compositor(false) {
@@ -441,6 +442,8 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setApplyPageScaleFactorInCompositor(
       apply_page_scale_factor_in_compositor);
+
+  settings->setDeferredImageDecodingEnabled(deferred_image_decoding_enabled);
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }

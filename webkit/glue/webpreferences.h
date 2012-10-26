@@ -139,6 +139,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   int max_untiled_layer_height;
   bool fixed_position_creates_stacking_context;
   bool sync_xhr_in_documents_enabled;
+  bool deferred_image_decoding_enabled;
   int number_of_cpu_cores;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
