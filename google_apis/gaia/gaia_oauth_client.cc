@@ -163,15 +163,16 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(
     // URLFetcher::Core::RetryOrCompleteUrlFetch resets it to NULL...
     request_->SetRequestContext(request_context_getter_);
     request_->Start();
-  } else {
-    request_.reset();
   }
 }
 
 void GaiaOAuthClient::Core::HandleResponse(
     const net::URLFetcher* source,
     bool* should_retry_request) {
-  *should_retry_request = false;
+  // Keep the URLFetcher object in case we need to reuse it.
+  scoped_ptr<net::URLFetcher> old_request = request_.Pass();
+  DCHECK_EQ(source, old_request.get());
+
   // RC_BAD_REQUEST means the arguments are invalid. No point retrying. We are
   // done here.
   if (source->GetResponseCode() == net::HTTP_BAD_REQUEST) {
@@ -199,6 +200,7 @@ void GaiaOAuthClient::Core::HandleResponse(
       // Retry limit reached. Give up.
       delegate_->OnNetworkError(source->GetResponseCode());
     } else {
+      request_ = old_request.Pass();
       *should_retry_request = true;
     }
     return;
