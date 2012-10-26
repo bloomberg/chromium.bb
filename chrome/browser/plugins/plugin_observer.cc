@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
@@ -216,6 +217,8 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
                         OnOpenAboutPlugins)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
                         OnCouldNotLoadPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
+                        OnNPAPINotSupported)
 
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
@@ -296,8 +299,11 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
       callback);
 #else
   delegate = base::win::IsMetroProcess() ?
-      PluginMetroModeInfoBarDelegate::Create(
-          infobar_helper, plugin_metadata->name()) :
+      new PluginMetroModeInfoBarDelegate(
+          infobar_helper,
+          l10n_util::GetStringFUTF16(IDS_METRO_MISSING_PLUGIN_PROMPT,
+                                     plugin_metadata->name()),
+          l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART)) :
       PluginInstallerInfoBarDelegate::Create(
           infobar_helper, installer,
           plugin_metadata.Pass(),
@@ -354,3 +360,29 @@ void PluginObserver::OnCouldNotLoadPlugin(const FilePath& plugin_path) {
       true  /* auto_expire */));
 }
 
+void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
+#if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  if (profile->IsOffTheRecord())
+    return;
+
+  scoped_ptr<PluginMetadata> plugin;
+  if (!PluginFinder::GetInstance()->FindPluginWithIdentifier(
+          identifier, NULL, &plugin)) {
+    NOTREACHED();
+    return;
+  }
+
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
+  infobar_helper->AddInfoBar(
+      new PluginMetroModeInfoBarDelegate(
+          infobar_helper,
+          l10n_util::GetStringFUTF16(IDS_METRO_NPAPI_PLUGIN_PROMPT,
+                                     plugin->name()),
+          l10n_util::GetStringUTF16(IDS_WIN8_RESTART)));
+#else
+  NOTREACHED();
+#endif
+}

@@ -61,6 +61,7 @@ class PluginObserver : public content::WebContentsObserver,
 #endif
   void OnOpenAboutPlugins();
   void OnCouldNotLoadPlugin(const FilePath& plugin_path);
+  void OnNPAPINotSupported(const std::string& identifier);
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
 

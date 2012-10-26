@@ -59,6 +59,7 @@ struct ChromeViewHostMsg_GetPluginInfo_Status {
     kClickToPlay,
     kDisabled,
     kNotFound,
+    kNPAPINotSupported,
     kOutdatedBlocked,
     kOutdatedDisallowed,
     kUnauthorized,
@@ -482,6 +483,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_OpenAboutPlugins)
 // Tells the browser that there was an error loading a plug-in.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
                     FilePath /* plugin_path */)
+
+// Tells the browser that we blocked a plug-in because NPAPI is not supported.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_NPAPINotSupported,
+                    std::string /* identifer */)
 
 // Send a snapshot of the tab contents to the render host.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_Snapshot,

@@ -437,18 +437,13 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
 
 // PluginMetroModeInfoBarDelegate ---------------------------------------------
 #if defined(OS_WIN)
-InfoBarDelegate* PluginMetroModeInfoBarDelegate::Create(
-    InfoBarService* infobar_service, const string16& plugin_name) {
-  string16 message = l10n_util::GetStringFUTF16(
-      IDS_METRO_MISSING_PLUGIN_PROMPT, plugin_name);
-  return new PluginMetroModeInfoBarDelegate(
-      infobar_service, message);
-}
-
 PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
-    InfoBarService* infobar_service, const string16& message)
+    InfoBarService* infobar_service,
+    const string16& message,
+    const string16& ok_label)
     : ConfirmInfoBarDelegate(infobar_service),
-      message_(message) {
+      message_(message),
+      ok_label_(ok_label) {
 }
 
 PluginMetroModeInfoBarDelegate::~PluginMetroModeInfoBarDelegate() {
@@ -470,7 +465,7 @@ int PluginMetroModeInfoBarDelegate::GetButtons() const {
 string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
-  return l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART);
+  return ok_label_;
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {

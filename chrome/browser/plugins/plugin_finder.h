@@ -51,7 +51,7 @@ class PluginFinder {
 
   // Finds the plug-in with the given identifier. If found, sets |installer|
   // to the corresponding PluginInstaller and |plugin_metadata| to a copy
-  // of the corresponding PluginMetadata.
+  // of the corresponding PluginMetadata. |installer| may be NULL.
   bool FindPluginWithIdentifier(const std::string& identifier,
                                 PluginInstaller** installer,
                                 scoped_ptr<PluginMetadata>* plugin_metadata);

@@ -24,6 +24,10 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 using content::PluginService;
 using webkit::WebPluginInfo;
 
@@ -137,6 +141,15 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     const WebPluginInfo& plugin,
     const PluginMetadata* plugin_metadata,
     ChromeViewHostMsg_GetPluginInfo_Status* status) const {
+#if defined(OS_WIN)
+  if (plugin.type == WebPluginInfo::PLUGIN_TYPE_NPAPI &&
+      base::win::IsMetroProcess()) {
+    status->value =
+        ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
+    return;
+  }
+#endif
+
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   bool uses_default_content_setting = true;
   // Check plug-in content settings. The primary URL is the top origin URL and

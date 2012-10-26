@@ -16,7 +16,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/win/metro.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
@@ -388,12 +387,6 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
       if (major == 6 && minor == 0 && update < 120)
         return false;  // Java SE6 Update 11 or older.
     }
-  }
-
-  if (base::win::IsMetroProcess()) {
-    // In metro mode we only allow pepper plugins.
-    if (info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI)
-      return false;
   }
 
   // Special WMP handling

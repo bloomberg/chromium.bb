@@ -518,6 +518,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
         return render_view->CreatePlugin(frame, plugin, params);
       }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported: {
+        RenderThread::Get()->RecordUserMetrics("Plugin_NPAPINotSupported");
+        placeholder = PluginPlaceholder::CreateBlockedPlugin(
+            render_view, frame, params, plugin, identifier, group_name,
+            IDR_BLOCKED_PLUGIN_HTML,
+            l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED));
+        render_view->Send(new ChromeViewHostMsg_NPAPINotSupported(
+            render_view->GetRoutingID(), identifier));
+        break;
+      }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
             render_view, frame, params, plugin, identifier, group_name,

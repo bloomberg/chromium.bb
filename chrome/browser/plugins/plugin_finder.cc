@@ -225,7 +225,8 @@ bool PluginFinder::FindPluginWithIdentifier(
   std::map<std::string, PluginInstaller*>::const_iterator it =
       installers_.find(identifier);
   if (it != installers_.end()) {
-    *installer = it->second;
+    if (installer)
+      *installer = it->second;
     PluginMap::const_iterator metadata_it = identifier_plugin_.find(identifier);
     DCHECK(metadata_it != identifier_plugin_.end());
     *plugin_metadata = metadata_it->second->Clone();

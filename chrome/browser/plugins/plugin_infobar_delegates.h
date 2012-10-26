@@ -185,11 +185,10 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Shows an infobar asking the user to switch to desktop chrome if they
   // want to use the plugin.
-  static InfoBarDelegate* Create(InfoBarService* infobar_service,
-                                 const string16& plugin_name);
- private:
   PluginMetroModeInfoBarDelegate(InfoBarService* infobar_service,
-                                 const string16& message);
+                                 const string16& plugin_name,
+                                 const string16& ok_label);
+ private:
   virtual ~PluginMetroModeInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
@@ -202,6 +201,7 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   string16 message_;
+  string16 ok_label_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetroModeInfoBarDelegate);
 };
