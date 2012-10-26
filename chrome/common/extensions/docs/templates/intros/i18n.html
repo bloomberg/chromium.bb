@@ -5,7 +5,7 @@
 
 
 <p id="classSummary">
-An <em>internationalized</em> extension
+An <em>internationalized</em> extension or app
 can be easily
 <em>localized</em> &mdash;
 adapted to languages and regions
@@ -13,10 +13,9 @@ that it didn't originally support.
 </p>
 
 <p>
-To internationalize your extension,
-you need to put all of its user-visible strings into a file
+You need to put all of its user-visible strings into a file
 named <a href="i18n-messages.html"><code>messages.json</code></a>.
-Each time you localize your extension
+Each time you add a new locale,
 you add a messages file
 under a directory
 named <code>_locales/<em>localeCode</em></code>,
@@ -75,7 +74,7 @@ the <a href="manifest.html">manifest</a>
 </p>
 
 <p>
-Some notes about internationalizing extensions:
+Some notes about internationalizing:
 </p>
 
 <ul>
@@ -93,7 +92,7 @@ Some notes about internationalizing extensions:
   </li>
 
   <li>
-    In your extension's JavaScript code,
+    In your extension or app's JavaScript code,
     refer to a string named <em>messagename</em>
     like this:
     <pre>chrome.i18n.getMessage("<em>messagename</em>")</pre>
@@ -145,7 +144,7 @@ For more information, see
 </ul>
 
 <p>
-Once an extension is internationalized,
+Once an extension or app is internationalized,
 translating it is simple.
 You copy <code>messages.json</code>,
 translate it,
@@ -166,7 +165,7 @@ with a new Spanish translation.
 
 <p>
 The internationalization system provides a few predefined
-messages to help you localize your extension.
+messages to help you localize.
 These include <code>@@ui_locale</code>,
 so you can detect the current UI locale,
 and a few <code>@@bidi_...</code> messages
@@ -178,8 +177,8 @@ gadgets BIDI (bi-directional) API</a>.
 
 <p>
 The special message <code>@@extension_id</code>
-can be used in the CSS and JavaScript files of any extension,
-whether or not the extension is localized.
+can be used in the CSS and JavaScript files,
+whether or not the extension or app is localized.
 This message doesn't work in manifest files.
 </p>
 
@@ -193,7 +192,7 @@ The following table describes each predefined message.
 </tr>
 <tr>
   <td> <code>@@extension_id</code> </td>
-  <td>The extension ID;
+  <td>The extension or app ID;
     you might use this string to construct URLs
     for resources inside the extension.
     Even unlocalized extensions can use this message.
@@ -293,19 +292,18 @@ that let a single translation support multiple variations of a language
 <h3 id="locales-supported">Supported locales</h3>
 
 <p>
-Extensions can use any of the
+You can use any of the
 <a href="http://code.google.com/chrome/webstore/docs/i18n.html#localeTable">locales that the Chrome Web Store supports</a>.
 </p>
 
 
-<h3 id="locales-usage">How extensions find strings</h3>
+<h3 id="locales-usage">Searching for messages</h3>
 
 <p>
-You don't have to define every string for every locale
-that your internationalized extension supports.
+You don't have to define every string for every supported locale.
 As long as the default locale's <code>messages.json</code> file
 has a value for every string,
-your extension will run no matter how sparse a translation is.
+your extension or app will run no matter how sparse a translation is.
 Here's how the extension system searches for a message:
 </p>
 
@@ -331,7 +329,7 @@ Here's how the extension system searches for a message:
      the system looks no further.
   </li>
   <li>
-     Search the messages file for the extension's default locale.
+     Search the messages file for the default locale.
      For example, if the extension's "default_locale" is set to "es",
      and neither <code>_locales/en_GB/messages.json</code>
      nor <code>_locales/en/messages.json</code> contains the message,
@@ -419,7 +417,7 @@ that has the following target:
 
 <p>
 You can create as many shortcuts as you like,
-making it easy to test your extension in multiple languages.
+making it easy to test in multiple languages.
 For example:
 </p>
 
