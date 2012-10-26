@@ -10,7 +10,7 @@
 namespace ui {
 
 // Default interval, in ms.
-static const int kDefaultInterval = 20;
+static const int kDefaultTimerInterval = 20;
 
 static int TotalTime(const MultiAnimation::Parts& parts) {
   int time_ms = 0;
@@ -21,8 +21,9 @@ static int TotalTime(const MultiAnimation::Parts& parts) {
   return time_ms;
 }
 
-MultiAnimation::MultiAnimation(const Parts& parts)
-    : Animation(base::TimeDelta::FromMilliseconds(kDefaultInterval)),
+MultiAnimation::MultiAnimation(const Parts& parts,
+                               base::TimeDelta timer_interval)
+    : Animation(timer_interval),
       parts_(parts),
       cycle_time_ms_(TotalTime(parts)),
       current_value_(0),
@@ -32,6 +33,11 @@ MultiAnimation::MultiAnimation(const Parts& parts)
 }
 
 MultiAnimation::~MultiAnimation() {}
+
+// static.
+base::TimeDelta MultiAnimation::GetDefaultTimerInterval() {
+  return base::TimeDelta::FromMilliseconds(kDefaultTimerInterval);
+}
 
 double MultiAnimation::GetCurrentValue() const {
   return current_value_;

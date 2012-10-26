@@ -197,6 +197,7 @@ static const int kMiniTitleChangeAnimationDuration2MS = 0;
 static const int kMiniTitleChangeAnimationDuration3MS = 550;
 static const int kMiniTitleChangeAnimationStart3MS = 150;
 static const int kMiniTitleChangeAnimationEnd3MS = 800;
+static const int kMiniTitleChangeAnimationIntervalMS = 40;
 
 // Offset from the right edge for the start of the mini title change animation.
 static const int kMiniTitleChangeInitialXOffset = 6;
@@ -261,7 +262,10 @@ void Tab::StartMiniTabTitleAnimation() {
     parts[0].end_time_ms = kMiniTitleChangeAnimationEnd1MS;
     parts[2].start_time_ms = kMiniTitleChangeAnimationStart3MS;
     parts[2].end_time_ms = kMiniTitleChangeAnimationEnd3MS;
-    mini_title_animation_.reset(new ui::MultiAnimation(parts));
+    mini_title_animation_.reset(new ui::MultiAnimation(
+        parts,
+        base::TimeDelta::FromMilliseconds(
+            kMiniTitleChangeAnimationIntervalMS)));
     mini_title_animation_->SetContainer(animation_container());
     mini_title_animation_->set_delegate(this);
   }

@@ -136,7 +136,9 @@ void ToolbarSearchAnimator::InitBackgroundAnimation() {
   parts.push_back(ui::MultiAnimation::Part(
       background_change_duration_ms_ * InstantUI::GetSlowAnimationScaleFactor(),
       ui::Tween::LINEAR));
-  background_animation_.reset(new ui::MultiAnimation(parts));
+  background_animation_.reset(new ui::MultiAnimation(
+      parts,
+      ui::MultiAnimation::GetDefaultTimerInterval()));
   background_animation_->set_continuous(false);
   background_animation_->set_delegate(this);
 }

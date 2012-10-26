@@ -14,7 +14,7 @@ TEST(MultiAnimationTest, Basic) {
   parts.push_back(MultiAnimation::Part(100, Tween::LINEAR));
   parts.push_back(MultiAnimation::Part(100, Tween::EASE_OUT));
 
-  MultiAnimation animation(parts);
+  MultiAnimation animation(parts, MultiAnimation::GetDefaultTimerInterval());
   AnimationContainerElement* as_element =
       static_cast<AnimationContainerElement*>(&animation);
   as_element->SetStartTime(base::TimeTicks());
@@ -43,7 +43,7 @@ TEST(MultiAnimationTest, DifferingStartAndEnd) {
   parts[0].start_time_ms = 100;
   parts[0].end_time_ms = 400;
 
-  MultiAnimation animation(parts);
+  MultiAnimation animation(parts, MultiAnimation::GetDefaultTimerInterval());
   AnimationContainerElement* as_element =
       static_cast<AnimationContainerElement*>(&animation);
   as_element->SetStartTime(base::TimeTicks());
@@ -62,7 +62,7 @@ TEST(MultiAnimationTest, DifferingStartAndEnd) {
 TEST(MultiAnimationTest, DontCycle) {
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
-  MultiAnimation animation(parts);
+  MultiAnimation animation(parts, MultiAnimation::GetDefaultTimerInterval());
   AnimationContainerElement* as_element =
       static_cast<AnimationContainerElement*>(&animation);
   as_element->SetStartTime(base::TimeTicks());
@@ -78,7 +78,7 @@ TEST(MultiAnimationTest, DontCycle) {
 TEST(MultiAnimationTest, Cycle) {
   MultiAnimation::Parts parts;
   parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
-  MultiAnimation animation(parts);
+  MultiAnimation animation(parts, MultiAnimation::GetDefaultTimerInterval());
   AnimationContainerElement* as_element =
       static_cast<AnimationContainerElement*>(&animation);
   as_element->SetStartTime(base::TimeTicks());

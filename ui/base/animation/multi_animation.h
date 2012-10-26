@@ -45,8 +45,11 @@ class UI_EXPORT MultiAnimation : public Animation {
 
   typedef std::vector<Part> Parts;
 
-  explicit MultiAnimation(const Parts& parts);
+  MultiAnimation(const Parts& parts, base::TimeDelta timer_interval);
   virtual ~MultiAnimation();
+
+  // Default interval.
+  static base::TimeDelta GetDefaultTimerInterval();
 
   // Sets whether the animation continues after it reaches the end. If true, the
   // animation runs until explicitly stopped. The default is true.
