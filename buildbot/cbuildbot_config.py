@@ -649,6 +649,14 @@ chrome_pgo = chrome_pfq.derive(
   hw_tests_timeout=90 * 60,
 )
 
+chrome_pgo.add_config('alex-chrome-pgo',
+  boards=['x86-alex'],
+)
+
+chrome_pgo.add_config('lumpy-chrome-pgo',
+  boards=['lumpy'],
+)
+
 chromium_info = chromium_pfq.derive(
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
