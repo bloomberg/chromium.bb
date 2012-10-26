@@ -106,10 +106,6 @@ ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 
 void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   SocketTimeoutFieldTrial();
-  // If a policy is defining the number of active connections this field test
-  // shoud not be performed.
-  if (!proxy_policy_is_set)
-    ProxyConnectionsFieldTrial();
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
   SpdyFieldTrial();
   WarmConnectionFieldTrial();
@@ -168,49 +164,6 @@ void ChromeBrowserFieldTrials::SocketTimeoutFieldTrial() {
   } else {
     NOTREACHED();
   }
-}
-
-void ChromeBrowserFieldTrials::ProxyConnectionsFieldTrial() {
-  const base::FieldTrial::Probability kProxyConnectionsDivisor = 100;
-  // 25% probability
-  const base::FieldTrial::Probability kProxyConnectionProbability = 1;
-
-  // This (32 connections per proxy server) is the current default value.
-  // Declaring it here allows us to easily re-assign the probability space while
-  // maintaining that the default group always has the remainder of the "share",
-  // which allows for cleaner and quicker changes down the line if needed.
-  int proxy_connections_32 = -1;
-
-  // After June 30, 2011 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> proxy_connection_trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "ProxyConnectionImpact", kProxyConnectionsDivisor,
-          "proxy_connections_32", 2011, 6, 30, &proxy_connections_32));
-
-  // The number of max sockets per group cannot be greater than the max number
-  // of sockets per proxy server.  We tried using 8, and it can easily
-  // lead to total browser stalls.
-  const int proxy_connections_16 =
-      proxy_connection_trial->AppendGroup("proxy_connections_16",
-                                          kProxyConnectionProbability);
-  const int proxy_connections_64 =
-      proxy_connection_trial->AppendGroup("proxy_connections_64",
-                                          kProxyConnectionProbability);
-
-  const int proxy_connections_trial_group = proxy_connection_trial->group();
-
-  int max_sockets = 0;
-  if (proxy_connections_trial_group == proxy_connections_16) {
-    max_sockets = 16;
-  } else if (proxy_connections_trial_group == proxy_connections_32) {
-    max_sockets = 32;
-  } else if (proxy_connections_trial_group == proxy_connections_64) {
-    max_sockets = 64;
-  } else {
-    NOTREACHED();
-  }
-  net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
-      net::HttpNetworkSession::NORMAL_SOCKET_POOL, max_sockets);
 }
 
 // When --use-spdy not set, users will be in A/B test for spdy.

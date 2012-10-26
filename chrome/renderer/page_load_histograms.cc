@@ -456,39 +456,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  // Histograms to determine effect of number of connections per proxy.
-  static const bool use_proxy_connection_impact_histogram =
-      base::FieldTrialList::TrialExists("ProxyConnectionImpact");
-  if (use_proxy_connection_impact_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("PLT.Abandoned", "ProxyConnectionImpact"),
-        abandoned_page ? 1 : 0, 2);
-    switch (load_type) {
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad", "ProxyConnectionImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal", "ProxyConnectionImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadReload", "ProxyConnectionImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadStaleOk", "ProxyConnectionImpact"),
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-  }
-
   // Histograms to determine if SDCH has an impact.
   // TODO(jar): Consider removing per-link load types and the enumeration.
   static const bool use_sdch_histogram =
