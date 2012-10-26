@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/event_router.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -398,7 +400,7 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
   std::set<const EventListener*> listeners(
       listeners_.GetEventListeners(*event));
 
-  std::set<std::string> already_dispatched;
+  std::set<EventDispatchIdentifier> already_dispatched;
 
   // We dispatch events for lazy background pages first because attempting to do
   // so will cause those that are being suspended to cancel that suspension.
@@ -412,8 +414,7 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
     if (restrict_to_extension_id.empty() ||
         restrict_to_extension_id == listener->extension_id) {
       if (!listener->process) {
-        if (DispatchLazyEvent(listener->extension_id, event))
-          already_dispatched.insert(listener->extension_id);
+        DispatchLazyEvent(listener->extension_id, event, &already_dispatched);
       }
     }
   }
@@ -423,36 +424,43 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
     const EventListener* listener = *it;
     if (restrict_to_extension_id.empty() ||
         restrict_to_extension_id == listener->extension_id) {
-      if (listener->process &&
-          !ContainsKey(already_dispatched, listener->extension_id)) {
-        DispatchEventToProcess(listener->extension_id, listener->process,
-                               event);
+
+      if (listener->process) {
+        EventDispatchIdentifier dispatch_id(
+            listener->process->GetBrowserContext(), listener->extension_id);
+        if (!ContainsKey(already_dispatched, dispatch_id)) {
+          DispatchEventToProcess(listener->extension_id, listener->process,
+              event);
+        }
       }
     }
   }
 }
 
-bool EventRouter::DispatchLazyEvent(const std::string& extension_id,
-                                    const linked_ptr<Event>& event) {
-  bool event_queued = false;
-
+void EventRouter::DispatchLazyEvent(
+    const std::string& extension_id,
+    const linked_ptr<Event>& event,
+    std::set<EventDispatchIdentifier>* already_dispatched) {
   ExtensionService* service = profile_->GetExtensionService();
   // Check both the original and the incognito profile to see if we
   // should load a lazy bg page to handle the event. The latter case
   // occurs in the case of split-mode extensions.
   const Extension* extension = service->extensions()->GetByID(extension_id);
   if (extension) {
-    event_queued |=
-        MaybeLoadLazyBackgroundPageToDispatchEvent(profile_, extension, event);
+    if (MaybeLoadLazyBackgroundPageToDispatchEvent(
+          profile_, extension, event)) {
+      already_dispatched->insert(std::make_pair(profile_, extension_id));
+    }
+
     if (profile_->HasOffTheRecordProfile() &&
         extension->incognito_split_mode()) {
-      event_queued |=
-          MaybeLoadLazyBackgroundPageToDispatchEvent(
-              profile_->GetOffTheRecordProfile(), extension, event);
+      if (MaybeLoadLazyBackgroundPageToDispatchEvent(
+          profile_->GetOffTheRecordProfile(), extension, event)) {
+        already_dispatched->insert(
+            std::make_pair(profile_->GetOffTheRecordProfile(), extension_id));
+      }
     }
   }
-
-  return event_queued;
 }
 
 void EventRouter::DispatchEventToProcess(const std::string& extension_id,
