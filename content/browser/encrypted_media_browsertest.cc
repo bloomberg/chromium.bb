@@ -104,7 +104,7 @@ class EncryptedMediaTest
   }
 };
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestSimplePlayback("bear-320x240-encrypted.webm",
                                              GetParam(), kExpected));
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, DISABLED_InvalidKeySystem) {
   const string16 kExpected = ASCIIToUTF16(
       StringToUpperASCII(std::string("GenerateKeyRequestException")));
   ASSERT_NO_FATAL_FAILURE(TestSimplePlayback("bear-320x240-encrypted.webm",
