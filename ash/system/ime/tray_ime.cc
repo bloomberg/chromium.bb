@@ -217,10 +217,13 @@ class IMENotificationView : public TrayNotificationView {
 
     // TODO(zork): Use IDS_ASH_STATUS_TRAY_THIRD_PARTY_IME_TURNED_ON_BUBBLE for
     // third party IMEs
-    return new views::Label(
+    views::Label* label = new views::Label(
         l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE,
             current.medium_name));
+    label->SetMultiLine(true);
+    label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    return label;
   }
 
 
