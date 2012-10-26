@@ -1786,6 +1786,14 @@
           'mac_bundle_resources!': [
             'host/remoting_me2me_host-Info.plist',
           ],
+          'conditions': [
+            ['mac_breakpad==1', {
+              'variables': {
+                # A real .dSYM is needed for dump_syms to operate on.
+                'mac_real_dsym': 1,
+              },
+            }],
+          ],  # conditions
         }],
         ['OS=="win"', {
           'product_name': 'remoting_host',
