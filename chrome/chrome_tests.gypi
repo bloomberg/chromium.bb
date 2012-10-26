@@ -2869,6 +2869,7 @@
         'browser/chromeos/extensions/file_browser_private_apitest.cc',
         'browser/chromeos/extensions/info_private_apitest.cc',
         'browser/chromeos/extensions/power/power_api_browsertest.cc',
+        'browser/chromeos/extensions/wallpaper_private_apitest.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.h',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen_browsertest.cc',
