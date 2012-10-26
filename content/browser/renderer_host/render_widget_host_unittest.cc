@@ -66,6 +66,9 @@ bool TouchEventsAreEquivalent(const ui::TouchEvent& first,
   EXPECT_EQ(second.touch_id(), first.touch_id());
   if (first.touch_id() != second.touch_id())
     return false;
+  EXPECT_EQ(second.time_stamp().InSeconds(), first.time_stamp().InSeconds());
+  if (second.time_stamp().InSeconds() != first.time_stamp().InSeconds())
+    return false;
   return true;
 }
 
@@ -173,7 +176,8 @@ bool RenderWidgetHostProcess::WaitForBackingStoreMsg(
 class TestView : public content::TestRenderWidgetHostView {
  public:
   explicit TestView(RenderWidgetHostImpl* rwh)
-      : content::TestRenderWidgetHostView(rwh) {
+      : content::TestRenderWidgetHostView(rwh),
+        acked_event_count_(0) {
   }
 
   // Sets the bounds returned by GetViewBounds.
@@ -182,23 +186,27 @@ class TestView : public content::TestRenderWidgetHostView {
   }
 
   const WebTouchEvent& acked_event() const { return acked_event_; }
+  int acked_event_count() const { return acked_event_count_; }
   void ClearAckedEvent() {
     acked_event_.type = WebKit::WebInputEvent::Undefined;
+    acked_event_count_ = 0;
   }
 
   // RenderWidgetHostView override.
   virtual gfx::Rect GetViewBounds() const OVERRIDE {
     return bounds_;
   }
-
   virtual void ProcessAckedTouchEvent(const WebTouchEvent& touch,
                                       bool processed) OVERRIDE {
     acked_event_ = touch;
+    ++acked_event_count_;
   }
 
  protected:
   WebTouchEvent acked_event_;
+  int acked_event_count_;
   gfx::Rect bounds_;
+
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
@@ -323,11 +331,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   size_t TouchEventQueueSize() {
-    return touch_event_queue_->touch_queue_.size();
+    return touch_event_queue_->GetQueueSize();
   }
 
   const WebTouchEvent& latest_event() const {
-    return touch_event_queue_->touch_queue_.back();
+    return touch_event_queue_->GetLatestEvent();
   }
 
  protected:
@@ -458,6 +466,11 @@ class RenderWidgetHostTest : public testing::Test {
     gesture_event.data.flingStart.velocityX = velocityX;
     gesture_event.data.flingStart.velocityY = velocityY;
     host_->ForwardGestureEvent(gesture_event);
+  }
+
+  // Set the timestamp for the touch-event.
+  void SetTouchTimestamp(base::TimeDelta timestamp) {
+    touch_event_.timeStampSeconds = timestamp.InSecondsF();
   }
 
   // Sends a touch event (irrespective of whether the page has a touch-event
@@ -1374,12 +1387,15 @@ TEST_F(RenderWidgetHostTest, TouchEventQueue) {
   SendInputEventACK(WebInputEvent::TouchStart, true);
   EXPECT_EQ(1U, host_->TouchEventQueueSize());
   EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->acked_event().type);
+  EXPECT_EQ(1, view_->acked_event_count());
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
+  view_->ClearAckedEvent();
 
   SendInputEventACK(WebInputEvent::TouchMove, true);
   EXPECT_EQ(0U, host_->TouchEventQueueSize());
   EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->acked_event().type);
+  EXPECT_EQ(1, view_->acked_event_count());
   EXPECT_EQ(0U, process_->sink().message_count());
 }
 
@@ -1420,8 +1436,10 @@ TEST_F(RenderWidgetHostTest, TouchEventQueueFlush) {
   SendInputEventACK(WebInputEvent::TouchStart, true);
   EXPECT_EQ(31U, host_->TouchEventQueueSize());
   EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->acked_event().type);
+  EXPECT_EQ(1, view_->acked_event_count());
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
+  view_->ClearAckedEvent();
 
   // The page stops listening for touch-events. The touch-event queue should now
   // be emptied, but none of the queued touch-events should be sent to the
@@ -1457,6 +1475,31 @@ TEST_F(RenderWidgetHostTest, TouchEventQueueCoalesce) {
   SendTouchEvent();
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(3U, host_->TouchEventQueueSize());
+
+  // ACK the press.
+  SendInputEventACK(WebInputEvent::TouchStart, true);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(2U, host_->TouchEventQueueSize());
+  EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->acked_event().type);
+  EXPECT_EQ(1, view_->acked_event_count());
+  process_->sink().ClearMessages();
+  view_->ClearAckedEvent();
+
+  // ACK the moves.
+  SendInputEventACK(WebInputEvent::TouchMove, true);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->acked_event().type);
+  EXPECT_EQ(10, view_->acked_event_count());
+  process_->sink().ClearMessages();
+  view_->ClearAckedEvent();
+
+  // ACK the release.
+  SendInputEventACK(WebInputEvent::TouchEnd, true);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_EQ(WebKit::WebInputEvent::TouchEnd, view_->acked_event().type);
+  EXPECT_EQ(1, view_->acked_event_count());
 }
 
 // Tests that an event that has already been sent but hasn't been ack'ed yet
@@ -1561,37 +1604,49 @@ TEST_F(RenderWidgetHostTest, AckedTouchEventState) {
   // Send a bunch of events, and make sure the ACKed events are correct.
   ScopedVector<ui::TouchEvent> expected_events;
 
+  // Use a custom timestamp for all the events to test that the acked events
+  // have the same timestamp;
+  base::TimeDelta timestamp = base::Time::NowFromSystemTime() - base::Time();
+  timestamp -= base::TimeDelta::FromSeconds(600);
+
   // Press the first finger.
   PressTouchPoint(1, 1);
+  SetTouchTimestamp(timestamp);
   SendTouchEvent();
   EXPECT_EQ(1U, process_->sink().message_count());
   process_->sink().ClearMessages();
   expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
-      gfx::Point(1, 1), 0, base::TimeDelta()));
+      gfx::Point(1, 1), 0, timestamp));
 
   // Move the finger.
+  timestamp += base::TimeDelta::FromSeconds(10);
   MoveTouchPoint(0, 5, 5);
+  SetTouchTimestamp(timestamp);
   SendTouchEvent();
   EXPECT_EQ(2U, host_->TouchEventQueueSize());
   expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
-      gfx::Point(5, 5), 0, base::TimeDelta()));
+      gfx::Point(5, 5), 0, timestamp));
 
   // Now press a second finger.
+  timestamp += base::TimeDelta::FromSeconds(10);
   PressTouchPoint(2, 2);
+  SetTouchTimestamp(timestamp);
   SendTouchEvent();
   EXPECT_EQ(3U, host_->TouchEventQueueSize());
   expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
-      gfx::Point(2, 2), 1, base::TimeDelta()));
+      gfx::Point(2, 2), 1, timestamp));
 
   // Move both fingers.
+  timestamp += base::TimeDelta::FromSeconds(10);
   MoveTouchPoint(0, 10, 10);
   MoveTouchPoint(1, 20, 20);
+  SetTouchTimestamp(timestamp);
   SendTouchEvent();
   EXPECT_EQ(4U, host_->TouchEventQueueSize());
   expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
-      gfx::Point(10, 10), 0, base::TimeDelta()));
+      gfx::Point(10, 10), 0, timestamp));
   expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
-      gfx::Point(20, 20), 1, base::TimeDelta()));
+      gfx::Point(20, 20), 1, timestamp));
 
   // Receive the ACKs and make sure the generated events from the acked events
   // are correct.
@@ -1616,7 +1671,6 @@ TEST_F(RenderWidgetHostTest, AckedTouchEventState) {
 
   EXPECT_EQ(0U, expected_events.size());
 }
-
 #endif  // defined(OS_WIN) || defined(USE_AURA)
 
 // Test that the hang monitor timer expires properly if a new timer is started
