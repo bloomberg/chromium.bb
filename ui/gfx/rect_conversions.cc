@@ -28,5 +28,12 @@ Rect ToEnclosedRect(const RectF& rect) {
   return Rect(min_x, min_y, width, height);
 }
 
+Rect ToFlooredRectDeprecated(const RectF& rect) {
+  return Rect(ToFlooredInt(rect.origin().x()),
+              ToFlooredInt(rect.origin().y()),
+              ToFlooredInt(rect.size().width()),
+              ToFlooredInt(rect.size().height()));
+}
+
 }  // namespace gfx
 

@@ -292,7 +292,7 @@ class ExtractSubsetImageSource: public gfx::ImageSkiaSource {
     scaled_subset_bounds.Scale(
         ui::GetScaleFactorScale(image_rep.scale_factor()));
     SkIRect subset_bounds_in_pixel = RectToSkIRect(
-        ToEnclosingRect(scaled_subset_bounds));
+        ToFlooredRectDeprecated(scaled_subset_bounds));
     SkBitmap dst;
     bool success = image_rep.sk_bitmap().extractSubset(&dst,
                                                        subset_bounds_in_pixel);

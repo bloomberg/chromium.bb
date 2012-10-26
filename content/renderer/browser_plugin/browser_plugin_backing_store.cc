@@ -39,7 +39,8 @@ void BrowserPluginBackingStore::PaintToBackingStore(
 
   gfx::RectF scaled_bitmap_rect = bitmap_rect;
   scaled_bitmap_rect.Scale(scale_factor_);
-  gfx::Rect pixel_bitmap_rect = gfx::ToEnclosingRect(scaled_bitmap_rect);
+  gfx::Rect pixel_bitmap_rect =
+      gfx::ToFlooredRectDeprecated(scaled_bitmap_rect);
 
   const int width = pixel_bitmap_rect.width();
   const int height = pixel_bitmap_rect.height();

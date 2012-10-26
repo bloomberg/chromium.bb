@@ -555,6 +555,39 @@ TEST(RectTest, ToEnclosingRect) {
   }
 }
 
+TEST(RectTest, ToFlooredRect) {
+  static const struct Test {
+    float x1; // source
+    float y1;
+    float w1;
+    float h1;
+    int x2; // target
+    int y2;
+    int w2;
+    int h2;
+  } tests [] = {
+    { 0.0f, 0.0f, 0.0f, 0.0f,
+      0, 0, 0, 0 },
+    { -1.5f, -1.5f, 3.0f, 3.0f,
+      -2, -2, 3, 3 },
+    { -1.5f, -1.5f, 3.5f, 3.5f,
+      -2, -2, 3, 3 },
+    { 20000.5f, 20000.5f, 0.5f, 0.5f,
+      20000, 20000, 0, 0 },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    gfx::RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+
+    gfx::Rect floored = ToFlooredRectDeprecated(r1);
+    EXPECT_FLOAT_EQ(r2.x(), floored.x());
+    EXPECT_FLOAT_EQ(r2.y(), floored.y());
+    EXPECT_FLOAT_EQ(r2.width(), floored.width());
+    EXPECT_FLOAT_EQ(r2.height(), floored.height());
+  }
+}
+
 #if defined(OS_WIN)
 TEST(RectTest, ConstructAndAssign) {
   const RECT rect_1 = { 0, 0, 10, 10 };

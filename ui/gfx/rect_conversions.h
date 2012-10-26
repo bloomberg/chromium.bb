@@ -16,6 +16,10 @@ UI_EXPORT Rect ToEnclosingRect(const RectF& rect);
 // Returns the largest Rect that is enclosed by the given RectF.
 UI_EXPORT Rect ToEnclosedRect(const RectF& rect);
 
+// Returns a Rect obtained by flooring the values of the given RectF.
+// Please prefer the previous two functions in new code.
+UI_EXPORT Rect ToFlooredRectDeprecated(const RectF& rect);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_RECT_CONVERSIONS_H_

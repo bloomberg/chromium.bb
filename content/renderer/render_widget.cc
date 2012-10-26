@@ -986,7 +986,8 @@ void RenderWidget::DoDeferredUpdate() {
     // Compute a buffer for painting and cache it.
     gfx::RectF scaled_bounds = bounds;
     scaled_bounds.Scale(device_scale_factor_);
-    gfx::Rect pixel_bounds = gfx::ToEnclosingRect(scaled_bounds);
+    gfx::Rect pixel_bounds =
+        gfx::ToFlooredRectDeprecated(scaled_bounds);
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
                                                    pixel_bounds));
