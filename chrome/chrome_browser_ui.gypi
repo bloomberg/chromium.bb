@@ -74,12 +74,10 @@
         '../ui/ui.gyp:ui_resources',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:glue',
-        '../webkit/support/webkit_support.gyp:quota',
         '../webkit/support/webkit_support.gyp:user_agent',
-        '../webkit/support/webkit_support.gyp:webkit_storage',
         '../webkit/support/webkit_support.gyp:webkit_resources',
+        '../webkit/support/webkit_support.gyp:webkit_storage',
       ],
       'include_dirs': [
         '..',

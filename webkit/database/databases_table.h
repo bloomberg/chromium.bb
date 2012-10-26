@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace sql {
 class Connection;
@@ -15,7 +16,7 @@ class Connection;
 
 namespace webkit_database {
 
-struct DatabaseDetails {
+struct WEBKIT_STORAGE_EXPORT_PRIVATE DatabaseDetails {
   DatabaseDetails();
   ~DatabaseDetails();
 
@@ -25,7 +26,7 @@ struct DatabaseDetails {
   int64 estimated_size;
 };
 
-class DatabasesTable {
+class WEBKIT_STORAGE_EXPORT_PRIVATE DatabasesTable {
  public:
   explicit DatabasesTable(sql::Connection* db) : db_(db) { }
 

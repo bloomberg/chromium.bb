@@ -12,6 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "webkit/quota/quota_types.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
 
@@ -20,7 +21,8 @@ namespace quota {
 class QuotaEvictionHandler;
 struct QuotaAndUsage;
 
-class QuotaTemporaryStorageEvictor : public base::NonThreadSafe {
+class WEBKIT_STORAGE_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
+    : public base::NonThreadSafe {
  public:
   struct Statistics {
     Statistics()

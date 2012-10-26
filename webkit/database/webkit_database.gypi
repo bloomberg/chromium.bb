@@ -3,41 +3,20 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
-    {
-      'target_name': 'database',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/sql/sql.gyp:sql',
-        '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-      ],
-      'sources': [
-        'databases_table.cc',
-        'databases_table.h',
-        'database_connections.cc',
-        'database_connections.h',
-        'database_quota_client.cc',
-        'database_quota_client.h',
-        'database_tracker.cc',
-        'database_tracker.h',
-        'database_util.cc',
-        'database_util.h',
-        'quota_table.cc',
-        'quota_table.h',
-        'vfs_backend.cc',
-        'vfs_backend.h',
-      ],
-      'conditions': [
-        ['inside_chromium_build==0', {
-          'dependencies': [
-            '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
-          ],
-        }],
-      ],
-    },
-  ],
+  'variables': {
+    'webkit_database_sources': [
+      '../database/databases_table.cc',
+      '../database/databases_table.h',
+      '../database/database_connections.cc',
+      '../database/database_connections.h',
+      '../database/database_quota_client.cc',
+      '../database/database_quota_client.h',
+      '../database/database_tracker.cc',
+      '../database/database_tracker.h',
+      '../database/database_util.cc',
+      '../database/database_util.h',
+      '../database/vfs_backend.cc',
+      '../database/vfs_backend.h',
+    ],
+  },
 }

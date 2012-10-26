@@ -20,6 +20,7 @@
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "webkit/database/database_connections.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -37,13 +38,14 @@ class SpecialStoragePolicy;
 
 namespace webkit_database {
 
-extern const FilePath::CharType kDatabaseDirectoryName[];
-extern const FilePath::CharType kTrackerDatabaseFileName[];
+WEBKIT_STORAGE_EXPORT extern const FilePath::CharType kDatabaseDirectoryName[];
+WEBKIT_STORAGE_EXPORT extern const FilePath::CharType
+    kTrackerDatabaseFileName[];
 
 class DatabasesTable;
 
 // This class is used to store information about all databases in an origin.
-class OriginInfo {
+class WEBKIT_STORAGE_EXPORT OriginInfo {
  public:
   OriginInfo();
   OriginInfo(const OriginInfo& origin_info);
@@ -75,7 +77,7 @@ class OriginInfo {
 // the disk. Therefore, in a multi-threaded application, all methods of this
 // class should be called on the thread dedicated to file operations (file
 // thread in the browser process, for example), if such a thread exists.
-class DatabaseTracker
+class WEBKIT_STORAGE_EXPORT DatabaseTracker
     : public base::RefCountedThreadSafe<DatabaseTracker> {
  public:
   class Observer {

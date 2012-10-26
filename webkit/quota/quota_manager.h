@@ -24,6 +24,7 @@
 #include "webkit/quota/quota_database.h"
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/special_storage_policy.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 class FilePath;
 
@@ -54,7 +55,7 @@ struct QuotaAndUsage {
 };
 
 // An interface called by QuotaTemporaryStorageEvictor.
-class QuotaEvictionHandler {
+class WEBKIT_STORAGE_EXPORT QuotaEvictionHandler {
  public:
   typedef base::Callback<void(const GURL&)> GetLRUOriginCallback;
   typedef StatusCallback EvictOriginDataCallback;
@@ -93,10 +94,10 @@ struct UsageInfo {
 // The quota manager class.  This class is instantiated per profile and
 // held by the profile.  With the exception of the constructor and the
 // proxy() method, all methods should only be called on the IO thread.
-class QuotaManager : public QuotaTaskObserver,
-                     public QuotaEvictionHandler,
-                     public base::RefCountedThreadSafe<
-                         QuotaManager, QuotaManagerDeleter> {
+class WEBKIT_STORAGE_EXPORT QuotaManager
+    : public QuotaTaskObserver,
+      public QuotaEvictionHandler,
+      public base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter> {
  public:
   typedef base::Callback<void(QuotaStatusCode,
                               int64 /* usage */,
@@ -215,6 +216,7 @@ class QuotaManager : public QuotaTaskObserver,
 
  private:
   friend class base::DeleteHelper<QuotaManager>;
+  friend class base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter>;
   friend class MockQuotaManager;
   friend class MockStorageClient;
   friend class quota_internals::QuotaInternalsProxy;
@@ -418,7 +420,7 @@ struct QuotaManagerDeleter {
 };
 
 // The proxy may be called and finally released on any thread.
-class QuotaManagerProxy
+class WEBKIT_STORAGE_EXPORT QuotaManagerProxy
     : public base::RefCountedThreadSafe<QuotaManagerProxy> {
  public:
   virtual void RegisterClient(QuotaClient* client);
