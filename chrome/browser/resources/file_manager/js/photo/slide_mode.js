@@ -614,13 +614,19 @@ SlideMode.prototype.loadItem_ = function(
 
   this.showSpinner_(true);
 
-  var loadDone = function(loadType, delay) {
+  var loadDone = function(loadType, delay, error) {
     var video = this.isShowingVideo_();
     ImageUtil.setAttribute(this.container_, 'video', video);
 
     this.showSpinner_(false);
     if (loadType == ImageView.LOAD_TYPE_ERROR) {
-      this.showErrorBanner_(video ? 'VIDEO_ERROR' : 'IMAGE_ERROR');
+      // if we have a specific error, then display it
+      if (error) {
+        this.showErrorBanner_(error);
+      } else {
+        // otherwise try to infer general error
+        this.showErrorBanner_(video ? 'VIDEO_ERROR' : 'IMAGE_ERROR');
+      }
     } else if (loadType == ImageView.LOAD_TYPE_OFFLINE) {
       this.showErrorBanner_(video ? 'VIDEO_OFFLINE' : 'IMAGE_OFFLINE');
     }

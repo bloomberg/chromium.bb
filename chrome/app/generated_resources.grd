@@ -12110,6 +12110,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GALLERY_IMAGE_ERROR" desc="In the Gallery, message informing that the image failed to load.">
         This file could not be displayed.
       </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_IMAGE_TOO_BIG_ERROR" desc="In the Gallery, message informing that the image is too big to be displayed.">
+        This file is too large to be opened.
+      </message>
       <message name="IDS_FILE_BROWSER_GALLERY_VIDEO_ERROR" desc="In the Gallery, message informing that the video could not be played.">
         This file could not be played.
       </message>

@@ -114,7 +114,7 @@ ImageEditor.prototype.openSession = function(
 
   var self = this;
   this.imageView_.load(
-      url, metadata, effect, displayCallback, function(loadType, delay) {
+      url, metadata, effect, displayCallback, function(loadType, delay, error) {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument,
@@ -123,7 +123,7 @@ ImageEditor.prototype.openSession = function(
     self.commandQueue_.attachUI(
         self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
     self.updateUndoRedo();
-    loadCallback(loadType, delay);
+    loadCallback(loadType, delay, error);
   });
 };
 

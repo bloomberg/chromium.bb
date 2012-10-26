@@ -421,6 +421,11 @@ ImageUtil.ImageLoader = function(document) {
 };
 
 /**
+ * Max size of image to be displayed (in pixels)
+ */
+ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT = 25 * 1000 * 1000;
+
+/**
  * @param {string} url Image URL.
  * @param {function(function(object))} transformFetcher function to get
  *    the image transform (which we need for the image orientation)
@@ -451,18 +456,25 @@ ImageUtil.ImageLoader.prototype.load = function(
     // The onload fires only if the src is different from the previous value.
     // To work around that we create a new Image every time.
     this.image_ = new Image();
-    this.image_.onload = function(e) {
-      this.image = null;
-      transformFetcher(url, onTransform.bind(this, e.target));
-    }.bind(this);
-    this.image_.onerror = function() {
+    var errorCallback = function(error) {
       this.image_ = null;
       this.callback_ = null;
       var emptyCanvas = this.document_.createElement('canvas');
       emptyCanvas.width = 0;
       emptyCanvas.height = 0;
-      callback(emptyCanvas);
+      callback(emptyCanvas, error);
     }.bind(this);
+    this.image_.onload = function(e) {
+      if (this.image_.width * this.image_.height >
+          ImageUtil.ImageLoader.IMAGE_SIZE_LIMIT) {
+        errorCallback('IMAGE_TOO_BIG_ERROR');
+        return;
+      }
+      transformFetcher(url, onTransform.bind(this, e.target));
+    }.bind(this);
+    // errorCallback has an optional error argument, which in case of general
+    // error should not be specified
+    this.image_.onerror = errorCallback.bind(this, 'IMAGE_ERROR');
     this.image_.src = url;
   }.bind(this);
   if (opt_delay) {

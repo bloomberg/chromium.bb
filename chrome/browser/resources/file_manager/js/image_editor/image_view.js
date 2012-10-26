@@ -327,19 +327,22 @@ ImageView.prototype.load = function(url, metadata, effect,
       this.replace(video, effect); // Show the poster immediately.
       if (displayCallback) displayCallback();
     }
-    video.addEventListener('loadedmetadata', onVideoLoad);
-    video.addEventListener('error', onVideoLoad);
+    video.addEventListener('loadedmetadata', onVideoLoadSuccess);
+    video.addEventListener('error', onVideoLoadError);
 
     // Do not try no stream when offline.
     video.src = (navigator.onLine && metadata.streaming &&
                  metadata.streaming.url) || url;
     video.load();
 
-    function onVideoLoad() {
-      video.removeEventListener('loadedmetadata', onVideoLoad);
-      video.removeEventListener('error', onVideoLoad);
-      displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, videoPreview, video);
+    function onVideoLoad(opt_error) {
+      video.removeEventListener('loadedmetadata', onVideoLoadSuccess);
+      video.removeEventListener('error', onVideoLoadError);
+      displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, videoPreview, video,
+          opt_error);
     }
+    var onVideoLoadError = onVideoLoad.bind(this, 'VIDEO_ERROR');
+    var onVideoLoadSuccess = onVideoLoad.bind(this, null);
     return;
   }
   var cached = this.contentCache_.getItem(this.contentID_);
@@ -412,9 +415,8 @@ ImageView.prototype.load = function(url, metadata, effect,
         delay);
   }
 
-  function displayMainImage(loadType, previewShown, content) {
-    if ((!loadingVideo && !content.width) ||
-        (loadingVideo && !content.duration)) {
+  function displayMainImage(loadType, previewShown, content, opt_error) {
+    if (opt_error) {
       loadType = ImageView.LOAD_TYPE_ERROR;
     }
 
@@ -445,7 +447,7 @@ ImageView.prototype.load = function(url, metadata, effect,
       // |streaming| is set only when the file is not locally cached.
       loadType = ImageView.LOAD_TYPE_OFFLINE;
     }
-    if (loadCallback) loadCallback(loadType, animationDuration);
+    if (loadCallback) loadCallback(loadType, animationDuration, opt_error);
   }
 };
 
