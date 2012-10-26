@@ -31,6 +31,7 @@ extern const char kActionSave[];
 extern const char kActionShare[];
 extern const char kActionSubscribe[];
 extern const char kActionView[];
+extern const char kActionCrosEcho[];
 
 extern const char kQuickOfficeViewerServiceURL[];
 extern const char kQuickOfficeViewerDevServiceURL[];

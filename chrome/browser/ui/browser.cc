@@ -1674,6 +1674,19 @@ void Browser::WebIntentDispatch(
       return;
     }
   }
+#else
+  // ChromeOS currently uses a couple specific intent actions.
+  // TODO(gbillock): delete this when we find good alternatives for those uses.
+  if (intents_dispatcher->GetIntent().action !=
+      ASCIIToUTF16(web_intents::kActionCrosEcho) &&
+      intents_dispatcher->GetIntent().action !=
+      ASCIIToUTF16(web_intents::kActionView)) {
+    web_intents::RecordIntentsDispatchDisabled();
+    intents_dispatcher->SendReplyMessage(
+        webkit_glue::WEB_INTENT_REPLY_FAILURE,
+        ASCIIToUTF16("Intents may only be invoked from extensions/apps."));
+    return;
+  }
 #endif
 
   web_intents::RecordIntentDispatchRequested();
