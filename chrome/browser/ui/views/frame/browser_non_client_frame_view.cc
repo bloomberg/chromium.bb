@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/managed_mode.h"
+#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"

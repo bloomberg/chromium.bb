@@ -6,7 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

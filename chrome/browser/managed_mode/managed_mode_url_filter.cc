@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 
 #include "base/file_path.h"
 #include "base/json/json_file_value_serializer.h"

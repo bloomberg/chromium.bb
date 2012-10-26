@@ -1447,8 +1447,8 @@
         'browser/internal_auth_unittest.cc',
         'browser/language_usage_metrics_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
-        'browser/managed_mode_unittest.cc',
-        'browser/managed_mode_url_filter_unittest.cc',
+        'browser/managed_mode/managed_mode_unittest.cc',
+        'browser/managed_mode/managed_mode_url_filter_unittest.cc',
         'browser/media/media_internals_unittest.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.h',
@@ -2320,7 +2320,7 @@
         }],
         ['configuration_policy==0', {
           'sources!': [
-            'browser/managed_mode_url_filter_unittest.cc',
+            'browser/managed_mode/managed_mode_url_filter_unittest.cc',
             'browser/prefs/proxy_policy_unittest.cc',
             'browser/ui/webui/policy_ui_unittest.cc',
             'browser/value_store/policy_value_store_unittest.cc',
@@ -2617,8 +2617,8 @@
             # There's no Browser/BrowserList on Android.
             'browser/browser_commands_unittest.cc',
             'browser/extensions/extension_ui_unittest.cc',
-            'browser/managed_mode_unittest.cc',
-            'browser/managed_mode_url_filter_unittest.cc',
+            'browser/managed_mode/managed_mode_unittest.cc',
+            'browser/managed_mode/managed_mode_url_filter_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/page_cycler/page_cycler_unittest.cc',
             'browser/profiles/off_the_record_profile_impl_unittest.cc',

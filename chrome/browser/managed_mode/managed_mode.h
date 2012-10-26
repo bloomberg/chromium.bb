@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MANAGED_MODE_H_
-#define CHROME_BROWSER_MANAGED_MODE_H_
+#ifndef CHROME_BROWSER_MANAGED_MODE_MANAGED_MODE_H_
+#define CHROME_BROWSER_MANAGED_MODE_MANAGED_MODE_H_
 
 #include <set>
 #include <string>
@@ -125,4 +125,4 @@ class ManagedMode : public chrome::BrowserListObserver,
   DISALLOW_COPY_AND_ASSIGN(ManagedMode);
 };
 
-#endif  // CHROME_BROWSER_MANAGED_MODE_H_
+#endif  // CHROME_BROWSER_MANAGED_MODE_MANAGED_MODE_H_

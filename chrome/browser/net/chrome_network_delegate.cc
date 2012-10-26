@@ -40,7 +40,7 @@
 #include "net/url_request/url_request.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #endif
 
 #if defined(OS_CHROMEOS)

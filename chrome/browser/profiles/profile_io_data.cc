@@ -69,7 +69,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/managed_mode.h"
+#include "chrome/browser/managed_mode/managed_mode.h"
 #endif
 
 #if defined(OS_CHROMEOS)
