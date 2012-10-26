@@ -41,6 +41,9 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     public static final int PAGE_TRANSITION_TYPED = 1;
     public static final int PAGE_TRANSITION_AUTO_BOOKMARK = 2;
     public static final int PAGE_TRANSITION_START_PAGE = 6;
+    // Flag that should be ORed to the page transition when a navigation is initiated from the
+    // omnibox.
+    public static final int PAGE_TRANSITION_FROM_ADDRESS_BAR = 0x02000000;
 
     // Used when ContentView implements a standalone View.
     public static final int PERSONALITY_VIEW = ContentViewCore.PERSONALITY_VIEW;
