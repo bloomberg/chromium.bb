@@ -259,7 +259,8 @@ FormStructure::FormStructure(const FormData& form)
 
 FormStructure::~FormStructure() {}
 
-void FormStructure::DetermineHeuristicTypes() {
+void FormStructure::DetermineHeuristicTypes(
+    const AutofillMetrics& metric_logger) {
   // First, try to detect field types based on each field's |autocomplete|
   // attribute value.  If there is at least one form field that specifies an
   // autocomplete type hint, don't try to apply other heuristics to match fields
@@ -281,6 +282,15 @@ void FormStructure::DetermineHeuristicTypes() {
 
   UpdateAutofillCount();
   IdentifySections(has_author_specified_sections);
+
+  if (IsAutofillable(true)) {
+    metric_logger.LogDeveloperEngagementMetric(
+        AutofillMetrics::FILLABLE_FORM_PARSED);
+    if (has_author_specified_types_) {
+      metric_logger.LogDeveloperEngagementMetric(
+          AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS);
+    }
+  }
 }
 
 bool FormStructure::EncodeUploadRequest(

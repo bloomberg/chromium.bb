@@ -17,6 +17,16 @@ class TimeDelta;
 
 class AutofillMetrics {
  public:
+  enum DeveloperEngagementMetric {
+    // Parsed a form that is potentially autofillable.
+    FILLABLE_FORM_PARSED = 0,
+    // Parsed a form that is potentially autofillable and contains at least one
+    // web developer-specified field type hint, a la
+    // http://is.gd/whatwg_autocomplete
+    FILLABLE_FORM_CONTAINS_TYPE_HINTS,
+    NUM_DEVELOPER_ENGAGEMENT_METRICS
+  };
+
   enum InfoBarMetric {
     INFOBAR_SHOWN = 0,  // We showed an infobar, e.g. prompting to save credit
                         // card info.
@@ -123,6 +133,9 @@ class AutofillMetrics {
   virtual ~AutofillMetrics();
 
   virtual void LogCreditCardInfoBarMetric(InfoBarMetric metric) const;
+
+  virtual void LogDeveloperEngagementMetric(
+      DeveloperEngagementMetric metric) const;
 
   virtual void LogHeuristicTypePrediction(
       FieldTypeQualityMetric metric,

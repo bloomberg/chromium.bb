@@ -396,6 +396,8 @@ class AutofillManager : public content::NotificationObserver,
                            DeterminePossibleFieldTypesForUploadStressTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, DeveloperEngagement);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FormFillDuration);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            NoQualityMetricsForNonAutofillableForms);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetrics);
@@ -408,7 +410,6 @@ class AutofillManager : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            UserHappinessFormLoadAndSubmission);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, UserHappinessFormInteraction);
-  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FormFillDuration);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };

@@ -1082,7 +1082,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
   // Add the new or updated form to our cache.
   form_structures_.push_back(new FormStructure(live_form));
   *updated_form = *form_structures_.rbegin();
-  (*updated_form)->DetermineHeuristicTypes();
+  (*updated_form)->DetermineHeuristicTypes(*metric_logger_);
 
   // If we have cached data, propagate it to the updated form.
   if (cached_form) {
@@ -1325,7 +1325,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     if (!form_structure->ShouldBeParsed(false))
       continue;
 
-    form_structure->DetermineHeuristicTypes();
+    form_structure->DetermineHeuristicTypes(*metric_logger_);
 
     // Set aside forms with method GET or author-specified types, so that they
     // are not included in the query to the server.

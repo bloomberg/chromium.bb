@@ -48,7 +48,7 @@ class FormStructure {
 
   // Runs several heuristics against the form fields to determine their possible
   // types.
-  void DetermineHeuristicTypes();
+  void DetermineHeuristicTypes(const AutofillMetrics& metric_logger);
 
   // Encodes the XML upload request from this FormStructure.
   bool EncodeUploadRequest(const FieldTypeSet& available_field_types,

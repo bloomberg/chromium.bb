@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/autofill/form_structure.h"
+
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "googleurl/src/gurl.h"
@@ -13,6 +15,20 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
 using WebKit::WebInputElement;
+
+namespace {
+
+// Unlike the base AutofillMetrics, exposes copy and assignment constructors,
+// which are handy for briefer test code.  The AutofillMetrics class is
+// stateless, so this is safe.
+class TestAutofillMetrics : public AutofillMetrics {
+ public:
+  TestAutofillMetrics() {}
+  virtual ~TestAutofillMetrics() {}
+};
+
+}  // anonymous namespace
+
 
 namespace content {
 
@@ -97,7 +113,7 @@ TEST(FormStructureTest, AutofillCount) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
 
   // Only text and select fields that are heuristically matched are counted.
   EXPECT_EQ(1U, form_structure.autofill_count());
@@ -136,7 +152,7 @@ TEST(FormStructureTest, IsAutofillable) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
 
   // We now have three text fields, but only two auto-fillable fields.
@@ -151,7 +167,7 @@ TEST(FormStructureTest, IsAutofillable) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
 
   // We now have three auto-fillable fields.
@@ -161,14 +177,14 @@ TEST(FormStructureTest, IsAutofillable) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // The method must be 'post', though we can intentionally ignore this
   // criterion for the sake of providing a helpful warning message to the user.
   form.method = ASCIIToUTF16("get");
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
   EXPECT_TRUE(form_structure->IsAutofillable(false));
 
@@ -176,13 +192,13 @@ TEST(FormStructureTest, IsAutofillable) {
   form.method = ASCIIToUTF16("post");
   form.action = GURL("http://google.com/search?q=hello");
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
 
   // But search can be in the URL.
   form.action = GURL("http://search.com/?q=hello");
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 }
 
@@ -303,7 +319,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // Expect the correct number of fields.
@@ -354,7 +370,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttribute) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // Expect the correct number of fields.
@@ -392,7 +408,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // Expect the correct number of fields.
@@ -433,7 +449,7 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
 
@@ -447,7 +463,7 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
   // Now update the first form field to include an 'autocomplete' attribute.
   form.fields.front().autocomplete_attribute = "x-other";
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
   EXPECT_FALSE(form_structure->ShouldBeCrowdsourced());
 
@@ -507,7 +523,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure.IsAutofillable(true));
 
   // Expect the correct number of fields.
@@ -552,7 +568,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsDegenerate) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
 
   // Expect the correct number of fields.
   ASSERT_EQ(6U, form_structure.field_count());
@@ -582,7 +598,7 @@ TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
 
   // Expect the correct number of fields.
   ASSERT_EQ(2U, form_structure.field_count());
@@ -620,7 +636,7 @@ TEST(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
 
   // Expect the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
@@ -685,7 +701,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(10U, form_structure->field_count());
   ASSERT_EQ(9U, form_structure->autofill_count());
@@ -753,7 +769,7 @@ TEST(FormStructureTest, HeuristicsSample6) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(7U, form_structure->field_count());
   ASSERT_EQ(6U, form_structure->autofill_count());
@@ -819,7 +835,7 @@ TEST(FormStructureTest, HeuristicsLabelsOnly) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(8U, form_structure->field_count());
   ASSERT_EQ(7U, form_structure->autofill_count());
@@ -877,7 +893,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(6U, form_structure->field_count());
   ASSERT_EQ(4U, form_structure->autofill_count());
@@ -937,7 +953,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(7U, form_structure->field_count());
   ASSERT_EQ(4U, form_structure->autofill_count());
@@ -984,7 +1000,7 @@ TEST(FormStructureTest, ThreeAddressLines) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -1026,7 +1042,7 @@ TEST(FormStructureTest, BillingAndShippingAddresses) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(4U, form_structure->autofill_count());
@@ -1072,7 +1088,7 @@ TEST(FormStructureTest, ThreeAddressLinesExpedia) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
   EXPECT_EQ(3U, form_structure->autofill_count());
@@ -1111,7 +1127,7 @@ TEST(FormStructureTest, TwoAddressLinesEbay) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -1145,7 +1161,7 @@ TEST(FormStructureTest, HeuristicsStateWithProvince) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(3U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -1212,7 +1228,7 @@ TEST(FormStructureTest, HeuristicsWithBilling) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(11U, form_structure->field_count());
   ASSERT_EQ(11U, form_structure->autofill_count());
@@ -1263,7 +1279,7 @@ TEST(FormStructureTest, ThreePartPhoneNumber) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
   ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
@@ -1309,7 +1325,7 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // Expect the correct number of fields.
@@ -1362,7 +1378,7 @@ TEST(FormStructureTest, CVCCodeClash) {
   form.fields.push_back(field);
 
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // Expect the correct number of fields.
@@ -1501,7 +1517,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   FormData form;
   form.method = ASCIIToUTF16("post");
   form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
 
   FormFieldData field;
   field.form_control_type = "text";

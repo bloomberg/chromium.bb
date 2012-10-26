@@ -18,6 +18,7 @@
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -2526,7 +2527,8 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->DetermineHeuristicTypes();
+  AutofillMetrics metrics_logger;  // ignored
+  form_structure->DetermineHeuristicTypes(metrics_logger);
 
   // Clear the heuristic types, and instead set the appropriate server types.
   std::vector<AutofillFieldType> heuristic_types, server_types;

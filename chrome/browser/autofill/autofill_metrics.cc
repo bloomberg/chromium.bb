@@ -258,6 +258,14 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
                             NUM_INFO_BAR_METRICS);
 }
 
+void AutofillMetrics::LogDeveloperEngagementMetric(
+    DeveloperEngagementMetric metric) const {
+  DCHECK(metric < NUM_DEVELOPER_ENGAGEMENT_METRICS);
+
+  UMA_HISTOGRAM_ENUMERATION("Autofill.DeveloperEngagement", metric,
+                            NUM_DEVELOPER_ENGAGEMENT_METRICS);
+}
+
 void AutofillMetrics::LogHeuristicTypePrediction(
     FieldTypeQualityMetric metric,
     AutofillFieldType field_type,
