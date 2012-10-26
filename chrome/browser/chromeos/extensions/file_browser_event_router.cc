@@ -558,7 +558,12 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
-  if (!profile_ || mount_info.mount_type == chromeos::MOUNT_TYPE_INVALID) {
+  // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
+  // happen at shutdown.
+  if (!profile_)
+    return;
+
+  if (mount_info.mount_type == chromeos::MOUNT_TYPE_INVALID) {
     NOTREACHED();
     return;
   }
