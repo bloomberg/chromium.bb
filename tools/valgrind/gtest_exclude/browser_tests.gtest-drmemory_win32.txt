@@ -197,4 +197,9 @@ WebstoreStandaloneInstallTest.*
 # DrM-i#1052-c#25
 MetricsServiceTest.*
 PrintPreviewTabControllerBrowserTest.*
-
+# DrM-i#1052-c#26
+MalwareDOMDetailsTest.*
+ExtensionsLoadMultipleTest.*
+NaClExtensionTest.*
+PolicyStatisticsCollectorTest.*
+HistoryExtensionApiTest.*
