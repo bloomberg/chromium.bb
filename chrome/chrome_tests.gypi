@@ -1330,6 +1330,7 @@
         'browser/extensions/event_router_forwarder_unittest.cc',
         'browser/extensions/extension_action_icon_factory_unittest.cc',
         'browser/extensions/extension_action_unittest.cc',
+        'browser/extensions/extension_context_menu_model_unittest.cc',
         'browser/extensions/extension_creator_filter_unittest.cc',
         'browser/extensions/extension_function_test_utils.cc',
         'browser/extensions/extension_function_test_utils.h',
@@ -2616,6 +2617,7 @@
 
             # There's no Browser/BrowserList on Android.
             'browser/browser_commands_unittest.cc',
+            'browser/extensions/extension_context_menu_model_unittest.cc',
             'browser/extensions/extension_ui_unittest.cc',
             'browser/managed_mode/managed_mode_unittest.cc',
             'browser/managed_mode/managed_mode_url_filter_unittest.cc',

@@ -5,7 +5,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -523,41 +522,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Frames) {
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Enabled) {
   TestEnabledContextMenu(true);
   TestEnabledContextMenu(false);
-}
-
-// Tests that applicable menu items are disabled when a ManagementPolicy
-// prohibits them.
-IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, PolicyDisablesItems) {
-  ASSERT_TRUE(LoadContextMenuExtension("simple"));
-  ExtensionService* service = browser()->profile()->GetExtensionService();
-  ASSERT_TRUE(service != NULL);
-  ASSERT_FALSE(service->extensions()->is_empty());
-
-  // We need an extension to pass to the menu constructor, but we don't care
-  // which one.
-  ExtensionSet::const_iterator i = service->extensions()->begin();
-  const extensions::Extension* extension = *i;
-  ASSERT_TRUE(extension != NULL);
-
-  scoped_refptr<ExtensionContextMenuModel> menu(
-      new ExtensionContextMenuModel(extension, browser(), NULL));
-
-  extensions::ExtensionSystem::Get(
-      browser()->profile())->management_policy()->UnregisterAllProviders();
-
-  // Actions should be enabled.
-  ASSERT_TRUE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::DISABLE));
-  ASSERT_TRUE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
-
-  extensions::TestManagementPolicyProvider policy_provider(
-    extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
-  extensions::ExtensionSystem::Get(
-      browser()->profile())->management_policy()->RegisterProvider(
-      &policy_provider);
-
-  // Now the actions are disabled.
-  ASSERT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::DISABLE));
-  ASSERT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
 }
 
 class ExtensionContextMenuBrowserLazyTest :

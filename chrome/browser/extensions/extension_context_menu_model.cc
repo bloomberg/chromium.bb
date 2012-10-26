@@ -78,7 +78,8 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     if (!web_contents)
       return false;
 
-    return extension_action_->HasPopup(SessionID::IdForTab(web_contents));
+    return extension_action_ &&
+        extension_action_->HasPopup(SessionID::IdForTab(web_contents));
   } else if (command_id == DISABLE || command_id == UNINSTALL) {
     // Some extension types can not be disabled or uninstalled.
     return extensions::ExtensionSystem::Get(
@@ -165,6 +166,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   extension_action_ = extension_action_manager->GetBrowserAction(*extension);
   if (!extension_action_)
     extension_action_ = extension_action_manager->GetPageAction(*extension);
+  DCHECK(extension_action_);
 
   AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator(ui::NORMAL_SEPARATOR);
