@@ -82,7 +82,7 @@ deps = {
     'src/third_party/mozc/session':
         Var('git_url') + '/external/mozc/src/session.git@2fcc92e77f89b40f51af703954c14bc524b9fcb0',
     'src/third_party/opus/src':
-        Var('git_url') + '/chromium/deps/opus.git@885f2ff5a7a7d6a73432d26a6c0ae9147e6b4521',
+        Var('git_url') + '/chromium/deps/opus.git@6304b9628cb7244e3cc78f740aeb6659562f1857',
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@54380c8e93060a771a2b4bf608e6d7160b3a71e4',
     'src/third_party/pyftpdlib/src':
