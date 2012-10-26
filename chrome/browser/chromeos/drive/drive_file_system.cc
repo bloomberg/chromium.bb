@@ -421,7 +421,7 @@ void DriveFileSystem::CheckForUpdates() {
   DVLOG(1) << "CheckForUpdates";
 
   ContentOrigin initial_origin = resource_metadata_->origin();
-  if (initial_origin == INITIALIZED) {
+  if (initial_origin == FROM_SERVER) {
     resource_metadata_->set_origin(REFRESHING);
     feed_loader_->ReloadFromServerIfNeeded(
         initial_origin,

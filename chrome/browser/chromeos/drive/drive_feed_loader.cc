@@ -329,7 +329,10 @@ void DriveFeedLoader::OnGetAccountMetadata(
                    << ", server = "
                    << account_metadata->largest_changestamp();
     }
-    resource_metadata_->set_origin(initial_origin);
+    // If our cache holds the latest state from the server, change the
+    // state to FROM_SERVER.
+    resource_metadata_->set_origin(
+        initial_origin == FROM_CACHE ? FROM_SERVER : initial_origin);
     changes_detected = false;
   }
 
@@ -387,7 +390,10 @@ void DriveFeedLoader::OnGetAboutResource(
                    << ", server = "
                    << largest_changestamp;
     }
-    resource_metadata_->set_origin(initial_origin);
+    // If our cache holds the latest state from the server, change the
+    // state to FROM_SERVER.
+    resource_metadata_->set_origin(
+        initial_origin == FROM_CACHE ? FROM_SERVER : initial_origin);
     changes_detected = false;
   }
 
@@ -789,7 +795,7 @@ void DriveFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If we have already received updates from the server, bail out.
-  if (resource_metadata_->origin() == INITIALIZED)
+  if (resource_metadata_->origin() == FROM_SERVER)
     return;
 
   // Update directory structure only if everything is OK and we haven't yet
@@ -839,8 +845,8 @@ void DriveFeedLoader::ContinueWithInitializedResourceMetadata(
   ContentOrigin initial_origin = UNINITIALIZED;
   if (resource_metadata_->origin() != INITIALIZING) {
     // If directory content is already initialized, restore content origin
-    // to INITIALIZED in case of failure.
-    initial_origin = INITIALIZED;
+    // to FROM_CACHE in case of failure.
+    initial_origin = FROM_CACHE;
     resource_metadata_->set_origin(REFRESHING);
   }
 
