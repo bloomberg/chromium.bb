@@ -154,3 +154,31 @@ WebNavigationApiTest.*
 ScriptBadgeApiTest.*
 BrowsingDataRemoverBrowserTest.*
 BrowserActionApiTest.*
+# DrM-i#1052-c#20
+ExtensionWebstorePrivateBundleTest.*
+DeviceManagementServiceIntegrationTestInstance*
+ExtensionPageCaptureApiTest.*
+
+# Failed tests from debug build
+# DrM-i#1052-c#21
+PrintWebViewHelperTest.*
+PrintWebViewHelperPreviewTest.*
+PrintWebViewHelperKioskTest.*
+TranslateHelperTest.*
+ChromeRenderViewTest.*
+PhishingDOMFeatureExtractorTest.*
+ThumbnailerTest.*
+PhishingClassifierDelegateTest.*
+PasswordGenerationManagerTest.*
+PasswordAutofillManagerTest.*
+FormAutocompleteTest.*
+FormAutofillTest.*
+AutomationRendererHelperTest.*
+ContentSettingsTest.*
+BrowserActionsContainerTest.*
+SessionRestoreTest.*
+ExtensionsLoadTest.*
+PageClickTrackerTest.*
+PhishingDOMFeatureExtractorTest.*
+SSLUITestBlock.*
+ExtensionInstallUIBrowserTest.*
