@@ -51,10 +51,8 @@ enum ContentOrigin {
   INITIALIZING,
   // Content is initialized, but during refreshing.
   REFRESHING,
-  // Content is initialized from disk cache.
-  FROM_CACHE,
-  // Content is initialized from the direct server response.
-  FROM_SERVER,
+  // Content is initialized.
+  INITIALIZED,
 };
 
 // Converts a ContentOrigin constant to a string of its name.

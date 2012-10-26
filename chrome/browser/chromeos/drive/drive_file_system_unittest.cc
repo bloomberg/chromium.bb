@@ -130,6 +130,13 @@ ACTION_P2(MockCopyDocument, status, value) {
       base::Bind(arg2, status, base::Passed(value)));
 }
 
+ACTION(MockFailingGetDocuments) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(arg4, google_apis::GDATA_NO_CONNECTION,
+                 base::Passed(scoped_ptr<base::Value>())));
+}
+
 // Counts the number of files (not directories) in |entries|.
 int CountFiles(const DriveEntryProtoVector& entries) {
   int num_files = 0;
@@ -593,16 +600,23 @@ class DriveFileSystemTest : public testing::Test {
     google_apis::test_util::RunBlockingPoolTask();
   }
 
+  // Flag for specifying the timestamp of the test filesystem cache.
+  enum SaveTestFileSystemParam {
+    USE_OLD_TIMESTAMP,
+    USE_SERVER_TIMESTAMP,
+  };
+
   // Creates a proto file representing a filesystem with directories:
   // drive, drive/Dir1, drive/Dir1/SubDir2
   // and files
   // drive/File1, drive/Dir1/File2, drive/Dir1/SubDir2/File3.
-  // Sets the changestamp to 654321, equal to that of "account_metadata.json"
-  // test data, indicating the cache is holding the latest file system info.
-  void SaveTestFileSystem() {
+  // If |use_up_to_date_timestamp| is true, sets the changestamp to 654321,
+  // equal to that of "account_metadata.json" test data, indicating the cache is
+  // holding the latest file system info.
+  void SaveTestFileSystem(SaveTestFileSystemParam param) {
     DriveRootDirectoryProto root;
     root.set_version(kProtoVersion);
-    root.set_largest_changestamp(654321);
+    root.set_largest_changestamp(param == USE_SERVER_TIMESTAMP ? 654321 : 0);
     DriveDirectoryProto* root_dir = root.mutable_drive_directory();
     DriveEntryProto* dir_base = root_dir->mutable_drive_entry();
     PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
@@ -1159,7 +1173,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
 }
 
 TEST_F(DriveFileSystemTest, CachedFeedLoading) {
-  SaveTestFileSystem();
+  SaveTestFileSystem(USE_OLD_TIMESTAMP);
   TestLoadMetadataFromCache();
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
@@ -1171,7 +1185,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoading) {
 }
 
 TEST_F(DriveFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
-  SaveTestFileSystem();
+  SaveTestFileSystem(USE_SERVER_TIMESTAMP);
 
   // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
   // so no request for new feeds (i.e., call to GetDocuments) should happen.
@@ -1186,13 +1200,44 @@ TEST_F(DriveFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
 
   // Since the file system has verified that it holds the latest snapshot,
-  // it should change its state to FROM_SERVER, which admits periodic refresh.
+  // it should change its state to INITIALIZED, which admits periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check updates.
   mock_drive_service_->set_account_metadata(
       google_apis::test_util::LoadJSONFile(
           "gdata/account_metadata.json").release());
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
+
+  file_system_->CheckForUpdates();
+  google_apis::test_util::RunBlockingPoolTask();
+}
+
+TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
+  SaveTestFileSystem(USE_OLD_TIMESTAMP);
+
+  mock_drive_service_->set_account_metadata(
+      google_apis::test_util::LoadJSONFile(
+          "gdata/account_metadata.json").release());
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
+
+  // Make GetDocuments fail for simulating offline situation. This will leave
+  // the file system "loaded from cache, but not synced with server" state.
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _))
+      .WillOnce(MockFailingGetDocuments());
+
+  // Kicks loading of cached file system and query for server update.
+  EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
+
+  // Since the file system has at least succeeded to load cached snapshot,
+  // the file system should be able to start periodic refresh.
+  // To test it, call CheckForUpdates and verify it does try to check updates.
+  mock_drive_service_->set_account_metadata(
+      google_apis::test_util::LoadJSONFile(
+          "gdata/account_metadata.json").release());
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _)).Times(1);
 
   file_system_->CheckForUpdates();
   google_apis::test_util::RunBlockingPoolTask();

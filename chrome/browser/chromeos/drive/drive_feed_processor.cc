@@ -56,7 +56,7 @@ void DriveFeedProcessor::ApplyFeeds(
     std::set<FilePath>* changed_dirs) {
   bool is_delta_feed = start_changestamp != 0;
 
-  resource_metadata_->set_origin(FROM_SERVER);
+  resource_metadata_->set_origin(INITIALIZED);
 
   int64 delta_feed_changestamp = 0;
   FeedToEntryProtoMapUMAStats uma_stats;
