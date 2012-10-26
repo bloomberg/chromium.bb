@@ -88,6 +88,19 @@ class BrowserOptions(optparse.Values):
     group.add_option('--record', action='store_const',
         dest='wpr_mode', const=wpr_modes.WPR_RECORD,
         help='Record to the page set archive')
+    group.add_option('--page-repeat', dest='page_repeat', default=1,
+        help='Number of times to repeat each individual ' +
+        'page in the pageset before proceeding.')
+    group.add_option('--pageset-repeat', dest='pageset_repeat', default=1,
+        help='Number of times to repeat the entire pageset ' +
+        'before finishing.')
+    group.add_option('--test-shuffle', action='store_true', dest='test_shuffle',
+        help='Shuffle the order of pages within a pageset.')
+    group.add_option('--test-shuffle-order-file',
+        dest='test_shuffle_order_file', default=None,
+        help='Filename of an output of a previously run test on the current ' +
+        'pageset. The tests will run in the same order again, overriding ' +
+        'what is specified by --page-repeat and --pageset-repeat.')
     parser.add_option_group(group)
 
     # Debugging options

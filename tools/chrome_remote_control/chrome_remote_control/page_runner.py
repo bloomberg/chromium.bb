@@ -6,6 +6,8 @@ import os
 import time
 import traceback
 import urlparse
+import random
+import csv
 
 from chrome_remote_control import page_test
 from chrome_remote_control import util
@@ -25,6 +27,27 @@ class PageRunner(object):
 
   def __exit__(self, *args):
     self.Close()
+
+  def _ReorderPageSet(self, test_shuffle_order_file):
+    page_set_dict = {}
+    for page in self.page_set:
+      page_set_dict[page.url] = page
+
+    self.page_set.pages = []
+    with open(test_shuffle_order_file, 'rb') as csv_file:
+      csv_reader = csv.reader(csv_file)
+      csv_header = csv_reader.next()
+
+      if 'url' not in csv_header:
+        raise Exception('Unusable test_shuffle_order_file.')
+
+      url_index = csv_header.index('url')
+
+      for csv_row in csv_reader:
+        if csv_row[url_index] in page_set_dict:
+          self.page_set.pages.append(page_set_dict[csv_row[url_index]])
+        else:
+          raise Exception('Unusable test_shuffle_order_file.')
 
   def Run(self, options, possible_browser, test, results):
     archive_path = os.path.abspath(os.path.join(self.page_set.base_dir,
@@ -55,10 +78,26 @@ http://goto/read-src-internal, or create a new archive using --record.
 
       b.credentials.WarnIfMissingCredentials(self.page_set)
 
+      if not options.test_shuffle and options.test_shuffle_order_file is not\
+          None:
+        raise Exception('--test-shuffle-order-file requires --test-shuffle.')
+
+      # Set up a random generator for shuffling the page running order.
+      test_random = random.Random()
+
       b.SetReplayArchivePath(archive_path)
       with b.ConnectToNthTab(0) as tab:
-        for page in self.page_set:
-          self._RunPage(options, page, tab, test, results)
+        if options.test_shuffle_order_file is None:
+          for _ in range(int(options.pageset_repeat)):
+            if options.test_shuffle:
+              test_random.shuffle(self.page_set)
+            for page in self.page_set:
+              for _ in range(int(options.page_repeat)):
+                self._RunPage(options, page, tab, test, results)
+        else:
+          self._ReorderPageSet(options.test_shuffle_order_file)
+          for page in self.page_set:
+            self._RunPage(options, page, tab, test, results)
 
   def _RunPage(self, options, page, tab, test, results):
     logging.info('Running %s' % page.url)

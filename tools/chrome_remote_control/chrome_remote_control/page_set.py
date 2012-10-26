@@ -37,3 +37,12 @@ class PageSet(object):
 
   def __iter__(self):
     return self.pages.__iter__()
+
+  def __len__(self):
+    return len(self.pages)
+
+  def __getitem__(self, key):
+    return self.pages[key]
+
+  def __setitem__(self, key, value):
+    self.pages[key] = value
