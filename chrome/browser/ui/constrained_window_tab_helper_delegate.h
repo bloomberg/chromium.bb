@@ -8,7 +8,10 @@
 namespace content {
 class WebContents;
 }
-class BrowserWindow;
+
+namespace gfx {
+class Point;
+}
 
 class ConstrainedWindowTabHelperDelegate {
  public:
@@ -22,8 +25,11 @@ class ConstrainedWindowTabHelperDelegate {
   virtual void SetTabContentBlocked(content::WebContents* web_contents,
                                     bool blocked);
 
-  // Returns the window for this Browser.
-  virtual BrowserWindow* GetBrowserWindow();
+  // Fills in |point| with the coordinates for positioning chrome style
+  // constrained windows. The constrained window should position itself such
+  // that its top center is at |point|. Return false if the default position
+  // should be used.
+  virtual bool GetConstrainedWindowTopCenter(gfx::Point* point);
 
  protected:
   virtual ~ConstrainedWindowTabHelperDelegate();

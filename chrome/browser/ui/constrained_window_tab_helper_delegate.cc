@@ -16,6 +16,7 @@ void ConstrainedWindowTabHelperDelegate::SetTabContentBlocked(
 
 ConstrainedWindowTabHelperDelegate::~ConstrainedWindowTabHelperDelegate() {}
 
-BrowserWindow* ConstrainedWindowTabHelperDelegate::GetBrowserWindow() {
-  return NULL;
+bool ConstrainedWindowTabHelperDelegate::GetConstrainedWindowTopCenter(
+    gfx::Point* point) {
+  return false;
 }

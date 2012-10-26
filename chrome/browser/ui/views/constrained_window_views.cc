@@ -12,7 +12,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/constrained_window_frame_simple.h"
@@ -735,16 +734,14 @@ void ConstrainedWindowViews::Observe(
 
 void ConstrainedWindowViews::PositionChromeStyleWindow(const gfx::Size& size) {
   DCHECK(enable_chrome_style_);
-  gfx::Rect bounds(GetRootView()->bounds().origin(), size);
   ConstrainedWindowTabHelperDelegate* tab_helper_delegate =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_)->delegate();
-  BrowserWindow* browser_window =
-      tab_helper_delegate ? tab_helper_delegate->GetBrowserWindow() : NULL;
-  if (browser_window) {
-    bounds.set_x(browser_window->GetBounds().width() / 2 - bounds.width() / 2);
-    int top_y;
-    if (browser_window->GetConstrainedWindowTopY(&top_y))
-      bounds.set_y(top_y);
+  gfx::Point point;
+  if (!tab_helper_delegate ||
+      !tab_helper_delegate->GetConstrainedWindowTopCenter(&point)) {
+    Widget::CenterWindow(size);
+    return;
   }
-  SetBounds(bounds);
+
+  SetBounds(gfx::Rect(point - gfx::Point(size.width() / 2, 0), size));
 }

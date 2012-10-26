@@ -1773,8 +1773,14 @@ void Browser::SetTabContentBlocked(content::WebContents* web_contents,
     web_contents->Focus();
 }
 
-BrowserWindow* Browser::GetBrowserWindow() {
-  return window();
+bool Browser::GetConstrainedWindowTopCenter(gfx::Point* point) {
+  int y = 0;
+  if (window_->GetConstrainedWindowTopY(&y)) {
+    *point = gfx::Point(window_->GetBounds().width() / 2, y);
+    return true;
+  }
+
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
