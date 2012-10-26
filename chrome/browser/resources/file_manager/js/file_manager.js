@@ -1659,7 +1659,7 @@ DialogType.isModal = function(type) {
     var onError = function(error) {
       if (listItem)
         listItem.removeAttribute('disabled');
-      this.alert.show(strf('UNMOUNT_FAILED', error.message));
+      this.alert.showHtml('', str('UNMOUNT_FAILED'));
     };
     this.volumeManager_.unmount(path, function() {}, onError.bind(this));
   };

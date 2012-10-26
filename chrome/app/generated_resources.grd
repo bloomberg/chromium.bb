@@ -11972,7 +11972,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Unable to open "$1": $2
       </message>
       <message name="IDS_FILE_BROWSER_UNMOUNT_FAILED" desc="Title of the error dialog when device unmount operation failed.">
-        Unable to eject: $1
+       <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Don't remove your device just yet!<ph name="END_BOLD">&lt;/b&gt;</ph>
+       <ph name="LINE_BREAKS">&lt;br/&gt;&lt;br/&gt;</ph>
+       Removing your device while it is in use may cause data loss.  Please wait until the operation is over, then eject the device using the Files app.
       </message>
       <message name="IDS_FILE_BROWSER_MOUNT_ARCHIVE" desc="Title of the action for mounting an archive file to work with its contents.">
         Open
