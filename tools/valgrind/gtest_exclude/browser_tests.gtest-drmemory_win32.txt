@@ -134,3 +134,23 @@ PageCyclerBrowserTest.*
 ExtensionContextMenuBrowserTest.*
 ChromeAppAPITest.*
 CommandsApiTest.*
+# DrM-i#1052-c#19
+PlatformAppBrowserTest.*
+ProcessManagementTest.*
+AllUrlsApiTest.*
+ExtensionCrashRecoveryTest.*
+WindowOpenPanelTest.*
+CalculatorBrowserTest.*
+ExtensionWebstorePrivateApiTest.*
+ExtensionFromWebAppTest.*
+ExtensionsStartupTest.*
+ExtensionSettingsApiTest.*
+HistoryBrowserTest.*
+PrerenderBrowserTestWithNaCl.*
+PrefetchBrowserTestNoPrefetching.*
+PageActionApiTest.*
+PageAsBrowserActionApiTest.*
+WebNavigationApiTest.*
+ScriptBadgeApiTest.*
+BrowsingDataRemoverBrowserTest.*
+BrowserActionApiTest.*
