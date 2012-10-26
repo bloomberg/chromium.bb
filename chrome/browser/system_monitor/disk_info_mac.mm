@@ -70,6 +70,7 @@ DiskInfoMac DiskInfoMac::BuildDiskInfoOnFileThread(CFDictionaryRef dict) {
   info.display_name_ = vendor_name;
   info.display_name_ = JoinName(info.display_name_, model_name);
   info.display_name_ = JoinName(info.display_name_, volume_name);
+  info.model_name_ = UTF16ToUTF8(model_name);
 
   CFUUIDRef uuid = base::mac::GetValueFromDictionary<CFUUIDRef>(
       dict, kDADiskDescriptionVolumeUUIDKey);

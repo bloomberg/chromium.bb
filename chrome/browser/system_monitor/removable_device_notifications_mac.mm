@@ -10,6 +10,8 @@ namespace chrome {
 
 namespace {
 
+const char kDiskImageModelName[] = "Disk Image";
+
 static RemovableDeviceNotificationsMac*
     g_removable_device_notifications_mac = NULL;
 
@@ -180,11 +182,12 @@ void RemovableDeviceNotificationsMac::DiskDescriptionChangedCallback(
 bool RemovableDeviceNotificationsMac::ShouldPostNotificationForDisk(
     const DiskInfoMac& info) const {
   // Only post notifications about disks that have no empty fields and
-  // are removable.
+  // are removable. Also exclude disk images (DMGs).
   return !info.bsd_name().empty() &&
          !info.device_id().empty() &&
          !info.display_name().empty() &&
          !info.mount_point().empty() &&
+         info.model_name() != kDiskImageModelName &&
          (info.type() == MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM ||
           info.type() == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
 }

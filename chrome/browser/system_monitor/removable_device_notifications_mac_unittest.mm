@@ -21,6 +21,7 @@ namespace chrome {
 namespace {
 
 DiskInfoMac CreateDiskInfoMac(const std::string& unique_id,
+                              const std::string& model_name,
                               const string16& display_name,
                               const FilePath& mount_point) {
   NSMutableDictionary *dict = [NSMutableDictionary dictionary];
@@ -28,6 +29,10 @@ DiskInfoMac CreateDiskInfoMac(const std::string& unique_id,
            forKey:base::mac::CFToNSCast(kDADiskDescriptionMediaBSDNameKey)];
   [dict setObject:base::SysUTF8ToNSString(unique_id)
            forKey:base::mac::CFToNSCast(kDADiskDescriptionDeviceRevisionKey)];
+  if (!model_name.empty()) {
+    [dict setObject:base::SysUTF8ToNSString(model_name)
+             forKey:base::mac::CFToNSCast(kDADiskDescriptionDeviceModelKey)];
+  }
   NSString* path = base::mac::FilePathToNSString(mount_point);
   [dict setObject:[NSURL fileURLWithPath:path]
            forKey:base::mac::CFToNSCast(kDADiskDescriptionVolumePathKey)];
@@ -62,7 +67,7 @@ class RemovableDeviceNotificationsMacTest : public testing::Test {
     mount_point_ = FilePath("/unused_test_directory");
     device_id_ = MediaStorageUtil::MakeDeviceId(
         MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id_);
-    disk_info_ = CreateDiskInfoMac(unique_id_, display_name_, mount_point_);
+    disk_info_ = CreateDiskInfoMac(unique_id_, "", display_name_, mount_point_);
   }
 
  protected:
@@ -118,7 +123,7 @@ TEST_F(RemovableDeviceNotificationsMacTest, UpdateVolumeName) {
   {
     string16 new_display_name(ASCIIToUTF16("Test Display Name"));
     DiskInfoMac info2 = CreateDiskInfoMac(
-        unique_id_, new_display_name, mount_point_);
+        unique_id_, "", new_display_name, mount_point_);
     EXPECT_CALL(*mock_devices_changed_observer_,
                 OnRemovableStorageDetached(device_id_));
     EXPECT_CALL(*mock_devices_changed_observer_,
@@ -137,7 +142,8 @@ TEST_F(RemovableDeviceNotificationsMacTest, DCIM) {
   file_util::CreateDirectory(temp_dir.path().AppendASCII("DCIM"));
 
   FilePath mount_point = temp_dir.path();
-  DiskInfoMac info = CreateDiskInfoMac(unique_id_, display_name_, mount_point);
+  DiskInfoMac info = CreateDiskInfoMac(
+      unique_id_, "", display_name_, mount_point);
   std::string device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id_);
 
@@ -172,6 +178,19 @@ TEST_F(RemovableDeviceNotificationsMacTest, GetDeviceInfo) {
 
   EXPECT_FALSE(notifications_->GetDeviceInfoForPath(
       FilePath("/non/matching/path"), &info));
+}
+
+// Test that mounting a DMG doesn't send a notification.
+TEST_F(RemovableDeviceNotificationsMacTest, DMG) {
+  EXPECT_CALL(*mock_devices_changed_observer_,
+              OnRemovableStorageAttached(testing::_,
+                                         testing::_,
+                                         testing::_)).Times(0);
+  DiskInfoMac info = CreateDiskInfoMac(
+      unique_id_, "Disk Image", display_name_, mount_point_);
+  notifications_->UpdateDisk(
+      info, RemovableDeviceNotificationsMac::UPDATE_DEVICE_ADDED);
+  message_loop_.RunAllPending();
 }
 
 }  // namespace chrome
