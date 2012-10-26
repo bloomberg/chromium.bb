@@ -194,7 +194,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   source_extensions = r'\.(cc|cpp|cxx|mm)$'
   file_inclusion_pattern = r'.+%s' % source_extensions
   file_exclusion_patterns = (
-      r'.*[/\\](test_|mock_).+%s' % source_extensions,
+      r'.*[/\\](fake_|test_|mock_).+%s' % source_extensions,
       r'.+_test_(base|support|util)%s' % source_extensions,
       r'.+_(api|browser|perf|unit|ui)?test%s%s' % (platform_specifiers,
                                                    source_extensions),
