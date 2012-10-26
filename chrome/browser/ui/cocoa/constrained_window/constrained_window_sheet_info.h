@@ -18,8 +18,6 @@
   scoped_nsobject<NSView> parentView_;
   scoped_nsobject<NSWindow> overlayWindow_;
   scoped_nsobject<NSAnimation> animation_;
-  NSRect oldSheetFrame_;
-  BOOL oldSheetAutoresizesSubviews_;
 }
 
 @property(nonatomic, readonly) NSWindow* sheet;

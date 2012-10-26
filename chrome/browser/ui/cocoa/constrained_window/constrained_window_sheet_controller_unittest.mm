@@ -25,7 +25,9 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
       scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:dummyRect]);
       [tab_views_ addObject:view];
     }
-    ActivateTabView([tab_views_ objectAtIndex:0]);
+    tab0_.reset([tab_views_ objectAtIndex:0], base::scoped_policy::RETAIN);
+    tab1_.reset([tab_views_ objectAtIndex:1], base::scoped_policy::RETAIN);
+    ActivateTabView(tab0_);
 
     // Create a test sheet.
     sheet_.reset([[NSWindow alloc] initWithContentRect:dummyRect
@@ -34,6 +36,9 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
                                                  defer:NO]);
     [sheet_ setReleasedWhenClosed:NO];
 
+    controller_.reset([[ConstrainedWindowSheetController
+            controllerForParentWindow:test_window()] retain]);
+    EXPECT_TRUE(controller_);
     EXPECT_FALSE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
   }
 
@@ -63,26 +68,24 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
   }
 
   scoped_nsobject<NSWindow> sheet_;
+  scoped_nsobject<ConstrainedWindowSheetController> controller_;
   scoped_nsobject<NSMutableArray> tab_views_;
   scoped_nsobject<NSView> active_tab_view_;
+  scoped_nsobject<NSView> tab0_;
+  scoped_nsobject<NSView> tab1_;
 };
 
 // Test showing then hiding the sheet.
 TEST_F(ConstrainedWindowSheetControllerTest, ShowHide) {
-  ConstrainedWindowSheetController* controller =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:test_window()];
-  EXPECT_TRUE(controller);
-
   EXPECT_FALSE([sheet_ isVisible]);
-  [controller showSheet:sheet_ forParentView:active_tab_view_];
+  [controller_ showSheet:sheet_ forParentView:active_tab_view_];
   EXPECT_TRUE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
   EXPECT_TRUE([sheet_ isVisible]);
 
-  [controller closeSheet:sheet_];
-  [controller endAnimationForSheet:sheet_];
+  [controller_ closeSheet:sheet_];
+  [controller_ endAnimationForSheet:sheet_];
   chrome::testing::NSRunLoopRunAllPending();
-  [controller endAnimationForSheet:sheet_];
+  [controller_ endAnimationForSheet:sheet_];
   chrome::testing::NSRunLoopRunAllPending();
   EXPECT_FALSE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
   EXPECT_FALSE([sheet_ isVisible]);
@@ -90,10 +93,7 @@ TEST_F(ConstrainedWindowSheetControllerTest, ShowHide) {
 
 // Test that switching tabs correctly hides the inactive tab's sheet.
 TEST_F(ConstrainedWindowSheetControllerTest, SwitchTabs) {
-  ConstrainedWindowSheetController* controller =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:test_window()];
-  [controller showSheet:sheet_ forParentView:active_tab_view_];
+  [controller_ showSheet:sheet_ forParentView:active_tab_view_];
 
   EXPECT_TRUE([sheet_ isVisible]);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
@@ -107,27 +107,16 @@ TEST_F(ConstrainedWindowSheetControllerTest, SwitchTabs) {
 
 // Test that adding a sheet to an inactive view doesn't show it.
 TEST_F(ConstrainedWindowSheetControllerTest, AddToInactiveTab) {
-  ConstrainedWindowSheetController* controller =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:test_window()];
-  NSView* tab0 = [tab_views_ objectAtIndex:0];
-  NSView* tab1 = [tab_views_ objectAtIndex:1];
-
-  ActivateTabView(tab0);
-  [controller showSheet:sheet_ forParentView:tab1];
+  ActivateTabView(tab0_);
+  [controller_ showSheet:sheet_ forParentView:tab1_];
   EXPECT_EQ(0.0, [sheet_ alphaValue]);
 
-  ActivateTabView(tab1);
+  ActivateTabView(tab1_);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
 }
 
 // Test that two parent windows with two sheet controllers don't conflict.
 TEST_F(ConstrainedWindowSheetControllerTest, TwoParentWindows) {
-  ConstrainedWindowSheetController* controller1 =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:test_window()];
-  EXPECT_TRUE(controller1);
-
   scoped_nsobject<NSWindow> parent_window2([[NSWindow alloc]
       initWithContentRect:NSMakeRect(0, 0, 30, 30)
                 styleMask:NSTitledWindowMask
@@ -139,7 +128,7 @@ TEST_F(ConstrainedWindowSheetControllerTest, TwoParentWindows) {
       [ConstrainedWindowSheetController
           controllerForParentWindow:parent_window2];
   EXPECT_TRUE(controller2);
-  EXPECT_NSNE(controller1, controller2);
+  EXPECT_NSNE(controller_, controller2);
 
   [controller2 showSheet:sheet_ forParentView:[parent_window2 contentView]];
   EXPECT_NSEQ(controller2,
@@ -150,16 +139,11 @@ TEST_F(ConstrainedWindowSheetControllerTest, TwoParentWindows) {
 
 // Test that using a top level parent view works.
 TEST_F(ConstrainedWindowSheetControllerTest, TopLevelView) {
-  ConstrainedWindowSheetController* controller =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:test_window()];
-  EXPECT_TRUE(controller);
-
   NSView* parentView = [[test_window() contentView] superview];
-  [controller parentViewDidBecomeActive:parentView];
+  [controller_ parentViewDidBecomeActive:parentView];
 
   EXPECT_FALSE([sheet_ isVisible]);
-  [controller showSheet:sheet_ forParentView:parentView];
+  [controller_ showSheet:sheet_ forParentView:parentView];
   EXPECT_TRUE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
   EXPECT_TRUE([sheet_ isVisible]);
 
@@ -172,18 +156,15 @@ TEST_F(ConstrainedWindowSheetControllerTest, TopLevelView) {
 
 // Test that resizing sheet works.
 TEST_F(ConstrainedWindowSheetControllerTest, Resize) {
-  ConstrainedWindowSheetController* controller =
-      [ConstrainedWindowSheetController
-          controllerForParentWindow:test_window()];
-  [controller showSheet:sheet_ forParentView:active_tab_view_];
+  [controller_ showSheet:sheet_ forParentView:active_tab_view_];
 
   NSRect old_frame = [sheet_ frame];
 
   NSRect sheet_frame;
   sheet_frame.size = NSMakeSize(NSWidth(old_frame) + 100,
                                 NSHeight(old_frame) + 50);
-  sheet_frame.origin = [controller originForSheet:sheet_
-                                   withWindowSize:sheet_frame.size];
+  sheet_frame.origin = [controller_ originForSheet:sheet_
+                                    withWindowSize:sheet_frame.size];
 
   // Y pos should not have changed.
   EXPECT_EQ(NSMaxY(sheet_frame), NSMaxY(old_frame));
@@ -193,4 +174,22 @@ TEST_F(ConstrainedWindowSheetControllerTest, Resize) {
   CGFloat expected_x = NSMinX(parent_frame) +
       (NSWidth(parent_frame) - NSWidth(sheet_frame)) / 2.0;
   EXPECT_EQ(expected_x, NSMinX(sheet_frame));
+}
+
+// Test that resizing a hidden sheet works.
+TEST_F(ConstrainedWindowSheetControllerTest, ResizeHiddenSheet) {
+  [controller_ showSheet:sheet_ forParentView:tab0_];
+  EXPECT_EQ(1.0, [sheet_ alphaValue]);
+  ActivateTabView(tab1_);
+  EXPECT_EQ(0.0, [sheet_ alphaValue]);
+
+  NSRect old_frame = [sheet_ frame];
+  NSRect new_inactive_frame = NSInsetRect(old_frame, -30, -40);
+  [sheet_ setFrame:new_inactive_frame display:YES];
+
+  ActivateTabView(tab0_);
+  EXPECT_EQ(1.0, [sheet_ alphaValue]);
+
+  NSRect new_active_frame = [sheet_ frame];
+  EXPECT_TRUE(NSEqualRects(new_inactive_frame, new_active_frame));
 }
