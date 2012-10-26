@@ -137,10 +137,10 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // preferences. If true is returned it can be assumed the local preferences
   // has applied changes from the remote preferences. The two may not be
   // identical if a change is in flight (from either side).
-  bool HasSynced();
+  bool IsSyncing();
 
-  // Invoked internally when the HasSynced() state changes.
-  void HasSyncedChanged();
+  // Invoked internally when the IsSyncing() state changes.
+  void OnIsSyncingChanged();
 
   // PrefServiceBase implementation.
   virtual bool IsManagedPreference(const char* pref_name) const OVERRIDE;

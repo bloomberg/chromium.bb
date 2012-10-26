@@ -270,7 +270,7 @@ class ChromeLauncherController
   virtual void OnStateChanged() OVERRIDE;
 
   // Overriden from PrefServiceObserver:
-  virtual void OnHasSyncedChanged() OVERRIDE;
+  virtual void OnIsSyncingChanged() OVERRIDE;
 
  private:
   friend class BrowserLauncherItemControllerTest;

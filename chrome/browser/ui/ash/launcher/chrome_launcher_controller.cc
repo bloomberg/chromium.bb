@@ -139,7 +139,7 @@ void MaybePropagatePrefToLocal(PrefService* pref_service,
                                const char* local_path,
                                const char* synced_path) {
   if (pref_service->GetString(local_path).empty() &&
-      pref_service->HasSynced()) {
+      pref_service->IsSyncing()) {
     // First time the user is using this machine, propagate from remote to
     // local.
     pref_service->SetString(local_path, pref_service->GetString(synced_path));
@@ -828,7 +828,7 @@ void ChromeLauncherController::OnStateChanged() {
   CheckAppSync();
 }
 
-void ChromeLauncherController::OnHasSyncedChanged() {
+void ChromeLauncherController::OnIsSyncingChanged() {
   MaybePropagatePrefToLocal(profile_->GetPrefs(),
                             prefs::kShelfAlignmentLocal,
                             prefs::kShelfAlignment);

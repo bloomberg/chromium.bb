@@ -7,8 +7,8 @@
 
 class PrefServiceObserver {
  public:
-  // Invoked when PrefService::HasSycned() changes.
-  virtual void OnHasSyncedChanged() = 0;
+  // Invoked when PrefService::IsSyncing() changes.
+  virtual void OnIsSyncingChanged() = 0;
 
  protected:
   virtual ~PrefServiceObserver() {}

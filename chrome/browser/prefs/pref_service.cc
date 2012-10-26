@@ -265,13 +265,13 @@ void PrefService::RemoveObserver(PrefServiceObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool PrefService::HasSynced() {
+bool PrefService::IsSyncing() {
   return pref_sync_associator_.get() &&
       pref_sync_associator_->models_associated();
 }
 
-void PrefService::HasSyncedChanged() {
-  FOR_EACH_OBSERVER(PrefServiceObserver, observer_list_, OnHasSyncedChanged());
+void PrefService::OnIsSyncingChanged() {
+  FOR_EACH_OBSERVER(PrefServiceObserver, observer_list_, OnIsSyncingChanged());
 }
 
 namespace {
