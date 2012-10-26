@@ -74,7 +74,7 @@ int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
 }
 
 void CrashDumpManager::ProcessMinidump(const MinidumpInfo& minidump) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Close the file descriptor, it is still open.
   bool r = base::ClosePlatformFile(minidump.file);
   DCHECK(r) << "Failed to close minidump file descriptor.";
@@ -156,5 +156,7 @@ void CrashDumpManager::Observe(int type,
     minidump_info = iter->second;
     child_process_id_to_minidump_info_.erase(iter);
   }
-  ProcessMinidump(minidump_info);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CrashDumpManager::ProcessMinidump, minidump_info));
 }
