@@ -39,6 +39,12 @@ class SearchTabHelper : public content::WebContentsObserver,
   // affect the search mode.
   void OmniboxEditModelChanged(bool user_input_in_progress, bool cancelling);
 
+  // Invoked when the active navigation entry is updated in some way that might
+  // affect the search mode. This is used by Instant when it "fixes up" the
+  // virtual URL of the active entry. Regular navigations are captured through
+  // the notification system and shouldn't call this method.
+  void NavigationEntryUpdated();
+
   // Overridden from contents::WebContentsObserver:
   virtual void NavigateToPendingEntry(
       const GURL& url,

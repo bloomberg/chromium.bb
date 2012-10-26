@@ -22,6 +22,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -355,6 +356,8 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
       entry->SetVirtualURL(GURL(
           url + "#q=" +
           net::EscapeQueryParamValue(UTF16ToUTF8(last_full_text_), true)));
+      chrome::search::SearchTabHelper::FromWebContents(
+          preview->web_contents())->NavigationEntryUpdated();
     }
   }
 

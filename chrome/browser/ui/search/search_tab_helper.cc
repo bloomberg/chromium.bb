@@ -67,6 +67,12 @@ void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
     UpdateModelBasedOnURL(web_contents()->GetURL(), ntp_load_state_, true);
 }
 
+void SearchTabHelper::NavigationEntryUpdated() {
+  if (!is_search_enabled_)
+    return;
+  UpdateModelBasedOnURL(web_contents()->GetURL(), ntp_load_state_, true);
+}
+
 void SearchTabHelper::NavigateToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
