@@ -80,7 +80,8 @@ bool WebAccessibilityNotificationToAccessibilityNotification(
       *type = AccessibilityNotificationValueChanged;
       break;
     default:
-      NOTREACHED();
+      DLOG(WARNING)
+          << "WebKit accessibility notification not handled in switch!";
       return false;
   }
   return true;
