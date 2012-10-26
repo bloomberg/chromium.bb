@@ -35,6 +35,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/request_media_access_permission_helper.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/content_browser_client.h"
@@ -638,6 +640,15 @@ void ExtensionHost::RenderViewReady() {
       chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::Source<Profile>(profile_),
       content::Details<ExtensionHost>(this));
+}
+
+void ExtensionHost::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+  // For tab capture device, we require the tabCapture permission.
+  RequestMediaAccessPermissionHelper::AuthorizeRequest(
+      request, callback, extension(), false);
 }
 
 }  // namespace extensions

@@ -269,7 +269,6 @@ void MediaStreamManager::GenerateStreamForDevice(
   // |device_id| actually exists.  Note that no such MediaStreamProvider API for
   // this currently exists.  Also, we don't have a user-friendly device name for
   // the infobar UI.
-  StreamDeviceInfoArray devices;
   if (content::IsAudioMediaType(options.audio_type)) {
     // TODO(justinlin): Updating the state to requested and pending are no-ops
     // in terms of the media manager, but these are the state changes we want to
@@ -278,22 +277,21 @@ void MediaStreamManager::GenerateStreamForDevice(
                      content::MEDIA_REQUEST_STATE_REQUESTED);
     request.setState(options.audio_type,
                      content::MEDIA_REQUEST_STATE_PENDING_APPROVAL);
-    devices.push_back(
-        StreamDeviceInfo(options.audio_type, device_id, device_id, false));
+    ui_controller_->AddAvailableDevicesToRequest(
+        *label, options.audio_type, StreamDeviceInfoArray(
+            1, StreamDeviceInfo(options.audio_type, device_id, device_id,
+                                false)));
   }
   if (content::IsVideoMediaType(options.video_type)) {
     request.setState(options.video_type,
                      content::MEDIA_REQUEST_STATE_REQUESTED);
     request.setState(options.video_type,
                      content::MEDIA_REQUEST_STATE_PENDING_APPROVAL);
-    devices.push_back(
-        StreamDeviceInfo(options.video_type, device_id, device_id, false));
+    ui_controller_->AddAvailableDevicesToRequest(
+        *label, options.video_type, StreamDeviceInfoArray(
+            1, StreamDeviceInfo(options.video_type, device_id, device_id,
+                                false)));
   }
-
-  // Bypass the user authorization dropdown for tab capture.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamManager::DevicesAccepted,
-                 base::Unretained(this), *label, devices));
 }
 
 void MediaStreamManager::CancelRequest(const std::string& label) {

@@ -177,6 +177,14 @@ const Experiment::Choice kScriptBubbleChoices[] = {
     switches::kScriptBubble, "1"}
 };
 
+const Experiment::Choice kTabCaptureChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kTabCapture, "0"},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kTabCapture, "1"}
+};
+
 #if defined(OS_CHROMEOS)
 const Experiment::Choice kAshBootAnimationFunction[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -734,6 +742,13 @@ const Experiment kExperiments[] = {
     IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION,
     kOsWin | kOsMac | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableTouchEvents)
+  },
+  {
+    "enable-tab-capture",
+    IDS_ENABLE_TAB_CAPTURE_NAME,
+    IDS_ENABLE_TAB_CAPTURE_DESCRIPTION,
+    kOsMac | kOsLinux,
+    MULTI_VALUE_TYPE(kTabCaptureChoices)
   },
 #if defined(OS_CHROMEOS)
   {

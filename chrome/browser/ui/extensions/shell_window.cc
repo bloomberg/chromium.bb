@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/request_media_access_permission_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
@@ -52,6 +53,7 @@ using content::ResourceDispatcherHost;
 using content::SiteInstance;
 using content::WebContents;
 using extensions::APIPermission;
+using extensions::RequestMediaAccessPermissionHelper;
 
 namespace {
 const int kDefaultWidth = 512;
@@ -196,31 +198,8 @@ void ShellWindow::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback) {
-  content::MediaStreamDevices devices;
-
-  // Auto-accept the first audio device and the first video device from the
-  // request when the appropriate API permissions exist.
-  bool accepted_an_audio_device = false;
-  bool accepted_a_video_device = false;
-  for (content::MediaStreamDeviceMap::const_iterator it =
-           request->devices.begin();
-       it != request->devices.end(); ++it) {
-    if (!accepted_an_audio_device &&
-        content::IsAudioMediaType(it->first) &&
-        extension()->HasAPIPermission(APIPermission::kAudioCapture) &&
-        !it->second.empty()) {
-      devices.push_back(it->second.front());
-      accepted_an_audio_device = true;
-    } else if (!accepted_a_video_device &&
-               content::IsVideoMediaType(it->first) &&
-               extension()->HasAPIPermission(APIPermission::kVideoCapture) &&
-               !it->second.empty()) {
-      devices.push_back(it->second.front());
-      accepted_a_video_device = true;
-    }
-  }
-
-  callback.Run(devices);
+  RequestMediaAccessPermissionHelper::AuthorizeRequest(
+      request, callback, extension(), true);
 }
 
 WebContents* ShellWindow::OpenURLFromTab(WebContents* source,

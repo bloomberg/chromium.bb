@@ -7,6 +7,8 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
+#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -63,6 +65,36 @@ MediaStreamDevicesController::MediaStreamDevicesController(
 MediaStreamDevicesController::~MediaStreamDevicesController() {}
 
 bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
+  // For tab media requests, we need to make sure the request came from the
+  // extension API, so we check the registry here.
+  content::MediaStreamDeviceMap::const_iterator tab_video =
+      request_.devices.find(content::MEDIA_TAB_VIDEO_CAPTURE);
+  content::MediaStreamDeviceMap::const_iterator tab_audio =
+      request_.devices.find(content::MEDIA_TAB_AUDIO_CAPTURE);
+  if (tab_video != request_.devices.end() ||
+      tab_audio != request_.devices.end()) {
+    extensions::TabCaptureRegistry* registry =
+        extensions::TabCaptureRegistryFactory::GetForProfile(profile_);
+
+    DCHECK(!tab_audio->second.empty() || !tab_video->second.empty());
+    std::string audio_device_id;
+    std::string video_device_id;
+
+    if (!tab_audio->second.empty())
+      audio_device_id = tab_audio->second[0].device_id;
+    if (!tab_video->second.empty())
+      video_device_id = tab_video->second[0].device_id;
+
+    if (!registry->VerifyRequest(!video_device_id.empty() ?
+                                 video_device_id : audio_device_id)) {
+      Deny();
+    } else {
+      Accept(audio_device_id, video_device_id, false);
+    }
+
+    return true;
+  }
+
   // Deny the request if the security origin is empty, this happens with
   // file access without |--allow-file-access-from-files| flag.
   if (request_.security_origin.is_empty()) {
