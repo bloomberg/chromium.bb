@@ -186,13 +186,13 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath1),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath2),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
 
   // Creates and removes a same directory.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -222,13 +222,13 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath1),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath2),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
 }
 
 }  // namespace fileapi

@@ -139,19 +139,19 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
 
   VerifyAndClearChange(URL(kPath1),
                FileChange(FileChange::FILE_CHANGE_DELETE,
-                          FileChange::FILE_TYPE_DIRECTORY));
+                          SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath2),
                FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                          FileChange::FILE_TYPE_DIRECTORY));
+                          SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath3),
                FileChange(FileChange::FILE_CHANGE_DELETE,
-                          FileChange::FILE_TYPE_FILE));
+                          SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath4),
                FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                          FileChange::FILE_TYPE_FILE));
+                          SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath5),
                FileChange(FileChange::FILE_CHANGE_DELETE,
-                          FileChange::FILE_TYPE_FILE));
+                          SYNC_FILE_TYPE_FILE));
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
@@ -229,35 +229,35 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath1),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath2),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath3),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath4),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
 
   VerifyAndClearChange(URL(kPath0Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath1Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath2Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath3Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath4Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
@@ -330,22 +330,22 @@ TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath1),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath2),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath3),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath4),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath5),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
@@ -418,34 +418,34 @@ TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath1),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath2),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath3),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath4),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
-                                  FileChange::FILE_TYPE_UNDETERMINED));
+                                  SYNC_FILE_TYPE_UNKNOWN));
   VerifyAndClearChange(URL(kPath5),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath6),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath7),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
   VerifyAndClearChange(URL(kPath8),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_DIRECTORY));
+                                  SYNC_FILE_TYPE_DIRECTORY));
   VerifyAndClearChange(URL(kPath9),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                  FileChange::FILE_TYPE_FILE));
+                                  SYNC_FILE_TYPE_FILE));
 }
 
 }  // namespace fileapi

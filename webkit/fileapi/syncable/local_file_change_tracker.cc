@@ -82,33 +82,33 @@ void LocalFileChangeTracker::OnEndUpdate(const FileSystemURL& url) {}
 
 void LocalFileChangeTracker::OnCreateFile(const FileSystemURL& url) {
   RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                               FileChange::FILE_TYPE_FILE));
+                               SYNC_FILE_TYPE_FILE));
 }
 
 void LocalFileChangeTracker::OnCreateFileFrom(const FileSystemURL& url,
                                               const FileSystemURL& src) {
   RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                               FileChange::FILE_TYPE_FILE));
+                               SYNC_FILE_TYPE_FILE));
 }
 
 void LocalFileChangeTracker::OnRemoveFile(const FileSystemURL& url) {
   RecordChange(url, FileChange(FileChange::FILE_CHANGE_DELETE,
-                               FileChange::FILE_TYPE_FILE));
+                               SYNC_FILE_TYPE_FILE));
 }
 
 void LocalFileChangeTracker::OnModifyFile(const FileSystemURL& url) {
   RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                               FileChange::FILE_TYPE_FILE));
+                               SYNC_FILE_TYPE_FILE));
 }
 
 void LocalFileChangeTracker::OnCreateDirectory(const FileSystemURL& url) {
   RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                               FileChange::FILE_TYPE_DIRECTORY));
+                               SYNC_FILE_TYPE_DIRECTORY));
 }
 
 void LocalFileChangeTracker::OnRemoveDirectory(const FileSystemURL& url) {
   RecordChange(url, FileChange(FileChange::FILE_CHANGE_DELETE,
-                               FileChange::FILE_TYPE_DIRECTORY));
+                               SYNC_FILE_TYPE_DIRECTORY));
 }
 
 void LocalFileChangeTracker::GetChangedURLs(std::vector<FileSystemURL>* urls) {
@@ -198,12 +198,12 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
       case base::PLATFORM_FILE_OK: {
         if (!file_info.is_directory) {
           changes_[url].Update(FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                          FileChange::FILE_TYPE_FILE));
+                                          SYNC_FILE_TYPE_FILE));
           break;
         }
 
         changes_[url].Update(FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                        FileChange::FILE_TYPE_DIRECTORY));
+                                        SYNC_FILE_TYPE_DIRECTORY));
 
         // Push files and directories in this directory into |dirty_files|.
         scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
@@ -220,12 +220,12 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
       case base::PLATFORM_FILE_ERROR_NOT_FOUND: {
         // File represented by |url| has already been deleted. Since we cannot
         // figure out if this file was directory or not from the URL, file
-        // type is treated as FILE_TYPE_UNDETERMINED.
+        // type is treated as SYNC_FILE_TYPE_UNKNOWN.
         //
         // NOTE: Directory to have been reverted (that is, ADD -> DELETE) is
         // also treated as FILE_CHANGE_DELETE.
         changes_[url].Update(FileChange(FileChange::FILE_CHANGE_DELETE,
-                                        FileChange::FILE_TYPE_UNDETERMINED));
+                                        SYNC_FILE_TYPE_UNKNOWN));
         break;
       }
       case base::PLATFORM_FILE_ERROR_FAILED:

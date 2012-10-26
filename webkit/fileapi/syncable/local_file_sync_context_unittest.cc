@@ -402,15 +402,14 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
 
   // Now let's apply remote deletion changes.
   FileChange change(FileChange::FILE_CHANGE_DELETE,
-                    FileChange::FILE_TYPE_FILE);
+                    SYNC_FILE_TYPE_FILE);
   EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
                               change, FilePath(), kFile));
 
   // The implementation doesn't check file type for deletion, and it must be ok
   // even if we don't know if the deletion change was for a file or a directory.
-  change = FileChange(FileChange::FILE_CHANGE_DELETE,
-                      FileChange::FILE_TYPE_UNDETERMINED);
+  change = FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN);
   EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
                               change, FilePath(), kDir));
@@ -511,7 +510,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
 
   // Apply the remote change to kFile1 (which will update the file).
   FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                    FileChange::FILE_TYPE_FILE);
+                    SYNC_FILE_TYPE_FILE);
   EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
                               change, kFilePath1, kFile1));
@@ -526,13 +525,13 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   // Apply remote changes to kFile2 and kDir (should create a file and
   // directory respectively).
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                      FileChange::FILE_TYPE_FILE);
+                      SYNC_FILE_TYPE_FILE);
   EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
                               change, kFilePath2, kFile2));
 
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                      FileChange::FILE_TYPE_DIRECTORY);
+                      SYNC_FILE_TYPE_DIRECTORY);
   EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
                               change, FilePath(), kDir));
@@ -540,7 +539,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   // This should not happen, but calling ApplyRemoteChange
   // with wrong file type will result in error.
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                      FileChange::FILE_TYPE_FILE);
+                      SYNC_FILE_TYPE_FILE);
   EXPECT_EQ(SYNC_FILE_ERROR_FAILED,
             ApplyRemoteChange(file_system.file_system_context(),
                               change, kFilePath1, kDir));

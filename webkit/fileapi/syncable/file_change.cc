@@ -13,7 +13,7 @@ namespace fileapi {
 
 FileChange::FileChange(
     ChangeType change,
-    FileType file_type)
+    SyncFileType file_type)
     : change_(change),
       file_type_(file_type) {}
 
@@ -27,16 +27,16 @@ std::string FileChange::DebugString() const {
       change_string = "DELETE";
       break;
   }
-  const char* type_string = NULL;
+  const char* type_string = "UNKNOWN";
   switch (file_type()) {
-    case FILE_TYPE_FILE:
+    case SYNC_FILE_TYPE_FILE:
       type_string = "FILE";
       break;
-    case FILE_TYPE_DIRECTORY:
+    case SYNC_FILE_TYPE_DIRECTORY:
       type_string = "DIRECTORY";
       break;
-    case FILE_TYPE_UNDETERMINED:
-      type_string = "UNDETERMINED";
+    case SYNC_FILE_TYPE_UNKNOWN:
+      type_string = "UNKNOWN";
       break;
   }
   return base::StringPrintf("%s:%s", change_string, type_string);

@@ -14,22 +14,22 @@ namespace {
 
 FileChange AddOrUpdateFile() {
   return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                    FileChange::FILE_TYPE_FILE);
+                    SYNC_FILE_TYPE_FILE);
 }
 
 FileChange DeleteFile() {
   return FileChange(FileChange::FILE_CHANGE_DELETE,
-                    FileChange::FILE_TYPE_FILE);
+                    SYNC_FILE_TYPE_FILE);
 }
 
 FileChange AddDirectory() {
   return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                    FileChange::FILE_TYPE_DIRECTORY);
+                    SYNC_FILE_TYPE_DIRECTORY);
 }
 
 FileChange DeleteDirectory() {
   return FileChange(FileChange::FILE_CHANGE_DELETE,
-                    FileChange::FILE_TYPE_DIRECTORY);
+                    SYNC_FILE_TYPE_DIRECTORY);
 }
 
 template <size_t INPUT_SIZE>

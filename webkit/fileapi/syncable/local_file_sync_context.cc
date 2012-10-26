@@ -141,17 +141,17 @@ void LocalFileSyncContext::ApplyRemoteChange(
   switch (change.change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
       switch (change.file_type()) {
-        case FileChange::FILE_TYPE_FILE:
+        case SYNC_FILE_TYPE_FILE:
           DCHECK(!local_path.empty());
           operation->CopyInForeignFile(local_path, url, operation_callback);
           break;
-        case FileChange::FILE_TYPE_DIRECTORY:
+        case SYNC_FILE_TYPE_DIRECTORY:
           operation->CreateDirectory(
               url, false /* exclusive */, true /* recursive */,
               operation_callback);
           break;
-        case FileChange::FILE_TYPE_UNDETERMINED:
-          NOTREACHED() << "File type undetermined for ADD_OR_UPDATE change";
+        case SYNC_FILE_TYPE_UNKNOWN:
+          NOTREACHED() << "File type unknown for ADD_OR_UPDATE change";
       }
       break;
     case FileChange::FILE_CHANGE_DELETE:
