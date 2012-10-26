@@ -246,7 +246,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::leaveToRenderTarget(con
 
 // FIXME: Remove usePaintTracking when paint tracking is on for paint culling.
 template<typename LayerType>
-static inline void addOcclusionBehindLayer(Region& region, const LayerType* layer, const WebTransformationMatrix& transform, const Region& opaqueContents, const IntRect& clipRectInTarget, const IntSize& minimumTrackingSize, Vector<IntRect>* occludingScreenSpaceRects)
+static inline void addOcclusionBehindLayer(Region& region, const LayerType* layer, const WebTransformationMatrix& transform, const Region& opaqueContents, const IntRect& clipRectInTarget, const IntSize& minimumTrackingSize, std::vector<IntRect>* occludingScreenSpaceRects)
 {
     DCHECK(layer->visibleContentRect().contains(opaqueContents.bounds()));
 
@@ -263,7 +263,7 @@ static inline void addOcclusionBehindLayer(Region& region, const LayerType* laye
         transformedRect.intersect(clipRectInTarget);
         if (transformedRect.width() >= minimumTrackingSize.width() || transformedRect.height() >= minimumTrackingSize.height()) {
             if (occludingScreenSpaceRects)
-                occludingScreenSpaceRects->append(transformedRect);
+                occludingScreenSpaceRects->push_back(transformedRect);
             region.unite(transformedRect);
         }
     }
@@ -479,4 +479,4 @@ template IntRect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::unoccludedC
 template IntRect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::layerClipRectInTarget(const LayerImpl*) const;
 
 
-} // namespace cc
+}  // namespace cc

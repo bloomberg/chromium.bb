@@ -10,7 +10,6 @@
 #include "IntRect.h"
 #include "IntSize.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/Vector.h>
 
 namespace cc {
 
@@ -91,6 +90,6 @@ LayerType* LayerTreeHostCommon::findLayerInSubtree(LayerType* rootLayer, int lay
     return 0;
 }
 
-} // namespace cc
+}  // namespace cc
 
 #endif

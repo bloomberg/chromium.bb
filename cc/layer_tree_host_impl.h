@@ -121,7 +121,7 @@ public:
         FrameData();
         ~FrameData();
 
-        Vector<IntRect> occludingScreenSpaceRects;
+        std::vector<IntRect> occludingScreenSpaceRects;
         RenderPassList renderPasses;
         RenderPassIdHashMap renderPassesById;
         LayerList* renderSurfaceLayerList;

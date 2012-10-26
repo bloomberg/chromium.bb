@@ -50,7 +50,7 @@ public:
     void setMinimumTrackingSize(const IntSize& size) { m_minimumTrackingSize = size; }
 
     // The following is used for visualization purposes.
-    void setOccludingScreenSpaceRectsContainer(Vector<IntRect>* rects) { m_occludingScreenSpaceRects = rects; }
+    void setOccludingScreenSpaceRectsContainer(std::vector<IntRect>* rects) { m_occludingScreenSpaceRects = rects; }
 
 protected:
     struct StackObject {
@@ -93,7 +93,7 @@ private:
     IntSize m_minimumTrackingSize;
 
     // This is used for visualizing the occlusion tracking process.
-    Vector<IntRect>* m_occludingScreenSpaceRects;
+    std::vector<IntRect>* m_occludingScreenSpaceRects;
 
     DISALLOW_COPY_AND_ASSIGN(OcclusionTrackerBase);
 };
@@ -101,5 +101,6 @@ private:
 typedef OcclusionTrackerBase<Layer, RenderSurface> OcclusionTracker;
 typedef OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl> OcclusionTrackerImpl;
 
-}
+}  // namespace cc
+
 #endif // CCOcclusionTracker_h

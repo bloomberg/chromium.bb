@@ -237,7 +237,7 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, FrameRateCoun
 
 void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory* debugRectHistory)
 {
-    const Vector<DebugRect>& debugRects = debugRectHistory->debugRects();
+    const std::vector<DebugRect>& debugRects = debugRectHistory->debugRects();
 
     for (size_t i = 0; i < debugRects.size(); ++i) {
         SkColor strokeColor = 0;
@@ -294,4 +294,4 @@ const char* HeadsUpDisplayLayerImpl::layerTypeAsString() const
     return "HeadsUpDisplayLayer";
 }
 
-}
+}  // namespace cc
