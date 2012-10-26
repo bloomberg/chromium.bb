@@ -53,8 +53,7 @@ std::string ContentOriginToString(ContentOrigin origin) {
     case UNINITIALIZED: return "UNINITIALIZED";
     case INITIALIZING: return "INITIALIZING";
     case REFRESHING: return "REFRESHING";
-    case FROM_CACHE: return "FROM_CACHE";
-    case FROM_SERVER: return "FROM_SERVER";
+    case INITIALIZED: return "INITIALIZED";
   };
   NOTREACHED();
   return "(unknown content origin)";
@@ -740,7 +739,7 @@ void DriveResourceMetadata::InitResourceMap(
   DCHECK_EQ(resource_map.size(), resource_map_.size());
   DCHECK_EQ(resource_map.size(), serialized_resources->size());
 
-  origin_ = FROM_CACHE;
+  origin_ = INITIALIZED;
 
   callback.Run(DRIVE_FILE_OK);
 }
@@ -809,7 +808,7 @@ bool DriveResourceMetadata::ParseFromString(
 
   root_->FromProto(proto.drive_directory());
 
-  origin_ = FROM_CACHE;
+  origin_ = INITIALIZED;
   largest_changestamp_ = proto.largest_changestamp();
 
   return true;
