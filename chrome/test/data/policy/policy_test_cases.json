@@ -1421,7 +1421,7 @@
 
   "DriveDisabled": {
     "os": ["chromeos"],
-    "test_policy": { "DriveDisabled": false },
+    "test_policy": { "DriveDisabled": true },
     "pref_mappings": [
       { "pref": "gdata.disabled" }
     ]
