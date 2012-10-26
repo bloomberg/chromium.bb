@@ -11,7 +11,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebTransformationMatrix.h>
 #include <public/WebVideoFrameProvider.h>
-#include <wtf/ThreadingPrimitives.h>
 
 namespace WebKit {
 class WebVideoFrame;
@@ -84,6 +83,6 @@ private:
     FramePlane m_framePlanes[WebKit::WebVideoFrame::maxPlanes];
 };
 
-}
+}  // namespace cc
 
 #endif // CCVideoLayerImpl_h
