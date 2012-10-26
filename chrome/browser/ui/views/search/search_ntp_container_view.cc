@@ -82,7 +82,7 @@ void SearchNTPContainerView::NotifyNTPBackgroundYPosIfChanged(
     if (alignment & ThemeService::ALIGN_TOP) {
       new_css_background_y_pos = content_view->bounds().y();
     } else if (alignment & ThemeService::ALIGN_BOTTOM) {
-        new_css_background_y_pos = 0;
+      new_css_background_y_pos = 0;
     } else { // ALIGN_CENTER
       // Convert new bounds of |content_view| relative to |BrowserView|.
       gfx::Point origin(content_view->bounds().origin());
@@ -92,7 +92,8 @@ void SearchNTPContainerView::NotifyNTPBackgroundYPosIfChanged(
       gfx::ImageSkia* ntp_background =
           tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
       int image_y = NtpBackgroundUtil::GetPlacementOfCenterAlignedImage(
-          browser_view_->height(), ntp_background->height());
+          browser_view_->GetNTPBackgroundFillSize().height(),
+          ntp_background->height());
       new_css_background_y_pos = origin.y() - image_y;
     }
   }
@@ -204,7 +205,8 @@ void SearchNTPContainerView::OnPaintBackground(gfx::Canvas* canvas) {
   View::ConvertPointToTarget(this, browser_view_, &origin);
   paint_rect_in_browser_view.set_origin(origin);
   NtpBackgroundUtil::PaintBackgroundForBrowserClientArea(profile_, canvas,
-      paint_rect, browser_view_->size(), paint_rect_in_browser_view);
+      paint_rect, browser_view_->GetNTPBackgroundFillSize(),
+      paint_rect_in_browser_view);
 
 #if defined(USE_AURA)
   // Have to use the height of the layer here since the layer is animated

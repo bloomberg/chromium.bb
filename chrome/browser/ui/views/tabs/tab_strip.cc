@@ -917,11 +917,18 @@ void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
   newtab_button_->set_background_offset(offset);
 }
 
+void TabStrip::SetNTPBackgroundFillSize(const gfx::Size& new_size) {
+  if (new_size == ntp_background_fill_size_)
+    return;
+  ntp_background_fill_size_ = new_size;
+  // Background fill size has changed, force re-extraction of image.
+  ntp_background_theme_ = gfx::ImageSkia();
+}
+
 void TabStrip::ExtractNTPBackgroundTheme(ui::ScaleFactor scale_factor) {
-  browser_view_size_ = parent()->size();
   gfx::Canvas canvas(size(), scale_factor, false);
   NtpBackgroundUtil::PaintBackgroundForBrowserClientArea(profile_, &canvas,
-      GetLocalBounds(), parent()->size(), bounds());
+      GetLocalBounds(), ntp_background_fill_size_, bounds());
   ntp_background_theme_.AddRepresentation(canvas.ExtractImageRep());
 }
 
@@ -1185,9 +1192,6 @@ bool TabStrip::ShouldShowWhiteNTP() {
 
 const gfx::ImageSkiaRep& TabStrip::GetNTPBackgroundTheme(
     ui::ScaleFactor scale_factor) {
-  // If size of |BrowserView| has changed, force re-extraction of image.
-  if (browser_view_size_ != parent()->size())
-    ntp_background_theme_ = gfx::ImageSkia();
   // If there's no image at all or for requested scale factor, extract it.
   if (ntp_background_theme_.isNull() ||
       !ntp_background_theme_.HasRepresentation(scale_factor)) {

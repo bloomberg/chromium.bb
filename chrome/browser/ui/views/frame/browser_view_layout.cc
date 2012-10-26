@@ -291,6 +291,9 @@ void BrowserViewLayout::Layout(views::View* host) {
   }
   // NTP needs to layout the search box now that we have the contents bounds.
   toolbar_->LayoutForSearch();
+  // Set NTP background size now that we have the contents bounds.
+  tabstrip_->SetNTPBackgroundFillSize(
+      browser_view_->GetNTPBackgroundFillSize());
 }
 
 // Return the preferred size which is the size required to give each

@@ -162,6 +162,9 @@ class TabStrip : public views::View,
   // Set the background offset used by inactive tabs to match the frame image.
   void SetBackgroundOffset(const gfx::Point& offset);
 
+  // Set the size to fill for NTP theme background image.
+  void SetNTPBackgroundFillSize(const gfx::Size& new_size);
+
   // Returns the new tab button. This is never NULL.
   views::View* newtab_button();
 
@@ -607,8 +610,8 @@ class TabStrip : public views::View,
   // NTP background iamge extracted for use in active tab.
   gfx::ImageSkia ntp_background_theme_;
 
-  // Size of |BrowserView| when NTP background image was extracted.
-  gfx::Size browser_view_size_;
+  // Size that the entire NTP background image should fill up.
+  gfx::Size ntp_background_fill_size_;
 
   content::NotificationRegistrar registrar_;
 

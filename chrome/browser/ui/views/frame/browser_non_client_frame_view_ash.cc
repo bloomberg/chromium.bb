@@ -483,7 +483,8 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
     View::ConvertPointToTarget(this, browser_view(), &origin);
     paint_rect_in_browser_view.set_origin(origin);
     NtpBackgroundUtil::PaintBackgroundForBrowserClientArea(profile, canvas,
-        paint_rect, browser_view()->size(), paint_rect_in_browser_view);
+        paint_rect, browser_view()->GetNTPBackgroundFillSize(),
+        paint_rect_in_browser_view);
   } else {
     SkColor background_color = chrome::search::GetToolbarBackgroundColor(
         profile, mode);

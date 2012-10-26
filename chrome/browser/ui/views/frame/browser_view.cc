@@ -903,6 +903,18 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   }
 }
 
+gfx::Size BrowserView::GetNTPBackgroundFillSize() const {
+  if (!chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()))
+    return gfx::Size();
+  // Convert bounds of content view relatve to browser view.
+  // Fill size is right and bottom of content view.
+  gfx::Rect content_bounds = contents_container_->bounds();
+  gfx::Point origin(content_bounds.origin());
+  View::ConvertPointToTarget(contents_container_->parent(), this, &origin);
+  content_bounds.set_origin(origin);
+  return gfx::Size(content_bounds.right(), content_bounds.bottom());
+}
+
 LocationBar* BrowserView::GetLocationBar() const {
   return GetLocationBarView();
 }
@@ -2129,6 +2141,11 @@ void BrowserView::ShowDevToolsContainer(DevToolsDockSide dock_side) {
                     : views::SingleSplitView::VERTICAL_SPLIT);
   contents_split_->InvalidateLayout();
   Layout();
+  // In NTP search mode, schedule a repaint of toolbar and tabstrip.
+  if (browser()->search_model()->mode().is_ntp()) {
+    toolbar_->SchedulePaint();
+    tabstrip_->SchedulePaint();
+  }
 }
 
 void BrowserView::HideDevToolsContainer() {
@@ -2148,6 +2165,11 @@ void BrowserView::HideDevToolsContainer() {
   devtools_container_->SetVisible(false);
   contents_split_->InvalidateLayout();
   Layout();
+  // In NTP search mode, schedule a repaint of toolbar and tabstrip.
+  if (browser()->search_model()->mode().is_ntp()) {
+    toolbar_->SchedulePaint();
+    tabstrip_->SchedulePaint();
+  }
 }
 
 void BrowserView::UpdateUIForContents(TabContents* contents) {
