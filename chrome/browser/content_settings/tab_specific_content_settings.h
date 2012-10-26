@@ -34,6 +34,10 @@ namespace net {
 class CookieOptions;
 }
 
+// This class manages state about permissions, content settings, cookies and
+// site data for a specific WebContents. It tracks which content was accessed
+// and which content was blocked. Based on this it provides information about
+// which types of content were accessed and blocked.
 class TabSpecificContentSettings
     : public content::WebContentsObserver,
       public content::NotificationObserver,
