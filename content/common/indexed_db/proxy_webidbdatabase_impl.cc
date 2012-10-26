@@ -53,6 +53,7 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
       new IndexedDBHostMsg_DatabaseMetadata(idb_database_id_, &idb_metadata));
 
   WebIDBMetadata web_metadata;
+  web_metadata.id = idb_metadata.id;
   web_metadata.name = idb_metadata.name;
   web_metadata.version = idb_metadata.version;
   web_metadata.intVersion = idb_metadata.int_version;
@@ -66,6 +67,7 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
     WebIDBMetadata::ObjectStore& web_store_metadata =
         web_metadata.objectStores[i];
 
+    web_store_metadata.id = idb_store_metadata.id;
     web_store_metadata.name = idb_store_metadata.name;
     web_store_metadata.keyPath = idb_store_metadata.keyPath;
     web_store_metadata.autoIncrement = idb_store_metadata.autoIncrement;
@@ -79,6 +81,7 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
       WebIDBMetadata::Index& web_index_metadata =
           web_store_metadata.indexes[j];
 
+      web_index_metadata.id = idb_index_metadata.id;
       web_index_metadata.name = idb_index_metadata.name;
       web_index_metadata.keyPath = idb_index_metadata.keyPath;
       web_index_metadata.unique = idb_index_metadata.unique;

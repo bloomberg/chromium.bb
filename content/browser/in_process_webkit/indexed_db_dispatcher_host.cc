@@ -342,6 +342,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
     return;
 
   WebIDBMetadata web_metadata = idb_database->metadata();
+  metadata->id = web_metadata.id;
   metadata->name = web_metadata.name;
   metadata->version = web_metadata.version;
   metadata->int_version = web_metadata.intVersion;
@@ -351,6 +352,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
     const WebIDBMetadata::ObjectStore& web_store_metadata =
         web_metadata.objectStores[i];
     IndexedDBObjectStoreMetadata idb_store_metadata;
+    idb_store_metadata.id = web_store_metadata.id;
     idb_store_metadata.name = web_store_metadata.name;
     idb_store_metadata.keyPath = IndexedDBKeyPath(web_store_metadata.keyPath);
     idb_store_metadata.autoIncrement = web_store_metadata.autoIncrement;
@@ -360,6 +362,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
       const WebIDBMetadata::Index& web_index_metadata =
           web_store_metadata.indexes[j];
       IndexedDBIndexMetadata idb_index_metadata;
+      idb_index_metadata.id = web_index_metadata.id;
       idb_index_metadata.name = web_index_metadata.name;
       idb_index_metadata.keyPath = IndexedDBKeyPath(web_index_metadata.keyPath);
       idb_index_metadata.unique = web_index_metadata.unique;
@@ -720,7 +723,8 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnSetIndexKeys(
       &parent_->transaction_dispatcher_host_->map_, transaction_id);
   if (!idb_transaction || !idb_object_store)
     return;
-  idb_object_store->setIndexKeys(primary_key, index_names,
+  idb_object_store->setIndexKeys(primary_key,
+                                 WebVector<WebKit::WebString>(index_names),
                                  index_keys, *idb_transaction);
 }
 
@@ -736,7 +740,8 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnSetIndexesReady(
   if (!idb_transaction || !idb_object_store)
     return;
 
-  idb_object_store->setIndexesReady(index_names, *idb_transaction);
+  idb_object_store->setIndexesReady(WebVector<WebKit::WebString>(index_names),
+                                    *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDelete(
