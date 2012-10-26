@@ -52,6 +52,18 @@
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 
+
+static void (*g_enable_outer_sandbox_func)(void) =
+#if NACL_OSX
+    NaClEnableOuterSandbox;
+#else
+    NULL;
+#endif
+
+void NaClSetEnableOuterSandboxFunc(void (*func)(void)) {
+  g_enable_outer_sandbox_func = func;
+}
+
 static void VmentryPrinter(void           *state,
                     struct NaClVmmapEntry *vmep) {
   UNREFERENCED_PARAMETER(state);
@@ -681,7 +693,6 @@ int NaClSelLdrMain(int argc, char **argv) {
     NaClGdbHook(&state);
   }
 
-#if NACL_OSX
   /*
    * Tell the debug stub to bind a TCP port before enabling the outer
    * sandbox.  This is only needed on Mac OS X since that is the only
@@ -690,14 +701,15 @@ int NaClSelLdrMain(int argc, char **argv) {
    * XP seems to have some problems when we do bind()/listen() on a
    * separate thread from accept().
    */
-  if (enable_debug_stub) {
+  if (enable_debug_stub && NACL_OSX) {
     if (!NaClDebugBindSocket()) {
       exit(1);
     }
   }
 
   /*
-   * Enable the outer sandbox on Mac.  Do this as soon as possible.
+   * Enable the outer sandbox, if one is defined.  Do this as soon as
+   * possible.
    *
    * This must come after NaClWaitForLoadModuleStatus(), which waits
    * for another thread to have called NaClAppLoadFile().
@@ -707,10 +719,9 @@ int NaClSelLdrMain(int argc, char **argv) {
    *
    * We cannot enable the sandbox if file access is enabled.
    */
-  if (!NaClAclBypassChecks) {
-    NaClEnableOuterSandbox();
+  if (!NaClAclBypassChecks && g_enable_outer_sandbox_func != NULL) {
+    g_enable_outer_sandbox_func();
   }
-#endif
 
   if (NULL != blob_library_file) {
     if (LOAD_OK == errcode) {
