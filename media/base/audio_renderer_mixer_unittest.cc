@@ -164,7 +164,7 @@ class AudioRendererMixerTest
     EXPECT_TRUE(RenderAndValidateAudioData(0.0f));
 
     // Start() all even numbered mixer inputs and ensure we still get silence.
-    for (size_t i = 0; i < mixer_inputs_.size(); ++i)
+    for (size_t i = 0; i < mixer_inputs_.size(); i += 2)
       mixer_inputs_[i]->Start();
     FillAudioData(1.0f);
     EXPECT_TRUE(RenderAndValidateAudioData(0.0f));
