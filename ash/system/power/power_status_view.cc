@@ -109,8 +109,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
     time_status_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_FULL));
-  } else if (supply_status_.is_calculating_battery_time ||
-             supply_status_.battery_percentage < 0.0f) {
+  } else if (supply_status_.battery_percentage < 0.0f) {
     time_status_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
@@ -121,21 +120,27 @@ void PowerStatusView::UpdateTextForDefaultView() {
     string16 battery_time = string16();
     int hour = 0;
     int min = 0;
-    base::TimeDelta time = base::TimeDelta::FromSeconds(
-        supply_status_.line_power_on ?
-          supply_status_.averaged_battery_time_to_full :
-          supply_status_.averaged_battery_time_to_empty);
-    hour = time.InHours();
-    min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-    if (hour || min) {
-      string16 minute = min < 10 ?
-          ASCIIToUTF16("0") + base::IntToString16(min) :
-          base::IntToString16(min);
+    if (supply_status_.is_calculating_battery_time) {
       battery_time =
-          l10n_util::GetStringFUTF16(
-              IDS_ASH_STATUS_TRAY_BATTERY_TIME_ONLY,
-              base::IntToString16(hour),
-              minute);
+          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+              IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
+    } else {
+      base::TimeDelta time = base::TimeDelta::FromSeconds(
+          supply_status_.line_power_on ?
+              supply_status_.averaged_battery_time_to_full :
+              supply_status_.averaged_battery_time_to_empty);
+      hour = time.InHours();
+      min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
+      if (hour || min) {
+        string16 minute = min < 10 ?
+            ASCIIToUTF16("0") + base::IntToString16(min) :
+            base::IntToString16(min);
+        battery_time =
+            l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_BATTERY_TIME_ONLY,
+                base::IntToString16(hour),
+                minute);
+      }
     }
     string16 battery_status = battery_time.empty() ?
         battery_percentage :
