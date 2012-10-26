@@ -158,6 +158,9 @@ BrowserActionApiTest.*
 ExtensionWebstorePrivateBundleTest.*
 DeviceManagementServiceIntegrationTestInstance*
 ExtensionPageCaptureApiTest.*
+# DrM-i#1052-c#22
+WebUIAssertionsTest.*
+WebUIBrowserAsyncGenDeferredTest.*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
@@ -182,3 +185,16 @@ PageClickTrackerTest.*
 PhishingDOMFeatureExtractorTest.*
 SSLUITestBlock.*
 ExtensionInstallUIBrowserTest.*
+# DrM-i#1052-c#23
+WebCacheManagerBrowserTest.*
+SafeBrowsingServiceTest.*
+PerformanceMonitorBrowserTest.*
+ProxySettingsApiTest.*
+# DrM-i#1052-c#24
+PhishingClassifierTest.*
+ExtensionToolbarModelTest.*
+WebstoreStandaloneInstallTest.*
+# DrM-i#1052-c#25
+MetricsServiceTest.*
+PrintPreviewTabControllerBrowserTest.*
+
