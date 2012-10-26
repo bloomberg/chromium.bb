@@ -125,26 +125,31 @@ class CONTENT_EXPORT MediaStreamImpl
   // Structure for storing information about a WebKit request to create a
   // MediaStream.
   struct UserMediaRequestInfo {
-    UserMediaRequestInfo() : request_id(0), frame(NULL), request() {}
+    UserMediaRequestInfo()
+        : request_id(0), generated(false), frame(NULL), request() {
+    }
     UserMediaRequestInfo(int request_id,
                          WebKit::WebFrame* frame,
                          const WebKit::WebUserMediaRequest& request)
-        : request_id(request_id), frame(frame), request(request) {}
+        : request_id(request_id), generated(false), frame(frame),
+          request(request) {
+    }
     int request_id;
+    // True if MediaStreamDispatcher has generated the stream, see
+    // OnStreamGenerated.
+    bool generated;
     WebKit::WebFrame* frame;  // WebFrame that requested the MediaStream.
     WebKit::WebMediaStreamDescriptor descriptor;
     WebKit::WebUserMediaRequest request;
   };
   typedef ScopedVector<UserMediaRequestInfo> UserMediaRequests;
 
-  // We keep a list of the label and WebFrame of generated local media streams,
-  // so that we can stop them when needed.
-  typedef std::map<std::string, WebKit::WebFrame*> LocalNativeStreamMap;
-  typedef scoped_refptr<webrtc::MediaStreamInterface> LocalNativeStreamPtr;
-
   UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
   UserMediaRequestInfo* FindUserMediaRequestInfo(
       WebKit::WebMediaStreamDescriptor* descriptor);
+  UserMediaRequestInfo* FindUserMediaRequestInfo(
+      const WebKit::WebUserMediaRequest& request);
+  UserMediaRequestInfo* FindUserMediaRequestInfo(const std::string& label);
   void DeleteUserMediaRequestInfo(UserMediaRequestInfo* request);
 
   scoped_refptr<webkit_media::VideoFrameProvider>
@@ -167,7 +172,6 @@ class CONTENT_EXPORT MediaStreamImpl
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
 
   UserMediaRequests user_media_requests_;
-  LocalNativeStreamMap local_media_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamImpl);
 };

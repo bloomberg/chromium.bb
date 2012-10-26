@@ -104,6 +104,7 @@ cricket::VideoCapturer* MockVideoSource::GetVideoCapturer() {
 void MockVideoSource::AddSink(cricket::VideoRenderer* output) {
   NOTIMPLEMENTED();
 }
+
 void MockVideoSource::RemoveSink(cricket::VideoRenderer* output) {
   NOTIMPLEMENTED();
 }
@@ -118,7 +119,15 @@ void MockVideoSource::UnregisterObserver(webrtc::ObserverInterface* observer) {
 }
 
 void MockVideoSource::SetLive() {
+  DCHECK_EQ(MediaSourceInterface::kInitializing, state_);
   state_ = MediaSourceInterface::kLive;
+  if (observer_)
+    observer_->OnChanged();
+}
+
+void MockVideoSource::SetEnded() {
+  DCHECK_NE(MediaSourceInterface::kEnded, state_);
+  state_ = MediaSourceInterface::kEnded;
   if (observer_)
     observer_->OnChanged();
 }

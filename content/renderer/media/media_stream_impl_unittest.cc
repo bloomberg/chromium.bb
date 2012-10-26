@@ -23,11 +23,30 @@ namespace content {
 
 class MediaStreamImplUnderTest : public MediaStreamImpl {
  public:
+  enum RequestState {
+    REQUEST_NOT_STARTED,
+    REQUEST_NOT_COMPLETE,
+    REQUEST_SUCCEEDED,
+    REQUEST_FAILED,
+  };
+
   MediaStreamImplUnderTest(MediaStreamDispatcher* media_stream_dispatcher,
                            VideoCaptureImplManager* vc_manager,
                            MediaStreamDependencyFactory* dependency_factory)
       : MediaStreamImpl(NULL, media_stream_dispatcher, vc_manager,
-                        dependency_factory) {
+                        dependency_factory),
+        state_(REQUEST_NOT_STARTED) {
+  }
+
+  void RequestUserMedia(bool audio, bool video) {
+    WebKit::WebUserMediaRequest user_media_request;
+    WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
+        audio ? static_cast<size_t>(1) : 0);
+    WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
+        video ? static_cast<size_t>(1) : 0);
+    state_ = REQUEST_NOT_COMPLETE;
+    requestUserMedia(user_media_request, audio_sources,
+                     video_sources);
   }
 
   virtual void CompleteGetUserMediaRequest(
@@ -35,11 +54,7 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
       WebKit::WebUserMediaRequest* request_info,
       bool request_succeeded) OVERRIDE {
     last_generated_stream_ = stream;
-    EXPECT_TRUE(request_succeeded);
-  }
-
-  const WebKit::WebMediaStreamDescriptor& last_generated_stream() {
-    return last_generated_stream_;
+    state_ = request_succeeded ? REQUEST_SUCCEEDED : REQUEST_FAILED;
   }
 
   virtual WebKit::WebMediaStreamDescriptor GetMediaStream(
@@ -49,8 +64,15 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
 
   using MediaStreamImpl::OnLocalMediaStreamStop;
 
+  const WebKit::WebMediaStreamDescriptor& last_generated_stream() {
+    return last_generated_stream_;
+  }
+
+  RequestState request_state() const { return state_; }
+
  private:
   WebKit::WebMediaStreamDescriptor last_generated_stream_;
+  RequestState state_;
 };
 
 class MediaStreamImplTest : public ::testing::Test {
@@ -68,8 +90,15 @@ class MediaStreamImplTest : public ::testing::Test {
 
   WebKit::WebMediaStreamDescriptor RequestLocalMediaStream(bool audio,
                                                            bool video) {
-    GenerateSources(audio, video);
-    ChangeSourceStateToLive();
+    ms_impl_->RequestUserMedia(audio, video);
+    FakeMediaStreamDispatcherComplete();
+    if (video) {
+      // TODO(perkj): Only change the video source at the moment since audio
+      // sources are not implemented.
+      ChangeSourceStateToLive();
+    }
+    EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_SUCCEEDED,
+              ms_impl_->request_state());
 
     WebKit::WebMediaStreamDescriptor desc = ms_impl_->last_generated_stream();
     content::MediaStreamExtraData* extra_data =
@@ -90,15 +119,8 @@ class MediaStreamImplTest : public ::testing::Test {
     return desc;
   }
 
-  void GenerateSources(bool audio, bool video) {
-    WebKit::WebUserMediaRequest user_media_request;
-    WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
-        audio ? static_cast<size_t>(1) : 0);
-    WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
-        video ? static_cast<size_t>(1) : 0);
-    ms_impl_->requestUserMedia(user_media_request, audio_sources,
-                               video_sources);
 
+  void FakeMediaStreamDispatcherComplete() {
     ms_impl_->OnStreamGenerated(ms_dispatcher_->request_id(),
                                 ms_dispatcher_->stream_label(),
                                 ms_dispatcher_->audio_array(),
@@ -106,8 +128,14 @@ class MediaStreamImplTest : public ::testing::Test {
   }
 
   void ChangeSourceStateToLive() {
-    if(dependency_factory_->last_video_source() != NULL) {
+    if (dependency_factory_->last_video_source() != NULL) {
       dependency_factory_->last_video_source()->SetLive();
+    }
+  }
+
+  void ChangeSourceStateToEnded() {
+    if (dependency_factory_->last_video_source() != NULL) {
+      dependency_factory_->last_video_source()->SetEnded();
     }
   }
 
@@ -154,12 +182,53 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
   EXPECT_EQ(3, ms_dispatcher_->stop_stream_counter());
 }
 
+// This test what happens if a source to a MediaSteam fails to start.
+TEST_F(MediaStreamImplTest, MediaSourceFailToStart) {
+  ms_impl_->RequestUserMedia(true, true);
+  FakeMediaStreamDispatcherComplete();
+  ChangeSourceStateToEnded();
+  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_FAILED,
+            ms_impl_->request_state());
+  EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+}
+
 // This test what happens if MediaStreamImpl is deleted while the sources of a
-// MediaStream is being started. This only test that no crash occur.
-TEST_F(MediaStreamImplTest, DependencyFactoryShutDown) {
-  GenerateSources(true, true);
+// MediaStream is being started.
+TEST_F(MediaStreamImplTest, MediaStreamImplShutDown) {
+  ms_impl_->RequestUserMedia(true, true);
+  FakeMediaStreamDispatcherComplete();
+  EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
+  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
+            ms_impl_->request_state());
   ms_impl_.reset();
   ChangeSourceStateToLive();
+}
+
+// This test what happens if the WebFrame is closed while the MediaStream is
+// being generated by the MediaStreamDispatcher.
+TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingStream) {
+  ms_impl_->RequestUserMedia(true, true);
+  ms_impl_->FrameWillClose(NULL);
+  EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
+  EXPECT_EQ(0, ms_dispatcher_->stop_stream_counter());
+  ChangeSourceStateToLive();
+  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
+            ms_impl_->request_state());
+}
+
+// This test what happens if the WebFrame is closed while the sources are being
+// started by MediaStreamDependencyFactory.
+TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
+  ms_impl_->RequestUserMedia(true, true);
+  FakeMediaStreamDispatcherComplete();
+  EXPECT_EQ(0, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
+  ms_impl_->FrameWillClose(NULL);
+  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+  ChangeSourceStateToLive();
+  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
+            ms_impl_->request_state());
 }
 
 }  // namespace content

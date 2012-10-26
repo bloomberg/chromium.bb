@@ -12,6 +12,7 @@ namespace content {
 MockMediaStreamDispatcher::MockMediaStreamDispatcher()
     : MediaStreamDispatcher(NULL),
       request_id_(-1),
+      request_stream_counter_(0),
       stop_stream_counter_(0) {
 }
 
@@ -19,9 +20,9 @@ MockMediaStreamDispatcher::~MockMediaStreamDispatcher() {}
 
 void MockMediaStreamDispatcher::GenerateStream(
     int request_id,
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>&,
+    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const media_stream::StreamOptions& components,
-    const GURL&) {
+    const GURL& url) {
   request_id_ = request_id;
 
   stream_label_ = StringPrintf("%s%d","local_stream",request_id);
@@ -44,6 +45,7 @@ void MockMediaStreamDispatcher::GenerateStream(
     video.session_id = request_id;
     video_array_.push_back(video);
   }
+  ++request_stream_counter_;
 }
 
 void MockMediaStreamDispatcher::StopStream(const std::string& label) {

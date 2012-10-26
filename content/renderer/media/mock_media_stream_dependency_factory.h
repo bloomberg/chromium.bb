@@ -24,8 +24,10 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   virtual void AddSink(cricket::VideoRenderer* output) OVERRIDE;
   virtual void RemoveSink(cricket::VideoRenderer* output) OVERRIDE;
 
-  // Change the state of the source to live and notifies the observer.
+  // Changes the state of the source to live and notifies the observer.
   void SetLive();
+  // Changes the state of the source to ended and notifies the observer.
+  void SetEnded();
 
  protected:
   virtual ~MockVideoSource();
