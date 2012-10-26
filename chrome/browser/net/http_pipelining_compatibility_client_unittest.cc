@@ -397,7 +397,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, OldHttpVersion) {
   ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
-TEST_F(HttpPipeliningCompatibilityClientTest, DISABLED_MultipleRequests) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/147903: test fails on ChromeOS
+#define MAYBE_MultipleRequests DISABLED_MultipleRequests
+#else
+#define MAYBE_MultipleRequests MultipleRequests
+#endif
+TEST_F(HttpPipeliningCompatibilityClientTest, MAYBE_MultipleRequests) {
   std::vector<RequestInfo> requests;
 
   RequestInfo info1;
@@ -460,7 +466,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, StatsIndifferentToOrder) {
   ExpectHistogramCount(1, 1, FIELD_HTTP_1_1);
 }
 
-TEST_F(HttpPipeliningCompatibilityClientTest, DISABLED_StatsBadField) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/147903: test fails on ChromeOS
+#define MAYBE_StatsBadField DISABLED_StatsBadField
+#else
+#define MAYBE_StatsBadField StatsBadField
+#endif
+TEST_F(HttpPipeliningCompatibilityClientTest, MAYBE_StatsBadField) {
   EXPECT_EQ(internal::PipelineTestRequest::STATUS_CORRUPT_STATS,
             internal::ProcessStatsResponse(
                 "foo:3,were_all_requests_http_1_1:1"));
@@ -526,7 +538,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, WaitForCanary) {
       1, internal::PipelineTestRequest::STATUS_SUCCESS, 0, FIELD_STATUS);
 }
 
-TEST_F(HttpPipeliningCompatibilityClientTest, CanaryFailure) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/147903: test fails on ChromeOS
+#define MAYBE_CanaryFailure DISABLED_CanaryFailure
+#else
+#define MAYBE_CanaryFailure CanaryFailure
+#endif
+TEST_F(HttpPipeliningCompatibilityClientTest, MAYBE_CanaryFailure) {
   MockFactory* factory = new MockFactory;
   HttpPipeliningCompatibilityClient client(factory);
 
