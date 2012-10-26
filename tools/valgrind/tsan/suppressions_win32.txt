@@ -48,6 +48,13 @@
   fun:_wfsopen
 }
 
+{
+  bug_158099_mmdevice_endpoint_shutdown_too_fast
+  ThreadSanitizer:Race
+  fun:GetLocalIdFromEndpointId
+  ...
+}
+
 ############################
 # Chromium
 
