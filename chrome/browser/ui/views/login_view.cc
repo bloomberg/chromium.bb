@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/constrained_window_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
@@ -25,7 +26,9 @@ using views::GridLayout;
 ///////////////////////////////////////////////////////////////////////////////
 // LoginView, public:
 
-LoginView::LoginView(const string16& explanation, LoginModel* model)
+LoginView::LoginView(const string16& explanation,
+                     LoginModel* model,
+                     bool enable_chrome_style)
     : username_field_(new views::Textfield),
       password_field_(new views::Textfield(views::Textfield::STYLE_OBSCURED)),
       username_label_(new views::Label(
@@ -42,6 +45,9 @@ LoginView::LoginView(const string16& explanation, LoginModel* model)
   GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
+  if (enable_chrome_style)
+    layout->SetInsets(0, 0, ConstrainedWindowConstants::kRowPadding, 0);
+
   // Add the column set for the information message at the top of the dialog
   // box.
   const int single_column_view_set_id = 0;
@@ -53,18 +59,24 @@ LoginView::LoginView(const string16& explanation, LoginModel* model)
   // Add the column set for the user name and password fields and labels.
   const int labels_column_set_id = 1;
   column_set = layout->AddColumnSet(labels_column_set_id);
-  column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
+  if (!enable_chrome_style)
+    column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
+  if (!enable_chrome_style)
+    column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(message_label_);
 
-  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
+  if (enable_chrome_style) {
+    layout->AddPaddingRow(0, ConstrainedWindowConstants::kRowPadding);
+  } else {
+    layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
+  }
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(username_label_);
@@ -76,7 +88,8 @@ LoginView::LoginView(const string16& explanation, LoginModel* model)
   layout->AddView(password_label_);
   layout->AddView(password_field_);
 
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  if (!enable_chrome_style)
+    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   if (login_model_)
     login_model_->SetObserver(this);

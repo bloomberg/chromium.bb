@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/login/login_prompt.h"
 
+#include "base/command_line.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/login_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -35,6 +37,8 @@ class LoginHandlerViews : public LoginHandler,
  public:
   LoginHandlerViews(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
+        enable_chrome_style_(CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableFramelessConstrainedDialogs)),
         login_view_(NULL) {
   }
 
@@ -79,6 +83,10 @@ class LoginHandlerViews : public LoginHandler,
     ReleaseSoon();
   }
 
+  virtual bool UseChromeStyle() const OVERRIDE {
+    return enable_chrome_style_;
+  }
+
   virtual bool Cancel() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -119,7 +127,7 @@ class LoginHandlerViews : public LoginHandler,
     // so natural destruction order means we don't have to worry about
     // disassociating the model from the view, because the view will
     // be deleted before the password manager.
-    login_view_ = new LoginView(explanation, manager);
+    login_view_ = new LoginView(explanation, manager, enable_chrome_style_);
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got
@@ -128,7 +136,9 @@ class LoginHandlerViews : public LoginHandler,
     // to happen after this is called (since this was InvokeLater'd first).
     WebContents* requesting_contents = GetWebContentsForLogin();
     SetDialog(new ConstrainedWindowViews(
-        requesting_contents, this, false,
+        requesting_contents,
+        this,
+        enable_chrome_style_,
         ConstrainedWindowViews::DEFAULT_INSETS));
     NotifyAuthNeeded();
   }
@@ -138,6 +148,8 @@ class LoginHandlerViews : public LoginHandler,
   friend class LoginPrompt;
 
   ~LoginHandlerViews() {}
+
+  bool enable_chrome_style_;
 
   // The LoginView that contains the user's login information
   LoginView* login_view_;
