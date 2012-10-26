@@ -57,9 +57,6 @@
 #include "base/win/metro.h"
 #endif
 
-#if defined(USE_ASH)
-#include "ash/wm/window_util.h"
-#endif
 using content::NavigationController;
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -1023,16 +1020,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (browser_ == browser)
       return;
 
-#if defined(USE_ASH)
-    // Prevent the auto window management for this window on show.
-    ash::wm::SetUserHasChangedWindowPositionOrSize(
-        browser->window()->GetNativeWindow(), true);
-#endif
     browser->window()->Show();
-#if defined(USE_ASH)
-    ash::wm::SetUserHasChangedWindowPositionOrSize(
-        browser->window()->GetNativeWindow(), false);
-#endif
     browser->set_is_session_restore(false);
 
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the

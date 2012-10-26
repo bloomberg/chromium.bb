@@ -67,21 +67,11 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const
 extern const aura::WindowProperty<ui_controls::UIControlsAura*>* const
     kUIControlsKey;
 
-// A property key to remember if a windows position or size was changed by a
-// user.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kUserChangedWindowPositionOrSizeKey;
-
 // Property to tell if the container uses the screen coordinates.
 extern const aura::WindowProperty<bool>* const kUsesScreenCoordinatesKey;
 
 extern const aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>* const
     kWindowPersistsAcrossAllWorkspacesKey;
-
-// A property key to remember if a windows position can be managed by the
-// workspace manager or not.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kWindowPositionManagedKey;
 
 // True if the window is controlled by the workspace manager.
 extern const aura::WindowProperty<bool>* const

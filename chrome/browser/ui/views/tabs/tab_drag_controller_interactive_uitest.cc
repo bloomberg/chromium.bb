@@ -38,7 +38,6 @@
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/cursor_manager.h"
-#include "ash/wm/window_util.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/root_window.h"
 #endif
@@ -400,22 +399,6 @@ void DetachToOwnWindowStep2(DetachToBrowserTabDragControllerTest* test) {
     ASSERT_TRUE(test->ReleaseInput());
 }
 
-#if defined(USE_ASH)
-bool IsWindowPositionManaged(aura::Window* window) {
-  return ash::wm::IsWindowPositionManaged(window);
-}
-bool HasUserChangedWindowPositionOrSize(aura::Window* window) {
-  return ash::wm::HasUserChangedWindowPositionOrSize(window);
-}
-#else
-bool IsWindowPositionManaged(gfx::NativeWindow window) {
-  return true;
-}
-bool HasUserChangedWindowPositionOrSize(gfx::NativeWindow window) {
-  return false;
-}
-#endif
-
 }  // namespace
 
 // Drags from browser to separate window and releases mouse.
@@ -458,10 +441,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   EXPECT_TRUE(GetTrackedByWorkspace(browser()));
   EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
-  // After this both windows should still be managable.
-  EXPECT_TRUE(IsWindowPositionManaged(browser()->window()->GetNativeWindow()));
-  EXPECT_TRUE(IsWindowPositionManaged(
-      new_browser->window()->GetNativeWindow()));
 }
 
 // Deletes a tab being dragged before the user moved enough to start a drag.
@@ -877,7 +856,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Create another browser.
   Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
-  const gfx::Rect initial_bounds(browser2->window()->GetBounds());
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
@@ -901,13 +879,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ("100 0", IDString(browser2->tab_strip_model()));
 
   EXPECT_TRUE(GetTrackedByWorkspace(browser2));
-  // Make sure that the window is still managed and not user moved.
-  EXPECT_TRUE(IsWindowPositionManaged(browser2->window()->GetNativeWindow()));
-  EXPECT_FALSE(HasUserChangedWindowPositionOrSize(
-      browser2->window()->GetNativeWindow()));
-  // Also make sure that the drag to window position has not changed.
-  EXPECT_EQ(initial_bounds.ToString(),
-            browser2->window()->GetBounds().ToString());
 }
 
 namespace {

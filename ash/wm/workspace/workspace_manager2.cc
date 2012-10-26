@@ -17,7 +17,6 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/auto_window_management.h"
 #include "ash/wm/workspace/desktop_background_fade_controller.h"
 #include "ash/wm/workspace/workspace_animations.h"
 #include "ash/wm/workspace/workspace_layout_manager2.h"
@@ -594,14 +593,10 @@ void WorkspaceManager2::OnWindowAddedToWorkspace(Workspace2* workspace,
   // to the workspace.
   if (workspace == active_workspace_)
     UpdateShelfVisibility();
-
-  RearrangeVisibleWindowOnShow(child);
 }
 
 void WorkspaceManager2::OnWillRemoveWindowFromWorkspace(Workspace2* workspace,
                                                         Window* child) {
-  if (child->TargetVisibility())
-    RearrangeVisibleWindowOnHideOrRemove(child);
   child->ClearProperty(kWorkspaceKey);
 }
 
@@ -614,16 +609,10 @@ void WorkspaceManager2::OnWindowRemovedFromWorkspace(Workspace2* workspace,
 void WorkspaceManager2::OnWorkspaceChildWindowVisibilityChanged(
     Workspace2* workspace,
     Window* child) {
-  if (workspace->ShouldMoveToPending()) {
+  if (workspace->ShouldMoveToPending())
     MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_VISIBILITY_CHANGED);
-  } else {
-    if (child->TargetVisibility())
-      RearrangeVisibleWindowOnShow(child);
-    else
-      RearrangeVisibleWindowOnHideOrRemove(child);
-    if (workspace == active_workspace_)
-      UpdateShelfVisibility();
-  }
+  else if (workspace == active_workspace_)
+    UpdateShelfVisibility();
 }
 
 void WorkspaceManager2::OnWorkspaceWindowChildBoundsChanged(
