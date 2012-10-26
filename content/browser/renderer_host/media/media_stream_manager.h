@@ -172,10 +172,6 @@ class CONTENT_EXPORT MediaStreamManager
   // devices, which is needed for server based testing.
   void UseFakeDevice();
 
-  // Call to have all GenerateStream calls from now on use fake devices instead
-  // of real ones. This should NOT be used in production versions of Chrome.
-  static void AlwaysUseFakeDevice();
-
   // This object gets deleted on the UI thread after the IO thread has been
   // destroyed. So we need to know when IO thread is being destroyed so that
   // we can delete VideoCaptureManager and AudioInputDeviceManager.

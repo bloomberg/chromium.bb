@@ -7,6 +7,7 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/media_request_state.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "googleurl/src/gurl.h"
 
@@ -150,13 +152,6 @@ MediaStreamManager::EnumerationCache::EnumerationCache()
 MediaStreamManager::EnumerationCache::~EnumerationCache() {
 }
 
-bool MediaStreamManager::always_use_fake_devices_ = false;
-
-// static
-void MediaStreamManager::AlwaysUseFakeDevice() {
-  always_use_fake_devices_ = true;
-}
-
 MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           ui_controller_(new content::MediaStreamUIController(this))),
@@ -220,8 +215,10 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                         const GURL& security_origin,
                                         std::string* label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (always_use_fake_devices_)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeDeviceForMediaStream)) {
     UseFakeDevice();
+  }
 
   // Create a new request based on options.
   DeviceRequest new_request(requester, options,
