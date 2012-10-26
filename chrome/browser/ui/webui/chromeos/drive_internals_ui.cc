@@ -24,10 +24,12 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -185,6 +187,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Updates respective sections.
   void UpdateDriveRelatedFlagsSection();
+  void UpdateDriveRelatedPreferencesSection();
   void UpdateAuthStatusSection(
       google_apis::DriveServiceInterface* drive_service);
   void UpdateAccountMetadataSection(
@@ -321,6 +324,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   DCHECK(cache);
 
   UpdateDriveRelatedFlagsSection();
+  UpdateDriveRelatedPreferencesSection();
   UpdateAuthStatusSection(drive_service);
   UpdateAccountMetadataSection(drive_service);
   UpdateInFlightOperationsSection(drive_service);
@@ -350,6 +354,32 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
   }
 
   web_ui()->CallJavascriptFunction("updateDriveRelatedFlags", flags);
+}
+
+void DriveInternalsWebUIHandler::UpdateDriveRelatedPreferencesSection() {
+  const char* kDriveRelatedPreferences[] = {
+    prefs::kDisableDrive,
+    prefs::kDisableDriveOverCellular,
+    prefs::kDisableDriveHostedFiles,
+  };
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* pref_service = profile->GetPrefs();
+
+  base::ListValue preferences;
+  for (size_t i = 0; i < arraysize(kDriveRelatedPreferences); ++i) {
+    const std::string key = kDriveRelatedPreferences[i];
+    // As of now, all preferences are boolean.
+    const std::string value =
+        (pref_service->GetBoolean(key.c_str()) ? "true" : "false");
+    base::DictionaryValue* preference = new DictionaryValue;
+    preference->SetString("key", key);
+    preference->SetString("value", value);
+    preferences.Append(preference);
+  }
+
+  web_ui()->CallJavascriptFunction("updateDriveRelatedPreferences",
+                                   preferences);
 }
 
 void DriveInternalsWebUIHandler::UpdateAuthStatusSection(

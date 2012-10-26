@@ -4,19 +4,20 @@
 
 /**
  * Updates the Drive related Flags section.
- * @param {Array} flags List of dictionaries describing flags information.
+ * @param {Array} flags List of dictionaries describing flags.
  */
 function updateDriveRelatedFlags(flags) {
   var ul = $('drive-related-flags');
-  for (var i = 0; i < flags.length; i++) {
-    var flag = flags[i];
-    var text = flag.key;
-    if (flags.value != '')
-      text += ': ' + flag.value;
+  updateKeyValueList(ul, flags);
+}
 
-    var li = createElementFromText('li', text);
-    ul.appendChild(li);
-  }
+/**
+ * Updates the Drive related Preferences section.
+ * @param {Array} preferences List of dictionaries describing preferences.
+ */
+function updateDriveRelatedPreferences(preferences) {
+  var ul = $('drive-related-preferences');
+  updateKeyValueList(ul, preferences);
 }
 
 /**
@@ -173,6 +174,23 @@ function createElementFromText(elementName, text) {
   var element = document.createElement(elementName);
   element.appendChild(document.createTextNode(text));
   return element;
+}
+
+/**
+ * Updates <ul> element with the given key-value list.
+ * @param {HTMLElement} ul <ul> element to be modified.
+ * @param {Array} list List of dictionaries containing 'key' and 'value'.
+ */
+function updateKeyValueList(ul, list) {
+  for (var i = 0; i < list.length; i++) {
+    var flag = list[i];
+    var text = flag.key;
+    if (list.value != '')
+      text += ': ' + flag.value;
+
+    var li = createElementFromText('li', text);
+    ul.appendChild(li);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
