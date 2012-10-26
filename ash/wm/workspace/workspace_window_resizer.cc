@@ -313,6 +313,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
 }
 
 void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
+  wm::SetUserHasChangedWindowPositionOrSize(details_.window, true);
   window()->layer()->SetOpacity(details_.initial_opacity);
   drag_phantom_window_controller_.reset();
   snap_phantom_window_controller_.reset();

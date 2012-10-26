@@ -23,6 +23,7 @@
 
 #if defined(USE_ASH)
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_util.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -109,6 +110,11 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
         GetNativeWindow(),
         ash::WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO);
   }
+  // Turn on auto window management if we don't need an explicit bounds.
+  // This way the requested bounds are honored.
+  if (!browser_view->browser()->bounds_overridden() &&
+      !browser_view->browser()->is_session_restore())
+    SetWindowAutoManaged();
 #endif
 }
 
@@ -160,8 +166,13 @@ void BrowserFrameAura::OnWindowTargetVisibilityChanged(bool visible) {
   // RestoreFocus() when we become visible, which results in the web contents
   // being asked to focus, which places focus either in the web contents or in
   // the location bar as appropriate.
-  if (visible)
+  if (visible) {
+    // Once the window has been shown we know the requested bounds
+    // (if provided) have been honored and we can switch on window management.
+    SetWindowAutoManaged();
+
     browser_view_->RestoreFocus();
+  }
   views::NativeWidgetAura::OnWindowTargetVisibilityChanged(visible);
 }
 
@@ -218,4 +229,12 @@ NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
 // BrowserFrameAura, private:
 
 BrowserFrameAura::~BrowserFrameAura() {
+}
+
+void BrowserFrameAura::SetWindowAutoManaged() {
+#if defined(USE_ASH)
+  if (browser_view_->browser()->type() != Browser::TYPE_POPUP ||
+      browser_view_->browser()->is_app())
+    ash::wm::SetWindowPositionManaged(GetNativeWindow(), true);
+#endif
 }

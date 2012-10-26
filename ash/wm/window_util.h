@@ -36,22 +36,22 @@ ASH_EXPORT bool CanActivateWindow(aura::Window* window);
 ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
 // Returns true if |window| can be maximized.
-ASH_EXPORT bool CanMaximizeWindow(aura::Window* window);
+ASH_EXPORT bool CanMaximizeWindow(const aura::Window* window);
 
 // Returns true if |window| is normal or default.
-ASH_EXPORT bool IsWindowNormal(aura::Window* window);
+ASH_EXPORT bool IsWindowNormal(const aura::Window* window);
 
 // Returns true if |state| is normal or default.
-ASH_EXPORT bool IsWindowStateNormal(ui::WindowShowState state);
+ASH_EXPORT bool IsWindowStateNormal(const ui::WindowShowState state);
 
 // Returns true if |window| is in the maximized state.
-ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
+ASH_EXPORT bool IsWindowMaximized(const aura::Window* window);
 
 // Returns true if |window| is minimized.
-ASH_EXPORT bool IsWindowMinimized(aura::Window* window);
+ASH_EXPORT bool IsWindowMinimized(const aura::Window* window);
 
 // Returns true if |window| is in the fullscreen state.
-ASH_EXPORT bool IsWindowFullscreen(aura::Window* window);
+ASH_EXPORT bool IsWindowFullscreen(const aura::Window* window);
 
 // Maximizes |window|, which must not be NULL.
 ASH_EXPORT void MaximizeWindow(aura::Window* window);
@@ -82,6 +82,19 @@ ASH_EXPORT ui::Layer* RecreateWindowLayers(aura::Window* window,
 
 // Deletes |layer| and all its child layers.
 ASH_EXPORT void DeepDeleteLayers(ui::Layer* layer);
+
+// Returns true if |window|'s position can automatically be managed.
+ASH_EXPORT bool IsWindowPositionManaged(const aura::Window* window);
+
+// Change the |window|'s position manageability to |managed|.
+ASH_EXPORT void SetWindowPositionManaged(aura::Window* window, bool managed);
+
+// Returns true if the user has changed the |window|'s position or size.
+ASH_EXPORT bool HasUserChangedWindowPositionOrSize(const aura::Window* window);
+
+// Marks a |window|'s coordinates to be changed by a user.
+ASH_EXPORT void SetUserHasChangedWindowPositionOrSize(aura::Window* window,
+                                                      bool changed);
 
 }  // namespace wm
 }  // namespace ash

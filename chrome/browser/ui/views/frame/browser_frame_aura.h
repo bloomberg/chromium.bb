@@ -53,6 +53,9 @@ class BrowserFrameAura : public views::ContextMenuController,
 
   virtual ~BrowserFrameAura();
 
+  // Set the window into the auto managed mode.
+  void SetWindowAutoManaged();
+
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
 

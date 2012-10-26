@@ -36,9 +36,8 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, PRE_Test) {
 
 IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, Test) {
   gfx::Rect bounds = browser()->window()->GetBounds();
-
   gfx::Rect expected_bounds(gfx::Rect(20, 30, 400, 500));
-  ASSERT_EQ(expected_bounds, bounds);
+  ASSERT_EQ(expected_bounds.ToString(), bounds.ToString());
 }
 
 #endif  // defined(TOOLKIT_GTK)
