@@ -362,7 +362,8 @@ void FillFontFamilyMap(const PrefService* prefs,
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
     std::string font_family = prefs->GetString(pref_name.c_str());
-    (*map)[script] = UTF8ToUTF16(font_family);
+    if (!font_family.empty())
+      (*map)[script] = UTF8ToUTF16(font_family);
   }
 }
 
