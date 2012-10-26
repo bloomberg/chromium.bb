@@ -45,6 +45,10 @@ typedef base::Callback<void(scoped_ptr<LoadFeedParams> params,
 // In the case of loading the root feed we use |root_feed_changestamp| as its
 // initial changestamp value since it does not come with that info.
 //
+// Loaded feed may be partial due to size limit on a single feed. In that case,
+// the loaded feed will have next feed url set. Iff |load_subsequent_feeds|
+// parameter is set, feed loader will load all subsequent feeds.
+//
 // When all feeds are loaded, |feed_load_callback| is invoked with the retrieved
 // feeds. Then |load_finished_callback| is invoked with the error code.
 //
@@ -67,6 +71,7 @@ struct LoadFeedParams {
   std::string search_query;
   std::string directory_resource_id;
   GURL feed_to_load;
+  bool load_subsequent_feeds;
   const LoadDocumentFeedCallback feed_load_callback;
   FileOperationCallback load_finished_callback;
   ScopedVector<google_apis::DocumentFeed> feed_list;

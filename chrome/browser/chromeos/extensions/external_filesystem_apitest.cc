@@ -117,6 +117,26 @@ base::Value* LoadJSONFile(const std::string& filename) {
   return value;
 }
 
+// Adds a next feed URL property to the given feed value.
+bool AddNextFeedURLToFeedValue(const std::string& url, base::Value* feed) {
+  DictionaryValue* feed_as_dictionary;
+  if (!feed->GetAsDictionary(&feed_as_dictionary))
+    return false;
+
+  ListValue* links;
+  if (!feed_as_dictionary->GetList("feed.link", &links))
+    return false;
+
+  DictionaryValue* link_value = new DictionaryValue();
+  link_value->SetString("href", url);
+  link_value->SetString("rel", "next");
+  link_value->SetString("type", "application/atom_xml");
+
+  links->Append(link_value);
+
+  return true;
+}
+
 // Action used to set mock expectations for CreateDirectory().
 ACTION_P2(MockCreateDirectoryCallback, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -415,12 +435,29 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
       .WillOnce(MockGetDocumentsCallback(google_apis::HTTP_SUCCESS,
                                          &documents_value));
 
-  // We return the whole test file system in serch results.
-  scoped_ptr<base::Value> search_value(LoadJSONFile(kTestRootFeed));
+  // Search results will be returned in two parts:
+  // 1. Search will be given empty initial feed url. The returned feed will
+  //    have next feed URL set to mock the situation when server returns
+  //    partial result feed.
+  // 2. Search will be given next feed URL from the first call as the initial
+  //    feed url. Result feed will not have next feed url set.
+  // In both cases search will return all files and directories in test root
+  // feed.
+  scoped_ptr<base::Value> first_search_value(LoadJSONFile(kTestRootFeed));
+
+  ASSERT_TRUE(
+      AddNextFeedURLToFeedValue("https://next_feed", first_search_value.get()));
+
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(_, _, "foo", _, _))
+              GetDocuments(GURL(), _, "foo", _, _))
       .WillOnce(MockGetDocumentsCallback(google_apis::HTTP_SUCCESS,
-                                         &search_value));
+                                         &first_search_value));
+
+  scoped_ptr<base::Value> second_search_value(LoadJSONFile(kTestRootFeed));
+  EXPECT_CALL(*mock_drive_service_,
+              GetDocuments(GURL("https://next_feed"), _, "foo", _, _))
+      .WillOnce(MockGetDocumentsCallback(google_apis::HTTP_SUCCESS,
+                                         &second_search_value));
 
   // Test will try to create a snapshot of the returned file.
   scoped_ptr<base::Value> document_to_download_value(

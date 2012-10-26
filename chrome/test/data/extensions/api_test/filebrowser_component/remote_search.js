@@ -67,6 +67,15 @@ function verifyDirectoryAccessible(entry,
   readNext();
 }
 
+function verifySearchResult(entries, nextFeed, expectedNextFeed) {
+  chrome.test.assertTrue(!!entries);
+  chrome.test.assertEq(2, entries.length);
+  chrome.test.assertEq(expectedNextFeed, nextFeed);
+
+  chrome.test.assertEq('/drive/Folder', entries[0].fullPath);
+  chrome.test.assertEq('/drive/Folder/File.aBc', entries[1].fullPath);
+}
+
 chrome.test.runTests([
   function loadFileSystem() {
   chrome.fileBrowserPrivate.requestLocalFileSystem(
@@ -79,19 +88,17 @@ chrome.test.runTests([
   function driveSearch() {
     chrome.fileBrowserPrivate.searchGData('foo', '',
         function(entries, nextFeed) {
-          chrome.test.assertTrue(!!entries);
-          chrome.test.assertEq(2, entries.length);
-          chrome.test.assertEq('', nextFeed);
+          verifySearchResult(entries, nextFeed, 'https://next_feed/');
+          chrome.fileBrowserPrivate.searchGData('foo', nextFeed,
+              function(entries, nextFeed) {
+                verifySearchResult(entries, nextFeed, '');
 
-          chrome.test.assertEq('/drive/Folder',
-                               entries[0].fullPath);
-          chrome.test.assertEq('/drive/Folder/File.aBc',
-                               entries[1].fullPath);
+                var directoryVerifier = verifyDirectoryAccessible.bind(null,
+                    entries[0], 1, chrome.test.succeed, errorCallback);
 
-         var directoryVerifier = verifyDirectoryAccessible.bind(null,
-             entries[0], 1, chrome.test.succeed, errorCallback);
-
-         verifyFileAccessible(entries[1], directoryVerifier, errorCallback);
+                verifyFileAccessible(entries[1], directoryVerifier,
+                                     errorCallback);
+              });
         });
   }
 ]);

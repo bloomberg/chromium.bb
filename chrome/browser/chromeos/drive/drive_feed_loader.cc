@@ -163,6 +163,7 @@ LoadFeedParams::LoadFeedParams(
     const LoadDocumentFeedCallback& feed_load_callback)
     : start_changestamp(0),
       root_feed_changestamp(0),
+      load_subsequent_feeds(true),
       feed_load_callback(feed_load_callback) {
   DCHECK(!feed_load_callback.is_null());
 }
@@ -462,6 +463,7 @@ void DriveFeedLoader::SearchFromServer(
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams(feed_load_callback));
   params->search_query = search_query;
   params->feed_to_load = next_feed;
+  params->load_subsequent_feeds = false;
   LoadFromServer(params.Pass());
 }
 
@@ -546,6 +548,7 @@ void DriveFeedLoader::OnParseFeed(
 
   GURL next_feed_url;
   const bool has_next_feed_url =
+      params->load_subsequent_feeds &&
       (*current_feed)->GetNextFeedURL(&next_feed_url);
 
   // Add the current feed to the list of collected feeds for this directory.

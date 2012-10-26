@@ -59,11 +59,12 @@ struct SearchResultPair {
 };
 
 // Callback to DriveFileSystem::Search used in ContentSearch tests.
-// Verifies returned vector of results.
+// Verifies returned vector of results and next feed url.
 void DriveSearchCallback(
     MessageLoop* message_loop,
     const SearchResultPair* expected_results,
     size_t expected_results_size,
+    const GURL& expected_next_feed,
     DriveFileError error,
     const GURL& next_feed,
     scoped_ptr<std::vector<SearchResultInfo> > results) {
@@ -76,6 +77,8 @@ void DriveSearchCallback(
     EXPECT_EQ(expected_results[i].is_directory,
               results->at(i).is_directory);
   }
+
+  EXPECT_EQ(expected_next_feed, next_feed);
 
   message_loop->Quit();
 }
@@ -2478,6 +2481,8 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
 
   mock_drive_service_->set_search_result("gdata/search_result_feed.json");
 
+  // There should be only one GetDocuments request, even though search result
+  // feed has next feed url.
   EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
@@ -2487,7 +2492,9 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
   };
 
   SearchCallback callback = base::Bind(&DriveSearchCallback,
-      &message_loop_, kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults));
+      &message_loop_,
+      kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
+      GURL("https://next_feed"));
 
   file_system_->Search("foo", GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
@@ -2502,6 +2509,8 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   mock_drive_service_->set_search_result(
       "gdata/search_result_with_new_entry_feed.json");
 
+  // There should be only one GetDocuments request, even though search result
+  // feed has next feed url.
   EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
@@ -2520,7 +2529,9 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   SearchCallback callback = base::Bind(&DriveSearchCallback,
-      &message_loop_, kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults));
+      &message_loop_,
+      kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
+      GURL("https://next_feed"));
 
   file_system_->Search("foo", GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
@@ -2537,7 +2548,7 @@ TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
   const SearchResultPair* expected_results = NULL;
 
   SearchCallback callback = base::Bind(&DriveSearchCallback,
-      &message_loop_, expected_results, 0u);
+      &message_loop_, expected_results, 0u, GURL());
 
   file_system_->Search("foo", GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
