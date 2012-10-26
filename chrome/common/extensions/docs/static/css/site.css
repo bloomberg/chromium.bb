@@ -267,6 +267,11 @@ span.displayModeWarning {
   top: .4em;
 }
 
+#gc-pagecontent h5 {
+  font-size: 100%;
+  margin: 0;
+}
+
 #gc-pagecontent h1.page_title,
 #gc-pagecontent h2.page_title {
   line-height: 130%;

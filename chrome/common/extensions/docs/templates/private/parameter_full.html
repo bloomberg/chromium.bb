@@ -10,4 +10,25 @@
     </dl>
   </dd>
   {{/properties}}
+  {{?parameters}}
+  <dd>
+    <dl>
+    <h5>Parameters</h5>
+    {{#parameters}}
+      {{+partials.parameter_full}}
+    {{/}}
+    </dl>
+    {{?callback}}{{+partials.callback}}{{/}}
+  </dd>
+  {{/parameters}}
+  {{?returns}}
+  <dd>
+    <dl>
+    <h5>Returns</h5>
+    <dt><span class="property">
+        {{+partials.variable_type}}
+    </span></dt>
+    </dl>
+  </dd>
+  {{/returns}}
 </div>

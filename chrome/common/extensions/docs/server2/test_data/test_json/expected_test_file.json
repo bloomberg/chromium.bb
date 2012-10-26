@@ -12,12 +12,16 @@
         "parameters": [
           {
             "functions": [],
+            "parameters": [],
+            "returns": null,
             "last": true,
             "name": "results",
             "parent_name": "callback",
             "id": "property-callback-results",
             "array": {
               "functions": [],
+              "parameters": [],
+              "returns": null,
               "name": "resultsElement",
               "parent_name": "results",
               "id": "property-results-resultsElement",
@@ -41,12 +45,16 @@
       "parameters": [
         {
           "functions": [],
+          "parameters": [],
+          "returns": null,
           "name": "a",
           "parent_name": "get",
           "id": "property-get-a",
           "choices": [
             {
               "functions": [],
+              "parameters": [],
+              "returns": null,
               "simple_type": "string",
               "name": "a",
               "parent_name": "a",
@@ -57,12 +65,16 @@
             },
             {
               "functions": [],
+              "parameters": [],
+              "returns": null,
               "last": true,
               "name": "a",
               "parent_name": "a",
               "id": "property-a-a",
               "array": {
                 "functions": [],
+                "parameters": [],
+                "returns": null,
                 "simple_type": "string",
                 "name": "aElement",
                 "parent_name": "a",
@@ -89,12 +101,16 @@
           "parameters": [
             {
               "functions": [],
+              "parameters": [],
+              "returns": null,
               "last": true,
               "name": "results",
               "parent_name": "callback",
               "id": "property-callback-results",
               "array": {
                 "functions": [],
+                "parameters": [],
+                "returns": null,
                 "name": "resultsElement",
                 "parent_name": "results",
                 "id": "property-results-resultsElement",
@@ -126,11 +142,15 @@
       "properties": [
         {
           "functions": [],
+          "parameters": [],
+          "returns": null,
           "name": "b",
           "parent_name": "TypeA",
           "id": "property-TypeA-b",
           "array": {
             "functions": [],
+            "parameters": [],
+            "returns": null,
             "name": "bElement",
             "parent_name": "b",
             "id": "property-b-bElement",
@@ -163,6 +183,8 @@
       "parameters": [
         {
           "functions": [],
+          "parameters": [],
+          "returns": null,
           "simple_type": "string",
           "name": "id",
           "parent_name": "EventA",
@@ -173,6 +195,8 @@
         },
         {
           "functions": [],
+          "parameters": [],
+          "returns": null,
           "last": true,
           "name": "bookmark",
           "parent_name": "EventA",

@@ -229,6 +229,8 @@ class Property(object):
     self.from_json = from_json
     self.from_client = from_client
     self.instance_of = json.get('isInstanceOf', None)
+    self.params = []
+    self.returns = None
     _AddProperties(self, json, namespace)
     if is_additional_properties:
       self.type_ = PropertyType.ADDITIONAL_PROPERTIES
@@ -257,6 +259,16 @@ class Property(object):
         # self.properties will already have some value from |_AddProperties|.
         self.properties.update(type_.properties)
         self.functions = type_.functions
+      elif self.type_ == PropertyType.FUNCTION:
+        for p in json.get('parameters', []):
+          self.params.append(Property(self,
+                                      p['name'],
+                                      p,
+                                      namespace,
+                                      from_json=from_json,
+                                      from_client=from_client))
+        if 'returns' in json:
+          self.returns = Property(self, 'return', json['returns'], namespace)
     elif 'choices' in json:
       if not json['choices'] or len(json['choices']) == 0:
         raise ParseException(self, 'Choices has no choices')
