@@ -569,13 +569,59 @@ class TempDirTestCase(TestCase):
     osutils._TempDirTearDown(self, self.sudo_cleanup)
 
 
+class _RunCommandMock(mox.MockObject):
+  """Custom mock class used to suppress arguments we don't care about"""
+
+  DEFAULT_IGNORED_ARGS = ('print_cmd',)
+
+  def __call__(self, *args, **kwds):
+    for arg in self.DEFAULT_IGNORED_ARGS:
+       kwds.setdefault(arg, mox.IgnoreArg())
+    return mox.MockObject.__call__(self, *args, **kwds)
+
+
+class LessAnnoyingMox(mox.Mox):
+  """Mox derivative that slips in our suppressions to mox.
+
+  This is used by default via MoxTestCase; namely, this suppresses
+  certain arguments awareness that we don't care about via switching
+  in (dependent on the namespace requested) overriding MockObject
+  classing.
+
+  Via this, it makes maintenance much simpler- simplest example, if code
+  doesn't explicitly assert that print_cmd must be true/false... then
+  we don't care about what argument is set (it has no effect beyond output).
+  Mox normally *would* care, making it a pita to maintain.  This selectively
+  suppresses that awareness, making it maintainable.
+  """
+
+  mock_classes = {}.fromkeys(
+      ['chromite.lib.cros_build_lib.%s' % x
+       for x in dir(cros_build_lib) if "RunCommand" in x],
+       _RunCommandMock)
+
+  @staticmethod
+  def _GetNamespace(obj):
+    return '%s.%s' % (obj.__module__, obj.__name__)
+
+  def CreateMock(self, obj, attrs=None):
+    if attrs is None:
+      attrs = {}
+    kls = self.mock_classes.get(
+        self._GetNamespace(obj), mox.MockObject)
+    # Copy attrs; I don't trust mox to not be stupid here.
+    mock = kls(obj, attrs=attrs)
+    self._mock_objects.append(mock)
+    return mock
+
+
 class MoxTestCase(TestCase):
   """Mox based test case; compatible with StackedSetup"""
 
   mox_suppress_verify_all = False
 
   def setUp(self):
-    self.mox = mox.Mox()
+    self.mox = LessAnnoyingMox()
     self.stubs = mox.stubout.StubOutForTesting()
 
   def tearDown(self):
