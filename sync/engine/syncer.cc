@@ -11,7 +11,7 @@
 #include "base/time.h"
 #include "build/build_config.h"
 #include "sync/engine/apply_control_data_updates.h"
-#include "sync/engine/apply_updates_command.h"
+#include "sync/engine/apply_updates_and_resolve_conflicts_command.h"
 #include "sync/engine/build_commit_command.h"
 #include "sync/engine/commit.h"
 #include "sync/engine/conflict_resolver.h"
@@ -19,7 +19,6 @@
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/process_commit_response_command.h"
 #include "sync/engine/process_updates_command.h"
-#include "sync/engine/resolve_conflicts_command.h"
 #include "sync/engine/store_timestamps_command.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/throttled_data_type_tracker.h"
@@ -61,8 +60,6 @@ const char* SyncerStepToString(const SyncerStep step)
     ENUM_CASE(STORE_TIMESTAMPS);
     ENUM_CASE(APPLY_UPDATES);
     ENUM_CASE(COMMIT);
-    ENUM_CASE(RESOLVE_CONFLICTS);
-    ENUM_CASE(APPLY_UPDATES_TO_RESOLVE_CONFLICTS);
     ENUM_CASE(SYNCER_END);
   }
   NOTREACHED();
@@ -152,7 +149,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         // These include encryption updates that should be applied early.
         ApplyControlDataUpdates(session->context()->directory());
 
-        ApplyUpdatesCommand apply_updates;
+        ApplyUpdatesAndResolveConflictsCommand apply_updates;
         apply_updates.Execute(session);
 
         session->context()->set_hierarchy_conflict_detected(
@@ -172,43 +169,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       case COMMIT: {
         session->mutable_status_controller()->set_commit_result(
             BuildAndPostCommits(this, session));
-        next_step = RESOLVE_CONFLICTS;
-        break;
-      }
-      case RESOLVE_CONFLICTS: {
-        StatusController* status = session->mutable_status_controller();
-        status->reset_conflicts_resolved();
-        ResolveConflictsCommand resolve_conflicts_command;
-        resolve_conflicts_command.Execute(session);
-
-        // Has ConflictingUpdates includes both resolvable and unresolvable
-        // conflicts. If we have either, we want to attempt to reapply.
-        if (status->HasConflictingUpdates())
-          next_step = APPLY_UPDATES_TO_RESOLVE_CONFLICTS;
-        else
-          next_step = SYNCER_END;
-        break;
-      }
-      case APPLY_UPDATES_TO_RESOLVE_CONFLICTS: {
-        StatusController* status = session->mutable_status_controller();
-        DVLOG(1) << "Applying updates to resolve conflicts";
-        ApplyUpdatesCommand apply_updates;
-
-        // We only care to resolve conflicts again if we made progress on the
-        // simple conflicts.
-        int before_blocking_conflicting_updates =
-            status->num_simple_conflicts();
-        apply_updates.Execute(session);
-        int after_blocking_conflicting_updates =
-            status->num_simple_conflicts();
-        // If the following call sets the conflicts_resolved value to true,
-        // SyncSession::HasMoreToSync() will send us into another sync cycle
-        // after this one completes.
-        //
-        // TODO(rlarocque, 109072): Make conflict resolution not require
-        // extra sync cycles/GetUpdates.
-        status->update_conflicts_resolved(before_blocking_conflicting_updates >
-                                          after_blocking_conflicting_updates);
         next_step = SYNCER_END;
         break;
       }

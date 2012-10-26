@@ -17,7 +17,6 @@
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
-#include "sync/sessions/session_state.h"
 
 namespace syncer {
 

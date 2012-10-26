@@ -16,7 +16,6 @@
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/sync_enums.pb.h"
-#include "sync/sessions/session_state.h"
 #include "sync/sessions/sync_session_context.h"
 #include "sync/syncable/blob.h"
 #include "sync/syncable/directory.h"

@@ -99,20 +99,20 @@ void StatusController::increment_num_successful_commits() {
   model_neutral_.num_successful_commits++;
 }
 
-void StatusController::increment_num_updates_applied() {
-  model_neutral_.num_updates_applied++;
+void StatusController::increment_num_updates_applied_by(int value) {
+  model_neutral_.num_updates_applied += value;
 }
 
-void StatusController::increment_num_encryption_conflicts() {
-  model_neutral_.num_encryption_conflicts++;
+void StatusController::increment_num_encryption_conflicts_by(int value) {
+  model_neutral_.num_encryption_conflicts += value;
+}
+
+void StatusController::increment_num_hierarchy_conflicts_by(int value) {
+  model_neutral_.num_hierarchy_conflicts += value;
 }
 
 void StatusController::increment_num_server_conflicts() {
   model_neutral_.num_server_conflicts++;
-}
-
-void StatusController::set_num_hierarchy_conflicts(int value) {
-  model_neutral_.num_hierarchy_conflicts = value;
 }
 
 void StatusController::increment_num_local_overwrites() {
@@ -169,6 +169,10 @@ bool StatusController::HasConflictingUpdates() const {
 
 int StatusController::num_updates_applied() const {
   return model_neutral_.num_updates_applied;
+}
+
+int StatusController::num_server_overwrites() const {
+  return model_neutral_.num_server_overwrites;
 }
 
 int StatusController::num_encryption_conflicts() const {

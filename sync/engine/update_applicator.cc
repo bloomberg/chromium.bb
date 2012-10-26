@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "sync/engine/syncer_util.h"
-#include "sync/sessions/session_state.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_id.h"
@@ -25,7 +24,10 @@ UpdateApplicator::UpdateApplicator(Cryptographer* cryptographer,
                                    ModelSafeGroup group_filter)
     : cryptographer_(cryptographer),
       group_filter_(group_filter),
-      routing_info_(routes) {
+      routing_info_(routes),
+      updates_applied_(0),
+      encryption_conflicts_(0),
+      hierarchy_conflicts_(0) {
 }
 
 UpdateApplicator::~UpdateApplicator() {
@@ -39,22 +41,23 @@ UpdateApplicator::~UpdateApplicator() {
 // making progress, which would indicate that the hierarchy is invalid.
 //
 // The update applicator also has to deal with simple conflicts, which occur
-// when an item is modified on both the server and the local model, and
-// encryption conflicts.  There's not much we can do about them here, so we
-// don't bother re-processing them on subsequent passes.
+// when an item is modified on both the server and the local model.  We remember
+// their IDs so they can be passed to the conflict resolver after all the other
+// applications are complete.
+//
+// Finally, there are encryption conflicts, which can occur when we don't have
+// access to all the Nigori keys.  There's nothing we can do about them here.
 void UpdateApplicator::AttemptApplications(
     syncable::WriteTransaction* trans,
-    const std::vector<int64>& handles,
-    sessions::StatusController* status) {
+    const std::vector<int64>& handles) {
   std::vector<int64> to_apply = handles;
-  std::set<syncable::Id>* simple_conflict_ids =
-      status->mutable_simple_conflict_ids();
 
   DVLOG(1) << "UpdateApplicator running over " << to_apply.size() << " items.";
   while (!to_apply.empty()) {
     std::vector<int64> to_reapply;
 
-    for (UpdateIterator i = to_apply.begin(); i != to_apply.end(); ++i) {
+    for (std::vector<int64>::iterator i = to_apply.begin();
+         i != to_apply.end(); ++i) {
       syncable::Entry read_entry(trans, syncable::GET_BY_HANDLE, *i);
       if (SkipUpdate(read_entry)) {
         continue;
@@ -66,13 +69,13 @@ void UpdateApplicator::AttemptApplications(
 
       switch (result) {
         case SUCCESS:
-          status->increment_num_updates_applied();
+          updates_applied_++;
           break;
         case CONFLICT_SIMPLE:
-          simple_conflict_ids->insert(entry.Get(ID));
+          simple_conflict_ids_.insert(entry.Get(ID));
           break;
         case CONFLICT_ENCRYPTION:
-          status->increment_num_encryption_conflicts();
+          encryption_conflicts_++;
           break;
         case CONFLICT_HIERARCHY:
           // The decision to classify these as hierarchy conflcits is tentative.
@@ -88,7 +91,7 @@ void UpdateApplicator::AttemptApplications(
 
     if (to_reapply.size() == to_apply.size()) {
       // We made no progress.  Must be stubborn hierarchy conflicts.
-      status->set_num_hierarchy_conflicts(to_apply.size());
+      hierarchy_conflicts_ = to_apply.size();
       break;
     }
 

@@ -16,7 +16,6 @@
 #include "sync/js/js_backend.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/debug_info_getter.h"
-#include "sync/sessions/session_state.h"
 
 namespace syncer {
 

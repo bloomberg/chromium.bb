@@ -29,8 +29,6 @@ void DebugInfoEventListener::OnSyncCycleCompleted(
       snapshot.num_encryption_conflicts());
   sync_completed_event_info->set_num_hierarchy_conflicts(
       snapshot.num_hierarchy_conflicts());
-  sync_completed_event_info->set_num_simple_conflicts(
-      snapshot.num_simple_conflicts());
   sync_completed_event_info->set_num_server_conflicts(
       snapshot.num_server_conflicts());
 

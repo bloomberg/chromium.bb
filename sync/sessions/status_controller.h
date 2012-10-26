@@ -107,6 +107,8 @@ class StatusController {
   // Number of successfully applied updates.
   int num_updates_applied() const;
 
+  int num_server_overwrites() const;
+
   // Returns the number of updates received from the sync server.
   int64 CountUpdates() const;
 
@@ -151,10 +153,10 @@ class StatusController {
   void increment_num_reflected_updates_downloaded_by(int value);
 
   // Update application and conflict resolution counters.
-  void increment_num_updates_applied();
-  void increment_num_encryption_conflicts();
+  void increment_num_updates_applied_by(int value);
+  void increment_num_encryption_conflicts_by(int value);
+  void increment_num_hierarchy_conflicts_by(int value);
   void increment_num_server_conflicts();
-  void set_num_hierarchy_conflicts(int value);
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();
 

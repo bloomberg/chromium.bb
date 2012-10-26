@@ -49,18 +49,13 @@ class ConflictResolver {
   ~ConflictResolver();
   // Called by the syncer at the end of a update/commit cycle.
   // Returns true if the syncer should try to apply its updates again.
-  bool ResolveConflicts(syncable::WriteTransaction* trans,
+  void ResolveConflicts(syncable::WriteTransaction* trans,
                         const Cryptographer* cryptographer,
                         const std::set<syncable::Id>& simple_conflict_ids,
                         sessions::StatusController* status);
 
  private:
-  enum ProcessSimpleConflictResult {
-    NO_SYNC_PROGRESS,  // No changes to advance syncing made.
-    SYNC_PROGRESS,     // Progress made.
-  };
-
-  ProcessSimpleConflictResult ProcessSimpleConflict(
+  void ProcessSimpleConflict(
       syncable::WriteTransaction* trans,
       const syncable::Id& id,
       const Cryptographer* cryptographer,

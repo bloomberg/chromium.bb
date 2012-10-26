@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_RESOLVE_CONFLICTS_COMMAND_H_
-#define SYNC_ENGINE_RESOLVE_CONFLICTS_COMMAND_H_
+#ifndef SYNC_ENGINE_APPLY_UPDATES_AND_RESOLVE_CONFLICTS_COMMAND_H_
+#define SYNC_ENGINE_APPLY_UPDATES_AND_RESOLVE_CONFLICTS_COMMAND_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "sync/engine/model_changing_syncer_command.h"
 
 namespace syncer {
 
-class ResolveConflictsCommand : public ModelChangingSyncerCommand {
+class ApplyUpdatesAndResolveConflictsCommand
+    : public ModelChangingSyncerCommand {
  public:
-  ResolveConflictsCommand();
-  virtual ~ResolveConflictsCommand();
+  ApplyUpdatesAndResolveConflictsCommand();
+  virtual ~ApplyUpdatesAndResolveConflictsCommand();
 
  protected:
   // ModelChangingSyncerCommand implementation.
@@ -24,9 +24,9 @@ class ResolveConflictsCommand : public ModelChangingSyncerCommand {
       sessions::SyncSession* session) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ResolveConflictsCommand);
+  DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesAndResolveConflictsCommand);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_RESOLVE_CONFLICTS_COMMAND_H_
+#endif  // SYNC_ENGINE_APPLY_UPDATES_AND_RESOLVE_CONFLICTS_COMMAND_H_

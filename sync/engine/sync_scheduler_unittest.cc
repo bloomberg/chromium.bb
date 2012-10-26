@@ -692,36 +692,6 @@ TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
   StopSyncScheduler();
 }
 
-// Test that a sync session is run through to completion.
-TEST_F(SyncSchedulerTest, HasMoreToSync) {
-  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
-      .WillOnce(Invoke(sessions::test_util::SimulateHasMoreToSync))
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-                      QuitLoopNowAction()));
-  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-
-  scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
-  RunLoop();
-  // If more nudges are scheduled, they'll be waited on by TearDown, and would
-  // cause our expectation to break.
-}
-
-// Test that continuations can go into backoff.
-TEST_F(SyncSchedulerTest, HasMoreToSyncThenFails) {
-  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
-    .WillOnce(Invoke(sessions::test_util::SimulateHasMoreToSync))
-    .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
-                    QuitLoopNowAction()));
-  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-
-  scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
-
-  // We should detect the failure on the second sync share, and go into backoff.
-  EXPECT_TRUE(RunAndGetBackoff());
-}
-
 // Test that no syncing occurs when throttled.
 TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
   const ModelTypeSet types(BOOKMARKS);

@@ -35,8 +35,6 @@ class Cryptographer;
 
 class UpdateApplicator {
  public:
-  typedef std::vector<int64>::iterator UpdateIterator;
-
   UpdateApplicator(Cryptographer* cryptographer,
                    const ModelSafeRoutingInfo& routes,
                    ModelSafeGroup group_filter);
@@ -44,8 +42,23 @@ class UpdateApplicator {
 
   // Attempt to apply the specified updates.
   void AttemptApplications(syncable::WriteTransaction* trans,
-                           const std::vector<int64>& handles,
-                           sessions::StatusController* status);
+                           const std::vector<int64>& handles);
+
+  int updates_applied() {
+    return updates_applied_;
+  }
+
+  int encryption_conflicts() {
+    return encryption_conflicts_;
+  }
+
+  int hierarchy_conflicts() {
+    return hierarchy_conflicts_;
+  }
+
+  const std::set<syncable::Id>& simple_conflict_ids() {
+    return simple_conflict_ids_;
+  }
 
  private:
   // If true, AttemptOneApplication will skip over |entry| and return true.
@@ -59,6 +72,11 @@ class UpdateApplicator {
   const ModelSafeRoutingInfo routing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateApplicator);
+
+  int updates_applied_;
+  int encryption_conflicts_;
+  int hierarchy_conflicts_;
+  std::set<syncable::Id> simple_conflict_ids_;
 };
 
 }  // namespace syncer

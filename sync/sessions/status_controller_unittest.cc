@@ -42,28 +42,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   EXPECT_EQ(14, status.model_neutral_state().num_successful_commits);
 }
 
-TEST_F(StatusControllerTest, HasConflictingUpdates) {
-  StatusController status(routes_);
-  EXPECT_FALSE(status.HasConflictingUpdates());
-
-  {
-    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    status.increment_num_updates_applied();
-    status.mutable_simple_conflict_ids()->insert(syncable::Id());
-  }
-
-  EXPECT_TRUE(status.HasConflictingUpdates());
-}
-
-TEST_F(StatusControllerTest, HasConflictingUpdates_NonBlockingUpdates) {
-  StatusController status(routes_);
-  EXPECT_FALSE(status.HasConflictingUpdates());
-
-  status.increment_num_updates_applied();
-  status.increment_num_encryption_conflicts();
-  EXPECT_TRUE(status.HasConflictingUpdates());
-}
-
 TEST_F(StatusControllerTest, CountUpdates) {
   StatusController status(routes_);
   EXPECT_EQ(0, status.CountUpdates());
@@ -77,25 +55,12 @@ TEST_F(StatusControllerTest, CountUpdates) {
 // Test TotalNumConflictingItems
 TEST_F(StatusControllerTest, TotalNumConflictingItems) {
   StatusController status(routes_);
-  TestIdFactory f;
-  {
-    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    status.mutable_simple_conflict_ids()->insert(f.NewLocalId());
-    status.mutable_simple_conflict_ids()->insert(f.NewLocalId());
-    EXPECT_EQ(static_cast<size_t>(2), status.simple_conflict_ids()->size());
-  }
-  EXPECT_EQ(2, status.TotalNumConflictingItems());
-  {
-    ScopedModelSafeGroupRestriction r(&status, GROUP_DB);
-    status.mutable_simple_conflict_ids()->insert(f.NewLocalId());
-    status.mutable_simple_conflict_ids()->insert(f.NewLocalId());
-    EXPECT_EQ(static_cast<size_t>(2), status.simple_conflict_ids()->size());
-  }
-  EXPECT_EQ(4, status.TotalNumConflictingItems());
+  EXPECT_EQ(0, status.TotalNumConflictingItems());
 
   status.increment_num_server_conflicts();
-  status.set_num_hierarchy_conflicts(3);
-  EXPECT_EQ(8, status.TotalNumConflictingItems());
+  status.increment_num_hierarchy_conflicts_by(3);
+  status.increment_num_encryption_conflicts_by(2);
+  EXPECT_EQ(6, status.TotalNumConflictingItems());
 }
 
 // Basic test that non group-restricted state accessors don't cause violations.

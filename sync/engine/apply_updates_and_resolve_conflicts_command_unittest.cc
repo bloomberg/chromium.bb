@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
-#include "sync/engine/apply_updates_command.h"
+#include "sync/engine/apply_updates_and_resolve_conflicts_command.h"
 #include "sync/engine/syncer.h"
 #include "sync/internal_api/public/test/test_entry_factory.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -40,12 +40,12 @@ sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
 }
 } // namespace
 
-// A test fixture for tests exercising ApplyUpdatesCommand.
-class ApplyUpdatesCommandTest : public SyncerCommandTest {
+// A test fixture for tests exercising ApplyUpdatesAndResolveConflictsCommand.
+class ApplyUpdatesAndResolveConflictsCommandTest : public SyncerCommandTest {
  public:
  protected:
-  ApplyUpdatesCommandTest() {}
-  virtual ~ApplyUpdatesCommandTest() {}
+  ApplyUpdatesAndResolveConflictsCommandTest() {}
+  virtual ~ApplyUpdatesAndResolveConflictsCommandTest() {}
 
   virtual void SetUp() {
     workers()->clear();
@@ -63,13 +63,13 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
   }
 
  protected:
-  DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommandTest);
+  DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesAndResolveConflictsCommandTest);
 
-  ApplyUpdatesCommand apply_updates_command_;
+  ApplyUpdatesAndResolveConflictsCommand apply_updates_command_;
   scoped_ptr<TestEntryFactory> entry_factory_;
 };
 
-TEST_F(ApplyUpdatesCommandTest, Simple) {
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, Simple) {
   string root_server_id = syncable::GetNullId().GetServerId();
   entry_factory_->CreateUnappliedNewItemWithParent("parent",
                                                    DefaultBookmarkSpecifics(),
@@ -82,8 +82,6 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
   apply_updates_command_.ExecuteImpl(session());
 
   const sessions::StatusController& status = session()->status_controller();
-  EXPECT_EQ(0, status.num_simple_conflicts())
-      << "Simple update shouldn't result in conflicts";
   EXPECT_EQ(0, status.num_encryption_conflicts())
       << "Simple update shouldn't result in conflicts";
   EXPECT_EQ(0, status.num_hierarchy_conflicts())
@@ -92,7 +90,8 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
       << "All items should have been successfully applied";
 }
 
-TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
+       UpdateWithChildrenBeforeParents) {
   // Set a bunch of updates which are difficult to apply in the order
   // they're received due to dependencies on other unseen items.
   string root_server_id = syncable::GetNullId().GetServerId();
@@ -111,33 +110,34 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
   apply_updates_command_.ExecuteImpl(session());
 
   const sessions::StatusController& status = session()->status_controller();
-  EXPECT_EQ(0, status.num_simple_conflicts())
-      << "Simple update shouldn't result in conflicts, even if out-of-order";
   EXPECT_EQ(5, status.num_updates_applied())
       << "All updates should have been successfully applied";
 }
 
-// Runs the ApplyUpdatesCommand on an item that has both local and remote
-// modifications (IS_UNSYNCED and IS_UNAPPLIED_UPDATE).  We expect the command
-// to detect that this update can't be applied because it is in a CONFLICT
-// state.
-TEST_F(ApplyUpdatesCommandTest, SimpleConflict) {
+// Runs the ApplyUpdatesAndResolveConflictsCommand on an item that has both
+// local and remote modifications (IS_UNSYNCED and IS_UNAPPLIED_UPDATE).  We
+// expect the command to detect that this update can't be applied because it is
+// in a CONFLICT state.
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, SimpleConflict) {
   entry_factory_->CreateUnappliedAndUnsyncedItem("item", BOOKMARKS);
 
   ExpectGroupToChange(apply_updates_command_, GROUP_UI);
   apply_updates_command_.ExecuteImpl(session());
 
   const sessions::StatusController& status = session()->status_controller();
-  EXPECT_EQ(1, status.num_simple_conflicts())
-      << "Unsynced and unapplied item should be a simple conflict";
+  EXPECT_EQ(1, status.num_server_overwrites())
+      << "Unsynced and unapplied item conflict should be resolved";
+  EXPECT_EQ(0, status.num_updates_applied())
+      << "Update should not be applied; we should override the server.";
 }
 
-// Runs the ApplyUpdatesCommand on an item that has both local and remote
-// modifications *and* the remote modification cannot be applied without
-// violating the tree constraints.  We expect the command to detect that this
-// update can't be applied and that this situation can't be resolved with the
-// simple conflict processing logic; it is in a CONFLICT_HIERARCHY state.
-TEST_F(ApplyUpdatesCommandTest, HierarchyAndSimpleConflict) {
+// Runs the ApplyUpdatesAndResolveConflictsCommand on an item that has both
+// local and remote modifications *and* the remote modification cannot be
+// applied without violating the tree constraints.  We expect the command to
+// detect that this update can't be applied and that this situation can't be
+// resolved with the simple conflict processing logic; it is in a
+// CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, HierarchyAndSimpleConflict) {
   // Create a simply-conflicting item.  It will start with valid parent ids.
   int64 handle = entry_factory_->CreateUnappliedAndUnsyncedItem(
       "orphaned_by_server", BOOKMARKS);
@@ -156,19 +156,16 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyAndSimpleConflict) {
   apply_updates_command_.ExecuteImpl(session());
 
   const sessions::StatusController& status = session()->status_controller();
-
-  // An update that is both a simple conflict and a hierarchy conflict should be
-  // treated as a hierarchy conflict.
   EXPECT_EQ(1, status.num_hierarchy_conflicts());
-  EXPECT_EQ(0, status.num_simple_conflicts());
 }
 
 
-// Runs the ApplyUpdatesCommand on an item with remote modifications that would
-// create a directory loop if the update were applied.  We expect the command to
-// detect that this update can't be applied because it is in a
-// CONFLICT_HIERARCHY state.
-TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDirectoryLoop) {
+// Runs the ApplyUpdatesAndResolveConflictsCommand on an item with remote
+// modifications that would create a directory loop if the update were applied.
+// We expect the command to detect that this update can't be applied because it
+// is in a CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
+       HierarchyConflictDirectoryLoop) {
   // Item 'X' locally has parent of 'root'.  Server is updating it to have
   // parent of 'Y'.
   {
@@ -202,14 +199,14 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDirectoryLoop) {
 
   // This should count as a hierarchy conflict.
   EXPECT_EQ(1, status.num_hierarchy_conflicts());
-  EXPECT_EQ(0, status.num_simple_conflicts());
 }
 
-// Runs the ApplyUpdatesCommand on a directory where the server sent us an
-// update to add a child to a locally deleted (and unsynced) parent.  We expect
-// the command to not apply the update and to indicate the update is in a
-// CONFLICT_HIERARCHY state.
-TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeletedParent) {
+// Runs the ApplyUpdatesAndResolveConflictsCommand on a directory where the
+// server sent us an update to add a child to a locally deleted (and unsynced)
+// parent.  We expect the command to not apply the update and to indicate the
+// update is in a CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
+       HierarchyConflictDeletedParent) {
   // Create a locally deleted parent item.
   int64 parent_handle;
   entry_factory_->CreateUnsyncedItem(
@@ -234,14 +231,14 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeletedParent) {
 
   const sessions::StatusController& status = session()->status_controller();
   EXPECT_EQ(1, status.num_hierarchy_conflicts());
-  EXPECT_EQ(0, status.num_simple_conflicts());
 }
 
-// Runs the ApplyUpdatesCommand on a directory where the server is trying to
-// delete a folder that has a recently added (and unsynced) child.  We expect
-// the command to not apply the update because it is in a CONFLICT_HIERARCHY
-// state.
-TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeleteNonEmptyDirectory) {
+// Runs the ApplyUpdatesAndResolveConflictsCommand on a directory where the
+// server is trying to delete a folder that has a recently added (and unsynced)
+// child.  We expect the command to not apply the update because it is in a
+// CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
+       HierarchyConflictDeleteNonEmptyDirectory) {
   // Create a server-deleted directory.
   {
     // Create it as a child of root node.
@@ -273,13 +270,13 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeleteNonEmptyDirectory) {
   const sessions::StatusController& status = session()->status_controller();
   // This should count as a hierarchy conflict.
   EXPECT_EQ(1, status.num_hierarchy_conflicts());
-  EXPECT_EQ(0, status.num_simple_conflicts());
 }
 
-// Runs the ApplyUpdatesCommand on a server-created item that has a locally
-// unknown parent.  We expect the command to not apply the update because the
-// item is in a CONFLICT_HIERARCHY state.
-TEST_F(ApplyUpdatesCommandTest, HierarchyConflictUnknownParent) {
+// Runs the ApplyUpdatesAndResolveConflictsCommand on a server-created item that
+// has a locally unknown parent.  We expect the command to not apply the update
+// because the item is in a CONFLICT_HIERARCHY state.
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
+       HierarchyConflictUnknownParent) {
   // We shouldn't be able to do anything with either of these items.
   entry_factory_->CreateUnappliedNewItemWithParent(
       "some_item", DefaultBookmarkSpecifics(), "unknown_parent");
@@ -290,16 +287,13 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictUnknownParent) {
   apply_updates_command_.ExecuteImpl(session());
 
   const sessions::StatusController& status = session()->status_controller();
-  EXPECT_EQ(0, status.num_simple_conflicts())
-      << "Updates with unknown parent should not be treated as 'simple'"
-      << " conflicts";
   EXPECT_EQ(2, status.num_hierarchy_conflicts())
       << "All updates with an unknown ancestors should be in conflict";
   EXPECT_EQ(0, status.num_updates_applied())
       << "No item with an unknown ancestor should be applied";
 }
 
-TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, ItemsBothKnownAndUnknown) {
   // See what happens when there's a mixture of good and bad updates.
   string root_server_id = syncable::GetNullId().GetServerId();
   entry_factory_->CreateUnappliedNewItemWithParent(
@@ -325,7 +319,7 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
       << "The updates with known ancestors should be successfully applied";
 }
 
-TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, DecryptablePassword) {
   // Decryptable password updates should be applied.
   Cryptographer* cryptographer;
   {
@@ -350,13 +344,11 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
   apply_updates_command_.ExecuteImpl(session());
 
   const sessions::StatusController& status = session()->status_controller();
-  EXPECT_EQ(0, status.num_simple_conflicts())
-      << "No update should be in conflict because they're all decryptable";
   EXPECT_EQ(1, status.num_updates_applied())
       << "The updates that can be decrypted should be applied";
 }
 
-TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, UndecryptableData) {
   // Undecryptable updates should not be applied.
   sync_pb::EntitySpecifics encrypted_bookmark;
   encrypted_bookmark.mutable_encrypted();
@@ -373,18 +365,13 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
   apply_updates_command_.ExecuteImpl(session());
 
   const sessions::StatusController& status = session()->status_controller();
-  EXPECT_TRUE(status.HasConflictingUpdates())
-      << "Updates that can't be decrypted should trigger the syncer to have "
-      << "conflicting updates.";
-  EXPECT_EQ(0, status.num_simple_conflicts())
-      << "Updates that can't be decrypted should not be in regular conflict";
   EXPECT_EQ(3, status.num_encryption_conflicts())
       << "Updates that can't be decrypted should be in encryption conflict";
   EXPECT_EQ(0, status.num_updates_applied())
       << "No update that can't be decrypted should be applied";
 }
 
-TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
+TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, SomeUndecryptablePassword) {
   Cryptographer* cryptographer;
   // Only decryptable password updates should be applied.
   {
@@ -422,12 +409,6 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
   apply_updates_command_.ExecuteImpl(session());
 
   const sessions::StatusController& status = session()->status_controller();
-  EXPECT_TRUE(status.HasConflictingUpdates())
-      << "Updates that can't be decrypted should trigger the syncer to have "
-      << "conflicting updates.";
-  EXPECT_EQ(0, status.num_simple_conflicts())
-      << "The updates that can't be decrypted should not be in regular "
-      << "conflict";
   EXPECT_EQ(1, status.num_encryption_conflicts())
       << "The updates that can't be decrypted should be in encryption "
       << "conflict";
