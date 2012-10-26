@@ -1,5 +1,10 @@
 <html><body><h1>Instant</h1><script>
 
+var onvisibilitycalls = 0;
+document.addEventListener("webkitvisibilitychange", function() {
+  onvisibilitycalls++;
+}, false);
+
 var onchangecalls = 0;
 var onsubmitcalls = 0;
 var oncancelcalls = 0;

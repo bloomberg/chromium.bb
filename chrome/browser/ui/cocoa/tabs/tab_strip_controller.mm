@@ -1208,8 +1208,6 @@ private:
   // for layout.
   availableResizeWidth_ = kUseFullAvailableWidth;
 
-  [delegate_ onInsertTabWithContents:contents->web_contents()];
-
   // We don't need to call |-layoutTabs| if the tab will be in the foreground
   // because it will get called when the new tab is selected by the tab model.
   // Whenever |-layoutTabs| is called, it'll also add the new subview.
@@ -1305,8 +1303,6 @@ private:
 
   // Bye bye, |oldController|.
   [tabContentsArray_ replaceObjectAtIndex:index withObject:newController];
-
-  [delegate_ onReplaceTabWithContents:newContents->web_contents()];
 
   // Fake a tab changed notification to force tab titles and favicons to update.
   [self tabChangedWithContents:newContents

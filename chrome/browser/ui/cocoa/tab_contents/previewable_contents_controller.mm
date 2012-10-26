@@ -60,7 +60,7 @@ using content::WebContents;
   previewContents_ = nil;
 }
 
-- (void)onInsertTabWithContents:(WebContents*)contents {
+- (void)onActivateTabWithContents:(WebContents*)contents {
   if (previewContents_ == contents) {
     [previewContents_->GetNativeView() removeFromSuperview];
     previewContents_ = nil;

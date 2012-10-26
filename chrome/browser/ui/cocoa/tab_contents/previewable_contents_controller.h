@@ -53,9 +53,9 @@ class WebContents;
 // Closes the current preview and shows the active view.
 - (void)hidePreview;
 
-// Called when a new tab with |contents| is added, so that we can check to see
-// if it's the preview being committed (and adjust internal state accordingly).
-- (void)onInsertTabWithContents:(content::WebContents*)contents;
+// Called when a tab with |contents| is activated, so that we can check to see
+// if it's the preview being activated (and adjust internal state accordingly).
+- (void)onActivateTabWithContents:(content::WebContents*)contents;
 
 // Returns YES if the preview contents is currently showing.
 - (BOOL)isShowingPreview;

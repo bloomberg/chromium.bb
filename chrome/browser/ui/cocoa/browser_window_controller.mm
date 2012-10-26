@@ -1554,13 +1554,8 @@ enum {
   TabContents* tabContents = TabContents::FromWebContents(contents);
   // Without the .get(), xcode fails.
   [infoBarContainerController_.get() changeTabContents:tabContents];
-}
 
-- (void)onReplaceTabWithContents:(WebContents*)contents {
-  // Simply remove the preview view if it exists; the tab strip
-  // controller will reinstall the view as the active view.
-  [previewableContentsController_ hidePreview];
-  [self updateBookmarkBarVisibilityWithAnimation:NO];
+  [previewableContentsController_ onActivateTabWithContents:contents];
 }
 
 - (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
@@ -1582,10 +1577,6 @@ enum {
 - (void)onTabDetachedWithContents:(WebContents*)contents {
   TabContents* tabContents = TabContents::FromWebContents(contents);
   [infoBarContainerController_ tabDetachedWithContents:tabContents];
-}
-
-- (void)onInsertTabWithContents:(WebContents*)contents {
-  [previewableContentsController_ onInsertTabWithContents:contents];
 }
 
 - (void)userChangedTheme {

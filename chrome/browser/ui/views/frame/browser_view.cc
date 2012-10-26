@@ -1417,29 +1417,80 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
                                    TabContents* new_contents,
                                    int index,
                                    bool user_gesture) {
-  ProcessTabSelected(new_contents);
-}
+  DCHECK(new_contents);
 
-void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
-                                TabContents* old_contents,
-                                TabContents* new_contents,
-                                int index) {
-  if (index != browser_->tab_strip_model()->active_index())
-    return;
-
+  // See if the Instant preview is being activated (committed).
   if (contents_->preview_web_contents() == new_contents->web_contents()) {
     if (search_view_controller_.get())
       search_view_controller_->WillCommitInstant();
-    // If 'preview' is becoming active, swap the 'active' and 'preview' and
-    // delete what was the active.
     contents_->MakePreviewContentsActiveContents();
     views::WebView* old_container = contents_container_;
     contents_container_ = preview_controller_->release_preview_container();
     old_container->SetWebContents(NULL);
     delete old_container;
   }
-  // Update the UI for the new contents.
-  ProcessTabSelected(new_contents);
+
+  // If |contents_container_| already has the correct WebContents, we can save
+  // some work.  This also prevents extra events from being reported by the
+  // Visibility API under Windows, as ChangeWebContents will briefly hide
+  // the WebContents window.
+  bool change_tab_contents =
+      contents_container_->web_contents() != new_contents->web_contents();
+
+  // Update various elements that are interested in knowing the current
+  // WebContents.
+
+  // When we toggle the NTP floating bookmarks bar and/or the info bar,
+  // we don't want any WebContents to be attached, so that we
+  // avoid an unnecessary resize and re-layout of a WebContents.
+  // This also applies to the |search_view_controller_| logic, as it can
+  // reparent the |contents_container_|.
+  if (change_tab_contents)
+    contents_container_->SetWebContents(NULL);
+  InfoBarTabHelper* new_infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(new_contents->web_contents());
+  // Hide infobars when showing Instant Extended suggestions.
+  infobar_container_->ChangeTabContents(
+      (chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()) &&
+          browser()->search_model()->mode().is_search_suggestions()) ?
+          NULL : new_infobar_tab_helper);
+  if (bookmark_bar_view_.get()) {
+    bookmark_bar_view_->SetBookmarkBarState(
+        browser_->bookmark_bar_state(),
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE,
+        browser_->search_model()->mode());
+  }
+  UpdateUIForContents(new_contents);
+
+  // |change_tab_contents| can mean same WebContents but different TabContents,
+  // so let SearchViewController decide how it would handle |new_contents|.
+  if (search_view_controller_.get())
+    search_view_controller_->SetTabContents(new_contents);
+
+  // Layout for DevTools _before_ setting the main WebContents to avoid
+  // toggling the size of the main WebContents.
+  UpdateDevToolsForContents(new_contents);
+
+  if (change_tab_contents)
+    contents_container_->SetWebContents(new_contents->web_contents());
+
+  if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
+      GetWidget()->IsVisible()) {
+    // We only restore focus if our window is visible, to avoid invoking blur
+    // handlers when we are eventually shown.
+    new_contents->web_contents()->GetView()->RestoreFocus();
+  }
+
+  // Update all the UI bits.
+  UpdateTitleBar();
+
+  // Restacking needs to happen after other UI updates. This restores special
+  // "widget" stacking that governs the SearchViewController's NTP "content"
+  // area.
+  RestackLocationBarContainer();
+
+  // No need to update Toolbar because it's already updated in
+  // browser.cc.
 }
 
 void BrowserView::TabStripEmpty() {
@@ -2455,71 +2506,6 @@ void BrowserView::UpdateAcceleratorMetrics(
       break;
   }
 #endif
-}
-
-void BrowserView::ProcessTabSelected(TabContents* new_contents) {
-  // If |contents_container_| already has the correct WebContents, we can save
-  // some work.  This also prevents extra events from being reported by the
-  // Visibility API under Windows, as ChangeWebContents will briefly hide
-  // the WebContents window.
-  DCHECK(new_contents);
-  bool change_tab_contents =
-      contents_container_->web_contents() != new_contents->web_contents();
-
-  // Update various elements that are interested in knowing the current
-  // WebContents.
-
-  // When we toggle the NTP floating bookmarks bar and/or the info bar,
-  // we don't want any WebContents to be attached, so that we
-  // avoid an unnecessary resize and re-layout of a WebContents.
-  // This also applies to the |search_view_controller_| logic, as it can
-  // reparent the |contents_container_|.
-  if (change_tab_contents)
-    contents_container_->SetWebContents(NULL);
-  InfoBarTabHelper* new_infobar_tab_helper =
-      InfoBarTabHelper::FromWebContents(new_contents->web_contents());
-  // Hide infobars when showing Instant Extended suggestions.
-  infobar_container_->ChangeTabContents(
-      (chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()) &&
-          browser()->search_model()->mode().is_search_suggestions()) ?
-          NULL : new_infobar_tab_helper);
-  if (bookmark_bar_view_.get()) {
-    bookmark_bar_view_->SetBookmarkBarState(
-        browser_->bookmark_bar_state(),
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE,
-        browser_->search_model()->mode());
-  }
-  UpdateUIForContents(new_contents);
-
-  // |change_tab_contents| can mean same WebContents but different TabContents,
-  // so let SearchViewController decide how it would handle |new_contents|.
-  if (search_view_controller_.get())
-    search_view_controller_->SetTabContents(new_contents);
-
-  // Layout for DevTools _before_ setting the main WebContents to avoid
-  // toggling the size of the main WebContents.
-  UpdateDevToolsForContents(new_contents);
-
-  if (change_tab_contents)
-    contents_container_->SetWebContents(new_contents->web_contents());
-
-  if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
-      GetWidget()->IsVisible()) {
-    // We only restore focus if our window is visible, to avoid invoking blur
-    // handlers when we are eventually shown.
-    new_contents->web_contents()->GetView()->RestoreFocus();
-  }
-
-  // Update all the UI bits.
-  UpdateTitleBar();
-
-  // Restacking needs to happen after other UI updates. This restores special
-  // "widget" stacking that governs the SearchViewController's NTP "content"
-  // area.
-  RestackLocationBarContainer();
-
-  // No need to update Toolbar because it's already updated in
-  // browser.cc.
 }
 
 gfx::Size BrowserView::GetResizeCornerSize() const {

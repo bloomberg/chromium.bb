@@ -317,7 +317,14 @@ TabContents* InstantController::GetPreviewContents() const {
 
 void InstantController::Hide() {
   last_active_tab_ = NULL;
-  model_.SetDisplayState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
+
+  // The only time when the model is not already in the desired NOT_READY state
+  // and GetPreviewContents() returns NULL is when we are in the commit path.
+  // In that case, don't change the state just yet; otherwise we may cause the
+  // preview to hide unnecessarily. Instead, the state will be set correctly
+  // after the commit is done.
+  if (GetPreviewContents())
+    model_.SetDisplayState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
 
   if (GetPreviewContents() && !last_full_text_.empty()) {
     // Send a blank query to ask the preview to clear out old results.
@@ -390,13 +397,6 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
   }
 
   AddPreviewUsageForHistogram(mode_, PREVIEW_COMMITTED);
-
-  // We may have gotten here from CommitInstant(), which means the loader may
-  // still be on the stack. So, schedule a destruction for later.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
-
-  // This call is here to reset view state. It won't actually delete |loader_|
-  // because it was just released to DeleteSoon().
   DeleteLoader();
 
   preview->web_contents()->GetController().PruneAllButActive();
@@ -415,6 +415,8 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
       chrome::NOTIFICATION_INSTANT_COMMITTED,
       content::Source<content::WebContents>(preview->web_contents()),
       content::NotificationService::NoDetails());
+
+  model_.SetDisplayState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
 
   // Try to create another loader immediately so that it is ready for the next
   // user interaction.
@@ -608,14 +610,8 @@ void InstantController::InstantSupportDetermined(InstantLoader* loader,
     blacklisted_urls_.erase(loader->instant_url());
   } else {
     ++blacklisted_urls_[loader->instant_url()];
-    if (loader_ == loader) {
-      if (GetPreviewContents())
-        AddPreviewUsageForHistogram(mode_, PREVIEW_DELETED);
-
-      // Because of the state of the stack, we can't destroy the loader now.
-      MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
+    if (loader_ == loader)
       DeleteLoader();
-    }
   }
 
   content::NotificationService::current()->Notify(
@@ -660,12 +656,14 @@ void InstantController::ResetLoader(const std::string& instant_url,
   if (!GetPreviewContents()) {
     loader_.reset(new InstantLoader(this, instant_url, active_tab));
     loader_->Init();
+
     // Ensure the searchbox API has the correct focus state and context.
     if (is_omnibox_focused_)
       loader_->OnAutocompleteGotFocus();
     else
       loader_->OnAutocompleteLostFocus();
     loader_->OnActiveTabModeChanged(active_tab_is_ntp_);
+
     AddPreviewUsageForHistogram(mode_, PREVIEW_CREATED);
 
     // Reset the loader timer.
@@ -718,13 +716,18 @@ void InstantController::DeleteLoader() {
   last_verbatim_ = false;
   last_suggestion_ = InstantSuggestion();
   last_match_was_search_ = false;
-  model_.SetDisplayState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
   loader_processed_last_update_ = false;
   last_omnibox_bounds_ = gfx::Rect();
   url_for_history_ = GURL();
-  if (GetPreviewContents())
+  if (GetPreviewContents()) {
     AddPreviewUsageForHistogram(mode_, PREVIEW_DELETED);
-  loader_.reset();
+    model_.SetDisplayState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
+  }
+  // Schedule the deletion for later, since we may have gotten here from a call
+  // within a |loader_| method (i.e., it's still on the stack). If we deleted
+  // the loader immediately, things would still be fine so long as the caller
+  // doesn't access any instance members after we return, but why rely on that?
+  MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
 }
 
 void InstantController::Show(int height, InstantSizeUnits units) {
