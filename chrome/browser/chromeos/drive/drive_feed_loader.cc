@@ -92,10 +92,10 @@ void SaveFeedOnBlockingPoolForDebugging(
 
   int file_size = static_cast<int>(json.length());
   if (file_util::WriteFile(file_path, json.data(), file_size) != file_size) {
-    LOG(WARNING) << "GData metadata file can't be stored at "
+    LOG(WARNING) << "Drive metadata file can't be stored at "
                  << file_path.value();
     if (!file_util::Delete(file_path, true)) {
-      LOG(WARNING) << "GData metadata file can't be deleted at "
+      LOG(WARNING) << "Drive metadata file can't be deleted at "
                    << file_path.value();
       return;
     }
@@ -125,10 +125,10 @@ void SaveProtoOnBlockingPool(const FilePath& path,
   const int file_size = static_cast<int>(serialized_proto->length());
   if (file_util::WriteFile(path, serialized_proto->data(), file_size) !=
       file_size) {
-    LOG(WARNING) << "GData proto file can't be stored at "
+    LOG(WARNING) << "Drive proto file can't be stored at "
                  << path.value();
     if (!file_util::Delete(path, true)) {
-      LOG(WARNING) << "GData proto file can't be deleted at "
+      LOG(WARNING) << "Drive proto file can't be deleted at "
                    << path.value();
     }
   }
@@ -247,7 +247,7 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DVLOG(1) << "ReloadFeedFromServerIfNeeded local_changestamp="
+  DVLOG(1) << "ReloadFromServerIfNeeded local_changestamp="
            << local_changestamp << ", initial_origin=" << initial_origin;
 
   // First fetch the latest changestamp to see if there were any new changes
@@ -830,7 +830,7 @@ void DriveFeedLoader::ContinueWithInitializedResourceMetadata(
   if (error == DRIVE_FILE_OK && !callback.is_null()) {
     callback.Run(DRIVE_FILE_OK);
     // Reset the callback so we don't run the same callback once
-    // ReloadFeedFromServerIfNeeded() is complete.
+    // ReloadFromServerIfNeeded() is complete.
     callback.Reset();
   }
 

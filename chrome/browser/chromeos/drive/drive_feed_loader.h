@@ -167,7 +167,7 @@ class DriveFeedLoader {
                                                DriveFileError error);
 
   // Helper callback for handling results of metadata retrieval initiated from
-  // ReloadFeedFromServerIfNeeded(). This method makes a decision about fetching
+  // ReloadFromServerIfNeeded(). This method makes a decision about fetching
   // the content of the root feed during the root directory refresh process.
   void OnGetAccountMetadata(
       ContentOrigin initial_origin,
@@ -177,7 +177,7 @@ class DriveFeedLoader {
       scoped_ptr<base::Value> feed_data);
 
   // Helper callback for handling results of account data retrieval initiated
-  // from ReloadFeedFromServerIfNeeded() for Drive V2 API.
+  // from ReloadFromServerIfNeeded() for Drive V2 API.
   // This method makes a decision about fetching the content of the root feed
   // during the root directory refresh process.
   void OnGetAboutResource(
@@ -215,7 +215,7 @@ class DriveFeedLoader {
                    base::TimeTicks start_time,
                    scoped_ptr<google_apis::DocumentFeed>* current_feed);
 
-  // Callback for handling response from |DriveAPIService::GetChanglist|.
+  // Callback for handling response from |DriveAPIService::GetDocuments|.
   // Invokes |callback| when done.
   // |callback| must not be null.
   void OnGetChangelist(scoped_ptr<LoadFeedParams> params,
