@@ -30,6 +30,9 @@ const CGFloat kBubbleCornerRadius = 2.0;
 // reflect the single pixel space w/in that.
 const CGFloat kBubbleYInset = 4.0;
 
+// Padding between the icon and label.
+const CGFloat kIconLabelPadding = 4.0;
+
 }  // namespace
 
 BubbleDecoration::BubbleDecoration(NSFont* font) {
@@ -59,7 +62,7 @@ CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
   // underestimate, so floor() seems to work better.
   const CGFloat label_width =
       std::floor([label sizeWithAttributes:attributes_].width);
-  return kBubblePadding + image_width + label_width;
+  return kBubblePadding + image_width + kIconLabelPadding + label_width;
 }
 
 NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
@@ -105,10 +108,11 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   [path setLineWidth:1.0];
   [path stroke];
 
-  NSRect imageRect = decorationFrame;
+  CGFloat textOffset = NSMinX(decorationFrame);
   if (image_) {
     // Center the image vertically.
     const NSSize imageSize = [image_ size];
+    NSRect imageRect = decorationFrame;
     imageRect.origin.y +=
         std::floor((NSHeight(decorationFrame) - imageSize.height) / 2.0);
     imageRect.size = imageSize;
@@ -118,13 +122,12 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
               fraction:1.0
         respectFlipped:YES
                  hints:nil];
-  } else {
-    imageRect.size = NSZeroSize;
+    textOffset = NSMaxX(imageRect) + kIconLabelPadding;
   }
 
   if (label_) {
     NSRect textRect = decorationFrame;
-    textRect.origin.x = NSMaxX(imageRect);
+    textRect.origin.x = textOffset;
     textRect.size.width = NSMaxX(decorationFrame) - NSMinX(textRect);
     [label_ drawInRect:textRect withAttributes:attributes_];
   }
