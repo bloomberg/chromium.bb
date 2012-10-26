@@ -3,14 +3,15 @@
 # found in the LICENSE file.
 
 import json
+import logging
 import os
 
 import appengine_blobstore as blobstore
 import object_store
-from file_system import FileSystem, StatInfo
+from file_system import FileSystem, StatInfo, FileNotFoundError
 from StringIO import StringIO
 from future import Future
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipfile
 
 ZIP_KEY = 'zipball'
 
@@ -25,14 +26,22 @@ class _AsyncFetchFutureZip(object):
     self._key_to_delete = key_to_delete
 
   def Get(self):
-    blob = self._fetch.Get().content
+    try:
+      blob = self._fetch.Get().content
+    except FileNotFoundError as e:
+      logging.error('Bad github zip file: %s' % e)
+      return None
     self._blobstore.Set(_MakeKey(self._key_to_set),
                         blob,
                         blobstore.BLOBSTORE_GITHUB)
     if self._key_to_delete is not None:
       self._blobstore.Delete(_MakeKey(self._key_to_delete),
                              blobstore.BLOBSTORE_GITHUB)
-    return ZipFile(StringIO(blob))
+    try:
+      return ZipFile(StringIO(blob))
+    except BadZipfile as e:
+      logging.error('Bad github zip file: %s' % e)
+      return None
 
 class GithubFileSystem(FileSystem):
   """FileSystem implementation which fetches resources from github.
@@ -47,7 +56,12 @@ class GithubFileSystem(FileSystem):
   def _GetZip(self, version):
     blob = self._blobstore.Get(_MakeKey(version), blobstore.BLOBSTORE_GITHUB)
     if blob is not None:
-      self._zip_file = Future(value=ZipFile(StringIO(blob)))
+      try:
+        self._zip_file = Future(value=ZipFile(StringIO(blob)))
+      except BadZipfile as e:
+        self._blobstore.Delete(_MakeKey(version), blobstore.BLOBSTORE_GITHUB)
+        logging.error('Bad github zip file: %s' % e)
+        self._zip_file = Future(value=None)
     else:
       self._zip_file = Future(
           delegate=_AsyncFetchFutureZip(self._fetcher,
@@ -58,11 +72,18 @@ class GithubFileSystem(FileSystem):
 
   def _ReadFile(self, path):
     zip_file = self._zip_file.Get()
+    if zip_file is None:
+      logging.error('Bad github zip file.')
+      return ''
     prefix = zip_file.namelist()[0][:-1]
     return zip_file.read(prefix + path)
 
   def _ListDir(self, path):
-    filenames = self._zip_file.Get().namelist()
+    zip_file = self._zip_file.Get()
+    if zip_file is None:
+      logging.error('Bad github zip file.')
+      return []
+    filenames = zip_file.namelist()
     # Take out parent directory name (GoogleChrome-chrome-app-samples-c78a30f)
     filenames = [f[len(filenames[0]) - 1:] for f in filenames]
     # Remove the path of the directory we're listing from the filenames.
@@ -87,7 +108,16 @@ class GithubFileSystem(FileSystem):
     version = self._object_store.Get(path, object_store.GITHUB_STAT).Get()
     if version is not None:
       return StatInfo(version)
-    version = json.loads(
-        self._fetcher.Fetch('commits/HEAD').content)['commit']['tree']['sha']
-    self._object_store.Set(path, version, object_store.GITHUB_STAT)
+    version = (json.loads(
+        self._fetcher.Fetch('commits/HEAD').content).get('commit', {})
+                                                    .get('tree', {})
+                                                    .get('sha', None))
+    # Check if the JSON was valid, and set to 0 if not.
+    if version is not None:
+      self._object_store.Set(path, version, object_store.GITHUB_STAT)
+    else:
+      logging.warning('Problem fetching commit hash from github.')
+      version = 0
+      # Cache for a minute so we don't try to keep fetching bad data.
+      self._object_store.Set(path, version, object_store.GITHUB_STAT, time=60)
     return StatInfo(version)
