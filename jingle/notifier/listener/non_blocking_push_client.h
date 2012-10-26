@@ -49,6 +49,7 @@ class NonBlockingPushClient : public PushClient {
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendNotification(const Notification& notification) OVERRIDE;
+  virtual void SendPing() OVERRIDE;
 
  private:
   class Core;
@@ -56,6 +57,7 @@ class NonBlockingPushClient : public PushClient {
   void OnNotificationsEnabled();
   void OnNotificationsDisabled(NotificationsDisabledReason reason);
   void OnIncomingNotification(const Notification& notification);
+  void OnPingResponse();
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<NonBlockingPushClient> weak_ptr_factory_;

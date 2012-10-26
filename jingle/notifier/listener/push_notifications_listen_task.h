@@ -31,7 +31,7 @@ class PushNotificationsListenTask : public buzz::XmppTask {
     virtual void OnNotificationReceived(const Notification& notification) = 0;
 
    protected:
-    virtual ~Delegate() {}
+    virtual ~Delegate();
   };
 
   PushNotificationsListenTask(buzz::XmppTaskParentInterface* parent,

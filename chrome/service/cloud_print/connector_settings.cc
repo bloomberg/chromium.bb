@@ -19,7 +19,9 @@ const char kDeleteOnEnumFail[] = "delete_on_enum_fail";
 
 ConnectorSettings::ConnectorSettings()
     : delete_on_enum_fail_(false),
-      connect_new_printers_(true) {
+      connect_new_printers_(true),
+      xmpp_ping_enabled_(false),
+      xmpp_ping_timeout_sec_(kDefaultXmppPingTimeoutSecs) {
 }
 
 ConnectorSettings::~ConnectorSettings() {
@@ -56,6 +58,13 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
 
   connect_new_printers_ = prefs->GetBoolean(
       prefs::kCloudPrintConnectNewPrinters, true);
+
+  xmpp_ping_enabled_ = prefs->GetBoolean(
+      prefs::kCloudPrintXmppPingEnabled, false);
+  int timeout = prefs->GetInt(
+      prefs::kCloudPrintXmppPingTimeout, kDefaultXmppPingTimeoutSecs);
+  SetXmppPingTimeoutSec(timeout);
+
   const base::ListValue* printers = prefs->GetList(
       prefs::kCloudPrintPrinterBlacklist);
   if (printers) {
@@ -76,8 +85,18 @@ void ConnectorSettings::CopyFrom(const ConnectorSettings& source) {
   proxy_id_ = source.proxy_id();
   delete_on_enum_fail_ = source.delete_on_enum_fail();
   connect_new_printers_ = source.connect_new_printers();
+  xmpp_ping_enabled_ = source.xmpp_ping_enabled();
+  xmpp_ping_timeout_sec_ = source.xmpp_ping_timeout_sec();
   printer_blacklist_ = source.printer_blacklist_;
   if (source.print_system_settings())
     print_system_settings_.reset(source.print_system_settings()->DeepCopy());
 }
 
+void ConnectorSettings::SetXmppPingTimeoutSec(int timeout) {
+  xmpp_ping_timeout_sec_ = timeout;
+  if (xmpp_ping_timeout_sec_ < kMinimumXmppPingTimeoutSecs) {
+    LOG(WARNING) <<
+        "CP_CONNECTOR: XMPP ping timeout is less then minimal value";
+    xmpp_ping_timeout_sec_ = kMinimumXmppPingTimeoutSecs;
+  }
+}

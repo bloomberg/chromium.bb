@@ -8,7 +8,7 @@
 
 namespace notifier {
 
-FakePushClient::FakePushClient() {}
+FakePushClient::FakePushClient() : sent_pings_(0) {}
 
 FakePushClient::~FakePushClient() {}
 
@@ -33,6 +33,10 @@ void FakePushClient::UpdateCredentials(
 
 void FakePushClient::SendNotification(const Notification& notification) {
   sent_notifications_.push_back(notification);
+}
+
+void FakePushClient::SendPing() {
+  sent_pings_++;
 }
 
 void FakePushClient::EnableNotifications() {
@@ -66,6 +70,10 @@ const std::string& FakePushClient::token() const {
 
 const std::vector<Notification>& FakePushClient::sent_notifications() const {
   return sent_notifications_;
+}
+
+int FakePushClient::sent_pings() const {
+  return sent_pings_;
 }
 
 }  // namespace notifier

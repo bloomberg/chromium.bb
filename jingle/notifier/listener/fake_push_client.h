@@ -29,6 +29,7 @@ class FakePushClient : public PushClient {
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendNotification(const Notification& notification) OVERRIDE;
+  virtual void SendPing() OVERRIDE;
 
   // Triggers OnNotificationsEnabled on all observers.
   void EnableNotifications();
@@ -43,6 +44,7 @@ class FakePushClient : public PushClient {
   const std::string& email() const;
   const std::string& token() const;
   const std::vector<Notification>& sent_notifications() const;
+  int sent_pings() const;
 
  private:
   ObserverList<PushClientObserver> observers_;
@@ -50,6 +52,7 @@ class FakePushClient : public PushClient {
   std::string email_;
   std::string token_;
   std::vector<Notification> sent_notifications_;
+  int sent_pings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePushClient);
 };

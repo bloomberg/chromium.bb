@@ -38,12 +38,14 @@ class NonBlockingPushClient::Core
   void UpdateSubscriptions(const SubscriptionList& subscriptions);
   void UpdateCredentials(const std::string& email, const std::string& token);
   void SendNotification(const Notification& data);
+  void SendPing();
 
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const Notification& notification) OVERRIDE;
+  virtual void OnPingResponse() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<NonBlockingPushClient::Core>;
@@ -110,6 +112,12 @@ void NonBlockingPushClient::Core::SendNotification(
   delegate_push_client_->SendNotification(notification);
 }
 
+void NonBlockingPushClient::Core::SendPing() {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+  DCHECK(delegate_push_client_.get());
+  delegate_push_client_->SendPing();
+}
+
 void NonBlockingPushClient::Core::OnNotificationsEnabled() {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   parent_task_runner_->PostTask(
@@ -134,6 +142,14 @@ void NonBlockingPushClient::Core::OnIncomingNotification(
       FROM_HERE,
       base::Bind(&NonBlockingPushClient::OnIncomingNotification,
                  parent_push_client_, notification));
+}
+
+void NonBlockingPushClient::Core::OnPingResponse() {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+  parent_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingPushClient::OnPingResponse,
+                 parent_push_client_));
 }
 
 NonBlockingPushClient::NonBlockingPushClient(
@@ -195,6 +211,13 @@ void NonBlockingPushClient::SendNotification(
                  notification));
 }
 
+void NonBlockingPushClient::SendPing() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  delegate_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingPushClient::Core::SendPing, core_.get()));
+}
+
 void NonBlockingPushClient::OnNotificationsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
@@ -213,6 +236,11 @@ void NonBlockingPushClient::OnIncomingNotification(
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
                     OnIncomingNotification(notification));
+}
+
+void NonBlockingPushClient::OnPingResponse() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(PushClientObserver, observers_, OnPingResponse());
 }
 
 }  // namespace notifier

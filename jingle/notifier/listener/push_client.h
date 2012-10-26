@@ -50,6 +50,9 @@ class PushClient {
 
   // Sends a notification (with no reliability guarantees).
   virtual void SendNotification(const Notification& notification) = 0;
+
+  // Sends a ping (with no reliability guarantees).
+  virtual void SendPing() = 0;
 };
 
 }  // namespace notifier

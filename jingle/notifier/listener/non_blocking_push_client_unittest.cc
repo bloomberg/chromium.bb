@@ -112,6 +112,14 @@ TEST_F(NonBlockingPushClientTest, SendNotification) {
       fake_push_client_->sent_notifications()[0].Equals(notification));
 }
 
+// Make sure SendPing() gets delegated properly.
+TEST_F(NonBlockingPushClientTest, SendPing) {
+  push_client_->SendPing();
+  EXPECT_EQ(0, fake_push_client_->sent_pings());
+  message_loop_.RunAllPending();
+  ASSERT_EQ(1, fake_push_client_->sent_pings());
+}
+
 // Make sure notification state changes get propagated back to the
 // parent.
 TEST_F(NonBlockingPushClientTest, NotificationStateChange) {

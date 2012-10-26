@@ -18,6 +18,9 @@
 
 namespace notifier {
 
+PushNotificationsListenTask::Delegate::~Delegate() {
+}
+
 PushNotificationsListenTask::PushNotificationsListenTask(
     buzz::XmppTaskParentInterface* parent, Delegate* delegate)
         : buzz::XmppTask(parent, buzz::XmppEngine::HL_TYPE),

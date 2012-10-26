@@ -39,6 +39,10 @@ class PushClientObserver {
   // Called when a notification is received.  The details of the
   // notification are in |notification|.
   virtual void OnIncomingNotification(const Notification& notification) = 0;
+
+  // Called when a ping response is received. Default implementation does
+  // nothing.
+  virtual void OnPingResponse();
 };
 
 }  // namespace notifier

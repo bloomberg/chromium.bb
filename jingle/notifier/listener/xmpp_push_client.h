@@ -21,6 +21,7 @@
 #include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_notifications_listen_task.h"
 #include "jingle/notifier/listener/push_notifications_subscribe_task.h"
+#include "jingle/notifier/listener/send_ping_task.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace buzz {
@@ -36,7 +37,8 @@ class XmppPushClient :
       public PushClient,
       public Login::Delegate,
       public PushNotificationsListenTaskDelegate,
-      public PushNotificationsSubscribeTaskDelegate {
+      public PushNotificationsSubscribeTaskDelegate,
+      public SendPingTaskDelegate {
  public:
   explicit XmppPushClient(const NotifierOptions& notifier_options);
   virtual ~XmppPushClient();
@@ -49,6 +51,7 @@ class XmppPushClient :
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendNotification(const Notification& notification) OVERRIDE;
+  virtual void SendPing() OVERRIDE;
 
   // Login::Delegate implementation.
   virtual void OnConnect(
@@ -63,6 +66,9 @@ class XmppPushClient :
   // PushNotificationsSubscribeTaskDelegate implementation.
   virtual void OnSubscribed() OVERRIDE;
   virtual void OnSubscriptionError() OVERRIDE;
+
+  // SendPingTaskDelegate implementation.
+  virtual void OnPingResponseReceived() OVERRIDE;
 
  private:
   base::ThreadChecker thread_checker_;

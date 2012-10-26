@@ -8,4 +8,6 @@ namespace notifier {
 
 PushClientObserver::~PushClientObserver() {}
 
+void PushClientObserver::OnPingResponse() {}
+
 }  // namespace notifier
