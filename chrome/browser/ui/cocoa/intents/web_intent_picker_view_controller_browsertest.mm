@@ -18,7 +18,6 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_service_row_view_controller.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/spinner_progress_indicator.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate_mock.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -50,12 +49,7 @@ class WebIntentPickerViewControllerTest : public InProcessBrowserTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     EXPECT_CALL(delegate_, OnClosing());
-    NSWindow* sheet = picker_->constrained_window()->GetNativeWindow();
-    ConstrainedWindowSheetController* sheetController =
-        [ConstrainedWindowSheetController controllerForSheet:sheet];
     picker_->Close();
-    [sheetController endAnimationForSheet:sheet];
-    chrome::testing::NSRunLoopRunAllPending();
   }
 
  protected:

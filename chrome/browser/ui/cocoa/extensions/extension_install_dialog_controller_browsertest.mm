@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
@@ -46,10 +45,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
   [[controller->view_controller() cancelButton] performClick:nil];
 
   // Wait for the window to finish closing.
-  ConstrainedWindowSheetController* sheetController =
-      [ConstrainedWindowSheetController controllerForSheet:window];
-  EXPECT_TRUE(sheetController);
-  [sheetController endAnimationForSheet:window];
-  chrome::testing::NSRunLoopRunAllPending();
   EXPECT_FALSE([window isVisible]);
 }

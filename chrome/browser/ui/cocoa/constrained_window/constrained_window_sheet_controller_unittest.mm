@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "testing/gtest_mac.h"
 
 class ConstrainedWindowSheetControllerTest : public CocoaTest {
@@ -83,10 +82,6 @@ TEST_F(ConstrainedWindowSheetControllerTest, ShowHide) {
   EXPECT_TRUE([sheet_ isVisible]);
 
   [controller_ closeSheet:sheet_];
-  [controller_ endAnimationForSheet:sheet_];
-  chrome::testing::NSRunLoopRunAllPending();
-  [controller_ endAnimationForSheet:sheet_];
-  chrome::testing::NSRunLoopRunAllPending();
   EXPECT_FALSE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
   EXPECT_FALSE([sheet_ isVisible]);
 }

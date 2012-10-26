@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
-#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate_mock.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -42,13 +41,7 @@ class WebIntentInlineServiceViewControllerTest : public InProcessBrowserTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     EXPECT_CALL(delegate_, OnClosing());
-    NSWindow* sheet = picker_->constrained_window()->GetNativeWindow();
-    ConstrainedWindowSheetController* sheetController =
-        [ConstrainedWindowSheetController controllerForSheet:sheet];
     picker_->Close();
-    [sheetController endAnimationForSheet:sheet];
-    chrome::testing::NSRunLoopRunAllPending();
-
     view_controller_.reset();
   }
 

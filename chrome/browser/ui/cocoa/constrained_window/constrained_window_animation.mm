@@ -204,7 +204,7 @@ void UpdateWindowShowHideAnimationState(NSWindow* window, CGFloat value) {
   if ((self = [self initWithDuration:kAnimationDuration
                       animationCurve:NSAnimationEaseInOut])) {
     window_.reset([window retain]);
-    [self setAnimationBlockingMode:NSAnimationNonblocking];
+    [self setAnimationBlockingMode:NSAnimationBlocking];
     [self setWindowStateForStart];
   }
   return self;

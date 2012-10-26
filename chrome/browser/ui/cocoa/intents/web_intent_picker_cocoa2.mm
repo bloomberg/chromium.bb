@@ -32,11 +32,10 @@ WebIntentPickerCocoa2::WebIntentPickerCocoa2(content::WebContents* web_contents,
   scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);
   [[window contentView] addSubview:[view_controller_ view]];
+  [view_controller_ update];
 
   constrained_window_.reset(new ConstrainedWindowMac2(
       this, web_contents, window));
-
-  [view_controller_ update];
 }
 
 WebIntentPickerCocoa2::~WebIntentPickerCocoa2() {
