@@ -586,7 +586,7 @@ cr.define('ntp', function() {
       } else if (tileCount > dataListLength) {
         var tiles = this.tiles_;
         while (tiles.length > dataListLength) {
-          var previousLength = this.length;
+          var previousLength = tiles.length;
           // It doesn't matter which tiles are being removed here because
           // they're going to be reconstructed below when calling updateTiles_
           // method, so the first tiles are being removed here.
