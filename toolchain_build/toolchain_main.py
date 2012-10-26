@@ -114,7 +114,8 @@ class PackageBuilder(object):
     if self._options.pinned:
       logging.info('Checking out pinned revision...')
       log_tools.CheckCall(['git', 'fetch', '--all'], cwd=destination)
-      log_tools.CheckCall(['git', 'checkout', revision], cwd=destination)
+      log_tools.CheckCall(['git', 'checkout', '-f', revision], cwd=destination)
+      log_tools.CheckCall(['git', 'clean', '-dffx'], cwd=destination)
     logging.info('Done syncing %s.' % package)
 
   def BuildPackage(self, package):
