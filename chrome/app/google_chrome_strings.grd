@@ -728,6 +728,9 @@ For Google Chrome, processes used to display diagnostics information (such as th
       <message name="IDS_SYNC_PROMO_V_LEARN_MORE" desc="Learn more link at the bottom of the sync promo.">
         See <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>more benefits<ph name="END_LINK">&lt;/a&gt;</ph> of signing in to Chrome.
       </message>
+      <message name="IDS_SYNC_DIFFERENT_EMAIL" desc="Error message to display when setting up sync for a second time and the user name is different from the previous user name.">
+        You were previously signed in with a different account, signing in will merge your data. Consider creating a new Chrome user via the <ph name="BEGIN_LINK">&lt;a href="chrome://settings/search#Users"&gt;</ph>settings page<ph name="END_LINK">&lt;/a&gt;</ph> for your Chrome stuff.
+      </message>
 
       <!-- One click sign in infobar -->
       <if expr="not pp_ifdef('chromeos')">

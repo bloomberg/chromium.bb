@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -287,6 +289,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "emailLabel", IDS_SYNC_LOGIN_EMAIL_NEW_LINE },
     { "passwordLabel", IDS_SYNC_LOGIN_PASSWORD_NEW_LINE },
     { "invalidCredentials", IDS_SYNC_INVALID_USER_CREDENTIALS },
+    { "differentEmail", IDS_SYNC_DIFFERENT_EMAIL },
     { "signin", IDS_SYNC_SIGNIN },
     { "couldNotConnect", IDS_SYNC_LOGIN_COULD_NOT_CONNECT },
     { "unrecoverableError", IDS_SYNC_UNRECOVERABLE_ERROR },
@@ -602,6 +605,12 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
     args.SetBoolean("askForOtp", false);
   else if (error == GoogleServiceAuthError::CAPTCHA_REQUIRED)
     args.SetBoolean("hideEmailAndPassword", false);
+
+  // Tell the page the previous email address used for sync.  If the user
+  // enters a different email address, he will be shown a warning.
+  std::string last_email = GetProfile()->GetPrefs()->GetString(
+      prefs::kGoogleServicesLastUsername);
+  args.SetString("lastEmailAddress", last_email);
 
   args.SetBoolean("editableUser", editable_user);
   if (!local_error_message.empty())

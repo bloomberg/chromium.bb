@@ -30,6 +30,11 @@ cr.define('options', function() {
   // each other).
   var keystoreEncryptionEnabled_ = false;
 
+  // The last email address that this profile was connected to.  If the profile
+  // was never connected this is an empty string.  Otherwise it is a normalized
+  // email address.
+  var lastEmailAddress_ = '';
+
   /**
    * SyncSetupOverlay class
    * Encapsulated handling of the 'Sync Setup' overlay page.
@@ -82,6 +87,7 @@ cr.define('options', function() {
         chrome.send('SyncSetupStopSyncing');
         self.closeOverlay_();
       };
+      $('different-email').innerHTML = loadTimeData.getString('differentEmail');
     },
 
     showOverlay_: function() {
@@ -751,6 +757,7 @@ cr.define('options', function() {
       $('sync-setup-login').hidden = false;
       this.allowEmptyPassword_ = false;
       this.captchaChallengeActive_ = false;
+      this.lastEmailAddress_ = args.lastEmailAddress;
 
       var f = $('gaia-login-form');
       var email = $('gaia-email');
@@ -816,6 +823,7 @@ cr.define('options', function() {
       $('errormsg-0-email').hidden = true;
       $('errormsg-0-password').hidden = true;
       $('errormsg-1-password').hidden = true;
+      $('errormsg-different-email').hidden = true;
       $('errormsg-0-connection').hidden = true;
       $('errormsg-0-access-code').hidden = true;
       $('errormsg-0-otp').hidden = true;
@@ -848,6 +856,8 @@ cr.define('options', function() {
     },
 
     setErrorVisibility_: function() {
+      var errormsgDifferentEmail = $('errormsg-different-email');
+      var isErrormsgDifferentEmailHidden = errormsgDifferentEmail.hidden;
       this.resetErrorVisibility_();
       var f = $('gaia-login-form');
       var email = $('gaia-email');
@@ -855,6 +865,14 @@ cr.define('options', function() {
       if (!email.value) {
         $('errormsg-0-email').hidden = false;
         this.setBlurbError_();
+        return false;
+      }
+      // If email is different from last email, and we have not already warned
+      // the user, tell them now.  Otherwise proceed as usual.
+      if (this.lastEmailAddress_.length > 0 &&
+          email.value != this.lastEmailAddress_ &&
+          isErrormsgDifferentEmailHidden) {
+        errormsgDifferentEmail.hidden = false;
         return false;
       }
       // Don't enforce password being non-blank when checking access code (it
