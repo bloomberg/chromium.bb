@@ -347,9 +347,6 @@ void DriveSystemServiceFactory::set_cache_root_for_test(
 
 ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  if (!IsDriveEnabledForProfile(profile))
-    return NULL;
-
   DriveSystemService* service = new DriveSystemService(profile);
 
   google_apis::DriveServiceInterface* drive_service = g_test_drive_service;
