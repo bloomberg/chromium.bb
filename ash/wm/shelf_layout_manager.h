@@ -76,10 +76,6 @@ class ASH_EXPORT ShelfLayoutManager :
 
   // We reserve a small area at the bottom of the workspace area to ensure that
   // the bottom-of-window resize handle can be hit.
-  // TODO(jamescook): Some day we may want the workspace area to be an even
-  // multiple of the size of the grid (currently 8 pixels), which will require
-  // removing this and finding a way for hover and click events to pass through
-  // the invisible parts of the launcher.
   static const int kWorkspaceAreaBottomInset;
 
   // Size of the shelf when auto-hidden.

@@ -4,11 +4,15 @@
 
 #include "ash/system/tray/tray_bubble_view.h"
 
+#include "ash/root_window_controller.h"
+#include "ash/wm/property_util.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events/event.h"
@@ -235,6 +239,7 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
       shadow(views::BubbleBorder::BIG_SHADOW) {
 }
 
+// static
 TrayBubbleView* TrayBubbleView::Create(aura::Window* parent_window,
                                        views::View* anchor,
                                        Delegate* delegate,
@@ -276,7 +281,7 @@ TrayBubbleView::TrayBubbleView(aura::Window* parent_window,
   bubble_border_ = new TrayBubbleBorder(this, anchor_view(), params_);
 
   bubble_background_ = new TrayBubbleBackground(
-    bubble_border_, init_params.top_color, init_params.arrow_color);
+      bubble_border_, init_params.top_color, init_params.arrow_color);
 
   // Inset the view on the top and bottom by the corner radius to avoid drawing
   // over the the bubble corners.
@@ -302,6 +307,10 @@ void TrayBubbleView::InitializeAndShowBubble() {
 void TrayBubbleView::UpdateBubble() {
   SizeToContents();
   GetWidget()->GetRootView()->SchedulePaint();
+  aura::RootWindow* root_window = GetWidget()->GetNativeView()->GetRootWindow();
+  const bool is_launcher_visible =
+      ash::GetRootWindowController(root_window)->shelf()->IsVisible();
+  bubble_border_->set_paint_arrow(is_launcher_visible);
 }
 
 void TrayBubbleView::SetMaxHeight(int height) {
