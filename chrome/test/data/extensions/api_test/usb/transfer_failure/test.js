@@ -6,21 +6,16 @@ var usb = chrome.experimental.usb;
 
 function createErrorTest(resultCode, errorMessage) {
   return function() {
-    var handler = new Object();
-    handler.onEvent = (function (callback) {
-      return function (usbEvent) {
-        chrome.test.assertTrue(resultCode == usbEvent.resultCode);
-        chrome.test.assertTrue(errorMessage == usbEvent.error);
-        callback();
-      }
-    })(chrome.test.callbackAdded());
-
-    usb.findDevice(0, 0, handler, function(device) {
+    usb.findDevices(0, 0, {}, function(devices) {
+      var device = devices[0];
       var transfer = new Object();
       transfer.direction = "out";
       transfer.endpoint = 1;
       transfer.data = new ArrayBuffer(0);
-      usb.bulkTransfer(device, transfer);
+      usb.bulkTransfer(device, transfer, function (result) {
+        chrome.test.assertTrue(resultCode == result.resultCode);
+        chrome.test.succeed();
+      });
     });
   };
 }

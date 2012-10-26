@@ -4,15 +4,10 @@
 
 var usb = chrome.experimental.usb;
 
-function handler() {
-  var handlerObject = new Object();
-  handlerObject.onEvent = chrome.test.callbackAdded();
-  return handlerObject;
-}
-
 var tests = [
   function controlTransfer() {
-    usb.findDevice(0, 0, handler(), function (device) {
+    usb.findDevices(0, 0, {}, function (devices) {
+      var device = devices[0];
       var transfer = new Object();
       transfer.direction = "out";
       transfer.recipient = "device";
@@ -22,31 +17,40 @@ var tests = [
       transfer.index = 3;
       transfer.data = new ArrayBuffer(1);
 
-      usb.controlTransfer(device, transfer);
+      usb.controlTransfer(device, transfer, function (result) {
+        chrome.test.succeed();
+      });
     });
   },
   function bulkTransfer() {
-    usb.findDevice(0, 0, handler(), function (device) {
+    usb.findDevices(0, 0, {}, function (devices) {
+      var device = devices[0];
       var transfer = new Object();
       transfer.direction = "out";
       transfer.endpoint = 1;
       transfer.data = new ArrayBuffer(1);
 
-      usb.bulkTransfer(device, transfer);
+      usb.bulkTransfer(device, transfer, function (result) {
+        chrome.test.succeed();
+      });
     });
   },
   function interruptTransfer() {
-    usb.findDevice(0, 0, handler(), function (device) {
+    usb.findDevices(0, 0, {}, function (devices) {
+      var device = devices[0];
       var transfer = new Object();
       transfer.direction = "out";
       transfer.endpoint = 2;
       transfer.data = new ArrayBuffer(1);
 
-      usb.interruptTransfer(device, transfer);
+      usb.interruptTransfer(device, transfer, function (result) {
+        chrome.test.succeed();
+      });
     });
   },
   function isochronousTransfer() {
-    usb.findDevice(0, 0, handler(), function (device) {
+    usb.findDevices(0, 0, {}, function (devices) {
+      var device = devices[0];
       var transfer = new Object();
       transfer.direction = "out";
       transfer.endpoint = 3;
@@ -57,7 +61,9 @@ var tests = [
       isoTransfer.packets = 1;
       isoTransfer.packetLength = 1;
 
-      usb.isochronousTransfer(device, isoTransfer);
+      usb.isochronousTransfer(device, isoTransfer, function (result) {
+        chrome.test.succeed();
+      });
     });
   },
 ];

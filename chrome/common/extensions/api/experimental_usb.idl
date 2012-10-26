@@ -77,47 +77,23 @@ namespace experimental.usb {
     long packetLength;
   };
 
-  // When a USB event occurs the event handler specified by the DeviceOptions
-  // provided to findDevice will have a UsbEvent delivered to it which will
-  // contain the result of a transfer, including returned data.
-  dictionary UsbEvent {
-    // A string indicating the type of the event. Currently will only contain
-    // the value 'transferResult'.
-    DOMString type;
-
+  dictionary TransferResultInfo {
     // A value of 0 indicates that the transfer was a success. Other values
     // indicate failure.
     long? resultCode;
 
-    // If resultCode is not 0, this field will contain a textual description of
-    // the error that occurred during the transfer.
-    DOMString? error;
-
     // If the transfer was an input transfer then this field will contain all
     // of the input data requested.
     ArrayBuffer? data;
-
-    // The following fields are used for internal event routing and can be
-    // ignored.
-    [nodoc] boolean isFinalEvent;
-    [nodoc] long srcId;
   };
 
-  callback OnEventCallback = void (UsbEvent event);
-
-  dictionary DeviceOptions {
-    // Invoked by the extension API whenever an event occurs for the device(s)
-    // that this DeviceOptions is associated with.
-    OnEventCallback? onEvent;
-
-    // Used for internal event routing. Do not set or rely on its value.
-    [nodoc] long? srcId;
-  };
+  dictionary FindDevicesOptions {};
 
   callback VoidCallback = void ();
 
-  callback FindDeviceCallback = void (optional Device device);
-  callback TransferCallback = void ();
+  callback FindDevicesCallback = void (Device[] device);
+  callback CloseDeviceCallback = void ();
+  callback TransferCallback = void (TransferResultInfo info);
 
   interface Functions {
     // Finds the first instance of the USB device specified by the vendorId/
@@ -127,13 +103,15 @@ namespace experimental.usb {
     // |vendorId|: The vendor ID of the USB device to find.
     // |productId|: The product ID of the USB device to find.
     // |callback|: Invoked with the opened Device on success.
-    static void findDevice(long vendorId, long productId,
-        DeviceOptions options, FindDeviceCallback callback);
+    static void findDevices(long vendorId, long productId,
+        FindDevicesOptions options, FindDevicesCallback callback);
 
     // Closes an open device instance. Invoking operations on a device after it
     // has been closed is a safe operation, but causes no action to be taken.
     // |device|: The device to close.
-    static void closeDevice(Device device);
+    // |callback|: The callback to invoke once the device is closed.
+    static void closeDevice(Device device,
+        optional CloseDeviceCallback callback);
 
     // Claims an interface on the specified USB device.
     // |device|: The device on which the interface is to be claimed.
@@ -165,21 +143,21 @@ namespace experimental.usb {
     // |transferInfo|: The parameters to the transfer. See ControlTransferInfo.
     // |callback|: Invoked once the transfer has completed.
     static void controlTransfer(Device device,
-        ControlTransferInfo transferInfo, optional TransferCallback callback);
+        ControlTransferInfo transferInfo, TransferCallback callback);
 
     // Performs a bulk transfer on the specified device.
     // |device|: An open device to make the transfer on.
     // |transferInfo|: The paramters to the transfer. See GenericTransferInfo.
     // |callback|: Invoked once the transfer has completed.
     static void bulkTransfer(Device device, GenericTransferInfo transferInfo,
-        optional TransferCallback callback);
+        TransferCallback callback);
 
     // Performs an interrupt transfer on the specified device.
     // |device|: An open device to make the transfer on.
     // |transferInfo|: The paramters to the transfer. See GenericTransferInfo.
     // |callback|: Invoked once the transfer has completed.
     static void interruptTransfer(Device device,
-        GenericTransferInfo transferInfo, optional TransferCallback callback);
+        GenericTransferInfo transferInfo, TransferCallback callback);
 
     // Performs an isochronous transfer on the specific device.
     // |device|: An open device to make the transfer on.
@@ -188,11 +166,6 @@ namespace experimental.usb {
     // |callback|: Invoked once the transfer has been completed.
     static void isochronousTransfer(Device device,
         IsochronousTransferInfo transferInfo,
-        optional TransferCallback callback);
+        TransferCallback callback);
   };
-
-  interface Events {
-    static void onEvent(UsbEvent event);
-  };
-
 };

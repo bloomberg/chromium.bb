@@ -103,10 +103,11 @@ UsbDevice::UsbDevice() : service_(NULL), handle_(NULL) {}
 
 UsbDevice::~UsbDevice() {}
 
-void UsbDevice::Close() {
+void UsbDevice::Close(const base::Callback<void()>& callback) {
   CheckDevice();
   service_->CloseDevice(this);
   handle_ = NULL;
+  callback.Run();
 }
 
 void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {

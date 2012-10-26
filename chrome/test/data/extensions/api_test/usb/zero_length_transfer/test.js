@@ -4,20 +4,17 @@
 
 var usb = chrome.experimental.usb;
 
-function handler() {
-  var handlerObject = new Object();
-  handlerObject.onEvent = chrome.test.callbackAdded();
-  return handlerObject;
-}
-
 var tests = [
   function zeroLengthTransfer() {
-    usb.findDevice(0, 0, handler(), function(device) {
+    usb.findDevices(0, 0, {}, function(devices) {
+      var device = devices[0];
       var transfer = new Object();
       transfer.direction = "out";
       transfer.endpoint = 1;
       transfer.data = new ArrayBuffer(0);
-      usb.bulkTransfer(device, transfer);
+      usb.bulkTransfer(device, transfer, function (result) {
+        chrome.test.succeed();
+      });
     });
   },
 ];

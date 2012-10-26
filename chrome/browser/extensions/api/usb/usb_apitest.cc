@@ -33,7 +33,7 @@ class MockUsbDevice : public UsbDevice {
  public:
   MockUsbDevice() : UsbDevice() {}
 
-  MOCK_METHOD0(Close, void(void));
+  MOCK_METHOD1(Close, void(const base::Callback<void()>& callback));
 
   MOCK_METHOD10(ControlTransfer, void(const TransferDirection direction,
       const TransferRequestType request_type, const TransferRecipient recipient,
@@ -70,7 +70,7 @@ class UsbApiTest : public ExtensionApiTest {
 
   void SetUpOnMainThread() OVERRIDE {
     mock_device_ = new MockUsbDevice();
-    extensions::UsbFindDeviceFunction::SetDeviceForTest(mock_device_.get());
+    extensions::UsbFindDevicesFunction::SetDeviceForTest(mock_device_.get());
   }
 
  protected:
@@ -80,7 +80,7 @@ class UsbApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
-  EXPECT_CALL(*mock_device_, Close()).Times(3);
+  EXPECT_CALL(*mock_device_, Close(_)).Times(1);
   ASSERT_TRUE(RunExtensionTest("usb/device_handling"));
 }
 
@@ -98,14 +98,14 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
   EXPECT_CALL(*mock_device_,
       IsochronousTransfer(UsbDevice::OUTBOUND, 3, _, 1, 1, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<7>(USB_TRANSFER_COMPLETED));
-  EXPECT_CALL(*mock_device_, Close()).Times(AnyNumber());
+  EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/transfer_event"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ZeroLengthTransfer) {
   EXPECT_CALL(*mock_device_, BulkTransfer(_, _, _, 0, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
-  EXPECT_CALL(*mock_device_, Close());
+  EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/zero_length_transfer"));
 }
 
@@ -114,6 +114,6 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED))
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_ERROR))
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_TIMEOUT));
-  EXPECT_CALL(*mock_device_, Close()).Times(AnyNumber());
+  EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/transfer_failure"));
 }

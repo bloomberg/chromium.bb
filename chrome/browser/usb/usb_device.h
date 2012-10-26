@@ -66,8 +66,9 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
 
   PlatformUsbDeviceHandle handle() { return handle_; }
 
-  // Close the USB device and release the underlying platform device.
-  virtual void Close();
+  // Close the USB device and release the underlying platform device. |callback|
+  // is invoked after the device has been closed.
+  virtual void Close(const base::Callback<void()>& callback);
 
   virtual void ClaimInterface(const int interface_number,
                               const UsbInterfaceCallback& callback);

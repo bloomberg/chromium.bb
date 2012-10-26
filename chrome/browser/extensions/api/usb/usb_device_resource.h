@@ -25,40 +25,19 @@ namespace extensions {
 
 class ApiResourceEventNotifier;
 
-// A UsbDeviceResource is an ApiResource wrapper for a UsbDevice. When invoking
-// transfers on the underlying device it will use the ApiResourceEventNotifier
-// associated with the underlying ApiResource to deliver completion messages.
+// A UsbDeviceResource is an ApiResource wrapper for a UsbDevice.
 class UsbDeviceResource : public ApiResource {
  public:
   UsbDeviceResource(const std::string& owner_extension_id,
-                    ApiResourceEventNotifier* notifier, UsbDevice* device);
+                    ApiResourceEventNotifier* notifier,
+                    scoped_refptr<UsbDevice> device);
   virtual ~UsbDeviceResource();
 
-  UsbDevice* device() {
-    return device_.get();
+  scoped_refptr<UsbDevice> device() {
+    return device_;
   }
 
-  void Close();
-
-  // All of the *Transfer variants that are exposed here adapt their arguments
-  // for the underlying UsbDevice's interface and invoke the corresponding
-  // methods with completion callbacks that call OnTransferComplete on the event
-  // notifier.
-  void ControlTransfer(
-      const api::experimental_usb::ControlTransferInfo& transfer);
-  void InterruptTransfer(
-      const api::experimental_usb::GenericTransferInfo& transfer);
-  void BulkTransfer(const api::experimental_usb::GenericTransferInfo& transfer);
-  void IsochronousTransfer(
-      const api::experimental_usb::IsochronousTransferInfo& transfer);
-
  private:
-  // Invoked by the underlying device's transfer callbacks. Indicates transfer
-  // completion to the ApiResource's event notifier.
-  void TransferComplete(UsbTransferStatus status,
-                        scoped_refptr<net::IOBuffer> buffer,
-                        size_t length);
-
   scoped_refptr<UsbDevice> device_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceResource);

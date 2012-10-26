@@ -23,7 +23,6 @@ namespace extensions {
 class EventRouter;
 
 enum ApiResourceEventType {
-  API_RESOURCE_EVENT_TRANSFER_COMPLETE,
 };
 
 extern const char kSrcIdKey[];
@@ -36,10 +35,6 @@ class ApiResourceEventNotifier
   ApiResourceEventNotifier(EventRouter* router, Profile* profile,
                            const std::string& src_extension_id, int src_id,
                            const GURL& src_url);
-
-  virtual void OnTransferComplete(UsbTransferStatus status,
-                                  const std::string& error,
-                                  base::BinaryValue* data);
 
   static std::string ApiResourceEventTypeToString(
       ApiResourceEventType event_type);
