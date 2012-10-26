@@ -136,6 +136,7 @@ struct BubbleBorder::BorderImages*
 BubbleBorder::BubbleBorder(ArrowLocation arrow_location, Shadow shadow)
     : override_arrow_offset_(0),
       arrow_location_(arrow_location),
+      paint_arrow_(true),
       alignment_(ALIGN_ARROW_TO_MID_ANCHOR),
       background_color_(SK_ColorWHITE) {
   DCHECK(shadow < SHADOW_COUNT);
@@ -403,22 +404,24 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   const int height = bottom - top;
   const int width = right - left;
 
+  const ArrowLocation arrow_location = paint_arrow_ ? arrow_location_ : NONE;
+
   // |arrow_offset| is offset of arrow from the beginning of the edge.
   int arrow_offset = GetArrowOffset(view.size());
-  if (!is_arrow_at_center(arrow_location_)) {
-    if (is_arrow_on_horizontal(arrow_location_) &&
-        !is_arrow_on_left(arrow_location_)) {
+  if (!is_arrow_at_center(arrow_location)) {
+    if (is_arrow_on_horizontal(arrow_location) &&
+        !is_arrow_on_left(arrow_location)) {
       arrow_offset = view.width() - arrow_offset - 1;
-    } else if (!is_arrow_on_horizontal(arrow_location_) &&
-               !is_arrow_on_top(arrow_location_)) {
+    } else if (!is_arrow_on_horizontal(arrow_location) &&
+               !is_arrow_on_top(arrow_location)) {
       arrow_offset = view.height() - arrow_offset - 1;
     }
   }
 
   // Left edge.
-  if (arrow_location_ == LEFT_TOP ||
-      arrow_location_ == LEFT_CENTER ||
-      arrow_location_ == LEFT_BOTTOM) {
+  if (arrow_location == LEFT_TOP ||
+      arrow_location == LEFT_CENTER ||
+      arrow_location == LEFT_BOTTOM) {
     int start_y = top + tl_height;
     int before_arrow =
         arrow_offset - start_y - images_->left_arrow.height() / 2;
@@ -446,9 +449,9 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   canvas->DrawImageInt(images_->top_left, left, top);
 
   // Top edge.
-  if (arrow_location_ == TOP_LEFT ||
-      arrow_location_ == TOP_CENTER ||
-      arrow_location_ == TOP_RIGHT) {
+  if (arrow_location == TOP_LEFT ||
+      arrow_location == TOP_CENTER ||
+      arrow_location == TOP_RIGHT) {
     int start_x = left + tl_width;
     int before_arrow = arrow_offset - start_x - images_->top_arrow.width() / 2;
     int after_arrow = width - tl_width - tr_width -
@@ -474,9 +477,9 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   canvas->DrawImageInt(images_->top_right, right - tr_width, top);
 
   // Right edge.
-  if (arrow_location_ == RIGHT_TOP ||
-      arrow_location_ == RIGHT_CENTER ||
-      arrow_location_ == RIGHT_BOTTOM) {
+  if (arrow_location == RIGHT_TOP ||
+      arrow_location == RIGHT_CENTER ||
+      arrow_location == RIGHT_BOTTOM) {
     int start_y = top + tr_height;
     int before_arrow =
         arrow_offset - start_y - images_->right_arrow.height() / 2;
@@ -506,9 +509,9 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
                        bottom - br_height);
 
   // Bottom edge.
-  if (arrow_location_ == BOTTOM_LEFT ||
-      arrow_location_ == BOTTOM_CENTER ||
-      arrow_location_ == BOTTOM_RIGHT) {
+  if (arrow_location == BOTTOM_LEFT ||
+      arrow_location == BOTTOM_CENTER ||
+      arrow_location == BOTTOM_RIGHT) {
     int start_x = left + bl_width;
     int before_arrow =
         arrow_offset - start_x - images_->bottom_arrow.width() / 2;
