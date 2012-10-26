@@ -798,6 +798,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       cc::switches::kEnablePartialSwap,
       cc::switches::kEnablePinchInCompositor,
       ::switches::kUIEnablePartialSwap,
+      ::switches::kUIEnableThreadedCompositing,
       ::switches::kUIPrioritizeInGpuProcess,
 #if defined(USE_CRAS)
       ::switches::kUseCras,
