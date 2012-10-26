@@ -87,9 +87,25 @@ class DevToolsWindow : private content::NotificationObserver,
   TabContents* tab_contents() { return tab_contents_; }
   Browser* browser() { return browser_; }  // For tests.
   DevToolsDockSide dock_side() { return dock_side_; }
-  content::DevToolsClientHost* devtools_client_host() {
-    return frontend_host_;
-  }
+  content::DevToolsClientHost* devtools_client_host() { return frontend_host_; }
+
+  // Returns preferred devtools window width for given |container_width|. It
+  // tries to use the saved window width, or, if none exists, 1/3 of the
+  // container width, then clamps to try and ensure both devtools and content
+  // are at least somewhat visible.
+  // Called only for the case when devtools window is docked to the side.
+  int GetWidth(int container_width);
+
+  // Returns preferred devtools window height for given |container_height|.
+  // Uses the same logic as GetWidth.
+  // Called only for the case when devtools window is docked to bottom.
+  int GetHeight(int container_height);
+
+  // Stores preferred devtools window width for this instance.
+  void SetWidth(int width);
+
+  // Stores preferred devtools window height for this instance.
+  void SetHeight(int height);
 
  private:
   static DevToolsWindow* Create(Profile* profile,
@@ -183,6 +199,8 @@ class DevToolsWindow : private content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   content::DevToolsClientHost* frontend_host_;
   scoped_ptr<DevToolsFileHelper> file_helper_;
+  int width_;
+  int height_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

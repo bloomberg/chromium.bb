@@ -119,12 +119,6 @@ namespace {
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
 
-// Minimal height of devotools pane or content pane when devtools are docked
-// to the browser window.
-const int kMinDevToolsHeight = 50;
-const int kMinDevToolsWidth = 150;
-const int kMinContentsSize = 50;
-
 const char* kBrowserWindowKey = "__BROWSER_WINDOW_GTK__";
 
 // The frame border is only visible in restored mode and is hardcoded to 4 px
@@ -238,6 +232,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        browser_(browser),
        state_(GDK_WINDOW_STATE_WITHDRAWN),
        devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
+       devtools_window_(NULL),
        contents_hsplit_(NULL),
        contents_vsplit_(NULL),
        frame_cursor_(NULL),
@@ -739,18 +734,6 @@ void BrowserWindowGtk::BookmarkBarStateChanged(
 
 void BrowserWindowGtk::UpdateDevTools() {
   UpdateDevToolsForContents(chrome::GetActiveWebContents(browser_.get()));
-}
-
-void BrowserWindowGtk::SetDevToolsDockSide(DevToolsDockSide side) {
-  if (devtools_dock_side_ == side)
-    return;
-
-  if (devtools_container_->tab()) {
-    HideDevToolsContainer();
-    ShowDevToolsContainer(side);
-  } else {
-    devtools_dock_side_ = side;
-  }
 }
 
 void BrowserWindowGtk::UpdateLoadingAnimations(bool should_animate) {
@@ -1319,101 +1302,6 @@ extensions::ActiveTabPermissionGranter*
       active_tab_permission_granter();
 }
 
-void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
-  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateDevToolsForContents");
-  TabContents* old_devtools = devtools_container_->tab();
-  DevToolsWindow* devtools_window = contents ?
-      DevToolsWindow::GetDockedInstanceForInspectedTab(contents) : NULL;
-  TabContents* devtools_contents =
-      devtools_window ? devtools_window->tab_contents() : NULL;
-
-  if (old_devtools == devtools_contents) {
-    if (devtools_contents &&
-        devtools_window->dock_side() != devtools_dock_side_)
-      SetDevToolsDockSide(devtools_window->dock_side());
-    return;
-  }
-
-  if (old_devtools)
-    devtools_container_->DetachTab(old_devtools);
-
-  devtools_container_->SetTab(devtools_contents);
-  if (devtools_contents) {
-    // WebContentsViewGtk::WasShown is not called when tab contents is shown by
-    // anything other than user selecting a Tab.
-    // See TabContentsViewViews::OnWindowPosChanged for reference on how it
-    // should be implemented.
-    devtools_contents->web_contents()->WasShown();
-  }
-
-  bool should_show = old_devtools == NULL && devtools_contents != NULL;
-  bool should_hide = old_devtools != NULL && devtools_contents == NULL;
-
-  if (should_show)
-    ShowDevToolsContainer(devtools_window->dock_side());
-  else if (should_hide)
-    HideDevToolsContainer();
-}
-
-void BrowserWindowGtk::ShowDevToolsContainer(DevToolsDockSide dock_side) {
-  devtools_dock_side_ = dock_side;
-  bool dock_to_right = dock_side == DEVTOOLS_DOCK_SIDE_RIGHT;
-
-  GtkAllocation contents_rect;
-  gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
-  int content_size =
-      dock_to_right ? contents_rect.width : contents_rect.height;
-
-  int split_offset = browser_->profile()->GetPrefs()->
-      GetInteger(dock_to_right ? prefs::kDevToolsVSplitLocation :
-                                 prefs::kDevToolsHSplitLocation);
-  int min_size =
-      dock_to_right ? kMinDevToolsWidth : kMinDevToolsHeight;
-
-  if (split_offset == -1)
-    split_offset = content_size * 1 / 3;
-  // Make sure user can see both panes.
-  split_offset = std::max(min_size, split_offset);
-  split_offset = std::min(content_size - kMinContentsSize, split_offset);
-  if (split_offset < 0)
-    split_offset = content_size * 1 / 3;
-  if (dock_to_right) {
-    gtk_paned_pack2(GTK_PANED(contents_hsplit_), devtools_container_->widget(),
-                    FALSE, TRUE);
-    gtk_paned_set_position(GTK_PANED(contents_hsplit_),
-                           content_size - split_offset);
-  } else {
-    gtk_paned_pack2(GTK_PANED(contents_vsplit_), devtools_container_->widget(),
-                    FALSE, TRUE);
-    gtk_paned_set_position(GTK_PANED(contents_vsplit_),
-                           content_size - split_offset);
-  }
-  gtk_widget_show(devtools_container_->widget());
-}
-
-void BrowserWindowGtk::HideDevToolsContainer() {
-  GtkAllocation contents_rect;
-  gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
-  bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  gint split_offset;
-  if (dock_to_right) {
-    split_offset = contents_rect.width -
-        gtk_paned_get_position(GTK_PANED(contents_hsplit_));
-    gtk_container_remove(GTK_CONTAINER(contents_hsplit_),
-                         devtools_container_->widget());
-  } else {
-    split_offset = contents_rect.height -
-        gtk_paned_get_position(GTK_PANED(contents_vsplit_));
-    gtk_container_remove(GTK_CONTAINER(contents_vsplit_),
-                         devtools_container_->widget());
-  }
-
-  browser_->profile()->GetPrefs()->
-      SetInteger(dock_to_right ? prefs::kDevToolsVSplitLocation :
-                                 prefs::kDevToolsHSplitLocation,
-                 split_offset);
-}
-
 void BrowserWindowGtk::DestroyBrowser() {
   browser_.reset();
 }
@@ -1782,7 +1670,6 @@ void BrowserWindowGtk::InitWidgets() {
   contents_hsplit_ = gtk_hpaned_new();
   gtk_paned_pack1(GTK_PANED(contents_hsplit_), contents_container_->widget(),
                   TRUE, TRUE);
-
   contents_vsplit_ = gtk_vpaned_new();
   gtk_paned_pack1(GTK_PANED(contents_vsplit_), contents_hsplit_, TRUE, TRUE);
 
@@ -2416,6 +2303,97 @@ bool BrowserWindowGtk::DrawFrameAsActive() const {
   // changes, we can't consistently repaint the frame at the right time. Instead
   // we always draw the frame as active.
   return true;
+}
+
+void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateDevToolsForContents");
+  DevToolsWindow* new_devtools_window = contents ?
+      DevToolsWindow::GetDockedInstanceForInspectedTab(contents) : NULL;
+
+  // Fast return in case of the same window having same orientation.
+  if (devtools_window_ == new_devtools_window && (!new_devtools_window ||
+        new_devtools_window->dock_side() == devtools_dock_side_))
+    return;
+
+  // Replace tab contents.
+  if (devtools_window_ != new_devtools_window) {
+    if (devtools_window_)
+      devtools_container_->DetachTab(devtools_window_->tab_contents());
+    devtools_container_->SetTab(
+        new_devtools_window ? new_devtools_window->tab_contents() : NULL);
+    if (new_devtools_window) {
+      // WebContentsViewGtk::WasShown is not called when tab contents is shown
+      // by anything other than user selecting a Tab.
+      // See TabContentsViewViews::OnWindowPosChanged for reference on how it
+      // should be implemented.
+      new_devtools_window->tab_contents()->web_contents()->WasShown();
+    }
+  }
+
+  // Store last used position.
+  if (devtools_window_) {
+    GtkAllocation contents_rect;
+    gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
+    if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT) {
+      devtools_window_->SetWidth(
+          contents_rect.width -
+          gtk_paned_get_position(GTK_PANED(contents_hsplit_)));
+    } else {
+      devtools_window_->SetHeight(
+          contents_rect.height -
+          gtk_paned_get_position(GTK_PANED(contents_vsplit_)));
+    }
+  }
+
+  // Show / hide container if necessary. Changing dock orientation is
+  // hide + show.
+  bool should_hide = devtools_window_ && (!new_devtools_window ||
+      devtools_dock_side_ != new_devtools_window->dock_side());
+  bool should_show = new_devtools_window && (!devtools_window_ || should_hide);
+
+  if (should_hide)
+    HideDevToolsContainer();
+
+  devtools_window_ = new_devtools_window;
+
+  if (should_show) {
+    devtools_dock_side_ = new_devtools_window->dock_side();
+    ShowDevToolsContainer();
+  } else if (new_devtools_window) {
+    UpdateDevToolsSplitPosition();
+  }
+}
+
+void BrowserWindowGtk::ShowDevToolsContainer() {
+  bool to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
+  gtk_paned_pack2(GTK_PANED(to_right ? contents_hsplit_ : contents_vsplit_),
+                  devtools_container_->widget(),
+                  FALSE,
+                  TRUE);
+  UpdateDevToolsSplitPosition();
+  gtk_widget_show(devtools_container_->widget());
+}
+
+void BrowserWindowGtk::HideDevToolsContainer() {
+  bool to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
+  gtk_container_remove(GTK_CONTAINER(to_right ? contents_hsplit_ :
+                           contents_vsplit_),
+                       devtools_container_->widget());
+}
+
+void BrowserWindowGtk::UpdateDevToolsSplitPosition() {
+  GtkAllocation contents_rect;
+  gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
+
+  if (devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
+    int split_offset = contents_rect.width -
+        devtools_window_->GetWidth(contents_rect.width);
+    gtk_paned_set_position(GTK_PANED(contents_hsplit_), split_offset);
+  } else {
+    int split_offset = contents_rect.height -
+        devtools_window_->GetHeight(contents_rect.height);
+    gtk_paned_set_position(GTK_PANED(contents_vsplit_), split_offset);
+  }
 }
 
 // static

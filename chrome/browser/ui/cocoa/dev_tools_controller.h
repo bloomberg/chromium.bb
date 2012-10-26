@@ -28,6 +28,10 @@ class WebContents;
   scoped_nsobject<NSSplitView> splitView_;
 
   DevToolsDockSide dockSide_;
+
+  // Docked devtools window instance. NULL when current tab is not inspected
+  // or is inspected with undocked version of DevToolsWindow.
+  DevToolsWindow* devToolsWindow_;
 }
 
 - (id)init;

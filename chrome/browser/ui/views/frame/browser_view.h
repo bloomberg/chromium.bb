@@ -508,17 +508,21 @@ class BrowserView : public BrowserWindow,
   // |contents| can be NULL.
   bool MaybeShowInfoBar(TabContents* contents);
 
+  // Updates devtools window for given contents. This method will show docked
+  // devtools window for inspected |tab_contents| that has docked devtools
+  // and hide it for NULL or not inspected |tab_contents|. It will also make
+  // sure devtools window size and position are restored for given tab.
+  void UpdateDevToolsForContents(TabContents* tab_contents);
+
   // Shows docked devtools.
-  void ShowDevToolsContainer(DevToolsDockSide side);
+  void ShowDevToolsContainer();
 
   // Hides docked devtools.
   void HideDevToolsContainer();
 
-  // Updates devtools dock side.
-  void SetDevToolsDockSide(DevToolsDockSide side);
-
-  // Updated devtools window for given contents.
-  void UpdateDevToolsForContents(TabContents* tab_contents);
+  // Reads split position from the current tab's devtools window and applies
+  // it to the devtools split.
+  void UpdateDevToolsSplitPosition();
 
   // Updates various optional child Views, e.g. Bookmarks Bar, Info Bar or the
   // Download Shelf in response to a change notification from the specified
@@ -668,8 +672,12 @@ class BrowserView : public BrowserWindow,
   // Split view containing the contents container and devtools container.
   views::SingleSplitView* contents_split_;
 
-  // Side to dock devtools to
+  // Side to dock devtools to.
   DevToolsDockSide devtools_dock_side_;
+
+  // Docked devtools window instance. NULL when current tab is not inspected
+  // or is inspected with undocked version of DevToolsWindow.
+  DevToolsWindow* devtools_window_;
 
   // Tracks and stores the last focused view which is not the
   // devtools_container_ or any of its children. Used to restore focus once

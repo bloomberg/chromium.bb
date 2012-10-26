@@ -161,12 +161,6 @@ const int kStatusBubbleHeight = 20;
 // locate this object using just the handle.
 const char* const kBrowserViewKey = "__BROWSER_VIEW__";
 
-// Minimal height of devtools pane or content pane when devtools are docked
-// to the browser window.
-const int kMinDevToolsHeight = 50;
-const int kMinDevToolsWidth = 150;
-const int kMinContentsSize = 50;
-
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
 // The amount of space we expect the window border to take up.
@@ -362,6 +356,7 @@ BrowserView::BrowserView(Browser* browser)
       contents_(NULL),
       contents_split_(NULL),
       devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
+      devtools_window_(NULL),
       initialized_(false),
       ignore_layout_(true),
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -701,18 +696,6 @@ void BrowserView::UpdateDevTools() {
   Layout();
 }
 
-
-void BrowserView::SetDevToolsDockSide(DevToolsDockSide side) {
-  if (devtools_dock_side_ == side)
-    return;
-
-  if (devtools_container_->visible()) {
-    HideDevToolsContainer();
-    ShowDevToolsContainer(side);
-  } else {
-    devtools_dock_side_ = side;
-  }
-}
 
 void BrowserView::UpdateLoadingAnimations(bool should_animate) {
   if (should_animate) {
@@ -2077,35 +2060,54 @@ bool BrowserView::MaybeShowInfoBar(TabContents* contents) {
 }
 
 void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
-  DevToolsWindow* devtools_window = tab_contents ?
+  DevToolsWindow* new_devtools_window = tab_contents ?
       DevToolsWindow::GetDockedInstanceForInspectedTab(
           tab_contents->web_contents()) : NULL;
-  TabContents* devtools_tab_contents =
-      devtools_window ? devtools_window->tab_contents() : NULL;
-  WebContents* devtools_contents = devtools_tab_contents ?
-      devtools_tab_contents->web_contents() : NULL;
-
-  if (devtools_contents == devtools_container_->web_contents()) {
-    if (devtools_contents &&
-        devtools_window->dock_side() != devtools_dock_side_)
-      SetDevToolsDockSide(devtools_window->dock_side());
-    return;
+  // Fast return in case of the same window having same orientation.
+  if (devtools_window_ == new_devtools_window) {
+    if (!new_devtools_window ||
+        (new_devtools_window->dock_side() == devtools_dock_side_)) {
+      return;
+    }
   }
 
-  bool should_show = devtools_contents && !devtools_container_->visible();
-  bool should_hide = !devtools_contents && devtools_container_->visible();
+  // Replace tab contents.
+  if (devtools_window_ != new_devtools_window) {
+    devtools_container_->SetWebContents(new_devtools_window ?
+        new_devtools_window->tab_contents()->web_contents() : NULL);
+  }
 
-  devtools_container_->SetWebContents(devtools_contents);
-  RestackLocationBarContainer();
+  // Store last used position.
+  if (devtools_window_) {
+    if (devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT) {
+      devtools_window_->SetWidth(
+          contents_split_->width() - contents_split_->divider_offset());
+    } else {
+      devtools_window_->SetHeight(
+          contents_split_->height() - contents_split_->divider_offset());
+    }
+  }
 
-  if (should_show)
-    ShowDevToolsContainer(devtools_window->dock_side());
-  else if (should_hide)
+  // Show / hide container if necessary. Changing dock orientation is
+  // hide + show.
+  bool should_hide = devtools_window_ && (!new_devtools_window ||
+      devtools_dock_side_ != new_devtools_window->dock_side());
+  bool should_show = new_devtools_window && (!devtools_window_ || should_hide);
+
+  if (should_hide)
     HideDevToolsContainer();
+
+  devtools_window_ = new_devtools_window;
+
+  if (should_show) {
+    devtools_dock_side_ = new_devtools_window->dock_side();
+    ShowDevToolsContainer();
+  } else if (new_devtools_window) {
+    UpdateDevToolsSplitPosition();
+  }
 }
 
-void BrowserView::ShowDevToolsContainer(DevToolsDockSide dock_side) {
-  devtools_dock_side_ = dock_side;
+void BrowserView::ShowDevToolsContainer() {
   if (!devtools_focus_tracker_.get()) {
     // Install devtools focus tracker when dev tools window is shown for the
     // first time.
@@ -2113,32 +2115,13 @@ void BrowserView::ShowDevToolsContainer(DevToolsDockSide dock_side) {
         new views::ExternalFocusTracker(devtools_container_,
                                         GetFocusManager()));
   }
-
-  bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-
-  int contents_size = dock_to_right ? contents_split_->width() :
-      contents_split_->height();
-  int min_size = dock_to_right ? kMinDevToolsWidth : kMinDevToolsHeight;
-
-  // Restore split offset.
-  int split_offset = browser_->profile()->GetPrefs()->
-      GetInteger(dock_to_right ? prefs::kDevToolsVSplitLocation :
-                                 prefs::kDevToolsHSplitLocation);
-
-  if (split_offset == -1)
-    split_offset = contents_size * 1 / 3;
-
-  // Make sure user can see both panes.
-  split_offset = std::max(min_size, split_offset);
-  split_offset = std::min(contents_size - kMinContentsSize, split_offset);
-  if (split_offset < 0)
-    split_offset = contents_size * 1 / 3;
-  contents_split_->set_divider_offset(contents_size - split_offset);
-
   devtools_container_->SetVisible(true);
+  devtools_dock_side_ = devtools_window_->dock_side();
+  bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
   contents_split_->set_orientation(
       dock_to_right ? views::SingleSplitView::HORIZONTAL_SPLIT
                     : views::SingleSplitView::VERTICAL_SPLIT);
+  UpdateDevToolsSplitPosition();
   contents_split_->InvalidateLayout();
   Layout();
   // In NTP search mode, schedule a repaint of toolbar and tabstrip.
@@ -2149,19 +2132,8 @@ void BrowserView::ShowDevToolsContainer(DevToolsDockSide dock_side) {
 }
 
 void BrowserView::HideDevToolsContainer() {
-  // Store split offset when hiding devtools window only.
-  bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  int contents_size = dock_to_right ? contents_split_->width() :
-      contents_split_->height();
-
-  browser_->profile()->GetPrefs()->SetInteger(
-      dock_to_right ? prefs::kDevToolsVSplitLocation :
-                      prefs::kDevToolsHSplitLocation,
-      contents_size - contents_split_->divider_offset());
-
   // Restore focus to the last focused view when hiding devtools window.
   devtools_focus_tracker_->FocusLastFocusedExternalView();
-
   devtools_container_->SetVisible(false);
   contents_split_->InvalidateLayout();
   Layout();
@@ -2169,6 +2141,18 @@ void BrowserView::HideDevToolsContainer() {
   if (browser()->search_model()->mode().is_ntp()) {
     toolbar_->SchedulePaint();
     tabstrip_->SchedulePaint();
+  }
+}
+
+void BrowserView::UpdateDevToolsSplitPosition() {
+  if (devtools_window_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
+    int split_offset = contents_split_->width() -
+        devtools_window_->GetWidth(contents_split_->width());
+    contents_split_->set_divider_offset(split_offset);
+  } else {
+    int split_offset = contents_split_->height() -
+        devtools_window_->GetHeight(contents_split_->height());
+    contents_split_->set_divider_offset(split_offset);
   }
 }
 

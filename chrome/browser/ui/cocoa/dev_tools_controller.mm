@@ -18,17 +18,6 @@
 
 using content::WebContents;
 
-namespace {
-
-// Minimal height of devtools pane or content pane when devtools are docked
-// to the browser window.
-const int kMinDevToolsHeight = 50;
-const int kMinDevToolsWidth = 150;
-const int kMinContentsSize = 50;
-
-}  // end namespace
-
-
 @interface GraySplitView : NSSplitView
 - (NSColor*)dividerColor;
 @end
@@ -42,13 +31,9 @@ const int kMinContentsSize = 50;
 
 
 @interface DevToolsController (Private)
-- (void)showDevToolsContainer:(NSView*)container
-                     dockSide:(DevToolsDockSide)dockSide
-                      profile:(Profile*)profile;
-- (void)hideDevToolsContainer:(Profile*)profile;
-- (void)setDockToRight:(BOOL)dock_to_right
-           withProfile:(Profile*)profile;
-- (void)resizeDevTools:(CGFloat)size;
+- (void)showDevToolsContainer;
+- (void)hideDevToolsContainer;
+- (void)updateDevToolsSplitPosition;
 @end
 
 
@@ -82,118 +67,74 @@ const int kMinContentsSize = 50;
 
 - (void)updateDevToolsForWebContents:(WebContents*)contents
                          withProfile:(Profile*)profile {
-  // Get current devtools content.
-  DevToolsWindow* devToolsWindow = contents ?
+  DevToolsWindow* newDevToolsWindow = contents ?
       DevToolsWindow::GetDockedInstanceForInspectedTab(contents) : NULL;
-  WebContents* devToolsContents = devToolsWindow ?
-      devToolsWindow->tab_contents()->web_contents() : NULL;
 
-  if (devToolsContents && devToolsContents->GetNativeView() &&
-      [devToolsContents->GetNativeView() superview] == splitView_.get()) {
-    [self setDockSide:devToolsWindow->dock_side() withProfile:profile];
-    return;
+  // Fast return in case of the same window having same orientation.
+  if (devToolsWindow_ == newDevToolsWindow) {
+    if (!newDevToolsWindow ||
+        (newDevToolsWindow->dock_side() == dockSide_)) {
+      return;
+    }
   }
 
-  NSArray* subviews = [splitView_ subviews];
-  if (devToolsContents) {
-    // |devToolsView| is a TabContentsViewCocoa object, whose ViewID was
-    // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
-    // VIEW_ID_DEV_TOOLS_DOCKED here.
-    NSView* devToolsView = devToolsContents->GetNativeView();
-    view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
-    [self showDevToolsContainer:devToolsView
-                       dockSide:devToolsWindow->dock_side()
-                        profile:profile];
-  } else if ([subviews count] > 1) {
-    [self hideDevToolsContainer:profile];
-  }
-}
-
-- (void)setDockSide:(DevToolsDockSide)dockSide
-        withProfile:(Profile*)profile {
-  if (dockSide_ == dockSide)
-    return;
-
-  NSArray* subviews = [splitView_ subviews];
-  if ([subviews count] == 2) {
-    scoped_nsobject<NSView> devToolsContentsView(
-        [[subviews objectAtIndex:1] retain]);
-    [self hideDevToolsContainer:profile];
-    dockSide_ = dockSide;
-    [self showDevToolsContainer:devToolsContentsView
-                       dockSide:dockSide
-                        profile:profile];
-  } else {
-    dockSide_ = dockSide;
-  }
-}
-
-- (void)showDevToolsContainer:(NSView*)container
-                     dockSide:(BOOL)dockSide
-                      profile:(Profile*)profile {
-  NSArray* subviews = [splitView_ subviews];
-  DCHECK_GE([subviews count], 1u);
-
-  CGFloat splitOffset = 0;
-
-  BOOL dockToRight = dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  CGFloat contentSize =
-      dockToRight ? NSWidth([splitView_ frame])
-                  : NSHeight([splitView_ frame]);
-
-  if ([subviews count] == 1) {
-    // Load the default split offset.
-    splitOffset = profile->GetPrefs()->
-        GetInteger(dockToRight ? prefs::kDevToolsVSplitLocation :
-                                 prefs::kDevToolsHSplitLocation);
-
-    if (splitOffset < 0)
-      splitOffset = contentSize * 1 / 3;
-
-    [splitView_ addSubview:container];
-  } else {
+  // Store last used position.
+  if (devToolsWindow_) {
+    NSArray* subviews = [splitView_ subviews];
     DCHECK_EQ([subviews count], 2u);
-    // If devtools are already visible, keep the current size.
-    splitOffset = dockToRight ? NSWidth([[subviews objectAtIndex:1] frame])
-                              : NSHeight([[subviews objectAtIndex:1] frame]);
-    [splitView_ replaceSubview:[subviews objectAtIndex:1]
-                          with:container];
+    NSView* devToolsView = [subviews objectAtIndex:1];
+    if (dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT)
+      devToolsWindow_->SetWidth(NSWidth([devToolsView frame]));
+    else
+      devToolsWindow_->SetHeight(NSHeight([devToolsView frame]));
   }
 
-  // Make sure |splitOffset| isn't too large or too small.
-  CGFloat minSize = dockToRight ? kMinDevToolsWidth: kMinDevToolsHeight;
-  splitOffset = std::max(minSize, splitOffset);
-  splitOffset = std::min(static_cast<CGFloat>(contentSize - kMinContentsSize),
-                         splitOffset);
+  // Show / hide container if necessary. Changing dock orientation is
+  // hide + show.
+  BOOL shouldHide = devToolsWindow_ && (!newDevToolsWindow ||
+      dockSide_ != newDevToolsWindow->dock_side());
+  BOOL shouldShow = newDevToolsWindow && (!devToolsWindow_ || shouldHide);
 
-  if (splitOffset < 0)
-    splitOffset = contentSize * 1 / 3;
+  if (shouldHide)
+    [self hideDevToolsContainer];
 
-  DCHECK_GE(splitOffset, 0) << "kMinWebHeight needs to be smaller than "
-                            << "smallest available tab contents space.";
+  devToolsWindow_ = newDevToolsWindow;
 
-  [splitView_ setVertical: dockToRight];
-  [self resizeDevTools:splitOffset];
+  if (shouldShow) {
+    dockSide_ = newDevToolsWindow->dock_side();
+    [self showDevToolsContainer];
+  } else if (newDevToolsWindow) {
+    [self updateDevToolsSplitPosition];
+  }
 }
 
-- (void)hideDevToolsContainer:(Profile*)profile {
+- (void)showDevToolsContainer {
   NSArray* subviews = [splitView_ subviews];
+  DCHECK_EQ([subviews count], 1u);
+  WebContents* devToolsContents =
+      devToolsWindow_->tab_contents()->web_contents();
+
+  // |devToolsView| is a TabContentsViewCocoa object, whose ViewID was
+  // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
+  // VIEW_ID_DEV_TOOLS_DOCKED here.
+  NSView* devToolsView = devToolsContents->GetNativeView();
+  view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
+  [splitView_ addSubview:devToolsView];
+
+  BOOL isVertical = devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT;
+  [splitView_ setVertical:isVertical];
+  [self updateDevToolsSplitPosition];
+}
+
+- (void)hideDevToolsContainer {
+  NSArray* subviews = [splitView_ subviews];
+  DCHECK_EQ([subviews count], 2u);
   NSView* oldDevToolsContentsView = [subviews objectAtIndex:1];
-
-  BOOL dockToRight = dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  // Store split offset when hiding devtools window only.
-  int splitOffset = dockToRight ? NSWidth([oldDevToolsContentsView frame])
-                                : NSHeight([oldDevToolsContentsView frame]);
-  profile->GetPrefs()->SetInteger(
-      dockToRight ? prefs::kDevToolsVSplitLocation :
-                    prefs::kDevToolsHSplitLocation,
-      splitOffset);
-
   [oldDevToolsContentsView removeFromSuperview];
   [splitView_ adjustSubviews];
 }
 
-- (void)resizeDevTools:(CGFloat)size {
+- (void)updateDevToolsSplitPosition {
   NSArray* subviews = [splitView_ subviews];
 
   // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
@@ -205,16 +146,14 @@ const int kMinContentsSize = 50;
   NSView* devToolsView = [subviews objectAtIndex:1];
   NSRect devToolsFrame = [devToolsView frame];
 
-  BOOL dockToRight = dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT;
-  if (dockToRight)
+  if (devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
+    CGFloat size = devToolsWindow_->GetWidth(NSWidth([splitView_ frame]));
     devToolsFrame.size.width = size;
-  else
-    devToolsFrame.size.height = size;
-
-  if (dockToRight) {
     webFrame.size.width =
         NSWidth([splitView_ frame]) - ([splitView_ dividerThickness] + size);
   } else {
+    CGFloat size = devToolsWindow_->GetHeight(NSHeight([splitView_ frame]));
+    devToolsFrame.size.height = size;
     webFrame.size.height =
         NSHeight([splitView_ frame]) - ([splitView_ dividerThickness] + size);
   }

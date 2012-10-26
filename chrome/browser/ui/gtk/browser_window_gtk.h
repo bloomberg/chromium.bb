@@ -30,6 +30,7 @@ class BookmarkBarGtk;
 class Browser;
 class BrowserTitlebar;
 class BrowserToolbarGtk;
+class DevToolsWindow;
 class DownloadShelfGtk;
 class ExtensionKeybindingRegistryGtk;
 class FindBarGtk;
@@ -201,17 +202,6 @@ class BrowserWindowGtk
 
   // Accessor for the tab strip.
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }
-
-  void UpdateDevToolsForContents(content::WebContents* contents);
-
-  // Shows docked devtools.
-  void ShowDevToolsContainer(DevToolsDockSide dock_side);
-
-  // Hides docked devtools.
-  void HideDevToolsContainer();
-
-  // Updates dock side orientation for the devtools.
-  void SetDevToolsDockSide(DevToolsDockSide side);
 
   void OnDebouncedBoundsChanged();
 
@@ -454,6 +444,22 @@ class BrowserWindowGtk
   // Decides if we should draw the frame as if the window is active.
   bool DrawFrameAsActive() const;
 
+  // Updates devtools window for given contents. This method will show docked
+  // devtools window for inspected |contents| that has docked devtools
+  // and hide it for NULL or not inspected |contents|. It will also make
+  // sure devtools window size and position are restored for given tab.
+  void UpdateDevToolsForContents(content::WebContents* contents);
+
+  // Shows docked devtools.
+  void ShowDevToolsContainer();
+
+  // Hides docked devtools.
+  void HideDevToolsContainer();
+
+  // Reads split position from the current tab's devtools window and applies
+  // it to the devtools split.
+  void UpdateDevToolsSplitPosition();
+
   // Determine whether we use should default to native decorations or the custom
   // frame based on the currently-running window manager.
   static bool GetCustomFramePrefDefault();
@@ -508,6 +514,10 @@ class BrowserWindowGtk
   scoped_ptr<ExtensionKeybindingRegistryGtk> extension_keybinding_registry_;
 
   DevToolsDockSide devtools_dock_side_;
+
+  // Docked devtools window instance. NULL when current tab is not inspected
+  // or is inspected with undocked version of DevToolsWindow.
+  DevToolsWindow* devtools_window_;
 
   // Split pane containing the contents_container_ and the devtools_container_.
   GtkWidget* contents_hsplit_;

@@ -80,6 +80,12 @@ const char kDockSideBottom[] = "bottom";
 const char kDockSideRight[] = "right";
 const char kDockSideUndocked[] = "undocked";
 
+// Minimal height of devtools pane or content pane when devtools are docked
+// to the browser window.
+const int kMinDevToolsHeight = 50;
+const int kMinDevToolsWidth = 150;
+const int kMinContentsSize = 50;
+
 // static
 void DevToolsWindow::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
@@ -204,7 +210,9 @@ DevToolsWindow::DevToolsWindow(TabContents* tab_contents,
       browser_(NULL),
       dock_side_(dock_side),
       is_loaded_(false),
-      action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW) {
+      action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW),
+      width_(-1),
+      height_(-1) {
   frontend_host_ = DevToolsClientHost::CreateDevToolsFrontendHost(
       tab_contents->web_contents(),
       this);
@@ -319,6 +327,57 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
   }
 
   ScheduleAction(action);
+}
+
+int DevToolsWindow::GetWidth(int container_width) {
+  if (width_ == -1) {
+    width_ = profile_->GetPrefs()->
+        GetInteger(prefs::kDevToolsVSplitLocation);
+  }
+
+  // By default, size devtools as 1/3 of the browser window.
+  if (width_ == -1)
+    width_ = container_width / 3;
+
+  // Respect the minimum devtools width preset.
+  width_ = std::max(kMinDevToolsWidth, width_);
+
+  // But it should never compromise the content window size unless the entire
+  // window is tiny.
+  width_ = std::min(container_width - kMinContentsSize, width_);
+  if (width_ < (kMinContentsSize / 2))
+    width_ = container_width / 3;
+  return width_;
+}
+
+int DevToolsWindow::GetHeight(int container_height) {
+  if (height_ == -1) {
+    height_ = profile_->GetPrefs()->
+        GetInteger(prefs::kDevToolsHSplitLocation);
+  }
+
+  // By default, size devtools as 1/3 of the browser window.
+  if (height_ == -1)
+    height_ = container_height / 3;
+
+  // Respect the minimum devtools width preset.
+  height_ = std::max(kMinDevToolsHeight, height_);
+
+  // But it should never compromise the content window size.
+  height_ = std::min(container_height - kMinContentsSize, height_);
+  if (height_ < (kMinContentsSize / 2))
+    height_ = container_height / 3;
+  return height_;
+}
+
+void DevToolsWindow::SetWidth(int width) {
+  width_ = width;
+  profile_->GetPrefs()->SetInteger(prefs::kDevToolsVSplitLocation, width);
+}
+
+void DevToolsWindow::SetHeight(int height) {
+  height_ = height;
+  profile_->GetPrefs()->SetInteger(prefs::kDevToolsHSplitLocation, height);
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
