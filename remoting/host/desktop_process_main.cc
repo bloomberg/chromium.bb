@@ -6,12 +6,17 @@
 // running within user sessions.
 
 #include "base/at_exit.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
@@ -77,8 +82,25 @@ int main(int argc, char** argv) {
     return remoting::kUsageExitCode;
   }
 
-  remoting::DesktopProcess desktop_process(channel_name);
-  return desktop_process.Run();
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::RunLoop run_loop;
+  base::Closure quit_ui_task_runner = base::Bind(
+      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+      message_loop.message_loop_proxy(),
+      FROM_HERE, run_loop.QuitClosure());
+  scoped_refptr<remoting::AutoThreadTaskRunner> ui_task_runner =
+      new remoting::AutoThreadTaskRunner(message_loop.message_loop_proxy(),
+                                         quit_ui_task_runner);
+
+  remoting::DesktopProcess desktop_process(ui_task_runner, channel_name);
+  if (!desktop_process.Start())
+    return remoting::kInitializationFailed;
+
+  // Run the UI message loop.
+  ui_task_runner = NULL;
+  run_loop.Run();
+
+  return remoting::kSuccessExitCode;
 }
 
 #if defined(OS_WIN)

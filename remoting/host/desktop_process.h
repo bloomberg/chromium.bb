@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_listener.h"
 
@@ -18,11 +19,13 @@ class ChannelProxy;
 
 namespace remoting {
 
+class AutoThreadTaskRunner;
 class DesktopSessionAgent;
 
 class DesktopProcess : public IPC::Listener {
  public:
-  explicit DesktopProcess(const std::string& daemon_channel_name);
+  DesktopProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+                 const std::string& daemon_channel_name);
   virtual ~DesktopProcess();
 
   // IPC::Listener implementation.
@@ -30,8 +33,9 @@ class DesktopProcess : public IPC::Listener {
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // Runs the desktop process.
-  int Run();
+  // Creates the desktop agent and required threads and IPC channels. Returns
+  // true on success.
+  bool Start();
 
  private:
   // Crashes the process in response to a daemon's request. The daemon passes
@@ -40,6 +44,9 @@ class DesktopProcess : public IPC::Listener {
   void OnCrash(const std::string& function_name,
                const std::string& file_name,
                const int& line_number);
+
+  // Task runner on which public methods of this class should be called.
+  scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
 
   // Name of the IPC channel connecting the desktop process with the daemon
   // process.

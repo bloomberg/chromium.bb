@@ -4,9 +4,12 @@
 
 #include "remoting/host/desktop_process.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -44,6 +47,21 @@ class MockDaemonListener : public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(MockDaemonListener);
 };
 
+class MockNetworkListener : public IPC::Listener {
+ public:
+  MockNetworkListener() {}
+  virtual ~MockNetworkListener() {}
+
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  MOCK_METHOD1(OnDesktopAttached, void(IPC::PlatformFileForTransit));
+  MOCK_METHOD1(OnChannelConnected, void(int32));
+  MOCK_METHOD0(OnChannelError, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockNetworkListener);
+};
+
 bool MockDaemonListener::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MockDaemonListener, message)
@@ -51,6 +69,15 @@ bool MockDaemonListener::OnMessageReceived(const IPC::Message& message) {
                         OnDesktopAttached)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  EXPECT_TRUE(handled);
+  return handled;
+}
+
+bool MockNetworkListener::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+
+  // TODO(alexeypa): handle received messages here.
 
   EXPECT_TRUE(handled);
   return handled;
@@ -75,8 +102,6 @@ class DesktopProcessTest : public testing::Test {
   // exit.
   void DisconnectChannels();
 
-  void QuitMessageLoop();
-
   // Runs the desktop process code in a separate thread.
   void RunDesktopProcess();
 
@@ -87,9 +112,6 @@ class DesktopProcessTest : public testing::Test {
   void SendCrashRequest();
 
  protected:
-  // Name of the daemon-to_desktop channel.
-  std::string channel_name_;
-
   // The daemon's end of the daemon-to-desktop channel.
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
 
@@ -105,7 +127,7 @@ class DesktopProcessTest : public testing::Test {
   scoped_ptr<IPC::ChannelProxy> network_channel_;
 
   // Delegate that is passed to |network_channel_|.
-  MockDaemonListener network_listener_;
+  MockNetworkListener network_listener_;
 };
 
 
@@ -117,21 +139,6 @@ DesktopProcessTest::~DesktopProcessTest() {
 }
 
 void DesktopProcessTest::SetUp() {
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
-      message_loop_.message_loop_proxy(),
-      base::Bind(&DesktopProcessTest::QuitMessageLoop,
-                 base::Unretained(this)));
-
-  io_task_runner_ = AutoThread::CreateWithType("IPC thread", ui_task_runner,
-                                               MessageLoop::TYPE_IO);
-
-  // Create the daemon-to-desktop process channel.
-  channel_name_ = IPC::Channel::GenerateUniqueRandomChannelID();
-  daemon_channel_.reset(new IPC::ChannelProxy(
-      IPC::ChannelHandle(channel_name_),
-      IPC::Channel::MODE_SERVER,
-      &daemon_listener_,
-      io_task_runner_));
 }
 
 void DesktopProcessTest::TearDown() {
@@ -168,13 +175,30 @@ void DesktopProcessTest::DisconnectChannels() {
   io_task_runner_ = NULL;
 }
 
-void DesktopProcessTest::QuitMessageLoop() {
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
-}
-
 void DesktopProcessTest::RunDesktopProcess() {
-  DesktopProcess desktop_process(channel_name_);
-  EXPECT_EQ(desktop_process.Run(), kSuccessExitCode);
+  base::RunLoop run_loop;
+  base::Closure quit_ui_task_runner = base::Bind(
+      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+      message_loop_.message_loop_proxy(),
+      FROM_HERE, run_loop.QuitClosure());
+  scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
+      message_loop_.message_loop_proxy(), quit_ui_task_runner);
+
+  io_task_runner_ = AutoThread::CreateWithType("IPC thread", ui_task_runner,
+                                               MessageLoop::TYPE_IO);
+
+  std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
+  daemon_channel_.reset(new IPC::ChannelProxy(
+      IPC::ChannelHandle(channel_name),
+      IPC::Channel::MODE_SERVER,
+      &daemon_listener_,
+      io_task_runner_));
+
+  DesktopProcess desktop_process(ui_task_runner, channel_name);
+  EXPECT_TRUE(desktop_process.Start());
+
+  ui_task_runner = NULL;
+  run_loop.Run();
 }
 
 void DesktopProcessTest::RunDeathTest() {
@@ -224,8 +248,6 @@ TEST_F(DesktopProcessTest, DeathTest) {
   testing::GTEST_FLAG(death_test_style) = "threadsafe";
 
   EXPECT_DEATH(RunDeathTest(), "");
-
-  DisconnectChannels();
 }
 
 }  // namespace remoting
