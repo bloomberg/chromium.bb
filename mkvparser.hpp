@@ -569,6 +569,8 @@ public:
     public:
         long long GetStartTimecode() const;
         long long GetStopTimecode() const;
+        long long GetStartTime(const Chapters*) const;
+        long long GetStopTime(const Chapters*) const;
         int GetDisplayCount() const;
         const Display* GetDisplay(int index) const;
     private:
@@ -576,6 +578,7 @@ public:
         void ShallowCopy(Atom&) const;
         void Clear();
         long Parse(IMkvReader*, long long pos, long long size);
+        static long long GetTime(const Chapters*, long long timecode);
 
         long ParseDisplay(IMkvReader*, long long pos, long long size);
         bool ExpandDisplaysArray();
