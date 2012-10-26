@@ -6086,12 +6086,6 @@
   fun:_ZN12media_stream23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
 }
 {
-  bug_157141
-  Memcheck:Leak
-  ...
-  fun:_ZN35WebAuthFlowTest_UIClosedByUser_Test8TestBodyEv
-}
-{
   bug_157616
   Memcheck:Uninitialized
   ...

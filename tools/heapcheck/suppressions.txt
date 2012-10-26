@@ -1574,20 +1574,6 @@
    fun:predictors::ResourcePrefetcher::Start
 }
 {
-   bug_157141_a
-   Heapcheck:Leak
-   ...
-   fun:WebAuthFlowTest_UIClosedByUser_Test::TestBody
-}
-{
-   bug_157141_b
-   Heapcheck:Leak
-   ...
-   fun:content::WebContentsImpl::Init
-   ...
-   fun:WebAuthFlowTest::SetUp
-}
-{
    bug_155530_a
    Heapcheck:Leak
    ...
