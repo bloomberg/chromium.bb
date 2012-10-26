@@ -94,6 +94,7 @@ class CannedSyncableFileSystem {
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
               const FileSystemURL& url, const GURL& blob_url);
+  int64 WriteString(const FileSystemURL& url, const std::string& data);
 
   // Purges the file system local storage.
   base::PlatformFileError DeleteFileSystem();
@@ -130,6 +131,9 @@ class CannedSyncableFileSystem {
                const FileSystemURL& url,
                const GURL& blob_url,
                const WriteCallback& callback);
+  void DoWriteString(const FileSystemURL& url,
+                     const std::string& data,
+                     const WriteCallback& callback);
   void DoGetUsageAndQuota(int64* usage,
                           int64* quota,
                           const quota::StatusCallback& callback);

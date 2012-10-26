@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/blob/mock_blob_url_request_context.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -23,6 +24,8 @@
 
 using base::PlatformFileError;
 using quota::QuotaManager;
+using webkit_blob::MockBlobURLRequestContext;
+using webkit_blob::ScopedTextBlob;
 
 namespace fileapi {
 
@@ -72,7 +75,17 @@ void VerifySameTaskRunner(
 class WriteHelper {
  public:
   WriteHelper() : bytes_written_(0) {}
-  ~WriteHelper() {}
+  WriteHelper(MockBlobURLRequestContext* request_context,
+              const GURL& blob_url,
+              const std::string& blob_data)
+      : bytes_written_(0),
+        request_context_(request_context),
+        blob_data_(new ScopedTextBlob(*request_context, blob_url, blob_data)) {}
+
+  ~WriteHelper() {
+    if (request_context_)
+      MessageLoop::current()->DeleteSoon(FROM_HERE, request_context_.release());
+  }
 
   void DidWrite(const base::Callback<void(int64)>& completion_callback,
                 PlatformFileError error, int64 bytes, bool complete) {
@@ -87,6 +100,10 @@ class WriteHelper {
 
  private:
   int64 bytes_written_;
+  scoped_ptr<MockBlobURLRequestContext> request_context_;
+  scoped_ptr<ScopedTextBlob> blob_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(WriteHelper);
 };
 
 void DidGetUsageAndQuota(const quota::StatusCallback& callback,
@@ -263,6 +280,15 @@ int64 CannedSyncableFileSystem::Write(
                  base::Unretained(this), url_request_context, url, blob_url));
 }
 
+int64 CannedSyncableFileSystem::WriteString(
+    const FileSystemURL& url, const std::string& data) {
+  return RunOnThread<int64>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoWriteString,
+                 base::Unretained(this), url, data));
+}
+
 PlatformFileError CannedSyncableFileSystem::DeleteFileSystem() {
   EXPECT_TRUE(is_filesystem_set_up_);
   return RunOnThread<PlatformFileError>(
@@ -350,6 +376,19 @@ void CannedSyncableFileSystem::DoWrite(
     const WriteCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
   WriteHelper* helper = new WriteHelper;
+  NewOperation()->Write(url_request_context, url, blob_url, 0,
+                        base::Bind(&WriteHelper::DidWrite,
+                                   base::Owned(helper), callback));
+}
+
+void CannedSyncableFileSystem::DoWriteString(
+    const FileSystemURL& url,
+    const std::string& data,
+    const WriteCallback& callback) {
+  MockBlobURLRequestContext* url_request_context(
+      new MockBlobURLRequestContext(file_system_context_));
+  const GURL blob_url(std::string("blob:") + data);
+  WriteHelper* helper = new WriteHelper(url_request_context, blob_url, data);
   NewOperation()->Write(url_request_context, url, blob_url, 0,
                         base::Bind(&WriteHelper::DidWrite,
                                    base::Owned(helper), callback));

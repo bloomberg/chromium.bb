@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/blob/mock_blob_url_request_context.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/isolated_context.h"
@@ -20,6 +22,8 @@
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
+
+#define FPL FILE_PATH_LITERAL
 
 // This tests LocalFileSyncContext behavior in multi-thread /
 // multi-file-system-context environment.
@@ -57,24 +61,6 @@ class LocalFileSyncContextTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(kServiceName));
     io_thread_->Stop();
-  }
-
-  SyncStatusCode ApplyRemoteChange(FileSystemContext* file_system_context,
-                                   const FileChange& change,
-                                   const FilePath& local_path,
-                                   const FileSystemURL& url) {
-    status_ = SYNC_STATUS_UNKNOWN;
-    sync_context_->ApplyRemoteChange(
-        file_system_context, change, local_path, url,
-        base::Bind(&LocalFileSyncContextTest::DidApplyRemoteChange,
-                   base::Unretained(this)));
-    MessageLoop::current()->Run();
-    return status_;
-  }
-
-  void DidApplyRemoteChange(SyncStatusCode status) {
-    MessageLoop::current()->Quit();
-    status_ = status;
   }
 
   void StartPrepareForSync(LocalFileSyncContext* sync_context,
@@ -119,6 +105,31 @@ class LocalFileSyncContextTest : public testing::Test {
     status_ = status;
     *changes_out = changes;
     MessageLoop::current()->Quit();
+  }
+
+  SyncStatusCode ApplyRemoteChange(FileSystemContext* file_system_context,
+                                   const FileChange& change,
+                                   const FilePath& local_path,
+                                   const FileSystemURL& url) {
+    status_ = SYNC_STATUS_UNKNOWN;
+
+    // First we should call PrepareForSync to disable writing.
+    FileChangeList changes;
+    StartPrepareForSync(sync_context_, file_system_context, url, &changes);
+    MessageLoop::current()->Run();
+    EXPECT_EQ(SYNC_STATUS_OK, status_);
+
+    sync_context_->ApplyRemoteChange(
+        file_system_context, change, local_path, url,
+        base::Bind(&LocalFileSyncContextTest::DidApplyRemoteChange,
+                   base::Unretained(this)));
+    MessageLoop::current()->Run();
+    return status_;
+  }
+
+  void DidApplyRemoteChange(SyncStatusCode status) {
+    MessageLoop::current()->Quit();
+    status_ = status;
   }
 
   void StartModifyFileOnIOThread(CannedSyncableFileSystem* file_system,
@@ -425,6 +436,135 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
 
   sync_context_->ShutdownOnUIThread();
   sync_context_ = NULL;
+  file_system.TearDown();
+}
+
+TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  CannedSyncableFileSystem file_system(GURL(kOrigin1), kServiceName,
+                                       io_task_runner_);
+  file_system.SetUp();
+
+  sync_context_ = new LocalFileSyncContext(ui_task_runner_, io_task_runner_);
+  ASSERT_EQ(SYNC_STATUS_OK,
+            file_system.MaybeInitializeFileSystemContext(sync_context_));
+  ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+
+  const FileSystemURL kFile1(file_system.URL("file1"));
+  const FileSystemURL kFile2(file_system.URL("file2"));
+  const FileSystemURL kDir(file_system.URL("dir"));
+
+  const char kTestFileData0[] = "0123456789";
+  const char kTestFileData1[] = "Lorem ipsum!";
+  const char kTestFileData2[] = "This is sample test data.";
+
+  // Create kFile1 and populate it with kTestFileData0.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kFile1));
+  EXPECT_EQ(static_cast<int64>(arraysize(kTestFileData0) - 1),
+            file_system.WriteString(kFile1, kTestFileData0));
+
+  // kFile2 and kDir are not there yet.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            file_system.FileExists(kFile2));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            file_system.DirectoryExists(kDir));
+
+  // file_system's change tracker must have recorded the creation.
+  std::vector<FileSystemURL> urls;
+  file_system.file_system_context()->change_tracker()->GetChangedURLs(&urls);
+  ASSERT_EQ(1U, urls.size());
+  EXPECT_EQ(kFile1, urls[0]);
+  file_system.file_system_context()->change_tracker()->FinalizeSyncForURL(
+      urls[0]);
+
+  // Prepare temporary files which represent the remote file data.
+  const FilePath kFilePath1(temp_dir.path().Append(FPL("file1")));
+  const FilePath kFilePath2(temp_dir.path().Append(FPL("file2")));
+
+  ASSERT_EQ(static_cast<int>(arraysize(kTestFileData1) - 1),
+            file_util::WriteFile(kFilePath1, kTestFileData1,
+                                 arraysize(kTestFileData1) - 1));
+  ASSERT_EQ(static_cast<int>(arraysize(kTestFileData2) - 1),
+            file_util::WriteFile(kFilePath2, kTestFileData2,
+                                 arraysize(kTestFileData2) - 1));
+
+  // Record the usage.
+  int64 usage = -1, new_usage = -1;
+  int64 quota = -1;
+  EXPECT_EQ(quota::kQuotaStatusOk,
+            file_system.GetUsageAndQuota(&usage, &quota));
+
+  // Here in the local filesystem we have:
+  //  * kFile1 with kTestFileData0
+  //
+  // In the remote side let's assume we have:
+  //  * kFile1 with kTestFileData1
+  //  * kFile2 with kTestFileData2
+  //  * kDir
+  //
+  // By calling ApplyChange's:
+  //  * kFile1 will be updated to have kTestFileData1
+  //  * kFile2 will be created
+  //  * kDir will be created
+
+  // Apply the remote change to kFile1 (which will update the file).
+  FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                    FileChange::FILE_TYPE_FILE);
+  EXPECT_EQ(SYNC_STATUS_OK,
+            ApplyRemoteChange(file_system.file_system_context(),
+                              change, kFilePath1, kFile1));
+
+  // Check if the usage has been increased by (kTestFileData1 - kTestFileData0).
+  const int updated_size =
+      arraysize(kTestFileData1) - arraysize(kTestFileData0);
+  EXPECT_EQ(quota::kQuotaStatusOk,
+            file_system.GetUsageAndQuota(&new_usage, &quota));
+  EXPECT_EQ(updated_size, new_usage - usage);
+
+  // Apply remote changes to kFile2 and kDir (should create a file and
+  // directory respectively).
+  change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                      FileChange::FILE_TYPE_FILE);
+  EXPECT_EQ(SYNC_STATUS_OK,
+            ApplyRemoteChange(file_system.file_system_context(),
+                              change, kFilePath2, kFile2));
+
+  change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                      FileChange::FILE_TYPE_DIRECTORY);
+  EXPECT_EQ(SYNC_STATUS_OK,
+            ApplyRemoteChange(file_system.file_system_context(),
+                              change, FilePath(), kDir));
+
+  // This should not happen, but calling ApplyRemoteChange
+  // with wrong file type will result in error.
+  change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                      FileChange::FILE_TYPE_FILE);
+  EXPECT_EQ(SYNC_FILE_ERROR_FAILED,
+            ApplyRemoteChange(file_system.file_system_context(),
+                              change, kFilePath1, kDir));
+
+  // Creating a file/directory must have increased the usage more than
+  // the size of kTestFileData2.
+  new_usage = usage;
+  EXPECT_EQ(quota::kQuotaStatusOk,
+            file_system.GetUsageAndQuota(&new_usage, &quota));
+  EXPECT_GT(new_usage,
+            static_cast<int64>(usage + arraysize(kTestFileData2) - 1));
+
+  // The changes applied by ApplyRemoteChange should not be recorded in
+  // the change tracker.
+  urls.clear();
+  file_system.file_system_context()->change_tracker()->GetChangedURLs(&urls);
+  EXPECT_TRUE(urls.empty());
+
+  // Make sure all three files/directory exist.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.FileExists(kFile1));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.FileExists(kFile2));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.DirectoryExists(kDir));
+
+  sync_context_->ShutdownOnUIThread();
   file_system.TearDown();
 }
 

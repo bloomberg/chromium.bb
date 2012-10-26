@@ -130,6 +130,8 @@ void LocalFileSyncContext::ApplyRemoteChange(
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!sync_status()->IsWritable(url));
+  DCHECK(!sync_status()->IsWriting(url));
   LocalFileSystemOperation* operation = CreateFileSystemOperationForSync(
       file_system_context);
   DCHECK(operation);
@@ -138,8 +140,19 @@ void LocalFileSyncContext::ApplyRemoteChange(
                  this, callback);
   switch (change.change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-      // TODO(kinuko): implement. (crbug.com/156599)
-      NOTIMPLEMENTED();
+      switch (change.file_type()) {
+        case FileChange::FILE_TYPE_FILE:
+          DCHECK(!local_path.empty());
+          operation->CopyInForeignFile(local_path, url, operation_callback);
+          break;
+        case FileChange::FILE_TYPE_DIRECTORY:
+          operation->CreateDirectory(
+              url, false /* exclusive */, true /* recursive */,
+              operation_callback);
+          break;
+        case FileChange::FILE_TYPE_UNDETERMINED:
+          NOTREACHED() << "File type undetermined for ADD_OR_UPDATE change";
+      }
       break;
     case FileChange::FILE_CHANGE_DELETE:
       operation->Remove(url, true /* recursive */, operation_callback);
