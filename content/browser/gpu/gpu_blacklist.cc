@@ -32,6 +32,15 @@ bool ProcessVersionString(const std::string& version_string,
   base::SplitString(version_string, splitter, version);
   if (version->size() == 0)
     return false;
+  // If the splitter is '-', we assume it's a date with format "mm-dd-yyyy";
+  // we split it into the order of "yyyy", "mm", "dd".
+  if (splitter == '-') {
+    std::string year = (*version)[version->size() - 1];
+    for (int i = version->size() - 1; i > 0; --i) {
+      (*version)[i] = (*version)[i - 1];
+    }
+    (*version)[0] = year;
+  }
   for (size_t i = 0; i < version->size(); ++i) {
     unsigned num = 0;
     if (!base::StringToUint((*version)[i], &num))

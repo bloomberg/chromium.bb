@@ -317,7 +317,7 @@ TEST_F(GpuBlacklistTest, AllExceptIntelOnLinuxEntry) {
 }
 
 TEST_F(GpuBlacklistTest, DateOnWindowsEntry) {
-  // Blacklist all drivers earlier than 2010-01 in Windows.
+  // Blacklist all drivers earlier than 2010-5-8 in Windows.
   const std::string date_windows_json =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
@@ -330,7 +330,7 @@ TEST_F(GpuBlacklistTest, DateOnWindowsEntry) {
       "      },\n"
       "      \"driver_date\": {\n"
       "        \"op\": \"<\",\n"
-      "        \"number\": \"2010.1\"\n"
+      "        \"number\": \"2010.5.8\"\n"
       "      },\n"
       "      \"blacklist\": [\n"
       "        \"accelerated_2d_canvas\"\n"
@@ -340,17 +340,50 @@ TEST_F(GpuBlacklistTest, DateOnWindowsEntry) {
       "}";
   scoped_ptr<GpuBlacklist> blacklist(Create());
 
+  content::GPUInfo gpu_info;
+  gpu_info.driver_date = "7-14-2009";
+
   EXPECT_TRUE(
       blacklist->LoadGpuBlacklist(date_windows_json, GpuBlacklist::kAllOs));
   GpuFeatureType type = blacklist->MakeBlacklistDecision(
-      GpuBlacklist::kOsMacosx, kOsVersion, gpu_info()).blacklisted_features;
+      GpuBlacklist::kOsMacosx, kOsVersion, gpu_info).blacklisted_features;
   EXPECT_EQ(0, type);
   type = blacklist->MakeBlacklistDecision(
-      GpuBlacklist::kOsLinux, kOsVersion, gpu_info()).blacklisted_features;
+      GpuBlacklist::kOsLinux, kOsVersion, gpu_info).blacklisted_features;
   EXPECT_EQ(0, type);
   type = blacklist->MakeBlacklistDecision(
-      GpuBlacklist::kOsWin, kOsVersion, gpu_info()).blacklisted_features;
+      GpuBlacklist::kOsWin, kOsVersion, gpu_info).blacklisted_features;
   EXPECT_EQ(content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS, type);
+
+  gpu_info.driver_date = "07-14-2009";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsWin, kOsVersion, gpu_info).blacklisted_features;
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS, type);
+
+  gpu_info.driver_date = "1-1-2010";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsWin, kOsVersion, gpu_info).blacklisted_features;
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS, type);
+
+  gpu_info.driver_date = "05-07-2010";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsWin, kOsVersion, gpu_info).blacklisted_features;
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS, type);
+
+  gpu_info.driver_date = "5-8-2010";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsWin, kOsVersion, gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
+
+  gpu_info.driver_date = "5-9-2010";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsWin, kOsVersion, gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
+
+  gpu_info.driver_date = "6-2-2010";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsWin, kOsVersion, gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
 }
 
 TEST_F(GpuBlacklistTest, MultipleDevicesEntry) {
