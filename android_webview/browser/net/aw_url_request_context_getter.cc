@@ -196,17 +196,16 @@ void AwURLRequestContextGetter::Init() {
   storage->set_http_transaction_factory(new net::HttpCache(
       network_session_params, http_cache_backend.release()));
 
-  scoped_ptr<AwURLRequestJobFactory> job_factory(
-      new AwURLRequestJobFactory);
-  bool set_protocol = job_factory->SetProtocolHandler(
+  job_factory_.reset(new AwURLRequestJobFactory);
+  bool set_protocol = job_factory_->SetProtocolHandler(
       chrome::kFileScheme, new net::FileProtocolHandler());
   DCHECK(set_protocol);
-  set_protocol = job_factory->SetProtocolHandler(
+  set_protocol = job_factory_->SetProtocolHandler(
       chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
-  RegisterAndroidProtocolsOnIOThread(job_factory.get());
-  job_factory->AddInterceptor(new AwRequestInterceptor());
-  storage->set_job_factory(job_factory.release());
+  RegisterAndroidProtocolsOnIOThread(job_factory_.get());
+  job_factory_->AddInterceptor(new AwRequestInterceptor());
+  storage->set_job_factory(job_factory_.get());
 }
 
 content::ResourceContext* AwURLRequestContextGetter::GetResourceContext() {

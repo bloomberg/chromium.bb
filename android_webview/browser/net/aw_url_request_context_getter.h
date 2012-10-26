@@ -17,6 +17,7 @@ class ResourceContext;
 namespace net {
 class ProxyConfigService;
 class URLRequestContext;
+class URLRequestJobFactory;
 }
 
 namespace android_webview {
@@ -49,6 +50,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<content::ResourceContext> resource_context_;
+  scoped_ptr<net::URLRequestJobFactory> job_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwURLRequestContextGetter);
 };
