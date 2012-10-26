@@ -150,6 +150,38 @@ def RmDir(path, ignore_missing=False, sudo=False):
       if not ignore_missing or e.errno != errno.ENOENT:
         raise
 
+
+def Which(binary):
+  """Return the absolute path to the specified binary.
+
+  Arguments:
+    binary: The binary to look for.
+
+  Returns the specified binary if found. Otherwise returns None.
+  """
+  for p in os.environ.get('PATH', '').split(':'):
+    p = os.path.join(p, binary)
+    if os.access(p, os.X_OK):
+      return p
+  return None
+
+
+def FindMissingBinaries(needed_tools):
+  """Verifies that the required tools are present on the system.
+
+  This is especially important for scripts that are intended to run
+  outside the chroot.
+
+  Arguments:
+    needed_tools: an array of string specified binaries to look for.
+
+  Returns:
+    If all tools are found, returns the empty list. Otherwise, returns the
+    list of missing tools.
+  """
+  return [binary for binary in needed_tools if Which(binary) is None]
+
+
 # pylint: disable=W0212,R0904,W0702
 def _TempDirSetup(self, prefix='tmp', update_env=True):
   """Generate a tempdir, modifying the object, and env to use it.

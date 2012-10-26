@@ -37,29 +37,6 @@ ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
 NEEDED_TOOLS = ('curl', 'xz')
 
 
-def CheckPrerequisites(needed_tools):
-  """Verifies that the required tools are present on the system.
-
-  This is especially important as this script is intended to run
-  outside the chroot.
-
-  Arguments:
-    needed_tools: an array of string specified binaries to look for.
-
-  Returns:
-    True if all needed tools were found.
-  """
-  missing = []
-  for tool in needed_tools:
-    cmd = ['which', tool]
-    try:
-      cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True,
-                                combine_stdout_stderr=True)
-    except cros_build_lib.RunCommandError:
-      missing.append(tool)
-  return missing
-
-
 def GetSdkConfig():
   """Extracts latest version from chromiumos-overlay."""
   d = {}
@@ -292,7 +269,7 @@ If given args those are passed to the chroot environment, and executed."""
         "cros_sdk is currently only supported on x86_64; you're running"
         " %s.  Please find a x86_64 machine." % (host,))
 
-  missing = CheckPrerequisites(NEEDED_TOOLS)
+  missing = osutils.FindMissingBinaries(NEEDED_TOOLS)
   if missing:
     parser.error((
         'The tool(s) %s were not found.'

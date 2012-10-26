@@ -1163,14 +1163,7 @@ def main(argv):
       parser.error('Option --buildbot/--remote-trybot was given, but this '
                    'system does not support cgroups.  Failing.')
 
-    missing = []
-    for program in _BUILDBOT_REQUIRED_BINARIES:
-      ret = cros_build_lib.RunCommand(
-          'which %s' % program, shell=True, redirect_stderr=True,
-          redirect_stdout=True, error_code_ok=True, print_cmd=False)
-      if ret.returncode != 0:
-        missing.append(program)
-
+    missing = osutils.FindMissingBinaries(_BUILDBOT_REQUIRED_BINARIES)
     if missing:
       parser.error("Option --buildbot/--remote-trybot requires the following "
                    "binaries which couldn't be found in $PATH: %s"
