@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
     ASM_WITH_REGS(
         expected_regs,
         ".p2align 4\n"
-        "FaultAddr: .word " NACL_TO_STRING(NACL_INSTR_BREAKPOINT) "\n"
+        "FaultAddr: .word " NACL_TO_STRING(NACL_INSTR_ARM_BREAKPOINT) "\n"
         /*
          * ARM does not provide hardware single-stepping so we do not
          * test it here, unlike in the x86 case.

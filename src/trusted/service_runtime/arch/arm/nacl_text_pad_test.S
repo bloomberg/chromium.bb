@@ -224,11 +224,12 @@ _start:
 /* NOTE: unlike x86 the alignment directive on ARM takes
    the logarithm of the alignment */
 #define POW2_BIGGER_THAN_DOT 14
-        .align32 POW2_BIGGER_THAN_DOT, NACL_INSTR_HALT_FILL
+        .align32 POW2_BIGGER_THAN_DOT, NACL_INSTR_ARM_HALT_FILL
         .fill (TEXT_EXTEND - (1 << POW2_BIGGER_THAN_DOT))/4, 4, \
-              NACL_INSTR_HALT_FILL
+              NACL_INSTR_ARM_HALT_FILL
 #else
-        .fill (TEXT_EXTEND - (. - start_of_text))/4, 4, NACL_INSTR_HALT_FILL
+        .fill (TEXT_EXTEND - (. - start_of_text))/4, 4, \
+              NACL_INSTR_ARM_HALT_FILL
 #endif
 
 end_of_text:

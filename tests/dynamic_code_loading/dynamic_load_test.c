@@ -82,7 +82,7 @@ void fill_hlts(uint8_t *data, size_t size) {
 #if defined(__i386__) || defined(__x86_64__)
   memset(data, 0xf4, size); /* HLTs */
 #elif defined(__arm__)
-  fill_int32(data, size, NACL_INSTR_HALT_FILL);
+  fill_int32(data, size, NACL_INSTR_ARM_HALT_FILL);
 #else
 # error "Unknown arch"
 #endif
@@ -488,7 +488,7 @@ void check_region_is_filled_with_hlts(const char *data, size_t size) {
 #if defined(__i386__) || defined(__x86_64__)
   uint8_t halts = 0xf4; /* HLT */
 #elif defined(__arm__)
-  uint32_t halts = NACL_INSTR_HALT_FILL;
+  uint32_t halts = NACL_INSTR_ARM_HALT_FILL;
 #else
 # error "Unknown arch"
 #endif

@@ -34,7 +34,7 @@ bad:    pop {lr}
         bx lr
 
 
-        .word NACL_INSTR_LITERAL_POOL_HEAD
+        .word NACL_INSTR_ARM_LITERAL_POOL_HEAD
         /*
          * Put a disallowed instruction here to ensure that the bkpt
          * data bundle marker works.  If the marker does not work, then

@@ -25,7 +25,7 @@
 #define NACL_HALT_LEN           2           /* length of halt instruction */
 #else
 #define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
-#define NACL_HALT_OPCODE        NACL_INSTR_HALT_FILL
+#define NACL_HALT_OPCODE        NACL_INSTR_ARM_HALT_FILL
 #define NACL_HALT_LEN           4           /* length of halt instruction */
 #endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
 #define NACL_HALT_WORD          NACL_HALT_OPCODE

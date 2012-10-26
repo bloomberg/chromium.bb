@@ -17,7 +17,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 uint8_t halts = 0xf4; /* HLT */
 #elif defined(__arm__)
-uint32_t halts = NACL_INSTR_HALT_FILL;
+uint32_t halts = NACL_INSTR_ARM_HALT_FILL;
 #else
 # error "Unknown arch"
 #endif

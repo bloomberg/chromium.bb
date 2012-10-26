@@ -258,11 +258,11 @@ static const int kArm32InstSize = 32;
 static const int kThumbWordSize = 16;
 
 // Special ARM instructions for sandboxing.
-static const uint32_t kLiteralPoolHead = NACL_INSTR_LITERAL_POOL_HEAD;
-static const uint32_t kBreakpoint = NACL_INSTR_BREAKPOINT;
-static const uint32_t kHaltFill = NACL_INSTR_HALT_FILL;
-static const uint32_t kAbortNow = NACL_INSTR_ABORT_NOW;
-static const uint32_t kFailValidation = NACL_INSTR_FAIL_VALIDATION;
+static const uint32_t kLiteralPoolHead = NACL_INSTR_ARM_LITERAL_POOL_HEAD;
+static const uint32_t kBreakpoint = NACL_INSTR_ARM_BREAKPOINT;
+static const uint32_t kHaltFill = NACL_INSTR_ARM_HALT_FILL;
+static const uint32_t kAbortNow = NACL_INSTR_ARM_ABORT_NOW;
+static const uint32_t kFailValidation = NACL_INSTR_ARM_FAIL_VALIDATION;
 
 // Models an instruction, either a 32-bit ARM instruction of unspecified type,
 // or one word (16-bit) and two word (32-bit) THUMB instructions.

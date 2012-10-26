@@ -130,7 +130,7 @@ static Abi::BPDef breakpoint_x86 = {
   breakpoint_code_x86
 };
 
-static uint32_t breakpoint_code_arm[] = { NACL_INSTR_BREAKPOINT };
+static uint32_t breakpoint_code_arm[] = { NACL_INSTR_ARM_BREAKPOINT };
 static Abi::BPDef breakpoint_arm = {
   sizeof(breakpoint_code_arm),
   (uint8_t *) breakpoint_code_arm

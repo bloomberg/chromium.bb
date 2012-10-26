@@ -26,16 +26,16 @@
  * Treated as a roadblock by the validator: all words that follow it in
  * a bundle aren't validated and can't be branched to.
  */
-#define NACL_INSTR_LITERAL_POOL_HEAD 0xE125BE70
+#define NACL_INSTR_ARM_LITERAL_POOL_HEAD 0xE125BE70
 
 /*
- * NACL_INSTR_BREAKPOINT, NACL_INSTR_HALT_FILL and NACL_INSTR_ABORT_NOW
- * are intended to be equivalent from a security point of view. We
- * provide the distinction between them just for debugging
- * purposes. They might also generate different POSIX signals. In
- * principle it should be safe for a debugger to skip past one of these
- * (unlike NACL_INSTR_POOL_HEAD), because the validator validates the
- * instructions that follow.
+ * NACL_INSTR_ARM_BREAKPOINT, NACL_INSTR_ARM_HALT_FILL and
+ * NACL_INSTR_ARM_ABORT_NOW are intended to be equivalent from a
+ * security point of view. We provide the distinction between them just
+ * for debugging purposes. They might also generate different POSIX
+ * signals. In principle it should be safe for a debugger to skip past
+ * one of these (unlike NACL_INSTR_ARM_POOL_HEAD), because the validator
+ * validates the instructions that follow.
  */
 
 /*
@@ -43,21 +43,21 @@
  *
  * Usable statically by users or dynamically by the runtime.
  */
-#define NACL_INSTR_BREAKPOINT        0xE125BE7F
+#define NACL_INSTR_ARM_BREAKPOINT        0xE125BE7F
 
 /*
  * UDF #0xEDEF: halt-fill.
  *
  * Generated at load time.
  */
-#define NACL_INSTR_HALT_FILL         0xE7FEDEFF
+#define NACL_INSTR_ARM_HALT_FILL         0xE7FEDEFF
 
 /*
  * UDF #0xEDE0: abort-now.
  *
  * Required by some language constructs such as __builtin_trap.
  */
-#define NACL_INSTR_ABORT_NOW         0xE7FEDEF0
+#define NACL_INSTR_ARM_ABORT_NOW         0xE7FEDEF0
 
 /*
  * UDF #0xEDE1: always fail validation.
@@ -65,6 +65,6 @@
  * It's guaranteed to always fail, and can be used to initialize buffers
  * that are expected to be filled later.
  */
-#define NACL_INSTR_FAIL_VALIDATION   0xE7FEDEF1
+#define NACL_INSTR_ARM_FAIL_VALIDATION   0xE7FEDEF1
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_ARM_SANDBOX_H_ */

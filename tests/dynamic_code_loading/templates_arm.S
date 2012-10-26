@@ -57,10 +57,10 @@ template_func_nonreplacement_end:
         .global hlts_end
         .p2align 4
 hlts:
-        .word NACL_INSTR_HALT_FILL
-        .word NACL_INSTR_HALT_FILL
-        .word NACL_INSTR_HALT_FILL
-        .word NACL_INSTR_HALT_FILL
+        .word NACL_INSTR_ARM_HALT_FILL
+        .word NACL_INSTR_ARM_HALT_FILL
+        .word NACL_INSTR_ARM_HALT_FILL
+        .word NACL_INSTR_ARM_HALT_FILL
 hlts_end:
 
 
