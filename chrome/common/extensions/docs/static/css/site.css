@@ -487,11 +487,3 @@ div.gsc-input-box {
   padding-right: 16px;
   padding-left: 16px;
 }
-
-#search_results td {
-  border: none;
-}
-
-#search_results {
-  float: right;
-}
