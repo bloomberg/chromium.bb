@@ -342,19 +342,6 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       // have already been updated in |SetBounds|.
       if (pointer_barriers_.get()) {
         UnConfineCursor();
-        RootWindow* root = delegate_->AsRootWindow();
-        client::ScreenPositionClient* client =
-            client::GetScreenPositionClient(root);
-        if (client) {
-          gfx::Point p = gfx::Screen::GetScreenFor(root)->
-              GetCursorScreenPoint();
-          client->ConvertPointFromScreen(root, &p);
-          if (root->ContainsPoint(p)) {
-            root->ConvertPointToNativeScreen(&p);
-            XWarpPointer(
-                xdisplay_, None, x_root_window_, 0, 0, 0, 0, p.x(), p.y());
-          }
-        }
         ConfineCursorToRootWindow();
       }
       if (size_changed)

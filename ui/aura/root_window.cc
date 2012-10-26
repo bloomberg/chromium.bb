@@ -237,12 +237,6 @@ gfx::Size RootWindow::GetHostSize() const {
 void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
   DispatchHeldMouseMove();
   host_->SetBounds(bounds_in_pixel);
-
-  // Requery the location to constrain it within the new root window size.
-  gfx::Point point;
-  if (host_->QueryMouseLocation(&point))
-    SetLastMouseLocation(this, ui::ConvertPointToDIP(layer(), point));
-
   synthesize_mouse_move_ = false;
 }
 

@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/aura_switches.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
@@ -291,6 +292,7 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
     NotifyDisplayRemoved(displays_.back());
     displays_.pop_back();
   }
+  EnsurePointerInDisplays();
 }
 
 RootWindow* MultiDisplayManager::CreateRootWindowForDisplay(
@@ -493,6 +495,42 @@ int64 MultiDisplayManager::SetFirstDisplayAsInternalDisplayForTest() {
   internal_display_.reset(new gfx::Display);
   *internal_display_ = displays_[0];
   return internal_display_id_;
+}
+
+void MultiDisplayManager::EnsurePointerInDisplays() {
+  // Don't try to move the pointer during the boot/startup.
+  if (!Shell::HasInstance())
+    return;
+  gfx::Point location_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
+  gfx::Point target_location;
+  int64 closest_distance = -1;
+
+  for (DisplayList::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    const gfx::Rect& display_bounds = iter->bounds();
+
+    if (display_bounds.Contains(location_in_screen)) {
+      target_location = location_in_screen;
+      break;
+    }
+    gfx::Point center = display_bounds.CenterPoint();
+    gfx::Point diff = center.Subtract(location_in_screen);
+    // Use the distance from the center of the dislay. This is not
+    // exactly "closest" display, but good enough to pick one
+    // appropriate (and there are at most two displays).
+    int64 distance = diff.x() * diff.x() + diff.y() * diff.y();
+    if (closest_distance < 0 || closest_distance > distance) {
+      target_location = center;
+      closest_distance = distance;
+    }
+  }
+
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  aura::client::ScreenPositionClient* client =
+      aura::client::GetScreenPositionClient(root_window);
+  client->ConvertPointFromScreen(root_window, &target_location);
+
+  root_window->MoveCursorTo(target_location);
 }
 
 void MultiDisplayManager::SetDisplayIdsForTest(DisplayList* to_update) const {

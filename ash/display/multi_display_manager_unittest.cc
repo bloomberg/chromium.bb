@@ -5,6 +5,7 @@
 #include "ash/display/multi_display_manager.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/format_macros.h"
@@ -385,6 +386,79 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
+}
+
+TEST_F(MultiDisplayManagerTest, EnsurePointerInDisplays) {
+  UpdateDisplay("200x200,300x300");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  aura::Env* env = aura::Env::GetInstance();
+
+  // Set the initial position.
+  root_windows[0]->MoveCursorTo(gfx::Point(350, 150));
+  EXPECT_EQ("350,150", env->last_mouse_location().ToString());
+
+  // A mouse pointer will be inside 2nd display.
+  UpdateDisplay("300x300,200x200");
+  EXPECT_EQ("350,150", env->last_mouse_location().ToString());
+
+  // A mouse pointer will be outside of displays and move to the
+  // center of 2nd display.
+  UpdateDisplay("300x300,100x100");
+  EXPECT_EQ("350,50", env->last_mouse_location().ToString());
+
+  // 2nd display was disconnected, but the mouse pointer says in the
+  // 1st display.
+  UpdateDisplay("400x400");
+  EXPECT_EQ("350,50", env->last_mouse_location().ToString());
+
+  // 1st display's resolution has changed, and the mouse pointer is
+  // now outside. Move the mouse pointer to the center of 1st display.
+  UpdateDisplay("300x300");
+  EXPECT_EQ("150,150", env->last_mouse_location().ToString());
+
+  // Move the mouse pointer to the bottom of 1st display.
+  root_windows[0]->MoveCursorTo(gfx::Point(150, 290));
+  EXPECT_EQ("150,290", env->last_mouse_location().ToString());
+
+  // The mouse pointer is outside and closest display is 1st one.
+  UpdateDisplay("300x280,200x200");
+  EXPECT_EQ("150,140", env->last_mouse_location().ToString());
+}
+
+TEST_F(MultiDisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
+  UpdateDisplay("200x200,300x300");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  // Set the 2nd display on the left.
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  DisplayLayout layout = display_controller->default_display_layout();
+  layout.position = DisplayLayout::LEFT;
+  display_controller->SetDefaultDisplayLayout(layout);
+
+  EXPECT_EQ("-300,0 300x300",
+            ScreenAsh::GetSecondaryDisplay().bounds().ToString());
+
+  aura::Env* env = aura::Env::GetInstance();
+
+  // Set the initial position.
+  root_windows[0]->MoveCursorTo(gfx::Point(-150, 150));
+  EXPECT_EQ("-150,150", env->last_mouse_location().ToString());
+
+  // A mouse pointer will be in 2nd display.
+  UpdateDisplay("300x300,200x200");
+  EXPECT_EQ("-150,150", env->last_mouse_location().ToString());
+
+  // A mouse pointer will be outside of displays and move to the
+  // center of 2nd display.
+  UpdateDisplay("300x300,200x100");
+  EXPECT_EQ("-100,50", env->last_mouse_location().ToString());
+
+  // 2nd display was disconnected. Mouse pointer should move to
+  // 1st display.
+  UpdateDisplay("300x300");
+  EXPECT_EQ("150,150", env->last_mouse_location().ToString());
 }
 
 }  // namespace internal

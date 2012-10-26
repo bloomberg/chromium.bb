@@ -128,6 +128,10 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   // the internal display.
   int64 SetFirstDisplayAsInternalDisplayForTest();
 
+  // Checks if the mouse pointer is on one of displays, and moves to
+  // the center of the nearest display if it's outside of all displays.
+  void EnsurePointerInDisplays();
+
   // Update the display's id in the |display_list| to match the ones
   // stored in this display manager's |displays_|. This is used to
   // emulate display change behavior during the test byn creating the
