@@ -119,21 +119,6 @@ ui::EventResult WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   return ToplevelWindowEventHandler::OnGestureEvent(event);
 }
 
-WindowResizer* WorkspaceEventHandler::CreateWindowResizer(
-    aura::Window* window,
-    const gfx::Point& point_in_parent,
-    int window_component) {
-  // Allow dragging maximized windows if it's not tracked by workspace. This is
-  // set by tab dragging code.
-  if (!wm::IsWindowNormal(window) &&
-      (window_component != HTCAPTION || GetTrackedByWorkspace(window))) {
-    return NULL;
-  }
-  return WorkspaceWindowResizer::Create(
-      window, point_in_parent, window_component,
-      std::vector<aura::Window*>());
-}
-
 void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     aura::Window* target,
     ui::MouseEvent* event) {

@@ -26,13 +26,6 @@ class WorkspaceEventHandler : public ToplevelWindowEventHandler {
   virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
- protected:
-  // Overridden from ToplevelWindowEventHandler:
-  virtual WindowResizer* CreateWindowResizer(
-      aura::Window* window,
-      const gfx::Point& point_in_parent,
-      int window_component) OVERRIDE;
-
  private:
   friend class WorkspaceEventHandlerTestHelper;
 

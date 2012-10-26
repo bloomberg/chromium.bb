@@ -13,8 +13,10 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/cursor_manager.h"
+#include "ash/wm/default_window_resizer.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
@@ -31,19 +33,29 @@
 namespace ash {
 
 scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
-                                   const gfx::Point& point_in_parent,
-                                   int window_component) {
-  // Allow dragging maximized windows if it's not tracked by workspace. This is
-  // set by tab dragging code.
-  if (!wm::IsWindowNormal(window) &&
-      (window_component != HTCAPTION || GetTrackedByWorkspace(window))) {
+                                              const gfx::Point& point_in_parent,
+                                              int window_component) {
+  DCHECK(window);
+  if (window->parent() &&
+      window->parent()->id() == internal::kShellWindowId_WorkspaceContainer) {
+    // Allow dragging maximized windows if it's not tracked by workspace. This
+    // is set by tab dragging code.
+    if (!wm::IsWindowNormal(window) &&
+        (window_component != HTCAPTION || GetTrackedByWorkspace(window)))
+      return scoped_ptr<WindowResizer>();
+    return make_scoped_ptr<WindowResizer>(
+        internal::WorkspaceWindowResizer::Create(window,
+                                                 point_in_parent,
+                                                 window_component,
+                                                 std::vector<aura::Window*>()));
+  } else if (wm::IsWindowNormal(window)) {
+    return make_scoped_ptr<WindowResizer>(DefaultWindowResizer::Create(
+        window,
+        point_in_parent,
+        window_component));
+  } else {
     return scoped_ptr<WindowResizer>();
   }
-  return make_scoped_ptr<WindowResizer>(
-      internal::WorkspaceWindowResizer::Create(window,
-                                               point_in_parent,
-                                               window_component,
-                                               std::vector<aura::Window*>()));
 }
 
 namespace internal {

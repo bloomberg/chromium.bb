@@ -53,12 +53,6 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Overridden form ash::DisplayController::Observer:
   virtual void OnDisplayConfigurationChanging() OVERRIDE;
 
- protected:
-  // Creates a new WindowResizer.
-  virtual WindowResizer* CreateWindowResizer(aura::Window* window,
-                                             const gfx::Point& point_in_parent,
-                                             int window_component);
-
  private:
   class ScopedWindowResizer;
 
