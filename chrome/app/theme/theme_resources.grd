@@ -36,6 +36,20 @@
       <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB_MASK" file="nub_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_SMALL_BUBBLE" file="small_bubble.png" />
       <structure type="chrome_scaled_image" name="IDR_ASK_MEDIA" file="ask_media.png" />
+      <if expr="pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE" file="win/app_window_close.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_H" file="win/app_window_close_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_P" file="win/app_window_close_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE" file="win/app_window_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_H" file="win/app_window_restore_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_P" file="win/app_window_restore_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE" file="win/app_window_maximize.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_H" file="win/app_window_maximize_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_P" file="win/app_window_maximize_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE" file="win/app_window_minimize.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_H" file="win/app_window_minimize_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_P" file="win/app_window_minimize_active.png" />
+      </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_BACK" file="back.png" />
         <structure type="chrome_scaled_image" name="IDR_BACK_D" file="back_disabled.png" />
