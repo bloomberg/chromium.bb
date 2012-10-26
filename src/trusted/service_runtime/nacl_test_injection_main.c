@@ -4,9 +4,9 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_main.h"
 
 int main(int argc,
          char **argv) {
-  return NaClPostTestInjectionMain(argc, argv);
+  return NaClSelLdrMain(argc, argv);
 }

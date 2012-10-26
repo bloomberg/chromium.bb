@@ -781,8 +781,6 @@ static INLINE void NaClHandleBootstrapArgs(int *argc_p, char ***argv_p) {
 }
 #endif
 
-int NaClPostTestInjectionMain(int argc, char **argv);
-
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_ */

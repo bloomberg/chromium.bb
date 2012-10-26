@@ -164,8 +164,7 @@ static int my_getopt(int argc, char *const *argv, const char *shortopts) {
 #define my_getopt getopt
 #endif
 
-int NaClPostTestInjectionMain(int  argc,
-                              char **argv) {
+int NaClSelLdrMain(int argc, char **argv) {
   int                           opt;
   char                          *rest;
   struct redir                  *entry;
