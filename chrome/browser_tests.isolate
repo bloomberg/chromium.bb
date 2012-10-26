@@ -88,6 +88,8 @@
           '<(PRODUCT_DIR)',
           '../tools/swarm_client/run_test_cases.py',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          # Added to help debug browser test failures, will be remove later.
+          '-v', '-v', '-v',
         ],
         'isolate_dependency_tracked': [
           '../content/test/data/simple_database.html',
