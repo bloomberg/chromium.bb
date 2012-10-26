@@ -38,19 +38,15 @@
       }
       catch(e) {/* urchinTracker not available. */}
     </script>
-    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
-    <script type="text/javascript">
-      google.load('search', '1',
-          {language : 'en', style : google.loader.themes.V2_DEFAULT});
-      google.setOnLoadCallback(function() {
-        var customSearchOptions = {};
-        var customSearchControl = new google.search.CustomSearchControl(
-          '002967670403910741006:61_cvzfqtno', customSearchOptions);
-        customSearchControl.setResultSetSize(
-            google.search.Search.FILTERED_CSE_RESULTSET);
-        customSearchControl.draw('cse');
-      }, true);
+    <script>
+      (function() {
+        var cx = '002967670403910741006:61_cvzfqtno';
+        var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
+        gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+          '//www.google.com/cse/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
+      })();
     </script>
-    <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
+
   </div>
 </div>
