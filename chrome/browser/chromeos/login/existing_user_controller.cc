@@ -318,6 +318,10 @@ void ExistingUserController::CompleteLogin(const std::string& username,
     UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToCompleteLoginTime", delta);
     time_init_ = base::Time();  // Reset to null.
   }
+
+  // Disable UI while loading user profile.
+  login_display_->SetUIEnabled(false);
+
   host_->OnCompleteLogin();
   // Auto-enrollment must have made a decision by now. It's too late to enroll
   // if the protocol isn't done at this point.
@@ -623,6 +627,10 @@ void ExistingUserController::OnLoginSuccess(
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
   OptionallyShowReleaseNotes(profile);
+
+  // Reenable clicking on other windows and status area.
+  login_display_->SetUIEnabled(true);
+
   if (!ready_for_browser_launch_) {
     // Don't specify start URLs if the administrator has configured the start
     // URLs via policy.

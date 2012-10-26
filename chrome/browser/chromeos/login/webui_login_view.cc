@@ -118,7 +118,8 @@ WebUILoginView::WebUILoginView()
       host_window_frozen_(false),
       is_hidden_(false),
       login_prompt_visible_handled_(false),
-      should_emit_login_prompt_visible_(true) {
+      should_emit_login_prompt_visible_(true),
+      forward_keyboard_event_(true) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
@@ -254,6 +255,11 @@ void WebUILoginView::SetStatusAreaVisible(bool visible) {
   }
 }
 
+void WebUILoginView::SetUIEnabled(bool enabled) {
+  forward_keyboard_event_ = enabled;
+  ash::Shell::GetInstance()->system_tray()->SetEnabled(enabled);
+}
+
 // WebUILoginView protected: ---------------------------------------------------
 
 void WebUILoginView::Layout() {
@@ -309,8 +315,10 @@ bool WebUILoginView::HandleContextMenu(
 
 void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
                                          const NativeWebKeyboardEvent& event) {
-  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
-                                                        GetFocusManager());
+  if (forward_keyboard_event_) {
+    unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
+                                                          GetFocusManager());
+  }
 
   // Make sure error bubble is cleared on keyboard event. This is needed
   // when the focus is inside an iframe. Only clear on KeyDown to prevent hiding

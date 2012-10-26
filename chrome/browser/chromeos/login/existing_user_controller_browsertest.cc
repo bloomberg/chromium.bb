@@ -257,6 +257,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
       .Times(1);
   EXPECT_CALL(*mock_login_display_, OnLoginSuccess(kUsername))
       .Times(1);
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
+      .Times(1);
   EXPECT_CALL(*mock_login_display_, OnFadeOut())
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_,

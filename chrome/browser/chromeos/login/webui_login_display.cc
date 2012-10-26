@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -82,6 +83,15 @@ void WebUILoginDisplay::OnLoginSuccess(const std::string& username) {
 void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
   if (webui_handler_ && is_enabled)
     webui_handler_->ClearAndEnablePassword();
+
+  if (chromeos::WebUILoginDisplayHost::default_host()) {
+    chromeos::WebUILoginDisplayHost* webui_host =
+        static_cast<chromeos::WebUILoginDisplayHost*>(
+            chromeos::WebUILoginDisplayHost::default_host());
+    chromeos::WebUILoginView* login_view = webui_host->login_view();
+    if (login_view)
+      login_view->SetUIEnabled(is_enabled);
+  }
 }
 
 void WebUILoginDisplay::SelectPod(int index) {
