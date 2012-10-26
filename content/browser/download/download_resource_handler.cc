@@ -30,13 +30,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
 
-using content::BrowserThread;
-using content::DownloadId;
-using content::DownloadItem;
-using content::DownloadManager;
-using content::ResourceDispatcherHostImpl;
-using content::ResourceRequestInfoImpl;
-
+namespace content {
 namespace {
 
 static const int kDownloadByteStreamSize = 100 * 1024;
@@ -56,7 +50,7 @@ void CallStartedCBOnUIThread(
 // DownloadResourceHandler members from the UI thread.
 static void StartOnUIThread(
     scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<content::ByteStreamReader> stream,
+    scoped_ptr<ByteStreamReader> stream,
     const DownloadResourceHandler::OnStartedCallback& started_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -81,7 +75,7 @@ static void StartOnUIThread(
 DownloadResourceHandler::DownloadResourceHandler(
     net::URLRequest* request,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
-    scoped_ptr<content::DownloadSaveInfo> save_info)
+    scoped_ptr<DownloadSaveInfo> save_info)
     : render_view_id_(0),               // Actually initialized below.
       content_length_(0),
       request_(request),
@@ -96,7 +90,7 @@ DownloadResourceHandler::DownloadResourceHandler(
   global_id_ = info->GetGlobalRequestID();
   render_view_id_ = info->GetRouteID();
 
-  download_stats::RecordDownloadCount(download_stats::UNTHROTTLED_COUNT);
+  RecordDownloadCount(UNTHROTTLED_COUNT);
 }
 
 bool DownloadResourceHandler::OnUploadProgress(int request_id,
@@ -109,7 +103,7 @@ bool DownloadResourceHandler::OnUploadProgress(int request_id,
 bool DownloadResourceHandler::OnRequestRedirected(
     int request_id,
     const GURL& url,
-    content::ResourceResponse* response,
+    ResourceResponse* response,
     bool* defer) {
   return true;
 }
@@ -117,7 +111,7 @@ bool DownloadResourceHandler::OnRequestRedirected(
 // Send the download creation information to the download thread.
 bool DownloadResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response,
+    ResourceResponse* response,
     bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // There can be only one (call)
@@ -147,7 +141,7 @@ bool DownloadResourceHandler::OnResponseStarted(
       request_info->transition_type()));
 
   // Create the ByteStream for sending data to the download sink.
-  scoped_ptr<content::ByteStreamReader> stream_reader;
+  scoped_ptr<ByteStreamReader> stream_reader;
   CreateByteStream(
       base::MessageLoopProxy::current(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
@@ -165,7 +159,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->content_disposition = content_disposition_;
   info->mime_type = response->head.mime_type;
   info->remote_address = request_->GetSocketAddress().host();
-  download_stats::RecordDownloadMimeType(info->mime_type);
+  RecordDownloadMimeType(info->mime_type);
 
   info->request_handle =
       DownloadRequestHandle(AsWeakPtr(), global_id_.child_id,
@@ -261,7 +255,7 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int bytes_read,
 
     double actual_bandwidth = (bytes_read)/seconds_since_last_read;
     double potential_bandwidth = last_buffer_size_/seconds_since_last_read;
-    download_stats::RecordBandwidth(actual_bandwidth, potential_bandwidth);
+    RecordBandwidth(actual_bandwidth, potential_bandwidth);
   }
   last_read_time_ = now;
 
@@ -315,9 +309,9 @@ bool DownloadResourceHandler::OnResponseCompleted(
       error_code == net::ERR_INCOMPLETE_CHUNKED_ENCODING) {
     error_code = net::OK;
   }
-  content::DownloadInterruptReason reason =
-      content::ConvertNetErrorToInterruptReason(
-        error_code, content::DOWNLOAD_INTERRUPT_FROM_NETWORK);
+  DownloadInterruptReason reason =
+      ConvertNetErrorToInterruptReason(
+        error_code, DOWNLOAD_INTERRUPT_FROM_NETWORK);
 
   if (status.status() == net::URLRequestStatus::CANCELED &&
       status.error() == net::ERR_ABORTED) {
@@ -329,30 +323,30 @@ bool DownloadResourceHandler::OnResponseCompleted(
     // to a user action.
     // TODO(ahendrickson) -- Find a better set of codes to use here, as
     // CANCELED/ERR_ABORTED can occur for reasons other than user cancel.
-    reason = content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
+    reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
   }
 
   if (status.is_success()) {
     if (response_code >= 400) {
       switch(response_code) {
         case 404:  // File Not Found.
-          reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
           break;
         case 416:  // Range Not Satisfiable.
-          reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
           break;
         case 412:  // Precondition Failed.
-          reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION;
+          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION;
           break;
         default:
-          reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
           break;
       }
     }
   }
 
-  download_stats::RecordAcceptsRanges(accept_ranges_, bytes_read_);
-  download_stats::RecordNetworkBlockage(
+  RecordAcceptsRanges(accept_ranges_, bytes_read_);
+  RecordNetworkBlockage(
       base::TimeTicks::Now() - download_start_time_, total_pause_time_);
 
   CallStartedCB(NULL, error_code);
@@ -451,3 +445,5 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   UMA_HISTOGRAM_TIMES("SB2.DownloadDuration",
                       base::TimeTicks::Now() - download_start_time_);
 }
+
+}  // namespace content

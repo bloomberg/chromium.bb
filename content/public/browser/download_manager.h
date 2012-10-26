@@ -43,10 +43,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 
-class DownloadRequestHandle;
 class GURL;
-struct DownloadCreateInfo;
-struct DownloadRetrieveInfo;
 
 namespace content {
 
@@ -54,7 +51,10 @@ class BrowserContext;
 class ByteStreamReader;
 class DownloadManagerDelegate;
 class DownloadQuery;
+class DownloadRequestHandle;
 class DownloadUrlParameters;
+struct DownloadCreateInfo;
+struct DownloadRetrieveInfo;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager

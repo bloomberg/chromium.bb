@@ -20,6 +20,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_log.h"
 
+namespace content {
+
 // Used for informing the download manager of a new download, since we don't
 // want to pass |DownloadItem|s between threads.
 struct CONTENT_EXPORT DownloadCreateInfo {
@@ -29,7 +31,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
                      int32 state,
                      const net::BoundNetLog& bound_net_log,
                      bool has_user_gesture,
-                     content::PageTransition transition_type);
+                     PageTransition transition_type);
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
@@ -58,12 +60,12 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   int32 state;
 
   // The (per-session) ID of the download.
-  content::DownloadId download_id;
+  DownloadId download_id;
 
   // True if the download was initiated by user action.
   bool has_user_gesture;
 
-  content::PageTransition transition_type;
+  PageTransition transition_type;
 
   // The handle of the download in the history database.
   int64 db_handle;
@@ -94,7 +96,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   bool prompt_user_for_save_location;
 
   // The download file save info.
-  scoped_ptr<content::DownloadSaveInfo> save_info;
+  scoped_ptr<DownloadSaveInfo> save_info;
 
   // The remote IP address where the download was fetched from.  Copied from
   // UrlRequest::GetSocketAddress().
@@ -110,5 +112,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_

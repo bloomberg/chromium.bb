@@ -16,18 +16,13 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "net/base/file_stream.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
-using content::DownloadItem;
-using content::DownloadManager;
-using content::DownloadUrlParameters;
-using content::WebContents;
+namespace content {
 
 DragDownloadFile::DragDownloadFile(
     const FilePath& file_name_or_path,
     scoped_ptr<net::FileStream> file_stream,
     const GURL& url,
-    const content::Referrer& referrer,
+    const Referrer& referrer,
     const std::string& referrer_encoding,
     WebContents* web_contents)
     : file_stream_(file_stream.Pass()),
@@ -133,13 +128,11 @@ void DragDownloadFile::InitiateDownload() {
   download_manager_observer_added_ = true;
   download_manager_->AddObserver(this);
 
-  scoped_ptr<content::DownloadSaveInfo> save_info(
-      new content::DownloadSaveInfo());
+  scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
   save_info->file_path = file_path_;
   save_info->file_stream = file_stream_.Pass(); // Nulls file_stream_
 
-  download_stats::RecordDownloadSource(
-      download_stats::INITIATED_BY_DRAG_N_DROP);
+  RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(
           web_contents_, url_, save_info.Pass()));
@@ -199,7 +192,7 @@ void DragDownloadFile::ModelChanged(DownloadManager* manager) {
   }
 }
 
-void DragDownloadFile::OnDownloadUpdated(content::DownloadItem* download) {
+void DragDownloadFile::OnDownloadUpdated(DownloadItem* download) {
   AssertCurrentlyOnUIThread();
   if (download->IsCancelled()) {
     RemoveObservers();
@@ -216,7 +209,7 @@ void DragDownloadFile::OnDownloadUpdated(content::DownloadItem* download) {
 // OnDownloadDestroyed is only called if OnDownloadUpdated() does not detect
 // completion or cancellation (in which cases it removes this observer).
 // TODO(benjhayden): Try to change this to NOTREACHED()?
-void DragDownloadFile::OnDownloadDestroyed(content::DownloadItem* download) {
+void DragDownloadFile::OnDownloadDestroyed(DownloadItem* download) {
   AssertCurrentlyOnUIThread();
   RemoveObservers();
   DownloadCompleted(false);
@@ -255,3 +248,5 @@ void DragDownloadFile::QuitNestedMessageLoop() {
   }
 }
 #endif
+
+}  // namespace content

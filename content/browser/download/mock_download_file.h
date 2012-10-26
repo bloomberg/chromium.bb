@@ -16,19 +16,19 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
 struct DownloadCreateInfo;
 
-class MockDownloadFile : virtual public content::DownloadFile {
+class MockDownloadFile : virtual public DownloadFile {
  public:
   MockDownloadFile();
   virtual ~MockDownloadFile();
 
   // DownloadFile functions.
   MOCK_METHOD1(Initialize, void(const InitializeCallback&));
-  MOCK_METHOD2(AppendDataToFile, content::DownloadInterruptReason(
+  MOCK_METHOD2(AppendDataToFile, DownloadInterruptReason(
       const char* data, size_t data_len));
-  MOCK_METHOD1(Rename, content::DownloadInterruptReason(
-      const FilePath& full_path));
+  MOCK_METHOD1(Rename, DownloadInterruptReason(const FilePath& full_path));
   MOCK_METHOD3(Rename, void(const FilePath& full_path,
                             bool overwrite_existing_file,
                             const RenameCompletionCallback& callback));
@@ -44,9 +44,11 @@ class MockDownloadFile : virtual public content::DownloadFile {
   MOCK_METHOD0(GetHashState, std::string());
   MOCK_METHOD0(SendUpdate, void());
   MOCK_CONST_METHOD0(Id, int());
-  MOCK_METHOD0(GetDownloadManager, content::DownloadManager*());
-  MOCK_CONST_METHOD0(GlobalId, const content::DownloadId&());
+  MOCK_METHOD0(GetDownloadManager, DownloadManager*());
+  MOCK_CONST_METHOD0(GlobalId, const DownloadId&());
   MOCK_CONST_METHOD0(DebugString, std::string());
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_

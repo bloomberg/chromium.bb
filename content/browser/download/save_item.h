@@ -11,6 +11,7 @@
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
 class SavePackage;
 
 // One SaveItem per save file. This is the model class that stores all the
@@ -25,7 +26,7 @@ class SaveItem {
   };
 
   SaveItem(const GURL& url,
-           const content::Referrer& referrer,
+           const Referrer& referrer,
            SavePackage* package,
            SaveFileCreateInfo::SaveFileSource save_source);
 
@@ -58,7 +59,7 @@ class SaveItem {
   const FilePath& full_path() const { return full_path_; }
   const FilePath& file_name() const { return file_name_; }
   const GURL& url() const { return url_; }
-  const content::Referrer& referrer() const { return referrer_; }
+  const Referrer& referrer() const { return referrer_; }
   int64 total_bytes() const { return total_bytes_; }
   int64 received_bytes() const { return received_bytes_; }
   int32 save_id() const { return save_id_; }
@@ -84,7 +85,7 @@ class SaveItem {
 
   // The URL for this save item.
   GURL url_;
-  content::Referrer referrer_;
+  Referrer referrer_;
 
   // Total bytes expected.
   int64 total_bytes_;
@@ -108,5 +109,7 @@ class SaveItem {
 
   DISALLOW_COPY_AND_ASSIGN(SaveItem);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_ITEM_H_

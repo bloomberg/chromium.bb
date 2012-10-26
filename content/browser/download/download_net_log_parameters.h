@@ -14,7 +14,7 @@
 class FilePath;
 class GURL;
 
-namespace download_net_logs {
+namespace content {
 
 enum DownloadType {
   SRC_NEW_DOWNLOAD,
@@ -23,68 +23,68 @@ enum DownloadType {
 };
 
 // Returns NetLog parameters when a DownloadItem is activated.
-base::Value* ItemActivatedCallback(
-    const content::DownloadItem* download_item,
+base::Value* ItemActivatedNetLogCallback(
+    const DownloadItem* download_item,
     DownloadType download_type,
     const std::string* file_name,
     net::NetLog::LogLevel log_level);
 
 // Returns NetLog parameters when a DownloadItem is checked for danger.
-base::Value* ItemCheckedCallback(
-    content::DownloadDangerType danger_type,
-    content::DownloadItem::SafetyState safety_state,
+base::Value* ItemCheckedNetLogCallback(
+    DownloadDangerType danger_type,
+    DownloadItem::SafetyState safety_state,
     net::NetLog::LogLevel log_level);
 
 // Returns NetLog parameters when a DownloadItem is renamed.
-base::Value* ItemRenamedCallback(const FilePath* old_filename,
-                                 const FilePath* new_filename,
-                                 net::NetLog::LogLevel log_level);
-
-// Returns NetLog parameters when a DownloadItem is interrupted.
-base::Value* ItemInterruptedCallback(content::DownloadInterruptReason reason,
-                                     int64 bytes_so_far,
-                                     const std::string* hash_state,
-                                     net::NetLog::LogLevel log_level);
-
-// Returns NetLog parameters when a DownloadItem is completing.
-base::Value* ItemCompletingCallback(int64 bytes_so_far,
-                                    const std::string* final_hash,
-                                    net::NetLog::LogLevel log_level);
-
-// Returns NetLog parameters when a DownloadItem is finished.
-base::Value* ItemFinishedCallback(bool auto_opened,
-                                  net::NetLog::LogLevel log_level);
-
-// Returns NetLog parameters when a DownloadItem is canceled.
-base::Value* ItemCanceledCallback(int64 bytes_so_far,
-                                  const std::string* hash_state,
-                                  net::NetLog::LogLevel log_level);
-
-// Returns NetLog parameters when a DownloadFile is opened.
-base::Value* FileOpenedCallback(const FilePath* file_name,
-                                int64 start_offset,
-                                net::NetLog::LogLevel log_level);
-
-// Returns NetLog parameters when a DownloadFile is opened.
-base::Value* FileStreamDrainedCallback(size_t stream_size,
-                                       size_t num_buffers,
+base::Value* ItemRenamedNetLogCallback(const FilePath* old_filename,
+                                       const FilePath* new_filename,
                                        net::NetLog::LogLevel log_level);
 
+// Returns NetLog parameters when a DownloadItem is interrupted.
+base::Value* ItemInterruptedNetLogCallback(DownloadInterruptReason reason,
+                                           int64 bytes_so_far,
+                                           const std::string* hash_state,
+                                           net::NetLog::LogLevel log_level);
+
+// Returns NetLog parameters when a DownloadItem is completing.
+base::Value* ItemCompletingNetLogCallback(int64 bytes_so_far,
+                                          const std::string* final_hash,
+                                          net::NetLog::LogLevel log_level);
+
+// Returns NetLog parameters when a DownloadItem is finished.
+base::Value* ItemFinishedNetLogCallback(bool auto_opened,
+                                        net::NetLog::LogLevel log_level);
+
+// Returns NetLog parameters when a DownloadItem is canceled.
+base::Value* ItemCanceledNetLogCallback(int64 bytes_so_far,
+                                        const std::string* hash_state,
+                                        net::NetLog::LogLevel log_level);
+
+// Returns NetLog parameters when a DownloadFile is opened.
+base::Value* FileOpenedNetLogCallback(const FilePath* file_name,
+                                      int64 start_offset,
+                                      net::NetLog::LogLevel log_level);
+
+// Returns NetLog parameters when a DownloadFile is opened.
+base::Value* FileStreamDrainedNetLogCallback(size_t stream_size,
+                                             size_t num_buffers,
+                                             net::NetLog::LogLevel log_level);
+
 // Returns NetLog parameters when a DownloadFile is renamed.
-base::Value* FileRenamedCallback(const FilePath* old_filename,
-                                 const FilePath* new_filename,
-                                 net::NetLog::LogLevel log_level);
+base::Value* FileRenamedNetLogCallback(const FilePath* old_filename,
+                                       const FilePath* new_filename,
+                                       net::NetLog::LogLevel log_level);
 
 // Returns NetLog parameters when a File has an error.
-base::Value* FileErrorCallback(const char* operation,
-                               net::Error net_error,
-                               net::NetLog::LogLevel log_level);
-
-base::Value* FileInterruptedCallback(const char* operation,
-                                     int os_error,
-                                     content::DownloadInterruptReason reason,
+base::Value* FileErrorNetLogCallback(const char* operation,
+                                     net::Error net_error,
                                      net::NetLog::LogLevel log_level);
 
-}  // namespace download_net_logs
+base::Value* FileInterruptedNetLogCallback(const char* operation,
+                                           int os_error,
+                                           DownloadInterruptReason reason,
+                                           net::NetLog::LogLevel log_level);
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_NET_LOG_PARAMETERS_H_

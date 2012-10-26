@@ -14,9 +14,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 
-using content::BrowserThread;
-using content::RenderViewHostImpl;
-using content::WebContents;
+namespace content {
 
 MHTMLGenerationManager::Job::Job()
     : browser_file(base::kInvalidPlatformFileValue),
@@ -137,3 +135,5 @@ void MHTMLGenerationManager::CloseFile(base::PlatformFile file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::ClosePlatformFile(file);
 }
+
+}  // namespace content

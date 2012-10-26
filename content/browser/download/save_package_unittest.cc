@@ -17,9 +17,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-using content::BrowserThreadImpl;
-using content::RenderViewHostImplTestHarness;
+namespace content {
 
 #define FPL FILE_PATH_LITERAL
 #if defined(OS_WIN)
@@ -428,3 +426,5 @@ TEST_F(SavePackageTest, TestGetUrlToBeSavedViewSource) {
   EXPECT_EQ(actual_url, GetUrlToBeSaved());
   EXPECT_EQ(view_source_url, contents()->GetURL());
 }
+
+}  // namespace content

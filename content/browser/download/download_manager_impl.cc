@@ -45,16 +45,10 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/glue/webkit_glue.h"
 
-using content::BrowserThread;
-using content::DownloadId;
-using content::DownloadItem;
-using content::DownloadPersistentStoreInfo;
-using content::ResourceDispatcherHostImpl;
-using content::WebContents;
-
+namespace content {
 namespace {
 
-void BeginDownload(scoped_ptr<content::DownloadUrlParameters> params) {
+void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
@@ -81,7 +75,7 @@ void BeginDownload(scoped_ptr<content::DownloadUrlParameters> params) {
     upload_data->set_identifier(params->post_id());
     request->set_upload(upload_data);
   }
-  for (content::DownloadUrlParameters::RequestHeadersType::const_iterator iter
+  for (DownloadUrlParameters::RequestHeadersType::const_iterator iter
            = params->request_headers_begin();
        iter != params->request_headers_end();
        ++iter) {
@@ -125,20 +119,20 @@ class MapValueIteratorAdapter {
 
 void EnsureNoPendingDownloadJobsOnFile(bool* result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  *result = (content::DownloadFile::GetNumberOfDownloadFiles() == 0);
+  *result = (DownloadFile::GetNumberOfDownloadFiles() == 0);
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
 }
 
-class DownloadItemFactoryImpl : public content::DownloadItemFactory {
+class DownloadItemFactoryImpl : public DownloadItemFactory {
  public:
     DownloadItemFactoryImpl() {}
     virtual ~DownloadItemFactoryImpl() {}
 
     virtual DownloadItemImpl* CreatePersistedItem(
         DownloadItemImplDelegate* delegate,
-        content::DownloadId download_id,
-        const content::DownloadPersistentStoreInfo& info,
+        DownloadId download_id,
+        const DownloadPersistentStoreInfo& info,
         const net::BoundNetLog& bound_net_log) OVERRIDE {
       return new DownloadItemImpl(delegate, download_id, info, bound_net_log);
     }
@@ -156,7 +150,7 @@ class DownloadItemFactoryImpl : public content::DownloadItemFactory {
         DownloadItemImplDelegate* delegate,
         const FilePath& path,
         const GURL& url,
-        content::DownloadId download_id,
+        DownloadId download_id,
         const std::string& mime_type,
         const net::BoundNetLog& bound_net_log) OVERRIDE {
       return new DownloadItemImpl(delegate, path, url, download_id,
@@ -169,7 +163,7 @@ class DownloadItemFactoryImpl : public content::DownloadItemFactory {
 DownloadManagerImpl::DownloadManagerImpl(
     net::NetLog* net_log)
     : item_factory_(new DownloadItemFactoryImpl()),
-      file_factory_(new content::DownloadFileFactory()),
+      file_factory_(new DownloadFileFactory()),
       history_size_(0),
       shutdown_needed_(false),
       browser_context_(NULL),
@@ -205,7 +199,7 @@ void DownloadManagerImpl::DetermineDownloadTarget(
     // TODO(asanka): Determine a useful path if |target_path| is empty.
     callback.Run(target_path,
                  DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                 DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                  target_path);
   }
 }
@@ -234,12 +228,11 @@ bool DownloadManagerImpl::ShouldOpenDownload(DownloadItemImpl* item) {
   return delegate_->ShouldOpenDownload(item);
 }
 
-void DownloadManagerImpl::SetDelegate(
-    content::DownloadManagerDelegate* delegate) {
+void DownloadManagerImpl::SetDelegate(DownloadManagerDelegate* delegate) {
   delegate_ = delegate;
 }
 
-content::DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() const {
+DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() const {
   return delegate_;
 }
 
@@ -303,7 +296,7 @@ void DownloadManagerImpl::Shutdown() {
   delegate_ = NULL;
 }
 
-bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
+bool DownloadManagerImpl::Init(BrowserContext* browser_context) {
   DCHECK(browser_context);
   DCHECK(!shutdown_needed_)  << "DownloadManager already initialized.";
   shutdown_needed_ = true;
@@ -315,7 +308,7 @@ bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
 
 DownloadItem* DownloadManagerImpl::StartDownload(
     scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<content::ByteStreamReader> stream) {
+    scoped_ptr<ByteStreamReader> stream) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   net::BoundNetLog bound_net_log =
@@ -334,7 +327,7 @@ DownloadItem* DownloadManagerImpl::StartDownload(
   // no associated DownloadFile (history downloads, !IN_PROGRESS downloads)
   DownloadItemImpl* download =
       CreateDownloadItem(info.get(), bound_net_log);
-  scoped_ptr<content::DownloadFile> download_file(
+  scoped_ptr<DownloadFile> download_file(
       file_factory_->CreateFile(
           info->save_info.Pass(), default_download_directory,
           info->url(), info->referrer_url,
@@ -390,7 +383,7 @@ void DownloadManagerImpl::OnFileRemovalDetected(int32 download_id) {
     downloads_[download_id]->OnDownloadedFileRemoved();
 }
 
-content::BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
+BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
   return browser_context_;
 }
 
@@ -506,17 +499,16 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItemImpl* download) {
 }
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
-    scoped_ptr<content::DownloadItemFactory> item_factory) {
+    scoped_ptr<DownloadItemFactory> item_factory) {
   item_factory_ = item_factory.Pass();
 }
 
 void DownloadManagerImpl::SetDownloadFileFactoryForTesting(
-    scoped_ptr<content::DownloadFileFactory> file_factory) {
+    scoped_ptr<DownloadFileFactory> file_factory) {
   file_factory_ = file_factory.Pass();
 }
 
-content::DownloadFileFactory*
-DownloadManagerImpl::GetDownloadFileFactoryForTesting() {
+DownloadFileFactory* DownloadManagerImpl::GetDownloadFileFactoryForTesting() {
   return file_factory_.get();
 }
 
@@ -587,12 +579,12 @@ int DownloadManagerImpl::RemoveDownloads(base::Time remove_begin) {
 int DownloadManagerImpl::RemoveAllDownloads() {
   // The null times make the date range unbounded.
   int num_deleted = RemoveDownloadsBetween(base::Time(), base::Time());
-  download_stats::RecordClearAllSize(num_deleted);
+  RecordClearAllSize(num_deleted);
   return num_deleted;
 }
 
 void DownloadManagerImpl::DownloadUrl(
-    scoped_ptr<content::DownloadUrlParameters> params) {
+    scoped_ptr<DownloadUrlParameters> params) {
   if (params->post_id() >= 0) {
     // Check this here so that the traceback is more useful.
     DCHECK(params->prefer_cache());
@@ -647,7 +639,7 @@ void DownloadManagerImpl::AddDownloadItemToHistory(DownloadItemImpl* download,
   download->SetDbHandle(db_handle);
   download->SetIsPersisted();
 
-  download_stats::RecordHistorySize(history_size_);
+  RecordHistorySize(history_size_);
   // Not counting |download|.
   ++history_size_;
 
@@ -805,8 +797,7 @@ void DownloadManagerImpl::OnSavePageItemAddedToPersistentStore(
     SavePageDownloadFinished(item);
 }
 
-void DownloadManagerImpl::SavePageDownloadFinished(
-    content::DownloadItem* download) {
+void DownloadManagerImpl::SavePageDownloadFinished(DownloadItem* download) {
   if (download->IsPersisted()) {
     if (delegate_)
       delegate_->UpdateItemInPersistentStore(download);
@@ -824,7 +815,7 @@ void DownloadManagerImpl::DownloadOpened(DownloadItemImpl* download) {
         !item->GetOpened())
       ++num_unopened;
   }
-  download_stats::RecordOpensOutstanding(num_unopened);
+  RecordOpensOutstanding(num_unopened);
 }
 
 void DownloadManagerImpl::DownloadRenamedToIntermediateName(
@@ -851,3 +842,5 @@ void DownloadManagerImpl::DownloadRenamedToFinalName(
         download, download->GetFullPath());
   }
 }
+
+}  // namespace content

@@ -36,7 +36,6 @@
 #include "webkit/glue/resource_type.h"
 
 class ResourceHandler;
-class SaveFileManager;
 struct ResourceHostMsg_Request;
 struct ViewMsg_SwapOut_Params;
 
@@ -53,6 +52,7 @@ class ResourceContext;
 class ResourceDispatcherHostDelegate;
 class ResourceMessageFilter;
 class ResourceRequestInfoImpl;
+class SaveFileManager;
 class WebContentsImpl;
 struct DownloadSaveInfo;
 struct GlobalRequestID;

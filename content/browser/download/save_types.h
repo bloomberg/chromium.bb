@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
 typedef std::vector<std::pair<int, FilePath> > FinalNameList;
 typedef std::vector<int> SaveIDList;
 
@@ -63,5 +64,7 @@ struct SaveFileCreateInfo {
   // Source type of saved file.
   SaveFileSource save_source;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_TYPES_H_

@@ -20,7 +20,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
-using content::BrowserThread;
+namespace content {
 
 // This will initialize the entire array to zero.
 const unsigned char BaseFile::kEmptySha256Hash[] = { 0 };
@@ -62,7 +62,7 @@ BaseFile::~BaseFile() {
     Cancel();  // Will delete the file.
 }
 
-content::DownloadInterruptReason BaseFile::Initialize(
+DownloadInterruptReason BaseFile::Initialize(
     const FilePath& default_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
@@ -77,7 +77,7 @@ content::DownloadInterruptReason BaseFile::Initialize(
     FilePath temp_file;
     if (initial_directory.empty()) {
       initial_directory =
-          content::GetContentClient()->browser()->GetDefaultDownloadDirectory();
+          GetContentClient()->browser()->GetDefaultDownloadDirectory();
     }
     // |initial_directory| can still be empty if ContentBrowserClient returned
     // an empty path for the downloads directory.
@@ -85,7 +85,7 @@ content::DownloadInterruptReason BaseFile::Initialize(
          !file_util::CreateTemporaryFileInDir(initial_directory, &temp_file)) &&
         !file_util::CreateTemporaryFile(&temp_file)) {
       return LogInterruptReason("Unable to create", 0,
-                                content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+                                DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     }
     full_path_ = temp_file;
   }
@@ -93,25 +93,23 @@ content::DownloadInterruptReason BaseFile::Initialize(
   return Open();
 }
 
-content::DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
-                                                            size_t data_len) {
+DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
+                                                   size_t data_len) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
   // NOTE(benwells): The above DCHECK won't be present in release builds,
   // so we log any occurences to see how common this error is in the wild.
-  if (detached_) {
-    download_stats::RecordDownloadCount(
-        download_stats::APPEND_TO_DETACHED_FILE_COUNT);
-  }
+  if (detached_)
+    RecordDownloadCount(APPEND_TO_DETACHED_FILE_COUNT);
 
   if (!file_stream_.get())
     return LogInterruptReason("No file stream on append", 0,
-                              content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+                              DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
 
   // TODO(phajdan.jr): get rid of this check.
   if (data_len == 0)
-    return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+    return DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // The Write call below is not guaranteed to write all the data.
   size_t write_count = 0;
@@ -141,24 +139,23 @@ content::DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
     bytes_so_far_ += write_size;
   }
 
-  download_stats::RecordDownloadWriteSize(data_len);
-  download_stats::RecordDownloadWriteLoopCount(write_count);
+  RecordDownloadWriteSize(data_len);
+  RecordDownloadWriteLoopCount(write_count);
 
   if (calculate_hash_)
     secure_hash_->Update(data, data_len);
 
-  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-content::DownloadInterruptReason BaseFile::Rename(const FilePath& new_path) {
+DownloadInterruptReason BaseFile::Rename(const FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  content::DownloadInterruptReason rename_result =
-      content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  DownloadInterruptReason rename_result = DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // If the new path is same as the old one, there is no need to perform the
   // following renaming logic.
   if (new_path == full_path_)
-    return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+    return DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // Save the information whether the download is in progress because
   // it will be overwritten by closing the file.
@@ -166,8 +163,7 @@ content::DownloadInterruptReason BaseFile::Rename(const FilePath& new_path) {
 
   bound_net_log_.BeginEvent(
       net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED,
-      base::Bind(&download_net_logs::FileRenamedCallback,
-                 &full_path_, &new_path));
+      base::Bind(&FileRenamedNetLogCallback, &full_path_, &new_path));
   Close();
   file_util::CreateDirectory(new_path.DirName());
 
@@ -175,7 +171,7 @@ content::DownloadInterruptReason BaseFile::Rename(const FilePath& new_path) {
   // permissions / security descriptors that makes sense in the new directory.
   rename_result = MoveFileAndAdjustPermissions(new_path);
 
-  if (rename_result == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (rename_result == DOWNLOAD_INTERRUPT_REASON_NONE) {
     full_path_ = new_path;
     // Re-open the file if we were still using it.
     if (was_in_progress)
@@ -267,15 +263,14 @@ void BaseFile::CreateFileStream() {
   file_stream_->SetBoundNetLogSource(bound_net_log_);
 }
 
-content::DownloadInterruptReason BaseFile::Open() {
+DownloadInterruptReason BaseFile::Open() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
   DCHECK(!full_path_.empty());
 
   bound_net_log_.BeginEvent(
       net::NetLog::TYPE_DOWNLOAD_FILE_OPENED,
-      base::Bind(&download_net_logs::FileOpenedCallback,
-                 &full_path_, bytes_so_far_));
+      base::Bind(&FileOpenedNetLogCallback, &full_path_, bytes_so_far_));
 
   // Create a new file stream if it is not provided.
   if (!file_stream_.get()) {
@@ -300,7 +295,7 @@ content::DownloadInterruptReason BaseFile::Open() {
     file_stream_->SetBoundNetLogSource(bound_net_log_);
   }
 
-  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 void BaseFile::Close() {
@@ -332,34 +327,34 @@ int64 BaseFile::CurrentSpeedAtTime(base::TimeTicks current_time) const {
   return diff_ms == 0 ? 0 : bytes_so_far() * 1000 / diff_ms;
 }
 
-content::DownloadInterruptReason BaseFile::LogNetError(
+DownloadInterruptReason BaseFile::LogNetError(
     const char* operation,
     net::Error error) {
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_FILE_ERROR,
-      base::Bind(&download_net_logs::FileErrorCallback, operation, error));
-  return content::ConvertNetErrorToInterruptReason(
-      error, content::DOWNLOAD_INTERRUPT_FROM_DISK);
+      base::Bind(&FileErrorNetLogCallback, operation, error));
+  return ConvertNetErrorToInterruptReason(error, DOWNLOAD_INTERRUPT_FROM_DISK);
 }
 
-content::DownloadInterruptReason BaseFile::LogSystemError(
+DownloadInterruptReason BaseFile::LogSystemError(
     const char* operation,
     int os_error) {
   // There's no direct conversion from a system error to an interrupt reason.
   net::Error net_error = net::MapSystemError(os_error);
   return LogInterruptReason(
       operation, os_error,
-      content::ConvertNetErrorToInterruptReason(
-          net_error, content::DOWNLOAD_INTERRUPT_FROM_DISK));
+      ConvertNetErrorToInterruptReason(
+          net_error, DOWNLOAD_INTERRUPT_FROM_DISK));
 }
 
-content::DownloadInterruptReason BaseFile::LogInterruptReason(
+DownloadInterruptReason BaseFile::LogInterruptReason(
     const char* operation,
     int os_error,
-    content::DownloadInterruptReason reason) {
+    DownloadInterruptReason reason) {
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_FILE_ERROR,
-      base::Bind(&download_net_logs::FileInterruptedCallback, operation,
-                 os_error, reason));
+      base::Bind(&FileInterruptedNetLogCallback, operation, os_error, reason));
   return reason;
 }
+
+}  // namespace content

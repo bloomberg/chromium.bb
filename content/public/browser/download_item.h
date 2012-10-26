@@ -30,7 +30,6 @@
 
 class FilePath;
 class GURL;
-struct DownloadCreateInfo;
 
 namespace base {
 class Time;
@@ -43,6 +42,7 @@ class BrowserContext;
 class DownloadId;
 class DownloadManager;
 class WebContents;
+struct DownloadCreateInfo;
 struct DownloadPersistentStoreInfo;
 
 // One DownloadItem per download. This is the model class that stores all the

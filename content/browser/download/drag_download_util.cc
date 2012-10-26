@@ -19,10 +19,9 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
-using content::BrowserThread;
 using net::FileStream;
 
-namespace drag_download_util {
+namespace content {
 
 bool ParseDownloadMetadata(const string16& metadata,
                            string16* mime_type,
@@ -117,4 +116,4 @@ void PromiseFileFinalizer::Cleanup() {
     drag_file_downloader_ = NULL;
 }
 
-}  // namespace drag_download_util
+}  // namespace content

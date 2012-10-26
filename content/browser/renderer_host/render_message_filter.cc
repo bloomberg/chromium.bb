@@ -760,7 +760,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   request->set_referrer(referrer.url.spec());
   webkit_glue::ConfigureURLRequestForReferrerPolicy(
       request.get(), referrer.policy);
-  download_stats::RecordDownloadSource(download_stats::INITIATED_BY_RENDERER);
+  RecordDownloadSource(INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),
       true,  // is_content_initiated

@@ -10,10 +10,11 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
 class SaveFileManager;
 
 // Forwards data to the save thread.
-class SaveFileResourceHandler : public content::ResourceHandler {
+class SaveFileResourceHandler : public ResourceHandler {
  public:
   SaveFileResourceHandler(int render_process_host_id,
                           int render_view_id,
@@ -30,12 +31,12 @@ class SaveFileResourceHandler : public content::ResourceHandler {
   // URL to match original request.
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& url,
-                                   content::ResourceResponse* response,
+                                   ResourceResponse* response,
                                    bool* defer) OVERRIDE;
 
   // Sends the download creation information to the download thread.
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response,
+                                 ResourceResponse* response,
                                  bool* defer) OVERRIDE;
 
   // Pass-through implementation.
@@ -82,5 +83,7 @@ class SaveFileResourceHandler : public content::ResourceHandler {
 
   DISALLOW_COPY_AND_ASSIGN(SaveFileResourceHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_SAVE_FILE_RESOURCE_HANDLER_H_

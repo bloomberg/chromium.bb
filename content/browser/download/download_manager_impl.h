@@ -19,21 +19,18 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_manager.h"
 
-class DownloadFileManager;
-class DownloadItemImpl;
-
-namespace content {
-class DownloadItemFactory;
-class DownloadFileFactory;
-}
-
 namespace net {
 class BoundNetLog;
 }
 
-class CONTENT_EXPORT DownloadManagerImpl
-    : public content::DownloadManager,
-      private DownloadItemImplDelegate {
+namespace content {
+class DownloadFileFactory;
+class DownloadFileManager;
+class DownloadItemFactory;
+class DownloadItemImpl;
+
+class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
+                                           private DownloadItemImplDelegate {
  public:
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
@@ -48,46 +45,44 @@ class CONTENT_EXPORT DownloadManagerImpl
       const FilePath& main_file_path,
       const GURL& page_url,
       const std::string& mime_type,
-      content::DownloadItem::Observer* observer);
+      DownloadItem::Observer* observer);
 
-  // content::DownloadManager functions.
-  virtual void SetDelegate(content::DownloadManagerDelegate* delegate) OVERRIDE;
-  virtual content::DownloadManagerDelegate* GetDelegate() const OVERRIDE;
+  // DownloadManager functions.
+  virtual void SetDelegate(DownloadManagerDelegate* delegate) OVERRIDE;
+  virtual DownloadManagerDelegate* GetDelegate() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void GetAllDownloads(DownloadVector* result) OVERRIDE;
-  virtual bool Init(content::BrowserContext* browser_context) OVERRIDE;
-  virtual content::DownloadItem* StartDownload(
+  virtual bool Init(BrowserContext* browser_context) OVERRIDE;
+  virtual DownloadItem* StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
-      scoped_ptr<content::ByteStreamReader> stream) OVERRIDE;
+      scoped_ptr<ByteStreamReader> stream) OVERRIDE;
   virtual void CancelDownload(int32 download_id) OVERRIDE;
   virtual int RemoveDownloadsBetween(base::Time remove_begin,
                                      base::Time remove_end) OVERRIDE;
   virtual int RemoveDownloads(base::Time remove_begin) OVERRIDE;
   virtual int RemoveAllDownloads() OVERRIDE;
-  virtual void DownloadUrl(
-      scoped_ptr<content::DownloadUrlParameters> params) OVERRIDE;
+  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void OnPersistentStoreQueryComplete(
-      std::vector<content::DownloadPersistentStoreInfo>* entries) OVERRIDE;
+      std::vector<DownloadPersistentStoreInfo>* entries) OVERRIDE;
   virtual void OnItemAddedToPersistentStore(int32 download_id,
                                             int64 db_handle) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
-  virtual content::DownloadItem* GetDownload(int id) OVERRIDE;
-  virtual void SavePageDownloadFinished(
-      content::DownloadItem* download) OVERRIDE;
+  virtual DownloadItem* GetDownload(int id) OVERRIDE;
+  virtual void SavePageDownloadFinished(DownloadItem* download) OVERRIDE;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
-      scoped_ptr<content::DownloadItemFactory> item_factory);
+      scoped_ptr<DownloadItemFactory> item_factory);
   void SetDownloadFileFactoryForTesting(
-      scoped_ptr<content::DownloadFileFactory> file_factory);
-  virtual content::DownloadFileFactory* GetDownloadFileFactoryForTesting();
+      scoped_ptr<DownloadFileFactory> file_factory);
+  virtual DownloadFileFactory* GetDownloadFileFactoryForTesting();
 
  private:
-  typedef std::set<content::DownloadItem*> DownloadSet;
+  typedef std::set<DownloadItem*> DownloadSet;
   typedef base::hash_map<int32, DownloadItemImpl*> DownloadMap;
   typedef std::vector<DownloadItemImpl*> DownloadItemImplVector;
 
@@ -107,7 +102,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void ShowDownloadInBrowser(DownloadItemImpl* download);
 
   // Get next download id.
-  content::DownloadId GetNextId();
+  DownloadId GetNextId();
 
   // Called on the FILE thread to check the existence of a downloaded file.
   void CheckForFileRemovalOnFileThread(int32 download_id, const FilePath& path);
@@ -161,10 +156,10 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void AssertStateConsistent(DownloadItemImpl* download) const OVERRIDE;
 
   // Factory for creation of downloads items.
-  scoped_ptr<content::DownloadItemFactory> item_factory_;
+  scoped_ptr<DownloadItemFactory> item_factory_;
 
   // Factory for the creation of download files.
-  scoped_ptr<content::DownloadFileFactory> file_factory_;
+  scoped_ptr<DownloadFileFactory> file_factory_;
 
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in
@@ -199,14 +194,16 @@ class CONTENT_EXPORT DownloadManagerImpl
   ObserverList<Observer> observers_;
 
   // The current active browser context.
-  content::BrowserContext* browser_context_;
+  BrowserContext* browser_context_;
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
-  content::DownloadManagerDelegate* delegate_;
+  DownloadManagerDelegate* delegate_;
 
   net::NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_IMPL_H_

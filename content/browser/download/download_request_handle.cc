@@ -11,10 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
-using content::DownloadManager;
-using content::RenderViewHostImpl;
+namespace content {
 
 DownloadRequestHandle::~DownloadRequestHandle() {
 }
@@ -37,7 +34,7 @@ DownloadRequestHandle::DownloadRequestHandle(
   DCHECK(handler_);
 }
 
-content::WebContents* DownloadRequestHandle::GetWebContents() const {
+WebContents* DownloadRequestHandle::GetWebContents() const {
   RenderViewHostImpl* render_view_host =
       RenderViewHostImpl::FromID(child_id_, render_view_id_);
   if (!render_view_host)
@@ -51,10 +48,10 @@ DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
       child_id_, render_view_id_);
   if (rvh == NULL)
     return NULL;
-  content::RenderProcessHost* rph = rvh->GetProcess();
+  RenderProcessHost* rph = rvh->GetProcess();
   if (rph == NULL)
     return NULL;
-  content::BrowserContext* context = rph->GetBrowserContext();
+  BrowserContext* context = rph->GetBrowserContext();
   if (context == NULL)
     return NULL;
   return BrowserContext::GetDownloadManager(context);
@@ -88,3 +85,5 @@ std::string DownloadRequestHandle::DebugString() const {
                             render_view_id_,
                             request_id_);
 }
+
+}  // namespace content

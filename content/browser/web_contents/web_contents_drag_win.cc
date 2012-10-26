@@ -36,12 +36,12 @@
 #include "ui/gfx/size.h"
 #include "webkit/glue/webdropdata.h"
 
-using content::BrowserThread;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationCopy;
 using WebKit::WebDragOperationLink;
 using WebKit::WebDragOperationMove;
 
+namespace content {
 namespace {
 
 HHOOK msg_hook = NULL;
@@ -135,7 +135,7 @@ class DragDropThread : public base::Thread {
 
 WebContentsDragWin::WebContentsDragWin(
     gfx::NativeWindow source_window,
-    content::WebContents* web_contents,
+    WebContents* web_contents,
     WebDragDest* drag_dest,
     const base::Callback<void()>& drag_end_callback)
     : drag_drop_thread_id_(0),
@@ -226,15 +226,15 @@ void WebContentsDragWin::PrepareDragForDownload(
   string16 mime_type;
   FilePath file_name;
   GURL download_url;
-  if (!drag_download_util::ParseDownloadMetadata(drop_data.download_metadata,
-                                                 &mime_type,
-                                                 &file_name,
-                                                 &download_url))
+  if (!ParseDownloadMetadata(drop_data.download_metadata,
+                             &mime_type,
+                             &file_name,
+                             &download_url))
     return;
 
   // Generate the file name based on both mime type and proposed file name.
   std::string default_name =
-      content::GetContentClient()->browser()->GetDefaultDownloadName();
+      GetContentClient()->browser()->GetDefaultDownloadName();
   FilePath generated_download_file_name =
       net::GenerateFileName(download_url,
                             std::string(),
@@ -250,7 +250,7 @@ void WebContentsDragWin::PrepareDragForDownload(
           generated_download_file_name,
           scoped_ptr<net::FileStream>(),
           download_url,
-          content::Referrer(page_url, drop_data.referrer_policy),
+          Referrer(page_url, drop_data.referrer_policy),
           page_encoding,
           web_contents_);
   ui::OSExchangeData::DownloadFileInfo file_download(FilePath(),
@@ -416,3 +416,5 @@ void WebContentsDragWin::OnDataObjectDisposed() {
       FROM_HERE,
       base::Bind(&WebContentsDragWin::CloseThread, this));
 }
+
+}  // namespace content

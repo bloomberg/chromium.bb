@@ -17,19 +17,18 @@
 #include "ui/base/dragdrop/download_file_interface.h"
 #include "ui/base/ui_export.h"
 
-namespace content {
-class DownloadManager;
-class WebContents;
-}
-
 namespace net {
 class FileStream;
 }
 
+namespace content {
+class DownloadManager;
+class WebContents;
+
 class DragDownloadFile
     : public ui::DownloadFileProvider,
-      public content::DownloadManager::Observer,
-      public content::DownloadItem::Observer {
+      public DownloadManager::Observer,
+      public DownloadItem::Observer {
  public:
   // On Windows, we need to download into a temporary file. Two threads are
   // involved: background drag-and-drop thread and UI thread.
@@ -43,9 +42,9 @@ class DragDownloadFile
   DragDownloadFile(const FilePath& file_name_or_path,
                    scoped_ptr<net::FileStream> file_stream,
                    const GURL& url,
-                   const content::Referrer& referrer,
+                   const Referrer& referrer,
                    const std::string& referrer_encoding,
-                   content::WebContents* web_contents);
+                   WebContents* web_contents);
 
   // DownloadFileProvider methods.
   // Called on drag-and-drop thread (Windows).
@@ -56,14 +55,14 @@ class DragDownloadFile
   virtual IStream* GetStream() { return NULL; }
 #endif
 
-  // content::DownloadManager::Observer methods.
+  // DownloadManager::Observer methods.
   // Called on UI thread.
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
+  virtual void ModelChanged(DownloadManager* manager) OVERRIDE;
 
-  // content::DownloadItem::Observer methods.
+  // DownloadItem::Observer methods.
   // Called on UI thread.
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
 
  private:
   // Called on drag-and-drop thread (Windows).
@@ -94,9 +93,9 @@ class DragDownloadFile
   FilePath file_name_;
   scoped_ptr<net::FileStream> file_stream_;
   GURL url_;
-  content::Referrer referrer_;
+  Referrer referrer_;
   std::string referrer_encoding_;
-  content::WebContents* web_contents_;
+  WebContents* web_contents_;
   MessageLoop* drag_message_loop_;
   FilePath temp_dir_path_;
 
@@ -112,11 +111,13 @@ class DragDownloadFile
 #endif
 
   // Access on UI thread.
-  content::DownloadManager* download_manager_;
+  DownloadManager* download_manager_;
   bool download_manager_observer_added_;
-  content::DownloadItem* download_item_;
+  DownloadItem* download_item_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFile);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_

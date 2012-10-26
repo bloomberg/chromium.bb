@@ -8,7 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 
-using content::BrowserThread;
+namespace content {
 
 // TODO(asanka): SaveFile should use the target directory of the save package as
 //               the default download directory when initializing |file_|.
@@ -34,16 +34,16 @@ SaveFile::~SaveFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-content::DownloadInterruptReason SaveFile::Initialize() {
+DownloadInterruptReason SaveFile::Initialize() {
   return file_.Initialize(FilePath());
 }
 
-content::DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
-                                                            size_t data_len) {
+DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
+                                                   size_t data_len) {
   return file_.AppendDataToFile(data, data_len);
 }
 
-content::DownloadInterruptReason SaveFile::Rename(const FilePath& full_path) {
+DownloadInterruptReason SaveFile::Rename(const FilePath& full_path) {
   return file_.Rename(full_path);
 }
 
@@ -82,3 +82,5 @@ bool SaveFile::GetHash(std::string* hash) {
 std::string SaveFile::DebugString() const {
   return file_.DebugString();
 }
+
+}  // namespace content

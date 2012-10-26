@@ -1667,8 +1667,7 @@ bool WebContentsImpl::IsSavable() {
 void WebContentsImpl::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!IsSavable()) {
-    download_stats::RecordDownloadSource(
-        download_stats::INITIATED_BY_SAVE_PACKAGE_ON_NON_HTML);
+    RecordDownloadSource(INITIATED_BY_SAVE_PACKAGE_ON_NON_HTML);
     SaveURL(GetURL(), Referrer(), true);
     return;
   }
@@ -2201,8 +2200,7 @@ void WebContentsImpl::OnUpdateZoomLimits(int minimum_percent,
 
 void WebContentsImpl::OnSaveURL(const GURL& url,
                                 const Referrer& referrer) {
-  download_stats::RecordDownloadSource(
-      download_stats::INITIATED_BY_PEPPER_SAVE);
+  RecordDownloadSource(INITIATED_BY_PEPPER_SAVE);
   // Check if the URL to save matches the URL of the main frame. Since this
   // message originates from Pepper plugins, it may not be the case if the
   // plugin is an embedded element.

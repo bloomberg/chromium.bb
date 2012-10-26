@@ -64,7 +64,7 @@ namespace content {
 //      // Create a stream for sending bytes from IO->FILE threads.
 //      scoped_ptr<ByteStreamWriter> writer;
 //      scoped_ptr<ByteStreamReader> reader;
-//      content::CreateByteStream(
+//      CreateByteStream(
 //          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
 //          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
 //          kStreamBufferSize /* e.g. 10240.  */,
@@ -107,13 +107,13 @@ namespace content {
 //      scoped_refptr<net::IOBuffer> data;
 //      size_t length = 0;
 //
-//      while (content::ByteStreamReader::STREAM_HAS_DATA ==
+//      while (ByteStreamReader::STREAM_HAS_DATA ==
 //             (state = reader->Read(&data, &length))) {
 //        // Process |data|.
 //      }
 //
-//      if (content::ByteStreamReader::STREAM_COMPLETE == state) {
-//        content::DownloadInterruptReason status = reader->GetStatus();
+//      if (ByteStreamReader::STREAM_COMPLETE == state) {
+//        DownloadInterruptReason status = reader->GetStatus();
 //        // Process error or successful completion in |status|.
 //      }
 //

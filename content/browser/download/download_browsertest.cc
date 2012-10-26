@@ -279,16 +279,16 @@ bool WasPersisted(DownloadItem* item) {
 class CountingDownloadFile : public DownloadFileImpl {
  public:
   CountingDownloadFile(
-    scoped_ptr<content::DownloadSaveInfo> save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
     int64 received_bytes,
     bool calculate_hash,
-    scoped_ptr<content::ByteStreamReader> stream,
+    scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
-    base::WeakPtr<content::DownloadDestinationObserver> observer)
+    scoped_ptr<PowerSaveBlocker> power_save_blocker,
+    base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(save_info.Pass(), default_downloads_directory,
                          url, referrer_url, received_bytes, calculate_hash,
                          stream.Pass(), bound_net_log,
@@ -334,16 +334,16 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
   virtual ~CountingDownloadFileFactory() {}
 
   // DownloadFileFactory interface.
-  virtual content::DownloadFile* CreateFile(
-    scoped_ptr<content::DownloadSaveInfo> save_info,
+  virtual DownloadFile* CreateFile(
+    scoped_ptr<DownloadSaveInfo> save_info,
     const FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
     int64 received_bytes,
     bool calculate_hash,
-    scoped_ptr<content::ByteStreamReader> stream,
+    scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    base::WeakPtr<content::DownloadDestinationObserver> observer) OVERRIDE {
+    base::WeakPtr<DownloadDestinationObserver> observer) OVERRIDE {
     scoped_ptr<PowerSaveBlocker> psb(
         new PowerSaveBlocker(
             PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
@@ -397,7 +397,7 @@ class DownloadContentTest : public ContentBrowserTest {
   // Note: Cannot be used with other alternative DownloadFileFactorys
   void SetupEnsureNoPendingDownloads() {
     DownloadManagerForShell(shell())->SetDownloadFileFactoryForTesting(
-        scoped_ptr<content::DownloadFileFactory>(
+        scoped_ptr<DownloadFileFactory>(
             new CountingDownloadFileFactory()).Pass());
   }
 
@@ -679,8 +679,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
 
   // Wait for it to be persisted.
-  content::DownloadUpdatedObserver(
-      items[0], base::Bind(&WasPersisted)).WaitForEvent();
+  DownloadUpdatedObserver(items[0], base::Bind(&WasPersisted)).WaitForEvent();
 
   // Shutdown the download manager and make sure we get the right
   // notifications in the right order.
@@ -715,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   DownloadFileWithDelayFactory* file_factory =
       new DownloadFileWithDelayFactory();
   DownloadManagerForShell(shell())->SetDownloadFileFactoryForTesting(
-      scoped_ptr<content::DownloadFileFactory>(file_factory).Pass());
+      scoped_ptr<DownloadFileFactory>(file_factory).Pass());
 
   // Create a download
   FilePath file(FILE_PATH_LITERAL("download-test.lib"));

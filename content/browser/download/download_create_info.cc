@@ -9,7 +9,7 @@
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 
-using content::DownloadId;
+namespace content {
 
 DownloadCreateInfo::DownloadCreateInfo(
     const base::Time& start_time,
@@ -18,7 +18,7 @@ DownloadCreateInfo::DownloadCreateInfo(
     int32 state,
     const net::BoundNetLog& bound_net_log,
     bool has_user_gesture,
-    content::PageTransition transition_type)
+    PageTransition transition_type)
     : start_time(start_time),
       received_bytes(received_bytes),
       total_bytes(total_bytes),
@@ -28,7 +28,7 @@ DownloadCreateInfo::DownloadCreateInfo(
       transition_type(transition_type),
       db_handle(0),
       prompt_user_for_save_location(false),
-      save_info(new content::DownloadSaveInfo()),
+      save_info(new DownloadSaveInfo()),
       request_bound_net_log(bound_net_log) {
 }
 
@@ -38,10 +38,10 @@ DownloadCreateInfo::DownloadCreateInfo()
       state(-1),
       download_id(DownloadId::Invalid()),
       has_user_gesture(false),
-      transition_type(content::PAGE_TRANSITION_LINK),
+      transition_type(PAGE_TRANSITION_LINK),
       db_handle(0),
       prompt_user_for_save_location(false),
-      save_info(new content::DownloadSaveInfo()) {
+      save_info(new DownloadSaveInfo()) {
 }
 
 DownloadCreateInfo::~DownloadCreateInfo() {
@@ -65,3 +65,5 @@ std::string DownloadCreateInfo::DebugString() const {
 const GURL& DownloadCreateInfo::url() const {
   return url_chain.empty() ? GURL::EmptyGURL() : url_chain.back();
 }
+
+}  // namespace content

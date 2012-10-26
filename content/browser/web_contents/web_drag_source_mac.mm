@@ -36,6 +36,8 @@ using base::SysNSStringToUTF8;
 using base::SysUTF8ToNSString;
 using base::SysUTF16ToNSString;
 using content::BrowserThread;
+using content::DragDownloadFile;
+using content::PromiseFileFinalizer;
 using content::RenderViewHostImpl;
 using net::FileStream;
 
@@ -342,9 +344,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   // which is blocking.  Since this operation is already blocking the
   // UI thread on OSX, it should be reasonable to let it happen.
   base::ThreadRestrictions::ScopedAllowIO allowIO;
-  scoped_ptr<FileStream> fileStream(
-      drag_download_util::CreateFileStreamForDrop(
-          &filePath, content::GetContentClient()->browser()->GetNetLog()));
+  scoped_ptr<FileStream> fileStream(content::CreateFileStreamForDrop(
+      &filePath, content::GetContentClient()->browser()->GetNetLog()));
   if (!fileStream.get())
     return nil;
 
@@ -358,8 +359,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
         contents_));
 
     // The finalizer will take care of closing and deletion.
-    dragFileDownloader->Start(
-        new drag_download_util::PromiseFileFinalizer(dragFileDownloader));
+    dragFileDownloader->Start(new PromiseFileFinalizer(dragFileDownloader));
   } else {
     // The writer will take care of closing and deletion.
     BrowserThread::PostTask(BrowserThread::FILE,
@@ -406,7 +406,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     } else {
       string16 mimeType;
       FilePath fileName;
-      if (drag_download_util::ParseDownloadMetadata(
+      if (content::ParseDownloadMetadata(
               dropData_->download_metadata,
               &mimeType,
               &fileName,

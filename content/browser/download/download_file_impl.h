@@ -17,16 +17,14 @@
 #include "content/public/browser/download_save_info.h"
 #include "net/base/net_log.h"
 
-struct DownloadCreateInfo;
-
 namespace content {
 class ByteStreamReader;
 class DownloadDestinationObserver;
 class DownloadManager;
 class PowerSaveBlocker;
-}
+struct DownloadCreateInfo;
 
-class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
+class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
  public:
   // Takes ownership of the object pointed to by |request_handle|.
   // |bound_net_log| will be used for logging the download file's events.
@@ -37,16 +35,16 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   // stream, and sends updates and status of those reads to the
   // DownloadDestinationObserver.
   DownloadFileImpl(
-    scoped_ptr<content::DownloadSaveInfo> save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
     int64 received_bytes,
     bool calculate_hash,
-    scoped_ptr<content::ByteStreamReader> stream,
+    scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
-    base::WeakPtr<content::DownloadDestinationObserver> observer);
+    scoped_ptr<PowerSaveBlocker> power_save_blocker,
+    base::WeakPtr<DownloadDestinationObserver> observer);
 
   virtual ~DownloadFileImpl();
 
@@ -67,7 +65,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
 
  protected:
   // For test class overrides.
-  virtual content::DownloadInterruptReason AppendDataToFile(
+  virtual DownloadInterruptReason AppendDataToFile(
       const char* data, size_t data_len);
 
  private:
@@ -88,7 +86,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   // TODO(rdsmith): Move this into BaseFile; requires using the same
   // stream semantics in SavePackage.  Alternatively, replace SaveFile
   // with DownloadFile and get rid of BaseFile.
-  scoped_ptr<content::ByteStreamReader> stream_reader_;
+  scoped_ptr<ByteStreamReader> stream_reader_;
 
   // Used to trigger progress updates.
   scoped_ptr<base::RepeatingTimer<DownloadFileImpl> > update_timer_;
@@ -100,14 +98,16 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
 
   net::BoundNetLog bound_net_log_;
 
-  base::WeakPtr<content::DownloadDestinationObserver> observer_;
+  base::WeakPtr<DownloadDestinationObserver> observer_;
 
   base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
 
   // RAII handle to keep the system from sleeping while we're downloading.
-  scoped_ptr<content::PowerSaveBlocker> power_save_blocker_;
+  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_IMPL_H_

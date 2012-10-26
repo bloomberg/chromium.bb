@@ -8,10 +8,11 @@
 using ::testing::_;
 using ::testing::Return;
 
+namespace content {
 namespace {
 
-void SuccessRun(const content::DownloadFile::InitializeCallback& callback) {
-  callback.Run(content::DOWNLOAD_INTERRUPT_REASON_NONE);
+void SuccessRun(const DownloadFile::InitializeCallback& callback) {
+  callback.Run(DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 }  // namespace
@@ -25,3 +26,5 @@ MockDownloadFile::MockDownloadFile() {
 
 MockDownloadFile::~MockDownloadFile() {
 }
+
+}  // namespace content

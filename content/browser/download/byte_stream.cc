@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 
+namespace content {
 namespace {
 
 typedef std::deque<std::pair<scoped_refptr<net::IOBuffer>, size_t> >
@@ -47,7 +48,7 @@ struct LifetimeFlag : public base::RefCountedThreadSafe<LifetimeFlag> {
 // For both ByteStreamWriterImpl and ByteStreamReaderImpl, Construction and
 // SetPeer may happen anywhere; all other operations on each class must
 // happen in the context of their SequencedTaskRunner.
-class ByteStreamWriterImpl : public content::ByteStreamWriter {
+class ByteStreamWriterImpl : public ByteStreamWriter {
  public:
   ByteStreamWriterImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
                        scoped_refptr<LifetimeFlag> lifetime_flag,
@@ -62,7 +63,7 @@ class ByteStreamWriterImpl : public content::ByteStreamWriter {
   // Overridden from ByteStreamWriter.
   virtual bool Write(scoped_refptr<net::IOBuffer> buffer,
                      size_t byte_count) OVERRIDE;
-  virtual void Close(content::DownloadInterruptReason status) OVERRIDE;
+  virtual void Close(DownloadInterruptReason status) OVERRIDE;
   virtual void RegisterCallback(const base::Closure& source_callback) OVERRIDE;
 
   // PostTask target from |ByteStreamReaderImpl::MaybeUpdateInput|.
@@ -74,7 +75,7 @@ class ByteStreamWriterImpl : public content::ByteStreamWriter {
   // Called from UpdateWindow when object existence has been validated.
   void UpdateWindowInternal(size_t bytes_consumed);
 
-  void PostToPeer(bool complete, content::DownloadInterruptReason status);
+  void PostToPeer(bool complete, DownloadInterruptReason status);
 
   const size_t total_buffer_size_;
 
@@ -105,7 +106,7 @@ class ByteStreamWriterImpl : public content::ByteStreamWriter {
   ByteStreamReaderImpl* peer_;
 };
 
-class ByteStreamReaderImpl : public content::ByteStreamReader {
+class ByteStreamReaderImpl : public ByteStreamReader {
  public:
   ByteStreamReaderImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
                        scoped_refptr<LifetimeFlag> lifetime_flag,
@@ -120,7 +121,7 @@ class ByteStreamReaderImpl : public content::ByteStreamReader {
   // Overridden from ByteStreamReader.
   virtual StreamState Read(scoped_refptr<net::IOBuffer>* data,
                            size_t* length) OVERRIDE;
-  virtual content::DownloadInterruptReason GetStatus() const OVERRIDE;
+  virtual DownloadInterruptReason GetStatus() const OVERRIDE;
   virtual void RegisterCallback(const base::Closure& sink_callback) OVERRIDE;
 
   // PostTask target from |ByteStreamWriterImpl::MaybePostToPeer| and
@@ -135,7 +136,7 @@ class ByteStreamReaderImpl : public content::ByteStreamReader {
       scoped_ptr<ContentVector> transfer_buffer,
       size_t transfer_buffer_bytes,
       bool source_complete,
-      content::DownloadInterruptReason status);
+      DownloadInterruptReason status);
 
  private:
   // Called from TransferData once object existence has been validated.
@@ -143,7 +144,7 @@ class ByteStreamReaderImpl : public content::ByteStreamReader {
       scoped_ptr<ContentVector> transfer_buffer,
       size_t transfer_buffer_bytes,
       bool source_complete,
-      content::DownloadInterruptReason status);
+      DownloadInterruptReason status);
 
   void MaybeUpdateInput();
 
@@ -157,7 +158,7 @@ class ByteStreamReaderImpl : public content::ByteStreamReader {
   ContentVector available_contents_;
 
   bool received_status_;
-  content::DownloadInterruptReason status_;
+  DownloadInterruptReason status_;
 
   base::Closure data_available_callback_;
 
@@ -217,13 +218,13 @@ bool ByteStreamWriterImpl::Write(
 
   // Arbitrarily, we buffer to a third of the total size before sending.
   if (input_contents_size_ > total_buffer_size_ / kFractionBufferBeforeSending)
-    PostToPeer(false, content::DOWNLOAD_INTERRUPT_REASON_NONE);
+    PostToPeer(false, DOWNLOAD_INTERRUPT_REASON_NONE);
 
   return (input_contents_size_ + output_size_used_ <= total_buffer_size_);
 }
 
 void ByteStreamWriterImpl::Close(
-    content::DownloadInterruptReason status) {
+    DownloadInterruptReason status) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   PostToPeer(true, status);
 }
@@ -260,7 +261,7 @@ void ByteStreamWriterImpl::UpdateWindowInternal(size_t bytes_consumed) {
 }
 
 void ByteStreamWriterImpl::PostToPeer(
-    bool complete, content::DownloadInterruptReason status) {
+    bool complete, DownloadInterruptReason status) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   // Valid contexts in which to call.
   DCHECK(complete || 0 != input_contents_size_);
@@ -293,7 +294,7 @@ ByteStreamReaderImpl::ByteStreamReaderImpl(
       my_task_runner_(task_runner),
       my_lifetime_flag_(lifetime_flag),
       received_status_(false),
-      status_(content::DOWNLOAD_INTERRUPT_REASON_NONE),
+      status_(DOWNLOAD_INTERRUPT_REASON_NONE),
       unreported_consumed_bytes_(0),
       peer_(NULL) {
   DCHECK(my_lifetime_flag_.get());
@@ -333,8 +334,7 @@ ByteStreamReaderImpl::Read(scoped_refptr<net::IOBuffer>* data,
   return STREAM_EMPTY;
 }
 
-content::DownloadInterruptReason
-ByteStreamReaderImpl::GetStatus() const {
+DownloadInterruptReason ByteStreamReaderImpl::GetStatus() const {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(received_status_);
   return status_;
@@ -354,7 +354,7 @@ void ByteStreamReaderImpl::TransferData(
     scoped_ptr<ContentVector> transfer_buffer,
     size_t buffer_size,
     bool source_complete,
-    content::DownloadInterruptReason status) {
+    DownloadInterruptReason status) {
   // If our target is no longer alive, do nothing.
   if (!object_lifetime_flag->is_alive) return;
 
@@ -366,7 +366,7 @@ void ByteStreamReaderImpl::TransferDataInternal(
     scoped_ptr<ContentVector> transfer_buffer,
     size_t buffer_size,
     bool source_complete,
-    content::DownloadInterruptReason status) {
+    DownloadInterruptReason status) {
   DCHECK(my_task_runner_->RunsTasksOnCurrentThread());
 
   bool was_empty = available_contents_.empty();
@@ -410,8 +410,6 @@ void ByteStreamReaderImpl::MaybeUpdateInput() {
 }
 
 }  // namespace
-
-namespace content {
 
 ByteStreamReader::~ByteStreamReader() { }
 

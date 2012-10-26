@@ -29,8 +29,6 @@
 #include "ui/gfx/gtk_util.h"
 #include "webkit/glue/webdropdata.h"
 
-using content::RenderViewHostImpl;
-using content::WebContents;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationNone;
@@ -97,10 +95,10 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
   if (!drop_data.file_contents.empty())
     targets_mask |= ui::CHROME_WEBDROP_FILE_CONTENTS;
   if (!drop_data.download_metadata.empty() &&
-      drag_download_util::ParseDownloadMetadata(drop_data.download_metadata,
-                                                &wide_download_mime_type_,
-                                                &download_file_name_,
-                                                &download_url_)) {
+      ParseDownloadMetadata(drop_data.download_metadata,
+                            &wide_download_mime_type_,
+                            &download_file_name_,
+                            &download_url_)) {
     targets_mask |= ui::DIRECT_SAVE_FILE;
   }
   if (!drop_data.custom_data.empty())
@@ -137,7 +135,7 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
   // much, but we should probably look into the possibility of getting the
   // initiating event from webkit.
   drag_context_ = gtk_drag_begin(drag_widget_, list,
-      content::WebDragOpToGdkDragAction(allowed_ops),
+      WebDragOpToGdkDragAction(allowed_ops),
       1,  // Drags are always initiated by the left button.
       reinterpret_cast<GdkEvent*>(last_mouse_down));
   // The drag adds a ref; let it own the list.
@@ -245,9 +243,9 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
         if (net::FileURLToFilePath(file_url, &file_path)) {
           // Open the file as a stream.
           scoped_ptr<net::FileStream> file_stream(
-              drag_download_util::CreateFileStreamForDrop(
+              CreateFileStreamForDrop(
                   &file_path,
-                  content::GetContentClient()->browser()->GetNetLog()));
+                  GetContentClient()->browser()->GetNetLog()));
           if (file_stream.get()) {
             // Start downloading the file to the stream.
             scoped_refptr<DragDownloadFile> drag_file_downloader =
@@ -255,13 +253,12 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
                     file_path,
                     file_stream.Pass(),
                     download_url_,
-                    content::Referrer(web_contents_->GetURL(),
+                    Referrer(web_contents_->GetURL(),
                                       drop_data_->referrer_policy),
                     web_contents_->GetEncoding(),
                     web_contents_);
             drag_file_downloader->Start(
-                new drag_download_util::PromiseFileFinalizer(
-                    drag_file_downloader));
+                new PromiseFileFinalizer(drag_file_downloader));
 
             // Set the status code to success.
             status_code = 'S';
@@ -318,7 +315,7 @@ void WebDragSourceGtk::OnDragBegin(GtkWidget* sender,
   if (!download_url_.is_empty()) {
     // Generate the file name based on both mime type and proposed file name.
     std::string default_name =
-        content::GetContentClient()->browser()->GetDefaultDownloadName();
+        GetContentClient()->browser()->GetDefaultDownloadName();
     FilePath generated_download_file_name =
         net::GenerateFileName(download_url_,
                               std::string(),
@@ -378,7 +375,7 @@ void WebDragSourceGtk::OnDragEnd(GtkWidget* sender,
     if (GetRenderViewHost()) {
       GetRenderViewHost()->DragSourceEndedAt(
           client.x(), client.y(), root.x(), root.y(),
-          content::GdkDragActionToWebDragOp(drag_context->action));
+          GdkDragActionToWebDragOp(drag_context->action));
     }
   }
 

@@ -24,17 +24,16 @@
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 
+class GURL;
+
+namespace content {
 class DownloadItemImpl;
 class DownloadManagerImpl;
-class GURL;
+class WebContents;
 class SaveFileManager;
 class SaveItem;
 class SavePackage;
 struct SaveFileCreateInfo;
-
-namespace content {
-class WebContents;
-}
 
 // The SavePackage object manages the process of saving a page as only-html or
 // complete-html or MHTML and providing the information for displaying saving
@@ -52,8 +51,8 @@ class WebContents;
 // saving job, and exist for the duration of one contents's life time.
 class CONTENT_EXPORT SavePackage
     : public base::RefCountedThreadSafe<SavePackage>,
-      public content::WebContentsObserver,
-      public content::DownloadItem::Observer,
+      public WebContentsObserver,
+      public DownloadItem::Observer,
       public base::SupportsWeakPtr<SavePackage> {
  public:
   enum WaitState {
@@ -78,13 +77,13 @@ class CONTENT_EXPORT SavePackage
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
   // in the "Save As" dialog box.
-  explicit SavePackage(content::WebContents* web_contents);
+  explicit SavePackage(WebContents* web_contents);
 
   // This contructor is used only for testing. We can bypass the file and
   // directory name generation / sanitization by providing well known paths
   // better suited for tests.
-  SavePackage(content::WebContents* web_contents,
-              content::SavePageType save_type,
+  SavePackage(WebContents* web_contents,
+              SavePageType save_type,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
@@ -93,7 +92,7 @@ class CONTENT_EXPORT SavePackage
   // g_browser_process on a non-UI thread can cause crashes during shutdown.
   // |cb| will be called when the DownloadItem is created, before data is
   // written to disk.
-  bool Init(const content::SavePackageDownloadCreatedCallback& cb);
+  bool Init(const SavePackageDownloadCreatedCallback& cb);
 
   // Cancel all in progress request, might be called by user or internal error.
   void Cancel(bool user_action);
@@ -113,21 +112,21 @@ class CONTENT_EXPORT SavePackage
 
   bool canceled() const { return user_canceled_ || disk_error_occurred_; }
   bool finished() const { return finished_; }
-  content::SavePageType save_type() const { return save_type_; }
+  SavePageType save_type() const { return save_type_; }
   int contents_id() const { return contents_id_; }
   int id() const { return unique_id_; }
-  content::WebContents* web_contents() const;
+  WebContents* web_contents() const;
 
   void GetSaveInfo();
 
  private:
   friend class base::RefCountedThreadSafe<SavePackage>;
 
-  // Callback for content::WebContents::GenerateMHTML().
+  // Callback for WebContents::GenerateMHTML().
   void OnMHTMLGenerated(const FilePath& path, int64 size);
 
   // For testing only.
-  SavePackage(content::WebContents* web_contents,
+  SavePackage(WebContents* web_contents,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
@@ -141,11 +140,11 @@ class CONTENT_EXPORT SavePackage
   void SaveNextFile(bool process_all_remainder_items);
   void DoSavingProcess();
 
-  // content::WebContentsObserver implementation.
+  // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // content::DownloadItem::Observer implementation.
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
+  // DownloadItem::Observer implementation.
+  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
 
   // Update the download history of this item upon completion.
   void FinalizeDownloadEntry();
@@ -195,11 +194,11 @@ class CONTENT_EXPORT SavePackage
                            bool can_save_as_complete);
   void OnPathPicked(
       const FilePath& final_name,
-      content::SavePageType type,
-      const content::SavePackageDownloadCreatedCallback& cb);
+      SavePageType type,
+      const SavePackageDownloadCreatedCallback& cb);
   void OnReceivedSavableResourceLinksForCurrentPage(
       const std::vector<GURL>& resources_list,
-      const std::vector<content::Referrer>& referrers_list,
+      const std::vector<Referrer>& referrers_list,
       const std::vector<GURL>& frames_list);
 
   void OnReceivedSerializedHtmlData(const GURL& frame_url,
@@ -291,7 +290,7 @@ class CONTENT_EXPORT SavePackage
   bool disk_error_occurred_;
 
   // Type about saving page as only-html or complete-html.
-  content::SavePageType save_type_;
+  SavePageType save_type_;
 
   // Number of all need to be saved resources.
   size_t all_save_items_count_;
@@ -326,5 +325,7 @@ class CONTENT_EXPORT SavePackage
 
   DISALLOW_COPY_AND_ASSIGN(SavePackage);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_

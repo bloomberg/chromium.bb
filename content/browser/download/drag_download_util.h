@@ -17,7 +17,7 @@ namespace net {
 class FileStream;
 }
 
-namespace drag_download_util {
+namespace content {
 
 // Parse the download metadata set in DataTransfer.setData. The metadata
 // consists of a set of the following values separated by ":"
@@ -60,6 +60,6 @@ class PromiseFileFinalizer : public ui::DownloadFileObserver {
   DISALLOW_COPY_AND_ASSIGN(PromiseFileFinalizer);
 };
 
-}  // namespace drag_download_util
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_

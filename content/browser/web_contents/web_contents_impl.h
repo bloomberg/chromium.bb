@@ -32,7 +32,6 @@
 #include "base/win/scoped_handle.h"
 #endif
 
-class SavePackage;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewMsg_PostMessage_Params;
 
@@ -52,6 +51,7 @@ class RenderViewHost;
 class RenderViewHostDelegateView;
 class RenderViewHostImpl;
 class RenderWidgetHostImpl;
+class SavePackage;
 class SessionStorageNamespaceImpl;
 class SiteInstance;
 class TestWebContents;

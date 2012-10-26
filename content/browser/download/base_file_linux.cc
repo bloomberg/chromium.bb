@@ -7,9 +7,13 @@
 #include "content/browser/download/file_metadata_linux.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace content {
+
 void BaseFile::AnnotateWithSourceInformation() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
-  content::AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
+  AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
 }
+
+}  // namespace content

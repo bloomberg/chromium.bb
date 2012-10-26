@@ -11,12 +11,10 @@
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 
+namespace content {
 class DownloadFileManager;
 class DownloadItemImpl;
-
-namespace content {
 class BrowserContext;
-}
 
 // Delegate for operations that a DownloadItemImpl can't do for itself.
 // The base implementation of this class does nothing (returning false
@@ -26,8 +24,8 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
  public:
   typedef base::Callback<void(
       const FilePath&,                  // Target path
-      content::DownloadItem::TargetDisposition,  // overwrite/uniquify target
-      content::DownloadDangerType,
+      DownloadItem::TargetDisposition,  // overwrite/uniquify target
+      DownloadDangerType,
       const FilePath&                   // Intermediate file path
                               )> DownloadTargetCallback;
 
@@ -65,7 +63,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item);
 
   // For contextual issues like language and prefs.
-  virtual content::BrowserContext* GetBrowserContext() const;
+  virtual BrowserContext* GetBrowserContext() const;
 
   // Get the DownloadFileManager to use for this download.
   virtual DownloadFileManager* GetDownloadFileManager();
@@ -92,5 +90,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImplDelegate);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_DELEGATE_H_

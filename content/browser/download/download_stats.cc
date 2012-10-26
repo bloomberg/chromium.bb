@@ -9,7 +9,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
-namespace download_stats {
+namespace content {
 
 // All possible error codes from the network module. Note that the error codes
 // are all positive (since histograms expect positive sample values).
@@ -41,7 +41,7 @@ void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len) {
                               256);
 }
 
-void RecordDownloadInterrupted(content::DownloadInterruptReason reason,
+void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64 received,
                                int64 total) {
   RecordDownloadCount(INTERRUPTED_COUNT);
@@ -346,4 +346,4 @@ void RecordSavePackageEvent(SavePackageEvent event) {
                             SAVE_PACKAGE_LAST_ENTRY);
 }
 
-}  // namespace download_stats
+}  // namespace content

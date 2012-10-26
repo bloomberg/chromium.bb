@@ -7,10 +7,10 @@
 #include "content/browser/download/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 
+namespace content {
+
 void PrintTo(const DownloadRequestHandle& params, std::ostream* os) {
 }
-
-namespace content {
 
 MockDownloadManager::MockDownloadManager() {}
 

@@ -12,10 +12,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 // To avoid leaking download_request_handle.h to embedders.
 void PrintTo(const DownloadRequestHandle& params, std::ostream* os);
-
-namespace content {
 
 class MockDownloadManager : public DownloadManager {
  public:

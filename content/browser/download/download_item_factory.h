@@ -14,18 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_id.h"
 
-struct DownloadCreateInfo;
-
-class DownloadItemImpl;
-class DownloadItemImplDelegate;
-class DownloadRequestHandleInterface;
 class FilePath;
 class GURL;
-
-namespace content {
-class DownloadItem;
-struct DownloadPersistentStoreInfo;
-}
 
 namespace net {
 class BoundNetLog;
@@ -33,14 +23,21 @@ class BoundNetLog;
 
 namespace content {
 
+class DownloadItem;
+class DownloadItemImpl;
+class DownloadItemImplDelegate;
+class DownloadRequestHandleInterface;
+struct DownloadCreateInfo;
+struct DownloadPersistentStoreInfo;
+
 class DownloadItemFactory {
 public:
   virtual ~DownloadItemFactory() {}
 
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
-      content::DownloadId download_id,
-      const content::DownloadPersistentStoreInfo& info,
+      DownloadId download_id,
+      const DownloadPersistentStoreInfo& info,
       const net::BoundNetLog& bound_net_log) = 0;
 
   virtual DownloadItemImpl* CreateActiveItem(
@@ -53,7 +50,7 @@ public:
       DownloadItemImplDelegate* delegate,
       const FilePath& path,
       const GURL& url,
-      content::DownloadId download_id,
+      DownloadId download_id,
       const std::string& mime_type,
       const net::BoundNetLog& bound_net_log) = 0;
 };

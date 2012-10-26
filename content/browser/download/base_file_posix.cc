@@ -7,7 +7,9 @@
 #include "base/file_util.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
-content::DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
+namespace content {
+
+DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     const FilePath& new_path) {
   // Similarly, on Unix, we're moving a temp file created with permissions 600
   // to |new_path|. Here, we try to fix up the destination file with appropriate
@@ -36,5 +38,7 @@ content::DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     if (chmod_error < 0)
       LogSystemError("chmod", errno);
   }
-  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
+
+}  // namespace content

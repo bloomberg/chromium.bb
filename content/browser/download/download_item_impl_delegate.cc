@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "content/browser/download/download_item_impl.h"
 
+namespace content {
+
 // Infrastructure in DownloadItemImplDelegate to assert invariant that
 // delegate always outlives all attached DownloadItemImpls.
 DownloadItemImplDelegate::DownloadItemImplDelegate()
@@ -30,8 +32,8 @@ void DownloadItemImplDelegate::DetermineDownloadTarget(
   // TODO(rdsmith/asanka): Do something useful if forced file path is null.
   FilePath target_path(download->GetForcedFilePath());
   callback.Run(target_path,
-               content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+               DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                target_path);
 }
 
@@ -53,7 +55,7 @@ bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
 void DownloadItemImplDelegate::CheckForFileRemoval(
     DownloadItemImpl* download_item) {}
 
-content::BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
+BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
   return NULL;
 }
 
@@ -79,3 +81,5 @@ void DownloadItemImplDelegate::DownloadRenamedToFinalName(
 
 void DownloadItemImplDelegate::AssertStateConsistent(
     DownloadItemImpl* download) const {}
+
+}  // namespace content

@@ -22,10 +22,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_util.h"
 
-using content::BrowserThread;
-using content::RenderViewHostImpl;
-using content::ResourceDispatcherHostImpl;
-using content::WebContentsImpl;
+namespace content {
 
 SaveFileManager::SaveFileManager()
     : next_id_(0) {
@@ -117,12 +114,12 @@ SavePackage* SaveFileManager::LookupPackage(int save_id) {
 // Call from SavePackage for starting a saving job
 void SaveFileManager::SaveURL(
     const GURL& url,
-    const content::Referrer& referrer,
+    const Referrer& referrer,
     int render_process_host_id,
     int render_view_id,
     SaveFileCreateInfo::SaveFileSource save_source,
     const FilePath& file_full_path,
-    content::ResourceContext* context,
+    ResourceContext* context,
     SavePackage* save_package) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -242,7 +239,7 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFile* save_file = LookupSaveFile(save_id);
   if (save_file) {
-    content::DownloadInterruptReason reason =
+    DownloadInterruptReason reason =
         save_file->AppendDataToFile(data->data(), data_len);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -250,7 +247,7 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
                    this,
                    save_file->save_id(),
                    save_file->BytesSoFar(),
-                   reason == content::DOWNLOAD_INTERRUPT_REASON_NONE));
+                   reason == DOWNLOAD_INTERRUPT_REASON_NONE));
   }
 }
 
@@ -356,10 +353,10 @@ void SaveFileManager::OnErrorFinished(const GURL& save_url, int contents_id) {
 
 void SaveFileManager::OnSaveURL(
     const GURL& url,
-    const content::Referrer& referrer,
+    const Referrer& referrer,
     int render_process_host_id,
     int render_view_id,
-    content::ResourceContext* context) {
+    ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ResourceDispatcherHostImpl::Get()->BeginSaveFile(url,
                                                    referrer,
@@ -525,3 +522,5 @@ void SaveFileManager::RemoveSavedFileFromFileMap(
     }
   }
 }
+
+}  // namespace content

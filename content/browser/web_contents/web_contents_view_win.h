@@ -15,7 +15,6 @@
 #include "ui/base/win/window_impl.h"
 
 class WebDragDest;
-class WebContentsDragWin;
 
 namespace ui {
 class HWNDMessageFilter;
@@ -24,6 +23,7 @@ class HWNDMessageFilter;
 namespace content {
 class RenderWidgetHostViewWin;
 class WebContentsViewDelegate;
+class WebContentsDragWin;
 class WebContentsImpl;
 
 // An implementation of WebContentsView for Windows.

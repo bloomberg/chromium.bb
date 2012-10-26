@@ -7,10 +7,14 @@
 #include "content/browser/download/file_metadata_mac.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace content {
+
 void BaseFile::AnnotateWithSourceInformation() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
-  content::AddQuarantineMetadataToFile(full_path_, source_url_, referrer_url_);
-  content::AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
+  AddQuarantineMetadataToFile(full_path_, source_url_, referrer_url_);
+  AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
 }
+
+}  // namespace content

@@ -13,7 +13,7 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_status.h"
 
-using content::BrowserThread;
+namespace content {
 
 SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
                                                  int render_view_id,
@@ -39,7 +39,7 @@ bool SaveFileResourceHandler::OnUploadProgress(int request_id,
 bool SaveFileResourceHandler::OnRequestRedirected(
     int request_id,
     const GURL& url,
-    content::ResourceResponse* response,
+    ResourceResponse* response,
     bool* defer) {
   final_url_ = url;
   return true;
@@ -47,7 +47,7 @@ bool SaveFileResourceHandler::OnRequestRedirected(
 
 bool SaveFileResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response,
+    ResourceResponse* response,
     bool* defer) {
   save_id_ = save_manager_->GetNextId();
   // |save_manager_| consumes (deletes):
@@ -113,3 +113,5 @@ void SaveFileResourceHandler::set_content_length(
     const std::string& content_length) {
   base::StringToInt64(content_length, &content_length_);
 }
+
+}  // namespace content

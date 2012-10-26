@@ -15,7 +15,6 @@
 namespace content {
 class DownloadManager;
 class WebContents;
-}
 
 // A handle used by the download system for operations on the URLRequest
 // or objects conditional on it (e.g. WebContentsImpl).
@@ -28,8 +27,8 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
   virtual ~DownloadRequestHandleInterface() {}
 
   // These functions must be called on the UI thread.
-  virtual content::WebContents* GetWebContents() const = 0;
-  virtual content::DownloadManager* GetDownloadManager() const = 0;
+  virtual WebContents* GetWebContents() const = 0;
+  virtual DownloadManager* GetDownloadManager() const = 0;
 
   // Pauses or resumes the matching URL request.
   virtual void PauseRequest() const = 0;
@@ -64,8 +63,8 @@ class CONTENT_EXPORT DownloadRequestHandle
                         int request_id);
 
   // Implement DownloadRequestHandleInterface interface.
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual content::DownloadManager* GetDownloadManager() const OVERRIDE;
+  virtual WebContents* GetWebContents() const OVERRIDE;
+  virtual DownloadManager* GetDownloadManager() const OVERRIDE;
   virtual void PauseRequest() const OVERRIDE;
   virtual void ResumeRequest() const OVERRIDE;
   virtual void CancelRequest() const OVERRIDE;
@@ -83,5 +82,7 @@ class CONTENT_EXPORT DownloadRequestHandle
   // The ID associated with the request used for the download.
   int request_id_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_HANDLE_H_

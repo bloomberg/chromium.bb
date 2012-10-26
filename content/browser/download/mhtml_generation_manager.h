@@ -16,7 +16,6 @@ class FilePath;
 
 namespace content {
 class WebContents;
-}
 
 class MHTMLGenerationManager {
  public:
@@ -27,7 +26,7 @@ class MHTMLGenerationManager {
 
   // Instructs the render view to generate a MHTML representation of the current
   // page for |web_contents|.
-  void GenerateMHTML(content::WebContents* web_contents,
+  void GenerateMHTML(WebContents* web_contents,
                      const FilePath& file,
                      const GenerateMHTMLCallback& callback);
 
@@ -87,5 +86,7 @@ class MHTMLGenerationManager {
 
   DISALLOW_COPY_AND_ASSIGN(MHTMLGenerationManager);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_MHTML_GENERATION_MANAGER_H_

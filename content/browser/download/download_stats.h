@@ -19,7 +19,7 @@ class TimeDelta;
 class TimeTicks;
 }
 
-namespace download_stats {
+namespace content {
 
 // We keep a count of how often various events occur in the
 // histogram "Download.Counts".
@@ -99,7 +99,7 @@ void RecordDownloadSource(DownloadSource source);
 void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len);
 
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
-void RecordDownloadInterrupted(content::DownloadInterruptReason reason,
+void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64 received,
                                int64 total);
 
@@ -172,6 +172,6 @@ enum SavePackageEvent {
 
 void RecordSavePackageEvent(SavePackageEvent event);
 
-}  // namespace download_stats
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_

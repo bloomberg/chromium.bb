@@ -68,20 +68,19 @@
 
 class FilePath;
 class GURL;
-class SaveFile;
-class SavePackage;
 
-namespace content {
-struct Referrer;
-class ResourceContext;
-}
 
 namespace net {
 class IOBuffer;
 }
 
-class SaveFileManager
-    : public base::RefCountedThreadSafe<SaveFileManager> {
+namespace content {
+class ResourceContext;
+class SaveFile;
+class SavePackage;
+struct Referrer;
+
+class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
  public:
   SaveFileManager();
 
@@ -96,12 +95,12 @@ class SaveFileManager
   // Save the specified URL. Called on the UI thread and forwarded to the
   // ResourceDispatcherHostImpl on the IO thread.
   void SaveURL(const GURL& url,
-               const content::Referrer& referrer,
+               const Referrer& referrer,
                int render_process_host_id,
                int render_view_id,
                SaveFileCreateInfo::SaveFileSource save_source,
                const FilePath& file_full_path,
-               content::ResourceContext* context,
+               ResourceContext* context,
                SavePackage* save_package);
 
   // Notifications sent from the IO thread and run on the file thread:
@@ -206,10 +205,10 @@ class SaveFileManager
 
   // Initiates a request for URL to be saved.
   void OnSaveURL(const GURL& url,
-                 const content::Referrer& referrer,
+                 const Referrer& referrer,
                  int render_process_host_id,
                  int render_view_id,
-                 content::ResourceContext* context);
+                 ResourceContext* context);
   // Handler for a notification sent to the IO thread for generating save id.
   void OnRequireSaveJobFromOtherSource(SaveFileCreateInfo* info);
   // Call ResourceDispatcherHostImpl's CancelRequest method to execute cancel
@@ -245,5 +244,7 @@ class SaveFileManager
 
   DISALLOW_COPY_AND_ASSIGN(SaveFileManager);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H_

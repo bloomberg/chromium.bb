@@ -17,9 +17,7 @@
 #include "net/base/mock_file_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-using content::BrowserThreadImpl;
-
+namespace content {
 namespace {
 
 const char kTestData1[] = "Let's write some data to the file!\n";
@@ -44,7 +42,7 @@ class BaseFileTest : public testing::Test {
   BaseFileTest()
       : expect_file_survives_(false),
         expect_in_progress_(true),
-        expected_error_(content::DOWNLOAD_INTERRUPT_REASON_NONE),
+        expected_error_(DOWNLOAD_INTERRUPT_REASON_NONE),
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
@@ -113,28 +111,27 @@ class BaseFileTest : public testing::Test {
   }
 
   bool InitializeFile() {
-    content::DownloadInterruptReason result =
-        base_file_->Initialize(temp_dir_.path());
+    DownloadInterruptReason result = base_file_->Initialize(temp_dir_.path());
     EXPECT_EQ(expected_error_, result);
-    return result == content::DOWNLOAD_INTERRUPT_REASON_NONE;
+    return result == DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
   bool AppendDataToFile(const std::string& data) {
     EXPECT_EQ(expect_in_progress_, base_file_->in_progress());
-    content::DownloadInterruptReason result =
+    DownloadInterruptReason result =
         base_file_->AppendDataToFile(data.data(), data.size());
-    if (result == content::DOWNLOAD_INTERRUPT_REASON_NONE)
+    if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
       EXPECT_TRUE(expect_in_progress_) << " result = " << result;
 
     EXPECT_EQ(expected_error_, result);
     if (base_file_->in_progress()) {
       expected_data_ += data;
-      if (expected_error_ == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+      if (expected_error_ == DOWNLOAD_INTERRUPT_REASON_NONE) {
         EXPECT_EQ(static_cast<int64>(expected_data_.size()),
                   base_file_->bytes_so_far());
       }
     }
-    return result == content::DOWNLOAD_INTERRUPT_REASON_NONE;
+    return result == DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
   void set_expected_data(const std::string& data) { expected_data_ = data; }
@@ -152,12 +149,12 @@ class BaseFileTest : public testing::Test {
                   scoped_ptr<net::FileStream>(),
                   net::BoundNetLog());
 
-    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+    EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               file.Initialize(temp_dir_.path()));
     file_name = file.full_path();
     EXPECT_NE(FilePath::StringType(), file_name.value());
 
-    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+    EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               file.AppendDataToFile(kTestData4, kTestDataLength4));
 
     // Keep the file from getting deleted when existing_file_name is deleted.
@@ -177,7 +174,7 @@ class BaseFileTest : public testing::Test {
                             "",
                             scoped_ptr<net::FileStream>(),
                             net::BoundNetLog());
-    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+    EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               duplicate_file.Initialize(temp_dir_.path()));
     // Write something into it.
     duplicate_file.AppendDataToFile(kTestData4, kTestDataLength4);
@@ -195,7 +192,7 @@ class BaseFileTest : public testing::Test {
     return base_file_->start_tick_;
   }
 
-  void set_expected_error(content::DownloadInterruptReason err) {
+  void set_expected_error(DownloadInterruptReason err) {
     expected_error_ = err;
   }
 
@@ -222,7 +219,7 @@ class BaseFileTest : public testing::Test {
  private:
   // Keep track of what data should be saved to the disk file.
   std::string expected_data_;
-  content::DownloadInterruptReason expected_error_;
+  DownloadInterruptReason expected_error_;
 
   // Mock file thread to satisfy debug checks in BaseFile.
   MessageLoop message_loop_;
@@ -293,8 +290,7 @@ TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
 
   ASSERT_TRUE(AppendDataToFile(kTestData1));
 
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Rename(new_path));
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
 
@@ -402,10 +398,10 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
                        hash_state,
                        scoped_ptr<net::FileStream>(),
                        net::BoundNetLog());
-  ASSERT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+  ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             second_file.Initialize(temp_dir_.path()));
   std::string data(kTestData3);
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             second_file.AppendDataToFile(data.data(), data.size()));
   second_file.Finish();
 
@@ -427,7 +423,7 @@ TEST_F(BaseFileTest, WriteThenRename) {
 
   ASSERT_TRUE(AppendDataToFile(kTestData1));
 
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
@@ -447,8 +443,7 @@ TEST_F(BaseFileTest, RenameWhileInProgress) {
   ASSERT_TRUE(AppendDataToFile(kTestData1));
 
   EXPECT_TRUE(base_file_->in_progress());
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
-            base_file_->Rename(new_path));
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
 
@@ -472,7 +467,7 @@ TEST_F(BaseFileTest, RenameWithError) {
   {
     file_util::PermissionRestorer restore_permissions_for(test_dir);
     ASSERT_TRUE(file_util::MakeFileUnwritable(test_dir));
-    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
+    EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
               base_file_->Rename(new_path));
   }
 
@@ -510,7 +505,7 @@ TEST_F(BaseFileTest, MultipleWritesWithError) {
   ASSERT_TRUE(AppendDataToFile(kTestData1));
   ASSERT_TRUE(AppendDataToFile(kTestData2));
   mock_file_stream->set_forced_error(net::ERR_ACCESS_DENIED);
-  set_expected_error(content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
+  set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
   ASSERT_FALSE(AppendDataToFile(kTestData3));
   std::string hash;
   EXPECT_FALSE(base_file_->GetHash(&hash));
@@ -520,7 +515,7 @@ TEST_F(BaseFileTest, MultipleWritesWithError) {
 // Try to write to uninitialized file.
 TEST_F(BaseFileTest, UninitializedFile) {
   expect_in_progress_ = false;
-  set_expected_error(content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+  set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   EXPECT_FALSE(AppendDataToFile(kTestData1));
 }
 
@@ -589,14 +584,14 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
                                 net::BoundNetLog()));
 
   expect_in_progress_ = false;
-  set_expected_error(content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
+  set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
   EXPECT_FALSE(InitializeFile());
 
   const FilePath file_name = base_file_->full_path();
   EXPECT_NE(FilePath::StringType(), file_name.value());
 
   // Write into the file.
-  set_expected_error(content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+  set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   EXPECT_FALSE(AppendDataToFile(kTestData1));
 
   base_file_->Finish();
@@ -670,3 +665,5 @@ TEST_F(BaseFileTest, CreatedInDefaultDirectory) {
                base_file_->full_path().DirName().value().c_str());
   base_file_->Finish();
 }
+
+}  // namespace content

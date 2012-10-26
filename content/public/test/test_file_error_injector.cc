@@ -19,7 +19,6 @@
 
 namespace content {
 class ByteStreamReader;
-}
 
 namespace {
 
@@ -30,17 +29,17 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   typedef base::Callback<void(const GURL& url)> DestructionCallback;
 
   DownloadFileWithErrors(
-      scoped_ptr<content::DownloadSaveInfo> save_info,
+      scoped_ptr<DownloadSaveInfo> save_info,
       const FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
       int64 received_bytes,
       bool calculate_hash,
-      scoped_ptr<content::ByteStreamReader> stream,
+      scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
-      scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
-      base::WeakPtr<content::DownloadDestinationObserver> observer,
-      const content::TestFileErrorInjector::FileErrorInfo& error_info,
+      scoped_ptr<PowerSaveBlocker> power_save_blocker,
+      base::WeakPtr<DownloadDestinationObserver> observer,
+      const TestFileErrorInjector::FileErrorInfo& error_info,
       const ConstructionCallback& ctor_callback,
       const DestructionCallback& dtor_callback);
 
@@ -49,7 +48,7 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   virtual void Initialize(const InitializeCallback& callback) OVERRIDE;
 
   // DownloadFile interface.
-  virtual content::DownloadInterruptReason AppendDataToFile(
+  virtual DownloadInterruptReason AppendDataToFile(
       const char* data, size_t data_len) OVERRIDE;
   virtual void Rename(const FilePath& full_path,
                       bool overwrite_existing_file,
@@ -57,9 +56,9 @@ class DownloadFileWithErrors: public DownloadFileImpl {
 
  private:
   // Error generating helper.
-  content::DownloadInterruptReason ShouldReturnError(
-      content::TestFileErrorInjector::FileOperationCode code,
-      content::DownloadInterruptReason original_error);
+  DownloadInterruptReason ShouldReturnError(
+      TestFileErrorInjector::FileOperationCode code,
+      DownloadInterruptReason original_error);
 
   // Determine whether to overwrite an operation with the given code
   // with a substitute error; if returns true, |*original_error| is
@@ -68,53 +67,52 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   // operations counts for the specified code.  It should only be called
   // once per operation.
   bool OverwriteError(
-    content::TestFileErrorInjector::FileOperationCode code,
-    content::DownloadInterruptReason* output_error);
+    TestFileErrorInjector::FileOperationCode code,
+    DownloadInterruptReason* output_error);
 
   // Source URL for the file being downloaded.
   GURL source_url_;
 
   // Our injected error.  Only one per file.
-  content::TestFileErrorInjector::FileErrorInfo error_info_;
+  TestFileErrorInjector::FileErrorInfo error_info_;
 
   // Count per operation.  0-based.
-  std::map<content::TestFileErrorInjector::FileOperationCode, int>
-      operation_counter_;
+  std::map<TestFileErrorInjector::FileOperationCode, int> operation_counter_;
 
   // Callback for destruction.
   DestructionCallback destruction_callback_;
 };
 
 static void InitializeErrorCallback(
-    const content::DownloadFile::InitializeCallback original_callback,
-    content::DownloadInterruptReason overwrite_error,
-    content::DownloadInterruptReason original_error) {
+    const DownloadFile::InitializeCallback original_callback,
+    DownloadInterruptReason overwrite_error,
+    DownloadInterruptReason original_error) {
   original_callback.Run(overwrite_error);
 }
 
 static void RenameErrorCallback(
-    const content::DownloadFile::RenameCompletionCallback original_callback,
-    content::DownloadInterruptReason overwrite_error,
-    content::DownloadInterruptReason original_error,
+    const DownloadFile::RenameCompletionCallback original_callback,
+    DownloadInterruptReason overwrite_error,
+    DownloadInterruptReason original_error,
     const FilePath& path_result) {
   original_callback.Run(
       overwrite_error,
-      overwrite_error == content::DOWNLOAD_INTERRUPT_REASON_NONE ?
+      overwrite_error == DOWNLOAD_INTERRUPT_REASON_NONE ?
       path_result : FilePath());
 }
 
 DownloadFileWithErrors::DownloadFileWithErrors(
-    scoped_ptr<content::DownloadSaveInfo> save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     int64 received_bytes,
     bool calculate_hash,
-    scoped_ptr<content::ByteStreamReader> stream,
+    scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
-    base::WeakPtr<content::DownloadDestinationObserver> observer,
-    const content::TestFileErrorInjector::FileErrorInfo& error_info,
+    scoped_ptr<PowerSaveBlocker> power_save_blocker,
+    base::WeakPtr<DownloadDestinationObserver> observer,
+    const TestFileErrorInjector::FileErrorInfo& error_info,
     const ConstructionCallback& ctor_callback,
     const DestructionCallback& dtor_callback)
         : DownloadFileImpl(
@@ -133,13 +131,12 @@ DownloadFileWithErrors::~DownloadFileWithErrors() {
 
 void DownloadFileWithErrors::Initialize(
     const InitializeCallback& callback) {
-  content::DownloadInterruptReason error_to_return =
-      content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
   InitializeCallback callback_to_use = callback;
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
-          content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+          TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
           &error_to_return)) {
     callback_to_use = base::Bind(&InitializeErrorCallback, callback,
                                  error_to_return);
@@ -148,10 +145,10 @@ void DownloadFileWithErrors::Initialize(
   DownloadFileImpl::Initialize(callback_to_use);
 }
 
-content::DownloadInterruptReason DownloadFileWithErrors::AppendDataToFile(
+DownloadInterruptReason DownloadFileWithErrors::AppendDataToFile(
     const char* data, size_t data_len) {
   return ShouldReturnError(
-      content::TestFileErrorInjector::FILE_OPERATION_WRITE,
+      TestFileErrorInjector::FILE_OPERATION_WRITE,
       DownloadFileImpl::AppendDataToFile(data, data_len));
 }
 
@@ -159,13 +156,12 @@ void DownloadFileWithErrors::Rename(
     const FilePath& full_path,
     bool overwrite_existing_file,
     const RenameCompletionCallback& callback) {
-  content::DownloadInterruptReason error_to_return =
-      content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
   RenameCompletionCallback callback_to_use = callback;
 
   // Replace callback if the error needs to be overwritten.
   if (OverwriteError(
-          content::TestFileErrorInjector::FILE_OPERATION_RENAME,
+          TestFileErrorInjector::FILE_OPERATION_RENAME,
           &error_to_return)) {
     callback_to_use = base::Bind(&RenameErrorCallback, callback,
                                  error_to_return);
@@ -175,8 +171,8 @@ void DownloadFileWithErrors::Rename(
 }
 
 bool DownloadFileWithErrors::OverwriteError(
-    content::TestFileErrorInjector::FileOperationCode code,
-    content::DownloadInterruptReason* output_error) {
+    TestFileErrorInjector::FileOperationCode code,
+    DownloadInterruptReason* output_error) {
   int counter = operation_counter_[code]++;
 
   if (code != error_info_.code)
@@ -189,17 +185,15 @@ bool DownloadFileWithErrors::OverwriteError(
   return true;
 }
 
-content::DownloadInterruptReason DownloadFileWithErrors::ShouldReturnError(
-    content::TestFileErrorInjector::FileOperationCode code,
-    content::DownloadInterruptReason original_error) {
-  content::DownloadInterruptReason output_error = original_error;
+DownloadInterruptReason DownloadFileWithErrors::ShouldReturnError(
+    TestFileErrorInjector::FileOperationCode code,
+    DownloadInterruptReason original_error) {
+  DownloadInterruptReason output_error = original_error;
   OverwriteError(code, &output_error);
   return output_error;
 }
 
 }  // namespace
-
-namespace content {
 
 // A factory for constructing DownloadFiles that inject errors.
 class DownloadFileWithErrorsFactory : public DownloadFileFactory {

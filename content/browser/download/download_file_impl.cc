@@ -20,26 +20,24 @@
 #include "content/browser/download/download_stats.h"
 #include "net/base/io_buffer.h"
 
-using content::BrowserThread;
-using content::DownloadId;
-using content::DownloadManager;
+namespace content {
 
 const int kUpdatePeriodMs = 500;
 const int kMaxTimeBlockingFileThreadMs = 1000;
 
-int content::DownloadFile::number_active_objects_ = 0;
+int DownloadFile::number_active_objects_ = 0;
 
 DownloadFileImpl::DownloadFileImpl(
-    scoped_ptr<content::DownloadSaveInfo> save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     int64 received_bytes,
     bool calculate_hash,
-    scoped_ptr<content::ByteStreamReader> stream,
+    scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
-    base::WeakPtr<content::DownloadDestinationObserver> observer)
+    scoped_ptr<PowerSaveBlocker> power_save_blocker,
+    base::WeakPtr<DownloadDestinationObserver> observer)
         : file_(save_info->file_path,
                 url,
                 referrer_url,
@@ -66,9 +64,9 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
-  content::DownloadInterruptReason result =
+  DownloadInterruptReason result =
       file_.Initialize(default_download_directory_);
-  if (result != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
     return;
@@ -84,12 +82,12 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
-          callback, content::DOWNLOAD_INTERRUPT_REASON_NONE));
+          callback, DOWNLOAD_INTERRUPT_REASON_NONE));
 
   ++number_active_objects_;
 }
 
-content::DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
+DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
     const char* data, size_t data_len) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -117,8 +115,8 @@ void DownloadFileImpl::Rename(const FilePath& full_path,
     }
   }
 
-  content::DownloadInterruptReason reason = file_.Rename(new_path);
-  if (reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  DownloadInterruptReason reason = file_.Rename(new_path);
+  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     // Make sure our information is updated, since we're about to
     // error out.
     SendUpdate();
@@ -188,10 +186,8 @@ void DownloadFileImpl::StreamActive() {
   size_t incoming_data_size = 0;
   size_t total_incoming_data_size = 0;
   size_t num_buffers = 0;
-  content::ByteStreamReader::StreamState state(
-      content::ByteStreamReader::STREAM_EMPTY);
-  content::DownloadInterruptReason reason =
-      content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  ByteStreamReader::StreamState state(ByteStreamReader::STREAM_EMPTY);
+  DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   base::TimeDelta delta(
       base::TimeDelta::FromMilliseconds(kMaxTimeBlockingFileThreadMs));
 
@@ -200,9 +196,9 @@ void DownloadFileImpl::StreamActive() {
     state = stream_reader_->Read(&incoming_data, &incoming_data_size);
 
     switch (state) {
-      case content::ByteStreamReader::STREAM_EMPTY:
+      case ByteStreamReader::STREAM_EMPTY:
         break;
-      case content::ByteStreamReader::STREAM_HAS_DATA:
+      case ByteStreamReader::STREAM_HAS_DATA:
         {
           ++num_buffers;
           base::TimeTicks write_start(base::TimeTicks::Now());
@@ -213,7 +209,7 @@ void DownloadFileImpl::StreamActive() {
           total_incoming_data_size += incoming_data_size;
         }
         break;
-      case content::ByteStreamReader::STREAM_COMPLETE:
+      case ByteStreamReader::STREAM_COMPLETE:
         {
           reason = stream_reader_->GetStatus();
           SendUpdate();
@@ -221,7 +217,7 @@ void DownloadFileImpl::StreamActive() {
           file_.Finish();
           base::TimeTicks now(base::TimeTicks::Now());
           disk_writes_time_ += (now - close_start);
-          download_stats::RecordFileBandwidth(
+          RecordFileBandwidth(
               bytes_seen_, disk_writes_time_, now - download_start_);
           update_timer_.reset();
         }
@@ -231,12 +227,12 @@ void DownloadFileImpl::StreamActive() {
         break;
     }
     now = base::TimeTicks::Now();
-  } while (state == content::ByteStreamReader::STREAM_HAS_DATA &&
-           reason == content::DOWNLOAD_INTERRUPT_REASON_NONE &&
+  } while (state == ByteStreamReader::STREAM_HAS_DATA &&
+           reason == DOWNLOAD_INTERRUPT_REASON_NONE &&
            now - start <= delta);
 
   // If we're stopping to yield the thread, post a task so we come back.
-  if (state == content::ByteStreamReader::STREAM_HAS_DATA &&
+  if (state == ByteStreamReader::STREAM_HAS_DATA &&
       now - start > delta) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
@@ -245,12 +241,12 @@ void DownloadFileImpl::StreamActive() {
   }
 
   if (total_incoming_data_size)
-    download_stats::RecordFileThreadReceiveBuffers(num_buffers);
+    RecordFileThreadReceiveBuffers(num_buffers);
 
-  download_stats::RecordContiguousWriteTime(now - start);
+  RecordContiguousWriteTime(now - start);
 
   // Take care of communication with our observer.
-  if (reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     // Error case for both upstream source and file write.
     // Shut down processing and signal an error to our observer.
     // Our observer will clean us up.
@@ -259,9 +255,9 @@ void DownloadFileImpl::StreamActive() {
     SendUpdate();                       // Make info up to date before error.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&content::DownloadDestinationObserver::DestinationError,
+        base::Bind(&DownloadDestinationObserver::DestinationError,
                    observer_, reason));
-  } else if (state == content::ByteStreamReader::STREAM_COMPLETE) {
+  } else if (state == ByteStreamReader::STREAM_COMPLETE) {
     // Signal successful completion and shut down processing.
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
@@ -272,26 +268,27 @@ void DownloadFileImpl::StreamActive() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
-            &content::DownloadDestinationObserver::DestinationCompleted,
+            &DownloadDestinationObserver::DestinationCompleted,
             observer_, hash));
   }
   if (bound_net_log_.IsLoggingAllEvents()) {
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_STREAM_DRAINED,
-        base::Bind(&download_net_logs::FileStreamDrainedCallback,
-                   total_incoming_data_size, num_buffers));
+        base::Bind(&FileStreamDrainedNetLogCallback, total_incoming_data_size,
+                   num_buffers));
   }
 }
 
 void DownloadFileImpl::SendUpdate() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&content::DownloadDestinationObserver::DestinationUpdate,
+      base::Bind(&DownloadDestinationObserver::DestinationUpdate,
                  observer_, BytesSoFar(), CurrentSpeed(), GetHashState()));
 }
 
 // static
-int content::DownloadFile::GetNumberOfDownloadFiles() {
+int DownloadFile::GetNumberOfDownloadFiles() {
   return number_active_objects_;
 }
 
+}  // namespace content

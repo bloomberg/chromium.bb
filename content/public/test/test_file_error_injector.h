@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
-class DownloadManagerImpl;
 class GURL;
 
 namespace content {
@@ -22,6 +21,7 @@ namespace content {
 class DownloadId;
 class DownloadFileWithErrorsFactory;
 class DownloadManager;
+class DownloadManagerImpl;
 
 // Test helper for injecting errors into download file operations.
 // All errors for a download must be injected before it starts.
