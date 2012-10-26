@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,10 +16,10 @@ import zipfile
 
 def IncludeFiles(filters, files):
   """Filter files based on inclusion lists
-  
+
   Return a list of files which match and of the Unix shell-style wildcards
   provided, or return all the files if no filter is provided."""
-  if not filters: 
+  if not filters:
     return files
   match = set()
   for file_filter in filters:
@@ -29,10 +29,10 @@ def IncludeFiles(filters, files):
 
 def ExcludeFiles(filters, files):
   """Filter files based on exclusions lists
-  
+
   Return a list of files which do not match any of the Unix shell-style
   wildcards provided, or return all the files if no filter is provided."""
-  if not filters: 
+  if not filters:
     return files
   match = set()
   for file_filter in filters:
@@ -43,7 +43,7 @@ def ExcludeFiles(filters, files):
 
 def CopyPath(options, src, dst):
   """CopyPath from src to dst
-  
+
   Copy a fully specified src to a fully specified dst.  If src and dst are
   both files, the dst file is removed first to prevent error.  If and include
   or exclude list are provided, the destination is first matched against that
@@ -99,8 +99,8 @@ def CopyPath(options, src, dst):
 
 def Copy(args):
   """A Unix cp style copy.
-  
-  Copies multiple sources to a single destination using the normal cp 
+
+  Copies multiple sources to a single destination using the normal cp
   semantics.  In addition, it support inclusion and exclusion filters which
   allows the copy to skip certain types of files."""
   parser = optparse.OptionParser(usage='usage: cp [Options] souces... dest')
@@ -175,11 +175,11 @@ def Mkdir(args):
 
 def MovePath(options, src, dst):
   """MovePath from src to dst
-  
+
   Moves the src to the dst much like the Unix style mv command, except it
   only handles one source at a time.  Because of possible temporary failures
   do to locks (such as anti-virus software on Windows), the function will retry
-  up to five times.""" 
+  up to five times."""
   # if the destination is not an existing directory, then overwrite it
   if os.path.isdir(dst):
     dst = os.path.join(dst, os.path.basename(src))
@@ -230,10 +230,10 @@ def Move(args):
 
 def Remove(args):
   """A Unix style rm.
-  
+
   Removes the list of paths.  Because of possible temporary failures do to locks
   (such as anti-virus software on Windows), the function will retry up to five
-  times.""" 
+  times."""
   parser = optparse.OptionParser(usage='usage: rm [Options] PATHS...')
   parser.add_option(
       '-R', '-r', '--recursive', dest='recursive', action='store_true',
@@ -297,7 +297,7 @@ def Remove(args):
     print error
   return 0
 
-  
+
 def MakeZipPath(os_path, isdir, iswindows):
   """Changes a path into zipfile format.
 
@@ -456,9 +456,13 @@ FuncMap = {
 }
 
 
-if __name__ == '__main__':
-  func = FuncMap.get(sys.argv[1])
+def main(args):
+  func = FuncMap.get(args[1])
   if not func:
-    print 'Do not recognize: ' + sys.argv[1]
-    sys.exit(1)
-  sys.exit(func(sys.argv[2:]))
+    print 'Do not recognize command: ' + args[1]
+    print 'Available commands: %s' % ' '.join(FuncMap)
+    return 1
+  return func(args[2:])
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))

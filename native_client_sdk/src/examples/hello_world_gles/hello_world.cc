@@ -155,7 +155,7 @@ void InitGL(void)
   };
 
   g_context =  ppb_g3d_interface->Create(g_instance, 0, attribs);
-  int32_t success =  ppb_instance_interface->BindGraphics(g_instance, g_context);
+  int32_t success = ppb_instance_interface->BindGraphics(g_instance, g_context);
   if (success == PP_FALSE) 
   {
     glSetCurrentContextPPAPI(0);
@@ -307,11 +307,14 @@ void Render( void )
 
   //define the attributes of the vertex
   glBindBuffer(GL_ARRAY_BUFFER, g_vboID);
-  glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex,loc));
+  glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE,
+                        sizeof(Vertex), (void*)offsetof(Vertex,loc));
   glEnableVertexAttribArray(g_positionLoc);
-  glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex,tu));
+  glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE,
+                        sizeof(Vertex), (void*)offsetof(Vertex,tu));
   glEnableVertexAttribArray(g_texCoordLoc);
-  glVertexAttribPointer(g_colorLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex,color));
+  glVertexAttribPointer(g_colorLoc, 3, GL_FLOAT, GL_FALSE,
+                        sizeof(Vertex), (void*)offsetof(Vertex,color));
   glEnableVertexAttribArray(g_colorLoc);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ibID);
@@ -397,8 +400,8 @@ static void URLOpened(void* user_data, int mode) {
   req->buf_ = (char *) malloc(cnt + 1);
   req->buf_[cnt] = 0;
   req->size_ = cnt;
-  int32_t bytes = ppb_urlloader_interface->ReadResponseBody(req->loader_, req->buf_, cnt,
-      PP_MakeCompletionCallback(URLPartialRead, req));
+  int32_t bytes = ppb_urlloader_interface->ReadResponseBody(req->loader_,
+      req->buf_, cnt, PP_MakeCompletionCallback(URLPartialRead, req));
 
   // Usually we are pending.
   if (bytes == PP_OK_COMPLETIONPENDING) return;
