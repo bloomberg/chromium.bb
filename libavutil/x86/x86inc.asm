@@ -446,10 +446,12 @@ DECLARE_REG 14, R15, 120
             movdqa xmm %+ %%i, [%1 + (%%i-6)*16+stack_size_aligned]
         %endrep
     %endif
-    %if mmsize == 32 || HAVE_ALIGNED_STACK == 0
-        mov rsp, [rsp+stack_size_padded]
-    %else
-        add %1, stack_size_padded
+    %if stack_size_padded > 0
+        %if mmsize == 32 || HAVE_ALIGNED_STACK == 0
+            mov rsp, [rsp+stack_size_padded]
+        %else
+            add %1, stack_size_padded
+        %endif
     %endif
 %endmacro
 
@@ -512,7 +514,7 @@ DECLARE_REG 14, R15, 72
 %define has_epilogue regs_used > 9 || mmsize == 32 || stack_size_aligned > 0
 
 %macro RET 0
-%if stack_size_aligned > 0
+%if stack_size_padded > 0
 %if mmsize == 32 || HAVE_ALIGNED_STACK == 0
     mov rsp, [rsp+stack_size_padded]
 %else
@@ -539,7 +541,7 @@ DECLARE_REG 6, ebp, 28
 
 %macro DECLARE_ARG 1-*
     %rep %0
-        %define r%1m [esp + stack_offset + 4*%1 + 4]
+        %define r%1m [rSTK + stack_offset + 4*%1 + 4]
         %define r%1mp dword r%1m
         %rotate 1
     %endrep
@@ -576,7 +578,7 @@ DECLARE_ARG 7, 8, 9, 10, 11, 12, 13, 14
 %define has_epilogue regs_used > 3 || mmsize == 32 || stack_size_aligned > 0
 
 %macro RET 0
-%if stack_size_aligned > 0
+%if stack_size_padded > 0
 %if mmsize == 32 || HAVE_ALIGNED_STACK == 0
     mov rsp, [rsp+stack_size_padded]
 %else
