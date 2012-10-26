@@ -251,7 +251,7 @@ class FakeServerChange {
   // Pass the fake change list to |service|.
   void ApplyPendingChanges(ChangeProcessor* processor) {
     processor->ApplyChangesFromSyncModel(
-        trans_, syncer::ImmutableChangeRecordList(&changes_));
+        trans_, 0, syncer::ImmutableChangeRecordList(&changes_));
   }
 
   const syncer::ChangeRecordList& changes() {

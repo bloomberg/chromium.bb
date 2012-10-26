@@ -133,6 +133,10 @@ class BookmarkModelAssociator
   bool NodesMatch(const BookmarkNode* bookmark,
                   const syncer::BaseNode* sync_node) const;
 
+  // Check whether bookmark model and sync model are synced by comparing
+  // their transaction versions.
+  void CheckModelSyncState() const;
+
   BookmarkModel* bookmark_model_;
   syncer::UserShare* user_share_;
   DataTypeErrorHandler* unrecoverable_error_handler_;

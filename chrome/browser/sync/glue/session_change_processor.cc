@@ -247,6 +247,7 @@ void SessionChangeProcessor::Observe(
 
 void SessionChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
+    int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

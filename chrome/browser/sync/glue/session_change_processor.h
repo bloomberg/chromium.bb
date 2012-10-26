@@ -48,6 +48,7 @@ class SessionChangeProcessor : public ChangeProcessor,
   // sync API model -> BrowserSessionProvider change application.
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
+      int64 model_version,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
 
  protected:

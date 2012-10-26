@@ -109,6 +109,18 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // representation but we may want to suppress some nodes.
   virtual bool IsVisible() const;
 
+  // Gets/sets/deletes value of |key| in the meta info represented by
+  // |meta_info_str_|. Return true if key is found in meta info for gets or
+  // meta info is changed indeed for sets/deletes.
+  bool GetMetaInfo(const std::string& key, std::string* value) const;
+  bool SetMetaInfo(const std::string& key, const std::string& value);
+  bool DeleteMetaInfo(const std::string& key);
+  void set_meta_info_str(const std::string& meta_info_str) {
+    meta_info_str_.reserve(meta_info_str.size());
+    meta_info_str_ = meta_info_str.substr(0);
+  }
+  const std::string& meta_info_str() const { return meta_info_str_; }
+
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
 
@@ -159,6 +171,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // If non-zero, it indicates we're loading the favicon and this is the handle
   // from the HistoryService.
   HistoryService::Handle favicon_load_handle_;
+
+  // A JSON string representing a DictionaryValue that stores arbitrary meta
+  // information about the node. Use serialized format to save memory.
+  std::string meta_info_str_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
 };
@@ -363,6 +379,13 @@ class BookmarkModel : public content::NotificationObserver,
 
   // Sets the visibility of one of the permanent nodes. This is set by sync.
   void SetPermanentNodeVisible(BookmarkNode::Type type, bool value);
+
+  // Sets/deletes meta info of |node|.
+  void SetNodeMetaInfo(const BookmarkNode* node,
+                       const std::string& key,
+                       const std::string& value);
+  void DeleteNodeMetaInfo(const BookmarkNode* node,
+                          const std::string& key);
 
  private:
   friend class BookmarkCodecTest;

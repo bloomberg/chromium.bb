@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "ui/base/models/tree_node_model.h"
@@ -1077,6 +1078,30 @@ TEST_F(BookmarkModelTest, MultipleExtensiveChangesObserver) {
   model_.EndExtensiveChanges();
   EXPECT_FALSE(model_.IsDoingExtensiveChanges());
   AssertExtensiveChangesObserverCount(1, 1);
+}
+
+TEST(BookmarkNodeTest, NodeMetaInfo) {
+  GURL url;
+  BookmarkNode node(url);
+  EXPECT_TRUE(node.meta_info_str().empty());
+
+  EXPECT_TRUE(node.SetMetaInfo("key1", "value1"));
+  std::string out_value;
+  EXPECT_TRUE(node.GetMetaInfo("key1", &out_value));
+  EXPECT_EQ("value1", out_value);
+  EXPECT_FALSE(node.SetMetaInfo("key1", "value1"));
+
+  EXPECT_FALSE(node.GetMetaInfo("key2", &out_value));
+  EXPECT_TRUE(node.SetMetaInfo("key2", "value2"));
+  EXPECT_TRUE(node.GetMetaInfo("key2", &out_value));
+  EXPECT_EQ("value2", out_value);
+
+  EXPECT_TRUE(node.DeleteMetaInfo("key1"));
+  EXPECT_TRUE(node.DeleteMetaInfo("key2"));
+  EXPECT_FALSE(node.DeleteMetaInfo("key3"));
+  EXPECT_FALSE(node.GetMetaInfo("key1", &out_value));
+  EXPECT_FALSE(node.GetMetaInfo("key2", &out_value));
+  EXPECT_TRUE(node.meta_info_str().empty());
 }
 
 }  // namespace

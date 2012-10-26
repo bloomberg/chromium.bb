@@ -164,6 +164,7 @@ class LoggingChangeDelegate : public SyncManager::ChangeDelegate {
 
   virtual void OnChangesApplied(
       ModelType model_type,
+      int64 model_version,
       const BaseTransaction* trans,
       const ImmutableChangeRecordList& changes) OVERRIDE {
     LOG(INFO) << "Changes applied for "

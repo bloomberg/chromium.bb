@@ -21,6 +21,8 @@ class WriteTransaction;
 
 namespace browser_sync {
 
+extern const char kBookmarkTransactionVersionKey[];
+
 // This class is responsible for taking changes from the BookmarkModel
 // and applying them to the sync API 'syncable' model, and vice versa.
 // All operations and use of this class are from the UI thread.
@@ -59,6 +61,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
   // the sync model to the bookmarks model.
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
+      int64 model_version,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
 
   // The following methods are static and hence may be invoked at any time,

@@ -97,6 +97,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate {
   // any thread.
   virtual void OnChangesApplied(
       syncer::ModelType model_type,
+      int64 model_version,
       const syncer::BaseTransaction* trans,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncer::ModelType model_type) OVERRIDE;

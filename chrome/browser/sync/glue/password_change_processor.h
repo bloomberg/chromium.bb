@@ -44,6 +44,7 @@ class PasswordChangeProcessor : public ChangeProcessor,
   // sync API model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
+      int64 model_version,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
 
   // Commit changes buffered during ApplyChanges. We must commit them to the

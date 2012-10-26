@@ -651,7 +651,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionUpdate) {
   {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
-        &trans,
+        &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
             node_id, ChangeRecord::ACTION_UPDATE));
   }
@@ -670,7 +670,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionAdd) {
   {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
-        &trans,
+        &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
             node_id, ChangeRecord::ACTION_ADD));
   }
@@ -691,7 +691,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
   {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     change_processor_->ApplyChangesFromSyncModel(
-        &trans,
+        &trans, 0,
         ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
             node_id, deleted_specifics));
   }

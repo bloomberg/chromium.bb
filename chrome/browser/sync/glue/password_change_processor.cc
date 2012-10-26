@@ -160,6 +160,7 @@ void PasswordChangeProcessor::Observe(
 
 void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
+    int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(expected_loop_ == MessageLoop::current());
 

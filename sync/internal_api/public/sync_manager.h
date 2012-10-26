@@ -105,6 +105,7 @@ class SyncManager {
     // updated later in the list.
     virtual void OnChangesApplied(
         ModelType model_type,
+        int64 model_version,
         const BaseTransaction* trans,
         const ImmutableChangeRecordList& changes) = 0;
 

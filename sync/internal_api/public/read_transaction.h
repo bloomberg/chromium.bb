@@ -31,6 +31,11 @@ class ReadTransaction : public BaseTransaction {
 
   // BaseTransaction override.
   virtual syncable::BaseTransaction* GetWrappedTrans() const OVERRIDE;
+
+  // Return |transaction_version| of |type| stored in sync directory's
+  // persisted info.
+  int64 GetModelVersion(ModelType type);
+
  private:
   void* operator new(size_t size);  // Transaction is meant for stack use only.
 

@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/read_transaction.h"
 
+#include "sync/syncable/directory.h"
 #include "sync/syncable/read_transaction.h"
 
 namespace syncer {
@@ -33,6 +34,10 @@ ReadTransaction::~ReadTransaction() {
 
 syncable::BaseTransaction* ReadTransaction::GetWrappedTrans() const {
   return transaction_;
+}
+
+int64 ReadTransaction::GetModelVersion(ModelType type) {
+  return transaction_->directory()->GetTransactionVersion(type);
 }
 
 }  // namespace syncer

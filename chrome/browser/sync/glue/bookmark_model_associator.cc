@@ -11,6 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/location.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +23,7 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/util/cryptographer.h"
+#include "sync/util/data_type_histogram.h"
 
 using content::BrowserThread;
 
@@ -355,6 +357,8 @@ bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
 }
 
 syncer::SyncError BookmarkModelAssociator::AssociateModels() {
+  CheckModelSyncState();
+
   scoped_ptr<ScopedAssociationUpdater> association_updater(
       new ScopedAssociationUpdater(bookmark_model_));
   // Try to load model associations from persisted associations first. If that
@@ -664,6 +668,23 @@ bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
   const syncer::ModelTypeSet encrypted_types = trans.GetEncryptedTypes();
   return !encrypted_types.Has(syncer::BOOKMARKS) ||
       trans.GetCryptographer()->is_ready();
+}
+
+void BookmarkModelAssociator::CheckModelSyncState() const {
+  std::string version_str;
+  if (bookmark_model_->root_node()->GetMetaInfo(kBookmarkTransactionVersionKey,
+                                                &version_str)) {
+    syncer::ReadTransaction trans(FROM_HERE, user_share_);
+    int64 native_version;
+    if (base::StringToInt64(version_str, &native_version) &&
+        native_version != trans.GetModelVersion(syncer::BOOKMARKS)) {
+      UMA_HISTOGRAM_ENUMERATION("Sync.LocalModelOutOfSync",
+                                syncer::BOOKMARKS, syncer::MODEL_TYPE_COUNT);
+      // Clear version on bookmark model so that we only report error once.
+      bookmark_model_->DeleteNodeMetaInfo(bookmark_model_->root_node(),
+                                          kBookmarkTransactionVersionKey);
+    }
+  }
 }
 
 }  // namespace browser_sync

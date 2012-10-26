@@ -795,8 +795,14 @@ SyncManagerImpl::HandleTransactionEndingChangeEvent(
     CHECK(change_buffers_[type].GetAllChangesInTreeOrder(&read_trans,
                                                          &ordered_changes));
     if (!ordered_changes.Get().empty()) {
+      // Increment transaction version so that change processor can read
+      // updated value and set it in native model after changes are applied.
+      trans->directory()->IncrementTransactionVersion(type);
+
       change_delegate_->
-          OnChangesApplied(type, &read_trans, ordered_changes);
+          OnChangesApplied(type,
+                           trans->directory()->GetTransactionVersion(type),
+                           &read_trans, ordered_changes);
       change_observer_.Call(FROM_HERE,
           &SyncManager::ChangeObserver::OnChangesApplied,
           type, write_transaction_info.Get().id, ordered_changes);

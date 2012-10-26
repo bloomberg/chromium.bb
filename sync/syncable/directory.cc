@@ -657,6 +657,16 @@ void Directory::SetDownloadProgress(
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
+int64 Directory::GetTransactionVersion(ModelType type) const {
+  kernel_->transaction_mutex.AssertAcquired();
+  return kernel_->persisted_info.transaction_version[type];
+}
+
+void Directory::IncrementTransactionVersion(ModelType type) {
+  kernel_->transaction_mutex.AssertAcquired();
+  kernel_->persisted_info.transaction_version[type]++;
+}
+
 ModelTypeSet Directory::initial_sync_ended_types() const {
   ScopedKernelLock lock(this);
   return kernel_->persisted_info.initial_sync_ended;

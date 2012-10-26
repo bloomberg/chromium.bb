@@ -119,6 +119,7 @@ class BookmarkCodecTest : public testing::Test {
                                 AsMutable(model->mobile_node()),
                                 &max_id, value);
     model->set_next_node_id(max_id);
+    AsMutable(model->root_node())->set_meta_info_str(codec->model_meta_info());
     return result;
   }
 
@@ -335,4 +336,28 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   EXPECT_EQ(ASCIIToUTF16("Get started with Google Chrome"), child->GetTitle());
 
   ASSERT_TRUE(decoded_model.mobile_node() != NULL);
+}
+
+TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
+  // Add meta info and encode.
+  scoped_ptr<BookmarkModel> model(CreateTestModel1());
+  model->SetNodeMetaInfo(model->root_node(), "model_info", "value1");
+  model->SetNodeMetaInfo(model->bookmark_bar_node()->GetChild(0),
+                         "node_info", "value2");
+  std::string checksum;
+  scoped_ptr<Value> value(EncodeHelper(model.get(), &checksum));
+  ASSERT_TRUE(value.get() != NULL);
+
+  // Decode and check for meta info.
+  model.reset(DecodeHelper(*value, checksum, &checksum, false));
+  std::string meta_value;
+  EXPECT_TRUE(model->root_node()->GetMetaInfo("model_info", &meta_value));
+  EXPECT_EQ("value1", meta_value);
+  EXPECT_FALSE(model->root_node()->GetMetaInfo("other_key", &meta_value));
+  const BookmarkNode* bbn = model->bookmark_bar_node();
+  ASSERT_EQ(1, bbn->child_count());
+  const BookmarkNode* child = bbn->GetChild(0);
+  EXPECT_TRUE(child->GetMetaInfo("node_info", &meta_value));
+  EXPECT_EQ("value2", meta_value);
+  EXPECT_FALSE(child->GetMetaInfo("other_key", &meta_value));
 }

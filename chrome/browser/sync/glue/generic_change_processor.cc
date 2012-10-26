@@ -40,6 +40,7 @@ GenericChangeProcessor::~GenericChangeProcessor() {
 
 void GenericChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
+    int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(CalledOnValidThread());
   DCHECK(syncer_changes_.empty());

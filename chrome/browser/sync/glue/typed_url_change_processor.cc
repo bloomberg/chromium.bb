@@ -243,6 +243,7 @@ bool TypedUrlChangeProcessor::ShouldSyncVisit(
 
 void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
+    int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(expected_loop_ == MessageLoop::current());
 

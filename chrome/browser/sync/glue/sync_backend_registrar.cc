@@ -219,13 +219,14 @@ bool SyncBackendRegistrar::IsTypeActivatedForTest(
 
 void SyncBackendRegistrar::OnChangesApplied(
     syncer::ModelType model_type,
+    int64 model_version,
     const syncer::BaseTransaction* trans,
     const syncer::ImmutableChangeRecordList& changes) {
   ChangeProcessor* processor = GetProcessor(model_type);
   if (!processor)
     return;
 
-  processor->ApplyChangesFromSyncModel(trans, changes);
+  processor->ApplyChangesFromSyncModel(trans, model_version, changes);
 }
 
 void SyncBackendRegistrar::OnChangesComplete(syncer::ModelType model_type) {

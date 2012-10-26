@@ -43,7 +43,8 @@ class BookmarkCodec {
   // up to the caller to delete the returned object.
   base::Value* Encode(const BookmarkNode* bookmark_bar_node,
                       const BookmarkNode* other_folder_node,
-                      const BookmarkNode* mobile_folder_node);
+                      const BookmarkNode* mobile_folder_node,
+                      const std::string& model_meta_info);
 
   // Decodes the previously encoded value to the specified nodes as well as
   // setting |max_node_id| to the greatest node id. Returns true on success,
@@ -66,6 +67,9 @@ class BookmarkCodec {
   // user.
   const std::string& stored_checksum() const { return stored_checksum_; }
 
+  // Return meta info of bookmark model root.
+  const std::string& model_meta_info() const { return model_meta_info_; }
+
   // Returns whether the IDs were reassigned during decoding. Always returns
   // false after encoding.
   bool ids_reassigned() const { return ids_reassigned_; }
@@ -84,6 +88,7 @@ class BookmarkCodec {
   static const char* kURLKey;
   static const char* kDateModifiedKey;
   static const char* kChildrenKey;
+  static const char* kMetaInfo;
 
   // Possible values for kTypeKey.
   static const char* kTypeURL;
@@ -160,6 +165,9 @@ class BookmarkCodec {
 
   // Maximum ID assigned when decoding data.
   int64 maximum_id_;
+
+  // Meta info set on bookmark model root.
+  std::string model_meta_info_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkCodec);
 };

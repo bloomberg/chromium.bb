@@ -9,6 +9,7 @@
 
 #include "base/location.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -33,6 +34,9 @@ using content::BrowserThread;
 namespace browser_sync {
 
 static const char kMobileBookmarksTag[] = "synced_bookmarks";
+
+// Key for sync transaction version in bookmark node meta info.
+const char kBookmarkTransactionVersionKey[] = "sync.transaction_version";
 
 BookmarkChangeProcessor::BookmarkChangeProcessor(
     BookmarkModelAssociator* model_associator,
@@ -413,6 +417,7 @@ int BookmarkChangeProcessor::CalculateBookmarkModelInsertionIndex(
 // model.
 void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
+    int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // A note about ordering.  Sync backend is responsible for ordering the change
@@ -535,6 +540,11 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 
   // We are now ready to hear about bookmarks changes again.
   model->AddObserver(this);
+
+  // All changes are applied in bookmark model. Set transaction version on
+  // bookmark model to mark as synced.
+  model->SetNodeMetaInfo(model->root_node(), kBookmarkTransactionVersionKey,
+                         base::Int64ToString(model_version));
 }
 
 // Create a bookmark node corresponding to |src| if one is not already

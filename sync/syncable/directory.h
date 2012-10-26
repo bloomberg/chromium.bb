@@ -259,6 +259,11 @@ class Directory {
       ModelType type,
       const sync_pb::DataTypeProgressMarker& value);
 
+  // Gets/Increments transaction version of a model type. Must be called when
+  // holding kernel mutex.
+  int64 GetTransactionVersion(ModelType type) const;
+  void IncrementTransactionVersion(ModelType type);
+
   ModelTypeSet initial_sync_ended_types() const;
   bool initial_sync_ended_for_type(ModelType type) const;
   void set_initial_sync_ended_for_type(ModelType type, bool value);

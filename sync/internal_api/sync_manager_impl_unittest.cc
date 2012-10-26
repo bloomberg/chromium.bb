@@ -801,6 +801,7 @@ class SyncManagerTest : public testing::Test,
 
   virtual void OnChangesApplied(
       ModelType model_type,
+      int64 model_version,
       const BaseTransaction* trans,
       const ImmutableChangeRecordList& changes) OVERRIDE {}
 
@@ -2615,6 +2616,45 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     EXPECT_EQ(kEncryptedString, node_entry->Get(NON_UNIQUE_NAME));
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
     EXPECT_TRUE(specifics.has_encrypted());
+  }
+}
+
+// Verify transaction version of a model type is incremented when node of
+// that type is updated.
+TEST_F(SyncManagerTest, IncrementTransactionVersion) {
+  ModelSafeRoutingInfo routing_info;
+  GetModelSafeRoutingInfo(&routing_info);
+
+  {
+    ReadTransaction read_trans(FROM_HERE, sync_manager_.GetUserShare());
+    for (ModelSafeRoutingInfo::iterator i = routing_info.begin();
+         i != routing_info.end(); ++i) {
+      // Transaction version is incremented when SyncManagerTest::SetUp()
+      // creates a node of each type.
+      EXPECT_EQ(1,
+                sync_manager_.GetUserShare()->directory->
+                    GetTransactionVersion(i->first));
+    }
+  }
+
+  // Create bookmark node to increment transaction version of bookmark model.
+  std::string client_tag = "title";
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.mutable_bookmark()->set_url("url");
+  entity_specifics.mutable_bookmark()->set_title("title");
+  MakeServerNode(sync_manager_.GetUserShare(), BOOKMARKS, client_tag,
+                 BaseNode::GenerateSyncableHash(BOOKMARKS,
+                                                client_tag),
+                 entity_specifics);
+
+  {
+    ReadTransaction read_trans(FROM_HERE, sync_manager_.GetUserShare());
+    for (ModelSafeRoutingInfo::iterator i = routing_info.begin();
+         i != routing_info.end(); ++i) {
+      EXPECT_EQ(i->first == BOOKMARKS ? 2 : 1,
+                sync_manager_.GetUserShare()->directory->
+                    GetTransactionVersion(i->first));
+    }
   }
 }
 

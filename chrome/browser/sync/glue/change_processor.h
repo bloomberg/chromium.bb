@@ -40,6 +40,7 @@ class ChangeProcessor {
   // how to interpret and process |changes|.
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
+      int64 model_version,
       const syncer::ImmutableChangeRecordList& changes) = 0;
 
   // The changes found in ApplyChangesFromSyncModel may be too slow to be
