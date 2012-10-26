@@ -61,8 +61,8 @@ class CONTENT_EXPORT AudioRendererMixerManager {
     media::AudioRendererMixer* mixer;
     int ref_count;
   };
-  typedef std::map<media::AudioParameters, AudioRendererMixerReference,
-                   media::AudioParameters::Compare> AudioRendererMixerMap;
+  typedef std::map<media::AudioParameters,
+                   AudioRendererMixerReference> AudioRendererMixerMap;
   AudioRendererMixerMap mixers_;
   base::Lock mixers_lock_;
 
