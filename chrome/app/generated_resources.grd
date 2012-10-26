@@ -4418,8 +4418,14 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_PERFORMANCE_MONITOR_TITLE" desc="Title for the Performance tab.">
         Performance
       </message>
-      <message name="IDS_PERFORMANCE_MONITOR_FLAG_NOT_ENABLED" desc="The text of the alert box which indicates that the kPerformanceMonitorGathering flag has not been enabled.">
+      <message name="IDS_PERFORMANCE_MONITOR_FLAG_NOT_ENABLED_WARNING" desc="The warning which indicates that the kPerformanceMonitorGathering flag has not been enabled.">
         Warning: You do not have the performance monitoring flag enabled! Data displayed will be limited to any data which were gathered previously.
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_ENABLE_FLAG" desc="The text displayed for the link to enable the performance monitor flag.">
+        Enable
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_NO_AGGREGATION_WARNING" desc="The warning which indicates that the page may be slow because the data are not being aggregated.">
+        Warning: The data are not being aggregated! This may cause the page to be slow!
       </message>
       <!-- Time Range-Related -->
       <message name="IDS_PERFORMANCE_MONITOR_TIME_RANGE_SECTION" desc="Text displayed for the header of the section which allows the user to choose the window of time for which to display data.">

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui.h"
 
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,9 +29,14 @@ ChromeWebUIDataSource* CreateWebUIHTMLSource() {
   source->add_resource_path("flot.js", IDR_PERFORMANCE_MONITOR_JQUERY_FLOT_JS);
   source->set_default_resource(IDR_PERFORMANCE_MONITOR_HTML);
 
+  source->AddString("enableFlagsURL", ASCIIToUTF16(chrome::kChromeUIFlagsURL));
+
   source->AddLocalizedString("title", IDS_PERFORMANCE_MONITOR_TITLE);
-  source->AddLocalizedString("flagNotEnabled",
-                             IDS_PERFORMANCE_MONITOR_FLAG_NOT_ENABLED);
+  source->AddLocalizedString("flagNotEnabledWarning",
+                             IDS_PERFORMANCE_MONITOR_FLAG_NOT_ENABLED_WARNING);
+  source->AddLocalizedString("enableFlag", IDS_PERFORMANCE_MONITOR_ENABLE_FLAG);
+  source->AddLocalizedString("noAggregationWarning",
+                             IDS_PERFORMANCE_MONITOR_NO_AGGREGATION_WARNING);
   source->AddLocalizedString("timeRangeSection",
                              IDS_PERFORMANCE_MONITOR_TIME_RANGE_SECTION);
   source->AddLocalizedString("timeResolutionCategory",

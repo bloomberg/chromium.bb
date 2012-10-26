@@ -90,6 +90,19 @@ cr.define('performance_monitor', function() {
    */
   var resizeDelay_ = 500;
 
+  /*
+   * The value of the 'No Aggregation' option enum (AGGREGATION_METHOD_NONE) on
+   * the C++ side. We use this to warn the user that selecting this aggregation
+   * option will be slow.
+   */
+  var aggregationMethodNone = 0;
+
+  /*
+   * The value of the default aggregation option, 'Median Aggregation'
+   * (AGGREGATION_METHOD_MEDIAN), on the C++ side.
+   */
+  var aggregationMethodMedian = 1;
+
   /** @constructor */
   function PerformanceMonitor() {
     this.__proto__ = PerformanceMonitor.prototype;
@@ -277,6 +290,14 @@ cr.define('performance_monitor', function() {
     this.intervals_ = [];
 
     /**
+     * The record of all the warnings which are currently active (or empty if no
+     * warnings are being displayed).
+     * @type {!Array.<string>}
+     * @private
+     */
+    this.activeWarnings_ = [];
+
+    /**
      * Handle of timer interval function used to update charts
      * @type {Object}
      * @private
@@ -308,6 +329,37 @@ cr.define('performance_monitor', function() {
 
   PerformanceMonitor.prototype = {
     /**
+     * Display the appropriate warning at the top of the page.
+     * @param {string} warningId the id of the HTML element with the warning
+     *     to display; this does not include the '#'.
+     */
+    showWarning: function(warningId) {
+      if (this.activeWarnings_.indexOf(warningId) != -1)
+        return;
+
+      if (this.activeWarnings_.length == 0)
+        $('#warnings-box')[0].style.display = 'block';
+      $('#' + warningId)[0].style.display = 'block';
+      this.activeWarnings_.push(warningId);
+    },
+
+    /**
+     * Hide the warning, and, if that was the only warning showing, the entire
+     * warnings box.
+     * @param {string} warningId the id of the HTML element with the warning
+     *     to display; this does not include the '#'.
+     */
+    hideWarning: function(warningId) {
+      if ($('#' + warningId)[0].style.display == 'none')
+        return;
+      $('#' + warningId)[0].style.display = 'none';
+      this.activeWarnings_.splice(this.activeWarnings_.indexOf(warningId), 1);
+
+      if (this.activeWarnings_.length == 0)
+        $('#warnings-box')[0].style.display = 'none';
+    },
+
+    /**
      * Receive an indication of whether or not the kPerformanceMonitorGathering
      * flag has been enabled and, if not, warn the user of such.
      * @param {boolean} flagEnabled indicates whether or not the flag has been
@@ -315,7 +367,7 @@ cr.define('performance_monitor', function() {
      */
     getFlagEnabledCallback: function(flagEnabled) {
       if (!flagEnabled)
-        $('#flag-warning')[0].style.display = 'block';
+        this.showWarning('flag-not-enabled-warning');
     },
 
     /**
@@ -337,9 +389,9 @@ cr.define('performance_monitor', function() {
       this.setupRadioButtons_($('#choose-aggregation')[0],
                               this.aggregationRadioMap_,
                               this.setAggregationStrategy,
-                              0,  // Set the default option to the first.
+                              aggregationMethodMedian,
                               'aggregation-strategies');
-      this.setAggregationStrategy(0);
+      this.setAggregationStrategy(aggregationMethodMedian);
     },
 
     /**
@@ -527,44 +579,34 @@ cr.define('performance_monitor', function() {
      *
      * So, for the example given, the generated HTML looks thus:
      *
-     * <div id="category-label-template" class="category-label">CPU</div>
-     *   <div id="detail-checkbox-template" class="detail-checkbox">
-     *     <div class="horizontal-box">
-     *       <input type="checkbox">
-     *       <div class="detail-label" title=
+     * <div>
+     *   <h3 class="category-heading">CPU</h3>
+     *   <div class="checkbox-group">
+     *     <div>
+     *       <label class="input-label" title=
      *           "The combined CPU usage of all processes related to Chrome">
-     *         CPU Usage
-     *       </div>
-     *       <div class="spacer"></div>
-     *       <div class="color-icon"
-     *           style="background-color: rgb(255, 128, 128);"></div>
+     *         <input type="checkbox">
+     *         <span>CPU</span>
+     *       </label>
      *     </div>
      *   </div>
      * </div>
-     *
-     * <div id="category-label-template" class="category-label">Memory</div>
-     *   <div id="detail-checkbox-template" class="detail-checkbox">
-     *     <div class="horizontal-box">
-     *       <input type="checkbox">
-     *       <div class="detail-label" title="The combined private memory \
+     * <div>
+     *   <h3 class="category-heading">Memory</h3>
+     *   <div class="checkbox-group">
+     *     <div>
+     *       <label class="input-label" title= "The combined private memory \
      *           usage of all processes related to Chrome">
-     *         Private Memory Usage
-     *       </div>
-     *       <div class="spacer"></div>
-     *       <div class="color-icon"
-     *           style="background-color: rgb(128, 255, 128);"></div>
+     *         <input type="checkbox">
+     *         <span>Private Memory</span>
+     *       </label>
      *     </div>
-     *   </div>
-     *   </div><div id="detail-checkbox-template" class="detail-checkbox">
-     *      <div class="horizontal-box">
-     *        <input type="checkbox">
-     *        <div class="detail-label" title="The combined shared memory \
-     *            usage of all processes related to Chrome">
-     *          Shared Memory Usage
-     *        </div>
-     *        <div class="spacer"></div>
-     *        <div class="color-icon"
-     *            style="background-color: rgb(128, 128, 255);"></div>
+     *     <div>
+     *       <label class="input-label" title= "The combined shared memory \
+     *           usage of all processes related to Chrome">
+     *         <input type="checkbox">
+     *         <span>Shared Memory</span>
+     *       </label>
      *     </div>
      *   </div>
      * </div>
@@ -592,41 +634,38 @@ cr.define('performance_monitor', function() {
      * @private
      */
     setupCheckboxes_: function(div, optionCategoryMap, idKey, check, uncheck) {
-      var checkboxTemplate = $('#detail-checkbox-template')[0];
-      var labelTemplate = $('#category-label-template')[0];
+      var categoryTemplate = $('#category-template')[0];
+      var checkboxTemplate = $('#checkbox-template')[0];
 
       for (var c in optionCategoryMap) {
         var category = optionCategoryMap[c];
-        var label = labelTemplate.cloneNode(true);
+        var template = categoryTemplate.cloneNode(true);
+        template.id = '';
 
-        label.innerText = category.name;
-        label.title = category.description;
-        div.appendChild(label);
+        var heading = template.querySelector('.category-heading');
+        heading.innerText = category.name;
+        heading.title = category.description;
 
+        var checkboxGroup = template.querySelector('.checkbox-group');
         category.details.forEach(function(details) {
           var checkbox = checkboxTemplate.cloneNode(true);
+          checkbox.id = '';
           var input = checkbox.querySelector('input');
-          var label = checkbox.querySelector('.detail-label');
-          var icon = checkbox.querySelector('.color-icon');
 
           details.checkbox = input;
-
           input.checked = false;
           input.option = details[idKey];
-          input.icon = icon;
           input.addEventListener('change', function(e) {
             (e.target.checked ? check : uncheck).call(this, e.target.option);
-            e.target.icon.style.visibility =
-                e.target.checked ? 'visible' : 'hidden';
           }.bind(this));
 
-          label.innerText = details.name;
-          label.title = details.description;
+          checkbox.querySelector('span').innerText = details.name;
+          checkbox.querySelector('.input-label').title = details.description;
 
-          icon.style.backgroundColor = details.color;
-
-          div.appendChild(checkbox);
+          checkboxGroup.appendChild(checkbox);
         }, this);
+
+        div.appendChild(template);
       }
     },
 
@@ -673,21 +712,19 @@ cr.define('performance_monitor', function() {
      *     this.setAggregationStrategy, 0, 'aggregation-strategies');
      *
      * The resultant HTML would be:
-     * <div id="radio-template" class="radio" title="Aggregate using median
-     *     calculations to reduce noisiness in reporting">
-     *   <div class="horizontal-box">
+     * <div class="radio">
+     *   <label class="input-label" title="Aggregate using median \
+     *       calculations to reduce noisiness in reporting">
      *     <input type="radio" name="aggregation-strategies" value=0>
-     *       <span>Median</span>
-     *     </input>
-     *   </div>
+     *     <span>Median</span>
+     *   </label>
      * </div>
-     * <div id="radio-template" class="radio" title="Aggregate using mean
-     *     calculations for the most accurate average in reporting">
-     *   <div class="horizontal-box">
+     * <div class="radio">
+     *   <label class="input-label" title="Aggregate using mean \
+     *       calculations for the most accurate average in reporting">
      *     <input type="radio" name="aggregation-strategies" value=1>
-     *       <span>Mean</span>
-     *     </input>
-     *   </div>
+     *     <span>Mean</span>
+     *   </label>
      * </div>
      *
      * If a radio button is selected, |onSelect| is called with the radio
@@ -713,6 +750,7 @@ cr.define('performance_monitor', function() {
       for (var key in optionMap) {
         var entry = optionMap[key];
         var radio = radioTemplate.cloneNode(true);
+        radio.id = '';
         var input = radio.querySelector('input');
 
         input.name = collectionName;
@@ -720,7 +758,7 @@ cr.define('performance_monitor', function() {
         input.option = entry;
         radio.querySelector('span').innerText = entry.option.name;
         if (entry.option.description != undefined)
-          radio.title = entry.option.description;
+          radio.querySelector('.input-label').title = entry.option.description;
         div.appendChild(radio);
         entry.element = input;
       }
@@ -879,6 +917,11 @@ cr.define('performance_monitor', function() {
      * @param {number} strategyId The id of the aggregation strategy.
      */
     setAggregationStrategy: function(strategyId) {
+      if (strategyId != aggregationMethodNone)
+        this.hideWarning('no-aggregation-warning');
+      else
+        this.showWarning('no-aggregation-warning');
+
       this.aggregationStrategy = strategyId;
       this.requestIntervals();
     },

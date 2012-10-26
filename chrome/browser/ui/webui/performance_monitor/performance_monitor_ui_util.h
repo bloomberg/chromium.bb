@@ -12,9 +12,11 @@ namespace performance_monitor {
 
 // The different options for aggregation strategies.
 enum AggregationStrategy {
+  // IMPORTANT! These values are hard-coded in
+  // chrome/browser/resources/performance_monitor.js. Please do not change them.
+  AGGREGATION_STRATEGY_NONE,
   AGGREGATION_STRATEGY_MEDIAN,
   AGGREGATION_STRATEGY_MEAN,
-  AGGREGATION_STRATEGY_NONE,
   AGGREGATION_STRATEGY_NUMBER_OF_STRATEGIES
 };
 
