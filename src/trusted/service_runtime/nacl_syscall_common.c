@@ -45,6 +45,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
@@ -357,7 +358,7 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
 
   NaClLog(1, "Exit syscall handler: %d\n", status);
 
-  (void) NaClReportExitStatus(nap, status);
+  (void) NaClReportExitStatus(nap, NACL_ABI_W_EXITCODE(status, 0));
 
   NaClAppThreadTeardown(natp);
   /* NOTREACHED */

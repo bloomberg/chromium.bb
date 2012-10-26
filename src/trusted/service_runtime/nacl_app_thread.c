@@ -129,7 +129,7 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClLog(3, " NaClThreadExit\n");
 
   NaClXMutexLock(&nap->mu);
-  process_exit_status = nap->exit_status;
+  process_exit_status = NACL_ABI_WEXITSTATUS(nap->exit_status);
   NaClXMutexUnlock(&nap->mu);
   /*
    * There appears to be a race on Windows where the process can sometimes

@@ -829,12 +829,17 @@ void Target::IgnoreThread(struct NaClAppThread *natp) {
   threads_.erase(iter);
 }
 
-void Target::Exit(int err_code) {
+void Target::Exit() {
   MutexLock lock(&mutex_);
   if (session_ != NULL) {
     Packet exit_packet;
-    exit_packet.AddRawChar('W');
-    exit_packet.AddWord8(err_code);
+    if (NACL_ABI_WIFSIGNALED(nap_->exit_status)) {
+      exit_packet.AddRawChar('X');
+      exit_packet.AddWord8(NACL_ABI_WTERMSIG(nap_->exit_status));
+    } else {
+      exit_packet.AddRawChar('W');
+      exit_packet.AddWord8(NACL_ABI_WEXITSTATUS(nap_->exit_status));
+    }
     session_->SendPacket(&exit_packet);
   }
 }

@@ -14,6 +14,7 @@
 
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
@@ -101,7 +102,11 @@ static void NaClSecureServiceConnectionCountDecr(
   }
   if (0 == --self->conn_count) {
     NaClLog(4, "NaClSecureServiceThread: all channels closed, exiting.\n");
-    NaClExit(0);
+    /*
+     * Set that we are killed by SIGKILL so that debug stub could report
+     * this to debugger.
+     */
+    NaClReportExitStatus(self->nap, NACL_ABI_W_EXITCODE(0, NACL_ABI_SIGKILL));
   }
   NaClXMutexUnlock(&self->mu);
 }

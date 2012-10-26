@@ -70,9 +70,9 @@ int main(int argc, char **argv) {
   CHECK(NaClCreateMainThread(&app[1], 2, domain2_args, NULL));
 
   return_code = NaClWaitForMainThreadToExit(&app[0]);
-  CHECK(return_code == 1001);
+  CHECK(return_code == 101);
   return_code = NaClWaitForMainThreadToExit(&app[1]);
-  CHECK(return_code == 1002);
+  CHECK(return_code == 102);
 
   /*
    * Avoid calling exit() because it runs process-global destructors

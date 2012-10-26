@@ -77,7 +77,7 @@ struct NaClValidationCache;
 struct NaClDebugCallbacks {
   void (*thread_create_hook)(struct NaClAppThread *natp);
   void (*thread_exit_hook)(struct NaClAppThread *natp);
-  void (*process_exit_hook)(int exit_status);
+  void (*process_exit_hook)();
 };
 
 enum NaClResourcePhase {
@@ -508,6 +508,12 @@ int NaClAppLaunchServiceThreads(struct NaClApp *nap);
  * channel, and false (0) otherwise.
  */
 int NaClReportExitStatus(struct NaClApp *nap, int exit_status);
+
+/*
+ * Report that we are killed with a signal to debug stub and announce
+ * that nexe should be considered no longer running.
+ */
+void NaClReportKilledBySignal(struct NaClApp *nap, int signal);
 
 /*
  * Used to launch the main thread.  NB: calling thread may in the

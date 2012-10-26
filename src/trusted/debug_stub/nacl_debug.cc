@@ -112,8 +112,8 @@ static void ThreadExitHook(struct NaClAppThread *natp) throw() {
   g_target->IgnoreThread(natp);
 }
 
-static void ProcessExitHook(int ErrCode) throw() {
-  g_target->Exit(ErrCode);
+static void ProcessExitHook() throw() {
+  g_target->Exit();
   NaClDebugStubFini();
 }
 

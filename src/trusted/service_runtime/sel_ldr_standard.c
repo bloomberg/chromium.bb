@@ -37,6 +37,7 @@
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_kernel_service.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
@@ -623,19 +624,29 @@ done:
 }
 
 int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
-  int           rv;
+  int           rv = 0;
   NaClSrpcError rpc_result;
 
   NaClXMutexLock(&nap->mu);
+  /*
+   * If several threads are exiting/reporting signals at once, we should
+   * let only one thread to pass through. This way we can use exit code
+   * without synchronization once we know that running==0.
+   */
+  if (!nap->running) {
+    NaClXMutexUnlock(&nap->mu);
+    return 0;
+  }
 
-  if (NACL_REVERSE_CHANNEL_INITIALIZED !=
+  if (NACL_REVERSE_CHANNEL_INITIALIZED ==
       nap->reverse_channel_initialization_state) {
-    rv = 0;
-  } else {
-    rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
-                                           NACL_REVERSE_CONTROL_REPORT_STATUS,
-                                           exit_status & 0xff);
-    rv = NACL_SRPC_RESULT_OK == rpc_result;
+    /* TODO(halyavin) update NaCl plugin to accept full exit_status value */
+    if (NACL_ABI_WIFEXITED(exit_status)) {
+      rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
+                                             NACL_REVERSE_CONTROL_REPORT_STATUS,
+                                             NACL_ABI_WEXITSTATUS(exit_status));
+      rv = NACL_SRPC_RESULT_OK == rpc_result;
+    }
     /*
      * Due to cross-repository checkins, the Cr-side might not yet
      * implement this RPC.  We return whether shutdown was reported.
@@ -886,10 +897,10 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
    */
 
   if (NULL != nap->debug_stub_callbacks) {
-    nap->debug_stub_callbacks->process_exit_hook(nap->exit_status);
+    nap->debug_stub_callbacks->process_exit_hook();
   }
 
-  return (nap->exit_status);
+  return NACL_ABI_WEXITSTATUS(nap->exit_status);
 }
 
 /*

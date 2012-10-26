@@ -45,8 +45,19 @@ enum NaClSignalResult {
   NACL_SIGNAL_RETURN    /* Skip all other handlers and return */
 };
 
+/*
+ * TODO(halyavin): this is part of external ABI. We need to find a directory to
+ * place such headers.
+ */
 #define NACL_ABI_SIGTRAP 5
+#define NACL_ABI_SIGKILL 9
 #define NACL_ABI_SIGSEGV 11
+
+#define NACL_ABI_WEXITSTATUS(status) (((status) & 0xff00) >> 8)
+#define NACL_ABI_WTERMSIG(status) ((status) & 0x7f)
+#define NACL_ABI_WIFEXITED(status) (NACL_ABI_WTERMSIG(status) == 0)
+#define NACL_ABI_WIFSIGNALED(status) ((((status) + 1) & 0x7f) > 1)
+#define NACL_ABI_W_EXITCODE(ret, sig) ((((ret) & 0xff) << 8) + ((sig) & 0x7f))
 
 #if NACL_WINDOWS
 enum PosixSignals {

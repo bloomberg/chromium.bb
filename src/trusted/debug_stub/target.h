@@ -77,7 +77,7 @@ class Target {
   void IgnoreThread(struct NaClAppThread *natp);
 
   // Send exit packet to gdb.
-  void Exit(int err_code);
+  void Exit();
 
  protected:
   uint64_t AdjustUserAddr(uint64_t addr);
