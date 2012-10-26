@@ -127,12 +127,9 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   }
 
   if (tab_strip) {
-    content::NavigationController* opener =
-        tab_strip->GetOpenerOfTabContentsAt(tab_index);
-    if (opener) {
-      result->SetInteger(keys::kOpenerTabIdKey,
-                         GetTabId(opener->GetWebContents()));
-    }
+    WebContents* opener = tab_strip->GetOpenerOfWebContentsAt(tab_index);
+    if (opener)
+      result->SetInteger(keys::kOpenerTabIdKey, GetTabId(opener));
   }
 
   return result;

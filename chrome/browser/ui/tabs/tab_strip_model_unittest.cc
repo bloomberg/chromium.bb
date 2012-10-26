@@ -42,7 +42,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using content::NavigationController;
 using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
@@ -634,8 +633,7 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   // background with opener_contents set as their opener.
 
   TabContents* opener_contents = CreateTabContents();
-  NavigationController* opener =
-      &opener_contents->web_contents()->GetController();
+  WebContents* opener = opener_contents->web_contents();
   tabstrip.AppendTabContents(opener_contents, true);
   TabContents* contents1 = CreateTabContents();
   TabContents* contents2 = CreateTabContents();
@@ -658,45 +656,45 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
 
   // All the tabs should have the same opener.
   for (int i = 1; i < tabstrip.count(); ++i)
-    EXPECT_EQ(opener, tabstrip.GetOpenerOfTabContentsAt(i));
+    EXPECT_EQ(opener, tabstrip.GetOpenerOfWebContentsAt(i));
 
   // If there is a next adjacent item, then the index should be of that item.
-  EXPECT_EQ(2, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 1, false));
+  EXPECT_EQ(2, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 1, false));
   // If the last tab in the group is closed, the preceding tab in the same
   // group should be selected.
-  EXPECT_EQ(4, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 5, false));
+  EXPECT_EQ(4, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 5, false));
 
   // Tests the method that finds the last tab opened by the same opener in the
   // strip (this is the insertion index for the next background tab for the
   // specified opener).
-  EXPECT_EQ(5, tabstrip.GetIndexOfLastTabContentsOpenedBy(opener, 1));
+  EXPECT_EQ(5, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener, 1));
 
   // For a tab that has opened no other tabs, the return value should always be
   // -1...
-  NavigationController* o1 = &contents1->web_contents()->GetController();
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(o1, 3, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastTabContentsOpenedBy(o1, 3));
+  WebContents* o1 = contents1->web_contents();
+  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(o1, 3, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(o1, 3));
 
   // ForgetAllOpeners should destroy all opener relationships.
   tabstrip.ForgetAllOpeners();
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 1, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 5, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastTabContentsOpenedBy(opener, 1));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 1, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 5, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener, 1));
 
   // Specify the last tab as the opener of the others.
-  NavigationController* o5 = &contents5->web_contents()->GetController();
+  WebContents* o5 = contents5->web_contents();
   for (int i = 0; i < tabstrip.count() - 1; ++i)
-    tabstrip.SetOpenerOfTabContentsAt(i, o5);
+    tabstrip.SetOpenerOfWebContentsAt(i, o5);
 
   for (int i = 0; i < tabstrip.count() - 1; ++i)
-    EXPECT_EQ(o5, tabstrip.GetOpenerOfTabContentsAt(i));
+    EXPECT_EQ(o5, tabstrip.GetOpenerOfWebContentsAt(i));
 
   // If there is a next adjacent item, then the index should be of that item.
-  EXPECT_EQ(2, tabstrip.GetIndexOfNextTabContentsOpenedBy(o5, 1, false));
+  EXPECT_EQ(2, tabstrip.GetIndexOfNextWebContentsOpenedBy(o5, 1, false));
 
   // If the last tab in the group is closed, the preceding tab in the same
   // group should be selected.
-  EXPECT_EQ(3, tabstrip.GetIndexOfNextTabContentsOpenedBy(o5, 4, false));
+  EXPECT_EQ(3, tabstrip.GetIndexOfNextWebContentsOpenedBy(o5, 4, false));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -801,8 +799,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   EXPECT_TRUE(tabstrip.empty());
 
   TabContents* opener_contents = CreateTabContents();
-  NavigationController* opener =
-      &opener_contents->web_contents()->GetController();
+  WebContents* opener = opener_contents->web_contents();
   tabstrip.AppendTabContents(opener_contents, true);
 
   // Open some other random unrelated tab in the background to monkey with our
@@ -823,9 +820,9 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   EXPECT_EQ(other_contents, tabstrip.GetTabContentsAt(4));
 
   // The opener API should work...
-  EXPECT_EQ(3, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 2, false));
-  EXPECT_EQ(2, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 3, false));
-  EXPECT_EQ(3, tabstrip.GetIndexOfLastTabContentsOpenedBy(opener, 1));
+  EXPECT_EQ(3, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 2, false));
+  EXPECT_EQ(2, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 3, false));
+  EXPECT_EQ(3, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener, 1));
 
   // Now open a foreground tab from a link. It should be opened adjacent to the
   // opener tab.
@@ -858,10 +855,10 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   EXPECT_EQ(fg_nonlink_contents, tabstrip.GetActiveTabContents());
 
   // Verify that all opener relationships are forgotten.
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 2, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 3, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextTabContentsOpenedBy(opener, 3, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastTabContentsOpenedBy(opener, 1));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 2, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 3, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 3, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener, 1));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());

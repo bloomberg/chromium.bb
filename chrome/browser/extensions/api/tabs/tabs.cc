@@ -1000,7 +1000,7 @@ bool CreateTabFunction::RunImpl() {
 
   // TODO(jstritar): Add a constant, chrome.tabs.TAB_ID_ACTIVE, that
   // represents the active tab.
-  content::NavigationController* opener = NULL;
+  WebContents* opener = NULL;
   if (args->HasKey(keys::kOpenerTabIdKey)) {
     int opener_id = -1;
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(
@@ -1012,7 +1012,7 @@ bool CreateTabFunction::RunImpl() {
             NULL, NULL, &opener_contents, NULL))
       return false;
 
-    opener = &opener_contents->web_contents()->GetController();
+    opener = opener_contents->web_contents();
   }
 
   // TODO(rafaelw): handle setting remaining tab properties:
@@ -1095,7 +1095,7 @@ bool CreateTabFunction::RunImpl() {
   tab_strip = params.browser->tab_strip_model();
   int new_index = tab_strip->GetIndexOfTabContents(params.target_contents);
   if (opener)
-    tab_strip->SetOpenerOfTabContentsAt(new_index, opener);
+    tab_strip->SetOpenerOfWebContentsAt(new_index, opener);
 
   if (active)
     params.target_contents->web_contents()->GetView()->SetInitialFocus();
@@ -1319,8 +1319,8 @@ bool UpdateTabFunction::RunImpl() {
             NULL, NULL, &opener_contents, NULL))
       return false;
 
-    tab_strip->SetOpenerOfTabContentsAt(
-        tab_index, &opener_contents->web_contents()->GetController());
+    tab_strip->SetOpenerOfWebContentsAt(
+        tab_index, opener_contents->web_contents());
   }
 
   if (!is_async) {
