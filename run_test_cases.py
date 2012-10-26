@@ -258,6 +258,7 @@ class ThreadPool(object):
   thread-local result storage.
   """
   def __init__(self, num_threads):
+    logging.debug('Creating ThreadPool')
     self._tasks = QueueWithTimeout()
     self._workers = [
       WorkerThread(self._tasks, name='worker-%d' % i)
@@ -685,8 +686,10 @@ def run_test_cases(
     decider = RunSome(len(test_cases), retries, 2, 0.1)
   with ThreadPool(jobs) as pool:
     function = Runner(cmd, os.getcwd(), timeout, progress, retries, decider).map
+    logging.debug('Adding tests to ThreadPool')
     for test_case in test_cases:
       pool.add_task(function, test_case)
+    logging.debug('All tests added to the ThreadPool')
     results = pool.join(progress, 0.1)
     duration = time.time() - progress.start
 
