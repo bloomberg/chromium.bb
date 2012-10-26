@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_INTERNALS_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/values.h"
@@ -61,10 +62,6 @@ class MediaInternals : public content::MediaObserver {
   void RemoveObserver(MediaInternalsObserver* observer);
   void SendEverything();
 
-  MediaStreamCaptureIndicator* media_stream_capture_indicator() {
-    return media_stream_capture_indicator_.get();
-  }
-
  private:
   friend class MediaInternalsTest;
   friend struct DefaultSingletonTraits<MediaInternals>;
@@ -90,7 +87,7 @@ class MediaInternals : public content::MediaObserver {
 
   DictionaryValue data_;
   ObserverList<MediaInternalsObserver> observers_;
-  scoped_ptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
+  scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternals);
 };

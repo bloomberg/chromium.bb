@@ -69,9 +69,11 @@ void MediaInternals::OnCaptureDevicesOpened(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  media_stream_capture_indicator()->CaptureDevicesOpened(render_process_id,
-                                                         render_view_id,
-                                                         devices);
+  if (!media_stream_capture_indicator_.get())
+    media_stream_capture_indicator_ = new MediaStreamCaptureIndicator();
+  media_stream_capture_indicator_->CaptureDevicesOpened(render_process_id,
+                                                        render_view_id,
+                                                        devices);
 }
 
 void MediaInternals::OnCaptureDevicesClosed(
@@ -79,9 +81,9 @@ void MediaInternals::OnCaptureDevicesClosed(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  media_stream_capture_indicator()->CaptureDevicesClosed(render_process_id,
-                                                         render_view_id,
-                                                         devices);
+  media_stream_capture_indicator_->CaptureDevicesClosed(render_process_id,
+                                                        render_view_id,
+                                                        devices);
 }
 
 void MediaInternals::OnMediaRequestStateChanged(
@@ -111,9 +113,7 @@ void MediaInternals::SendEverything() {
   SendUpdate("media.onReceiveEverything", &data_);
 }
 
-MediaInternals::MediaInternals()
-    : media_stream_capture_indicator_(new MediaStreamCaptureIndicator()) {
-}
+MediaInternals::MediaInternals() {}
 
 void MediaInternals::UpdateAudioStream(
     void* host, int stream_id, const std::string& property, Value* value) {
