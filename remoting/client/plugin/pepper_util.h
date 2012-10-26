@@ -21,6 +21,9 @@ namespace remoting {
 // Adapts a base::Callback to a pp::CompletionCallback, which may be passed to
 // exactly one Pepper API. If the adapted callback is not used then a copy of
 // |callback| will be leaked, including references & passed values bound to it.
+// Pepper guarantees that each completion callback is called once and only once
+// (aborted callbacks are called with PP_ABOIRTED), so there should be no leaks
+// as long as the result of this function is passed to Pepper.
 pp::CompletionCallback PpCompletionCallback(base::Callback<void(int)> callback);
 
 // Helpers to convert between different socket address representations.

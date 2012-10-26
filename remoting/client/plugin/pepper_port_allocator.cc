@@ -4,6 +4,7 @@
 
 #include "remoting/client/plugin/pepper_port_allocator.h"
 
+#include "base/bind.h"
 #include "base/string_number_conversions.h"
 #include "net/base/net_util.h"
 #include "ppapi/c/pp_errors.h"
@@ -48,11 +49,6 @@ class PepperPortAllocatorSession
   virtual void SendSessionRequest(const std::string& host, int port) OVERRIDE;
 
  private:
-  // Callback handlers for Pepper APIs.
-  static void HostResolverCallback(void* user_data, int32_t result);
-  static void UrlLoaderOpenCallback(void* user_data, int32_t result);
-  static void UrlLoaderReadCallback(void* user_data, int32_t result);
-
   void ResolveStunServerAddress();
   void OnStunAddressResolved(int32_t result);
 
@@ -69,6 +65,9 @@ class PepperPortAllocatorSession
   scoped_ptr<pp::URLLoader> relay_url_loader_;
   std::vector<char> relay_response_body_;
   bool relay_response_received_;
+
+  // Used to safely cancel completion callbacks from PPAPI calls.
+  base::WeakPtrFactory<PepperPortAllocatorSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPortAllocatorSession);
 };
@@ -89,7 +88,8 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
       instance_(instance),
       stun_address_resolver_(instance_),
       stun_port_(0),
-      relay_response_received_(false) {
+      relay_response_received_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   if (stun_hosts.size() > 0) {
     stun_address_ = stun_hosts[0];
   }
@@ -151,8 +151,11 @@ void PepperPortAllocatorSession::ResolveStunServerAddress() {
   hint.flags = 0;
   hint.family = PP_NETADDRESSFAMILY_IPV4;
   int result = stun_address_resolver_.Resolve(
-      hostname, port, hint, pp::CompletionCallback(
-          &PepperPortAllocatorSession::HostResolverCallback, this));
+      hostname, port, hint,
+      PpCompletionCallback(base::Bind(
+          &PepperPortAllocatorSession::OnStunAddressResolved,
+          weak_factory_.GetWeakPtr())));
+
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
 }
 
@@ -211,8 +214,11 @@ void PepperPortAllocatorSession::SendSessionRequest(
   headers << "X-Stream-Type: " << "chromoting" << "\n\r";
   request_info.SetHeaders(headers.str());
 
-  int result = relay_url_loader_->Open(request_info, pp::CompletionCallback(
-      &PepperPortAllocatorSession::UrlLoaderOpenCallback, this));
+  int result = relay_url_loader_->Open(
+      request_info, PpCompletionCallback(base::Bind(
+          &PepperPortAllocatorSession::OnUrlOpened,
+          weak_factory_.GetWeakPtr())));
+
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
 }
 
@@ -245,8 +251,10 @@ void PepperPortAllocatorSession::ReadResponseBody() {
   int pos = relay_response_body_.size();
   relay_response_body_.resize(pos + kReadSize);
   int result = relay_url_loader_->ReadResponseBody(
-      &relay_response_body_[pos], kReadSize, pp::CompletionCallback(
-          &PepperPortAllocatorSession::UrlLoaderReadCallback, this));
+      &relay_response_body_[pos], kReadSize,
+      PpCompletionCallback(base::Bind(
+          &PepperPortAllocatorSession::OnResponseBodyRead,
+          weak_factory_.GetWeakPtr())));
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
 }
 
@@ -276,33 +284,6 @@ void PepperPortAllocatorSession::OnResponseBodyRead(int32_t result) {
   }
 
   ReadResponseBody();
-}
-
-// static
-void PepperPortAllocatorSession::HostResolverCallback(
-    void* user_data,
-    int32_t result) {
-  PepperPortAllocatorSession* object =
-      static_cast<PepperPortAllocatorSession*>(user_data);
-  object->OnStunAddressResolved(result);
-}
-
-// static
-void PepperPortAllocatorSession::UrlLoaderOpenCallback(
-    void* user_data,
-    int32_t result) {
-  PepperPortAllocatorSession* object =
-      static_cast<PepperPortAllocatorSession*>(user_data);
-  object->OnUrlOpened(result);
-}
-
-// static
-void PepperPortAllocatorSession::UrlLoaderReadCallback(
-    void* user_data,
-    int32_t result) {
-  PepperPortAllocatorSession* object =
-      static_cast<PepperPortAllocatorSession*>(user_data);
-  object->OnResponseBodyRead(result);
 }
 
 }  // namespace
