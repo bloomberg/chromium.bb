@@ -106,6 +106,10 @@ int munmap(void *start, size_t length) {
   return errno_call(NACL_SYSCALL(munmap)(start, length));
 }
 
+int mprotect(void *start, size_t length, int prot) {
+  return errno_call(NACL_SYSCALL(mprotect)(start, length, prot));
+}
+
 int open(char const *pathname, int oflag, ...) {
   mode_t cmode;
   va_list ap;

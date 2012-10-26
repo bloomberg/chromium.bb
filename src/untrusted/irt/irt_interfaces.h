@@ -29,5 +29,6 @@ extern const struct nacl_irt_clock nacl_irt_clock;
 extern const struct nacl_irt_dev_getpid nacl_irt_dev_getpid;
 extern const struct nacl_irt_dev_exception_handling
     nacl_irt_dev_exception_handling;
+extern const struct nacl_irt_dev_mprotect nacl_irt_dev_mprotect;
 
 #endif  /* NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_INTERFACES_H_ */
