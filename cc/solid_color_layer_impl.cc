@@ -8,9 +8,7 @@
 
 #include "cc/quad_sink.h"
 #include "cc/solid_color_draw_quad.h"
-#include <wtf/MathExtras.h>
 
-using namespace std;
 using WebKit::WebTransformationMatrix;
 
 namespace cc {
@@ -36,7 +34,7 @@ void SolidColorLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appen
     int height = contentBounds().height();
     for (int x = 0; x < width; x += m_tileSize) {
         for (int y = 0; y < height; y += m_tileSize) {
-            IntRect solidTileRect(x, y, min(width - x, m_tileSize), min(height - y, m_tileSize));
+            IntRect solidTileRect(x, y, std::min(width - x, m_tileSize), std::min(height - y, m_tileSize));
             quadSink.append(SolidColorDrawQuad::create(sharedQuadState, solidTileRect, backgroundColor()).PassAs<DrawQuad>(), appendQuadsData);
         }
     }
@@ -47,4 +45,4 @@ const char* SolidColorLayerImpl::layerTypeAsString() const
     return "SolidColorLayer";
 }
 
-} // namespace cc
+}  // namespace cc

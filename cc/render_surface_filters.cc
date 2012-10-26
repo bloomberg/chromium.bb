@@ -17,9 +17,8 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/MathExtras.h>
 
-using namespace cc;
+namespace cc {
 
 namespace {
 
@@ -309,9 +308,7 @@ private:
     SkAutoTUnref<SkCanvas> m_canvas;
 };
 
-}
-
-namespace cc {
+}  // namespace
 
 WebKit::WebFilterOperations RenderSurfaceFilters::optimize(const WebKit::WebFilterOperations& filters)
 {
@@ -441,4 +438,4 @@ SkBitmap RenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filters,
     return state.source();
 }
 
-}
+}  // namespace cc
