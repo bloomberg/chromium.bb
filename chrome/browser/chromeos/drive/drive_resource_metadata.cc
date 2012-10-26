@@ -51,8 +51,6 @@ void PostGetEntryInfoWithFilePathCallbackError(
 std::string ContentOriginToString(ContentOrigin origin) {
   switch (origin) {
     case UNINITIALIZED: return "UNINITIALIZED";
-    case INITIALIZING: return "INITIALIZING";
-    case REFRESHING: return "REFRESHING";
     case INITIALIZED: return "INITIALIZED";
   };
   NOTREACHED();
@@ -655,7 +653,6 @@ void DriveResourceMetadata::InitResourceMap(
   SerializedMap* serialized_resources = &create_params->serialized_resources;
   resource_metadata_db_ = create_params->db.Pass();
   if (serialized_resources->empty()) {
-    origin_ = INITIALIZING;
     callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }

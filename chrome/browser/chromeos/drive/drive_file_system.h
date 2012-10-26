@@ -443,11 +443,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
-  // from CheckForUpdates(). This callback checks whether feed is successfully
-  // reloaded, and in case of failure, restores the content origin of the root
-  // directory.
-  void OnUpdateChecked(ContentOrigin initial_origin,
-                       DriveFileError error);
+  // from CheckForUpdates().
+  void OnUpdateChecked(DriveFileError error);
 
   // Notifies that the initial load is finished and runs |callback|.
   // |callback| must not be null.

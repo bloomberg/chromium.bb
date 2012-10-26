@@ -54,8 +54,7 @@ typedef base::Callback<void(scoped_ptr<LoadFeedParams> params,
 // |feed_load_callback| must not be null.
 // |load_finished_callback| may be null.
 struct LoadFeedParams {
-  LoadFeedParams(ContentOrigin initial_origin,
-                 const LoadDocumentFeedCallback& feed_load_callback);
+  explicit LoadFeedParams(const LoadDocumentFeedCallback& feed_load_callback);
 
   ~LoadFeedParams();
 
@@ -63,7 +62,6 @@ struct LoadFeedParams {
   // between two changestamps is proportional equal to number of items in
   // delta feed between them - bigger the difference, more likely bigger
   // number of items in delta feeds.
-  ContentOrigin initial_origin;
   int64 start_changestamp;
   int64 root_feed_changestamp;
   std::string search_query;
@@ -123,7 +121,6 @@ class DriveFeedLoader {
   // from the server. Upon completion, |feed_load_callback| is invoked.
   // |feed_load_callback| must not be null.
   void LoadDirectoryFromServer(
-      ContentOrigin initial_origin,
       const std::string& directory_resource_id,
       const LoadDocumentFeedCallback& feed_load_callback);
 
@@ -132,17 +129,14 @@ class DriveFeedLoader {
   // If |next_feed| is an empty string, the default URL is used.
   // Upon completion, |feed_load_callback| is invoked.
   // |feed_load_callback| must not be null.
-  void SearchFromServer(ContentOrigin initial_origin,
-                        const std::string& search_query,
+  void SearchFromServer(const std::string& search_query,
                         const GURL& next_feed,
                         const LoadDocumentFeedCallback& feed_load_callback);
 
   // Retrieves account metadata and determines from the last change timestamp
   // if the feed content loading from the server needs to be initiated.
-  void ReloadFromServerIfNeeded(
-      ContentOrigin initial_origin,
-      int64 local_changestamp,
-      const FileOperationCallback& callback);
+  void ReloadFromServerIfNeeded(int64 local_changestamp,
+                                const FileOperationCallback& callback);
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // Record file statistics as UMA histograms.
@@ -153,6 +147,9 @@ class DriveFeedLoader {
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp);
+
+  // Indicates whether there is a feed refreshing server request is in flight.
+  bool refreshing() const { return refreshing_; }
 
  private:
   // Starts root feed load from the server, with details specified in |params|.
@@ -170,7 +167,6 @@ class DriveFeedLoader {
   // ReloadFromServerIfNeeded(). This method makes a decision about fetching
   // the content of the root feed during the root directory refresh process.
   void OnGetAccountMetadata(
-      ContentOrigin initial_origin,
       int64 local_changestamp,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
@@ -181,7 +177,6 @@ class DriveFeedLoader {
   // This method makes a decision about fetching the content of the root feed
   // during the root directory refresh process.
   void OnGetAboutResource(
-      ContentOrigin initial_origin,
       int64 local_changestamp,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
@@ -236,6 +231,9 @@ class DriveFeedLoader {
   DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ObserverList<DriveFeedLoaderObserver> observers_;
+
+  // Indicates whether there is a feed refreshing server request is in flight.
+  bool refreshing_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

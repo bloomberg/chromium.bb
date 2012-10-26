@@ -389,15 +389,12 @@ DriveFileSystem::DriveFileSystem(
 void DriveFileSystem::Reload() {
   InitializeResourceMetadtaAndFeedLoader();
 
-  resource_metadata_->set_origin(INITIALIZING);
   feed_loader_->ReloadFromServerIfNeeded(
-      UNINITIALIZED,
       resource_metadata_->largest_changestamp(),
       base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                  ui_weak_ptr_,
                  base::Bind(&DriveFileSystem::OnUpdateChecked,
-                            ui_weak_ptr_,
-                            UNINITIALIZED)));
+                            ui_weak_ptr_)));
 }
 
 void DriveFileSystem::Initialize() {
@@ -438,24 +435,17 @@ void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
-  ContentOrigin initial_origin = resource_metadata_->origin();
-  if (initial_origin == INITIALIZED) {
-    resource_metadata_->set_origin(REFRESHING);
+  if (resource_metadata_->origin() == INITIALIZED &&
+      !feed_loader_->refreshing()) {
     feed_loader_->ReloadFromServerIfNeeded(
-        initial_origin,
         resource_metadata_->largest_changestamp(),
-        base::Bind(&DriveFileSystem::OnUpdateChecked,
-                   ui_weak_ptr_,
-                   initial_origin));
+        base::Bind(&DriveFileSystem::OnUpdateChecked, ui_weak_ptr_));
   }
 }
 
-void DriveFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
-                                      DriveFileError error) {
+void DriveFileSystem::OnUpdateChecked(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != DRIVE_FILE_OK)
-    resource_metadata_->set_origin(initial_origin);
+  DVLOG(1) << "CheckForUpdates finished: " << error;
 }
 
 DriveFileSystem::~DriveFileSystem() {
@@ -573,31 +563,32 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (resource_metadata_->origin() == INITIALIZING) {
+  if (resource_metadata_->origin() == INITIALIZED) {
+    // The feed has already been loaded, so we have nothing to do, but post a
+    // task to the same thread, rather than calling it here, as
+    // LoadFeedIfNeeded() is asynchronous.
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DRIVE_FILE_OK));
+    return;
+  }
+
+  if (feed_loader_->refreshing()) {
     // If root feed is not initialized but the initialization process has
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
     // The observer deletes itself after OnInitialLoadFinished() gets called.
     new InitialLoadObserver(this, callback);
     return;
-  } else if (resource_metadata_->origin() == UNINITIALIZED) {
-    // Load root feed from this disk cache. Upon completion, kick off server
-    // fetching.
-    resource_metadata_->set_origin(INITIALIZING);
-    feed_loader_->LoadFromCache(
-        true,  // should_load_from_server
-        base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
-                   ui_weak_ptr_,
-                   callback));
-    return;
   }
 
-  // The feed has already been loaded, so we have nothing to do, but post a
-  // task to the same thread, rather than calling it here, as
-  // LoadFeedIfNeeded() is asynchronous.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, DRIVE_FILE_OK));
+  // Load root feed from this disk cache. Upon completion, kick off server
+  // fetching.
+  feed_loader_->LoadFromCache(
+      true,  // should_load_from_server
+      base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
+                 ui_weak_ptr_,
+                 callback));
 }
 
 void DriveFileSystem::TransferFileFromRemoteToLocal(
@@ -1321,7 +1312,6 @@ void DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
   }
 
   feed_loader_->LoadDirectoryFromServer(
-      resource_metadata_->origin(),
       entry_proto->resource_id(),
       base::Bind(&DriveFileSystem::OnRequestDirectoryRefresh,
                  ui_weak_ptr_,
@@ -1734,7 +1724,6 @@ void DriveFileSystem::SearchAsyncOnUIThread(
   DCHECK(!callback.is_null());
 
   feed_loader_->SearchFromServer(
-      resource_metadata_->origin(),
       search_query,
       next_feed,
       base::Bind(&DriveFileSystem::OnSearch, ui_weak_ptr_, callback));
@@ -1914,9 +1903,6 @@ void DriveFileSystem::NotifyInitialLoadFinishedAndRun(
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  if (error != DRIVE_FILE_OK)
-    resource_metadata_->set_origin(UNINITIALIZED);
 
   // Notify the observers that root directory has been initialized.
   FOR_EACH_OBSERVER(DriveFileSystemObserver,
@@ -2175,6 +2161,8 @@ DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
   DriveFileSystemMetadata metadata;
   metadata.largest_changestamp = resource_metadata_->largest_changestamp();
   metadata.origin = ContentOriginToString(resource_metadata_->origin());
+  if (feed_loader_->refreshing())
+    metadata.origin += " (refreshing)";
   return metadata;
 }
 

@@ -47,10 +47,6 @@ enum DriveFileType {
 // The root directory content origin.
 enum ContentOrigin {
   UNINITIALIZED,
-  // Content is currently loading from somewhere.  Needs to wait.
-  INITIALIZING,
-  // Content is initialized, but during refreshing.
-  REFRESHING,
   // Content is initialized.
   INITIALIZED,
 };
