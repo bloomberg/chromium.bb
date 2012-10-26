@@ -1421,8 +1421,6 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   else:
     master_ninja.variable('ld_host', flock + ' linker.lock ' + ld_host)
 
-  if flavor == 'mac':
-    master_ninja.variable('mac_tool', os.path.join('.', 'gyp-mac-tool'))
   master_ninja.newline()
 
   if flavor != 'win':
@@ -1656,11 +1654,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'mac_tool',
       description='MACTOOL $mactool_cmd $in',
-      command='$env $mac_tool $mactool_cmd $in $out')
+      command='$env ./gyp-mac-tool $mactool_cmd $in $out')
     master_ninja.rule(
       'package_framework',
       description='PACKAGE FRAMEWORK $out, POSTBUILDS',
-      command='$mac_tool package-framework $out $version$postbuilds '
+      command='./gyp-mac-tool package-framework $out $version$postbuilds '
               '&& touch $out')
   if flavor == 'win':
     master_ninja.rule(
