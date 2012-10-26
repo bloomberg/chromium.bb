@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SCREEN_RECORDER_H_
-#define REMOTING_HOST_SCREEN_RECORDER_H_
+#ifndef REMOTING_HOST_VIDEO_SCHEDULER_H_
+#define REMOTING_HOST_VIDEO_SCHEDULER_H_
 
 #include <vector>
 
@@ -63,7 +63,7 @@ class CursorShapeInfo;
 // | Time
 // v
 //
-// ScreenRecorder has the following responsibilities:
+// VideoScheduler has the following responsibilities:
 // 1. Make sure capture and encode occurs no more frequently than |rate|.
 // 2. Make sure there is at most one outstanding capture not being encoded.
 // 3. Distribute tasks on three threads on a timely fashion to minimize latency.
@@ -73,16 +73,16 @@ class CursorShapeInfo;
 //                    the capture thread by this object.
 // |network_stopped_| - This state is to prevent activity on the network thread
 //                      if set to false.
-class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
+class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler> {
  public:
-  // Construct a ScreenRecorder. Message loops and threads are provided.
+  // Construct a VideoScheduler. Message loops and threads are provided.
   // This object does not own capturer but owns encoder.
-  ScreenRecorder(
+  VideoScheduler(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       VideoFrameCapturer* capturer,
-      VideoEncoder* encoder);
+      scoped_ptr<VideoEncoder> encoder);
 
   // Start recording.
   void Start();
@@ -104,8 +104,8 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   void UpdateSequenceNumber(int64 sequence_number);
 
  private:
-  friend class base::RefCountedThreadSafe<ScreenRecorder>;
-  virtual ~ScreenRecorder();
+  friend class base::RefCountedThreadSafe<VideoScheduler>;
+  virtual ~VideoScheduler();
 
   // Getters for capturer and encoder.
   VideoFrameCapturer* capturer();
@@ -174,9 +174,9 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   ConnectionToClientList connections_;
 
   // Timer that calls DoCapture. Set to NULL when not recording.
-  scoped_ptr<base::OneShotTimer<ScreenRecorder> > capture_timer_;
+  scoped_ptr<base::OneShotTimer<VideoScheduler> > capture_timer_;
 
-  // Per-thread flags that are set when the ScreenRecorder is
+  // Per-thread flags that are set when the VideoScheduler is
   // stopped. They must be used on the corresponding threads only.
   bool network_stopped_;
   bool encoder_stopped_;
@@ -203,7 +203,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // An object to schedule capturing.
   CaptureScheduler scheduler_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenRecorder);
+  DISALLOW_COPY_AND_ASSIGN(VideoScheduler);
 };
 
 }  // namespace remoting

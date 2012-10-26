@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/screen_recorder.h"
+#include "remoting/host/video_scheduler.h"
 
 #include <algorithm>
 
@@ -32,17 +32,17 @@ namespace remoting {
 // TODO(hclam): Move this value to CaptureScheduler.
 static const int kMaxRecordings = 2;
 
-ScreenRecorder::ScreenRecorder(
+VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     VideoFrameCapturer* capturer,
-    VideoEncoder* encoder)
+    scoped_ptr<VideoEncoder> encoder)
     : capture_task_runner_(capture_task_runner),
       encode_task_runner_(encode_task_runner),
       network_task_runner_(network_task_runner),
       capturer_(capturer),
-      encoder_(encoder),
+      encoder_(encoder.Pass()),
       network_stopped_(false),
       encoder_stopped_(false),
       max_recordings_(kMaxRecordings),
@@ -56,15 +56,15 @@ ScreenRecorder::ScreenRecorder(
 
 // Public methods --------------------------------------------------------------
 
-void ScreenRecorder::Start() {
+void VideoScheduler::Start() {
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoStart, this));
+      FROM_HERE, base::Bind(&VideoScheduler::DoStart, this));
 }
 
-void ScreenRecorder::Stop(const base::Closure& done_task) {
+void VideoScheduler::Stop(const base::Closure& done_task) {
   if (!capture_task_runner_->BelongsToCurrentThread()) {
     capture_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &ScreenRecorder::Stop, this, done_task));
+        &VideoScheduler::Stop, this, done_task));
     return;
   }
 
@@ -74,18 +74,18 @@ void ScreenRecorder::Stop(const base::Closure& done_task) {
   capture_timer_.reset();
 
   network_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &ScreenRecorder::DoStopOnNetworkThread, this, done_task));
+      &VideoScheduler::DoStopOnNetworkThread, this, done_task));
 }
 
-void ScreenRecorder::AddConnection(ConnectionToClient* connection) {
+void VideoScheduler::AddConnection(ConnectionToClient* connection) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   connections_.push_back(connection);
 
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoInvalidateFullScreen, this));
+      FROM_HERE, base::Bind(&VideoScheduler::DoInvalidateFullScreen, this));
 }
 
-void ScreenRecorder::RemoveConnection(ConnectionToClient* connection) {
+void VideoScheduler::RemoveConnection(ConnectionToClient* connection) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   ConnectionToClientList::iterator it =
@@ -95,16 +95,16 @@ void ScreenRecorder::RemoveConnection(ConnectionToClient* connection) {
   }
 }
 
-void ScreenRecorder::RemoveAllConnections() {
+void VideoScheduler::RemoveAllConnections() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   connections_.clear();
 }
 
-void ScreenRecorder::UpdateSequenceNumber(int64 sequence_number) {
+void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
   // Sequence number is used and written only on the capture thread.
   if (!capture_task_runner_->BelongsToCurrentThread()) {
     capture_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ScreenRecorder::UpdateSequenceNumber,
+        FROM_HERE, base::Bind(&VideoScheduler::UpdateSequenceNumber,
                               this, sequence_number));
     return;
   }
@@ -114,29 +114,29 @@ void ScreenRecorder::UpdateSequenceNumber(int64 sequence_number) {
 
 // Private methods -----------------------------------------------------------
 
-ScreenRecorder::~ScreenRecorder() {
+VideoScheduler::~VideoScheduler() {
 }
 
-VideoFrameCapturer* ScreenRecorder::capturer() {
+VideoFrameCapturer* VideoScheduler::capturer() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   DCHECK(capturer_);
   return capturer_;
 }
 
-VideoEncoder* ScreenRecorder::encoder() {
+VideoEncoder* VideoScheduler::encoder() {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
   DCHECK(encoder_.get());
   return encoder_.get();
 }
 
-bool ScreenRecorder::is_recording() {
+bool VideoScheduler::is_recording() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   return capture_timer_.get() != NULL;
 }
 
 // Capturer thread -------------------------------------------------------------
 
-void ScreenRecorder::DoStart() {
+void VideoScheduler::DoStart() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (is_recording()) {
@@ -145,24 +145,24 @@ void ScreenRecorder::DoStart() {
   }
 
   capturer()->Start(
-      base::Bind(&ScreenRecorder::CursorShapeChangedCallback, this));
+      base::Bind(&VideoScheduler::CursorShapeChangedCallback, this));
 
-  capture_timer_.reset(new base::OneShotTimer<ScreenRecorder>());
+  capture_timer_.reset(new base::OneShotTimer<VideoScheduler>());
 
   // Capture first frame immedately.
   DoCapture();
 }
 
-void ScreenRecorder::StartCaptureTimer() {
+void VideoScheduler::StartCaptureTimer() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   capture_timer_->Start(FROM_HERE,
                         scheduler_.NextCaptureDelay(),
                         this,
-                        &ScreenRecorder::DoCapture);
+                        &VideoScheduler::DoCapture);
 }
 
-void ScreenRecorder::DoCapture() {
+void VideoScheduler::DoCapture() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   // Make sure we have at most two oustanding recordings. We can simply return
   // if we can't make a capture now, the next capture will be started by the
@@ -184,15 +184,15 @@ void ScreenRecorder::DoCapture() {
   capture_timer_->Start(FROM_HERE,
                         scheduler_.NextCaptureDelay(),
                         this,
-                        &ScreenRecorder::DoCapture);
+                        &VideoScheduler::DoCapture);
 
   // And finally perform one capture.
   capture_start_time_ = base::Time::Now();
   capturer()->CaptureInvalidRegion(
-      base::Bind(&ScreenRecorder::CaptureDoneCallback, this));
+      base::Bind(&VideoScheduler::CaptureDoneCallback, this));
 }
 
-void ScreenRecorder::CaptureDoneCallback(
+void VideoScheduler::CaptureDoneCallback(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
@@ -215,10 +215,10 @@ void ScreenRecorder::CaptureDoneCallback(
   }
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoEncode, this, capture_data));
+      FROM_HERE, base::Bind(&VideoScheduler::DoEncode, this, capture_data));
 }
 
-void ScreenRecorder::CursorShapeChangedCallback(
+void VideoScheduler::CursorShapeChangedCallback(
     scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
@@ -226,11 +226,11 @@ void ScreenRecorder::CursorShapeChangedCallback(
     return;
 
   network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoSendCursorShape, this,
+      FROM_HERE, base::Bind(&VideoScheduler::DoSendCursorShape, this,
                             base::Passed(cursor_shape.Pass())));
 }
 
-void ScreenRecorder::DoFinishOneRecording() {
+void VideoScheduler::DoFinishOneRecording() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (!is_recording())
@@ -247,7 +247,7 @@ void ScreenRecorder::DoFinishOneRecording() {
     DoCapture();
 }
 
-void ScreenRecorder::DoInvalidateFullScreen() {
+void VideoScheduler::DoInvalidateFullScreen() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   SkRegion region;
@@ -258,7 +258,7 @@ void ScreenRecorder::DoInvalidateFullScreen() {
 
 // Network thread --------------------------------------------------------------
 
-void ScreenRecorder::DoSendVideoPacket(scoped_ptr<VideoPacket> packet) {
+void VideoScheduler::DoSendVideoPacket(scoped_ptr<VideoPacket> packet) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   if (network_stopped_ || connections_.empty())
@@ -266,7 +266,7 @@ void ScreenRecorder::DoSendVideoPacket(scoped_ptr<VideoPacket> packet) {
 
   base::Closure callback;
   if ((packet->flags() & VideoPacket::LAST_PARTITION) != 0)
-    callback = base::Bind(&ScreenRecorder::VideoFrameSentCallback, this);
+    callback = base::Bind(&VideoScheduler::VideoFrameSentCallback, this);
 
   // TODO(sergeyu): Currently we send the data only to the first
   // connection. Send it to all connections if necessary.
@@ -274,17 +274,17 @@ void ScreenRecorder::DoSendVideoPacket(scoped_ptr<VideoPacket> packet) {
       packet.Pass(), callback);
 }
 
-void ScreenRecorder::VideoFrameSentCallback() {
+void VideoScheduler::VideoFrameSentCallback() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   if (network_stopped_)
     return;
 
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoFinishOneRecording, this));
+      FROM_HERE, base::Bind(&VideoScheduler::DoFinishOneRecording, this));
 }
 
-void ScreenRecorder::DoStopOnNetworkThread(const base::Closure& done_task) {
+void VideoScheduler::DoStopOnNetworkThread(const base::Closure& done_task) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   // There could be tasks on the network thread when this method is being
@@ -296,11 +296,11 @@ void ScreenRecorder::DoStopOnNetworkThread(const base::Closure& done_task) {
   network_stopped_ = true;
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoStopOnEncodeThread,
+      FROM_HERE, base::Bind(&VideoScheduler::DoStopOnEncodeThread,
                             this, done_task));
 }
 
-void ScreenRecorder::DoSendCursorShape(
+void VideoScheduler::DoSendCursorShape(
     scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
@@ -314,7 +314,7 @@ void ScreenRecorder::DoSendCursorShape(
 
 // Encoder thread --------------------------------------------------------------
 
-void ScreenRecorder::DoEncode(
+void VideoScheduler::DoEncode(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
@@ -327,7 +327,7 @@ void ScreenRecorder::DoEncode(
     scoped_ptr<VideoPacket> packet(new VideoPacket());
     packet->set_flags(VideoPacket::LAST_PARTITION);
     network_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ScreenRecorder::DoSendVideoPacket,
+        FROM_HERE, base::Bind(&VideoScheduler::DoSendVideoPacket,
                               this, base::Passed(packet.Pass())));
     return;
   }
@@ -335,10 +335,10 @@ void ScreenRecorder::DoEncode(
   encode_start_time_ = base::Time::Now();
   encoder()->Encode(
       capture_data, false,
-      base::Bind(&ScreenRecorder::EncodedDataAvailableCallback, this));
+      base::Bind(&VideoScheduler::EncodedDataAvailableCallback, this));
 }
 
-void ScreenRecorder::DoStopOnEncodeThread(const base::Closure& done_task) {
+void VideoScheduler::DoStopOnEncodeThread(const base::Closure& done_task) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
   encoder_stopped_ = true;
@@ -349,7 +349,7 @@ void ScreenRecorder::DoStopOnEncodeThread(const base::Closure& done_task) {
   capture_task_runner_->PostTask(FROM_HERE, done_task);
 }
 
-void ScreenRecorder::EncodedDataAvailableCallback(
+void VideoScheduler::EncodedDataAvailableCallback(
     scoped_ptr<VideoPacket> packet) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
@@ -366,7 +366,7 @@ void ScreenRecorder::EncodedDataAvailableCallback(
   }
 
   network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ScreenRecorder::DoSendVideoPacket, this,
+      FROM_HERE, base::Bind(&VideoScheduler::DoSendVideoPacket, this,
                             base::Passed(packet.Pass())));
 }
 

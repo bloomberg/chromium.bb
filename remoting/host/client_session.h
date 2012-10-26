@@ -36,9 +36,9 @@ class AudioScheduler;
 struct ClientSessionTraits;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
-class ScreenRecorder;
 class VideoEncoder;
 class VideoFrameCapturer;
+class VideoScheduler;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
@@ -163,7 +163,7 @@ class ClientSession
       const protocol::SessionConfig& config);
 
   // Creates a video encoder for the specified configuration.
-  static VideoEncoder* CreateVideoEncoder(
+  static scoped_ptr<VideoEncoder> CreateVideoEncoder(
       const protocol::SessionConfig& config);
 
   EventHandler* event_handler_;
@@ -222,7 +222,7 @@ class ClientSession
 
   // Schedulers for audio and video capture.
   scoped_refptr<AudioScheduler> audio_scheduler_;
-  scoped_refptr<ScreenRecorder> video_recorder_;
+  scoped_refptr<VideoScheduler> video_scheduler_;
 
   // Number of screen recorders and audio schedulers that are currently being
   // used or shutdown. Used to delay shutdown if one or more

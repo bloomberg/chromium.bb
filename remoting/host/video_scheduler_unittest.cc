@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/screen_recorder.h"
+#include "remoting/host/video_scheduler.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -57,8 +57,8 @@ void QuitMessageLoop(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-ACTION_P2(StopScreenRecorder, recorder, task) {
-  recorder->Stop(task);
+ACTION_P2(StopVideoScheduler, scheduler, task) {
+  scheduler->Stop(task);
 }
 
 }  // namespace
@@ -87,13 +87,13 @@ MockVideoEncoder::MockVideoEncoder() {}
 
 MockVideoEncoder::~MockVideoEncoder() {}
 
-class ScreenRecorderTest : public testing::Test {
+class VideoSchedulerTest : public testing::Test {
  public:
-  ScreenRecorderTest() {
+  VideoSchedulerTest() {
   }
 
   virtual void SetUp() OVERRIDE {
-    // VideoFrameCapturer and VideoEncoder are owned by ScreenRecorder.
+    // VideoFrameCapturer and VideoEncoder are owned by VideoScheduler.
     encoder_ = new MockVideoEncoder();
 
     session_ = new MockSession();
@@ -103,9 +103,10 @@ class ScreenRecorderTest : public testing::Test {
     connection_.reset(new MockConnectionToClient(session_, &host_stub_));
     connection_->SetEventHandler(&handler_);
 
-    record_ = new ScreenRecorder(
+    scheduler_ = new VideoScheduler(
         message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
-        message_loop_.message_loop_proxy(), &capturer_, encoder_);
+        message_loop_.message_loop_proxy(), &capturer_,
+        scoped_ptr<remoting::VideoEncoder>(encoder_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -117,26 +118,26 @@ class ScreenRecorderTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  scoped_refptr<ScreenRecorder> record_;
+  scoped_refptr<VideoScheduler> scheduler_;
 
   MockConnectionToClientEventHandler handler_;
   MockHostStub host_stub_;
   MockSession* session_;  // Owned by |connection_|.
   scoped_ptr<MockConnectionToClient> connection_;
 
-  // The following mock objects are owned by ScreenRecorder.
+  // The following mock objects are owned by VideoScheduler.
   MockVideoFrameCapturer capturer_;
   MockVideoEncoder* encoder_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenRecorderTest);
+  DISALLOW_COPY_AND_ASSIGN(VideoSchedulerTest);
 };
 
-// This test mocks capturer, encoder and network layer to simulate one recording
+// This test mocks capturer, encoder and network layer to simulate one capture
 // cycle. When the first encoded packet is submitted to the network
-// ScreenRecorder is instructed to come to a complete stop. We expect the stop
+// VideoScheduler is instructed to come to a complete stop. We expect the stop
 // sequence to be executed successfully.
-TEST_F(ScreenRecorderTest, StartAndStop) {
+TEST_F(VideoSchedulerTest, StartAndStop) {
   SkRegion update_region(SkIRect::MakeXYWH(0, 0, 10, 10));
   DataPlanes planes;
   for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
@@ -172,11 +173,11 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
       .WillRepeatedly(FinishSend());
 
   // For the first time when ProcessVideoPacket is received we stop the
-  // ScreenRecorder.
+  // VideoScheduler.
   EXPECT_CALL(video_stub, ProcessVideoPacketPtr(_, _))
       .WillOnce(DoAll(
           FinishSend(),
-          StopScreenRecorder(record_,
+          StopVideoScheduler(scheduler_,
                              base::Bind(&QuitMessageLoop, &message_loop_))))
       .RetiresOnSaturation();
 
@@ -184,16 +185,16 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
       .After(capturer_capture);
 
   // Add the mock client connection to the session.
-  record_->AddConnection(connection_.get());
+  scheduler_->AddConnection(connection_.get());
 
-  // Start the recording.
-  record_->Start();
+  // Start capturing.
+  scheduler_->Start();
   message_loop_.Run();
 }
 
-TEST_F(ScreenRecorderTest, StopWithoutStart) {
+TEST_F(VideoSchedulerTest, StopWithoutStart) {
   EXPECT_CALL(capturer_, Stop());
-  record_->Stop(base::Bind(&QuitMessageLoop, &message_loop_));
+  scheduler_->Stop(base::Bind(&QuitMessageLoop, &message_loop_));
   message_loop_.Run();
 }
 
