@@ -73,6 +73,7 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kHardwareRevisionProperty, PROPERTY_INDEX_HARDWARE_REVISION },
   { flimflam::kHomeProviderProperty, PROPERTY_INDEX_HOME_PROVIDER },
   { flimflam::kHostProperty, PROPERTY_INDEX_HOST },
+  { flimflam::kIccidProperty, PROPERTY_INDEX_ICCID },
   { flimflam::kIdentityProperty, PROPERTY_INDEX_IDENTITY },
   { flimflam::kImeiProperty, PROPERTY_INDEX_IMEI },
   { flimflam::kImsiProperty, PROPERTY_INDEX_IMSI },
@@ -376,6 +377,7 @@ bool NativeNetworkDeviceParser::ParseValue(
       return true;
     }
     case PROPERTY_INDEX_MEID:
+    case PROPERTY_INDEX_ICCID:
     case PROPERTY_INDEX_IMEI:
     case PROPERTY_INDEX_IMSI:
     case PROPERTY_INDEX_ESN:
@@ -392,6 +394,9 @@ bool NativeNetworkDeviceParser::ParseValue(
       switch (index) {
         case PROPERTY_INDEX_MEID:
           device->set_meid(item);
+          break;
+        case PROPERTY_INDEX_ICCID:
+          device->set_iccid(item);
           break;
         case PROPERTY_INDEX_IMEI:
           device->set_imei(item);

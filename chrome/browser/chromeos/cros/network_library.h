@@ -93,6 +93,7 @@ class NetworkDevice {
   ConnectionType type() const { return type_; }
   bool scanning() const { return scanning_; }
   const std::string& meid() const { return meid_; }
+  const std::string& iccid() const { return iccid_; }
   const std::string& imei() const { return imei_; }
   const std::string& imsi() const { return imsi_; }
   const std::string& esn() const { return esn_; }
@@ -174,6 +175,7 @@ class NetworkDevice {
   void set_type(ConnectionType type) { type_ = type; }
   void set_scanning(bool scanning) { scanning_ = scanning; }
   void set_meid(const std::string& meid) { meid_ = meid; }
+  void set_iccid(const std::string& iccid) { iccid_ = iccid; }
   void set_imei(const std::string& imei) { imei_ = imei; }
   void set_imsi(const std::string& imsi) { imsi_ = imsi; }
   void set_esn(const std::string& esn) { esn_ = esn; }
@@ -263,6 +265,7 @@ class NetworkDevice {
   bool provider_requires_roaming_;
   std::string meid_;
   std::string imei_;
+  std::string iccid_;
   std::string imsi_;
   std::string esn_;
   std::string mdn_;
