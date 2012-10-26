@@ -79,4 +79,17 @@ TEST(WebIntentsUtilTest, MimeTypesMatchWildCards) {
   EXPECT_FALSE(TypesMatch("**", "image/png"));
 }
 
+TEST(WebIntentsUtilTest, MimeTypesMatchParameters) {
+  EXPECT_TRUE(TypesMatch("*", "video/*;single=true"));
+  EXPECT_TRUE(TypesMatch("*/*", "video/mpg;single=true"));
+  EXPECT_TRUE(TypesMatch("video/*", "video/mpg;single=true"));
+  EXPECT_TRUE(TypesMatch("video/mpg", "video/mpg;single=true"));
+  EXPECT_TRUE(TypesMatch("video/mpg;single=true", "video/mpg;single=true"));
+  EXPECT_TRUE(TypesMatch("video/mpg;a=b;single=true",
+                         "video/mpg;single=true;a=b"));
+  EXPECT_FALSE(TypesMatch("video/mpg;a=b;single=true",
+                          "video/mpg;single=false;a=b"));
+  EXPECT_FALSE(TypesMatch("video/mpg;single=true", "video/mpg;single=false"));
+}
+
 }  // namepsace web_intents
