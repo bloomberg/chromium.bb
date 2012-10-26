@@ -39,7 +39,7 @@ SessionConfig::SessionConfig() {
 }
 
 // static
-SessionConfig SessionConfig::GetDefault() {
+SessionConfig SessionConfig::ForTest() {
   SessionConfig result;
   result.set_control_config(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                           kDefaultStreamVersion,

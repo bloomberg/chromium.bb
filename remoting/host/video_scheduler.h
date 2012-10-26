@@ -27,20 +27,20 @@ class CaptureData;
 class VideoFrameCapturer;
 
 namespace protocol {
-class ConnectionToClient;
+class ClientStub;
 class CursorShapeInfo;
+class VideoStub;
 }  // namespace protocol
 
-// A class for controlling and coordinate VideoFrameCapturer, Encoder
-// and NetworkChannel in a record session.
+// Class responsible for scheduling frame captures from a VideoFrameCapturer,
+// delivering them to a VideoEncoder to encode, and finally passing the encoded
+// video packets to the specified VideoStub to send on the network.
 //
 // THREADING
 //
-// This class works on three threads, namely capture, encode and network
-// thread. The main function of this class is to coordinate and schedule
-// capture, encode and transmission of data on different threads.
-//
-// The following is an example of timeline for operations scheduled.
+// This class is supplied TaskRunners to use for capture, encode and network
+// operations.  Capture, encode and network transmission tasks are interleaved
+// as illustrated below:
 //
 // |       CAPTURE       ENCODE     NETWORK
 // |    .............
@@ -63,133 +63,108 @@ class CursorShapeInfo;
 // | Time
 // v
 //
-// VideoScheduler has the following responsibilities:
-// 1. Make sure capture and encode occurs no more frequently than |rate|.
-// 2. Make sure there is at most one outstanding capture not being encoded.
-// 3. Distribute tasks on three threads on a timely fashion to minimize latency.
-//
-// This class has the following state variables:
-// |capture_timer_| - If this is set to NULL there should be no activity on
-//                    the capture thread by this object.
-// |network_stopped_| - This state is to prevent activity on the network thread
-//                      if set to false.
+// VideoScheduler would ideally schedule captures so as to saturate the slowest
+// of the capture, encode and network processes.  However, it also needs to
+// rate-limit captures to avoid overloading the host system, either by consuming
+// too much CPU, or hogging the host's graphics subsystem.
+
 class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler> {
  public:
-  // Construct a VideoScheduler. Message loops and threads are provided.
-  // This object does not own capturer but owns encoder.
+  // Creates a VideoScheduler running capture, encode and network tasks on the
+  // supplied TaskRunners.  Video and cursor shape updates will be pumped to
+  // |video_stub| and |client_stub|, which must remain valid until Stop() is
+  // called. |capturer| is used to capture frames and must remain valid until
+  // the |done_task| supplied to Stop() is executed.
   VideoScheduler(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       VideoFrameCapturer* capturer,
-      scoped_ptr<VideoEncoder> encoder);
+      scoped_ptr<VideoEncoder> encoder,
+      protocol::ClientStub* client_stub,
+      protocol::VideoStub* video_stub);
 
-  // Start recording.
-  void Start();
-
-  // Stop the recording session. |done_task| is executed when recording is fully
-  // stopped. This object cannot be used again after |task| is executed.
+  // Stop scheduling frame captures.  |done_task| is executed on the network
+  // thread when capturing has stopped.  This object cannot be re-used once
+  // it has been stopped.
   void Stop(const base::Closure& done_task);
 
-  // Add a connection to this recording session.
-  void AddConnection(protocol::ConnectionToClient* connection);
-
-  // Remove a connection from receiving screen updates.
-  void RemoveConnection(protocol::ConnectionToClient* connection);
-
-  // Remove all connections.
-  void RemoveAllConnections();
-
-  // Update the sequence number for tracing performance.
+  // Updates the sequence number embedded in VideoPackets.
+  // Sequence numbers are used for performance measurements.
   void UpdateSequenceNumber(int64 sequence_number);
 
  private:
   friend class base::RefCountedThreadSafe<VideoScheduler>;
   virtual ~VideoScheduler();
 
-  // Getters for capturer and encoder.
-  VideoFrameCapturer* capturer();
-  VideoEncoder* encoder();
-
-  bool is_recording();
-
   // Capturer thread ----------------------------------------------------------
 
-  void DoStart();
-  void DoSetMaxRate(double max_rate);
+  // Starts the capturer on the capture thread.
+  void StartOnCaptureThread();
 
-  // Hepler method to schedule next capture using the current rate.
-  void StartCaptureTimer();
+  // Stops scheduling frame captures on the capture thread, and posts
+  // |done_task| to the network thread when done.
+  void StopOnCaptureThread(const base::Closure& done_task);
 
-  void DoCapture();
+  // Schedules the next call to CaptureNextFrame.
+  void ScheduleNextCapture();
+
+  // Starts the next frame capture, unless there are already too many pending.
+  void CaptureNextFrame();
+
+  // Called when a frame capture completes.
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
+
+  // Called when the cursor shape changes.
   void CursorShapeChangedCallback(
       scoped_ptr<protocol::CursorShapeInfo> cursor_data);
-  void DoFinishOneRecording();
-  void DoInvalidateFullScreen();
+
+  // Called when a frame capture has been encoded & sent to the client.
+  void FrameCaptureCompleted();
 
   // Network thread -----------------------------------------------------------
 
-  void DoSendVideoPacket(scoped_ptr<VideoPacket> packet);
+  // Send |packet| to the client, unless we are in the process of stopping.
+  void SendVideoPacket(scoped_ptr<VideoPacket> packet);
 
-  void DoSendInit(scoped_refptr<protocol::ConnectionToClient> connection,
-                  int width, int height);
-
-  // Signal network thread to cease activities.
-  void DoStopOnNetworkThread(const base::Closure& done_task);
-
-  // Callback for VideoStub::ProcessVideoPacket() that is used for
-  // each last packet in a frame.
+  // Callback passed to |video_stub_| for the last packet in each frame, to
+  // rate-limit frame captures to network throughput.
   void VideoFrameSentCallback();
 
   // Send updated cursor shape to client.
-  void DoSendCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
+  void SendCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
 
   // Encoder thread -----------------------------------------------------------
 
-  void DoEncode(scoped_refptr<CaptureData> capture_data);
-
-  // Perform stop operations on encode thread.
-  void DoStopOnEncodeThread(const base::Closure& done_task);
+  // Encode a frame, passing generated VideoPackets to SendVideoPacket().
+  void EncodeFrame(scoped_refptr<CaptureData> capture_data);
 
   void EncodedDataAvailableCallback(scoped_ptr<VideoPacket> packet);
-  void SendVideoPacket(VideoPacket* packet);
 
   // Task runners used by this class.
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
-  // Reference to the capturer. This member is always accessed on the capture
-  // thread.
+  // Used to capture frames. Always accessed on the capture thread.
   VideoFrameCapturer* capturer_;
 
-  // Reference to the encoder. This member is always accessed on the encode
-  // thread.
+  // Used to encode captured frames. Always accessed on the encode thread.
   scoped_ptr<VideoEncoder> encoder_;
 
-  // A list of clients connected to this hosts.
-  // This member is always accessed on the network thread.
-  typedef std::vector<protocol::ConnectionToClient*> ConnectionToClientList;
-  ConnectionToClientList connections_;
+  // Interfaces through which video frames and cursor shapes are passed to the
+  // client. These members are always accessed on the network thread.
+  protocol::ClientStub* cursor_stub_;
+  protocol::VideoStub* video_stub_;
 
-  // Timer that calls DoCapture. Set to NULL when not recording.
+  // Timer used to schedule CaptureNextFrame().
   scoped_ptr<base::OneShotTimer<VideoScheduler> > capture_timer_;
 
-  // Per-thread flags that are set when the VideoScheduler is
-  // stopped. They must be used on the corresponding threads only.
-  bool network_stopped_;
-  bool encoder_stopped_;
-
-  // Maximum simultaneous recordings allowed.
-  int max_recordings_;
-
   // Count the number of recordings (i.e. capture or encode) happening.
-  int recordings_;
+  int pending_captures_;
 
-  // Set to true if we've skipped last capture because there are too
-  // many pending frames.
-  int frame_skipped_;
+  // True if the previous scheduled capture was skipped.
+  int did_skip_frame_;
 
   // Time when capture is started.
   base::Time capture_start_time_;

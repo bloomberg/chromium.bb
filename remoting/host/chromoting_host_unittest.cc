@@ -169,13 +169,13 @@ class ChromotingHostTest : public testing::Test {
     session2_ = new MockSession();
     session_unowned1_.reset(new MockSession());
     session_unowned2_.reset(new MockSession());
-    session_config1_ = SessionConfig::GetDefault();
+    session_config1_ = SessionConfig::ForTest();
     session_jid1_ = "user@domain/rest-of-jid";
-    session_config2_ = SessionConfig::GetDefault();
+    session_config2_ = SessionConfig::ForTest();
     session_jid2_ = "user2@domain/rest-of-jid";
-    session_unowned_config1_ = SessionConfig::GetDefault();
+    session_unowned_config1_ = SessionConfig::ForTest();
     session_unowned_jid1_ = "user3@doman/rest-of-jid";
-    session_unowned_config2_ = SessionConfig::GetDefault();
+    session_unowned_config2_ = SessionConfig::ForTest();
     session_unowned_jid2_ = "user4@doman/rest-of-jid";
 
     EXPECT_CALL(*session1_, jid())

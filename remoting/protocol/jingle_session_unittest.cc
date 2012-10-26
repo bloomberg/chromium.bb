@@ -97,7 +97,7 @@ class JingleSessionTest : public testing::Test {
     host_session_.reset(session);
     host_session_->SetEventHandler(&host_session_event_handler_);
 
-    session->set_config(SessionConfig::GetDefault());
+    session->set_config(SessionConfig::ForTest());
   }
 
   void OnClientChannelCreated(scoped_ptr<net::StreamSocket> socket) {

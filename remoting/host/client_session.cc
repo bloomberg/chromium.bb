@@ -130,14 +130,17 @@ void ClientSession::OnConnectionChannelsConnected(
   scoped_ptr<VideoEncoder> video_encoder =
       CreateVideoEncoder(connection_->session()->config());
 
-  // Create a VideoScheduler to capture frames and feed them to the encoder.
+  // Create a VideoScheduler to pump frames from the capturer to the client.
   video_scheduler_ = new VideoScheduler(capture_task_runner_,
                                         encode_task_runner_,
                                         network_task_runner_,
                                         desktop_environment_->video_capturer(),
-                                        video_encoder.Pass());
+                                        video_encoder.Pass(),
+                                        connection_->client_stub(),
+                                        connection_->video_stub());
   ++active_recorders_;
 
+  // Create an AudioScheduler if audio is enabled, to pump audio samples.
   if (connection_->session()->config().is_audio_enabled()) {
     scoped_ptr<AudioEncoder> audio_encoder =
         CreateAudioEncoder(connection_->session()->config());
@@ -150,11 +153,10 @@ void ClientSession::OnConnectionChannelsConnected(
     ++active_recorders_;
   }
 
-  // Start the session.
-  video_scheduler_->AddConnection(connection_.get());
-  video_scheduler_->Start();
+  // Let the desktop environment notify us of local clipboard changes.
   desktop_environment_->Start(CreateClipboardProxy());
 
+  // Notify the event handler that all our channels are now connected.
   event_handler_->OnSessionChannelsConnected(this);
 }
 
@@ -221,7 +223,6 @@ void ClientSession::Stop(const base::Closure& done_task) {
   }
 
   if (video_scheduler_.get()) {
-    video_scheduler_->RemoveConnection(connection_.get());
     video_scheduler_->Stop(base::Bind(&ClientSession::OnRecorderStopped, this));
     video_scheduler_ = NULL;
   }

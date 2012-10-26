@@ -20,84 +20,55 @@
 #include "remoting/proto/internal.pb.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/client_stub.h"
-#include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/message_decoder.h"
+#include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
-
-using remoting::protocol::ConnectionToClient;
 
 namespace remoting {
 
-// Maximum number of frames that can be processed similtaneously.
+// Maximum number of frames that can be processed simultaneously.
 // TODO(hclam): Move this value to CaptureScheduler.
-static const int kMaxRecordings = 2;
+static const int kMaxPendingCaptures = 2;
 
 VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     VideoFrameCapturer* capturer,
-    scoped_ptr<VideoEncoder> encoder)
+    scoped_ptr<VideoEncoder> encoder,
+    protocol::ClientStub* client_stub,
+    protocol::VideoStub* video_stub)
     : capture_task_runner_(capture_task_runner),
       encode_task_runner_(encode_task_runner),
       network_task_runner_(network_task_runner),
       capturer_(capturer),
       encoder_(encoder.Pass()),
-      network_stopped_(false),
-      encoder_stopped_(false),
-      max_recordings_(kMaxRecordings),
-      recordings_(0),
-      frame_skipped_(false),
+      cursor_stub_(client_stub),
+      video_stub_(video_stub),
+      pending_captures_(0),
+      did_skip_frame_(false),
       sequence_number_(0) {
-  DCHECK(capture_task_runner_);
-  DCHECK(encode_task_runner_);
-  DCHECK(network_task_runner_);
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(capturer_);
+  DCHECK(cursor_stub_);
+  DCHECK(video_stub_);
+
+  capture_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoScheduler::StartOnCaptureThread, this));
 }
 
 // Public methods --------------------------------------------------------------
 
-void VideoScheduler::Start() {
-  capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::DoStart, this));
-}
-
 void VideoScheduler::Stop(const base::Closure& done_task) {
-  if (!capture_task_runner_->BelongsToCurrentThread()) {
-    capture_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &VideoScheduler::Stop, this, done_task));
-    return;
-  }
-
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(!done_task.is_null());
 
-  capturer()->Stop();
-  capture_timer_.reset();
+  // Clear stubs to prevent further updates reaching the client.
+  cursor_stub_ = NULL;
+  video_stub_ = NULL;
 
-  network_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &VideoScheduler::DoStopOnNetworkThread, this, done_task));
-}
-
-void VideoScheduler::AddConnection(ConnectionToClient* connection) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  connections_.push_back(connection);
-
-  capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::DoInvalidateFullScreen, this));
-}
-
-void VideoScheduler::RemoveConnection(ConnectionToClient* connection) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  ConnectionToClientList::iterator it =
-      std::find(connections_.begin(), connections_.end(), connection);
-  if (it != connections_.end()) {
-    connections_.erase(it);
-  }
-}
-
-void VideoScheduler::RemoveAllConnections() {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  connections_.clear();
+  capture_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&VideoScheduler::StopOnCaptureThread, this, done_task));
 }
 
 void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
@@ -117,87 +88,78 @@ void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
 VideoScheduler::~VideoScheduler() {
 }
 
-VideoFrameCapturer* VideoScheduler::capturer() {
-  DCHECK(capture_task_runner_->BelongsToCurrentThread());
-  DCHECK(capturer_);
-  return capturer_;
-}
-
-VideoEncoder* VideoScheduler::encoder() {
-  DCHECK(encode_task_runner_->BelongsToCurrentThread());
-  DCHECK(encoder_.get());
-  return encoder_.get();
-}
-
-bool VideoScheduler::is_recording() {
-  DCHECK(capture_task_runner_->BelongsToCurrentThread());
-  return capture_timer_.get() != NULL;
-}
-
 // Capturer thread -------------------------------------------------------------
 
-void VideoScheduler::DoStart() {
+void VideoScheduler::StartOnCaptureThread() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  if (is_recording()) {
-    NOTREACHED() << "Record session already started.";
-    return;
-  }
-
-  capturer()->Start(
+  // Start the capturer and let it notify us of cursor shape changes.
+  capturer_->Start(
       base::Bind(&VideoScheduler::CursorShapeChangedCallback, this));
 
   capture_timer_.reset(new base::OneShotTimer<VideoScheduler>());
 
   // Capture first frame immedately.
-  DoCapture();
+  CaptureNextFrame();
 }
 
-void VideoScheduler::StartCaptureTimer() {
+void VideoScheduler::StopOnCaptureThread(const base::Closure& done_task) {
+  DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  // Stop |capturer_| and clear it to prevent pending tasks from using it.
+  capturer_->Stop();
+  capturer_ = NULL;
+
+  // |capture_timer_| must be destroyed on the thread on which it is used.
+  capture_timer_.reset();
+
+  // Activity on the encode thread will stop implicitly as a result of
+  // captures having stopped.
+  network_task_runner_->PostTask(FROM_HERE, done_task);
+}
+
+void VideoScheduler::ScheduleNextCapture() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   capture_timer_->Start(FROM_HERE,
                         scheduler_.NextCaptureDelay(),
                         this,
-                        &VideoScheduler::DoCapture);
+                        &VideoScheduler::CaptureNextFrame);
 }
 
-void VideoScheduler::DoCapture() {
+void VideoScheduler::CaptureNextFrame() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  // If |capturer_| is NULL then we're in the process of stopping.
+  if (!capturer_)
+    return;
+
   // Make sure we have at most two oustanding recordings. We can simply return
   // if we can't make a capture now, the next capture will be started by the
   // end of an encode operation.
-  if (recordings_ >= max_recordings_ || !is_recording()) {
-    frame_skipped_ = true;
+  if (pending_captures_ >= kMaxPendingCaptures) {
+    did_skip_frame_ = true;
     return;
   }
 
-  if (frame_skipped_)
-    frame_skipped_ = false;
+  did_skip_frame_ = false;
 
   // At this point we are going to perform one capture so save the current time.
-  ++recordings_;
-  DCHECK_LE(recordings_, max_recordings_);
+  pending_captures_++;
+  DCHECK_LE(pending_captures_, kMaxPendingCaptures);
 
   // Before doing a capture schedule for the next one.
-  capture_timer_->Stop();
-  capture_timer_->Start(FROM_HERE,
-                        scheduler_.NextCaptureDelay(),
-                        this,
-                        &VideoScheduler::DoCapture);
+  ScheduleNextCapture();
 
   // And finally perform one capture.
   capture_start_time_ = base::Time::Now();
-  capturer()->CaptureInvalidRegion(
+  capturer_->CaptureInvalidRegion(
       base::Bind(&VideoScheduler::CaptureDoneCallback, this));
 }
 
 void VideoScheduler::CaptureDoneCallback(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
-
-  if (!is_recording())
-    return;
 
   if (capture_data) {
     base::TimeDelta capture_time = base::Time::Now() - capture_start_time_;
@@ -215,146 +177,91 @@ void VideoScheduler::CaptureDoneCallback(
   }
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::DoEncode, this, capture_data));
+      FROM_HERE, base::Bind(&VideoScheduler::EncodeFrame, this, capture_data));
 }
 
 void VideoScheduler::CursorShapeChangedCallback(
     scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  if (!is_recording())
-    return;
-
   network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::DoSendCursorShape, this,
-                            base::Passed(cursor_shape.Pass())));
+      FROM_HERE, base::Bind(&VideoScheduler::SendCursorShape, this,
+                            base::Passed(&cursor_shape)));
 }
 
-void VideoScheduler::DoFinishOneRecording() {
+void VideoScheduler::FrameCaptureCompleted() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  if (!is_recording())
-    return;
+  // Decrement the pending capture count.
+  pending_captures_--;
+  DCHECK_GE(pending_captures_, 0);
 
-  // Decrement the number of recording in process since we have completed
-  // one cycle.
-  --recordings_;
-  DCHECK_GE(recordings_, 0);
-
-  // Try to do a capture again only if |frame_skipped_| is set to true by
-  // capture timer.
-  if (frame_skipped_)
-    DoCapture();
-}
-
-void VideoScheduler::DoInvalidateFullScreen() {
-  DCHECK(capture_task_runner_->BelongsToCurrentThread());
-
-  SkRegion region;
-  region.op(SkIRect::MakeSize(capturer_->size_most_recent()),
-            SkRegion::kUnion_Op);
-  capturer_->InvalidateRegion(region);
+  // If we've skipped a frame capture because too we had too many captures
+  // pending then schedule one now.
+  if (did_skip_frame_)
+    CaptureNextFrame();
 }
 
 // Network thread --------------------------------------------------------------
 
-void VideoScheduler::DoSendVideoPacket(scoped_ptr<VideoPacket> packet) {
+void VideoScheduler::SendVideoPacket(scoped_ptr<VideoPacket> packet) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-  if (network_stopped_ || connections_.empty())
+  if (!video_stub_)
     return;
 
   base::Closure callback;
   if ((packet->flags() & VideoPacket::LAST_PARTITION) != 0)
     callback = base::Bind(&VideoScheduler::VideoFrameSentCallback, this);
 
-  // TODO(sergeyu): Currently we send the data only to the first
-  // connection. Send it to all connections if necessary.
-  connections_.front()->video_stub()->ProcessVideoPacket(
-      packet.Pass(), callback);
+  video_stub_->ProcessVideoPacket(packet.Pass(), callback);
 }
 
 void VideoScheduler::VideoFrameSentCallback() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-  if (network_stopped_)
+  if (!video_stub_)
     return;
 
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::DoFinishOneRecording, this));
+      FROM_HERE, base::Bind(&VideoScheduler::FrameCaptureCompleted, this));
 }
 
-void VideoScheduler::DoStopOnNetworkThread(const base::Closure& done_task) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  // There could be tasks on the network thread when this method is being
-  // executed. By setting the flag we'll not post anymore tasks from network
-  // thread.
-  //
-  // After that a task is posted on encode thread to continue the stop
-  // sequence.
-  network_stopped_ = true;
-
-  encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::DoStopOnEncodeThread,
-                            this, done_task));
-}
-
-void VideoScheduler::DoSendCursorShape(
+void VideoScheduler::SendCursorShape(
     scoped_ptr<protocol::CursorShapeInfo> cursor_shape) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-  if (network_stopped_ || connections_.empty())
+  if (!cursor_stub_)
     return;
 
-  // TODO(sergeyu): Currently we send the data only to the first
-  // connection. Send it to all connections if necessary.
-  connections_.front()->client_stub()->SetCursorShape(*cursor_shape);
+  cursor_stub_->SetCursorShape(*cursor_shape);
 }
 
 // Encoder thread --------------------------------------------------------------
 
-void VideoScheduler::DoEncode(
+void VideoScheduler::EncodeFrame(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
-  if (encoder_stopped_)
-    return;
-
-  // Early out if there's nothing to encode.
+  // If there is nothing to encode then send an empty keep-alive packet.
   if (!capture_data || capture_data->dirty_region().isEmpty()) {
-    // Send an empty video packet to keep network active.
     scoped_ptr<VideoPacket> packet(new VideoPacket());
     packet->set_flags(VideoPacket::LAST_PARTITION);
     network_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoScheduler::DoSendVideoPacket,
-                              this, base::Passed(packet.Pass())));
+        FROM_HERE, base::Bind(&VideoScheduler::SendVideoPacket, this,
+                              base::Passed(&packet)));
     return;
   }
 
   encode_start_time_ = base::Time::Now();
-  encoder()->Encode(
+  encoder_->Encode(
       capture_data, false,
       base::Bind(&VideoScheduler::EncodedDataAvailableCallback, this));
-}
-
-void VideoScheduler::DoStopOnEncodeThread(const base::Closure& done_task) {
-  DCHECK(encode_task_runner_->BelongsToCurrentThread());
-
-  encoder_stopped_ = true;
-
-  // When this method is being executed there are no more tasks on encode thread
-  // for this object. We can then post a task to capture thread to finish the
-  // stop sequence.
-  capture_task_runner_->PostTask(FROM_HERE, done_task);
 }
 
 void VideoScheduler::EncodedDataAvailableCallback(
     scoped_ptr<VideoPacket> packet) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
-
-  if (encoder_stopped_)
-    return;
 
   bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
   if (last) {
@@ -366,8 +273,8 @@ void VideoScheduler::EncodedDataAvailableCallback(
   }
 
   network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::DoSendVideoPacket, this,
-                            base::Passed(packet.Pass())));
+      FROM_HERE, base::Bind(&VideoScheduler::SendVideoPacket, this,
+                            base::Passed(&packet)));
 }
 
 }  // namespace remoting

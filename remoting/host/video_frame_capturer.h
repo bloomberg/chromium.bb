@@ -18,16 +18,15 @@ class CursorShapeInfo;
 
 class CaptureData;
 
-// A class to perform the task of capturing the image of a window.
-// The capture action is asynchronous to allow maximum throughput.
+// Class used to capture video frames asynchronously.
 //
-// The full capture process is as follows:
+// The full capture sequence is as follows:
 //
 // (1) Start
 //     This is when pre-capture steps are executed, such as flagging the
 //     display to prevent it from sleeping during a session.
 //
-// (2) InvalidateRects
+// (2) InvalidateRegion
 //     This is an optional step where regions of the screen are marked as
 //     invalid. Some platforms (Windows, for now) won't use this and will
 //     instead calculate the diff-regions later (in step (2). Other
@@ -35,7 +34,7 @@ class CaptureData;
 //     screen. Some limited rect-merging (e.g., to eliminate exact
 //     duplicates) may be done here.
 //
-// (3) CaptureInvalidRects
+// (3) CaptureInvalidRegion
 //     This is where the bits for the invalid rects are packaged up and sent
 //     to the encoder.
 //     A screen capture is performed if needed. For example, Windows requires

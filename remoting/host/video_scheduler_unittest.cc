@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/host_mock_objects.h"
@@ -14,10 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::remoting::protocol::MockConnectionToClient;
-using ::remoting::protocol::MockConnectionToClientEventHandler;
-using ::remoting::protocol::MockHostStub;
-using ::remoting::protocol::MockSession;
+using ::remoting::protocol::MockClientStub;
 using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
@@ -52,13 +50,8 @@ ACTION(FinishSend) {
   arg1.Run();
 }
 
-// Helper method to quit the main message loop.
-void QuitMessageLoop(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-}
-
 ACTION_P2(StopVideoScheduler, scheduler, task) {
-  scheduler->Stop(task);
+  scheduler->get()->Stop(task);
 }
 
 }  // namespace
@@ -93,40 +86,29 @@ class VideoSchedulerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    // VideoFrameCapturer and VideoEncoder are owned by VideoScheduler.
     encoder_ = new MockVideoEncoder();
-
-    session_ = new MockSession();
-    EXPECT_CALL(*session_, SetEventHandler(_));
-    EXPECT_CALL(*session_, Close())
-        .Times(AnyNumber());
-    connection_.reset(new MockConnectionToClient(session_, &host_stub_));
-    connection_->SetEventHandler(&handler_);
-
-    scheduler_ = new VideoScheduler(
-        message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
-        message_loop_.message_loop_proxy(), &capturer_,
-        scoped_ptr<remoting::VideoEncoder>(encoder_));
   }
 
-  virtual void TearDown() OVERRIDE {
-    connection_.reset();
-    // Run message loop before destroying because protocol::Session is
-    // destroyed asynchronously.
-    message_loop_.RunAllPending();
+  void StartVideoScheduler() {
+    scheduler_ = new VideoScheduler(
+        message_loop_.message_loop_proxy(),
+        message_loop_.message_loop_proxy(),
+        message_loop_.message_loop_proxy(),
+        &capturer_,
+        scoped_ptr<VideoEncoder>(encoder_),
+        &client_stub_,
+        &video_stub_);
   }
 
  protected:
   MessageLoop message_loop_;
   scoped_refptr<VideoScheduler> scheduler_;
 
-  MockConnectionToClientEventHandler handler_;
-  MockHostStub host_stub_;
-  MockSession* session_;  // Owned by |connection_|.
-  scoped_ptr<MockConnectionToClient> connection_;
+  MockClientStub client_stub_;
+  MockVideoStub video_stub_;
+  MockVideoFrameCapturer capturer_;
 
   // The following mock objects are owned by VideoScheduler.
-  MockVideoFrameCapturer capturer_;
   MockVideoEncoder* encoder_;
 
  private:
@@ -150,10 +132,11 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
   SkISize size(SkISize::Make(kWidth, kHeight));
   scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
 
+  // Create a RunLoop through which to drive |message_loop_|.
+  base::RunLoop run_loop;
+
   EXPECT_CALL(capturer_, size_most_recent())
       .WillRepeatedly(ReturnRef(size));
-
-  EXPECT_CALL(capturer_, InvalidateRegion(_));
 
   // First the capturer is called.
   Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureInvalidRegion(_))
@@ -164,38 +147,24 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
   EXPECT_CALL(*encoder_, Encode(data, false, _))
       .WillRepeatedly(FinishEncode());
 
-  MockVideoStub video_stub;
-  EXPECT_CALL(*connection_, video_stub())
-      .WillRepeatedly(Return(&video_stub));
-
   // By default delete the arguments when ProcessVideoPacket is received.
-  EXPECT_CALL(video_stub, ProcessVideoPacketPtr(_, _))
+  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillRepeatedly(FinishSend());
 
   // For the first time when ProcessVideoPacket is received we stop the
   // VideoScheduler.
-  EXPECT_CALL(video_stub, ProcessVideoPacketPtr(_, _))
+  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillOnce(DoAll(
           FinishSend(),
-          StopVideoScheduler(scheduler_,
-                             base::Bind(&QuitMessageLoop, &message_loop_))))
+          StopVideoScheduler(&scheduler_, run_loop.QuitClosure())))
       .RetiresOnSaturation();
 
   EXPECT_CALL(capturer_, Stop())
       .After(capturer_capture);
 
-  // Add the mock client connection to the session.
-  scheduler_->AddConnection(connection_.get());
-
-  // Start capturing.
-  scheduler_->Start();
-  message_loop_.Run();
-}
-
-TEST_F(VideoSchedulerTest, StopWithoutStart) {
-  EXPECT_CALL(capturer_, Stop());
-  scheduler_->Stop(base::Bind(&QuitMessageLoop, &message_loop_));
-  message_loop_.Run();
+  // Start video frame capture.
+  StartVideoScheduler();
+  run_loop.Run();
 }
 
 }  // namespace remoting

@@ -283,7 +283,7 @@ bool FakeUdpSocket::SetSendBufferSize(int32 size) {
 FakeSession::FakeSession()
     : event_handler_(NULL),
       candidate_config_(CandidateSessionConfig::CreateDefault()),
-      config_(SessionConfig::GetDefault()),
+      config_(SessionConfig::ForTest()),
       message_loop_(MessageLoop::current()),
       async_creation_(false),
       jid_(kTestJid),

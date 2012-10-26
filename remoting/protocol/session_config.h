@@ -82,7 +82,8 @@ class SessionConfig {
     return audio_config_.transport != ChannelConfig::TRANSPORT_NONE;
   }
 
-  static SessionConfig GetDefault();
+  // Returns a suitable session configuration for use in tests.
+  static SessionConfig ForTest();
 
  private:
   ChannelConfig control_config_;
