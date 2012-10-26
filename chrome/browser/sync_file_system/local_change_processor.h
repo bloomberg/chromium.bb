@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_CHANGE_PROCESSOR_H_
 
 #include "base/callback_forward.h"
+#include "webkit/fileapi/syncable/sync_callbacks.h"
 
 namespace fileapi {
 class FileChange;
@@ -20,8 +21,6 @@ namespace sync_file_system {
 // This interface is to be implemented/backed by RemoteSyncFileService.
 class LocalChangeProcessor {
  public:
-  typedef base::Callback<void(fileapi::SyncStatusCode status)> StatusCallback;
-
   LocalChangeProcessor() {}
   virtual ~LocalChangeProcessor() {}
 
@@ -32,7 +31,7 @@ class LocalChangeProcessor {
       const fileapi::FileChange& change,
       const FilePath& local_path,
       const fileapi::FileSystemURL& url,
-      const StatusCallback& callback) = 0;
+      const fileapi::StatusCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalChangeProcessor);

@@ -40,7 +40,7 @@ void SyncFileSystemService::InitializeForApp(
     fileapi::FileSystemContext* file_system_context,
     const std::string& service_name,
     const GURL& app_url,
-    const StatusCallback& callback) {
+    const fileapi::StatusCallback& callback) {
   DCHECK(local_file_service_);
 
   // TODO(kinuko,tzik): Instantiate the remote_file_service for the given

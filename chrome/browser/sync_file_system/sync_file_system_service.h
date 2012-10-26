@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/sync_file_system/change_observer_interface.h"
+#include "webkit/fileapi/syncable/sync_callbacks.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 class GURL;
@@ -34,8 +35,6 @@ class SyncFileSystemService
       public LocalChangeObserver,
       public RemoteChangeObserver {
  public:
-  typedef base::Callback<void(fileapi::SyncStatusCode status)> StatusCallback;
-
   // ProfileKeyedService overrides.
   virtual void Shutdown() OVERRIDE;
 
@@ -43,7 +42,7 @@ class SyncFileSystemService
       fileapi::FileSystemContext* file_system_context,
       const std::string& service_name,
       const GURL& app_url,
-      const StatusCallback& callback);
+      const fileapi::StatusCallback& callback);
 
  private:
   friend class SyncFileSystemServiceFactory;
