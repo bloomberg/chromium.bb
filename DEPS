@@ -320,7 +320,7 @@ deps = {
     (Var("googlecode_url") % "pywebsocket") + "/trunk/src@662",
 
   "src/third_party/opus/src":
-    "/trunk/deps/third_party/opus@162558",
+    "/trunk/deps/third_party/opus@164159",
 }
 
 
