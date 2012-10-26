@@ -319,7 +319,13 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
-  if (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE) {
+  // When the window is not in the normal show state, we do not snap thw window.
+  // This happens when the user minimizes or maximizes the window by keyboard
+  // shortcut while dragging it. If the window is the result of dragging a tab
+  // out of a maximized window, it's already in the normal show state when this
+  // is called, so it does not matter.
+  if (wm::IsWindowNormal(window()) &&
+      (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE)) {
     if (!GetRestoreBoundsInScreen(window()))
       SetRestoreBoundsInParent(window(), details_.restore_bounds.IsEmpty() ?
                                          details_.initial_bounds :

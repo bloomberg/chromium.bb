@@ -62,6 +62,9 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   WindowResizer* resizer() { return resizer_.get(); }
 
   // WindowObserver overrides:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
@@ -83,6 +86,14 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
 ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   if (resizer_.get())
     resizer_->GetTarget()->RemoveObserver(this);
+}
+
+void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowPropertyChanged(
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (!wm::IsWindowNormal(window))
+    handler_->CompleteDrag(DRAG_COMPLETE, 0);
 }
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(

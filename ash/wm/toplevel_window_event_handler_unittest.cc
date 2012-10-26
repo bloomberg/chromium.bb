@@ -487,5 +487,48 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
   aura::client::SetActivationClient(root, original_client);
 }
 
+// Verifies window minimization/maximization completes drag.
+TEST_F(ToplevelWindowEventHandlerTest, MinimizeMaximizeCompletes) {
+  // Once window is minimized, window dragging completes.
+  {
+    scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+    target->Focus();
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         target.get());
+    generator.PressLeftButton();
+    generator.MoveMouseBy(10, 11);
+    RunAllPendingInMessageLoop();
+    EXPECT_EQ("10,11 100x100", target->bounds().ToString());
+
+    wm::MinimizeWindow(target.get());
+    wm::RestoreWindow(target.get());
+
+    generator.PressLeftButton();
+    generator.MoveMouseBy(10, 11);
+    RunAllPendingInMessageLoop();
+    EXPECT_EQ("10,11 100x100", target->bounds().ToString());
+  }
+
+  // Once window is maximized, window dragging completes.
+  {
+    scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+    target->Focus();
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                         target.get());
+    generator.PressLeftButton();
+    generator.MoveMouseBy(10, 11);
+    RunAllPendingInMessageLoop();
+    EXPECT_EQ("10,11 100x100", target->bounds().ToString());
+
+    wm::MaximizeWindow(target.get());
+    wm::RestoreWindow(target.get());
+
+    generator.PressLeftButton();
+    generator.MoveMouseBy(10, 11);
+    RunAllPendingInMessageLoop();
+    EXPECT_EQ("10,11 100x100", target->bounds().ToString());
+  }
+}
+
 }  // namespace test
 }  // namespace ash
