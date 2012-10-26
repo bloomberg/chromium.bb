@@ -421,10 +421,8 @@ void DriveFeedLoader::OnGetApplicationList(google_apis::GDataErrorCode status,
   if (json.get()) {
     scoped_ptr<google_apis::AppList> applist(
         google_apis::AppList::CreateFrom(*json));
-    if (applist.get()) {
-      VLOG(1) << "applist get success";
+    if (applist.get())
       webapps_registry_->UpdateFromApplicationList(*applist.get());
-    }
   }
 }
 

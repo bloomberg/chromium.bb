@@ -582,7 +582,7 @@ void ChangeList::RegisterJSONConverter(
                                         &ChangeList::largest_change_id_,
                                         &base::StringToInt64);
   converter->RegisterRepeatedMessage<ChangeResource>(kItems,
-                                                   &ChangeList::items_);
+                                                     &ChangeList::items_);
 }
 
 // static

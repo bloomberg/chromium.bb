@@ -140,7 +140,7 @@ class OperationReadinessObserver : public google_apis::DriveServiceObserver {
   DISALLOW_COPY_AND_ASSIGN(OperationReadinessObserver);
 };
 
-// Called when LoadIfNeeded() call from StartInitialFeedFetch() finishes.
+// Called when LoadFeedIfNeeded() call from StartInitialFeedFetch() finishes.
 void OnStartInitialFeedFetchFinished(DriveFileError error) {
   DVLOG(1) << "Loading from StartInitialFeedFetch() finished";
 }
