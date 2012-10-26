@@ -124,11 +124,11 @@ deps = {
     'src/third_party/webpagereplay':
         Var('git_url') + '/external/web-page-replay.git@4aeb73620f2fb43b0906c294b19554391f7ec1a8',
     'src/third_party/webrtc':
-        Var('git_url') + '/external/webrtc/stable/webrtc.git@351bd3470bdd2ab3f91306f0b43971765f1091d9',
+        Var('git_url') + '/external/webrtc/stable/src.git@93eaa3d249373300327889e880a9d001726fd735',
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@6b5f1af666c0fad6e4282d07267ff5ae84e7df9d',
     'src/tools/deps2git':
-        Var('git_url') + '/chromium/tools/deps2git.git@ef0c53a8a229cd1ea11ea61646b65d94ee4e0f88',
+        Var('git_url') + '/chromium/tools/deps2git.git@e736b7aba4fdbd9e1d3c8c331b9b6accb51b67dd',
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@99515cd09d78391b5ec3145ee6b7939220612e8d',
     'src/tools/gyp':
