@@ -392,15 +392,16 @@ cr.define('ntp', function() {
    * we inform the browser via a hash change.
    */
   function trackImageLoad(url) {
-    if ((loadStatus_ & LoadStatusType.LOAD_IMAGES_COMPLETE) ==
-        LoadStatusType.LOAD_IMAGES_COMPLETE) {
+    if (finishedLoadingNotificationSent_)
       return;
-    }
 
     for (var i = 0; i < imagesBeingLoaded.length; ++i) {
       if (imagesBeingLoaded[i].src == url)
         return;
     }
+
+    loadStatus_ &= (~LoadStatusType.LOAD_IMAGES_COMPLETE);
+
     var image = new Image();
     image.onload = onInitialImageLoaded;
     image.onerror = onInitialImageLoaded;
