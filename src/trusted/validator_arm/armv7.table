@@ -1053,7 +1053,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                                         Ubfx_Rule_236_A1_P466
                                         cccc0111111mmmmmddddlllll101nnnn
                                         RegsNotPc (v6T2)
-| 11111      111      -         -     = Roadblock  # Permanently Undefined
+| 11111      111      -         -     = PermanentlyUndefined
                                         # Note: the UDF mnemonic only applies
                                         #   when cond == 0b1110, but all
                                         #   encodings are permanently undefined.

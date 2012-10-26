@@ -100,24 +100,24 @@ bool Binary3RegisterOpAltATesterCase1
 
 // Neutral case:
 // inst(24:20)=11111 & inst(7:5)=111
-//    = {baseline: 'Roadblock',
+//    = {baseline: 'PermanentlyUndefined',
 //       constraints: }
 //
 // Representaive case:
 // op1(24:20)=11111 & op2(7:5)=111
-//    = {baseline: Roadblock,
+//    = {baseline: PermanentlyUndefined,
 //       constraints: }
-class RoadblockTesterCase2
-    : public RoadblockTester {
+class PermanentlyUndefinedTesterCase2
+    : public PermanentlyUndefinedTester {
  public:
-  RoadblockTesterCase2(const NamedClassDecoder& decoder)
-    : RoadblockTester(decoder) {}
+  PermanentlyUndefinedTesterCase2(const NamedClassDecoder& decoder)
+    : PermanentlyUndefinedTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool RoadblockTesterCase2
+bool PermanentlyUndefinedTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -127,7 +127,7 @@ bool RoadblockTesterCase2
   if ((inst.Bits() & 0x000000E0) != 0x000000E0 /* op2(7:5)=~111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return RoadblockTester::
+  return PermanentlyUndefinedTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -324,21 +324,21 @@ class Binary3RegisterOpAltATester_Case1
 
 // Neutral case:
 // inst(24:20)=11111 & inst(7:5)=111
-//    = {baseline: 'Roadblock',
+//    = {baseline: 'PermanentlyUndefined',
 //       constraints: ,
 //       rule: 'Udf_Rule_A1'}
 //
 // Representative case:
 // op1(24:20)=11111 & op2(7:5)=111
-//    = {baseline: Roadblock,
+//    = {baseline: PermanentlyUndefined,
 //       constraints: ,
 //       rule: Udf_Rule_A1}
-class RoadblockTester_Case2
-    : public RoadblockTesterCase2 {
+class PermanentlyUndefinedTester_Case2
+    : public PermanentlyUndefinedTesterCase2 {
  public:
-  RoadblockTester_Case2()
-    : RoadblockTesterCase2(
-      state_.Roadblock_Udf_Rule_A1_instance_)
+  PermanentlyUndefinedTester_Case2()
+    : PermanentlyUndefinedTesterCase2(
+      state_.PermanentlyUndefined_Udf_Rule_A1_instance_)
   {}
 };
 
@@ -491,22 +491,22 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=11111 & inst(7:5)=111
-//    = {actual: 'Roadblock',
-//       baseline: 'Roadblock',
+//    = {actual: 'PermanentlyUndefined',
+//       baseline: 'PermanentlyUndefined',
 //       constraints: ,
 //       pattern: 'cccc01111111iiiiiiiiiiii1111iiii',
 //       rule: 'Udf_Rule_A1'}
 //
 // Representaive case:
 // op1(24:20)=11111 & op2(7:5)=111
-//    = {actual: Roadblock,
-//       baseline: Roadblock,
+//    = {actual: PermanentlyUndefined,
+//       baseline: PermanentlyUndefined,
 //       constraints: ,
 //       pattern: cccc01111111iiiiiiiiiiii1111iiii,
 //       rule: Udf_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
-       RoadblockTester_Case2_TestCase2) {
-  RoadblockTester_Case2 tester;
+       PermanentlyUndefinedTester_Case2_TestCase2) {
+  PermanentlyUndefinedTester_Case2 tester;
   tester.Test("cccc01111111iiiiiiiiiiii1111iiii");
 }
 

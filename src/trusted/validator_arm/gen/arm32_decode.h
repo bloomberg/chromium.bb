@@ -185,9 +185,9 @@ class Arm32DecoderState : DecoderState {
   const MoveDoubleVfpRegisterOp MoveDoubleVfpRegisterOp_instance_;
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
+  const PermanentlyUndefined PermanentlyUndefined_instance_;
   const PreloadRegisterPairOp PreloadRegisterPairOp_instance_;
   const PreloadRegisterPairOpWAndRnNotPc PreloadRegisterPairOpWAndRnNotPc_instance_;
-  const Roadblock Roadblock_instance_;
   const Store2RegisterImm12OpRnNotRtOnWriteback Store2RegisterImm12OpRnNotRtOnWriteback_instance_;
   const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;
   const StoreBasedImmedMemoryDouble StoreBasedImmedMemoryDouble_instance_;

@@ -2551,8 +2551,8 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// RoadblockTester
-bool RoadblockTester::ApplySanityChecks(Instruction inst,
+// PermanentlyUndefinedTester
+bool PermanentlyUndefinedTester::ApplySanityChecks(Instruction inst,
                                         const NamedClassDecoder& decoder) {
   // Check if expected class name found.
   NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));

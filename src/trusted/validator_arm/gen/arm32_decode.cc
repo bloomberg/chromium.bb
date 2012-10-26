@@ -50,9 +50,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MoveDoubleVfpRegisterOp_instance_()
   , MoveVfpRegisterOp_instance_()
   , MoveVfpRegisterOpWithTypeSel_instance_()
+  , PermanentlyUndefined_instance_()
   , PreloadRegisterPairOp_instance_()
   , PreloadRegisterPairOpWAndRnNotPc_instance_()
-  , Roadblock_instance_()
   , Store2RegisterImm12OpRnNotRtOnWriteback_instance_()
   , StoreBasedImmedMemory_instance_()
   , StoreBasedImmedMemoryDouble_instance_()
@@ -973,7 +973,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
 
   if ((inst.Bits() & 0x01F00000) == 0x01F00000 /* op1(24:20)=11111 */ &&
       (inst.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5)=111 */) {
-    return Roadblock_instance_;
+    return PermanentlyUndefined_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20)=1110x */ &&

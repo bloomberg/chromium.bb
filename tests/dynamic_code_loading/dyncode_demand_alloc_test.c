@@ -10,14 +10,14 @@
 #include <string.h>
 #include <nacl/nacl_dyncode.h>
 
+#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 
 
-uint8_t halts[] =
 #if defined(__i386__) || defined(__x86_64__)
-  { 0xf4 }; /* HLT */
+uint8_t halts = 0xf4; /* HLT */
 #elif defined(__arm__)
-  { 0x76, 0x66, 0x26, 0xe1 }; /* 0xe1266676 - BKPT 0x6666 */
+uint32_t halts = NACL_INSTR_HALT_FILL;
 #else
 # error "Unknown arch"
 #endif
@@ -30,14 +30,14 @@ void load_into_page(uint8_t *dest) {
 
   /* Touch the page by loading some halt instructions into it. */
   for (ptr = buf; ptr < buf + sizeof(buf); ptr += sizeof(halts)) {
-    memcpy(ptr, halts, sizeof(halts));
+    memcpy(ptr, &halts, sizeof(halts));
   }
   rc = nacl_dyncode_create(dest, buf, sizeof(buf));
   assert(rc == 0);
 
   /* Check that the whole page is correctly filled with halts. */
   for (ptr = dest; ptr < dest + DYNAMIC_CODE_PAGE_SIZE; ptr += sizeof(halts)) {
-    if (memcmp(ptr, halts, sizeof(halts)) != 0) {
+    if (memcmp(ptr, &halts, sizeof(halts)) != 0) {
       fprintf(stderr, "Mismatch at %p\n", ptr);
       exit(1);
     }

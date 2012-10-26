@@ -1,8 +1,10 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
+
+#include "native_client/src/include/arm_sandbox.h"
 
         /*
          * assume 32-byte trampoline slots, 16-byte bundles.
@@ -32,7 +34,7 @@ bad:    pop {lr}
         bx lr
 
 
-        bkpt 0x7777
+        .word NACL_INSTR_LITERAL_POOL_HEAD
         /*
          * Put a disallowed instruction here to ensure that the bkpt
          * data bundle marker works.  If the marker does not work, then

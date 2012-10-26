@@ -121,8 +121,7 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
     uint32_t expected_branch_target_register = expect_bx_or_blx ?
         (i & 0xF) :  // When present, always Rm(3:0).
         nacl_arm_dec::Register::kNone;
-    bool expect_literal_pool_head =
-        (i == nacl_arm_dec::kLiteralPoolHeadInstruction);
+    bool expect_literal_pool_head =(i == nacl_arm_dec::kLiteralPoolHead);
     bool expect_load_store_or_unsafe = expect_unconditional ?
         // Advanced SIMD element or structure load/store instructions.
         // 1111 0100 xx0x xxxx xxxx xxxx xxxx xxxx
