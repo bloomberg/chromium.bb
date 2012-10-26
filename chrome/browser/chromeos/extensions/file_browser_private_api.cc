@@ -1023,9 +1023,16 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
     file_urls.push_back(GURL(origin_file_url));
   }
 
+  WebContents* web_contents =
+      dispatcher()->delegate()->GetAssociatedWebContents();
+  int32 tab_id = 0;
+  if (web_contents)
+    tab_id = ExtensionTabUtil::GetTabId(web_contents);
+
   scoped_refptr<FileTaskExecutor> executor(
       FileTaskExecutor::Create(profile(),
                                source_url(),
+                               tab_id,
                                extension_id,
                                task_type,
                                action_id));

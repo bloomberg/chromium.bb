@@ -476,6 +476,7 @@ class ExtensionTaskExecutor : public FileTaskExecutor {
 
   ExtensionTaskExecutor(Profile* profile,
                         const GURL source_url,
+                        int32 tab_id,
                         const std::string& extension_id,
                         const std::string& action_id);
   virtual ~ExtensionTaskExecutor();
@@ -530,6 +531,7 @@ class ExtensionTaskExecutor : public FileTaskExecutor {
   void SetupHandlerHostFileAccessPermissions(int handler_pid);
 
   const GURL source_url_;
+  int32 tab_id_;
   const std::string action_id_;
   FileTaskFinishedCallback done_;
 
@@ -563,12 +565,14 @@ class WebIntentTaskExecutor : public FileTaskExecutor {
 // static
 FileTaskExecutor* FileTaskExecutor::Create(Profile* profile,
                                            const GURL source_url,
+                                           int32 tab_id,
                                            const std::string& extension_id,
                                            const std::string& task_type,
                                            const std::string& action_id) {
   if (task_type == kTaskFile)
     return new ExtensionTaskExecutor(profile,
                                      source_url,
+                                     tab_id,
                                      extension_id,
                                      action_id);
 
@@ -601,6 +605,8 @@ bool FileTaskExecutor::Execute(const std::vector<GURL>& file_urls) {
   return ExecuteAndNotify(file_urls, FileTaskFinishedCallback());
 }
 
+// TODO(kaznacheev): Remove this method and inline its implementation at the
+// only place where it is used (DriveTaskExecutor::OnAppAuthorized)
 Browser* FileTaskExecutor::GetBrowser() const {
   return browser::FindOrCreateTabbedBrowser(
       profile_ ? profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord(),
@@ -782,10 +788,12 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
 ExtensionTaskExecutor::ExtensionTaskExecutor(
     Profile* profile,
     const GURL source_url,
+    int tab_id,
     const std::string& extension_id,
     const std::string& action_id)
     : FileTaskExecutor(profile, extension_id),
       source_url_(source_url),
+      tab_id_(tab_id),
       action_id_(action_id) {
 }
 
@@ -952,13 +960,7 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }
 
-  // Get tab id.
-  Browser* current_browser = GetBrowser();
-  if (current_browser) {
-    WebContents* contents = chrome::GetActiveWebContents(current_browser);
-    if (contents)
-      details->SetInteger("tab_id", ExtensionTabUtil::GetTabId(contents));
-  }
+  details->SetInteger("tab_id", tab_id_);
 
   event_router->DispatchEventToExtension(
       extension_id(), std::string("fileBrowserHandler.onExecute"),

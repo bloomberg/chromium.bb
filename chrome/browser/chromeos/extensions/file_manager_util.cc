@@ -605,7 +605,8 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
     std::vector<GURL> urls;
     urls.push_back(url);
     scoped_refptr<FileTaskExecutor> executor = FileTaskExecutor::Create(profile,
-        source_url, extension_id, file_handler_util::kTaskFile, action_id);
+        source_url, 0 /* no tab id */, extension_id,
+        file_handler_util::kTaskFile, action_id);
     executor->Execute(urls);
     return true;
   }

@@ -95,6 +95,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
   // Creates the appropriate FileTaskExecutor for the given |extension_id|.
   static FileTaskExecutor* Create(Profile* profile,
                                   const GURL source_url,
+                                  int32 tab_id,
                                   const std::string& extension_id,
                                   const std::string& task_type,
                                   const std::string& action_id);
