@@ -179,10 +179,9 @@ AudioHandler::AudioHandler(AudioMixer* mixer)
     : mixer_(mixer),
       local_state_(g_browser_process->local_state()) {
   InitializePrefObservers();
-  mixer_->Init();
   ApplyAudioPolicy();
-  SetMuted(local_state_->GetInteger(prefs::kAudioMute) == kPrefMuteOn);
-  SetVolumePercentInternal(local_state_->GetDouble(prefs::kAudioVolumePercent));
+  SetVolumePercent(local_state_->GetDouble(prefs::kAudioVolumePercent));
+  mixer_->Init();
 }
 
 AudioHandler::~AudioHandler() {
