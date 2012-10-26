@@ -446,6 +446,10 @@
                   this.eventOptions_.actions);
 
     ensureRuleSchemasLoaded();
+    // We remove the first parameter from the validation to give the user more
+    // meaningful error messages.
+    validate([rules, opt_cb],
+             ruleFunctionSchemas.addRules.parameters.slice().splice(1));
     sendRequest("events.addRules", [this.eventName_, rules, opt_cb],
                 ruleFunctionSchemas.addRules.parameters);
   }
@@ -454,6 +458,10 @@
     if (!this.eventOptions_.supportsRules)
       throw new Error("This event does not support rules.");
     ensureRuleSchemasLoaded();
+    // We remove the first parameter from the validation to give the user more
+    // meaningful error messages.
+    validate([ruleIdentifiers, opt_cb],
+             ruleFunctionSchemas.removeRules.parameters.slice().splice(1));
     sendRequest("events.removeRules",
                 [this.eventName_, ruleIdentifiers, opt_cb],
                 ruleFunctionSchemas.removeRules.parameters);
@@ -463,6 +471,11 @@
     if (!this.eventOptions_.supportsRules)
       throw new Error("This event does not support rules.");
     ensureRuleSchemasLoaded();
+    // We remove the first parameter from the validation to give the user more
+    // meaningful error messages.
+    validate([ruleIdentifiers, cb],
+             ruleFunctionSchemas.getRules.parameters.slice().splice(1));
+
     sendRequest("events.getRules",
                 [this.eventName_, ruleIdentifiers, cb],
                 ruleFunctionSchemas.getRules.parameters);

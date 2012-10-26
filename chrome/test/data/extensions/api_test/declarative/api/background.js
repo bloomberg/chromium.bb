@@ -64,6 +64,31 @@ var invalidRule1 = {
 var testEvent = chrome.declarativeWebRequest.onRequest;
 
 chrome.test.runTests([
+  // Test validation
+  function testInvalidAddRules() {
+    try {
+      testEvent.addRules();
+      chrome.test.fail();
+    } catch(e) {
+      chrome.test.succeed();
+    }
+  },
+  function testInvalidGetRules() {
+    try {
+      testEvent.getRules(function() {});
+      chrome.test.fail();
+    } catch(e) {
+      chrome.test.succeed();
+    }
+  },
+  function testInvalidRemoveRules() {
+    try {
+      testEvent.removeRules(function() {});
+      chrome.test.fail();
+    } catch(e) {
+      chrome.test.succeed();
+    }
+  },
   // Add adding two simple rules and check that their optional fields are set
   // correctly in the call back function.
   function testAddRules() {

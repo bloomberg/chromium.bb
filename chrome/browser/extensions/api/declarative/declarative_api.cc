@@ -88,7 +88,7 @@ bool RemoveRulesFunction::RunImplOnCorrectThread() {
 }
 
 bool GetRulesFunction::RunImplOnCorrectThread() {
-  scoped_ptr<RemoveRules::Params> params(RemoveRules::Params::Create(*args_));
+  scoped_ptr<GetRules::Params> params(GetRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::vector<linked_ptr<Rule> > rules;
