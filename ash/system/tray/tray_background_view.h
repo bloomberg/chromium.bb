@@ -17,6 +17,8 @@ namespace internal {
 class ShelfLayoutManager;
 class StatusAreaWidget;
 class TrayBackground;
+class TrayLayerAnimationObserver;
+
 // Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray.
 // This class handles setting and animating the background when the Launcher
 // his shown/hidden. It also inherits from ActionableView so that the tray
@@ -133,7 +135,7 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   ShelfLayoutManager* GetShelfLayoutManager();
 
  private:
-  class TrayWidgetObserver;
+  friend class TrayLayerAnimationObserver;
 
   // Called from Initialize after all status area trays have been created.
   // Sets the border based on the position of the view.
@@ -153,7 +155,8 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
 
   internal::BackgroundAnimator hide_background_animator_;
   internal::BackgroundAnimator hover_background_animator_;
-  scoped_ptr<TrayWidgetObserver> widget_observer_;
+  scoped_ptr<internal::TrayLayerAnimationObserver>
+      layer_animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackgroundView);
 };

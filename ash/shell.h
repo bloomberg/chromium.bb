@@ -97,6 +97,7 @@ class RootWindowController;
 class RootWindowLayoutManager;
 class ScreenPositionController;
 class ShadowController;
+class ShelfLayoutManager;
 class SlowAnimationEventFilter;
 class StackingController;
 class StatusAreaWidget;

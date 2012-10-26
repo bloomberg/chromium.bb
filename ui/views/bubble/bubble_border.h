@@ -130,9 +130,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // location to make that happen.
   void set_arrow_offset(int offset) { override_arrow_offset_ = offset; }
 
-  // Sets whether the arrow is actually painted. Default is true.
-  void set_paint_arrow(bool value) { paint_arrow_ = value; }
-
   // For borders with an arrow, gives the desired bounds (in screen coordinates)
   // given the rect to point to and the size of the contained contents.  This
   // depends on the arrow location, so if you change that, you should call this
@@ -195,8 +192,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   int override_arrow_offset_;
 
   ArrowLocation arrow_location_;
-  // See description above setter.
-  bool paint_arrow_;
   BubbleAlignment alignment_;
   SkColor background_color_;
 
