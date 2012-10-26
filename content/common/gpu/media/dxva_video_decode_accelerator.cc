@@ -17,6 +17,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
@@ -29,6 +30,7 @@
 #include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_switches.h"
 
 namespace content {
 
@@ -531,6 +533,14 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
 
   RETURN_AND_NOTIFY_ON_FAILURE(pre_sandbox_init_done_,
       "PreSandbox initialization not completed", PLATFORM_FAILURE, false);
+
+  std::string use_gl_value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      use_gl_value !=  gfx::kGLImplementationSwiftShaderName,
+      "Swiftshader is enabled. Cannot support H/W decode",
+      PLATFORM_FAILURE,
+      false);
 
   RETURN_AND_NOTIFY_ON_FAILURE((state_ == kUninitialized),
       "Initialize: invalid state: " << state_, ILLEGAL_STATE, false);
