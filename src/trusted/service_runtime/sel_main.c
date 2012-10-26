@@ -18,8 +18,6 @@
 #include <getopt.h>
 #endif
 
-#include <errno.h>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -198,7 +196,6 @@ int NaClSelLdrMain(int argc, char **argv) {
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
   struct NaClEnvCleanser        env_cleanser;
-  const char *sandbox_fd_string;
 
 #if NACL_OSX
   /* Mac dynamic libraries cannot access the environ variable directly. */
@@ -755,64 +752,6 @@ int NaClSelLdrMain(int argc, char **argv) {
    * output.
    */
   NaClLog(1, "NACL: Application output follows\n");
-
-  /*
-   * Chroot() ourselves.  Based on agl's chrome implementation.
-   *
-   * TODO(mseaborn): This enables a SUID-based Linux outer sandbox,
-   * but it is not used now.  When we do have an outer sandbox for
-   * standalone sel_ldr, we should enable it earlier on, and merge it
-   * with NaClEnableOuterSandbox().
-   */
-  sandbox_fd_string = getenv(NACL_SANDBOX_CHROOT_FD);
-  if (NULL != sandbox_fd_string) {
-    static const char kChrootMe = 'C';
-    static const char kChrootSuccess = 'O';
-
-    char* endptr;
-    char reply;
-    int fd;
-    long fd_long;
-    errno = 0;  /* To distinguish between success/failure after call */
-    fd_long = strtol(sandbox_fd_string, &endptr, 10);
-
-    NaClLog(1, "Chrooting the NaCl module\n");
-    if ((ERANGE == errno && (LONG_MAX == fd_long || LONG_MIN == fd_long)) ||
-        (0 != errno && 0 == fd_long)) {
-      perror("strtol");
-      exit(1);
-    }
-    if (endptr == sandbox_fd_string) {
-      fprintf(stderr, "Could not initialize sandbox fd: No digits found\n");
-      exit(1);
-    }
-    if (*endptr) {
-      fprintf(stderr, "Could not initialize sandbox fd: Extra digits\n");
-      exit(1);
-    }
-    fd = fd_long;
-
-    /*
-     * TODO(neha): When we're more merged with chrome, use HANDLE_EINTR()
-     */
-    if (write(fd, &kChrootMe, 1) != 1) {
-      fprintf(stderr, "Cound not signal sandbox to chroot()\n");
-      exit(1);
-    }
-
-    /*
-     * TODO(neha): When we're more merged with chrome, use HANDLE_EINTR()
-     */
-    if (read(fd, &reply, 1) != 1) {
-      fprintf(stderr, "Could not get response to chroot() from sandbox\n");
-      exit(1);
-    }
-    if (kChrootSuccess != reply) {
-      fprintf(stderr, "%s\n", &reply);
-      fprintf(stderr, "Reply not correct\n");
-      exit(1);
-    }
-  }
 
   /*
    * Make sure all the file buffers are flushed before entering

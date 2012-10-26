@@ -65,8 +65,6 @@ EXTERN_C_BEGIN
 
 #define NACL_DEFAULT_STACK_MAX  (16 << 20)  /* main thread stack */
 
-#define NACL_SANDBOX_CHROOT_FD  "SBX_D"
-
 struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
