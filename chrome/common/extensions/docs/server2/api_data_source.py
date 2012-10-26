@@ -17,19 +17,25 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # Increment this version when there are changes to the data stored in any of
 # the caches used by APIDataSource. This allows the cache to be invalidated
 # without having to flush memcache on the production server.
-_VERSION = 1
+_VERSION = 2
 
 def _RemoveNoDocs(item):
   if type(item) == dict:
     if item.get('nodoc', False):
       return True
+    to_remove = []
     for key, value in item.items():
       if _RemoveNoDocs(value):
-        del item[key]
+        to_remove.append(key)
+    for k in to_remove:
+      del item[k]
   elif type(item) == list:
+    to_remove = []
     for i in item:
       if _RemoveNoDocs(i):
-        item.remove(i)
+        to_remove.append(i)
+    for i in to_remove:
+      item.remove(i)
   return False
 
 def _CreateId(node, prefix):

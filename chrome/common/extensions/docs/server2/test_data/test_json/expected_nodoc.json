@@ -1,0 +1,30 @@
+[
+  {
+    "name": "B",
+    "list": [
+      {
+        "name": "B2"
+      }
+    ]
+  },
+  {
+    "name": "D",
+    "nodoc": false
+  },
+  {
+    "name": "E",
+    "items1": [
+      {
+        "name": "E1",
+        "items": [
+          {
+            "name": "E1.3"
+          }
+        ]
+      },
+      {
+        "name": "E2"
+      }
+    ]
+  }
+]

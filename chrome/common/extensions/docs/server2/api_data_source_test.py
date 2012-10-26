@@ -8,7 +8,10 @@ import os
 import sys
 import unittest
 
-from api_data_source import APIDataSource, _JscModel, _FormatValue
+from api_data_source import (APIDataSource,
+                             _JscModel,
+                             _FormatValue,
+                             _RemoveNoDocs)
 from compiled_file_system import CompiledFileSystem
 from docs_server_utils import GetLinkToRefType
 from file_system import FileNotFoundError
@@ -107,6 +110,11 @@ class APIDataSourceTest(unittest.TestCase):
         '%s != %s' % (_MakeLink('other.html#type-type2', 'other.type2'),
                       _MakeLink('#type-type2', 'type2')),
         _GetType(dict_, 'type3')['description'])
+
+  def testRemoveNoDocs(self):
+    d = json.loads(self._ReadLocalFile('nodoc_test.json'))
+    _RemoveNoDocs(d)
+    self.assertEqual(json.loads(self._ReadLocalFile('expected_nodoc.json')), d)
 
 if __name__ == '__main__':
   unittest.main()

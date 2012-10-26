@@ -1,0 +1,62 @@
+[
+  {
+    "name": "A",
+    "nodoc": true
+  },
+  {
+    "name": "B",
+    "list": [
+      {
+        "name": "B1",
+        "nodoc": true
+      },
+      {
+        "name": "B2"
+      },
+      {
+        "name": "B3",
+        "nodoc": true
+      }
+    ]
+  },
+  {
+    "name": "C",
+    "nodoc": true
+  },
+  {
+    "name": "D",
+    "nodoc": false
+  },
+  {
+    "name": "E",
+    "dict": {
+      "name": "Ed",
+      "nodoc": true
+    },
+    "items1": [
+      {
+        "name": "E1",
+        "items": [
+          {
+            "name": "E1.1",
+            "nodoc": true
+          },
+          {
+            "name": "E1.2",
+            "nodoc": true
+          },
+          {
+            "name": "E1.3"
+          }
+        ]
+      },
+      {
+        "name": "E2"
+      },
+      {
+        "name": "E3",
+        "nodoc": true
+      }
+    ]
+  }
+]
