@@ -690,7 +690,8 @@ void LocationBarViewMac::Layout() {
   if (plus_decoration_.get())
     [cell addRightDecoration:plus_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
-  [cell addRightDecoration:zoom_decoration_.get()];
+  // TODO(dbeam): uncomment when zoom bubble exists.
+  // [cell addRightDecoration:zoom_decoration_.get()];
 
   // Note that display order is right to left.
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
