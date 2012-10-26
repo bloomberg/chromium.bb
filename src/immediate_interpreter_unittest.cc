@@ -1705,8 +1705,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   HWStateGs hwsgs[] = {
     // Simple 1-finger tap
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
-    {C,{ 0.07, 0, 0, 0, NULL   }, .07, MkSet(),   kBL, kBL, kIdl, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
+    {C,{ 0.07, 0, 0, 0, NULL   }, .07, MkSet(),     0,   0, kIdl, false },
     // 1-finger tap with click
     {S,{ 0.00, kBL, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kIdl, false },
     {C,{ 0.01,   0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kIdl, false },
@@ -1718,21 +1718,21 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.03, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kIdl, false },
     // Double 1-finger tap
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[2] }, -1,  MkSet(93),   0,   0, kSTB, false },
     {C,{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
-    {C,{ 0.09, 0, 0, 0, NULL   }, .09, MkSet(),   kBL, kBL, kIdl, false },
+    {C,{ 0.09, 0, 0, 0, NULL   }, .09, MkSet(),     0,   0, kIdl, false },
     // Triple 1-finger tap
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[2] }, -1,  MkSet(93),   0,   0, kSTB, false },
     {C,{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.04, 0, 1, 1, &fs[3] }, -1,  MkSet(94),   0,   0, kSTB, false },
     {C,{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
-    {C,{ 0.11, 0, 0, 0, NULL   }, .11, MkSet(),   kBL, kBL, kIdl, false },
+    {C,{ 0.11, 0, 0, 0, NULL   }, .11, MkSet(),     0,   0, kIdl, false },
     // 1-finger tap + drag
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
     {C,{ 0.13, 0, 1, 1, &fs[5] }, -1,  MkSet(95), kBL,   0, kDrg, false },
     {C,{ 0.14, 0, 1, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kDrg, false },
@@ -1740,14 +1740,14 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.99 , 0, 0, 0, NULL   }, .99, MkSet(),    0, kBL, kIdl, false },
     // 1-finger tap + move
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
-    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95), kBL, kBL, kIdl, false },
+    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),   0,   0, kIdl, false },
     {C,{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kIdl, false },
     {C,{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kIdl, false },
     // 1-finger tap, move, release, move again (drag lock)
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
     {C,{ 0.13, 0, 1, 1, &fs[5] }, -1,  MkSet(95), kBL,   0, kDrg, false },
     {C,{ 0.14, 0, 1, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kDrg, false },
@@ -1765,7 +1765,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.07, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kIdl, false },
     // 1-finger tap then long press
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
     {C,{ 0.14, 0, 1, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kDrg, false },
     {C,{ 0.16, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kDrg, false },
@@ -1782,8 +1782,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),         0,   0, kIdl, false },
     // 2-finger tap, but one finger is very very light, so left tap
     {S,{ 0.00, 0, 2, 2, &fs[27] }, -1,  MkSet(97, 98), 0, 0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),     0,   0, kTpC, true },
-    {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),   kBL, kBL, kIdl, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),   kBL, kBL, kTpC, true },
+    {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),     0,   0, kIdl, false },
     // 2-finger scroll
     {S,{ 0.00, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98),  0, 0, kFTB, false },
     {C,{ 0.01, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
@@ -1791,28 +1791,28 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.03, 0, 0, 0, NULL    }, -1, MkSet(),         0,   0, kIdl, false },
     // left tap, right tap
     {S,{ 0.00, 0, 1, 1, &fs[0] },  -1,  MkSet(91),       0, 0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
-    {C,{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98), kBL, kBL, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBL, kBL, kTpC, true },
+    {C,{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false },
     {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
     {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),         0,   0, kIdl, false },
     // left tap, multi-frame right tap
     {S,{ 0.00, 0, 1, 1, &fs[0] },  -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[10] }, -1,  MkSet(97),   0,   0, kSTB, false },
-    {C,{ 0.03, 0, 1, 1, &fs[11] }, -1,  MkSet(98), kBL, kBL, kFTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[11] }, -1,  MkSet(98),   0,   0, kFTB, false },
     {C,{ 0.04, 0, 0, 0, NULL   },  -1,  MkSet(),   kBR, kBR, kIdl, false },
     // right tap, left tap
     {S,{ 0.00, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),  0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
     {C,{ 0.02, 0, 1, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false },
-    {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
-    {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),       kBL, kBL, kIdl, false },
+    {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),       kBL, kBL, kTpC, true },
+    {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),         0,   0, kIdl, false },
     // middle tap, left tap
     {S,{ 0.00, 0, 3, 3, &fs[29] }, -1,  MkSet(97, 98, 99), 0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBM, kBM, kIdl, false },
     {C,{ 0.02, 0, 1, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false },
-    {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
-    {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),       kBL, kBL, kIdl, false },
+    {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),       kBL, kBL, kTpC, true },
+    {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),         0,   0, kIdl, false },
     // right double-tap
     {S,{ 0.00, 0, 2, 2, &fs[6] },  -1,  MkSet(95, 96),  0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
@@ -1825,21 +1825,21 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.02, 0, 0, 0, NULL    },  -1,  MkSet(),    0, 0, kIdl, false },
     // left tap, right-drag
     {S,{ 0.00, 0, 1, 1, &fs[0] },  -1, MkSet(91),       0, 0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kTpC, true },
-    {C,{ 0.02, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), kBL, kBL, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),       kBL, kBL, kTpC, true },
+    {C,{ 0.02, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98),   0,   0, kFTB, false },
     {C,{ 0.03, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
     {C,{ 0.04, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
     {C,{ 0.05, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kIdl, false },
     // left tap, right multi-frame drag
     {S,{ 0.00, 0, 1, 1, &fs[0] },  -1, MkSet(91),       0, 0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),       kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[10] }, -1, MkSet(97),       0,   0, kSTB, false },
-    {C,{ 0.03, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98), kBL, kBL, kIdl, false },
+    {C,{ 0.03, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
     {C,{ 0.04, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
     {C,{ 0.05, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kIdl, false },
     // left tap, drag + finger joined later
     {S,{ 0.00, 0, 1, 1, &fs[0] },  -1, MkSet(91),       0, 0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),       kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[10] }, -1, MkSet(97),       0,   0, kSTB, false },
     {C,{ 0.13, 0, 1, 1, &fs[10] }, -1, MkSet(97),     kBL,   0, kDrg, false },
     {C,{ 0.14, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98),   0, kBL, kIdl, false },
@@ -1861,7 +1861,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.05, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kIdl, false },
     // drag then right-tap
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),     0,  0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),     0,   0, kSTB, false },
     {C,{ 0.13, 0, 1, 1, &fs[5] }, -1,  MkSet(95),   kBL,   0, kDrg, false },
     {C,{ 0.14, 0, 1, 1, &fs[6] }, -1,  MkSet(95),     0,   0, kDrg, false },
@@ -1871,10 +1871,10 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.99, 0, 0, 0, NULL   }, .99, MkSet(),     kBR, kBR, kIdl, false },
     // slow double tap
     {D,{ 0.00, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.10, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.10, 0, 0, 0, NULL   }, -1, MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.12, 0, 1, 1, &fs[2] }, -1, MkSet(93),   0,   0, kSTB, false },
     {C,{ 0.22, 0, 0, 0, NULL   }, -1, MkSet(),   kBL, kBL, kTpC, true },
-    {C,{ 0.90, 0, 0, 0, NULL   }, .9, MkSet(),   kBL, kBL, kIdl, false },
+    {C,{ 0.90, 0, 0, 0, NULL   }, .9, MkSet(),     0,   0, kIdl, false },
     // right tap, very close fingers - shouldn't tap
     {S,{ 0.00, 0, 2, 2, &fs[19] }, -1, MkSet(95, 96), 0, 0, kIdl, false },
     {C,{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),       0, 0, kIdl, false },
@@ -1889,8 +1889,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),   kBR, kBR, kIdl, false },
     // Right tap, w/ fingers too far apart - shouldn't right tap
     {S,{ 0.00, 0, 2, 2, &fs[23] }, -1,  MkSet(95, 96), 0, 0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),       0, 0, kTpC, true },
-    {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),   kBL, kBL, kIdl, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),   kBL, kBL, kTpC, true },
+    {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),     0,   0, kIdl, false },
     // Two fingers merge into one, then leave - shouldn't tap
     {S,{ 0.00, 0, 2, 2, &fs[6] },  -1, MkSet(95, 96), 0, 0, kFTB, false },
     {C,{ 1.00, 0, 2, 2, &fs[6] },  -1, MkSet(95, 96), 0, 0, kIdl, false },
@@ -1962,9 +1962,9 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 1.04, 0, 0, 0, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
     // tap then move. no drag expected
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),     0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),     0,   0, kSTB, false },
-    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),   kBL, kBL, kIdl, false },
+    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),     0,   0, kIdl, false },
     {C,{ 0.05, 0, 1, 1, &fs[6] }, -1,  MkSet(95),     0,   0, kIdl, false },
     {C,{ 0.06, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kIdl, false },
     {C,{ 0.99, 0, 0, 0, NULL   }, .99, MkSet(),       0,   0, kIdl, false },
@@ -2188,8 +2188,7 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
   HardwareState hwstates[] = {
     // Simple 1-finger tap
     { 0.01, 0, 1, 1, &fs },
-    { 0.02, 0, 0, 0, NULL },
-    { 0.30, 0, 0, 0, NULL }
+    { 0.02, 0, 0, 0, NULL }
   };
 
   enum {
@@ -2266,7 +2265,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
   HWStateGs hwsgs_list[] = {
     // 1-finger tap, move, release, move again (drag lock)
     {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),   kBL, kBL, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[1] }, -1,  MkSet(92),   0,   0, kSTB, false },
     {C,{ 0.13, 0, 1, 1, &fs[2] }, -1,  MkSet(92), kBL,   0, kDrg, false },
     {C,{ 0.14, 0, 1, 1, &fs[3] }, -1,  MkSet(92),   0,   0, kDrg, false },
