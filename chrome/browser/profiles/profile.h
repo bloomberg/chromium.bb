@@ -336,12 +336,13 @@ class Profile : public content::BrowserContext {
   }
 
   // Sets the ExitType for the profile. This may be invoked multiple times
-  // during shutdown; the value of the first invocation is written to prefs, any
-  // other calls are ignored. Only legal values to pass to this are
-  // EXIT_SESSION_ENDED and EXIT_NORMAL.
+  // during shutdown; only the first such change (the transition from
+  // EXIT_CRASHED to one of the other values) is written to prefs, any
+  // later calls are ignored.
   //
   // NOTE: this is invoked internally on a normal shutdown, but is public so
-  // that it can be invoked when the user logs out/powers down (WM_ENDSESSION).
+  // that it can be invoked when the user logs out/powers down (WM_ENDSESSION),
+  // or to handle backgrounding/foregrounding on mobile.
   virtual void SetExitType(ExitType exit_type) = 0;
 
   // Returns how the last session was shutdown.

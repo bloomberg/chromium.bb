@@ -8,11 +8,13 @@
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/version.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -185,4 +187,36 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
   profile.reset();
   content::RunAllPendingInMessageLoop();
   content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+}
+
+// Test that repeated setting of exit type is handled correctly.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  MockProfileDelegate delegate;
+  EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
+
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+
+  PrefService* prefs = profile->GetPrefs();
+  // The initial state is crashed; store for later reference.
+  std::string crash_value(prefs->GetString(prefs::kSessionExitType));
+
+  // The first call to a type other than crashed should change the value.
+  profile->SetExitType(Profile::EXIT_SESSION_ENDED);
+  std::string first_call_value(prefs->GetString(prefs::kSessionExitType));
+  EXPECT_NE(crash_value, first_call_value);
+
+  // Subsequent calls to a non-crash value should be ignored.
+  profile->SetExitType(Profile::EXIT_NORMAL);
+  std::string second_call_value(prefs->GetString(prefs::kSessionExitType));
+  EXPECT_EQ(first_call_value, second_call_value);
+
+  // Setting back to a crashed value should work.
+  profile->SetExitType(Profile::EXIT_CRASHED);
+  std::string final_value(prefs->GetString(prefs::kSessionExitType));
+  EXPECT_EQ(crash_value, final_value);
 }

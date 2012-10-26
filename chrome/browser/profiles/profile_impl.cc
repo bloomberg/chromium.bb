@@ -673,10 +673,14 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
 }
 
 void ProfileImpl::SetExitType(ExitType exit_type) {
-  DCHECK(exit_type == EXIT_NORMAL || exit_type == EXIT_SESSION_ENDED);
-  // This may be invoked multiple times. Only persist the value first passed in.
-  if (prefs_.get() && (SessionTypePrefValueToExitType(prefs_->GetString(
-                       prefs::kSessionExitType)) == EXIT_CRASHED)) {
+  if (!prefs_)
+    return;
+  ExitType current_exit_type = SessionTypePrefValueToExitType(
+      prefs_->GetString(prefs::kSessionExitType));
+  // This may be invoked multiple times during shutdown. Only persist the value
+  // first passed in (unless it's a reset to the crash state, which happens when
+  // foregrounding the app on mobile).
+  if (exit_type == EXIT_CRASHED || current_exit_type == EXIT_CRASHED) {
     prefs_->SetString(prefs::kSessionExitType,
                       ExitTypeToSessionTypePrefValue(exit_type));
 
