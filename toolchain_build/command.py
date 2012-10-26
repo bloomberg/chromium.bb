@@ -57,6 +57,13 @@ class Command(object):
     if build_signature is not None:
       values['build_signature'] = build_signature
 
+    if 'path_dirs' in kwargs:
+      path_dirs = [dirname % values for dirname in kwargs['path_dirs']]
+      del kwargs['path_dirs']
+      env = os.environ.copy()
+      env['PATH'] = os.pathsep.join(path_dirs + env['PATH'].split(os.pathsep))
+      kwargs['env'] = env
+
     if isinstance(self._command, str):
       command = self._command % values
     else:
@@ -78,3 +85,9 @@ def Copy(src, dst):
   return Command([
       sys.executable, '-c',
       'import sys,shutil; shutil.copyfile(sys.argv[1], sys.argv[2])', src, dst])
+
+
+def RemoveDirectory(path):
+  """Convenience method for generating a command to remove a directory tree."""
+  # TODO(mcgrathr): Windows
+  return Command(['rm', '-rf', path])

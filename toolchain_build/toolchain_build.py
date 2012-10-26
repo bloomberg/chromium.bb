@@ -8,11 +8,19 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
+import os
 import sys
 
 import command
 import toolchain_main
 
+GIT_REVISIONS = {
+    'binutils': '0d99b0776661ebbf2949c644cb060612ccc11737',
+    'gcc': '5a4bb98274d64b07a8b92e52684a445c4351bf3f',
+    'newlib': '51a8366a0898bc47ee78a7f6ed01e8bd40eee4d0',
+    }
+
+TARGET_LIST = ['arm']
 
 PACKAGE_NAME = 'Native Client SDK [%(build_signature)s]'
 BUG_URL = 'http://gonacl.com/reportissue'
@@ -24,116 +32,193 @@ EXTRACT_STRIP_TGZ = TAR_XV + ['--gzip', '--strip-components=1', '-f']
 EXTRACT_STRIP_TBZ2 = TAR_XV + ['--bzip2', '--strip-components=1', '-f']
 CONFIGURE_CMD = ['%(input0)s/configure']
 MAKE_PARALLEL_CMD = ['make', '-j%(cores)s']
+MAKE_CHECK_CMD = MAKE_PARALLEL_CMD + ['check']
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(output0)s']
 
+CONFIGURE_HOST_ARCH = []
 if sys.platform.startswith('linux'):
-  CONFIGURE_HOST_ARCH = [
+  # We build the tools for x86-32 hosts so they will run on either x86-32
+  # or x86-64 hosts (with the right compatibility libraries installed).
+  CONFIGURE_HOST_ARCH += [
       'CC=gcc -m32',
       'CXX=g++ -m32',
+      '--build=i686-linux',
       ]
-  ABI_OPTS = ['ABI=32']
-else:
-  CONFIGURE_HOST_ARCH = []
-  ABI_OPTS = []
 
-CONFIGURE_ARGS_COMMON = CONFIGURE_HOST_ARCH + [
-    '--prefix=',
+CONFIGURE_HOST_LIB = CONFIGURE_HOST_ARCH + [
+      '--disable-shared',
+      '--prefix=',
+      ]
+
+CONFIGURE_HOST_TOOL = CONFIGURE_HOST_LIB + [
     '--with-pkgversion=' + PACKAGE_NAME,
     '--with-bugurl=' + BUG_URL,
     '--without-zlib',
 ]
 
-CONFIGURE_ARGS_TARGET = [
-    '--target=arm-nacl',
-    '--with-sysroot=/arm-nacl',
-]
+def ConfigureTargetArgs(arch):
+  config_target = arch + '-nacl'
+  return ['--target=' + config_target, '--with-sysroot=/' + config_target]
 
-def BuildCommand(cmd):
-  return command.Command(cmd, cwd='build')
+def CommandsInBuild(command_lines):
+  return [command.Mkdir('build')] + [command.Command(cmd, cwd='build')
+                                     for cmd in command_lines]
 
-PACKAGES = {
-    'binutils': {
-        'git_url': GIT_BASE_URL + '/nacl-binutils.git',
-        'git_revision': '0d99b0776661ebbf2949c644cb060612ccc11737',
-        'commands': [
-            command.Command(
-                CONFIGURE_CMD +
-                CONFIGURE_ARGS_COMMON + CONFIGURE_ARGS_TARGET + [
-                    '--enable-gold',
-                    '--enable-plugins',
-                ]),
-            command.Command(MAKE_PARALLEL_CMD),
-            command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
-        ],
-    },
+def UnpackSrc(is_gzip):
+  if is_gzip:
+    extract = EXTRACT_STRIP_TGZ
+  else:
+    extract = EXTRACT_STRIP_TBZ2
+  return [
+      command.Mkdir('src'),
+      command.Command(extract + ['%(input0)s'], cwd='src'),
+      ]
+
+def PopulateDeps(dep_dirs):
+  commands = [command.Mkdir('all_deps')]
+  commands += [command.Command('cp -r "%s/"* all_deps' % dirname, shell=True)
+               for dirname in dep_dirs]
+  return commands
+
+def WithDepsOptions(options):
+  return ['--with-' + option + '=%(cwd)s/../all_deps' for option in options]
+
+# These are libraries that go into building the compiler itself.
+HOST_GCC_LIBS = {
     'gmp': {
         'tar_src': 'third_party/gmp/gmp-5.0.5.tar.bz2',
-        'unpack_commands': [
-            command.Mkdir('src'),
-            command.Command(EXTRACT_STRIP_TBZ2 + ['%(input0)s'], cwd='src'),
-        ],
+        'unpack_commands': UnpackSrc(False),
         'hashed_inputs': ['src'],
-        'commands': [
-            command.Mkdir('build'),
-            BuildCommand(
-                CONFIGURE_CMD + CONFIGURE_ARGS_COMMON + ABI_OPTS + [
-                    '--disable-shared',
-                    '--enable-cxx',
-                ]),
-            BuildCommand(MAKE_PARALLEL_CMD),
-            BuildCommand(MAKE_DESTDIR_CMD + ['install']),
-        ],
-    },
+        'commands': CommandsInBuild([
+            CONFIGURE_CMD + CONFIGURE_HOST_LIB + [
+                '--with-sysroot=%(output0)s',
+                '--enable-cxx',
+                ],
+            MAKE_PARALLEL_CMD,
+            MAKE_CHECK_CMD,
+            MAKE_DESTDIR_CMD + ['install-strip'],
+            ]),
+        },
     'mpfr': {
         'dependencies': ['gmp'],
         'tar_src': 'third_party/mpfr/mpfr-3.1.1.tar.bz2',
-        'unpack_commands': [
-            command.Mkdir('src'),
-            command.Command(EXTRACT_STRIP_TBZ2 + ['%(input0)s'], cwd='src'),
-            command.Mkdir('all_deps'),
-            command.Command('cp -r "%(input1)s/"* all_deps', shell=True),
-        ],
+        'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(input1)s']),
         'hashed_inputs': ['src', 'all_deps'],
-        'commands': [
-            command.Mkdir('build'),
-            BuildCommand(
-                CONFIGURE_CMD + CONFIGURE_ARGS_COMMON + ABI_OPTS + [
-                    '--disable-shared',
-                    '--with-sysroot=%(cwd)s/../all_deps',
-                    '--with-gmp=%(cwd)s/../all_deps',
-                    '--enable-cxx',
-                ]),
-            BuildCommand(MAKE_PARALLEL_CMD),
-            BuildCommand(MAKE_DESTDIR_CMD + ['install']),
-        ],
-    },
+        'commands': CommandsInBuild([
+            CONFIGURE_CMD + CONFIGURE_HOST_LIB + WithDepsOptions(['sysroot',
+                                                                  'gmp']),
+            MAKE_PARALLEL_CMD,
+            MAKE_CHECK_CMD,
+            MAKE_DESTDIR_CMD + ['install-strip'],
+            ])
+        },
     'mpc': {
         'dependencies': ['gmp', 'mpfr'],
         'tar_src': 'third_party/mpc/mpc-1.0.tar.gz',
-        'unpack_commands': [
-            command.Mkdir('src'),
-            command.Command(EXTRACT_STRIP_TGZ + ['%(input0)s'], cwd='src'),
-            command.Mkdir('all_deps'),
-            command.Command('cp -r "%(input1)s/"* all_deps', shell=True),
-            command.Command('cp -r "%(input2)s/"* all_deps', shell=True),
-        ],
+        'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(input1)s',
+                                                           '%(input2)s']),
         'hashed_inputs': ['src', 'all_deps'],
-        'commands': [
-            command.Mkdir('build'),
-            BuildCommand(
-                CONFIGURE_CMD + CONFIGURE_ARGS_COMMON + ABI_OPTS + [
-                    '--disable-shared',
-                    '--with-sysroot=%(cwd)s/../all_deps',
-                    '--with-gmp=%(cwd)s/../all_deps',
-                    '--with-mpfr=%(cwd)s/../all_deps',
-                ]),
-            BuildCommand(MAKE_PARALLEL_CMD),
-            BuildCommand(MAKE_DESTDIR_CMD + ['install']),
-        ],
-    },
-}
+        'commands': CommandsInBuild([
+            CONFIGURE_CMD + CONFIGURE_HOST_LIB + WithDepsOptions(['sysroot',
+                                                                  'gmp',
+                                                                  'mpfr']),
+            MAKE_PARALLEL_CMD,
+            MAKE_CHECK_CMD,
+            MAKE_DESTDIR_CMD + ['install-strip'],
+            ])
+        },
+    }
+
+GCC_GIT_URL = GIT_BASE_URL + '/nacl-gcc.git'
+
+
+def GccCommand(cmd):
+  return command.Command(cmd, path_dirs=[os.path.join('%(input4)s', 'bin')])
+
+
+def ConfigureGccCommand(target):
+  return GccCommand(
+      CONFIGURE_CMD +
+      CONFIGURE_HOST_TOOL +
+      ConfigureTargetArgs(target) + [
+          '--with-gmp=%(input1)s',
+          '--with-mpfr=%(input2)s',
+          '--with-mpc=%(input3)s',
+          '--disable-dlopen',
+          '--with-newlib',
+          '--with-linker-hash-style=gnu',
+          '--enable-languages=c,c++,lto',
+          ])
+
+
+def HostTools(target):
+  return {
+      'binutils_' + target: {
+          'git_url': GIT_BASE_URL + '/nacl-binutils.git',
+          'git_revision': GIT_REVISIONS['binutils'],
+          'commands': [
+              command.Command(
+                  CONFIGURE_CMD +
+                  CONFIGURE_HOST_TOOL +
+                  ConfigureTargetArgs(target) + [
+                      '--enable-gold',
+                      '--enable-plugins',
+                      ]),
+              command.Command(MAKE_PARALLEL_CMD),
+              # TODO(mcgrathr): Run MAKE_CHECK_CMD here, but
+              # check-ld has known failures for ARM targets.
+              command.Command(MAKE_DESTDIR_CMD + ['install-strip'])
+              # The top-level lib* directories contain host libraries
+              # that we don't want to include in the distribution.
+              ] + [command.RemoveDirectory(os.path.join('%(output0)s', name))
+                   for name in ['lib', 'lib32', 'lib64']],
+          },
+
+      'gcc_' + target: {
+          'dependencies': ['gmp', 'mpfr', 'mpc', 'binutils_' + target],
+          'git_url': GCC_GIT_URL,
+          'git_revision': GIT_REVISIONS['gcc'],
+          # Remove all the source directories that are used solely for
+          # building target libraries.  We don't want those included in the
+          # input hash calculation so that we don't rebuild the compiler
+          # when the the only things that have changed are target libraries.
+          'unpack_commands': [command.RemoveDirectory(dirname) for dirname in [
+                  'boehm-gc',
+                  'libada',
+                  'libffi',
+                  'libgcc',
+                  'libgfortran',
+                  'libgo',
+                  'libgomp',
+                  'libitm',
+                  'libjava',
+                  'libmudflap',
+                  'libobjc',
+                  'libquadmath',
+                  'libssp',
+                  'libstdc++-v3',
+                  ]],
+          'commands': [
+              ConfigureGccCommand(target),
+              GccCommand(MAKE_PARALLEL_CMD + ['all-gcc']),
+              GccCommand(MAKE_DESTDIR_CMD + ['install-strip-gcc']),
+              ],
+          },
+      }
+
+
+def CollectPackages(targets):
+  packages = HOST_GCC_LIBS.copy()
+  for target in targets:
+    packages.update(HostTools(target))
+    # TODO(mcgrathr): target libraries
+  return packages
+
+PACKAGES = CollectPackages(TARGET_LIST)
 
 
 if __name__ == '__main__':
   tb = toolchain_main.PackageBuilder(PACKAGES, sys.argv[1:])
+  # TODO(mcgrathr): The bot ought to run some native_client tests
+  # using the new toolchain, like the old x86 toolchain bots do.
   tb.Main()
