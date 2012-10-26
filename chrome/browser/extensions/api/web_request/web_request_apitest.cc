@@ -242,13 +242,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   RunPermissionTest("split", false, false, "redirected1", "");
 }
 
-// This test frequently times out and crashes in debug, see crbug.com/152859.
-#if !defined(NDEBUG)
-#define MAYBE_PostData DISABLED_PostData
-#else
-#define MAYBE_PostData PostData
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_PostData) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData) {
   // Request body access is only enabled on dev (and canary).
   Feature::ScopedCurrentChannel sc(chrome::VersionInfo::CHANNEL_DEV);
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post.html")) <<
