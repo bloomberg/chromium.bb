@@ -5,8 +5,8 @@
 #include "chrome/browser/net/async_dns_field_trial.h"
 
 #include "base/metrics/field_trial.h"
+#include "base/string_util.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_version_info.h"
 
 namespace chrome_browser_net {
 
@@ -15,18 +15,12 @@ bool ConfigureAsyncDnsFieldTrial() {
   // There is no DnsConfigService on those platforms so disable the field trial.
   return false;
 #endif
-  const base::FieldTrial::Probability kAsyncDnsDivisor = 100;
-  base::FieldTrial::Probability enabled_probability = 0;
-
-  if (chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV)
-    enabled_probability = 50;
-
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "AsyncDns", kAsyncDnsDivisor, "disabled", 2012, 10, 30, NULL));
-
-  int enabled_group = trial->AppendGroup("enabled", enabled_probability);
-  return trial->group() == enabled_group;
+  // Configure the AsyncDns field trial as follows:
+  // groups AsyncDnsA and AsyncDnsB: return true,
+  // groups SystemDnsA and SystemDnsB: return false,
+  // otherwise (trial absent): return false.
+  return StartsWithASCII(base::FieldTrialList::FindFullName("AsyncDns"),
+                         "AsyncDns", false /* case_sensitive */);
 }
 
 }  // namespace chrome_browser_net
