@@ -223,6 +223,11 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(number_of_cpu_cores)
   IPC_STRUCT_TRAITS_MEMBER(cookie_enabled)
   IPC_STRUCT_TRAITS_MEMBER(apply_page_scale_factor_in_compositor)
+#if defined(OS_ANDROID)
+  IPC_STRUCT_TRAITS_MEMBER(text_autosizing_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(font_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(force_enable_zoom)
+#endif
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)

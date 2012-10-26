@@ -16,6 +16,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
 import org.chromium.android_webview.test.util.TestWebServer;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -796,6 +797,82 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
         private int mIndex;
         private String mTempDir;
+    }
+
+    class AwSettingsTextZoomTestHelper extends AwSettingsTestHelper<Integer> {
+        private final int mInitialTextZoom = 100;
+        private final float mInitialActualFontSize;
+
+        AwSettingsTextZoomTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(awContents, contentViewClient, true);
+            // The initial font size can be adjusted by font autosizer depending on the page's
+            // viewport width.
+            mInitialActualFontSize = getActualFontSize();
+        }
+
+        @Override
+        protected Integer getAlteredValue() {
+            return mInitialTextZoom * 2;
+        }
+
+        @Override
+        protected Integer getInitialValue() {
+            return mInitialTextZoom;
+        }
+
+        @Override
+        protected Integer getCurrentValue() {
+            return mContentSettings.getTextZoom();
+        }
+
+        @Override
+        protected void setCurrentValue(Integer value) {
+            mContentSettings.setTextZoom(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Integer value) throws Throwable {
+            final float actualFontSize = getActualFontSize();
+            // Ensure that actual vs. initial font size ratio is similar to actual vs. initial
+            // text zoom values ratio.
+            final float ratiosDelta = Math.abs(
+                (actualFontSize / mInitialActualFontSize) -
+                (value / (float)mInitialTextZoom));
+            assertTrue(
+                "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - (" +
+                value + " / " + mInitialTextZoom + ")| = " + ratiosDelta,
+                ratiosDelta <= 0.2f);
+        }
+
+        private float getActualFontSize() throws Throwable {
+            loadDataSync(getData());
+            // Retrieve font size after the native callback has fired, not in body.onload.
+            // The latter can fire prior to Font autosizer adjustments.
+            executeJavaScriptAndWaitForResult(
+                mAwContents, mContentViewClient, "setTitleToActualFontSize()");
+            return Float.parseFloat(getTitleOnUiThread());
+        }
+
+        private String getData() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html>" +
+                      "<head><script>" +
+                      "function setTitleToActualFontSize() {" +
+                      // parseFloat is used to trim out the "px" suffix.
+                      "  document.title = parseFloat(getComputedStyle(" +
+                      "    document.getElementById('par')).getPropertyValue('font-size'));" +
+                      "}</script></head>" +
+                      "<body>" +
+                      "<p id=\"par\" style=\"font-size:14px;\">");
+            // Make the paragraph wide enough for being processed by the font autosizer.
+            for (int i = 0; i < 100; i++) {
+                sb.append("Hello, World! ");
+            }
+            sb.append("</p></body></html>");
+            return sb.toString();
+        }
     }
 
     // The test verifies that JavaScript is disabled upon WebView
@@ -1707,6 +1784,45 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         } finally {
             resetResourceContext();
         }
+    }
+
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * Blocked on crbug/157563
+     */
+    @DisabledTest
+    public void testTextZoomNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsTextZoomTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * Blocked on crbug/157563
+     */
+    @DisabledTest
+    public void testTextZoomIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsTextZoomTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * Blocked on crbug/157563
+     */
+    @DisabledTest
+    public void testTextZoomBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsTextZoomTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
     }
 
     class ViewPair {

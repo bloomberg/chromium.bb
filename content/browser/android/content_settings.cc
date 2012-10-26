@@ -41,6 +41,7 @@ struct ContentSettings::FieldIds {
     // FIXME: we should be using a new GetFieldIDFromClassName() with caching.
     ScopedJavaLocalRef<jclass> clazz(
         GetClass(env, "org/chromium/content/browser/ContentSettings"));
+    text_size_percent = GetFieldID(env, clazz, "mTextSizePercent", "I");
     standard_fond_family =
         GetFieldID(env, clazz, "mStandardFontFamily", kStringClassName);
     fixed_font_family =
@@ -80,6 +81,7 @@ struct ContentSettings::FieldIds {
   }
 
   // Field ids
+  jfieldID text_size_percent;
   jfieldID standard_fond_family;
   jfieldID fixed_font_family;
   jfieldID sans_serif_font_family;
@@ -136,6 +138,15 @@ void ContentSettings::SyncFromNativeImpl() {
     return;
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
+
+  // TODO(mnaganov): Hook LayoutAlgorithm.NARROW_COLUMNS up to
+  // prefs.text_autosizing_enabled
+
+  env->SetIntField(
+      obj,
+      field_ids_->text_size_percent,
+      prefs.font_scale_factor * 100.0f);
+  CheckException(env);
 
   ScopedJavaLocalRef<jstring> str =
       ConvertUTF16ToJavaString(env,
@@ -247,6 +258,13 @@ void ContentSettings::SyncToNativeImpl() {
     return;
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
+
+  // TODO(mnaganov): Hook prefs.text_autosizing_enabled up to
+  // LayoutAlgorithm.NARROW_COLUMNS
+
+  int text_size_percent = env->GetIntField(obj, field_ids_->text_size_percent);
+  prefs.font_scale_factor = text_size_percent / 100.0f;
+  prefs.force_enable_zoom = text_size_percent >= 130;
 
   ScopedJavaLocalRef<jstring> str(
       env, static_cast<jstring>(
