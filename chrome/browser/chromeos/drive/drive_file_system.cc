@@ -386,18 +386,26 @@ DriveFileSystem::DriveFileSystem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void DriveFileSystem::Reload() {
+  InitializeResourceMetadtaAndFeedLoader();
+
+  resource_metadata_->set_origin(INITIALIZING);
+  feed_loader_->ReloadFromServerIfNeeded(
+      UNINITIALIZED,
+      resource_metadata_->largest_changestamp(),
+      base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
+                 ui_weak_ptr_,
+                 base::Bind(&DriveFileSystem::OnUpdateChecked,
+                            ui_weak_ptr_,
+                            UNINITIALIZED)));
+}
+
 void DriveFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive_service_->Initialize(profile_);
 
-  resource_metadata_.reset(new DriveResourceMetadata);
-  feed_loader_.reset(new DriveFeedLoader(resource_metadata_.get(),
-                                         drive_service_,
-                                         webapps_registry_,
-                                         cache_,
-                                         blocking_task_runner_));
-  feed_loader_->AddObserver(this);
+  InitializeResourceMetadtaAndFeedLoader();
 
   // Allocate the drive operation handlers.
   drive_operations_.Init(drive_service_,
@@ -414,6 +422,16 @@ void DriveFileSystem::Initialize() {
   scheduler_->Initialize();
 
   InitializePreferenceObserver();
+}
+
+void DriveFileSystem::InitializeResourceMetadtaAndFeedLoader() {
+  resource_metadata_.reset(new DriveResourceMetadata);
+  feed_loader_.reset(new DriveFeedLoader(resource_metadata_.get(),
+                                         drive_service_,
+                                         webapps_registry_,
+                                         cache_,
+                                         blocking_task_runner_));
+  feed_loader_->AddObserver(this);
 }
 
 void DriveFileSystem::CheckForUpdates() {

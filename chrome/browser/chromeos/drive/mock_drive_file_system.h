@@ -104,6 +104,7 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
                                const FilePath& file_content_path,
                                const base::Closure& callback) OVERRIDE {}
   MOCK_CONST_METHOD0(GetMetadata, DriveFileSystemMetadata());
+  MOCK_METHOD0(Reload, void());
 };
 
 }  // namespace drive

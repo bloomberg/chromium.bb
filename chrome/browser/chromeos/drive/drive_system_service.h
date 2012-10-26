@@ -58,6 +58,9 @@ class DriveSystemService : public ProfileKeyedService,
   void ClearCacheAndRemountFileSystem(
       const base::Callback<void(bool)>& callback);
 
+  // Reloads and remounts the file system.
+  void ReloadAndRemountFileSystem();
+
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 

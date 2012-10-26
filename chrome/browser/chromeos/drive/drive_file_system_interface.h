@@ -360,8 +360,12 @@ class DriveFileSystemInterface {
                                const FilePath& file_content_path,
                                const base::Closure& callback) = 0;
 
-  // Returns metadata of the file system.
+  // Returns miscellaneous metadata of the file system like the largest
+  // timestamp. Used in chrome:drive-internals.
   virtual DriveFileSystemMetadata GetMetadata() const = 0;
+
+  // Reloads the file system feeds from the server.
+  virtual void Reload() = 0;
 };
 
 }  // namespace drive

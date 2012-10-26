@@ -207,6 +207,18 @@ void DriveSystemService::AddBackDriveMountPoint(
     callback.Run(error == DRIVE_FILE_OK);
 }
 
+void DriveSystemService::ReloadAndRemountFileSystem() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RemoveDriveMountPoint();
+  drive_service()->CancelAll();
+  file_system_->Reload();
+
+  // Reload() is asynchronous. But we can add back the mount point right away
+  // because every operation waits until loading is complete.
+  AddDriveMountPoint();
+}
+
 void DriveSystemService::AddDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

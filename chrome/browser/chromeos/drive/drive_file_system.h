@@ -141,6 +141,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                const FilePath& file_content_path,
                                const base::Closure& callback) OVERRIDE;
   virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
+  virtual void Reload() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -241,6 +242,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Struct used by UpdateEntryData.
   struct UpdateEntryParams;
+
+  // Initializes DriveResourceMetadta and DriveFeedLoader instances. This is a
+  // part of the initialization.
+  void InitializeResourceMetadtaAndFeedLoader();
 
   // Callback passed to |LoadFeedFromServer| from |Search| method.
   // |callback| is that should be run with data received from
