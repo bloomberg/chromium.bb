@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "3.9",
+  "version": "4.0",
   "entries": [
     {
       "id": 1,
@@ -870,6 +870,23 @@
       ],
       "blacklist": [
         "panel_fitting"
+      ]
+    },
+    {
+      "id": 58,
+      "description": "Optimus Intel driver version 8.15.10.* has problems sharing textures.",
+      "cr_bugs": [156849],
+      "os": {
+        "type": "win"
+      },
+      "multi_gpu_style": "optimus",
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "=",
+        "number": "8.15.10"
+      },
+      "blacklist": [
+        "texture_sharing"
       ]
     }
   ]
