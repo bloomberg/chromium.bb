@@ -295,7 +295,7 @@
     "extension_types": ["extension", "packaged_app"]
   },
   "tabCapture": {
-    "channel": "trunk",
+    "channel": "canary",
     "extension_types": ["extension", "packaged_app"]
   },
   "terminalPrivate": {
