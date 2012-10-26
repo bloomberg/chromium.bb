@@ -81,7 +81,7 @@ function onHostStateChanged_(state) {
     accessCodeExpiresIn_ = remoting.hostSession.getAccessCodeLifetime();
     if (accessCodeExpiresIn_ > 0) {  // Check it hasn't expired.
       accessCodeTimerId_ = setInterval(
-          'remoting.decrementAccessCodeTimeout_()', 1000);
+          remoting.decrementAccessCodeTimeout_, 1000);
       timerRunning_ = true;
       updateAccessCodeTimeoutElement_();
       updateTimeoutStyles_();
