@@ -157,7 +157,6 @@ TEST_F(LayerTest, addAndRemoveChild)
     EXPECT_FALSE(child->parent());
 
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, m_layerTreeHost->setRootLayer(parent));
-
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, parent->addChild(child));
 
     ASSERT_EQ(static_cast<size_t>(1), parent->children().size());
@@ -421,6 +420,7 @@ TEST_F(LayerTest, checkSetNeedsDisplayCausesCorrectBehavior)
 
     scoped_refptr<Layer> testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
 
     IntSize testBounds = IntSize(501, 508);
 
@@ -436,6 +436,7 @@ TEST_F(LayerTest, checkSetNeedsDisplayCausesCorrectBehavior)
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(testBounds));
     testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // The real test begins here.
@@ -455,6 +456,7 @@ TEST_F(LayerTest, checkSetNeedsDisplayCausesCorrectBehavior)
     // Case 4: Layer should accept dirty rects that go beyond its bounds.
     testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(testBounds));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setNeedsDisplayRect(outOfBoundsDirtyRect));
     EXPECT_TRUE(testLayer->needsDisplay());
@@ -462,8 +464,16 @@ TEST_F(LayerTest, checkSetNeedsDisplayCausesCorrectBehavior)
     // Case 5: setNeedsDisplay() without the dirty rect arg.
     testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(testBounds));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setNeedsDisplay());
+    EXPECT_TRUE(testLayer->needsDisplay());
+
+    // Case 6: setNeedsDisplay() with a non-drawable layer
+    testLayer = Layer::create();
+    testLayer->setLayerTreeHost(m_layerTreeHost.get());
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setBounds(testBounds));
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setNeedsDisplayRect(dirty1));
     EXPECT_TRUE(testLayer->needsDisplay());
 }
 
@@ -471,6 +481,7 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
 {
     scoped_refptr<Layer> testLayer = Layer::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
 
     scoped_refptr<Layer> dummyLayer = Layer::create(); // just a dummy layer for this test case.
 
@@ -577,6 +588,7 @@ private:
 TEST_F(LayerTest, checkContentsScaleChangeTriggersNeedsDisplay)
 {
     scoped_refptr<LayerWithContentScaling> testLayer = make_scoped_refptr(new LayerWithContentScaling());
+    testLayer->setIsDrawable(true);
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
 
     IntSize testBounds = IntSize(320, 240);

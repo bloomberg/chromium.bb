@@ -65,6 +65,7 @@ private:
     bool m_premultipliedAlpha;
     bool m_rateLimitContext;
     bool m_contextLost;
+    bool m_contentCommitted;
 
     unsigned m_textureId;
 };

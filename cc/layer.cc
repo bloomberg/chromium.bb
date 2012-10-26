@@ -515,7 +515,8 @@ void Layer::setNeedsDisplayRect(const FloatRect& dirtyRect)
     if (!dirtyRect.isEmpty())
         m_needsDisplay = true;
 
-    setNeedsCommit();
+    if (drawsContent())
+        setNeedsCommit();
 }
 
 bool Layer::descendantIsFixedToContainerLayer() const

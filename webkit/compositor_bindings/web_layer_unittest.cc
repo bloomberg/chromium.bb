@@ -75,6 +75,7 @@ TEST_F(WebLayerTest, Client)
     // Base layer.
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
     scoped_ptr<WebLayer> layer(WebLayer::create());
+    layer->setDrawsContent(true);
     m_rootLayer->addChild(layer.get());
     Mock::VerifyAndClearExpectations(&m_client);
 

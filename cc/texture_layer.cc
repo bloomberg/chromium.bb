@@ -27,6 +27,7 @@ TextureLayer::TextureLayer(TextureLayerClient* client)
     , m_rateLimitContext(false)
     , m_contextLost(false)
     , m_textureId(0)
+    , m_contentCommitted(false)
 {
 }
 
@@ -83,15 +84,17 @@ void TextureLayer::setTextureId(unsigned id)
 
 void TextureLayer::willModifyTexture()
 {
-    if (layerTreeHost())
+    if (layerTreeHost() && (drawsContent() || m_contentCommitted)) {
         layerTreeHost()->acquireLayerTextures();
+        m_contentCommitted = false;
+    }
 }
 
 void TextureLayer::setNeedsDisplayRect(const FloatRect& dirtyRect)
 {
     Layer::setNeedsDisplayRect(dirtyRect);
 
-    if (m_rateLimitContext && m_client && layerTreeHost())
+    if (m_rateLimitContext && m_client && layerTreeHost() && drawsContent())
         layerTreeHost()->startRateLimiter(m_client->context());
 }
 
@@ -126,6 +129,7 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
     textureLayer->setUVRect(m_uvRect);
     textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
     textureLayer->setTextureId(m_textureId);
+    m_contentCommitted = drawsContent();
 }
 
 }
