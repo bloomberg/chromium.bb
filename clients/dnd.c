@@ -517,7 +517,7 @@ dnd_receive_func(void *data, size_t len, int32_t x, int32_t y, void *user_data)
 	if (len == 0) {
 		return;
 	} else if (len != sizeof *message) {
-		fprintf(stderr, "odd message length %ld, expected %ld\n",
+		fprintf(stderr, "odd message length %zu, expected %zu\n",
 			len, sizeof *message);
 		return;
 	}
