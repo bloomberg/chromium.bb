@@ -19,6 +19,8 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPage
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -205,6 +207,59 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
         loadUrlAsync(awContents, aboutPageUrl);
         shouldInterceptRequestHelper.waitForCallback(callCount);
     }
+
+    private static class EmptyInputStream extends InputStream {
+        @Override
+        public int available() {
+            return 0;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return -1;
+        }
+
+        @Override
+        public int read(byte b[]) throws IOException {
+            return -1;
+        }
+
+        @Override
+        public int read(byte b[], int off, int len) throws IOException {
+            return -1;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            if (n < 0)
+                throw new IOException("skipping negative number of bytes");
+            return 0;
+        }
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView"})
+    public void testDoesNotCrashOnEmptyStream() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
+            contentsClient.getShouldInterceptRequestHelper();
+
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+
+        shouldInterceptRequestHelper.setReturnValue(
+                new InterceptedRequestData("text/html", "UTF-8", new EmptyInputStream()));
+        int shouldInterceptRequestCallCount = shouldInterceptRequestHelper.getCallCount();
+        int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
+
+        loadUrlAsync(awContents, aboutPageUrl);
+
+        shouldInterceptRequestHelper.waitForCallback(shouldInterceptRequestCallCount);
+        contentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+    }
+
 
     private String makePageWithTitle(String title) {
         return CommonResources.makeHtmlPageFrom("<title>" + title + "</title>",

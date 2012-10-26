@@ -111,7 +111,7 @@ bool AndroidStreamReaderURLRequestJob::SkipToRequestedRange(JNIEnv* env) {
   // Skip to the start of the requested data. This has to be done in a loop
   // because the underlying InputStream is not guaranteed to skip the requested
   // number of bytes.
-  if (byte_range_.first_byte_position() != 0) {
+  if (byte_range_.IsValid() && byte_range_.first_byte_position() != 0) {
     int64_t skipped, bytes_to_skip = byte_range_.first_byte_position();
     do {
       skipped = Java_InputStream_skip(env, stream_.obj(), bytes_to_skip);
