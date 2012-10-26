@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/desktop/desktop_screen.h"
-#include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -25,18 +24,19 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/test/test_views_delegate.h"
-#include "ui/views/widget/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
+#include "ui/views/test/desktop_test_views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "content/shell/shell_stacking_client_chromeos.h"
+#else
+#include "ui/aura/desktop/desktop_stacking_client.h"
 #endif
 
 // ViewDelegate implementation for aura content shell
-class ShellViewsDelegateAura : public views::TestViewsDelegate {
+class ShellViewsDelegateAura : public views::DesktopTestViewsDelegate {
  public:
   ShellViewsDelegateAura() : use_transparent_windows_(false) {
   }
@@ -52,10 +52,6 @@ class ShellViewsDelegateAura : public views::TestViewsDelegate {
   // Overridden from views::TestViewsDelegate:
   virtual bool UseTransparentWindows() const OVERRIDE {
     return use_transparent_windows_;
-  }
-  virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
-      views::NativeWidgetAura* native_widget) OVERRIDE {
-    return new views::DesktopNativeWidgetHelperAura(native_widget);
   }
 
  private:
@@ -287,20 +283,24 @@ void Shell::PlatformInitialize() {
   chromeos::DBusThreadManager::Initialize();
 #endif
   aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
+#if defined(OS_CHROMEOS)
+  stacking_client_ = new content::ShellStackingClientChromeos();
+#else
   stacking_client_ = new aura::DesktopStackingClient();
+#endif
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
   views_delegate_ = new ShellViewsDelegateAura();
 }
 
 void Shell::PlatformExit() {
-#if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Shutdown();
-#endif
   if (stacking_client_)
     delete stacking_client_;
   if (views_delegate_)
     delete views_delegate_;
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Shutdown();
+#endif
   aura::Env::DeleteInstance();
 }
 

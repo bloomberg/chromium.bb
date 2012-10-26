@@ -34,10 +34,6 @@ class NativeWidget;
 class NonClientFrameView;
 class View;
 class Widget;
-#if defined(USE_AURA)
-class NativeWidgetAura;
-class NativeWidgetHelperAura;
-#endif
 namespace internal {
 class NativeWidgetDelegate;
 }
@@ -104,13 +100,6 @@ class VIEWS_EXPORT ViewsDelegate {
 
   // Converts ui::Event::flags to a WindowOpenDisposition.
   virtual int GetDispositionForEvent(int event_flags) = 0;
-
-#if defined(USE_AURA)
-  // Creates an object that implements desktop integration behavior. Returned
-  // object is owned by the NativeWidgetAura passed in. May return NULL.
-  virtual NativeWidgetHelperAura* CreateNativeWidgetHelper(
-      NativeWidgetAura* native_widget) = 0;
-#endif
 
   // Creates a web contents. This will return NULL unless overriden.
   virtual content::WebContents* CreateWebContents(

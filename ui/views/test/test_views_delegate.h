@@ -56,10 +56,6 @@ class TestViewsDelegate : public ViewsDelegate {
   virtual void AddRef() OVERRIDE {}
   virtual void ReleaseRef() OVERRIDE {}
   virtual int GetDispositionForEvent(int event_flags) OVERRIDE;
-#if defined(USE_AURA)
-  virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
-      views::NativeWidgetAura* native_widget) OVERRIDE;
-#endif
   virtual content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) OVERRIDE;

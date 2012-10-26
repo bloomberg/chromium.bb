@@ -13,7 +13,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "ui/views/ime/input_method.h"
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #include "ui/views/widget/desktop_root_window_host_linux.h"
 #endif
 
@@ -101,17 +100,9 @@ void X11DesktopHandler::OnActiveWindowChanged(::Window xid) {
 #else
   aura::RootWindow* root_window =
       aura::RootWindow::GetForAcceleratedWidget(xid);
-  // TODO(erg): Rip out DesktopNativeWidgetHelperAura and replace with the if
-  // block below.
   aura::Window* window = root_window ?
-      views::DesktopNativeWidgetHelperAura::GetViewsWindowForRootWindow(
-          root_window) : NULL;
-
-  if (!window) {
-    window = root_window ?
-             views::DesktopRootWindowHostLinux::GetContentWindowForXID(xid) :
-             NULL;
-  }
+      views::DesktopRootWindowHostLinux::GetContentWindowForXID(xid) :
+      NULL;
 #endif
 
   desktop_activation_client_->ActivateWindow(window);

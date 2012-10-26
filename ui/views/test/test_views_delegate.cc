@@ -9,7 +9,7 @@
 #include "content/public/test/web_contents_tester.h"
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
-#include "ui/gfx/screen.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #endif
 
@@ -54,13 +54,6 @@ bool TestViewsDelegate::UseTransparentWindows() const {
 int TestViewsDelegate::GetDispositionForEvent(int event_flags) {
   return 0;
 }
-
-#if defined(USE_AURA)
-views::NativeWidgetHelperAura* TestViewsDelegate::CreateNativeWidgetHelper(
-    views::NativeWidgetAura* native_widget) {
-  return NULL;
-}
-#endif
 
 content::WebContents* TestViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,

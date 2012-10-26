@@ -26,7 +26,6 @@ namespace views {
 
 class DropHelper;
 class NativeWidgetAuraWindowObserver;
-class NativeWidgetHelperAura;
 class TooltipManagerAura;
 
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
@@ -179,8 +178,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   void SetInitialFocus();
 
   internal::NativeWidgetDelegate* delegate_;
-
-  scoped_ptr<NativeWidgetHelperAura> desktop_helper_;
 
   aura::Window* window_;
 

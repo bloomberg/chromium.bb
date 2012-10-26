@@ -7,7 +7,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
+#include "ui/views/widget/desktop_root_window_host_linux.h"
 
 #if !defined(USE_ASH)
 
@@ -187,17 +187,7 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
   // is.
   XID xid =
       LocalProcessWindowFinder::GetProcessWindowAtPoint(screen_point, ignore);
-  aura::RootWindow* root_window =
-      aura::RootWindow::GetForAcceleratedWidget(xid);
-
-  if (!root_window)
-    return NULL;
-
-  // We now have the aura::RootWindow, but most of views isn't interested in
-  // that; instead it wants the aura::Window that is contained by the
-  // RootWindow.
-  return views::DesktopNativeWidgetHelperAura::GetViewsWindowForRootWindow(
-      root_window);
+  return views::DesktopRootWindowHostLinux::GetContentWindowForXID(xid);
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {

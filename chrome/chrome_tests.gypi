@@ -2226,6 +2226,8 @@
         '../tools/json_schema_compiler/test/idl_schemas_unittest.cc',
         '../tools/json_schema_compiler/test/objects_unittest.cc',
         '../tools/json_schema_compiler/test/simple_api_unittest.cc',
+        '../ui/views/test/desktop_test_views_delegate.cc',
+        '../ui/views/test/desktop_test_views_delegate.h',
         '../ui/views/test/test_views_delegate.cc',
         '../ui/views/test/test_views_delegate.h',
         '../ui/views/test/views_test_base.cc',

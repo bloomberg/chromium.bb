@@ -35,7 +35,6 @@
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/native_widget_delegate.h"
-#include "ui/views/widget/native_widget_helper_aura.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
 #include "ui/views/widget/widget_aura_utils.h"
@@ -62,10 +61,6 @@ void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
 
 NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(desktop_helper_(
-          ViewsDelegate::views_delegate ?
-          ViewsDelegate::views_delegate->CreateNativeWidgetHelper(this):
-          NULL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
@@ -94,9 +89,6 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
 
-  if (desktop_helper_.get())
-    desktop_helper_->PreInitialize(window_, params);
-
   window_->set_user_data(this);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetProperty(aura::client::kShowStateKey, params.show_state);
@@ -110,12 +102,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   delegate_->OnNativeWidgetCreated();
 
   gfx::Rect window_bounds = params.bounds;
-  if (desktop_helper_.get() && desktop_helper_->GetRootWindow()) {
-    if (!params.child && params.GetParent())
-      params.GetParent()->AddTransientChild(window_);
-
-    window_->SetParent(desktop_helper_->GetRootWindow());
-  } else if (params.child) {
+  if (params.child) {
     window_->SetParent(params.GetParent());
   } else {
     // Set up the transient child before the window is added. This way the
@@ -166,9 +153,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   }
 
   aura::client::SetActivationDelegate(window_, this);
-
-  if (desktop_helper_.get())
-    desktop_helper_->PostInitialize();
 
   window_->SetProperty(aura::client::kCanMaximizeKey,
                        GetWidget()->widget_delegate()->CanMaximize());

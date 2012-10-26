@@ -29,10 +29,6 @@
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
-#endif
-
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_init.h"
@@ -170,18 +166,6 @@ int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
   return chrome::DispositionFromEventFlags(event_flags);
 }
 
-#if defined(USE_AURA)
-views::NativeWidgetHelperAura* ChromeViewsDelegate::CreateNativeWidgetHelper(
-    views::NativeWidgetAura* native_widget) {
-#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
-      // TODO(erg): get rid of this, it's interfering with desktop-aura.
-  return new views::DesktopNativeWidgetHelperAura(native_widget);
-#else
-  return NULL;
-#endif
-}
-#endif
-
 content::WebContents* ChromeViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
     content::SiteInstance* site_instance) {
@@ -195,7 +179,7 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   if (parent && type != views::Widget::InitParams::TYPE_MENU)
     return new views::NativeWidgetAura(delegate);
-  if (parent && chrome::GetHostDesktopTypeForNativeView(parent) ==
+  if (chrome::GetHostDesktopTypeForNativeView(parent) ==
       chrome::HOST_DESKTOP_TYPE_NATIVE)
     return new views::DesktopNativeWidgetAura(delegate);
 #endif
