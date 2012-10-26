@@ -43,11 +43,6 @@ static bool InitializeFFmpegLibraries() {
   FilePath file_path;
   CHECK(PathService::Get(base::DIR_EXE, &file_path));
   CHECK(media::InitializeMediaLibrary(file_path));
-
-  // TODO(tomfinegan): Add and implement cdm::InitializeCdmModule(),
-  // and call |av_register_all()| from there.
-  av_register_all();
-
   return true;
 }
 
@@ -108,6 +103,13 @@ static Type* AllocateAndCopy(const Type* data, int size) {
   Type* copy = new Type[size];
   memcpy(copy, data, size);
   return copy;
+}
+
+void INITIALIZE_CDM_MODULE() {
+  av_register_all();
+}
+
+void DeInitializeCdmModule() {
 }
 
 cdm::ContentDecryptionModule* CreateCdmInstance(

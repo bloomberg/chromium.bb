@@ -16,6 +16,11 @@ typedef __int64 int64_t;
 
 #include "webkit/media/crypto/ppapi/cdm_export.h"
 
+// The version number must be rolled when this file is updated!
+// If the CDM and the plugin use different versions of this file, the plugin
+// will fail to load or crash!
+#define INITIALIZE_CDM_MODULE InitializeCdmModule_1
+
 namespace cdm {
 class Allocator;
 class CdmHost;
@@ -23,6 +28,8 @@ class ContentDecryptionModule;
 }
 
 extern "C" {
+CDM_EXPORT void INITIALIZE_CDM_MODULE();
+CDM_EXPORT void DeInitializeCdmModule();
 // Caller retains ownership of arguments, which must outlive the call to
 // DestroyCdmInstance below.
 CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance(

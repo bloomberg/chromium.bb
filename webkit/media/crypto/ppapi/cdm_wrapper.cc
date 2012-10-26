@@ -940,8 +940,14 @@ void CdmWrapper::DeliverSamples(int32_t result,
 // as it is loaded.
 class CdmWrapperModule : public pp::Module {
  public:
-  CdmWrapperModule() : pp::Module() {}
-  virtual ~CdmWrapperModule() {}
+  CdmWrapperModule() : pp::Module() {
+    // This function blocks the renderer thread (PluginInstance::Initialize()).
+    // Move this call to other places if this may be a concern in the future.
+    INITIALIZE_CDM_MODULE();
+  }
+  virtual ~CdmWrapperModule() {
+    DeInitializeCdmModule();
+  }
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
     return new CdmWrapper(instance, this);
