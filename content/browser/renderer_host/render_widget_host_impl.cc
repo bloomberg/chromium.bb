@@ -1591,6 +1591,12 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
   if (decrement_in_flight_event_count() == 0)
     StopHangMonitorTimeout();
 
+  // If an input ack is pending, then hold off ticking the gesture
+  // until we get an input ack.
+  if (in_process_event_types_.empty() &&
+      !active_smooth_scroll_gestures_.empty())
+    TickActiveSmoothScrollGesture();
+
   int type = static_cast<int>(event_type);
   if (type < WebInputEvent::Undefined) {
     RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
@@ -1613,11 +1619,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
     ProcessGestureAck(processed, type);
   }
 
-  // If an input ack is pending, then hold off ticking the gesture
-  // until we get an input ack.
-  if (in_process_event_types_.size() == 0 &&
-      !active_smooth_scroll_gestures_.empty())
-    TickActiveSmoothScrollGesture();
+  // WARNING: |this| may be deleted at this point.
 
   // This is used only for testing, and the other end does not use the
   // source object.  On linux, specifying
