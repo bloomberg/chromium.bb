@@ -10,6 +10,11 @@
 #include "base/logging.h"
 #include "base/win/windows_version.h"
 
+#if defined(USE_ASH)
+#include "ash/wm/window_util.h"
+#include "chrome/browser/ui/host_desktop.h"
+#endif
+
 static bool IsPlatformFullScreenMode() {
   // SHQueryUserNotificationState is only available for Vista and above.
 #if defined(NTDDI_VERSION) && (NTDDI_VERSION >= NTDDI_VISTA)
@@ -96,6 +101,10 @@ static bool IsFullScreenConsoleMode() {
 }
 
 bool IsFullScreenMode() {
+#if defined(USE_ASH)
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return ash::wm::IsActiveWindowFullscreen();
+#endif
   return IsPlatformFullScreenMode() ||
          IsFullScreenWindowMode() ||
          IsFullScreenConsoleMode();

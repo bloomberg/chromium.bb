@@ -47,10 +47,7 @@ HostDesktopType GetHostDesktopTypeForNativeWindow(
     gfx::NativeWindow native_window);
 HostDesktopType GetHostDesktopTypeForBrowser(const Browser* browser);
 
-/*
-TODO(beng): implement utilities as needed, e.g.:
 HostDesktopType GetActiveDesktop();
-*/
 
 }  // namespace chrome
 

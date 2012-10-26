@@ -35,6 +35,9 @@ ASH_EXPORT bool CanActivateWindow(aura::Window* window);
 // this is probably what you're looking for.
 ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
+// Returns true if the active window or one its ancestors is fullscreen.
+ASH_EXPORT bool IsActiveWindowFullscreen();
+
 // Returns true if |window| can be maximized.
 ASH_EXPORT bool CanMaximizeWindow(aura::Window* window);
 

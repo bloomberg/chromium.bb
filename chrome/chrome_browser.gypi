@@ -2411,7 +2411,7 @@
             ['OS=="win"', {
               'sources/': [
                 ['exclude', '^browser/background/background_mode_manager_aura.cc'],
-                ['exclude', '^browser/fullscreen_win.cc'],
+                ['exclude', '^browser/fullscreen_ash.cc'],
                 ['exclude', '^browser/lifetime/application_lifetime_win.cc'],
               ],
               'dependencies': [

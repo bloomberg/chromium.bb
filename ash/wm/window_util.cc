@@ -52,6 +52,18 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
   return internal::ActivationController::GetActivatableWindow(window, NULL);
 }
 
+bool IsActiveWindowFullscreen() {
+  aura::Window* window = GetActiveWindow();
+  while (window) {
+    if (window->GetProperty(aura::client::kShowStateKey) ==
+        ui::SHOW_STATE_FULLSCREEN) {
+      return true;
+    }
+    window = window->parent();
+  }
+  return false;
+}
+
 bool CanActivateWindow(aura::Window* window) {
   DCHECK(window);
   if (!window->GetRootWindow())

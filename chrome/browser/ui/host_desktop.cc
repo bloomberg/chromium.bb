@@ -4,8 +4,17 @@
 
 #include "chrome/browser/ui/host_desktop.h"
 
-#include  "chrome/browser/ui/ash/ash_util.h"
-#include  "chrome/browser/ui/browser_list_impl.h"
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+#include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/browser_list_impl.h"
+
+#if defined(OS_WIN)
+#include "ash/shell.h"
+#include "ui/aura/root_window.h"
+#endif
 
 namespace chrome {
 
@@ -66,6 +75,22 @@ HostDesktopType GetHostDesktopTypeForBrowser(const Browser* browser) {
     if (std::find(begin, end, browser) != end)
       return type;
   }
+  return HOST_DESKTOP_TYPE_NATIVE;
+}
+
+HostDesktopType GetActiveDesktop() {
+#if defined(OS_WIN) && defined(USE_ASH)
+  if (ash::Shell::HasInstance()) {
+    HWND active_window = GetActiveWindow();
+    typedef ash::Shell::RootWindowList RootWindowList;
+    RootWindowList roots(ash::Shell::GetAllRootWindows());
+    for (RootWindowList::const_iterator i = roots.begin(); i != roots.end();
+         ++i) {
+      if ((*i)->GetAcceleratedWidget() == active_window)
+        return HOST_DESKTOP_TYPE_ASH;
+    }
+  }
+#endif
   return HOST_DESKTOP_TYPE_NATIVE;
 }
 
