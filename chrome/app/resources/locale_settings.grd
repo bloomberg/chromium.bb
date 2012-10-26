@@ -75,7 +75,13 @@
          be 'nb'. -->
     <output filename="locale_settings_nb.pak" type="data_package" lang="no" />
     <output filename="locale_settings_pl.pak" type="data_package" lang="pl" />
-    <output filename="locale_settings_pt-BR.pak" type="data_package" lang="pt-BR" />
+    <if expr="pp_ifdef('ios')">
+      <!-- iOS uses pt for pt-BR -->
+      <output filename="locale_settings_pt.pak" type="data_package" lang="pt-BR" />
+    </if>
+    <if expr="not pp_ifdef('ios')">
+      <output filename="locale_settings_pt-BR.pak" type="data_package" lang="pt-BR" />
+    </if>
     <output filename="locale_settings_pt-PT.pak" type="data_package" lang="pt-PT" />
     <output filename="locale_settings_ro.pak" type="data_package" lang="ro" />
     <output filename="locale_settings_ru.pak" type="data_package" lang="ru" />

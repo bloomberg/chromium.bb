@@ -46,7 +46,13 @@ Chrome supports. -->
     <output filename="google_chrome_strings_nb.pak" type="data_package" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
     <output filename="google_chrome_strings_pl.pak" type="data_package" lang="pl" />
-    <output filename="google_chrome_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
+    <if expr="pp_ifdef('ios')">
+      <!-- iOS uses pt for pt-BR -->
+      <output filename="google_chrome_strings_pt.pak" type="data_package" lang="pt-BR" />
+    </if>
+    <if expr="not pp_ifdef('ios')">
+      <output filename="google_chrome_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
+    </if>
     <output filename="google_chrome_strings_pt-PT.pak" type="data_package" lang="pt-PT" />
     <output filename="google_chrome_strings_ro.pak" type="data_package" lang="ro" />
     <output filename="google_chrome_strings_ru.pak" type="data_package" lang="ru" />
