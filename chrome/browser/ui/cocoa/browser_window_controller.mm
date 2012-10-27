@@ -1551,9 +1551,7 @@ enum {
   // applicable)?
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 
-  TabContents* tabContents = TabContents::FromWebContents(contents);
-  // Without the .get(), xcode fails.
-  [infoBarContainerController_.get() changeTabContents:tabContents];
+  [infoBarContainerController_ changeWebContents:contents];
 
   [previewableContentsController_ onActivateTabWithContents:contents];
 }
@@ -1575,8 +1573,7 @@ enum {
 }
 
 - (void)onTabDetachedWithContents:(WebContents*)contents {
-  TabContents* tabContents = TabContents::FromWebContents(contents);
-  [infoBarContainerController_ tabDetachedWithContents:tabContents];
+  [infoBarContainerController_ tabDetachedWithContents:contents];
 }
 
 - (void)userChangedTheme {

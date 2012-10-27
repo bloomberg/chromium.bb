@@ -175,11 +175,11 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
   for (TabContentsIterator it; !it.done(); ++it) {
     if (it->web_contents()->GetRenderProcessHost() ==
         hungContents_->GetRenderProcessHost()) {
-      string16 title = (*it)->web_contents()->GetTitle();
+      string16 title = it->web_contents()->GetTitle();
       if (title.empty())
         title = CoreTabHelper::GetDefaultTitle();
       [titles addObject:base::SysUTF16ToNSString(title)];
-      [favicons addObject:mac::FaviconForTabContents(*it)];
+      [favicons addObject:mac::FaviconForWebContents(it->web_contents())];
     }
   }
   hungTitles_.reset([titles copy]);

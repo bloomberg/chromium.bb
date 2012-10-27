@@ -104,12 +104,12 @@ namespace tabpose {
 class ThumbnailLoader;
 }
 
-// A CALayer that draws a thumbnail for a TabContents object. The layer
+// A CALayer that draws a thumbnail for a WebContents object. The layer
 // tries to draw the WebContents's backing store directly if possible, and
 // requests a thumbnail bitmap from the WebContents's renderer process if not.
 @interface ThumbnailLayer : CALayer {
-  // The TabContents the thumbnail is for.
-  TabContents* contents_;  // weak
+  // The WebContents the thumbnail is for.
+  content::WebContents* contents_;  // weak
 
   // The size the thumbnail is drawn at when zoomed in.
   NSSize fullSize_;
@@ -124,7 +124,7 @@ class ThumbnailLoader;
   // True if the layer already sent a thumbnail request to a renderer.
   BOOL didSendLoad_;
 }
-- (id)initWithTabContents:(TabContents*)contents
+- (id)initWithWebContents:(content::WebContents*)contents
                  fullSize:(NSSize)fullSize;
 - (void)drawInContext:(CGContextRef)context;
 - (void)setThumbnail:(const SkBitmap&)bitmap;
@@ -185,7 +185,7 @@ void ThumbnailLoader::LoadThumbnail() {
 
 @implementation ThumbnailLayer
 
-- (id)initWithTabContents:(TabContents*)contents
+- (id)initWithWebContents:(content::WebContents*)contents
                  fullSize:(NSSize)fullSize {
   CHECK(contents);
   if ((self = [super init])) {
@@ -195,7 +195,7 @@ void ThumbnailLoader::LoadThumbnail() {
   return self;
 }
 
-- (void)setTabContents:(TabContents*)contents {
+- (void)setWebContents:(content::WebContents*)contents {
   contents_ = contents;
 }
 
@@ -213,7 +213,7 @@ void ThumbnailLoader::LoadThumbnail() {
 
   // Medium term, we want to show thumbs of the actual info bar views, which
   // means I need to create InfoBarControllers here.
-  NSWindow* window = [contents_->web_contents()->GetNativeView() window];
+  NSWindow* window = [contents_->GetNativeView() window];
   NSWindowController* windowController = [window windowController];
   if ([windowController isKindOfClass:[BrowserWindowController class]]) {
     BrowserWindowController* bwc =
@@ -227,9 +227,11 @@ void ThumbnailLoader::LoadThumbnail() {
   }
 
   BookmarkTabHelper* bookmark_tab_helper =
-      BookmarkTabHelper::FromWebContents(contents_->web_contents());
+      BookmarkTabHelper::FromWebContents(contents_);
+  Profile* profile =
+      Profile::FromBrowserContext(contents_->GetBrowserContext());
   bool always_show_bookmark_bar =
-      contents_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+      profile->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
   bool has_detached_bookmark_bar =
       bookmark_tab_helper->ShouldShowBookmarkBar() &&
       !always_show_bookmark_bar;
@@ -242,8 +244,7 @@ void ThumbnailLoader::LoadThumbnail() {
 - (int)bottomOffset {
   int bottomOffset = 0;
   DevToolsWindow* devToolsWindow =
-      DevToolsWindow::GetDockedInstanceForInspectedTab(
-          contents_->web_contents());
+      DevToolsWindow::GetDockedInstanceForInspectedTab(contents_);
   content::WebContents* devToolsContents = devToolsWindow ?
       devToolsWindow->tab_contents()->web_contents() : NULL;
   if (devToolsContents && devToolsContents->GetRenderViewHost() &&
@@ -259,7 +260,7 @@ void ThumbnailLoader::LoadThumbnail() {
 }
 
 - (void)drawInContext:(CGContextRef)context {
-  RenderWidgetHost* rwh = contents_->web_contents()->GetRenderViewHost();
+  RenderWidgetHost* rwh = contents_->GetRenderViewHost();
   // NULL if renderer crashed.
   content::RenderWidgetHostView* rwhv = rwh ? rwh->GetView() : NULL;
   if (!rwhv) {
@@ -405,11 +406,11 @@ class Tile {
 
   // Returns an unelided title. The view logic is responsible for eliding.
   const string16& title() const {
-    return contents_->web_contents()->GetTitle();
+    return contents_->GetTitle();
   }
 
-  TabContents* tab_contents() const { return contents_; }
-  void set_tab_contents(TabContents* new_contents) {
+  content::WebContents* web_contents() const { return contents_; }
+  void set_tab_contents(content::WebContents* new_contents) {
     contents_ = new_contents;
   }
 
@@ -426,7 +427,7 @@ class Tile {
   CGFloat title_font_size_;
   NSRect title_rect_;
 
-  TabContents* contents_;  // weak
+  content::WebContents* contents_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(Tile);
 };
@@ -450,13 +451,13 @@ NSRect Tile::GetFaviconStartRectRelativeTo(const Tile& tile) const {
 
 NSImage* Tile::favicon() const {
   extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(contents_->web_contents());
+      extensions::TabHelper::FromWebContents(contents_);
   if (extensions_tab_helper->is_app()) {
     SkBitmap* bitmap = extensions_tab_helper->GetExtensionAppIcon();
     if (bitmap)
       return gfx::SkBitmapToNSImage(*bitmap);
   }
-  return mac::FaviconForTabContents(contents_);
+  return mac::FaviconForWebContents(contents_);
 }
 
 NSRect Tile::GetTitleStartRectRelativeTo(const Tile& tile) const {
@@ -521,7 +522,7 @@ class TileSet {
 
   // Inserts a new Tile object containing |contents| at |index|. Does no
   // relayout.
-  void InsertTileAt(int index, TabContents* contents);
+  void InsertTileAt(int index, content::WebContents* contents);
 
   // Removes the Tile object at |index|. Does no relayout.
   void RemoveTileAt(int index);
@@ -565,7 +566,7 @@ void TileSet::Build(TabStripModel* source_model) {
   tiles_.resize(source_model->count());
   for (size_t i = 0; i < tiles_.size(); ++i) {
     tiles_[i] = new Tile;
-    tiles_[i]->contents_ = source_model->GetTabContentsAt(i);
+    tiles_[i]->contents_ = source_model->GetWebContentsAt(i);
   }
 }
 
@@ -787,7 +788,7 @@ int TileSet::previous_index() const {
   return new_index;
 }
 
-void TileSet::InsertTileAt(int index, TabContents* contents) {
+void TileSet::InsertTileAt(int index, content::WebContents* contents) {
   tiles_.insert(tiles_.begin() + index, new Tile);
   tiles_[index]->contents_ = contents;
 }
@@ -975,7 +976,7 @@ void AnimateCALayerOpacityFromTo(
                    slomo:(BOOL)slomo
        animationDelegate:(id)animationDelegate {
   scoped_nsobject<CALayer> layer([[ThumbnailLayer alloc]
-      initWithTabContents:tile.tab_contents()
+      initWithWebContents:tile.web_contents()
                  fullSize:tile.GetStartRectRelativeTo(
                      tileSet_->selected_tile()).size]);
   [layer setNeedsDisplay];
@@ -1516,7 +1517,7 @@ void AnimateCALayerOpacityFromTo(
       nil);
 }
 
-- (void)insertTabWithContents:(TabContents*)contents
+- (void)insertTabWithContents:(content::WebContents*)contents
                       atIndex:(NSInteger)index
                  inForeground:(bool)inForeground {
   // This happens if you cmd-click a link and then immediately open tabpose
@@ -1553,13 +1554,13 @@ void AnimateCALayerOpacityFromTo(
   }
 }
 
-- (void)tabClosingWithContents:(TabContents*)contents
+- (void)tabClosingWithContents:(content::WebContents*)contents
                        atIndex:(NSInteger)index {
   // We will also get a -tabDetachedWithContents:atIndex: notification for
   // closing tabs, so do nothing here.
 }
 
-- (void)tabDetachedWithContents:(TabContents*)contents
+- (void)tabDetachedWithContents:(content::WebContents*)contents
                         atIndex:(NSInteger)index {
   ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
 
@@ -1600,7 +1601,7 @@ void AnimateCALayerOpacityFromTo(
     [self refreshLayerFramesAtIndex:i];
 }
 
-- (void)tabMovedWithContents:(TabContents*)contents
+- (void)tabMovedWithContents:(content::WebContents*)contents
                     fromIndex:(NSInteger)from
                       toIndex:(NSInteger)to {
   ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
@@ -1637,7 +1638,7 @@ void AnimateCALayerOpacityFromTo(
     [self refreshLayerFramesAtIndex:i];
 }
 
-- (void)tabChangedWithContents:(TabContents*)contents
+- (void)tabChangedWithContents:(content::WebContents*)contents
                        atIndex:(NSInteger)index
                     changeType:(TabStripModelObserver::TabChangeType)change {
   // Tell the window to update text, title, and thumb layers at |index| to get
@@ -1649,7 +1650,7 @@ void AnimateCALayerOpacityFromTo(
   // For now, just make sure that we don't hold on to an invalid WebContents
   // object.
   tabpose::Tile& tile = tileSet_->tile_at(index);
-  if (contents == tile.tab_contents()) {
+  if (contents == tile.web_contents()) {
     // TODO(thakis): Install a timer to send a thumb request/update title/update
     // favicon after 20ms or so, and reset the timer every time this is called
     // to make sure we get an updated thumb, without requesting them all over.
@@ -1658,7 +1659,7 @@ void AnimateCALayerOpacityFromTo(
 
   tile.set_tab_contents(contents);
   ThumbnailLayer* thumbLayer = [allThumbnailLayers_ objectAtIndex:index];
-  [thumbLayer setTabContents:contents];
+  [thumbLayer setWebContents:contents];
 }
 
 - (void)tabStripModelDeleted {

@@ -5,15 +5,14 @@
 #include "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace mac {
 
-NSImage* FaviconForTabContents(TabContents* contents) {
+NSImage* FaviconForWebContents(content::WebContents* contents) {
   FaviconTabHelper* favicon_tab_helper =
-      contents ? FaviconTabHelper::FromWebContents(contents->web_contents())
+      contents ? FaviconTabHelper::FromWebContents(contents)
                : NULL;
   if (favicon_tab_helper && favicon_tab_helper->FaviconIsValid()) {
     NSImage* image = favicon_tab_helper->GetFavicon().AsNSImage();

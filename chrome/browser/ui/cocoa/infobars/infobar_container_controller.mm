@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -136,14 +135,14 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
   return controller;
 }
 
-- (void)changeTabContents:(TabContents*)contents {
+- (void)changeWebContents:(content::WebContents*)contents {
   registrar_.RemoveAll();
   [self removeAllInfoBars];
 
-  currentTabContents_ = contents;
-  if (currentTabContents_) {
+  currentWebContents_ = contents;
+  if (currentWebContents_) {
     InfoBarTabHelper* infobarTabHelper =
-        InfoBarTabHelper::FromWebContents(currentTabContents_->web_contents());
+        InfoBarTabHelper::FromWebContents(currentWebContents_);
     for (size_t i = 0; i < infobarTabHelper->GetInfoBarCount(); ++i) {
       InfoBar* infobar = infobarTabHelper->
           GetInfoBarDelegateAt(i)->CreateInfoBar(infobarTabHelper);
@@ -162,9 +161,9 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
   [self positionInfoBarsAndRedraw];
 }
 
-- (void)tabDetachedWithContents:(TabContents*)contents {
-  if (currentTabContents_ == contents)
-    [self changeTabContents:NULL];
+- (void)tabDetachedWithContents:(content::WebContents*)contents {
+  if (currentWebContents_ == contents)
+    [self changeWebContents:NULL];
 }
 
 - (NSUInteger)infobarCount {

@@ -5,6 +5,16 @@
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+
+namespace {
+
+// TODO(avi): Remove when TabStripModelObserver sends WebContents.
+content::WebContents* WebContentsOf(TabContents* tab_contents) {
+  return tab_contents ? tab_contents->web_contents() : NULL;
+}
+
+}  // namespace
 
 TabStripModelObserverBridge::TabStripModelObserverBridge(TabStripModel* model,
                                                          id controller)
@@ -25,7 +35,7 @@ void TabStripModelObserverBridge::TabInsertedAt(TabContents* contents,
                                                 bool foreground) {
   if ([controller_ respondsToSelector:
           @selector(insertTabWithContents:atIndex:inForeground:)]) {
-    [controller_ insertTabWithContents:contents
+    [controller_ insertTabWithContents:WebContentsOf(contents)
                                atIndex:index
                           inForeground:foreground];
   }
@@ -36,7 +46,7 @@ void TabStripModelObserverBridge::TabClosingAt(TabStripModel* tab_strip_model,
                                                int index) {
   if ([controller_ respondsToSelector:
           @selector(tabClosingWithContents:atIndex:)]) {
-    [controller_ tabClosingWithContents:contents atIndex:index];
+    [controller_ tabClosingWithContents:WebContentsOf(contents) atIndex:index];
   }
 }
 
@@ -44,7 +54,8 @@ void TabStripModelObserverBridge::TabDetachedAt(TabContents* contents,
                                                 int index) {
   if ([controller_ respondsToSelector:
           @selector(tabDetachedWithContents:atIndex:)]) {
-    [controller_ tabDetachedWithContents:contents atIndex:index];
+    [controller_ tabDetachedWithContents:WebContentsOf(contents)
+                                 atIndex:index];
   }
 }
 
@@ -56,8 +67,8 @@ void TabStripModelObserverBridge::ActiveTabChanged(
   if ([controller_ respondsToSelector:
           @selector(activateTabWithContents:previousContents:atIndex:
                     userGesture:)]) {
-    [controller_ activateTabWithContents:new_contents
-                        previousContents:old_contents
+    [controller_ activateTabWithContents:WebContentsOf(new_contents)
+                        previousContents:WebContentsOf(old_contents)
                                  atIndex:index
                              userGesture:user_gesture];
   }
@@ -68,7 +79,7 @@ void TabStripModelObserverBridge::TabMoved(TabContents* contents,
                                            int to_index) {
   if ([controller_ respondsToSelector:
        @selector(tabMovedWithContents:fromIndex:toIndex:)]) {
-    [controller_ tabMovedWithContents:contents
+    [controller_ tabMovedWithContents:WebContentsOf(contents)
                             fromIndex:from_index
                               toIndex:to_index];
   }
@@ -79,7 +90,7 @@ void TabStripModelObserverBridge::TabChangedAt(TabContents* contents,
                                                TabChangeType change_type) {
   if ([controller_ respondsToSelector:
           @selector(tabChangedWithContents:atIndex:changeType:)]) {
-    [controller_ tabChangedWithContents:contents
+    [controller_ tabChangedWithContents:WebContentsOf(contents)
                                 atIndex:index
                              changeType:change_type];
   }
@@ -92,8 +103,8 @@ void TabStripModelObserverBridge::TabReplacedAt(
     int index) {
   if ([controller_ respondsToSelector:
           @selector(tabReplacedWithContents:previousContents:atIndex:)]) {
-    [controller_ tabReplacedWithContents:new_contents
-                        previousContents:old_contents
+    [controller_ tabReplacedWithContents:WebContentsOf(new_contents)
+                        previousContents:WebContentsOf(old_contents)
                                  atIndex:index];
   } else {
     TabChangedAt(new_contents, index, ALL);
@@ -101,10 +112,12 @@ void TabStripModelObserverBridge::TabReplacedAt(
 }
 
 void TabStripModelObserverBridge::TabMiniStateChanged(
-    TabContents* contents, int index) {
+    TabContents* contents,
+    int index) {
   if ([controller_ respondsToSelector:
           @selector(tabMiniStateChangedWithContents:atIndex:)]) {
-    [controller_ tabMiniStateChangedWithContents:contents atIndex:index];
+    [controller_ tabMiniStateChangedWithContents:WebContentsOf(contents)
+                                         atIndex:index];
   }
 }
 

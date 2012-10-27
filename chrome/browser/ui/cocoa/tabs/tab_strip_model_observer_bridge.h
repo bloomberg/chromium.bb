@@ -13,6 +13,10 @@
 class TabContents;
 class TabStripModel;
 
+namespace content {
+class WebContents;
+}
+
 // A C++ bridge class to handle receiving notifications from the C++ tab strip
 // model. When the caller allocates a bridge, it automatically registers for
 // notifications from |model| and passes messages to |controller| via the
@@ -58,27 +62,27 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
 // Cocoa object to receive updates about changes to a tab strip model. It is
 // ok to not implement them, the calling code checks before calling.
 @interface NSObject(TabStripModelBridge)
-- (void)insertTabWithContents:(TabContents*)contents
+- (void)insertTabWithContents:(content::WebContents*)contents
                       atIndex:(NSInteger)index
                  inForeground:(bool)inForeground;
-- (void)tabClosingWithContents:(TabContents*)contents
+- (void)tabClosingWithContents:(content::WebContents*)contents
                        atIndex:(NSInteger)index;
-- (void)tabDetachedWithContents:(TabContents*)contents
+- (void)tabDetachedWithContents:(content::WebContents*)contents
                         atIndex:(NSInteger)index;
-- (void)activateTabWithContents:(TabContents*)newContents
-               previousContents:(TabContents*)oldContents
+- (void)activateTabWithContents:(content::WebContents*)newContents
+               previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index
                     userGesture:(bool)wasUserGesture;
-- (void)tabMovedWithContents:(TabContents*)contents
-                    fromIndex:(NSInteger)from
-                      toIndex:(NSInteger)to;
-- (void)tabChangedWithContents:(TabContents*)contents
+- (void)tabMovedWithContents:(content::WebContents*)contents
+                   fromIndex:(NSInteger)from
+                     toIndex:(NSInteger)to;
+- (void)tabChangedWithContents:(content::WebContents*)contents
                        atIndex:(NSInteger)index
                     changeType:(TabStripModelObserver::TabChangeType)change;
-- (void)tabReplacedWithContents:(TabContents*)newContents
-               previousContents:(TabContents*)oldContents
+- (void)tabReplacedWithContents:(content::WebContents*)newContents
+               previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index;
-- (void)tabMiniStateChangedWithContents:(TabContents*)contents
+- (void)tabMiniStateChangedWithContents:(content::WebContents*)contents
                                 atIndex:(NSInteger)index;
 - (void)tabStripEmpty;
 - (void)tabStripModelDeleted;

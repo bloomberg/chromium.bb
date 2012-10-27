@@ -6,14 +6,17 @@
 #define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_FAVICON_UTIL_MAC_H_
 
 @class NSImage;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 namespace mac {
 
-// Returns an autoreleased favicon for a given TabContents. If |contents|
+// Returns an autoreleased favicon for a given WebContents. If |contents|
 // is NULL or there's no favicon for the NavigationEntry, this will return the
 // default image.
-NSImage* FaviconForTabContents(TabContents* contents);
+NSImage* FaviconForWebContents(content::WebContents* contents);
 
 }  // namespace mac
 
