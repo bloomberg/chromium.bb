@@ -37,6 +37,9 @@ class ResizableWidgetDelegate : public views::WidgetDelegate {
   // Implementations of the widget class.
   virtual views::Widget* GetWidget() OVERRIDE { return widget_; }
   virtual const views::Widget* GetWidget() const OVERRIDE { return widget_; }
+  virtual void DeleteDelegate() OVERRIDE {
+    delete this;
+  }
 
  private:
   views::Widget* widget_;

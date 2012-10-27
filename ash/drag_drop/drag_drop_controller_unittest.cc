@@ -535,6 +535,9 @@ TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
       ui::Clipboard::BUFFER_STANDARD));
   cb->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(clip_str, result);
+  // Destory the clipboard here because ash doesn't delete it.
+  // crbug.com/158150.
+  ui::Clipboard::DestroyClipboardForCurrentThread();
 }
 
 TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
