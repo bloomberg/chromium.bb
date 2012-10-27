@@ -64,6 +64,13 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
       int64 model_version,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
 
+  // Create a bookmark node corresponding to |src| if one is not already
+  // associated with |src|.  Returns the node that was created or updated.
+  static const BookmarkNode* CreateOrUpdateBookmarkNode(
+      syncer::BaseNode* src,
+      BookmarkModel* model,
+      BookmarkModelAssociator* model_associator);
+
   // The following methods are static and hence may be invoked at any time,
   // and do not depend on having a running ChangeProcessor.
   // Creates a bookmark node under the given parent node from the given sync
@@ -116,20 +123,15 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
     CREATE,
   };
 
-  // Create a bookmark node corresponding to |src| if one is not already
-  // associated with |src|.  Returns the node that was created or updated.
-  const BookmarkNode* CreateOrUpdateBookmarkNode(
-      syncer::BaseNode* src,
-      BookmarkModel* model);
-
   // Helper function to determine the appropriate insertion index of sync node
   // |node| under the Bookmark model node |parent|, to make the positions
   // match up between the two models. This presumes that the predecessor of the
   // item (in the bookmark model) has already been moved into its appropriate
   // position.
-  int CalculateBookmarkModelInsertionIndex(
+  static int CalculateBookmarkModelInsertionIndex(
       const BookmarkNode* parent,
-      const syncer::BaseNode* node) const;
+      const syncer::BaseNode* node,
+      BookmarkModelAssociator* model_associator);
 
   // Helper function used to fix the position of a sync node so that it matches
   // the position of a corresponding bookmark model node. |parent| and

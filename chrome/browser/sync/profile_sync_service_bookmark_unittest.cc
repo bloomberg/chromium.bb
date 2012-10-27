@@ -248,6 +248,15 @@ class FakeServerChange {
     return old_parent_id;
   }
 
+  void ModifyCreationTime(int64 id, int64 creation_time_us) {
+    syncer::WriteNode node(trans_);
+    ASSERT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
+    sync_pb::BookmarkSpecifics specifics = node.GetBookmarkSpecifics();
+    specifics.set_creation_time_us(creation_time_us);
+    node.SetBookmarkSpecifics(specifics);
+    SetModified(id);
+  }
+
   // Pass the fake change list to |service|.
   void ApplyPendingChanges(ChangeProcessor* processor) {
     processor->ApplyChangesFromSyncModel(
@@ -1536,6 +1545,54 @@ TEST_F(ProfileSyncServiceBookmarkTest, AssociationState) {
   EXPECT_EQ(1, observer.get_completed());
 
   model_->RemoveObserver(&observer);
+}
+
+// Verify that the creation_time_us changes are applied in the local model at
+// association time and update time.
+TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateDateAdded) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  WriteTestDataToBookmarkModel();
+
+  // Start and stop sync in order to create bookmark nodes in the sync db.
+  StartSync();
+  StopSync();
+
+  // Modify the date_added field of a bookmark so it doesn't match with
+  // the sync data.
+  const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
+  int remove_index = 2;
+  ASSERT_GT(bookmark_bar_node->child_count(), remove_index);
+  const BookmarkNode* child_node = bookmark_bar_node->GetChild(remove_index);
+  ASSERT_TRUE(child_node);
+  EXPECT_TRUE(child_node->is_url());
+  model_->SetDateAdded(child_node, base::Time::FromInternalValue(10));
+
+  StartSync();
+
+  // Everything should be back in sync after model association.
+  ExpectBookmarkModelMatchesTestData();
+  ExpectModelMatch();
+
+  // Now trigger a change while syncing. We add a new bookmark, sync it, then
+  // updates it's creation time.
+  syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+  FakeServerChange adds(&trans);
+  const std::wstring kTitle = L"Some site";
+  const std::string kUrl = "http://www.whatwhat.yeah/";
+  const int kCreationTime = 30;
+  int64 id = adds.AddURL(kTitle, kUrl,
+                         bookmark_bar_id(), 0);
+  adds.ApplyPendingChanges(change_processor_.get());
+  FakeServerChange updates(&trans);
+  updates.ModifyCreationTime(id, kCreationTime);
+  updates.ApplyPendingChanges(change_processor_.get());
+
+  const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(0);
+  ASSERT_TRUE(node);
+  EXPECT_TRUE(node->is_url());
+  EXPECT_EQ(WideToUTF16Hack(kTitle), node->GetTitle());
+  EXPECT_EQ(kUrl, node->url().possibly_invalid_spec());
+  EXPECT_EQ(node->date_added(), base::Time::FromInternalValue(30));
 }
 
 }  // namespace

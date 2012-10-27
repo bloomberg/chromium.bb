@@ -449,6 +449,32 @@ void BookmarkModel::DeleteNodeMetaInfo(const BookmarkNode* node,
     store_->ScheduleSave();
 }
 
+void BookmarkModel::SetDateAdded(const BookmarkNode* node,
+                                 base::Time date_added) {
+  if (!node) {
+    NOTREACHED();
+    return;
+  }
+
+  if (node->date_added() == date_added)
+    return;
+
+  if (is_permanent_node(node)) {
+    NOTREACHED();
+    return;
+  }
+
+  AsMutable(node)->set_date_added(date_added);
+
+  // Syncing might result in dates newer than the folder's last modified date.
+  if (date_added > node->parent()->date_folder_modified()) {
+    // Will trigger store_->ScheduleSave().
+    SetDateFolderModified(node->parent(), date_added);
+  } else if (store_.get()) {
+    store_->ScheduleSave();
+  }
+}
+
 void BookmarkModel::GetNodesByURL(const GURL& url,
                                   std::vector<const BookmarkNode*>* nodes) {
   base::AutoLock url_lock(url_lock_);
@@ -549,7 +575,7 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
 
   bool was_bookmarked = IsBookmarked(url);
 
-  // Syncing may result in dates older than the last modified date.
+  // Syncing may result in dates newer than the last modified date.
   if (creation_time > parent->date_folder_modified())
     SetDateFolderModified(parent, creation_time);
 

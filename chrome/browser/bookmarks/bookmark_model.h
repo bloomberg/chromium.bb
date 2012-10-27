@@ -296,6 +296,9 @@ class BookmarkModel : public content::NotificationObserver,
   // Sets the URL of |node|.
   void SetURL(const BookmarkNode* node, const GURL& url);
 
+  // Sets the date added time of |node|.
+  void SetDateAdded(const BookmarkNode* node, base::Time date_added);
+
   // Returns the set of nodes with the |url|.
   void GetNodesByURL(const GURL& url, std::vector<const BookmarkNode*>* nodes);
 

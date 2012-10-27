@@ -474,6 +474,21 @@ TEST_F(BookmarkModelTest, SetURL) {
   EXPECT_EQ(url, node->url());
 }
 
+TEST_F(BookmarkModelTest, SetDateAdded) {
+  const BookmarkNode* root = model_.bookmark_bar_node();
+  const string16 title(ASCIIToUTF16("foo"));
+  GURL url("http://foo.com");
+  const BookmarkNode* node = model_.AddURL(root, 0, title, url);
+
+  ClearCounts();
+
+  base::Time new_time = base::Time::Now() + base::TimeDelta::FromMinutes(20);
+  model_.SetDateAdded(node, new_time);
+  AssertObserverCount(0, 0, 0, 0, 0);
+  EXPECT_EQ(new_time, node->date_added());
+  EXPECT_EQ(new_time, model_.bookmark_bar_node()->date_folder_modified());
+}
+
 TEST_F(BookmarkModelTest, Move) {
   const BookmarkNode* root = model_.bookmark_bar_node();
   const string16 title(ASCIIToUTF16("foo"));

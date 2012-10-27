@@ -361,15 +361,8 @@ syncer::SyncError BookmarkModelAssociator::AssociateModels() {
 
   scoped_ptr<ScopedAssociationUpdater> association_updater(
       new ScopedAssociationUpdater(bookmark_model_));
-  // Try to load model associations from persisted associations first. If that
-  // succeeds, we don't need to run the complex model matching algorithm.
-  if (LoadAssociations())
-    return syncer::SyncError();
-
   DisassociateModels();
 
-  // We couldn't load model associations from persisted associations. So build
-  // them.
   return BuildAssociations();
 }
 
@@ -395,19 +388,19 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
 
   // To prime our association, we associate the top-level nodes, Bookmark Bar
   // and Other Bookmarks.
-  if (!AssociateTaggedPermanentNode(bookmark_model_->other_node(),
-                                    kOtherBookmarksTag)) {
-    return unrecoverable_error_handler_->CreateAndUploadError(
-        FROM_HERE,
-        "Other bookmarks node not found",
-        model_type());
-  }
-
   if (!AssociateTaggedPermanentNode(bookmark_model_->bookmark_bar_node(),
                                     kBookmarkBarTag)) {
     return unrecoverable_error_handler_->CreateAndUploadError(
         FROM_HERE,
         "Bookmark bar node not found",
+        model_type());
+  }
+
+  if (!AssociateTaggedPermanentNode(bookmark_model_->other_node(),
+                                    kOtherBookmarksTag)) {
+    return unrecoverable_error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Other bookmarks node not found",
         model_type());
   }
 
@@ -432,11 +425,13 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
     DCHECK_NE(syncer::kInvalidId, mobile_bookmarks_sync_id);
   }
 
+  // WARNING: The order in which we push these should match their order in the
+  // bookmark model (see BookmarkModel::DoneLoading(..)).
   std::stack<int64> dfs_stack;
+  dfs_stack.push(bookmark_bar_sync_id);
+  dfs_stack.push(other_bookmarks_sync_id);
   if (mobile_bookmarks_sync_id != syncer::kInvalidId)
     dfs_stack.push(mobile_bookmarks_sync_id);
-  dfs_stack.push(other_bookmarks_sync_id);
-  dfs_stack.push(bookmark_bar_sync_id);
 
   syncer::WriteTransaction trans(FROM_HERE, user_share_);
 
@@ -474,27 +469,12 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
 
       const BookmarkNode* child_node = NULL;
       child_node = node_finder.FindBookmarkNode(sync_child_node);
-      if (child_node) {
-        bookmark_model_->Move(child_node, parent_node, index);
-        // Set the favicon for bookmark node from the sync node.
-        BookmarkChangeProcessor::SetBookmarkFavicon(
-            &sync_child_node, child_node, bookmark_model_);
-      } else {
-        // Create a new bookmark node for the sync node.
-        child_node = BookmarkChangeProcessor::CreateBookmarkNode(
-            &sync_child_node, parent_node, bookmark_model_, index);
-        if (!child_node) {
-          // This can happen if a sync bookmark node doesn't have a valid url.
-          // As far as we can tell, it appears this can only happen if something
-          // interrupts association. For now, we just ignore the bookmark.
-          LOG(ERROR) << "Failed to create bookmark node with title "
-                     << sync_child_node.GetTitle() << " and url "
-                     << sync_child_node.GetURL().possibly_invalid_spec();
-        }
-      }
-      if (child_node) {
+      if (child_node)
         Associate(child_node, sync_child_id);
-      }
+      BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
+          &sync_child_node,
+          bookmark_model_,
+          this);
       if (sync_child_node.GetIsFolder())
         dfs_stack.push(sync_child_id);
 
@@ -567,99 +547,6 @@ void BookmarkModelAssociator::PersistAssociations() {
       NOTREACHED();
   }
   dirty_associations_sync_ids_.clear();
-}
-
-bool BookmarkModelAssociator::LoadAssociations() {
-  DCHECK(bookmark_model_->IsLoaded());
-  // If the bookmarks changed externally, our previous associations may not be
-  // valid; so return false.
-  if (bookmark_model_->file_changed())
-    return false;
-
-  // Our persisted associations should be valid. Try to populate id association
-  // maps using persisted associations.  Note that the unit tests will
-  // create the tagged nodes on demand, and the order in which we probe for
-  // them here will impact their positional ordering in that case.
-  int64 bookmark_bar_id;
-  if (!GetSyncIdForTaggedNode(kBookmarkBarTag, &bookmark_bar_id)) {
-    // We should always be able to find the permanent nodes.
-    return false;
-  }
-  int64 other_bookmarks_id;
-  if (!GetSyncIdForTaggedNode(kOtherBookmarksTag, &other_bookmarks_id)) {
-    // We should always be able to find the permanent nodes.
-    return false;
-  }
-  int64 mobile_bookmarks_id = -1;
-  if (!GetSyncIdForTaggedNode(kMobileBookmarksTag, &mobile_bookmarks_id) &&
-      expect_mobile_bookmarks_folder_) {
-    return false;
-  }
-
-  // Build a bookmark node ID index since we are going to repeatedly search for
-  // bookmark nodes by their IDs.
-  BookmarkNodeIdIndex id_index;
-  id_index.AddAll(bookmark_model_->bookmark_bar_node());
-  id_index.AddAll(bookmark_model_->other_node());
-  id_index.AddAll(bookmark_model_->mobile_node());
-
-  std::stack<int64> dfs_stack;
-  if (mobile_bookmarks_id != -1)
-    dfs_stack.push(mobile_bookmarks_id);
-  dfs_stack.push(other_bookmarks_id);
-  dfs_stack.push(bookmark_bar_id);
-
-  syncer::ReadTransaction trans(FROM_HERE, user_share_);
-
-  // Count total number of nodes in sync model so that we can compare that
-  // with the total number of nodes in the bookmark model.
-  size_t sync_node_count = 0;
-  while (!dfs_stack.empty()) {
-    int64 parent_id = dfs_stack.top();
-    dfs_stack.pop();
-    ++sync_node_count;
-    syncer::ReadNode sync_parent(&trans);
-    if (sync_parent.InitByIdLookup(parent_id) != syncer::BaseNode::INIT_OK) {
-      return false;
-    }
-
-    int64 external_id = sync_parent.GetExternalId();
-    if (external_id == 0)
-      return false;
-
-    const BookmarkNode* node = id_index.Find(external_id);
-    if (!node)
-      return false;
-
-    // Don't try to call NodesMatch on permanent nodes like bookmark bar and
-    // other bookmarks. They are not expected to match.
-    if (node != bookmark_model_->bookmark_bar_node() &&
-        node != bookmark_model_->mobile_node() &&
-        node != bookmark_model_->other_node() &&
-        !NodesMatch(node, &sync_parent))
-      return false;
-
-    Associate(node, sync_parent.GetId());
-
-    // Add all children of the current node to the stack.
-    int64 child_id = sync_parent.GetFirstChildId();
-    while (child_id != syncer::kInvalidId) {
-      dfs_stack.push(child_id);
-      syncer::ReadNode child_node(&trans);
-      if (child_node.InitByIdLookup(child_id) != syncer::BaseNode::INIT_OK) {
-        return false;
-      }
-      child_id = child_node.GetSuccessorId();
-    }
-  }
-  DCHECK(dfs_stack.empty());
-
-  // It's possible that the number of nodes in the bookmark model is not the
-  // same as number of nodes in the sync model. This can happen when the sync
-  // model doesn't get a chance to persist its changes, for example when
-  // Chrome does not shut down gracefully. In such cases we can't trust the
-  // loaded associations.
-  return sync_node_count == id_index.count();
 }
 
 bool BookmarkModelAssociator::CryptoReadyIfNecessary() {

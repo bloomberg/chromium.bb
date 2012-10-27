@@ -110,11 +110,6 @@ class BookmarkModelAssociator
   // Persists all dirty associations.
   void PersistAssociations();
 
-  // Loads the persisted associations into in-memory maps.
-  // If the persisted associations are out-of-date due to some reason, returns
-  // false; otherwise returns true.
-  bool LoadAssociations();
-
   // Matches up the bookmark model and the sync model to build model
   // associations.
   syncer::SyncError BuildAssociations();
