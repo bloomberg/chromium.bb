@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/touch_event_queue.h"
 
+#include "base/stl_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/port/browser/render_widget_host_view_port.h"
@@ -81,6 +82,8 @@ TouchEventQueue::TouchEventQueue(RenderWidgetHostImpl* host)
 }
 
 TouchEventQueue::~TouchEventQueue() {
+  if (!touch_queue_.empty())
+    STLDeleteElements(&touch_queue_);
 }
 
 void TouchEventQueue::QueueEvent(const WebKit::WebTouchEvent& event) {
