@@ -36,6 +36,7 @@ anch
 
 import logging
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -86,11 +87,39 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
       and including git push --dry-run.
   """
   upload_type = 'drafts' if draft else 'for'
+  # Download & setup the patch if need be.
+  patch.Fetch(work_dir)
   # Apply the actual change.
   patch.CherryPick(work_dir, inflight=True, leave_dirty=True)
 
   # Get the new sha1 after apply.
   new_sha1 = git.GetGitRepoRevision(work_dir)
+
+  # If the sha1 has changed, then rewrite the commit message.
+  if patch.sha1 != new_sha1:
+    msg = []
+    reviewers = set()
+    for line in patch.commit_message.splitlines():
+      if line.startswith('Reviewed-on: '):
+        line = 'Previous-' + line
+      elif line.startswith('Commit-Ready: ') or \
+           line.startswith('Reviewed-by: ') or \
+           line.startswith('Tested-by: '):
+        # If the tag is malformed, or the person lacks a name,
+        # then that's just too bad -- throw it away.
+        ele = re.split('[<>@]+', line)
+        if len(ele) == 4:
+          reviewers.add('@'.join(ele[-3:-1]))
+        continue
+      msg.append(line)
+    msg += [
+        '(cherry picked from commit %s)' % patch.sha1,
+    ]
+    git.RunGit(work_dir, ['commit', '--amend', '-F', '-'],
+               input='\n'.join(msg).encode('utf8'))
+
+    # Get the new sha1 after rewriting the commit message.
+    new_sha1 = git.GetGitRepoRevision(work_dir)
 
   # Create and use a LocalPatch to Upload the change to Gerrit.
   local_patch = cros_patch.LocalPatch(
@@ -98,7 +127,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
       patch.tracking_branch, patch.remote, new_sha1)
   return local_patch.Upload(
       patch.project_url, 'refs/%s/%s' % (upload_type, branch),
-      carbon_copy=False, dryrun=dryrun)
+      carbon_copy=False, dryrun=dryrun, reviewers=reviewers)
 
 
 def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):

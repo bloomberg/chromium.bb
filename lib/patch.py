@@ -431,7 +431,7 @@ class GitRepoPatch(object):
       change_id: If given, this must be a strict gerrit format (external format)
         Change-Id representing this change.
     """
-    self._commit_message = None
+    self.commit_message = None
     self._subject_line = None
     self.project_url = project_url
     self.project = project
@@ -505,7 +505,7 @@ class GitRepoPatch(object):
         sha1 = FormatSha1(sha1, strict=True)
         assert sha1 == self.sha1
         self._EnsureId(msg)
-        self._commit_message = msg
+        self.commit_message = msg
         self._subject_line = subject
         self._is_fetched.add(git_repo)
         return self.sha1
@@ -526,7 +526,7 @@ class GitRepoPatch(object):
     else:
       self.sha1 = sha1
     self._EnsureId(msg)
-    self._commit_message = msg
+    self.commit_message = msg
     self._subject_line = subject
     self._is_fetched.add(git_repo)
     return self.sha1
@@ -841,7 +841,7 @@ class GitRepoPatch(object):
 
     self.Fetch(git_repo)
 
-    matches = self._PALADIN_DEPENDENCY_RE.findall(self._commit_message)
+    matches = self._PALADIN_DEPENDENCY_RE.findall(self.commit_message)
     for match in matches:
       chunks = ' '.join(match.split(','))
       chunks = chunks.split()
@@ -973,7 +973,8 @@ class LocalPatch(GitRepoPatch):
 
     return new_sha1
 
-  def Upload(self, push_url, remote_ref, carbon_copy=True, dryrun=False):
+  def Upload(self, push_url, remote_ref, carbon_copy=True, dryrun=False,
+             reviewers=(), cc=()):
     """Upload the patch to a remote git branch.
 
     Arguments:
@@ -981,6 +982,8 @@ class LocalPatch(GitRepoPatch):
       remote_ref: The ref on the remote host to push to.
       carbon_copy: Use a carbon_copy of the local commit.
       dryrun: Do the git push with --dry-run
+      reviewers: Iterable of reviewers to add.
+      cc: Iterable of people to add to cc.
     Returns:
       A list of gerrit URLs found in the output
     """
@@ -989,7 +992,15 @@ class LocalPatch(GitRepoPatch):
     else:
       ref_to_upload = self.sha1
 
-    cmd = ['push', push_url, '%s:%s' % (ref_to_upload, remote_ref)]
+    cmd = ['push']
+    if reviewers or cc:
+      pack = '--receive-pack=git receive-pack '
+      if reviewers:
+        pack += ' '.join(['--reviewer=' + x for x in reviewers])
+      if cc:
+        pack += ' '.join(['--cc=' + x for x in cc])
+      cmd.append(pack)
+    cmd += [push_url, '%s:%s' % (ref_to_upload, remote_ref)]
     if dryrun:
       cmd.append('--dry-run')
 
