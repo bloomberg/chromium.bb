@@ -478,7 +478,10 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
           chrome::search::IsInstantExtendedAPIEnabled(parent_view_->profile()),
           ToolbarModel::NONE, LocationBarView::BACKGROUND))),
       security_level_(ToolbarModel::NONE),
-      text_object_model_(NULL) {
+      text_object_model_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          tsf_event_router_(base::win::IsTsfAwareRequired() ?
+              new ui::TsfEventRouter(this) : NULL)) {
   if (!loaded_library_module_)
     loaded_library_module_ = LoadLibrary(kRichEditDLLName);
 
@@ -539,9 +542,6 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
     // the edit control will invoke RevokeDragDrop when it's being destroyed, so
     // we don't have to do so.
     scoped_refptr<EditDropTarget> drop_target(new EditDropTarget(this));
-
-    if (base::win::IsTsfAwareRequired())
-      tsf_event_router_ = ui::TsfEventRouter::Create();
   }
 }
 
@@ -552,9 +552,6 @@ OmniboxViewWin::~OmniboxViewWin() {
   // initialized, it may still be null.
   if (text_object_model_)
     text_object_model_->Release();
-
-  if (tsf_event_router_)
-    tsf_event_router_->SetManager(NULL, NULL);
 
   // We balance our reference count and unpatch when the last instance has
   // been destroyed.  This prevents us from relying on the AtExit or static
@@ -1623,7 +1620,7 @@ void OmniboxViewWin::OnKillFocus(HWND focus_wnd) {
   PlaceCaretAt(0);
 
   if (tsf_event_router_)
-    tsf_event_router_->SetManager(NULL, NULL);
+    tsf_event_router_->SetManager(NULL);
 }
 
 void OmniboxViewWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
@@ -1958,8 +1955,7 @@ void OmniboxViewWin::OnSetFocus(HWND focus_wnd) {
     // Document manager created by RichEdit can be obtained only after
     // WM_SETFOCUS event is handled.
     tsf_event_router_->SetManager(
-        ui::TsfBridge::GetInstance()->GetThreadManager(),
-        this);
+        ui::TsfBridge::GetInstance()->GetThreadManager());
     SetMsgHandled(true);
   }
 }
