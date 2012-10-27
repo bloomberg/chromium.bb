@@ -95,10 +95,12 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
 # define MAYBE_PRE_SessionStorage DISABLED_PRE_SessionStorage
 # define MAYBE_SessionStorage DISABLED_SessionStorage
 #else
-# define MAYBE_PRE_SessionCookies FLAKY_PRE_SessionCookies
-# define MAYBE_SessionCookies FLAKY_SessionCookies
-# define MAYBE_PRE_SessionStorage FLAKY_PRE_SessionStorage
-# define MAYBE_SessionStorage FLAKY_SessionStorage
+// SessionCookies and SessionStorage are failing consistently on webkit canary
+// builders. http://crbug.com/156444.
+# define MAYBE_PRE_SessionCookies DISABLED_PRE_SessionCookies
+# define MAYBE_SessionCookies DISABLED_SessionCookies
+# define MAYBE_PRE_SessionStorage DISABLED_PRE_SessionStorage
+# define MAYBE_SessionStorage DISABLED_SessionStorage
 #endif
 
 // crbug.com/156981
