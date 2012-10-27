@@ -621,6 +621,8 @@
     'browser/renderer_host/media/video_capture_host.h',
     'browser/renderer_host/media/video_capture_manager.cc',
     'browser/renderer_host/media/video_capture_manager.h',
+    'browser/renderer_host/media/web_contents_video_capture_device.cc',
+    'browser/renderer_host/media/web_contents_video_capture_device.h',
     'browser/renderer_host/native_web_keyboard_event_android.cc',
     'browser/renderer_host/native_web_keyboard_event_aura.cc',
     'browser/renderer_host/native_web_keyboard_event.cc',

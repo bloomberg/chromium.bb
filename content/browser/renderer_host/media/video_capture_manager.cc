@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
+#include "content/browser/renderer_host/media/web_contents_video_capture_device.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/video/capture/fake_video_capture_device.h"
@@ -171,12 +172,8 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
             media::VideoCaptureDevice::Create(vc_device_name);
         break;
       case content::MEDIA_TAB_VIDEO_CAPTURE:
-        // TODO(miu): Replace this stub with the actual implementation in a
-        // later change.
-        // TODO(justinlin): This is so we don't get a null device. Remove later.
-        vc_device_name.unique_id = "/dev/video1";
-        video_capture_device =
-            media::FakeVideoCaptureDevice::Create(vc_device_name);
+        video_capture_device = content::WebContentsVideoCaptureDevice::Create(
+            vc_device_name.unique_id);
         break;
       default:
         NOTIMPLEMENTED();
