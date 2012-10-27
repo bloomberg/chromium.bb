@@ -89,6 +89,10 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler> {
   // it has been stopped.
   void Stop(const base::Closure& done_task);
 
+  // Pauses or resumes scheduling of frame captures.  Pausing/resuming captures
+  // only affects capture scheduling and does not stop/start the capturer.
+  void Pause(bool pause);
+
   // Updates the sequence number embedded in VideoPackets.
   // Sequence numbers are used for performance measurements.
   void UpdateSequenceNumber(int64 sequence_number);
@@ -164,7 +168,10 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler> {
   int pending_captures_;
 
   // True if the previous scheduled capture was skipped.
-  int did_skip_frame_;
+  bool did_skip_frame_;
+
+  // True if capture of video frames is paused.
+  bool is_paused_;
 
   // Time when capture is started.
   base::Time capture_start_time_;

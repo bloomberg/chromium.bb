@@ -82,11 +82,12 @@ void ClientSession::NotifyClientDimensions(
 }
 
 void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
-  // TODO(wez): Pause/resume video updates, being careful not to let clients
-  // override any host-initiated pause of the video channel.
   if (video_control.has_enable()) {
     VLOG(1) << "Received VideoControl (enable="
             << video_control.enable() << ")";
+    if (video_scheduler_.get()) {
+      video_scheduler_->Pause(!video_control.enable());
+    }
   }
 }
 

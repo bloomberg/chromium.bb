@@ -47,6 +47,7 @@ VideoScheduler::VideoScheduler(
       video_stub_(video_stub),
       pending_captures_(0),
       did_skip_frame_(false),
+      is_paused_(false),
       sequence_number_(0) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(capturer_);
@@ -71,9 +72,26 @@ void VideoScheduler::Stop(const base::Closure& done_task) {
       base::Bind(&VideoScheduler::StopOnCaptureThread, this, done_task));
 }
 
-void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
-  // Sequence number is used and written only on the capture thread.
+void VideoScheduler::Pause(bool pause) {
   if (!capture_task_runner_->BelongsToCurrentThread()) {
+    DCHECK(network_task_runner_->BelongsToCurrentThread());
+    capture_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoScheduler::Pause, this, pause));
+    return;
+  }
+
+  if (is_paused_ != pause) {
+    is_paused_ = pause;
+
+    // Restart captures if we're resuming and there are none scheduled.
+    if (!is_paused_ && !capture_timer_->IsRunning())
+      CaptureNextFrame();
+  }
+}
+
+void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
+  if (!capture_task_runner_->BelongsToCurrentThread()) {
+    DCHECK(network_task_runner_->BelongsToCurrentThread());
     capture_task_runner_->PostTask(
         FROM_HERE, base::Bind(&VideoScheduler::UpdateSequenceNumber,
                               this, sequence_number));
@@ -130,8 +148,8 @@ void VideoScheduler::ScheduleNextCapture() {
 void VideoScheduler::CaptureNextFrame() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  // If |capturer_| is NULL then we're in the process of stopping.
-  if (!capturer_)
+  // If we are stopping (|capturer_| is NULL), or paused, then don't capture.
+  if (!capturer_ || is_paused_)
     return;
 
   // Make sure we have at most two oustanding recordings. We can simply return
