@@ -244,22 +244,38 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
 }  // namespace
 
 class IOThread::LoggingNetworkChangeObserver
-    : public net::NetworkChangeNotifier::IPAddressObserver {
+    : public net::NetworkChangeNotifier::IPAddressObserver,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // |net_log| must remain valid throughout our lifetime.
   explicit LoggingNetworkChangeObserver(net::NetLog* net_log)
       : net_log_(net_log) {
     net::NetworkChangeNotifier::AddIPAddressObserver(this);
+    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   }
 
   ~LoggingNetworkChangeObserver() {
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   }
 
-  virtual void OnIPAddressChanged() {
+  virtual void OnIPAddressChanged() OVERRIDE {
     VLOG(1) << "Observed a change to the network IP addresses";
 
     net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
+  }
+
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
+    std::string type_as_string =
+        net::NetworkChangeNotifier::ConnectionTypeToString(type);
+
+    VLOG(1) << "Observed a change to network connectivity state "
+            << type_as_string;
+
+    net_log_->AddGlobalEntry(
+        net::NetLog::TYPE_NETWORK_CONNECTIVITY_CHANGED,
+        net::NetLog::StringCallback("new_connection_type", &type_as_string));
   }
 
  private:
