@@ -77,6 +77,7 @@
 
 #if defined(OS_LINUX)
 #include "remoting/host/audio_capturer_linux.h"
+#include "remoting/host/pam_authorization_factory_posix.h"
 #endif  // defined(OS_LINUX)
 
 // N.B. OS_WIN is defined by including src/base headers.
@@ -392,6 +393,10 @@ void HostProcess::CreateAuthenticatorFactory() {
   scoped_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::Me2MeHostAuthenticatorFactory(
           local_certificate, *key_pair_.private_key(), host_secret_hash_));
+#if defined(OS_LINUX)
+  // On Linux, perform a PAM authorization step after authentication.
+  factory.reset(new PamAuthorizationFactory(factory.Pass()));
+#endif
   host_->SetAuthenticatorFactory(factory.Pass());
 }
 

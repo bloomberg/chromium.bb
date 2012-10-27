@@ -1572,6 +1572,8 @@
         'host/mouse_clamping_filter.h',
         'host/mouse_move_observer.h',
         'host/network_settings.h',
+        'host/pam_authorization_factory_posix.cc',
+        'host/pam_authorization_factory_posix.h',
         'host/pin_hash.cc',
         'host/pin_hash.h',
         'host/policy_hack/policy_watcher.h',
@@ -1637,6 +1639,7 @@
               '-lX11',
               '-lXdamage',
               '-lXfixes',
+              '-lpam',
               '-lXtst',
               '-lXext',
               '-lXi'
