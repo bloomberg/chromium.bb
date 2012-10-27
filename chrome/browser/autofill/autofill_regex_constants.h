@@ -28,6 +28,7 @@ extern const char kNameOnCardRe[];
 extern const char kNameOnCardContextualRe[];
 extern const char kCardNumberRe[];
 extern const char kCardCvcRe[];
+extern const char kCardTypeRe[];
 extern const char kExpirationMonthRe[];
 extern const char kExpirationYearRe[];
 extern const char kExpirationDate2DigitYearRe[];

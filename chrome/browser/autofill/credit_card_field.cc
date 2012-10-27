@@ -18,7 +18,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-FormField* CreditCardField::Parse(AutofillScanner* scanner) {
+FormField* CreditCardField::Parse(AutofillScanner* scanner,
+                                  bool parse_new_field_types) {
   if (scanner->IsEnd())
     return NULL;
 
@@ -66,6 +67,15 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
       scanner->Rewind();
     }
 
+    // Check for a credit card type (Visa, MasterCard, etc.) field.
+    if (parse_new_field_types) {
+      string16 type_pattern = UTF8ToUTF16(autofill::kCardTypeRe);
+      if (!credit_card_field->type_ &&
+          ParseField(scanner, type_pattern, &credit_card_field->type_)) {
+        continue;
+      }
+    }
+
     // We look for a card security code before we look for a credit
     // card number and match the general term "number".  The security code
     // has a plethora of names; we've seen "verification #",
@@ -76,7 +86,6 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
         ParseField(scanner, pattern, &credit_card_field->verification_)) {
       continue;
     }
-    // TODO(jhawkins): Parse the type select control.
 
     pattern = UTF8ToUTF16(autofill::kCardNumberRe);
     if (!credit_card_field->number_ &&

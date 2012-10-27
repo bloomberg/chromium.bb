@@ -117,7 +117,8 @@ PhoneField::Parser PhoneField::phone_field_grammars_[] = {
 PhoneField::~PhoneField() {}
 
 // static
-FormField* PhoneField::Parse(AutofillScanner* scanner) {
+FormField* PhoneField::Parse(AutofillScanner* scanner,
+                             bool parse_new_field_types) {
   if (scanner->IsEnd())
     return NULL;
 

@@ -927,8 +927,8 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
 
   // This is not a field we know how to process.  But we should skip over it
   // and process the other fields in the card block.
-  field.label = ASCIIToUTF16("Card Type");
-  field.name = ASCIIToUTF16("card_type");
+  field.label = ASCIIToUTF16("Card image");
+  field.name = ASCIIToUTF16("card_image");
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Card Number");

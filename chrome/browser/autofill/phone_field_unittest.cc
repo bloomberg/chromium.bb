@@ -22,7 +22,7 @@ class PhoneFieldTest : public testing::Test {
 
   // Downcast for tests.
   static PhoneField* Parse(AutofillScanner* scanner) {
-    return static_cast<PhoneField*>(PhoneField::Parse(scanner));
+    return static_cast<PhoneField*>(PhoneField::Parse(scanner, false));
   }
 
  private:

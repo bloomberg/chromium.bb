@@ -10,7 +10,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-FormField* EmailField::Parse(AutofillScanner* scanner) {
+FormField* EmailField::Parse(AutofillScanner* scanner,
+                             bool parse_new_field_types) {
   const AutofillField* field;
   if (ParseFieldSpecifics(scanner, UTF8ToUTF16(autofill::kEmailRe),
                           MATCH_DEFAULT | MATCH_EMAIL, &field)) {

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/name_field.h"
 #include "chrome/browser/autofill/phone_field.h"
+#include "chrome/common/chrome_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -52,20 +54,29 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
   std::vector<const AutofillField*> remaining_fields(fields.size());
   std::copy(fields.begin(), fields.end(), remaining_fields.begin());
 
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool parse_new_field_types =
+      command_line.HasSwitch(switches::kEnableNewAutofillHeuristics);
+
   // Email pass.
-  ParseFormFieldsPass(EmailField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(EmailField::Parse, parse_new_field_types,
+                      &remaining_fields, map);
 
   // Phone pass.
-  ParseFormFieldsPass(PhoneField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(PhoneField::Parse, parse_new_field_types,
+                      &remaining_fields, map);
 
   // Address pass.
-  ParseFormFieldsPass(AddressField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(AddressField::Parse, parse_new_field_types,
+                      &remaining_fields, map);
 
   // Credit card pass.
-  ParseFormFieldsPass(CreditCardField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(CreditCardField::Parse, parse_new_field_types,
+                      &remaining_fields, map);
 
   // Name pass.
-  ParseFormFieldsPass(NameField::Parse, &remaining_fields, map);
+  ParseFormFieldsPass(NameField::Parse, parse_new_field_types,
+                      &remaining_fields, map);
 }
 
 // static
@@ -162,6 +173,7 @@ bool FormField::Match(const AutofillField* field,
 
 // static
 void FormField::ParseFormFieldsPass(ParseFunction parse,
+                                    bool parse_new_field_types,
                                     std::vector<const AutofillField*>* fields,
                                     FieldTypeMap* map) {
   // Store unmatched fields for further processing by the caller.
@@ -169,7 +181,7 @@ void FormField::ParseFormFieldsPass(ParseFunction parse,
 
   AutofillScanner scanner(*fields);
   while (!scanner.IsEnd()) {
-    scoped_ptr<FormField> form_field(parse(&scanner));
+    scoped_ptr<FormField> form_field(parse(&scanner, parse_new_field_types));
     if (!form_field.get()) {
       remaining_fields.push_back(scanner.Cursor());
       scanner.Advance();

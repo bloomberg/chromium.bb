@@ -23,7 +23,7 @@ class PhoneField : public FormField {
  public:
   virtual ~PhoneField();
 
-  static FormField* Parse(AutofillScanner* scanner);
+  static FormField* Parse(AutofillScanner* scanner, bool parse_new_field_types);
 
  protected:
   // FormField:

@@ -145,6 +145,8 @@ const char kCardNumberRe[] =
     "|카드";  // ko-KR
 const char kCardCvcRe[] =
     "verification|card identification|security code|cvn|cvv|cvc|csc";
+const char kCardTypeRe[] =
+    "card.?type";
 
 // "Expiration date" is the most common label here, but some pages have
 // "Expires", "exp. date" or "exp. month" and "exp. year".  We also look

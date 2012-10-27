@@ -52,6 +52,7 @@ enum FieldTypeGroupForMetrics {
   CREDIT_CARD_NAME,
   CREDIT_CARD_NUMBER,
   CREDIT_CARD_DATE,
+  CREDIT_CARD_TYPE,
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
@@ -137,6 +138,8 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
         case ::CREDIT_CARD_NUMBER:
           group = CREDIT_CARD_NUMBER;
           break;
+        case ::CREDIT_CARD_TYPE:
+          group = CREDIT_CARD_TYPE;
         default:
           group = CREDIT_CARD_DATE;
       }
