@@ -812,6 +812,10 @@ _PEPPER_INTERFACES = [
 # expectation:  If False the unit test will have no expected calls.
 # gen_func:     Name of function that generates GL resource for corresponding
 #               bind function.
+# states:       array of states that get set by this function corresponding to
+#               the given arguments
+# state_flag:   name of flag that is set to true when function is called.
+# no_gl:        no GL function is called.
 # valid_args:   A dictionary of argument indices to args to use in unit tests
 #               when they can not be automatically determined.
 # pepper_interface: The pepper interface that is used for this extension
@@ -875,12 +879,35 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'cmd_args': 'GLbitfield mask'
   },
-  'ClearColor': {'decoder_func': 'DoClearColor'},
+  'ClearColor': {
+    'type': 'StateSet',
+    'states': [
+      {'name': 'color_clear_red'},
+      {'name': 'color_clear_green'},
+      {'name': 'color_clear_blue'},
+      {'name': 'color_clear_alpha'},
+    ],
+  },
   'ClearDepthf': {
-    'decoder_func': 'DoClearDepthf',
+    'type': 'StateSet',
+    'states': [
+      {'name': 'depth_clear'},
+    ],
+    'decoder_func': 'glClearDepth',
     'gl_test_func': 'glClearDepth',
   },
-  'ColorMask': {'decoder_func': 'DoColorMask', 'expectation': False},
+  'ColorMask': {
+    'type': 'StateSet',
+    'states': [
+      {'name': 'color_mask_red'},
+      {'name': 'color_mask_green'},
+      {'name': 'color_mask_blue'},
+      {'name': 'color_mask_alpha'},
+    ],
+    'state_flag': 'clear_state_dirty_',
+    'no_gl': True,
+    'expectation': False,
+  },
   'ConsumeTextureCHROMIUM': {
     'decoder_func': 'DoConsumeTextureCHROMIUM',
     'type': 'PUT',
@@ -890,7 +917,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
-  'ClearStencil': {'decoder_func': 'DoClearStencil'},
+  'ClearStencil': {
+    'type': 'StateSet',
+    'states': [
+      {'name': 'stencil_clear'},
+    ],
+  },
   'EnableFeatureCHROMIUM': {
     'type': 'Custom',
     'immediate': False,
@@ -928,6 +960,50 @@ _FUNCTION_INFO = {
     'type': 'Create',
     'client_test': False,
   },
+  'BlendColor': {
+    'type': 'StateSet',
+    'states': [
+      {'name': 'blend_color_red'},
+      {'name': 'blend_color_green'},
+      {'name': 'blend_color_blue'},
+      {'name': 'blend_color_alpha'},
+    ],
+  },
+  'BlendEquation': {'decoder_func': 'DoBlendEquation'},
+  'BlendEquationSeparate': {
+    'type': 'StateSet',
+    'states': [
+      {'name': 'blend_equation_rgb'},
+      {'name': 'blend_equation_alpha'},
+    ],
+  },
+  'BlendFunc': {'decoder_func': 'DoBlendFunc'},
+  'BlendFuncSeparate': {
+    'type': 'StateSet',
+    'states': [
+      {'name': 'blend_source_rgb'},
+      {'name': 'blend_dest_rgb'},
+      {'name': 'blend_source_alpha'},
+      {'name': 'blend_dest_alpha'},
+    ],
+  },
+  'SampleCoverage': {'decoder_func': 'DoSampleCoverage'},
+  'StencilFunc': {'decoder_func': 'DoStencilFunc'},
+  'StencilFuncSeparate': {'decoder_func': 'DoStencilFuncSeparate'},
+  'StencilOp': {'decoder_func': 'DoStencilOp'},
+  'StencilOpSeparate': {'decoder_func': 'DoStencilOpSeparate'},
+  'Hint': {'decoder_func': 'DoHint'},
+  'CullFace': {'type': 'StateSet', 'states': [{'name': 'cull_mode'}]},
+  'FrontFace': {'type': 'StateSet', 'states': [{'name': 'front_face'}]},
+  'DepthFunc': {'type': 'StateSet', 'states': [{'name': 'depth_func'}]},
+  'LineWidth': {'type': 'StateSet', 'states': [{'name': 'line_width'}]},
+  'PolygonOffset': {
+    'type': 'StateSet',
+    'states': [
+      {'name': 'polygon_offset_factor'},
+      {'name': 'polygon_offset_units'},
+    ],
+  },
   'DeleteBuffers': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteBuffersARB',
@@ -962,8 +1038,19 @@ _FUNCTION_INFO = {
     'resource_type': 'Texture',
     'resource_types': 'Textures',
   },
-  'DepthRangef': {'decoder_func': 'glDepthRange'},
-  'DepthMask': {'decoder_func': 'DoDepthMask', 'expectation': False},
+  'DepthRangef': {
+    'decoder_func': 'DoDepthRangef',
+    'gl_test_func': 'glDepthRange',
+  },
+  'DepthMask': {
+    'type': 'StateSet',
+    'states': [
+      {'name': 'depth_mask'},
+    ],
+    'state_flag': 'clear_state_dirty_',
+    'no_gl': True,
+    'expectation': False,
+  },
   'DetachShader': {'decoder_func': 'DoDetachShader'},
   'Disable': {
     'decoder_func': 'DoDisable',
@@ -1275,6 +1362,7 @@ _FUNCTION_INFO = {
     'type': 'Is',
     'decoder_func': 'DoIsEnabled',
     'impl_func': False,
+    'expectation': False,
   },
   'IsFramebuffer': {
     'type': 'Is',
@@ -2441,6 +2529,28 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
            "typed_args": func.MakeTypedCmdArgString(""),
            "args": func.MakeCmdArgString(""),
         })
+
+
+class StateSetHandler(TypeHandler):
+  """Handler for commands that simply set state."""
+
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def WriteHandlerImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    states = func.GetInfo('states')
+    args = func.GetOriginalArgs()
+    ndx = 0
+    for state in states:
+      file.Write("  state_.%s = %s;\n" % (state['name'], args[ndx].name))
+      ndx += 1
+    state_flag = func.GetInfo('state_flag')
+    if state_flag:
+      file.Write("  %s = true;\n" % state_flag)
+    if not func.GetInfo("no_gl"):
+      file.Write("  %s(%s);\n" %
+                 (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
 
 class CustomHandler(TypeHandler):
@@ -5830,6 +5940,7 @@ class GLGenerator(object):
       'PUT': PUTHandler(),
       'PUTn': PUTnHandler(),
       'PUTXn': PUTXnHandler(),
+      'StateSet': StateSetHandler(),
       'STRn': STRnHandler(),
       'Todo': TodoHandler(),
     }

@@ -17,12 +17,13 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // State associated with each texture unit.
-struct TextureUnit {
+struct GPU_EXPORT TextureUnit {
   TextureUnit();
   ~TextureUnit();
 
@@ -76,7 +77,7 @@ struct TextureUnit {
 };
 
 
-struct ContextState {
+struct GPU_EXPORT ContextState {
   ContextState();
   ~ContextState();
 
@@ -100,17 +101,21 @@ struct ContextState {
   GLboolean color_mask_blue;
   GLboolean color_mask_alpha;
 
-  GLint stencil_clear;
-  GLuint stencil_mask_front;
-  GLuint stencil_mask_back;
   GLclampf depth_clear;
   GLboolean depth_mask;
+  GLenum depth_func;
+  float z_near;
+  float z_far;
 
   bool enable_blend;
   bool enable_cull_face;
   bool enable_scissor_test;
   bool enable_depth_test;
   bool enable_stencil_test;
+  bool enable_polygon_offset_fill;
+  bool enable_dither;
+  bool enable_sample_alpha_to_coverage;
+  bool enable_sample_coverage;
 
   // Cached values of the currently assigned viewport dimensions.
   GLint viewport_x;
@@ -119,6 +124,11 @@ struct ContextState {
   GLsizei viewport_height;
   GLsizei viewport_max_width;
   GLsizei viewport_max_height;
+
+  GLint scissor_x;
+  GLint scissor_y;
+  GLsizei scissor_width;
+  GLsizei scissor_height;
 
   // The currently bound array buffer. If this is 0 it is illegal to call
   // glVertexAttribPointer.
@@ -144,50 +154,44 @@ struct ContextState {
 
   GLenum cull_mode;
   GLenum front_face;
-  GLenum depth_func;
-  GLenum source_blend_rgb;
-  GLenum dest_blend_rgb;
-  GLenum source_blend_alpha;
-  GLenum dest_blend_alpha;
+
+  GLenum blend_source_rgb;
+  GLenum blend_dest_rgb;
+  GLenum blend_source_alpha;
+  GLenum blend_dest_alpha;
   GLenum blend_equation_rgb;
   GLenum blend_equation_alpha;
   GLfloat blend_color_red;
   GLfloat blend_color_green;
   GLfloat blend_color_blue;
   GLfloat blend_color_alpha;
-  GLenum stencil_func;
-  GLint stencil_ref;
-  GLenum stencil_fail;
-  GLenum stencil_pass_depth_fail;
-  GLenum stencil_pass_depth_pass;
-  GLuint stencil_writemask;
+
+  GLint stencil_clear;
+  GLuint stencil_front_writemask;
+  GLenum stencil_front_func;
+  GLint stencil_front_ref;
+  GLuint stencil_front_mask;
+  GLenum stencil_front_fail_op;
+  GLenum stencil_front_z_fail_op;
+  GLenum stencil_front_z_pass_op;
+  GLuint stencil_back_writemask;
   GLenum stencil_back_func;
   GLint stencil_back_ref;
-  GLenum stencil_back_fail;
-  GLenum stencil_back_pass_depth_fail;
-  GLenum stencil_back_pass_depth_pass;
-  GLuint stencil_back_writemask;
-  bool polygon_offset_fill;
+  GLuint stencil_back_mask;
+  GLenum stencil_back_fail_op;
+  GLenum stencil_back_z_fail_op;
+  GLenum stencil_back_z_pass_op;
+
   GLfloat polygon_offset_factor;
   GLfloat polygon_offset_units;
-  bool sample_alpha_to_coverage;
-  bool sample_coverage;
+
   GLclampf sample_coverage_value;
   bool sample_coverage_invert;
-  bool dither;
 
   GLfloat line_width;
 
-  GLenum generate_mipmap_hint;
-  GLenum fragment_shader_derivative_hint;
-
-  float z_near;
-  float z_far;
-
-  GLint scissor_x;
-  GLint scissor_y;
-  GLsizei scissor_width;
-  GLsizei scissor_height;
+  GLenum hint_generate_mipmap;
+  GLenum hint_fragment_shader_derivative;
 
   bool pack_reverse_row_order;
 };

@@ -79,6 +79,10 @@ error::Error GLES2DecoderImpl::HandleBlendColor(
   GLclampf green = static_cast<GLclampf>(c.green);
   GLclampf blue = static_cast<GLclampf>(c.blue);
   GLclampf alpha = static_cast<GLclampf>(c.alpha);
+  state_.blend_color_red = red;
+  state_.blend_color_green = green;
+  state_.blend_color_blue = blue;
+  state_.blend_color_alpha = alpha;
   glBlendColor(red, green, blue, alpha);
   return error::kNoError;
 }
@@ -90,7 +94,7 @@ error::Error GLES2DecoderImpl::HandleBlendEquation(
     SetGLErrorInvalidEnum("glBlendEquation", mode, "mode");
     return error::kNoError;
   }
-  glBlendEquation(mode);
+  DoBlendEquation(mode);
   return error::kNoError;
 }
 
@@ -106,6 +110,8 @@ error::Error GLES2DecoderImpl::HandleBlendEquationSeparate(
     SetGLErrorInvalidEnum("glBlendEquationSeparate", modeAlpha, "modeAlpha");
     return error::kNoError;
   }
+  state_.blend_equation_rgb = modeRGB;
+  state_.blend_equation_alpha = modeAlpha;
   glBlendEquationSeparate(modeRGB, modeAlpha);
   return error::kNoError;
 }
@@ -122,7 +128,7 @@ error::Error GLES2DecoderImpl::HandleBlendFunc(
     SetGLErrorInvalidEnum("glBlendFunc", dfactor, "dfactor");
     return error::kNoError;
   }
-  glBlendFunc(sfactor, dfactor);
+  DoBlendFunc(sfactor, dfactor);
   return error::kNoError;
 }
 
@@ -148,6 +154,10 @@ error::Error GLES2DecoderImpl::HandleBlendFuncSeparate(
     SetGLErrorInvalidEnum("glBlendFuncSeparate", dstAlpha, "dstAlpha");
     return error::kNoError;
   }
+  state_.blend_source_rgb = srcRGB;
+  state_.blend_dest_rgb = dstRGB;
+  state_.blend_source_alpha = srcAlpha;
+  state_.blend_dest_alpha = dstAlpha;
   glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
   return error::kNoError;
 }
@@ -221,21 +231,27 @@ error::Error GLES2DecoderImpl::HandleClearColor(
   GLclampf green = static_cast<GLclampf>(c.green);
   GLclampf blue = static_cast<GLclampf>(c.blue);
   GLclampf alpha = static_cast<GLclampf>(c.alpha);
-  DoClearColor(red, green, blue, alpha);
+  state_.color_clear_red = red;
+  state_.color_clear_green = green;
+  state_.color_clear_blue = blue;
+  state_.color_clear_alpha = alpha;
+  glClearColor(red, green, blue, alpha);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleClearDepthf(
     uint32 immediate_data_size, const gles2::ClearDepthf& c) {
   GLclampf depth = static_cast<GLclampf>(c.depth);
-  DoClearDepthf(depth);
+  state_.depth_clear = depth;
+  glClearDepth(depth);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleClearStencil(
     uint32 immediate_data_size, const gles2::ClearStencil& c) {
   GLint s = static_cast<GLint>(c.s);
-  DoClearStencil(s);
+  state_.stencil_clear = s;
+  glClearStencil(s);
   return error::kNoError;
 }
 
@@ -245,7 +261,11 @@ error::Error GLES2DecoderImpl::HandleColorMask(
   GLboolean green = static_cast<GLboolean>(c.green);
   GLboolean blue = static_cast<GLboolean>(c.blue);
   GLboolean alpha = static_cast<GLboolean>(c.alpha);
-  DoColorMask(red, green, blue, alpha);
+  state_.color_mask_red = red;
+  state_.color_mask_green = green;
+  state_.color_mask_blue = blue;
+  state_.color_mask_alpha = alpha;
+  clear_state_dirty_ = true;
   return error::kNoError;
 }
 
@@ -431,6 +451,7 @@ error::Error GLES2DecoderImpl::HandleCullFace(
     SetGLErrorInvalidEnum("glCullFace", mode, "mode");
     return error::kNoError;
   }
+  state_.cull_mode = mode;
   glCullFace(mode);
   return error::kNoError;
 }
@@ -570,6 +591,7 @@ error::Error GLES2DecoderImpl::HandleDepthFunc(
     SetGLErrorInvalidEnum("glDepthFunc", func, "func");
     return error::kNoError;
   }
+  state_.depth_func = func;
   glDepthFunc(func);
   return error::kNoError;
 }
@@ -577,7 +599,8 @@ error::Error GLES2DecoderImpl::HandleDepthFunc(
 error::Error GLES2DecoderImpl::HandleDepthMask(
     uint32 immediate_data_size, const gles2::DepthMask& c) {
   GLboolean flag = static_cast<GLboolean>(c.flag);
-  DoDepthMask(flag);
+  state_.depth_mask = flag;
+  clear_state_dirty_ = true;
   return error::kNoError;
 }
 
@@ -585,7 +608,7 @@ error::Error GLES2DecoderImpl::HandleDepthRangef(
     uint32 immediate_data_size, const gles2::DepthRangef& c) {
   GLclampf zNear = static_cast<GLclampf>(c.zNear);
   GLclampf zFar = static_cast<GLclampf>(c.zFar);
-  glDepthRange(zNear, zFar);
+  DoDepthRangef(zNear, zFar);
   return error::kNoError;
 }
 
@@ -705,6 +728,7 @@ error::Error GLES2DecoderImpl::HandleFrontFace(
     SetGLErrorInvalidEnum("glFrontFace", mode, "mode");
     return error::kNoError;
   }
+  state_.front_face = mode;
   glFrontFace(mode);
   return error::kNoError;
 }
@@ -1298,7 +1322,7 @@ error::Error GLES2DecoderImpl::HandleHint(
     SetGLErrorInvalidEnum("glHint", mode, "mode");
     return error::kNoError;
   }
-  glHint(target, mode);
+  DoHint(target, mode);
   return error::kNoError;
 }
 
@@ -1400,6 +1424,7 @@ error::Error GLES2DecoderImpl::HandleIsTexture(
 error::Error GLES2DecoderImpl::HandleLineWidth(
     uint32 immediate_data_size, const gles2::LineWidth& c) {
   GLfloat width = static_cast<GLfloat>(c.width);
+  state_.line_width = width;
   glLineWidth(width);
   return error::kNoError;
 }
@@ -1415,6 +1440,8 @@ error::Error GLES2DecoderImpl::HandlePolygonOffset(
     uint32 immediate_data_size, const gles2::PolygonOffset& c) {
   GLfloat factor = static_cast<GLfloat>(c.factor);
   GLfloat units = static_cast<GLfloat>(c.units);
+  state_.polygon_offset_factor = factor;
+  state_.polygon_offset_units = units;
   glPolygonOffset(factor, units);
   return error::kNoError;
 }
@@ -1456,7 +1483,7 @@ error::Error GLES2DecoderImpl::HandleSampleCoverage(
     uint32 immediate_data_size, const gles2::SampleCoverage& c) {
   GLclampf value = static_cast<GLclampf>(c.value);
   GLboolean invert = static_cast<GLboolean>(c.invert);
-  glSampleCoverage(value, invert);
+  DoSampleCoverage(value, invert);
   return error::kNoError;
 }
 
@@ -1487,7 +1514,7 @@ error::Error GLES2DecoderImpl::HandleStencilFunc(
     SetGLErrorInvalidEnum("glStencilFunc", func, "func");
     return error::kNoError;
   }
-  glStencilFunc(func, ref, mask);
+  DoStencilFunc(func, ref, mask);
   return error::kNoError;
 }
 
@@ -1505,7 +1532,7 @@ error::Error GLES2DecoderImpl::HandleStencilFuncSeparate(
     SetGLErrorInvalidEnum("glStencilFuncSeparate", func, "func");
     return error::kNoError;
   }
-  glStencilFuncSeparate(face, func, ref, mask);
+  DoStencilFuncSeparate(face, func, ref, mask);
   return error::kNoError;
 }
 
@@ -1545,7 +1572,7 @@ error::Error GLES2DecoderImpl::HandleStencilOp(
     SetGLErrorInvalidEnum("glStencilOp", zpass, "zpass");
     return error::kNoError;
   }
-  glStencilOp(fail, zfail, zpass);
+  DoStencilOp(fail, zfail, zpass);
   return error::kNoError;
 }
 
@@ -1571,7 +1598,7 @@ error::Error GLES2DecoderImpl::HandleStencilOpSeparate(
     SetGLErrorInvalidEnum("glStencilOpSeparate", zpass, "zpass");
     return error::kNoError;
   }
-  glStencilOpSeparate(face, fail, zfail, zpass);
+  DoStencilOpSeparate(face, fail, zfail, zpass);
   return error::kNoError;
 }
 

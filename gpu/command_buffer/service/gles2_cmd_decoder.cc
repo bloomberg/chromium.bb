@@ -1021,15 +1021,20 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   error::Error DoClear(GLbitfield mask);
 
   // Wrappers for clear and mask settings functions.
-  void DoClearColor(
-      GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-  void DoClearDepthf(GLclampf depth);
-  void DoClearStencil(GLint s);
-  void DoColorMask(
-      GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-  void DoDepthMask(GLboolean depth);
   void DoStencilMask(GLuint mask);
   void DoStencilMaskSeparate(GLenum face, GLuint mask);
+  void DoStencilFunc(GLenum func, GLint ref, GLuint mask);
+  void DoStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask);
+  void DoStencilOp(GLenum fail, GLenum zfail, GLenum zpass);
+  void DoStencilOpSeparate(
+      GLenum face, GLenum fail, GLenum zfail, GLenum zpass);
+
+  // Wrappers for various state.
+  void DoBlendEquation(GLenum mode);
+  void DoBlendFunc(GLenum sfactor, GLenum dfactor);
+  void DoDepthRangef(GLclampf znear, GLclampf zfar);
+  void DoHint(GLenum target, GLenum mode);
+  void DoSampleCoverage (GLclampf value, GLboolean invert);
 
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
@@ -1466,7 +1471,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // state saved for clearing so we can clear render buffers and then
   // restore to these values.
-  bool state_dirty_;
+  bool clear_state_dirty_;
 
   // The offscreen frame buffer that the client renders to. With EGL, the
   // depth and stencil buffers are separate. With regular GL there is a single
@@ -1921,7 +1926,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       attrib_0_size_(0),
       fixed_attrib_buffer_id_(0),
       fixed_attrib_buffer_size_(0),
-      state_dirty_(true),
+      clear_state_dirty_(true),
       offscreen_target_color_format_(0),
       offscreen_target_depth_format_(0),
       offscreen_target_stencil_format_(0),
@@ -2244,14 +2249,29 @@ bool GLES2DecoderImpl::Initialize(
   state_.viewport_max_width = viewport_params[0];
   state_.viewport_max_height = viewport_params[1];
 
+  state_.scissor_width = state_.viewport_width;
+  state_.scissor_height = state_.viewport_height;
+
   // Set all the default state because some GL drivers get it wrong.
   glActiveTexture(GL_TEXTURE0 + state_.active_texture_unit);
-  glLineWidth(1.0);
   EnableDisable(GL_BLEND, state_.enable_blend);
-  glBlendColor(0.0f, 0.0, 0.0f, 0.0f);
-  glBlendFunc(GL_ONE, GL_ZERO);
-  glBlendEquation(GL_FUNC_ADD);
-  glBlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO);
+  glBlendColor(
+      state_.blend_color_red,
+      state_.blend_color_green,
+      state_.blend_color_blue,
+      state_.blend_color_alpha);
+  glBlendFunc(
+      state_.blend_source_rgb,
+      state_.blend_dest_rgb);
+  glBlendFuncSeparate(
+      state_.blend_source_rgb,
+      state_.blend_dest_rgb,
+      state_.blend_source_alpha,
+      state_.blend_dest_alpha);
+  glBlendEquation(
+      state_.blend_equation_rgb);
+  glBlendEquationSeparate(
+      state_.blend_equation_rgb, state_.blend_equation_alpha);
   glClearColor(
       state_.color_clear_red, state_.color_clear_green, state_.color_clear_blue,
       state_.color_clear_alpha);
@@ -2259,29 +2279,50 @@ bool GLES2DecoderImpl::Initialize(
       state_.color_mask_red, state_.color_mask_green, state_.color_mask_blue,
       state_.color_mask_alpha);
   EnableDisable(GL_CULL_FACE, state_.enable_cull_face);
-  glCullFace(GL_BACK);
+  glCullFace(state_.cull_mode);
   glClearDepth(state_.depth_clear);
-  glDepthFunc(GL_LESS);
-  glDepthRange(0.0f, 1.0f);
+  glDepthFunc(state_.depth_func);
+  glDepthRange(state_.z_near, state_.z_far);
   EnableDisable(GL_DEPTH_TEST, state_.enable_depth_test);
-  glEnable(GL_DITHER);
-  glFrontFace(GL_CCW);
-  glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);
-  glLineWidth(1.0f);
+  EnableDisable(GL_DITHER, state_.enable_dither);
+  glFrontFace(state_.front_face);
+  glHint(GL_GENERATE_MIPMAP_HINT, state_.hint_generate_mipmap);
+  glLineWidth(state_.line_width);
   glPixelStorei(GL_PACK_ALIGNMENT, state_.pack_alignment);
-  glPolygonOffset(0.0f, 0.0f);
-  glDisable(GL_POLYGON_OFFSET_FILL);
-  glSampleCoverage(1.0, false);
+  glPolygonOffset(state_.polygon_offset_factor, state_.polygon_offset_units);
+  EnableDisable(GL_POLYGON_OFFSET_FILL, state_.enable_polygon_offset_fill);
+  EnableDisable(
+      GL_SAMPLE_ALPHA_TO_COVERAGE, state_.enable_sample_alpha_to_coverage);
+  EnableDisable(GL_SAMPLE_COVERAGE, state_.enable_sample_coverage);
+  glSampleCoverage(state_.sample_coverage_value, state_.sample_coverage_invert);
   glScissor(
-      state_.viewport_x, state_.viewport_y,
-      state_.viewport_width, state_.viewport_height);
+      state_.scissor_x, state_.scissor_y,
+      state_.scissor_width, state_.scissor_height);
   EnableDisable(GL_SCISSOR_TEST, state_.enable_scissor_test);
   EnableDisable(GL_STENCIL_TEST, state_.enable_stencil_test);
   glClearStencil(state_.stencil_clear);
-  glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFFU);
-  glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-  glStencilMaskSeparate(GL_FRONT, state_.stencil_mask_front);
-  glStencilMaskSeparate(GL_BACK, state_.stencil_mask_back);
+  glStencilFuncSeparate(
+      GL_FRONT,
+      state_.stencil_front_func,
+      state_.stencil_front_ref,
+      state_.stencil_front_mask);
+  glStencilFuncSeparate(
+      GL_BACK,
+      state_.stencil_back_func,
+      state_.stencil_back_ref,
+      state_.stencil_back_mask);
+  glStencilOpSeparate(
+      GL_FRONT,
+      state_.stencil_front_fail_op,
+      state_.stencil_front_z_fail_op,
+      state_.stencil_front_z_pass_op);
+  glStencilOpSeparate(
+      GL_BACK,
+      state_.stencil_back_fail_op,
+      state_.stencil_back_z_fail_op,
+      state_.stencil_back_z_pass_op);
+  glStencilMaskSeparate(GL_FRONT, state_.stencil_front_writemask);
+  glStencilMaskSeparate(GL_BACK, state_.stencil_back_writemask);
   glPixelStorei(GL_UNPACK_ALIGNMENT, state_.unpack_alignment);
 
   DoBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -2457,7 +2498,7 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
     if (framebuffer && !framebuffer->IsDeleted()) {
       if (framebuffer == state_.bound_draw_framebuffer) {
         state_.bound_draw_framebuffer = NULL;
-        state_dirty_ = true;
+        clear_state_dirty_ = true;
         GLenum target = supports_separate_framebuffer_binds ?
             GL_DRAW_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
         glBindFramebufferEXT(target, GetBackbufferServiceId());
@@ -2500,7 +2541,7 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
               GL_FRAMEBUFFER, renderbuffer);
         }
       }
-      state_dirty_ = true;
+      clear_state_dirty_ = true;
       RemoveRenderbufferInfo(client_ids[ii]);
     }
   }
@@ -2514,7 +2555,7 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
     TextureManager::TextureInfo* texture = GetTextureInfo(client_ids[ii]);
     if (texture && !texture->IsDeleted()) {
       if (texture->IsAttachedToFramebuffer()) {
-        state_dirty_ = true;
+        clear_state_dirty_ = true;
       }
       // Unbind texture from texture units.
       for (size_t jj = 0; jj < group_->max_texture_units(); ++jj) {
@@ -2589,7 +2630,7 @@ static void RebindCurrentFramebuffer(
 }
 
 void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
-  state_dirty_ = true;
+  clear_state_dirty_ = true;
 
   if (!features().chromium_framebuffer_multisample) {
     RebindCurrentFramebuffer(
@@ -3352,7 +3393,7 @@ bool GLES2DecoderImpl::BoundFramebufferHasStencilAttachment() {
 }
 
 void GLES2DecoderImpl::ApplyDirtyState() {
-  if (state_dirty_) {
+  if (clear_state_dirty_) {
     glColorMask(
         state_.color_mask_red, state_.color_mask_green, state_.color_mask_blue,
         state_.color_mask_alpha &&
@@ -3362,14 +3403,14 @@ void GLES2DecoderImpl::ApplyDirtyState() {
     EnableDisable(GL_DEPTH_TEST, state_.enable_depth_test && have_depth);
     bool have_stencil = BoundFramebufferHasStencilAttachment();
     glStencilMaskSeparate(
-        GL_FRONT, have_stencil ? state_.stencil_mask_front : 0);
+        GL_FRONT, have_stencil ? state_.stencil_front_writemask : 0);
     glStencilMaskSeparate(
-        GL_BACK, have_stencil ? state_.stencil_mask_back : 0);
+        GL_BACK, have_stencil ? state_.stencil_back_writemask : 0);
     EnableDisable(GL_STENCIL_TEST, state_.enable_stencil_test && have_stencil);
     EnableDisable(GL_CULL_FACE, state_.enable_cull_face);
     EnableDisable(GL_SCISSOR_TEST, state_.enable_scissor_test);
     EnableDisable(GL_BLEND, state_.enable_blend);
-    state_dirty_ = false;
+    clear_state_dirty_ = false;
   }
 }
 
@@ -3421,7 +3462,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
     state_.bound_read_framebuffer = info;
   }
 
-  state_dirty_ = true;
+  clear_state_dirty_ = true;
 
   // If we are rendering to the backbuffer get the FBO id for any simulated
   // backbuffer.
@@ -3675,13 +3716,13 @@ bool GLES2DecoderImpl::GetHelper(
     case GL_STENCIL_BACK_WRITEMASK:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_mask_back;
+        params[0] = state_.stencil_back_writemask;
       }
       return true;
     case GL_STENCIL_WRITEMASK:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_mask_front;
+        params[0] = state_.stencil_front_writemask;
       }
       return true;
     case GL_DEPTH_TEST:
@@ -4303,7 +4344,7 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     framebuffer_info->AttachRenderbuffer(attachment, info);
   }
   if (framebuffer_info == state_.bound_draw_framebuffer) {
-    state_dirty_ = true;
+    clear_state_dirty_ = true;
   }
 }
 
@@ -4321,16 +4362,24 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
     case GL_DEPTH_TEST: {
       if (state_.enable_depth_test != enabled) {
         state_.enable_depth_test = enabled;
-        state_dirty_ = true;
+        clear_state_dirty_ = true;
       }
       return false;
     }
     case GL_STENCIL_TEST:
       if (state_.enable_stencil_test != enabled) {
         state_.enable_stencil_test = enabled;
-        state_dirty_ = true;
+        clear_state_dirty_ = true;
       }
       return false;
+    case GL_POLYGON_OFFSET_FILL:
+      state_.enable_polygon_offset_fill = enabled;
+    case GL_DITHER:
+      state_.enable_dither = enabled;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      state_.enable_sample_alpha_to_coverage = enabled;
+    case GL_SAMPLE_COVERAGE:
+      state_.enable_sample_coverage = enabled;
     default:
       return true;
   }
@@ -4360,58 +4409,124 @@ bool GLES2DecoderImpl::DoIsEnabled(GLenum cap) {
       return state_.enable_depth_test;
     case GL_STENCIL_TEST:
       return state_.enable_stencil_test;
+    case GL_POLYGON_OFFSET_FILL:
+      return state_.enable_polygon_offset_fill;
+    case GL_DITHER:
+      return state_.enable_dither;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      return state_.enable_sample_alpha_to_coverage;
+    case GL_SAMPLE_COVERAGE:
+      return state_.enable_sample_coverage;
     default:
       return glIsEnabled(cap) != 0;
   }
 }
 
-void GLES2DecoderImpl::DoClearColor(
-      GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
-  state_.color_clear_red = red;
-  state_.color_clear_green = green;
-  state_.color_clear_blue = blue;
-  state_.color_clear_alpha = alpha;
-  glClearColor(red, green, blue, alpha);
-}
-
-void GLES2DecoderImpl::DoClearDepthf(GLclampf depth) {
-  state_.depth_clear = depth;
-  glClearDepth(depth);
-}
-
-void GLES2DecoderImpl::DoClearStencil(GLint s) {
-  state_.stencil_clear = s;
-  glClearStencil(s);
-}
-
-void GLES2DecoderImpl::DoColorMask(
-    GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
-  state_.color_mask_red = red;
-  state_.color_mask_green = green;
-  state_.color_mask_blue = blue;
-  state_.color_mask_alpha = alpha;
-  state_dirty_ = true;
-}
-
-void GLES2DecoderImpl::DoDepthMask(GLboolean depth) {
-  state_.depth_mask = depth;
-  state_dirty_ = true;
+void GLES2DecoderImpl::DoDepthRangef(GLclampf znear, GLclampf zfar) {
+  state_.z_near = std::min(1.0f, std::max(0.0f, znear));
+  state_.z_far = std::min(1.0f, std::max(0.0f, zfar));
+  glDepthRange(znear, zfar);
 }
 
 void GLES2DecoderImpl::DoStencilMask(GLuint mask) {
-  state_.stencil_mask_front = mask;
-  state_.stencil_mask_back = mask;
-  state_dirty_ = true;
+  state_.stencil_front_writemask = mask;
+  state_.stencil_back_writemask = mask;
+  clear_state_dirty_ = true;
 }
 
 void GLES2DecoderImpl::DoStencilMaskSeparate(GLenum face, GLuint mask) {
   if (face == GL_FRONT || face == GL_FRONT_AND_BACK) {
-    state_.stencil_mask_front = mask;
+    state_.stencil_front_writemask = mask;
   }
   if (face == GL_BACK || face == GL_FRONT_AND_BACK) {
-    state_.stencil_mask_back = mask;
+    state_.stencil_back_writemask = mask;
   }
-  state_dirty_ = true;
+  clear_state_dirty_ = true;
+}
+
+void GLES2DecoderImpl::DoStencilFunc(GLenum func, GLint ref, GLuint mask) {
+  state_.stencil_front_func = func;
+  state_.stencil_front_ref = ref;
+  state_.stencil_front_mask = mask;
+  state_.stencil_back_func = func;
+  state_.stencil_back_ref = ref;
+  state_.stencil_back_mask = mask;
+  glStencilFunc(func, ref, mask);
+}
+
+void GLES2DecoderImpl::DoStencilFuncSeparate(
+    GLenum face, GLenum func, GLint ref, GLuint mask) {
+  if (face == GL_FRONT || face == GL_FRONT_AND_BACK) {
+    state_.stencil_front_func = func;
+    state_.stencil_front_ref = ref;
+    state_.stencil_front_mask = mask;
+  }
+  if (face == GL_BACK || face == GL_FRONT_AND_BACK) {
+    state_.stencil_back_func = func;
+    state_.stencil_back_ref = ref;
+    state_.stencil_back_mask = mask;
+  }
+  glStencilFuncSeparate(face, func, ref, mask);
+}
+
+void GLES2DecoderImpl::DoStencilOp(
+    GLenum fail, GLenum zfail, GLenum zpass) {
+  state_.stencil_front_fail_op = fail;
+  state_.stencil_front_z_fail_op = zfail;
+  state_.stencil_front_z_pass_op = zpass;
+  state_.stencil_back_fail_op = fail;
+  state_.stencil_back_z_fail_op = zfail;
+  state_.stencil_back_z_pass_op = zpass;
+  glStencilOp(fail, zfail, zpass);
+}
+
+void GLES2DecoderImpl::DoStencilOpSeparate(
+    GLenum face, GLenum fail, GLenum zfail, GLenum zpass) {
+  if (face == GL_FRONT || face == GL_FRONT_AND_BACK) {
+    state_.stencil_front_fail_op = fail;
+    state_.stencil_front_z_fail_op = zfail;
+    state_.stencil_front_z_pass_op = zpass;
+  }
+  if (face == GL_BACK || face == GL_FRONT_AND_BACK) {
+    state_.stencil_back_fail_op = fail;
+    state_.stencil_back_z_fail_op = zfail;
+    state_.stencil_back_z_pass_op = zpass;
+  }
+  glStencilOpSeparate(face, fail, zfail, zpass);
+}
+
+void GLES2DecoderImpl::DoBlendEquation(GLenum mode) {
+  state_.blend_equation_rgb = mode;
+  state_.blend_equation_alpha = mode;
+  glBlendEquation(mode);
+}
+
+void GLES2DecoderImpl::DoBlendFunc(GLenum sfactor, GLenum dfactor) {
+  state_.blend_source_rgb = sfactor;
+  state_.blend_dest_rgb = dfactor;
+  state_.blend_source_alpha = sfactor;
+  state_.blend_dest_alpha = dfactor;
+  glBlendFunc(sfactor, dfactor);
+}
+
+void GLES2DecoderImpl::DoHint(GLenum target, GLenum mode) {
+  switch (target) {
+    case GL_GENERATE_MIPMAP_HINT:
+      state_.hint_generate_mipmap = mode;
+      break;
+    case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES:
+      state_.hint_fragment_shader_derivative = mode;
+      break;
+    default:
+      NOTREACHED();
+  }
+  glHint(target, mode);
+}
+
+void GLES2DecoderImpl::DoSampleCoverage (GLclampf value, GLboolean invert) {
+  state_.sample_coverage_value = std::min(1.0f, std::max(0.0f, value));
+  state_.sample_coverage_invert = (invert != 0);
+  glSampleCoverage(state_.sample_coverage_value, invert);
 }
 
 // Assumes framebuffer is complete.
@@ -4468,7 +4583,7 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
 }
 
 void GLES2DecoderImpl::RestoreClearState() {
-  state_dirty_ = true;
+  clear_state_dirty_ = true;
   glClearColor(
       state_.color_clear_red, state_.color_clear_green, state_.color_clear_blue,
       state_.color_clear_alpha);
@@ -4527,7 +4642,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
     framebuffer_info->AttachTexture(attachment, info, textarget, level);
   }
   if (framebuffer_info == state_.bound_draw_framebuffer) {
-    state_dirty_ = true;
+    clear_state_dirty_ = true;
   }
 }
 
@@ -6566,6 +6681,7 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
         state_.pack_alignment = param;
         break;
     case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
+        state_.pack_reverse_row_order = (param != 0);
         break;
     case GL_UNPACK_ALIGNMENT:
         state_.unpack_alignment = param;
@@ -7161,7 +7277,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
   }
 
   if (info->IsAttachedToFramebuffer()) {
-    state_dirty_ = true;
+    clear_state_dirty_ = true;
     // TODO(gman): If textures tracked which framebuffers they were attached to
     // we could just mark those framebuffers as not complete.
     framebuffer_manager()->IncFramebufferStateChangeCount();
@@ -7398,7 +7514,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
   }
 
   if (info->IsAttachedToFramebuffer()) {
-    state_dirty_ = true;
+    clear_state_dirty_ = true;
     // TODO(gman): If textures tracked which framebuffers they were attached to
     // we could just mark those framebuffers as not complete.
     framebuffer_manager()->IncFramebufferStateChangeCount();
@@ -7612,7 +7728,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   gfx::Size size = GetBoundReadFrameBufferSize();
 
   if (info->IsAttachedToFramebuffer()) {
-    state_dirty_ = true;
+    clear_state_dirty_ = true;
     // TODO(gman): If textures tracked which framebuffers they were attached to
     // we could just mark those framebuffers as not complete.
     framebuffer_manager()->IncFramebufferStateChangeCount();
@@ -9126,7 +9242,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     texture_manager()->SetLevelCleared(dest_info, GL_TEXTURE_2D, level);
   }
 
-  state_dirty_ = true;
+  clear_state_dirty_ = true;
   glViewport(0, 0, source_width, source_height);
   copy_texture_CHROMIUM_->DoCopyTexture(target, source_info->service_id(),
                                         dest_info->service_id(), level,
@@ -9218,7 +9334,7 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     return;
   }
   if (info->IsAttachedToFramebuffer()) {
-    state_dirty_ = true;
+    clear_state_dirty_ = true;
   }
   if (info->IsImmutable()) {
     SetGLError(GL_INVALID_OPERATION,

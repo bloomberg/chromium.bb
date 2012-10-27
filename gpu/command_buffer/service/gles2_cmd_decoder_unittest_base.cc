@@ -201,9 +201,6 @@ void GLES2DecoderTestBase::InitDecoder(
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, LineWidth(1.0))
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, Disable(GL_BLEND))
       .Times(1)
       .RetiresOnSaturation();
@@ -213,10 +210,13 @@ void GLES2DecoderTestBase::InitDecoder(
   EXPECT_CALL(*gl_, BlendFunc(GL_ONE, GL_ZERO))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BlendEquation(GL_FUNC_ADD))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO))
+  EXPECT_CALL(*gl_, BlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0, 0.0f, 0.0f))
@@ -264,6 +264,12 @@ void GLES2DecoderTestBase::InitDecoder(
   EXPECT_CALL(*gl_, Disable(GL_POLYGON_OFFSET_FILL))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_SAMPLE_ALPHA_TO_COVERAGE))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_SAMPLE_COVERAGE))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, SampleCoverage(1.0, false))
       .Times(1)
       .RetiresOnSaturation();
@@ -280,10 +286,16 @@ void GLES2DecoderTestBase::InitDecoder(
   EXPECT_CALL(*gl_, ClearStencil(0))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilFunc(GL_ALWAYS, 0, 0xFFFFFFFFU))
+  EXPECT_CALL(*gl_, StencilFuncSeparate(GL_FRONT, GL_ALWAYS, 0, 0xFFFFFFFFU))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilOp(GL_KEEP, GL_KEEP, GL_KEEP))
+  EXPECT_CALL(*gl_, StencilFuncSeparate(GL_BACK, GL_ALWAYS, 0, 0xFFFFFFFFU))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_KEEP))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, 0xFFFFFFFFU))

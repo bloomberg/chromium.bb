@@ -91,7 +91,6 @@ TEST_F(GLES2DecoderTest2, IsBufferInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_F(GLES2DecoderTest2, IsEnabledValidArgs) {
-  EXPECT_CALL(*gl_, IsEnabled(GL_DITHER));
   SpecializedSetup<IsEnabled, 0>(true);
   IsEnabled cmd;
   cmd.Init(GL_DITHER, shared_memory_id_, shared_memory_offset_);
@@ -118,7 +117,6 @@ TEST_F(GLES2DecoderTest2, IsEnabledInvalidArgs0_1) {
 }
 
 TEST_F(GLES2DecoderTest2, IsEnabledInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsEnabled(GL_DITHER)).Times(0);
   SpecializedSetup<IsEnabled, 0>(false);
   IsEnabled cmd;
   cmd.Init(GL_DITHER, kInvalidSharedMemoryId, shared_memory_offset_);
