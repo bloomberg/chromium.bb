@@ -32,7 +32,6 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                Profile* profile,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               LocationBarView* location_bar,
-                               views::View* popup_parent_view);
+                               LocationBarView* location_bar);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEWS_H_

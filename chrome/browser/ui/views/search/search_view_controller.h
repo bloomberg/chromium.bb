@@ -64,9 +64,6 @@ class SearchViewController
       BrowserView* browser_view);
   virtual ~SearchViewController();
 
-  // Provides a host parent view for the omnibox popup.
-  views::View* omnibox_popup_parent();
-
   // Set by host to facilitate proper view/layer stacking.
   void set_location_bar_container(
       LocationBarContainer* location_bar_container) {
@@ -235,9 +232,6 @@ class SearchViewController
   // An alias to |contents_container_->active()|, but reparented within
   // |ntp_container_| when in the NTP state.
   views::WebView* content_view_;
-
-  // Container provided to clients to host the omnibox popup view.
-  internal::OmniboxPopupContainer* omnibox_popup_parent_;
 
   // Set to true when theme changes to notify of CSS background y pos regardless
   // if it has changed.

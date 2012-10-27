@@ -35,8 +35,7 @@ class OmniboxPopupContentsView : public views::View,
   static OmniboxPopupView* Create(const gfx::Font& font,
                                   OmniboxView* omnibox_view,
                                   OmniboxEditModel* edit_model,
-                                  views::View* location_bar,
-                                  views::View* popup_parent_view);
+                                  views::View* location_bar);
 
   // Returns the bounds the popup should be shown at. This is the display bounds
   // and includes offsets for the dropshadow which this view's border renders.

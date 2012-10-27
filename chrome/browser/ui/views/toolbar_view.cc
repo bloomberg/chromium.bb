@@ -226,8 +226,7 @@ ToolbarView::~ToolbarView() {
   // browser.
 }
 
-void ToolbarView::Init(views::View* location_bar_parent,
-                       views::View* popup_parent_view) {
+void ToolbarView::Init(views::View* location_bar_parent) {
   back_ = new views::ButtonDropDown(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   back_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
@@ -311,7 +310,7 @@ void ToolbarView::Init(views::View* location_bar_parent,
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
 
-  location_bar_->Init(popup_parent_view);
+  location_bar_->Init();
   show_home_button_.Init(prefs::kShowHomeButton,
                          browser_->profile()->GetPrefs(), this);
   sideload_wipeout_bubble_shown_.Init(

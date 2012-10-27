@@ -454,13 +454,11 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
                                LocationBarView* parent_view,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               views::View* location_bar,
-                               views::View* popup_parent_view)
+                               views::View* location_bar)
     : OmniboxView(parent_view->profile(), controller, toolbar_model,
           command_updater),
       popup_view_(OmniboxPopupContentsView::Create(
-          parent_view->font(), this, model(), location_bar,
-          popup_parent_view)),
+          parent_view->font(), this, model(), location_bar)),
       parent_view_(parent_view),
       popup_window_mode_(popup_window_mode),
       force_hidden_(false),

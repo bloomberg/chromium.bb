@@ -96,53 +96,6 @@ class SearchContainerView : public views::View {
 
 }  // namespace
 
-namespace internal {
-
-// OmniboxPopupContainer -------------------------------------------------------
-
-// View the omnibox is added to. Listens for changes to the visibility of the
-// omnibox and updates the SearchViewController appropriately.
-class OmniboxPopupContainer : public views::View {
- public:
-  explicit OmniboxPopupContainer(SearchViewController* search_view_controller);
-  virtual ~OmniboxPopupContainer();
-
-  bool is_child_visible() { return child_count() && child_at(0)->visible(); }
-
- protected:
-  // views::View overrides:
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
-
- private:
-  SearchViewController* search_view_controller_;
-
-  bool child_visible_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContainer);
-};
-
-OmniboxPopupContainer::OmniboxPopupContainer(
-    SearchViewController* search_view_controller)
-    : search_view_controller_(search_view_controller),
-      child_visible_(false) {
-  SetLayoutManager(new views::FillLayout);
-}
-
-OmniboxPopupContainer::~OmniboxPopupContainer() {
-}
-
-void OmniboxPopupContainer::ChildPreferredSizeChanged(
-    views::View* child) {
-  if (parent() && (child->visible() || child_visible_))
-    parent()->Layout();
-  if (child_visible_ != child->visible()) {
-    child_visible_ = child->visible();
-    search_view_controller_->PopupVisibilityChanged();
-  }
-}
-
-}  // namespace internal
-
 // SearchViewController --------------------------------------------------------
 
 SearchViewController::SearchViewController(
@@ -160,11 +113,8 @@ SearchViewController::SearchViewController(
       search_container_(NULL),
       ntp_container_(NULL),
       content_view_(NULL),
-      omnibox_popup_parent_(NULL),
       notify_css_background_y_pos_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  omnibox_popup_parent_ = new internal::OmniboxPopupContainer(this);
-
 #if defined(ENABLE_THEMES)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -177,15 +127,6 @@ SearchViewController::SearchViewController(
 SearchViewController::~SearchViewController() {
   if (search_model())
     search_model()->RemoveObserver(this);
-
-  // If the |omnibox_popup_view_| isn't parented, delete it. Otherwise it'll be
-  // deleted by its parent.
-  if (!omnibox_popup_parent_->parent())
-    delete omnibox_popup_parent_;
-}
-
-views::View* SearchViewController::omnibox_popup_parent() {
-  return omnibox_popup_parent_;
 }
 
 void SearchViewController::SetTabContents(TabContents* tab_contents) {
@@ -310,7 +251,7 @@ void SearchViewController::UpdateState() {
     case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
       if (search_model()->mode().animate && is_ntp_state(state_))
         new_state = STATE_NTP_ANIMATING;
-      else if (omnibox_popup_parent_->is_child_visible())
+      else
         new_state = STATE_SUGGESTIONS;
       break;
 
@@ -560,17 +501,6 @@ void SearchViewController::DestroyViews() {
   content_view_ = NULL;
 
   state_ = STATE_NOT_VISIBLE;
-}
-
-void SearchViewController::PopupVisibilityChanged() {
-  // Don't do anything while animating if the child is visible. Otherwise we'll
-  // prematurely cancel the animation.
-  if (state_ != STATE_NTP_ANIMATING ||
-      !omnibox_popup_parent_->is_child_visible()) {
-    UpdateState();
-    if (!omnibox_popup_parent_->is_child_visible())
-      toolbar_search_animator_->OnOmniboxPopupClosed();
-  }
 }
 
 chrome::search::SearchModel* SearchViewController::search_model() {

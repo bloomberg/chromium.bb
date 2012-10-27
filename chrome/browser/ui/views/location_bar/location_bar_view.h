@@ -161,9 +161,8 @@ class LocationBarView : public LocationBar,
 
   virtual ~LocationBarView();
 
-  // Initializes the LocationBarView. See ToolbarView::Init() for a description
-  // of |popup_parent_view|.
-  void Init(views::View* popup_parent_view);
+  // Initializes the LocationBarView.
+  void Init();
 
   // True if this instance has been initialized by calling Init, which can only
   // be called when the receiving instance is attached to a view container.

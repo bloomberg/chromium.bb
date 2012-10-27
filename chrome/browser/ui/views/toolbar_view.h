@@ -56,10 +56,8 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual ~ToolbarView();
 
   // Create the contents of the Browser Toolbar. |location_bar_parent| is the
-  // view the LocationBarContainer is added to. |popup_parent_view| is the
-  // View to add the omnibox popup view to.
-  // TODO(sky): clearly describe when |popup_parent_view| is used.
-  void Init(views::View* location_bar_parent, views::View* popup_parent_view);
+  // view the LocationBarContainer is added to.
+  void Init(views::View* location_bar_parent);
 
   // Updates the toolbar (and transitively the location bar) with the states of
   // the specified |tab|.  If |should_restore_state| is true, we're switching

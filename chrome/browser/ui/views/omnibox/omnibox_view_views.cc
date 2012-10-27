@@ -266,7 +266,7 @@ OmniboxViewViews::~OmniboxViewViews() {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews public:
 
-void OmniboxViewViews::Init(views::View* popup_parent_view) {
+void OmniboxViewViews::Init() {
   // The height of the text view is going to change based on the font used.  We
   // don't want to stretch the height, and we want it vertically centered.
   // TODO(oshima): make sure the above happens with views.
@@ -293,8 +293,7 @@ void OmniboxViewViews::Init(views::View* popup_parent_view) {
   // Create popup view using the same font as |textfield_|'s.
   popup_view_.reset(
       OmniboxPopupContentsView::Create(
-          textfield_->font(), this, model(), location_bar_view_,
-          popup_parent_view));
+          textfield_->font(), this, model(), location_bar_view_));
 
   // A null-border to zero out the focused border on textfield.
   const int vertical_margin = !popup_window_mode_ ?
