@@ -76,11 +76,6 @@ const char* kAttrNameInvalidDomainError = "INVALID_DOMAIN_ERROR";
 
 const int kMaxLoginAttempts = 5;
 
-// We may need to have more than one task running at the same time
-// (e.g. key generation and status update), yet unlikely to ever need
-// more than 2 threads.
-const int kMaxWorkerPoolThreads = 2;
-
 }  // namespace
 
 // Internal implementation of the plugin's It2Me host function.
