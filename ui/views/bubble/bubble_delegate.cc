@@ -90,6 +90,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
   border_params.parent_widget = bubble->GetWidget();
   border_params.can_activate = bubble->CanActivate();
   border_widget->Init(border_params);
+  border_widget->set_focus_on_creation(false);
   return border_widget;
 }
 #endif
@@ -173,10 +174,6 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   bubble_delegate->SizeToContents();
   bubble_widget->AddObserver(bubble_delegate);
   return bubble_widget;
-}
-
-View* BubbleDelegateView::GetInitiallyFocusedView() {
-  return this;
 }
 
 BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {

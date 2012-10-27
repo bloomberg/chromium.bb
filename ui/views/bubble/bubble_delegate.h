@@ -39,7 +39,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   static Widget* CreateBubble(BubbleDelegateView* bubble_delegate);
 
   // WidgetDelegate overrides:
-  virtual View* GetInitiallyFocusedView() OVERRIDE;
   virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
