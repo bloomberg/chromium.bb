@@ -264,7 +264,8 @@ void ConfigureSpeculativePrefetching() {
     case chrome::VersionInfo::CHANNEL_CANARY:
     case chrome::VersionInfo::CHANNEL_DEV:
       kLearningProbability = 90;
-      kPrefetchingProbability = 1;
+      // Disabled due to http://crbug.com/158056.
+      // kPrefetchingProbability = 1;
       break;
 
     case chrome::VersionInfo::CHANNEL_BETA:
