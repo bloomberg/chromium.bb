@@ -383,6 +383,7 @@ extern const char kDisableNewWallpaperUI[];
 extern const char kDisableOobeAnimation[];
 extern const char kEnableBackgroundLoader[];
 extern const char kEnableTouchpadThreeFingerClick[];
+extern const char kEnableTouchpadThreeFingerSwipe[];
 extern const char kSkipOAuthLogin[];
 extern const char kEnableGView[];
 extern const char kEnableKioskMode[];

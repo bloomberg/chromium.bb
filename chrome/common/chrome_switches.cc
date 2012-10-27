@@ -1402,7 +1402,11 @@ const char kEnableBackgroundLoader[]        = "enable-background-loader";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
-    = "touchpad-enable-three-finger-click";
+    = "enable-touchpad-three-finger-click";
+
+// Enables touchpad three-finger swipe.
+const char kEnableTouchpadThreeFingerSwipe[]
+    = "enable-touchpad-three-finger-swipe";
 
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";

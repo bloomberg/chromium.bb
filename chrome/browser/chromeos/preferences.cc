@@ -72,6 +72,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerClick,
                              false,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerSwipe,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kNaturalScroll,
                              false,
                              PrefService::SYNCABLE_PREF);
@@ -285,6 +288,8 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   three_finger_click_enabled_.Init(prefs::kEnableTouchpadThreeFingerClick,
       prefs, this);
+  three_finger_swipe_enabled_.Init(prefs::kEnableTouchpadThreeFingerSwipe,
+      prefs, this);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, this);
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, this);
@@ -411,6 +416,14 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Changed", enabled);
     else
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Started", enabled);
+  }
+  if (!pref_name || *pref_name == prefs::kEnableTouchpadThreeFingerSwipe) {
+    const bool enabled = three_finger_swipe_enabled_.GetValue();
+    system::touchpad_settings::SetThreeFingerSwipe(enabled);
+    if (pref_name)
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerSwipe.Changed", enabled);
+    else
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerSwipe.Started", enabled);
   }
   if (!pref_name || *pref_name == prefs::kNaturalScroll) {
     // Force natural scroll to on if kNaturalScrollDefault is specified on the

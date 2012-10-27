@@ -99,6 +99,7 @@ class Preferences : public content::NotificationObserver {
 
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember three_finger_click_enabled_;
+  BooleanPrefMember three_finger_swipe_enabled_;
   BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;

@@ -68,6 +68,10 @@ void SetPointerSensitivity(const char* script, int value) {
   ExecuteScript(3, script, "sensitivity", StringPrintf("%d", value).c_str());
 }
 
+void SetTPControl(const char* control, bool enabled) {
+  ExecuteScript(3, kTpControl, control, enabled ? "on" : "off");
+}
+
 void DeviceExistsBlockingPool(const char* script, bool* exists) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   *exists = false;
@@ -114,16 +118,20 @@ void SetSensitivity(int value) {
 
 void SetTapToClick(bool enabled) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  ExecuteScript(3, kTpControl, "taptoclick", enabled ? "on" : "off");
+  SetTPControl("taptoclick", enabled);
 }
 
 void SetThreeFingerClick(bool enabled) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  ExecuteScript(3, kTpControl, "three_finger_click", enabled ? "on" : "off");
+  SetTPControl("three_finger_click", enabled);
   // For Alex/ZGB.
-  ExecuteScript(3, kTpControl, "t5r2_three_finger_click",
-      enabled ? "on" : "off");
+  SetTPControl("t5r2_three_finger_click", enabled);
+}
+
+void SetThreeFingerSwipe(bool enabled) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  SetTPControl("three_finger_swipe", enabled);
 }
 
 }  // namespace touchpad_settings

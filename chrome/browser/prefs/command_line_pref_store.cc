@@ -63,6 +63,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kDisableDrive, prefs::kDisableDrive, true },
       { switches::kEnableTouchpadThreeFingerClick,
           prefs::kEnableTouchpadThreeFingerClick, true },
+      { switches::kEnableTouchpadThreeFingerSwipe,
+          prefs::kEnableTouchpadThreeFingerSwipe, true },
 #endif
       { switches::kLoadCloudPolicyOnSignin, prefs::kLoadCloudPolicyOnSignin,
         true },

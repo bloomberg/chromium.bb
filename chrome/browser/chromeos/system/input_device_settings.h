@@ -26,6 +26,9 @@ void SetTapToClick(bool enabled);
 // Switch for three-finger click.
 void SetThreeFingerClick(bool enabled);
 
+// Switch for three-finger swipe.
+void SetThreeFingerSwipe(bool enabled);
+
 }  // namespace touchpad_settings
 
 namespace mouse_settings {
