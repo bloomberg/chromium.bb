@@ -411,6 +411,9 @@ below:
         1024 (Medium Grade)
       </message>
 
+      <message name="IDS_FORM_INPUT_WEEK_TEMPLATE" desc="A specfic week (1-53) in a specific year shown in a form control">
+        Week <ph name="WEEKNUMBER">$2<ex>51</ex></ph>, <ph name="YEAR">$1<ex>2012</ex></ph>
+      </message>
       <message name="IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE" desc="Heading or short sentence shown when a file upload control in a webpage requires one or more files selected, but the user didn't specify any files.">
         Please select one or more files.
       </message>
