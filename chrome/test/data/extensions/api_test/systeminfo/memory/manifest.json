@@ -1,0 +1,11 @@
+{
+  "name": "memoryinfo",
+  "version": "1.0",
+  "description": "Test systeminfo.memory API",
+  "permissions": ["experimental"],
+  "app": {
+    "background": {
+      "scripts": ["test_memory_api.js"]
+    }
+  }
+}
