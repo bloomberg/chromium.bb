@@ -105,7 +105,6 @@ ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
 
 void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
-  SocketTimeoutFieldTrial();
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
   SpdyFieldTrial();
   WarmConnectionFieldTrial();
@@ -121,49 +120,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   OneClickSigninHelper::InitializeFieldTrial();
 #endif
-}
-
-// A/B test for determining a value for unused socket timeout. Currently the
-// timeout defaults to 10 seconds. Having this value set too low won't allow us
-// to take advantage of idle sockets. Setting it to too high could possibly
-// result in more ERR_CONNECTION_RESETs, since some servers will kill a socket
-// before we time it out. Since these are "unused" sockets, we won't retry the
-// connection and instead show an error to the user. So we need to be
-// conservative here. We've seen that some servers will close the socket after
-// as short as 10 seconds. See http://crbug.com/84313 for more details.
-void ChromeBrowserFieldTrials::SocketTimeoutFieldTrial() {
-  const base::FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
-  // 1% probability for all experimental settings.
-  const base::FieldTrial::Probability kSocketTimeoutProbability = 1;
-
-  // After June 30, 2011 builds, it will always be in default group.
-  int socket_timeout_10 = -1;
-  scoped_refptr<base::FieldTrial> socket_timeout_trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "IdleSktToImpact", kIdleSocketTimeoutDivisor, "idle_timeout_10",
-          2011, 6, 30, &socket_timeout_10));
-
-  const int socket_timeout_5 =
-      socket_timeout_trial->AppendGroup("idle_timeout_5",
-                                        kSocketTimeoutProbability);
-  const int socket_timeout_20 =
-      socket_timeout_trial->AppendGroup("idle_timeout_20",
-                                        kSocketTimeoutProbability);
-
-  const int idle_to_trial_group = socket_timeout_trial->group();
-
-  if (idle_to_trial_group == socket_timeout_5) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(
-        base::TimeDelta::FromSeconds(5));
-  } else if (idle_to_trial_group == socket_timeout_10) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(
-        base::TimeDelta::FromSeconds(10));
-  } else if (idle_to_trial_group == socket_timeout_20) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(
-        base::TimeDelta::FromSeconds(20));
-  } else {
-    NOTREACHED();
-  }
 }
 
 // When --use-spdy not set, users will be in A/B test for spdy.

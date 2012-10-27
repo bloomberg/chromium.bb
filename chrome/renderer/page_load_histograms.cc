@@ -423,39 +423,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         begin_to_finish_all_loads);
   }
 
-  // Histograms to determine effect of idle socket timeout.
-  static const bool use_idle_socket_timeout_histogram =
-      base::FieldTrialList::TrialExists("IdleSktToImpact");
-  if (use_idle_socket_timeout_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("PLT.Abandoned", "IdleSktToImpact"),
-        abandoned_page ? 1 : 0, 2);
-    switch (load_type) {
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad", "IdleSktToImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal", "IdleSktToImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadReload", "IdleSktToImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadStaleOk", "IdleSktToImpact"),
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-  }
-
   // Histograms to determine if SDCH has an impact.
   // TODO(jar): Consider removing per-link load types and the enumeration.
   static const bool use_sdch_histogram =
