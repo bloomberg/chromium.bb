@@ -26,7 +26,9 @@ class StuckButtonInhibitorFilterInterpreterTestInterpreter :
       public Interpreter {
  public:
   StuckButtonInhibitorFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL), called_(false), set_hwprops_called_(false) {}
+      : Interpreter(NULL, NULL, false),
+        called_(false),
+        set_hwprops_called_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     return HandleTimer(0.0, timeout);

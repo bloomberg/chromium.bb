@@ -11,7 +11,7 @@ namespace gestures {
 FlingStopFilterInterpreter::FlingStopFilterInterpreter(PropRegistry* prop_reg,
                                                        Interpreter* next,
                                                        Tracer* tracer)
-    : FilterInterpreter(NULL, next, tracer),
+    : FilterInterpreter(NULL, next, tracer, false),
       prev_touch_cnt_(0),
       fling_stop_deadline_(0.0),
       next_timer_deadline_(0.0),

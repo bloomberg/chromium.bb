@@ -31,7 +31,8 @@ DictionaryValue* FilterInterpreter::EncodeCommonInfo() {
 }
 
 void FilterInterpreter::Clear() {
-  log_.Clear();
+  if (log_.get())
+    log_->Clear();
   next_->Clear();
 }
 }  // namespace gestures

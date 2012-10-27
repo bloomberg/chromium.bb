@@ -11,7 +11,7 @@ namespace gestures {
 
 AppleTrackpadFilterInterpreter::AppleTrackpadFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
-    : FilterInterpreter(NULL, next, tracer),
+    : FilterInterpreter(NULL, next, tracer, false),
       enabled_(prop_reg, "Apple TP Filter Enable", 0) {
   InitName();
 }

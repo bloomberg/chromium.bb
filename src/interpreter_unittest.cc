@@ -21,7 +21,7 @@ class InterpreterTest : public ::testing::Test {};
 class InterpreterTestInterpreter : public Interpreter {
  public:
   explicit InterpreterTestInterpreter(PropRegistry* prop_reg)
-      : Interpreter(prop_reg, NULL),
+      : Interpreter(prop_reg, NULL, true),
         expected_hwstate_(NULL),
         set_hwprops_call_count_(0),
         interpret_call_count_(0),
@@ -32,7 +32,7 @@ class InterpreterTestInterpreter : public Interpreter {
         short_prop_(prop_reg, "ShortProp", 0),
         string_prop_(prop_reg, "StringProp", "") {
     InitName();
-    logging_enabled_ = true;
+    log_.reset(new ActivityLog(prop_reg));
   }
 
   Gesture return_value_;
@@ -177,8 +177,8 @@ TEST(InterpreterTest, SimpleTest) {
 
 class InterpreterResetLogTestInterpreter : public Interpreter {
  public:
-  InterpreterResetLogTestInterpreter() : Interpreter(NULL, NULL) {
-    logging_enabled_ = true;
+  InterpreterResetLogTestInterpreter() : Interpreter(NULL, NULL, true) {
+    log_.reset(new ActivityLog(NULL));
   }
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
@@ -219,16 +219,16 @@ TEST(InterpreterTest, ResetLogTest) {
   };
   stime_t timeout = -1.0;
   base_interpreter->SyncInterpret(&hardware_state, &timeout);
-  EXPECT_EQ(base_interpreter->log_.size(), 1);
+  EXPECT_EQ(base_interpreter->log_->size(), 1);
 
   base_interpreter->SyncInterpret(&hardware_state, &timeout);
-  EXPECT_EQ(base_interpreter->log_.size(), 2);
+  EXPECT_EQ(base_interpreter->log_->size(), 2);
 
   // Assume the ResetLog property is set.
   base_interpreter->Clear();
-  EXPECT_EQ(base_interpreter->log_.size(), 0);
+  EXPECT_EQ(base_interpreter->log_->size(), 0);
 
   base_interpreter->SyncInterpret(&hardware_state, &timeout);
-  EXPECT_EQ(base_interpreter->log_.size(), 1);
+  EXPECT_EQ(base_interpreter->log_->size(), 1);
 }
 }  // namespace gestures

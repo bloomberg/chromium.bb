@@ -13,7 +13,8 @@ class AppleTrackpadFilterInterpreterTest : public ::testing::Test {};
 
 class AppleTrackpadFilterInterpreterTestInterpreter : public Interpreter {
  public:
-  AppleTrackpadFilterInterpreterTestInterpreter() : Interpreter(NULL, NULL) {}
+  AppleTrackpadFilterInterpreterTestInterpreter()
+      : Interpreter(NULL, NULL, false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     fs = hwstate->fingers[0];

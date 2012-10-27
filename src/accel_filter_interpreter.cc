@@ -18,7 +18,7 @@ namespace gestures {
 AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
                                                Interpreter* next,
                                                Tracer* tracer)
-    : FilterInterpreter(NULL, next, tracer),
+    : FilterInterpreter(NULL, next, tracer, false),
       sensitivity_(prop_reg, "Sensitivity", 3),
       custom_point_str_(prop_reg, "Pointer Accel Curve", ""),
       custom_scroll_str_(prop_reg, "Scroll Accel Curve", ""),

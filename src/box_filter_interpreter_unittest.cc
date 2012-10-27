@@ -25,7 +25,7 @@ class BoxFilterInterpreterTest : public ::testing::Test {};
 class BoxFilterInterpreterTestInterpreter : public Interpreter {
  public:
   BoxFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL),
+      : Interpreter(NULL, NULL, false),
         handle_timer_called_(false), set_hwprops_called_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {

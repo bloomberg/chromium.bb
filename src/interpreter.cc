@@ -17,15 +17,19 @@
 
 namespace gestures {
 
-Interpreter::Interpreter(PropRegistry* prop_reg, Tracer* tracer)
-    : log_(prop_reg),
+Interpreter::Interpreter(PropRegistry* prop_reg,
+                         Tracer* tracer,
+                         bool force_logging)
+    : log_(NULL),
       name_(NULL),
       tracer_(tracer) {
 #ifdef DEEP_LOGS
-  logging_enabled_ = true;
+  bool logging_enabled = true;
 #else
-  logging_enabled_ = false;
+  bool logging_enabled = force_logging;
 #endif
+  if (logging_enabled)
+    log_.reset(new ActivityLog(prop_reg));
 }
 
 Interpreter::~Interpreter() {
@@ -40,51 +44,43 @@ void Interpreter::Trace(const char* message, const char* name) {
 
 Gesture* Interpreter::SyncInterpret(HardwareState* hwstate,
                                     stime_t* timeout) {
-  if (logging_enabled_ && hwstate) {
+  if (log_.get() && hwstate) {
     Trace("log: start: ", "LogHardwareState");
-    log_.LogHardwareState(*hwstate);
+    log_->LogHardwareState(*hwstate);
     Trace("log: end: ", "LogHardwareState");
   }
   Trace("SyncInterpret: start: ", name());
   Gesture* result = SyncInterpretImpl(hwstate, timeout);
   Trace("SyncInterpret: end: ", name());
-  if (logging_enabled_) {
-    Trace("log: start: ", "SyncLogOutputs");
-    LogOutputs(result, timeout);
-    Trace("log: end: ", "SyncLogOutputs");
-  }
+  LogOutputs(result, timeout, "SyncLogOutputs");
   return result;
 }
 
 Gesture* Interpreter::HandleTimer(stime_t now, stime_t* timeout) {
-  if (logging_enabled_) {
+  if (log_.get()) {
     Trace("log: start: ", "LogTimerCallback");
-    log_.LogTimerCallback(now);
+    log_->LogTimerCallback(now);
     Trace("log: end: ", "LogTimerCallback");
   }
   Trace("HandleTimer: start: ", name());
   Gesture* result = HandleTimerImpl(now, timeout);
   Trace("HandleTimer: end: ", name());
-
-  if (logging_enabled_) {
-    Trace("log: start: ", "TimerLogOutputs");
-    LogOutputs(result, timeout);
-    Trace("log: end: ", "TimerLogOutputs");
-  }
+  LogOutputs(result, timeout, "TimerLogOutputs");
   return result;
 }
 
 void Interpreter::SetHardwareProperties(const HardwareProperties& hwprops) {
-  if (logging_enabled_) {
+  if (log_.get()) {
     Trace("log: start: ", "SetHardwareProperties");
-    log_.SetHardwareProperties(hwprops);
+    log_->SetHardwareProperties(hwprops);
     Trace("log: end: ", "SetHardwareProperties");
   }
   SetHardwarePropertiesImpl(hwprops);
 }
 
 DictionaryValue* Interpreter::EncodeCommonInfo() {
-  DictionaryValue* root = log_.EncodeCommonInfo();
+  DictionaryValue* root = log_.get() ?
+      log_->EncodeCommonInfo() : new DictionaryValue;
   root->Set(ActivityLog::kKeyInterpreterName,
             new StringValue(std::string(name())));
   return root;
@@ -93,7 +89,8 @@ DictionaryValue* Interpreter::EncodeCommonInfo() {
 std::string Interpreter::Encode() {
   DictionaryValue *root;
   root = EncodeCommonInfo();
-  root = log_.AddEncodeInfo(root);
+  if (log_.get())
+    root = log_->AddEncodeInfo(root);
 
   std::string out;
   base::JSONWriter::Write(root, true, &out);
@@ -125,10 +122,16 @@ void Interpreter::InitName() {
   }
 }
 
-void Interpreter::LogOutputs(Gesture* result, stime_t* timeout) {
+void Interpreter::LogOutputs(Gesture* result,
+                             stime_t* timeout,
+                             const char* action) {
+  if (!log_.get())
+    return;
+  Trace("log: start: ", action);
   if (result)
-    log_.LogGesture(*result);
+    log_->LogGesture(*result);
   if (timeout && *timeout >= 0.0)
-    log_.LogCallbackRequest(*timeout);
+    log_->LogCallbackRequest(*timeout);
+  Trace("log: end: ", action);
 }
 }  // namespace gestures

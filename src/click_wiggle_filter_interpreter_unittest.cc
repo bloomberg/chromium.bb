@@ -19,7 +19,7 @@ class ClickWiggleFilterInterpreterTest : public ::testing::Test {};
 class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
  public:
   ClickWiggleFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL),
+      : Interpreter(NULL, NULL, false),
         set_hwprops_called_(false), expect_warp_(true),
         expected_fingers_(-1) {}
 

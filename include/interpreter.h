@@ -30,7 +30,7 @@ class Interpreter {
   FRIEND_TEST(InterpreterTest, ResetLogTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, LogResetHandlerTest);
  public:
-  Interpreter(PropRegistry* prop_reg, Tracer* tracer);
+  Interpreter(PropRegistry* prop_reg, Tracer* tracer, bool force_logging);
   virtual ~Interpreter();
 
   // Called to interpret the current state and optionally produce 1
@@ -57,14 +57,14 @@ class Interpreter {
   std::string Encode();
 
   virtual void Clear() {
-    log_.Clear();
+    if (log_.get())
+      log_->Clear();
   }
 
   const char* name() const { return name_; }
 
  protected:
-  bool logging_enabled_;
-  ActivityLog log_;
+  scoped_ptr<ActivityLog> log_;
   void InitName();
   void Trace(const char* message, const char* name);
 
@@ -80,7 +80,7 @@ class Interpreter {
  private:
   const char* name_;
   Tracer* tracer_;
-  void LogOutputs(Gesture* result, stime_t* timeout);
+  void LogOutputs(Gesture* result, stime_t* timeout, const char* action);
 };
 }  // namespace gestures
 

@@ -26,7 +26,7 @@ class LookaheadFilterInterpreterTest : public ::testing::Test {};
 class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
  public:
   LookaheadFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL),
+      : Interpreter(NULL, NULL, false),
         timer_return_(-1.0), set_hwprops_called_(false),
         clear_incoming_hwstates_(false), expected_id_(-1),
         expected_flags_(0), expected_flags_at_(-1),
@@ -215,7 +215,7 @@ class LookaheadFilterInterpreterVariableDelayTestInterpreter
     : public Interpreter {
  public:
   LookaheadFilterInterpreterVariableDelayTestInterpreter()
-      : Interpreter(NULL, NULL), interpret_call_count_ (0) {}
+      : Interpreter(NULL, NULL, false), interpret_call_count_ (0) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     interpret_call_count_++;
@@ -290,7 +290,7 @@ class LookaheadFilterInterpreterNoTapSetTestInterpreter
     : public Interpreter {
  public:
   LookaheadFilterInterpreterNoTapSetTestInterpreter()
-      : Interpreter(NULL, NULL), interpret_call_count_(0) {}
+      : Interpreter(NULL, NULL, false), interpret_call_count_(0) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     EXPECT_EQ(expected_finger_cnts_[interpret_call_count_],

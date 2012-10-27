@@ -25,7 +25,7 @@ class SensorJumpFilterInterpreterTest : public ::testing::Test {};
 class SensorJumpFilterInterpreterTestInterpreter : public Interpreter {
  public:
   SensorJumpFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL),
+      : Interpreter(NULL, NULL, false),
         handle_timer_called_(false),
         set_hwprops_called_(false),
         expected_finger_cnt_(-1) {}

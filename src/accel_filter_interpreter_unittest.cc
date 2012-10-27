@@ -24,7 +24,7 @@ class AccelFilterInterpreterTest : public ::testing::Test {};
 
 class AccelFilterInterpreterTestInterpreter : public Interpreter {
  public:
-  AccelFilterInterpreterTestInterpreter() : Interpreter(NULL, NULL) {}
+  AccelFilterInterpreterTestInterpreter() : Interpreter(NULL, NULL, false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (return_values_.empty())

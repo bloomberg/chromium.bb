@@ -25,7 +25,7 @@ class ScalingFilterInterpreterTest : public ::testing::Test {};
 class ScalingFilterInterpreterTestInterpreter : public Interpreter {
  public:
   ScalingFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL), set_hwprops_called_(false) {}
+      : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (!expected_coordinates_.empty()) {

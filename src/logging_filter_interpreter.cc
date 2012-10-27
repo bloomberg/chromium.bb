@@ -19,13 +19,12 @@ namespace gestures {
 LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
                                                    Interpreter* next,
                                                    Tracer* tracer)
-    : FilterInterpreter(prop_reg, next, tracer),
+    : FilterInterpreter(prop_reg, next, tracer, true),
       logging_notify_(prop_reg, "Logging Notify", 0, this),
       logging_reset_(prop_reg, "Logging Reset", 0, this) {
   InitName();
-  logging_enabled_ = true;
-  if (prop_reg)
-    prop_reg->set_activity_log(&log_);
+  if (prop_reg && log_.get())
+    prop_reg->set_activity_log(log_.get());
 }
 
 void LoggingFilterInterpreter::IntWasWritten(IntProperty* prop) {

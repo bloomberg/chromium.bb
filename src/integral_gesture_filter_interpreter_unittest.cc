@@ -25,7 +25,7 @@ class IntegralGestureFilterInterpreterTest : public ::testing::Test {};
 class IntegralGestureFilterInterpreterTestInterpreter : public Interpreter {
  public:
   IntegralGestureFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL), set_hwprops_called_(false) {}
+      : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (return_values_.empty())

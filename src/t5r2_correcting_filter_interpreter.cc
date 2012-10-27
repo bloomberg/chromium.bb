@@ -9,7 +9,7 @@ namespace gestures {
 // Takes ownership of |next|:
 T5R2CorrectingFilterInterpreter::T5R2CorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
-    : FilterInterpreter(NULL, next, tracer),
+    : FilterInterpreter(NULL, next, tracer, false),
       last_finger_cnt_(0),
       last_touch_cnt_(0),
       touch_cnt_correct_enabled_(prop_reg,

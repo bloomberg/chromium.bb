@@ -17,7 +17,7 @@ namespace gestures {
 ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
                                                    Interpreter* next,
                                                    Tracer* tracer)
-    : FilterInterpreter(NULL, next, tracer),
+    : FilterInterpreter(NULL, next, tracer, false),
       tp_x_scale_(1.0),
       tp_y_scale_(1.0),
       tp_x_translate_(0.0),

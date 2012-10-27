@@ -17,7 +17,7 @@ namespace {
 class FlingStopFilterInterpreterTestInterpreter : public Interpreter {
  public:
   FlingStopFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL),
+      : Interpreter(NULL, NULL, false),
         sync_interpret_called_(false), handle_timer_called_(true),
         next_timeout_(-1) {}
 

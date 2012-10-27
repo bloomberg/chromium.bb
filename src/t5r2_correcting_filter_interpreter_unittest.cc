@@ -25,7 +25,7 @@ class T5R2CorrectingFilterInterpreterTest : public ::testing::Test {};
 class T5R2CorrectingFilterInterpreterTestInterpreter : public Interpreter {
  public:
   T5R2CorrectingFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL), set_hwprops_called_(false) {}
+      : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (expected_hardware_state_) {
