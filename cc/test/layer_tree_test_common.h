@@ -40,6 +40,7 @@ public:
     virtual void didCommit() { }
     virtual void didCommitAndDrawFrame() { }
     virtual void scheduleComposite() { }
+    virtual void didDeferCommit() { }
 
     // Implementation of WebAnimationDelegate
     virtual void notifyAnimationStarted(double time) OVERRIDE { }

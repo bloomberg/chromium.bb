@@ -212,8 +212,9 @@ void ImageTransportHelper::OnSetFrontSurfaceIsProtected(
   surface_->OnSetFrontSurfaceIsProtected(is_protected, protection_state_id);
 }
 
-void ImageTransportHelper::OnBufferPresented(uint32 sync_point) {
-  surface_->OnBufferPresented(sync_point);
+void ImageTransportHelper::OnBufferPresented(bool presented,
+                                             uint32 sync_point) {
+  surface_->OnBufferPresented(presented, sync_point);
 }
 
 void ImageTransportHelper::OnResizeViewACK() {
@@ -311,7 +312,9 @@ bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   return true;
 }
 
-void PassThroughImageTransportSurface::OnBufferPresented(uint32 sync_point) {
+void PassThroughImageTransportSurface::OnBufferPresented(
+    bool /* presented */,
+    uint32 /* sync_point */) {
   DCHECK(transport_);
   helper_->SetScheduled(true);
 }

@@ -275,7 +275,8 @@ IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_SetFrontSurfaceIsProtected,
 // Tells the GPU process that the browser process has handled the swap
 // buffers or post sub-buffer request. A non-zero sync point means
 // that we should wait for the sync point.
-IPC_MESSAGE_ROUTED1(AcceleratedSurfaceMsg_BufferPresented,
+IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_BufferPresented,
+                    bool /* presented */,
                     uint32 /* sync_point */)
 
 // Tells the GPU process to remove all contexts.

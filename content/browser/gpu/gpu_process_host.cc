@@ -108,7 +108,8 @@ void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
 
 void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
                                                      int route_id,
-                                                     bool alive) {
+                                                     bool alive,
+                                                     bool did_swap) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -116,14 +117,16 @@ void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
         base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForGPU,
                    host_id,
                    route_id,
-                   alive));
+                   alive,
+                   did_swap));
     return;
   }
 
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
   if (host) {
     if (alive)
-      host->Send(new AcceleratedSurfaceMsg_BufferPresented(route_id, 0));
+      host->Send(new AcceleratedSurfaceMsg_BufferPresented(
+          route_id, did_swap, 0));
     else
       host->ForceShutdown();
   }
@@ -168,7 +171,8 @@ void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
                                                bool alive,
                                                base::TimeTicks timebase,
                                                base::TimeDelta interval) {
-  AcceleratedSurfaceBuffersSwappedCompletedForGPU(host_id, route_id, alive);
+  AcceleratedSurfaceBuffersSwappedCompletedForGPU(host_id, route_id,
+                                                  alive, true /* presented */);
   AcceleratedSurfaceBuffersSwappedCompletedForRenderer(surface_id, timebase,
                                                        interval);
 }
@@ -680,7 +684,8 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
   base::ScopedClosureRunner scoped_completion_runner(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForGPU,
-                 host_id_, params.route_id, true));
+                 host_id_, params.route_id,
+                 true /* alive */, false /* presented */));
 
   int render_process_id = 0;
   int render_widget_id = 0;

@@ -231,6 +231,12 @@ void SingleThreadProxy::setNeedsRedraw()
     setNeedsCommit();
 }
 
+void SingleThreadProxy::setDeferCommits(bool deferCommits)
+{
+    // Thread-only feature.
+    NOTREACHED();
+}
+
 bool SingleThreadProxy::commitRequested() const
 {
     return false;

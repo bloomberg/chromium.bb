@@ -165,6 +165,11 @@ void WebLayerTreeViewImpl::finishAllRendering()
     m_layerTreeHost->finishAllRendering();
 }
 
+void WebLayerTreeViewImpl::setDeferCommits(bool deferCommits)
+{
+    m_layerTreeHost->setDeferCommits(deferCommits);
+}
+
 void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
 {
     RenderingStats ccStats;

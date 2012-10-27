@@ -46,6 +46,7 @@ public:
     virtual void updateAnimations(double frameBeginTime) OVERRIDE;
     virtual bool compositeAndReadback(void *pixels, const WebRect&) OVERRIDE;
     virtual void finishAllRendering() OVERRIDE;
+    virtual void setDeferCommits(bool deferCommits) OVERRIDE;
     virtual void renderingStats(WebRenderingStats&) const OVERRIDE;
     virtual void setFontAtlas(SkBitmap, WebRect asciiToRectTable[128], int fontHeight) OVERRIDE;
     virtual void loseCompositorContext(int numTimes) OVERRIDE;

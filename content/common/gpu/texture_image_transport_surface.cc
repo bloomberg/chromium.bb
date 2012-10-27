@@ -46,7 +46,8 @@ TextureImageTransportSurface::TextureImageTransportSurface(
         handle_(handle),
         parent_stub_(NULL),
         is_swap_buffers_pending_(false),
-        did_unschedule_(false) {
+        did_unschedule_(false),
+        did_flip_(false) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -323,7 +324,7 @@ bool TextureImageTransportSurface::PostSubBuffer(
             region_to_copy.width(), region_to_copy.height());
       }
     }
-  } else {
+  } else if (!surfaces_same_size && did_flip_) {
     DCHECK(new_damage_rect == gfx::Rect(expected_size));
   }
 
@@ -391,20 +392,34 @@ void TextureImageTransportSurface::OnSetFrontSurfaceIsProtected(
   }
 }
 
-void TextureImageTransportSurface::OnBufferPresented(uint32 sync_point) {
+void TextureImageTransportSurface::OnBufferPresented(bool presented,
+                                                     uint32 sync_point) {
   if (sync_point == 0) {
-    BufferPresentedImpl();
+    BufferPresentedImpl(presented);
   } else {
     helper_->manager()->sync_point_manager()->AddSyncPointCallback(
         sync_point,
         base::Bind(&TextureImageTransportSurface::BufferPresentedImpl,
-                   this->AsWeakPtr()));
+                   this->AsWeakPtr(),
+                   presented));
   }
 }
 
-void TextureImageTransportSurface::BufferPresentedImpl() {
+void TextureImageTransportSurface::BufferPresentedImpl(bool presented) {
   DCHECK(is_swap_buffers_pending_);
   is_swap_buffers_pending_ = false;
+
+  if (presented) {
+    // If we had not flipped, the two frame damage tracking is inconsistent.
+    // So conservatively take the whole frame.
+    if (!did_flip_)
+      previous_damage_rect_ = gfx::Rect(textures_[front()].size);
+  } else {
+    front_ = back();
+    previous_damage_rect_ = gfx::Rect(0, 0, 0, 0);
+  }
+
+  did_flip_ = presented;
 
   // We're relying on the fact that the parent context is
   // finished with it's context when it inserts the sync point that

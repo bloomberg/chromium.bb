@@ -19,11 +19,9 @@ class COMPOSITOR_EXPORT CompositorObserver {
   // composite. In the multi-threaded case, many commits may happen between
   // two successive composites. In the single-threaded, a single commit
   // between two composites (just before the composite as part of the
-  // composite cycle).
+  // composite cycle). If the compositor is locked, it will not send this
+  // this signal.
   virtual void OnCompositingDidCommit(Compositor* compositor) = 0;
-
-  // Called when compositing will start.
-  virtual void OnCompositingWillStart(Compositor* compositor) = 0;
 
   // Called when compositing started: it has taken all the layer changes into
   // account and has issued the graphics commands.
@@ -34,6 +32,9 @@ class COMPOSITOR_EXPORT CompositorObserver {
 
   // Called when compositing is aborted (e.g. lost graphics context).
   virtual void OnCompositingAborted(Compositor* compositor) = 0;
+
+  // Called when the compositor lock state changes.
+  virtual void OnCompositingLockStateChanged(Compositor* compositor) = 0;
 
  protected:
   virtual ~CompositorObserver() {}

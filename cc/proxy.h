@@ -65,6 +65,10 @@ public:
     virtual void setNeedsCommit() = 0;
     virtual void setNeedsRedraw() = 0;
 
+    // Defers commits until it is reset. It is only supported when in threaded mode. It's an error to make a sync call
+    // like compositeAndReadback while commits are deferred.
+    virtual void setDeferCommits(bool) = 0;
+
     virtual void didAddAnimation() = 0;
 
     virtual bool commitRequested() const = 0;

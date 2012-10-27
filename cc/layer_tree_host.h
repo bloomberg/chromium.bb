@@ -143,6 +143,11 @@ public:
 
     void finishAllRendering();
 
+    void setDeferCommits(bool deferCommits);
+
+    // Test only hook
+    virtual void didDeferCommit();
+
     int commitNumber() const { return m_commitNumber; }
 
     void renderingStats(RenderingStats*) const;

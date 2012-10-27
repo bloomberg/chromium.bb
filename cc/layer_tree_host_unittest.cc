@@ -3183,4 +3183,57 @@ TEST_F(LayerTreeHostTestContinuousAnimate, runMultiThread)
     runTest(true);
 }
 
+class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestDeferCommits()
+        : m_numCommitsDeferred(0)
+        , m_numCompleteCommits(0)
+    {
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didDeferCommit() OVERRIDE
+    {
+        m_numCommitsDeferred++;
+        m_layerTreeHost->setDeferCommits(false);
+    }
+
+    virtual void didCommit() OVERRIDE
+    {
+        m_numCompleteCommits++;
+        switch (m_numCompleteCommits) {
+        case 1:
+            EXPECT_EQ(0, m_numCommitsDeferred);
+            m_layerTreeHost->setDeferCommits(true);
+            postSetNeedsCommitToMainThread();
+            break;
+        case 2:
+            endTest();
+            break;
+        default:
+            NOTREACHED();
+            break;
+        }
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+        EXPECT_EQ(1, m_numCommitsDeferred);
+        EXPECT_EQ(2, m_numCompleteCommits);
+    }
+
+private:
+    int m_numCommitsDeferred;
+    int m_numCompleteCommits;
+};
+
+TEST_F(LayerTreeHostTestDeferCommits, runMultiThread)
+{
+    runTest(true);
+}
+
 } // namespace

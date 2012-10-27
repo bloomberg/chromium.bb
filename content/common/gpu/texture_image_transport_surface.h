@@ -48,6 +48,7 @@ class TextureImageTransportSurface :
  protected:
   // ImageTransportSurface implementation.
   virtual void OnBufferPresented(
+      bool presented,
       uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnSetFrontSurfaceIsProtected(
@@ -83,7 +84,7 @@ class TextureImageTransportSurface :
   void ReleaseTexture(int id);
   void ReleaseParentStub();
   void AdjustFrontBufferAllocation();
-  void BufferPresentedImpl();
+  void BufferPresentedImpl(bool presented);
   int front() const { return front_; }
   int back() const { return 1 - front_; }
 
@@ -121,6 +122,10 @@ class TextureImageTransportSurface :
 
   // Whether we unscheduled command buffer because of pending SwapBuffers.
   bool did_unschedule_;
+
+  // Whether or not the buffer flip went through browser side on the last
+  // swap or post sub buffer.
+  bool did_flip_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureImageTransportSurface);
 };

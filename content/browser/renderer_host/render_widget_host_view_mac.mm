@@ -1037,6 +1037,7 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
       RenderWidgetHostImpl::AcknowledgeBufferPresent(
           pending_swap_buffers_acks_.front().first,
           pending_swap_buffers_acks_.front().second,
+          true,
           0);
       if (render_widget_host_) {
         render_widget_host_->AcknowledgeSwapBuffersToRenderer();

@@ -50,8 +50,6 @@ namespace {
 const char kRootWindowForAcceleratedWidget[] =
     "__AURA_ROOT_WINDOW_ACCELERATED_WIDGET__";
 
-const int kCompositorLockTimeoutMs = 67;
-
 // Returns true if |target| has a non-client (frame) component at |location|,
 // in window coordinates.
 bool IsNonClientLocation(Window* target, const gfx::Point& location) {
@@ -96,25 +94,6 @@ RootWindowHost* CreateHost(RootWindow* root_window,
 
 }  // namespace
 
-CompositorLock::CompositorLock(RootWindow* root_window)
-    : root_window_(root_window) {
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CompositorLock::CancelLock, AsWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
-}
-
-CompositorLock::~CompositorLock() {
-  CancelLock();
-}
-
-void CompositorLock::CancelLock() {
-  if (!root_window_)
-    return;
-  root_window_->UnlockCompositor();
-  root_window_ = NULL;
-}
-
 RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
     : initial_bounds(a_initial_bounds),
       host(NULL) {
@@ -143,9 +122,7 @@ RootWindow::RootWindow(const CreateParams& params)
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(held_mouse_event_factory_(this)),
-      compositor_lock_(NULL),
-      draw_on_compositor_unlock_(false) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(held_mouse_event_factory_(this)) {
   SetName("RootWindow");
 
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));
@@ -158,12 +135,6 @@ RootWindow::RootWindow(const CreateParams& params)
 }
 
 RootWindow::~RootWindow() {
-  if (compositor_lock_) {
-    // No need to schedule a draw, we're going away.
-    draw_on_compositor_unlock_ = false;
-    compositor_lock_->CancelLock();
-    DCHECK(!compositor_lock_);
-  }
   compositor_->RemoveObserver(this);
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
@@ -277,10 +248,6 @@ void RootWindow::Draw() {
   defer_draw_scheduling_ = false;
   if (waiting_on_compositing_end_) {
     draw_on_compositing_end_ = true;
-    return;
-  }
-  if (compositor_lock_) {
-    draw_on_compositor_unlock_ = true;
     return;
   }
   waiting_on_compositing_end_ = true;
@@ -412,6 +379,7 @@ void RootWindow::HoldMouseMoves() {
   if (!mouse_move_hold_count_)
     held_mouse_event_factory_.InvalidateWeakPtrs();
   ++mouse_move_hold_count_;
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::HoldMouseMoves", this);
 }
 
 void RootWindow::ReleaseMouseMoves() {
@@ -428,12 +396,7 @@ void RootWindow::ReleaseMouseMoves() {
         base::Bind(&RootWindow::DispatchHeldMouseMove,
                    held_mouse_event_factory_.GetWeakPtr()));
   }
-}
-
-scoped_refptr<CompositorLock> RootWindow::GetCompositorLock() {
-  if (!compositor_lock_)
-    compositor_lock_ = new CompositorLock(this);
-  return compositor_lock_;
+  TRACE_EVENT_ASYNC_END0("ui", "RootWindow::HoldMouseMoves", this);
 }
 
 void RootWindow::SetFocusWhenShown(bool focused) {
@@ -486,9 +449,7 @@ ui::EventTarget* RootWindow::GetParentTarget() {
 // RootWindow, ui::CompositorDelegate implementation:
 
 void RootWindow::ScheduleDraw() {
-  if (compositor_lock_) {
-    draw_on_compositor_unlock_ = true;
-  } else if (!defer_draw_scheduling_) {
+  if (!defer_draw_scheduling_) {
     defer_draw_scheduling_ = true;
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -500,9 +461,6 @@ void RootWindow::ScheduleDraw() {
 // RootWindow, ui::CompositorObserver implementation:
 
 void RootWindow::OnCompositingDidCommit(ui::Compositor*) {
-}
-
-void RootWindow::OnCompositingWillStart(ui::Compositor*) {
 }
 
 void RootWindow::OnCompositingStarted(ui::Compositor*) {
@@ -523,6 +481,9 @@ void RootWindow::OnCompositingEnded(ui::Compositor*) {
 }
 
 void RootWindow::OnCompositingAborted(ui::Compositor*) {
+}
+
+void RootWindow::OnCompositingLockStateChanged(ui::Compositor*) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1060,15 +1021,6 @@ void RootWindow::SynthesizeMouseMoveEvent() {
   event.set_system_location(Env::GetInstance()->last_mouse_location());
   OnHostMouseEvent(&event);
 #endif
-}
-
-void RootWindow::UnlockCompositor() {
-  DCHECK(compositor_lock_);
-  compositor_lock_ = NULL;
-  if (draw_on_compositor_unlock_) {
-    draw_on_compositor_unlock_ = false;
-    ScheduleDraw();
-  }
 }
 
 }  // namespace aura

@@ -95,8 +95,6 @@ class BenchCompositorObserver : public ui::CompositorObserver {
 
   virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {}
 
-  virtual void OnCompositingWillStart(Compositor* compositor) OVERRIDE {}
-
   virtual void OnCompositingStarted(Compositor* compositor) OVERRIDE {}
 
   virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE {
@@ -119,6 +117,9 @@ class BenchCompositorObserver : public ui::CompositorObserver {
   }
 
   virtual void OnCompositingAborted(Compositor* compositor) OVERRIDE {}
+
+  virtual void OnCompositingLockStateChanged(
+      Compositor* compositor) OVERRIDE {}
 
   virtual void Draw() {}
 

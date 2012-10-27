@@ -345,6 +345,15 @@ void LayerTreeHost::finishAllRendering()
     m_proxy->finishAllRendering();
 }
 
+void LayerTreeHost::setDeferCommits(bool deferCommits)
+{
+    m_proxy->setDeferCommits(deferCommits);
+}
+
+void LayerTreeHost::didDeferCommit()
+{
+}
+
 void LayerTreeHost::renderingStats(RenderingStats* stats) const
 {
     *stats = m_renderingStats;

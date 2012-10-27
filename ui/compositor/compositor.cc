@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
@@ -39,6 +41,8 @@ webkit_glue::WebThreadImpl* g_compositor_thread = NULL;
 bool test_compositor_enabled = false;
 
 ui::ContextFactory* g_context_factory = NULL;
+
+const int kCompositorLockTimeoutMs = 67;
 
 }  // namespace
 
@@ -132,6 +136,25 @@ Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
 Texture::~Texture() {
 }
 
+CompositorLock::CompositorLock(Compositor* compositor)
+    : compositor_(compositor) {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CompositorLock::CancelLock, AsWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
+}
+
+CompositorLock::~CompositorLock() {
+  CancelLock();
+}
+
+void CompositorLock::CancelLock() {
+  if (!compositor_)
+    return;
+  compositor_->UnlockCompositor();
+  compositor_ = NULL;
+}
+
 Compositor::Compositor(CompositorDelegate* delegate,
                        gfx::AcceleratedWidget widget)
     : delegate_(delegate),
@@ -141,7 +164,8 @@ Compositor::Compositor(CompositorDelegate* delegate,
       device_scale_factor_(0.0f),
       last_started_frame_(0),
       last_ended_frame_(0),
-      disable_schedule_composite_(false) {
+      disable_schedule_composite_(false),
+      compositor_lock_(NULL) {
   WebKit::WebCompositorSupport* compositor_support =
       WebKit::Platform::current()->compositorSupport();
   root_web_layer_.reset(compositor_support->createLayer());
@@ -161,6 +185,9 @@ Compositor::Compositor(CompositorDelegate* delegate,
 }
 
 Compositor::~Compositor() {
+  CancelCompositorLock();
+  DCHECK(!compositor_lock_);
+
   // Don't call |CompositorDelegate::ScheduleDraw| from this point.
   delegate_ = NULL;
   if (root_layer_)
@@ -230,15 +257,12 @@ void Compositor::Draw(bool force_clear) {
     return;
 
   last_started_frame_++;
-  if (!g_compositor_thread)
-    FOR_EACH_OBSERVER(CompositorObserver,
-                      observer_list_,
-                      OnCompositingWillStart(this));
-
-  // TODO(nduca): Temporary while compositor calls
-  // compositeImmediately() directly.
-  layout();
-  host_->composite();
+  if (!g_compositor_thread && !IsLocked()) {
+    // TODO(nduca): Temporary while compositor calls
+    // compositeImmediately() directly.
+    layout();
+    host_->composite();
+  }
   if (!g_compositor_thread && !swap_posted_)
     NotifyEnd();
 }
@@ -257,6 +281,7 @@ bool Compositor::ReadPixels(SkBitmap* bitmap,
   bitmap->allocPixels();
   SkAutoLockPixels lock_image(*bitmap);
   unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
+  CancelCompositorLock();
   return host_->compositeAndReadback(pixels, bounds_in_pixel);
 }
 
@@ -285,10 +310,6 @@ void Compositor::RemoveObserver(CompositorObserver* observer) {
 
 bool Compositor::HasObserver(CompositorObserver* observer) {
   return observer_list_.HasObserver(observer);
-}
-
-bool Compositor::IsThreaded() const {
-  return g_compositor_thread != NULL;
 }
 
 void Compositor::OnSwapBuffersPosted() {
@@ -384,21 +405,14 @@ WebKit::WebCompositorOutputSurface* Compositor::createOutputSurface() {
 void Compositor::didRecreateOutputSurface(bool success) {
 }
 
-// Called once per draw in single-threaded compositor mode and potentially
-// many times between draws in the multi-threaded compositor mode.
 void Compositor::didCommit() {
+  DCHECK(!IsLocked());
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingDidCommit(this));
 }
 
 void Compositor::didCommitAndDrawFrame() {
-  // TODO(backer): Plumb through an earlier impl side will start.
-  if (g_compositor_thread)
-    FOR_EACH_OBSERVER(CompositorObserver,
-                      observer_list_,
-                      OnCompositingWillStart(this));
-
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingStarted(this));
@@ -411,6 +425,33 @@ void Compositor::didCompleteSwapBuffers() {
 void Compositor::scheduleComposite() {
   if (!disable_schedule_composite_)
     ScheduleDraw();
+}
+
+scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
+  if (!compositor_lock_) {
+    compositor_lock_ = new CompositorLock(this);
+    if (g_compositor_thread)
+      host_->setDeferCommits(true);
+    FOR_EACH_OBSERVER(CompositorObserver,
+                      observer_list_,
+                      OnCompositingLockStateChanged(this));
+  }
+  return compositor_lock_;
+}
+
+void Compositor::UnlockCompositor() {
+  DCHECK(compositor_lock_);
+  compositor_lock_ = NULL;
+  if (g_compositor_thread)
+    host_->setDeferCommits(false);
+  FOR_EACH_OBSERVER(CompositorObserver,
+                    observer_list_,
+                    OnCompositingLockStateChanged(this));
+}
+
+void Compositor::CancelCompositorLock() {
+  if (compositor_lock_)
+    compositor_lock_->CancelLock();
 }
 
 void Compositor::NotifyEnd() {

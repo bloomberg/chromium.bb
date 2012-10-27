@@ -50,7 +50,7 @@ class PbufferImageTransportSurface
 
  protected:
   // ImageTransportSurface implementation
-  virtual void OnBufferPresented(uint32 sync_point) OVERRIDE;
+  virtual void OnBufferPresented(bool presented, uint32 sync_point) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
@@ -205,7 +205,8 @@ void PbufferImageTransportSurface::SendBuffersSwapped() {
   is_swap_buffers_pending_ = true;
 }
 
-void PbufferImageTransportSurface::OnBufferPresented(uint32 sync_point) {
+void PbufferImageTransportSurface::OnBufferPresented(bool presented,
+                                                     uint32 sync_point) {
   is_swap_buffers_pending_ = false;
   if (did_unschedule_) {
     did_unschedule_ = false;

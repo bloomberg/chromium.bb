@@ -181,6 +181,11 @@ public:
 
     void setTestStarted(bool started) { m_testStarted = started; }
 
+    virtual void didDeferCommit() OVERRIDE
+    {
+        m_testHooks->didDeferCommit();
+    }
+
 private:
     MockLayerTreeHost(TestHooks* testHooks, cc::LayerTreeHostClient* client, const cc::LayerTreeSettings& settings)
         : LayerTreeHost(client, settings)

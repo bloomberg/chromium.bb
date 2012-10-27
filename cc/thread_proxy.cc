@@ -53,6 +53,8 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost)
     , m_nextFrameIsNewlyCommittedFrameOnImplThread(false)
     , m_renderVSyncEnabled(layerTreeHost->settings().renderVSyncEnabled)
     , m_totalCommitCount(0)
+    , m_deferCommits(false)
+    , m_deferredCommitPending(false)
 {
     TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
     DCHECK(isMainThread());
@@ -70,6 +72,7 @@ bool ThreadProxy::compositeAndReadback(void *pixels, const IntRect& rect)
     TRACE_EVENT0("cc", "ThreadPRoxy::compositeAndReadback");
     DCHECK(isMainThread());
     DCHECK(m_layerTreeHost);
+    DCHECK(!m_deferCommits);
 
     if (!m_layerTreeHost->initializeRendererIfNeeded()) {
         TRACE_EVENT0("cc", "compositeAndReadback_EarlyOut_LR_Uninitialized");
@@ -131,6 +134,7 @@ void ThreadProxy::requestStartPageScaleAnimationOnImplThread(IntSize targetPosit
 void ThreadProxy::finishAllRendering()
 {
     DCHECK(Proxy::isMainThread());
+    DCHECK(!m_deferCommits);
 
     // Make sure all GL drawing is finished on the impl thread.
     DebugScopedSetMainThreadBlocked mainThreadBlocked;
@@ -386,6 +390,23 @@ void ThreadProxy::setNeedsRedraw()
     Proxy::implThread()->postTask(createThreadTask(this, &ThreadProxy::setNeedsRedrawOnImplThread));
 }
 
+void ThreadProxy::setDeferCommits(bool deferCommits)
+{
+    DCHECK(isMainThread());
+    DCHECK_NE(m_deferCommits, deferCommits);
+    m_deferCommits = deferCommits;
+
+    if (m_deferCommits)
+        TRACE_EVENT_ASYNC_BEGIN0("cc", "ThreadProxy::setDeferCommits", this);
+    else
+        TRACE_EVENT_ASYNC_END0("cc", "ThreadProxy::setDeferCommits", this);
+
+    if (!m_deferCommits && m_deferredCommitPending) {
+        m_deferredCommitPending = false;
+        m_mainThreadProxy->postTask(createThreadTask(this, &ThreadProxy::beginFrame));
+    }
+}
+
 bool ThreadProxy::commitRequested() const
 {
     DCHECK(isMainThread());
@@ -499,6 +520,13 @@ void ThreadProxy::beginFrame()
     DCHECK(isMainThread());
     if (!m_layerTreeHost)
         return;
+
+    if (m_deferCommits) {
+        m_deferredCommitPending = true;
+        m_layerTreeHost->didDeferCommit();
+        TRACE_EVENT0("cc", "EarlyOut_DeferCommits");
+        return;
+    }
 
     if (!m_pendingBeginFrameRequest) {
         TRACE_EVENT0("cc", "EarlyOut_StaleBeginFrameMessage");

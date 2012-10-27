@@ -393,6 +393,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   static void AcknowledgeBufferPresent(
       int32 route_id,
       int gpu_host_id,
+      bool presented,
       uint32 sync_point);
 
   // Called by the view in response to AcceleratedSurfaceBuffersSwapped for

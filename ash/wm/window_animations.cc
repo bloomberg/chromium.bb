@@ -573,8 +573,6 @@ class CrossFadeObserver : public ui::CompositorObserver,
   // ui::CompositorObserver overrides:
   virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE {
   }
-  virtual void OnCompositingWillStart(ui::Compositor* compositor) OVERRIDE {
-  }
   virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE {
   }
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE {
@@ -582,6 +580,9 @@ class CrossFadeObserver : public ui::CompositorObserver,
   virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE {
     // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
     layer_->GetAnimator()->StopAnimating();
+  }
+  virtual void OnCompositingLockStateChanged(
+      ui::Compositor* compositor) OVERRIDE {
   }
 
   // aura::WindowObserver overrides:
