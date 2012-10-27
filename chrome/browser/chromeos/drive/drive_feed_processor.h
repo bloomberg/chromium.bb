@@ -67,13 +67,10 @@ class DriveFeedProcessor {
 
   // Helper function for adding new |entry| from the feed into |directory|. It
   // checks the type of file and updates |changed_dirs| if this file adding
-  // operation needs to raise directory notification update. If file is being
-  // added to |orphaned_resources| such notifications are not raised since
-  // we ignore such files and don't add them to the file system.
+  // operation needs to raise directory notification update.
   static void AddEntryToDirectoryAndCollectChangedDirectories(
       DriveEntry* entry,
       DriveDirectory* directory,
-      DriveResourceMetadata* orphaned_resources,
       std::set<FilePath>* changed_dirs);
 
   // Helper function for removing |entry| from its parent. If |entry| is a
@@ -84,12 +81,10 @@ class DriveFeedProcessor {
       std::set<FilePath>* changed_dirs);
 
   // Finds directory where new |new_entry| should be added to during feed
-  // processing. |orphaned_resources| collects files/dirs that don't have a
-  // parent in either locally cached file system or in this new feed.
+  // processing.
   DriveDirectory* FindDirectoryForNewEntry(
       DriveEntry* new_entry,
-      const ResourceMap& resource_map,
-      DriveResourceMetadata* orphaned_resources);
+      const ResourceMap& resource_map);
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(DriveFeedProcessor);

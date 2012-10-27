@@ -90,9 +90,6 @@ void DriveFeedProcessor::ApplyEntryProtoMap(
   }
   resource_metadata_->set_largest_changestamp(feed_changestamp);
 
-  scoped_ptr<DriveResourceMetadata> orphaned_resources(
-      new DriveResourceMetadata);
-
   // TODO(achuith): Get rid of this conversion of DriveEntryProtoMap to
   // ResourceMap.
   ResourceMap resource_map;
@@ -146,32 +143,23 @@ void DriveFeedProcessor::ApplyEntryProtoMap(
       // Did we actually move the new file to another directory?
       if (parent->resource_id() != entry->parent_resource_id()) {
         changed_dirs->insert(parent->GetFilePath());
-        parent = FindDirectoryForNewEntry(entry.get(),
-                                          resource_map,
-                                          orphaned_resources.get());
+        parent = FindDirectoryForNewEntry(entry.get(), resource_map);
       }
-      DCHECK(parent);
       AddEntryToDirectoryAndCollectChangedDirectories(
           entry.release(),
           parent,
-          orphaned_resources.get(),
           changed_dirs);
     } else {  // Adding a new file.
-      parent = FindDirectoryForNewEntry(entry.get(),
-                                        resource_map,
-                                        orphaned_resources.get());
-      DCHECK(parent);
+      parent = FindDirectoryForNewEntry(entry.get(), resource_map);
       AddEntryToDirectoryAndCollectChangedDirectories(
           entry.release(),
           parent,
-          orphaned_resources.get(),
           changed_dirs);
     }
 
     // Record the parent if it was already in the tree and this is a delta feed.
     if (parent &&
         (parent->parent() || parent == resource_metadata_->root()) &&
-        parent != orphaned_resources->root() &&
         is_delta_feed) {
       changed_dirs->insert(parent->GetFilePath());
     }
@@ -184,10 +172,13 @@ void DriveFeedProcessor::ApplyEntryProtoMap(
 void DriveFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
     DriveEntry* entry,
     DriveDirectory* directory,
-    DriveResourceMetadata* orphaned_resources,
     std::set<FilePath>* changed_dirs) {
+  if (!directory) {  // Orphan.
+    delete entry;
+    return;
+  }
   directory->AddEntry(entry);
-  if (entry->AsDriveDirectory() && directory != orphaned_resources->root())
+  if (entry->AsDriveDirectory())
     changed_dirs->insert(entry->GetFilePath());
 }
 
@@ -210,8 +201,7 @@ void DriveFeedProcessor::RemoveEntryFromParentAndCollectChangedDirectories(
 
 DriveDirectory* DriveFeedProcessor::FindDirectoryForNewEntry(
     DriveEntry* new_entry,
-    const ResourceMap& resource_map,
-    DriveResourceMetadata* orphaned_resources) {
+    const ResourceMap& resource_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DriveDirectory* dir = NULL;
   // Added file.
@@ -225,20 +215,13 @@ DriveDirectory* DriveFeedProcessor::FindDirectoryForNewEntry(
     dir = entry ? entry->AsDriveDirectory() : NULL;
     if (!dir) {
       // The parent directory was also added with this set of feeds.
-      ResourceMap::const_iterator find_iter =
-          resource_map.find(parent_resource_id);
-      dir = (find_iter != resource_map.end() &&
-             find_iter->second) ?
-                find_iter->second->AsDriveDirectory() : NULL;
-      if (dir) {
-        DVLOG(1) << "Found parent for " << new_entry->base_name()
-                 << " in resource_map " << parent_resource_id;
-      } else {
-        DVLOG(1) << "Adding orphan " << new_entry->GetFilePath().value();
-        dir = orphaned_resources->root();
-      }
+      ResourceMap::const_iterator iter = resource_map.find(parent_resource_id);
+      if (iter != resource_map.end())
+          dir = iter->second ? iter->second->AsDriveDirectory() : NULL;
     }
   }
+  DVLOG(1) << new_entry->base_name() << " parent " << parent_resource_id
+           << (dir ? " found" : " not found");
   return dir;
 }
 
