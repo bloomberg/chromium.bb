@@ -134,7 +134,10 @@ void HostStarter::OnHostStarted(DaemonController::AsyncResult result) {
         &HostStarter::OnHostStarted, weak_ptr_, result));
     return;
   }
-  // TODO(simonmorris): Unregister the host if we didn't start it.
+  if (result != DaemonController::RESULT_OK) {
+    service_client_->UnregisterHost(host_id_, access_token_, this);
+    return;
+  }
   Result done_result = (result == DaemonController::RESULT_OK) ?
       START_COMPLETE : START_ERROR;
   CompletionCallback cb = on_done_;
@@ -162,6 +165,17 @@ void HostStarter::OnNetworkError(int response_code) {
   CompletionCallback cb = on_done_;
   on_done_.Reset();
   cb.Run(NETWORK_ERROR);
+}
+
+void HostStarter::OnHostUnregistered() {
+  if (!main_task_runner_->BelongsToCurrentThread()) {
+    main_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &HostStarter::OnHostUnregistered, weak_ptr_));
+    return;
+  }
+  CompletionCallback cb = on_done_;
+  on_done_.Reset();
+  cb.Run(START_ERROR);
 }
 
 }  // namespace remoting

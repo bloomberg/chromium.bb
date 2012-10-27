@@ -18,10 +18,13 @@ namespace remoting {
 
 class ServiceClient {
  public:
+  // TODO(simonmorris): Consider using a Callback instead of a delegate.
   class Delegate {
    public:
     // Invoked when a host has been registered.
     virtual void OnHostRegistered() = 0;
+    // Invoked when a host has been unregistered.
+    virtual void OnHostUnregistered() = 0;
     // Invoked when there is an OAuth error.
     virtual void OnOAuthError() = 0;
     // Invoked when there is a network error or upon receiving an invalid
@@ -34,11 +37,16 @@ class ServiceClient {
   ServiceClient(net::URLRequestContextGetter* context_getter);
   ~ServiceClient();
 
+  // Register a host.
   void RegisterHost(const std::string& host_id,
                     const std::string& host_name,
                     const std::string& public_key,
                     const std::string& oauth_access_token,
                     Delegate* delegate);
+  // Unregister a host.
+  void UnregisterHost(const std::string& host_id,
+                      const std::string& oauth_access_token,
+                      Delegate* delegate);
 
  private:
   // The guts of the implementation live in this class.

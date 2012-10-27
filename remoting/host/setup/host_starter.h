@@ -55,6 +55,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
 
   // remoting::ServiceClient::Delegate
   virtual void OnHostRegistered() OVERRIDE;
+  virtual void OnHostUnregistered() OVERRIDE;
 
   // TODO(sergeyu): Following methods are members of all three delegate
   // interfaces implemented in this class. Fix ServiceClient and
