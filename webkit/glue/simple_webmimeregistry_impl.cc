@@ -70,7 +70,8 @@ WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
       return IsNotSupported;
 
     std::vector<std::string> strict_codecs;
-    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, false);
+    bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
+    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, strip_suffix);
 
     if (!webkit_media::IsSupportedKeySystemWithMediaMimeType(
             mime_type_ascii, strict_codecs, ToASCIIOrEmpty(key_system)))
