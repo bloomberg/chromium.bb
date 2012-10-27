@@ -127,6 +127,12 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
   void StartAnimation(int container_mask,
                       AnimationType type);
 
+  // Apply animation |type| to all containers included in |container_mask| and
+  // call a |callback| at the end of the animation, if it is not null.
+  void StartAnimationWithCallback(int container_mask,
+                                  AnimationType type,
+                                  base::Callback<void(void)>& callback);
+
   // Fills |containers| with the containers included in |container_mask|.
   void GetContainers(int container_mask,
                      aura::Window::Windows* containers);
@@ -136,6 +142,12 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
                                    const gfx::Size& old_size) OVERRIDE;
 
  private:
+  // Apply animation |type| to window |window| and add |observer| if it is not
+  // NULL to the last animation sequence.
+  void RunAnimationForWindow(aura::Window* window,
+                             AnimationType type,
+                             ui::LayerAnimationObserver* observer);
+
   // Layer that's stacked under all of the root window's children to provide a
   // black background when we're scaling all of the other windows down.
   // TODO(derat): Remove this in favor of having the compositor only clear the

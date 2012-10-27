@@ -67,32 +67,40 @@ gfx::Transform GetFastCloseTransform() {
 }
 
 // Slowly shrinks |window| to a slightly-smaller size.
-void StartSlowCloseAnimationForWindow(aura::Window* window) {
+void StartSlowCloseAnimationForWindow(aura::Window* window,
+                                      ui::LayerAnimationObserver* observer) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  animator->StartAnimation(
-      new ui::LayerAnimationSequence(
-          ui::LayerAnimationElement::CreateTransformElement(
-              GetSlowCloseTransform(),
-              base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs))));
+  ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
+      ui::LayerAnimationElement::CreateTransformElement(
+          GetSlowCloseTransform(),
+          base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs)));
+  animator->StartAnimation(sequence);
+  if (observer)
+    sequence->AddObserver(observer);
 }
 
 // Quickly undoes the effects of the slow-close animation on |window|.
-void StartUndoSlowCloseAnimationForWindow(aura::Window* window) {
+void StartUndoSlowCloseAnimationForWindow(
+    aura::Window* window,
+    ui::LayerAnimationObserver* observer) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  animator->StartAnimation(
-      new ui::LayerAnimationSequence(
-          ui::LayerAnimationElement::CreateTransformElement(
-              gfx::Transform(),
-              base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs))));
+  ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
+      ui::LayerAnimationElement::CreateTransformElement(
+          gfx::Transform(),
+          base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs)));
+  animator->StartAnimation(sequence);
+  if (observer)
+    sequence->AddObserver(observer);
 }
 
 // Quickly shrinks |window| down to a point in the center of the screen and
 // fades it out to 0 opacity.
-void StartFastCloseAnimationForWindow(aura::Window* window) {
+void StartFastCloseAnimationForWindow(aura::Window* window,
+                                      ui::LayerAnimationObserver* observer) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -101,10 +109,12 @@ void StartFastCloseAnimationForWindow(aura::Window* window) {
           ui::LayerAnimationElement::CreateTransformElement(
               GetFastCloseTransform(),
               base::TimeDelta::FromMilliseconds(kFastCloseAnimMs))));
-  animator->StartAnimation(
-      new ui::LayerAnimationSequence(
-          ui::LayerAnimationElement::CreateOpacityElement(
-              0.0, base::TimeDelta::FromMilliseconds(kFastCloseAnimMs))));
+  ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
+      ui::LayerAnimationElement::CreateOpacityElement(
+         0.0, base::TimeDelta::FromMilliseconds(kFastCloseAnimMs)));
+  animator->StartAnimation(sequence);
+  if (observer)
+    sequence->AddObserver(observer);
 }
 
 // Fades |window| to |target_opacity| over |length| milliseconds.
@@ -124,29 +134,38 @@ void StartPartialFadeAnimation(aura::Window* window,
 }
 
 // Fades |window| in to full opacity.
-void FadeInWindow(aura::Window* window) {
+void FadeInWindow(aura::Window* window,
+                  ui::LayerAnimationObserver* observer) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  animator->StartAnimation(
-      new ui::LayerAnimationSequence(
-          ui::LayerAnimationElement::CreateOpacityElement(
-              1.0, base::TimeDelta::FromMilliseconds(kLockFadeInAnimMs))));
+  ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
+      ui::LayerAnimationElement::CreateOpacityElement(
+          1.0, base::TimeDelta::FromMilliseconds(kLockFadeInAnimMs)));
+  animator->StartAnimation(sequence);
+  if (observer)
+    sequence->AddObserver(observer);
 }
 
 // Makes |window| fully transparent instantaneously.
-void HideWindow(aura::Window* window) {
+void HideWindow(aura::Window* window, ui::LayerAnimationObserver* observer) {
   window->layer()->SetOpacity(0.0);
+  if (observer)
+    observer->OnLayerAnimationEnded(NULL);
 }
 
 // Restores |window| to its original position and scale and full opacity
 // instantaneously.
-void RestoreWindow(aura::Window* window) {
+void RestoreWindow(aura::Window* window, ui::LayerAnimationObserver* observer) {
   window->layer()->SetTransform(gfx::Transform());
   window->layer()->SetOpacity(1.0);
+  if (observer)
+    observer->OnLayerAnimationEnded(NULL);
 }
 
-void RaiseWindow(aura::Window* window, base::TimeDelta length) {
+void RaiseWindow(aura::Window* window,
+                 base::TimeDelta length,
+                 ui::LayerAnimationObserver* observer) {
   WorkspaceAnimationDetails details;
   details.direction = WORKSPACE_ANIMATE_UP;
   details.animate = true;
@@ -154,9 +173,22 @@ void RaiseWindow(aura::Window* window, base::TimeDelta length) {
   details.animate_opacity = true;
   details.duration = length;
   HideWorkspace(window, details);
+  // A bit of a dirty trick: we need to catch the end of the animation we don't
+  // control. So we use two facts we know: which animator will be used and the
+  // target opacity to add "Do nothing" animation sequence.
+  // Unfortunately, we can not just use empty LayerAnimationSequence, because
+  // it does not call NotifyEnded().
+  ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
+      ui::LayerAnimationElement::CreateOpacityElement(
+          0.0, base::TimeDelta()));
+  if (observer)
+    sequence->AddObserver(observer);
+  window->layer()->GetAnimator()->ScheduleAnimation(sequence);
 }
 
-void LowerWindow(aura::Window* window, base::TimeDelta length) {
+void LowerWindow(aura::Window* window,
+                 base::TimeDelta length,
+                 ui::LayerAnimationObserver* observer) {
   WorkspaceAnimationDetails details;
   details.direction = WORKSPACE_ANIMATE_DOWN;
   details.animate = true;
@@ -164,16 +196,27 @@ void LowerWindow(aura::Window* window, base::TimeDelta length) {
   details.animate_opacity = true;
   details.duration = length;
   ShowWorkspace(window, details);
+  // A bit of a dirty trick: we need to catch the end of the animation we don't
+  // control. So we use two facts we know: which animator will be used and the
+  // target opacity to add "Do nothing" animation sequence.
+  // Unfortunately, we can not just use empty LayerAnimationSequence, because
+  // it does not call NotifyEnded().
+  ui::LayerAnimationSequence* sequence = new ui::LayerAnimationSequence(
+      ui::LayerAnimationElement::CreateOpacityElement(
+          1.0, base::TimeDelta()));
+  if (observer)
+    sequence->AddObserver(observer);
+  window->layer()->GetAnimator()->ScheduleAnimation(sequence);
 }
 
 // Animation observer that will drop animated foreground once animation is
 // finished. It is used in when undoing shutdown animation.
-class ForegroundDropAnimationObserver : public ui::LayerAnimationObserver {
+class CallbackAnimationObserver : public ui::LayerAnimationObserver {
  public:
-  explicit ForegroundDropAnimationObserver(SessionStateAnimator* animator)
-      : animator_(animator) {
+  explicit CallbackAnimationObserver(base::Callback<void(void)> &callback)
+      : callback_(callback) {
   }
-  virtual ~ForegroundDropAnimationObserver() {
+  virtual ~CallbackAnimationObserver() {
   }
 
  private:
@@ -181,23 +224,23 @@ class ForegroundDropAnimationObserver : public ui::LayerAnimationObserver {
   virtual void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq)
       OVERRIDE {
     // Drop foreground once animation is over.
-    animator_->DropForeground();
+    callback_.Run();
     delete this;
   }
 
   virtual void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq)
       OVERRIDE {
     // Drop foreground once animation is over.
-    animator_->DropForeground();
+    callback_.Run();
     delete this;
   }
 
   virtual void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq)
       OVERRIDE {}
 
-  SessionStateAnimator* animator_;
+  base::Callback<void(void)> callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ForegroundDropAnimationObserver);
+  DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
 };
 
 }  // namespace
@@ -333,59 +376,81 @@ void SessionStateAnimator::GetContainers(int container_mask,
   }
 }
 
-// Apply animation |type| to all containers described by |container_mask|.
 void SessionStateAnimator::StartAnimation(int container_mask,
                                           AnimationType type) {
   aura::Window::Windows containers;
   GetContainers(container_mask, &containers);
-
   for (aura::Window::Windows::const_iterator it = containers.begin();
        it != containers.end(); ++it) {
-    aura::Window* window = *it;
-    switch (type) {
-      case ANIMATION_PARTIAL_CLOSE:
-        StartSlowCloseAnimationForWindow(window);
-        break;
-      case ANIMATION_UNDO_PARTIAL_CLOSE:
-        StartUndoSlowCloseAnimationForWindow(window);
-        break;
-      case ANIMATION_FULL_CLOSE:
-        StartFastCloseAnimationForWindow(window);
-        break;
-      case ANIMATION_FADE_IN:
-        FadeInWindow(window);
-        break;
-      case ANIMATION_HIDE:
-        HideWindow(window);
-        break;
-      case ANIMATION_RESTORE:
-        RestoreWindow(window);
-        break;
-      case ANIMATION_RAISE:
-        RaiseWindow(window,
-            base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs));
-        break;
-      case ANIMATION_LOWER:
-        LowerWindow(window,
-            base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs));
-        break;
-      case ANIMATION_PARTIAL_FADE_IN:
-        StartPartialFadeAnimation(window, kPartialFadeRatio,
-            base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
-            NULL);
-        break;
-      case ANIMATION_UNDO_PARTIAL_FADE_IN:
-        StartPartialFadeAnimation(window, 0.0,
-            base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs),
-            new ForegroundDropAnimationObserver(this));
-        break;
-      case ANIMATION_FULL_FADE_IN:
-        StartPartialFadeAnimation(window, 1.0,
-            base::TimeDelta::FromMilliseconds(kFastCloseAnimMs), NULL);
-        break;
-      default:
-        NOTREACHED() << "Unhandled animation type " << type;
-    }
+    RunAnimationForWindow(*it, type, NULL);
+  }
+}
+
+// Apply animation |type| to all containers described by |container_mask|.
+void SessionStateAnimator::StartAnimationWithCallback(
+    int container_mask,
+    AnimationType type,
+    base::Callback<void(void)>& callback) {
+  aura::Window::Windows containers;
+  GetContainers(container_mask, &containers);
+  for (aura::Window::Windows::const_iterator it = containers.begin();
+       it != containers.end(); ++it) {
+    ui::LayerAnimationObserver* observer =
+        new CallbackAnimationObserver(callback);
+    RunAnimationForWindow(*it, type, observer);
+  }
+}
+
+void SessionStateAnimator::RunAnimationForWindow(
+    aura::Window* window,
+    AnimationType type,
+    ui::LayerAnimationObserver* observer) {
+  switch (type) {
+    case ANIMATION_PARTIAL_CLOSE:
+      StartSlowCloseAnimationForWindow(window, observer);
+      break;
+    case ANIMATION_UNDO_PARTIAL_CLOSE:
+      StartUndoSlowCloseAnimationForWindow(window, observer);
+      break;
+    case ANIMATION_FULL_CLOSE:
+      StartFastCloseAnimationForWindow(window, observer);
+      break;
+    case ANIMATION_FADE_IN:
+      FadeInWindow(window, observer);
+      break;
+    case ANIMATION_HIDE:
+      HideWindow(window, observer);
+      break;
+    case ANIMATION_RESTORE:
+      RestoreWindow(window, observer);
+      break;
+    case ANIMATION_RAISE:
+      RaiseWindow(window,
+          base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
+          observer);
+      break;
+    case ANIMATION_LOWER:
+      LowerWindow(window,
+          base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
+          observer);
+      break;
+    case ANIMATION_PARTIAL_FADE_IN:
+      StartPartialFadeAnimation(window, kPartialFadeRatio,
+          base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
+          observer);
+      break;
+    case ANIMATION_UNDO_PARTIAL_FADE_IN:
+      StartPartialFadeAnimation(window, 0.0,
+          base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs),
+          observer);
+      break;
+    case ANIMATION_FULL_FADE_IN:
+      StartPartialFadeAnimation(window, 1.0,
+          base::TimeDelta::FromMilliseconds(kFastCloseAnimMs),
+          observer);
+      break;
+    default:
+      NOTREACHED() << "Unhandled animation type " << type;
   }
 }
 
@@ -429,7 +494,7 @@ void SessionStateAnimator::CreateForeground() {
   aura::Window* window = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(),
       internal::kShellWindowId_PowerButtonAnimationContainer);
-  HideWindow(window);
+  HideWindow(window, NULL);
   foreground_.reset(
       new ColoredWindowController(window, "SessionStateAnimatorForeground"));
   foreground_->SetColor(SK_ColorWHITE);

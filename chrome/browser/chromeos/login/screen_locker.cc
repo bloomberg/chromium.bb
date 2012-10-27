@@ -9,6 +9,7 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/session_state_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -306,8 +307,20 @@ void ScreenLocker::Hide() {
   }
 
   DCHECK(screen_locker_);
+  base::Callback<void(void)> callback =
+      base::Bind(&ScreenLocker::ScheduleDeletion);
+  ash::Shell::GetInstance()->session_state_controller()->
+    OnLockScreenHide(callback);
+}
+
+void ScreenLocker::ScheduleDeletion() {
+  // Avoid possible multiple calls.
+  if (screen_locker_ == NULL)
+    return;
   VLOG(1) << "Posting task to delete ScreenLocker " << screen_locker_;
-  MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker_);
+  ScreenLocker* screen_locker = screen_locker_;
+  screen_locker_ = NULL;
+  MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker);
 }
 
 // static

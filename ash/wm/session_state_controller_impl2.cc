@@ -9,6 +9,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/session_state_animator.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
@@ -175,10 +176,13 @@ void SessionStateControllerImpl2::CancelShutdownAnimation() {
     return;
   }
   animator_->CreateForeground();
-  animator_->StartAnimation(
+  base::Callback<void(void)> callback =
+      base::Bind(&internal::SessionStateAnimator::DropForeground,
+      base::Unretained(animator_.get()));
+  animator_->StartAnimationWithCallback(
       internal::SessionStateAnimator::LOCK_SCREEN_SYSTEM_FOREGROUND,
-      internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_FADE_IN);
-
+      internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_FADE_IN,
+      callback);
   pre_shutdown_timer_.Stop();
 }
 
@@ -286,6 +290,14 @@ void SessionStateControllerImpl2::OnRealShutdownTimeout() {
   }
 #endif
   delegate_->RequestShutdown();
+}
+
+void SessionStateControllerImpl2::OnLockScreenHide(
+  base::Callback<void(void)>& callback) {
+  animator_->StartAnimationWithCallback(
+      internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::ANIMATION_RAISE,
+      callback);
 }
 
 }  // namespace ash

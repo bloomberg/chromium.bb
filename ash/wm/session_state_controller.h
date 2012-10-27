@@ -131,6 +131,11 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
   // Displays the shutdown animation and requests shutdown when it's done.
   virtual void RequestShutdown() = 0;
 
+  // Called when ScreenLocker is ready to close, but not yet destroyed.
+  // Can be used to display "hiding" animations on unlock.
+  // |callback| will be called when all animations are done.
+  virtual void OnLockScreenHide(base::Callback<void(void)>& callback) = 0;
+
  protected:
   friend class test::PowerButtonControllerTest;
 

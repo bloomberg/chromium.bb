@@ -110,6 +110,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // Called when the screen lock is ready.
   void ScreenLockReady();
 
+  // Called when screen locker is safe to delete.
+  static void ScheduleDeletion();
+
   // ScreenLockerDelegate instance in use.
   scoped_ptr<ScreenLockerDelegate> delegate_;
 

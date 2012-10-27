@@ -96,49 +96,27 @@ class ASH_EXPORT SessionStateControllerImpl2 : public SessionStateController {
   virtual void OnAppTerminating() OVERRIDE;
   virtual void OnLockStateChanged(bool locked) OVERRIDE;
 
-  // Returns true iff when we're in state when user session can be locked.
+  // SessionStateController overrides:
   virtual bool IsEligibleForLock() OVERRIDE;
-
-  // Returns true if system is locked.
   virtual bool IsLocked() OVERRIDE;
-
-  // Starts locking (with slow animation) that can be cancelled.
-  // After locking and |kLockToShutdownTimeoutMs| StartShutdownAnimation()
-  // will be called unless CancelShutdownAnimation() is called, if
-  // shutdown_after_lock is true.
   virtual void StartLockAnimation(bool shutdown_after_lock) OVERRIDE;
 
-  // Starts shutting down (with slow animation) that can be cancelled.
   virtual void StartShutdownAnimation() OVERRIDE;
-
-  // Starts usual lock animation, but locks immediately.
-  // Unlike StartLockAnimation it does no lead to StartShutdownAnimation.
   virtual void StartLockAnimationAndLockImmediately() OVERRIDE;
 
-  // Returns true if we have requested system to lock, but haven't received
-  // confirmation yet.
   virtual bool LockRequested() OVERRIDE;
-
-  // Returns true if we are shutting down.
   virtual bool ShutdownRequested() OVERRIDE;
 
-  // Returns true if we are within cancellable lock timeframe.
   virtual bool CanCancelLockAnimation() OVERRIDE;
-
-  // Cancels locking and reverts lock animation.
   virtual void CancelLockAnimation() OVERRIDE;
 
-  // Returns true if we are within cancellable shutdown timeframe.
   virtual bool CanCancelShutdownAnimation() OVERRIDE;
-
-  // Cancels shutting down and reverts shutdown animation.
   virtual void CancelShutdownAnimation() OVERRIDE;
 
-  // Called when Chrome gets a request to display the lock screen.
   virtual void OnStartingLock() OVERRIDE;
-
-  // Displays the shutdown animation and requests shutdown when it's done.
   virtual void RequestShutdown() OVERRIDE;
+
+  virtual void OnLockScreenHide(base::Callback<void(void)>& callback) OVERRIDE;
 
  protected:
   friend class test::PowerButtonControllerTest;
