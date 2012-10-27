@@ -354,3 +354,10 @@ name=http://crbug.com/120157
 # "ReleaseDC called from different thread than GetDC"
 system call NtUserCallOneParam.RELEASEDC
 *!*FontCache::CacheElement::~CacheElement
+
+GDI USAGE ERROR
+name=http://crbug.com/158090
+# "DC created by one thread and used by another"
+content.dll!content::`anonymous namespace'::FontCache::PreCacheFont
+content.dll!content::FontCacheDispatcher::OnPreCacheFont
+content.dll!DispatchToMethod<content::FontCacheDispatcher
