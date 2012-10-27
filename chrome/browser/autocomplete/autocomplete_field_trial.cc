@@ -45,19 +45,23 @@ const base::FieldTrial::Probability kHQPNewScoringFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
     kHQPNewScoringFieldTrialExperimentFraction = 0;
 
-// For HistoryURL provider cull redirects field trial, put 25% ( = 25/100 )
+// For HistoryURL provider cull redirects field trial, put 0% ( = 0/100 )
 // of the users in the don't-cull-redirects experiment group.
+// TODO(mpearson): Remove this field trial and the code it uses once I'm
+// sure it's no longer needed.
 const base::FieldTrial::Probability kHUPCullRedirectsFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kHUPCullRedirectsFieldTrialExperimentFraction = 25;
+    kHUPCullRedirectsFieldTrialExperimentFraction = 0;
 
-// For HistoryURL provider create shorter match field trial, put 25%
+// For HistoryURL provider create shorter match field trial, put 0%
 // ( = 25/100 ) of the users in the don't-create-a-shorter-match
 // experiment group.
+// TODO(mpearson): Remove this field trial and the code it uses once I'm
+// sure it's no longer needed.
 const base::FieldTrial::Probability
     kHUPCreateShorterMatchFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kHUPCreateShorterMatchFieldTrialExperimentFraction = 25;
+    kHUPCreateShorterMatchFieldTrialExperimentFraction = 0;
 
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
