@@ -255,10 +255,6 @@ SafeBrowsingService::SafeBrowsingService()
 }
 
 SafeBrowsingService::~SafeBrowsingService() {
-  // Deletes the PrefChangeRegistrars, whose dtors also unregister |this| as an
-  // observer of the preferences.
-  STLDeleteValues(&prefs_map_);
-
   // We should have already been shut down. If we're still enabled, then the
   // database isn't going to be closed properly, which could lead to corruption.
   DCHECK(!enabled_);
@@ -303,6 +299,13 @@ void SafeBrowsingService::Initialize() {
 }
 
 void SafeBrowsingService::ShutDown() {
+  // Deletes the PrefChangeRegistrars, whose dtors also unregister |this| as an
+  // observer of the preferences.
+  STLDeleteValues(&prefs_map_);
+
+  // Remove Profile creation/destruction observers.
+  prefs_registrar_.RemoveAll();
+
   Stop();
   // The IO thread is going away, so make sure the ClientSideDetectionService
   // dtor executes now since it may call the dtor of URLFetcher which relies

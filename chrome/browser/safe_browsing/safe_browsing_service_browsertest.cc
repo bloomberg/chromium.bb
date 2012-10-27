@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
@@ -210,6 +211,11 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
                                     disable_auto_update),
         sb_service_(sb_service),
         delay_ms_(0) {
+    create_count_++;
+  }
+
+  ~TestProtocolManager() {
+    delete_count_++;
   }
 
   // This function is called when there is a prefix hit in local safebrowsing
@@ -238,11 +244,26 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
     delay_ms_ = ms;
   }
 
+  static int create_count() {
+    return create_count_;
+  }
+
+  static int delete_count() {
+    return delete_count_;
+  }
+
  private:
   std::vector<SBFullHashResult> full_hashes_;
   SafeBrowsingService* sb_service_;
   int64 delay_ms_;
+  static int create_count_;
+  static int delete_count_;
 };
+
+// static
+int TestProtocolManager::create_count_ = 0;
+// static
+int TestProtocolManager::delete_count_ = 0;
 
 // Factory that creates TestProtocolManager instances.
 class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
@@ -767,6 +788,77 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
 }
 
 }  // namespace
+
+class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
+ public:
+  virtual void TearDown() OVERRIDE {
+    // Browser should be fully torn down by now, so we can safely check these
+    // counters.
+    EXPECT_EQ(1, TestProtocolManager::create_count());
+    EXPECT_EQ(1, TestProtocolManager::delete_count());
+
+    SafeBrowsingServiceTest::TearDown();
+  }
+
+  // An observer that returns back to test code after a new profile is
+  // initialized.
+  void OnUnblockOnProfileCreation(Profile* profile,
+                                  Profile::CreateStatus status) {
+    if (status == Profile::CREATE_STATUS_INITIALIZED) {
+      profile2_ = profile;
+      MessageLoop::current()->Quit();
+    }
+  }
+
+ protected:
+  Profile* profile2_;
+};
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceShutdownTest,
+                       DontStartAfterShutdown) {
+  CreateCSDService();
+  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
+  safe_browsing::ClientSideDetectionService* csd_service =
+      sb_service->safe_browsing_detection_service();
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+
+  ASSERT_TRUE(sb_service != NULL);
+  ASSERT_TRUE(csd_service != NULL);
+  ASSERT_TRUE(pref_service != NULL);
+
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
+
+  // SBS might still be starting, make sure this doesn't flake.
+  WaitForIOThread();
+  EXPECT_EQ(1, TestProtocolManager::create_count());
+  EXPECT_EQ(0, TestProtocolManager::delete_count());
+
+  // Create an additional profile.  We need to use the ProfileManager so that
+  // the profile will get destroyed in the normal browser shutdown process.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
+  profile_manager->CreateProfileAsync(
+      temp_profile_dir_.path(),
+      base::Bind(&SafeBrowsingServiceShutdownTest::OnUnblockOnProfileCreation,
+                 this),
+      string16(), string16());
+
+  // Spin to allow profile creation to take place, loop is terminated
+  // by OnUnblockOnProfileCreation when the profile is created.
+  content::RunMessageLoop();
+
+  PrefService* pref_service2 = profile2_->GetPrefs();
+  EXPECT_TRUE(pref_service2->GetBoolean(prefs::kSafeBrowsingEnabled));
+
+  // We don't expect the state to have changed, but if it did, wait for it.
+  WaitForIOThread();
+  EXPECT_EQ(1, TestProtocolManager::create_count());
+  EXPECT_EQ(0, TestProtocolManager::delete_count());
+
+  // End the test, shutting down the browser.
+  // SafeBrowsingServiceShutdownTest::TearDown will check the create_count and
+  // delete_count again.
+}
 
 class SafeBrowsingServiceCookieTest : public InProcessBrowserTest {
  public:
