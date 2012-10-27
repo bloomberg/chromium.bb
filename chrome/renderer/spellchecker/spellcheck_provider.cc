@@ -135,63 +135,29 @@ void SpellCheckProvider::RequestTextChecking(
       document_tag,
       text));
 #else
+  // Ignore invalid requests.
+  // TODO(groby): Should that be applied for OSX, too?
   if (text.isEmpty() || !HasWordCharacters(text, 0)) {
     completion->didCancelCheckingText();
     return;
   }
-  // Cancel this spellcheck request if the cached text is a substring of the
-  // given text and the given text is the middle of a possible word.
-  // TODO(hbono): Move this cache code to a new function and add its unit test.
-  string16 request(text);
-  size_t text_length = request.length();
-  size_t last_length = last_request_.length();
-  if (text_length >= last_length &&
-      !request.compare(0, last_length, last_request_)) {
-    if (text_length == last_length || !HasWordCharacters(text, last_length)) {
-      completion->didCancelCheckingText();
-      return;
-    }
-    int code = 0;
-    int length = static_cast<int>(text_length);
-    U16_PREV(text.data(), 0, length, code);
-    UErrorCode error = U_ZERO_ERROR;
-    if (uscript_getScript(code, &error) != USCRIPT_COMMON) {
-      completion->didCancelCheckingText();
-      return;
-    }
-  }
-  // Create a subset of the cached results and return it if the given text is a
-  // substring of the cached text.
-  if (text_length < last_length &&
-      !last_request_.compare(0, text_length, request)) {
-    size_t result_size = 0;
-    for (size_t i = 0; i < last_results_.size(); ++i) {
-      size_t start = last_results_[i].location;
-      size_t end = start + last_results_[i].length;
-      if (start <= text_length && end <= text_length)
-        ++result_size;
-    }
-    if (result_size > 0) {
-      WebKit::WebVector<WebKit::WebTextCheckingResult> results(result_size);
-      for (size_t i = 0; i < result_size; ++i) {
-        results[i].type = last_results_[i].type;
-        results[i].location = last_results_[i].location;
-        results[i].length = last_results_[i].length;
-        results[i].replacement = last_results_[i].replacement;
-      }
-      completion->didFinishCheckingText(results);
-      return;
-    }
-  }
+
+  // Try to satisfy check from cache.
+  // TODO(groby): Should that be applied to OSX results, too?
+  if (SatisfyRequestFromCache(text, completion))
+    return;
+
   // Send this text to a browser. A browser checks the user profile and send
   // this text to the Spelling service only if a user enables this feature.
   last_request_.clear();
   last_results_.assign(WebKit::WebVector<WebKit::WebTextCheckingResult>());
+
+
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),
       text_check_completions_.Add(completion),
       0,
-      request));
+      string16(text)));
 #endif  // !OS_MACOSX
 }
 
@@ -410,3 +376,55 @@ void SpellCheckProvider::OnToggleSpellCheck() {
   frame->enableContinuousSpellChecking(
       !frame->isContinuousSpellCheckingEnabled());
 }
+
+#if !defined(OS_MACOSX)
+bool SpellCheckProvider::SatisfyRequestFromCache(
+    const WebString& text,
+    WebTextCheckingCompletion* completion) {
+  // Cancel this spellcheck request if the cached text is a substring of the
+  // given text and the given text is the middle of a possible word.
+  string16 request(text);
+  size_t text_length = request.length();
+  size_t last_length = last_request_.length();
+  if (text_length >= last_length &&
+      !request.compare(0, last_length, last_request_)) {
+    if (text_length == last_length || !HasWordCharacters(text, last_length)) {
+      completion->didCancelCheckingText();
+      return true;
+    }
+    int code = 0;
+    int length = static_cast<int>(text_length);
+    U16_PREV(text.data(), 0, length, code);
+    UErrorCode error = U_ZERO_ERROR;
+    if (uscript_getScript(code, &error) != USCRIPT_COMMON) {
+      completion->didCancelCheckingText();
+      return true;
+    }
+  }
+  // Create a subset of the cached results and return it if the given text is a
+  // substring of the cached text.
+  if (text_length < last_length &&
+      !last_request_.compare(0, text_length, request)) {
+    size_t result_size = 0;
+    for (size_t i = 0; i < last_results_.size(); ++i) {
+      size_t start = last_results_[i].location;
+      size_t end = start + last_results_[i].length;
+      if (start <= text_length && end <= text_length)
+        ++result_size;
+    }
+    if (result_size > 0) {
+      WebKit::WebVector<WebKit::WebTextCheckingResult> results(result_size);
+      for (size_t i = 0; i < result_size; ++i) {
+        results[i].type = last_results_[i].type;
+        results[i].location = last_results_[i].location;
+        results[i].length = last_results_[i].length;
+        results[i].replacement = last_results_[i].replacement;
+      }
+      completion->didFinishCheckingText(results);
+      return true;
+    }
+  }
+
+  return false;
+}
+#endif

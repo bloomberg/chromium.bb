@@ -68,6 +68,14 @@ class SpellCheckProvider : public content::RenderViewObserver,
     int routing_id_;  // ID for RenderView observed by SpellCheckProvider.
   };
 
+#if !defined(OS_MACOSX)
+  // Tries to satisfy a spell check request from the cache in |last_request_|.
+  // Returns true (and cancels/finishes the completion) if it can, false
+  // if the provider should forward the query on.
+  bool SatisfyRequestFromCache(const WebKit::WebString& text,
+                               WebKit::WebTextCheckingCompletion* completion);
+#endif
+
   // WebKit::WebSpellCheckClient implementation.
   virtual void spellCheck(
       const WebKit::WebString& text,
