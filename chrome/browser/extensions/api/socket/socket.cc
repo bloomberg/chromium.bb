@@ -41,7 +41,7 @@ void Socket::WriteData() {
 
   WriteRequest& request = write_queue_.front();
 
-  DCHECK(request.byte_count > request.bytes_written);
+  DCHECK(request.byte_count >= request.bytes_written);
   io_buffer_write_ = new net::WrappedIOBuffer(
       request.io_buffer->data() + request.bytes_written);
   int result = WriteImpl(
