@@ -361,3 +361,12 @@ name=http://crbug.com/158090
 content.dll!content::`anonymous namespace'::FontCache::PreCacheFont
 content.dll!content::FontCacheDispatcher::OnPreCacheFont
 content.dll!DispatchToMethod<content::FontCacheDispatcher
+
+GDI USAGE ERROR
+name=http://crbug.com/158090 c#4
+# ReleaseDC for DC called from different thread than the thread that called GetDC
+system call NtUserCallOneParam.RELEASEDC
+ui.dll!gfx::ReadColorProfile
+ui.dll!gfx::GetColorProfile
+content.dll!content::RenderMessageFilter::OnGetMonitorColorProfile
+content.dll!DispatchToMethod
