@@ -103,7 +103,8 @@ void AddStartURLRequestEntries(LoadTimingObserver& observer,
                  &url,
                  &method,
                  request_timing ? net::LOAD_ENABLE_LOAD_TIMING : 0,
-                 net::LOW));
+                 net::LOW,
+                 -1));
 }
 
 void AddEndURLRequestEntries(LoadTimingObserver& observer, uint32 id) {
