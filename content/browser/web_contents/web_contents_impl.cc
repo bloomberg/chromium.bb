@@ -396,7 +396,8 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
 
 WebContentsImpl* WebContentsImpl::CreateGuest(BrowserContext* browser_context,
                                               const std::string& host_url,
-                                              int guest_instance_id) {
+                                              int guest_instance_id,
+                                              bool visible) {
   // The SiteInstance of a given guest is based on the fact that it's a guest
   // in addition to which platform application the guest belongs to, rather
   // than the URL that the guest is being navigated to.
@@ -418,7 +419,8 @@ WebContentsImpl* WebContentsImpl::CreateGuest(BrowserContext* browser_context,
       BrowserPluginGuest::Create(
           guest_instance_id,
           new_contents_impl,
-          new_contents_impl->GetRenderViewHost()));
+          new_contents_impl->GetRenderViewHost(),
+          visible));
   return new_contents;
 }
 
@@ -2341,7 +2343,8 @@ void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
 void WebContentsImpl::OnBrowserPluginCreateGuest(
     int instance_id,
     const std::string& storage_partition_id,
-    bool persist_storage) {
+    bool persist_storage,
+    bool visible) {
   // This creates a BrowserPluginEmbedder, which handles all the BrowserPlugin
   // specific messages for this WebContents (through its
   // BrowserPluginEmbedderHelper). This means that any message from browser
@@ -2360,7 +2363,8 @@ void WebContentsImpl::OnBrowserPluginCreateGuest(
   browser_plugin_embedder_->CreateGuest(GetRenderViewHost(),
                                         instance_id,
                                         storage_partition_id,
-                                        persist_storage);
+                                        persist_storage,
+                                        visible);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

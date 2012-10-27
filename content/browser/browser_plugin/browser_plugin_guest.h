@@ -70,7 +70,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   static BrowserPluginGuest* Create(int instance_id,
                                     WebContentsImpl* web_contents,
-                                    content::RenderViewHost* render_view_host);
+                                    content::RenderViewHost* render_view_host,
+                                    bool visible);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
@@ -82,7 +83,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
     guest_hang_timeout_ = timeout;
   }
 
-  void set_embedder_web_contents(WebContents* web_contents) {
+  void set_embedder_web_contents(WebContentsImpl* web_contents) {
     embedder_web_contents_ = web_contents;
   }
 
@@ -116,6 +117,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
 
+  virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   // WebContentsDelegate implementation.
@@ -213,7 +215,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   BrowserPluginGuest(int instance_id,
                      WebContentsImpl* web_contents,
-                     RenderViewHost* render_view_host);
+                     RenderViewHost* render_view_host,
+                     bool visible);
 
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
@@ -237,7 +240,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   static content::BrowserPluginHostFactory* factory_;
 
   NotificationRegistrar notification_registrar_;
-  WebContents* embedder_web_contents_;
+  WebContentsImpl* embedder_web_contents_;
   // An identifier that uniquely identifies a browser plugin guest within an
   // embedder.
   int instance_id_;

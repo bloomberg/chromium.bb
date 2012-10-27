@@ -17,11 +17,12 @@ class BrowserPluginGuest;
 TestBrowserPluginGuest::TestBrowserPluginGuest(
     int instance_id,
     WebContentsImpl* web_contents,
-    RenderViewHost* render_view_host)
-    : BrowserPluginGuest(instance_id, web_contents, render_view_host),
+    RenderViewHost* render_view_host,
+    bool visible)
+    : BrowserPluginGuest(instance_id, web_contents, render_view_host, visible),
       update_rect_count_(0),
       damage_buffer_call_count_(0),
-      crash_observed_(false),
+      exit_observed_(false),
       focus_observed_(false),
       advance_focus_observed_(false),
       was_hidden_observed_(false),
@@ -29,6 +30,7 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       reload_observed_(false),
       set_damage_buffer_observed_(false),
       input_observed_(false),
+      load_stop_observed_(false),
       waiting_for_damage_buffer_with_size_(false),
       last_damage_buffer_size_(gfx::Size()) {
   // Listen to visibility changes so that a test can wait for these changes.
@@ -95,7 +97,7 @@ void TestBrowserPluginGuest::WaitForDamageBufferWithSize(
 }
 
 void TestBrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
-  crash_observed_ = true;
+  exit_observed_ = true;
   LOG(INFO) << "Guest crashed";
   if (crash_message_loop_runner_)
     crash_message_loop_runner_->Quit();
@@ -116,9 +118,9 @@ void TestBrowserPluginGuest::HandleInputEvent(
     input_message_loop_runner_->Quit();
 }
 
-void TestBrowserPluginGuest::WaitForCrashed() {
+void TestBrowserPluginGuest::WaitForExit() {
   // Check if we already observed a guest crash, return immediately if so.
-  if (crash_observed_)
+  if (exit_observed_)
     return;
 
   crash_message_loop_runner_ = new MessageLoopRunner();
@@ -182,6 +184,17 @@ void TestBrowserPluginGuest::WaitForInput() {
   input_observed_ = false;
 }
 
+void TestBrowserPluginGuest::WaitForLoadStop() {
+  if (load_stop_observed_) {
+    load_stop_observed_ = false;
+    return;
+  }
+
+  load_stop_message_loop_runner_ = new MessageLoopRunner();
+  load_stop_message_loop_runner_->Run();
+  load_stop_observed_ = false;
+}
+
 void TestBrowserPluginGuest::SetFocus(bool focused) {
   focus_observed_ = true;
   if (focus_message_loop_runner_)
@@ -234,6 +247,14 @@ void TestBrowserPluginGuest::SetDamageBuffer(
 #endif
       damage_view_size,
       scale_factor);
+}
+
+void TestBrowserPluginGuest::DidStopLoading(
+    RenderViewHost* render_view_host) {
+  BrowserPluginGuest::DidStopLoading(render_view_host);
+  load_stop_observed_ = true;
+  if (load_stop_message_loop_runner_)
+    load_stop_message_loop_runner_->Quit();
 }
 
 }  // namespace content

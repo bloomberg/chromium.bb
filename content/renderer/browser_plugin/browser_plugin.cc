@@ -137,7 +137,8 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
             render_view_routing_id_,
             instance_id_,
             storage_partition_id_,
-            persist_storage_));
+            persist_storage_,
+            visible_));
   }
 
   scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> params(

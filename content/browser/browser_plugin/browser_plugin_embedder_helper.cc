@@ -107,14 +107,16 @@ void BrowserPluginEmbedderHelper::OnHandleInputEvent(
 void BrowserPluginEmbedderHelper::OnCreateGuest(
     int instance_id,
     const std::string& storage_partition_id,
-    bool persist_storage) {
+    bool persist_storage,
+    bool visible) {
   // The first BrowserPluginHostMsg_CreateGuest message is handled in
   // WebContentsImpl. All subsequent BrowserPluginHostMsg_CreateGuest
   // messages are handled here.
   embedder_->CreateGuest(render_view_host(),
                          instance_id,
                          storage_partition_id,
-                         persist_storage);
+                         persist_storage,
+                         visible);
 }
 
 void BrowserPluginEmbedderHelper::OnNavigateGuest(

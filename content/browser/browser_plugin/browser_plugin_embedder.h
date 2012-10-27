@@ -70,7 +70,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   void CreateGuest(RenderViewHost* render_view_host,
                    int instance_id,
                    std::string storage_partition_id,
-                   bool persist_storage);
+                   bool persist_storage,
+                   bool visible);
 
   // Navigates in a guest (new or existing).
   void NavigateGuest(
@@ -117,6 +118,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                         WebKit::WebDragOperationsMask drag_mask,
                         const gfx::Point& location);
 
+  bool visible() const { return visible_; }
+
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
@@ -155,6 +158,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Contains guests' WebContents, mapping from their instance ids.
   ContainerInstanceMap guest_web_contents_by_instance_id_;
   RenderViewHost* render_view_host_;
+  // Tracks the visibility state of the embedder.
   bool visible_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginEmbedder);

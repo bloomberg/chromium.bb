@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/string_util.h"
+#include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_helper.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -40,7 +41,8 @@ const int kGuestHangTimeoutMs = 5000;
 
 BrowserPluginGuest::BrowserPluginGuest(int instance_id,
                                        WebContentsImpl* web_contents,
-                                       RenderViewHost* render_view_host)
+                                       RenderViewHost* render_view_host,
+                                       bool visible)
     : WebContentsObserver(web_contents),
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
@@ -51,7 +53,7 @@ BrowserPluginGuest::BrowserPluginGuest(int instance_id,
       pending_update_counter_(0),
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kGuestHangTimeoutMs)),
-      visible_(true) {
+      visible_(visible) {
   DCHECK(web_contents);
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, render_view_host);
@@ -68,14 +70,19 @@ BrowserPluginGuest::~BrowserPluginGuest() {
 BrowserPluginGuest* BrowserPluginGuest::Create(
     int instance_id,
     WebContentsImpl* web_contents,
-    content::RenderViewHost* render_view_host) {
+    content::RenderViewHost* render_view_host,
+    bool visible) {
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
   if (factory_) {
     return factory_->CreateBrowserPluginGuest(instance_id,
                                               web_contents,
-                                              render_view_host);
+                                              render_view_host,
+                                              visible);
   }
-  return new BrowserPluginGuest(instance_id, web_contents, render_view_host);
+  return new BrowserPluginGuest(instance_id,
+                                web_contents,
+                                render_view_host,
+                                visible);
 }
 
 void BrowserPluginGuest::Observe(int type,
@@ -441,6 +448,14 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
 
 void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
   SendMessageToEmbedder(new BrowserPluginMsg_LoadStop(instance_id()));
+}
+
+void BrowserPluginGuest::RenderViewReady() {
+  // TODO(fsamuel): Investigate whether it's possible to update state earlier
+  // here (see http://www.crbug.com/158151).
+  bool embedder_visible =
+      embedder_web_contents_->GetBrowserPluginEmbedder()->visible();
+  SetVisibility(embedder_visible, visible());
 }
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {

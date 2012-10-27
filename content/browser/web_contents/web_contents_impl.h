@@ -94,7 +94,8 @@ class CONTENT_EXPORT WebContentsImpl
   // Creates a WebContents to be used as a browser plugin guest.
   static WebContentsImpl* CreateGuest(BrowserContext* browser_context,
                                       const std::string& host,
-                                      int guest_instance_id);
+                                      int guest_instance_id,
+                                      bool visible);
 
   // Returns the content specific prefs for the given RVH.
   static webkit_glue::WebPreferences GetWebkitPrefs(
@@ -563,7 +564,8 @@ class CONTENT_EXPORT WebContentsImpl
                                       const FilePath& plugin_path);
   void OnBrowserPluginCreateGuest(int instance_id,
                                   const std::string& storage_partition_id,
-                                  bool persist_storage);
+                                  bool persist_storage,
+                                  bool visible);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
