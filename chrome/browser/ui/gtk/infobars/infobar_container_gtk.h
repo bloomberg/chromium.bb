@@ -37,7 +37,9 @@ typedef struct _GtkWidget GtkWidget;
 // we can't just overlap the widgets.
 class InfoBarContainerGtk : public InfoBarContainer {
  public:
-  InfoBarContainerGtk(InfoBarContainer::Delegate* delegate, Profile* profile);
+  InfoBarContainerGtk(InfoBarContainer::Delegate* delegate,
+                      chrome::search::SearchModel* search_model,
+                      Profile* profile);
   virtual ~InfoBarContainerGtk();
 
   // Get the native widget.

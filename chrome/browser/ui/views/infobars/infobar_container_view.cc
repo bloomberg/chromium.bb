@@ -11,8 +11,10 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
-InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
-    : InfoBarContainer(delegate) {
+InfoBarContainerView::InfoBarContainerView(
+    Delegate* delegate,
+    chrome::search::SearchModel* search_model)
+    : InfoBarContainer(delegate, search_model) {
   set_id(VIEW_ID_INFO_BAR_CONTAINER);
 #if defined(USE_AURA)
   SetPaintToLayer(true);

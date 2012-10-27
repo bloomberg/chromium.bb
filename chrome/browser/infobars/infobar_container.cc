@@ -15,6 +15,7 @@
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -23,26 +24,29 @@
 InfoBarContainer::Delegate::~Delegate() {
 }
 
-InfoBarContainer::InfoBarContainer(Delegate* delegate)
+InfoBarContainer::InfoBarContainer(
+    Delegate* delegate,
+    chrome::search::SearchModel* search_model)
     : delegate_(delegate),
       tab_helper_(NULL),
+      search_model_(search_model),
       top_arrow_target_height_(InfoBar::kDefaultArrowTargetHeight) {
+  if (search_model_)
+    search_model_->AddObserver(this);
 }
 
 InfoBarContainer::~InfoBarContainer() {
   // RemoveAllInfoBarsForDestruction() should have already cleared our infobars.
   DCHECK(infobars_.empty());
+  if (search_model_)
+    search_model_->RemoveObserver(this);
 }
 
 void InfoBarContainer::ChangeTabContents(InfoBarTabHelper* tab_helper) {
   registrar_.RemoveAll();
 
-  while (!infobars_.empty()) {
-    InfoBar* infobar = infobars_.front();
-    // Inform the infobar that it's hidden.  If it was already closing, this
-    // closes its delegate.
-    infobar->Hide(false);
-  }
+  infobars_shown_time_ = base::TimeTicks();
+  HideAllInfoBars();
 
   tab_helper_ = tab_helper;
   if (tab_helper_) {
@@ -156,8 +160,24 @@ void InfoBarContainer::Observe(int type,
   }
 }
 
+void InfoBarContainer::ModeChanged(const chrome::search::Mode& old_mode,
+                                   const chrome::search::Mode& new_mode) {
+  // Hide infobars when showing Instant Extended suggestions.
+  if (new_mode.is_search_suggestions()) {
+    HideAllInfoBars();
+    OnInfoBarStateChanged(false);
+  } else {
+    ChangeTabContents(tab_helper_);
+    infobars_shown_time_ = base::TimeTicks::Now();
+  }
+}
+
 size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
                                      bool use_animation) {
+  bool should_animate = use_animation &&
+      ((base::TimeTicks::Now() - infobars_shown_time_) >
+          base::TimeDelta::FromMilliseconds(50));
+
   // Search for the infobar associated with |delegate|.  We cannot search for
   // |delegate| in |tab_helper_|, because an InfoBar remains alive until its
   // close animation completes, while the delegate is removed from the tab
@@ -168,7 +188,7 @@ size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
       size_t position = i - infobars_.begin();
       // We merely need hide the infobar; it will call back to RemoveInfoBar()
       // itself once it's hidden.
-      infobar->Hide(use_animation);
+      infobar->Hide(should_animate);
       infobar->CloseSoon();
       UpdateInfoBarArrowTargetHeights();
       return position;
@@ -176,6 +196,15 @@ size_t InfoBarContainer::HideInfoBar(InfoBarDelegate* delegate,
   }
   NOTREACHED();
   return infobars_.size();
+}
+
+void InfoBarContainer::HideAllInfoBars() {
+  while (!infobars_.empty()) {
+    InfoBar* infobar = infobars_.front();
+    // Inform the infobar that it's hidden.  If it was already closing, this
+    // closes its delegate.
+    infobar->Hide(false);
+  }
 }
 
 void InfoBarContainer::AddInfoBar(InfoBar* infobar,

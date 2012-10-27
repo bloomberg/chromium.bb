@@ -95,8 +95,7 @@ class BrowserView : public BrowserWindow,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
                     public views::SingleSplitViewListener,
-                    public gfx::SysColorChangeListener,
-                    public chrome::search::SearchModelObserver {
+                    public gfx::SysColorChangeListener {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -487,10 +486,6 @@ class BrowserView : public BrowserWindow,
 
   // Layout the Status Bubble.
   void LayoutStatusBubble();
-
-  // Overridden from chrome::search::SearchModelObserver:
-  virtual void ModeChanged(const chrome::search::Mode& old_mode,
-                           const chrome::search::Mode& new_mode) OVERRIDE;
 
   // Prepare to show the Bookmark Bar for the specified TabContents.
   // Returns true if the Bookmark Bar can be shown (i.e. it's supported for this

@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/time.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
+#include "chrome/browser/ui/search/search_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -16,6 +19,12 @@ class InfoBar;
 class InfoBarDelegate;
 class InfoBarTabHelper;
 
+namespace chrome {
+namespace search {
+class SearchModel;
+}
+}
+
 // InfoBarContainer is a cross-platform base class to handle the visibility-
 // related aspects of InfoBars.  While InfoBars own themselves, the
 // InfoBarContainer is responsible for telling particular InfoBars that they
@@ -23,7 +32,17 @@ class InfoBarTabHelper;
 //
 // Platforms need to subclass this to implement a few platform-specific
 // functions, which are pure virtual here.
-class InfoBarContainer : public content::NotificationObserver {
+//
+// This class also observes changes to the SearchModel mode. If the user changes
+// into suggestions mode, it hides all the infobars temporarily.  When the user
+// changes back out of suggestions mode, it reshows any infobars, and starts a
+// 50 ms window during which any attempts to re-hide any infobars are handled
+// without animation.  This prevents glitchy-looking behavior when the user
+// navigates following a mode change, which otherwise would re-show the infobars
+// only to instantly animate them closed.  The window is canceled if a tab
+// change occurs.
+class InfoBarContainer : public content::NotificationObserver,
+                         public chrome::search::SearchModelObserver  {
  public:
   class Delegate {
    public:
@@ -42,7 +61,10 @@ class InfoBarContainer : public content::NotificationObserver {
     virtual ~Delegate();
   };
 
-  explicit InfoBarContainer(Delegate* delegate);
+  // |search_model| may be NULL if this class is used in a window that does not
+  // support Instant Extended.
+  InfoBarContainer(Delegate* delegate,
+                   chrome::search::SearchModel* search_model);
   virtual ~InfoBarContainer();
 
   // Changes the InfoBarTabHelper for which this container is showing
@@ -99,13 +121,21 @@ class InfoBarContainer : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // chrome::search::SearchModelObserver:
+  virtual void ModeChanged(const chrome::search::Mode& old_mode,
+                           const chrome::search::Mode& new_mode) OVERRIDE;
+
   // Hides an InfoBar for the specified delegate, in response to a notification
   // from the selected InfoBarTabHelper.  The InfoBar's disappearance will be
-  // animated if |use_animation| is true.  The InfoBar will call back to
-  // RemoveInfoBar() to remove itself once it's hidden (which may mean
-  // synchronously).  Returns the position within |infobars_| the infobar was
-  // previously at.
+  // animated if |use_animation| is true and it has been more than 50ms since
+  // infobars were reshown due to an Instant Extended mode change. The InfoBar
+  // will call back to RemoveInfoBar() to remove itself once it's hidden (which
+  // may mean synchronously).  Returns the position within |infobars_| the
+  // infobar was previously at.
   size_t HideInfoBar(InfoBarDelegate* delegate, bool use_animation);
+
+  // Hides all infobars in this container without animation.
+  void HideAllInfoBars();
 
   // Adds |infobar| to this container before the existing infobar at position
   // |position| and calls Show() on it.  |animate| is passed along to
@@ -125,6 +155,14 @@ class InfoBarContainer : public content::NotificationObserver {
   Delegate* delegate_;
   InfoBarTabHelper* tab_helper_;
   InfoBars infobars_;
+
+  // Tracks the most recent time infobars were re-shown after being hidden due
+  // to Instant Extended's ModeChanged.
+  base::TimeTicks infobars_shown_time_;
+
+  // Tracks which search mode is active, as well as mode changes, for Instant
+  // Extended.
+  chrome::search::SearchModel* search_model_;
 
   // Calculated in SetMaxTopArrowHeight().
   int top_arrow_target_height_;

@@ -367,7 +367,6 @@ BrowserView::BrowserView(Browser* browser)
       ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
   browser_->tab_strip_model()->AddObserver(this);
-  browser_->search_model()->AddObserver(this);
 }
 
 BrowserView::~BrowserView() {
@@ -383,7 +382,6 @@ BrowserView::~BrowserView() {
   preview_controller_.reset(NULL);
 
   browser_->tab_strip_model()->RemoveObserver(this);
-  browser_->search_model()->RemoveObserver(this);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Stop hung plugin monitoring.
@@ -1449,11 +1447,7 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
     contents_container_->SetWebContents(NULL);
   InfoBarTabHelper* new_infobar_tab_helper =
       InfoBarTabHelper::FromWebContents(new_contents->web_contents());
-  // Hide infobars when showing Instant Extended suggestions.
-  infobar_container_->ChangeTabContents(
-      (chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()) &&
-          browser()->search_model()->mode().is_search_suggestions()) ?
-          NULL : new_infobar_tab_helper);
+  infobar_container_->ChangeTabContents(new_infobar_tab_helper);
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
@@ -1966,7 +1960,8 @@ void BrowserView::Init() {
   AddChildView(tabstrip_);
   tabstrip_controller->InitFromModel(tabstrip_);
 
-  infobar_container_ = new InfoBarContainerView(this);
+  infobar_container_ = new InfoBarContainerView(this,
+                                                browser()->search_model());
   AddChildView(infobar_container_);
 
   contents_container_ = new views::WebView(browser_->profile());
@@ -2507,20 +2502,6 @@ void BrowserView::UpdateAcceleratorMetrics(
 
 gfx::Size BrowserView::GetResizeCornerSize() const {
   return ResizeCorner::GetSize();
-}
-
-void BrowserView::ModeChanged(const chrome::search::Mode& old_mode,
-                              const chrome::search::Mode& new_mode) {
-  // Hide infobars when showing Instant Extended suggestions and when moving
-  // from SUGGESTIONS to DEFAULT which happens when a URL is selected or typed
-  // from the NTP. Moving to DEFAULT will replace the infobars with those of the
-  // new tab contents, therefore we avoid the showing the current infobars for
-  // a brief moment.
-  bool hide_infobars = new_mode.is_search_suggestions() ||
-      (old_mode.is_search_suggestions() && new_mode.is_default());
-  infobar_container_->ChangeTabContents(
-      hide_infobars ?
-          NULL : InfoBarTabHelper::FromWebContents(GetActiveWebContents()));
 }
 
 void BrowserView::CreateLauncherIcon() {

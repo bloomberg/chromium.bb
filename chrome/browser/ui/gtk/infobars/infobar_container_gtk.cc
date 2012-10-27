@@ -22,9 +22,11 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
-InfoBarContainerGtk::InfoBarContainerGtk(InfoBarContainer::Delegate* delegate,
-                                         Profile* profile)
-    : InfoBarContainer(delegate),
+InfoBarContainerGtk::InfoBarContainerGtk(
+    InfoBarContainer::Delegate* delegate,
+    chrome::search::SearchModel* search_model,
+    Profile* profile)
+    : InfoBarContainer(delegate, search_model),
       profile_(profile),
       container_(gtk_vbox_new(FALSE, 0)) {
   gtk_widget_show(widget());

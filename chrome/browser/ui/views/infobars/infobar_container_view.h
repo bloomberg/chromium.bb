@@ -12,7 +12,8 @@
 class InfoBarContainerView : public views::AccessiblePaneView,
                              public InfoBarContainer {
  public:
-  explicit InfoBarContainerView(Delegate* delegate);
+  explicit InfoBarContainerView(Delegate* delegate,
+                                chrome::search::SearchModel* search_model);
   virtual ~InfoBarContainerView();
 
   // Stacks this view as the top child of its parent.

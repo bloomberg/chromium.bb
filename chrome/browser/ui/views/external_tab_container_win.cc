@@ -1200,7 +1200,8 @@ void ExternalTabContainerWin::SetupExternalTabView() {
   // widget is torn down.
   external_tab_view_ = new views::View();
 
-  InfoBarContainerView* info_bar_container = new InfoBarContainerView(this);
+  InfoBarContainerView* info_bar_container =
+      new InfoBarContainerView(this, NULL);
   InfoBarTabHelper* infobar_tab_helper =
       InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
   info_bar_container->ChangeTabContents(infobar_tab_helper);
