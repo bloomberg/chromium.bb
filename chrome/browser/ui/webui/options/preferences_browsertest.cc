@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_service_base.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -167,9 +168,8 @@ void PreferencesBrowserTest::Observe(
     const content::NotificationDetails& details) {
   ASSERT_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
   ASSERT_EQ(pref_service_, content::Source<PrefService>(source).ptr());
-  std::string* name = content::Details<std::string>(details).ptr();
-  ASSERT_TRUE(name);
-  OnCommit(pref_service_->FindPreference(name->c_str()));
+  const std::string& name = *content::Details<std::string>(details).ptr();
+  OnCommit(pref_service_->FindPreference(name.c_str()));
 }
 
 // Sets up a mock user policy provider.
@@ -181,8 +181,8 @@ void PreferencesBrowserTest::SetUpInProcessBrowserTestFixture() {
 };
 
 void PreferencesBrowserTest::TearDownInProcessBrowserTestFixture() {
-  DeleteValues(default_values_);
-  DeleteValues(non_default_values_);
+  STLDeleteElements(&default_values_);
+  STLDeleteElements(&non_default_values_);
 }
 
 void PreferencesBrowserTest::SetUserPolicies(
@@ -205,13 +205,6 @@ void PreferencesBrowserTest::SetUserValues(
     const std::vector<base::Value*>& values) {
   for (size_t i = 0; i < names.size(); ++i)
     pref_service_->Set(names[i].c_str(), *values[i]);
-}
-
-void PreferencesBrowserTest::DeleteValues(std::vector<base::Value*>& values){
-  for (std::vector<base::Value*>::iterator value = values.begin();
-       value != values.end(); ++value)
-    delete *value;
-  values.clear();
 }
 
 void PreferencesBrowserTest::VerifyKeyValue(const base::DictionaryValue* dict,
@@ -697,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSDeviceFetchPrefs) {
   VerifyObservedPrefs(observed_json, pref_names_, decorated_non_default_values,
                       "", true, false);
 
-  DeleteValues(decorated_non_default_values);
+  STLDeleteElements(&decorated_non_default_values);
 }
 
 // Verifies that initializing the JavaScript Preferences class fires the correct

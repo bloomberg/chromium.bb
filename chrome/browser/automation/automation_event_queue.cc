@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "chrome/browser/automation/automation_event_observers.h"
 #include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider_json.h"
@@ -99,19 +100,11 @@ bool AutomationEventQueue::RemoveObserver(int observer_id) {
 }
 
 void AutomationEventQueue::ClearObservers() {
-  std::map<int, AutomationEventObserver*>::iterator it;
-  for (it = observers_.begin(); it != observers_.end(); it++) {
-    delete it->second;
-  }
-  observers_.clear();
+  STLDeleteValues(&observers_);
 }
 
 void AutomationEventQueue::ClearEvents() {
-  std::list<AutomationEvent*>::iterator it;
-  for (it = event_queue_.begin(); it != event_queue_.end(); it++) {
-    delete *it;
-  }
-  event_queue_.clear();
+  STLDeleteElements(&event_queue_);
 }
 
 bool AutomationEventQueue::CheckReturnEvent() {

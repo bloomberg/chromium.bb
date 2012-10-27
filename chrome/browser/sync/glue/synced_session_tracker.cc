@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 
@@ -149,8 +150,8 @@ void SyncedSessionTracker::ResetSessionTracking(
 
 bool SyncedSessionTracker::DeleteOldSessionWindowIfNecessary(
     SessionWindowWrapper window_wrapper) {
-   // Clear the tabs first, since we don't want the destructor to destroy
-   // them. Their deletion will be handled by DeleteOldSessionTab below.
+  // Clear the tabs first, since we don't want the destructor to destroy
+  // them. Their deletion will be handled by DeleteOldSessionTab below.
   if (!window_wrapper.owned) {
     DVLOG(1) << "Deleting closed window "
              << window_wrapper.window_ptr->window_id.id();
@@ -231,7 +232,8 @@ void SyncedSessionTracker::PutWindowInSession(const std::string& session_tag,
   }
   DCHECK(window_ptr);
   DCHECK_EQ(window_ptr->window_id.id(), window_id);
-  DCHECK_EQ((SessionWindow*)NULL, GetSession(session_tag)->windows[window_id]);
+  DCHECK_EQ(reinterpret_cast<SessionWindow*>(NULL),
+            GetSession(session_tag)->windows[window_id]);
   GetSession(session_tag)->windows[window_id] = window_ptr;
 }
 
@@ -291,14 +293,11 @@ SessionTab* SyncedSessionTracker::GetTab(
 
 void SyncedSessionTracker::Clear() {
   // Delete SyncedSession objects (which also deletes all their windows/tabs).
-  STLDeleteContainerPairSecondPointers(synced_session_map_.begin(),
-      synced_session_map_.end());
-  synced_session_map_.clear();
+  STLDeleteValues(&synced_session_map_);
 
   // Go through and delete any tabs we had allocated but had not yet placed into
   // a SyncedSessionobject.
-  STLDeleteContainerPointers(unmapped_tabs_.begin(), unmapped_tabs_.end());
-  unmapped_tabs_.clear();
+  STLDeleteElements(&unmapped_tabs_);
 
   // Get rid of our Window/Tab maps (does not delete the actual Window/Tabs
   // themselves; they should have all been deleted above).

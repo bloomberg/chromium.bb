@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -84,9 +85,7 @@ class ExpireHistoryTest : public testing::Test,
 
   // Clears the list of notifications received.
   void ClearLastNotifications() {
-    for (size_t i = 0; i < notifications_.size(); i++)
-      delete notifications_[i].second;
-    notifications_.clear();
+    STLDeleteValues(&notifications_);
   }
 
   void StarURL(const GURL& url) {
