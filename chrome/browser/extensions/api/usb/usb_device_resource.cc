@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "chrome/browser/usb/usb_device.h"
-#include "chrome/common/extensions/api/experimental_usb.h"
+#include "chrome/common/extensions/api/usb.h"
 
 namespace extensions {
 

@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/usb/usb_device.h"
-#include "chrome/common/extensions/api/experimental_usb.h"
+#include "chrome/common/extensions/api/usb.h"
 #include "net/base/io_buffer.h"
 
 class UsbDevice;
@@ -58,7 +58,7 @@ class UsbAsyncApiTransferFunction : public UsbAsyncApiFunction {
 
 class UsbFindDevicesFunction : public UsbAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.findDevices");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.findDevices");
 
   UsbFindDevicesFunction();
 
@@ -73,13 +73,12 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
   void OnCompleted(UsbDevice* device);
 
  private:
-  scoped_ptr<extensions::api::experimental_usb::FindDevices::Params>
-      parameters_;
+  scoped_ptr<extensions::api::usb::FindDevices::Params> parameters_;
 };
 
 class UsbCloseDeviceFunction : public UsbAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.closeDevice");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.closeDevice");
 
   UsbCloseDeviceFunction();
 
@@ -92,13 +91,12 @@ class UsbCloseDeviceFunction : public UsbAsyncApiFunction {
   void OnCompleted();
 
  private:
-  scoped_ptr<extensions::api::experimental_usb::CloseDevice::Params>
-      parameters_;
+  scoped_ptr<extensions::api::usb::CloseDevice::Params> parameters_;
 };
 
 class UsbClaimInterfaceFunction : public UsbAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.claimInterface");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.claimInterface");
 
   UsbClaimInterfaceFunction();
 
@@ -111,13 +109,12 @@ class UsbClaimInterfaceFunction : public UsbAsyncApiFunction {
  private:
   void OnCompleted(bool success);
 
-  scoped_ptr<extensions::api::experimental_usb::ClaimInterface::Params>
-      parameters_;
+  scoped_ptr<extensions::api::usb::ClaimInterface::Params> parameters_;
 };
 
 class UsbReleaseInterfaceFunction : public UsbAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.releaseInterface");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.releaseInterface");
 
   UsbReleaseInterfaceFunction();
 
@@ -130,14 +127,12 @@ class UsbReleaseInterfaceFunction : public UsbAsyncApiFunction {
  private:
   void OnCompleted(bool success);
 
-  scoped_ptr<extensions::api::experimental_usb::ReleaseInterface::Params>
-      parameters_;
+  scoped_ptr<extensions::api::usb::ReleaseInterface::Params> parameters_;
 };
 
 class UsbSetInterfaceAlternateSettingFunction : public UsbAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.usb.setInterfaceAlternateSetting");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.setInterfaceAlternateSetting");
 
   UsbSetInterfaceAlternateSettingFunction();
 
@@ -149,14 +144,13 @@ class UsbSetInterfaceAlternateSettingFunction : public UsbAsyncApiFunction {
 
   void OnCompleted(bool success);
 
-  scoped_ptr<
-      extensions::api::experimental_usb::SetInterfaceAlternateSetting::Params>
+  scoped_ptr<extensions::api::usb::SetInterfaceAlternateSetting::Params>
       parameters_;
 };
 
 class UsbControlTransferFunction : public UsbAsyncApiTransferFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.controlTransfer");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.controlTransfer");
 
   UsbControlTransferFunction();
 
@@ -167,13 +161,12 @@ class UsbControlTransferFunction : public UsbAsyncApiTransferFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  scoped_ptr<extensions::api::experimental_usb::ControlTransfer::Params>
-      parameters_;
+  scoped_ptr<extensions::api::usb::ControlTransfer::Params> parameters_;
 };
 
 class UsbBulkTransferFunction : public UsbAsyncApiTransferFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.bulkTransfer");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.bulkTransfer");
 
   UsbBulkTransferFunction();
 
@@ -184,13 +177,13 @@ class UsbBulkTransferFunction : public UsbAsyncApiTransferFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  scoped_ptr<extensions::api::experimental_usb::BulkTransfer::Params>
+  scoped_ptr<extensions::api::usb::BulkTransfer::Params>
       parameters_;
 };
 
 class UsbInterruptTransferFunction : public UsbAsyncApiTransferFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.interruptTransfer");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.interruptTransfer");
 
   UsbInterruptTransferFunction();
 
@@ -201,13 +194,12 @@ class UsbInterruptTransferFunction : public UsbAsyncApiTransferFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  scoped_ptr<extensions::api::experimental_usb::InterruptTransfer::Params>
-      parameters_;
+  scoped_ptr<extensions::api::usb::InterruptTransfer::Params> parameters_;
 };
 
 class UsbIsochronousTransferFunction : public UsbAsyncApiTransferFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.isochronousTransfer");
+  DECLARE_EXTENSION_FUNCTION_NAME("usb.isochronousTransfer");
 
   UsbIsochronousTransferFunction();
 
@@ -218,8 +210,7 @@ class UsbIsochronousTransferFunction : public UsbAsyncApiTransferFunction {
   virtual void AsyncWorkStart() OVERRIDE;
 
  private:
-  scoped_ptr<extensions::api::experimental_usb::IsochronousTransfer::Params>
-      parameters_;
+  scoped_ptr<extensions::api::usb::IsochronousTransfer::Params> parameters_;
 };
 
 }  // namespace extensions

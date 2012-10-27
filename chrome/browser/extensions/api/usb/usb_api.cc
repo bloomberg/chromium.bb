@@ -13,26 +13,23 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_service.h"
 #include "chrome/browser/usb/usb_service_factory.h"
-#include "chrome/common/extensions/api/experimental_usb.h"
+#include "chrome/common/extensions/api/usb.h"
 
-namespace BulkTransfer = extensions::api::experimental_usb::BulkTransfer;
-namespace ClaimInterface = extensions::api::experimental_usb::ClaimInterface;
-namespace CloseDevice = extensions::api::experimental_usb::CloseDevice;
-namespace ControlTransfer = extensions::api::experimental_usb::ControlTransfer;
-namespace FindDevices = extensions::api::experimental_usb::FindDevices;
-namespace InterruptTransfer =
-    extensions::api::experimental_usb::InterruptTransfer;
-namespace IsochronousTransfer =
-    extensions::api::experimental_usb::IsochronousTransfer;
-namespace ReleaseInterface =
-    extensions::api::experimental_usb::ReleaseInterface;
+namespace BulkTransfer = extensions::api::usb::BulkTransfer;
+namespace ClaimInterface = extensions::api::usb::ClaimInterface;
+namespace CloseDevice = extensions::api::usb::CloseDevice;
+namespace ControlTransfer = extensions::api::usb::ControlTransfer;
+namespace FindDevices = extensions::api::usb::FindDevices;
+namespace InterruptTransfer = extensions::api::usb::InterruptTransfer;
+namespace IsochronousTransfer = extensions::api::usb::IsochronousTransfer;
+namespace ReleaseInterface = extensions::api::usb::ReleaseInterface;
 namespace SetInterfaceAlternateSetting =
-    extensions::api::experimental_usb::SetInterfaceAlternateSetting;
+    extensions::api::usb::SetInterfaceAlternateSetting;
 
-using extensions::api::experimental_usb::ControlTransferInfo;
-using extensions::api::experimental_usb::Device;
-using extensions::api::experimental_usb::GenericTransferInfo;
-using extensions::api::experimental_usb::IsochronousTransferInfo;
+using extensions::api::usb::ControlTransferInfo;
+using extensions::api::usb::Device;
+using extensions::api::usb::GenericTransferInfo;
+using extensions::api::usb::IsochronousTransferInfo;
 using std::string;
 using std::vector;
 

@@ -101,6 +101,7 @@ class APIPermission {
     kTts,
     kTtsEngine,
     kUnlimitedStorage,
+    kUsb,
     kVideoCapture,
     kWallpaperPrivate,
     kWebNavigation,

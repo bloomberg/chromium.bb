@@ -324,6 +324,10 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "usb": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "videoCapture": {
     "channel": "stable",
     "extension_types": ["platform_app"]

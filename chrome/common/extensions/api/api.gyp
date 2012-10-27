@@ -56,7 +56,6 @@
           'experimental_system_info_cpu.idl',
           'experimental_system_info_memory.idl',
           'experimental_system_info_storage.idl',
-          'experimental_usb.idl',
           'file_system.idl',
           'media_galleries.idl',
           'media_galleries_private.idl',
@@ -66,6 +65,7 @@
           'socket.idl',
           'sync_file_system.idl',
           'tab_capture.idl',
+          'usb.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',
@@ -73,7 +73,7 @@
       'conditions': [
         ['OS=="android"', {
           'idl_schema_files!': [
-            'experimental_usb.idl',
+            'usb.idl',
           ],
         }],
         ['OS!="chromeos"', {

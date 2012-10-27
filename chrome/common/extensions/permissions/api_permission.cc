@@ -323,6 +323,9 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kBluetooth, "bluetooth", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH,
       PermissionMessage::kBluetooth },
+    { APIPermission::kUsb, "usb", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_USB,
+      PermissionMessage::kUsb },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(PermissionsToRegister); ++i) {

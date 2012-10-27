@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(gdk): The string-style enumerations are temporary, and will be removed
-// once full enumeration support is added.
-
-namespace experimental.usb {
+namespace usb {
 
   // A Device encapsulates everything that is needed to communicate with a USB
   // device. They are returned by findDevice calls and have all of their
