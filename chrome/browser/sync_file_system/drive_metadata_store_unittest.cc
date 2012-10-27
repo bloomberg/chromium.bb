@@ -68,31 +68,8 @@ class DriveMetadataStoreTest : public testing::Test {
     drive_metadata_store_.reset();
   }
 
-  SyncStatusCode UpdateEntry(const fileapi::FileSystemURL& url,
-                             const DriveMetadata& metadata) {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    return drive_metadata_store_->UpdateEntry(url, metadata);
-  }
-
-  SyncStatusCode DeleteEntry(const fileapi::FileSystemURL& url) {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    return drive_metadata_store_->DeleteEntry(url);
-  }
-
-  SyncStatusCode ReadEntry(const fileapi::FileSystemURL& url,
-                           DriveMetadata* metadata) {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    return drive_metadata_store_->ReadEntry(url, metadata);
-  }
-
-  void SetLargestChangeStamp(int64 changestamp) {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    drive_metadata_store_->SetLargestChangeStamp(changestamp);
-  }
-
-  int64 GetLargestChangeStamp() {
-    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    return drive_metadata_store_->GetLargestChangeStamp();
+  DriveMetadataStore* drive_metadata_store() {
+    return drive_metadata_store_.get();
   }
 
  private:
@@ -144,12 +121,14 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
   fileapi::FileSystemURL url(
       fileapi::CreateSyncableFileSystemURL(kOrigin, "test", FilePath()));
   DriveMetadata metadata;
-  EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND, ReadEntry(url, &metadata));
+  EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
+            drive_metadata_store()->ReadEntry(url, &metadata));
 
   metadata.set_resource_id("1234567890");
   metadata.set_md5_checksum("9876543210");
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, UpdateEntry(url, metadata));
-  SetLargestChangeStamp(1);
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            drive_metadata_store()->UpdateEntry(url, metadata));
+  drive_metadata_store()->SetLargestChangeStamp(1);
 
   DropDatabase();
   done = false;
@@ -160,16 +139,53 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
   EXPECT_FALSE(created);
 
-  EXPECT_EQ(1, GetLargestChangeStamp());
+  EXPECT_EQ(1, drive_metadata_store()->GetLargestChangeStamp());
 
   DriveMetadata metadata2;
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, ReadEntry(url, &metadata2));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            drive_metadata_store()->ReadEntry(url, &metadata2));
   EXPECT_EQ(metadata.resource_id(), metadata2.resource_id());
   EXPECT_EQ(metadata.md5_checksum(), metadata2.md5_checksum());
 
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, DeleteEntry(url));
-  EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND, ReadEntry(url, &metadata));
-  EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND, DeleteEntry(url));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, drive_metadata_store()->DeleteEntry(url));
+  EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
+            drive_metadata_store()->ReadEntry(url, &metadata));
+  EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
+            drive_metadata_store()->DeleteEntry(url));
+}
+
+TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
+  const GURL kOrigin1("http://www1.example.com");
+  const GURL kOrigin2("http://www2.example.com");
+
+  bool done = false;
+  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+  bool created = false;
+  InitializeDatabase(&done, &status, &created);
+  EXPECT_TRUE(done);
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+  EXPECT_TRUE(created);
+
+  // Make sure origins have not been marked yet.
+  EXPECT_FALSE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin1));
+  EXPECT_FALSE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin2));
+  EXPECT_FALSE(drive_metadata_store()->IsIncrementalSyncOrigin(kOrigin1));
+  EXPECT_FALSE(drive_metadata_store()->IsIncrementalSyncOrigin(kOrigin2));
+
+  drive_metadata_store()->IsBatchSyncOrigin(kOrigin1);
+  // Mark origins as batch sync origins.
+  drive_metadata_store()->AddBatchSyncOrigin(kOrigin1);
+  EXPECT_TRUE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin1));
+  drive_metadata_store()->AddBatchSyncOrigin(kOrigin2);
+  EXPECT_TRUE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin2));
+
+  // Mark |kOrigin1| as an incremental sync origin. |kOrigin2| should have still
+  // been marked as a batch sync origin.
+  drive_metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin1);
+  EXPECT_FALSE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin1));
+  EXPECT_TRUE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin2));
+  EXPECT_TRUE(drive_metadata_store()->IsIncrementalSyncOrigin(kOrigin1));
+  EXPECT_FALSE(drive_metadata_store()->IsIncrementalSyncOrigin(kOrigin2));
 }
 
 }  // namespace sync_file_system

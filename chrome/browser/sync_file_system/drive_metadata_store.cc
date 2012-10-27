@@ -209,7 +209,6 @@ void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin) {
   DCHECK(!IsIncrementalSyncOrigin(origin));
 
   // TODO(tzik): Store |origin| to DB. crbug.com/157821
-  // TODO(tzik): Add test.
   batch_sync_origins_.insert(origin);
 }
 
@@ -219,7 +218,6 @@ void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
   DCHECK(!IsIncrementalSyncOrigin(origin));
 
   // TODO(tzik): Store |origin| to DB. crbug.com/157821
-  // TODO(tzik): Add test.
   batch_sync_origins_.erase(origin);
   incremental_sync_origins_.insert(origin);
 }
