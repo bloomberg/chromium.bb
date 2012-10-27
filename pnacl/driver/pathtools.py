@@ -42,18 +42,10 @@ def normalize(syspath):
   if WINDOWS_MANGLE:
     # Recognize paths which are already normalized.
     # (Should only happen during recursive driver calls)
-    if syspath.startswith('/cygdrive/'):
+    if '\\' not in syspath:
       return syspath
 
-    # Leave '-' alone since it represents stdout and not a real path.
-    if syspath == '-':
-      return syspath
-
-    components = os.path.abspath(syspath).split('\\')
-    drive = components[0]
-    components = components[1:]
-    assert(len(drive) == 2 and drive[1] == ':')
-    return '/cygdrive/%s/%s' % (drive[0].lower(), '/'.join(components))
+    return syspath.replace('\\', '/')
   else:
     return syspath
 
@@ -66,13 +58,15 @@ def touser(npath):
 def tosys(npath):
   """ Convert a normalized path into a system-style path """
   if WINDOWS_MANGLE:
-    components = npath.split('/')
-    assert(components[0] == '')
-    assert(components[1] == 'cygdrive')
-    assert(len(components[2]) == 1)
-    drive = components[2]
-    components = components[3:]
-    return '%s:\\%s' % (drive.upper(), '\\'.join(components))
+    if npath.startswith('/cygdrive'):
+      components = npath.split('/')
+      assert(components[0] == '')
+      assert(len(components[2]) == 1)
+      drive = components[2]
+      components = components[3:]
+      return '%s:\\%s' % (drive.upper(), '\\'.join(components))
+    else:
+      return npath.replace('/', '\\')
   else:
     return npath
 
@@ -87,7 +81,6 @@ def split(npath):
 
 def splitext(npath):
   return posixpath.splitext(npath)
-
 
 def basename(npath):
   return posixpath.basename(npath)

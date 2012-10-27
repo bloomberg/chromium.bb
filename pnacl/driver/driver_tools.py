@@ -13,6 +13,7 @@ import hashlib
 import platform
 import os
 import re
+import shlex
 import signal
 import subprocess
 import struct
@@ -245,10 +246,20 @@ def ShouldExpandCommandFile(arg):
 def DoExpandCommandFile(argv, i):
   arg = argv[i]
   fd = DriverOpen(pathtools.normalize(arg[1:]), 'r')
-  more_args = fd.read().split()
+  more_args = []
+
+  # Use shlex here to process the response file contents.
+  # this ensures that single and double quoted args are
+  # handled correctly.  Since this file is very likely
+  # to contain paths with windows path seperators we disable
+  # escape charaters by passing posix=False.
+  for line in fd:
+    more_args += shlex.split(line, posix=False)
+
   fd.close()
-  new_argv = argv[:i] + more_args + argv[i+1:]
-  return new_argv
+  if more_args:
+    argv = argv[:i] + more_args + argv[i+1:]
+  return argv
 
 
 def ParseArgs(argv,
