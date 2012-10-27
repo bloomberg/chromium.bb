@@ -20,6 +20,9 @@ var QueryString = function() {
 
 var keySystem = QueryString.keysystem;
 var mediaFile = QueryString.mediafile;
+var mediaType = QueryString.mediatype;
+if (!mediaType)
+  mediaType = 'video/webm; codecs="vorbis, vp8"'
 // Default key used to encrypt many media files used in browser tests.
 var KEY = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
                           0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
@@ -63,7 +66,7 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key) {
     sourceOpened = true;
     console.log('onSourceOpen', e);
     var srcBuffer =
-        mediaSource.addSourceBuffer('video/webm; codecs="vorbis, vp8"');
+        mediaSource.addSourceBuffer(mediaType);
     var xhr = new XMLHttpRequest();
     xhr.open('GET', mediaFile);
     xhr.responseType = 'arraybuffer';
