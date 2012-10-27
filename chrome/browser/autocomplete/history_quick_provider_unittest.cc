@@ -74,6 +74,9 @@ struct TestURLInfo {
   {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
    "Dogs & Cats & Mice & Other Animals", 1, 1, 0},
   {"https://monkeytrap.org/", "", 3, 1, 0},
+  {"http://popularsitewithpathonly.com/moo.cow",
+   "popularsitewithpathonly.com/moo.cow", 50, 50, 0},
+  {"http://popularsitewithroot.com/", "popularsitewithroot.com", 50, 50, 0}
 };
 
 class HistoryQuickProviderTest : public testing::Test,
@@ -150,6 +153,9 @@ void HistoryQuickProviderTest::TearDown() {
 }
 
 bool HistoryQuickProviderTest::UpdateURL(const history::URLRow& row) {
+  history::URLDatabase* db = history_service_->InMemoryDatabase();
+  DCHECK(db);
+  EXPECT_NE(db->AddURL(row), 0);
   history::InMemoryURLIndex* index = provider_->GetIndex();
   DCHECK(index);
   history::URLIndexPrivateData* private_data = index->private_data();
@@ -315,8 +321,8 @@ TEST_F(HistoryQuickProviderTest, StartRelativeMatch) {
 TEST_F(HistoryQuickProviderTest, PrefixOnlyMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://foo.com/");
+  expected_urls.push_back("http://popularsitewithroot.com/");
   expected_urls.push_back("http://slashdot.org/favorite_page.html");
-  expected_urls.push_back("http://foo.com/dir/another/");
   RunTest(ASCIIToUTF16("http://"), expected_urls, true,
           ASCIIToUTF16("http://foo.com"));
 }
@@ -441,6 +447,62 @@ TEST_F(HistoryQuickProviderTest, DeleteMatch) {
           ASCIIToUTF16("NONE EXPECTED"));
 }
 
+TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
+  std::vector<std::string> expected_urls;
+
+  expected_urls.clear();
+  expected_urls.push_back("http://popularsitewithroot.com/");
+  // If the user enters a hostname (no path) that he/she has visited
+  // before, we should make sure that all HistoryQuickProvider results
+  // have scores less than the URL-what-you-typed match.
+  RunTest(ASCIIToUTF16("popularsitewithroot.com"), expected_urls, true,
+          ASCIIToUTF16("popularsitewithroot.com"));
+  EXPECT_LT(ac_matches_[0].relevance, AutocompleteResult::kLowestDefaultScore);
+
+  // Check that if the user didn't quite enter the full hostname, this
+  // hostname would've normally scored above the URL-what-you-typed match.
+  RunTest(ASCIIToUTF16("popularsitewithroot.c"), expected_urls, true,
+          ASCIIToUTF16("popularsitewithroot.com"));
+  EXPECT_GE(ac_matches_[0].relevance, AutocompleteResult::kLowestDefaultScore);
+
+  expected_urls.clear();
+  expected_urls.push_back("http://popularsitewithpathonly.com/moo.cow");
+  // If the user enters a hostname of a host that he/she has visited
+  // but never visited the root page of, we should make sure that all
+  // HistoryQuickProvider results have scores less than the
+  // URL-what-you-typed match.
+  RunTest(ASCIIToUTF16("popularsitewithpathonly.com"), expected_urls, true,
+          ASCIIToUTF16("popularsitewithpathonly.com/moo.cow"));
+  EXPECT_LT(ac_matches_[0].relevance, AutocompleteResult::kLowestDefaultScore);
+
+  // Verify the same thing happens if the user adds a / to end of the
+  // hostname.
+  RunTest(ASCIIToUTF16("popularsitewithpathonly.com/"), expected_urls, true,
+          ASCIIToUTF16("popularsitewithpathonly.com/moo.cow"));
+  EXPECT_LT(ac_matches_[0].relevance, AutocompleteResult::kLowestDefaultScore);
+
+  // Check that if the user didn't quite enter the full hostname, this
+  // page would've normally scored above the URL-what-you-typed match.
+  RunTest(ASCIIToUTF16("popularsitewithpathonly.co"), expected_urls, true,
+          ASCIIToUTF16("popularsitewithpathonly.com/moo.cow"));
+  EXPECT_GE(ac_matches_[0].relevance, AutocompleteResult::kLowestDefaultScore);
+
+  // If the user enters a hostname + path that he/she has not visited
+  // before (but visited other things on the host), we can allow
+  // inline autocompletions.
+  RunTest(ASCIIToUTF16("popularsitewithpathonly.com/moo"), expected_urls, true,
+          ASCIIToUTF16("popularsitewithpathonly.com/moo.cow"));
+  EXPECT_GE(ac_matches_[0].relevance, AutocompleteResult::kLowestDefaultScore);
+
+  // If the user enters a hostname + path that he/she has visited
+  // before, we should make sure that all HistoryQuickProvider results
+  // have scores less than the URL-what-you-typed match.
+  RunTest(ASCIIToUTF16("popularsitewithpathonly.com/moo.cow"),
+          expected_urls, true,
+          ASCIIToUTF16("popularsitewithpathonly.com/moo.cow"));
+  EXPECT_LT(ac_matches_[0].relevance, AutocompleteResult::kLowestDefaultScore);
+}
+
 // HQPOrderingTest -------------------------------------------------------------
 
 TestURLInfo ordering_test_db[] = {
@@ -508,4 +570,3 @@ TEST_F(HQPOrderingTest, TEAMatch) {
   RunTest(ASCIIToUTF16("tea"), expected_urls, true,
           ASCIIToUTF16("www.teamliquid.net"));
 }
-
