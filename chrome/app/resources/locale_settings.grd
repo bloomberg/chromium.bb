@@ -366,6 +366,13 @@
         http://gweb-gettingstartedguide.appspot.com/?hl=[GRITLANGCODE]
       </message>
 
+      <!-- The URL for Google Chrome privacy policy. -->
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_PRIVACY_POLICY_URL" translateable="false">
+          http://www.google.com/chrome/intl/[GRITLANGCODE]/privacy.html
+        </message>
+      </if>
+
       <!-- The URL for Adobe Flash storage settings. We cannot rely on -->
       <!-- the automatic expansion of GRITLANGCODE here because Adobe does -->
       <!-- not use the language/locale code. -->
