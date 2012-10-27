@@ -418,11 +418,11 @@ bool DeserializeAudioFrames(PP_Resource audio_frames,
     if (bytes_left < kHeaderSize)
       return false;
 
-    timestamp = *(reinterpret_cast<const int64*>(cur));
+    memcpy(&timestamp, cur, sizeof(timestamp));
     cur += sizeof(timestamp);
     bytes_left -= sizeof(timestamp);
 
-    frame_size = *(reinterpret_cast<const int64*>(cur));
+    memcpy(&frame_size, cur, sizeof(frame_size));
     cur += sizeof(frame_size);
     bytes_left -= sizeof(frame_size);
 

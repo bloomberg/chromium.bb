@@ -333,9 +333,9 @@ base::TimeDelta FFmpegCdmAudioDecoder::GetNextOutputTimestamp() const {
 }
 
 void FFmpegCdmAudioDecoder::SerializeInt64(int64 value) {
-  const uint8_t* ptr = reinterpret_cast<uint8_t*>(&value);
-  serialized_audio_frames_.insert(serialized_audio_frames_.end(),
-                                  ptr, ptr + sizeof(value));
+  int previous_size = serialized_audio_frames_.size();
+  serialized_audio_frames_.resize(previous_size + sizeof(value));
+  memcpy(&serialized_audio_frames_[0] + previous_size, &value, sizeof(value));
 }
 
 }  // namespace webkit_media

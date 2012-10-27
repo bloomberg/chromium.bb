@@ -485,10 +485,12 @@ int ClearKeyCdm::GenerateFakeAudioFramesFromDuration(
 
   const int kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
   audio_frames->set_buffer(allocator_->Allocate(kHeaderSize + frame_size));
-  int64* data = reinterpret_cast<int64*>(audio_frames->buffer()->data());
+  uint8_t* data = audio_frames->buffer()->data();
 
-  *(data++) = timestamp;
-  *(data++) = frame_size;
+  memcpy(data, &timestamp, sizeof(timestamp));
+  data += sizeof(timestamp);
+  memcpy(data, &frame_size, sizeof(frame_size));
+  data += sizeof(frame_size);
   // You won't hear anything because we have all zeros here. But the video
   // should play just fine!
   memset(data, 0, frame_size);
