@@ -392,7 +392,18 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
             FindDisplayForId(internal_display_id).bounds().ToString());
 }
 
-TEST_F(MultiDisplayManagerTest, EnsurePointerInDisplays) {
+#if defined(OS_CHROMEOS)
+#define MAYBE_EnsurePointerInDisplays EnsurePointerInDisplays
+#define MAYBE_EnsurePointerInDisplays_2ndOnLeft \
+  EnsurePointerInDisplays_2ndOnLeft
+#else
+// TODO(oshima): Re-enable these tests on WinAura (http://crbug.com/158163).
+#define MAYBE_EnsurePointerInDisplays DISABLED_EnsurePointerInDisplays
+#define MAYBE_EnsurePointerInDisplays_2ndOnLeft \
+  DISABLED_EnsurePointerInDisplays_2ndOnLeft
+#endif
+
+TEST_F(MultiDisplayManagerTest, MAYBE_EnsurePointerInDisplays) {
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -430,7 +441,7 @@ TEST_F(MultiDisplayManagerTest, EnsurePointerInDisplays) {
   EXPECT_EQ("150,140", env->last_mouse_location().ToString());
 }
 
-TEST_F(MultiDisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
+TEST_F(MultiDisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
