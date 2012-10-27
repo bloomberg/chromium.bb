@@ -8,7 +8,6 @@ from chrome_remote_control import options_for_unittests
 
 class BrowserTest(unittest.TestCase):
   def testBrowserCreation(self):
-
     options = options_for_unittests.Get()
     browser_to_create = browser_finder.FindBrowser(options)
     if not browser_to_create:
@@ -36,3 +35,17 @@ class BrowserTest(unittest.TestCase):
         self.assertEquals(t.runtime.Evaluate('navigator.userAgent'),
                           'chrome_remote_control')
 
+  def testNewCloseTab(self):
+    options = options_for_unittests.Get()
+    browser_to_create = browser_finder.FindBrowser(options)
+    with browser_to_create.Create() as b:
+      self.assertEquals(1, b.num_tabs)
+      existing_tab_url = b.GetNthTabUrl(0)
+      b.NewTab()
+      self.assertEquals(2, b.num_tabs)
+      self.assertEquals(b.GetNthTabUrl(0), existing_tab_url)
+      self.assertEquals(b.GetNthTabUrl(1), 'about:blank')
+      b.CloseTab(1)
+      self.assertEquals(1, b.num_tabs)
+      self.assertEquals(b.GetNthTabUrl(0), existing_tab_url)
+      self.assertRaises(AssertionError, b.CloseTab, 0)

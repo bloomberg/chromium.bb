@@ -45,6 +45,12 @@ class Browser(object):
   def platform(self):
     return self._platform
 
+  def NewTab(self):
+    return self._backend.NewTab()
+
+  def CloseTab(self, index):
+    self._backend.CloseTab(index)
+
   def GetNthTabUrl(self, index):
     return self._backend.GetNthTabUrl(index)
 

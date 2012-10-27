@@ -57,17 +57,39 @@ class BrowserBackend(object):
     except util.TimeoutException:
       raise browser_gone_exception.BrowserGoneException()
 
+  @property
+  def _debugger_url(self):
+    return 'http://localhost:%i/json' % self._port
+
   def _ListTabs(self, timeout=None):
-    if timeout:
-      req = urllib2.urlopen('http://localhost:%i/json' % self._port,
-                            timeout=timeout)
-    else:
-      req = urllib2.urlopen('http://localhost:%i/json' % self._port)
+    req = urllib2.urlopen(self._debugger_url, timeout=timeout)
     data = req.read()
     all_contexts = json.loads(data)
     tabs = [ctx for ctx in all_contexts
             if not ctx['url'].startswith('chrome-extension://')]
+    # FIXME(dtu): The remote debugger protocol returns in order of most
+    # recently created tab first. In order to convert it to the UI tab
+    # order, we just reverse the list, which assumes we can't move tabs.
+    # We should guarantee that the remote debugger returns in the UI tab order.
+    tabs.reverse()
     return tabs
+
+  def NewTab(self, timeout=None):
+    req = urllib2.urlopen(self._debugger_url + '/new', timeout=timeout)
+    data = req.read()
+    new_tab = json.loads(data)
+    return new_tab
+
+  def CloseTab(self, index, timeout=None):
+    assert self.num_tabs > 1, 'Closing the last tab not supported.'
+    target_tab = self._ListTabs()[index]
+    tab_id = target_tab['webSocketDebuggerUrl'].split('/')[-1]
+    target_num_tabs = self.num_tabs - 1
+
+    urllib2.urlopen('%s/close/%s' % (self._debugger_url, tab_id),
+                    timeout=timeout)
+
+    util.WaitFor(lambda: self.num_tabs == target_num_tabs, timeout=5)
 
   @property
   def num_tabs(self):
