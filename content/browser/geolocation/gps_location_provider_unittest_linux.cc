@@ -4,7 +4,6 @@
 
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/geolocation/gps_location_provider_linux.h"
-#include "content/browser/geolocation/libgps_wrapper_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/bind.h"

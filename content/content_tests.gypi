@@ -480,6 +480,7 @@
           ],
         }, {  # OS != "ios"
           'dependencies': [
+            'content_browser',
             'content_gpu',
             'content_plugin',
             'content_renderer',
