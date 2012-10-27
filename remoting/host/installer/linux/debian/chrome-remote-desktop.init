@@ -29,6 +29,23 @@ else
   USERS=$(whoami)
 fi
 
+# Tries to wait for 10 seconds until specified command exits and then kills it.
+run_with_timeout() {
+  "$@" &
+  pid=$!
+  ((time_left = 10))
+  while ((time_left > 0)); do
+    (kill -0 $pid 2>/dev/null) || return `wait $pid`
+    sleep 1
+    ((time_left -= 1))
+  done
+  (kill -0 $pid 2>/dev/null) || return `wait $pid`
+
+  echo command \"$@\" has timed out >&2
+  kill  $pid
+  return 1
+}
+
 run_and_ignore_error() {
   user=$1
   shift
@@ -55,7 +72,7 @@ do_start() {
 
 do_stop() {
   log_begin_msg "Stopping Chrome Remote Desktop host for $1..."
-  run_and_ignore_error $1 "$HOST_PATH --stop"
+  run_with_timeout run_and_ignore_error $1 "$HOST_PATH --stop"
   log_end_msg $?
 }
 
