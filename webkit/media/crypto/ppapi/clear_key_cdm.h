@@ -17,6 +17,7 @@
 #include "webkit/media/crypto/ppapi/content_decryption_module.h"
 
 // Enable this to use the fake decoder for testing.
+// TODO(xhwang): Move fake decoders into separate classes.
 #if 0
 #define CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 #endif
@@ -135,12 +136,21 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
       scoped_refptr<media::DecoderBuffer>* decrypted_buffer);
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
-  // Generates fake video frames with |last_timestamp_| and |last_duration_|.
-  void GenerateFakeAudioFrames(cdm::AudioFrames* audio_frames);
+  int64 CurrentTimeStampInMicroseconds() const;
+
+  // Generates fake video frames with |duration_in_microseconds|.
+  // Returns the number of samples generated in the |audio_frames|.
+  int GenerateFakeAudioFramesFromDuration(int64 duration_in_microseconds,
+                                          cdm::AudioFrames* audio_frames) const;
+
+  // Generates fake video frames given |input_timestamp|.
+  // Returns cdm::kSuccess if any audio frame is successfully generated.
+  cdm::Status GenerateFakeAudioFrames(int64 timestamp_in_microseconds,
+                                      cdm::AudioFrames* audio_frames);
 #endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-  // Generate a fake video frame with |video_size_| and |timestamp|.
+  // Generates a fake video frame with |video_size_| and |timestamp|.
   void GenerateFakeVideoFrame(base::TimeDelta timestamp,
                               cdm::VideoFrame* video_frame);
 #endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
@@ -158,8 +168,8 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   int channel_count_;
   int bits_per_channel_;
   int samples_per_second_;
-  base::TimeDelta last_timestamp_;
-  base::TimeDelta last_duration_;
+  int64 output_timestamp_base_in_microseconds_;
+  int total_samples_generated_;
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
