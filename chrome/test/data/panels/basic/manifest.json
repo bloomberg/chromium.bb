@@ -1,0 +1,10 @@
+{
+  "name": "Simple extension that creates a panel.",
+  "version": "1",
+  "manifest_version": 2,
+  "description": "Used by tests that simply need a panel created.",
+  "background": {
+    "scripts": ["test.js"]
+  },
+  "permissions": ["tabs"]
+}

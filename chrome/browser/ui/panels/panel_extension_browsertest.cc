@@ -4,8 +4,12 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -17,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,6 +107,130 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest,
 
   // Close tha panel without waiting for the app icon loaded.
   panel->Close();
+}
+
+// Non-abstract RenderViewContextMenu class for testing context menus in Panels.
+class PanelContextMenu : public RenderViewContextMenu {
+ public:
+  PanelContextMenu(content::WebContents* web_contents,
+                   const content::ContextMenuParams& params)
+      : RenderViewContextMenu(web_contents, params) {}
+
+  bool HasCommandWithId(int command_id) {
+    return menu_model_.GetIndexOfCommandId(command_id) != -1;
+  }
+
+ protected:
+  // RenderViewContextMenu implementation.
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE {
+    return false;
+  }
+  virtual void PlatformInit() OVERRIDE {}
+  virtual void PlatformCancel() OVERRIDE {}
+};
+
+IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
+  ExtensionTestMessageListener listener("panel loaded", false);
+  LoadExtension(test_data_dir_.AppendASCII("basic"));
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  // There should only be one panel.
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  EXPECT_EQ(1, panel_manager->num_panels());
+  Panel* panel = panel_manager->panels().front();
+  content::WebContents* web_contents = panel->GetWebContents();
+  ASSERT_TRUE(web_contents);
+
+  WebKit::WebContextMenuData data;
+  content::ContextMenuParams params(data);
+  params.page_url = web_contents->GetURL();
+
+  // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
+  EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
+
+  // Verify basic menu contents. The basic extension does not add any
+  // context menu items so the panel's menu should include only the
+  // developer tools.
+  scoped_ptr<PanelContextMenu> menu;
+  menu.reset(new PanelContextMenu(web_contents, params));
+  menu->Init();
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+
+  // Verify expected menu contents for editable item.
+  params.is_editable = true;
+  menu.reset(new PanelContextMenu(web_contents, params));
+  menu->Init();
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+  EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+  EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
+  EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+
+  // Verify expected menu contents for text selection.
+  params.is_editable = false;
+  params.selection_text = ASCIIToUTF16("Select me");
+  menu.reset(new PanelContextMenu(web_contents, params));
+  menu->Init();
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
+  EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+}
+
+IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
+  ExtensionTestMessageListener listener("created item", false);
+  LoadExtension(test_data_dir_.AppendASCII("context_menu"));
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  // Load a second extension that also creates a custom context menu item.
+  ExtensionTestMessageListener bogey_listener("created bogey item", false);
+  LoadExtension(test_data_dir_.AppendASCII("context_menu2"));
+  ASSERT_TRUE(bogey_listener.WaitUntilSatisfied());
+
+  // There should only be one panel.
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  EXPECT_EQ(1, panel_manager->num_panels());
+  Panel* panel = panel_manager->panels().front();
+  content::WebContents* web_contents = panel->GetWebContents();
+  ASSERT_TRUE(web_contents);
+
+  WebKit::WebContextMenuData data;
+  content::ContextMenuParams params(data);
+  params.page_url = web_contents->GetURL();
+
+  // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
+  EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
+
+  // Verify menu contents contains the custom item added by their own extension.
+  scoped_ptr<PanelContextMenu> menu;
+  menu.reset(new PanelContextMenu(web_contents, params));
+  menu->Init();
+  EXPECT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+
+  // Execute the extension's custom menu item and wait for the extension's
+  // script to tell us its onclick fired.
+  ExtensionTestMessageListener onclick_listener("clicked", false);
+  int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
+  menu->ExecuteCommand(command_id);
+  EXPECT_TRUE(onclick_listener.WaitUntilSatisfied());
 }
 
 class PanelExtensionApiTest : public ExtensionApiTest {

@@ -1,0 +1,10 @@
+{
+  "name": "Extension that creates a custom context menu item.",
+  "version": "1",
+  "manifest_version": 2,
+  "description": "Used to verify panels only see custom context menu items from their own extension.",
+  "background": {
+    "scripts": ["test.js"]
+  },
+  "permissions": ["contextMenus", "tabs"]
+}

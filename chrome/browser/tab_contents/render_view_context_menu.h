@@ -205,6 +205,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   const extensions::Extension* GetExtension() const;
   void AppendPlatformAppItems();
   void AppendPopupExtensionItems();
+  void AppendPanelItems();
   bool AppendCustomItems();
   void AppendDeveloperItems();
   void AppendLinkItems();

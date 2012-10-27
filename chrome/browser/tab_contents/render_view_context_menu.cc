@@ -404,6 +404,9 @@ void RenderViewContextMenu::InitMenu() {
   } else if (view_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
     AppendPopupExtensionItems();
     return;
+  } else if (view_type == chrome::VIEW_TYPE_PANEL) {
+    AppendPanelItems();
+    return;
   }
 
   bool has_link = !params_.unfiltered_link_url.is_empty();
@@ -562,6 +565,22 @@ void RenderViewContextMenu::AppendPopupExtensionItems() {
 
   AppendAllExtensionItems();
   AppendDeveloperItems();
+}
+
+void RenderViewContextMenu::AppendPanelItems() {
+  const Extension* extension = GetExtension();
+
+  bool has_selection = !params_.selection_text.empty();
+
+  if (params_.is_editable)
+    AppendEditableItems();
+  else if (has_selection)
+    AppendCopyItem();
+
+  // Only add extension items from this extension.
+  int index = 0;
+  extension_items_.AppendExtensionItems(extension->id(),
+                                        PrintableSelectionText(), &index);
 }
 
 void RenderViewContextMenu::AddMenuItem(int command_id,

@@ -1,0 +1,10 @@
+{
+  "name": "Extension that creates a panel and custom context menu item.",
+  "version": "1",
+  "manifest_version": 2,
+  "description": "Used to verify panels can create custom context menu items.",
+  "background": {
+    "scripts": ["test.js"]
+  },
+  "permissions": ["contextMenus", "tabs"]
+}

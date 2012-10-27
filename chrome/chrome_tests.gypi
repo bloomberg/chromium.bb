@@ -3370,6 +3370,7 @@
             'browser/service/service_process_control_browsertest.cc',
             # chromeos does not use cross-platform panels
             'browser/ui/views/panels/panel_view_browsertest.cc',
+	    'browser/ui/panels/panel_extension_browsertest.cc',
           ],
           'dependencies': [
             '../dbus/dbus.gyp:dbus_test_support',
