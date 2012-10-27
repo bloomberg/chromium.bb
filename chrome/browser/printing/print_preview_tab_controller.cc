@@ -86,13 +86,26 @@ class PrintPreviewTabDelegate : public WebDialogDelegate {
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
  private:
-  TabContents* initiator_tab_;
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewTabDelegate);
 };
 
 PrintPreviewTabDelegate::PrintPreviewTabDelegate(TabContents* initiator_tab) {
-  initiator_tab_ = initiator_tab;
+  const gfx::Size kMinDialogSize(800, 480);
+  const int kBorder = 50;
+  gfx::Rect rect;
+  initiator_tab->web_contents()->GetContainerBounds(&rect);
+  size_.set_width(std::max(rect.width(), kMinDialogSize.width()) - kBorder);
+  size_.set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder);
+
+#if defined(OS_MACOSX)
+  // Limit the maximum size on MacOS X.
+  // http://crbug.com/105815
+  const gfx::Size kMaxDialogSize(1000, 660);
+  size_.set_width(std::min(size_.width(), kMaxDialogSize.width()));
+  size_.set_height(std::min(size_.height(), kMaxDialogSize.height()));
+#endif
 }
 
 PrintPreviewTabDelegate::~PrintPreviewTabDelegate() {
@@ -119,21 +132,7 @@ void PrintPreviewTabDelegate::GetWebUIMessageHandlers(
 }
 
 void PrintPreviewTabDelegate::GetDialogSize(gfx::Size* size) const {
-  DCHECK(size);
-  const gfx::Size kMinDialogSize(800, 480);
-  const int kBorder = 50;
-  gfx::Rect rect;
-  initiator_tab_->web_contents()->GetContainerBounds(&rect);
-  size->set_width(std::max(rect.width(), kMinDialogSize.width()) - kBorder);
-  size->set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder);
-
-#if defined(OS_MACOSX)
-  // Limit the maximum size on MacOS X.
-  // http://crbug.com/105815
-  const gfx::Size kMaxDialogSize(1000, 660);
-  size->set_width(std::min(size->width(), kMaxDialogSize.width()));
-  size->set_height(std::min(size->height(), kMaxDialogSize.height()));
-#endif
+  *size = size_;
 }
 
 std::string PrintPreviewTabDelegate::GetDialogArgs() const {
