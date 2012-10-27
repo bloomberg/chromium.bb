@@ -120,7 +120,8 @@ struct InputBuffer {
 struct AudioDecoderConfig {
   enum AudioCodec {
     kUnknownAudioCodec = 0,
-    kCodecVorbis
+    kCodecVorbis,
+    kCodecAac
   };
 
   AudioDecoderConfig()
@@ -161,12 +162,20 @@ struct Size {
 struct VideoDecoderConfig {
   enum VideoCodec {
     kUnknownVideoCodec = 0,
-    kCodecVP8
+    kCodecVp8,
+    kCodecH264
   };
 
   enum VideoCodecProfile {
     kUnknownVideoCodecProfile = 0,
-    kVp8ProfileMain
+    kVp8ProfileMain,
+    kH264ProfileBaseline,
+    kH264ProfileMain,
+    kH264ProfileExtended,
+    kH264ProfileHigh,
+    kH264ProfileHigh10,
+    kH264ProfileHigh422,
+    kH264ProfileHigh444Predictive
   };
 
   VideoDecoderConfig()

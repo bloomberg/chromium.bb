@@ -30,11 +30,13 @@ static CodecID CdmAudioCodecToCodecID(
   switch (audio_codec) {
     case cdm::AudioDecoderConfig::kCodecVorbis:
       return CODEC_ID_VORBIS;
+    case cdm::AudioDecoderConfig::kCodecAac:
+      return CODEC_ID_AAC;
+    case cdm::AudioDecoderConfig::kUnknownAudioCodec:
     default:
       NOTREACHED() << "Unsupported cdm::AudioCodec: " << audio_codec;
+      return CODEC_ID_NONE;
   }
-
-  return CODEC_ID_NONE;
 }
 
 static void CdmAudioDecoderConfigToAVCodecContext(
@@ -110,7 +112,6 @@ bool FFmpegCdmAudioDecoder::Initialize(const cdm::AudioDecoderConfig& config) {
   // Initialize AVCodecContext structure.
   codec_context_ = avcodec_alloc_context3(NULL);
   CdmAudioDecoderConfigToAVCodecContext(config, codec_context_);
-  DCHECK_EQ(CODEC_ID_VORBIS, codec_context_->codec_id);
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
   if (!codec) {

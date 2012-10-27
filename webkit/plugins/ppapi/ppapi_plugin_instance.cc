@@ -446,6 +446,8 @@ PP_AudioCodec MediaAudioCodecToPpAudioCodec(media::AudioCodec codec) {
   switch (codec) {
     case media::kCodecVorbis:
       return PP_AUDIOCODEC_VORBIS;
+    case media::kCodecAAC:
+      return PP_AUDIOCODEC_AAC;
     default:
       return PP_AUDIOCODEC_UNKNOWN;
   }
@@ -455,6 +457,8 @@ PP_VideoCodec MediaVideoCodecToPpVideoCodec(media::VideoCodec codec) {
   switch (codec) {
     case media::kCodecVP8:
       return PP_VIDEOCODEC_VP8;
+    case media::kCodecH264:
+      return PP_VIDEOCODEC_H264;
     default:
       return PP_VIDEOCODEC_UNKNOWN;
   }
@@ -465,6 +469,20 @@ PP_VideoCodecProfile MediaVideoCodecProfileToPpVideoCodecProfile(
   switch (profile) {
     case media::VP8PROFILE_MAIN:
       return PP_VIDEOCODECPROFILE_VP8_MAIN;
+    case media::H264PROFILE_BASELINE:
+      return PP_VIDEOCODECPROFILE_H264_BASELINE;
+    case media::H264PROFILE_MAIN:
+      return PP_VIDEOCODECPROFILE_H264_MAIN;
+    case media::H264PROFILE_EXTENDED:
+      return PP_VIDEOCODECPROFILE_H264_EXTENDED;
+    case media::H264PROFILE_HIGH:
+      return PP_VIDEOCODECPROFILE_H264_HIGH;
+    case media::H264PROFILE_HIGH10PROFILE:
+      return PP_VIDEOCODECPROFILE_H264_HIGH_10;
+    case media::H264PROFILE_HIGH422PROFILE:
+      return PP_VIDEOCODECPROFILE_H264_HIGH_422;
+    case media::H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return PP_VIDEOCODECPROFILE_H264_HIGH_444_PREDICTIVE;
     default:
       return PP_VIDEOCODECPROFILE_UNKNOWN;
   }

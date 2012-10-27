@@ -47,12 +47,41 @@ static PixelFormat CdmVideoFormatToPixelFormat(cdm::VideoFormat video_format) {
 static CodecID CdmVideoCodecToCodecID(
     cdm::VideoDecoderConfig::VideoCodec video_codec) {
   switch (video_codec) {
-    case cdm::VideoDecoderConfig::kCodecVP8:
+    case cdm::VideoDecoderConfig::kCodecVp8:
       return CODEC_ID_VP8;
+    case cdm::VideoDecoderConfig::kCodecH264:
+      return CODEC_ID_H264;
+    case cdm::VideoDecoderConfig::kUnknownVideoCodec:
     default:
       NOTREACHED() << "Unsupported cdm::VideoCodec: " << video_codec;
+      return CODEC_ID_NONE;
   }
-  return CODEC_ID_NONE;
+}
+
+static int CdmVideoCodecProfileToProfileID(
+    cdm::VideoDecoderConfig::VideoCodecProfile profile) {
+  switch (profile) {
+    case cdm::VideoDecoderConfig::kVp8ProfileMain:
+      return FF_PROFILE_UNKNOWN;  // VP8 does not define an FFmpeg profile.
+    case cdm::VideoDecoderConfig::kH264ProfileBaseline:
+      return FF_PROFILE_H264_BASELINE;
+    case cdm::VideoDecoderConfig::kH264ProfileMain:
+      return FF_PROFILE_H264_MAIN;
+    case cdm::VideoDecoderConfig::kH264ProfileExtended:
+      return FF_PROFILE_H264_EXTENDED;
+    case cdm::VideoDecoderConfig::kH264ProfileHigh:
+      return FF_PROFILE_H264_HIGH;
+    case cdm::VideoDecoderConfig::kH264ProfileHigh10:
+      return FF_PROFILE_H264_HIGH_10;
+    case cdm::VideoDecoderConfig::kH264ProfileHigh422:
+      return FF_PROFILE_H264_HIGH_422;
+    case cdm::VideoDecoderConfig::kH264ProfileHigh444Predictive:
+      return FF_PROFILE_H264_HIGH_444_PREDICTIVE;
+    case cdm::VideoDecoderConfig::kUnknownVideoCodecProfile:
+    default:
+      NOTREACHED() << "Unknown cdm::VideoCodecProfile: " << profile;
+      return FF_PROFILE_UNKNOWN;
+  }
 }
 
 static void CdmVideoDecoderConfigToAVCodecContext(
@@ -60,7 +89,7 @@ static void CdmVideoDecoderConfigToAVCodecContext(
     AVCodecContext* codec_context) {
   codec_context->codec_type = AVMEDIA_TYPE_VIDEO;
   codec_context->codec_id = CdmVideoCodecToCodecID(config.codec);
-  codec_context->profile = FF_PROFILE_UNKNOWN;
+  codec_context->profile = CdmVideoCodecProfileToProfileID(config.profile);
   codec_context->coded_width = config.coded_size.width;
   codec_context->coded_height = config.coded_size.height;
   codec_context->pix_fmt = CdmVideoFormatToPixelFormat(config.format);
@@ -135,7 +164,6 @@ bool FFmpegCdmVideoDecoder::Initialize(const cdm::VideoDecoderConfig& config) {
   codec_context_->thread_count = kDecodeThreads;
   codec_context_->opaque = this;
   codec_context_->flags |= CODEC_FLAG_EMU_EDGE;
-  DCHECK_EQ(CODEC_ID_VP8, codec_context_->codec_id);
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
   if (!codec) {

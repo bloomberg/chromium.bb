@@ -123,6 +123,8 @@ cdm::AudioDecoderConfig::AudioCodec PpAudioCodecToCdmAudioCodec(
   switch (codec) {
     case PP_AUDIOCODEC_VORBIS:
       return cdm::AudioDecoderConfig::kCodecVorbis;
+    case PP_AUDIOCODEC_AAC:
+      return cdm::AudioDecoderConfig::kCodecAac;
     default:
       return cdm::AudioDecoderConfig::kUnknownAudioCodec;
   }
@@ -132,7 +134,9 @@ cdm::VideoDecoderConfig::VideoCodec PpVideoCodecToCdmVideoCodec(
     PP_VideoCodec codec) {
   switch (codec) {
     case PP_VIDEOCODEC_VP8:
-      return cdm::VideoDecoderConfig::kCodecVP8;
+      return cdm::VideoDecoderConfig::kCodecVp8;
+    case PP_VIDEOCODEC_H264:
+      return cdm::VideoDecoderConfig::kCodecH264;
     default:
       return cdm::VideoDecoderConfig::kUnknownVideoCodec;
   }
@@ -143,6 +147,20 @@ cdm::VideoDecoderConfig::VideoCodecProfile PpVCProfileToCdmVCProfile(
   switch (profile) {
     case PP_VIDEOCODECPROFILE_VP8_MAIN:
       return cdm::VideoDecoderConfig::kVp8ProfileMain;
+    case PP_VIDEOCODECPROFILE_H264_BASELINE:
+      return cdm::VideoDecoderConfig::kH264ProfileBaseline;
+    case PP_VIDEOCODECPROFILE_H264_MAIN:
+      return cdm::VideoDecoderConfig::kH264ProfileMain;
+    case PP_VIDEOCODECPROFILE_H264_EXTENDED:
+      return cdm::VideoDecoderConfig::kH264ProfileExtended;
+    case PP_VIDEOCODECPROFILE_H264_HIGH:
+      return cdm::VideoDecoderConfig::kH264ProfileHigh;
+    case PP_VIDEOCODECPROFILE_H264_HIGH_10:
+      return cdm::VideoDecoderConfig::kH264ProfileHigh10;
+    case PP_VIDEOCODECPROFILE_H264_HIGH_422:
+      return cdm::VideoDecoderConfig::kH264ProfileHigh422;
+    case PP_VIDEOCODECPROFILE_H264_HIGH_444_PREDICTIVE:
+      return cdm::VideoDecoderConfig::kH264ProfileHigh444Predictive;
     default:
       return cdm::VideoDecoderConfig::kUnknownVideoCodecProfile;
   }
