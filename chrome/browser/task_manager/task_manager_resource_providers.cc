@@ -1723,7 +1723,7 @@ TaskManager::Resource::Type TaskManagerGuestResource::GetType() const {
 
 string16 TaskManagerGuestResource::GetTitle() const {
   WebContents* web_contents = GetWebContents();
-  const int message_id = IDS_TASK_MANAGER_BROWSER_TAG_PREFIX;
+  const int message_id = IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX;
   if (web_contents) {
     string16 title = GetTitleFromWebContents(web_contents);
     return l10n_util::GetStringFUTF16(message_id, title);
