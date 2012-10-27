@@ -62,6 +62,8 @@ class MediaInternals : public content::MediaObserver {
   void RemoveObserver(MediaInternalsObserver* observer);
   void SendEverything();
 
+  scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
+
  private:
   friend class MediaInternalsTest;
   friend struct DefaultSingletonTraits<MediaInternals>;

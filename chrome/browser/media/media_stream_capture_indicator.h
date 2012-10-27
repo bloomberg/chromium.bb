@@ -45,6 +45,9 @@ class MediaStreamCaptureIndicator
                             int render_view_id,
                             const content::MediaStreamDevices& devices);
 
+  // Returns true if the render process is capturing media.
+  bool IsProcessCapturing(int render_process_id, int render_view_id) const;
+
   // ImageLoadingTracker::Observer implementation.
   virtual void OnImageLoaded(const gfx::Image& image,
                              const std::string& extension_id,

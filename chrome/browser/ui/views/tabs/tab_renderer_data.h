@@ -49,6 +49,7 @@ struct TabRendererData {
   bool mini;
   bool blocked;
   bool app;
+  bool recording;
   chrome::search::Mode::Type mode;
   double gradient_background_opacity;
 };

@@ -9,6 +9,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/media/media_internals.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -535,6 +538,12 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);
   data->app = extensions::TabHelper::FromWebContents(contents)->is_app();
+  int render_process_id = contents->GetRenderProcessHost()->GetID();
+  int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
+  scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
+      MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
+  data->recording =
+      capture_indicator->IsProcessCapturing(render_process_id, render_view_id);
   data->mode = browser_->search_model()->mode().mode;
   // Get current gradient background animation to paint.
   data->gradient_background_opacity = browser_->search_delegate()->
