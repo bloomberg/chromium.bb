@@ -94,7 +94,7 @@ void ResourcePrefetcherManager::ResourcePrefetcherFinished(
   PrefetcherMap::iterator it = prefetcher_map_.find(main_frame_url);
   DCHECK(it != prefetcher_map_.end());
   delete it->second;
-  prefetcher_map_.erase(main_frame_url);
+  prefetcher_map_.erase(it);
 }
 
 void ResourcePrefetcherManager::ResourcePrefetcherFinishedOnUI(
