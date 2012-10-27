@@ -170,7 +170,8 @@ html[dir='rtl'] .extension-list-item {
 }
 
 .terminated-reload-link {
-  -webkit-margin-end: 2em;
+  -webkit-margin-end: 2.5em;
+  padding-top: 7px;
 }
 
 .extension-list-item a {
