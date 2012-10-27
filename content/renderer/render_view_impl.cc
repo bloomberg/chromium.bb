@@ -489,31 +489,6 @@ static void NotifyTimezoneChange(WebKit::WebFrame* frame) {
     NotifyTimezoneChange(child);
 }
 
-// Recursively walks the frame tree and serializes it to JSON as described in
-// the comment for ViewMsg_UpdateFrameTree.  If |exclude_frame_subtree| is not
-// NULL, the subtree for the frame is not included in the serialized form.
-// This is used when a frame is going to be removed from the tree.
-static void ConstructFrameTree(WebKit::WebFrame* frame,
-                               WebKit::WebFrame* exclude_frame_subtree,
-                               base::DictionaryValue* dict) {
-  dict->SetString(kFrameTreeNodeNameKey,
-                  UTF16ToUTF8(frame->assignedName()).c_str());
-  dict->SetInteger(kFrameTreeNodeIdKey, frame->identifier());
-
-  WebFrame* child = frame->firstChild();
-  scoped_ptr<ListValue> children(new ListValue());
-  for (; child; child = child->nextSibling()) {
-    if (child == exclude_frame_subtree)
-      continue;
-
-    base::DictionaryValue* d = new base::DictionaryValue();
-    ConstructFrameTree(child, exclude_frame_subtree, d);
-    children->Append(d);
-  }
-  if (children->GetSize() > 0)
-    dict->Set(kFrameTreeNodeSubtreeKey, children.release());
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 struct RenderViewImpl::PendingFileChooser {
