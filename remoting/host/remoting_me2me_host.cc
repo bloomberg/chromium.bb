@@ -24,7 +24,6 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
-#include "google_apis/google_api_keys.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -690,14 +689,9 @@ void HostProcess::StartHost() {
       base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
 
   if (!oauth_refresh_token_.empty()) {
-    OAuthClientInfo client_info = {
-        google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
-        google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING)
-    };
-
     scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
         new SignalingConnector::OAuthCredentials(
-            xmpp_login_, oauth_refresh_token_, client_info));
+            xmpp_login_, oauth_refresh_token_));
     signaling_connector_->EnableOAuth(oauth_credentials.Pass());
   }
 

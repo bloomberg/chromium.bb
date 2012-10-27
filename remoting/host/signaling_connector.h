@@ -10,7 +10,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "net/base/network_change_notifier.h"
-#include "remoting/host/gaia_oauth_client.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 namespace net {
@@ -34,23 +34,19 @@ class SignalingConnector
       public SignalStrategy::Listener,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public net::NetworkChangeNotifier::IPAddressObserver,
-      public GaiaOAuthClient::Delegate {
+      public gaia::GaiaOAuthClient::Delegate {
  public:
   // This structure contains information required to perform
   // authentication to OAuth2.
   struct OAuthCredentials {
     OAuthCredentials(const std::string& login_value,
-                     const std::string& refresh_token_value,
-                     const OAuthClientInfo& client_info);
+                     const std::string& refresh_token_value);
 
     // The user's account name (i.e. their email address).
     std::string login;
 
     // Token delegating authority to us to act as the user.
     std::string refresh_token;
-
-    // Credentials identifying the application to OAuth.
-    OAuthClientInfo client_info;
   };
 
   // The |auth_failed_callback| is called when authentication fails.
@@ -78,10 +74,13 @@ class SignalingConnector
   // NetworkChangeNotifier::IPAddressObserver interface.
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  // GaiaOAuthClient::Delegate interface.
-  virtual void OnRefreshTokenResponse(const std::string& user_email,
-                                      const std::string& access_token,
-                                      int expires_seconds) OVERRIDE;
+  // gaia::GaiaOAuthClient::Delegate interface.
+  virtual void OnGetTokensResponse(const std::string& user_email,
+                                   const std::string& access_token,
+                                   int expires_seconds) OVERRIDE;
+  virtual void OnRefreshTokenResponse(const std::string& access_token,
+                                      int expires_in_seconds) OVERRIDE;
+  virtual void OnGetUserInfoResponse(const std::string& user_email) OVERRIDE;
   virtual void OnOAuthError() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;
 
@@ -98,13 +97,14 @@ class SignalingConnector
   base::Closure auth_failed_callback_;
 
   scoped_ptr<OAuthCredentials> oauth_credentials_;
-  scoped_ptr<GaiaOAuthClient> gaia_oauth_client_;
+  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker_;
 
   // Number of times we tried to connect without success.
   int reconnect_attempts_;
 
   bool refreshing_oauth_token_;
+  std::string oauth_access_token_;
   base::Time auth_token_expiry_time_;
 
   base::OneShotTimer<SignalingConnector> timer_;

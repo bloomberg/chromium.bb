@@ -19,11 +19,9 @@ namespace remoting {
 
 HostStarter::HostStarter(
     scoped_ptr<gaia::GaiaOAuthClient> oauth_client,
-    scoped_ptr<remoting::GaiaUserEmailFetcher> user_email_fetcher,
     scoped_ptr<remoting::ServiceClient> service_client,
     scoped_ptr<remoting::DaemonController> daemon_controller)
     : oauth_client_(oauth_client.Pass()),
-      user_email_fetcher_(user_email_fetcher.Pass()),
       service_client_(service_client.Pass()),
       daemon_controller_(daemon_controller.Pass()),
       consent_to_data_collection_(false),
@@ -40,15 +38,13 @@ scoped_ptr<HostStarter> HostStarter::Create(
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client(
       new gaia::GaiaOAuthClient(gaia::kGaiaOAuth2Url,
                                 url_request_context_getter));
-  scoped_ptr<remoting::GaiaUserEmailFetcher> user_email_fetcher(
-      new remoting::GaiaUserEmailFetcher(url_request_context_getter));
   scoped_ptr<remoting::ServiceClient> service_client(
       new remoting::ServiceClient(url_request_context_getter));
   scoped_ptr<remoting::DaemonController> daemon_controller(
       remoting::DaemonController::Create());
   return scoped_ptr<HostStarter>(
-      new HostStarter(oauth_client.Pass(), user_email_fetcher.Pass(),
-                      service_client.Pass(), daemon_controller.Pass()));
+      new HostStarter(oauth_client.Pass(), service_client.Pass(),
+                      daemon_controller.Pass()));
 }
 
 void HostStarter::StartHost(
@@ -88,7 +84,7 @@ void HostStarter::OnGetTokensResponse(
   refresh_token_ = refresh_token;
   access_token_ = access_token;
   // Get the email corresponding to the access token.
-  user_email_fetcher_->GetUserEmail(access_token_, this);
+  oauth_client_->GetUserInfo(access_token_, 1, this);
 }
 
 void HostStarter::OnRefreshTokenResponse(
@@ -98,10 +94,10 @@ void HostStarter::OnRefreshTokenResponse(
   NOTREACHED();
 }
 
-void HostStarter::OnGetUserEmailResponse(const std::string& user_email) {
+void HostStarter::OnGetUserInfoResponse(const std::string& user_email) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnGetUserEmailResponse, weak_ptr_, user_email));
+        &HostStarter::OnGetUserInfoResponse, weak_ptr_, user_email));
     return;
   }
   user_email_ = user_email;

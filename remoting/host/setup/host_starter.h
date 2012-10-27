@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "remoting/host/gaia_user_email_fetcher.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/service_client.h"
 #include "remoting/host/setup/daemon_controller.h"
@@ -19,7 +18,6 @@ namespace remoting {
 
 // A helper class that registers and starts a host.
 class HostStarter : public gaia::GaiaOAuthClient::Delegate,
-                    public remoting::GaiaUserEmailFetcher::Delegate,
                     public remoting::ServiceClient::Delegate {
  public:
   enum Result {
@@ -53,9 +51,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
                                    int expires_in_seconds) OVERRIDE;
   virtual void OnRefreshTokenResponse(const std::string& access_token,
                                       int expires_in_seconds) OVERRIDE;
-
-  // remoting::GaiaUserEmailFetcher::Delegate
-  virtual void OnGetUserEmailResponse(const std::string& user_email) OVERRIDE;
+  virtual void OnGetUserInfoResponse(const std::string& user_email) OVERRIDE;
 
   // remoting::ServiceClient::Delegate
   virtual void OnHostRegistered() OVERRIDE;
@@ -69,14 +65,12 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
 
  private:
   HostStarter(scoped_ptr<gaia::GaiaOAuthClient> oauth_client,
-              scoped_ptr<remoting::GaiaUserEmailFetcher> user_email_fetcher,
               scoped_ptr<remoting::ServiceClient> service_client,
               scoped_ptr<remoting::DaemonController> daemon_controller);
 
   void OnHostStarted(DaemonController::AsyncResult result);
 
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
-  scoped_ptr<remoting::GaiaUserEmailFetcher> user_email_fetcher_;
   scoped_ptr<remoting::ServiceClient> service_client_;
   scoped_ptr<remoting::DaemonController> daemon_controller_;
   gaia::OAuthClientInfo oauth_client_info_;

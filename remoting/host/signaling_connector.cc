@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "google_apis/google_api_keys.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/dns_blackhole_checker.h"
@@ -25,11 +26,9 @@ const int kTokenUpdateTimeBeforeExpirySeconds = 60;
 
 SignalingConnector::OAuthCredentials::OAuthCredentials(
     const std::string& login_value,
-    const std::string& refresh_token_value,
-    const OAuthClientInfo& client_info_value)
+    const std::string& refresh_token_value)
     : login(login_value),
-      refresh_token(refresh_token_value),
-      client_info(client_info_value) {
+      refresh_token(refresh_token_value) {
 }
 
 SignalingConnector::SignalingConnector(
@@ -60,8 +59,8 @@ SignalingConnector::~SignalingConnector() {
 void SignalingConnector::EnableOAuth(
     scoped_ptr<OAuthCredentials> oauth_credentials) {
   oauth_credentials_ = oauth_credentials.Pass();
-  gaia_oauth_client_.reset(new GaiaOAuthClient(
-      OAuthProviderInfo::GetDefault(), url_request_context_getter_));
+  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
+      gaia::kGaiaOAuth2Url, url_request_context_getter_));
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(
@@ -105,12 +104,31 @@ void SignalingConnector::OnIPAddressChanged() {
   ResetAndTryReconnect();
 }
 
-void SignalingConnector::OnRefreshTokenResponse(const std::string& user_email,
-                                                const std::string& access_token,
-                                                int expires_seconds) {
+void SignalingConnector::OnGetTokensResponse(const std::string& user_email,
+                                             const std::string& access_token,
+                                             int expires_seconds) {
+  NOTREACHED();
+}
+
+void SignalingConnector::OnRefreshTokenResponse(
+    const std::string& access_token,
+    int expires_seconds) {
   DCHECK(CalledOnValidThread());
   DCHECK(oauth_credentials_.get());
   LOG(INFO) << "Received OAuth token.";
+
+  oauth_access_token_ = access_token;
+  auth_token_expiry_time_ = base::Time::Now() +
+      base::TimeDelta::FromSeconds(expires_seconds) -
+      base::TimeDelta::FromSeconds(kTokenUpdateTimeBeforeExpirySeconds);
+
+  gaia_oauth_client_->GetUserInfo(access_token, 1, this);
+}
+
+void SignalingConnector::OnGetUserInfoResponse(const std::string& user_email) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(oauth_credentials_.get());
+  LOG(INFO) << "Received user info.";
 
   if (user_email != oauth_credentials_->login) {
     LOG(ERROR) << "OAuth token and email address do not refer to "
@@ -119,14 +137,12 @@ void SignalingConnector::OnRefreshTokenResponse(const std::string& user_email,
     return;
   }
 
-  refreshing_oauth_token_ = false;
-  auth_token_expiry_time_ = base::Time::Now() +
-      base::TimeDelta::FromSeconds(expires_seconds) -
-      base::TimeDelta::FromSeconds(kTokenUpdateTimeBeforeExpirySeconds);
   signal_strategy_->SetAuthInfo(oauth_credentials_->login,
-                                access_token, "oauth2");
+                                oauth_access_token_, "oauth2");
+  refreshing_oauth_token_ = false;
 
-  // Now that we've got the new token, try to connect using it.
+  // Now that we've refreshed the token and verified that it's for the correct
+  // user account, try to connect using the new token.
   DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::DISCONNECTED);
   signal_strategy_->Connect();
 }
@@ -209,10 +225,17 @@ void SignalingConnector::RefreshOAuthToken() {
   LOG(INFO) << "Refreshing OAuth token.";
   DCHECK(!refreshing_oauth_token_);
 
+  gaia::OAuthClientInfo client_info = {
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
+      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING),
+      // Redirect URL is only used when getting tokens from auth code. It
+      // is not required when getting access tokens.
+      ""
+  };
+
   refreshing_oauth_token_ = true;
   gaia_oauth_client_->RefreshToken(
-      oauth_credentials_->client_info,
-      oauth_credentials_->refresh_token, this);
+      client_info, oauth_credentials_->refresh_token, 1, this);
 }
 
 }  // namespace remoting
