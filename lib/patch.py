@@ -991,6 +991,8 @@ class LocalPatch(GitRepoPatch):
       remote_ref: The ref on the remote host to push to.
       carbon_copy: Use a carbon_copy of the local commit.
       dryrun: Do the git push with --dry-run
+    Returns:
+      A list of gerrit URLs found in the output
     """
     if carbon_copy:
       ref_to_upload = self._GetCarbonCopy()
@@ -1001,7 +1003,22 @@ class LocalPatch(GitRepoPatch):
     if dryrun:
       cmd.append('--dry-run')
 
-    cros_build_lib.RunGitCommand(self.project_url, cmd)
+    lines = cros_build_lib.RunGitCommand(self.project_url,
+                                         cmd).error.splitlines()
+    urls = []
+    for num, line in enumerate(lines):
+      # Look for output like:
+      # remote: New Changes:
+      # remote:   https://gerrit.chromium.org/gerrit/36756
+      if 'New Changes:' in line:
+        urls = []
+        for line in lines[num + 1:]:
+          line = line.split()
+          if len(line) != 2 or not line[1].startswith('http'):
+            break
+          urls.append(line[-1])
+        break
+    return urls
 
 
 class UploadedLocalPatch(GitRepoPatch):

@@ -94,7 +94,7 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
   local_patch = cros_patch.LocalPatch(
       work_dir, patch.project_url, constants.PATCH_BRANCH,
       patch.tracking_branch, patch.remote, new_sha1)
-  local_patch.Upload(
+  return local_patch.Upload(
       patch.project_url, 'refs/%s/%s' % (upload_type, branch),
       carbon_copy=False, dryrun=dryrun)
 
@@ -197,9 +197,11 @@ def main(argv):
       # Now that we have the project checked out, let's apply our change and
       # create a new change on Gerrit.
       logging.info('Uploading change %s to branch %s', change, branch)
-      _UploadChangeToBranch(work_dir, patch, branch, options.draft,
-                            options.dryrun)
+      url = _UploadChangeToBranch(work_dir, patch, branch, options.draft,
+                                  options.dryrun)
       logging.info('Successfully uploaded %s to %s', change, branch)
+      if url:
+        logging.info('  URL: %s', url)
 
   except (cros_build_lib.RunCommandError, cros_patch.ApplyPatchException,
           cros_build_lib.AmbiguousBranchName) as e:
