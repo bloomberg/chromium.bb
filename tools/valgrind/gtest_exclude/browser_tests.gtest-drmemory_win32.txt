@@ -203,3 +203,5 @@ ExtensionsLoadMultipleTest.*
 NaClExtensionTest.*
 PolicyStatisticsCollectorTest.*
 HistoryExtensionApiTest.*
+# DrM-i#1052-c#27
+SystemInfoStorageApiTest.*
