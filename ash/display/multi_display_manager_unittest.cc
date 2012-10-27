@@ -304,9 +304,13 @@ TEST_F(MultiDisplayManagerTest, MAYBE_ZeroOverscanInsets) {
 #if defined(OS_CHROMEOS)
 #define MAYBE_TestDeviceScaleOnlyChange TestDeviceScaleOnlyChange
 #define MAYBE_TestNativeDisplaysChanged TestNativeDisplaysChanged
+#define MAYBE_NativeDisplaysChangedAfterPrimaryChange \
+  NativeDisplaysChangedAfterPrimaryChange
 #else
 #define MAYBE_TestDeviceScaleOnlyChange DISABLED_TestDeviceScaleOnlyChange
 #define MAYBE_TestNativeDisplaysChanged DISABLED_TestNativeDisplaysChanged
+#define MAYBE_NativeDisplaysChangedAfterPrimaryChange \
+  DISABLED_NativeDisplaysChangedAfterPrimaryChange
 #endif
 
 TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
@@ -459,6 +463,36 @@ TEST_F(MultiDisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
   // 1st display.
   UpdateDisplay("300x300");
   EXPECT_EQ("150,150", env->last_mouse_location().ToString());
+}
+
+TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplaysChangedAfterPrimaryChange) {
+  const int64 internal_display_id =
+      display_manager()->SetFirstDisplayAsInternalDisplayForTest();
+  const gfx::Display native_display(internal_display_id,
+                                    gfx::Rect(0, 0, 500, 500));
+  const gfx::Display secondary_display(10, gfx::Rect(1, 1, 100, 100));
+
+  std::vector<gfx::Display> displays;
+  displays.push_back(native_display);
+  displays.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("0,0 500x500",
+            FindDisplayForId(internal_display_id).bounds().ToString());
+  EXPECT_EQ("500,0 100x100", FindDisplayForId(10).bounds().ToString());
+
+  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
+      secondary_display);
+  EXPECT_EQ("0,0 500x500",
+            FindDisplayForId(internal_display_id).bounds().ToString());
+  EXPECT_EQ("500,0 100x100", FindDisplayForId(10).bounds().ToString());
+
+  // OnNativeDisplaysChanged may change the display bounds.  Here makes sure
+  // nothing changed if the exactly same displays are specified.
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ("0,0 500x500",
+            FindDisplayForId(internal_display_id).bounds().ToString());
+  EXPECT_EQ("500,0 100x100", FindDisplayForId(10).bounds().ToString());
 }
 
 }  // namespace internal

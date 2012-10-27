@@ -106,6 +106,8 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   FRIEND_TEST_ALL_PREFIXES(MultiDisplayManagerTest, TestNativeDisplaysChanged);
+  FRIEND_TEST_ALL_PREFIXES(MultiDisplayManagerTest,
+                           NativeDisplaysChangedAfterPrimaryChange);
   friend class ash::AcceleratorControllerTest;
   friend class test::AshTestBase;
   friend class MultiDisplayManagerTest;

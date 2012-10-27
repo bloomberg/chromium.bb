@@ -273,6 +273,15 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
       ++new_iter;
     }
   }
+
+  // Do not update |displays_| if there's nothing to be updated. Without this,
+  // it will not update the display layout, which causes the bug
+  // http://crbug.com/155948.
+  if (changed_display_indices.empty() && added_display_indices.empty() &&
+      removed_displays.empty()) {
+    return;
+  }
+
   displays_ = new_displays;
   // Temporarily add displays to be removed because display object
   // being removed are accessed during shutting down the root.
