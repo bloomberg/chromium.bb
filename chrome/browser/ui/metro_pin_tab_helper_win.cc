@@ -44,14 +44,16 @@ string16 GenerateTileId(const string16& url_str) {
 
 // Get the path of the directory to store the tile logos in.
 FilePath GetTileImagesDir() {
-  FilePath time_images_dir;
-  DCHECK(PathService::Get(chrome::DIR_USER_DATA, &time_images_dir));
-  time_images_dir = time_images_dir.Append(L"TileImages");
-  if (!file_util::DirectoryExists(time_images_dir) &&
-      !file_util::CreateDirectory(time_images_dir))
+  FilePath tile_images_dir;
+  if (!PathService::Get(chrome::DIR_USER_DATA, &tile_images_dir))
     return FilePath();
 
-  return time_images_dir;
+  tile_images_dir = tile_images_dir.Append(L"TileImages");
+  if (!file_util::DirectoryExists(tile_images_dir) &&
+      !file_util::CreateDirectory(tile_images_dir))
+    return FilePath();
+
+  return tile_images_dir;
 }
 
 // For the given |image| and |tile_id|, try to create a site specific logo in
@@ -133,7 +135,9 @@ bool GetPathToBackupLogo(const FilePath& logo_dir,
     return true;
 
   FilePath default_logo_path;
-  DCHECK(PathService::Get(base::DIR_MODULE, &default_logo_path));
+  if (!PathService::Get(base::DIR_MODULE, &default_logo_path))
+    return false;
+
   default_logo_path = default_logo_path.Append(kDefaultLogoFileName);
   return file_util::CopyFile(default_logo_path, *logo_path);
 }
