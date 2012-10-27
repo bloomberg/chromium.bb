@@ -230,9 +230,9 @@ class PackageBuilder(object):
         default=True, action='store_false',
         help='Do not rely on cached results.')
     parser.add_option(
-        '--no-cache-results', dest='cache_results',
-        default=True, action='store_false',
-        help='Do not write results to the datastore.')
+        '--cache-results', dest='cache_results',
+        default=False, action='store_true',
+        help='Cache results to the datastore.')
     parser.add_option(
         '--reclone', dest='reclone',
         default=False, action='store_true',
@@ -256,6 +256,7 @@ class PackageBuilder(object):
     if options.trybot or options.buildbot:
       options.verbose = True
       options.clobber = True
+      options.cache_results = True
     if not targets:
       targets = sorted(packages.keys())
     targets = self.BuildOrder(targets)

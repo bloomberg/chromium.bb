@@ -136,6 +136,7 @@ class Once(object):
         self.PrintDownloadURLs(urls)
       except gsd_storage.GSDStorageError:
         logging.info('Failed to cache result.')
+        raise
 
   def ReadMemoizedResultFromCache(self, package, build_signature, outputs):
     """Read a cached result (if it exists) from the cache.

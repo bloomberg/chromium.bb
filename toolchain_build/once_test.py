@@ -93,11 +93,10 @@ class TestOnce(unittest.TestCase):
       self.assertEquals(1, self._tally)
       self.assertEquals(initial_urls, self._urls)
 
-  def test_SucceedsWhenWritingFails(self):
-    # Check that nothing throws and we get a result when the storage layer
-    # fails.
+  def test_FailsWhenWritingFails(self):
+    # Check that once doesn't eat the storage layer failures for writes.
     with working_directory.TemporaryWorkingDirectory() as work_dir:
-      self.GenerateTestData('SucceedsWhenWritingFails', work_dir)
+      self.GenerateTestData('FailsWhenWritingFails', work_dir)
       def call(cmd, **kwargs):
         # Cause gsutil commands to fail.
         return 1
@@ -107,10 +106,9 @@ class TestOnce(unittest.TestCase):
           read_buckets=[],
           call=call)
       o = once.Once(storage=bad_storage)
-      o.Run('test', self._input_dirs, [self._output_dirs[0]],
-            [command.Copy('%(input0)s/in0', '%(output0)s/out')])
-      self.assertEquals('SucceedsWhenWritingFailsdata0',
-                        file_tools.ReadFile(self._output_files[0]))
+      self.assertRaises(gsd_storage.GSDStorageError, o.Run, 'test',
+          self._input_dirs, [self._output_dirs[0]],
+          [command.Copy('%(input0)s/in0', '%(output0)s/out')])
 
   def test_UseCachedResultsFalse(self):
     # Check that the use_cached_results=False does indeed cause computations
