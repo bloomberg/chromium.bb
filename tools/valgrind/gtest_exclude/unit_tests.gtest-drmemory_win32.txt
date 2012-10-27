@@ -54,7 +54,6 @@ GAIAInfoUpdateServiceTest.*
 ProfileManagerTest.*
 ProfileInfoCacheTest.*
 
-# crashes under drmemory:
+# Unit tests crash under drmemory, disable them all for now.
 # http://crbug.com/157682
-SignatureUtilWinTest.*
-SafeBrowsingDatabaseTest.*
+*
