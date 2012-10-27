@@ -7,16 +7,15 @@
 
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/border_images.h"
+#include "ui/views/controls/button/label_button.h"
 
 namespace views {
-
-class NativeThemeDelegate;
 
 // A Border that paints a LabelButton's background frame.
 class VIEWS_EXPORT LabelButtonBorder : public Border {
  public:
-  explicit LabelButtonBorder(NativeThemeDelegate* delegate);
+  LabelButtonBorder();
   virtual ~LabelButtonBorder();
 
   bool native_theme() const { return native_theme_; }
@@ -26,40 +25,18 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE;
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
- private:
-  struct BorderImages {
-    BorderImages();
-    // |image_ids| must contain 9 image ids.
-    explicit BorderImages(const int image_ids[]);
-    ~BorderImages();
-
-    gfx::ImageSkia top_left;
-    gfx::ImageSkia top;
-    gfx::ImageSkia top_right;
-    gfx::ImageSkia left;
-    gfx::ImageSkia center;
-    gfx::ImageSkia right;
-    gfx::ImageSkia bottom_left;
-    gfx::ImageSkia bottom;
-    gfx::ImageSkia bottom_right;
-  };
-
   // Set the images shown for the specified button state.
   void SetImages(CustomButton::ButtonState state, const BorderImages& images);
 
-  // Paint the view-style images for the specified button state.
-  void PaintImages(const View& view,
-                   gfx::Canvas* canvas,
-                   CustomButton::ButtonState state) const;
-
-  // Paint the native-style button border and background.
-  void PaintNativeTheme(const View& view, gfx::Canvas* canvas) const;
+ private:
+  // Paint the border image set or native-style button border and background.
+  void PaintImages(const LabelButton* button, gfx::Canvas* canvas) const;
+  void PaintNativeTheme(const LabelButton* button, gfx::Canvas* canvas) const;
 
   // The images shown for each button state.
   BorderImages images_[CustomButton::BS_COUNT];
 
-  // A delegate and flag controlling the native/Views theme styling.
-  NativeThemeDelegate* native_theme_delegate_;
+  // A flag controlling native (true) or Views theme styling; false by default.
   bool native_theme_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButtonBorder);

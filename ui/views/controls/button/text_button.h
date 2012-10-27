@@ -13,6 +13,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/border_images.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/native_theme_delegate.h"
 
@@ -42,25 +43,10 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
   void copy_normal_set_to_hot_set() { set_normal_set(hot_set_); }
 
  protected:
-  struct BorderImageSet {
-    const gfx::ImageSkia* top_left;
-    const gfx::ImageSkia* top;
-    const gfx::ImageSkia* top_right;
-    const gfx::ImageSkia* left;
-    const gfx::ImageSkia* center;
-    const gfx::ImageSkia* right;
-    const gfx::ImageSkia* bottom_left;
-    const gfx::ImageSkia* bottom;
-    const gfx::ImageSkia* bottom_right;
-  };
+  void set_normal_set(const BorderImages& set) { normal_set_ = set; }
+  void set_hot_set(const BorderImages& set) { hot_set_ = set; }
+  void set_pushed_set(const BorderImages& set) { pushed_set_ = set; }
 
-  void Paint(const View& view,
-             gfx::Canvas* canvas,
-             const BorderImageSet& set) const;
-
-  void set_normal_set(const BorderImageSet& set) { normal_set_ = set; }
-  void set_hot_set(const BorderImageSet& set) { hot_set_ = set; }
-  void set_pushed_set(const BorderImageSet& set) { pushed_set_ = set; }
   void set_vertical_padding(int vertical_padding) {
     vertical_padding_ = vertical_padding;
   }
@@ -70,9 +56,9 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
   virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE;
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
-  BorderImageSet normal_set_;
-  BorderImageSet hot_set_;
-  BorderImageSet pushed_set_;
+  BorderImages normal_set_;
+  BorderImages hot_set_;
+  BorderImages pushed_set_;
 
   int vertical_padding_;
 

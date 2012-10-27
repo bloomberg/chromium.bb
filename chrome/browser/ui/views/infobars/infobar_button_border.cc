@@ -6,51 +6,26 @@
 
 #include "chrome/browser/defaults.h"
 #include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
+#include "ui/views/controls/button/border_images.h"
+
+#define BORDER_IMAGES(x, y) \
+  x ## _TOP_LEFT_ ## y,    x ## _TOP_ ## y,    x ## _TOP_RIGHT_ ## y, \
+  x ## _LEFT_ ## y,        x ## _CENTER_ ## y, x ## _RIGHT_ ## y, \
+  x ## _BOTTOM_LEFT_ ## y, x ## _BOTTOM_ ## y, x ## _BOTTOM_RIGHT_ ## y,
+
+namespace {
+
+const int kNormalImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON, N) };
+const int kHotImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON, H) };
+const int kPushedImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON, P) };
+
+}  // namespace
 
 InfoBarButtonBorder::InfoBarButtonBorder() {
   set_vertical_padding(browser_defaults::kInfoBarBorderPaddingVertical);
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  BorderImageSet normal_set = {
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_LEFT_N).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_N).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_RIGHT_N).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_LEFT_N).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_CENTER_N).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_RIGHT_N).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_N).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_N).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_N).ToImageSkia(),
-  };
-  set_normal_set(normal_set);
-
-  BorderImageSet hot_set = {
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_LEFT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_RIGHT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_LEFT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_CENTER_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_RIGHT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_H).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_H).ToImageSkia(),
-  };
-  set_hot_set(hot_set);
-
-  BorderImageSet pushed_set = {
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_LEFT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_TOP_RIGHT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_LEFT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_CENTER_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_RIGHT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_LEFT_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_P).ToImageSkia(),
-    rb.GetImageNamed(IDR_INFOBARBUTTON_BOTTOM_RIGHT_P).ToImageSkia(),
-  };
-  set_pushed_set(pushed_set);
+  set_normal_set(views::BorderImages(kNormalImageSet));
+  set_hot_set(views::BorderImages(kHotImageSet));
+  set_pushed_set(views::BorderImages(kPushedImageSet));
 }
 
 InfoBarButtonBorder::~InfoBarButtonBorder() {

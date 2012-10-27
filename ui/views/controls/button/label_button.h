@@ -55,6 +55,12 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   bool native_theme() const { return native_theme_; }
   void SetNativeTheme(bool native_theme);
 
+ private:
+  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
+  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Label);
+  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Image);
+  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
+
   // Overridden from CustomButton:
   virtual void StateChanged() OVERRIDE;
 
@@ -64,7 +70,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual std::string GetClassName() const OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
- protected:
   // Overridden from NativeThemeDelegate:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
@@ -78,10 +83,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Fill |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
-  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
 
   // The image and label shown in the button.
   ImageView* image_;

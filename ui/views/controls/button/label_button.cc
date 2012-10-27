@@ -16,17 +16,17 @@
 #include "ui/base/native_theme/native_theme_win.h"
 #endif
 
-namespace views {
-
 namespace {
 
 // The spacing between the icon and text.
-static const int kSpacing = 5;
+const int kSpacing = 5;
 
 // The length of the hover fade animation.
-static const int kHoverAnimationDurationMs = 170;
+const int kHoverAnimationDurationMs = 170;
 
 }  // namespace
+
+namespace views {
 
 LabelButton::LabelButton(ButtonListener* listener, const string16& text)
     : CustomButton(listener),
@@ -34,7 +34,7 @@ LabelButton::LabelButton(ButtonListener* listener, const string16& text)
       label_(new Label(text)),
       default_button_(false),
       native_theme_(false) {
-  set_border(new LabelButtonBorder(this));
+  set_border(new LabelButtonBorder());
   // Inset the button focus rect from the actual border; roughly match Windows.
   set_focus_border(FocusBorder::CreateDashedFocusBorder(3, 3, 3, 3));
   SetAnimationDuration(kHoverAnimationDurationMs);

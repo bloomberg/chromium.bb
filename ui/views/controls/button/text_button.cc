@@ -24,24 +24,18 @@
 
 namespace views {
 
-#if defined(OS_WIN)
-// The min size in DLUs comes from
-// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnwue/html/ch14e.asp
-static const int kMinWidthDLUs = 50;
-static const int kMinHeightDLUs = 14;
-#endif
-
+namespace {
 
 // Default space between the icon and text.
-static const int kDefaultIconTextSpacing = 5;
+const int kDefaultIconTextSpacing = 5;
 
 // Preferred padding between text and edge.
-static const int kPreferredPaddingHorizontal = 6;
-static const int kPreferredPaddingVertical = 5;
+const int kPreferredPaddingHorizontal = 6;
+const int kPreferredPaddingVertical = 5;
 
 // Preferred padding between text and edge for NativeTheme border.
-static const int kPreferredNativeThemePaddingHorizontal = 12;
-static const int kPreferredNativeThemePaddingVertical = 5;
+const int kPreferredNativeThemePaddingHorizontal = 12;
+const int kPreferredNativeThemePaddingVertical = 5;
 
 // By default the focus rect is drawn at the border of the view.
 // For a button, we inset the focus rect by 3 pixels so that it
@@ -49,19 +43,18 @@ static const int kPreferredNativeThemePaddingVertical = 5;
 // how the Windows native focus rect for buttons looks. A subclass
 // that draws a button with different padding may need to
 // override OnPaintFocusBorder and do something different.
-static const int kFocusRectInset = 3;
+const int kFocusRectInset = 3;
 
 // How long the hover fade animation should last.
-static const int kHoverAnimationDurationMs = 170;
+const int kHoverAnimationDurationMs = 170;
 
-// static
-const char TextButtonBase::kViewClassName[] = "views/TextButtonBase";
-// static
-const char TextButton::kViewClassName[] = "views/TextButton";
-// static
-const char NativeTextButton::kViewClassName[] = "views/NativeTextButton";
+#if defined(OS_WIN)
+// These sizes are from http://msdn.microsoft.com/en-us/library/aa511279.aspx
+const int kMinWidthDLUs = 50;
+const int kMinHeightDLUs = 14;
+#endif
 
-static int PrefixTypeToCanvasType(TextButton::PrefixType type) {
+int PrefixTypeToCanvasType(TextButton::PrefixType type) {
   switch (type) {
     case TextButton::PREFIX_HIDE:
       return gfx::Canvas::HIDE_PREFIX;
@@ -75,6 +68,15 @@ static int PrefixTypeToCanvasType(TextButton::PrefixType type) {
   }
 }
 
+}  // namespace
+
+// static
+const char TextButtonBase::kViewClassName[] = "views/TextButtonBase";
+// static
+const char TextButton::kViewClassName[] = "views/TextButton";
+// static
+const char NativeTextButton::kViewClassName[] = "views/NativeTextButton";
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TextButtonBorder - constructors, destructors, initialization
@@ -83,37 +85,8 @@ static int PrefixTypeToCanvasType(TextButton::PrefixType type) {
 
 TextButtonBorder::TextButtonBorder()
     : vertical_padding_(kPreferredPaddingVertical) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  BorderImageSet normal_set = {
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  };
-  set_normal_set(normal_set);
-
-  BorderImageSet hot_set = {
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_TOP_LEFT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_TOP).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_TOP_RIGHT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_LEFT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_CENTER).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_RIGHT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_BOTTOM).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT).ToImageSkia(),
-  };
-  set_hot_set(hot_set);
-
-  BorderImageSet pushed_set = {
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_TOP_LEFT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_TOP).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_TOP_RIGHT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_LEFT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_CENTER).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_RIGHT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_BOTTOM_LEFT).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_BOTTOM).ToImageSkia(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_PRESSED_BOTTOM_RIGHT).ToImageSkia(),
-  };
-  set_pushed_set(pushed_set);
+  set_hot_set(BorderImages(BorderImages::kHot));
+  set_pushed_set(BorderImages(BorderImages::kPushed));
 }
 
 TextButtonBorder::~TextButtonBorder() {
@@ -129,60 +102,22 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   const TextButton* button = static_cast<const TextButton*>(&view);
   int state = button->state();
 
-  const BorderImageSet* set = &normal_set_;
+  const BorderImages* set = &normal_set_;
   if (button->show_multiple_icon_states() &&
       ((state == TextButton::BS_HOT) || (state == TextButton::BS_PUSHED)))
     set = (state == TextButton::BS_HOT) ? &hot_set_ : &pushed_set_;
-  if (set->top_left) {
+  if (!set->top_left.isNull()) {
     if (button->GetAnimation()->is_animating()) {
       // TODO(pkasting): Really this should crossfade between states so it could
       // handle the case of having a non-NULL |normal_set_|.
       canvas->SaveLayerAlpha(static_cast<uint8>(
           button->GetAnimation()->CurrentValueBetween(0, 255)));
-      Paint(view, canvas, *set);
+      set->Paint(view.GetLocalBounds(), canvas);
       canvas->Restore();
     } else {
-      Paint(view, canvas, *set);
+      set->Paint(view.GetLocalBounds(), canvas);
     }
   }
-}
-
-void TextButtonBorder::Paint(const View& view,
-                             gfx::Canvas* canvas,
-                             const BorderImageSet& set) const {
-  DCHECK(set.top_left);
-  int width = view.bounds().width();
-  int height = view.bounds().height();
-  int tl_width = set.top_left->width();
-  int tl_height = set.top_left->height();
-  int t_height = set.top->height();
-  int tr_height = set.top_right->height();
-  int l_width = set.left->width();
-  int r_width = set.right->width();
-  int bl_width = set.bottom_left->width();
-  int bl_height = set.bottom_left->height();
-  int b_height = set.bottom->height();
-  int br_width = set.bottom_right->width();
-  int br_height = set.bottom_right->height();
-
-  canvas->DrawImageInt(*set.top_left, 0, 0);
-  canvas->DrawImageInt(*set.top, 0, 0, set.top->width(), t_height, tl_width, 0,
-      width - tl_width - set.top_right->width(), t_height, false);
-  canvas->DrawImageInt(*set.top_right, width - set.top_right->width(), 0);
-  canvas->DrawImageInt(*set.left, 0, 0, l_width, set.left->height(), 0,
-      tl_height, tl_width, height - tl_height - bl_height, false);
-  canvas->DrawImageInt(*set.center, 0, 0, set.center->width(),
-      set.center->height(), l_width, t_height, width - l_width - r_width,
-      height - t_height - b_height, false);
-  canvas->DrawImageInt(*set.right, 0, 0, r_width, set.right->height(),
-                       width - r_width, tr_height, r_width,
-                       height - tr_height - br_height, false);
-  canvas->DrawImageInt(*set.bottom_left, 0, height - bl_height);
-  canvas->DrawImageInt(*set.bottom, 0, 0, set.bottom->width(), b_height,
-                       bl_width, height - b_height,
-                       width - bl_width - br_width, b_height, false);
-  canvas->DrawImageInt(*set.bottom_right, width - br_width,
-                       height -  br_height);
 }
 
 void TextButtonBorder::GetInsets(gfx::Insets* insets) const {
