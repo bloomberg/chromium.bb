@@ -187,6 +187,7 @@ void AppsGridView::UpdateDrag(views::View* view,
     last_drag_point_ = event.location();
     views::View::ConvertPointToTarget(drag_view_, this, &last_drag_point_);
 
+    const Index last_drop_target = drop_target_;
     CalculateDropTarget(last_drag_point_);
     MaybeStartPageFlipTimer(last_drag_point_);
 
@@ -195,7 +196,8 @@ void AppsGridView::UpdateDrag(views::View* view,
                                       &page_switcher_point);
     page_switcher_view_->UpdateUIForDragPoint(page_switcher_point);
 
-    AnimateToIdealBounds();
+    if (last_drop_target != drop_target_)
+      AnimateToIdealBounds();
     drag_view_->SetPosition(last_drag_point_.Subtract(drag_offset_));
   }
 }
@@ -496,13 +498,15 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
                                         const gfx::Rect& current,
                                         bool animate_target,
                                         const gfx::Rect& target) {
-  const int y_diff = target.y() - current.y();
-  // It should be either wrap to next/prev row or next/prev page.
-  DCHECK(abs(y_diff) == kPreferredTileHeight ||
-         abs(y_diff) == (rows_per_page_ - 1) * kPreferredTileHeight);
+  // Determine page of |current| and |target|. -1 means in the left invisible
+  // page, 0 is the center visible page and 1 means in the right invisible page.
+  const int current_page = current.x() < 0 ? -1 :
+      current.x() >= width() ? 1 : 0;
+  const int target_page = target.x() < 0 ? -1 :
+      target.x() >= width() ? 1 : 0;
 
-  const int dir = y_diff == kPreferredTileHeight ||
-      y_diff == (1 - rows_per_page_) * kPreferredTileHeight ? 1 : -1;
+  const int dir = current_page < target_page ||
+      (current_page == target_page && current.y() < target.y()) ? 1 : -1;
 
 #if !defined(OS_WIN)
   scoped_ptr<ui::Layer> layer;
@@ -648,7 +652,6 @@ void AppsGridView::ListItemsAdded(size_t start, size_t count) {
   }
 
   UpdatePaging();
-
   Layout();
   SchedulePaint();
 }
@@ -663,7 +666,6 @@ void AppsGridView::ListItemsRemoved(size_t start, size_t count) {
   }
 
   UpdatePaging();
-
   Layout();
   SchedulePaint();
 }

@@ -97,6 +97,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     bool operator==(const Index& other) const {
       return page == other.page && slot == other.slot;
     }
+    bool operator!=(const Index& other) const {
+      return page != other.page || slot != other.slot;
+    }
 
     int page;  // Which page an item view is on.
     int slot;  // Which slot in the page an item view is in.
