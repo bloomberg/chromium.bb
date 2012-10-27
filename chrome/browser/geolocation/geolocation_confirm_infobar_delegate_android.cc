@@ -12,19 +12,13 @@
 #include "ui/base/l10n/l10n_util.h"
 
 GeolocationConfirmInfoBarDelegateAndroid::
-GeolocationConfirmInfoBarDelegateAndroid(
+    GeolocationConfirmInfoBarDelegateAndroid(
     InfoBarTabHelper* infobar_helper,
     GeolocationInfoBarQueueController* controller,
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
+    const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame_url,
     const std::string& display_languages)
-    : GeolocationConfirmInfoBarDelegate(infobar_helper,
-                                        controller,
-                                        render_process_id,
-                                        render_view_id,
-                                        bridge_id,
+    : GeolocationConfirmInfoBarDelegate(infobar_helper, controller, id,
                                         requesting_frame_url,
                                         display_languages),
       google_location_settings_helper_(new GoogleLocationSettingsHelper())  {

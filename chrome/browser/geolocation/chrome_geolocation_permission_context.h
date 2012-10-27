@@ -11,6 +11,7 @@
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
 #include "content/public/browser/geolocation_permission_context.h"
 
+class GeolocationPermissionRequestID;
 class Profile;
 
 // Chrome specific implementation of GeolocationPermissionContext; manages
@@ -21,7 +22,7 @@ class ChromeGeolocationPermissionContext
  public:
   explicit ChromeGeolocationPermissionContext(Profile* profile);
 
-  // GeolocationPermissionContext implementation:
+  // GeolocationPermissionContext:
   virtual void RequestGeolocationPermission(
       int render_process_id,
       int render_view_id,
@@ -47,9 +48,7 @@ class ChromeGeolocationPermissionContext
   // geolocation via
   // GeolocationPermissionContext::SetGeolocationPermissionResponse().
   // Called on the UI thread.
-  void NotifyPermissionSet(int render_process_id,
-                           int render_view_id,
-                           int bridge_id,
+  void NotifyPermissionSet(const GeolocationPermissionRequestID& id,
                            const GURL& requesting_frame,
                            base::Callback<void(bool)> callback,
                            bool allowed);
@@ -59,9 +58,7 @@ class ChromeGeolocationPermissionContext
   // Calls PermissionDecided if permission can be decided non-interactively,
   // or NotifyPermissionSet if permission decided by presenting an
   // infobar to the user. Called on the UI thread.
-  virtual void DecidePermission(int render_process_id,
-                                int render_view_id,
-                                int bridge_id,
+  virtual void DecidePermission(const GeolocationPermissionRequestID& id,
                                 const GURL& requesting_frame,
                                 const GURL& embedder,
                                 base::Callback<void(bool)> callback);
@@ -70,9 +67,7 @@ class ChromeGeolocationPermissionContext
   // the user. Can be overridden to introduce additional UI flow.
   // Should ultimately ensure that NotifyPermissionSet is called.
   // Called on the UI thread.
-  virtual void PermissionDecided(int render_process_id,
-                                 int render_view_id,
-                                 int bridge_id,
+  virtual void PermissionDecided(const GeolocationPermissionRequestID& id,
                                  const GURL& requesting_frame,
                                  const GURL& embedder,
                                  base::Callback<void(bool)> callback,
@@ -84,9 +79,7 @@ class ChromeGeolocationPermissionContext
 
  private:
   // Removes any pending InfoBar request.
-  void CancelPendingInfoBarRequest(int render_process_id,
-                                   int render_view_id,
-                                   int bridge_id);
+  void CancelPendingInfoBarRequest(const GeolocationPermissionRequestID& id);
 
   // This must only be accessed from the UI thread.
   Profile* const profile_;

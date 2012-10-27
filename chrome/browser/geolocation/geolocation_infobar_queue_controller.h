@@ -11,6 +11,7 @@
 
 class GURL;
 class GeolocationConfirmInfoBarDelegate;
+class GeolocationPermissionRequestID;
 class InfoBarTabHelper;
 class Profile;
 
@@ -31,24 +32,18 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
 
   // The InfoBar will be displayed immediately if the tab is not already
   // displaying one, otherwise it'll be queued.
-  void CreateInfoBarRequest(int render_process_id,
-                            int render_view_id,
-                            int bridge_id,
+  void CreateInfoBarRequest(const GeolocationPermissionRequestID& id,
                             const GURL& requesting_frame,
                             const GURL& embedder,
                             PermissionDecidedCallback callback);
 
   // Cancels a specific infobar request.
-  void CancelInfoBarRequest(int render_process_id,
-                            int render_view_id,
-                            int bridge_id);
+  void CancelInfoBarRequest(const GeolocationPermissionRequestID& id);
 
   // Called by the InfoBarDelegate to notify permission has been set.
   // It'll notify and dismiss any other pending InfoBar request for the same
   // |requesting_frame| and embedder.
-  void OnPermissionSet(int render_process_id,
-                       int render_view_id,
-                       int bridge_id,
+  void OnPermissionSet(const GeolocationPermissionRequestID& id,
                        const GURL& requesting_frame,
                        const GURL& embedder,
                        bool update_content_setting,
@@ -59,35 +54,26 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- protected:
-  // Create an Infobar delegate to ask the whether the requesting frame
-  // url should be granted geolocation permission. Overrided in
-  // derived classes to implement alternative UI.
-  virtual GeolocationConfirmInfoBarDelegate* CreateInfoBarDelegate(
-      InfoBarTabHelper* infobar_helper,
-      GeolocationInfoBarQueueController* controller,
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame_url,
-      const std::string& display_languages);
-
  private:
-  struct PendingInfoBarRequest;
+  class PendingInfoBarRequest;
   class RequestEquals;
 
   typedef std::vector<PendingInfoBarRequest> PendingInfoBarRequests;
 
-  // Shows the first pending infobar for this tab, if any.
-  void ShowQueuedInfoBar(int render_process_id, int render_view_id,
-                         InfoBarTabHelper* helper);
+  // Returns true if a geolocation infobar is already visible for the tab
+  // corresponding to |id|.
+  bool AlreadyShowingInfoBarForTab(
+      const GeolocationPermissionRequestID& id) const;
 
-  // Removes any pending requests for a given tab.
-  void ClearPendingInfoBarRequestsForTab(int render_process_id,
-                                         int render_view_id);
+  // Shows the next pending infobar for the tab corresponding to |id|, if any.
+  // Note that this may not be the pending request whose ID is |id| if other
+  // requests are higher in the queue.  If we can't show infobars because there
+  // is no InfoBarTabHelper for this tab, removes all queued requests for this
+  // tab.
+  void ShowQueuedInfoBarForTab(const GeolocationPermissionRequestID& id);
 
-  InfoBarTabHelper* GetInfoBarHelper(int render_process_id, int render_view_id);
-  bool AlreadyShowingInfoBar(int render_process_id, int render_view_id);
+  void ClearPendingInfoBarRequestsForTab(
+      const GeolocationPermissionRequestID& id);
 
   void RegisterForInfoBarNotifications(InfoBarTabHelper* helper);
   void UnregisterForInfoBarNotifications(InfoBarTabHelper* helper);

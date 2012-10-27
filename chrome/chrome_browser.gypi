@@ -672,6 +672,8 @@
         'browser/geolocation/geolocation_confirm_infobar_delegate_factory.h',
         'browser/geolocation/geolocation_infobar_queue_controller.cc',
         'browser/geolocation/geolocation_infobar_queue_controller.h',
+        'browser/geolocation/geolocation_permission_request_id.cc',
+        'browser/geolocation/geolocation_permission_request_id.h',
         'browser/geolocation/geolocation_prefs.cc',
         'browser/geolocation/geolocation_prefs.h',
         'browser/geolocation/geolocation_settings_state.cc',

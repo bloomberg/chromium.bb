@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 
 ChromeGeolocationPermissionContextAndroid::
-ChromeGeolocationPermissionContextAndroid(Profile* profile)
+    ChromeGeolocationPermissionContextAndroid(Profile* profile)
     : ChromeGeolocationPermissionContext(profile),
       google_location_settings_helper_(new GoogleLocationSettingsHelper()) {
 }
@@ -21,9 +21,7 @@ ChromeGeolocationPermissionContextAndroid::
 }
 
 void ChromeGeolocationPermissionContextAndroid::DecidePermission(
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
+    const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     base::Callback<void(bool)> callback) {
@@ -33,20 +31,16 @@ void ChromeGeolocationPermissionContextAndroid::DecidePermission(
   // This must happen before other services (e.g. tabs, extensions)
   // get an opportunity to allow the geolocation request.
   if (!google_location_settings_helper_->IsMasterLocationSettingEnabled()) {
-    PermissionDecided(render_process_id, render_view_id, bridge_id,
-                      requesting_frame, embedder, callback, false);
+    PermissionDecided(id, requesting_frame, embedder, callback, false);
     return;
   }
 
-  ChromeGeolocationPermissionContext::DecidePermission(
-      render_process_id, render_view_id, bridge_id,
-      requesting_frame, embedder, callback);
+  ChromeGeolocationPermissionContext::DecidePermission(id, requesting_frame,
+                                                       embedder, callback);
 }
 
 void ChromeGeolocationPermissionContextAndroid::PermissionDecided(
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
+    const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
     base::Callback<void(bool)> callback,
@@ -57,13 +51,11 @@ void ChromeGeolocationPermissionContextAndroid::PermissionDecided(
   // the infobar to go back to the 'settings' to turn it back on.
   if (allowed &&
       !google_location_settings_helper_->IsGoogleAppsLocationSettingEnabled()) {
-    QueueController()->CreateInfoBarRequest(
-        render_process_id, render_view_id, bridge_id, requesting_frame,
-        embedder, callback);
+    QueueController()->CreateInfoBarRequest(id, requesting_frame, embedder,
+                                            callback);
     return;
   }
 
   ChromeGeolocationPermissionContext::PermissionDecided(
-      render_process_id, render_view_id, bridge_id,
-      requesting_frame, embedder, callback, allowed);
+      id, requesting_frame, embedder, callback, allowed);
 }

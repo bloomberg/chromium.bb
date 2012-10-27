@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "googleurl/src/gurl.h"
 
 #include <string>
@@ -21,14 +22,11 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   GeolocationConfirmInfoBarDelegate(
       InfoBarTabHelper* infobar_helper,
       GeolocationInfoBarQueueController* controller,
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame_url,
+      const GeolocationPermissionRequestID& id,
+      const GURL& requesting_frame,
       const std::string& display_languages);
 
-  int render_process_id() const { return render_process_id_; }
-  int render_view_id() const { return render_view_id_; }
+  const GeolocationPermissionRequestID& id() const { return id_; }
 
  protected:
   // ConfirmInfoBarDelegate:
@@ -46,11 +44,8 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   GeolocationInfoBarQueueController* controller_;
-  int render_process_id_;
-  int render_view_id_;
-  int bridge_id_;
-
-  GURL requesting_frame_url_;
+  const GeolocationPermissionRequestID id_;
+  GURL requesting_frame_;
   std::string display_languages_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GeolocationConfirmInfoBarDelegate);

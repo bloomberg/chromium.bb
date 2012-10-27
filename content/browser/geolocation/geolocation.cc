@@ -51,6 +51,9 @@ void RequestLocationUpdateOnIOThread(
 
 }  // namespace
 
+
+// ----------------------------------------------------------------------------
+
 void OverrideLocationForTesting(
     const Geoposition& position,
     const base::Closure& completion_callback) {

@@ -31,7 +31,9 @@ class CONTENT_EXPORT GeolocationPermissionContext
 
   // The renderer is cancelling a pending permission request.
   virtual void CancelGeolocationPermissionRequest(
-      int render_process_id, int render_view_id, int bridge_id,
+      int render_process_id,
+      int render_view_id,
+      int bridge_id,
       const GURL& requesting_frame) = 0;
 
  protected:

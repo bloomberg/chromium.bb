@@ -16,22 +16,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-// GeolocationConfirmInfoBarDelegate ------------------------------------------
 
 GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
     GeolocationInfoBarQueueController* controller,
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
-    const GURL& requesting_frame_url,
+    const GeolocationPermissionRequestID& id,
+    const GURL& requesting_frame,
     const std::string& display_languages)
     : ConfirmInfoBarDelegate(infobar_helper),
       controller_(controller),
-      render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
-      bridge_id_(bridge_id),
-      requesting_frame_url_(requesting_frame_url),
+      id_(id),
+      requesting_frame_(requesting_frame),
       display_languages_(display_languages) {
   const content::NavigationEntry* committed_entry =
       infobar_helper->GetWebContents()->GetController().GetLastCommittedEntry();
@@ -50,7 +45,7 @@ InfoBarDelegate::Type
 
 string16 GeolocationConfirmInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
-      net::FormatUrl(requesting_frame_url_.GetOrigin(), display_languages_));
+      net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_));
 }
 
 string16 GeolocationConfirmInfoBarDelegate::GetButtonLabel(
@@ -61,12 +56,9 @@ string16 GeolocationConfirmInfoBarDelegate::GetButtonLabel(
 
 void GeolocationConfirmInfoBarDelegate::SetPermission(
     bool update_content_setting, bool allowed) {
-  controller_->OnPermissionSet(
-      render_process_id_, render_view_id_, bridge_id_,
-      requesting_frame_url_,
-      owner()->GetWebContents()->GetURL(),
-      update_content_setting,
-      allowed);
+  controller_->OnPermissionSet(id_, requesting_frame_,
+                               owner()->GetWebContents()->GetURL(),
+                               update_content_setting, allowed);
 }
 
 bool GeolocationConfirmInfoBarDelegate::Accept() {

@@ -4,6 +4,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
+#include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,8 +19,7 @@ class GeolocationInfoBarQueueControllerTests
   GeolocationInfoBarQueueControllerTests();
 
  protected:
-  int ProcessId();
-  int RenderId();
+  GeolocationPermissionRequestID RequestID(int bridge_id);
 
  private:
   // ChromeRenderViewHostTestHarness:
@@ -34,12 +34,12 @@ GeolocationInfoBarQueueControllerTests::GeolocationInfoBarQueueControllerTests()
     : ui_thread_(content::BrowserThread::UI, MessageLoop::current()) {
 }
 
-int GeolocationInfoBarQueueControllerTests::ProcessId() {
-  return web_contents()->GetRenderProcessHost()->GetID();
-}
-
-int GeolocationInfoBarQueueControllerTests::RenderId() {
-  return web_contents()->GetRenderViewHost()->GetRoutingID();
+GeolocationPermissionRequestID
+    GeolocationInfoBarQueueControllerTests::RequestID(int bridge_id) {
+  return GeolocationPermissionRequestID(
+      web_contents()->GetRenderProcessHost()->GetID(),
+      web_contents()->GetRenderViewHost()->GetRoutingID(),
+      bridge_id);
 }
 
 void GeolocationInfoBarQueueControllerTests::SetUp() {
@@ -62,9 +62,7 @@ class ObservationCountingQueueController :
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  static void NotifyPermissionSet(int render_process_id,
-                                  int render_view_id,
-                                  int bridge_id,
+  static void NotifyPermissionSet(const GeolocationPermissionRequestID& id,
                                   const GURL& requesting_frame,
                                   base::Callback<void(bool)> callback,
                                   bool allowed);
@@ -86,9 +84,7 @@ void ObservationCountingQueueController::Observe(
 }
 
 void ObservationCountingQueueController::NotifyPermissionSet(
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
+    const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame,
     base::Callback<void(bool)> callback,
     bool allowed) {
@@ -110,10 +106,10 @@ TEST_F(GeolocationInfoBarQueueControllerTests,
   ObservationCountingQueueController infobar_queue_controller(profile());
   GURL url("http://www.example.com/geolocation");
   base::Callback<void(bool)> callback;
-  infobar_queue_controller.CreateInfoBarRequest(ProcessId(), RenderId(), 1,
-                                                url, url, callback);
-  infobar_queue_controller.CreateInfoBarRequest(ProcessId(), RenderId(), 2,
-                                                url, url, callback);
-  infobar_queue_controller.CancelInfoBarRequest(ProcessId(), RenderId(), 1);
+  infobar_queue_controller.CreateInfoBarRequest(RequestID(0), url, url,
+                                                callback);
+  infobar_queue_controller.CreateInfoBarRequest(RequestID(1), url, url,
+                                                callback);
+  infobar_queue_controller.CancelInfoBarRequest(RequestID(0));
   EXPECT_EQ(1, infobar_queue_controller.call_count());
 };
