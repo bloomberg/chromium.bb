@@ -71,7 +71,6 @@
         'shell/shell_content_renderer_client.cc',
         'shell/shell_content_renderer_client.h',
         'shell/shell_devtools_delegate.cc',
-        'shell/shell_devtools_delegate_android.cc',
         'shell/shell_devtools_delegate.h',
         'shell/shell_download_manager_delegate.cc',
         'shell/shell_download_manager_delegate.h',
@@ -155,9 +154,6 @@
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/content/shell',
-          ],
-          'sources!': [
-            'shell/shell_devtools_delegate.cc',
           ],
         }, {  # else: OS!="android"
           'dependencies': [
