@@ -545,18 +545,17 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   ASSERT_TRUE(form_data->GetType() == Value::TYPE_DICTIONARY);
   // Contents of raw.
   ListValue raw;
-  extensions::RawDataPresenter::AppendResultWithKey(
-      &raw,
+  extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
-      BinaryValue::CreateWithCopiedBuffer(kPlainBlock1, kPlainBlock1Length));
-  extensions::RawDataPresenter::AppendResultWithKey(
-      &raw,
-      keys::kRequestBodyRawFileKey,
-      Value::CreateStringValue(""));
-  extensions::RawDataPresenter::AppendResultWithKey(
-      &raw,
+      BinaryValue::CreateWithCopiedBuffer(kPlainBlock1, kPlainBlock1Length),
+      &raw);
+  extensions::subtle::AppendKeyValuePair(keys::kRequestBodyRawFileKey,
+                                         Value::CreateStringValue(""),
+                                         &raw);
+  extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
-      BinaryValue::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length));
+      BinaryValue::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length),
+      &raw);
   // Summary.
   const Value* const kExpected[] = {
     form_data.get(),

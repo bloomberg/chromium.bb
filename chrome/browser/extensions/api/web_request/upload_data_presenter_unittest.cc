@@ -64,12 +64,12 @@ TEST(WebRequestUploadDataPresenterTest, RawData) {
   ASSERT_TRUE(expected_c.get() != NULL);
 
   ListValue expected_list;
-  RawDataPresenter::AppendResultWithKey(
-      &expected_list, keys::kRequestBodyRawBytesKey, expected_a.release());
-  RawDataPresenter::AppendResultWithKey(
-      &expected_list, keys::kRequestBodyRawFileKey, expected_b.release());
-  RawDataPresenter::AppendResultWithKey(
-      &expected_list, keys::kRequestBodyRawBytesKey, expected_c.release());
+  subtle::AppendKeyValuePair(
+      keys::kRequestBodyRawBytesKey, expected_a.release(), &expected_list);
+  subtle::AppendKeyValuePair(
+      keys::kRequestBodyRawFileKey, expected_b.release(), &expected_list);
+  subtle::AppendKeyValuePair(
+      keys::kRequestBodyRawBytesKey, expected_c.release(), &expected_list);
 
   // Real output.
   RawDataPresenter raw_presenter;

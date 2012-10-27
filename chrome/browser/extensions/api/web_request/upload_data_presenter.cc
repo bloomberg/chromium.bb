@@ -38,6 +38,16 @@ ListValue* GetOrCreateList(DictionaryValue* dictionary,
 
 namespace extensions {
 
+namespace subtle {
+
+void AppendKeyValuePair(const char* key, Value* value, ListValue* list) {
+  DictionaryValue* dictionary = new DictionaryValue;
+  dictionary->SetWithoutPathExpansion(key, value);
+  list->Append(dictionary);
+}
+
+}  // namespace subtle
+
 // Implementation of UploadDataPresenter.
 
 UploadDataPresenter::~UploadDataPresenter() {}
@@ -76,28 +86,22 @@ scoped_ptr<Value> RawDataPresenter::Result() {
   return list_.PassAs<Value>();
 }
 
-// static
-void RawDataPresenter::AppendResultWithKey(
-    ListValue* list, const char* key, Value* value) {
-  DictionaryValue* dictionary = new DictionaryValue;
-  dictionary->SetWithoutPathExpansion(key, value);
-  list->Append(dictionary);
-}
-
 void RawDataPresenter::Abort() {
   success_ = false;
   list_.reset();
 }
 
 void RawDataPresenter::FeedNextBytes(const char* bytes, size_t size) {
-  AppendResultWithKey(list_.get(), keys::kRequestBodyRawBytesKey,
-                      BinaryValue::CreateWithCopiedBuffer(bytes, size));
+  subtle::AppendKeyValuePair(keys::kRequestBodyRawBytesKey,
+                             BinaryValue::CreateWithCopiedBuffer(bytes, size),
+                             list_.get());
 }
 
 void RawDataPresenter::FeedNextFile(const std::string& filename) {
   // Insert the file path instead of the contents, which may be too large.
-  AppendResultWithKey(list_.get(), keys::kRequestBodyRawFileKey,
-                      Value::CreateStringValue(filename));
+  subtle::AppendKeyValuePair(keys::kRequestBodyRawFileKey,
+                             Value::CreateStringValue(filename),
+                             list_.get());
 }
 
 // Implementation of ParsedDataPresenter.

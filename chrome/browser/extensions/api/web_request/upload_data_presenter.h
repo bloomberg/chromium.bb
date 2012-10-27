@@ -28,6 +28,18 @@ class UploadElement;
 
 namespace extensions {
 
+namespace subtle {
+
+// Helpers shared with unit-tests.
+
+// Appends a dictionary {'key': 'value'} to |list|. |list| becomes the owner of
+// |value|.
+void AppendKeyValuePair(const char* key,
+                        base::Value* value,
+                        base::ListValue* list);
+
+}  // namespace subtle
+
 FORWARD_DECLARE_TEST(WebRequestUploadDataPresenterTest, RawData);
 
 // UploadDataPresenter is an interface for objects capable to consume a series
@@ -63,13 +75,6 @@ class RawDataPresenter : public UploadDataPresenter {
   virtual void FeedNext(const net::UploadElement& element) OVERRIDE;
   virtual bool Succeeded() OVERRIDE;
   virtual scoped_ptr<base::Value> Result() OVERRIDE;
-
-  // Appends a dictionary {'key': 'value'} to |list|.
-  // This is a helper function and has nothing to do with RawDataPresenter
-  // directly. However, it is used by FeedNext* methods and also unit-tests
-  // depending on RawDataPresenter. It is here to avoid code duplication.
-  static void AppendResultWithKey(
-      base::ListValue* list, const char* key, base::Value* value);
 
  private:
   // Clears resources and the success flag.
