@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_ANDROID_H_
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_ANDROID_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate.h"
+
+class GoogleLocationSettingsHelper;
 
 class GeolocationConfirmInfoBarDelegateAndroid
     : public GeolocationConfirmInfoBarDelegate {
@@ -18,10 +21,14 @@ class GeolocationConfirmInfoBarDelegateAndroid
       int bridge_id,
       const GURL& requesting_frame_url,
       const std::string& display_languages);
+  virtual ~GeolocationConfirmInfoBarDelegateAndroid();
 
  private:
   // ConfirmInfoBarDelegate:
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+
+  scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_CONFIRM_INFOBAR_DELEGATE_ANDROID_H_

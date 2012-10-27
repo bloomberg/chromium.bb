@@ -5,6 +5,7 @@
 #include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate_android.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/android/google_location_settings_helper.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -25,11 +26,32 @@ GeolocationConfirmInfoBarDelegateAndroid(
                                         render_view_id,
                                         bridge_id,
                                         requesting_frame_url,
-                                        display_languages) {
+                                        display_languages),
+      google_location_settings_helper_(new GoogleLocationSettingsHelper())  {
+}
+
+GeolocationConfirmInfoBarDelegateAndroid::
+    ~GeolocationConfirmInfoBarDelegateAndroid() {
+}
+
+bool GeolocationConfirmInfoBarDelegateAndroid::Accept() {
+  // Accept button text could be either 'Allow' or 'Google Location Settings'.
+  // If 'Allow' we follow the regular flow.
+  if (google_location_settings_helper_->IsGoogleAppsLocationSettingEnabled())
+    return GeolocationConfirmInfoBarDelegate::Accept();
+
+  // If 'Google Location Settings', we need to open the system Google Location
+  // Settings activity.
+  google_location_settings_helper_->ShowGoogleLocationSettings();
+  SetPermission(false, false);
+  return true;
 }
 
 string16 GeolocationConfirmInfoBarDelegateAndroid::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_GEOLOCATION_ALLOW_BUTTON : IDS_GEOLOCATION_DENY_BUTTON);
+  if (button == BUTTON_OK) {
+    return UTF8ToUTF16(
+        google_location_settings_helper_->GetAcceptButtonLabel());
+  }
+  return l10n_util::GetStringUTF16(IDS_GEOLOCATION_DENY_BUTTON);
 }

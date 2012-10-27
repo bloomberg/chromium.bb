@@ -7,6 +7,7 @@
 
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 
+class GoogleLocationSettingsHelper;
 
 // Android-specific geolocation permission flow, taking into account the
 // Google Location Settings, if available.
@@ -28,6 +29,16 @@ class ChromeGeolocationPermissionContextAndroid
       const GURL& requesting_frame,
       const GURL& embedder,
       base::Callback<void(bool)> callback) OVERRIDE;
+
+  virtual void PermissionDecided(int render_process_id,
+                                 int render_view_id,
+                                 int bridge_id,
+                                 const GURL& requesting_frame,
+                                 const GURL& embedder,
+                                 base::Callback<void(bool)> callback,
+                                 bool allowed) OVERRIDE;
+
+  scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationPermissionContextAndroid);
 };

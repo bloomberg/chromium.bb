@@ -290,32 +290,6 @@ TEST_F(GeolocationPermissionContextTests, SinglePermission) {
   infobar_0->InfoBarClosed();
 }
 
-#if defined(OS_ANDROID)
-TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
-  profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      CONTENT_SETTING_ALLOW);
-
-  // Check that the request is denied with preference disabled,
-  // even though the default policy allows it.
-  GURL requesting_frame("http://www.example.com/geolocation");
-  NavigateAndCommit(requesting_frame);
-  EXPECT_EQ(0U, infobar_tab_helper()->GetInfoBarCount());
-  profile()->GetPrefs()->SetBoolean(prefs::kGeolocationEnabled, false);
-  RequestGeolocationPermission(
-      process_id(), render_id(), bridge_id(), requesting_frame);
-  ASSERT_EQ(0U, infobar_tab_helper()->GetInfoBarCount());
-  CheckPermissionMessageSent(bridge_id(), false);
-
-  // Reenable the preference and check that the request now goes though.
-  profile()->GetPrefs()->SetBoolean(prefs::kGeolocationEnabled, true);
-  RequestGeolocationPermission(
-      process_id(), render_id(), bridge_id() + 1, requesting_frame);
-  ASSERT_EQ(0U, infobar_tab_helper()->GetInfoBarCount());
-  CheckPermissionMessageSent(bridge_id() + 1, true);
-}
-#endif
-
 TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   GURL requesting_frame_0("http://www.example.com/geolocation");
   GURL requesting_frame_1("http://www.example-2.com/geolocation");
