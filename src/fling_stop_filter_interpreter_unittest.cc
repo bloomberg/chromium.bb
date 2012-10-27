@@ -17,7 +17,8 @@ namespace {
 class FlingStopFilterInterpreterTestInterpreter : public Interpreter {
  public:
   FlingStopFilterInterpreterTestInterpreter()
-      : sync_interpret_called_(false), handle_timer_called_(true),
+      : Interpreter(NULL, NULL),
+        sync_interpret_called_(false), handle_timer_called_(true),
         next_timeout_(-1) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {

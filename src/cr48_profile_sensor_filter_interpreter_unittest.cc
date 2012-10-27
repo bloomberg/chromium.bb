@@ -23,7 +23,7 @@ class Cr48ProfileSensorFilterInterpreterTest : public ::testing::Test {};
 class Cr48ProfileSensorFilterInterpreterTestInterpreter : public Interpreter {
  public:
   Cr48ProfileSensorFilterInterpreterTestInterpreter()
-        : sync_interpret_cnt_(0) {
+        : Interpreter(NULL, NULL), sync_interpret_cnt_(0) {
   }
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {

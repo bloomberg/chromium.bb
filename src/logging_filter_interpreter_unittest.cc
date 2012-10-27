@@ -21,7 +21,7 @@ class LoggingFilterInterpreterTest : public ::testing::Test {};
 
 class LoggingFilterInterpreterResetLogTestInterpreter : public Interpreter {
  public:
-  LoggingFilterInterpreterResetLogTestInterpreter() {}
+  LoggingFilterInterpreterResetLogTestInterpreter() : Interpreter(NULL, NULL) {}
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                      stime_t* timeout) {

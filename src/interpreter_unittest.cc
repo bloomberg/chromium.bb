@@ -177,7 +177,7 @@ TEST(InterpreterTest, SimpleTest) {
 
 class InterpreterResetLogTestInterpreter : public Interpreter {
  public:
-  InterpreterResetLogTestInterpreter() {
+  InterpreterResetLogTestInterpreter() : Interpreter(NULL, NULL) {
     logging_enabled_ = true;
   }
  protected:

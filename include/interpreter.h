@@ -31,8 +31,6 @@ class Interpreter {
   FRIEND_TEST(LoggingFilterInterpreterTest, LogResetHandlerTest);
  public:
   Interpreter(PropRegistry* prop_reg, Tracer* tracer);
-  explicit Interpreter(Tracer* tracer);
-  Interpreter();  //For unittest
   virtual ~Interpreter();
 
   // Called to interpret the current state and optionally produce 1

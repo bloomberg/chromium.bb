@@ -14,7 +14,9 @@ class IirFilterInterpreterTest : public ::testing::Test {};
 
 class IirFilterInterpreterTestInterpreter : public Interpreter {
  public:
-  IirFilterInterpreterTestInterpreter() : sync_interpret_cnt_(0) {
+  IirFilterInterpreterTestInterpreter()
+      : Interpreter(NULL, NULL),
+        sync_interpret_cnt_(0) {
     prev_.position_x = 0.0;
     prev_.position_y = 0.0;
   }

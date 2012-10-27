@@ -15,7 +15,7 @@ namespace gestures {
 // Takes ownership of |next|:
 IntegralGestureFilterInterpreter::IntegralGestureFilterInterpreter(
     Interpreter* next, Tracer* tracer)
-    : FilterInterpreter(next, tracer),
+    : FilterInterpreter(NULL, next, tracer),
       hscroll_remainder_(0.0),
       vscroll_remainder_(0.0) {
   InitName();

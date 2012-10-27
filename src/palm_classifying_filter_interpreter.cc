@@ -16,7 +16,7 @@ namespace gestures {
 PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, FingerMetrics* finger_metrics,
     Tracer* tracer)
-    : FilterInterpreter(next, tracer),
+    : FilterInterpreter(NULL, next, tracer),
       finger_metrics_(finger_metrics),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_width_(prop_reg, "Palm Width", 21.2),

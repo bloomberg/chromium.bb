@@ -28,28 +28,6 @@ Interpreter::Interpreter(PropRegistry* prop_reg, Tracer* tracer)
 #endif
 }
 
-Interpreter::Interpreter(Tracer* tracer)
-    : log_(NULL),
-      name_(NULL),
-      tracer_(tracer) {
-#ifdef DEEP_LOGS
-  logging_enabled_ = true;
-#else
-  logging_enabled_ = false;
-#endif
-}
-
-Interpreter::Interpreter()
-    : log_(NULL),
-      name_(NULL),
-      tracer_(NULL) {
-#ifdef DEEP_LOGS
-  logging_enabled_ = true;
-#else
-  logging_enabled_ = false;
-#endif
-}
-
 Interpreter::~Interpreter() {
   if (name_)
     free(const_cast<char*>(name_));

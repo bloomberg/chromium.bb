@@ -295,7 +295,7 @@ void ScrollEventBuffer::GetSpeedSq(float* dist_sq, float* dt) const {
 ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                            FingerMetrics* finger_metrics,
                                            Tracer* tracer)
-    : Interpreter(tracer),
+    : Interpreter(NULL, tracer),
       button_type_(0),
       sent_button_down_(false),
       button_down_timeout_(0.0),

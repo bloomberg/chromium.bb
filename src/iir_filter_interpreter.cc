@@ -31,7 +31,7 @@ bool IirFilterInterpreter::IoHistory::operator==(
 IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
                                            Interpreter* next,
                                            Tracer* tracer)
-    : FilterInterpreter(next, tracer),
+    : FilterInterpreter(NULL, next, tracer),
       b0_(prop_reg, "IIR b0", 0.0674552738890719, this),
       b1_(prop_reg, "IIR b1", 0.134910547778144, this),
       b2_(prop_reg, "IIR b2", 0.0674552738890719, this),

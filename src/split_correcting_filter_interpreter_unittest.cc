@@ -21,7 +21,8 @@ class SplitCorrectingFilterInterpreterTestInterpreter :
       public Interpreter {
  public:
   SplitCorrectingFilterInterpreterTestInterpreter()
-      : expect_finger_ids_(true),
+      : Interpreter(NULL, NULL),
+        expect_finger_ids_(true),
         iteration_(0),
         expect_warp_on_one_finger_only_(false) {}
 

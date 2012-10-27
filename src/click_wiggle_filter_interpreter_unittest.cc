@@ -19,7 +19,8 @@ class ClickWiggleFilterInterpreterTest : public ::testing::Test {};
 class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
  public:
   ClickWiggleFilterInterpreterTestInterpreter()
-      : set_hwprops_called_(false), expect_warp_(true),
+      : Interpreter(NULL, NULL),
+        set_hwprops_called_(false), expect_warp_(true),
         expected_fingers_(-1) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {

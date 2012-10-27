@@ -14,7 +14,7 @@ namespace gestures {
 // Takes ownership of |next|:
 SplitCorrectingFilterInterpreter::SplitCorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
-    : FilterInterpreter(next, tracer),
+    : FilterInterpreter(NULL, next, tracer),
       enabled_(true),
       merge_max_separation_(prop_reg, "Split Merge Max Separation", 17.0),
       merge_max_movement_(prop_reg, "Split Merge Max Movement", 3.0),

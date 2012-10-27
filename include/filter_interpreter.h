@@ -20,8 +20,6 @@ class FilterInterpreter : public Interpreter {
  public:
   FilterInterpreter(PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
       : Interpreter(prop_reg, tracer) { next_.reset(next); }
-  FilterInterpreter(Interpreter* next, Tracer* tracer)
-      : Interpreter(tracer) { next_.reset(next); }
   virtual ~FilterInterpreter() {}
 
   DictionaryValue* EncodeCommonInfo();

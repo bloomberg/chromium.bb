@@ -25,7 +25,8 @@ class PalmClassifyingFilterInterpreterTest : public ::testing::Test {};
 class PalmClassifyingFilterInterpreterTestInterpreter : public Interpreter {
  public:
   PalmClassifyingFilterInterpreterTestInterpreter()
-      : expected_flags_(0) {}
+      : Interpreter(NULL, NULL),
+        expected_flags_(0) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (hwstate->finger_cnt > 0) {

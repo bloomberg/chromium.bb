@@ -14,7 +14,7 @@ namespace gestures {
 BoxFilterInterpreter::BoxFilterInterpreter(PropRegistry* prop_reg,
                                            Interpreter* next,
                                            Tracer* tracer)
-    : FilterInterpreter(next, tracer),
+    : FilterInterpreter(NULL, next, tracer),
       box_width_(prop_reg, "Box Width", 0.0) {
   InitName();
 }

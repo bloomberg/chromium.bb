@@ -14,7 +14,7 @@ namespace gestures {
 SensorJumpFilterInterpreter::SensorJumpFilterInterpreter(PropRegistry* prop_reg,
                                                          Interpreter* next,
                                                          Tracer* tracer)
-    : FilterInterpreter(next, tracer),
+    : FilterInterpreter(NULL, next, tracer),
       enabled_(prop_reg, "Sensor Jump Filter Enable", 0),
       min_warp_dist_non_move_(prop_reg, "Sensor Jump Min Dist Non-Move", 0.9),
       max_warp_dist_non_move_(prop_reg, "Sensor Jump Max Dist Non-Move", 7.5),
