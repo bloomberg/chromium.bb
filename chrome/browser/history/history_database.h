@@ -67,7 +67,8 @@ class HistoryDatabase : public DownloadDatabase,
   // Must call this function to complete initialization. Will return
   // sql::INIT_OK on success. Otherwise, no other function should be called. You
   // may want to call BeginExclusiveMode after this when you are ready.
-  sql::InitStatus Init(const FilePath& history_name);
+  sql::InitStatus Init(const FilePath& history_name,
+                       sql::ErrorDelegate* error_delegate);
 
   // Call to set the mode on the database to exclusive. The default locking mode
   // is "normal" but we want to run in exclusive mode for slightly better
@@ -115,6 +116,9 @@ class HistoryDatabase : public DownloadDatabase,
   // Vacuums the database. This will cause sqlite to defragment and collect
   // unused space in the file. It can be VERY SLOW.
   void Vacuum();
+
+  // Razes the database. Returns true if successful.
+  bool Raze();
 
   // Returns true if the history backend should erase the full text search
   // and archived history files as part of version 16 -> 17 migration. The

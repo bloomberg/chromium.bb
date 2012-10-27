@@ -34,7 +34,7 @@ TEST(HistoryDatabaseTest, DropBookmarks) {
   // migration leaves it in a state fit to load again later.
   for (int i = 0; i < 2; ++i) {
     HistoryDatabase history_db;
-    ASSERT_EQ(sql::INIT_OK, history_db.Init(db_file));
+    ASSERT_EQ(sql::INIT_OK, history_db.Init(db_file, NULL));
     HistoryDatabase::URLEnumerator url_enumerator;
     ASSERT_TRUE(history_db.InitURLEnumeratorForEverything(&url_enumerator));
     int num_urls = 0;

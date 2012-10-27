@@ -31,7 +31,7 @@ class AndroidCacheDatabaseTest : public testing::Test {
     FilePath history_db_name_ = temp_dir_.path().AppendASCII("history.db");
     android_cache_db_name_ = temp_dir_.path().AppendASCII(
         "TestAndroidCache.db");
-    ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_));
+    ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, NULL));
     ASSERT_EQ(sql::INIT_OK,
               history_db_.InitAndroidCacheDatabase(android_cache_db_name_));
   }
@@ -49,7 +49,7 @@ TEST(AndroidCacheDatabaseAttachTest, AttachDatabaseInTransactionNesting) {
   FilePath history_db_name = temp_dir.path().AppendASCII("history.db");
   android_cache_db_name = temp_dir.path().AppendASCII(
         "TestAndroidCache.db");
-  ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name));
+  ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name, NULL));
   // Create nested transactions.
   history_db.BeginTransaction();
   history_db.BeginTransaction();

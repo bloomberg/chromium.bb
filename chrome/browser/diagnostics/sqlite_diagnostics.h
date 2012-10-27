@@ -11,9 +11,8 @@ namespace sql {
   class ErrorDelegate;
 }
 
-// The following four factories create the error handlers that we use when
+// The following three factories create the error handlers that we use when
 // issuing sqlite commands during normal browser operation.
-sql::ErrorDelegate* GetErrorHandlerForHistoryDb();
 sql::ErrorDelegate* GetErrorHandlerForThumbnailDb();
 sql::ErrorDelegate* GetErrorHandlerForTextDb();
 sql::ErrorDelegate* GetErrorHandlerForWebDb();

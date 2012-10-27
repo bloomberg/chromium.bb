@@ -691,6 +691,11 @@ void ExpireHistoryBackend::ScheduleExpireHistoryIndexFiles() {
 }
 
 void ExpireHistoryBackend::DoExpireHistoryIndexFiles() {
+  if (!text_db_) {
+    // The text database may have been closed since the task was scheduled.
+    return;
+  }
+
   Time::Exploded exploded;
   Time::Now().LocalExplode(&exploded);
   int cutoff_month =

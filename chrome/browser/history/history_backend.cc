@@ -38,6 +38,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "sql/error_delegate_util.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/history/android/android_provider_backend.h"
@@ -204,6 +205,58 @@ class HistoryBackend::URLQuerier {
   DISALLOW_COPY_AND_ASSIGN(URLQuerier);
 };
 
+// KillHistoryDatabaseErrorDelegate -------------------------------------------
+
+class KillHistoryDatabaseErrorDelegate : public sql::ErrorDelegate {
+ public:
+  explicit KillHistoryDatabaseErrorDelegate(HistoryBackend* backend)
+      : backend_(backend),
+        scheduled_killing_database_(false) {
+  }
+
+  // sql::ErrorDelegate implementation.
+  virtual int OnError(int error,
+                      sql::Connection* connection,
+                      sql::Statement* stmt) OVERRIDE {
+    sql::LogAndRecordErrorInHistogram<HistogramUniquifier>(error, connection);
+
+    // Do not schedule killing database more than once. If the first time
+    // failed, it is unlikely that a second time will be successful.
+    if (!scheduled_killing_database_ && sql::IsErrorCatastrophic(error)) {
+      scheduled_killing_database_ = true;
+
+      // Don't just do the close/delete here, as we are being called by |db| and
+      // that seems dangerous.
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&HistoryBackend::KillHistoryDatabase, backend_));
+    }
+
+    return error;
+  }
+
+  // Returns true if the delegate has previously scheduled killing the database.
+  bool scheduled_killing_database() const {
+    return scheduled_killing_database_;
+  }
+
+ private:
+  class HistogramUniquifier {
+   public:
+    static const char* name() { return "Sqlite.History.Error"; }
+  };
+
+  // Do not increment the count on |HistoryBackend| as that would create a
+  // circular reference (HistoryBackend -> HistoryDatabase -> Connection ->
+  // ErrorDelegate -> HistoryBackend).
+  HistoryBackend* backend_;
+
+  // True if the backend has previously scheduled killing the history database.
+  bool scheduled_killing_database_;
+
+  DISALLOW_COPY_AND_ASSIGN(KillHistoryDatabaseErrorDelegate);
+};
+
 // HistoryBackend --------------------------------------------------------------
 
 HistoryBackend::HistoryBackend(const FilePath& history_dir,
@@ -230,23 +283,7 @@ HistoryBackend::~HistoryBackend() {
 #endif
 
   // First close the databases before optionally running the "destroy" task.
-  if (db_.get()) {
-    // Commit the long-running transaction.
-    db_->CommitTransaction();
-    db_.reset();
-  }
-  if (thumbnail_db_.get()) {
-    thumbnail_db_->CommitTransaction();
-    thumbnail_db_.reset();
-  }
-  if (archived_db_.get()) {
-    archived_db_->CommitTransaction();
-    archived_db_.reset();
-  }
-  if (text_database_.get()) {
-    text_database_->CommitTransaction();
-    text_database_.reset();
-  }
+  CloseAllDatabases();
 
   if (!backend_destroy_task_.is_null()) {
     // Notify an interested party (typically a unit test) that we're done.
@@ -619,16 +656,29 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   // History database.
   db_.reset(new HistoryDatabase());
-  sql::InitStatus status = db_->Init(history_name);
+
+  // |HistoryDatabase::Init| takes ownership of |error_delegate|.
+  KillHistoryDatabaseErrorDelegate* error_delegate =
+      new KillHistoryDatabaseErrorDelegate(this);
+
+  sql::InitStatus status = db_->Init(history_name, error_delegate);
   switch (status) {
     case sql::INIT_OK:
       break;
-    case sql::INIT_FAILURE:
+    case sql::INIT_FAILURE: {
       // A NULL db_ will cause all calls on this object to notice this error
-      // and to not continue.
+      // and to not continue. If the error delegate scheduled killing the
+      // database, the task it posted has not executed yet. Try killing the
+      // database now before we close it.
+      bool kill_database = error_delegate->scheduled_killing_database();
+      if (kill_database)
+        KillHistoryDatabase();
+      UMA_HISTOGRAM_BOOLEAN("History.AttemptedToFixProfileError",
+                            kill_database);
       delegate_->NotifyProfileError(id_, status);
       db_.reset();
       return;
+    }
     default:
       NOTREACHED();
   }
@@ -739,6 +789,26 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   HISTOGRAM_TIMES("History.InitTime",
                   TimeTicks::Now() - beginning_time);
+}
+
+void HistoryBackend::CloseAllDatabases() {
+  if (db_.get()) {
+    // Commit the long-running transaction.
+    db_->CommitTransaction();
+    db_.reset();
+  }
+  if (thumbnail_db_.get()) {
+    thumbnail_db_->CommitTransaction();
+    thumbnail_db_.reset();
+  }
+  if (archived_db_.get()) {
+    archived_db_->CommitTransaction();
+    archived_db_.reset();
+  }
+  if (text_database_.get()) {
+    text_database_->CommitTransaction();
+    text_database_.reset();
+  }
 }
 
 std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
@@ -2608,6 +2678,30 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
     if (visits.empty())
       expirer_.DeleteURL(*i);  // There are no more visits; nuke the URL.
   }
+}
+
+void HistoryBackend::KillHistoryDatabase() {
+  if (!db_.get())
+    return;
+
+  // Rollback transaction because Raze() cannot be called from within a
+  // transaction.
+  db_->RollbackTransaction();
+  bool success = db_->Raze();
+  UMA_HISTOGRAM_BOOLEAN("History.KillHistoryDatabaseResult", success);
+
+#if defined(OS_ANDROID)
+  // Release AndroidProviderBackend before other objects.
+  android_provider_backend_.reset();
+#endif
+
+  // The expirer keeps tabs on the active databases. Tell it about the
+  // databases which will be closed.
+  expirer_.SetDatabases(NULL, NULL, NULL, NULL);
+
+  // Reopen a new transaction for |db_| for the sake of CloseAllDatabases().
+  db_->BeginTransaction();
+  CloseAllDatabases();
 }
 
 void HistoryBackend::ProcessDBTask(

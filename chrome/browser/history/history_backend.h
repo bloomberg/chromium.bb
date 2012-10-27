@@ -446,6 +446,15 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // for the specified url, it is deleted.
   void URLsNoLongerBookmarked(const std::set<GURL>& urls);
 
+  // Callbacks To Kill Database When It Gets Corrupted -------------------------
+
+  // Raze the history database. It will be recreated in a future run. Hopefully
+  // things go better then. Continue running but without reading or storing any
+  // state into the HistoryBackend databases. Close all of the databases managed
+  // HistoryBackend as there are no provisions for accessing the other databases
+  // managed by HistoryBackend when the history database cannot be accessed.
+  void KillHistoryDatabase();
+
   // Testing -------------------------------------------------------------------
 
   // Sets the task to run and the message loop to run it on when this object
@@ -545,6 +554,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Does the work of Init.
   void InitImpl(const std::string& languages);
+
+  // Closes all databases managed by HistoryBackend. Commits any pending
+  // transactions.
+  void CloseAllDatabases();
 
   // Adds a single visit to the database, updating the URL information such
   // as visit and typed count. The visit ID of the added visit and the URL ID

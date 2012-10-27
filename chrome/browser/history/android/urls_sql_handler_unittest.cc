@@ -36,7 +36,7 @@ class UrlsSQLHandlerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     FilePath history_db_name = temp_dir_.path().AppendASCII(
         chrome::kHistoryFilename);
-    ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name));
+    ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name, NULL));
   }
 
   virtual void TearDown() {

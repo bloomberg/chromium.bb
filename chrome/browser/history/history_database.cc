@@ -13,7 +13,6 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "sql/transaction.h"
 
 #if defined(OS_MACOSX)
@@ -67,9 +66,10 @@ HistoryDatabase::HistoryDatabase()
 HistoryDatabase::~HistoryDatabase() {
 }
 
-sql::InitStatus HistoryDatabase::Init(const FilePath& history_name) {
+sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
+                                      sql::ErrorDelegate* error_delegate) {
   // Set the exceptional sqlite error handler.
-  db_.set_error_delegate(GetErrorHandlerForHistoryDb());
+  db_.set_error_delegate(error_delegate);
 
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).
@@ -175,6 +175,10 @@ void HistoryDatabase::Vacuum() {
   DCHECK_EQ(0, db_.transaction_nesting()) <<
       "Can not have a transaction when vacuuming.";
   ignore_result(db_.Execute("VACUUM"));
+}
+
+bool HistoryDatabase::Raze() {
+  return db_.Raze();
 }
 
 void HistoryDatabase::ThumbnailMigrationDone() {
