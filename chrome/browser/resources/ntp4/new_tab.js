@@ -192,13 +192,12 @@ cr.define('ntp', function() {
 
     if (loadTimeData.valueExists('bubblePromoText')) {
       promoBubble = new cr.ui.Bubble;
-      promoBubble.anchorNode = getRequiredElement('logo-img');
+      promoBubble.anchorNode = getRequiredElement('promo-bubble-anchor');
       promoBubble.arrowLocation = cr.ui.ArrowLocation.BOTTOM_START;
-      promoBubble.bubbleAlignment =
-          cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE;
+      promoBubble.bubbleAlignment = cr.ui.BubbleAlignment.ENTIRELY_VISIBLE;
       promoBubble.deactivateToDismissDelay = 2000;
-      promoBubble.content = parseHtmlSubset(loadTimeData.getString(
-          'bubblePromoText'), ['BR']);
+      promoBubble.content = parseHtmlSubset(
+          loadTimeData.getString('bubblePromoText'), ['BR']);
 
       var bubbleLink = promoBubble.querySelector('a');
       if (bubbleLink) {

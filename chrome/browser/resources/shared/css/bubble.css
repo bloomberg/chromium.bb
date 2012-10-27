@@ -22,6 +22,12 @@
   z-index: 3;
 }
 
+/* When the close button is there, we need more padding on the right of the
+ * bubble. */
+.bubble-close:not([hidden]) ~ .bubble-content {
+  -webkit-padding-end: 22px;
+}
+
 .bubble-close {
   background-image: no-repeat 50% 50%;
   height: 16px;

@@ -190,7 +190,18 @@ html[dir='rtl'] #attribution {
 }
 
 #logo-img {
+  display: inline-block;
   margin-top: 4px;
+  position: relative;
+}
+
+#promo-bubble-anchor {
+  height: 1px;
+  left: 0;
+  position: absolute;
+  top: 4px;
+  visibility: hidden;
+  width: 32px;
 }
 
 body.bare-minimum #footer {

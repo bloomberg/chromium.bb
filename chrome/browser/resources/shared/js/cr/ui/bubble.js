@@ -61,10 +61,19 @@ cr.define('cr.ui', function() {
 
   /**
    * The horizontal distance between the tip of the arrow and the reference edge
-   * of the bubble (as specified by the arrow location).
+   * of the bubble (as specified by the arrow location). In pixels.
+   * @type {number}
    * @const
    */
   BubbleBase.ARROW_OFFSET = 30;
+
+  /**
+   * Minimum horizontal spacing between edge of bubble and edge of viewport
+   * (when using the ENTIRELY_VISIBLE alignment). In pixels.
+   * @type {number}
+   * @const
+   */
+  BubbleBase.MIN_VIEWPORT_EDGE_MARGIN = 2;
 
   BubbleBase.prototype = {
     // Set up the prototype chain.
@@ -160,13 +169,18 @@ cr.define('cr.ui', function() {
         var left = this.arrowAtRight_ ?
            anchorMid + BubbleBase.ARROW_OFFSET - bubble.width :
            anchorMid - BubbleBase.ARROW_OFFSET;
+        var max_left_pos =
+            documentWidth - bubble.width - BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
+        var min_left_pos = BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
         if (document.documentElement.dir == 'rtl')
-          left = Math.min(Math.max(left, 0), documentWidth - bubble.width);
+          left = Math.min(Math.max(left, min_left_pos), max_left_pos);
         else
-          left = Math.max(Math.min(left, documentWidth - bubble.width), 0);
-        var arrowTip = Math.min(Math.max(this.arrowAtRight_ ?
-            left + bubble.width - anchorMid : anchorMid - left,
-            arrow.width / 2), bubble.width - arrow.width / 2);
+          left = Math.max(Math.min(left, max_left_pos), min_left_pos);
+        var arrowTip = Math.min(
+            Math.max(arrow.width / 2,
+                     this.arrowAtRight_ ? left + bubble.width - anchorMid :
+                                          anchorMid - left),
+            bubble.width - arrow.width / 2);
 
         // Work out the vertical placement, attempting to fit the bubble
         // entirely into view. The following placements are considered in
@@ -313,7 +327,7 @@ cr.define('cr.ui', function() {
 
       var close = document.createElement('div');
       close.className = 'bubble-close';
-      this.appendChild(close);
+      this.insertBefore(close, this.querySelector('.bubble-content'));
 
       this.handleCloseEvent = this.hide;
       this.deactivateToDismissDelay_ = 0;
