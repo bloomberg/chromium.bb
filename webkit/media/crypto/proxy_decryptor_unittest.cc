@@ -29,6 +29,7 @@ using media::Decryptor;
 namespace webkit_media {
 
 static const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
+static const int kFakeKeyIdSize = arraysize(kFakeKeyId);
 static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
 static const char kFakeKeySystem[] = "system.key.fake";
 static const char kFakeSessionId[] = "FakeSessionId";
@@ -44,7 +45,7 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
   encrypted_buffer->SetDecryptConfig(scoped_ptr<DecryptConfig>(
       new DecryptConfig(
           std::string(reinterpret_cast<const char*>(kFakeKeyId),
-                      arraysize(kFakeKeyId)),
+                      kFakeKeyIdSize),
           std::string(reinterpret_cast<const char*>(kFakeIv),
                       DecryptConfig::kDecryptionKeySize),
           encrypted_frame_offset,
@@ -94,11 +95,11 @@ class ProxyDecryptorTest : public testing::Test {
   // hence always use fake key IDs and keys.
   void AddKey() {
     EXPECT_CALL(*real_decryptor_, AddKey(kFakeKeySystem,
-                                         kFakeKeyId, arraysize(kFakeKeyId),
+                                         kFakeKeyId, kFakeKeyIdSize,
                                          kFakeKey, arraysize(kFakeKey),
                                          kFakeSessionId));
     proxy_decryptor_.AddKey(kFakeKeySystem,
-                            kFakeKeyId, arraysize(kFakeKeyId),
+                            kFakeKeyId, kFakeKeyIdSize,
                             kFakeKey, arraysize(kFakeKey),
                             kFakeSessionId);
   }
@@ -163,7 +164,7 @@ TEST_F(ProxyDecryptorTest, NormalDecryption_NoKey) {
 
   EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kNoKey, null_buffer_));
-  EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)));
+  EXPECT_CALL(client_, NeedKeyMock("", "", "", NotNull(), kFakeKeyIdSize));
   proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, null_buffer_));
@@ -172,7 +173,7 @@ TEST_F(ProxyDecryptorTest, NormalDecryption_NoKey) {
 
 // Tests the case where Decrypt() is called after the right key is added.
 TEST_F(ProxyDecryptorTest, DecryptBeforeAddKey) {
-  EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)));
+  EXPECT_CALL(client_, NeedKeyMock("", "", "", NotNull(), kFakeKeyIdSize));
   GenerateKeyRequest();
   EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kNoKey, null_buffer_));
@@ -190,7 +191,7 @@ TEST_F(ProxyDecryptorTest, DecryptBeforeAddKey) {
 // Tests the case where Decrypt() is called before GKR() and the right key is
 // added.
 TEST_F(ProxyDecryptorTest, DecryptBeforeGenerateKeyRequest) {
-  EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)));
+  EXPECT_CALL(client_, NeedKeyMock("", "", "", NotNull(), kFakeKeyIdSize));
   proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
   EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
@@ -206,7 +207,7 @@ TEST_F(ProxyDecryptorTest, DecryptBeforeGenerateKeyRequest) {
 // Tests the case where multiple AddKey() is called to add some irrelevant keys
 // before the real key that can decrypt |encrypted_buffer_| is added.
 TEST_F(ProxyDecryptorTest, MultipleAddKeys) {
-  EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)))
+  EXPECT_CALL(client_, NeedKeyMock("", "", "", NotNull(), kFakeKeyIdSize))
       .Times(AtLeast(1));
   proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
@@ -257,7 +258,7 @@ TEST_F(ProxyDecryptorTest, AddKeyAfterDecryptButBeforeNoKeyReturned) {
 // GenerateKeyRequest is called. In this case, the decryptor was not even
 // created!
 TEST_F(ProxyDecryptorTest, CancelDecryptWithoutGenerateKeyRequestCalled) {
-  EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)))
+  EXPECT_CALL(client_, NeedKeyMock("", "", "", NotNull(), kFakeKeyIdSize))
       .Times(AtLeast(1));
   proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
@@ -271,7 +272,7 @@ TEST_F(ProxyDecryptorTest, CancelDecryptWithoutGenerateKeyRequestCalled) {
 // Test the case where we cancel the pending decryption callback when it's
 // stored in the ProxyDecryptor.
 TEST_F(ProxyDecryptorTest, CancelDecryptWhenDecryptPendingInProxyDecryptor) {
-  EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)))
+  EXPECT_CALL(client_, NeedKeyMock("", "", "", NotNull(), kFakeKeyIdSize))
       .Times(AtLeast(1));
   EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillRepeatedly(RunDecryptCB(Decryptor::kNoKey, null_buffer_));
@@ -311,7 +312,7 @@ TEST_F(ProxyDecryptorTest, CancelDecryptWhenDecryptPendingInRealDecryptor) {
 // Test the case where we try to decrypt again after the previous decrypt was
 // canceled.
 TEST_F(ProxyDecryptorTest, DecryptAfterCancelDecrypt) {
-  EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)))
+  EXPECT_CALL(client_, NeedKeyMock("", "", "", NotNull(), kFakeKeyIdSize))
       .Times(AtLeast(1));
   EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillRepeatedly(RunDecryptCB(Decryptor::kNoKey, null_buffer_));

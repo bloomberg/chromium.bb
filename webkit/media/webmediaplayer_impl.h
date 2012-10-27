@@ -245,6 +245,7 @@ class WebMediaPlayerImpl
                     int message_length,
                     const std::string& default_url);
   void OnNeedKey(const std::string& key_system,
+                 const std::string& type,
                  const std::string& session_id,
                  scoped_array<uint8> init_data,
                  int init_data_size);
@@ -363,6 +364,10 @@ class WebMediaPlayerImpl
   bool starting_;
 
   scoped_refptr<media::ChunkDemuxer> chunk_demuxer_;
+
+  // Temporary for EME v0.1. In the future the init data type should be passed
+  // through GenerateKeyRequest() directly from WebKit.
+  std::string init_data_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

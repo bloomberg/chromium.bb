@@ -58,7 +58,7 @@ static void FireNeedKey(media::DecryptorClient* client,
   std::string key_id = encrypted->GetDecryptConfig()->key_id();
   scoped_array<uint8> key_id_array(new uint8[key_id.size()]);
   memcpy(key_id_array.get(), key_id.data(), key_id.size());
-  client->NeedKey("", "", key_id_array.Pass(), key_id.size());
+  client->NeedKey("", "", "", key_id_array.Pass(), key_id.size());
 }
 
 ProxyDecryptor::ProxyDecryptor(
@@ -101,6 +101,7 @@ void ProxyDecryptor::RequestDecryptorNotification(
 }
 
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
+                                        const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
   // We do not support run-time switching of decryptors. GenerateKeyRequest()
@@ -117,7 +118,7 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
     }
   }
 
-  if (!decryptor_->GenerateKeyRequest(key_system,
+  if (!decryptor_->GenerateKeyRequest(key_system, type,
                                       init_data, init_data_length)) {
     decryptor_.reset();
     return false;

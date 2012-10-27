@@ -45,6 +45,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
+  // TODO(tomfinegan): Update ContentDecryptionModule to pass "type" through.
   virtual cdm::Status GenerateKeyRequest(
       const uint8_t* init_data,
       int init_data_size,
@@ -109,6 +110,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
                             const std::string& default_url) OVERRIDE;
     virtual void NeedKey(const std::string& key_system,
                          const std::string& session_id,
+                         const std::string& type,
                          scoped_array<uint8> init_data,
                          int init_data_length) OVERRIDE;
 

@@ -40,6 +40,7 @@ PpapiDecryptor::~PpapiDecryptor() {
 }
 
 bool PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,
+                                        const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
   DVLOG(2) << "GenerateKeyRequest()";
@@ -50,6 +51,7 @@ bool PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,
   // data type conversions.
   if (!cdm_plugin_->GenerateKeyRequest(
       key_system,
+      type,
       std::string(reinterpret_cast<const char*>(init_data),
                   init_data_length))) {
     ReportFailureToCallPlugin(key_system, "");

@@ -257,6 +257,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // TODO(tomfinegan): Move decryptor methods to delegate class.
   void set_decrypt_client(media::DecryptorClient* client);
   bool GenerateKeyRequest(const std::string& key_system,
+                          const std::string& type,
                           const std::string& init_data);
   bool AddKey(const std::string& session_id,
               const std::string& key,

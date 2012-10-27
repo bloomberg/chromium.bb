@@ -799,7 +799,11 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length));
 
+  // TODO(xhwang): We assume all streams are from the same container (thus have
+  // the same "type") for now. In the future, the "type" should be passed down
+  // from the application.
   if (!decryptor_.GenerateKeyRequest(key_system.utf8(),
+                                     init_data_type_,
                                      init_data, init_data_length)) {
     current_key_system_.reset();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
@@ -1013,11 +1017,16 @@ void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,
 
 void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
                                    const std::string& session_id,
+                                   const std::string& type,
                                    scoped_array<uint8> init_data,
                                    int init_data_size) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
   UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
+
+  DCHECK(init_data_type_.empty() || type.empty() || type == init_data_type_);
+  if (init_data_type_.empty())
+    init_data_type_ = type;
 
   GetClient()->keyNeeded(WebString::fromUTF8(key_system),
                          WebString::fromUTF8(session_id),

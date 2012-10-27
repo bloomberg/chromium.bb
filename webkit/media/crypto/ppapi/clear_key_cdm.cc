@@ -168,6 +168,7 @@ void ClearKeyCdm::Client::KeyMessage(const std::string& key_system,
 
 void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
                                   const std::string& session_id,
+                                  const std::string& type,
                                   scoped_array<uint8> init_data,
                                   int init_data_length) {
   // In the current implementation of AesDecryptor, NeedKey is not used.
@@ -197,7 +198,8 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const uint8_t* init_data,
   DVLOG(1) << "GenerateKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.GenerateKeyRequest("", init_data, init_data_size);
+  // TODO(tomfinegan): Pass "type" here once ContentDecryptionModule is updated.
+  decryptor_.GenerateKeyRequest("", "", init_data, init_data_size);
 
   if (client_.status() != Client::kKeyMessage)
     return cdm::kSessionError;

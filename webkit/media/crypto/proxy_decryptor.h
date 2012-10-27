@@ -54,6 +54,7 @@ class ProxyDecryptor : public media::Decryptor {
 
   // media::Decryptor implementation.
   virtual bool GenerateKeyRequest(const std::string& key_system,
+                                  const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
   virtual void AddKey(const std::string& key_system,

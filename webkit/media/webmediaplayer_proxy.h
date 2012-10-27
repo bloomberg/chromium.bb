@@ -85,6 +85,7 @@ class WebMediaPlayerProxy
                           const std::string& default_url) OVERRIDE;
   virtual void NeedKey(const std::string& key_system,
                        const std::string& session_id,
+                       const std::string& type,
                        scoped_array<uint8> init_data,
                        int init_data_size) OVERRIDE;
 
@@ -115,6 +116,7 @@ class WebMediaPlayerProxy
   // Notify |webmediaplayer_| that a key is needed for decryption.
   void NeedKeyTask(const std::string& key_system,
                    const std::string& session_id,
+                   const std::string& type,
                    scoped_array<uint8> init_data,
                    int init_data_size);
 
