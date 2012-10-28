@@ -108,9 +108,9 @@ bool GpuChannelHost::Send(IPC::Message* message) {
   return false;
 }
 
-CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
+CommandBufferProxyImpl* GpuChannelHost::CreateViewCommandBuffer(
     int32 surface_id,
-    CommandBufferProxy* share_group,
+    CommandBufferProxyImpl* share_group,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     const GURL& active_url,
@@ -147,9 +147,9 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 #endif
 }
 
-CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
+CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
     const gfx::Size& size,
-    CommandBufferProxy* share_group,
+    CommandBufferProxyImpl* share_group,
     const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     const GURL& active_url,
@@ -201,7 +201,7 @@ GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
 }
 
 void GpuChannelHost::DestroyCommandBuffer(
-    CommandBufferProxy* command_buffer) {
+    CommandBufferProxyImpl* command_buffer) {
   TRACE_EVENT0("gpu", "GpuChannelHost::DestroyCommandBuffer");
 
 #if defined(ENABLE_GPU)

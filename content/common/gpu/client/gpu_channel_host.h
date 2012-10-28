@@ -27,7 +27,6 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gpu_preference.h"
 
-class CommandBufferProxy;
 class GURL;
 class MessageLoop;
 class TransportTextureService;
@@ -113,18 +112,18 @@ class GpuChannelHost : public IPC::Sender,
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Create and connect to a command buffer in the GPU process.
-  CommandBufferProxy* CreateViewCommandBuffer(
+  CommandBufferProxyImpl* CreateViewCommandBuffer(
       int32 surface_id,
-      CommandBufferProxy* share_group,
+      CommandBufferProxyImpl* share_group,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference);
 
   // Create and connect to a command buffer in the GPU process.
-  CommandBufferProxy* CreateOffscreenCommandBuffer(
+  CommandBufferProxyImpl* CreateOffscreenCommandBuffer(
       const gfx::Size& size,
-      CommandBufferProxy* share_group,
+      CommandBufferProxyImpl* share_group,
       const std::string& allowed_extensions,
       const std::vector<int32>& attribs,
       const GURL& active_url,
@@ -138,7 +137,7 @@ class GpuChannelHost : public IPC::Sender,
       media::VideoDecodeAccelerator::Client* client);
 
   // Destroy a command buffer created by this channel.
-  void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
+  void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);
 
   // Collect rendering stats from GPU process.
   bool CollectRenderingStatsForSurface(

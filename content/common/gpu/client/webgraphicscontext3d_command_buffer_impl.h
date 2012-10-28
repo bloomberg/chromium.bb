@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
@@ -23,7 +24,6 @@
 #define FLIP_FRAMEBUFFER_VERTICALLY
 #endif
 
-class CommandBufferProxy;
 namespace gpu {
 
 class TransferBuffer;
@@ -81,7 +81,7 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual ~WebGraphicsContext3DCommandBufferImpl();
 
   void InitializeWithCommandBuffer(
-      CommandBufferProxy* command_buffer,
+      CommandBufferProxyImpl* command_buffer,
       const Attributes& attributes,
       bool bind_generates_resources);
 
@@ -99,7 +99,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // Gets the context ID (relative to the channel).
   int GetContextID();
 
-  CommandBufferProxy* GetCommandBufferProxy() { return command_buffer_; }
+  CommandBufferProxyImpl* GetCommandBufferProxy() { return command_buffer_; }
 
   gpu::gles2::GLES2Implementation* GetImplementation() { return gl_; }
 
@@ -719,7 +719,7 @@ class WebGraphicsContext3DCommandBufferImpl
   bool initialized_;
   WebGraphicsContext3DCommandBufferImpl* parent_;
   uint32 parent_texture_id_;
-  CommandBufferProxy* command_buffer_;
+  CommandBufferProxyImpl* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
   gpu::TransferBuffer* transfer_buffer_;
   gpu::gles2::GLES2Implementation* gl_;

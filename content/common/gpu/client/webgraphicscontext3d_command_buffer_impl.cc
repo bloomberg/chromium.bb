@@ -170,7 +170,7 @@ WebGraphicsContext3DCommandBufferImpl::
 }
 
 void WebGraphicsContext3DCommandBufferImpl::InitializeWithCommandBuffer(
-    CommandBufferProxy* command_buffer,
+    CommandBufferProxyImpl* command_buffer,
     const WebGraphicsContext3D::Attributes& attributes,
     bool bind_generates_resources) {
   DCHECK(command_buffer);
@@ -278,7 +278,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   // for our share group isn't deleted.
   // (There's also a lock in our destructor.)
   base::AutoLock lock(g_all_shared_contexts_lock.Get());
-  CommandBufferProxy* share_group = NULL;
+  CommandBufferProxyImpl* share_group = NULL;
   if (attributes_.shareResources) {
     WebGraphicsContext3DCommandBufferImpl* share_group_context =
         g_all_shared_contexts.Pointer()->empty() ?

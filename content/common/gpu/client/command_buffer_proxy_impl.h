@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ipc/ipc_listener.h"
@@ -31,7 +32,6 @@ class SharedMemory;
 
 namespace content {
 class GpuChannelHost;
-struct GpuMemoryAllocationForRenderer;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
@@ -63,22 +63,9 @@ class CommandBufferProxyImpl
   // CommandBufferProxy implementation:
   virtual int GetRouteID() const OVERRIDE;
   virtual bool Echo(const base::Closure& callback) OVERRIDE;
-  virtual bool SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual bool DiscardBackbuffer() OVERRIDE;
-  virtual bool EnsureBackbuffer() OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
-  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
-  virtual bool SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) OVERRIDE;
-  virtual void SetMemoryAllocationChangedCallback(
-      const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
-          callback) OVERRIDE;
   virtual bool SetParent(CommandBufferProxy* parent_command_buffer,
                          uint32 parent_texture_id) OVERRIDE;
   virtual void SetChannelErrorCallback(const base::Closure& callback) OVERRIDE;
-  virtual void SetNotifyRepaintTask(const base::Closure& callback) OVERRIDE;
-  virtual void SetOnConsoleMessageCallback(
-      const GpuConsoleMessageCallback& callback) OVERRIDE;
 
   // CommandBuffer implementation:
   virtual bool Initialize() OVERRIDE;
@@ -98,6 +85,39 @@ class CommandBufferProxyImpl
   virtual void SetParseError(gpu::error::Error error) OVERRIDE;
   virtual void SetContextLostReason(
       gpu::error::ContextLostReason reason) OVERRIDE;
+
+  void SetMemoryAllocationChangedCallback(
+      const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
+          callback);
+
+  bool DiscardBackbuffer();
+  bool EnsureBackbuffer();
+
+  // Inserts a sync point, returning its ID. This is handled on the IO thread of
+  // the GPU process, and so should be relatively fast, but its effect is
+  // ordered wrt other messages (in particular, Flush). Sync point IDs are
+  // global and can be used for cross-channel synchronization.
+  uint32 InsertSyncPoint();
+
+  // Makes this command buffer wait on a sync point. This command buffer will be
+  // unscheduled until the command buffer that inserted that sync point reaches
+  // it, or gets destroyed.
+  void WaitSyncPoint(uint32);
+
+  // Makes this command buffer invoke a task when a sync point is reached, or
+  // the command buffer that inserted that sync point is destroyed.
+  bool SignalSyncPoint(uint32 sync_point,
+                       const base::Closure& callback);
+
+  // Set a task that will be invoked the next time the window becomes invalid
+  // and needs to be repainted. Takes ownership of task.
+  void SetNotifyRepaintTask(const base::Closure& callback);
+
+  // Sends an IPC message with the new state of surface visibility.
+  bool SetSurfaceVisible(bool visible);
+
+  void SetOnConsoleMessageCallback(
+      const GpuConsoleMessageCallback& callback);
 
   // TODO(apatrick): this is a temporary optimization while skia is calling
   // ContentGLContext::MakeCurrent prior to every GL call. It saves returning 6

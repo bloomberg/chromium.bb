@@ -32,22 +32,9 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
   // CommandBufferProxy implementation:
   virtual int GetRouteID() const OVERRIDE;
   virtual bool Echo(const base::Closure& callback) OVERRIDE;
-  virtual bool SetSurfaceVisible(bool visible) OVERRIDE;
-  virtual bool DiscardBackbuffer() OVERRIDE;
-  virtual bool EnsureBackbuffer() OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
-  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
-  virtual bool SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) OVERRIDE;
-  virtual void SetMemoryAllocationChangedCallback(
-      const base::Callback<void(
-        const content::GpuMemoryAllocationForRenderer&)>& callback) OVERRIDE;
   virtual bool SetParent(CommandBufferProxy* parent_command_buffer,
                          uint32 parent_texture_id) OVERRIDE;
   virtual void SetChannelErrorCallback(const base::Closure& callback) OVERRIDE;
-  virtual void SetNotifyRepaintTask(const base::Closure& callback) OVERRIDE;
-  virtual void SetOnConsoleMessageCallback(
-      const GpuConsoleMessageCallback& callback) OVERRIDE;
 
   // gpu::CommandBuffer implementation:
   virtual bool Initialize();

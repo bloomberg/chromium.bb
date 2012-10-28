@@ -102,7 +102,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
     attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
   }
 
-  CommandBufferProxy* share_buffer = NULL;
+  CommandBufferProxyImpl* share_buffer = NULL;
   if (share_context) {
     PlatformContext3DImpl* share_impl =
         static_cast<PlatformContext3DImpl*>(share_context);
@@ -144,7 +144,7 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
   parent_gles2->helper()->CommandBufferHelper::Finish();
   parent_texture_id_ = parent_gles2->MakeTextureId();
 
-  CommandBufferProxy* parent_command_buffer =
+  CommandBufferProxyImpl* parent_command_buffer =
       parent_context_->GetCommandBufferProxy();
   if (!command_buffer_->SetParent(parent_command_buffer, parent_texture_id_))
     return false;
@@ -178,7 +178,7 @@ void PlatformContext3DImpl::SetParentContext(
   parent_gles2->helper()->CommandBufferHelper::Flush();
   parent_texture_id_ = parent_gles2->MakeTextureId();
 
-  CommandBufferProxy* parent_command_buffer =
+  CommandBufferProxyImpl* parent_command_buffer =
       parent_context_->GetCommandBufferProxy();
   command_buffer_->SetParent(parent_command_buffer, parent_texture_id_);
 }
