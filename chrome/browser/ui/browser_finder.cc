@@ -15,8 +15,6 @@
 
 using content::WebContents;
 
-namespace browser {
-
 namespace {
 
 // TODO(mad) eventually move this to host_desktop_type.h.
@@ -127,6 +125,8 @@ size_t GetBrowserCountImpl(Profile* profile,
 
 }  // namespace
 
+namespace browser {
+
 Browser* FindTabbedBrowser(Profile* profile,
                            bool match_original_profiles) {
   return FindTabbedBrowser(profile, match_original_profiles,
@@ -210,6 +210,10 @@ Browser* FindLastActiveWithHostDesktopType(chrome::HostDesktopType type) {
   return NULL;
 }
 
+}  // namespace browser
+
+namespace chrome {
+
 size_t GetBrowserCount(Profile* profile) {
   return GetBrowserCountImpl(profile, kDefaultHostDesktopType, kMatchAny);
 }
@@ -218,4 +222,4 @@ size_t GetTabbedBrowserCount(Profile* profile) {
   return GetBrowserCountImpl(profile, kDefaultHostDesktopType, kMatchTabbed);
 }
 
-}  // namespace browser
+}  // namespace chrome

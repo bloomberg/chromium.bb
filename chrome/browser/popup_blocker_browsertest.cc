@@ -68,7 +68,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser, url);
     observer.Wait();
 
-    ASSERT_EQ(2u, browser::GetBrowserCount(browser->profile()));
+    ASSERT_EQ(2u, chrome::GetBrowserCount(browser->profile()));
 
     std::vector<WebContents*> blocked_contents = GetBlockedContents(browser);
     ASSERT_TRUE(blocked_contents.empty());
@@ -81,7 +81,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     // If the popup blocker blocked the blank post, there should be only one
     // tab in only one browser window and the URL of current tab must be equal
     // to the original URL.
-    EXPECT_EQ(1u, browser::GetBrowserCount(browser->profile()));
+    EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile()));
     EXPECT_EQ(1, browser->tab_count());
     WebContents* web_contents = chrome::GetActiveWebContents(browser);
     EXPECT_EQ(url, web_contents->GetURL());

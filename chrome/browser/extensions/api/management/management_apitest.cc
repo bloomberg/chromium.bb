@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ASSERT_FALSE(HasFatalFailure());  // Stop the test if any ASSERT failed.
 
   // Find the app's browser.  Check that it is a popup.
-  ASSERT_EQ(2u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
   Browser* app_browser = FindOtherBrowser(browser());
   ASSERT_TRUE(app_browser->is_type_popup());
   ASSERT_TRUE(app_browser->is_app());
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
 
   // Unload the extension.
   UninstallExtension(app_id);
-  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_FALSE(service->GetExtensionById(app_id, true));
 
   // Set a pref indicating that the user wants to launch in a regular tab.
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
 
   // Find the app's browser.  Apps that should load in a panel ignore
   // prefs, so we should still see the launch in a popup.
-  ASSERT_EQ(2u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
   app_browser = FindOtherBrowser(browser());
   ASSERT_TRUE(app_browser->is_type_popup());
   ASSERT_TRUE(app_browser->is_app());
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
 
   // Code below assumes that the test starts with a single browser window
   // hosting one tab.
-  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_EQ(1, browser()->tab_count());
 
   // Load an app with app.launch.container = "tab".
@@ -226,12 +226,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
   ASSERT_FALSE(HasFatalFailure());
 
   // Check that the app opened in a new tab of the existing browser.
-  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_EQ(2, browser()->tab_count());
 
   // Unload the extension.
   UninstallExtension(app_id);
-  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_FALSE(service->GetExtensionById(app_id, true));
 
   // Set a pref indicating that the user wants to launch in a window.
@@ -248,12 +248,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
 #if defined(OS_MACOSX)
   // App windows are not yet implemented on mac os.  We should fall back
   // to a normal tab.
-  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_EQ(2, browser()->tab_count());
 #else
   // Find the app's browser.  Opening in a new window will create
   // a new browser.
-  ASSERT_EQ(2u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
   Browser* app_browser = FindOtherBrowser(browser());
   ASSERT_TRUE(app_browser->is_app());
   ASSERT_FALSE(app_browser->is_type_panel());

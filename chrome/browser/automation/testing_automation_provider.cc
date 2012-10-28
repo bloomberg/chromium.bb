@@ -618,7 +618,7 @@ void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {
 }
 
 void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
-  *window_count = static_cast<int>(browser::GetTabbedBrowserCount(profile_));
+  *window_count = static_cast<int>(chrome::GetTabbedBrowserCount(profile_));
 }
 
 void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {

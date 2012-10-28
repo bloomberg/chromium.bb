@@ -111,7 +111,7 @@ class AppApiTest : public ExtensionApiTest {
 
     // Opening tabs with window.open should keep the page in the opener's
     // process.
-    ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+    ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
     OpenWindow(tab1, base_url.Resolve("path1/empty.html"), true, NULL);
     LOG(INFO) << "WindowOpenHelper 1.";
     OpenWindow(tab2, base_url.Resolve("path2/empty.html"), true, NULL);
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
             chrome::GetWebContentsAt(browser(), 3)->GetRenderProcessHost());
 
   // Now let's do the same using window.open. The same should happen.
-  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   OpenWindow(tab, base_url.Resolve("path1/empty.html"), true, NULL);
   LOG(INFO) << "WindowOpenHelper 1.";
   OpenWindow(tab, base_url.Resolve("path2/empty.html"), true, NULL);
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
             chrome::GetWebContentsAt(browser(), 2)->GetRenderProcessHost());
 
   // Now let's do the same using window.open. The same should happen.
-  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   OpenWindow(tab, base_url.Resolve("path1/empty.html"), true, NULL);
   OpenWindow(tab, base_url.Resolve("path2/empty.html"), true, NULL);
 

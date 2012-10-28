@@ -11,7 +11,6 @@
 class Profile;
 
 namespace contents {
-class NavigationController;
 class WebContents;
 }
 
@@ -76,12 +75,16 @@ Browser* FindLastActiveWithProfile(Profile* profile);
 // BrowserList::GetLastActive().
 Browser* FindLastActiveWithHostDesktopType(chrome::HostDesktopType type);
 
+}  // namespace browser
+
+namespace chrome {
+
 // Returns the number of browsers with the Profile |profile|.
 size_t GetBrowserCount(Profile* profile);
 
 // Returns the number of tabbed browsers with the Profile |profile|.
 size_t GetTabbedBrowserCount(Profile* profile);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_FINDER_H_

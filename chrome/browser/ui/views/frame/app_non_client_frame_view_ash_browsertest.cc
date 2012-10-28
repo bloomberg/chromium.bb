@@ -146,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, ClickClose) {
       content::Source<Browser>(app_browser()));
   eg.ClickLeftButton();
   signal.Wait();
-  EXPECT_EQ(1,
-            static_cast<int>(browser::GetBrowserCount(browser()->profile())));
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
 
 // Ensure that closing a maximized app with Ctrl-W does not crash the
@@ -157,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, KeyboardClose) {
   aura::test::EventGenerator eg(root_window);
 
   // Base browser and app browser.
-  EXPECT_EQ(2u, browser::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 
   // Send Control-W.
   content::WindowedNotificationObserver signal(
@@ -168,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, KeyboardClose) {
   signal.Wait();
 
   // App browser is closed.
-  EXPECT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
 
 // Ensure that snapping left with Alt-[ closes the control window.
