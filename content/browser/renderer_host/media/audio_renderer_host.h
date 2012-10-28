@@ -52,46 +52,23 @@
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/simple_sources.h"
 
-namespace content {
-class MediaObserver;
-class ResourceContext;
-}  // namespace content
-
 namespace media {
 class AudioManager;
 class AudioParameters;
 }
 
+namespace content {
+
+class MediaObserver;
+class ResourceContext;
+
 class CONTENT_EXPORT AudioRendererHost
-    : public content::BrowserMessageFilter,
+    : public BrowserMessageFilter,
       public media::AudioOutputController::EventHandler {
  public:
-  struct AudioEntry {
-    AudioEntry();
-    ~AudioEntry();
-
-    // The AudioOutputController that manages the audio stream.
-    scoped_refptr<media::AudioOutputController> controller;
-
-    // The audio stream ID.
-    int stream_id;
-
-    // Shared memory for transmission of the audio data.
-    base::SharedMemory shared_memory;
-
-    // The synchronous reader to be used by the controller. We have the
-    // ownership of the reader.
-    scoped_ptr<media::AudioOutputController::SyncReader> reader;
-
-    // Set to true after we called Close() for the controller.
-    bool pending_close;
-  };
-
-  typedef std::map<int, AudioEntry*> AudioEntryMap;
-
   // Called from UI thread from the owner of this object.
   AudioRendererHost(media::AudioManager* audio_manager,
-                    content::MediaObserver* media_observer);
+                    MediaObserver* media_observer);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -108,11 +85,14 @@ class CONTENT_EXPORT AudioRendererHost
 
  private:
   friend class AudioRendererHostTest;
-  friend class content::BrowserThread;
+  friend class BrowserThread;
   friend class base::DeleteHelper<AudioRendererHost>;
   friend class MockAudioRendererHost;
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, CreateMockStream);
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, MockStreamDataConversation);
+
+  struct AudioEntry;
+  typedef std::map<int, AudioEntry*> AudioEntryMap;
 
   virtual ~AudioRendererHost();
 
@@ -178,13 +158,17 @@ class CONTENT_EXPORT AudioRendererHost
   // event is received.
   AudioEntry* LookupByController(media::AudioOutputController* controller);
 
+  media::AudioOutputController* LookupControllerByIdForTesting(int stream_id);
+
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
 
   media::AudioManager* audio_manager_;
-  content::MediaObserver* media_observer_;
+  MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_RENDERER_HOST_H_

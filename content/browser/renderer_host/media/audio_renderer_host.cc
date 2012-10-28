@@ -16,9 +16,30 @@
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 
-using content::BrowserMessageFilter;
-using content::BrowserThread;
 using media::AudioBus;
+
+namespace content {
+
+struct AudioRendererHost::AudioEntry {
+  AudioEntry();
+  ~AudioEntry();
+
+  // The AudioOutputController that manages the audio stream.
+  scoped_refptr<media::AudioOutputController> controller;
+
+  // The audio stream ID.
+  int stream_id;
+
+  // Shared memory for transmission of the audio data.
+  base::SharedMemory shared_memory;
+
+  // The synchronous reader to be used by the controller. We have the
+  // ownership of the reader.
+  scoped_ptr<media::AudioOutputController::SyncReader> reader;
+
+  // Set to true after we called Close() for the controller.
+  bool pending_close;
+};
 
 AudioRendererHost::AudioEntry::AudioEntry()
     : stream_id(0),
@@ -30,8 +51,7 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
 AudioRendererHost::AudioRendererHost(
-    media::AudioManager* audio_manager,
-    content::MediaObserver* media_observer)
+    media::AudioManager* audio_manager, MediaObserver* media_observer)
     : audio_manager_(audio_manager),
       media_observer_(media_observer) {
 }
@@ -404,3 +424,11 @@ AudioRendererHost::AudioEntry* AudioRendererHost::LookupByController(
   }
   return NULL;
 }
+
+media::AudioOutputController* AudioRendererHost::LookupControllerByIdForTesting(
+    int stream_id) {
+  AudioEntry* const entry = LookupById(stream_id);
+  return entry ? entry->controller : NULL;
+}
+
+}  // namespace content

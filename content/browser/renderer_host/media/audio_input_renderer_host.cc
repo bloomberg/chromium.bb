@@ -13,8 +13,28 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/audio_messages.h"
 
-using content::BrowserMessageFilter;
-using content::BrowserThread;
+namespace content {
+
+struct AudioInputRendererHost::AudioEntry {
+  AudioEntry();
+  ~AudioEntry();
+
+  // The AudioInputController that manages the audio input stream.
+  scoped_refptr<media::AudioInputController> controller;
+
+  // The audio input stream ID in the render view.
+  int stream_id;
+
+  // Shared memory for transmission of the audio data.
+  base::SharedMemory shared_memory;
+
+  // The synchronous writer to be used by the controller. We have the
+  // ownership of the writer.
+  scoped_ptr<media::AudioInputController::SyncWriter> writer;
+
+  // Set to true after we called Close() for the controller.
+  bool pending_close;
+};
 
 AudioInputRendererHost::AudioEntry::AudioEntry()
     : stream_id(0),
@@ -407,3 +427,5 @@ int AudioInputRendererHost::LookupSessionById(int stream_id) {
   }
   return 0;
 }
+
+}  // namespace content

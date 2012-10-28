@@ -18,9 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/common_types.h"
 
-class AudioInputRendererHost;
-class AudioRendererHost;
-
 namespace media {
 class AudioManager;
 }
@@ -46,6 +43,9 @@ class ScopedCOMInitializer;
 #endif
 
 namespace content {
+
+class AudioInputRendererHost;
+class AudioRendererHost;
 class ContentRendererClient;
 class MockResourceContext;
 class RenderThreadImpl;

@@ -72,32 +72,13 @@ namespace media_stream {
 class MediaStreamManager;
 }
 
+namespace content {
+
 class CONTENT_EXPORT AudioInputRendererHost
-    : public content::BrowserMessageFilter,
+    : public BrowserMessageFilter,
       public media::AudioInputController::EventHandler,
       public media_stream::AudioInputDeviceManagerEventHandler {
  public:
-  struct AudioEntry {
-    AudioEntry();
-    ~AudioEntry();
-
-    // The AudioInputController that manages the audio input stream.
-    scoped_refptr<media::AudioInputController> controller;
-
-    // The audio input stream ID in the render view.
-    int stream_id;
-
-    // Shared memory for transmission of the audio data.
-    base::SharedMemory shared_memory;
-
-    // The synchronous writer to be used by the controller. We have the
-    // ownership of the writer.
-    scoped_ptr<media::AudioInputController::SyncWriter> writer;
-
-    // Set to true after we called Close() for the controller.
-    bool pending_close;
-  };
-
   // Called from UI thread from the owner of this object.
   AudioInputRendererHost(
       media::AudioManager* audio_manager,
@@ -125,8 +106,12 @@ class CONTENT_EXPORT AudioInputRendererHost
 
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
-  friend class content::BrowserThread;
+  friend class BrowserThread;
   friend class base::DeleteHelper<AudioInputRendererHost>;
+
+  struct AudioEntry;
+  typedef std::map<int, AudioEntry*> AudioEntryMap;
+  typedef std::map<int, int> SessionEntryMap;
 
   virtual ~AudioInputRendererHost();
 
@@ -203,14 +188,14 @@ class CONTENT_EXPORT AudioInputRendererHost
   media_stream::MediaStreamManager* media_stream_manager_;
 
   // A map of stream IDs to audio sources.
-  typedef std::map<int, AudioEntry*> AudioEntryMap;
   AudioEntryMap audio_entries_;
 
   // A map of session IDs to audio session sources.
-  typedef std::map<int, int> SessionEntryMap;
   SessionEntryMap session_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_RENDERER_HOST_H_
