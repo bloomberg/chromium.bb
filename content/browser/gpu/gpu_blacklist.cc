@@ -14,10 +14,6 @@
 #include "content/browser/gpu/gpu_util.h"
 #include "content/public/common/gpu_info.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif  // OS_MACOSX
-
 using content::GpuFeatureType;
 using content::GpuSwitchingOption;
 
@@ -1012,8 +1008,6 @@ GpuBlacklist::GpuBlacklistEntry::StringToMultiGpuCategory(
 
 bool GpuBlacklist::GpuBlacklistEntry::Contains(
     OsType os_type, const std::string& os_version,
-    const std::string& machine_model_name,
-    const std::string& machine_model_version,
     const content::GPUInfo& gpu_info) const {
   DCHECK(os_type != kOsAny);
   if (os_info_.get() != NULL && !os_info_->Contains(os_type, os_version))
@@ -1082,9 +1076,13 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
       (gpu_info.performance_stats.overall == 0.0 ||
        !perf_overall_info_->Contains(gpu_info.performance_stats.overall)))
     return false;
-  if (machine_model_info_.get() != NULL &&
-      !machine_model_info_->Contains(machine_model_name, machine_model_version))
-    return false;
+  if (machine_model_info_.get() != NULL) {
+    std::vector<std::string> name_version;
+    base::SplitString(gpu_info.machine_model, ' ', &name_version);
+    if (name_version.size() == 2 &&
+        !machine_model_info_->Contains(name_version[0], name_version[1]))
+      return false;
+  }
   if (gpu_count_info_.get() != NULL &&
       !gpu_count_info_->Contains(gpu_info.secondary_gpus.size() + 1))
     return false;
@@ -1095,8 +1093,7 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
   }
 
   for (size_t i = 0; i < exceptions_.size(); ++i) {
-    if (exceptions_[i]->Contains(os_type, os_version, machine_model_name,
-                                 machine_model_version, gpu_info) &&
+    if (exceptions_[i]->Contains(os_type, os_version, gpu_info) &&
         !exceptions_[i]->NeedsMoreInfo(gpu_info))
       return false;
   }
@@ -1266,10 +1263,8 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
   if (!ProcessVersionString(os_version, '.', &pieces))
     os_version = "0";
 
-  CollectCurrentMachineModelInfo();
   for (size_t i = 0; i < blacklist_.size(); ++i) {
-    if (blacklist_[i]->Contains(os, os_version, current_machine_model_name_,
-                                current_machine_model_version_, gpu_info)) {
+    if (blacklist_[i]->Contains(os, os_version, gpu_info)) {
       if (!blacklist_[i]->disabled()) {
         bool not_final = blacklist_[i]->NeedsMoreInfo(gpu_info);
         if (not_final)
@@ -1391,29 +1386,6 @@ GpuBlacklist::IsEntrySupportedByCurrentBrowserVersion(
     return kUnsupported;
   }
   return kSupported;
-}
-
-void GpuBlacklist::CollectCurrentMachineModelInfo() {
-  if (!current_machine_model_name_.empty())
-    return;
-  std::string model_name;
-  int32 model_major = 0, model_minor = 0;
-#if defined(OS_MACOSX)
-  base::mac::ParseModelIdentifier(base::mac::GetModelIdentifier(),
-                                  &model_name, &model_major, &model_minor);
-#endif  // OS_MACOSX
-  current_machine_model_name_ = model_name;
-  current_machine_model_version_ =
-      base::IntToString(model_major) + "." + base::IntToString(model_minor);
-}
-
-void GpuBlacklist::SetCurrentMachineModelInfoForTesting(
-    const std::string& model_name, const std::string& model_version) {
-  current_machine_model_name_ = model_name;
-  std::vector<std::string> pieces;
-  bool valid = ProcessVersionString(model_version, '.', &pieces);
-  DCHECK(valid);
-  current_machine_model_version_ = model_version;
 }
 
 // static

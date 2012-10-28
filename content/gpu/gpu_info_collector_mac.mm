@@ -8,9 +8,12 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -168,6 +171,14 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
 
 bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+
+  std::string model_name;
+  int32 model_major = 0, model_minor = 0;
+  base::mac::ParseModelIdentifier(base::mac::GetModelIdentifier(),
+                                  &model_name, &model_major, &model_minor);
+  ReplaceChars(model_name, " ", "_", &gpu_info->machine_model);
+  gpu_info->machine_model += " " + base::IntToString(model_major) +
+                             "." + base::IntToString(model_minor);
 
   return CollectPCIVideoCardInfo(gpu_info);
 }

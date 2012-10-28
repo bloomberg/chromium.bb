@@ -151,6 +151,8 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
                                              gpu_info.pixel_shader_version));
   basic_info->Append(NewDescriptionValuePair("Vertex shader version",
                                              gpu_info.vertex_shader_version));
+  basic_info->Append(NewDescriptionValuePair("Machine model",
+                                             gpu_info.machine_model));
   basic_info->Append(NewDescriptionValuePair("GL version",
                                              gpu_info.gl_version));
   basic_info->Append(NewDescriptionValuePair("GL_VENDOR",

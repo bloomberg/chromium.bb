@@ -76,6 +76,10 @@ struct CONTENT_EXPORT GPUInfo {
   // The version of the vertex shader used by the gpu.
   std::string vertex_shader_version;
 
+  // The machine model identifier with format "name major.minor".
+  // Name should not contain any whitespaces.
+  std::string machine_model;
+
   // The version of OpenGL we are using.
   // TODO(zmo): should be able to tell if it's GL or GLES.
   std::string gl_version;

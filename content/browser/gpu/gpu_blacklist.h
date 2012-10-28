@@ -290,10 +290,7 @@ class CONTENT_EXPORT GpuBlacklist {
 
     // Determines if a given os/gc/machine_model/driver is included in the
     // Entry set.
-    bool Contains(OsType os_type,
-                  const std::string& os_version,
-                  const std::string& machine_model_name,
-                  const std::string& machine_model_version,
+    bool Contains(OsType os_type, const std::string& os_version,
                   const content::GPUInfo& gpu_info) const;
 
     // Determines whether we needs more gpu info to make the blacklisting
@@ -471,12 +468,6 @@ class CONTENT_EXPORT GpuBlacklist {
 
   static NumericOp StringToNumericOp(const std::string& op);
 
-  // Collect the current machine model info if it's not already available.
-  void CollectCurrentMachineModelInfo();
-
-  void SetCurrentMachineModelInfoForTesting(const std::string& name,
-                                            const std::string& version);
-
   std::string version_;
   std::vector<ScopedGpuBlacklistEntry> blacklist_;
 
@@ -492,9 +483,6 @@ class CONTENT_EXPORT GpuBlacklist {
   bool contains_unknown_fields_;
 
   bool needs_more_info_;
-
-  std::string current_machine_model_name_;
-  std::string current_machine_model_version_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklist);
 };

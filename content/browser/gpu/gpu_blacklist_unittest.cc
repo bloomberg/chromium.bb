@@ -34,8 +34,6 @@ class GpuBlacklistTest : public testing::Test {
 
   GpuBlacklist* Create() {
     GpuBlacklist* rt = new GpuBlacklist();
-    // Set up machine model to avoid triggering collection code on Mac.
-    rt->SetCurrentMachineModelInfoForTesting("Test", "1.0");
     return rt;
   }
 
@@ -46,6 +44,7 @@ class GpuBlacklistTest : public testing::Test {
     gpu_info_.driver_vendor = "NVIDIA";
     gpu_info_.driver_version = "1.6.18";
     gpu_info_.driver_date = "7-14-2009";
+    gpu_info_.machine_model = "MacBookPro 7.1";
     gpu_info_.gl_vendor = "NVIDIA Corporation";
     gpu_info_.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
     gpu_info_.performance_stats.graphics = 5.0;
@@ -1296,8 +1295,6 @@ TEST_F(GpuBlacklistTest, DualGpuModel) {
       "}";
   scoped_ptr<GpuBlacklist> blacklist(Create());
   EXPECT_TRUE(blacklist->LoadGpuBlacklist(model_json, GpuBlacklist::kAllOs));
-  // Setup model name and version.
-  blacklist->SetCurrentMachineModelInfoForTesting("MacBookPro", "7.1");
   // Insert a second GPU.
   content::GPUInfo gpu_info;
   gpu_info.secondary_gpus.push_back(content::GPUInfo::GPUDevice());
