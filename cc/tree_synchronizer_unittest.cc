@@ -29,10 +29,10 @@ public:
     virtual ~MockLayerImpl()
     {
         if (m_layerImplDestructionList)
-            m_layerImplDestructionList->append(id());
+            m_layerImplDestructionList->push_back(id());
     }
 
-    void setLayerImplDestructionList(Vector<int>* list) { m_layerImplDestructionList = list; }
+    void setLayerImplDestructionList(std::vector<int>* list) { m_layerImplDestructionList = list; }
 
 private:
     MockLayerImpl(int layerId)
@@ -41,12 +41,12 @@ private:
     {
     }
 
-    Vector<int>* m_layerImplDestructionList;
+    std::vector<int>* m_layerImplDestructionList;
 };
 
 class MockLayer : public Layer {
 public:
-    static scoped_refptr<MockLayer> create(Vector<int>* layerImplDestructionList)
+    static scoped_refptr<MockLayer> create(std::vector<int>* layerImplDestructionList)
     {
         return make_scoped_refptr(new MockLayer(layerImplDestructionList));
     }
@@ -65,14 +65,14 @@ public:
     }
 
 private:
-    MockLayer(Vector<int>* layerImplDestructionList)
+    MockLayer(std::vector<int>* layerImplDestructionList)
         : Layer()
         , m_layerImplDestructionList(layerImplDestructionList)
     {
     }
     virtual ~MockLayer() { }
 
-    Vector<int>* m_layerImplDestructionList;
+    std::vector<int>* m_layerImplDestructionList;
 };
 
 class FakeLayerAnimationController : public LayerAnimationController {
@@ -159,7 +159,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeFromEmpty)
 TEST(TreeSynchronizerTest, syncSimpleTreeReusingLayers)
 {
     DebugScopedSetImplThread impl;
-    Vector<int> layerImplDestructionList;
+    std::vector<int> layerImplDestructionList;
 
     LayerTreeSettings settings;
     scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
@@ -189,7 +189,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeReusingLayers)
 TEST(TreeSynchronizerTest, syncSimpleTreeAndTrackStackingOrderChange)
 {
     DebugScopedSetImplThread impl;
-    Vector<int> layerImplDestructionList;
+    std::vector<int> layerImplDestructionList;
 
     LayerTreeSettings settings;
     scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
@@ -255,7 +255,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeAndProperties)
 TEST(TreeSynchronizerTest, reuseLayerImplsAfterStructuralChange)
 {
     DebugScopedSetImplThread impl;
-    Vector<int> layerImplDestructionList;
+    std::vector<int> layerImplDestructionList;
 
     LayerTreeSettings settings;
     scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
@@ -305,7 +305,7 @@ TEST(TreeSynchronizerTest, reuseLayerImplsAfterStructuralChange)
 TEST(TreeSynchronizerTest, syncSimpleTreeThenDestroy)
 {
     DebugScopedSetImplThread impl;
-    Vector<int> layerImplDestructionList;
+    std::vector<int> layerImplDestructionList;
 
     LayerTreeSettings settings;
     scoped_ptr<LayerTreeHostImpl> hostImpl = LayerTreeHostImpl::create(settings, 0);
@@ -330,9 +330,10 @@ TEST(TreeSynchronizerTest, syncSimpleTreeThenDestroy)
     expectTreesAreIdentical(newLayerTreeRoot.get(), layerImplTreeRoot.get(), hostImpl.get());
 
     ASSERT_EQ(3u, layerImplDestructionList.size());
-    EXPECT_TRUE(layerImplDestructionList.contains(oldTreeRootLayerId));
-    EXPECT_TRUE(layerImplDestructionList.contains(oldTreeFirstChildLayerId));
-    EXPECT_TRUE(layerImplDestructionList.contains(oldTreeSecondChildLayerId));
+
+    EXPECT_TRUE(std::find(layerImplDestructionList.begin(), layerImplDestructionList.end(), oldTreeRootLayerId) != layerImplDestructionList.end());
+    EXPECT_TRUE(std::find(layerImplDestructionList.begin(), layerImplDestructionList.end(), oldTreeFirstChildLayerId) != layerImplDestructionList.end());
+    EXPECT_TRUE(std::find(layerImplDestructionList.begin(), layerImplDestructionList.end(), oldTreeSecondChildLayerId) != layerImplDestructionList.end());
 }
 
 // Constructs+syncs a tree with mask, replica, and replica mask layers.
