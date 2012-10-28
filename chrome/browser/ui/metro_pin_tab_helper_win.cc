@@ -70,7 +70,7 @@ bool CreateSiteSpecificLogo(const gfx::ImageSkia& image,
   const int kCaptionHeight = 20;
   const double kBoxFade = 0.75;
   const int kColorMeanDarknessLimit = 100;
-  const int kColorMeanLightnessLimit = 100;
+  const int kColorMeanLightnessLimit = 650;
 
   if (image.isNull())
     return false;
