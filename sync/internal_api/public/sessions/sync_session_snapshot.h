@@ -43,8 +43,7 @@ class SyncSessionSnapshot {
       const SyncSourceInfo& source,
       bool notifications_enabled,
       size_t num_entries,
-      base::Time sync_start_time,
-      bool retry_scheduled);
+      base::Time sync_start_time);
   ~SyncSessionSnapshot();
 
   // Caller takes ownership of the returned dictionary.
@@ -69,7 +68,6 @@ class SyncSessionSnapshot {
   bool notifications_enabled() const;
   size_t num_entries() const;
   base::Time sync_start_time() const;
-  bool retry_scheduled() const;
 
   // Set iff this snapshot was not built using the default constructor.
   bool is_initialized() const;
@@ -89,7 +87,6 @@ class SyncSessionSnapshot {
   bool notifications_enabled_;
   size_t num_entries_;
   base::Time sync_start_time_;
-  bool retry_scheduled_;
 
   bool is_initialized_;
 };

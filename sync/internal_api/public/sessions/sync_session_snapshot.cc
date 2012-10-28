@@ -21,7 +21,6 @@ SyncSessionSnapshot::SyncSessionSnapshot()
       num_server_conflicts_(0),
       notifications_enabled_(false),
       num_entries_(0),
-      retry_scheduled_(false),
       is_initialized_(false) {
 }
 
@@ -39,8 +38,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     const SyncSourceInfo& source,
     bool notifications_enabled,
     size_t num_entries,
-    base::Time sync_start_time,
-    bool retry_scheduled)
+    base::Time sync_start_time)
     : model_neutral_state_(model_neutral_state),
       is_share_usable_(is_share_usable),
       initial_sync_ended_(initial_sync_ended),
@@ -55,7 +53,6 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       notifications_enabled_(notifications_enabled),
       num_entries_(num_entries),
       sync_start_time_(sync_start_time),
-      retry_scheduled_(retry_scheduled),
       is_initialized_(true) {
 }
 
@@ -166,10 +163,6 @@ size_t SyncSessionSnapshot::num_entries() const {
 
 base::Time SyncSessionSnapshot::sync_start_time() const {
   return sync_start_time_;
-}
-
-bool SyncSessionSnapshot::retry_scheduled() const {
-  return retry_scheduled_;
 }
 
 bool SyncSessionSnapshot::is_initialized() const {
