@@ -5,11 +5,11 @@
 #ifndef UI_GL_EGL_UTIL_H_
 #define UI_GL_EGL_UTIL_H_
 
-namespace gfx {
+namespace ui {
 
 // Returns the last EGL error as a string.
 const char* GetLastEGLErrorString();
 
-}  // namespace gfx
+}  // namespace ui
 
 #endif  // UI_GL_EGL_UTIL_H_

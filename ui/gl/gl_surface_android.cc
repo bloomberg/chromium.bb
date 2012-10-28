@@ -14,6 +14,8 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 
+using ui::GetLastEGLErrorString;
+
 namespace gfx {
 
 bool GLSurface::InitializeOneOffInternal() {

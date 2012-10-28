@@ -13,7 +13,7 @@
 // This needs to be after the EGL includes
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
+namespace ui {
 
 // Returns the last EGL error as a string.
 const char* GetLastEGLErrorString() {
@@ -50,4 +50,4 @@ const char* GetLastEGLErrorString() {
   }
 }
 
-}  // namespace gfx
+}  // namespace ui

@@ -23,6 +23,8 @@ extern "C" {
 }
 #endif
 
+using ui::GetLastEGLErrorString;
+
 namespace gfx {
 
 GLContextEGL::GLContextEGL(GLShareGroup* share_group)

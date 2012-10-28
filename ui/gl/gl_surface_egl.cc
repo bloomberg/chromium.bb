@@ -23,6 +23,8 @@ extern "C" {
 }
 #endif
 
+using ui::GetLastEGLErrorString;
+
 namespace gfx {
 
 namespace {
