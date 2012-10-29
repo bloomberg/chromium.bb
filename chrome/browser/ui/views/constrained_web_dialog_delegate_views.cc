@@ -135,12 +135,6 @@ class ConstrainedWebDialogDelegateViewViews
     views::WidgetDelegate::OnWidgetMove();
   }
 
-  virtual void OnWidgetMove() OVERRIDE {
-    GetWidget()->CenterWindow(
-        GetWidget()->non_client_view()->GetPreferredSize());
-    views::WidgetDelegate::OnWidgetMove();
-  }
-
   // views::WebView overrides.
   virtual bool AcceleratorPressed(
       const ui::Accelerator& accelerator) OVERRIDE {
