@@ -336,8 +336,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // When fingers change, we record the time
   stime_t changed_time_;
 
-  // When gesturing fingers move after change, we record the time
+  // When gesturing fingers move after change, we record the time.
   stime_t started_moving_time_;
+  // Record which fingers have started moving already.
+  set<short, kMaxFingers> moving_;
 
   // When different fingers are gesturing, we record the time
   stime_t gs_changed_time_;

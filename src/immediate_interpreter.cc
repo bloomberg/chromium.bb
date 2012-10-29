@@ -477,6 +477,7 @@ void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
   pointing_.clear();
   fingers_.clear();
   start_positions_.clear();
+  moving_.clear();
   changed_time_ = now;
 }
 
@@ -1496,8 +1497,9 @@ bool ImmediateInterpreter::PressureChangingSignificantly(
 void ImmediateInterpreter::UpdateStartedMovingTime(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
-  if (started_moving_time_ > changed_time_)
-    return;  // Already started moving
+  SetRemoveMissing(&moving_, gs_fingers);
+  if (moving_.size() == gs_fingers.size())
+    return;  // All fingers already started moving
   const float kMinDistSq =
       change_move_distance_.val_ * change_move_distance_.val_;
   for (set<short, kMaxGesturingFingers>::const_iterator
@@ -1511,11 +1513,15 @@ void ImmediateInterpreter::UpdateStartedMovingTime(
       Err("Missing start position!");
       continue;
     }
+    if (SetContainsValue(moving_, fs->tracking_id)) {
+      // This finger already moving
+      continue;
+    }
     const Point& start_position = start_positions_[*it];
     float dist_sq = DistSqXY(*fs, start_position.x_, start_position.y_);
     if (dist_sq > kMinDistSq) {
       started_moving_time_ = hwstate.timestamp;
-      return;
+      moving_.insert(fs->tracking_id);
     }
   }
 }
