@@ -20,18 +20,15 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-namespace content {
-struct SpeechRecognitionError;
-struct SpeechRecognitionResult;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
 
-namespace speech {
+namespace content {
 
 class AudioChunk;
+struct SpeechRecognitionError;
+struct SpeechRecognitionResult;
 
 // Implements a SpeechRecognitionEngine supporting continuous recognition by
 // means of interaction with Google streaming speech recognition webservice.
@@ -138,7 +135,7 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
   FSMState CloseDownstream(const FSMEventArgs& event_args);
   FSMState AbortSilently(const FSMEventArgs& event_args);
   FSMState AbortWithError(const FSMEventArgs& event_args);
-  FSMState Abort(content::SpeechRecognitionErrorCode error);
+  FSMState Abort(SpeechRecognitionErrorCode error);
   FSMState DoNothing(const FSMEventArgs& event_args);
   FSMState NotFeasible(const FSMEventArgs& event_args);
 
@@ -159,6 +156,6 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
   DISALLOW_COPY_AND_ASSIGN(GoogleStreamingRemoteEngine);
 };
 
-}  // namespace speech
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SPEECH_GOOGLE_STREAMING_REMOTE_ENGINE_H_

@@ -28,21 +28,11 @@
 #include "content/test/content_browser_test_utils.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
-using content::NavigationController;
-using content::SpeechRecognitionEventListener;
-using content::SpeechRecognitionSessionConfig;
-using content::SpeechRecognitionSessionContext;
-using content::WebContents;
-
-namespace speech {
-class FakeSpeechRecognitionManager;
-}
-
-namespace speech {
+namespace content {
 
 const char kTestResult[] = "Pictures of the moon";
 
-class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
+class FakeSpeechRecognitionManager : public SpeechRecognitionManager {
  public:
   FakeSpeechRecognitionManager()
       : session_id_(0),
@@ -74,7 +64,7 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
 
   // SpeechRecognitionManager methods.
   virtual int CreateSession(
-      const content::SpeechRecognitionSessionConfig& config) OVERRIDE {
+      const SpeechRecognitionSessionConfig& config) OVERRIDE {
     VLOG(1) << "FAKE CreateSession invoked.";
     EXPECT_EQ(0, session_id_);
     EXPECT_EQ(NULL, listener_);
@@ -120,7 +110,7 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
   }
 
   virtual void AbortAllSessionsForListener(
-      content::SpeechRecognitionEventListener* listener) OVERRIDE {
+      SpeechRecognitionEventListener* listener) OVERRIDE {
     VLOG(1) << "CancelAllRequestsWithDelegate invoked.";
     // listener_ is set to NULL if a fake result was received (see below), so
     // check that listener_ matches the incoming parameter only when there is
@@ -152,7 +142,7 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     return session_config_;
   }
 
-  virtual content::SpeechRecognitionSessionContext GetSessionContext(
+  virtual SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const OVERRIDE {
     EXPECT_EQ(session_id, session_id_);
     return session_ctx_;
@@ -163,8 +153,8 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     if (session_id_) {  // Do a check in case we were cancelled..
       VLOG(1) << "Setting fake recognition result.";
       listener_->OnAudioEnd(session_id_);
-      content::SpeechRecognitionResult results;
-      results.hypotheses.push_back(content::SpeechRecognitionHypothesis(
+      SpeechRecognitionResult results;
+      results.hypotheses.push_back(SpeechRecognitionHypothesis(
           ASCIIToUTF16(kTestResult), 1.0));
       listener_->OnRecognitionResult(session_id_, results);
       listener_->OnRecognitionEnd(session_id_);
@@ -184,7 +174,7 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
   base::WaitableEvent recognition_started_event_;
 };
 
-class SpeechRecognitionBrowserTest : public content::ContentBrowserTest {
+class SpeechRecognitionBrowserTest : public ContentBrowserTest {
  public:
   // ContentBrowserTest methods
   virtual void SetUpCommandLine(CommandLine* command_line) {
@@ -196,8 +186,8 @@ class SpeechRecognitionBrowserTest : public content::ContentBrowserTest {
     // The test page calculates the speech button's coordinate in the page on
     // load & sets that coordinate in the URL fragment. We send mouse down & up
     // events at that coordinate to trigger speech recognition.
-    GURL test_url = content::GetTestUrl("speech", filename);
-    content::NavigateToURL(shell(), test_url);
+    GURL test_url = GetTestUrl("speech", filename);
+    NavigateToURL(shell(), test_url);
 
     WebKit::WebMouseEvent mouse_event;
     mouse_event.type = WebKit::WebInputEvent::MouseDown;
@@ -207,9 +197,9 @@ class SpeechRecognitionBrowserTest : public content::ContentBrowserTest {
     mouse_event.clickCount = 1;
     WebContents* web_contents = shell()->web_contents();
 
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<NavigationController>(&web_contents->GetController()));
+    WindowedNotificationObserver observer(
+        NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&web_contents->GetController()));
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
     mouse_event.type = WebKit::WebInputEvent::MouseUp;
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
@@ -250,10 +240,10 @@ class SpeechRecognitionBrowserTest : public content::ContentBrowserTest {
 
   // This is used by the static |fakeManager|, and it is a pointer rather than a
   // direct instance per the style guide.
-  static content::SpeechRecognitionManager* speech_recognition_manager_;
+  static SpeechRecognitionManager* speech_recognition_manager_;
 };
 
-content::SpeechRecognitionManager*
+SpeechRecognitionManager*
     SpeechRecognitionBrowserTest::speech_recognition_manager_ = NULL;
 
 // TODO(satish): Once this flakiness has been fixed, add a second test here to
@@ -288,9 +278,9 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, DISABLED_TestCancelAll) {
 
   // Make the renderer crash. This should trigger
   // InputTagSpeechDispatcherHost to cancel all pending sessions.
-  content::NavigateToURL(shell(), GURL(chrome::kChromeUICrashURL));
+  NavigateToURL(shell(), GURL(chrome::kChromeUICrashURL));
 
   EXPECT_TRUE(fake_speech_recognition_manager_.did_cancel_all());
 }
 
-}  // namespace speech
+}  // namespace content

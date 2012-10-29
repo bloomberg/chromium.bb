@@ -576,10 +576,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
                                               GetID(), browser_context));
 #if defined(ENABLE_INPUT_SPEECH)
-  channel_->AddFilter(new speech::InputTagSpeechDispatcherHost(
+  channel_->AddFilter(new InputTagSpeechDispatcherHost(
       GetID(), storage_partition_impl_->GetURLRequestContext(),
       browser_context->GetSpeechRecognitionPreferences()));
-  channel_->AddFilter(new speech::SpeechRecognitionDispatcherHost(
+  channel_->AddFilter(new SpeechRecognitionDispatcherHost(
       GetID(), storage_partition_impl_->GetURLRequestContext(),
       browser_context->GetSpeechRecognitionPreferences()));
 #endif

@@ -663,7 +663,7 @@ void BrowserMainLoop::BrowserThreadsStarted() {
 #endif  // !OS_IOS
 
 #if defined(ENABLE_INPUT_SPEECH)
-  speech_recognition_manager_.reset(new speech::SpeechRecognitionManagerImpl());
+  speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl());
 #endif
 
 #if !defined(OS_IOS)

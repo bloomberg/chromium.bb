@@ -16,18 +16,11 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-namespace content {
-struct SpeechRecognitionResult;
-class URLFetcher;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
 
-namespace speech {
-
-class AudioChunk;
+namespace content {
 
 // Implements a SpeechRecognitionEngine by means of remote interaction with
 // Google speech recognition webservice.
@@ -64,6 +57,6 @@ class CONTENT_EXPORT GoogleOneShotRemoteEngine
   DISALLOW_COPY_AND_ASSIGN(GoogleOneShotRemoteEngine);
 };
 
-}  // namespace speech
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SPEECH_GOOGLE_ONE_SHOT_REMOTE_ENGINE_H_

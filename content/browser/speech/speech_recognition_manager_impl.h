@@ -19,17 +19,14 @@
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_error.h"
 
-namespace content {
-class BrowserMainLoop;
-class SpeechRecognitionManagerDelegate;
-}
-
 namespace media_stream {
 class MediaStreamManager;
 }
 
-namespace speech {
+namespace content {
 
+class BrowserMainLoop;
+class SpeechRecognitionManagerDelegate;
 class SpeechRecognizer;
 
 // This is the manager for speech recognition. It is a single instance in
@@ -52,8 +49,8 @@ class SpeechRecognizer;
 //  - Relays also recognition results/status/error events of every session to
 //    the catch-all snoop listener (optionally) provided by the delegate.
 class CONTENT_EXPORT SpeechRecognitionManagerImpl :
-    public NON_EXPORTED_BASE(content::SpeechRecognitionManager),
-    public content::SpeechRecognitionEventListener {
+    public NON_EXPORTED_BASE(SpeechRecognitionManager),
+    public SpeechRecognitionEventListener {
  public:
   // Returns the current SpeechRecognitionManagerImpl or NULL if the call is
   // issued when it is not created yet or destroyed (by BrowserMainLoop).
@@ -61,17 +58,17 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
 
   // SpeechRecognitionManager implementation.
   virtual int CreateSession(
-      const content::SpeechRecognitionSessionConfig& config) OVERRIDE;
+      const SpeechRecognitionSessionConfig& config) OVERRIDE;
   virtual void StartSession(int session_id) OVERRIDE;
   virtual void AbortSession(int session_id) OVERRIDE;
   virtual void AbortAllSessionsForListener(
-        content::SpeechRecognitionEventListener* listener) OVERRIDE;
+        SpeechRecognitionEventListener* listener) OVERRIDE;
   virtual void AbortAllSessionsForRenderView(int render_process_id,
                                              int render_view_id) OVERRIDE;
   virtual void StopAudioCaptureForSession(int session_id) OVERRIDE;
-  virtual const content::SpeechRecognitionSessionConfig& GetSessionConfig(
+  virtual const SpeechRecognitionSessionConfig& GetSessionConfig(
       int session_id) const OVERRIDE;
-  virtual content::SpeechRecognitionSessionContext GetSessionContext(
+  virtual SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const OVERRIDE;
   virtual int GetSession(int render_process_id,
                          int render_view_id,
@@ -90,15 +87,15 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   virtual void OnAudioEnd(int session_id) OVERRIDE;
   virtual void OnRecognitionEnd(int session_id) OVERRIDE;
   virtual void OnRecognitionResult(
-      int session_id, const content::SpeechRecognitionResult& result) OVERRIDE;
+      int session_id, const SpeechRecognitionResult& result) OVERRIDE;
   virtual void OnRecognitionError(
-      int session_id, const content::SpeechRecognitionError& error) OVERRIDE;
+      int session_id, const SpeechRecognitionError& error) OVERRIDE;
   virtual void OnAudioLevelsChange(int session_id, float volume,
                                    float noise_volume) OVERRIDE;
 
  protected:
   // BrowserMainLoop is the only one allowed to istantiate and free us.
-  friend class content::BrowserMainLoop;
+  friend class BrowserMainLoop;
   friend class scoped_ptr<SpeechRecognitionManagerImpl>;  // Needed for dtor.
   SpeechRecognitionManagerImpl();
   virtual ~SpeechRecognitionManagerImpl();
@@ -127,8 +124,8 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
 
     int id;
     bool listener_is_active;
-    content::SpeechRecognitionSessionConfig config;
-    content::SpeechRecognitionSessionContext context;
+    SpeechRecognitionSessionConfig config;
+    SpeechRecognitionSessionContext context;
     scoped_refptr<SpeechRecognizer> recognizer;
   };
 
@@ -159,8 +156,8 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
 
   bool SessionExists(int session_id) const;
   const Session& GetSession(int session_id) const;
-  content::SpeechRecognitionEventListener* GetListener(int session_id) const;
-  content::SpeechRecognitionEventListener* GetDelegateListener() const;
+  SpeechRecognitionEventListener* GetListener(int session_id) const;
+  SpeechRecognitionEventListener* GetDelegateListener() const;
   int GetNextSessionID();
 
   typedef std::map<int, Session> SessionsTable;
@@ -168,7 +165,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   int primary_session_id_;
   int last_session_id_;
   bool is_dispatching_event_;
-  scoped_ptr<content::SpeechRecognitionManagerDelegate> delegate_;
+  scoped_ptr<SpeechRecognitionManagerDelegate> delegate_;
 
   // Used for posting asynchronous tasks (on the IO thread) without worrying
   // about this class being destroyed in the meanwhile (due to browser shutdown)
@@ -181,6 +178,6 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
 #endif  // !defined(OS_IOS)
 };
 
-}  // namespace speech
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_IMPL_H_

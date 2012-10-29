@@ -13,14 +13,13 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace speech {
+namespace content {
 
-class GoogleOneShotRemoteEngineTest
-    : public SpeechRecognitionEngineDelegate,
-      public testing::Test {
+class GoogleOneShotRemoteEngineTest : public SpeechRecognitionEngineDelegate,
+                                      public testing::Test {
  public:
   GoogleOneShotRemoteEngineTest()
-      : error_(content::SPEECH_RECOGNITION_ERROR_NONE) {}
+      : error_(SPEECH_RECOGNITION_ERROR_NONE) {}
 
   // Creates a speech recognition request and invokes its URL fetcher delegate
   // with the given test data.
@@ -28,20 +27,20 @@ class GoogleOneShotRemoteEngineTest
 
   // SpeechRecognitionRequestDelegate methods.
   virtual void OnSpeechRecognitionEngineResult(
-      const content::SpeechRecognitionResult& result) OVERRIDE {
+      const SpeechRecognitionResult& result) OVERRIDE {
     result_ = result;
   }
 
   virtual void OnSpeechRecognitionEngineError(
-      const content::SpeechRecognitionError& error) OVERRIDE {
+      const SpeechRecognitionError& error) OVERRIDE {
     error_ = error.code;
   }
 
  protected:
   MessageLoop message_loop_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  content::SpeechRecognitionErrorCode error_;
-  content::SpeechRecognitionResult result_;
+  SpeechRecognitionErrorCode error_;
+  SpeechRecognitionResult result_;
 };
 
 void GoogleOneShotRemoteEngineTest::CreateAndTestRequest(
@@ -76,7 +75,7 @@ TEST_F(GoogleOneShotRemoteEngineTest, BasicTest) {
   CreateAndTestRequest(true,
       "{\"status\":0,\"hypotheses\":"
       "[{\"utterance\":\"123456\",\"confidence\":0.9}]}");
-  EXPECT_EQ(error_, content::SPEECH_RECOGNITION_ERROR_NONE);
+  EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NONE);
   EXPECT_EQ(1U, result_.hypotheses.size());
   EXPECT_EQ(ASCIIToUTF16("123456"), result_.hypotheses[0].utterance);
   EXPECT_EQ(0.9, result_.hypotheses[0].confidence);
@@ -86,7 +85,7 @@ TEST_F(GoogleOneShotRemoteEngineTest, BasicTest) {
       "{\"status\":0,\"hypotheses\":["
       "{\"utterance\":\"hello\",\"confidence\":0.9},"
       "{\"utterance\":\"123456\",\"confidence\":0.5}]}");
-  EXPECT_EQ(error_, content::SPEECH_RECOGNITION_ERROR_NONE);
+  EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NONE);
   EXPECT_EQ(2u, result_.hypotheses.size());
   EXPECT_EQ(ASCIIToUTF16("hello"), result_.hypotheses[0].utterance);
   EXPECT_EQ(0.9, result_.hypotheses[0].confidence);
@@ -95,29 +94,29 @@ TEST_F(GoogleOneShotRemoteEngineTest, BasicTest) {
 
   // Zero results.
   CreateAndTestRequest(true, "{\"status\":0,\"hypotheses\":[]}");
-  EXPECT_EQ(error_, content::SPEECH_RECOGNITION_ERROR_NONE);
+  EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NONE);
   EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Http failure case.
   CreateAndTestRequest(false, "");
-  EXPECT_EQ(error_, content::SPEECH_RECOGNITION_ERROR_NETWORK);
+  EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NETWORK);
   EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Invalid status case.
   CreateAndTestRequest(true, "{\"status\":\"invalid\",\"hypotheses\":[]}");
-  EXPECT_EQ(error_, content::SPEECH_RECOGNITION_ERROR_NETWORK);
+  EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NETWORK);
   EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Server-side error case.
   CreateAndTestRequest(true, "{\"status\":1,\"hypotheses\":[]}");
-  EXPECT_EQ(error_, content::SPEECH_RECOGNITION_ERROR_NETWORK);
+  EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NETWORK);
   EXPECT_EQ(0U, result_.hypotheses.size());
 
   // Malformed JSON case.
   CreateAndTestRequest(true, "{\"status\":0,\"hypotheses\":"
       "[{\"unknownkey\":\"hello\"}]}");
-  EXPECT_EQ(error_, content::SPEECH_RECOGNITION_ERROR_NETWORK);
+  EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NETWORK);
   EXPECT_EQ(0U, result_.hypotheses.size());
 }
 
-}  // namespace speech
+}  // namespace content

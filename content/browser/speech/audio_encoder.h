@@ -12,8 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/speech/audio_buffer.h"
 
-namespace speech {
+namespace content{
 class AudioChunk;
+
 // Provides a simple interface to encode raw audio using the various speech
 // codecs.
 class AudioEncoder {
@@ -54,6 +55,6 @@ class AudioEncoder {
   DISALLOW_COPY_AND_ASSIGN(AudioEncoder);
 };
 
-}  // namespace speech
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SPEECH_AUDIO_ENCODER_H_

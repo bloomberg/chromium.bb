@@ -17,17 +17,12 @@
 #include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using content::BrowserMainLoop;
-using content::BrowserThread;
-using content::SpeechRecognitionError;
-using content::SpeechRecognitionEventListener;
-using content::SpeechRecognitionGrammar;
-using content::SpeechRecognitionResult;
 using media::AudioInputController;
 using media::AudioManager;
 using media::AudioParameters;
 using media::ChannelLayout;
 
+namespace content {
 namespace {
 
 // The following constants are related to the volume level indicator shown in
@@ -47,7 +42,7 @@ const float kAudioMeterDbRange = kAudioMeterMaxDb - kAudioMeterMinDb;
 const float kAudioMeterRangeMaxUnclipped = 47.0f / 48.0f;
 
 // Returns true if more than 5% of the samples are at min or max value.
-bool DetectClipping(const speech::AudioChunk& chunk) {
+bool DetectClipping(const AudioChunk& chunk) {
   const int num_samples = chunk.NumSamples();
   const int16* samples = chunk.SamplesData16();
   const int kThreshold = num_samples / 20;
@@ -66,8 +61,6 @@ void KeepAudioControllerRefcountedForDtor(scoped_refptr<AudioInputController>) {
 }
 
 }  // namespace
-
-namespace speech {
 
 const int SpeechRecognizer::kAudioSampleRate = 16000;
 const ChannelLayout SpeechRecognizer::kChannelLayout =
@@ -194,7 +187,7 @@ void SpeechRecognizer::OnData(AudioInputController* controller,
 void SpeechRecognizer::OnAudioClosed(AudioInputController*) {}
 
 void SpeechRecognizer::OnSpeechRecognitionEngineResult(
-    const content::SpeechRecognitionResult& result) {
+    const SpeechRecognitionResult& result) {
   FSMEventArgs event_args(EVENT_ENGINE_RESULT);
   event_args.engine_result = result;
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -203,7 +196,7 @@ void SpeechRecognizer::OnSpeechRecognitionEngineResult(
 }
 
 void SpeechRecognizer::OnSpeechRecognitionEngineError(
-    const content::SpeechRecognitionError& error) {
+    const SpeechRecognitionError& error) {
   FSMEventArgs event_args(EVENT_ENGINE_ERROR);
   event_args.engine_error = error;
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -406,15 +399,13 @@ SpeechRecognizer::StartRecording(const FSMEventArgs&) {
   listener_->OnRecognitionStart(session_id_);
 
   if (!audio_manager->HasAudioInputDevices()) {
-    return Abort(SpeechRecognitionError(
-        content::SPEECH_RECOGNITION_ERROR_AUDIO,
-        content::SPEECH_AUDIO_ERROR_DETAILS_NO_MIC));
+    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO,
+                                        SPEECH_AUDIO_ERROR_DETAILS_NO_MIC));
   }
 
   if (audio_manager->IsRecordingInProcess()) {
-    return Abort(SpeechRecognitionError(
-        content::SPEECH_RECOGNITION_ERROR_AUDIO,
-        content::SPEECH_AUDIO_ERROR_DETAILS_IN_USE));
+    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO,
+                                        SPEECH_AUDIO_ERROR_DETAILS_IN_USE));
   }
 
   const int samples_per_packet = (kAudioSampleRate *
@@ -425,8 +416,7 @@ SpeechRecognizer::StartRecording(const FSMEventArgs&) {
   audio_controller_ = AudioInputController::Create(audio_manager, this, params);
 
   if (audio_controller_.get() == NULL) {
-    return Abort(
-        SpeechRecognitionError(content::SPEECH_RECOGNITION_ERROR_AUDIO));
+    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
   }
 
   // The endpointer needs to estimate the environment/background noise before
@@ -471,8 +461,7 @@ SpeechRecognizer::DetectUserSpeechOrTimeout(const FSMEventArgs&) {
     listener_->OnSoundStart(session_id_);
     return STATE_RECOGNIZING;
   } else if (GetElapsedTimeMs() >= kNoSpeechTimeoutMs) {
-    return Abort(
-        SpeechRecognitionError(content::SPEECH_RECOGNITION_ERROR_NO_SPEECH));
+    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_NO_SPEECH));
   }
   return STATE_WAITING_FOR_SPEECH;
 }
@@ -503,20 +492,17 @@ SpeechRecognizer::FSMState
 SpeechRecognizer::AbortSilently(const FSMEventArgs& event_args) {
   DCHECK_NE(event_args.event, EVENT_AUDIO_ERROR);
   DCHECK_NE(event_args.event, EVENT_ENGINE_ERROR);
-  return Abort(
-      SpeechRecognitionError(content::SPEECH_RECOGNITION_ERROR_NONE));
+  return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_NONE));
 }
 
 SpeechRecognizer::FSMState
 SpeechRecognizer::AbortWithError(const FSMEventArgs& event_args) {
   if (event_args.event == EVENT_AUDIO_ERROR) {
-    return Abort(
-        SpeechRecognitionError(content::SPEECH_RECOGNITION_ERROR_AUDIO));
+    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
   } else if (event_args.event == EVENT_ENGINE_ERROR) {
     return Abort(event_args.engine_error);
   }
-  return Abort(
-      SpeechRecognitionError(content::SPEECH_RECOGNITION_ERROR_ABORTED));
+  return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_ABORTED));
 }
 
 SpeechRecognizer::FSMState SpeechRecognizer::Abort(
@@ -538,7 +524,7 @@ SpeechRecognizer::FSMState SpeechRecognizer::Abort(
   if (state_ > STATE_STARTING && state_ < STATE_WAITING_FINAL_RESULT)
     listener_->OnAudioEnd(session_id_);
 
-  if (error.code != content::SPEECH_RECOGNITION_ERROR_NONE)
+  if (error.code != SPEECH_RECOGNITION_ERROR_NONE)
     listener_->OnRecognitionError(session_id_, error);
 
   listener_->OnRecognitionEnd(session_id_);
@@ -660,10 +646,10 @@ SpeechRecognizer::FSMEventArgs::FSMEventArgs(FSMEvent event_value)
     : event(event_value),
       audio_error_code(0),
       audio_data(NULL),
-      engine_error(content::SPEECH_RECOGNITION_ERROR_NONE) {
+      engine_error(SPEECH_RECOGNITION_ERROR_NONE) {
 }
 
 SpeechRecognizer::FSMEventArgs::~FSMEventArgs() {
 }
 
-}  // namespace speech
+}  // namespace content

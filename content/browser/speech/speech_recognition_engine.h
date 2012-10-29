@@ -12,13 +12,10 @@
 #include "content/public/common/speech_recognition_grammar.h"
 
 namespace content {
-struct SpeechRecognitionResult;
-struct SpeechRecognitionError;
-}
-
-namespace speech {
 
 class AudioChunk;
+struct SpeechRecognitionResult;
+struct SpeechRecognitionError;
 
 // This interface models the basic contract that a speech recognition engine,
 // either working locally or relying on a remote web-service, must obey.
@@ -39,9 +36,9 @@ class SpeechRecognitionEngine {
     // (e.g., in the case of continuous speech recognition engine
     // implementations).
     virtual void OnSpeechRecognitionEngineResult(
-        const content::SpeechRecognitionResult& result) = 0;
+        const SpeechRecognitionResult& result) = 0;
     virtual void OnSpeechRecognitionEngineError(
-        const content::SpeechRecognitionError& error) = 0;
+        const SpeechRecognitionError& error) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -53,7 +50,7 @@ class SpeechRecognitionEngine {
     ~Config();
 
     std::string language;
-    content::SpeechRecognitionGrammarArray grammars;
+    SpeechRecognitionGrammarArray grammars;
     bool filter_profanities;
     bool continuous;
     bool interim_results;
@@ -110,6 +107,6 @@ class SpeechRecognitionEngine {
 typedef SpeechRecognitionEngine::Delegate SpeechRecognitionEngineDelegate;
 typedef SpeechRecognitionEngine::Config SpeechRecognitionEngineConfig;
 
-}  // namespace speech
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_ENGINE_H_

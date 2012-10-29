@@ -23,22 +23,12 @@
 #include "media/audio/audio_manager.h"
 
 using base::Callback;
-using content::BrowserMainLoop;
-using content::BrowserThread;
-using content::SpeechRecognitionEventListener;
-using content::SpeechRecognitionManager;
-using content::SpeechRecognitionResult;
-using content::SpeechRecognitionSessionContext;
-using content::SpeechRecognitionSessionConfig;
 
 namespace content {
-SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
-  return speech::SpeechRecognitionManagerImpl::GetInstance();
-}
-}  // namespace content
 
 namespace {
-speech::SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
+
+SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
 
 void ShowAudioInputSettingsOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -47,9 +37,12 @@ void ShowAudioInputSettingsOnFileThread() {
   if (audio_manager->CanShowAudioInputSettings())
     audio_manager->ShowAudioInputSettings();
 }
+
 }  // namespace
 
-namespace speech {
+SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
+  return SpeechRecognitionManagerImpl::GetInstance();
+}
 
 #if !defined(OS_IOS)
 class SpeechRecognitionManagerImpl::PermissionRequest
@@ -74,8 +67,8 @@ class SpeechRecognitionManagerImpl::PermissionRequest
         this,
         render_process_id,
         render_view_id,
-        media_stream::StreamOptions(content::MEDIA_DEVICE_AUDIO_CAPTURE,
-                                    content::MEDIA_DEVICE_VIDEO_CAPTURE),
+        media_stream::StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE,
+                                    MEDIA_DEVICE_VIDEO_CAPTURE),
         origin,
         &label_);
   }
@@ -136,7 +129,7 @@ SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl()
     : primary_session_id_(kSessionIDInvalid),
       last_session_id_(kSessionIDInvalid),
       is_dispatching_event_(false),
-      delegate_(content::GetContentClient()->browser()->
+      delegate_(GetContentClient()->browser()->
                     GetSpeechRecognitionManagerDelegate()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(!g_speech_recognition_manager_impl);
@@ -261,8 +254,8 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
         base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
                    weak_factory_.GetWeakPtr(), session_id, EVENT_START));
   } else {
-    OnRecognitionError(session_id, content::SpeechRecognitionError(
-        content::SPEECH_RECOGNITION_ERROR_NOT_ALLOWED));
+    OnRecognitionError(session_id, SpeechRecognitionError(
+        SPEECH_RECOGNITION_ERROR_NOT_ALLOWED));
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
                    weak_factory_.GetWeakPtr(), session_id, EVENT_ABORT));
@@ -385,7 +378,7 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionResult(
-    int session_id, const content::SpeechRecognitionResult& result) {
+    int session_id, const SpeechRecognitionResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!SessionExists(session_id))
     return;
@@ -397,7 +390,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionResult(
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionError(
-    int session_id, const content::SpeechRecognitionError& error) {
+    int session_id, const SpeechRecognitionError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!SessionExists(session_id))
     return;
@@ -686,4 +679,4 @@ SpeechRecognitionManagerImpl::Session::Session()
 SpeechRecognitionManagerImpl::Session::~Session() {
 }
 
-}  // namespace speech
+}  // namespace content

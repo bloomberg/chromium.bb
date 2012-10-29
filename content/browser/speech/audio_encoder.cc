@@ -13,9 +13,7 @@
 #include "third_party/flac/flac.h"
 #include "third_party/speex/speex.h"
 
-using std::string;
-using speech::AudioChunk;
-
+namespace content {
 namespace {
 
 //-------------------------------- FLACEncoder ---------------------------------
@@ -23,7 +21,7 @@ namespace {
 const char* const kContentTypeFLAC = "audio/x-flac; rate=";
 const int kFLACCompressionLevel = 0;  // 0 for speed
 
-class FLACEncoder : public speech::AudioEncoder {
+class FLACEncoder : public AudioEncoder {
  public:
   FLACEncoder(int sampling_rate, int bits_per_sample);
   virtual ~FLACEncoder();
@@ -112,7 +110,7 @@ const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
 // make sure it is within the byte range.
 COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
 
-class SpeexEncoder : public speech::AudioEncoder {
+class SpeexEncoder : public AudioEncoder {
  public:
   explicit SpeexEncoder(int sampling_rate, int bits_per_sample);
   virtual ~SpeexEncoder();
@@ -172,8 +170,6 @@ void SpeexEncoder::Encode(const AudioChunk& raw_audio) {
 
 }  // namespace
 
-namespace speech {
-
 AudioEncoder* AudioEncoder::Create(Codec codec,
                                    int sampling_rate,
                                    int bits_per_sample) {
@@ -195,4 +191,4 @@ scoped_refptr<AudioChunk> AudioEncoder::GetEncodedDataAndClear() {
   return encoded_audio_buffer_.DequeueAll();
 }
 
-}  // namespace speech
+}  // namespace content

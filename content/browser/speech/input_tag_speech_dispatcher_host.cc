@@ -12,15 +12,11 @@
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 
-using content::SpeechRecognitionManager;
-using content::SpeechRecognitionSessionConfig;
-using content::SpeechRecognitionSessionContext;
-
 namespace {
 const uint32 kMaxHypothesesForSpeechInputTag = 6;
 }
 
-namespace speech {
+namespace content {
 SpeechRecognitionManager* InputTagSpeechDispatcherHost::manager_for_tests_;
 
 void InputTagSpeechDispatcherHost::SetManagerForTests(
@@ -31,7 +27,7 @@ void InputTagSpeechDispatcherHost::SetManagerForTests(
 InputTagSpeechDispatcherHost::InputTagSpeechDispatcherHost(
     int render_process_id,
     net::URLRequestContextGetter* url_request_context_getter,
-    content::SpeechRecognitionPreferences* recognition_preferences)
+    SpeechRecognitionPreferences* recognition_preferences)
     : render_process_id_(render_process_id),
       url_request_context_getter_(url_request_context_getter),
       recognition_preferences_(recognition_preferences) {
@@ -78,8 +74,7 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
   SpeechRecognitionSessionConfig config;
   config.language = params.language;
   if (!params.grammar.empty()) {
-    config.grammars.push_back(
-        content::SpeechRecognitionGrammar(params.grammar));
+    config.grammars.push_back(SpeechRecognitionGrammar(params.grammar));
   }
   config.max_hypotheses = kMaxHypothesesForSpeechInputTag;
   config.origin_url = params.origin_url;
@@ -93,7 +88,7 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
   config.event_listener = this;
 
   int session_id = manager()->CreateSession(config);
-  DCHECK_NE(session_id, content::SpeechRecognitionManager::kSessionIDInvalid);
+  DCHECK_NE(session_id, SpeechRecognitionManager::kSessionIDInvalid);
   manager()->StartSession(session_id);
 }
 
@@ -123,7 +118,8 @@ void InputTagSpeechDispatcherHost::OnStopRecording(int render_view_id,
 
 // -------- SpeechRecognitionEventListener interface implementation -----------
 void InputTagSpeechDispatcherHost::OnRecognitionResult(
-      int session_id, const content::SpeechRecognitionResult& result) {
+    int session_id,
+    const SpeechRecognitionResult& result) {
   VLOG(1) << "InputTagSpeechDispatcherHost::OnRecognitionResult enter";
 
   const SpeechRecognitionSessionContext& context =
@@ -162,10 +158,11 @@ void InputTagSpeechDispatcherHost::OnAudioStart(int session_id) {}
 void InputTagSpeechDispatcherHost::OnSoundStart(int session_id) {}
 void InputTagSpeechDispatcherHost::OnSoundEnd(int session_id) {}
 void InputTagSpeechDispatcherHost::OnRecognitionError(
-    int session_id, const content::SpeechRecognitionError& error) {}
+    int session_id,
+    const SpeechRecognitionError& error) {}
 void InputTagSpeechDispatcherHost::OnAudioLevelsChange(
     int session_id, float volume, float noise_volume) {}
 void InputTagSpeechDispatcherHost::OnEnvironmentEstimationComplete(
     int session_id) {}
 
-}  // namespace speech
+}  // namespace content

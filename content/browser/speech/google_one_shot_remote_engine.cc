@@ -21,10 +21,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
-using content::SpeechRecognitionError;
-using content::SpeechRecognitionHypothesis;
-using content::SpeechRecognitionResult;
-
+namespace content {
 namespace {
 
 const char* const kDefaultSpeechRecognitionUrl =
@@ -36,8 +33,7 @@ const char* const kConfidenceString = "confidence";
 const int kWebServiceStatusNoError = 0;
 const int kWebServiceStatusNoSpeech = 4;
 const int kWebServiceStatusNoMatch = 5;
-const speech::AudioEncoder::Codec kDefaultAudioCodec =
-    speech::AudioEncoder::CODEC_FLAC;
+const AudioEncoder::Codec kDefaultAudioCodec = AudioEncoder::CODEC_FLAC;
 
 bool ParseServerResponse(const std::string& response_body,
                          SpeechRecognitionResult* result,
@@ -78,13 +74,13 @@ bool ParseServerResponse(const std::string& response_body,
     case kWebServiceStatusNoError:
       break;
     case kWebServiceStatusNoSpeech:
-      error->code = content::SPEECH_RECOGNITION_ERROR_NO_SPEECH;
+      error->code = SPEECH_RECOGNITION_ERROR_NO_SPEECH;
       return false;
     case kWebServiceStatusNoMatch:
-      error->code = content::SPEECH_RECOGNITION_ERROR_NO_MATCH;
+      error->code = SPEECH_RECOGNITION_ERROR_NO_MATCH;
       return false;
     default:
-      error->code = content::SPEECH_RECOGNITION_ERROR_NETWORK;
+      error->code = SPEECH_RECOGNITION_ERROR_NETWORK;
       // Other status codes should not be returned by the server.
       VLOG(1) << "ParseServerResponse: unexpected status code " << status;
       return false;
@@ -147,8 +143,6 @@ bool ParseServerResponse(const std::string& response_body,
 }
 
 }  // namespace
-
-namespace speech {
 
 const int GoogleOneShotRemoteEngine::kAudioPacketIntervalMs = 100;
 int GoogleOneShotRemoteEngine::url_fetcher_id_for_tests = 0;
@@ -266,7 +260,7 @@ void GoogleOneShotRemoteEngine::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
   SpeechRecognitionResult result;
-  SpeechRecognitionError error(content::SPEECH_RECOGNITION_ERROR_NETWORK);
+  SpeechRecognitionError error(SPEECH_RECOGNITION_ERROR_NETWORK);
   std::string data;
 
   // The default error code in case of parse errors is NETWORK_FAILURE, however
@@ -293,4 +287,4 @@ int GoogleOneShotRemoteEngine::GetDesiredAudioChunkDurationMs() const {
   return kAudioPacketIntervalMs;
 }
 
-}  // namespace speech
+}  // namespace content

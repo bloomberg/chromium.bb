@@ -18,8 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::MessageLoopProxy;
-using content::BrowserThread;
-using content::BrowserThreadImpl;
 using media::AudioInputController;
 using media::AudioInputStream;
 using media::AudioManager;
@@ -28,9 +26,9 @@ using media::AudioParameters;
 using media::TestAudioInputController;
 using media::TestAudioInputControllerFactory;
 
-namespace speech {
+namespace content {
 
-class SpeechRecognizerTest : public content::SpeechRecognitionEventListener,
+class SpeechRecognizerTest : public SpeechRecognitionEventListener,
                              public testing::Test {
  public:
   SpeechRecognizerTest()
@@ -42,7 +40,7 @@ class SpeechRecognizerTest : public content::SpeechRecognitionEventListener,
         audio_ended_(false),
         sound_started_(false),
         sound_ended_(false),
-        error_(content::SPEECH_RECOGNITION_ERROR_NONE),
+        error_(SPEECH_RECOGNITION_ERROR_NONE),
         volume_(-1.0f) {
     // SpeechRecognizer takes ownership of sr_engine.
     SpeechRecognitionEngine* sr_engine =
@@ -87,7 +85,7 @@ class SpeechRecognizerTest : public content::SpeechRecognitionEventListener,
     EXPECT_FALSE(sound_started_ ^ sound_ended_);
   }
 
-  // Overridden from content::SpeechRecognitionEventListener:
+  // Overridden from SpeechRecognitionEventListener:
   virtual void OnAudioStart(int session_id) OVERRIDE {
     audio_started_ = true;
     CheckEventsConsistency();
@@ -99,12 +97,12 @@ class SpeechRecognizerTest : public content::SpeechRecognitionEventListener,
   }
 
   virtual void OnRecognitionResult(
-      int session_id, const content::SpeechRecognitionResult& result) OVERRIDE {
+      int session_id, const SpeechRecognitionResult& result) OVERRIDE {
     result_received_ = true;
   }
 
   virtual void OnRecognitionError(
-      int session_id, const content::SpeechRecognitionError& error) OVERRIDE {
+      int session_id, const SpeechRecognitionError& error) OVERRIDE {
     EXPECT_TRUE(recognition_started_);
     EXPECT_FALSE(recognition_ended_);
     error_ = error.code;
@@ -175,7 +173,7 @@ class SpeechRecognizerTest : public content::SpeechRecognitionEventListener,
   bool audio_ended_;
   bool sound_started_;
   bool sound_ended_;
-  content::SpeechRecognitionErrorCode error_;
+  SpeechRecognitionErrorCode error_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   TestAudioInputControllerFactory audio_input_controller_factory_;
   std::vector<uint8> audio_packet_;
@@ -191,7 +189,7 @@ TEST_F(SpeechRecognizerTest, StopNoData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -204,7 +202,7 @@ TEST_F(SpeechRecognizerTest, CancelNoData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_ABORTED, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_ABORTED, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -237,7 +235,7 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
 
   // Issue the network callback to complete the process.
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
@@ -254,7 +252,7 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_TRUE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -274,7 +272,7 @@ TEST_F(SpeechRecognizerTest, CancelWithData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_ABORTED, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_ABORTED, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -298,7 +296,7 @@ TEST_F(SpeechRecognizerTest, ConnectionError) {
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
 
   // Issue the network callback to complete the process.
   fetcher->set_url(fetcher->GetOriginalURL());
@@ -312,7 +310,7 @@ TEST_F(SpeechRecognizerTest, ConnectionError) {
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NETWORK, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NETWORK, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -336,7 +334,7 @@ TEST_F(SpeechRecognizerTest, ServerError) {
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
 
   // Issue the network callback to complete the process.
   fetcher->set_url(fetcher->GetOriginalURL());
@@ -349,7 +347,7 @@ TEST_F(SpeechRecognizerTest, ServerError) {
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NETWORK, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NETWORK, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -365,7 +363,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorNoData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_AUDIO, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_AUDIO, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -385,7 +383,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorWithData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_AUDIO, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_AUDIO, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -409,7 +407,7 @@ TEST_F(SpeechRecognizerTest, NoSpeechCallbackIssued) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NO_SPEECH, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NO_SPEECH, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -442,7 +440,7 @@ TEST_F(SpeechRecognizerTest, NoSpeechCallbackNotIssued) {
   }
 
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
@@ -488,7 +486,7 @@ TEST_F(SpeechRecognizerTest, SetInputVolumeCallback) {
   EXPECT_FLOAT_EQ(0.89926866f, volume_);
   EXPECT_FLOAT_EQ(0.75071919f, noise_volume_);
 
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
   EXPECT_FALSE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   recognizer_->AbortRecognition();
@@ -496,4 +494,4 @@ TEST_F(SpeechRecognizerTest, SetInputVolumeCallback) {
   CheckFinalEventsConsistency();
 }
 
-}  // namespace speech
+}  // namespace content
