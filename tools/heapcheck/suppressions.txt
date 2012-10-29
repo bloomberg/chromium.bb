@@ -1608,7 +1608,7 @@
   fun:VisitedLinkMaster::AddFingerprint
   fun:VisitedLinkMaster::TryToAddURL
   fun:VisitedLinkMaster::AddURL
-  fun:VisitedLinkEventsTest_TabVisibility_Test::TestBody
+  fun:VisitedLinkEventsTest*
 }
 {
   bug_157669b
@@ -1618,14 +1618,4 @@
   fun:ProfileKeyedServiceFactory::GetServiceForProfile
   fun:ProfileKeyedServiceFactory::SetTestingFactoryAndUse
   fun:VisitedLinkEventsTest::SetUp
-}
-{
-  bug_157669c
-  Heapcheck:Leak
-  ...
-  fun:VisitedLinkEventListener::Add
-  fun:VisitedLinkMaster::AddFingerprint
-  fun:VisitedLinkMaster::TryToAddURL
-  fun:VisitedLinkMaster::AddURL
-  fun:VisitedLinkEventsTest_Coalescense_Test::TestBody
 }
