@@ -378,3 +378,25 @@ ui.dll!gfx::ReadColorProfile
 ui.dll!gfx::GetColorProfile
 content.dll!content::RenderMessageFilter::OnGetMonitorColorProfile
 content.dll!DispatchToMethod*
+
+INVALID HEAP ARGUMENT
+name=http://crbug.com/158350
+# allocated with operator new[], freed with operator delete
+*!*
+*!*
+*!*
+*!*
+*!*
+content.dll!*
+content.dll!*
+content.dll!*
+content.dll!*
+content.dll!*
+*!*
+*!*
+*!*
+*!*
+*!*
+KERNEL32.dll!*
+ntdll.dll!*
+ntdll.dll!*
