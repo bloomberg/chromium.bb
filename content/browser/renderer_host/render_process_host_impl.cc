@@ -1151,6 +1151,7 @@ void RenderProcessHostImpl::Release(int routing_id) {
 void RenderProcessHostImpl::Cleanup() {
   // When no other owners of this object, we can delete ourselves
   if (render_widget_hosts_.IsEmpty()) {
+    DCHECK_EQ(0, pending_views_);
     NotificationService::current()->Notify(
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this),
