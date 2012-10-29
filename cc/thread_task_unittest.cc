@@ -9,10 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace cc;
-using namespace WTF;
-
-namespace {
+namespace cc {
 
 class Mock {
 public:
@@ -42,4 +39,4 @@ TEST(ThreadTaskTest, runnableMethods)
     createThreadTask(&mock, &Mock::method5, 9, 8, 7, 6, 5)->performTask();
 }
 
-} // namespace
+}  // namespace cc
