@@ -16,6 +16,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -239,12 +240,26 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
               details.initial_bounds.x() + details.restore_bounds.width())
         new_bounds.set_x(location.x() - details.restore_bounds.width() / 2);
     }
-    // Make sure that the x origin does not leave the screen. Note that y is
-    // taken care of next.
-    new_bounds.set_x(
-        std::max(work_area.x() - new_bounds.width() + kMinimumOnScreenArea,
-                 std::min(work_area.right() - kMinimumOnScreenArea,
-                          new_bounds.x())));
+
+    // Make sure that |new_bounds| doesn't leave any of the displays.  Note that
+    // the |work_area| above isn't good for this check since it is the work area
+    // for the current display but the window can move to a different one.
+    aura::Window* parent = details.window->parent();
+    gfx::Rect new_bounds_in_screen =
+        ScreenAsh::ConvertRectToScreen(parent, new_bounds);
+    const gfx::Display& display =
+        Shell::GetScreen()->GetDisplayMatching(new_bounds_in_screen);
+    gfx::Rect screen_work_area = display.work_area();
+    screen_work_area.Inset(kMinimumOnScreenArea, 0);
+    if (!screen_work_area.Intersects(new_bounds_in_screen)) {
+      // Make sure that the x origin does not leave the current display.
+      new_bounds_in_screen.set_x(
+          std::max(screen_work_area.x() - new_bounds.width(),
+                   std::min(screen_work_area.right(),
+                            new_bounds_in_screen.x())));
+      new_bounds =
+          ScreenAsh::ConvertRectFromScreen(parent, new_bounds_in_screen);
+    }
   }
 
   return new_bounds;

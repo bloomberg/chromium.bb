@@ -915,6 +915,42 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
             window_->bounds().ToString());
 }
 
+// Verifies that 'outside' check of the resizer take into account the extended
+// desktop in case of repositions.
+TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
+  // Only primary display.  Changes the window position to fit within the
+  // display.
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(
+      Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
+  int right = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+      window_.get()).right();
+  int pixels_to_right_border = 50;
+  int window_width = 300;
+  int window_x = right - pixels_to_right_border;
+  window_->SetBounds(gfx::Rect(window_x, 100, window_width, 380));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(window_x, 0), HTCAPTION,
+      empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
+  EXPECT_EQ(base::IntToString(right - kMinimumOnScreenArea) +
+            ",100 " +
+            base::IntToString(window_width) +
+            "x380", window_->bounds().ToString());
+
+  // With secondary display.  Operation itself is same but doesn't change
+  // the position because the window is still within the secondary display.
+  UpdateDisplay("1000x600,600x400");
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(
+      Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
+  window_->SetBounds(gfx::Rect(window_x, 100, window_width, 380));
+  resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
+  EXPECT_EQ(base::IntToString(window_x + window_width) +
+            ",100 " +
+            base::IntToString(window_width) +
+            "x380", window_->bounds().ToString());
+}
+
 // Verifies snapping to edges works.
 TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   Shell::GetPrimaryRootWindowController()->
