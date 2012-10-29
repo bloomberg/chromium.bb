@@ -24,6 +24,21 @@ import run_test_cases
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+def with_tempfile(function):
+  """Creates a temporary file and calls the inner function."""
+  def hook(*args, **kwargs):
+    handle, tempfilepath = tempfile.mkstemp(prefix='fix_test_cases')
+    os.close(handle)
+    try:
+      return function(tempfilepath, *args, **kwargs)
+    finally:
+      try:
+        os.remove(tempfilepath)
+      except OSError, e:
+        print >> sys.stderr, 'Failed to remove %s: %s' % (tempfilepath, e)
+  return hook
+
+
 def load_run_test_cases_results(run_test_cases_file):
   """Loads a .run_test_cases result file.
 
@@ -50,57 +65,67 @@ def load_run_test_cases_results(run_test_cases_file):
   return success, failure
 
 
-def run_all(isolated, run_test_cases_file):
-  """Runs all the test cases in an isolated environment."""
+def list_test_cases(isolated):
+  """Retrieves the test cases list."""
   cmd = [
     sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
     'run',
     '--isolated', isolated,
     '--',
-    '--result', run_test_cases_file,
-    '--run-all',
+  ]
+  # Use the default seed.
+  # TODO(maruel): Shards?
+  return run_test_cases.list_test_cases(
+      cmd,
+      '.',
+      0,
+      0,
+      False,
+      False,
+      False,
+      1)
+
+
+# This function requires 2 temporary files.
+@with_tempfile
+@with_tempfile
+def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
+  """Runs all the test cases in an isolated environment."""
+  with open(tempfilepath_cases, 'w') as f:
+    f.write('\n'.join(test_cases))
+  cmd = [
+    sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
+    'run',
+    '--isolated', isolated,
+    '--',
+    '--result', tempfilepath_result,
+    '--test-case-file', tempfilepath_cases,
+    # Do not retry; it's faster to trace flaky test than retrying each failing
+    # tests 3 times.
+    # Do not use --run-all, iterate multiple times instead.
+    '--retries', '0',
+  ]
+  logging.debug(cmd)
+  retcode = subprocess.call(cmd)
+  success, failures = load_run_test_cases_results(tempfilepath_result)
+  # Returning non-zero must match having failures.
+  assert bool(retcode) == bool(failures)
+  return success, failures
+
+
+@with_tempfile
+def trace_some(tempfilepath, isolated, test_cases):
+  """Traces the test cases."""
+  with open(tempfilepath, 'w') as f:
+    f.write('\n'.join(test_cases))
+  cmd = [
+    sys.executable, os.path.join(ROOT_DIR, 'isolate_test_cases.py'),
+    '--isolated', isolated,
+    '--test-case-file', tempfilepath,
+    '--verbose',
   ]
   logging.debug(cmd)
   return subprocess.call(cmd)
-
-
-def run_some(isolated, run_test_cases_file, test_cases):
-  """Runs some of the test cases in an isolated environment."""
-  handle, test_cases_file = tempfile.mkstemp(prefix='fix_test_cases')
-  os.write(handle, '\n'.join(test_cases))
-  os.close(handle)
-  try:
-    cmd = [
-      sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
-      'run',
-      '--isolated', isolated,
-      '--',
-      '--result', run_test_cases_file,
-      '--test-case-file', test_cases_file,
-      '--run-all',
-    ]
-    logging.debug(cmd)
-    return subprocess.call(cmd)
-  finally:
-    os.remove(test_cases_file)
-
-
-def trace_some(isolated, test_cases):
-  """Traces the test cases."""
-  handle, test_cases_file = tempfile.mkstemp(prefix='fix_test_cases')
-  os.write(handle, '\n'.join(test_cases))
-  os.close(handle)
-  try:
-    cmd = [
-      sys.executable, os.path.join(ROOT_DIR, 'isolate_test_cases.py'),
-      '--isolated', isolated,
-      '--test-case-file', test_cases_file,
-      '--verbose',
-    ]
-    logging.debug(cmd)
-    return subprocess.call(cmd)
-  finally:
-    os.remove(test_cases_file)
 
 
 def fix_all(isolated):
@@ -119,35 +144,42 @@ def fix_all(isolated):
       print >> sys.stderr, 'Please unset %s' % i
       return False
 
-  handle, run_test_cases_file = tempfile.mkstemp(prefix='fix_test_cases')
-  os.close(handle)
-  try:
-    run_all(isolated, run_test_cases_file)
-    success, failures = load_run_test_cases_results(run_test_cases_file)
+  # Run until test cases remain to be tested.
+  all_test_cases = list_test_cases(isolated)
+  remaining_test_cases = all_test_cases[:]
+  if not remaining_test_cases:
+    print >> sys.stderr, 'Didn\'t find any test case to run'
+    return 1
+
+  previous_failures = []
+  while remaining_test_cases:
+    # pylint is confused about with_tempfile.
+    # pylint: disable=E1120
+    success, failures = run_tests(isolated, remaining_test_cases)
     print(
-        '\nFound %d working and %d broken test cases.' %
-        (len(success), len(failures)))
+        '\nTotal: %5d; Remaining: %5d; Succeeded: %5d; Failed: %5d' % (
+          len(all_test_cases),
+          len(remaining_test_cases),
+          len(success),
+          len(failures)))
+
     if not failures:
+      print('I\'m done. Have a nice day!')
       return True
+
+    if previous_failures == failures:
+      print('The last trace didn\'t help, aborting.')
+      return False
+
+    # Test cases that passed to not need to be retried anymore.
+    remaining_test_cases = [i for i in remaining_test_cases if i not in success]
 
     # Trace them all and update the .isolate file.
     print('\nTracing the failing tests.')
     if trace_some(isolated, failures):
+      # The tracing itself failed.
       return False
-
-    print('\nRunning again to confirm.')
-    run_some(isolated, run_test_cases_file, failures)
-    fixed_success, fixed_failures = load_run_test_cases_results(
-        run_test_cases_file)
-
-    print(
-        '\nFound %d working and %d broken test cases.' %
-        (len(fixed_success), len(fixed_failures)))
-    for failure in fixed_failures:
-      print('  %s' % failure)
-    return not fixed_failures
-  finally:
-    os.remove(run_test_cases_file)
+    previous_failures = failures
 
 
 def main():
