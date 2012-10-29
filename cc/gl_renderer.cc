@@ -408,9 +408,10 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     desc.fHeight = source.height();
     desc.fConfig = kSkia8888_GrPixelConfig;
     GrAutoScratchTexture scratchTexture(grContext, desc, GrContext::kExact_ScratchTexMatch);
+    SkAutoTUnref<GrTexture> backingStore(scratchTexture.detach());
 
     // Create a device and canvas using that backing store.
-    SkGpuDevice device(grContext, scratchTexture.detach());
+    SkGpuDevice device(grContext, backingStore.get());
     SkCanvas canvas(&device);
 
     // Draw the source bitmap through the filter to the canvas.
