@@ -209,18 +209,14 @@ bool BrowserCommandController::IsReservedCommandOrKey(
     return false;
 
 #if defined(OS_CHROMEOS)
-  // Chrome OS's top row of keys produces F1-10.  Make sure that web pages
-  // aren't able to block Chrome from performing the standard actions for F1-F4.
-  // We should not handle F5-10 here since they are processed by Ash. See also:
-  // crbug.com/127333#c8
+  // On Chrome OS, the top row of keys are mapped to F1-F10.  We don't want web
+  // pages to be able to change the behavior of these keys.  Ash handles F4 and
+  // up; this leaves us needing to reserve F1-F3 here.
   ui::KeyboardCode key_code =
-      static_cast<ui::KeyboardCode>(event.windowsKeyCode);
-  if ((key_code == ui::VKEY_F1 ||
-       key_code == ui::VKEY_F2 ||
-       key_code == ui::VKEY_F3 ||
-       key_code == ui::VKEY_F4) &&
-      // Make sure it's a browser shortcut (i.e. not an Ash one like Alt+F4).
-      command_id != -1) {
+    static_cast<ui::KeyboardCode>(event.windowsKeyCode);
+  if ((key_code == ui::VKEY_F1 && command_id == IDC_BACK) ||
+      (key_code == ui::VKEY_F2 && command_id == IDC_FORWARD) ||
+      (key_code == ui::VKEY_F3 && command_id == IDC_RELOAD)) {
     return true;
   }
 #endif
@@ -236,8 +232,7 @@ bool BrowserCommandController::IsReservedCommandOrKey(
          command_id == IDC_SELECT_NEXT_TAB ||
          command_id == IDC_SELECT_PREVIOUS_TAB ||
          command_id == IDC_TABPOSE ||
-         command_id == IDC_EXIT ||
-         command_id == IDC_SEARCH;
+         command_id == IDC_EXIT;
 }
 
 void BrowserCommandController::SetBlockCommandExecution(bool block) {
