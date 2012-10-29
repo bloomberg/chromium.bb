@@ -15,16 +15,14 @@
 #include "content/public/common/geoposition.h"
 #include "net/url_request/url_request_context_getter.h"
 
-class GeolocationArbitratorDependencyFactory;
-class LocationProviderBase;
-
-namespace content {
-class AccessTokenStore;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
+
+namespace content {
+class AccessTokenStore;
+class GeolocationArbitratorDependencyFactory;
+class LocationProviderBase;
 
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
@@ -77,18 +75,18 @@ class CONTENT_EXPORT GeolocationArbitrator
   // |providers_| or deleted on error (e.g. it fails to start).
   void RegisterProvider(LocationProviderBase* provider);
   void OnAccessTokenStoresLoaded(
-      content::AccessTokenStore::AccessTokenSet access_token_store,
+      AccessTokenStore::AccessTokenSet access_token_store,
       net::URLRequestContextGetter* context_getter);
   void DoStartProviders();
   // Returns true if |new_position| is an improvement over |old_position|.
   // Set |from_same_provider| to true if both the positions came from the same
   // provider.
-  bool IsNewPositionBetter(const content::Geoposition& old_position,
-                           const content::Geoposition& new_position,
+  bool IsNewPositionBetter(const Geoposition& old_position,
+                           const Geoposition& new_position,
                            bool from_same_provider) const;
 
   scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
-  scoped_refptr<content::AccessTokenStore> access_token_store_;
+  scoped_refptr<AccessTokenStore> access_token_store_;
   GetTimeNow get_time_now_;
   GeolocationObserver* observer_;
   ScopedVector<LocationProviderBase> providers_;
@@ -97,9 +95,11 @@ class CONTENT_EXPORT GeolocationArbitrator
   const LocationProviderBase* position_provider_;
   bool is_permission_granted_;
   // The current best estimate of our position.
-  content::Geoposition position_;
+  Geoposition position_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationArbitrator);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_

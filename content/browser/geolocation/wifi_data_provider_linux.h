@@ -13,6 +13,8 @@ namespace dbus {
 class Bus;
 };
 
+namespace content {
+
 class CONTENT_EXPORT WifiDataProviderLinux : public WifiDataProviderCommon {
  public:
   WifiDataProviderLinux();
@@ -31,5 +33,7 @@ class CONTENT_EXPORT WifiDataProviderLinux : public WifiDataProviderCommon {
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderLinux);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_LINUX_H_

@@ -16,6 +16,7 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 
+namespace content {
 namespace {
 // The time periods between successive polls of the wifi data.
 const int kDefaultPollingIntervalMilliseconds = 10 * 1000;  // 10s
@@ -375,3 +376,5 @@ WifiDataProviderLinux::NewWlanApiForTesting(dbus::Bus* bus) {
     return wlan_api.release();
   return NULL;
 }
+
+}  // namespace content

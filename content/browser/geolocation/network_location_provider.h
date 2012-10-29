@@ -21,7 +21,7 @@
 
 namespace content {
 class AccessTokenStore;
-}
+
 
 class NetworkLocationProvider
     : public LocationProviderBase,
@@ -43,12 +43,12 @@ class NetworkLocationProvider
     // evict old entries in FIFO orderer of being added.
     // Returns true on success, false otherwise.
     bool CachePosition(const WifiData& wifi_data,
-                       const content::Geoposition& position);
+                       const Geoposition& position);
 
     // Searches for a cached position response for the current set of device
     // data. Returns NULL if the position is not in the cache, or the cached
     // position if available. Ownership remains with the cache.
-    const content::Geoposition* FindPosition(const WifiData& wifi_data);
+    const Geoposition* FindPosition(const WifiData& wifi_data);
 
    private:
     // Makes the key for the map of cached positions, using a set of
@@ -59,13 +59,13 @@ class NetworkLocationProvider
     // The cache of positions. This is stored as a map keyed on a string that
     // represents a set of device data, and a list to provide
     // least-recently-added eviction.
-    typedef std::map<string16, content::Geoposition> CacheMap;
+    typedef std::map<string16, Geoposition> CacheMap;
     CacheMap cache_;
     typedef std::list<CacheMap::iterator> CacheAgeList;
     CacheAgeList cache_age_list_;  // Oldest first.
   };
 
-  NetworkLocationProvider(content::AccessTokenStore* access_token_store,
+  NetworkLocationProvider(AccessTokenStore* access_token_store,
                           net::URLRequestContextGetter* context,
                           const GURL& url,
                           const string16& access_token);
@@ -74,7 +74,7 @@ class NetworkLocationProvider
   // LocationProviderBase implementation
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(content::Geoposition *position) OVERRIDE;
+  virtual void GetPosition(Geoposition *position) OVERRIDE;
   virtual void UpdatePosition() OVERRIDE;
   virtual void OnPermissionGranted() OVERRIDE;
 
@@ -91,12 +91,12 @@ class NetworkLocationProvider
   virtual void DeviceDataUpdateAvailable(WifiDataProvider* provider) OVERRIDE;
 
   // NetworkLocationRequest::ListenerInterface implementation.
-  virtual void LocationResponseAvailable(const content::Geoposition& position,
+  virtual void LocationResponseAvailable(const Geoposition& position,
                                          bool server_error,
                                          const string16& access_token,
                                          const WifiData& wifi_data) OVERRIDE;
 
-  scoped_refptr<content::AccessTokenStore> access_token_store_;
+  scoped_refptr<AccessTokenStore> access_token_store_;
 
   // The wifi data provider, acquired via global factories.
   WifiDataProvider* wifi_data_provider_;
@@ -113,7 +113,7 @@ class NetworkLocationProvider
   string16 access_token_;
 
   // The current best position estimate.
-  content::Geoposition position_;
+  Geoposition position_;
 
   // Whether permission has been granted for the provider to operate.
   bool is_permission_granted_;
@@ -129,5 +129,7 @@ class NetworkLocationProvider
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLocationProvider);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_PROVIDER_H_

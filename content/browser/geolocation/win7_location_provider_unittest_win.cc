@@ -15,7 +15,7 @@ using testing::DoDefault;
 using testing::Invoke;
 using testing::Return;
 
-namespace {
+namespace content {
 
 class MockWin7LocationApi : public Win7LocationApi {
  public:
@@ -26,27 +26,26 @@ class MockWin7LocationApi : public Win7LocationApi {
   // Used to signal when the destructor is called.
   MOCK_METHOD0(Die, void());
   // Win7LocationApi
-  MOCK_METHOD1(GetPosition, void(content::Geoposition*));
+  MOCK_METHOD1(GetPosition, void(Geoposition*));
   MOCK_METHOD1(SetHighAccuracy, bool(bool));
 
   virtual ~MockWin7LocationApi() {
     Die();
   }
 
-  void GetPositionValid(content::Geoposition* position) {
+  void GetPositionValid(Geoposition* position) {
     position->latitude = 4.5;
     position->longitude = -34.1;
     position->accuracy = 0.5;
     position->timestamp = base::Time::FromDoubleT(200);
-    position->error_code = content::Geoposition::ERROR_CODE_NONE;
+    position->error_code = Geoposition::ERROR_CODE_NONE;
   }
-  void GetPositionInvalid(content::Geoposition* position) {
+  void GetPositionInvalid(Geoposition* position) {
     position->latitude = 4.5;
     position->longitude = -340000.1;
     position->accuracy = 0.5;
     position->timestamp = base::Time::FromDoubleT(200);
-    position->error_code =
-        content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+    position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   }
 
  private:
@@ -119,7 +118,7 @@ TEST_F(GeolocationProviderWin7Tests, GetValidPosition) {
       .WillOnce(Return(true));
   EXPECT_TRUE(provider_->StartProvider(true));
   main_message_loop_.Run();
-  content::Geoposition position;
+  Geoposition position;
   provider_->GetPosition(&position);
   EXPECT_TRUE(position.Validate());
 }
@@ -133,9 +132,9 @@ TEST_F(GeolocationProviderWin7Tests, GetInvalidPosition) {
       .WillOnce(Return(true));
   EXPECT_TRUE(provider_->StartProvider(true));
   main_message_loop_.Run();
-  content::Geoposition position;
+  Geoposition position;
   provider_->GetPosition(&position);
   EXPECT_FALSE(position.Validate());
 }
 
-}  // namespace
+}  // namespace content

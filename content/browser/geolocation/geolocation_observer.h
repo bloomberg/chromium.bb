@@ -10,7 +10,6 @@
 
 namespace content {
 struct Geoposition;
-}
 
 // This interface is implemented by observers of GeolocationProvider as
 // well as GeolocationProvider itself as an observer of GeolocationArbitrator.
@@ -19,7 +18,7 @@ class CONTENT_EXPORT GeolocationObserver {
   // This will be called whenever the 'best available' location is updated,
   // or when an error is encountered meaning no location data will be
   // available in the forseeable future.
-  virtual void OnLocationUpdate(const content::Geoposition& position) = 0;
+  virtual void OnLocationUpdate(const Geoposition& position) = 0;
 
  protected:
   GeolocationObserver() {}
@@ -54,5 +53,7 @@ struct GeolocationObserverOptions {
 
   bool use_high_accuracy;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_OBSERVER_H_

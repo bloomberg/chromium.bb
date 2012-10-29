@@ -33,6 +33,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 
+namespace content {
+
 // Wifi data relating to a single access point.
 struct CONTENT_EXPORT AccessPointData {
   AccessPointData();
@@ -301,5 +303,7 @@ class DeviceDataProvider : public base::NonThreadSafe {
 };
 
 typedef DeviceDataProvider<WifiData> WifiDataProvider;
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_DEVICE_DATA_PROVIDER_H_

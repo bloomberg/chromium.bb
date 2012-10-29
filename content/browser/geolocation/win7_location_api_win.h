@@ -16,7 +16,6 @@
 
 namespace content {
 struct Geoposition;
-}
 
 // PropVariantToDouble
 typedef HRESULT (WINAPI* PropVariantToDoubleFunction)
@@ -34,7 +33,7 @@ class CONTENT_EXPORT Win7LocationApi {
             ILocation* locator);
   // Gives the best available position.
   // Returns false if no valid position is available.
-  virtual void GetPosition(content::Geoposition* position);
+  virtual void GetPosition(Geoposition* position);
   // Changes the "accuracy" needed. Affects power levels of devices.
   virtual bool SetHighAccuracy(bool acc);
 
@@ -49,7 +48,7 @@ class CONTENT_EXPORT Win7LocationApi {
   // Provides the best position fix if one is available.
   // Does this by requesting a location report and querying it to obtain
   // location information.
-  virtual bool GetPositionIfFixed(content::Geoposition* position);
+  virtual bool GetPositionIfFixed(Geoposition* position);
 
   // ILocation object that lets us communicate with the Location and
   // Sensors platform.
@@ -61,5 +60,7 @@ class CONTENT_EXPORT Win7LocationApi {
 
   DISALLOW_COPY_AND_ASSIGN(Win7LocationApi);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_WIN7_LOCATION_API_WIN_H_

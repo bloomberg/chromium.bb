@@ -13,10 +13,8 @@
 #include "base/synchronization/lock.h"
 
 namespace content {
-struct Geoposition;
-}
-
 class LocationProviderAndroid;
+struct Geoposition;
 
 // Interacts with JNI and reports back to AndroidLocationProvider.
 // This class creates a LocationProvider java object and listens for
@@ -63,11 +61,10 @@ class AndroidLocationApiAdapter {
   void CreateJavaObject(JNIEnv* env);
 
   // Called on the JNI main thread looper.
-  void OnNewGeopositionInternal(const content::Geoposition& geoposition);
+  void OnNewGeopositionInternal(const Geoposition& geoposition);
 
   /// Called on the Geolocation thread.
-  static void NotifyProviderNewGeoposition(
-      const content::Geoposition& geoposition);
+  static void NotifyProviderNewGeoposition(const Geoposition& geoposition);
 
   base::android::ScopedJavaGlobalRef<jobject>
       java_location_provider_android_object_;
@@ -78,5 +75,7 @@ class AndroidLocationApiAdapter {
   base::Lock lock_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_LOCATION_API_ADAPTER_ANDROID_H_

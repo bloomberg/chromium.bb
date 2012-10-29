@@ -17,7 +17,7 @@ class GeolocationDispatcherHost : public BrowserMessageFilter {
  public:
   static GeolocationDispatcherHost* New(
       int render_process_id,
-      content::GeolocationPermissionContext* geolocation_permission_context);
+      GeolocationPermissionContext* geolocation_permission_context);
 
  protected:
   GeolocationDispatcherHost();

@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+namespace content {
+
 LocationProviderBase::LocationProviderBase() {
 }
 
@@ -61,3 +63,5 @@ LocationProviderBase* NewSystemLocationProvider() {
   return NULL;
 }
 #endif
+
+}  // namespace content

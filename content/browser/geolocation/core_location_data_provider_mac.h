@@ -16,8 +16,10 @@
 
 #import <Foundation/Foundation.h>
 
-class CoreLocationProviderMac;
 @class CoreLocationWrapperMac;
+
+namespace content {
+class CoreLocationProviderMac;
 
 // Data provider class that allows CoreLocation to run in Chrome's UI thread
 // while existing on any of Chrome's threads (in this case the IO thread)
@@ -29,7 +31,7 @@ class CoreLocationDataProviderMac
   bool StartUpdating(CoreLocationProviderMac* provider);
   void StopUpdating();
 
-  void UpdatePosition(content::Geoposition* position);
+  void UpdatePosition(Geoposition* position);
 
  protected:
   friend class base::RefCountedThreadSafe<CoreLocationDataProviderMac>;
@@ -40,12 +42,14 @@ class CoreLocationDataProviderMac
   void StartUpdatingTask();
   void StopUpdatingTask();
   // This must execute in the origin thread (IO thread)
-  void PositionUpdated(content::Geoposition position);
+  void PositionUpdated(Geoposition position);
 
   // The wrapper class that supplies this class with position data
   scoped_nsobject<CoreLocationWrapperMac> wrapper_;
   // The LocationProviderBase class that should receive position data
   CoreLocationProviderMac* provider_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_DATA_PROVIDER_H_

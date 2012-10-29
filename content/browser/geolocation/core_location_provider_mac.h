@@ -12,6 +12,7 @@
 #include "content/browser/geolocation/location_provider.h"
 #include "content/public/common/geoposition.h"
 
+namespace content {
 class CoreLocationDataProviderMac;
 
 class CoreLocationProviderMac : public LocationProviderBase {
@@ -22,15 +23,17 @@ class CoreLocationProviderMac : public LocationProviderBase {
   // LocationProvider
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(content::Geoposition* position) OVERRIDE;
+  virtual void GetPosition(Geoposition* position) OVERRIDE;
 
   // Receives new positions and calls UpdateListeners
-  void SetPosition(content::Geoposition* position);
+  void SetPosition(Geoposition* position);
 
  private:
   bool is_updating_;
   CoreLocationDataProviderMac* data_provider_;
-  content::Geoposition position_;
+  Geoposition position_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_PROVIDER_MAC_H_

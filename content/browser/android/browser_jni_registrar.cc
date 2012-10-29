@@ -26,7 +26,7 @@ using content::SurfaceTexturePeerBrowserImpl;
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "AndroidLocationApiAdapter",
-    AndroidLocationApiAdapter::RegisterGeolocationService },
+    content::AndroidLocationApiAdapter::RegisterGeolocationService },
   { "AndroidBrowserProcess", content::RegisterAndroidBrowserProcess },
   { "BrowserProcessSurfaceTexture",
     SurfaceTexturePeerBrowserImpl::RegisterBrowserProcessSurfaceTexture },

@@ -13,14 +13,13 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-namespace content {
-struct Geoposition;
-}
-
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
 }
+
+namespace content {
+struct Geoposition;
 
 // Takes a set of device data and sends it to a server to get a position fix.
 // It performs formatting of the request and interpretation of the response.
@@ -34,7 +33,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
     // Updates the listener with a new position. server_error indicates whether
     // was a server or network error - either no response or a 500 error code.
     virtual void LocationResponseAvailable(
-        const content::Geoposition& position,
+        const Geoposition& position,
         bool server_error,
         const string16& access_token,
         const WifiData& wifi_data) = 0;
@@ -74,5 +73,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLocationRequest);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_

@@ -24,7 +24,7 @@ using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
 
-namespace {
+namespace content {
 
 class MockLatLongReport : public ILatLongReport {
  public:
@@ -311,16 +311,16 @@ TEST_F(GeolocationApiWin7Tests, PermissionDenied) {
   EXPECT_CALL(*locator_, GetReport(_, _))
       .Times(AtLeast(1))
       .WillRepeatedly(Return(E_ACCESSDENIED));
-  content::Geoposition position;
+  Geoposition position;
   api_->GetPosition(&position);
-  EXPECT_EQ(content::Geoposition::ERROR_CODE_PERMISSION_DENIED,
+  EXPECT_EQ(Geoposition::ERROR_CODE_PERMISSION_DENIED,
             position.error_code);
 }
 
 TEST_F(GeolocationApiWin7Tests, GetValidPosition) {
   EXPECT_CALL(*locator_, GetReport(_, _))
       .Times(AtLeast(1));
-  content::Geoposition position;
+  Geoposition position;
   api_->GetPosition(&position);
   EXPECT_TRUE(position.Validate());
 }
@@ -331,9 +331,9 @@ TEST_F(GeolocationApiWin7Tests, GetInvalidPosition) {
       .WillRepeatedly(Return(HRESULT_FROM_WIN32(ERROR_NO_DATA)));
   EXPECT_CALL(*locator_, GetReport(_, _))
       .Times(AtLeast(1));
-  content::Geoposition position;
+  Geoposition position;
   api_->GetPosition(&position);
   EXPECT_FALSE(position.Validate());
 }
 
-}  // namespace
+}  // namespace content

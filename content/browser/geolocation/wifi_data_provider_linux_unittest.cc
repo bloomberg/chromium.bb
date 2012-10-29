@@ -21,6 +21,8 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Unused;
 
+namespace content {
+
 class GeolocationWifiDataProviderLinuxTest : public testing::Test {
   void SetUp() {
     // Create a mock bus.
@@ -224,3 +226,5 @@ TEST_F(GeolocationWifiDataProviderLinuxTest, GetAccessPointData) {
   EXPECT_EQ(-50, access_point_data.radio_signal_strength);
   EXPECT_EQ(4, access_point_data.channel);
 }
+
+}  // namespace content

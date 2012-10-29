@@ -13,12 +13,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::AccessTokenStore;
-using content::FakeAccessTokenStore;
-using content::Geoposition;
 using ::testing::NiceMock;
 
-namespace {
+namespace content {
 
 class MockLocationObserver : public GeolocationObserver {
  public:
@@ -188,14 +185,14 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
   EXPECT_FALSE(observer_->last_position_.Validate());
-  EXPECT_EQ(content::Geoposition::ERROR_CODE_NONE,
+  EXPECT_EQ(Geoposition::ERROR_CODE_NONE,
             observer_->last_position_.error_code);
 
   SetReferencePosition(cell());
 
   EXPECT_TRUE(observer_->last_position_.Validate() ||
               observer_->last_position_.error_code !=
-                  content::Geoposition::ERROR_CODE_NONE);
+                  Geoposition::ERROR_CODE_NONE);
   EXPECT_EQ(cell()->position_.latitude,
             observer_->last_position_.latitude);
 
@@ -297,4 +294,4 @@ TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
   CheckLastPositionInfo(3.5658700, 139.069979, 1000);
 }
 
-}  // namespace
+}  // namespace content

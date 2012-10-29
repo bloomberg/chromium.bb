@@ -7,6 +7,8 @@
 
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
+namespace content {
+
 // Implementation of the wifi data provider for Mac OSX. Uses different API
 // bindings depending on APIs detected available at runtime in order to access
 // wifi scan data: Apple80211.h on OSX 10.5, CoreWLAN framework on OSX 10.6.
@@ -27,5 +29,7 @@ class MacWifiDataProvider : public WifiDataProviderCommon {
 // Creates and returns a new API binding for the CoreWLAN API, or NULL if the
 // API can not be initialized.
 WifiDataProviderCommon::WlanApiInterface* NewCoreWlanApi();
+
+} // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_MAC_H_

@@ -8,6 +8,7 @@
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 #include "content/common/content_export.h"
 
+namespace content {
 class PollingPolicyInterface;
 
 class CONTENT_EXPORT Win32WifiDataProvider : public WifiDataProviderCommon {
@@ -23,5 +24,7 @@ class CONTENT_EXPORT Win32WifiDataProvider : public WifiDataProviderCommon {
 
   DISALLOW_COPY_AND_ASSIGN(Win32WifiDataProvider);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_WIN_H_

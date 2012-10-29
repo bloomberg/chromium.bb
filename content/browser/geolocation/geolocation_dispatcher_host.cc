@@ -18,7 +18,6 @@
 #include "content/common/geolocation_messages.h"
 
 namespace content {
-
 namespace {
 
 void NotifyArbitratorPermissionGranted() {
@@ -68,7 +67,7 @@ class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost,
                                  const GURL& requesting_frame);
   void OnStartUpdating(int render_view_id,
                        const GURL& requesting_frame,
-                       bool enable_high_accuracy);
+      bool enable_high_accuracy);
   void OnStopUpdating(int render_view_id);
 
   // Updates the |location_arbitrator_| with the currently required update
@@ -162,7 +161,7 @@ void GeolocationDispatcherHostImpl::OnCancelPermissionRequest(
   DVLOG(1) << __FUNCTION__ << " " << render_process_id_ << ":"
            << render_view_id << ":" << bridge_id;
   if (geolocation_permission_context_) {
-    geolocation_permission_context_->CancelGeolocationPermissionRequest(
+  geolocation_permission_context_->CancelGeolocationPermissionRequest(
         render_process_id_, render_view_id, bridge_id, requesting_frame);
   }
 }

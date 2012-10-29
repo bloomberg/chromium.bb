@@ -9,6 +9,8 @@
 #include "content/browser/geolocation/core_location_data_provider_mac.h"
 #include "content/public/common/content_switches.h"
 
+namespace content {
+
 CoreLocationProviderMac::CoreLocationProviderMac()
     : is_updating_(false) {
   data_provider_ = new CoreLocationDataProviderMac();
@@ -36,18 +38,18 @@ void CoreLocationProviderMac::StopProvider() {
   is_updating_ = false;
 }
 
-void CoreLocationProviderMac::GetPosition(content::Geoposition* position) {
+void CoreLocationProviderMac::GetPosition(Geoposition* position) {
   DCHECK(position);
   *position = position_;
   DCHECK(position->Validate() ||
-         position->error_code != content::Geoposition::ERROR_CODE_NONE);
+         position->error_code != Geoposition::ERROR_CODE_NONE);
 }
 
-void CoreLocationProviderMac::SetPosition(content::Geoposition* position) {
+void CoreLocationProviderMac::SetPosition(Geoposition* position) {
   DCHECK(position);
   position_ = *position;
   DCHECK(position->Validate() ||
-         position->error_code != content::Geoposition::ERROR_CODE_NONE);
+         position->error_code != Geoposition::ERROR_CODE_NONE);
   UpdateListeners();
 }
 
@@ -58,3 +60,5 @@ LocationProviderBase* NewSystemLocationProvider() {
   }
   return NULL;
 }
+
+}  // namespace content

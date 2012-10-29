@@ -9,6 +9,7 @@
 #include "content/browser/geolocation/location_provider.h"
 #include "content/public/common/geoposition.h"
 
+namespace content {
 class AndroidLocationApiAdapter;
 struct Geoposition;
 
@@ -19,17 +20,19 @@ class LocationProviderAndroid : public LocationProviderBase {
   virtual ~LocationProviderAndroid();
 
   // Called by the AndroidLocationApiAdapter.
-  void NotifyNewGeoposition(const content::Geoposition& position);
+  void NotifyNewGeoposition(const Geoposition& position);
 
   // LocationProviderBase.
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(content::Geoposition* position) OVERRIDE;
+  virtual void GetPosition(Geoposition* position) OVERRIDE;
   virtual void UpdatePosition() OVERRIDE;
   virtual void OnPermissionGranted() OVERRIDE;
 
  private:
-  content::Geoposition last_position_;
+  Geoposition last_position_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_LOCATION_PROVIDER_ANDROID_H_

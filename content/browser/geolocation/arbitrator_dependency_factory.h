@@ -10,19 +10,18 @@
 #include "content/common/content_export.h"
 
 class GURL;
-class LocationProviderBase;
 
 namespace base {
 class Time;
 }
 
-namespace content {
-class AccessTokenStore;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
+
+namespace content {
+class AccessTokenStore;
+class LocationProviderBase;
 
 // Allows injection of factory methods for creating the location providers.
 // RefCounted for simplicity of writing tests.
@@ -33,9 +32,9 @@ class CONTENT_EXPORT GeolocationArbitratorDependencyFactory
   typedef base::Time (*GetTimeNow)();
 
   virtual GetTimeNow GetTimeFunction() = 0;
-  virtual content::AccessTokenStore* NewAccessTokenStore() = 0;
+  virtual AccessTokenStore* NewAccessTokenStore() = 0;
   virtual LocationProviderBase* NewNetworkLocationProvider(
-      content::AccessTokenStore* access_token_store,
+      AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token) = 0;
@@ -53,9 +52,9 @@ class CONTENT_EXPORT DefaultGeolocationArbitratorDependencyFactory
  public:
   // GeolocationArbitratorDependencyFactory
   virtual GetTimeNow GetTimeFunction() OVERRIDE;
-  virtual content::AccessTokenStore* NewAccessTokenStore() OVERRIDE;
+  virtual AccessTokenStore* NewAccessTokenStore() OVERRIDE;
   virtual LocationProviderBase* NewNetworkLocationProvider(
-      content::AccessTokenStore* access_token_store,
+      AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token) OVERRIDE;
@@ -64,5 +63,7 @@ class CONTENT_EXPORT DefaultGeolocationArbitratorDependencyFactory
  protected:
   virtual ~DefaultGeolocationArbitratorDependencyFactory();
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_ARBITRATOR_DEPENDENCY_FACTORY_H_

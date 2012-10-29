@@ -14,7 +14,7 @@
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
+namespace content {
 
 void GeolocationProvider::AddObserver(GeolocationObserver* observer,
     const GeolocationObserverOptions& update_options) {
@@ -22,7 +22,7 @@ void GeolocationProvider::AddObserver(GeolocationObserver* observer,
   observers_[observer] = update_options;
   OnClientsChanged();
   if (position_.Validate() ||
-      position_.error_code != content::Geoposition::ERROR_CODE_NONE)
+      position_.error_code != Geoposition::ERROR_CODE_NONE)
     observer->OnLocationUpdate(position_);
 }
 
@@ -35,7 +35,7 @@ bool GeolocationProvider::RemoveObserver(GeolocationObserver* observer) {
 }
 
 void GeolocationProvider::RequestCallback(
-    const content::GeolocationUpdateCallback& callback) {
+    const GeolocationUpdateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   callbacks_.push_back(callback);
   OnClientsChanged();
@@ -55,8 +55,7 @@ bool GeolocationProvider::HasPermissionBeenGranted() const {
   return is_permission_granted_;
 }
 
-void GeolocationProvider::OnLocationUpdate(
-    const content::Geoposition& position) {
+void GeolocationProvider::OnLocationUpdate(const Geoposition& position) {
   DCHECK(OnGeolocationThread());
   // Will be true only in testing.
   if (ignore_location_updates_)
@@ -68,7 +67,7 @@ void GeolocationProvider::OnLocationUpdate(
 }
 
 void GeolocationProvider::OverrideLocationForTesting(
-    const content::Geoposition& position) {
+    const Geoposition& position) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   position_ = position;
   ignore_location_updates_ = true;
@@ -155,10 +154,10 @@ void GeolocationProvider::InformProvidersPermissionGranted() {
   arbitrator_->OnPermissionGranted();
 }
 
-void GeolocationProvider::NotifyClients(const content::Geoposition& position) {
+void GeolocationProvider::NotifyClients(const Geoposition& position) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(position.Validate() ||
-         position.error_code != content::Geoposition::ERROR_CODE_NONE);
+         position.error_code != Geoposition::ERROR_CODE_NONE);
   position_ = position;
   ObserverMap::const_iterator it = observers_.begin();
   while (it != observers_.end()) {
@@ -192,3 +191,5 @@ void GeolocationProvider::CleanUp() {
   delete arbitrator_;
   arbitrator_ = NULL;
 }
+
+}  // namespace content

@@ -12,17 +12,17 @@ namespace chromeos {
 class NetworkLibrary;
 }
 
-class WifiDataProviderChromeOs : public WifiDataProviderImplBase {
+class WifiDataProviderChromeOs : public content::WifiDataProviderImplBase {
  public:
   WifiDataProviderChromeOs();
 
   // WifiDataProviderImplBase
   virtual bool StartDataProvider() OVERRIDE;
   virtual void StopDataProvider() OVERRIDE;
-  virtual bool GetData(WifiData* data) OVERRIDE;
+  virtual bool GetData(content::WifiData* data) OVERRIDE;
 
   // Allows injection of |lib| for testing.
-  static WifiDataProviderCommon::WlanApiInterface* NewWlanApi(
+  static content::WifiDataProviderCommon::WlanApiInterface* NewWlanApi(
       chromeos::NetworkLibrary* lib);
 
  private:
@@ -35,13 +35,13 @@ class WifiDataProviderChromeOs : public WifiDataProviderImplBase {
 
   // Client thread
   void DidWifiScanTaskNoResults();
-  void DidWifiScanTask(const WifiData& new_data);
+  void DidWifiScanTask(const content::WifiData& new_data);
   void MaybeNotifyListeners(bool update_available);
   void DidStartFailed();
 
   // WifiDataProviderCommon
-  virtual WifiDataProviderCommon::WlanApiInterface* NewWlanApi();
-  virtual PollingPolicyInterface* NewPollingPolicy();
+  virtual content::WifiDataProviderCommon::WlanApiInterface* NewWlanApi();
+  virtual content::PollingPolicyInterface* NewPollingPolicy();
 
   // Will schedule a scan; i.e. enqueue DoWifiScanTask deferred task.
   void ScheduleNextScan(int interval);
@@ -53,13 +53,13 @@ class WifiDataProviderChromeOs : public WifiDataProviderImplBase {
   void ScheduleStop();
 
   // Underlying OS wifi API. (UI thread)
-  scoped_ptr<WifiDataProviderCommon::WlanApiInterface> wlan_api_;
+  scoped_ptr<content::WifiDataProviderCommon::WlanApiInterface> wlan_api_;
 
   // Controls the polling update interval. (client thread)
-  scoped_ptr<PollingPolicyInterface> polling_policy_;
+  scoped_ptr<content::PollingPolicyInterface> polling_policy_;
 
   // The latest wifi data. (client thread)
-  WifiData wifi_data_;
+  content::WifiData wifi_data_;
 
   // Whether we have strated the data provider. (client thread)
   bool started_;

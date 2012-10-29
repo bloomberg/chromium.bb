@@ -8,6 +8,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
+namespace content {
+
 string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
   // mac_as_int is big-endian. Write in byte chunks.
   // Format is XX-XX-XX-XX-XX-XX.
@@ -107,3 +109,5 @@ void WifiDataProviderCommon::ScheduleNextScan(int interval) {
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(interval));
 }
+
+}  // namespace content

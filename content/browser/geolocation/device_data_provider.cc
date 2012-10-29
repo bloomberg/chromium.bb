@@ -4,6 +4,8 @@
 
 #include "content/browser/geolocation/device_data_provider.h"
 
+namespace content {
+
 // statics
 template<> DeviceDataProvider<WifiData>*
     DeviceDataProvider<WifiData>::instance_ = NULL;
@@ -48,3 +50,5 @@ bool WifiData::DiffersSignificantly(const WifiData& other) const {
   // Test how many have changed.
   return max_ap_count > num_common + difference_threadhold;
 }
+
+}  // namespace content

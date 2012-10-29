@@ -8,6 +8,8 @@
 #include "content/browser/geolocation/wifi_data_provider_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 TEST(GeolocationWin32WifiDataProviderTest, CreateDestroy) {
   // WifiDataProviderCommon requires the client to have a message loop.
   MessageLoop dummy_loop;
@@ -17,3 +19,5 @@ TEST(GeolocationWin32WifiDataProviderTest, CreateDestroy) {
   // Can't actually call start provider on the Win32WifiDataProvider without
   // it accessing hardware and so risking making the test flaky.
 }
+
+}  // namespace content

@@ -15,6 +15,8 @@
 #include "content/browser/geolocation/device_data_provider.h"
 #include "content/common/content_export.h"
 
+namespace content {
+
 // Converts a MAC address stored as an array of uint8 to a string.
 string16 MacAddressAsString16(const uint8 mac_as_int[6]);
 
@@ -122,5 +124,7 @@ class CONTENT_EXPORT WifiDataProviderCommon
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderCommon);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H_

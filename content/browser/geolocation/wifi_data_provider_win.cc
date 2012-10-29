@@ -36,6 +36,7 @@
 #define NDIS_STATUS_INVALID_LENGTH   ((NDIS_STATUS)0xC0010014L)
 #define NDIS_STATUS_BUFFER_TOO_SHORT ((NDIS_STATUS)0xC0010016L)
 
+namespace content {
 namespace {
 // The limits on the size of the buffer used for the OID query.
 const int kInitialBufferSize = 2 << 12;  // Good for about 50 APs.
@@ -605,3 +606,5 @@ bool GetSystemDirectory(string16* path) {
   return true;
 }
 }  // namespace
+
+}  // namespace content

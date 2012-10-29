@@ -17,7 +17,8 @@
 #include "content/browser/geolocation/core_location_provider_mac.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 
-using content::BrowserThread;
+using content::CoreLocationDataProviderMac;
+using content::Geoposition;
 
 // A few required declarations since the CoreLocation headers are not available
 // with the Mac OS X 10.5 SDK.
@@ -140,7 +141,7 @@ enum {
 - (void)locationManager:(CLLocationManager*)manager
     didUpdateToLocation:(CLLocation*)newLocation
            fromLocation:(CLLocation*)oldLocation {
-  content::Geoposition position;
+  Geoposition position;
   position.latitude  = [newLocation coordinate].latitude;
   position.longitude = [newLocation coordinate].longitude;
   position.altitude  = [newLocation altitude];
@@ -149,20 +150,19 @@ enum {
   position.speed = [newLocation speed];
   position.heading = [newLocation course];
   position.timestamp = base::Time::Now();
-  position.error_code = content::Geoposition::ERROR_CODE_NONE;
+  position.error_code = Geoposition::ERROR_CODE_NONE;
   dataProvider_->UpdatePosition(&position);
 }
 
 - (void)locationManager:(CLLocationManager*)manager
        didFailWithError:(NSError*)error {
-  content::Geoposition position;
+  Geoposition position;
   switch ([error code]) {
     case kCLErrorLocationUnknown:
-      position.error_code =
-          content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+      position.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
       break;
     case kCLErrorDenied:
-      position.error_code = content::Geoposition::ERROR_CODE_PERMISSION_DENIED;
+      position.error_code = Geoposition::ERROR_CODE_PERMISSION_DENIED;
       break;
     default:
       NOTREACHED() << "Unknown CoreLocation error: " << [error code];
@@ -187,6 +187,8 @@ enum {
 }
 
 @end
+
+namespace content {
 
 CoreLocationDataProviderMac::CoreLocationDataProviderMac() {
   if (MessageLoop::current() !=
@@ -224,8 +226,7 @@ void CoreLocationDataProviderMac::StopUpdating() {
       base::Bind(&CoreLocationDataProviderMac::StopUpdatingTask, this));
 }
 
-void CoreLocationDataProviderMac::UpdatePosition(
-    content::Geoposition *position) {
+void CoreLocationDataProviderMac::UpdatePosition(Geoposition *position) {
   GeolocationProvider::GetInstance()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&CoreLocationDataProviderMac::PositionUpdated, this,
@@ -244,10 +245,11 @@ void CoreLocationDataProviderMac::StopUpdatingTask() {
   [wrapper_ stopLocation];
 }
 
-void CoreLocationDataProviderMac::PositionUpdated(
-    content::Geoposition position) {
+void CoreLocationDataProviderMac::PositionUpdated(Geoposition position) {
   DCHECK(MessageLoop::current() ==
          GeolocationProvider::GetInstance()->message_loop());
   if (provider_)
     provider_->SetPosition(&position);
 }
+
+}  // namespace content

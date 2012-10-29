@@ -42,6 +42,8 @@
 - (BOOL)isEqualToNetwork:(CWNetwork*)network;
 @end
 
+namespace content {
+
 class CoreWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
   CoreWlanApi() {}
@@ -160,3 +162,5 @@ WifiDataProviderCommon::WlanApiInterface* NewCoreWlanApi() {
 
   return NULL;
 }
+
+}  // namespace content

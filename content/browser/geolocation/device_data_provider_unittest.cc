@@ -7,7 +7,7 @@
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace content {
 
 class NullWifiDataListenerInterface
     : public WifiDataProviderCommon::ListenerInterface {
@@ -38,4 +38,4 @@ TEST(GeolocationDeviceDataProviderWifiData, CreateDestroy) {
   }
 }
 
-}  // namespace
+}  // namespace content

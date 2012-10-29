@@ -14,6 +14,7 @@
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ClearException;
+using content::AndroidLocationApiAdapter;
 
 static void NewLocationAvailable(JNIEnv* env, jclass,
                                  jdouble latitude,
@@ -31,6 +32,8 @@ static void NewLocationAvailable(JNIEnv* env, jclass,
 static void NewErrorAvailable(JNIEnv* env, jclass, jstring message) {
   AndroidLocationApiAdapter::OnNewErrorAvailable(env, message);
 }
+
+namespace content {
 
 AndroidLocationApiAdapter::AndroidLocationApiAdapter()
     : location_provider_(NULL) {
@@ -87,7 +90,7 @@ void AndroidLocationApiAdapter::Stop() {
 
 // static
 void AndroidLocationApiAdapter::NotifyProviderNewGeoposition(
-    const content::Geoposition& geoposition) {
+    const Geoposition& geoposition) {
   // Called on the geolocation thread, safe to access location_provider_ here.
   if (GetInstance()->location_provider_) {
     CHECK(GetInstance()->message_loop_->BelongsToCurrentThread());
@@ -102,7 +105,7 @@ void AndroidLocationApiAdapter::OnNewLocationAvailable(
     bool has_accuracy, double accuracy,
     bool has_heading, double heading,
     bool has_speed, double speed) {
-  content::Geoposition position;
+  Geoposition position;
   position.latitude = latitude;
   position.longitude = longitude;
   position.timestamp = base::Time::FromDoubleT(time_stamp);
@@ -120,9 +123,8 @@ void AndroidLocationApiAdapter::OnNewLocationAvailable(
 // static
 void AndroidLocationApiAdapter::OnNewErrorAvailable(JNIEnv* env,
                                                     jstring message) {
-  content::Geoposition position_error;
-  position_error.error_code =
-      content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  Geoposition position_error;
+  position_error.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   position_error.error_message =
       base::android::ConvertJavaStringToUTF8(env, message);
   GetInstance()->OnNewGeopositionInternal(position_error);
@@ -147,7 +149,7 @@ void AndroidLocationApiAdapter::CreateJavaObject(JNIEnv* env) {
 }
 
 void AndroidLocationApiAdapter::OnNewGeopositionInternal(
-    const content::Geoposition& geoposition) {
+    const Geoposition& geoposition) {
   base::AutoLock lock(lock_);
   if (!message_loop_)
     return;
@@ -157,3 +159,5 @@ void AndroidLocationApiAdapter::OnNewGeopositionInternal(
           &AndroidLocationApiAdapter::NotifyProviderNewGeoposition,
           geoposition));
 }
+
+}  // namespace content

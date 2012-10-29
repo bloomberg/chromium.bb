@@ -22,13 +22,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::Geoposition;
 using testing::MakeMatcher;
 using testing::Matcher;
 using testing::MatcherInterface;
 using testing::MatchResultListener;
 
-namespace {
+namespace content {
 class NonSingletonGeolocationProvider : public GeolocationProvider {
  public:
   NonSingletonGeolocationProvider() {}
@@ -55,7 +54,7 @@ class StartStopMockLocationProvider : public MockLocationProvider {
 // existing FakeAccessTokenStore class cannot be used here because it is based
 // on gmock and gmock is not thread-safe on Windows.
 // See: http://code.google.com/p/googlemock/issues/detail?id=156
-class TestingAccessTokenStore : public content::AccessTokenStore {
+class TestingAccessTokenStore : public AccessTokenStore {
  public:
   TestingAccessTokenStore(base::WaitableEvent* event) : event_(event) {}
 
@@ -80,12 +79,12 @@ class TestingDependencyFactory
  public:
   TestingDependencyFactory(base::WaitableEvent* event) : event_(event) {}
 
-  virtual content::AccessTokenStore* NewAccessTokenStore() OVERRIDE {
+  virtual AccessTokenStore* NewAccessTokenStore() OVERRIDE {
     return new TestingAccessTokenStore(event_);
   }
 
   virtual LocationProviderBase* NewNetworkLocationProvider(
-      content::AccessTokenStore* access_token_store,
+      AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token) OVERRIDE {
@@ -106,27 +105,27 @@ class TestingDependencyFactory
 class NullGeolocationObserver : public GeolocationObserver {
  public:
   // GeolocationObserver
-  virtual void OnLocationUpdate(const content::Geoposition& position) {}
+  virtual void OnLocationUpdate(const Geoposition& position) {}
 };
 
 class MockGeolocationObserver : public GeolocationObserver {
  public:
   // GeolocationObserver
-  MOCK_METHOD1(OnLocationUpdate, void(const content::Geoposition& position));
+  MOCK_METHOD1(OnLocationUpdate, void(const Geoposition& position));
 };
 
 class MockGeolocationCallbackWrapper {
  public:
-  MOCK_METHOD1(Callback, void(const content::Geoposition& position));
+  MOCK_METHOD1(Callback, void(const Geoposition& position));
 };
 
 class GeopositionEqMatcher
-    : public MatcherInterface<const content::Geoposition&> {
+    : public MatcherInterface<const Geoposition&> {
  public:
-  explicit GeopositionEqMatcher(const content::Geoposition& expected)
+  explicit GeopositionEqMatcher(const Geoposition& expected)
       : expected_(expected) {}
 
-  virtual bool MatchAndExplain(const content::Geoposition& actual,
+  virtual bool MatchAndExplain(const Geoposition& actual,
                                MatchResultListener* listener) const OVERRIDE {
     return actual.latitude == expected_.latitude &&
            actual.longitude == expected_.longitude &&
@@ -149,13 +148,12 @@ class GeopositionEqMatcher
   }
 
  private:
-  content::Geoposition expected_;
+  Geoposition expected_;
 
   DISALLOW_COPY_AND_ASSIGN(GeopositionEqMatcher);
 };
 
-Matcher<const content::Geoposition&> GeopositionEq(
-    const content::Geoposition& expected) {
+Matcher<const Geoposition&> GeopositionEq(const Geoposition& expected) {
   return MakeMatcher(new GeopositionEqMatcher(expected));
 }
 
@@ -163,7 +161,7 @@ class GeolocationProviderTest : public testing::Test {
  protected:
   GeolocationProviderTest()
       : message_loop_(),
-        io_thread_(content::BrowserThread::IO, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_),
         event_(false, false),
         dependency_factory_(new TestingDependencyFactory(&event_)),
         provider_(new NonSingletonGeolocationProvider) {
@@ -181,7 +179,7 @@ class GeolocationProviderTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  content::TestBrowserThread io_thread_;
+  TestBrowserThread io_thread_;
 
   base::WaitableEvent event_;
   scoped_refptr<TestingDependencyFactory> dependency_factory_;
@@ -213,8 +211,8 @@ TEST_F(GeolocationProviderTest, StartStop) {
 }
 
 TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
-  content::Geoposition position;
-  position.error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  Geoposition position;
+  position.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   provider_->OverrideLocationForTesting(position);
   // Adding an observer when the location is overridden should synchronously
   // update the observer with our overridden position.
@@ -237,7 +235,7 @@ TEST_F(GeolocationProviderTest, Callback) {
   // Wait for token load request from the arbitrator to come through.
   WaitAndReset();
 
-  content::Geoposition position;
+  Geoposition position;
   position.latitude = 12;
   position.longitude = 34;
   position.accuracy = 56;
@@ -248,4 +246,4 @@ TEST_F(GeolocationProviderTest, Callback) {
   WaitAndReset();
 }
 
-}  // namespace
+}  // namespace content

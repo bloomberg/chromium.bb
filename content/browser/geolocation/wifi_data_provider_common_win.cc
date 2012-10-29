@@ -10,6 +10,8 @@
 #include "content/browser/geolocation/device_data_provider.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
+namespace content {
+
 bool ConvertToAccessPointData(const NDIS_WLAN_BSSID& data,
                               AccessPointData *access_point_data) {
   // Currently we get only MAC address, signal strength and SSID.
@@ -50,3 +52,5 @@ int GetDataFromBssIdList(const NDIS_802_11_BSSID_LIST& bss_id_list,
   }
   return found;
 }
+
+}  // namespace content

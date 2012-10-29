@@ -7,6 +7,8 @@
 
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
 
+namespace content {
+
 class GeolocationArbitratorDependencyFactoryWithLocationProvider
     : public DefaultGeolocationArbitratorDependencyFactory {
  public:
@@ -16,7 +18,7 @@ class GeolocationArbitratorDependencyFactoryWithLocationProvider
       LocationProviderFactoryFunction factory_function);
 
   virtual LocationProviderBase* NewNetworkLocationProvider(
-      content::AccessTokenStore* access_token_store,
+      AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token) OVERRIDE;
@@ -29,5 +31,6 @@ class GeolocationArbitratorDependencyFactoryWithLocationProvider
   LocationProviderFactoryFunction factory_function_;
 };
 
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_ARBITRATOR_DEPENDENCY_FACTORIES_FOR_TEST_H_

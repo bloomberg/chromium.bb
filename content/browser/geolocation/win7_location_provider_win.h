@@ -13,6 +13,8 @@
 #include "content/common/content_export.h"
 #include "content/public/common/geoposition.h"
 
+namespace content {
+
 // Location provider for Windows 7 that uses the Location and Sensors platform
 // to obtain position fixes.
 // TODO(allanwoj): Remove polling and let the api signal when a new location.
@@ -27,7 +29,7 @@ class CONTENT_EXPORT Win7LocationProvider : public LocationProviderBase {
   // LocationProvider.
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(content::Geoposition* position) OVERRIDE;
+  virtual void GetPosition(Geoposition* position) OVERRIDE;
   virtual void UpdatePosition() OVERRIDE;
 
  private:
@@ -37,9 +39,11 @@ class CONTENT_EXPORT Win7LocationProvider : public LocationProviderBase {
   void ScheduleNextPoll(int interval);
 
   scoped_ptr<Win7LocationApi> api_;
-  content::Geoposition position_;
+  Geoposition position_;
   // Holder for the tasks which run on the thread; takes care of cleanup.
   base::WeakPtrFactory<Win7LocationProvider> weak_factory_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_WIN7_LOCATION_PROVIDER_WIN_H_

@@ -12,7 +12,14 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::AccessPointData;
 using content::BrowserThread;
+using content::GenericPollingPolicy;
+using content::PollingPolicyInterface;
+using content::WifiData;
+using content::WifiDataProvider;
+using content::WifiDataProviderCommon;
+using content::WifiDataProviderImplBase;
 
 namespace {
 // The time periods between successive polls of the wifi data.

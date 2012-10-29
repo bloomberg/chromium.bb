@@ -20,14 +20,13 @@
 
 class GURL;
 
-namespace content {
-class AccessTokenStore;
-struct Geoposition;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
+
+namespace content {
+class AccessTokenStore;
+struct Geoposition;
 
 // The base class used by all location providers.
 class CONTENT_EXPORT LocationProviderBase
@@ -68,7 +67,7 @@ class CONTENT_EXPORT LocationProviderBase
   virtual bool StartProvider(bool high_accuracy) = 0;
   virtual void StopProvider() = 0;
   // Gets the current best position estimate.
-  virtual void GetPosition(content::Geoposition* position) = 0;
+  virtual void GetPosition(Geoposition* position) = 0;
   // Provides a hint to the provider that new location data is needed as soon
   // as possible. Default implementation does nothing.
   virtual void UpdatePosition() {}
@@ -95,10 +94,12 @@ class CONTENT_EXPORT LocationProviderBase
 // Factory functions for the various types of location provider to abstract
 // over the platform-dependent implementations.
 CONTENT_EXPORT LocationProviderBase* NewNetworkLocationProvider(
-    content::AccessTokenStore* access_token_store,
+    AccessTokenStore* access_token_store,
     net::URLRequestContextGetter* context,
     const GURL& url,
     const string16& access_token);
 LocationProviderBase* NewSystemLocationProvider();
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_

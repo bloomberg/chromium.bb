@@ -12,9 +12,7 @@
 #include "content/public/browser/access_token_store.h"
 #include "googleurl/src/gurl.h"
 
-using content::AccessTokenStore;
-using content::Geoposition;
-
+namespace content {
 namespace {
 
 const char* kDefaultNetworkProviderUrl =
@@ -131,7 +129,7 @@ void GeolocationArbitrator::LocationUpdateAvailable(
   Geoposition new_position;
   provider->GetPosition(&new_position);
   DCHECK(new_position.Validate() ||
-         new_position.error_code != content::Geoposition::ERROR_CODE_NONE);
+         new_position.error_code != Geoposition::ERROR_CODE_NONE);
   if (!IsNewPositionBetter(position_, new_position,
                            provider == position_provider_))
     return;
@@ -174,3 +172,5 @@ void GeolocationArbitrator::SetDependencyFactoryForTest(
     GeolocationArbitratorDependencyFactory* dependency_factory) {
   g_dependency_factory_for_test = dependency_factory;
 }
+
+}  // namespace content

@@ -16,9 +16,11 @@
 #include "content/public/browser/geolocation.h"
 #include "content/public/common/geoposition.h"
 
+template<typename Type> struct DefaultSingletonTraits;
+
+namespace content {
 class GeolocationArbitrator;
 class GeolocationProviderTest;
-template<typename Type> struct DefaultSingletonTraits;
 
 // This is the main API to the geolocation subsystem. The application will hold
 // a single instance of this class and can register multiple clients to be
@@ -51,19 +53,18 @@ class CONTENT_EXPORT GeolocationProvider
   // Request a single callback when the next location update becomes available.
   // Callbacks must only be requested by code that is allowed to access the
   // location. No further permission checks will be made.
-  void RequestCallback(const content::GeolocationUpdateCallback& callback);
+  void RequestCallback(const GeolocationUpdateCallback& callback);
 
   void OnPermissionGranted();
   bool HasPermissionBeenGranted() const;
 
   // GeolocationObserver implementation.
-  virtual void OnLocationUpdate(const content::Geoposition& position) OVERRIDE;
+  virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE;
 
   // Overrides the location for automation/testing. Suppresses any further
   // updates from the actual providers and sends an update with the overridden
   // position to all registered clients.
-  void OverrideLocationForTesting(
-      const content::Geoposition& override_position);
+  void OverrideLocationForTesting(const Geoposition& override_position);
 
   // Gets a pointer to the singleton instance of the location relayer, which
   // is in turn bound to the browser's global context objects. This must only be
@@ -80,7 +81,7 @@ class CONTENT_EXPORT GeolocationProvider
   typedef std::map<GeolocationObserver*, GeolocationObserverOptions>
       ObserverMap;
 
-  typedef std::vector<content::GeolocationUpdateCallback> CallbackList;
+  typedef std::vector<GeolocationUpdateCallback> CallbackList;
 
   bool OnGeolocationThread() const;
 
@@ -100,7 +101,7 @@ class CONTENT_EXPORT GeolocationProvider
   void InformProvidersPermissionGranted();
 
   // Notifies all registered clients that a position update is available.
-  void NotifyClients(const content::Geoposition& position);
+  void NotifyClients(const Geoposition& position);
 
   // Thread
   virtual void Init() OVERRIDE;
@@ -110,7 +111,7 @@ class CONTENT_EXPORT GeolocationProvider
   ObserverMap observers_;
   CallbackList callbacks_;
   bool is_permission_granted_;
-  content::Geoposition position_;
+  Geoposition position_;
 
   // True only in testing, where we want to use a custom position.
   bool ignore_location_updates_;
@@ -120,5 +121,7 @@ class CONTENT_EXPORT GeolocationProvider
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationProvider);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_PROVIDER_H_

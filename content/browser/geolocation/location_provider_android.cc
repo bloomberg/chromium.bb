@@ -8,6 +8,8 @@
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/public/common/geoposition.h"
 
+namespace content {
+
 // LocationProviderAndroid
 LocationProviderAndroid::LocationProviderAndroid() {
 }
@@ -17,7 +19,7 @@ LocationProviderAndroid::~LocationProviderAndroid() {
 }
 
 void LocationProviderAndroid::NotifyNewGeoposition(
-    const content::Geoposition& position) {
+    const Geoposition& position) {
   last_position_ = position;
   UpdateListeners();
 }
@@ -30,7 +32,7 @@ void LocationProviderAndroid::StopProvider() {
   AndroidLocationApiAdapter::GetInstance()->Stop();
 }
 
-void LocationProviderAndroid::GetPosition(content::Geoposition* position) {
+void LocationProviderAndroid::GetPosition(Geoposition* position) {
   *position = last_position_;
 }
 
@@ -45,3 +47,5 @@ void LocationProviderAndroid::OnPermissionGranted() {
 LocationProviderBase* NewSystemLocationProvider() {
   return new LocationProviderAndroid;
 }
+
+}  // namespace content

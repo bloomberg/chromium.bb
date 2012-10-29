@@ -12,6 +12,8 @@
 #include "content/browser/geolocation/location_provider.h"
 #include "content/public/common/geoposition.h"
 
+namespace content {
+
 // Mock implementation of a location provider for testing.
 class MockLocationProvider : public LocationProviderBase {
  public:
@@ -21,15 +23,15 @@ class MockLocationProvider : public LocationProviderBase {
   virtual ~MockLocationProvider();
 
   // Updates listeners with the new position.
-  void HandlePositionChanged(const content::Geoposition& position);
+  void HandlePositionChanged(const Geoposition& position);
 
   // LocationProviderBase implementation.
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(content::Geoposition* position) OVERRIDE;
+  virtual void GetPosition(Geoposition* position) OVERRIDE;
   virtual void OnPermissionGranted() OVERRIDE;
 
-  content::Geoposition position_;
+  Geoposition position_;
   enum State { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;
   bool is_permission_granted_;
   MockLocationProvider** self_ref_;
@@ -59,5 +61,7 @@ LocationProviderBase* NewAutoFailMockLocationProvider();
 // the Network Location provider, in deferring making location updates until
 // a permission request has been confirmed.
 LocationProviderBase* NewAutoSuccessMockNetworkLocationProvider();
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_

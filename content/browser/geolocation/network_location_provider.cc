@@ -9,9 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/access_token_store.h"
 
-using content::AccessTokenStore;
-using content::Geoposition;
-
+namespace content {
 namespace {
 // The maximum period of time we'll wait for a complete set of device data
 // before sending the request.
@@ -269,3 +267,5 @@ void NetworkLocationProvider::OnDeviceDataUpdated() {
 bool NetworkLocationProvider::IsStarted() const {
   return wifi_data_provider_ != NULL;
 }
+
+}  // namespace content

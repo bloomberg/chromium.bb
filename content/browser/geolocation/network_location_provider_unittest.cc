@@ -17,10 +17,7 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::FakeAccessTokenStore;
-using content::Geoposition;
-
-namespace {
+namespace content {
 
 // Constants used in multiple tests.
 const char kTestServerUrl[] = "https://www.geolocation.test/service";
@@ -584,4 +581,4 @@ TEST_F(GeolocationNetworkProviderTest, NetworkPositionCache) {
   }
 }
 
-}  // namespace
+}  // namespace content

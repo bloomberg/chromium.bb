@@ -9,7 +9,7 @@
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/content_browser_client.h"
 
-using content::AccessTokenStore;
+namespace content {
 
 // GeolocationArbitratorDependencyFactory
 GeolocationArbitratorDependencyFactory::
@@ -24,7 +24,7 @@ DefaultGeolocationArbitratorDependencyFactory::GetTimeFunction() {
 
 AccessTokenStore*
 DefaultGeolocationArbitratorDependencyFactory::NewAccessTokenStore() {
-  return content::GetContentClient()->browser()->CreateAccessTokenStore();
+  return GetContentClient()->browser()->CreateAccessTokenStore();
 }
 
 LocationProviderBase*
@@ -37,16 +37,18 @@ DefaultGeolocationArbitratorDependencyFactory::NewNetworkLocationProvider(
   // Android uses its own SystemLocationProvider.
   return NULL;
 #else
-  return ::NewNetworkLocationProvider(access_token_store, context,
-                                      url, access_token);
+  return NewNetworkLocationProvider(access_token_store, context, url,
+                                    access_token);
 #endif
 }
 
 LocationProviderBase*
 DefaultGeolocationArbitratorDependencyFactory::NewSystemLocationProvider() {
-  return ::NewSystemLocationProvider();
+  return NewSystemLocationProvider();
 }
 
 DefaultGeolocationArbitratorDependencyFactory::
 ~DefaultGeolocationArbitratorDependencyFactory() {
 }
+
+}  // namespace content

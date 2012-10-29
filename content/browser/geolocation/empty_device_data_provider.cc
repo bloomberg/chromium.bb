@@ -4,6 +4,8 @@
 
 #include "content/browser/geolocation/empty_device_data_provider.h"
 
+namespace content {
+
 // Only define for platforms that lack a real wifi data provider.
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
 // static
@@ -12,3 +14,5 @@ WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
   return new EmptyDeviceDataProvider<WifiData>();
 }
 #endif
+
+}  // namespace content

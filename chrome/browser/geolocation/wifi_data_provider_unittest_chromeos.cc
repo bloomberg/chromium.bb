@@ -40,8 +40,8 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
   }
 
   chromeos::MockNetworkLibrary net_lib_;
-  scoped_ptr<WifiDataProviderCommon::WlanApiInterface> api_;
-  WifiData::AccessPointDataSet ap_data_;
+  scoped_ptr<content::WifiDataProviderCommon::WlanApiInterface> api_;
+  content::WifiData::AccessPointDataSet ap_data_;
 };
 
 TEST_F(GeolocationChromeOsWifiDataProviderTest, WifiPoweredOff) {

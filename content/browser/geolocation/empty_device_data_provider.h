@@ -7,6 +7,8 @@
 
 #include "content/browser/geolocation/device_data_provider.h"
 
+namespace content {
+
 // An implementation of DeviceDataProviderImplBase that does not provide any
 // data. Used on platforms where a given data type is not available.
 
@@ -28,5 +30,7 @@ class EmptyDeviceDataProvider : public DeviceDataProviderImplBase<DataType> {
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyDeviceDataProvider);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_EMPTY_DEVICE_DATA_PROVIDER_H_

@@ -17,6 +17,8 @@
 #include "content/common/content_export.h"
 #include "content/public/common/geoposition.h"
 
+namespace content {
+
 // Defines a wrapper around the C libgps API (gps.h). Similar to the libgpsmm.h
 // API provided by that package.
 class CONTENT_EXPORT LibGps {
@@ -83,7 +85,7 @@ class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
   // LocationProvider
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(content::Geoposition* position) OVERRIDE;
+  virtual void GetPosition(Geoposition* position) OVERRIDE;
   virtual void UpdatePosition() OVERRIDE;
 
  private:
@@ -99,10 +101,12 @@ class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
 
   const LibGpsFactory libgps_factory_;
   scoped_ptr<LibGps> gps_;
-  content::Geoposition position_;
+  Geoposition position_;
 
   // Holder for the tasks which run on the thread; takes care of cleanup.
   base::WeakPtrFactory<GpsLocationProviderLinux> weak_factory_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_GPS_LOCATION_PROVIDER_LINUX_H_
