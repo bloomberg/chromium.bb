@@ -240,8 +240,11 @@
  * See ARM Procedure Call Standard, ARM IHI 0042D, section 5.2.1.2.
  * http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042a/IHI0042A_aapcs.pdf
  * -- the "public" stack alignment is required to be 8 bytes,
+ * While ARM vector loads and stores work with misaligned addresses, there can
+ * be performance penalties on some microarchitectures.  To improve the
+ * performance of vector instructions, we increase this to 16.
  */
-# define NACL_STACK_ALIGN_MASK    (0x7)
+# define NACL_STACK_ALIGN_MASK    (0xf)
 # define NACL_STACK_GETS_ARG      (0)
 # define NACL_STACK_PAD_BELOW_ALIGN (0)
 # define NACL_STACK_RED_ZONE      (0)
