@@ -18,6 +18,7 @@
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/view_cache_helper.h"
 
+namespace content {
 namespace {
 
 // A job subclass that dumps an HTTP cache entry.
@@ -200,3 +201,5 @@ net::URLRequestJob* ViewHttpCacheJobFactory::CreateJobForRequest(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   return new ViewHttpCacheJob(request, network_delegate);
 }
+
+}  // namespace content

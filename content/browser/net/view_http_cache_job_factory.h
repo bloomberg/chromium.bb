@@ -13,11 +13,15 @@ class URLRequestJob;
 
 class GURL;
 
+namespace content {
+
 class ViewHttpCacheJobFactory {
  public:
   static bool IsSupportedURL(const GURL& url);
   static net::URLRequestJob* CreateJobForRequest(
       net::URLRequest* request, net::NetworkDelegate* network_delegate);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_NET_VIEW_HTTP_CACHE_JOB_FACTORY_H_

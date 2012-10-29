@@ -7,6 +7,8 @@
 #include "content/common/view_messages.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 
+namespace content {
+
 BrowserOnlineStateObserver::BrowserOnlineStateObserver() {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
@@ -17,10 +19,11 @@ BrowserOnlineStateObserver::~BrowserOnlineStateObserver() {
 
 void BrowserOnlineStateObserver::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  for (content::RenderProcessHost::iterator it(
-          content::RenderProcessHost::AllHostsIterator());
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
     it.GetCurrentValue()->Send(new ViewMsg_NetworkStateChanged(
         type != net::NetworkChangeNotifier::CONNECTION_NONE));
   }
 }
+
+}  // namespace content

@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "net/base/network_change_notifier.h"
 
+namespace content {
+
 // Listens for changes to the online state and manages sending
 // updates to each RenderProcess via RenderProcessHost IPC.
 class BrowserOnlineStateObserver
@@ -23,5 +25,7 @@ class BrowserOnlineStateObserver
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserOnlineStateObserver);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_NET_BROWSER_ONLINE_STATE_OBSERVER_H_

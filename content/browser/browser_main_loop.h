@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_process_sub_thread.h"
 
-class BrowserOnlineStateObserver;
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
@@ -32,8 +31,8 @@ class NetworkChangeNotifier;
 }
 
 namespace content {
-
 class BrowserMainParts;
+class BrowserOnlineStateObserver;
 class BrowserShutdownImpl;
 class BrowserThreadImpl;
 class ResourceDispatcherHostImpl;

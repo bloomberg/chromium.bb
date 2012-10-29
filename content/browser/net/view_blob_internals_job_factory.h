@@ -16,6 +16,8 @@ class BlobStorageController;
 
 class GURL;
 
+namespace content {
+
 class ViewBlobInternalsJobFactory {
  public:
   static bool IsSupportedURL(const GURL& url);
@@ -24,5 +26,7 @@ class ViewBlobInternalsJobFactory {
       net::NetworkDelegate* network_delegate,
       webkit_blob::BlobStorageController* blob_storage_controller);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_NET_VIEW_BLOB_INTERNALS_JOB_FACTORY_H_

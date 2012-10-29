@@ -9,6 +9,8 @@
 #include "content/public/common/url_constants.h"
 #include "webkit/blob/view_blob_internals_job.h"
 
+namespace content {
+
 // static.
 bool ViewBlobInternalsJobFactory::IsSupportedURL(const GURL& url) {
   return url.SchemeIs(chrome::kChromeUIScheme) &&
@@ -23,3 +25,5 @@ net::URLRequestJob* ViewBlobInternalsJobFactory::CreateJobForRequest(
   return new webkit_blob::ViewBlobInternalsJob(
       request, network_delegate, blob_storage_controller);
 }
+
+}  // namespace content
