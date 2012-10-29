@@ -69,7 +69,9 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  static const size_t kMaxEntries;
+  enum {
+    kMaxEntries = TabRestoreServiceHelper::kMaxEntries,
+  };
 
   // testing::Test:
   virtual void SetUp() OVERRIDE {
@@ -162,9 +164,6 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
       webkit_platform_support_;
   content::TestBrowserThread ui_thread_;
 };
-
-const size_t PersistentTabRestoreServiceTest::kMaxEntries =
-    TabRestoreServiceHelper::kMaxEntries;
 
 TEST_F(PersistentTabRestoreServiceTest, Basic) {
   AddThreeNavigations();

@@ -61,8 +61,6 @@ void TabRestoreServiceHelper::Observer::OnAddEntry() {}
 
 // TabRestoreServiceHelper -----------------------------------------------------
 
-const size_t TabRestoreServiceHelper::kMaxEntries = 25;
-
 TabRestoreServiceHelper::TabRestoreServiceHelper(
     TabRestoreService* tab_restore_service,
     Observer* observer,

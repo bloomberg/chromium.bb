@@ -55,8 +55,10 @@ class TabRestoreServiceHelper {
     virtual ~Observer();
   };
 
-  // Max number of entries we'll keep around.
-  static const size_t kMaxEntries;
+  enum {
+    // Max number of entries we'll keep around.
+    kMaxEntries = 25,
+  };
 
   // Creates a new TabRestoreServiceHelper and provides an object that provides
   // the current time. The TabRestoreServiceHelper does not take ownership of
