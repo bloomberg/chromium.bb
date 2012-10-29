@@ -204,7 +204,7 @@ void TiledLayer::pushPropertiesTo(LayerImpl* layer)
 
     tiledLayer->setSkipsDraw(m_skipsDraw);
     tiledLayer->setTilingData(*m_tiler);
-    Vector<UpdatableTile*> invalidTiles;
+    std::vector<UpdatableTile*> invalidTiles;
 
     for (LayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
         int i = iter->first.first;
@@ -216,7 +216,7 @@ void TiledLayer::pushPropertiesTo(LayerImpl* layer)
 
         if (!tile->managedTexture()->haveBackingTexture()) {
             // Evicted tiles get deleted from both layers
-            invalidTiles.append(tile);
+            invalidTiles.push_back(tile);
             continue;
         }
 
@@ -228,7 +228,7 @@ void TiledLayer::pushPropertiesTo(LayerImpl* layer)
 
         tiledLayer->pushTileProperties(i, j, tile->managedTexture()->resourceId(), tile->opaqueRect(), tile->managedTexture()->contentsSwizzled());
     }
-    for (Vector<UpdatableTile*>::const_iterator iter = invalidTiles.begin(); iter != invalidTiles.end(); ++iter)
+    for (std::vector<UpdatableTile*>::const_iterator iter = invalidTiles.begin(); iter != invalidTiles.end(); ++iter)
         m_tiler->takeTile((*iter)->i(), (*iter)->j());
 }
 

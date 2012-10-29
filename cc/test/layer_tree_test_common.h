@@ -189,7 +189,7 @@ public:
 private:
     explicit CompositorFakeWebGraphicsContext3DWithTextureTracking(Attributes attrs);
 
-    Vector<WebKit::WebGLId> m_textures;
+    std::vector<WebKit::WebGLId> m_textures;
     base::hash_set<WebKit::WebGLId> m_usedTextures;
 };
 

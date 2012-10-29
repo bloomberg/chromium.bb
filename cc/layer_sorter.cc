@@ -88,14 +88,14 @@ LayerSorter::ABCompareResult LayerSorter::checkOverlap(LayerShape* a, LayerShape
     FloatPoint bPoints[4] = {b->projectedQuad.p1(), b->projectedQuad.p2(), b->projectedQuad.p3(), b->projectedQuad.p4() };
 
     // Make a list of points that inside both layer quad projections.
-    Vector<FloatPoint> overlapPoints;
+    std::vector<FloatPoint> overlapPoints;
 
     // Check all four corners of one layer against the other layer's quad.
     for (int i = 0; i < 4; ++i) {
         if (a->projectedQuad.containsPoint(bPoints[i]))
-            overlapPoints.append(bPoints[i]);
+            overlapPoints.push_back(bPoints[i]);
         if (b->projectedQuad.containsPoint(aPoints[i]))
-            overlapPoints.append(aPoints[i]);
+            overlapPoints.push_back(aPoints[i]);
     }
 
     // Check all the edges of one layer for intersection with the other layer's edges.
@@ -105,9 +105,9 @@ LayerSorter::ABCompareResult LayerSorter::checkOverlap(LayerShape* a, LayerShape
             if (edgeEdgeTest(aPoints[ea], aPoints[(ea + 1) % 4],
                              bPoints[eb], bPoints[(eb + 1) % 4],
                              r))
-                overlapPoints.append(r);
+                overlapPoints.push_back(r);
 
-    if (!overlapPoints.size())
+    if (overlapPoints.empty())
         return None;
 
     // Check the corresponding layer depth value for all overlap points to determine

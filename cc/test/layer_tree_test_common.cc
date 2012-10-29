@@ -45,18 +45,15 @@ scoped_ptr<CompositorFakeWebGraphicsContext3DWithTextureTracking> CompositorFake
 WebGLId CompositorFakeWebGraphicsContext3DWithTextureTracking::createTexture()
 {
     WebGLId texture = m_textures.size() + 1;
-    m_textures.append(texture);
+    m_textures.push_back(texture);
     return texture;
 }
 
 void CompositorFakeWebGraphicsContext3DWithTextureTracking::deleteTexture(WebGLId texture)
 {
-    for (size_t i = 0; i < m_textures.size(); i++) {
-        if (m_textures[i] == texture) {
-            m_textures.remove(i);
-            break;
-        }
-    }
+    std::vector<WebGLId>::iterator i(std::find(m_textures.begin(), m_textures.end(), texture));
+    if (i != m_textures.end())
+      m_textures.erase(i);
 }
 
 void CompositorFakeWebGraphicsContext3DWithTextureTracking::bindTexture(WGC3Denum /* target */, WebGLId texture)

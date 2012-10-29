@@ -1308,7 +1308,7 @@ void LayerTreeHostImpl::makeScrollAndScaleSet(ScrollAndScaleSet* scrollInfo, con
     LayerTreeHostCommon::ScrollUpdateInfo scroll;
     scroll.layerId = m_rootScrollLayerImpl->id();
     scroll.scrollDelta = scrollOffset - toSize(m_rootScrollLayerImpl->scrollPosition());
-    scrollInfo->scrolls.append(scroll);
+    scrollInfo->scrolls.push_back(scroll);
     m_rootScrollLayerImpl->setSentScrollDelta(scroll.scrollDelta);
     scrollInfo->pageScaleDelta = pageScale / m_pinchZoomViewport.pageScaleFactor();
     m_pinchZoomViewport.setSentPageScaleDelta(scrollInfo->pageScaleDelta);
@@ -1324,7 +1324,7 @@ static void collectScrollDeltas(ScrollAndScaleSet* scrollInfo, LayerImpl* layerI
         LayerTreeHostCommon::ScrollUpdateInfo scroll;
         scroll.layerId = layerImpl->id();
         scroll.scrollDelta = scrollDelta;
-        scrollInfo->scrolls.append(scroll);
+        scrollInfo->scrolls.push_back(scroll);
         layerImpl->setSentScrollDelta(scrollDelta);
     }
 

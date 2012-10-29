@@ -134,10 +134,10 @@ void LayerTilingData::setBounds(const IntSize& size)
     // Any tiles completely outside our new bounds are invalid and should be dropped.
     int left, top, right, bottom;
     contentRectToTileIndices(IntRect(IntPoint(), size), left, top, right, bottom);
-    Vector<TileMapKey> invalidTileKeys;
+    std::vector<TileMapKey> invalidTileKeys;
     for (TileMap::const_iterator it = m_tiles.begin(); it != m_tiles.end(); ++it) {
         if (it->first.first > right || it->first.second > bottom)
-            invalidTileKeys.append(it->first);
+            invalidTileKeys.push_back(it->first);
     }
     for (size_t i = 0; i < invalidTileKeys.size(); ++i)
         m_tiles.erase(invalidTileKeys[i]);

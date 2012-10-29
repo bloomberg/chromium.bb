@@ -601,7 +601,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
             // Pushed to (0,0) via clamping against contents layer size.
             expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
         } else {
-            EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
+            EXPECT_TRUE(scrollInfo->scrolls.empty());
         }
     }
 
@@ -709,7 +709,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
         if (!Settings::pageScalePinchZoomEnabled()) {
             expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
         } else {
-            EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
+            EXPECT_TRUE(scrollInfo->scrolls.empty());
         }
     }
 
@@ -729,7 +729,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
             expectContains(*scrollInfo, scrollLayer->id(), IntSize(0, 0));
         } else {
             EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
-            EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
+            EXPECT_TRUE(scrollInfo->scrolls.empty());
         }
 
         // Once the gesture ends, we get the final scroll and page scale values.
@@ -775,7 +775,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
         expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
     } else {
         EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
-        EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
+        EXPECT_TRUE(scrollInfo->scrolls.empty());
     }
 
     // Scrolling during the animation is ignored.

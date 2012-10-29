@@ -53,7 +53,7 @@ struct ScrollAndScaleSet {
     ScrollAndScaleSet();
     ~ScrollAndScaleSet();
 
-    Vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
+    std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
     float pageScaleDelta;
 };
 
