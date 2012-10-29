@@ -38,9 +38,5 @@ bool EventClientImpl::CanProcessEventsWithinSubtree(
   return true;
 }
 
-ui::EventTarget* EventClientImpl::GetToplevelEventTarget() {
-  return Shell::GetInstance();
-}
-
 }  // namespace internal
 }  // namespace ash

@@ -336,10 +336,6 @@ class TestEventClient : public client::EventClient {
     return lock_ ? GetLockWindow()->Contains(window) : true;
   }
 
-  virtual ui::EventTarget* GetToplevelEventTarget() OVERRIDE {
-    return NULL;
-  }
-
   RootWindow* root_window_;
   bool lock_;
 

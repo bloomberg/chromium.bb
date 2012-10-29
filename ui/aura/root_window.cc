@@ -452,9 +452,7 @@ void RootWindow::SetTransform(const gfx::Transform& transform) {
 // RootWindow, ui::EventTarget implementation:
 
 ui::EventTarget* RootWindow::GetParentTarget() {
-  return client::GetEventClient(this) ?
-      client::GetEventClient(this)->GetToplevelEventTarget() :
-          Env::GetInstance();
+  return Env::GetInstance();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
