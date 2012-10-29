@@ -167,7 +167,7 @@ AC_ARG_ENABLE(simple-egl-clients,
 AM_CONDITIONAL(BUILD_SIMPLE_EGL_CLIENTS, test "x$enable_simple_egl_clients" = "xyes")
 if test x$enable_simple_egl_clients = xyes; then
   PKG_CHECK_MODULES(SIMPLE_EGL_CLIENT,
-                    [egl >= 7.10 glesv2 wayland-client wayland-egl])
+                    [egl >= 7.10 glesv2 wayland-client wayland-egl wayland-cursor])
 fi
 
 AC_ARG_ENABLE(clients, [  --enable-clients],, enable_clients=yes)

@@ -32,6 +32,7 @@
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
+#include <wayland-cursor.h>
 
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
@@ -47,6 +48,10 @@ struct display {
 	struct wl_seat *seat;
 	struct wl_pointer *pointer;
 	struct wl_keyboard *keyboard;
+	struct wl_shm *shm;
+	struct wl_cursor_theme *cursor_theme;
+	struct wl_cursor *default_cursor;
+	struct wl_surface *cursor_surface;
 	struct {
 		EGLDisplay dpy;
 		EGLContext ctx;
@@ -426,9 +431,24 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 		     wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct display *display = data;
+	struct wl_buffer *buffer;
+	struct wl_cursor *cursor = display->default_cursor;
+	struct wl_cursor_image *image;
 
 	if (display->window->fullscreen)
 		wl_pointer_set_cursor(pointer, serial, NULL, 0, 0);
+	else if (cursor) {
+		image = display->default_cursor->images[0];
+		buffer = wl_cursor_image_get_buffer(image);
+		wl_pointer_set_cursor(pointer, serial,
+				      display->cursor_surface,
+				      image->hotspot_x,
+				      image->hotspot_y);
+		wl_surface_attach(display->cursor_surface, buffer, 0, 0);
+		wl_surface_damage(display->cursor_surface, 0, 0,
+				  image->width, image->height);
+		wl_surface_commit(display->cursor_surface);
+	}
 }
 
 static void
@@ -561,6 +581,12 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->seat = wl_registry_bind(registry, name,
 					   &wl_seat_interface, 1);
 		wl_seat_add_listener(d->seat, &seat_listener, d);
+	} else if (strcmp(interface, "wl_shm") == 0) {
+		d->shm = wl_registry_bind(registry, name,
+					  &wl_shm_interface, 1);
+		d->cursor_theme = wl_cursor_theme_load(NULL, 32, d->shm);
+		d->default_cursor =
+			wl_cursor_theme_get_cursor(d->cursor_theme, "left_ptr");
 	}
 }
 
@@ -622,6 +648,9 @@ main(int argc, char **argv)
 	create_surface(&window);
 	init_gl(&window);
 
+	display.cursor_surface =
+		wl_compositor_create_surface(display.compositor);
+
 	sigint.sa_handler = signal_int;
 	sigemptyset(&sigint.sa_mask);
 	sigint.sa_flags = SA_RESETHAND;
@@ -634,6 +663,10 @@ main(int argc, char **argv)
 
 	destroy_surface(&window);
 	fini_egl(&display);
+
+	wl_surface_destroy(display.cursor_surface);
+	if (display.cursor_theme)
+		wl_cursor_theme_destroy(display.cursor_theme);
 
 	if (display.shell)
 		wl_shell_destroy(display.shell);
