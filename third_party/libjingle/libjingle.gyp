@@ -138,7 +138,7 @@
     'conditions': [
       ['use_openssl!=1', {
         'defines': [
-          'SSL_USE_NSS',
+          'SSL_USE_NSS_RNG',
         ],
         'conditions': [
           ['os_posix == 1 and OS != "mac" and OS != "ios" and '
@@ -276,6 +276,10 @@
         '<@(libjingle_source)/talk/base/network.cc',
         '<@(libjingle_source)/talk/base/network.h',
         '<@(libjingle_source)/talk/base/nullsocketserver.h',
+        '<@(libjingle_source)/talk/base/nssidentity.cc',
+        '<@(libjingle_source)/talk/base/nssidentity.h',
+        '<@(libjingle_source)/talk/base/nssstreamadapter.cc',
+        '<@(libjingle_source)/talk/base/nssstreamadapter.h',
         '<@(libjingle_source)/talk/base/pathutils.cc',
         '<@(libjingle_source)/talk/base/pathutils.h',
         '<@(libjingle_source)/talk/base/physicalsocketserver.cc',
@@ -316,6 +320,8 @@
         '<@(libjingle_source)/talk/base/sslsocketfactory.h',
         '<@(libjingle_source)/talk/base/sslstreamadapter.cc',
         '<@(libjingle_source)/talk/base/sslstreamadapter.h',
+        '<@(libjingle_source)/talk/base/sslstreamadapterhelper.cc',
+        '<@(libjingle_source)/talk/base/sslstreamadapterhelper.h',
         '<@(libjingle_source)/talk/base/stream.cc',
         '<@(libjingle_source)/talk/base/stream.h',
         '<@(libjingle_source)/talk/base/stringencode.cc',
