@@ -14,6 +14,10 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/default_app_order.h"
+#endif
+
 using extensions::ExtensionPrefs;
 
 namespace {
@@ -541,42 +545,21 @@ void ExtensionSorting::SyncIfNeeded(const std::string& extension_id) {
 void ExtensionSorting::CreateDefaultOrdinals() {
   // The following defines the default order of apps.
 #if defined(OS_CHROMEOS)
-  const char* kDefaultAppOrder[] = {
-    extension_misc::kChromeAppId,
-    extension_misc::kWebStoreAppId,
-    "coobgpohoikkiipiblmjeljniedjpjpf",  // Search
-    "blpcfgokakmgnkcojhhkbfbldkacnbeo",  // Youtube
-    "pjkljhegncpnkpknbcohdijeoejaedia",  // Gmail
-    "ejjicmeblgpmajnghnpcppodonldlgfn",  // Calendar
-    "kjebfhglflhjjjiceimfkgicifkhjlnm",  // Scratchpad
-    "lneaknkopdijkpnocmklfnjbeapigfbh",  // Google Maps
-    "apdfllckaahabafndbhieahigkjlhalf",  // Drive
-    "aohghmighlieiainnegkcijnfilokake",  // Docs
-    "felcaaldnbdncclmgdcncolpebgiejap",  // Sheets
-    "aapocclcgogkmnckokdopfmhonfmgoek",  // Slides
-    "dlppkpafhbajpcmmoheippocdidnckmm",  // Google+
-    "kbpgddbgniojgndnhlkjbkpknjhppkbk",  // Google+ Hangouts
-    "hhaomjibdihmijegdhdafkllkbggdgoj",  // Files
-    "hkhhlkdconhgemhegnplaldnmnmkaemd",  // Tips & Tricks
-    "icppfcnhkcmnfdhfhphakoifcfokfdhg",  // Play Music
-    "mmimngoggfoobjdlefbcabngfnmieonb",  // Play Books
-    "fppdphmgcddhjeddoeghpjefkdlccljb",  // Play Movies
-    "fobcpibfeplaikcclojfdhfdmbbeofai",  // Games
-    "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
-    "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
-    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
-  };
+  std::vector<std::string> app_ids;
+  chromeos::default_app_order::Get(&app_ids);
 #else
   const char* kDefaultAppOrder[] = {
     extension_misc::kWebStoreAppId,
   };
+  const std::vector<const char*> app_ids(
+      kDefaultAppOrder, kDefaultAppOrder + arraysize(kDefaultAppOrder));
 #endif
 
   syncer::StringOrdinal page_ordinal = CreateFirstAppPageOrdinal();
   syncer::StringOrdinal app_launch_ordinal =
       CreateFirstAppLaunchOrdinal(page_ordinal);
-  for (size_t i = 0; i < arraysize(kDefaultAppOrder); ++i) {
-    const std::string extension_id = kDefaultAppOrder[i];
+  for (size_t i = 0; i < app_ids.size(); ++i) {
+    const std::string extension_id = app_ids[i];
     default_ordinals_[extension_id].page_ordinal = page_ordinal;
     default_ordinals_[extension_id].app_launch_ordinal = app_launch_ordinal;
     app_launch_ordinal = app_launch_ordinal.CreateAfter();

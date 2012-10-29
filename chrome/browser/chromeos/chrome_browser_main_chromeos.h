@@ -22,6 +22,11 @@ class ScreenLockObserver;
 class SessionManagerObserver;
 class UserActivityNotifier;
 class VideoActivityNotifier;
+
+namespace default_app_order {
+class ExternalLoader;
+}
+
 }  // namespace chromeos
 
 namespace contacts {
@@ -56,6 +61,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   scoped_ptr<contacts::ContactManager> contact_manager_;
   scoped_ptr<chromeos::BrightnessObserver> brightness_observer_;
+  scoped_ptr<chromeos::default_app_order::ExternalLoader> app_order_loader_;
   scoped_ptr<chromeos::OutputObserver> output_observer_;
   scoped_ptr<chromeos::ResumeObserver> resume_observer_;
   scoped_ptr<chromeos::ScreenLockObserver> screen_lock_observer_;

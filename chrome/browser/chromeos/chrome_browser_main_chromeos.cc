@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/display/primary_display_switch_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
+#include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -399,7 +400,17 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
       g_browser_process->browser_policy_connector()->InitializeUserPolicy(
           username, false  /* wait_for_policy_fetch */);
     }
+
+    // Load the default app order synchronously for restarting case.
+    app_order_loader_.reset(
+        new chromeos::default_app_order::ExternalLoader(false /* async */));
+
     chromeos::UserManager::Get()->SessionStarted();
+  }
+
+  if (!app_order_loader_) {
+    app_order_loader_.reset(
+        new chromeos::default_app_order::ExternalLoader(true /* async */));
   }
 
   // In Aura builds this will initialize ash::Shell.

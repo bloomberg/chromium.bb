@@ -92,6 +92,15 @@ const char kFilepathSinglePrefExtensions[] =
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_CHROMEOS)
+const char kDefaultAppOrderFileName[] =
+#if defined(GOOGLE_CHROME_BUILD)
+    FILE_PATH_LITERAL("/usr/share/google-chrome/default_app_order.json");
+#else
+    FILE_PATH_LITERAL("/usr/share/chromium/default_app_order.json");
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 namespace chrome {
@@ -366,6 +375,9 @@ bool PathProvider(int key, FilePath* result) {
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("wallpapers"));
+      break;
+    case chrome::FILE_DEFAULT_APP_ORDER:
+      cur = FilePath(FILE_PATH_LITERAL(kDefaultAppOrderFileName));
       break;
 #endif
     // The following are only valid in the development environment, and
