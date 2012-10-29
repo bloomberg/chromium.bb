@@ -365,9 +365,10 @@ system call NtUserCallOneParam.RELEASEDC
 GDI USAGE ERROR
 name=http://crbug.com/158090
 # "DC created by one thread and used by another"
-content.dll!content::`anonymous namespace'::FontCache::PreCacheFont
+...
+content.dll!content::*::FontCache::PreCacheFont
 content.dll!content::FontCacheDispatcher::OnPreCacheFont
-content.dll!DispatchToMethod<content::FontCacheDispatcher
+content.dll!DispatchToMethod<content::FontCacheDispatcher*
 
 GDI USAGE ERROR
 name=http://crbug.com/158090 c#4
