@@ -646,6 +646,9 @@ chrome_pgo = chrome_pfq.derive(
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
   hw_tests_num=1,
   hw_tests_timeout=90 * 60,
+
+  # TODO(petermayo): Remove once PGO is reliable again.
+  important=False,
 )
 
 chrome_pgo.add_config('alex-chrome-pgo',
