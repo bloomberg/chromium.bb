@@ -295,15 +295,15 @@ FormDataParser::~FormDataParser() {}
 
 // static
 scoped_ptr<FormDataParser> FormDataParser::Create(
-    const net::URLRequest* request) {
+    const net::URLRequest& request) {
   std::string value;
-  const bool found = request->extra_request_headers().GetHeader(
+  const bool found = request.extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kContentType, &value);
-  return Create(found ? &value : NULL);
+  return CreateFromContentTypeHeader(found ? &value : NULL);
 }
 
 // static
-scoped_ptr<FormDataParser> FormDataParser::Create(
+scoped_ptr<FormDataParser> FormDataParser::CreateFromContentTypeHeader(
     const std::string* content_type_header) {
   enum ParserChoice {URL_ENCODED, MULTIPART, ERROR_CHOICE};
   ParserChoice choice = ERROR_CHOICE;

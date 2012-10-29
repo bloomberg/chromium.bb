@@ -22,7 +22,7 @@ bool RunParser(const std::string& content_type_header,
     return false;
   output->clear();
   scoped_ptr<FormDataParser> parser(
-      FormDataParser::Create(&content_type_header));
+      FormDataParser::CreateFromContentTypeHeader(&content_type_header));
   if (parser.get() == NULL)
     return false;
   FormDataParser::Result result;

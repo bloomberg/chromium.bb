@@ -99,7 +99,7 @@ class RawDataPresenter : public UploadDataPresenter {
 // DictionaryValue, not as a JSON string).
 class ParsedDataPresenter : public UploadDataPresenter {
  public:
-  explicit ParsedDataPresenter(const net::URLRequest* request);
+  explicit ParsedDataPresenter(const net::URLRequest& request);
   virtual ~ParsedDataPresenter();
 
   // Implementation of UploadDataPresenter.

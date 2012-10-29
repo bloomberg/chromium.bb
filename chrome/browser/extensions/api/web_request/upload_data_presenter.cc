@@ -106,7 +106,7 @@ void RawDataPresenter::FeedNextFile(const std::string& filename) {
 
 // Implementation of ParsedDataPresenter.
 
-ParsedDataPresenter::ParsedDataPresenter(const net::URLRequest* request)
+ParsedDataPresenter::ParsedDataPresenter(const net::URLRequest& request)
   : parser_(FormDataParser::Create(request)),
     success_(parser_.get() != NULL),
     dictionary_(success_ ? new DictionaryValue() : NULL) {
@@ -154,7 +154,7 @@ scoped_ptr<ParsedDataPresenter> ParsedDataPresenter::CreateForTests() {
 }
 
 ParsedDataPresenter::ParsedDataPresenter(const std::string& form_type)
-  : parser_(FormDataParser::Create(&form_type)),
+  : parser_(FormDataParser::CreateFromContentTypeHeader(&form_type)),
     success_(parser_.get() != NULL),
     dictionary_(success_ ? new DictionaryValue() : NULL) {
 }

@@ -183,7 +183,7 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
   out->Set(keys::kRequestBodyKey, requestBody);
 
   // Get the data presenters, ordered by how specific they are.
-  extensions::ParsedDataPresenter parsed_data_presenter(request);
+  extensions::ParsedDataPresenter parsed_data_presenter(*request);
   extensions::RawDataPresenter raw_data_presenter;
   extensions::UploadDataPresenter* const presenters[] = {
     &parsed_data_presenter,    // 1: any parseable forms? (Specific to forms.)
