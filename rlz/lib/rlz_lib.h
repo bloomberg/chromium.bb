@@ -55,14 +55,14 @@ namespace rlz_lib {
 class ScopedRlzValueStoreLock;
 
 // The maximum length of an access points RLZ in bytes.
-const int kMaxRlzLength = 64;
+const size_t kMaxRlzLength = 64;
 // The maximum length of an access points RLZ in bytes.
-const int kMaxDccLength = 128;
+const size_t kMaxDccLength = 128;
 // The maximum length of a CGI string in bytes.
-const int kMaxCgiLength = 2048;
+const size_t kMaxCgiLength = 2048;
 // The maximum length of a ping response we will parse in bytes. If the response
 // is bigger, please break it up into separate calls.
-const int kMaxPingResponseLength = 0x4000;  // 16K
+const size_t kMaxPingResponseLength = 0x4000;  // 16K
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 // Set the URLRequestContextGetter used by SendFinancialPing(). The IO message

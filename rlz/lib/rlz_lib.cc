@@ -84,7 +84,7 @@ bool IsGoodRlzChar(const char ch) {
 // reasonable size.  It also assumes that normalized_rlz is at least
 // kMaxRlzLength+1 long.
 void NormalizeRlz(const char* raw_rlz, char* normalized_rlz) {
-  int index = 0;
+  size_t index = 0;
   for (; raw_rlz[index] != 0 && index < rlz_lib::kMaxRlzLength; ++index) {
     char current = raw_rlz[index];
     if (IsGoodRlzChar(current)) {
@@ -551,8 +551,8 @@ bool ParsePingResponse(Product product, const char* response) {
       std::string rlz_value(response_line.substr(separator_index + 2));
       TrimWhitespaceASCII(rlz_value, TRIM_LEADING, &rlz_value);
 
-      int rlz_length = rlz_value.find_first_of("\r\n ");
-      if (rlz_length < 0)
+      size_t rlz_length = rlz_value.find_first_of("\r\n ");
+      if (rlz_length == std::string::npos)
         rlz_length = rlz_value.size();
 
       if (rlz_length > kMaxRlzLength)

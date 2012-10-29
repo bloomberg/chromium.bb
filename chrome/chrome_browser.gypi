@@ -2653,11 +2653,11 @@
             '../third_party/GTM/Foundation',
           ],
         }],
-        ['OS=="win" or OS=="mac"', {
+        ['enable_rlz==1', {
           'dependencies': [
             '../rlz/rlz.gyp:rlz_lib',
           ],
-        }, {  # 'OS!="win" and OS!="mac"
+        }, {  # enable_rlz!=1
           'sources/': [
             # Exclude all of rlz.
             ['exclude', '^browser/rlz/'],

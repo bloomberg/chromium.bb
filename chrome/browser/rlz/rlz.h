@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(ENABLE_RLZ)
 
 #include <map>
 #include <string>
@@ -166,6 +166,6 @@ class RLZTracker : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(RLZTracker);
 };
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(ENABLE_RLZ)
 
 #endif  // CHROME_BROWSER_RLZ_RLZ_H_

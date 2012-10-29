@@ -2522,8 +2522,12 @@
         }],
         ['OS!="win" and OS!="mac"', {
           'sources!': [
-            'browser/rlz/rlz_unittest.cc',
             '../skia/ext/platform_canvas_unittest.cc',
+          ],
+        }],
+        ['enable_rlz==0', {
+          'sources!': [
+            'browser/rlz/rlz_unittest.cc',
           ],
         }],
         ['OS=="win" and component!="shared_library"', {
@@ -3426,7 +3430,7 @@
             'browser/ui/gtk/view_id_util_browsertest.cc',
           ],
         }],
-        ['OS!="win" and OS!="mac"', {
+        ['enable_rlz==0', {
           'sources!': [
             'browser/rlz/rlz_extension_apitest.cc',
           ],

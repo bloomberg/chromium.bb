@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(ENABLE_RLZ)
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -72,6 +72,6 @@ class RlzClearProductStateFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(ENABLE_RLZ)
 
 #endif  // CHROME_BROWSER_RLZ_RLZ_EXTENSION_API_H_

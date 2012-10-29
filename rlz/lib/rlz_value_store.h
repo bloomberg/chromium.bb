@@ -98,7 +98,7 @@ class ScopedRlzValueStoreLock {
   scoped_ptr<RlzValueStore> store_;
 #if defined(OS_WIN)
   LibMutex lock_;
-#else
+#elif defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool_;
 #endif
 };
