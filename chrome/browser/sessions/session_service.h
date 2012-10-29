@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/time.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
@@ -53,6 +54,7 @@ class WebContents;
 // SessionService rebuilds the contents of the file from the open state
 // of the browser.
 class SessionService : public BaseSessionService,
+                       public ProfileKeyedService,
                        public content::NotificationObserver,
                        public chrome::BrowserListObserver {
   friend class SessionServiceTestHelper;

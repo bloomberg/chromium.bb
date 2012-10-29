@@ -19,6 +19,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
+class Profile;
 
 namespace history {
 class TopSites;

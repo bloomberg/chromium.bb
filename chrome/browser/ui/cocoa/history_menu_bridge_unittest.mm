@@ -12,8 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/common/cancelable_request.h"
+#include "chrome/browser/sessions/persistent_tab_restore_service.h"
 #include "chrome/browser/sessions/session_types_test_helper.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,9 +24,9 @@
 
 namespace {
 
-class MockTRS : public TabRestoreService {
+class MockTRS : public PersistentTabRestoreService {
  public:
-  MockTRS(Profile* profile) : TabRestoreService(profile, NULL) {}
+  MockTRS(Profile* profile) : PersistentTabRestoreService(profile, NULL) {}
   MOCK_CONST_METHOD0(entries, const TabRestoreService::Entries&());
 };
 

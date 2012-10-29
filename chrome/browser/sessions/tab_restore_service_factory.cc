@@ -39,13 +39,6 @@ TabRestoreServiceFactory::TabRestoreServiceFactory()
 TabRestoreServiceFactory::~TabRestoreServiceFactory() {
 }
 
-ProfileKeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  TabRestoreService* service = NULL;
-  service = new TabRestoreService(profile);
-  return service;
-}
-
 bool TabRestoreServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

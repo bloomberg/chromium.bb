@@ -2645,6 +2645,9 @@
 
             # TODO(jcivelli): figure-out how to make this compile.
             'browser/metrics/variations_service_unittest.cc',
+
+            'browser/sessions/persistent_tab_restore_service_browsertest.cc',
+            'browser/sessions/session_backend_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
@@ -3101,17 +3104,17 @@
         'browser/protector/default_search_provider_change_browsertest.cc',
         'browser/protector/protector_service_browsertest.cc',
         'browser/repost_form_warning_browsertest.cc',
-        'browser/rlz/rlz_extension_apitest.cc',
         'browser/referrer_policy_browsertest.cc',
         'browser/renderer_host/render_process_host_chrome_browsertest.cc',
         'browser/renderer_host/web_cache_manager_browsertest.cc',
+        'browser/rlz/rlz_extension_apitest.cc',
         'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
         'browser/safe_browsing/safe_browsing_blocking_page_v2_test.cc',
         'browser/safe_browsing/safe_browsing_service_browsertest.cc',
         'browser/service/service_process_control_browsertest.cc',
         'browser/sessions/better_session_restore_browsertest.cc',
+        'browser/sessions/persistent_tab_restore_service_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
-        'browser/sessions/tab_restore_service_browsertest.cc',
         'browser/speech/extension_api/tts_extension_apitest.cc',
         'browser/speech/speech_input_extension_apitest.cc',
         'browser/speech/speech_recognition_bubble_browsertest.cc',
