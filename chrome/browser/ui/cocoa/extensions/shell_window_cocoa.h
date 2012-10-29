@@ -136,6 +136,9 @@ class ShellWindowCocoa : public NativeShellWindow {
   bool is_fullscreen_;
   NSRect restored_bounds_;
 
+  gfx::Size min_size_;
+  gfx::Size max_size_;
+
   scoped_nsobject<ShellWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
 

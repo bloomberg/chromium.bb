@@ -228,14 +228,15 @@ ShellWindowCocoa::ShellWindowCocoa(ShellWindow* shell_window,
                       defer:NO]);
   }
   [window setTitle:base::SysUTF8ToNSString(extension()->name())];
-  gfx::Size min_size = params.minimum_size;
-  if (min_size.width() || min_size.height()) {
-    [window setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
+  min_size_ = params.minimum_size;
+  if (min_size_.width() || min_size_.height()) {
+    [window setContentMinSize:
+        NSMakeSize(min_size_.width(), min_size_.height())];
   }
-  gfx::Size max_size = params.maximum_size;
-  if (max_size.width() || max_size.height()) {
-    CGFloat max_width = max_size.width() ? max_size.width() : CGFLOAT_MAX;
-    CGFloat max_height = max_size.height() ? max_size.height() : CGFLOAT_MAX;
+  max_size_ = params.maximum_size;
+  if (max_size_.width() || max_size_.height()) {
+    CGFloat max_width = max_size_.width() ? max_size_.width() : CGFLOAT_MAX;
+    CGFloat max_height = max_size_.height() ? max_size_.height() : CGFLOAT_MAX;
     [window setContentMaxSize:NSMakeSize(max_width, max_height)];
   }
 
@@ -273,6 +274,10 @@ void ShellWindowCocoa::InstallView() {
   if (has_frame_) {
     [view setFrame:[[window() contentView] bounds]];
     [[window() contentView] addSubview:view];
+    if (!max_size_.IsEmpty() && min_size_ == max_size_) {
+      [[window() standardWindowButton:NSWindowZoomButton] setEnabled:NO];
+      [window() setShowsResizeIndicator:NO];
+    }
   } else {
     // TODO(jeremya): find a cleaner way to send this information to the
     // WebContentsViewCocoa view.
@@ -287,6 +292,11 @@ void ShellWindowCocoa::InstallView() {
     [[window() standardWindowButton:NSWindowZoomButton] setHidden:YES];
     [[window() standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
     [[window() standardWindowButton:NSWindowCloseButton] setHidden:YES];
+
+    // Some third-party OS X utilities check the zoom button's enabled state to
+    // determine whether to show custom UI on hover, so we disable it here to
+    // prevent them from doing so in a frameless app window.
+    [[window() standardWindowButton:NSWindowZoomButton] setEnabled:NO];
 
     InstallDraggableRegionViews();
   }
