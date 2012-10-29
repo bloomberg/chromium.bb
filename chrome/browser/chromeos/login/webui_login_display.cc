@@ -81,7 +81,7 @@ void WebUILoginDisplay::OnLoginSuccess(const std::string& username) {
 }
 
 void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
-  if (webui_handler_ && is_enabled)
+  if (webui_handler_ && is_enabled && !UserManager::Get()->IsUserLoggedIn())
     webui_handler_->ClearAndEnablePassword();
 
   if (chromeos::WebUILoginDisplayHost::default_host()) {
