@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace browser_sync {
@@ -19,6 +20,9 @@ namespace browser_sync {
 class ForeignSessionHandler : public content::WebUIMessageHandler,
                               public content::NotificationObserver {
  public:
+  // Invalid value, used to note that we don't have a tab or window number.
+  static const int kInvalidId = -1;
+
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
@@ -26,6 +30,19 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   virtual ~ForeignSessionHandler() {}
 
   static void RegisterUserPrefs(PrefService* prefs);
+
+  static void OpenForeignSession(content::WebUI* web_ui,
+                                 const std::string& session_string_value,
+                                 SessionID::id_type window_num,
+                                 SessionID::id_type tab_id,
+                                 const WindowOpenDisposition& disposition);
+
+  // Helper method to create JSON compatible objects from Session objects.
+  static bool SessionTabToValue(const SessionTab& tab,
+                                DictionaryValue* dictionary);
+
+  // Returns a pointer to the current session model associator or NULL.
+  static SessionModelAssociator* GetModelAssociator(content::WebUI* web_ui);
 
  private:
   // Used to register ForeignSessionHandler for notifications.
@@ -35,9 +52,6 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Returns a pointer to the current session model associator or NULL.
-  SessionModelAssociator* GetModelAssociator();
 
   // Returns true if tab sync is enabled for this profile, otherwise false.
   bool IsTabSyncEnabled();
@@ -61,8 +75,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   // This handler was introduced for NTP5.
   void HandleShowOtherDeviceSessionPopup(const ListValue* args);
 
-  // Helper methods to create JSON compatible objects from Session objects.
-  bool SessionTabToValue(const SessionTab& tab, DictionaryValue* dictionary);
+  // Helper method to create JSON compatible objects from Session objects.
   bool SessionWindowToValue(const SessionWindow& window,
                             DictionaryValue* dictionary);
 

@@ -81,7 +81,7 @@ cr.define('ntp', function() {
 
       // Ask the native side to show a popup listing the devices's tabs.
       chrome.send('showOtherDeviceSessionPopup',
-                  [this.data.tag, e.clientX, e.clientY]);
+                  [this.data.tag, e.screenX, e.screenY]);
     },
 
     /**
