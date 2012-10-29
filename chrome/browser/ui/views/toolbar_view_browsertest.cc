@@ -88,16 +88,9 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
     EXPECT_EQ(ids[i], reverse_ids[count - 2 - i]);
 }
 
-#if defined(OS_WIN)
-// http://crbug.com/152938 Flaky on win.
-#define MAYBE_ToolbarCycleFocus DISABLED_ToolbarCycleFocus
-#define MAYBE_ToolbarCycleFocusWithBookmarkBar DISABLED_ToolbarCycleFocusWithBookmarkBar
-#else
-#define MAYBE_ToolbarCycleFocus ToolbarCycleFocus
-#define MAYBE_ToolbarCycleFocusWithBookmarkBar ToolbarCycleFocusWithBookmarkBar
-#endif
-
-IN_PROC_BROWSER_TEST_F(ToolbarViewTest, MAYBE_ToolbarCycleFocus) {
+// The test is flaky on Win (http://crbug.com/152938) and crashes on CrOS under
+// AddressSanitizer (http://crbug.com/154657).
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest, DISABLED_ToolbarCycleFocus) {
   RunToolbarCycleFocusTest(browser());
 }
 
