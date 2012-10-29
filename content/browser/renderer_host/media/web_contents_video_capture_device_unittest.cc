@@ -193,10 +193,13 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDeviceTest);
 };
 
+// TODO(miu): Fix test crashing and race conditions, then re-enable tests, per
+// http://crbug.com/158317.
+
 // The "happy case" test.  No scaling is needed, so we should be able to change
 // the picture emitted from the source and expect to see each delivered to the
 // consumer.
-TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
+TEST_F(WebContentsVideoCaptureDeviceTest, DISABLED_GoesThroughAllTheMotions) {
   device()->Allocate(kTestWidth, kTestHeight, kTestFramesPerSecond,
                      consumer());
 
@@ -213,7 +216,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
   device()->DeAllocate();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
+TEST_F(WebContentsVideoCaptureDeviceTest,
+       DISABLED_RejectsInvalidAllocateParams) {
   device()->Allocate(1280, 720, -2, consumer());
   EXPECT_FALSE(consumer()->WaitForNextColorOrError(kNotInterested));
 }
