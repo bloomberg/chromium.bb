@@ -1573,6 +1573,10 @@ void RenderWidgetHostViewWin::OnInputLangChange(DWORD character_set,
       ime_notification_ = ime_status;
     }
   }
+  // Call DefWindowProc() for consistency with other Chrome windows.
+  // TODO(hbono): This is a speculative fix for Bug 36354 and this code may be
+  // reverted if it does not fix it.
+  SetMsgHandled(FALSE);
 }
 
 void RenderWidgetHostViewWin::OnThemeChanged() {
