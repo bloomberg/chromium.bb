@@ -23,7 +23,7 @@
 #include "ui/base/ui_base_types.h"
 
 namespace content {
-
+namespace {
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
@@ -104,6 +104,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
 };
+
+}  // namespace
 
 // Checks that a fullscreen view has the correct show-state and receives the
 // focus.
