@@ -308,13 +308,9 @@ void TrayBubbleView::UpdateBubble() {
   SizeToContents();
   GetWidget()->GetRootView()->SchedulePaint();
   aura::RootWindow* root_window = GetWidget()->GetNativeView()->GetRootWindow();
-  // TODO(oshima): this NULL check shouldn't be needed.
-  // ExtendedDesktopTest.OpenSystemTray currently triggers it. It indicates the
-  // bubble is ending up on a display that doesn't have a shelf.
   ash::internal::ShelfLayoutManager* shelf =
       ash::GetRootWindowController(root_window)->shelf();
-  const bool is_launcher_visible = shelf && shelf->IsVisible();
-  bubble_border_->set_paint_arrow(is_launcher_visible);
+  bubble_border_->set_paint_arrow(shelf->IsVisible());
 }
 
 void TrayBubbleView::SetMaxHeight(int height) {

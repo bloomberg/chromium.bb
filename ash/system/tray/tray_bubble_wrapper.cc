@@ -7,6 +7,7 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_event_filter.h"
+#include "ash/wm/window_properties.h"
 #include "ui/views/widget/widget.h"
 
 using message_center::TrayBubbleView;
@@ -20,6 +21,8 @@ TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
       bubble_view_(bubble_view) {
   bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
+  bubble_widget_->GetNativeView()->
+      SetProperty(internal::kStayInSameRootWindowKey, true);
 
   bubble_view_->InitializeAndShowBubble();
   tray_->InitializeBubbleAnimations(bubble_widget_);
