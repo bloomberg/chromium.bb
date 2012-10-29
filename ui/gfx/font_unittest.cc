@@ -14,15 +14,14 @@
 #include "ui/gfx/platform_font_win.h"
 #endif
 
+namespace gfx {
 namespace {
-
-using gfx::Font;
 
 class FontTest : public testing::Test {
  public:
   // Fulfills the memory management contract as outlined by the comment at
   // gfx::Font::GetNativeFont().
-  void FreeIfNecessary(gfx::NativeFont font) {
+  void FreeIfNecessary(NativeFont font) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     pango_font_description_free(font);
 #endif
@@ -34,12 +33,12 @@ class ScopedMinimumFontSizeCallback {
  public:
   explicit ScopedMinimumFontSizeCallback(int minimum_size) {
     minimum_size_ = minimum_size;
-    old_callback_ = gfx::PlatformFontWin::get_minimum_font_size_callback;
-    gfx::PlatformFontWin::get_minimum_font_size_callback = &GetMinimumFontSize;
+    old_callback_ = PlatformFontWin::get_minimum_font_size_callback;
+    PlatformFontWin::get_minimum_font_size_callback = &GetMinimumFontSize;
   }
 
   ~ScopedMinimumFontSizeCallback() {
-    gfx::PlatformFontWin::get_minimum_font_size_callback = old_callback_;
+    PlatformFontWin::get_minimum_font_size_callback = old_callback_;
   }
 
  private:
@@ -47,7 +46,7 @@ class ScopedMinimumFontSizeCallback {
     return minimum_size_;
   }
 
-  gfx::PlatformFontWin::GetMinimumFontSizeCallback old_callback_;
+  PlatformFontWin::GetMinimumFontSizeCallback old_callback_;
   static int minimum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMinimumFontSizeCallback);
@@ -59,7 +58,7 @@ int ScopedMinimumFontSizeCallback::minimum_size_ = 0;
 
 TEST_F(FontTest, LoadArial) {
   Font cf("Arial", 16);
-  gfx::NativeFont native = cf.GetNativeFont();
+  NativeFont native = cf.GetNativeFont();
   ASSERT_TRUE(native);
   ASSERT_EQ(cf.GetStyle(), Font::NORMAL);
   ASSERT_EQ(cf.GetFontSize(), 16);
@@ -70,7 +69,7 @@ TEST_F(FontTest, LoadArial) {
 TEST_F(FontTest, LoadArialBold) {
   Font cf("Arial", 16);
   Font bold(cf.DeriveFont(0, Font::BOLD));
-  gfx::NativeFont native = bold.GetNativeFont();
+  NativeFont native = bold.GetNativeFont();
   ASSERT_TRUE(native);
   ASSERT_EQ(bold.GetStyle(), Font::BOLD);
   FreeIfNecessary(native);
@@ -134,3 +133,4 @@ TEST_F(FontTest, DeriveFontKeepsOriginalSizeIfHeightOk) {
 #endif  // defined(OS_WIN)
 
 }  // namespace
+}  // namespace gfx
