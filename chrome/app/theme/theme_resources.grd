@@ -468,6 +468,7 @@
       <structure type="chrome_scaled_image" name="IDR_MOBILE" file="mobile.png" />
       <structure type="chrome_scaled_image" name="IDR_MOBILE_LIT" file="mobile_lit.png" />
       <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_NETWORK_ADD_CONNECTION" file="cros/network_add_connection.png" />
         <structure type="chrome_scaled_image" name="IDR_NETWORK_HIDE_PASSWORD" file="cros/network_hide_password.png" />
         <structure type="chrome_scaled_image" name="IDR_NETWORK_HIDE_PASSWORD_HOVER" file="cros/network_hide_password_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD" file="cros/network_show_password.png" />
@@ -658,7 +659,6 @@
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_16" file="settings_app_icon_16.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
-      <structure type="chrome_scaled_image" name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_EMPTY" file="common/speech_input_mic_empty.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_FULL" file="common/speech_input_mic_full.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_MASK" file="common/speech_input_mic_mask.png" />

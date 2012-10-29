@@ -238,7 +238,7 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-add-connection {
-  background-image: url('chrome://theme/IDR_SIDETABS_NEW_TAB');
+  background-image: url('chrome://theme/IDR_NETWORK_ADD_CONNECTION');
   background-size: 16px;
 }
 
