@@ -222,8 +222,7 @@ void SigninScreenHandler::Show(bool oobe_ui) {
         SetCapsLockEnabled(false);
 
     DictionaryValue params;
-    params.SetBoolean("disableAddUser",
-                      DoRestrictedUsersMatchExistingOnScreen());
+    params.SetBoolean("disableAddUser", AllWhitelistedUsersPresent());
     ShowScreen(kAccountPickerScreen, &params);
   }
 }
@@ -558,7 +557,7 @@ void SigninScreenHandler::UpdateAuthExtension() {
 }
 
 void SigninScreenHandler::UpdateAddButtonStatus() {
-  base::FundamentalValue disabled(DoRestrictedUsersMatchExistingOnScreen());
+  base::FundamentalValue disabled(AllWhitelistedUsersPresent());
   web_ui()->CallJavascriptFunction(
       "cr.ui.login.DisplayManager.updateAddUserButtonStatus", disabled);
 }
@@ -965,23 +964,25 @@ void SigninScreenHandler::MaybePreloadAuthExtension() {
   }
 }
 
-bool SigninScreenHandler::DoRestrictedUsersMatchExistingOnScreen() {
+bool SigninScreenHandler::AllWhitelistedUsersPresent() {
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = false;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   if (allow_new_user)
     return false;
-  const UserList& users = UserManager::Get()->GetUsers();
-  if (!delegate_ || users.size() > kMaxUsers - delegate_->IsShowGuest()) {
+  UserManager* user_manager = UserManager::Get();
+  const UserList& users = user_manager->GetUsers();
+  if (!delegate_ || users.size() > kMaxUsers) {
     return false;
   }
-  const base::ListValue* existing = NULL;
-  if (!cros_settings->GetList(kAccountsPrefUsers, &existing) ||
-      !existing || users.size() != existing->GetSize()) {
+  const base::ListValue* whitelist = NULL;
+  if (!cros_settings->GetList(kAccountsPrefUsers, &whitelist) || !whitelist)
     return false;
-  }
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if (!cros_settings->FindEmailInList(kAccountsPrefUsers, (*it)->email())) {
+  for (size_t i = 0; i < whitelist->GetSize(); ++i) {
+    std::string whitelisted_user;
+    // NB: Wildcards in the whitelist are also detected as not present here.
+    if (!whitelist->GetString(i, &whitelisted_user) ||
+        !user_manager->IsKnownUser(whitelisted_user)) {
       return false;
     }
   }

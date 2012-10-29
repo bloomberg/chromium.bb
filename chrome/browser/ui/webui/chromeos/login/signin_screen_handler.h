@@ -252,9 +252,8 @@ class SigninScreenHandler
 
   // Returns true iff
   // (i)   log in is restricted to some user list,
-  // (ii)  existing users fit login screen and
-  // (iii) existing users match to restricted list.
-  bool DoRestrictedUsersMatchExistingOnScreen();
+  // (ii)  all users in the restricted list are present.
+  bool AllWhitelistedUsersPresent();
 
   // Sends network state to a WebUI |callback|.
   void SendState(const std::string& callback,
