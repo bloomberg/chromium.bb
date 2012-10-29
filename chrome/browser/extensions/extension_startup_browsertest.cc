@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -102,7 +103,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
         chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
     extensions::UserScriptMaster* master =
-        browser()->profile()->GetUserScriptMaster();
+        extensions::ExtensionSystem::Get(browser()->profile())->
+            user_script_master();
     if (!master->ScriptsReady())
       user_scripts_observer.Wait();
     ASSERT_TRUE(master->ScriptsReady());

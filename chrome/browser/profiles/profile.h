@@ -53,7 +53,6 @@ class WebUI;
 
 namespace extensions {
 class EventRouter;
-class UserScriptMaster;
 }
 
 namespace fileapi {
@@ -197,13 +196,6 @@ class Profile : public content::BrowserContext {
   // profile. The ExtensionService is created at startup.
   // TODO(yoz): remove this accessor (bug 104095).
   virtual ExtensionService* GetExtensionService() = 0;
-
-  // DEPRECATED. Instead, use ExtensionSystem::user_script_master().
-  // Retrieves a pointer to the extensions::UserScriptMaster associated with
-  // this profile.  The extensions::UserScriptMaster is lazily created the first
-  // time that this method is called.
-  // TODO(yoz): remove this accessor (bug 104095).
-  virtual extensions::UserScriptMaster* GetUserScriptMaster() = 0;
 
   // DEPRECATED. Instead, use ExtensionSystem::event_router().
   // Accessor. The instance is created at startup.

@@ -520,10 +520,6 @@ ExtensionService* TestingProfile::GetExtensionService() {
   return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
-extensions::UserScriptMaster* TestingProfile::GetUserScriptMaster() {
-  return extensions::ExtensionSystem::Get(this)->user_script_master();
-}
-
 extensions::EventRouter* TestingProfile::GetExtensionEventRouter() {
   return extensions::ExtensionSystem::Get(this)->event_router();
 }
