@@ -24,6 +24,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
+#include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
@@ -1624,8 +1625,19 @@ void RecordBrowserStartupTime() {
         base::Time::Now() - *process_creation_time);
 #endif // OS_MACOSX || OS_WIN
 
-  // Add another startup time metric that measures from main entry rather
-  // than the OS's notion of process startup in an attempt to lower variance.
+  // Startup.BrowserMessageLoopStartTime exhibits instability in the field
+  // which limits its usefullness in all scenarios except when we have a very
+  // large sample size.
+  // Attempt to mitigate this with a new metric:
+  // * Measure time from main entry rather than the OS' notion of process start
+  //   time.
+  // * Only measure launches that occur 7 minutes after boot to try to avoid
+  //   cases where Chrome is auto-started and IO is heavily loaded.
+  const int64 kSevenMinutesInMilliseconds =
+      base::TimeDelta::FromMinutes(7).InMilliseconds();
+  if (base::SysInfo::Uptime() < kSevenMinutesInMilliseconds)
+    return;
+
   RecordPreReadExperimentTime(
       "Startup.BrowserMessageLoopStartTimeFromMainEntry",
       base::Time::Now() - startup_metric_utils::MainEntryStartTime());
