@@ -58,8 +58,9 @@ void LogShortcutOperation(ShellUtil::ChromeShortcutLocation location,
   std::string message;
   if (failed)
     message.append("Failed: ");
-  message.append(operation == ShellUtil::SHORTCUT_CREATE_ALWAYS ?
-      "Creating " : "Overwriting ");
+  message.append((operation == ShellUtil::SHORTCUT_CREATE_ALWAYS ||
+                  operation == ShellUtil::SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL) ?
+                     "Creating " : "Overwriting ");
   if (failed && operation == ShellUtil::SHORTCUT_REPLACE_EXISTING)
     message.append("(maybe the shortcut doesn't exist?) ");
   message.append((properties.level == ShellUtil::CURRENT_USER) ? "per-user " :
