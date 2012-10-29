@@ -186,7 +186,7 @@ weston_screensaver_SOURCES =			\
 	glmatrix.c				\
 	matrix3.xpm
 weston_screensaver_LDADD = $(toolkit_libs) $(GLU_LIBS)
-weston_screensaver_CFLAGS = $(toolkit_libs) $(GLU_CFLAGS)
+weston_screensaver_CFLAGS = $(GLU_CFLAGS)
 endif
 
 endif
