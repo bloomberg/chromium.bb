@@ -40,9 +40,11 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(ui_controls::UIControlsAura,
                                  kUIControlsKey,
                                  NULL);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kUserChangedWindowPositionOrSizeKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(ash::WindowPersistsAcrossAllWorkspacesType,
                            kWindowPersistsAcrossAllWorkspacesKey,
                            WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowPositionManagedKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowTrackedByWorkspaceKey, true);
 
 }  // namespace internal

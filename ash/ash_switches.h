@@ -19,6 +19,7 @@ ASH_EXPORT extern const char kAshBootAnimationFunction2[];
 ASH_EXPORT extern const char kAshBootAnimationFunction3[];
 ASH_EXPORT extern const char kAshConstrainPointerToRoot[];
 ASH_EXPORT extern const char kAshDebugShortcuts[];
+ASH_EXPORT extern const char kAshDisableAutoWindowPlacement[];
 ASH_EXPORT extern const char kAshDisablePanelFitting[];
 ASH_EXPORT extern const char kAshDisableBootAnimation2[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
