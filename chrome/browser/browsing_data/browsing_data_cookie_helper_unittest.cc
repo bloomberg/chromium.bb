@@ -319,4 +319,24 @@ TEST_F(BrowsingDataCookieHelperTest, CannedDifferentFrames) {
                  base::Unretained(this)));
 }
 
+TEST_F(BrowsingDataCookieHelperTest, CannedGetCookieCount) {
+  GURL frame1_url("http://www.google.com");
+  GURL frame2_url("http://www.google.de");
+  GURL request_url("http://res.google.com");
+  scoped_refptr<CannedBrowsingDataCookieHelper> helper(
+      new CannedBrowsingDataCookieHelper(
+          testing_profile_->GetRequestContext()));
+
+  EXPECT_EQ(0U, helper->GetCookieCount());
+  helper->AddChangedCookie(frame1_url, request_url, "a=1",
+                           net::CookieOptions());
+  EXPECT_EQ(1U, helper->GetCookieCount());
+  helper->AddChangedCookie(frame1_url, request_url, "b=1",
+                           net::CookieOptions());
+  EXPECT_EQ(2U, helper->GetCookieCount());
+  helper->AddChangedCookie(frame2_url, request_url, "a=2",
+                           net::CookieOptions());
+  EXPECT_EQ(2U, helper->GetCookieCount());
+}
+
 }  // namespace
