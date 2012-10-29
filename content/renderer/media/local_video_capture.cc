@@ -101,6 +101,8 @@ void LocalVideoCapture::OnError(media::VideoCapture* capture,
 void LocalVideoCapture::OnRemoved(media::VideoCapture* capture) {
   DVLOG(3) << "LocalVideoCapture::OnRemoved";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  // OnRemoved could be triggered by error.
+  capture_engine_ = NULL;
   vc_manager_->RemoveDevice(video_stream_id_, this);
   Release();  // Balance the AddRef() in StartCapture().
 }
