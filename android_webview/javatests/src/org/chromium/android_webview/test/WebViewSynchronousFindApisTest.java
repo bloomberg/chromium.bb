@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -14,21 +15,33 @@ import org.chromium.base.test.util.Feature;
  */
 public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testFindAllFinds() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testFindAllDouble() throws Throwable {
         findAllSyncOnUiThread("wood");
         assertEquals(4, findAllSyncOnUiThread("chuck"));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testFindAllDoubleNext() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
         assertEquals(4, findAllSyncOnUiThread("wood"));
@@ -53,8 +66,12 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(0, findAllSyncOnUiThread(""));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testFindNextForward() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
 
@@ -79,8 +96,12 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(3, findNextOnUiThread(false));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testFindNextBig() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
 
@@ -109,15 +130,23 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(1, findNextOnUiThread(true));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testClearMatches() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
         clearMatchesOnUiThread();
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testClearFindNext() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
         clearMatchesOnUiThread();
@@ -125,16 +154,24 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(2, findNextOnUiThread(true));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testFindEmptyNext() throws Throwable {
         assertEquals(0, findAllSyncOnUiThread(""));
         assertEquals(0, findNextOnUiThread(true));
         assertEquals(4, findAllSyncOnUiThread("wood"));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testFindNextFirst() throws Throwable {
         runTestOnUiThread(new Runnable() {
             @Override

@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -15,8 +16,12 @@ import org.chromium.base.test.util.Feature;
  */
 public class WebViewMixedFindApisTest extends WebViewFindApisTestBase {
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testAsyncFindOperationsMixedWithSyncFind() throws Throwable {
         clearMatchesOnUiThread();
         assertEquals(4, findAllSyncOnUiThread("wood"));
@@ -28,8 +33,12 @@ public class WebViewMixedFindApisTest extends WebViewFindApisTestBase {
         assertEquals(4, findAllSyncOnUiThread("wood"));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /*
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * BUG=158284
+     */
+    @DisabledTest
     public void testInterleavedFinds() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
         assertEquals(4, findAllAsyncOnUiThread("wood"));
