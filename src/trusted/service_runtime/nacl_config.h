@@ -239,7 +239,7 @@
 /*
  * See ARM Procedure Call Standard, ARM IHI 0042D, section 5.2.1.2.
  * http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042a/IHI0042A_aapcs.pdf
- * -- the "public" stack alignment is required to be 8 bytes,
+ * -- the "public" stack alignment is required to be 8 bytes.
  * While ARM vector loads and stores work with misaligned addresses, there can
  * be performance penalties on some microarchitectures.  To improve the
  * performance of vector instructions, we increase this to 16.
