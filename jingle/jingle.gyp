@@ -7,7 +7,7 @@
     'chromium_code': 1,
   },  # variables
   'conditions': [
-    ['OS != "ios"', {
+    ['OS != "ios" and OS != "android"', {
       'targets': [
         # A library of various utils for integration with libjingle.
         {
@@ -214,11 +214,15 @@
           ],
         },
       ],
-    }, {  # OS == "ios"
+    }, {  # OS == "ios" or OS == "android"
       'targets': [
-        # Stub targets as iOS doesn't use libjingle.
+        # Stub targets as iOS/Android don't use libjingle.
         {
           'target_name': 'jingle_glue',
+          'type': 'none',
+        },
+        {
+          'target_name': 'jingle_glue_test_util',
           'type': 'none',
         },
         {

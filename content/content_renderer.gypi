@@ -14,7 +14,6 @@
     '../third_party/icu/icu.gyp:icuuc',
     '../third_party/icu/icu.gyp:icui18n',
     '../third_party/libjingle/libjingle.gyp:libjingle',
-    '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
     '../third_party/npapi/npapi.gyp:npapi',
     '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../ui/surface/surface.gyp:surface',
@@ -312,6 +311,7 @@
     }],
     ['enable_webrtc==1', {
       'dependencies': [
+        '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
         '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
         '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
         '../third_party/webrtc/modules/modules.gyp:audio_device',        
