@@ -67,8 +67,8 @@ void RunOnThread(base::SingleThreadTaskRunner* task_runner,
       location, task,
       base::Bind(base::IgnoreResult(
           base::Bind(&base::MessageLoopProxy::PostTask,
-                      base::MessageLoopProxy::current(),
-                      FROM_HERE, base::Bind(&Quit)))));
+                     base::MessageLoopProxy::current(),
+                     FROM_HERE, base::Bind(&Quit)))));
   MessageLoop::current()->Run();
 }
 
@@ -100,7 +100,7 @@ class WriteHelper {
       MessageLoop::current()->DeleteSoon(FROM_HERE, request_context_.release());
   }
 
-  void DidWrite(const base::Callback<void(int64)>& completion_callback,
+  void DidWrite(const base::Callback<void(int64 result)>& completion_callback,
                 PlatformFileError error, int64 bytes, bool complete) {
     if (error == base::PLATFORM_FILE_OK) {
       bytes_written_ += bytes;

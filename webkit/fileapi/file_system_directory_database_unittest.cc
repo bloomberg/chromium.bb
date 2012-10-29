@@ -5,6 +5,7 @@
 #include "webkit/fileapi/file_system_directory_database.h"
 
 #include <math.h>
+#include <limits>
 
 #include "base/file_util.h"
 #include "base/platform_file.h"

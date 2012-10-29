@@ -5,6 +5,7 @@
 #include "webkit/fileapi/file_util_helper.h"
 
 #include <stack>
+#include <utility>
 
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"

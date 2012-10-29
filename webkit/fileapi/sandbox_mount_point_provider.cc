@@ -341,7 +341,6 @@ SandboxMountPointProvider::SandboxMountPointProvider(
                       file_task_runner,
                       ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-
   // Set quota observers.
   UpdateObserverList::Source update_observers_src;
   AccessObserverList::Source access_observers_src;

@@ -6,6 +6,7 @@
 #define WEBKIT_FILEAPI_SYNCABLE_CANNED_SYNCABLE_FILE_SYSTEM_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/message_loop.h"

@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 
+#include <limits>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -55,7 +56,7 @@ void ReadFromReader(FileSystemFileStreamReader* reader,
   }
 }
 
-void NeverCalled(int) { ADD_FAILURE(); }
+void NeverCalled(int unused) { ADD_FAILURE(); }
 
 }  // namespace
 

@@ -1242,8 +1242,9 @@ FilePath ObfuscatedFileUtil::DataPathToLocalPath(
   return root.Append(data_path);
 }
 
-// TODO: How to do the whole validation-without-creation thing?  We may not have
-// quota even to create the database.  Ah, in that case don't even get here?
+// TODO(ericu): How to do the whole validation-without-creation thing?
+// We may not have quota even to create the database.
+// Ah, in that case don't even get here?
 // Still doesn't answer the quota issue, though.
 FileSystemDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     const GURL& origin, FileSystemType type, bool create) {

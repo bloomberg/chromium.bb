@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/rand_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "base/stringprintf.h"
@@ -43,18 +44,7 @@ const char kFileSystemURLPrefix[] = "filesystem:http://remote/temporary/";
 const char kTestFileData[] = "0123456789";
 
 void FillBuffer(char* buffer, size_t len) {
-  static bool called = false;
-  if (!called) {
-    called = true;
-    int seed = static_cast<int>(base::Time::Now().ToInternalValue());
-    srand(seed);
-  }
-
-  for (size_t i = 0; i < len; i++) {
-    buffer[i] = static_cast<char>(rand());
-    if (!buffer[i])
-      buffer[i] = 'g';
-  }
+  base::RandBytes(buffer, len);
 }
 
 }  // namespace

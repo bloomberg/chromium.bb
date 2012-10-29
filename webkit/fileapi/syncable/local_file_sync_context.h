@@ -43,10 +43,10 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
     : public base::RefCountedThreadSafe<LocalFileSyncContext>,
       public LocalFileSyncStatus::Observer {
  public:
-  typedef base::Callback<void(
-      SyncStatusCode status,
-      SyncFileType file_type,
-      const FileChangeList& changes)> ChangeListCallback;
+  typedef base::Callback<void(SyncStatusCode status,
+                              SyncFileType file_type,
+                              const FileChangeList& changes)>
+      ChangeListCallback;
 
   LocalFileSyncContext(base::SingleThreadTaskRunner* ui_task_runner,
                        base::SingleThreadTaskRunner* io_task_runner);

@@ -19,7 +19,7 @@ namespace fileapi {
 namespace {
 
 FileSystemURL CreateFileSystemURL(const std::string& url_string) {
- return FileSystemURL(GURL(url_string));
+  return FileSystemURL(GURL(url_string));
 }
 
 std::string NormalizedUTF8Path(const FilePath& path) {

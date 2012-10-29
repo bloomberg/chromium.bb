@@ -31,6 +31,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
   class WEBKIT_STORAGE_EXPORT Observer {
    public:
     Observer() {}
+    virtual ~Observer() {}
     virtual void OnSyncEnabled(const FileSystemURL& url) = 0;
     virtual void OnWriteEnabled(const FileSystemURL& url) = 0;
    private:

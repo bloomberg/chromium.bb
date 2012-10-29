@@ -57,7 +57,7 @@ bool IsSinglePathIsolatedFileSystem(FileSystemType type) {
   return true;
 }
 
-}
+}  // namespace
 
 static base::LazyInstance<IsolatedContext>::Leaky g_isolated_context =
     LAZY_INSTANCE_INITIALIZER;
@@ -307,7 +307,7 @@ void IsolatedContext::RemoveReference(const std::string& filesystem_id) {
   if (found == instance_map_.end())
     return;
   Instance* instance = found->second;
-  DCHECK(instance->ref_counts() > 0);
+  DCHECK_GT(instance->ref_counts(), 0);
   instance->RemoveRef();
   if (instance->ref_counts() == 0 &&
       instance->mount_type() != kFileSystemTypeExternal) {

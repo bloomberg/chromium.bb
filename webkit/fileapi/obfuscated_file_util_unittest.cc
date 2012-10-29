@@ -163,7 +163,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
       context = helper->NewOperationContext();
     else
       context = test_helper_.NewOperationContext();
-    context->set_allowed_bytes_growth(1024 * 1024); // Big enough for all tests.
+    // Setting allowed_bytes_growth big enough for all tests.
+    context->set_allowed_bytes_growth(1024 * 1024);
     context->set_change_observers(change_observers());
     return context;
   }

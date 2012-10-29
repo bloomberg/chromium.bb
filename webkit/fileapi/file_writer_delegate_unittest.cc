@@ -221,9 +221,11 @@ void FileWriterDelegateTest::TearDown() {
 // FileWriterDelegateTest.WriteSuccessWithoutQuotaLimit is flaky on windows
 // http://crbug.com/130401
 #if defined(OS_WIN)
-#define MAYBE_WriteSuccessWithoutQuotaLimit DISABLED_WriteSuccessWithoutQuotaLimit
+#define MAYBE_WriteSuccessWithoutQuotaLimit \
+    DISABLED_WriteSuccessWithoutQuotaLimit
 #else
-#define MAYBE_WriteSuccessWithoutQuotaLimit WriteSuccessWithoutQuotaLimit
+#define MAYBE_WriteSuccessWithoutQuotaLimit \
+    WriteSuccessWithoutQuotaLimit
 #endif
 TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimit) {
   const GURL kBlobURL("blob:nolimit");

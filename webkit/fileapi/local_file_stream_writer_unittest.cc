@@ -70,7 +70,7 @@ class LocalFileStreamWriterTest : public testing::Test {
   ScopedTempDir temp_dir_;
 };
 
-void NeverCalled(int) {
+void NeverCalled(int unused) {
   ADD_FAILURE();
 }
 

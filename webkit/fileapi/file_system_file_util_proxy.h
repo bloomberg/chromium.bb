@@ -148,7 +148,8 @@ class FileSystemFileUtilProxy {
 
   // Reads the filenames in |url| by calling |file_util|'s
   // ReadDirectory method on the given context's task_runner.
-  // TODO: this should support returning entries in multiple chunks.
+  // TODO(kinuko): this should support returning entries in multiple chunks.
+  // (http://crbug.com/145908)
   static bool ReadDirectory(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,

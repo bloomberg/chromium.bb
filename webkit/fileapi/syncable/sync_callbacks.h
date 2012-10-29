@@ -9,10 +9,11 @@
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 namespace fileapi {
+
 class FileSystemURL;
 
 typedef base::Callback<void(SyncStatusCode status)> StatusCallback;
-typedef base::Callback<void(SyncStatusCode, const FileSystemURL& url)>
+typedef base::Callback<void(SyncStatusCode status, const FileSystemURL& url)>
     SyncCompletionCallback;
 
 }  // namespace fileapi

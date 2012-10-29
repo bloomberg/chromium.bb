@@ -163,11 +163,11 @@ class LocalFileSystemOperationWriteTest
 
   MockBlobURLRequestContext url_request_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperationWriteTest);
-
  private:
   MockFileChangeObserver change_observer_;
   ChangeObserverList change_observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemOperationWriteTest);
 };
 
 void LocalFileSystemOperationWriteTest::SetUp() {

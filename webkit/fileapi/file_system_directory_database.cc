@@ -4,8 +4,10 @@
 
 #include "webkit/fileapi/file_system_directory_database.h"
 
-#include <algorithm>
 #include <math.h>
+#include <algorithm>
+#include <set>
+#include <stack>
 
 #include "base/file_util.h"
 #include "base/location.h"
@@ -256,8 +258,8 @@ bool DatabaseCheckHelper::ScanDatabase() {
 }
 
 bool DatabaseCheckHelper::ScanDirectory() {
-  // Scans all local file system entries to verify each of them has a database
-  // entry.
+  // TODO(kinuko): Scans all local file system entries to verify each of them
+  // has a database entry.
   const FilePath kExcludes[] = {
     FilePath(kDirectoryDatabaseName),
     FilePath(fileapi::FileSystemUsageCache::kUsageFileName),
@@ -535,8 +537,8 @@ bool FileSystemDirectoryDatabase::RemoveFileInfo(FileId file_id) {
 
 bool FileSystemDirectoryDatabase::UpdateFileInfo(
     FileId file_id, const FileInfo& new_info) {
-  // TODO: We should also check to see that this doesn't create a loop, but
-  // perhaps only in a debug build.
+  // TODO(ericu): We should also check to see that this doesn't create a loop,
+  // but perhaps only in a debug build.
   if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(file_id);  // You can't remove the root, ever.  Just delete the DB.

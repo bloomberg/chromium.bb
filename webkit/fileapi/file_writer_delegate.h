@@ -32,10 +32,10 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileWriterDelegate
     ERROR_WRITE_NOT_STARTED,
   };
 
-  typedef base::Callback<void(
-      base::PlatformFileError result,
-      int64 bytes,
-      WriteProgressStatus write_status)> DelegateWriteCallback;
+  typedef base::Callback<void(base::PlatformFileError result,
+                              int64 bytes,
+                              WriteProgressStatus write_status)>
+      DelegateWriteCallback;
 
   FileWriterDelegate(
       const DelegateWriteCallback& write_callback,
