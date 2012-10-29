@@ -99,7 +99,7 @@ enum OperandName {
   REG_PORT_DX,      /* 16-bit DX: for in/out instructions.                    */
   NO_REG,           /* For modrm: both index and base can be absent.          */
   REG_ST,           /* For x87 instructions: implicit %st.                    */
-  JMP_TO,           /* Operand is jump target address: usually %rip+offset.   */
+  JMP_TO            /* Operand is jump target address: usually %rip+offset.   */
 };
 
 /*
