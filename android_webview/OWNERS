@@ -1,6 +1,8 @@
+# Please include joth@ and (joi@ or erikwright@) on the review for any changes
+# to DEPS files under android_webview/ 
+
 benm@chromium.org
 joth@chromium.org
 mkosiba@chromium.org
 mnaganov@chromium.org
-steveblock@chromium.org
 torne@chromium.org
