@@ -131,6 +131,12 @@ BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllSources());
+
+  // Login screen is moved to lock screen container when user logs in.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                 content::NotificationService::AllSources());
+
   DCHECK(default_host_ == NULL);
   default_host_ = this;
 
@@ -284,6 +290,9 @@ void BaseLoginDisplayHost::Observe(
     // during the user image picker step are below it.
     ash::Shell::GetInstance()->
         desktop_background_controller()->MoveDesktopToLockedContainer();
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                      content::NotificationService::AllSources());
   }
 }
 
