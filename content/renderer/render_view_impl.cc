@@ -5697,6 +5697,10 @@ bool RenderViewImpl::SupportsAsynchronousSwapBuffers() {
   return true;
 }
 
+bool RenderViewImpl::ForceCompositingModeEnabled() {
+  return webkit_preferences_.force_compositing_mode;
+}
+
 void RenderViewImpl::OnSetFocus(bool enable) {
   RenderWidget::OnSetFocus(enable);
 

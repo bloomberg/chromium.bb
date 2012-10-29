@@ -303,6 +303,8 @@ class CONTENT_EXPORT RenderWidget
   // the context is lost.
   virtual bool SupportsAsynchronousSwapBuffers();
 
+  virtual bool ForceCompositingModeEnabled();
+
   // Notifies scheduler that the RenderWidget's subclass has finished or aborted
   // a swap buffers.
   void OnSwapBuffersPosted();

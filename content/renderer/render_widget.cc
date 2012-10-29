@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -206,10 +207,11 @@ void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd) {
   host_window_ = parent_hwnd;
   host_window_set_ = true;
 
-#if WEBWIDGET_HAS_SETCOMPOSITORSURFACEREADY
-  if (webwidget_)
-      webwidget_->setCompositorSurfaceReady();
-#endif
+  if (webwidget_) {
+    webwidget_->setCompositorSurfaceReady();
+    if (IsThreadedCompositingEnabled())
+      webwidget_->enterForceCompositingMode(true);
+  }
   DoDeferredUpdate();
 
   Send(new ViewHostMsg_RenderViewReady(routing_id_));
@@ -463,6 +465,10 @@ void RenderWidget::OnUpdateRectAck() {
 }
 
 bool RenderWidget::SupportsAsynchronousSwapBuffers() {
+  return false;
+}
+
+bool RenderWidget::ForceCompositingModeEnabled() {
   return false;
 }
 
@@ -903,6 +909,12 @@ void RenderWidget::DoDeferredUpdate() {
     return;
   }
 
+  if (!is_accelerated_compositing_active_ &&
+      !IsThreadedCompositingEnabled() &&
+      ForceCompositingModeEnabled()) {
+    webwidget_->enterForceCompositingMode(true);
+  }
+
   if (!last_do_deferred_update_time_.is_null()) {
     base::TimeDelta delay = frame_begin_ticks - last_do_deferred_update_time_;
     if (is_accelerated_compositing_active_) {
@@ -1063,6 +1075,8 @@ void RenderWidget::DoDeferredUpdate() {
 // WebWidgetClient
 
 void RenderWidget::didInvalidateRect(const WebRect& rect) {
+  TRACE_EVENT2("renderer", "RenderWidget::didInvalidateRect",
+               "width", rect.width, "height", rect.height);
   // The invalidated rect might be outside the bounds of the view.
   gfx::Rect view_rect(size_);
   gfx::Rect damaged_rect = view_rect;
@@ -1178,6 +1192,13 @@ void RenderWidget::didDeactivateCompositor() {
 
   if (using_asynchronous_swapbuffers_)
     using_asynchronous_swapbuffers_ = false;
+
+  // In single-threaded mode, we exit force compositing mode and re-enter in
+  // DoDeferredUpdate() if appropriate. In threaded compositing mode,
+  // DoDeferredUpdate() is bypassed and WebKit is responsible for exiting and
+  // entering force compositing mode at the appropriate times.
+  if (!IsThreadedCompositingEnabled())
+    webwidget_->enterForceCompositingMode(false);
 }
 
 void RenderWidget::willBeginCompositorFrame() {
@@ -1238,6 +1259,7 @@ void RenderWidget::didCompleteSwapBuffers() {
 }
 
 void RenderWidget::scheduleComposite() {
+  TRACE_EVENT0("gpu", "RenderWidget::scheduleComposite");
   if (WebWidgetHandlesCompositorScheduling()) {
     webwidget_->composite(false);
   } else {
