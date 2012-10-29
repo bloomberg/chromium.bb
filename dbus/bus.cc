@@ -305,7 +305,7 @@ bool Bus::Connect() {
   }
   if (!connection_) {
     LOG(ERROR) << "Failed to connect to the bus: "
-               << (dbus_error_is_set(error.get()) ? error.message() : "");
+               << (error.is_set() ? error.message() : "");
     return false;
   }
   // We shouldn't exit on the disconnected signal.
@@ -429,7 +429,7 @@ bool Bus::RequestOwnershipAndBlock(const std::string& service_name) {
                                            error.get());
   if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
     LOG(ERROR) << "Failed to get the ownership of " << service_name << ": "
-               << (dbus_error_is_set(error.get()) ? error.message() : "");
+               << (error.is_set() ? error.message() : "");
     return false;
   }
   owned_service_names_.insert(service_name);

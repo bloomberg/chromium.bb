@@ -21,7 +21,7 @@ class ScopedDBusError {
   }
 
   DBusError* get() { return &error_; }
-  bool is_set() { return dbus_error_is_set(&error_); }
+  bool is_set() const { return dbus_error_is_set(&error_); }
   const char* name() { return error_.name; }
   const char* message() { return error_.message; }
 
