@@ -72,8 +72,10 @@ const int Predictor::kMaxSpeculativeResolveQueueDelayMs =
     (kExpectedResolutionTimeMs * Predictor::kTypicalSpeculativeGroupSize) /
     Predictor::kMaxSpeculativeParallelResolves;
 
-static int g_max_queueing_delay_ms = 0;
-static size_t g_max_parallel_resolves = 0u;
+static int g_max_queueing_delay_ms =
+    Predictor::kMaxSpeculativeResolveQueueDelayMs;
+static size_t g_max_parallel_resolves =
+    Predictor::kMaxSpeculativeParallelResolves;
 
 // A version number for prefs that are saved. This should be incremented when
 // we change the format so that we discard old data.

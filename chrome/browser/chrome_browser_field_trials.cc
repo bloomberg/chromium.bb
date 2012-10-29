@@ -17,18 +17,14 @@
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/chrome_gpu_util.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/variations_util.h"
-#include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"
-#include "net/socket/client_socket_pool_manager.h"
 #include "net/spdy/spdy_session.h"
-#include "net/spdy/spdy_session_pool.h"
 #include "ui/base/layout.h"
 
 #if defined(OS_WIN)
@@ -108,7 +104,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
   SpdyFieldTrial();
   WarmConnectionFieldTrial();
-  PredictorFieldTrial();
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
   SetupUniformityFieldTrials();
@@ -197,89 +192,6 @@ void ChromeBrowserFieldTrials::WarmConnectionFieldTrial() {
                               last_accessed_socket };
   SetSocketReusePolicy(warmest_socket_trial_group, policy_list,
                        arraysize(policy_list));
-}
-
-void ChromeBrowserFieldTrials::PredictorFieldTrial() {
-  const base::FieldTrial::Probability kDivisor = 1000;
-  // For each option (i.e., non-default), we have a fixed probability.
-  // 0.1% probability.
-  const base::FieldTrial::Probability kProbabilityPerGroup = 1;
-
-  // After June 30, 2011 builds, it will always be in default group
-  // (default_enabled_prefetch).
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "DnsImpact", kDivisor, "default_enabled_prefetch", 2011, 10, 30,
-          NULL));
-
-  // First option is to disable prefetching completely.
-  int disabled_prefetch = trial->AppendGroup("disabled_prefetch",
-                                              kProbabilityPerGroup);
-
-  // We're running two experiments at the same time.  The first set of trials
-  // modulates the delay-time until we declare a congestion event (and purge
-  // our queue).  The second modulates the number of concurrent resolutions
-  // we do at any time.  Users are in exactly one trial (or the default) during
-  // any one run, and hence only one experiment at a time.
-  // Experiment 1:
-  // Set congestion detection at 250, 500, or 750ms, rather than the 1 second
-  // default.
-  int max_250ms_prefetch = trial->AppendGroup("max_250ms_queue_prefetch",
-                                              kProbabilityPerGroup);
-  int max_500ms_prefetch = trial->AppendGroup("max_500ms_queue_prefetch",
-                                              kProbabilityPerGroup);
-  int max_750ms_prefetch = trial->AppendGroup("max_750ms_queue_prefetch",
-                                              kProbabilityPerGroup);
-  // Set congestion detection at 2 seconds instead of the 1 second default.
-  int max_2s_prefetch = trial->AppendGroup("max_2s_queue_prefetch",
-                                           kProbabilityPerGroup);
-  // Experiment 2:
-  // Set max simultaneous resoultions to 2, 4, or 6, and scale the congestion
-  // limit proportionally (so we don't impact average probability of asserting
-  // congesion very much).
-  int max_2_concurrent_prefetch = trial->AppendGroup(
-      "max_2 concurrent_prefetch", kProbabilityPerGroup);
-  int max_4_concurrent_prefetch = trial->AppendGroup(
-      "max_4 concurrent_prefetch", kProbabilityPerGroup);
-  int max_6_concurrent_prefetch = trial->AppendGroup(
-      "max_6 concurrent_prefetch", kProbabilityPerGroup);
-
-  if (trial->group() != disabled_prefetch) {
-    // Initialize the DNS prefetch system.
-    size_t max_parallel_resolves =
-        chrome_browser_net::Predictor::kMaxSpeculativeParallelResolves;
-    int max_queueing_delay_ms =
-        chrome_browser_net::Predictor::kMaxSpeculativeResolveQueueDelayMs;
-
-    if (trial->group() == max_2_concurrent_prefetch)
-      max_parallel_resolves = 2;
-    else if (trial->group() == max_4_concurrent_prefetch)
-      max_parallel_resolves = 4;
-    else if (trial->group() == max_6_concurrent_prefetch)
-      max_parallel_resolves = 6;
-    chrome_browser_net::Predictor::set_max_parallel_resolves(
-        max_parallel_resolves);
-
-    if (trial->group() == max_250ms_prefetch) {
-      max_queueing_delay_ms =
-         (250 * chrome_browser_net::Predictor::kTypicalSpeculativeGroupSize) /
-         max_parallel_resolves;
-    } else if (trial->group() == max_500ms_prefetch) {
-      max_queueing_delay_ms =
-          (500 * chrome_browser_net::Predictor::kTypicalSpeculativeGroupSize) /
-          max_parallel_resolves;
-    } else if (trial->group() == max_750ms_prefetch) {
-      max_queueing_delay_ms =
-          (750 * chrome_browser_net::Predictor::kTypicalSpeculativeGroupSize) /
-          max_parallel_resolves;
-    } else if (trial->group() == max_2s_prefetch) {
-      max_queueing_delay_ms =
-          (2000 * chrome_browser_net::Predictor::kTypicalSpeculativeGroupSize) /
-          max_parallel_resolves;
-    }
-    chrome_browser_net::Predictor::set_max_queueing_delay(
-        max_queueing_delay_ms);
-  }
 }
 
 void ChromeBrowserFieldTrials::AutoLaunchChromeFieldTrial() {

@@ -317,42 +317,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       break;
   }
 
-  // Histograms to determine if DNS prefetching has an impact on PLT.
-  static const bool use_dns_histogram =
-      base::FieldTrialList::TrialExists("DnsImpact");
-  if (use_dns_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("PLT.Abandoned", "DnsImpact"),
-        abandoned_page ? 1 : 0, 2);
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("PLT.LoadType", "DnsImpact"),
-        load_type, DocumentState::kLoadTypeMax);
-    switch (load_type) {
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad", "DnsImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal", "DnsImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadReload", "DnsImpact"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-  }
-
   if (document_state->was_fetched_via_proxy() &&
       document_state->was_fetched_via_spdy() &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSpdyProxyOrigin)) {
