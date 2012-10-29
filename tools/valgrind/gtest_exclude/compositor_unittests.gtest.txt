@@ -1,0 +1,2 @@
+# Fails under Valgrind, see http://crbug.com/158357
+LayerWithDelegateTest.ConvertPointToLayer_Simple

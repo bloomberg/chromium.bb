@@ -6080,10 +6080,16 @@
   fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEiiP16InfoBarTabHelper
 }
 {
-  bug_156829
+  bug_156829_a
   Memcheck:Leak
   fun:_Znw*
   fun:_ZN12media_stream23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
+}
+{
+   bug_156829_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
 }
 {
   bug_157616
