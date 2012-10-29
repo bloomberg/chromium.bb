@@ -82,7 +82,7 @@ void FontLoader::LoadFont(const FontDescriptor& font,
   // Retrieve the ATSFontContainerRef corresponding to the font file we want to
   // load. This is a unique identifier that allows the caller determine if the
   // font file in question is already loaded.
-  COMPILE_ASSERT(sizeof(ATSFontContainerRef) == sizeof(&result->font_id),
+  COMPILE_ASSERT(sizeof(ATSFontContainerRef) == sizeof(result->font_id),
       uint32_cant_hold_fontcontainer_ref);
   ATSFontContainerRef fontContainer = kATSFontContainerRefUnspecified;
   if (ATSFontGetContainer(ats_font, 0, &fontContainer) != noErr) {

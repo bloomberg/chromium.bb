@@ -83,7 +83,7 @@ using content::RenderWidgetHostViewMac;
 - (void)drawRect:(NSRect)rect {
   TRACE_EVENT0("browser", "AcceleratedPluginView::drawRect");
   const NSRect* dirtyRects;
-  int dirtyRectCount;
+  NSInteger dirtyRectCount;
   [self getRectsBeingDrawn:&dirtyRects count:&dirtyRectCount];
 
   {
