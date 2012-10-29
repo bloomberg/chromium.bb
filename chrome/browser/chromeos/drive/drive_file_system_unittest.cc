@@ -1190,7 +1190,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoading) {
       FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2/File3"))));
 }
 
-TEST_F(DriveFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
+TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   SaveTestFileSystem(USE_SERVER_TIMESTAMP);
 
   // SaveTestFileSystem and "account_metadata.json" have the same changestamp,

@@ -387,7 +387,7 @@ DriveFileSystem::DriveFileSystem(
 }
 
 void DriveFileSystem::Reload() {
-  InitializeResourceMetadtaAndFeedLoader();
+  InitializeResourceMetadataAndFeedLoader();
 
   feed_loader_->ReloadFromServerIfNeeded(
       resource_metadata_->largest_changestamp(),
@@ -402,7 +402,7 @@ void DriveFileSystem::Initialize() {
 
   drive_service_->Initialize(profile_);
 
-  InitializeResourceMetadtaAndFeedLoader();
+  InitializeResourceMetadataAndFeedLoader();
 
   // Allocate the drive operation handlers.
   drive_operations_.Init(drive_service_,
@@ -421,7 +421,7 @@ void DriveFileSystem::Initialize() {
   InitializePreferenceObserver();
 }
 
-void DriveFileSystem::InitializeResourceMetadtaAndFeedLoader() {
+void DriveFileSystem::InitializeResourceMetadataAndFeedLoader() {
   resource_metadata_.reset(new DriveResourceMetadata);
   feed_loader_.reset(new DriveFeedLoader(resource_metadata_.get(),
                                          drive_service_,

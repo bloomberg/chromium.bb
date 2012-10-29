@@ -243,9 +243,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Struct used by UpdateEntryData.
   struct UpdateEntryParams;
 
-  // Initializes DriveResourceMetadta and DriveFeedLoader instances. This is a
+  // Initializes DriveResourceMetadata and DriveFeedLoader instances. This is a
   // part of the initialization.
-  void InitializeResourceMetadtaAndFeedLoader();
+  void InitializeResourceMetadataAndFeedLoader();
 
   // Callback passed to |LoadFeedFromServer| from |Search| method.
   // |callback| is that should be run with data received from
