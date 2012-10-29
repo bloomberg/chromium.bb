@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/mock_drive_uploader.h"
+#include "chrome/browser/google_apis/mock_drive_uploader.h"
 
-namespace drive {
+namespace google_apis {
 
 MockDriveUploader::MockDriveUploader() {
 }
@@ -12,4 +12,4 @@ MockDriveUploader::MockDriveUploader() {
 MockDriveUploader::~MockDriveUploader() {
 }
 
-}   // namespace drive
+}   // namespace google_apis

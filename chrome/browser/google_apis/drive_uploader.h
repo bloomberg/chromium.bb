@@ -24,12 +24,9 @@ namespace content {
 class DownloadItem;
 }
 
-namespace drive {
-class MockDriveUploader;
-}
-
 namespace google_apis {
 class DriveServiceInterface;
+class MockDriveUploader;
 struct ResumeUploadResponse;
 
 // Callback to be invoked once the upload has completed.

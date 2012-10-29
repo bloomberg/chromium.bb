@@ -26,11 +26,11 @@
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_service.h"
-#include "chrome/browser/chromeos/drive/mock_drive_uploader.h"
 #include "chrome/browser/chromeos/drive/mock_drive_web_apps_registry.h"
 #include "chrome/browser/chromeos/drive/mock_free_disk_space_getter.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
+#include "chrome/browser/google_apis/mock_drive_uploader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -195,7 +195,7 @@ class DriveFileSystemTest : public testing::Test {
     cache_ = DriveCache::CreateDriveCacheOnUIThread(
         DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
-    mock_uploader_.reset(new StrictMock<MockDriveUploader>);
+    mock_uploader_.reset(new StrictMock<google_apis::MockDriveUploader>);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
 
     ASSERT_FALSE(file_system_);
@@ -810,7 +810,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
   DriveCache* cache_;
-  scoped_ptr<StrictMock<MockDriveUploader> > mock_uploader_;
+  scoped_ptr<StrictMock<google_apis::MockDriveUploader> > mock_uploader_;
   DriveFileSystem* file_system_;
   StrictMock<MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
