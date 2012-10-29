@@ -46,7 +46,8 @@ class CannedSyncableFileSystem {
 
   CannedSyncableFileSystem(const GURL& origin,
                            const std::string& service,
-                           base::SingleThreadTaskRunner* io_task_runner);
+                           base::SingleThreadTaskRunner* io_task_runner,
+                           base::SingleThreadTaskRunner* file_task_runner);
   ~CannedSyncableFileSystem();
 
   // SetUp must be called before using this instance.
@@ -79,7 +80,8 @@ class CannedSyncableFileSystem {
 
   // Helper routines to perform file system operations.
   // OpenFileSystem() must have been called before calling any of them.
-  // They run on io_task_runner.
+  // They create an operation and run it on IO task runner, and the operation
+  // posts a task on file runner.
   base::PlatformFileError CreateDirectory(const FileSystemURL& url);
   base::PlatformFileError CreateFile(const FileSystemURL& url);
   base::PlatformFileError Copy(const FileSystemURL& src_url,
@@ -101,6 +103,10 @@ class CannedSyncableFileSystem {
 
   // Retrieves the quota and usage.
   quota::QuotaStatusCode GetUsageAndQuota(int64* usage, int64* quota);
+
+  // ChangeTracker related methods. They run on file task runner.
+  void GetChangedURLsInTracker(std::vector<FileSystemURL>* urls);
+  void FinalizeSyncForURLInTracker(const FileSystemURL& url);
 
   // Returns new FileSystemOperation.
   FileSystemOperation* NewOperation();
@@ -155,6 +161,7 @@ class CannedSyncableFileSystem {
   SyncStatusCode sync_status_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   // Boolean flags mainly for helping debug.
   bool is_filesystem_set_up_;

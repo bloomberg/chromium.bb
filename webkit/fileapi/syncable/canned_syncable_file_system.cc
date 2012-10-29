@@ -5,6 +5,7 @@
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
@@ -18,6 +19,7 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
@@ -43,7 +45,6 @@ void AssignAndQuit(base::TaskRunner* original_task_runner,
   original_task_runner->PostTask(FROM_HERE, base::Bind(&Quit));
 }
 
-
 template <typename R>
 R RunOnThread(
     base::SingleThreadTaskRunner* task_runner,
@@ -57,6 +58,18 @@ R RunOnThread(
                                   &result)));
   MessageLoop::current()->Run();
   return result;
+}
+
+void RunOnThread(base::SingleThreadTaskRunner* task_runner,
+                 const tracked_objects::Location& location,
+                 const base::Closure& task) {
+  task_runner->PostTaskAndReply(
+      location, task,
+      base::Bind(base::IgnoreResult(
+          base::Bind(&base::MessageLoopProxy::PostTask,
+                      base::MessageLoopProxy::current(),
+                      FROM_HERE, base::Bind(&Quit)))));
+  MessageLoop::current()->Run();
 }
 
 void EnsureRunningOn(base::SingleThreadTaskRunner* runner) {
@@ -119,12 +132,14 @@ void DidGetUsageAndQuota(const quota::StatusCallback& callback,
 
 CannedSyncableFileSystem::CannedSyncableFileSystem(
     const GURL& origin, const std::string& service,
-    base::SingleThreadTaskRunner* io_task_runner)
+    base::SingleThreadTaskRunner* io_task_runner,
+    base::SingleThreadTaskRunner* file_task_runner)
     : service_name_(service),
       test_helper_(origin, kFileSystemTypeSyncable),
       result_(base::PLATFORM_FILE_OK),
       sync_status_(SYNC_STATUS_OK),
       io_task_runner_(io_task_runner),
+      file_task_runner_(file_task_runner),
       is_filesystem_set_up_(false),
       is_filesystem_opened_(false) {
 }
@@ -146,7 +161,10 @@ void CannedSyncableFileSystem::SetUp() {
       storage_policy);
 
   file_system_context_ = new FileSystemContext(
-      FileSystemTaskRunners::CreateMockTaskRunners(),
+      make_scoped_ptr(new FileSystemTaskRunners(
+          io_task_runner_,
+          file_task_runner_,
+          file_task_runner_)),
       storage_policy,
       quota_manager_->proxy(),
       data_dir_.path(),
@@ -180,7 +198,7 @@ PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
       true /* create */,
       base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
                  base::Unretained(this)));
-  MessageLoop::current()->RunAllPending();
+  MessageLoop::current()->Run();
   return result_;
 }
 
@@ -309,6 +327,26 @@ quota::QuotaStatusCode CannedSyncableFileSystem::GetUsageAndQuota(
                  base::Unretained(this), usage, quota));
 }
 
+void CannedSyncableFileSystem::GetChangedURLsInTracker(
+    std::vector<FileSystemURL>* urls) {
+  return RunOnThread(
+      file_task_runner_,
+      FROM_HERE,
+      base::Bind(&LocalFileChangeTracker::GetChangedURLs,
+                 base::Unretained(file_system_context_->change_tracker()),
+                 urls));
+}
+
+void CannedSyncableFileSystem::FinalizeSyncForURLInTracker(
+    const FileSystemURL& url) {
+  return RunOnThread(
+      file_task_runner_,
+      FROM_HERE,
+      base::Bind(&LocalFileChangeTracker::FinalizeSyncForURL,
+                 base::Unretained(file_system_context_->change_tracker()),
+                 url));
+}
+
 FileSystemOperation* CannedSyncableFileSystem::NewOperation() {
   return file_system_context_->CreateFileSystemOperation(URL(""), NULL);
 }
@@ -409,6 +447,7 @@ void CannedSyncableFileSystem::DidOpenFileSystem(
   result_ = result;
   root_url_ = root;
   is_filesystem_opened_ = true;
+  MessageLoop::current()->Quit();
 }
 
 void CannedSyncableFileSystem::DidInitializeFileSystemContext(

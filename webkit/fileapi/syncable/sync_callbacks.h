@@ -14,6 +14,7 @@ class FileSystemURL;
 typedef base::Callback<void(SyncStatusCode status)> StatusCallback;
 typedef base::Callback<void(SyncStatusCode, const FileSystemURL& url)>
     SyncCompletionCallback;
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_SYNCABLE_SYNC_CALLBACKS_H_

@@ -8,13 +8,14 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
+#include "webkit/fileapi/syncable/sync_file_type.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 class FilePath;
 
 namespace fileapi {
 class FileChange;
-class FileChangeSet;
+class FileChangeList;
 class FileSystemURL;
 }
 
@@ -25,9 +26,15 @@ namespace sync_file_system {
 // This interface is to be implemented/backed by LocalSyncFileService.
 class RemoteChangeProcessor {
  public:
+  // Callback type for PrepareForProcessRemoteChange.
+  // |file_type| indicates the current file/directory type of the target
+  // URL in the local filesystem. If the target URL does not exist it is
+  // set to SYNC_FILE_TYPE_UNKNOWN.
+  // |changes| indicates a set of pending changes for the target URL.
   typedef base::Callback<void(
       fileapi::SyncStatusCode status,
-      fileapi::FileChangeSet& changes)> PrepareChangeCallback;
+      fileapi::SyncFileType file_type,
+      const fileapi::FileChangeList& changes)> PrepareChangeCallback;
 
   RemoteChangeProcessor() {}
   virtual ~RemoteChangeProcessor() {}

@@ -41,6 +41,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   SyncableFileOperationRunnerTest()
     : message_loop_(MessageLoop::TYPE_IO),
       file_system_(GURL("http://example.com"), kServiceName,
+                   base::MessageLoopProxy::current(),
                    base::MessageLoopProxy::current()),
       callback_count_(0),
       write_status_(base::PLATFORM_FILE_ERROR_FAILED),

@@ -6,10 +6,13 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/platform_file.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/syncable/file_change.h"
@@ -79,17 +82,16 @@ void LocalFileSyncContext::PrepareForSync(
     return;
   }
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  if (sync_status()->IsWriting(url)) {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(callback, SYNC_STATUS_FILE_BUSY, FileChangeList()));
-    return;
-  }
-  sync_status()->StartSyncing(url);
+  const bool writing = sync_status()->IsWriting(url);
+  // Disable writing if it's ready to be synced.
+  if (!writing)
+    sync_status()->StartSyncing(url);
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LocalFileSyncContext::DidDisabledWritesForPrepareForSync,
-                 this, make_scoped_refptr(file_system_context), url, callback));
+      base::Bind(&LocalFileSyncContext::DidGetWritingStatusForPrepareForSync,
+                 this, make_scoped_refptr(file_system_context),
+                 writing ? SYNC_STATUS_FILE_BUSY : SYNC_STATUS_OK,
+                 url, callback));
 }
 
 void LocalFileSyncContext::RegisterURLForWaitingSync(
@@ -285,21 +287,58 @@ void LocalFileSyncContext::DidInitialize(
   pending_initialize_callbacks_.erase(file_system_context);
 }
 
-void LocalFileSyncContext::DidDisabledWritesForPrepareForSync(
+void LocalFileSyncContext::DidGetWritingStatusForPrepareForSync(
     FileSystemContext* file_system_context,
+    SyncStatusCode status,
     const FileSystemURL& url,
     const ChangeListCallback& callback) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  if (shutdown_on_ui_) {
-    callback.Run(SYNC_STATUS_ABORT, FileChangeList());
+  // This gets called on UI thread and relays the task on FILE thread.
+  DCHECK(file_system_context);
+  if (!file_system_context->task_runners()->file_task_runner()->
+          RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    if (shutdown_on_ui_) {
+      callback.Run(SYNC_STATUS_ABORT, SYNC_FILE_TYPE_UNKNOWN, FileChangeList());
+      return;
+    }
+    file_system_context->task_runners()->file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::DidGetWritingStatusForPrepareForSync,
+                   this, make_scoped_refptr(file_system_context),
+                   status, url, callback));
     return;
   }
-  DCHECK(file_system_context);
-  DCHECK(file_system_context->change_tracker());
 
+  DCHECK(file_system_context->change_tracker());
   FileChangeList changes;
   file_system_context->change_tracker()->GetChangesForURL(url, &changes);
-  callback.Run(SYNC_STATUS_OK, changes);
+
+  FilePath platform_path;
+  base::PlatformFileInfo file_info;
+  FileSystemFileUtil* file_util = file_system_context->GetFileUtil(url.type());
+  DCHECK(file_util);
+  base::PlatformFileError file_error = file_util->GetFileInfo(
+      make_scoped_ptr(
+          new FileSystemOperationContext(file_system_context)).get(),
+      url,
+      &file_info,
+      &platform_path);
+  if (status == SYNC_STATUS_OK &&
+      file_error != base::PLATFORM_FILE_OK &&
+      file_error != base::PLATFORM_FILE_ERROR_NOT_FOUND)
+    status = PlatformFileErrorToSyncStatusCode(file_error);
+
+  DCHECK(!file_info.is_symbolic_link);
+
+  SyncFileType file_type = SYNC_FILE_TYPE_FILE;
+  if (file_error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
+    file_type = SYNC_FILE_TYPE_UNKNOWN;
+  else if (file_info.is_directory)
+    file_type = SYNC_FILE_TYPE_DIRECTORY;
+
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback, status, file_type, changes));
 }
 
 void LocalFileSyncContext::DidApplyRemoteChange(

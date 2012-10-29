@@ -43,7 +43,7 @@ void LocalFileSyncService::MaybeInitializeFileSystemContext(
                  AsWeakPtr(), app_origin, file_system_context, callback));
 }
 
-void LocalFileSyncService::ProcessChange(
+void LocalFileSyncService::ProcessLocalChange(
     LocalChangeProcessor* processor,
     const SyncCompletionCallback& callback) {
   // TODO(kinuko): implement.
@@ -53,8 +53,10 @@ void LocalFileSyncService::ProcessChange(
 void LocalFileSyncService::PrepareForProcessRemoteChange(
     const fileapi::FileSystemURL& url,
     const PrepareChangeCallback& callback) {
-  // TODO(kinuko): implement.
-  NOTIMPLEMENTED();
+  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+  sync_context_->PrepareForSync(
+      origin_to_contexts_[url.origin()],
+      url, callback);
 }
 
 void LocalFileSyncService::ApplyRemoteChange(

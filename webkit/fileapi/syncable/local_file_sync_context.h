@@ -45,7 +45,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
  public:
   typedef base::Callback<void(
       SyncStatusCode status,
-      const FileChangeList& change)> ChangeListCallback;
+      SyncFileType file_type,
+      const FileChangeList& changes)> ChangeListCallback;
 
   LocalFileSyncContext(base::SingleThreadTaskRunner* ui_task_runner,
                        base::SingleThreadTaskRunner* io_task_runner);
@@ -131,8 +132,9 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       SyncStatusCode status);
 
   // Helper routines for PrepareForSync.
-  void DidDisabledWritesForPrepareForSync(
+  void DidGetWritingStatusForPrepareForSync(
       FileSystemContext* file_system_context,
+      SyncStatusCode status,
       const FileSystemURL& url,
       const ChangeListCallback& callback);
 

@@ -42,10 +42,11 @@ class LocalFileSyncService
       fileapi::FileSystemContext* file_system_context,
       const fileapi::StatusCallback& callback);
 
-  // Synchronize one local change (to the remote server) using |processor|.
+  // Synchronize one (or a set of) local change(s) to the remote server
+  // using |processor|.
   // |processor| must have same or longer lifetime than this service.
-  void ProcessChange(LocalChangeProcessor* processor,
-                     const fileapi::SyncCompletionCallback& callback);
+  void ProcessLocalChange(LocalChangeProcessor* processor,
+                          const fileapi::SyncCompletionCallback& callback);
 
   // RemoteChangeProcessor overrides.
   virtual void PrepareForProcessRemoteChange(

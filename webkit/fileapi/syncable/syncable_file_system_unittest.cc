@@ -25,6 +25,7 @@ class SyncableFileSystemTest : public testing::Test {
  public:
   SyncableFileSystemTest()
       : file_system_(GURL("http://example.com/"), "test",
+                     base::MessageLoopProxy::current(),
                      base::MessageLoopProxy::current()),
         weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 

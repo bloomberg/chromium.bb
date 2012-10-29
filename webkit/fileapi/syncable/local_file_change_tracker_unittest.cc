@@ -31,6 +31,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
   LocalFileChangeTrackerTest()
       : message_loop_(MessageLoop::TYPE_IO),
         file_system_(GURL("http://example.com"), "test",
+                     base::MessageLoopProxy::current(),
                      base::MessageLoopProxy::current()) {}
 
   virtual void SetUp() OVERRIDE {
