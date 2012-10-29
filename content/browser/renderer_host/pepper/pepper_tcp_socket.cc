@@ -30,8 +30,9 @@
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 
-using content::BrowserThread;
 using ppapi::NetAddressPrivateImpl;
+
+namespace content {
 
 PepperTCPSocket::PepperTCPSocket(
     PepperMessageFilter* manager,
@@ -415,3 +416,5 @@ void PepperTCPSocket::DoWrite() {
   if (result != net::ERR_IO_PENDING)
     OnWriteCompleted(result);
 }
+
+}  // namespace content

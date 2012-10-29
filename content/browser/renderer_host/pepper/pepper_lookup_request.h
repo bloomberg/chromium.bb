@@ -12,6 +12,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/single_request_host_resolver.h"
 
+namespace content {
+
 template<class T>
 class PepperLookupRequest {
  public:
@@ -55,5 +57,7 @@ class PepperLookupRequest {
 
   DISALLOW_COPY_AND_ASSIGN(PepperLookupRequest);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_LOOKUP_REQUEST_H_

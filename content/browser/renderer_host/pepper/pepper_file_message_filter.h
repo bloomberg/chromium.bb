@@ -17,22 +17,21 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/shared_impl/dir_contents.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace ppapi {
 class PepperFilePath;
 }
 
+namespace content {
+class BrowserContext;
+
 // A message filter for Pepper-specific File I/O messages. Used on
 // renderer channels, this denys the renderer the trusted operations
 // permitted only by plugin processes.
-class PepperFileMessageFilter : public content::BrowserMessageFilter {
+class PepperFileMessageFilter : public BrowserMessageFilter {
  public:
   explicit PepperFileMessageFilter(int child_id);
 
-  // content::BrowserMessageFilter methods:
+  // BrowserMessageFilter methods:
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -50,7 +49,7 @@ class PepperFileMessageFilter : public content::BrowserMessageFilter {
   virtual ~PepperFileMessageFilter();
 
  private:
-  friend class content::BrowserThread;
+  friend class BrowserThread;
   friend class base::DeleteHelper<PepperFileMessageFilter>;
 
   // Called on the FILE thread:
@@ -133,5 +132,7 @@ class PepperUnsafeFileMessageFilter : public PepperFileMessageFilter {
 
   DISALLOW_COPY_AND_ASSIGN(PepperUnsafeFileMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_MESSAGE_FILTER_H_

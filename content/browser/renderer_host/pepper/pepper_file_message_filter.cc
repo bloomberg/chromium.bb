@@ -23,8 +23,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-using content::BrowserThread;
-
+namespace content {
 namespace {
 
 // Used to check if the renderer has permission for the requested operation.
@@ -106,7 +105,7 @@ void PepperFileMessageFilter::OnDestruct() const {
 
 // static
 FilePath PepperFileMessageFilter::GetDataDirName(const FilePath& profile_path) {
-  return profile_path.Append(content::kPepperDataDirname);
+  return profile_path.Append(kPepperDataDirname);
 }
 
 PepperFileMessageFilter::~PepperFileMessageFilter() {
@@ -364,3 +363,5 @@ FilePath PepperUnsafeFileMessageFilter::ValidateAndConvertPepperFilePath(
   }
   return file_path;
 }
+
+}  // namespace content

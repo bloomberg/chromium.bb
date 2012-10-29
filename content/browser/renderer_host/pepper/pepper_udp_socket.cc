@@ -16,8 +16,9 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
-using content::BrowserThread;
 using ppapi::NetAddressPrivateImpl;
+
+namespace content {
 
 PepperUDPSocket::PepperUDPSocket(
     PepperMessageFilter* manager,
@@ -180,3 +181,5 @@ void PepperUDPSocket::OnSendToCompleted(int result) {
 
   sendto_buffer_ = NULL;
 }
+
+}  // namespace content

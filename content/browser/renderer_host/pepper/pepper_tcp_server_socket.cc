@@ -17,8 +17,9 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
-using content::BrowserThread;
 using ppapi::NetAddressPrivateImpl;
+
+namespace content {
 
 PepperTCPServerSocket::PepperTCPServerSocket(
     PepperMessageFilter* manager,
@@ -166,3 +167,5 @@ void PepperTCPServerSocket::OnAcceptCompleted(
 
   state_ = LISTENING;
 }
+
+}  // namespace content

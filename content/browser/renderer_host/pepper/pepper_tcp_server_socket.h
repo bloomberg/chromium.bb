@@ -9,13 +9,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_resource.h"
 
-class PepperMessageFilter;
 struct PP_NetAddress_Private;
 
 namespace net {
 class ServerSocket;
 class StreamSocket;
 }
+
+namespace content {
+class PepperMessageFilter;
 
 // PepperTCPSocket is used by PepperMessageFilter to handle requests
 // from the Pepper TCP server socket API
@@ -63,5 +65,7 @@ class PepperTCPServerSocket {
 
   DISALLOW_COPY_AND_ASSIGN(PepperTCPServerSocket);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_TCP_SERVER_SOCKET_H_

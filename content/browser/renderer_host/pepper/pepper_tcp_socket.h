@@ -14,12 +14,11 @@
 #include "net/base/completion_callback.h"
 #include "ppapi/c/pp_stdint.h"
 
+struct PP_NetAddress_Private;
+
 namespace ppapi {
 class PPB_X509Certificate_Fields;
 }
-
-class PepperMessageFilter;
-struct PP_NetAddress_Private;
 
 namespace net {
 class DrainableIOBuffer;
@@ -28,6 +27,9 @@ class SingleRequestHostResolver;
 class StreamSocket;
 class X509Certificate;
 }
+
+namespace content {
+class PepperMessageFilter;
 
 // PepperTCPSocket is used by PepperMessageFilter to handle requests from
 // the Pepper TCP socket API (PPB_TCPSocket_Private).
@@ -130,5 +132,7 @@ class PepperTCPSocket {
 
   DISALLOW_COPY_AND_ASSIGN(PepperTCPSocket);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_TCP_SOCKET_H_

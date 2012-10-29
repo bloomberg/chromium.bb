@@ -51,10 +51,9 @@
 #include <CoreServices/CoreServices.h>
 #endif
 
-using content::BrowserThread;
-using content::RenderViewHostImpl;
 using ppapi::NetAddressPrivateImpl;
 
+namespace content {
 namespace {
 
 const size_t kMaxSocketsAllowed = 1024;
@@ -89,7 +88,7 @@ void CreateNetAddressListFromAddressList(
 PepperMessageFilter::PepperMessageFilter(
     ProcessType type,
     int process_id,
-    content::BrowserContext* browser_context)
+    BrowserContext* browser_context)
     : process_type_(type),
       process_id_(process_id),
       resource_context_(browser_context->GetResourceContext()),
@@ -265,7 +264,7 @@ void PepperMessageFilter::OnGetLocalTimeZoneOffset(base::Time t,
 }
 
 void PepperMessageFilter::OnGetFontFamilies(IPC::Message* reply_msg) {
-  content::GetFontListAsync(
+  GetFontListAsync(
       base::Bind(&PepperMessageFilter::GetFontFamiliesComplete,
                  this, reply_msg));
 }
@@ -741,8 +740,7 @@ void PepperMessageFilter::OnGetLocalDataRestrictions(
     const GURL& document_url,
     const GURL& plugin_url,
     PP_FlashLSORestrictions* restrictions) {
-  content::ContentBrowserClient* client =
-      content::GetContentClient()->browser();
+  ContentBrowserClient* client = GetContentClient()->browser();
   if (!client->AllowPluginLocalDataAccess(document_url, plugin_url,
                                           resource_context_)) {
     *restrictions = PP_FLASHLSORESTRICTIONS_BLOCK;
@@ -823,11 +821,11 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id) {
   if (!render_view_host)
     return false;
 
-  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
+  SiteInstance* site_instance = render_view_host->GetSiteInstance();
   if (!site_instance)
     return false;
 
-  if (!content::GetContentClient()->browser()->AllowPepperSocketAPI(
+  if (!GetContentClient()->browser()->AllowPepperSocketAPI(
           site_instance->GetBrowserContext(),
           site_instance->GetSiteURL())) {
     LOG(ERROR) << "Host " << site_instance->GetSiteURL().host()
@@ -884,3 +882,5 @@ void PepperMessageFilter::SendNetworkList(
         ppapi::API_ID_PPB_NETWORKMANAGER_PRIVATE, *it, *list_copy));
   }
 }
+
+}  // namespace content

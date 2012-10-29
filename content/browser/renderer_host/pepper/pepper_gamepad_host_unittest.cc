@@ -55,7 +55,7 @@ inline ptrdiff_t AddressDiff(const void* a, const void* b) {
 TEST_F(PepperGamepadHostTest, ValidateHardwareBuffersMatch) {
   // Hardware buffer.
   COMPILE_ASSERT(sizeof(ppapi::ContentGamepadHardwareBuffer) ==
-                 sizeof(content::GamepadHardwareBuffer),
+                 sizeof(GamepadHardwareBuffer),
                  gamepad_hardware_buffers_must_match);
   ppapi::ContentGamepadHardwareBuffer ppapi_buf;
   GamepadHardwareBuffer content_buf;

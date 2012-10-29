@@ -27,19 +27,11 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-class PepperTCPServerSocket;
-class PepperTCPSocket;
-class PepperUDPSocket;
 struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
 
 namespace base {
 class ListValue;
-}
-
-namespace content {
-class BrowserContext;
-class ResourceContext;
 }
 
 namespace net {
@@ -53,13 +45,20 @@ struct HostPortPair;
 class PPB_X509Certificate_Fields;
 }
 
+namespace content {
+class BrowserContext;
+class PepperTCPServerSocket;
+class PepperTCPSocket;
+class PepperUDPSocket;
+class ResourceContext;
+
 // This class is used in two contexts, both supporting PPAPI plugins. The first
 // is on the renderer->browser channel, to handle requests from in-process
 // PPAPI plugins and any requests that the PPAPI implementation code in the
 // renderer needs to make. The second is on the plugin->browser channel to
 // handle requests that out-of-process plugins send directly to the browser.
 class PepperMessageFilter
-    : public content::BrowserMessageFilter,
+    : public BrowserMessageFilter,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   enum ProcessType { PLUGIN, RENDERER };
@@ -68,17 +67,17 @@ class PepperMessageFilter
   // provided for sanity checking).
   PepperMessageFilter(ProcessType type,
                       int process_id,
-                      content::BrowserContext* browser_context);
+                      BrowserContext* browser_context);
 
   // Constructor when used in the context of a PPAPI process (the argument is
   // provided for sanity checking).
   PepperMessageFilter(ProcessType type,
                       net::HostResolver* host_resolver);
 
-  // content::BrowserMessageFilter methods.
+  // BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+      BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -245,7 +244,7 @@ class PepperMessageFilter
   int process_id_;
 
   // When non-NULL, this should be used instead of the host_resolver_.
-  content::ResourceContext* const resource_context_;
+  ResourceContext* const resource_context_;
 
   // When non-NULL, this should be used instead of the resource_context_. Use
   // GetHostResolver instead of accessing directly.
@@ -270,5 +269,7 @@ class PepperMessageFilter
 
   DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_MESSAGE_FILTER_H_
