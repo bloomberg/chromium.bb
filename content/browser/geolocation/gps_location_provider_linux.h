@@ -17,6 +17,8 @@
 #include "content/common/content_export.h"
 #include "content/public/common/geoposition.h"
 
+struct gps_data_t;
+
 namespace content {
 
 // Defines a wrapper around the C libgps API (gps.h). Similar to the libgpsmm.h
