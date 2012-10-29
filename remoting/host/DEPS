@@ -1,6 +1,5 @@
 include_rules = [
   "+ui",
-  "+base/crypto",
 
   # Note: This directory, although within chrome/, has a DEPS file to
   # ensure it does not depend on anything in chrome/ or content/.
