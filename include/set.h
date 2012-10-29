@@ -145,6 +145,27 @@ inline bool SetContainsValue(const Set& the_set,
   return the_set.find(elt) != the_set.end();
 }
 
+// Removes all elements from |reduced| which are not in |required|
+template<typename ReducedSet, typename RequiredSet>
+inline void SetRemoveMissing(ReducedSet* reduced, const RequiredSet& required) {
+  typename ReducedSet::iterator it = reduced->begin();
+  while (it != reduced->end()) {
+    if (SetContainsValue(required, *it)) {
+      ++it;
+      continue;
+    }
+    if (it == reduced->begin()) {
+      reduced->erase(it);
+      it = reduced->begin();
+    } else {
+      typename ReducedSet::iterator it_copy = it;
+      --it;
+      reduced->erase(it_copy);
+      ++it;
+    }
+  }
+}
+
 // Removes any ids from the set that are not finger ids in hs.
 template<size_t kSetSize>
 void RemoveMissingIdsFromSet(set<short, kSetSize>* the_set,

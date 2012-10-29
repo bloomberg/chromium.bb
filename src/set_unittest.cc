@@ -92,4 +92,59 @@ TEST(SetTest, SizeTest) {
   small = big;
 }
 
+template<typename ReducedSet, typename RequiredSet>
+void DoSetRemoveMissingTest(ReducedSet* reduced,
+                            RequiredSet* required,
+                            bool revserse_insert_order) {
+  if (!revserse_insert_order) {
+    reduced->insert(10);
+    reduced->insert(11);
+    required->insert(11);
+    required->insert(12);
+  } else {
+    required->insert(12);
+    required->insert(11);
+    reduced->insert(11);
+    reduced->insert(10);
+  }
+  SetRemoveMissing(reduced, *required);
+  EXPECT_EQ(1, reduced->size());
+  EXPECT_EQ(2, required->size());
+  EXPECT_TRUE(SetContainsValue(*reduced, 11));
+  EXPECT_TRUE(SetContainsValue(*required, 11));
+  EXPECT_TRUE(SetContainsValue(*required, 12));
+}
+
+TEST(SetTest, SetRemoveMissingTest) {
+  for (size_t i = 0; i < 2; i++) {
+    set<short, 3> small;
+    set<short, 4> big;
+    DoSetRemoveMissingTest(&small, &big, i == 0);
+  }
+
+  for (size_t i = 0; i < 2; i++) {
+    set<short, 3> small;
+    set<short, 4> big;
+    DoSetRemoveMissingTest(&big, &small, i == 0);
+  }
+
+  for (size_t i = 0; i < 2; i++) {
+    set<short, 2> small;
+    set<short, 3> big;
+    DoSetRemoveMissingTest(&small, &big, i == 0);
+  }
+
+  for (size_t i = 0; i < 2; i++) {
+    set<short, 2> small;
+    set<short, 3> big;
+    DoSetRemoveMissingTest(&big, &small, i == 0);
+  }
+
+  for (size_t i = 0; i < 2; i++) {
+    std::set<short> small;
+    std::set<short> big;
+    DoSetRemoveMissingTest(&small, &big, i == 0);
+  }
+}
+
 }  // namespace gestures
