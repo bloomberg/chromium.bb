@@ -117,7 +117,8 @@ class BluetoothDetailedView : public TrayDetailsView,
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container =
           AddScrollListItem(list[i].display_name,
-              list[i].connected ? gfx::Font::BOLD : gfx::Font::NORMAL);
+              list[i].connected ? gfx::Font::BOLD : gfx::Font::NORMAL,
+              list[i].connected);
       device_map_[container] = list[i].address;
     }
 
@@ -134,16 +135,17 @@ class BluetoothDetailedView : public TrayDetailsView,
         else
           message_id = IDS_ASH_STATUS_TRAY_BLUETOOTH_NO_DEVICE;
         AddScrollListItem(l10n_util::GetStringUTF16(message_id),
-                          gfx::Font::NORMAL);
+                          gfx::Font::NORMAL, false);
       }
     }
   }
 
   HoverHighlightView* AddScrollListItem(const string16& text,
-                                        gfx::Font::FontStyle style) {
+                                        gfx::Font::FontStyle style,
+                                        bool checked) {
     HoverHighlightView* container = new HoverHighlightView(this);
     container->set_fixed_height(kTrayPopupItemHeight);
-    container->AddLabel(text, style);
+    container->AddCheckableLabel(text, style, checked);
     scroll_content()->AddChildView(container);
     return container;
   }

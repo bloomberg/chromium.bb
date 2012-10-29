@@ -114,6 +114,12 @@ class HoverHighlightView : public ActionableView {
   // blank icon.  This also sets the accessible name.
   void AddLabel(const string16& text, gfx::Font::FontStyle style);
 
+  // Convenience fucntion for adding an optional check and a label.  In the
+  // absense of a check, padding is added to align with checked items.
+  void AddCheckableLabel(const string16& text,
+                         gfx::Font::FontStyle style,
+                         bool checked);
+
   void set_highlight_color(SkColor color) { highlight_color_ = color; }
   void set_default_color(SkColor color) { default_color_ = color; }
   void set_text_highlight_color(SkColor c) { text_highlight_color_ = c; }

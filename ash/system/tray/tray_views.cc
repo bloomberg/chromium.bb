@@ -30,6 +30,7 @@ namespace {
 const int kIconPaddingLeft = 5;
 const int kPopupDetailLabelExtraLeftMargin = 8;
 const int kPaddingAroundButtons = 5;
+const int kCheckLabelPadding = 4;
 
 const int kBarImagesActive[] = {
     IDR_SLIDER_ACTIVE_LEFT,
@@ -205,8 +206,15 @@ void HoverHighlightView::AddLabel(const string16& text,
                                   gfx::Font::FontStyle style) {
   SetLayoutManager(new views::FillLayout());
   text_label_ = new views::Label(text);
-  text_label_->set_border(views::Border::CreateEmptyBorder(
-      5, kTrayPopupPaddingHorizontal + kPopupDetailLabelExtraLeftMargin, 5, 0));
+  int margin = kTrayPopupPaddingHorizontal + kPopupDetailLabelExtraLeftMargin;
+  int left_margin = 0;
+  int right_margin = 0;
+  if (base::i18n::IsRTL())
+    right_margin = margin;
+  else
+    left_margin = margin;
+  text_label_->set_border(
+      views::Border::CreateEmptyBorder(5, left_margin, 5, right_margin));
   text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   text_label_->SetFont(text_label_->font().DeriveFont(0, style));
   text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
@@ -215,6 +223,34 @@ void HoverHighlightView::AddLabel(const string16& text,
   AddChildView(text_label_);
 
   SetAccessibleName(text);
+}
+
+void HoverHighlightView::AddCheckableLabel(const string16& text,
+                                           gfx::Font::FontStyle style,
+                                           bool checked) {
+  if (checked) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const gfx::ImageSkia* check =
+        rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
+    int margin = kTrayPopupPaddingHorizontal + kPopupDetailLabelExtraLeftMargin
+        - kCheckLabelPadding;
+    SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 3, kCheckLabelPadding));
+    views::ImageView* image_view = new FixedSizedImageView(margin, 0);
+    image_view->SetImage(check);
+    image_view->SetHorizontalAlignment(views::ImageView::TRAILING);
+    AddChildView(image_view);
+
+    text_label_ = new views::Label(text);
+    text_label_->SetFont(text_label_->font().DeriveFont(0, style));
+    if (text_default_color_)
+      text_label_->SetEnabledColor(text_default_color_);
+    AddChildView(text_label_);
+
+    SetAccessibleName(text);
+  } else {
+    AddLabel(text, style);
+  }
 }
 
 bool HoverHighlightView::PerformAction(const ui::Event& event) {
