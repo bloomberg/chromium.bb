@@ -459,7 +459,9 @@ bool AcceleratorController::PerformAction(int action,
     case CYCLE_BACKWARD_MRU_PRESSED:
       if (cycle_backward_mru_suppressed_)
         return true;
-      cycle_backward_mru_suppressed_ = true;
+      // Temporarily disable the feature until crbug.com/158213 is fixed.
+      // TODO(mtomasz): Reenable the feature.
+      // cycle_backward_mru_suppressed_ = true;
       if (key_code == ui::VKEY_TAB && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
@@ -470,7 +472,9 @@ bool AcceleratorController::PerformAction(int action,
     case CYCLE_FORWARD_MRU_PRESSED:
       if (cycle_forward_mru_suppressed_)
         return true;
-      cycle_forward_mru_suppressed_ = true;
+      // Temporarily disable the feature until crbug.com/158213 is fixed.
+      // TODO(mtomasz): Reenable the feature.
+      // cycle_forward_mru_suppressed_ = true;
       if (key_code == ui::VKEY_TAB && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
