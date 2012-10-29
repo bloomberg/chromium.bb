@@ -43,8 +43,7 @@ gfx::Rect DrawQuad::opaqueRect() const
 
 void DrawQuad::setQuadVisibleRect(gfx::Rect quadVisibleRect)
 {
-    m_quadVisibleRect = quadVisibleRect;
-    m_quadVisibleRect.Intersect(m_quadRect);
+    m_quadVisibleRect = gfx::IntersectRects(quadVisibleRect, m_quadRect);
 }
 
 unsigned DrawQuad::size() const

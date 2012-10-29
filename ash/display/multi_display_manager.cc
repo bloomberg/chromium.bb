@@ -360,8 +360,7 @@ const gfx::Display& MultiDisplayManager::GetDisplayMatching(
   for (std::vector<gfx::Display>::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     const gfx::Display& display = *iter;
-    gfx::Rect intersect = display.bounds();
-    intersect.Intersect(rect);
+    gfx::Rect intersect = gfx::IntersectRects(display.bounds(), rect);
     int area = intersect.width() * intersect.height();
     if (area > max) {
       max = area;

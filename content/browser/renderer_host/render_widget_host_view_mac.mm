@@ -859,9 +859,8 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   gfx::Rect src_gl_subrect = src_subrect;
   src_gl_subrect.set_y(GetViewBounds().height() - src_subrect.bottom());
 
-  gfx::RectF scaled_src_gl_subrect = src_gl_subrect;
-  scaled_src_gl_subrect.Scale(scale);
-  gfx::Rect src_pixel_gl_subrect = gfx::ToEnclosingRect(scaled_src_gl_subrect);
+  gfx::Rect src_pixel_gl_subrect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(src_gl_subrect, scale));
   compositing_iosurface_->CopyTo(
       src_pixel_gl_subrect,
       dst_pixel_size,
@@ -2278,8 +2277,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     // smaller and the renderer hasn't yet repainted.
     int yOffset = NSHeight([self bounds]) - backingStore->size().height();
 
-    gfx::Rect paintRect = bitmapRect;
-    paintRect.Intersect(damagedRect);
+    gfx::Rect paintRect = gfx::IntersectRects(bitmapRect, damagedRect);
     if (!paintRect.IsEmpty()) {
       // if we have a CGLayer, draw that into the window
       if (backingStore->cg_layer()) {

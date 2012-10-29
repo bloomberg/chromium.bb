@@ -129,8 +129,8 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
 
   // The parent should have been told to repaint as the animation progressed.
   // The resulting rect is the union of the original and target bounds.
-  target_bounds.Union(initial_bounds);
-  EXPECT_EQ(target_bounds, parent()->dirty_rect());
+  EXPECT_EQ(gfx::UnionRects(target_bounds, initial_bounds),
+            parent()->dirty_rect());
 }
 
 // Make sure an AnimationDelegate is deleted when canceled.

@@ -1174,14 +1174,12 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   gfx::Rect pixel_plugin_backing_store_rect(
       0, 0, image_data->width(), image_data->height());
   float scale = GetBoundGraphics2D()->GetScale();
-  gfx::RectF scaled_backing_store_rect = pixel_plugin_backing_store_rect;
-  scaled_backing_store_rect.Scale(scale);
-  gfx::Rect plugin_backing_store_rect =
-    gfx::ToEnclosedRect(scaled_backing_store_rect);
+  gfx::Rect plugin_backing_store_rect = gfx::ToEnclosedRect(
+      gfx::ScaleRect(pixel_plugin_backing_store_rect, scale));
 
   gfx::Rect clip_page = PP_ToGfxRect(view_data_.clip_rect);
-  gfx::Rect plugin_paint_rect = plugin_backing_store_rect;
-  plugin_paint_rect.Intersect(clip_page);
+  gfx::Rect plugin_paint_rect =
+      gfx::IntersectRects(plugin_backing_store_rect, clip_page);
   if (!plugin_paint_rect.Contains(relative_paint_bounds))
     return false;
 

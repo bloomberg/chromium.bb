@@ -220,8 +220,8 @@ class DriveDetailedView : public TrayDetailsView,
                          kBottomPadding -
                          status_img_->GetPreferredSize().height())/2),
           status_img_->GetPreferredSize());
-      bounds_status.Intersect(child_area);
-      status_img_->SetBoundsRect(bounds_status);
+      status_img_->SetBoundsRect(
+          gfx::IntersectRects(bounds_status, child_area));
       pos_x += status_img_->bounds().width() + kHorizontalPadding;
 
       gfx::Rect bounds_label(pos_x,
@@ -231,8 +231,8 @@ class DriveDetailedView : public TrayDetailsView,
                                  status_img_->GetPreferredSize().width() -
                                  cancel_button_->GetPreferredSize().width(),
                              label_container_->GetPreferredSize().height());
-      bounds_label.Intersect(child_area);
-      label_container_->SetBoundsRect(bounds_label);
+      label_container_->SetBoundsRect(
+          gfx::IntersectRects(bounds_label, child_area));
       pos_x += label_container_->bounds().width() + kHorizontalPadding;
 
       gfx::Rect bounds_button(
@@ -241,8 +241,8 @@ class DriveDetailedView : public TrayDetailsView,
                          kBottomPadding -
                          cancel_button_->GetPreferredSize().height())/2),
           cancel_button_->GetPreferredSize());
-      bounds_button.Intersect(child_area);
-      cancel_button_->SetBoundsRect(bounds_button);
+      cancel_button_->SetBoundsRect(
+          gfx::IntersectRects(bounds_button, child_area));
     }
 
     // views::ButtonListener overrides.

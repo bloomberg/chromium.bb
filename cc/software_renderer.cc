@@ -255,8 +255,7 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
 
     // FIXME: Add support for non-premultiplied alpha.
     ResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
-    gfx::RectF uvRect = quad->uvRect();
-    uvRect.Scale(quad->quadRect().width(), quad->quadRect().height());
+    gfx::RectF uvRect = gfx::ScaleRect(quad->uvRect(), quad->quadRect().width(), quad->quadRect().height());
     SkIRect skUvRect = toSkIRect(gfx::ToEnclosingRect(uvRect));
     if (quad->flipped())
         m_skCurrentCanvas->scale(1, -1);

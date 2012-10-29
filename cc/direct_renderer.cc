@@ -186,8 +186,7 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
 
     const QuadList& quadList = renderPass->quadList();
     for (QuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {
-        gfx::RectF quadScissorRect = frame.scissorRectInRenderPassSpace;
-        quadScissorRect.Intersect((*it)->clippedRectInTarget());
+        gfx::RectF quadScissorRect = gfx::IntersectRects(frame.scissorRectInRenderPassSpace, (*it)->clippedRectInTarget());
         if (!quadScissorRect.IsEmpty()) {
             enableScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
             drawQuad(frame, *it);

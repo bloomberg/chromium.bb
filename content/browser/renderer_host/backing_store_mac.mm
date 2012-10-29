@@ -90,9 +90,8 @@ void BackingStoreMac::PaintToBackingStore(
 
   gfx::Size pixel_size = gfx::ToFlooredSize(
       size().Scale(device_scale_factor_));
-  gfx::RectF scaled_bitmap_rect = bitmap_rect;
-  scaled_bitmap_rect.Scale(scale_factor);
-  gfx::Rect pixel_bitmap_rect = ToFlooredRectDeprecated(scaled_bitmap_rect);
+  gfx::Rect pixel_bitmap_rect = ToFlooredRectDeprecated(
+      gfx::ScaleRect(bitmap_rect, scale_factor));
 
   size_t bitmap_byte_count =
       pixel_bitmap_rect.width() * pixel_bitmap_rect.height() * 4;
@@ -111,9 +110,8 @@ void BackingStoreMac::PaintToBackingStore(
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];
-    gfx::RectF scaled_copy_rect = copy_rect;
-    scaled_copy_rect.Scale(scale_factor);
-    gfx::Rect pixel_copy_rect = ToFlooredRectDeprecated(scaled_copy_rect);
+    gfx::Rect pixel_copy_rect = ToFlooredRectDeprecated(
+        gfx::ScaleRect(copy_rect, scale_factor));
 
     // Only the subpixels given by copy_rect have pixels to copy.
     base::mac::ScopedCFTypeRef<CGImageRef> image(

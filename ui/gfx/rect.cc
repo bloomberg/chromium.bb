@@ -88,4 +88,22 @@ std::string Rect::ToString() const {
                             size().ToString().c_str());
 }
 
+Rect IntersectRects(const Rect& a, const Rect& b) {
+  Rect result = a;
+  result.Intersect(b);
+  return result;
+}
+
+Rect UnionRects(const Rect& a, const Rect& b) {
+  Rect result = a;
+  result.Union(b);
+  return result;
+}
+
+Rect SubtractRects(const Rect& a, const Rect& b) {
+  Rect result = a;
+  result.Subtract(b);
+  return result;
+}
+
 }  // namespace gfx

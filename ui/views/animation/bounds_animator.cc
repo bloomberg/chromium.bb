@@ -235,8 +235,7 @@ void BoundsAnimator::AnimationProgressed(const Animation* animation) {
   gfx::Rect new_bounds =
       animation->CurrentValueBetween(data.start_bounds, data.target_bounds);
   if (new_bounds != view->bounds()) {
-    gfx::Rect total_bounds = view->bounds();
-    total_bounds.Union(new_bounds);
+    gfx::Rect total_bounds = gfx::UnionRects(new_bounds, view->bounds());
 
     // Build up the region to repaint in repaint_bounds_. We'll do the repaint
     // when all animations complete (in AnimationContainerProgressed).

@@ -37,8 +37,7 @@ TEST(PaintAggregator, DoubleDisjointInvalidation) {
   greg.InvalidateRect(r1);
   greg.InvalidateRect(r2);
 
-  gfx::Rect expected_bounds = r1;
-  expected_bounds.Union(r2);
+  gfx::Rect expected_bounds = gfx::UnionRects(r1, r2);
 
   EXPECT_TRUE(greg.HasPendingUpdate());
   PaintAggregator::PendingUpdate update;
@@ -62,8 +61,7 @@ TEST(PaintAggregator, DisjointInvalidationsCombined) {
   greg.InvalidateRect(r1);
   greg.InvalidateRect(r2);
 
-  gfx::Rect expected_bounds = r1;
-  expected_bounds.Union(r2);
+  gfx::Rect expected_bounds = gfx::UnionRects(r1, r2);
 
   EXPECT_TRUE(greg.HasPendingUpdate());
   PaintAggregator::PendingUpdate update;
@@ -279,8 +277,7 @@ TEST(PaintAggregator, OverlappingPaintBeforeScroll) {
   gfx::Rect scroll_rect(0, 0, 10, 10);
   greg.ScrollRect(2, 0, scroll_rect);
 
-  gfx::Rect expected_paint_rect = scroll_rect;
-  expected_paint_rect.Union(paint_rect);
+  gfx::Rect expected_paint_rect = gfx::UnionRects(scroll_rect, paint_rect);
 
   EXPECT_TRUE(greg.HasPendingUpdate());
   PaintAggregator::PendingUpdate update;
@@ -301,8 +298,7 @@ TEST(PaintAggregator, OverlappingPaintAfterScroll) {
   gfx::Rect paint_rect(4, 4, 10, 2);
   greg.InvalidateRect(paint_rect);
 
-  gfx::Rect expected_paint_rect = scroll_rect;
-  expected_paint_rect.Union(paint_rect);
+  gfx::Rect expected_paint_rect = gfx::UnionRects(scroll_rect, paint_rect);
 
   EXPECT_TRUE(greg.HasPendingUpdate());
   PaintAggregator::PendingUpdate update;

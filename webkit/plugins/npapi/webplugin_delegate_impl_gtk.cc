@@ -355,8 +355,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   // "real" means as seen by Chrome
   // "apparent" means as seen by the plugin.
 
-  gfx::Rect draw_rect = window_rect_;
-  draw_rect.Intersect(damage_rect);
+  gfx::Rect draw_rect = gfx::IntersectRects(window_rect_, damage_rect);
 
   // clip_rect_ is relative to the plugin
   gfx::Rect clip_rect_window = clip_rect_;

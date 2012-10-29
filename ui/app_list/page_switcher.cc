@@ -189,8 +189,7 @@ void PageSwitcher::Layout() {
                            rect.y(),
                            buttons_size.width(),
                            rect.height());
-  rect.Intersect(buttons_bounds);
-  buttons_->SetBoundsRect(rect);
+  buttons_->SetBoundsRect(gfx::IntersectRects(rect, buttons_bounds));
 }
 
 void PageSwitcher::CalculateButtonWidthAndSpacing(int contents_width) {

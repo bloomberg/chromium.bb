@@ -865,8 +865,7 @@ void RenderWidgetHostViewGtk::DidUpdateBackingStore(
   for (size_t i = 0; i < copy_rects.size(); ++i) {
     // Avoid double painting.  NOTE: This is only relevant given the call to
     // Paint(scroll_rect) above.
-    gfx::Rect rect = copy_rects[i];
-    rect.Subtract(scroll_rect);
+    gfx::Rect rect = gfx::SubtractRects(copy_rects[i], scroll_rect);
     if (rect.IsEmpty())
       continue;
 
@@ -969,9 +968,7 @@ void RenderWidgetHostViewGtk::SelectionBoundsChanged(
     WebKit::WebTextDirection start_direction,
     const gfx::Rect& end_rect,
     WebKit::WebTextDirection end_direction) {
-  gfx::Rect combined_rect = start_rect;
-  combined_rect.Union(end_rect);
-  im_context_->UpdateCaretBounds(combined_rect);
+  im_context_->UpdateCaretBounds(gfx::UnionRects(start_rect, end_rect));
 }
 
 GdkEventButton* RenderWidgetHostViewGtk::GetLastMouseDown() {

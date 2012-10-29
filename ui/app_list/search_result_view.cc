@@ -200,8 +200,7 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
     canvas->FillRect(content_rect, kHoverAndPushedColor);
   }
 
-  gfx::Rect border_bottom(rect);
-  border_bottom.Subtract(content_rect);
+  gfx::Rect border_bottom = gfx::SubtractRects(rect, content_rect);
   canvas->FillRect(border_bottom,
                    selected ? kSelectedBorderColor : kBorderColor);
 

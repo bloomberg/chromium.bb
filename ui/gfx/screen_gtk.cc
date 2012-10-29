@@ -157,8 +157,7 @@ class ScreenGtk : public gfx::Screen {
     gfx::Display display(0, bounds);
     gfx::Rect rect;
     if (GetScreenWorkArea(&rect)) {
-      bounds.Intersect(rect);
-      display.set_work_area(bounds);
+      display.set_work_area(gfx::IntersectRects(rect, bounds));
     } else {
       // Return the best we've got.
       display.set_work_area(bounds);

@@ -739,8 +739,7 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
                                    const gfx::Rect& damaged_rect) {
   // Limit the damaged rectangle to whatever is contained inside the plugin
   // rectangle, as that's the rectangle that we'll actually draw.
-  gfx::Rect rect = damaged_rect;
-  rect.Intersect(plugin_rect_);
+  gfx::Rect rect = gfx::IntersectRects(damaged_rect, plugin_rect_);
 
   // If the plugin is no longer connected (channel crashed) draw a crashed
   // plugin bitmap
@@ -854,8 +853,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   // intersect their rects first.
   gfx::Rect bitmap_rect(static_cast<int>(-xf.eDx), static_cast<int>(-xf.eDy),
                         bitmap.bmWidth, bitmap.bmHeight);
-  gfx::Rect check_rect = rect;
-  check_rect.Intersect(bitmap_rect);
+  gfx::Rect check_rect = gfx::IntersectRects(rect, bitmap_rect);
   int row_byte_size = check_rect.width() * (bitmap.bmBitsPixel / 8);
   for (int y = check_rect.y(); y < check_rect.bottom(); y++) {
     char* hdc_row_start = static_cast<char*>(bitmap.bmBits) +
@@ -900,8 +898,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
 #endif
   // According to comments in the Windows code, the damage rect that we're given
   // may project outside the image, so intersect their rects.
-  gfx::Rect content_rect = rect;
-  content_rect.Intersect(full_content_rect);
+  gfx::Rect content_rect = gfx::IntersectRects(rect, full_content_rect);
 
 #if defined(OS_MACOSX)
   const unsigned char* page_bytes = static_cast<const unsigned char*>(
@@ -1191,8 +1188,8 @@ void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
 
   // Clip the invalidation rect to the plugin bounds; the plugin may have been
   // resized since the invalidate message was sent.
-  gfx::Rect clipped_rect = rect;
-  clipped_rect.Intersect(gfx::Rect(plugin_rect_.size()));
+  gfx::Rect clipped_rect =
+      gfx::IntersectRects(rect, gfx::Rect(plugin_rect_.size()));
 
   invalidate_pending_ = true;
   // The plugin is blocked on the renderer because the invalidate message it has

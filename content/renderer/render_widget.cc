@@ -375,13 +375,11 @@ void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
   if (resizer_rect_ != resizer_rect) {
     gfx::Rect view_rect(size_);
 
-    gfx::Rect old_damage_rect = view_rect;
-    old_damage_rect.Intersect(resizer_rect_);
+    gfx::Rect old_damage_rect = gfx::IntersectRects(view_rect, resizer_rect_);
     if (!old_damage_rect.IsEmpty())
       paint_aggregator_.InvalidateRect(old_damage_rect);
 
-    gfx::Rect new_damage_rect = view_rect;
-    new_damage_rect.Intersect(resizer_rect);
+    gfx::Rect new_damage_rect = gfx::IntersectRects(view_rect, resizer_rect);
     if (!new_damage_rect.IsEmpty())
       paint_aggregator_.InvalidateRect(new_damage_rect);
 
@@ -949,8 +947,7 @@ void RenderWidget::DoDeferredUpdate() {
   paint_aggregator_.PopPendingUpdate(&update);
 
   gfx::Rect scroll_damage = update.GetScrollDamage();
-  gfx::Rect bounds = update.GetPaintBounds();
-  bounds.Union(scroll_damage);
+  gfx::Rect bounds = gfx::UnionRects(update.GetPaintBounds(), scroll_damage);
 
   // Notify derived classes that we're about to initiate a paint.
   WillInitiatePaint();
@@ -996,10 +993,8 @@ void RenderWidget::DoDeferredUpdate() {
     pending_update_params_->scale_factor = dib_scale_factor;
   } else if (!is_accelerated_compositing_active_) {
     // Compute a buffer for painting and cache it.
-    gfx::RectF scaled_bounds = bounds;
-    scaled_bounds.Scale(device_scale_factor_);
-    gfx::Rect pixel_bounds =
-        gfx::ToFlooredRectDeprecated(scaled_bounds);
+    gfx::Rect pixel_bounds = gfx::ToFlooredRectDeprecated(
+        gfx::ScaleRect(bounds, device_scale_factor_));
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
                                                    pixel_bounds));
@@ -1079,8 +1074,7 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
                "width", rect.width, "height", rect.height);
   // The invalidated rect might be outside the bounds of the view.
   gfx::Rect view_rect(size_);
-  gfx::Rect damaged_rect = view_rect;
-  damaged_rect.Intersect(rect);
+  gfx::Rect damaged_rect = gfx::IntersectRects(view_rect, rect);
   if (damaged_rect.IsEmpty())
     return;
 
@@ -1120,8 +1114,7 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 
   // The scrolled rect might be outside the bounds of the view.
   gfx::Rect view_rect(size_);
-  gfx::Rect damaged_rect = view_rect;
-  damaged_rect.Intersect(clip_rect);
+  gfx::Rect damaged_rect = gfx::IntersectRects(view_rect, clip_rect);
   if (damaged_rect.IsEmpty())
     return;
 

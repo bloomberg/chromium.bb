@@ -376,8 +376,7 @@ int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback,
 
       // Set |no_update_visible| to false if the change overlaps the visible
       // area.
-      gfx::Rect visible_changed_rect = clip;
-      visible_changed_rect.Intersect(op_rect);
+      gfx::Rect visible_changed_rect = gfx::IntersectRects(clip, op_rect);
       if (!visible_changed_rect.IsEmpty())
         no_update_visible = false;
 
@@ -561,8 +560,7 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
 
   CGContextDrawImage(canvas, bitmap_rect, image);
 #else
-  gfx::Rect invalidate_rect = plugin_rect;
-  invalidate_rect.Intersect(paint_rect);
+  gfx::Rect invalidate_rect = gfx::IntersectRects(plugin_rect, paint_rect);
   SkRect sk_invalidate_rect = gfx::RectToSkRect(invalidate_rect);
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->clipRect(sk_invalidate_rect);
@@ -649,20 +647,20 @@ bool PPB_Graphics2D_Impl::ConvertToLogicalPixels(float scale,
   // Take the enclosing rectangle after scaling so a rectangle scaled down then
   // scaled back up by the inverse scale would fully contain the entire area
   // affected by the original rectangle.
-  gfx::RectF scaled_rect = *op_rect;
-  scaled_rect.Scale(scale);
-  *op_rect = gfx::ToEnclosingRect(scaled_rect);
+  *op_rect = gfx::ToEnclosingRect(gfx::ScaleRect(*op_rect, scale));
   if (delta) {
     gfx::Point original_delta = *delta;
     float inverse_scale = 1.0f / scale;
     *delta = gfx::ToFlooredPoint(delta->Scale(scale));
 
-    gfx::RectF inverse_scaled_rect = *op_rect;
-    inverse_scaled_rect.Scale(inverse_scale);
-    if (original_rect != gfx::ToEnclosingRect(inverse_scaled_rect) ||
-        original_delta != gfx::ToFlooredPoint(delta->Scale(inverse_scale))) {
+    gfx::Rect inverse_scaled_rect =
+        gfx::ToEnclosingRect(gfx::ScaleRect(*op_rect, inverse_scale));
+    if (original_rect != inverse_scaled_rect)
       return false;
-    }
+    gfx::Point inverse_scaled_point =
+        gfx::ToFlooredPoint(delta->Scale(inverse_scale));
+    if (original_delta != inverse_scaled_point)
+      return false;
   }
 
   return true;

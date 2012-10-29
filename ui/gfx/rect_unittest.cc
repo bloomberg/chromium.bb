@@ -107,8 +107,7 @@ TEST(RectTest, Intersect) {
     gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     gfx::Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
-    gfx::Rect ir = r1;
-    ir.Intersect(r2);
+    gfx::Rect ir = gfx::IntersectRects(r1, r2);
     EXPECT_EQ(r3.x(), ir.x());
     EXPECT_EQ(r3.y(), ir.y());
     EXPECT_EQ(r3.width(), ir.width());
@@ -157,8 +156,7 @@ TEST(RectTest, Union) {
     gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     gfx::Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
-    gfx::Rect u = r1;
-    u.Union(r2);
+    gfx::Rect u = gfx::UnionRects(r1, r2);
     EXPECT_EQ(r3.x(), u.x());
     EXPECT_EQ(r3.y(), u.y());
     EXPECT_EQ(r3.width(), u.width());
@@ -446,8 +444,7 @@ TEST(RectTest, ScaleRect) {
     gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     gfx::RectF r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
-    gfx::RectF scaled = r1;
-    scaled.Scale(tests[i].scale);
+    gfx::RectF scaled = gfx::ScaleRect(r1, tests[i].scale);
     EXPECT_FLOAT_AND_NAN_EQ(r2.x(), scaled.x());
     EXPECT_FLOAT_AND_NAN_EQ(r2.y(), scaled.y());
     EXPECT_FLOAT_AND_NAN_EQ(r2.width(), scaled.width());
@@ -602,8 +599,7 @@ TEST(RectTest, ToRectF) {
   gfx::Rect a(10, 20, 30, 40);
   gfx::RectF b(10, 20, 30, 40);
 
-  gfx::RectF intersect = b;
-  intersect.Intersect(a);
+  gfx::RectF intersect = gfx::IntersectRects(a, b);
   EXPECT_EQ(b.ToString(), intersect.ToString());
 
   EXPECT_EQ(a, b);

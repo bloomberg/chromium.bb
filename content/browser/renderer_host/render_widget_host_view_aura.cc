@@ -587,8 +587,7 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
     SchedulePaintIfNotInClip(scroll_rect, clip_rect);
 
   for (size_t i = 0; i < copy_rects.size(); ++i) {
-    gfx::Rect rect = copy_rects[i];
-    rect.Subtract(scroll_rect);
+    gfx::Rect rect = gfx::SubtractRects(copy_rects[i], scroll_rect);
     if (rect.IsEmpty())
       continue;
 
@@ -1193,8 +1192,8 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(const gfx::Rect& rect) {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
-  gfx::Rect rect = selection_start_rect_;
-  rect.Union(selection_end_rect_);
+  const gfx::Rect rect =
+      gfx::UnionRects(selection_start_rect_, selection_end_rect_);
   return ConvertRectToScreen(rect);
 }
 
@@ -1838,8 +1837,7 @@ void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
     const gfx::Rect& rect,
     const gfx::Rect& clip) {
   if (!clip.IsEmpty()) {
-    gfx::Rect to_paint = rect;
-    to_paint.Subtract(clip);
+    gfx::Rect to_paint = gfx::SubtractRects(rect, clip);
     if (!to_paint.IsEmpty())
       window_->SchedulePaintInRect(to_paint);
   } else {

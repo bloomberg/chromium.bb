@@ -39,8 +39,7 @@ NSScreen* GetMatchingScreen(const gfx::Rect& match_rect) {
 
   for (NSScreen* screen in [NSScreen screens]) {
     gfx::Rect monitor_area = ConvertCoordinateSystem([screen frame]);
-    gfx::Rect intersection = monitor_area;
-    intersection.Intersect(match_rect);
+    gfx::Rect intersection = gfx::IntersectRects(monitor_area, match_rect);
     int area = intersection.width() * intersection.height();
     if (area > max_area) {
       max_area = area;
