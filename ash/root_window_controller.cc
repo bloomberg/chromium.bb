@@ -187,6 +187,8 @@ void RootWindowController::Shutdown() {
   // And this root window should no longer process events.
   root_window_->PrepareForShutdown();
 
+  system_background_.reset();
+
   // Launcher widget has an InputMethodBridge that references to
   // |input_method_filter_|'s |input_method_|. So explicitly release
   // |launcher_| before |input_method_filter_|. And this needs to be
