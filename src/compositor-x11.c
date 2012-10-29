@@ -153,6 +153,32 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 	return ret;
 }
 
+static uint32_t
+get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
+{
+	struct weston_xkb_info *info = &c->core_seat.xkb_info;
+	uint32_t ret = 0;
+
+	if ((in & ShiftMask) && info->shift_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->shift_mod);
+	if ((in & LockMask) && info->caps_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->caps_mod);
+	if ((in & ControlMask) && info->ctrl_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->ctrl_mod);
+	if ((in & Mod1Mask) && info->alt_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->alt_mod);
+	if ((in & Mod2Mask) && info->mod2_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->mod2_mod);
+	if ((in & Mod3Mask) && info->mod3_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->mod3_mod);
+	if ((in & Mod4Mask) && info->super_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->super_mod);
+	if ((in & Mod5Mask) && info->mod5_mod != XKB_MOD_INVALID)
+		ret |= (1 << info->mod5_mod);
+
+	return ret;
+}
+
 static void
 x11_compositor_setup_xkb(struct x11_compositor *c)
 {
@@ -167,6 +193,8 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 	xcb_void_cookie_t select;
 	xcb_xkb_per_client_flags_cookie_t pcf;
 	xcb_xkb_per_client_flags_reply_t *pcf_reply;
+	xcb_xkb_get_state_cookie_t state;
+	xcb_xkb_get_state_reply_t *state_reply;
 
 	c->has_xkb = 0;
 	c->xkb_event_base = 0;
@@ -207,6 +235,24 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 		return;
 	}
 
+	state = xcb_xkb_get_state(c->conn, XCB_XKB_ID_USE_CORE_KBD);
+	state_reply = xcb_xkb_get_state_reply(c->conn, state, &error);
+	if (error) {
+		weston_log("failed to get initial XKB state\n");
+		free(state_reply);
+		return;
+	}
+
+	xkb_state_update_mask(c->core_seat.xkb_state.state,
+			      get_xkb_mod_mask(c, state_reply->baseMods),
+			      get_xkb_mod_mask(c, state_reply->latchedMods),
+			      get_xkb_mod_mask(c, state_reply->lockedMods),
+			      0,
+			      0,
+			      state_reply->group);
+
+	free(state_reply);
+
 	c->has_xkb = 1;
 #endif
 }
@@ -223,12 +269,12 @@ x11_input_create(struct x11_compositor *c, int no_input)
 
 	weston_seat_init_pointer(&c->core_seat);
 
-	x11_compositor_setup_xkb(c);
-
 	keymap = x11_compositor_get_keymap(c);
 	weston_seat_init_keyboard(&c->core_seat, keymap);
 	if (keymap)
 		xkb_map_unref(keymap);
+
+	x11_compositor_setup_xkb(c);
 
 	return 0;
 }
@@ -568,32 +614,6 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 	}
 
 	return NULL;
-}
-
-static uint32_t
-get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
-{
-	struct weston_xkb_info *info = &c->core_seat.xkb_info;
-	uint32_t ret = 0;
-
-	if ((in & ShiftMask) && info->shift_mod != XKB_MOD_INVALID)
-		ret |= (1 << info->shift_mod);
-	if ((in & LockMask) && info->caps_mod != XKB_MOD_INVALID)
-		ret |= (1 << info->caps_mod);
-	if ((in & ControlMask) && info->ctrl_mod != XKB_MOD_INVALID)
-		ret |= (1 << info->ctrl_mod);
-	if ((in & Mod1Mask) && info->alt_mod != XKB_MOD_INVALID)
-		ret |= (1 << info->alt_mod);
-	if ((in & Mod2Mask) && info->mod2_mod != XKB_MOD_INVALID)
-		ret |= (1 << info->mod2_mod);
-	if ((in & Mod3Mask) && info->mod3_mod != XKB_MOD_INVALID)
-		ret |= (1 << info->mod3_mod);
-	if ((in & Mod4Mask) && info->super_mod != XKB_MOD_INVALID)
-		ret |= (1 << info->super_mod);
-	if ((in & Mod5Mask) && info->mod5_mod != XKB_MOD_INVALID)
-		ret |= (1 << info->mod5_mod);
-
-	return ret;
 }
 
 #ifdef HAVE_XCB_XKB
