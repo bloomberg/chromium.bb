@@ -1097,8 +1097,11 @@ TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL(
       "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
 
+  // This will move "Directory 1" from "drive/" to "drive/Directory 2/".
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 2"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(

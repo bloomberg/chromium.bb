@@ -192,10 +192,14 @@ void DriveFeedProcessor::RemoveEntryFromParentAndCollectChangedDirectories(
     return;
   }
 
-  // We need to notify all children of entry if entry is a directory.
   DriveDirectory* dir = entry->AsDriveDirectory();
-  if (dir)
+  if (dir) {
+    // We need to notify all children of entry if entry is a directory.
     dir->GetChildDirectoryPaths(changed_dirs);
+    // Notify this directory if the removed entry is a directory.
+    changed_dirs->insert(dir->GetFilePath());
+  }
+
   parent->RemoveEntry(entry);
 }
 
