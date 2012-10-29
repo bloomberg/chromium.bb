@@ -24,6 +24,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -385,6 +386,11 @@ class PolicyPrefsTest
     EXPECT_CALL(provider_, IsInitializationComplete())
         .WillRepeatedly(Return(true));
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ui_test_utils::WaitForTemplateURLServiceToLoad(
+        TemplateURLServiceFactory::GetForProfile(browser()->profile()));
   }
 
   PolicyTestCases policy_test_cases_;
