@@ -140,6 +140,7 @@ static const struct Executables {
   { "mht", AllowOnUserGesture },
   { "mhtml", AllowOnUserGesture },
   { "mmc", AllowOnUserGesture },
+  { "mof", Dangerous },
   { "msc", AllowOnUserGesture },
   { "msh", AllowOnUserGesture },
   { "mshxml", AllowOnUserGesture },
