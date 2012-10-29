@@ -92,7 +92,7 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   }
 
   SyncSchedulerImpl::JobProcessDecision DecideOnJob(
-      const SyncSessionJob& job) {
+      const SyncSchedulerImpl::SyncSessionJob& job) {
     return scheduler_->DecideOnJob(job);
   }
 
@@ -102,10 +102,13 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   }
 
   SyncSchedulerImpl::JobProcessDecision CreateAndDecideJob(
-      SyncSessionJob::Purpose purpose) {
-    scoped_ptr<SyncSession> s(scheduler_->CreateSyncSession(SyncSourceInfo()));
-    SyncSessionJob job(purpose, TimeTicks::Now(), s.Pass(),
-        ConfigurationParams(), FROM_HERE);
+      SyncSchedulerImpl::SyncSessionJob::SyncSessionJobPurpose purpose) {
+    SyncSession* s = scheduler_->CreateSyncSession(SyncSourceInfo());
+    SyncSchedulerImpl::SyncSessionJob job(purpose, TimeTicks::Now(),
+         make_linked_ptr(s),
+         false,
+         ConfigurationParams(),
+         FROM_HERE);
     return DecideOnJob(job);
   }
 
@@ -132,7 +135,7 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudge) {
   SetMode(SyncScheduler::CONFIGURATION_MODE);
 
   SyncSchedulerImpl::JobProcessDecision decision =
-      CreateAndDecideJob(SyncSessionJob::NUDGE);
+      CreateAndDecideJob(SyncSchedulerImpl::SyncSessionJob::NUDGE);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::SAVE);
 }
@@ -150,14 +153,17 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
       ModelTypeSetToInvalidationMap(types, std::string());
 
   SyncSourceInfo info(GetUpdatesCallerInfo::LOCAL, invalidation_map);
-  scoped_ptr<SyncSession> s(scheduler_->CreateSyncSession(info));
+  SyncSession* s = scheduler_->CreateSyncSession(info);
 
   // Now schedule a nudge with just bookmarks and the change is local.
-  SyncSessionJob job(SyncSessionJob::NUDGE,
-                     TimeTicks::Now(),
-                     s.Pass(),
-                     ConfigurationParams(),
-                     FROM_HERE);
+  SyncSchedulerImpl::SyncSessionJob job(
+        SyncSchedulerImpl::SyncSessionJob::NUDGE,
+        TimeTicks::Now(),
+        make_linked_ptr(s),
+        false,
+        ConfigurationParams(),
+        FROM_HERE);
+
   SyncSchedulerImpl::JobProcessDecision decision = DecideOnJob(job);
   EXPECT_EQ(decision, SyncSchedulerImpl::SAVE);
 }
@@ -166,7 +172,7 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueNudge) {
   InitializeSyncerOnNormalMode();
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::NUDGE);
+      SyncSchedulerImpl::SyncSessionJob::NUDGE);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);
 }
@@ -176,7 +182,7 @@ TEST_F(SyncSchedulerWhiteboxTest, DropPoll) {
   SetMode(SyncScheduler::CONFIGURATION_MODE);
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::POLL);
+      SyncSchedulerImpl::SyncSessionJob::POLL);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::DROP);
 }
@@ -185,7 +191,7 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinuePoll) {
   InitializeSyncerOnNormalMode();
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::POLL);
+      SyncSchedulerImpl::SyncSessionJob::POLL);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);
 }
@@ -195,7 +201,7 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueConfiguration) {
   SetMode(SyncScheduler::CONFIGURATION_MODE);
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::CONFIGURATION);
+      SyncSchedulerImpl::SyncSessionJob::CONFIGURATION);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);
 }
@@ -207,7 +213,7 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveConfigurationWhileThrottled) {
   SetWaitIntervalToThrottled();
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::CONFIGURATION);
+      SyncSchedulerImpl::SyncSessionJob::CONFIGURATION);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::SAVE);
 }
@@ -219,7 +225,7 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileThrottled) {
   SetWaitIntervalToThrottled();
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::NUDGE);
+      SyncSchedulerImpl::SyncSessionJob::NUDGE);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::SAVE);
 }
@@ -230,7 +236,7 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueNudgeWhileExponentialBackOff) {
   SetWaitIntervalToExponentialBackoff();
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::NUDGE);
+      SyncSchedulerImpl::SyncSessionJob::NUDGE);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);
 }
@@ -242,7 +248,7 @@ TEST_F(SyncSchedulerWhiteboxTest, DropNudgeWhileExponentialBackOff) {
   SetWaitIntervalHadNudge(true);
 
   SyncSchedulerImpl::JobProcessDecision decision = CreateAndDecideJob(
-      SyncSessionJob::NUDGE);
+      SyncSchedulerImpl::SyncSessionJob::NUDGE);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::DROP);
 }
@@ -252,11 +258,10 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueCanaryJobConfig) {
   SetMode(SyncScheduler::CONFIGURATION_MODE);
   SetWaitIntervalToExponentialBackoff();
 
-  SyncSessionJob job(SyncSessionJob::CONFIGURATION,
-                     TimeTicks::Now(), scoped_ptr<SyncSession>(),
-                     ConfigurationParams(), FROM_HERE);
-
-  job.GrantCanaryPrivilege();
+  struct SyncSchedulerImpl::SyncSessionJob job;
+  job.purpose = SyncSchedulerImpl::SyncSessionJob::CONFIGURATION;
+  job.scheduled_start = TimeTicks::Now();
+  job.is_canary_job = true;
   SyncSchedulerImpl::JobProcessDecision decision = DecideOnJob(job);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);

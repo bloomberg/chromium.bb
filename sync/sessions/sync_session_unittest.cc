@@ -347,7 +347,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
   EXPECT_EQ(expected_enabled_groups_one, one.GetEnabledGroups());
   EXPECT_EQ(expected_enabled_groups_two, two.GetEnabledGroups());
 
-  two.RebaseRoutingInfoWithLatest(one.routing_info(), one.workers());
+  two.RebaseRoutingInfoWithLatest(one);
 
   EXPECT_EQ(expected_enabled_groups_one, one.GetEnabledGroups());
   EXPECT_EQ(expected_enabled_groups_one, two.GetEnabledGroups());
@@ -417,7 +417,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   EXPECT_EQ(expected_enabled_groups, first.GetEnabledGroups());
   EXPECT_EQ(expected_enabled_groups, second.GetEnabledGroups());
 
-  second.RebaseRoutingInfoWithLatest(first.routing_info(), first.workers());
+  second.RebaseRoutingInfoWithLatest(first);
 
   EXPECT_EQ(expected_enabled_groups, first.GetEnabledGroups());
   EXPECT_EQ(expected_enabled_groups, second.GetEnabledGroups());

@@ -75,8 +75,6 @@ struct ModelNeutralState {
   int64 num_server_changes_remaining;
 };
 
-bool HasSyncerError(const ModelNeutralState& state);
-
 }  // namespace sessions
 }  // namespace syncer
 

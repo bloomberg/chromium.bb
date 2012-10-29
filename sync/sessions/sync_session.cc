@@ -77,7 +77,8 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate,
       delegate_(delegate),
       workers_(workers),
       routing_info_(routing_info),
-      enabled_groups_(ComputeEnabledGroups(routing_info_, workers_)) {
+      enabled_groups_(ComputeEnabledGroups(routing_info_, workers_)),
+      finished_(false) {
   status_controller_.reset(new StatusController(routing_info_));
   std::sort(workers_.begin(), workers_.end());
 }
@@ -114,31 +115,30 @@ void SyncSession::Coalesce(const SyncSession& session) {
   enabled_groups_ = ComputeEnabledGroups(routing_info_, workers_);
 }
 
-void SyncSession::RebaseRoutingInfoWithLatest(
-    const ModelSafeRoutingInfo& routing_info,
-    const std::vector<ModelSafeWorker*>& workers) {
+void SyncSession::RebaseRoutingInfoWithLatest(const SyncSession& session) {
   ModelSafeRoutingInfo temp_routing_info;
 
-  // Take the intersection and also set the routing info(it->second) from the
+  // Take the intersecion and also set the routing info(it->second) from the
   // passed in session.
   for (ModelSafeRoutingInfo::const_iterator it =
-       routing_info.begin(); it != routing_info.end();
+       session.routing_info_.begin(); it != session.routing_info_.end();
        ++it) {
     if (routing_info_.find(it->first) != routing_info_.end()) {
       temp_routing_info[it->first] = it->second;
     }
   }
+
+  // Now swap it.
   routing_info_.swap(temp_routing_info);
 
-  PurgeStaleStates(&source_.types, routing_info);
+  // Now update the payload map.
+  PurgeStaleStates(&source_.types, session.routing_info_);
 
   // Now update the workers.
   std::vector<ModelSafeWorker*> temp;
-  std::vector<ModelSafeWorker*> sorted_workers = workers;
-  std::sort(sorted_workers.begin(), sorted_workers.end());
   std::set_intersection(workers_.begin(), workers_.end(),
-                        sorted_workers.begin(), sorted_workers.end(),
-                        std::back_inserter(temp));
+                 session.workers_.begin(), session.workers_.end(),
+                 std::back_inserter(temp));
   workers_.swap(temp);
 
   // Now update enabled groups.
@@ -146,6 +146,7 @@ void SyncSession::RebaseRoutingInfoWithLatest(
 }
 
 void SyncSession::PrepareForAnotherSyncCycle() {
+  finished_ = false;
   source_.updates_source =
       sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION;
   status_controller_.reset(new StatusController(routing_info_));
@@ -182,7 +183,8 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       source_,
       context_->notifications_enabled(),
       dir->GetEntriesCount(),
-      status_controller_->sync_start_time());
+      status_controller_->sync_start_time(),
+      !Succeeded());
 }
 
 void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {
@@ -217,11 +219,35 @@ std::set<ModelSafeGroup> SyncSession::GetEnabledGroupsWithConflicts() const {
   return enabled_groups_with_conflicts;
 }
 
-bool SyncSession::DidReachServer() const {
+namespace {
+
+// Returns false iff one of the command results had an error.
+bool HadErrors(const ModelNeutralState& state) {
+  const bool get_key_error = SyncerErrorIsError(state.last_get_key_result);
+  const bool download_updates_error =
+      SyncerErrorIsError(state.last_download_updates_result);
+  const bool commit_error = SyncerErrorIsError(state.commit_result);
+  return get_key_error || download_updates_error || commit_error;
+}
+}  // namespace
+
+bool SyncSession::Succeeded() const {
+  return finished_ && !HadErrors(status_controller_->model_neutral_state());
+}
+
+bool SyncSession::SuccessfullyReachedServer() const {
   const ModelNeutralState& state = status_controller_->model_neutral_state();
-  return state.last_get_key_result >= FIRST_SERVER_RETURN_VALUE ||
-      state.last_download_updates_result >= FIRST_SERVER_RETURN_VALUE ||
-      state.commit_result >= FIRST_SERVER_RETURN_VALUE;
+  bool reached_server = state.last_get_key_result == SYNCER_OK ||
+                        state.last_download_updates_result == SYNCER_OK;
+  // It's possible that we reached the server on one attempt, then had an error
+  // on the next (or didn't perform some of the server-communicating commands).
+  // We want to verify that, for all commands attempted, we successfully spoke
+  // with the server. Therefore, we verify no errors and at least one SYNCER_OK.
+  return reached_server && !HadErrors(state);
+}
+
+void SyncSession::SetFinished() {
+  finished_ = true;
 }
 
 }  // namespace sessions

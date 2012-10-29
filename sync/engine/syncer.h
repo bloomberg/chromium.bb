@@ -57,9 +57,7 @@ class Syncer {
   void RequestEarlyExit();
 
   // Runs a sync cycle from |first_step| to |last_step|.
-  // Returns true if the cycle completed with |last_step|, and false
-  // if it terminated early due to error / exit requested.
-  virtual bool SyncShare(sessions::SyncSession* session,
+  virtual void SyncShare(sessions::SyncSession* session,
                          SyncerStep first_step,
                          SyncerStep last_step);
 

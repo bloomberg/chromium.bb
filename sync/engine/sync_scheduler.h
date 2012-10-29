@@ -85,18 +85,13 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
 
   // The meat and potatoes. Both of these methods will post a delayed task
   // to attempt the actual nudge (see ScheduleNudgeImpl).
-  // NOTE: |desired_delay| is best-effort. If a nudge is already scheduled to
-  // depart earlier than Now() + delay, the scheduler can and will prefer to
-  // batch the two so that only one nudge is sent (at the earlier time). Also,
-  // as always with delayed tasks and timers, it's possible the task gets run
-  // any time after |desired_delay|.
   virtual void ScheduleNudgeAsync(
-      const base::TimeDelta& desired_delay,
+      const base::TimeDelta& delay,
       NudgeSource source,
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) = 0;
   virtual void ScheduleNudgeWithStatesAsync(
-      const base::TimeDelta& desired_delay, NudgeSource source,
+      const base::TimeDelta& delay, NudgeSource source,
       const ModelTypeInvalidationMap& invalidation_map,
       const tracked_objects::Location& nudge_location) = 0;
 

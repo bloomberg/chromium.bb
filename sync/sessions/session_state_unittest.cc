@@ -90,7 +90,8 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
                                source,
                                false,
                                0,
-                               base::Time::Now());
+                               base::Time::Now(),
+                               false);
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(20u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits,

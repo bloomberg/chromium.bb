@@ -186,24 +186,24 @@ class SyncerTest : public testing::Test,
         info, workers);
   }
 
-
-  void SyncShareAsDelegate(SyncSessionJob::Purpose purpose) {
+  void SyncShareAsDelegate(
+      SyncSchedulerImpl::SyncSessionJob::SyncSessionJobPurpose purpose) {
     SyncerStep start;
     SyncerStep end;
-    SyncSessionJob::GetSyncerStepsForPurpose(purpose, &start, &end);
+    SyncSchedulerImpl::SetSyncerStepsForPurpose(purpose, &start, &end);
 
     session_.reset(MakeSession());
-    EXPECT_TRUE(syncer_->SyncShare(session_.get(), start, end));
+    syncer_->SyncShare(session_.get(), start, end);
   }
 
   void SyncShareNudge() {
     session_.reset(MakeSession());
-    SyncShareAsDelegate(SyncSessionJob::NUDGE);
+    SyncShareAsDelegate(SyncSchedulerImpl::SyncSessionJob::NUDGE);
   }
 
   void SyncShareConfigure() {
     session_.reset(MakeSession());
-    SyncShareAsDelegate(SyncSessionJob::CONFIGURATION);
+    SyncShareAsDelegate(SyncSchedulerImpl::SyncSessionJob::CONFIGURATION);
   }
 
   virtual void SetUp() {
@@ -2538,6 +2538,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
   SyncShareNudge();
 
   EXPECT_EQ(1U, mock_server_->commit_messages().size());
+  EXPECT_FALSE(session_->Succeeded());
   EXPECT_EQ(SYNC_SERVER_ERROR,
             session_->status_controller().model_neutral_state().commit_result);
   EXPECT_EQ(items_to_commit - kDefaultMaxCommitBatchSize,
@@ -2568,7 +2569,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_CommitConflict) {
 
   // We should stop looping at the first sign of trouble.
   EXPECT_EQ(1U, mock_server_->commit_messages().size());
-  EXPECT_FALSE(session_->HasMoreToSync());
+  EXPECT_FALSE(session_->Succeeded());
   EXPECT_EQ(items_to_commit - (kDefaultMaxCommitBatchSize - 1),
             directory()->unsynced_entity_count());
 }
