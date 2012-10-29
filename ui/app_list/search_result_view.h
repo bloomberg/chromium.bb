@@ -6,6 +6,7 @@
 #define UI_APP_LIST_SEARCH_RESULT_VIEW_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
