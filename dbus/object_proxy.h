@@ -236,6 +236,24 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
                          ResponseCallback response_callback,
                          ErrorResponse* error_response);
 
+  // Adds the match rule to the bus and associate the callback with the signal.
+  bool AddMatchRuleWithCallback(const std::string& match_rule,
+                                const std::string& absolute_signal_name,
+                                SignalCallback signal_callback);
+
+  // Adds the match rule to the bus so that HandleMessage can see the signal.
+  bool AddMatchRuleWithoutCallback(const std::string& match_rule,
+                                   const std::string& absolute_signal_name);
+
+  // Calls D-Bus's GetNameOwner method synchronously to update
+  // |service_name_owner_| with the current owner of |service_name_|.
+  //
+  // BLOCKING CALL.
+  void UpdateNameOwnerAndBlock();
+
+  // Handles NameOwnerChanged signal from D-Bus's special message bus.
+  DBusHandlerResult HandleNameOwnerChanged(dbus::Signal* signal);
+
   scoped_refptr<Bus> bus_;
   std::string service_name_;
   ObjectPath object_path_;
@@ -251,6 +269,9 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   std::set<std::string> match_rules_;
 
   const bool ignore_service_unknown_errors_;
+
+  // Known name owner of the well-known bus name represnted by |service_name_|.
+  std::string service_name_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectProxy);
 };

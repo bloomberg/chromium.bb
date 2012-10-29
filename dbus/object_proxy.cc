@@ -24,6 +24,9 @@ const char kErrorServiceUnknown[] = "org.freedesktop.DBus.Error.ServiceUnknown";
 // Used for success ratio histograms. 1 for success, 0 for failure.
 const int kSuccessRatioHistogramMaxValue = 2;
 
+// The path of D-Bus Object sending NameOwnerChanged signal.
+const char kDbusSystemObjectPath[] = "/org/freedesktop/DBus";
+
 // Gets the absolute signal name by concatenating the interface name and
 // the signal name. Used for building keys for method_table_ in
 // ObjectProxy.
@@ -362,25 +365,27 @@ void ObjectProxy::ConnectToSignalInternal(
         base::StringPrintf("type='signal', interface='%s', path='%s'",
                            interface_name.c_str(),
                            object_path_.value().c_str());
-
-    // Add the match rule if we don't have it.
-    if (match_rules_.find(match_rule) == match_rules_.end()) {
-      ScopedDBusError error;
-      bus_->AddMatch(match_rule, error.get());;
-      if (error.is_set()) {
-        LOG(ERROR) << "Failed to add match rule: " << match_rule;
-      } else {
-        // Store the match rule, so that we can remove this in Detach().
-        match_rules_.insert(match_rule);
-        // Add the signal callback to the method table.
-        method_table_[absolute_signal_name] = signal_callback;
-        success = true;
-      }
-    } else {
-      // We already have the match rule.
-      method_table_[absolute_signal_name] = signal_callback;
+    // Add a match_rule listening NameOwnerChanged for the well-known name
+    // |service_name_|.
+    const std::string name_owner_changed_match_rule =
+        base::StringPrintf(
+            "type='signal',interface='org.freedesktop.DBus',"
+            "member='NameOwnerChanged',path='/org/freedesktop/DBus',"
+            "sender='org.freedesktop.DBus',arg0='%s'",
+            service_name_.c_str());
+    if (AddMatchRuleWithCallback(match_rule,
+                                 absolute_signal_name,
+                                 signal_callback) &&
+        AddMatchRuleWithoutCallback(name_owner_changed_match_rule,
+                                    "org.freedesktop.DBus.NameOwnerChanged")) {
       success = true;
     }
+
+    // Try getting the current name owner. It's not guaranteed that we can get
+    // the name owner at this moment, as the service may not yet be started. If
+    // that's the case, we'll get the name owner via NameOwnerChanged signal,
+    // as soon as the service is started.
+    UpdateNameOwnerAndBlock();
   }
 
   // Run on_connected_callback in the origin thread.
@@ -407,6 +412,7 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     DBusConnection* connection,
     DBusMessage* raw_message) {
   bus_->AssertOnDBusThread();
+
   if (dbus_message_get_type(raw_message) != DBUS_MESSAGE_TYPE_SIGNAL)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
@@ -421,6 +427,11 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   // allow other object proxies to handle instead.
   const dbus::ObjectPath path = signal->GetPath();
   if (path != object_path_) {
+    if (path.value() == kDbusSystemObjectPath &&
+        signal->GetMember() == "NameOwnerChanged") {
+      // Handle NameOwnerChanged separately
+      return HandleNameOwnerChanged(signal.get());
+    }
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
@@ -436,6 +447,13 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
   VLOG(1) << "Signal received: " << signal->ToString();
+
+  std::string sender = signal->GetSender();
+  if (service_name_owner_ != sender) {
+    LOG(ERROR) << "Rejecting a message from a wrong sender.";
+    UMA_HISTOGRAM_COUNTS("DBus.RejectedSignalCount", 1);
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
   if (bus_->HasDBusThread()) {
@@ -513,6 +531,115 @@ void ObjectProxy::OnCallMethodError(const std::string& interface_name,
                          error_message);
   }
   response_callback.Run(NULL);
+}
+
+bool ObjectProxy::AddMatchRuleWithCallback(
+    const std::string& match_rule,
+    const std::string& absolute_signal_name,
+    SignalCallback signal_callback) {
+  DCHECK(!match_rule.empty());
+  DCHECK(!absolute_signal_name.empty());
+  bus_->AssertOnDBusThread();
+
+  if (match_rules_.find(match_rule) == match_rules_.end()) {
+    ScopedDBusError error;
+    bus_->AddMatch(match_rule, error.get());
+    if (error.is_set()) {
+      LOG(ERROR) << "Failed to add match rule \"" << match_rule << "\". Got " <<
+          error.name() << ": " << error.message();
+      return false;
+    } else {
+      // Store the match rule, so that we can remove this in Detach().
+      match_rules_.insert(match_rule);
+      // Add the signal callback to the method table.
+      method_table_[absolute_signal_name] = signal_callback;
+      return true;
+    }
+  } else {
+    // We already have the match rule.
+    method_table_[absolute_signal_name] = signal_callback;
+    return true;
+  }
+}
+
+bool ObjectProxy::AddMatchRuleWithoutCallback(
+    const std::string& match_rule,
+    const std::string& absolute_signal_name) {
+  DCHECK(!match_rule.empty());
+  DCHECK(!absolute_signal_name.empty());
+  bus_->AssertOnDBusThread();
+
+  if (match_rules_.find(match_rule) != match_rules_.end())
+    return true;
+
+  ScopedDBusError error;
+  bus_->AddMatch(match_rule, error.get());
+  if (error.is_set()) {
+    LOG(ERROR) << "Failed to add match rule \"" << match_rule << "\". Got " <<
+        error.name() << ": " << error.message();
+    return false;
+  }
+  // Store the match rule, so that we can remove this in Detach().
+  match_rules_.insert(match_rule);
+  return true;
+}
+
+void ObjectProxy::UpdateNameOwnerAndBlock() {
+  bus_->AssertOnDBusThread();
+
+  MethodCall get_name_owner_call("org.freedesktop.DBus", "GetNameOwner");
+  MessageWriter writer(&get_name_owner_call);
+  writer.AppendString(service_name_);
+  VLOG(1) << "Method call: " << get_name_owner_call.ToString();
+
+  const dbus::ObjectPath obj_path("/org/freedesktop/DBus");
+  ScopedDBusError error;
+  if (!get_name_owner_call.SetDestination("org.freedesktop.DBus") ||
+      !get_name_owner_call.SetPath(obj_path)) {
+    LOG(ERROR) << "Failed to get name owner.";
+    return;
+  }
+
+  DBusMessage* response_message = bus_->SendWithReplyAndBlock(
+      get_name_owner_call.raw_message(),
+      TIMEOUT_USE_DEFAULT,
+      error.get());
+  if (!response_message) {
+    LOG(ERROR) << "Failed to get name owner. Got " << error.name() << ": " <<
+        error.message();
+    return;
+  }
+  scoped_ptr<Response> response(Response::FromRawMessage(response_message));
+  MessageReader reader(response.get());
+
+  std::string new_service_name_owner;
+  if (reader.PopString(&new_service_name_owner))
+    service_name_owner_ = new_service_name_owner;
+  else
+    service_name_owner_.clear();
+}
+
+DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(Signal* signal) {
+  DCHECK(signal);
+  bus_->AssertOnDBusThread();
+
+  // Confirm the validity of the NameOwnerChanged signal.
+  if (signal->GetMember() == "NameOwnerChanged" &&
+      signal->GetInterface() == "org.freedesktop.DBus" &&
+      signal->GetSender() == "org.freedesktop.DBus") {
+    MessageReader reader(signal);
+    std::string name, old_owner, new_owner;
+    if (reader.PopString(&name) &&
+        reader.PopString(&old_owner) &&
+        reader.PopString(&new_owner) &&
+        name == service_name_) {
+      service_name_owner_ = new_owner;
+      return DBUS_HANDLER_RESULT_HANDLED;
+    }
+  }
+
+  // Untrusted or uninteresting signal
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 }  // namespace dbus

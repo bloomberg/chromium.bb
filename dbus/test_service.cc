@@ -103,6 +103,19 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
   root_object->SendSignal(&signal);
 }
 
+void TestService::RequestOwnership() {
+  message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&TestService::RequestOwnershipInternal,
+                 base::Unretained(this)));
+}
+
+void TestService::RequestOwnershipInternal() {
+  bus_->RequestOwnership("org.chromium.TestService",
+                         base::Bind(&TestService::OnOwnership,
+                                    base::Unretained(this)));
+}
+
 void TestService::OnOwnership(const std::string& service_name,
                               bool success) {
   LOG_IF(ERROR, !success) << "Failed to own: " << service_name;

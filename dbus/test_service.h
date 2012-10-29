@@ -65,6 +65,9 @@ class TestService : public base::Thread {
   // This function emulates dbus-send's behavior.
   void SendTestSignalFromRoot(const std::string& message);
 
+  // Request the ownership of a well-known name "TestService".
+  void RequestOwnership();
+
  private:
   // Helper function for SendTestSignal().
   void SendTestSignalInternal(const std::string& message);
@@ -126,6 +129,9 @@ class TestService : public base::Thread {
 
   // Helper function for SendPropertyChangedSignal().
   void SendPropertyChangedSignalInternal(const std::string& name);
+
+  // Helper function for RequestOwnership().
+  void RequestOwnershipInternal();
 
   scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy_;
   base::WaitableEvent on_all_methods_exported_;
