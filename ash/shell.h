@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "ui/base/events/event_target.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
@@ -114,7 +115,8 @@ class WorkspaceController;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
+class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
+                         public ui::EventTarget {
  public:
   typedef std::vector<aura::RootWindow*> RootWindowList;
   typedef std::vector<internal::RootWindowController*> RootWindowControllerList;
@@ -423,6 +425,10 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
 
   // ash::internal::SystemModalContainerEventFilterDelegate overrides:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;
+
+  // Overridden from ui::EventTarget:
+  virtual bool CanAcceptEvents() OVERRIDE;
+  virtual EventTarget* GetParentTarget() OVERRIDE;
 
   static Shell* instance_;
 

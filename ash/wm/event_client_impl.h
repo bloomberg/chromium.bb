@@ -24,6 +24,7 @@ class EventClientImpl : public aura::client::EventClient {
   // Overridden from aura::client::EventClient:
   virtual bool CanProcessEventsWithinSubtree(
       const aura::Window* window) const OVERRIDE;
+  virtual ui::EventTarget* GetToplevelEventTarget() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(EventClientImpl);
 };

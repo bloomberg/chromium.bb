@@ -510,11 +510,11 @@ void Shell::Init() {
 }
 
 void Shell::AddEnvEventFilter(aura::EventFilter* filter) {
-  aura::Env::GetInstance()->AddPreTargetHandler(filter);
+  AddPreTargetHandler(filter);
 }
 
 void Shell::RemoveEnvEventFilter(aura::EventFilter* filter) {
-  aura::Env::GetInstance()->RemovePreTargetHandler(filter);
+  RemovePreTargetHandler(filter);
 }
 
 void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
@@ -800,6 +800,14 @@ bool Shell::CanWindowReceiveEvents(aura::Window* window) {
     }
   }
   return false;
+}
+
+bool Shell::CanAcceptEvents() {
+  return true;
+}
+
+ui::EventTarget* Shell::GetParentTarget() {
+  return NULL;
 }
 
 }  // namespace ash
