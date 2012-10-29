@@ -154,6 +154,7 @@ class Builder(object):
     self.suffix = options.suffix
     self.strip = options.strip
     self.empty = options.empty
+    self.strip_all = options.strip_all
     self.strip_debug = options.strip_debug
 
     if self.verbose:
@@ -452,7 +453,8 @@ class Builder(object):
     self.CleanOutput(tmp)
     os.rename(out, tmp)
     bin_name = self.GetStrip()
-    cmd_line = [bin_name, '--strip-debug', tmp, '-o', out]
+    strip_option = '--strip-all' if self.strip_all else '--strip-debug'
+    cmd_line = [bin_name, strip_option, tmp, '-o', out]
     err = self.Run(cmd_line, out)
     if sys.platform.startswith('win') and err == 5:
       # Try again on mystery windows failure.
@@ -468,7 +470,7 @@ class Builder(object):
     """
     if self.outtype in ['nexe', 'pexe', 'nso']:
       out = self.Link(srcs)
-      if self.strip_debug:
+      if self.strip_all or self.strip_debug:
         self.Strip(out)
     elif self.outtype in ['nlib', 'plib']:
       self.Archive(srcs)
@@ -485,7 +487,9 @@ def Main(argv):
   parser.add_option('--sufix', dest='suffix',
                     help='Do append arch suffix.', action='store_true')
   parser.add_option('--strip-debug', dest='strip_debug', default=False,
-                    help='Strip the NEXE', action='store_true')
+                    help='Strip the NEXE for debugging', action='store_true')
+  parser.add_option('--strip-all', dest='strip_all', default=False,
+                    help='Strip the NEXE for production', action='store_true')
   parser.add_option('--strip', dest='strip', default='',
                     help='Strip the filename')
   parser.add_option('--source-list', dest='source_list',
