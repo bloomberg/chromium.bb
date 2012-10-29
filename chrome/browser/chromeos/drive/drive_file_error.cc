@@ -8,6 +8,67 @@
 
 namespace drive {
 
+std::string DriveFileErrorToString(DriveFileError error) {
+  switch (error) {
+    case DRIVE_FILE_OK:
+      return "DRIVE_FILE_OK";
+
+    case DRIVE_FILE_ERROR_FAILED:
+      return "DRIVE_FILE_ERROR_FAILED";
+
+    case DRIVE_FILE_ERROR_IN_USE:
+      return "DRIVE_FILE_ERROR_IN_USE";
+
+    case DRIVE_FILE_ERROR_EXISTS:
+      return "DRIVE_FILE_ERROR_EXISTS";
+
+    case DRIVE_FILE_ERROR_NOT_FOUND:
+      return "DRIVE_FILE_ERROR_NOT_FOUND";
+
+    case DRIVE_FILE_ERROR_ACCESS_DENIED:
+      return "DRIVE_FILE_ERROR_ACCESS_DENIED";
+
+    case DRIVE_FILE_ERROR_TOO_MANY_OPENED:
+      return "DRIVE_FILE_ERROR_TOO_MANY_OPENED";
+
+    case DRIVE_FILE_ERROR_NO_MEMORY:
+      return "DRIVE_FILE_ERROR_NO_MEMORY";
+
+    case DRIVE_FILE_ERROR_NO_SPACE:
+      return "DRIVE_FILE_ERROR_NO_SPACE";
+
+    case DRIVE_FILE_ERROR_NOT_A_DIRECTORY:
+      return "DRIVE_FILE_ERROR_NOT_A_DIRECTORY";
+
+    case DRIVE_FILE_ERROR_INVALID_OPERATION:
+      return "DRIVE_FILE_ERROR_INVALID_OPERATION";
+
+    case DRIVE_FILE_ERROR_SECURITY:
+      return "DRIVE_FILE_ERROR_SECURITY";
+
+    case DRIVE_FILE_ERROR_ABORT:
+      return "DRIVE_FILE_ERROR_ABORT";
+
+    case DRIVE_FILE_ERROR_NOT_A_FILE:
+      return "DRIVE_FILE_ERROR_NOT_A_FILE";
+
+    case DRIVE_FILE_ERROR_NOT_EMPTY:
+      return "DRIVE_FILE_ERROR_NOT_EMPTY";
+
+    case DRIVE_FILE_ERROR_INVALID_URL:
+      return "DRIVE_FILE_ERROR_INVALID_URL";
+
+    case DRIVE_FILE_ERROR_NO_CONNECTION:
+      return "DRIVE_FILE_ERROR_NO_CONNECTION";
+
+    case DRIVE_FILE_ERROR_THROTTLED:
+      return "DRIVE_FILE_ERROR_THROTTLED";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 base::PlatformFileError DriveFileErrorToPlatformError(DriveFileError error) {
   switch (error) {
     case DRIVE_FILE_OK:

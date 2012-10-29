@@ -31,6 +31,9 @@ enum DriveFileError {
   DRIVE_FILE_ERROR_THROTTLED = -17,
 };
 
+// Returns a string representation of DriveFileError.
+std::string DriveFileErrorToString(DriveFileError error);
+
 // Returns a PlatformFileError that corresponds to the DriveFileError provided.
 base::PlatformFileError DriveFileErrorToPlatformError(DriveFileError error);
 
