@@ -44,7 +44,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   virtual void GenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      const media_stream::StreamOptions& components,
+      const StreamOptions& components,
       const GURL& security_origin);
 
   // Cancel the request for a new media stream to be created.
@@ -57,7 +57,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   void EnumerateDevices(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      media_stream::MediaStreamType type,
+      MediaStreamType type,
       const GURL& security_origin);
 
   // Request to stop enumerating devices.
@@ -70,7 +70,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const std::string& device_id,
-      media_stream::MediaStreamType type,
+      MediaStreamType type,
       const GURL& security_origin);
 
   // Close a started device. |label| is provided in OnDeviceOpened.
@@ -127,18 +127,18 @@ class CONTENT_EXPORT MediaStreamDispatcher
   void OnStreamGenerated(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfoArray& audio_array,
-      const media_stream::StreamDeviceInfoArray& video_array);
+      const StreamDeviceInfoArray& audio_array,
+      const StreamDeviceInfoArray& video_array);
   void OnStreamGenerationFailed(int request_id);
   void OnDevicesEnumerated(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfoArray& device_array);
+      const StreamDeviceInfoArray& device_array);
   void OnDevicesEnumerationFailed(int request_id);
   void OnDeviceOpened(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfo& device_info);
+      const StreamDeviceInfo& device_info);
   void OnDeviceOpenFailed(int request_id);
 
   void RemoveEnumerationRequest(

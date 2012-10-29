@@ -14,21 +14,19 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-using content::BrowserThreadImpl;
 using testing::_;
 
 namespace content {
 
 class MediaStreamDeviceUIControllerTest
     : public ::testing::Test,
-      public media_stream::SettingsRequester {
+      public SettingsRequester {
  public:
   MediaStreamDeviceUIControllerTest() {}
 
   // Mock implementation of SettingsRequester;
   MOCK_METHOD2(DevicesAccepted, void(
-      const std::string&, const media_stream::StreamDeviceInfoArray&));
+      const std::string&, const StreamDeviceInfoArray&));
   MOCK_METHOD1(SettingsError, void(const std::string&));
 
  protected:
@@ -38,7 +36,7 @@ class MediaStreamDeviceUIControllerTest
                                            message_loop_.get()));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
-    ui_controller_.reset(new content::MediaStreamUIController(this));
+    ui_controller_.reset(new MediaStreamUIController(this));
   }
 
   virtual void TearDown() {
@@ -48,11 +46,9 @@ class MediaStreamDeviceUIControllerTest
   void CreateDummyRequest(const std::string& label, bool audio, bool video) {
     int dummy_render_process_id = 1;
     int dummy_render_view_id = 1;
-    media_stream::StreamOptions components(
-        audio ? content::MEDIA_DEVICE_AUDIO_CAPTURE :
-                content::MEDIA_NO_SERVICE,
-        video ? content::MEDIA_DEVICE_VIDEO_CAPTURE :
-                content::MEDIA_NO_SERVICE);
+    StreamOptions components(
+        audio ? MEDIA_DEVICE_AUDIO_CAPTURE : MEDIA_NO_SERVICE,
+        video ? MEDIA_DEVICE_VIDEO_CAPTURE : MEDIA_NO_SERVICE);
     GURL security_origin;
     ui_controller_->MakeUIRequest(label,
                                   dummy_render_process_id,
@@ -68,10 +64,10 @@ class MediaStreamDeviceUIControllerTest
 
   void CreateAudioDeviceForRequset(const std::string& label) {
     // Setup the dummy available device for the request.
-    media_stream::StreamDeviceInfoArray audio_device_array(1);
-    media_stream::StreamDeviceInfo dummy_audio_device;
+    StreamDeviceInfoArray audio_device_array(1);
+    StreamDeviceInfo dummy_audio_device;
     dummy_audio_device.name = "Microphone";
-    dummy_audio_device.stream_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
+    dummy_audio_device.stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
     dummy_audio_device.session_id = 1;
     audio_device_array[0] = dummy_audio_device;
     ui_controller_->AddAvailableDevicesToRequest(
@@ -82,10 +78,10 @@ class MediaStreamDeviceUIControllerTest
 
   void CreateVideoDeviceForRequset(const std::string& label) {
     // Setup the dummy available device for the request.
-    media_stream::StreamDeviceInfoArray video_device_array(1);
-    media_stream::StreamDeviceInfo dummy_video_device;
+    StreamDeviceInfoArray video_device_array(1);
+    StreamDeviceInfo dummy_video_device;
     dummy_video_device.name = "camera";
-    dummy_video_device.stream_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
+    dummy_video_device.stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
     dummy_video_device.session_id = 1;
     video_device_array[0] = dummy_video_device;
     ui_controller_->AddAvailableDevicesToRequest(
@@ -176,4 +172,4 @@ TEST_F(MediaStreamDeviceUIControllerTest, CreateRequestsAndCancelTheLast) {
   EXPECT_CALL(*this, DevicesAccepted(label_2, _));
 }
 
-}  // namespace media_stream
+}  // namespace content

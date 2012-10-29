@@ -29,8 +29,8 @@ struct MediaStreamDispatcher::Stream {
   Stream() {}
   ~Stream() {}
   base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
-  media_stream::StreamDeviceInfoArray audio_array;
-  media_stream::StreamDeviceInfoArray video_array;
+  StreamDeviceInfoArray audio_array;
+  StreamDeviceInfoArray video_array;
 };
 
 MediaStreamDispatcher::EnumerationRequest::EnumerationRequest(
@@ -50,14 +50,14 @@ MediaStreamDispatcher::EnumerationState::~EnumerationState() {}
 
 struct MediaStreamDispatcher::EnumerationState::CachedDevices {
   CachedDevices(const std::string& label,
-                const media_stream::StreamDeviceInfoArray& device_array)
+                const StreamDeviceInfoArray& device_array)
       : label(label),
         devices(device_array) {
   }
   ~CachedDevices() {}
 
   std::string label;
-  media_stream::StreamDeviceInfoArray devices;
+  StreamDeviceInfoArray devices;
 };
 
 MediaStreamDispatcher::MediaStreamDispatcher(RenderViewImpl* render_view)
@@ -71,7 +71,7 @@ MediaStreamDispatcher::~MediaStreamDispatcher() {}
 void MediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    const media_stream::StreamOptions& components,
+    const StreamOptions& components,
     const GURL& security_origin) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
@@ -116,7 +116,7 @@ void MediaStreamDispatcher::StopStream(const std::string& label) {
 void MediaStreamDispatcher::EnumerateDevices(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    media_stream::MediaStreamType type,
+    MediaStreamType type,
     const GURL& security_origin) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
@@ -181,7 +181,7 @@ void MediaStreamDispatcher::OpenDevice(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const std::string& device_id,
-    media_stream::MediaStreamType type,
+    MediaStreamType type,
     const GURL& security_origin) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamDispatcher::OpenDevice(" << request_id << ")";
@@ -225,8 +225,8 @@ bool MediaStreamDispatcher::OnMessageReceived(const IPC::Message& message) {
 void MediaStreamDispatcher::OnStreamGenerated(
     int request_id,
     const std::string& label,
-    const media_stream::StreamDeviceInfoArray& audio_array,
-    const media_stream::StreamDeviceInfoArray& video_array) {
+    const StreamDeviceInfoArray& audio_array,
+    const StreamDeviceInfoArray& video_array) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   for (RequestList::iterator it = requests_.begin();
@@ -270,7 +270,7 @@ void MediaStreamDispatcher::OnStreamGenerationFailed(int request_id) {
 void MediaStreamDispatcher::OnDevicesEnumerated(
     int request_id,
     const std::string& label,
-    const media_stream::StreamDeviceInfoArray& device_array) {
+    const StreamDeviceInfoArray& device_array) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DCHECK_GE(request_id, 0);
 
@@ -322,7 +322,7 @@ void MediaStreamDispatcher::OnDevicesEnumerationFailed(int request_id) {
 void MediaStreamDispatcher::OnDeviceOpened(
     int request_id,
     const std::string& label,
-    const media_stream::StreamDeviceInfo& device_info) {
+    const StreamDeviceInfo& device_info) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   for (RequestList::iterator it = requests_.begin();
        it != requests_.end(); ++it) {
@@ -371,7 +371,7 @@ int MediaStreamDispatcher::audio_session_id(const std::string& label,
                                             int index) {
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end())
-    return media_stream::StreamDeviceInfo::kNoId;
+    return StreamDeviceInfo::kNoId;
 
   DCHECK_GT(it->second.audio_array.size(), static_cast<size_t>(index));
   return it->second.audio_array[index].session_id;
@@ -385,7 +385,7 @@ int MediaStreamDispatcher::video_session_id(const std::string& label,
                                             int index) {
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end())
-    return media_stream::StreamDeviceInfo::kNoId;
+    return StreamDeviceInfo::kNoId;
 
   DCHECK_GT(it->second.video_array.size(), static_cast<size_t>(index));
   return it->second.video_array[index].session_id;

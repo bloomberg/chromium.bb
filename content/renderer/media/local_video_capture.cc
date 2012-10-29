@@ -30,7 +30,7 @@ LocalVideoCapture::LocalVideoCapture(
       ALLOW_THIS_IN_INITIALIZER_LIST(
           handler_proxy_(new media::VideoCaptureHandlerProxy(
               this, message_loop_proxy_))),
-      state_(video_capture::kStopped) {
+      state_(VIDEO_CAPTURE_STATE_STOPPED) {
   DVLOG(3) << "LocalVideoCapture::ctor";
   DCHECK(vc_manager);
 }
@@ -42,10 +42,10 @@ LocalVideoCapture::~LocalVideoCapture() {
 void LocalVideoCapture::Start() {
   DVLOG(3) << "LocalVideoCapture::Start";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, video_capture::kStopped);
+  DCHECK_EQ(state_, VIDEO_CAPTURE_STATE_STOPPED);
 
   capture_engine_ = vc_manager_->AddDevice(video_stream_id_, this);
-  state_ = video_capture::kStarted;
+  state_ = VIDEO_CAPTURE_STATE_STARTED;
   AddRef();  // Will be balanced in OnRemoved().
   capture_engine_->StartCapture(handler_proxy_.get(), capability_);
 }
@@ -54,7 +54,7 @@ void LocalVideoCapture::Stop() {
   DVLOG(3) << "LocalVideoCapture::Stop";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (capture_engine_) {
-    state_ = video_capture::kStopping;
+    state_ = VIDEO_CAPTURE_STATE_STOPPING;
     capture_engine_->StopCapture(handler_proxy_.get());
     capture_engine_ = NULL;
   }
@@ -63,16 +63,16 @@ void LocalVideoCapture::Stop() {
 void LocalVideoCapture::Play() {
   DVLOG(3) << "LocalVideoCapture::Play";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (capture_engine_ && state_ == video_capture::kPaused) {
-    state_ = video_capture::kStarted;
+  if (capture_engine_ && state_ == VIDEO_CAPTURE_STATE_PAUSED) {
+    state_ = VIDEO_CAPTURE_STATE_STARTED;
   }
 }
 
 void LocalVideoCapture::Pause() {
   DVLOG(3) << "LocalVideoCapture::Pause";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (capture_engine_ && state_ == video_capture::kStarted) {
-    state_ = video_capture::kPaused;
+  if (capture_engine_ && state_ == VIDEO_CAPTURE_STATE_STARTED) {
+    state_ = VIDEO_CAPTURE_STATE_PAUSED;
   }
 }
 
@@ -119,7 +119,7 @@ void LocalVideoCapture::OnBufferReady(
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(buf);
 
-  if (state_ != video_capture::kStarted) {
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED) {
     capture->FeedBuffer(buf);
     return;
   }

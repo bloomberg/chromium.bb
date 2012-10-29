@@ -6,30 +6,28 @@
 
 #include "base/logging.h"
 
-namespace media_stream {
+namespace content {
 
 const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] = "chromeMediaSourceId";
 const char kMediaStreamSourceTab[] = "tab";
 
 StreamOptions::StreamOptions()
-    : audio_type(content::MEDIA_NO_SERVICE),
-      video_type(content::MEDIA_NO_SERVICE) {}
+    : audio_type(MEDIA_NO_SERVICE),
+      video_type(MEDIA_NO_SERVICE) {}
 
 StreamOptions::StreamOptions(MediaStreamType audio_type,
                              MediaStreamType video_type)
     : audio_type(audio_type), video_type(video_type) {
-  DCHECK(IsAudioMediaType(audio_type) ||
-         audio_type == content::MEDIA_NO_SERVICE);
-  DCHECK(IsVideoMediaType(video_type) ||
-         video_type == content::MEDIA_NO_SERVICE);
+  DCHECK(IsAudioMediaType(audio_type) || audio_type == MEDIA_NO_SERVICE);
+  DCHECK(IsVideoMediaType(video_type) || video_type == MEDIA_NO_SERVICE);
 }
 
 // static
 const int StreamDeviceInfo::kNoId = -1;
 
 StreamDeviceInfo::StreamDeviceInfo()
-    : stream_type(content::MEDIA_NO_SERVICE),
+    : stream_type(MEDIA_NO_SERVICE),
       in_use(false),
       session_id(kNoId) {}
 
@@ -53,4 +51,4 @@ bool StreamDeviceInfo::IsEqual(const StreamDeviceInfo& first,
       first.session_id == second.session_id;
 }
 
-}  // namespace media_stream
+}  // namespace content

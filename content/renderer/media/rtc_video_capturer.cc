@@ -14,18 +14,18 @@ RtcVideoCapturer::RtcVideoCapturer(
     bool is_screencast)
     : is_screencast_(is_screencast),
       delegate_(new RtcVideoCaptureDelegate(id, vc_manager)),
-      state_(video_capture::kStopped) {
+      state_(VIDEO_CAPTURE_STATE_STOPPED) {
 }
 
 RtcVideoCapturer::~RtcVideoCapturer() {
-  DCHECK(video_capture::kStopped);
+  DCHECK(VIDEO_CAPTURE_STATE_STOPPED);
   DVLOG(3) << " RtcVideoCapturer::dtor";
 }
 
 cricket::CaptureState RtcVideoCapturer::Start(
     const cricket::VideoFormat& capture_format) {
   DVLOG(3) << " RtcVideoCapturer::Start ";
-  if (state_ == video_capture::kStarted) {
+  if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
     DVLOG(1) << "Got a StartCapture when already started!!! ";
     return cricket::CS_FAILED;
   }
@@ -36,7 +36,7 @@ cricket::CaptureState RtcVideoCapturer::Start(
   cap.frame_rate = capture_format.framerate();
   cap.color = media::VideoCaptureCapability::kI420;
 
-  state_ = video_capture::kStarted;
+  state_ = VIDEO_CAPTURE_STATE_STARTED;
   start_time_ = base::Time::Now();
   delegate_->StartCapture(cap,
       base::Bind(&RtcVideoCapturer::OnFrameCaptured, base::Unretained(this)),
@@ -46,17 +46,17 @@ cricket::CaptureState RtcVideoCapturer::Start(
 
 void RtcVideoCapturer::Stop() {
   DVLOG(3) << " RtcVideoCapturer::Stop ";
-  if (state_ == video_capture::kStopped) {
+  if (state_ == VIDEO_CAPTURE_STATE_STOPPED) {
     DVLOG(1) << "Got a StopCapture while not started.";
     return;
   }
-  state_ = video_capture::kStopped;
+  state_ = VIDEO_CAPTURE_STATE_STOPPED;
   delegate_->StopCapture();
   SignalStateChange(this, cricket::CS_STOPPED);
 }
 
 bool RtcVideoCapturer::IsRunning() {
-  return state_ == video_capture::kStarted;
+  return state_ == VIDEO_CAPTURE_STATE_STARTED;
 }
 
 bool RtcVideoCapturer::GetPreferredFourccs(std::vector<uint32>* fourccs) {

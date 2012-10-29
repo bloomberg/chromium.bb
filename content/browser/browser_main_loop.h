@@ -22,10 +22,6 @@ namespace media {
 class AudioManager;
 }
 
-namespace media_stream {
-class MediaStreamManager;
-}
-
 namespace net {
 class NetworkChangeNotifier;
 }
@@ -35,6 +31,7 @@ class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserShutdownImpl;
 class BrowserThreadImpl;
+class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SpeechRecognitionManagerImpl;
 class WebKitThread;
@@ -74,7 +71,7 @@ class BrowserMainLoop {
 
   // Can be called on any thread.
   static media::AudioManager* GetAudioManager();
-  static media_stream::MediaStreamManager* GetMediaStreamManager();
+  static MediaStreamManager* GetMediaStreamManager();
 
  private:
   // For ShutdownThreadsAndCleanUp.
@@ -98,7 +95,7 @@ class BrowserMainLoop {
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
+  scoped_ptr<MediaStreamManager> media_stream_manager_;
   // Per-process listener for online state changes.
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
 #if defined(OS_WIN)

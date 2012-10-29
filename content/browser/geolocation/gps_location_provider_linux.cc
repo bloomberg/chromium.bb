@@ -144,9 +144,9 @@ void LibGps::Stop() {
   is_open_ = false;
 }
 
-bool LibGps::Read(content::Geoposition* position) {
+bool LibGps::Read(Geoposition* position) {
   DCHECK(position);
-  position->error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   if (!is_open_) {
       DLOG(WARNING) << "No gpsd connection";
       position->error_message = "No gpsd connection";
@@ -165,7 +165,7 @@ bool LibGps::Read(content::Geoposition* position) {
       return false;
   }
 
-  position->error_code = content::Geoposition::ERROR_CODE_NONE;
+  position->error_code = Geoposition::ERROR_CODE_NONE;
   position->timestamp = base::Time::Now();
   if (!position->Validate()) {
     // GetPositionIfFixed returned true, yet we've not got a valid fix.
@@ -174,15 +174,14 @@ bool LibGps::Read(content::Geoposition* position) {
                  << position->latitude << "," << position->longitude
                  << " accuracy " << position->accuracy << " time "
                  << position->timestamp.ToDoubleT();
-    position->error_code =
-        content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+    position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     position->error_message = "Bad fix from gps";
     return false;
   }
   return true;
 }
 
-bool LibGps::GetPositionIfFixed(content::Geoposition* position) {
+bool LibGps::GetPositionIfFixed(Geoposition* position) {
   DCHECK(position);
   if (gps_data_->status == STATUS_NO_FIX) {
     DVLOG(2) << "Status_NO_FIX";
@@ -245,11 +244,11 @@ bool LibGps::Start() {
 void LibGps::Stop() {
 }
 
-bool LibGps::Read(content::Geoposition* position) {
+bool LibGps::Read(Geoposition* position) {
   return false;
 }
 
-bool LibGps::GetPositionIfFixed(content::Geoposition* position) {
+bool LibGps::GetPositionIfFixed(Geoposition* position) {
   return false;
 }
 

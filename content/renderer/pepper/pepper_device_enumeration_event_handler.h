@@ -31,30 +31,28 @@ class PepperDeviceEnumerationEventHandler
   virtual void OnStreamGenerated(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfoArray& audio_device_array,
-      const media_stream::StreamDeviceInfoArray& video_device_array) OVERRIDE;
+      const StreamDeviceInfoArray& audio_device_array,
+      const StreamDeviceInfoArray& video_device_array) OVERRIDE;
   virtual void OnStreamGenerationFailed(int request_id) OVERRIDE;
   virtual void OnDevicesEnumerated(
       int request_id,
-      const media_stream::StreamDeviceInfoArray& device_array) OVERRIDE;
+      const StreamDeviceInfoArray& device_array) OVERRIDE;
   virtual void OnDevicesEnumerationFailed(int request_id) OVERRIDE;
   virtual void OnDeviceOpened(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfo& device_info) OVERRIDE;
+      const StreamDeviceInfo& device_info) OVERRIDE;
   virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
 
   // Stream type conversion.
-  static media_stream::MediaStreamType FromPepperDeviceType(
-      PP_DeviceType_Dev type);
-  static PP_DeviceType_Dev FromMediaStreamType(
-      media_stream::MediaStreamType type);
+  static MediaStreamType FromPepperDeviceType(PP_DeviceType_Dev type);
+  static PP_DeviceType_Dev FromMediaStreamType(MediaStreamType type);
 
  private:
   void NotifyDevicesEnumerated(
       int request_id,
       bool succeeded,
-      const media_stream::StreamDeviceInfoArray& device_array);
+      const StreamDeviceInfoArray& device_array);
 
   void NotifyDeviceOpened(int request_id,
                           bool succeeded,

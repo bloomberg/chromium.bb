@@ -60,7 +60,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
         video ? static_cast<size_t>(1) : 0);
 
     if (audio) {
-      media_stream::StreamDeviceInfo info;
+      StreamDeviceInfo info;
       info.stream_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
       info.name = "audio";
       info.session_id = 99;
@@ -71,7 +71,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
               new MediaStreamSourceExtraData(info));
     }
     if (video) {
-      media_stream::StreamDeviceInfo info;
+      StreamDeviceInfo info;
       info.stream_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
       info.name = "video";
       info.session_id = 98;

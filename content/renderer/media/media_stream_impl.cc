@@ -28,6 +28,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+namespace content {
 namespace {
 
 std::string GetMandatoryStreamConstraint(
@@ -42,25 +43,25 @@ std::string GetMandatoryStreamConstraint(
 
 void UpdateOptionsIfTabMediaRequest(
     const WebKit::WebUserMediaRequest& user_media_request,
-    media_stream::StreamOptions* options) {
+    StreamOptions* options) {
   if (options->audio_type != content::MEDIA_NO_SERVICE &&
       GetMandatoryStreamConstraint(user_media_request.audioConstraints(),
-                                   media_stream::kMediaStreamSource) ==
-          media_stream::kMediaStreamSourceTab) {
+                                   kMediaStreamSource) ==
+          kMediaStreamSourceTab) {
     options->audio_type = content::MEDIA_TAB_AUDIO_CAPTURE;
     options->audio_device_id = GetMandatoryStreamConstraint(
         user_media_request.audioConstraints(),
-        media_stream::kMediaStreamSourceId);
+        kMediaStreamSourceId);
   }
 
   if (options->video_type != content::MEDIA_NO_SERVICE &&
       GetMandatoryStreamConstraint(user_media_request.videoConstraints(),
-                                   media_stream::kMediaStreamSource) ==
-          media_stream::kMediaStreamSourceTab) {
+                                   kMediaStreamSource) ==
+          kMediaStreamSourceTab) {
     options->video_type = content::MEDIA_TAB_VIDEO_CAPTURE;
     options->video_device_id = GetMandatoryStreamConstraint(
         user_media_request.videoConstraints(),
-        media_stream::kMediaStreamSourceId);
+        kMediaStreamSourceId);
   }
 }
 
@@ -70,7 +71,7 @@ static int g_next_request_id  = 0;
 // |devices| from the MediaStreamDispatcher.
 void CreateWebKitSourceVector(
     const std::string& label,
-    const media_stream::StreamDeviceInfoArray& devices,
+    const StreamDeviceInfoArray& devices,
     WebKit::WebMediaStreamSource::Type type,
     WebKit::WebVector<WebKit::WebMediaStreamSource>& webkit_sources) {
   CHECK_EQ(devices.size(), webkit_sources.size());
@@ -99,8 +100,6 @@ webrtc::MediaStreamInterface* GetNativeMediaStream(
 }
 
 }  // namespace
-
-namespace content {
 
 MediaStreamImpl::MediaStreamImpl(
     RenderView* render_view,
@@ -137,7 +136,7 @@ void MediaStreamImpl::requestUserMedia(
   UpdateWebRTCMethodCount(WEBKIT_GET_USER_MEDIA);
   DCHECK(CalledOnValidThread());
   int request_id = g_next_request_id++;
-  media_stream::StreamOptions options(MEDIA_NO_SERVICE, MEDIA_NO_SERVICE);
+  StreamOptions options(MEDIA_NO_SERVICE, MEDIA_NO_SERVICE);
   WebKit::WebFrame* frame = NULL;
   GURL security_origin;
 
@@ -260,8 +259,8 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
 void MediaStreamImpl::OnStreamGenerated(
     int request_id,
     const std::string& label,
-    const media_stream::StreamDeviceInfoArray& audio_array,
-    const media_stream::StreamDeviceInfoArray& video_array) {
+    const StreamDeviceInfoArray& audio_array,
+    const StreamDeviceInfoArray& video_array) {
   DCHECK(CalledOnValidThread());
 
   UserMediaRequestInfo* request_info = FindUserMediaRequestInfo(request_id);
@@ -352,7 +351,7 @@ void MediaStreamImpl::OnCreateNativeSourcesComplete(
 
 void MediaStreamImpl::OnDevicesEnumerated(
     int request_id,
-    const media_stream::StreamDeviceInfoArray& device_array) {
+    const StreamDeviceInfoArray& device_array) {
   DVLOG(1) << "MediaStreamImpl::OnDevicesEnumerated("
            << request_id << ")";
   NOTIMPLEMENTED();
@@ -367,7 +366,7 @@ void MediaStreamImpl::OnDevicesEnumerationFailed(int request_id) {
 void MediaStreamImpl::OnDeviceOpened(
     int request_id,
     const std::string& label,
-    const media_stream::StreamDeviceInfo& video_device) {
+    const StreamDeviceInfo& video_device) {
   DVLOG(1) << "MediaStreamImpl::OnDeviceOpened("
            << request_id << ", " << label << ")";
   NOTIMPLEMENTED();
@@ -502,7 +501,7 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateVideoDecoder(
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(
-    const media_stream::StreamDeviceInfo& device_info)
+    const StreamDeviceInfo& device_info)
     : device_info_(device_info) {
 }
 

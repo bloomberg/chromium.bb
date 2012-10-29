@@ -30,7 +30,7 @@ struct VideoCaptureImpl::DIBBuffer {
 };
 
 bool VideoCaptureImpl::CaptureStarted() {
-  return state_ == video_capture::kStarted;
+  return state_ == VIDEO_CAPTURE_STATE_STARTED;
 }
 
 int VideoCaptureImpl::CaptureWidth() {
@@ -56,7 +56,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       device_id_(0),
       video_type_(media::VideoCaptureCapability::kI420),
       device_info_available_(false),
-      state_(video_capture::kStopped) {
+      state_(VIDEO_CAPTURE_STATE_STOPPED) {
   DCHECK(filter);
   memset(&current_params_, 0, sizeof(current_params_));
   memset(&device_info_, 0, sizeof(device_info_));
@@ -119,7 +119,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id, base::Time timestamp) {
                  base::Unretained(this), buffer_id, timestamp));
 }
 
-void VideoCaptureImpl::OnStateChanged(video_capture::State state) {
+void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoStateChangedOnCaptureThread,
                  base::Unretained(this), state));
@@ -139,7 +139,7 @@ void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {
 }
 
 void VideoCaptureImpl::DoDeInitOnCaptureThread(base::Closure task) {
-  if (state_ == video_capture::kStarted)
+  if (state_ == VIDEO_CAPTURE_STATE_STARTED)
     Send(new VideoCaptureHostMsg_Stop(device_id_));
 
   io_message_loop_proxy_->PostTask(FROM_HERE,
@@ -152,7 +152,7 @@ void VideoCaptureImpl::DoStartCaptureOnCaptureThread(
     const media::VideoCaptureCapability& capability) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (state_ == video_capture::kError) {
+  if (state_ == VIDEO_CAPTURE_STATE_ERROR) {
     handler->OnError(this, 1);
     handler->OnRemoved(this);
   } else if ((clients_pending_on_filter_.find(handler) !=
@@ -165,7 +165,7 @@ void VideoCaptureImpl::DoStartCaptureOnCaptureThread(
     clients_pending_on_filter_[handler] = capability;
   } else {
     handler->OnStarted(this);
-    if (state_ == video_capture::kStarted) {
+    if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
       // TODO(wjia): Temporarily disable restarting till client supports
       // resampling.
 #if 0
@@ -185,7 +185,7 @@ void VideoCaptureImpl::DoStartCaptureOnCaptureThread(
 
         clients_[handler] = capability;
       }
-    } else if (state_ == video_capture::kStopping) {
+    } else if (state_ == VIDEO_CAPTURE_STATE_STOPPING) {
       clients_pending_on_restart_[handler] = capability;
       DVLOG(1) << "StartCapture: Got new resolution ("
                << capability.width << ", " << capability.height << ") "
@@ -248,7 +248,7 @@ void VideoCaptureImpl::DoBufferCreatedOnCaptureThread(
 
   // In case client calls StopCapture before the arrival of created buffer,
   // just close this buffer and return.
-  if (state_ != video_capture::kStarted) {
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED) {
     base::SharedMemory::CloseHandle(handle);
     return;
   }
@@ -275,7 +275,7 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
     int buffer_id, base::Time timestamp) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (state_ != video_capture::kStarted) {
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED) {
     Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id));
     return;
   }
@@ -291,27 +291,26 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
   cached_dibs_[buffer_id]->references = clients_.size();
 }
 
-void VideoCaptureImpl::DoStateChangedOnCaptureThread(
-    video_capture::State state) {
+void VideoCaptureImpl::DoStateChangedOnCaptureThread(VideoCaptureState state) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
 
   switch (state) {
-    case video_capture::kStarted:
+    case VIDEO_CAPTURE_STATE_STARTED:
       break;
-    case video_capture::kStopped:
-      state_ = video_capture::kStopped;
+    case VIDEO_CAPTURE_STATE_STOPPED:
+      state_ = VIDEO_CAPTURE_STATE_STOPPED;
       DVLOG(1) << "OnStateChanged: stopped!, device_id = " << device_id_;
       STLDeleteValues(&cached_dibs_);
       if (!clients_.empty() || !clients_pending_on_restart_.empty())
         RestartCapture();
       break;
-    case video_capture::kPaused:
+    case VIDEO_CAPTURE_STATE_PAUSED:
       for (ClientInfo::iterator it = clients_.begin();
            it != clients_.end(); ++it) {
         it->first->OnPaused(this);
       }
       break;
-    case video_capture::kError:
+    case VIDEO_CAPTURE_STATE_ERROR:
       DVLOG(1) << "OnStateChanged: error!, device_id = " << device_id_;
       for (ClientInfo::iterator it = clients_.begin();
            it != clients_.end(); ++it) {
@@ -320,7 +319,7 @@ void VideoCaptureImpl::DoStateChangedOnCaptureThread(
         it->first->OnRemoved(this);
       }
       clients_.clear();
-      state_ = video_capture::kError;
+      state_ = VIDEO_CAPTURE_STATE_ERROR;
       break;
     default:
       break;
@@ -359,8 +358,8 @@ void VideoCaptureImpl::StopDevice() {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
 
   device_info_available_ = false;
-  if (state_ == video_capture::kStarted) {
-    state_ = video_capture::kStopping;
+  if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
+    state_ = VIDEO_CAPTURE_STATE_STOPPING;
     Send(new VideoCaptureHostMsg_Stop(device_id_));
     current_params_.width = current_params_.height = 0;
   }
@@ -368,7 +367,7 @@ void VideoCaptureImpl::StopDevice() {
 
 void VideoCaptureImpl::RestartCapture() {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, video_capture::kStopped);
+  DCHECK_EQ(state_, VIDEO_CAPTURE_STATE_STOPPED);
 
   int width = 0;
   int height = 0;
@@ -396,7 +395,7 @@ void VideoCaptureImpl::StartCaptureInternal() {
   DCHECK(device_id_);
 
   Send(new VideoCaptureHostMsg_Start(device_id_, current_params_));
-  state_ = video_capture::kStarted;
+  state_ = VIDEO_CAPTURE_STATE_STARTED;
 }
 
 void VideoCaptureImpl::AddDelegateOnIOThread() {

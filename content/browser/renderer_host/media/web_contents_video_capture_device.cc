@@ -142,7 +142,7 @@ void CalculateFittedSize(int source_width, int source_height,
 
 // Keeps track of the RenderView to be sourced, and executes copying of the
 // backing store on the UI BrowserThread.
-class BackingStoreCopier : public content::WebContentsObserver {
+class BackingStoreCopier : public WebContentsObserver {
  public:
   // Result status and done callback used with StartCopy().
   enum Result {
@@ -158,7 +158,7 @@ class BackingStoreCopier : public content::WebContentsObserver {
 
   // If non-NULL, use the given |override| to access the backing store.
   // This is used for unit testing.
-  void SetRenderWidgetHostForTesting(content::RenderWidgetHost* override);
+  void SetRenderWidgetHostForTesting(RenderWidgetHost* override);
 
   // Starts the copy from the backing store.  Must be run on the UI
   // BrowserThread.  |done_cb| is invoked with result status.  When successful
@@ -178,7 +178,7 @@ class BackingStoreCopier : public content::WebContentsObserver {
 
   // If the following is NULL (normal behavior), the implementation should
   // access RenderWidgetHost via web_contents().
-  content::RenderWidgetHost* rwh_for_testing_;
+  RenderWidgetHost* rwh_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreCopier);
 };
@@ -270,7 +270,7 @@ BackingStoreCopier::BackingStoreCopier(int render_process_id,
       rwh_for_testing_(NULL) {}
 
 void BackingStoreCopier::LookUpAndObserveWebContents() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Look-up the RenderViewHost and, from that, the WebContents that wraps it.
   // If successful, begin observing the WebContents instance.  If unsuccessful,
@@ -282,28 +282,28 @@ void BackingStoreCopier::LookUpAndObserveWebContents() {
   // there have been multiple back-and-forth IPCs between processes, as well as
   // a bit of indirection across threads.  It's easily possible that, in the
   // meantime, the original RenderView may have gone away.
-  content::RenderViewHost* const rvh =
-      content::RenderViewHost::FromID(render_process_id_, render_view_id_);
+  RenderViewHost* const rvh =
+      RenderViewHost::FromID(render_process_id_, render_view_id_);
   DVLOG_IF(1, !rvh) << "RenderViewHost::FromID("
                     << render_process_id_ << ", " << render_view_id_
                     << ") returned NULL.";
-  Observe(rvh ? content::WebContents::FromRenderViewHost(rvh) : NULL);
+  Observe(rvh ? WebContents::FromRenderViewHost(rvh) : NULL);
   DVLOG_IF(1, !web_contents())
       << "WebContents::FromRenderViewHost(" << rvh << ") returned NULL.";
 }
 
 void BackingStoreCopier::SetRenderWidgetHostForTesting(
-    content::RenderWidgetHost* override) {
+    RenderWidgetHost* override) {
   rwh_for_testing_ = override;
 }
 
 void BackingStoreCopier::StartCopy(int desired_width, int desired_height,
                                    const DoneCB& done_cb) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TRACE_EVENT_ASYNC_BEGIN0("mirroring", "Capture", this);
 
-  content::RenderWidgetHost* rwh;
+  RenderWidgetHost* rwh;
   if (rwh_for_testing_) {
     rwh = rwh_for_testing_;
   } else {
@@ -325,7 +325,7 @@ void BackingStoreCopier::StartCopy(int desired_width, int desired_height,
   }
 
   gfx::Size fitted_size;
-  if (content::RenderWidgetHostView* const view = rwh->GetView()) {
+  if (RenderWidgetHostView* const view = rwh->GetView()) {
     const gfx::Size& view_size = view->GetViewBounds().size();
     if (!view_size.IsEmpty()) {
       CalculateFittedSize(view_size.width(), view_size.height(),
@@ -607,7 +607,7 @@ class CaptureMachine
   CaptureMachine(int render_process_id, int render_view_id);
 
   // Set capture source to the given |override| for unit testing.
-  void SetRenderWidgetHostForTesting(content::RenderWidgetHost* override);
+  void SetRenderWidgetHostForTesting(RenderWidgetHost* override);
 
   // Synchronously sets/unsets the consumer.  Pass |consumer| as NULL to remove
   // the reference to the consumer; then, once this method returns,
@@ -692,7 +692,7 @@ CaptureMachine::CaptureMachine(int render_process_id, int render_view_id)
 }
 
 void CaptureMachine::SetRenderWidgetHostForTesting(
-    content::RenderWidgetHost* override) {
+    RenderWidgetHost* override) {
   copier_.SetRenderWidgetHostForTesting(override);
 }
 
@@ -800,7 +800,7 @@ void CaptureMachine::Destruct(const CaptureMachine* x) {
   // CaptureMachine-owned threads, including itself.  Since it's illegal for a
   // thread to join with itself, we need to trampoline the destructor call to
   // another thread.
-  content::BrowserThread::PostBlockingPoolTask(
+  BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&DeleteFromOutsideThread, x));
 }
 
@@ -873,8 +873,8 @@ void CaptureMachine::StartSnapshot() {
             base::Bind(&BackingStoreCopier::StartCopy,
                        base::Unretained(&copier_),
                        settings_.width, settings_.height, done_cb);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE, start_cb);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, start_cb);
   }
 
   ScheduleNextFrameCapture();
@@ -947,7 +947,7 @@ WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
       capturer_(new CaptureMachine(render_process_id, render_view_id)) {}
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
-    content::RenderWidgetHost* test_source)
+    RenderWidgetHost* test_source)
     : capturer_(new CaptureMachine(-1, -1)) {
   device_name_.device_name = "WebContentsForTesting";
   device_name_.unique_id = "-1:-1";
@@ -988,7 +988,7 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
 
 // static
 media::VideoCaptureDevice* WebContentsVideoCaptureDevice::CreateForTesting(
-    content::RenderWidgetHost* test_source) {
+    RenderWidgetHost* test_source) {
   return new WebContentsVideoCaptureDevice(test_source);
 }
 

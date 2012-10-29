@@ -15,13 +15,13 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_message_filter.h"
 
-namespace media_stream {
+namespace content {
 
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
 // MediaStreamImpl. It's the complement of MediaStreamDispatcher
 // (owned by RenderView).
 class CONTENT_EXPORT MediaStreamDispatcherHost
-    : public content::BrowserMessageFilter,
+    : public BrowserMessageFilter,
       public MediaStreamRequester {
  public:
   explicit MediaStreamDispatcherHost(int render_process_id);
@@ -37,7 +37,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   virtual void DeviceOpened(const std::string& label,
                             const StreamDeviceInfo& video_device) OVERRIDE;
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
@@ -63,13 +63,13 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
 
   void OnEnumerateDevices(int render_view_id,
                           int page_request_id,
-                          media_stream::MediaStreamType type,
+                          MediaStreamType type,
                           const GURL& security_origin);
 
   void OnOpenDevice(int render_view_id,
                     int page_request_id,
                     const std::string& device_id,
-                    media_stream::MediaStreamType type,
+                    MediaStreamType type,
                     const GURL& security_origin);
 
   // Returns the media stream manager to forward events to,
@@ -87,6 +87,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcherHost);
 };
 
-}  // namespace media_stream
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_DISPATCHER_HOST_H_

@@ -14,7 +14,7 @@ namespace base {
 class SharedMemory;
 }
 
-namespace media {
+namespace content {
 // A AudioInputController::SyncWriter implementation using SyncSocket. This
 // is used by AudioInputController to provide a low latency data source for
 // transmitting audio packets between the browser process and the renderer
@@ -51,6 +51,6 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputSyncWriter);
 };
 
-}  // namespace media
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_

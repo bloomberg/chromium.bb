@@ -37,7 +37,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   // Construct an instance with the following |test_source| injected for testing
   // purposes.
   static media::VideoCaptureDevice* CreateForTesting(
-      content::RenderWidgetHost* test_source);
+      RenderWidgetHost* test_source);
 
   virtual ~WebContentsVideoCaptureDevice();
 
@@ -61,7 +61,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   WebContentsVideoCaptureDevice(
       const Name& name, int render_process_id, int render_view_id);
   explicit WebContentsVideoCaptureDevice(
-      content::RenderWidgetHost* test_source);
+      RenderWidgetHost* test_source);
 
 
   Name device_name_;

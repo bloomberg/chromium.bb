@@ -45,7 +45,7 @@ AudioInputRendererHost::AudioEntry::~AudioEntry() {}
 
 AudioInputRendererHost::AudioInputRendererHost(
     media::AudioManager* audio_manager,
-    media_stream::MediaStreamManager* media_stream_manager)
+    MediaStreamManager* media_stream_manager)
     : audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager) {
 }
@@ -134,8 +134,8 @@ void AudioInputRendererHost::DoCompleteCreation(
     return;
   }
 
-  media::AudioInputSyncWriter* writer =
-      static_cast<media::AudioInputSyncWriter*>(entry->writer.get());
+  AudioInputSyncWriter* writer =
+      static_cast<AudioInputSyncWriter*>(entry->writer.get());
 
 #if defined(OS_WIN)
   base::SyncSocket::Handle foreign_socket_handle;
@@ -229,8 +229,8 @@ void AudioInputRendererHost::OnCreateStream(
     return;
   }
 
-  scoped_ptr<media::AudioInputSyncWriter> writer(
-      new media::AudioInputSyncWriter(&entry->shared_memory));
+  scoped_ptr<AudioInputSyncWriter> writer(
+      new AudioInputSyncWriter(&entry->shared_memory));
 
   if (!writer->Init()) {
     SendErrorMessage(stream_id);

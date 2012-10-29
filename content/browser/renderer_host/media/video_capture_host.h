@@ -45,13 +45,15 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "ipc/ipc_message.h"
 
+namespace content {
+
 class CONTENT_EXPORT VideoCaptureHost
-    : public content::BrowserMessageFilter,
+    : public BrowserMessageFilter,
       public VideoCaptureControllerEventHandler {
  public:
   VideoCaptureHost();
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -72,7 +74,7 @@ class CONTENT_EXPORT VideoCaptureHost
   virtual void OnPaused(const VideoCaptureControllerID& id) OVERRIDE;
 
  private:
-  friend class content::BrowserThread;
+  friend class BrowserThread;
   friend class base::DeleteHelper<VideoCaptureHost>;
   friend class MockVideoCaptureHost;
   friend class VideoCaptureHostTest;
@@ -133,7 +135,7 @@ class CONTENT_EXPORT VideoCaptureHost
 
   // Returns the video capture manager. This is a virtual function so that
   // the unit tests can inject their own MediaStreamManager.
-  virtual media_stream::VideoCaptureManager* GetVideoCaptureManager();
+  virtual VideoCaptureManager* GetVideoCaptureManager();
 
   struct Entry;
   typedef std::map<VideoCaptureControllerID, Entry*> EntryMap;
@@ -142,5 +144,7 @@ class CONTENT_EXPORT VideoCaptureHost
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_HOST_H_

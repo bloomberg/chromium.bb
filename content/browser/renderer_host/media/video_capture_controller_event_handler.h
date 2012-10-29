@@ -9,6 +9,8 @@
 #include "base/time.h"
 #include "content/common/content_export.h"
 
+namespace content {
+
 // ID used for identifying an object of VideoCaptureController.
 struct CONTENT_EXPORT VideoCaptureControllerID {
   explicit VideoCaptureControllerID(int device_id);
@@ -49,5 +51,7 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
  protected:
   virtual ~VideoCaptureControllerEventHandler() {}
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_EVENT_HANDLER_H_

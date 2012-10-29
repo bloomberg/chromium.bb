@@ -18,8 +18,8 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   virtual void OnStreamGenerated(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfoArray& audio_device_array,
-      const media_stream::StreamDeviceInfoArray& video_device_array) = 0;
+      const StreamDeviceInfoArray& audio_device_array,
+      const StreamDeviceInfoArray& video_device_array) = 0;
 
   // Creation of a new media stream failed. The user might have denied access
   // to the requested devices or no device is available.
@@ -28,7 +28,7 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   // A new list of devices have been enumerated.
   virtual void OnDevicesEnumerated(
       int request_id,
-      const media_stream::StreamDeviceInfoArray& device_array) = 0;
+      const StreamDeviceInfoArray& device_array) = 0;
 
   // Failed to enumerate devices.
   virtual void OnDevicesEnumerationFailed(int request_id) = 0;
@@ -37,7 +37,7 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   virtual void OnDeviceOpened(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfo& device_info) = 0;
+      const StreamDeviceInfo& device_info) = 0;
 
   // Failed to open the device.
   virtual void OnDeviceOpenFailed(int request_id) = 0;

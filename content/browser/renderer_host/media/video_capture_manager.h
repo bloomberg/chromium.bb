@@ -22,11 +22,10 @@
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 
+namespace content {
 class MockVideoCaptureManager;
 class VideoCaptureController;
 class VideoCaptureControllerEventHandler;
-
-namespace media_stream {
 
 // VideoCaptureManager opens/closes and start/stops video capture devices.
 class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
@@ -80,7 +79,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       VideoCaptureControllerEventHandler* handler);
 
  private:
-  friend class ::MockVideoCaptureManager;
+  friend class MockVideoCaptureManager;
 
   virtual ~VideoCaptureManager();
 
@@ -104,18 +103,16 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       VideoCaptureControllerEventHandler* handler);
 
   // Executed on Browser::IO thread to call Listener.
-  void OnOpened(content::MediaStreamDeviceType type, int capture_session_id);
-  void OnClosed(content::MediaStreamDeviceType type, int capture_session_id);
+  void OnOpened(MediaStreamDeviceType type, int capture_session_id);
+  void OnClosed(MediaStreamDeviceType type, int capture_session_id);
   void OnDevicesEnumerated(const StreamDeviceInfoArray& devices);
-  void OnError(content::MediaStreamDeviceType type, int capture_session_id,
+  void OnError(MediaStreamDeviceType type, int capture_session_id,
                MediaStreamProviderError error);
 
   // Executed on device thread to make sure Listener is called from
   // Browser::IO thread.
-  void PostOnOpened(content::MediaStreamDeviceType type,
-                    int capture_session_id);
-  void PostOnClosed(content::MediaStreamDeviceType type,
-                    int capture_session_id);
+  void PostOnOpened(MediaStreamDeviceType type, int capture_session_id);
+  void PostOnClosed(MediaStreamDeviceType type, int capture_session_id);
   void PostOnDevicesEnumerated(const StreamDeviceInfoArray& devices);
   void PostOnError(int capture_session_id, MediaStreamProviderError error);
 
@@ -139,7 +136,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // VideoCaptureManager owns all VideoCaptureDevices and is responsible for
   // deleting the instances when they are not used any longer.
   struct DeviceEntry {
-    content::MediaStreamDeviceType stream_type;
+    MediaStreamDeviceType stream_type;
     media::VideoCaptureDevice* capture_device;  // Maybe shared across sessions.
   };
   typedef std::map<int, DeviceEntry> VideoCaptureDevices;
@@ -158,6 +155,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureManager);
 };
 
-}  // namespace media_stream
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_

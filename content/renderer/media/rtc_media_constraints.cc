@@ -10,6 +10,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
+namespace content {
 namespace {
 
 void GetNativeMediaConstraints(
@@ -22,8 +23,8 @@ void GetNativeMediaConstraints(
     new_constraint.value = constraints[i].m_value.utf8();
 
     // Ignore Chrome specific Tab capture constraints.
-    if (new_constraint.key == media_stream::kMediaStreamSource ||
-        new_constraint.key == media_stream::kMediaStreamSourceId)
+    if (new_constraint.key == kMediaStreamSource ||
+        new_constraint.key == kMediaStreamSourceId)
       continue;
     DVLOG(3) << "MediaStreamConstraints:" << new_constraint.key
              << " : " <<  new_constraint.value;
@@ -32,8 +33,6 @@ void GetNativeMediaConstraints(
 }
 
 }  // namespace
-
-namespace content {
 
 RTCMediaConstraints::RTCMediaConstraints(
       const WebKit::WebMediaConstraints& constraints) {

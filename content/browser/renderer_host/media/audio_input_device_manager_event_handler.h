@@ -10,7 +10,7 @@
 
 #include "content/common/content_export.h"
 
-namespace media_stream {
+namespace content {
 
 class CONTENT_EXPORT AudioInputDeviceManagerEventHandler {
  public:
@@ -28,6 +28,6 @@ class CONTENT_EXPORT AudioInputDeviceManagerEventHandler {
   virtual ~AudioInputDeviceManagerEventHandler() {}
 };
 
-}  // namespace media_stream
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEVICE_MANAGER_EVENT_HANDLER_H_

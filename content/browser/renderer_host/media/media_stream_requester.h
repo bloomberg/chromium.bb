@@ -10,7 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
-namespace media_stream {
+namespace content {
 
 // MediaStreamRequester must be implemented by the class requesting a new media
 // stream to be opened. MediaStreamManager will use this interface to signal
@@ -37,6 +37,6 @@ class CONTENT_EXPORT MediaStreamRequester {
   }
 };
 
-}  // namespace media_stream
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_REQUESTER_H_

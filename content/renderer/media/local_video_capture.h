@@ -68,7 +68,7 @@ class CONTENT_EXPORT LocalVideoCapture
   media::VideoCapture* capture_engine_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   scoped_ptr<media::VideoCaptureHandlerProxy> handler_proxy_;
-  video_capture::State state_;
+  VideoCaptureState state_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalVideoCapture);
 };

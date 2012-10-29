@@ -10,7 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
-namespace media_stream {
+namespace content {
 
 // Implemented by the class requesting media capture device usage.
 class CONTENT_EXPORT SettingsRequester {
@@ -27,6 +27,6 @@ class CONTENT_EXPORT SettingsRequester {
   virtual ~SettingsRequester() {}
 };
 
-}  // namespace media_stream
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_SETTINGS_REQUESTER_H_

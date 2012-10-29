@@ -52,7 +52,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void OnBufferCreated(base::SharedMemoryHandle handle,
                                int length, int buffer_id) OVERRIDE;
   virtual void OnBufferReceived(int buffer_id, base::Time timestamp) OVERRIDE;
-  virtual void OnStateChanged(video_capture::State state) OVERRIDE;
+  virtual void OnStateChanged(VideoCaptureState state) OVERRIDE;
   virtual void OnDeviceInfoReceived(
       const media::VideoCaptureParams& device_info) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
@@ -80,7 +80,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   void DoBufferCreatedOnCaptureThread(base::SharedMemoryHandle handle,
                                       int length, int buffer_id);
   void DoBufferReceivedOnCaptureThread(int buffer_id, base::Time timestamp);
-  void DoStateChangedOnCaptureThread(video_capture::State state);
+  void DoStateChangedOnCaptureThread(VideoCaptureState state);
   void DoDeviceInfoReceivedOnCaptureThread(
       const media::VideoCaptureParams& device_info);
   void DoDelegateAddedOnCaptureThread(int32 device_id);
@@ -124,7 +124,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   media::VideoCaptureParams device_info_;
   bool device_info_available_;
 
-  video_capture::State state_;
+  VideoCaptureState state_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);
 };

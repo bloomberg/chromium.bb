@@ -26,7 +26,7 @@ namespace media {
 class AudioManager;
 }
 
-namespace media_stream {
+namespace content {
 
 class AudioInputDeviceManagerEventHandler;
 
@@ -70,10 +70,10 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   void DevicesEnumeratedOnIOThread(StreamDeviceInfoArray* devices);
   // Callback used by OpenOnDeviceThread(), called with the session_id
   // referencing the opened device on IO thread.
-  void OpenedOnIOThread(content::MediaStreamDeviceType type, int session_id);
+  void OpenedOnIOThread(MediaStreamDeviceType type, int session_id);
   // Callback used by CloseOnDeviceThread(), called with the session_id
   // referencing the closed device on IO thread.
-  void ClosedOnIOThread(content::MediaStreamDeviceType type, int session_id);
+  void ClosedOnIOThread(MediaStreamDeviceType type, int session_id);
 
   // Verifies that the calling thread is media stream device thread.
   bool IsOnDeviceThread() const;
@@ -93,6 +93,6 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   DISALLOW_COPY_AND_ASSIGN(AudioInputDeviceManager);
 };
 
-}  // namespace media_stream
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEVICE_MANAGER_H_

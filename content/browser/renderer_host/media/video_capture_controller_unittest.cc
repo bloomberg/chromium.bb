@@ -26,8 +26,8 @@ using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::Return;
-using content::BrowserThread;
-using content::BrowserThreadImpl;
+
+namespace content {
 
 enum { kDeviceId = 1 };
 
@@ -97,8 +97,7 @@ class MockVideoCaptureControllerEventHandler
   base::ProcessHandle process_handle_;
 };
 
-class MockVideoCaptureManager
-    : public media_stream::VideoCaptureManager {
+class MockVideoCaptureManager : public VideoCaptureManager {
  public:
   MockVideoCaptureManager()
       : video_session_id_(kStartOpenSessionId) {}
@@ -265,3 +264,5 @@ TEST_F(VideoCaptureControllerTest, StopSession) {
   controller_->StopCapture(controller_handler_->controller_id_,
                            controller_handler_.get());
 }
+
+}  // namespace content

@@ -13,7 +13,7 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START VideoCaptureMsgStart
 
-IPC_ENUM_TRAITS(video_capture::State)
+IPC_ENUM_TRAITS(content::VideoCaptureState)
 
 IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureParams)
   IPC_STRUCT_TRAITS_MEMBER(width)
@@ -26,7 +26,7 @@ IPC_STRUCT_TRAITS_END()
 // Start/Pause/Stop.
 IPC_MESSAGE_CONTROL2(VideoCaptureMsg_StateChanged,
                      int /* device id */,
-                     video_capture::State /* new state */)
+                     content::VideoCaptureState /* new state */)
 
 // Tell the renderer process that a new buffer is allocated for video capture.
 IPC_MESSAGE_CONTROL4(VideoCaptureMsg_NewBuffer,

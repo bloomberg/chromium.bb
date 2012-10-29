@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/base/yuv_convert.h"
 
-using content::BrowserThread;
+namespace content {
 
 // The number of DIBs VideoCaptureController allocate.
 static const size_t kNoOfDIBS = 3;
@@ -66,13 +66,13 @@ struct VideoCaptureController::SharedDIB {
 };
 
 VideoCaptureController::VideoCaptureController(
-    media_stream::VideoCaptureManager* video_capture_manager)
+    VideoCaptureManager* video_capture_manager)
     : chopped_width_(0),
       chopped_height_(0),
       frame_info_available_(false),
       video_capture_manager_(video_capture_manager),
       device_in_use_(false),
-      state_(video_capture::kStopped) {
+      state_(VIDEO_CAPTURE_STATE_STOPPED) {
   memset(&current_params_, 0, sizeof(current_params_));
 }
 
@@ -90,7 +90,7 @@ void VideoCaptureController::StartCapture(
            << ")";
 
   // Signal error in case device is already in error state.
-  if (state_ == video_capture::kError) {
+  if (state_ == VIDEO_CAPTURE_STATE_ERROR) {
     event_handler->OnError(id);
     return;
   }
@@ -103,7 +103,7 @@ void VideoCaptureController::StartCapture(
   ControllerClient* client = new ControllerClient(id, event_handler,
                                                   render_process, params);
   // In case capture has been started, need to check different condtions.
-  if (state_ == video_capture::kStarted) {
+  if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
   // TODO(wjia): Temporarily disable restarting till client supports resampling.
 #if 0
     // This client has higher resolution than what is currently requested.
@@ -113,7 +113,7 @@ void VideoCaptureController::StartCapture(
       video_capture_manager_->Stop(current_params_.session_id,
           base::Bind(&VideoCaptureController::OnDeviceStopped, this));
       frame_info_available_ = false;
-      state_ = video_capture::kStopping;
+      state_ = VIDEO_CAPTURE_STATE_STOPPING;
       pending_clients_.push_back(client);
       return;
     }
@@ -131,7 +131,7 @@ void VideoCaptureController::StartCapture(
 
   // In case the device is in the middle of stopping, put the client in
   // pending queue.
-  if (state_ == video_capture::kStopping) {
+  if (state_ == VIDEO_CAPTURE_STATE_STOPPING) {
     pending_clients_.push_back(client);
     return;
   }
@@ -141,7 +141,7 @@ void VideoCaptureController::StartCapture(
   current_params_ = params;
   // Order the manager to start the actual capture.
   video_capture_manager_->Start(params, this);
-  state_ = video_capture::kStarted;
+  state_ = VIDEO_CAPTURE_STATE_STARTED;
   device_in_use_ = true;
 }
 
@@ -184,11 +184,11 @@ void VideoCaptureController::StopCapture(
   controller_clients_.remove(client);
 
   // No more clients. Stop device.
-  if (controller_clients_.empty() && state_ == video_capture::kStarted) {
+  if (controller_clients_.empty() && state_ == VIDEO_CAPTURE_STATE_STARTED) {
     video_capture_manager_->Stop(session_id,
         base::Bind(&VideoCaptureController::OnDeviceStopped, this));
     frame_info_available_ = false;
-    state_ = video_capture::kStopping;
+    state_ = VIDEO_CAPTURE_STATE_STOPPING;
   }
 }
 
@@ -236,7 +236,7 @@ void VideoCaptureController::ReturnBuffer(
   // When all buffers have been returned by clients and device has been
   // called to stop, check if restart is needed. This could happen when
   // capture needs to be restarted due to resolution change.
-  if (!ClientHasDIB() && state_ == video_capture::kStopping) {
+  if (!ClientHasDIB() && state_ == VIDEO_CAPTURE_STATE_STOPPING) {
     PostStopping();
   }
 }
@@ -390,7 +390,7 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   int count = 0;
-  if (state_ == video_capture::kStarted) {
+  if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
     for (ControllerClients::iterator client_it = controller_clients_.begin();
          client_it != controller_clients_.end(); client_it++) {
       if ((*client_it)->session_closed)
@@ -416,7 +416,7 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
       << "Device is restarted without releasing shared memory.";
 
   // Allocate memory only when device has been started.
-  if (state_ != video_capture::kStarted)
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED)
     return;
 
   bool frames_created = true;
@@ -435,7 +435,7 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
   }
   // Check whether all DIBs were created successfully.
   if (!frames_created) {
-    state_ = video_capture::kError;
+    state_ = VIDEO_CAPTURE_STATE_ERROR;
     for (ControllerClients::iterator client_it = controller_clients_.begin();
          client_it != controller_clients_.end(); client_it++) {
       (*client_it)->event_handler->OnError((*client_it)->controller_id);
@@ -452,7 +452,7 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
 
 void VideoCaptureController::DoErrorOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  state_ = video_capture::kError;
+  state_ = VIDEO_CAPTURE_STATE_ERROR;
   ControllerClients::iterator client_it;
   for (client_it = controller_clients_.begin();
        client_it != controller_clients_.end(); client_it++) {
@@ -467,7 +467,7 @@ void VideoCaptureController::DoErrorOnIOThread() {
 void VideoCaptureController::DoDeviceStoppedOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   device_in_use_ = false;
-  if (state_ == video_capture::kStopping) {
+  if (state_ == VIDEO_CAPTURE_STATE_STOPPING) {
     PostStopping();
   }
 }
@@ -526,7 +526,7 @@ VideoCaptureController::FindClient(
 // restarted.
 void VideoCaptureController::PostStopping() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(state_, video_capture::kStopping);
+  DCHECK_EQ(state_, VIDEO_CAPTURE_STATE_STOPPING);
 
   // When clients still have some buffers, or device has not been stopped yet,
   // do nothing.
@@ -540,7 +540,7 @@ void VideoCaptureController::PostStopping() {
 
   // No more client. Therefore the controller is stopped.
   if (controller_clients_.empty() && pending_clients_.empty()) {
-    state_ = video_capture::kStopped;
+    state_ = VIDEO_CAPTURE_STATE_STOPPED;
     return;
   }
 
@@ -566,7 +566,7 @@ void VideoCaptureController::PostStopping() {
   }
   // Request the manager to start the actual capture.
   video_capture_manager_->Start(current_params_, this);
-  state_ = video_capture::kStarted;
+  state_ = VIDEO_CAPTURE_STATE_STARTED;
   device_in_use_ = true;
 }
 
@@ -580,3 +580,5 @@ bool VideoCaptureController::ClientHasDIB() {
   }
   return false;
 }
+
+}  // namespace content

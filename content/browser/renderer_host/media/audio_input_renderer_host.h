@@ -68,23 +68,20 @@ class AudioManager;
 class AudioParameters;
 }
 
-namespace media_stream {
-class MediaStreamManager;
-}
-
 namespace content {
+class MediaStreamManager;
 
 class CONTENT_EXPORT AudioInputRendererHost
     : public BrowserMessageFilter,
       public media::AudioInputController::EventHandler,
-      public media_stream::AudioInputDeviceManagerEventHandler {
+      public AudioInputDeviceManagerEventHandler {
  public:
   // Called from UI thread from the owner of this object.
   AudioInputRendererHost(
       media::AudioManager* audio_manager,
-      media_stream::MediaStreamManager* media_stream_manager);
+      MediaStreamManager* media_stream_manager);
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -99,7 +96,7 @@ class CONTENT_EXPORT AudioInputRendererHost
                       const uint8* data,
                       uint32 size) OVERRIDE;
 
-  // media_stream::AudioInputDeviceManagerEventHandler implementation.
+  // AudioInputDeviceManagerEventHandler implementation.
   virtual void OnDeviceStarted(int session_id,
                                const std::string& device_id) OVERRIDE;
   virtual void OnDeviceStopped(int session_id) OVERRIDE;
@@ -185,7 +182,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   media::AudioManager* audio_manager_;
 
   // Used to access to AudioInputDeviceManager.
-  media_stream::MediaStreamManager* media_stream_manager_;
+  MediaStreamManager* media_stream_manager_;
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;

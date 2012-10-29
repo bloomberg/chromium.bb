@@ -136,7 +136,7 @@ void VideoCaptureMessageFilter::OnBufferReceived(
 
 void VideoCaptureMessageFilter::OnDeviceStateChanged(
     int device_id,
-    video_capture::State state) {
+    VideoCaptureState state) {
   Delegate* delegate = NULL;
   if (delegates_.find(device_id) != delegates_.end())
     delegate = delegates_.find(device_id)->second;

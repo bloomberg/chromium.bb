@@ -23,7 +23,7 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace media_stream {
+namespace content {
 
 enum MediaStreamProviderError {
   kMediaStreamOk = 0,
@@ -89,6 +89,6 @@ class CONTENT_EXPORT MediaStreamProvider
   virtual ~MediaStreamProvider() {}
 };
 
-}  // namespace media_stream
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_PROVIDER_H_

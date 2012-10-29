@@ -9,7 +9,7 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 
-namespace media {
+namespace content {
 
 AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory)
     : shared_memory_(shared_memory) {
@@ -24,8 +24,8 @@ void AudioInputSyncWriter::UpdateRecordedBytes(uint32 bytes) {
 
 uint32 AudioInputSyncWriter::Write(const void* data, uint32 size,
                                    double volume) {
-  AudioInputBuffer* buffer =
-      reinterpret_cast<AudioInputBuffer*>(shared_memory_->memory());
+  media::AudioInputBuffer* buffer =
+      reinterpret_cast<media::AudioInputBuffer*>(shared_memory_->memory());
   buffer->params.volume = volume;
   buffer->params.size = size;
   memcpy(buffer->audio, data, size);
@@ -67,4 +67,4 @@ bool AudioInputSyncWriter::PrepareForeignSocketHandle(
 
 #endif
 
-}  // namespace media
+}  // namespace content

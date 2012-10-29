@@ -9,11 +9,7 @@
 #include "content/common/media/media_stream_options.h"
 #include "googleurl/src/gurl.h"
 
-using content::BrowserMainLoop;
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-
-namespace media_stream {
+namespace content {
 
 struct MediaStreamDispatcherHost::StreamRequest {
   StreamRequest() : render_view_id(0), page_request_id(0) {}
@@ -132,7 +128,7 @@ MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
 void MediaStreamDispatcherHost::OnGenerateStream(
     int render_view_id,
     int page_request_id,
-    const media_stream::StreamOptions& components,
+    const StreamOptions& components,
     const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnGenerateStream("
            << render_view_id << ", "
@@ -143,8 +139,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << security_origin.spec() << ")";
 
   std::string label;
-  if (components.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-      components.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+  if (components.audio_type == MEDIA_TAB_AUDIO_CAPTURE ||
+      components.video_type == MEDIA_TAB_VIDEO_CAPTURE) {
     const std::string& device_id = components.video_device_id;
     DCHECK(!device_id.empty());
     // TODO(justinlin): Cleanup/get rid of GenerateStreamForDevice and merge
@@ -187,7 +183,7 @@ void MediaStreamDispatcherHost::OnStopGeneratedStream(
 void MediaStreamDispatcherHost::OnEnumerateDevices(
     int render_view_id,
     int page_request_id,
-    media_stream::MediaStreamType type,
+    MediaStreamType type,
     const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnEnumerateDevices("
            << render_view_id << ", "
@@ -206,7 +202,7 @@ void MediaStreamDispatcherHost::OnOpenDevice(
     int render_view_id,
     int page_request_id,
     const std::string& device_id,
-    media_stream::MediaStreamType type,
+    MediaStreamType type,
     const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnOpenDevice("
            << render_view_id << ", "
@@ -226,4 +222,4 @@ MediaStreamManager* MediaStreamDispatcherHost::GetManager() {
   return BrowserMainLoop::GetMediaStreamManager();
 }
 
-}  // namespace media_stream
+}  // namespace content

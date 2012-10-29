@@ -19,6 +19,8 @@ const int kMinIntervalBetweenReadCallsInMs = 10;
 
 using media::AudioBus;
 
+namespace content {
+
 AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory,
                                  const media::AudioParameters& params,
                                  int input_channels)
@@ -156,3 +158,5 @@ bool AudioSyncReader::PrepareForeignSocketHandle(
   return false;
 }
 #endif
+
+}  // namespace content

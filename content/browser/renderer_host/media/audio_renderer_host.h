@@ -70,7 +70,7 @@ class CONTENT_EXPORT AudioRendererHost
   AudioRendererHost(media::AudioManager* audio_manager,
                     MediaObserver* media_observer);
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,

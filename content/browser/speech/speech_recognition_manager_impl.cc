@@ -46,7 +46,7 @@ SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
 
 #if !defined(OS_IOS)
 class SpeechRecognitionManagerImpl::PermissionRequest
-    : public media_stream::MediaStreamRequester {
+    : public MediaStreamRequester {
  public:
   PermissionRequest(int session_id,
                     const base::Callback<void(bool is_allowed)>& callback)
@@ -67,8 +67,7 @@ class SpeechRecognitionManagerImpl::PermissionRequest
         this,
         render_process_id,
         render_view_id,
-        media_stream::StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE,
-                                    MEDIA_DEVICE_VIDEO_CAPTURE),
+        StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_DEVICE_VIDEO_CAPTURE),
         origin,
         &label_);
   }
@@ -84,8 +83,8 @@ class SpeechRecognitionManagerImpl::PermissionRequest
   // MediaStreamRequester methods.
   virtual void StreamGenerated(
       const std::string& label,
-      const media_stream::StreamDeviceInfoArray& audio_devices,
-      const media_stream::StreamDeviceInfoArray& video_devices) OVERRIDE {
+      const StreamDeviceInfoArray& audio_devices,
+      const StreamDeviceInfoArray& video_devices) OVERRIDE {
     // TODO(hans): One day it would be nice to actually use the generated stream
     // but right now we only use it to request permission, and then we dump it.
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -93,7 +92,7 @@ class SpeechRecognitionManagerImpl::PermissionRequest
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        base::Bind(&media_stream::MediaStreamManager::StopGeneratedStream,
+        base::Bind(&MediaStreamManager::StopGeneratedStream,
                    base::Unretained(BrowserMainLoop::GetMediaStreamManager()),
                    label));
     callback_.Run(true);
@@ -108,10 +107,10 @@ class SpeechRecognitionManagerImpl::PermissionRequest
   // The callbacks below are ignored.
   virtual void DevicesEnumerated(
       const std::string& label,
-      const media_stream::StreamDeviceInfoArray& devices) OVERRIDE {}
+      const StreamDeviceInfoArray& devices) OVERRIDE {}
   virtual void DeviceOpened(
       const std::string& label,
-      const media_stream::StreamDeviceInfo& device_info) OVERRIDE {}
+      const StreamDeviceInfo& device_info) OVERRIDE {}
 
  private:
   int session_id_;

@@ -19,12 +19,7 @@
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_error.h"
 
-namespace media_stream {
-class MediaStreamManager;
-}
-
 namespace content {
-
 class BrowserMainLoop;
 class SpeechRecognitionManagerDelegate;
 class SpeechRecognizer;

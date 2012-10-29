@@ -134,8 +134,7 @@ void WebRTCAudioDeviceTest::SetUp() {
 
   // Create our own AudioManager and MediaStreamManager.
   audio_manager_.reset(media::AudioManager::Create());
-  media_stream_manager_.reset(
-      new media_stream::MediaStreamManager(audio_manager_.get()));
+  media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 
   // Construct the resource context on the UI thread.
   resource_context_.reset(new MockRTCResourceContext);

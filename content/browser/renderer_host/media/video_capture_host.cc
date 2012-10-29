@@ -12,9 +12,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/video_capture_messages.h"
 
-using content::BrowserMainLoop;
-using content::BrowserMessageFilter;
-using content::BrowserThread;
+namespace content {
 
 struct VideoCaptureHost::Entry {
   Entry(VideoCaptureController* controller)
@@ -130,7 +128,7 @@ void VideoCaptureHost::DoHandleErrorOnIOThread(
     return;
 
   Send(new VideoCaptureMsg_StateChanged(controller_id.device_id,
-                                        video_capture::kError));
+                                        VIDEO_CAPTURE_STATE_ERROR));
   DeleteVideoCaptureControllerOnIOThread(controller_id);
 }
 
@@ -142,7 +140,7 @@ void VideoCaptureHost::DoPausedOnIOThread(
     return;
 
   Send(new VideoCaptureMsg_StateChanged(controller_id.device_id,
-                                        video_capture::kPaused));
+                                        VIDEO_CAPTURE_STATE_PAUSED));
   DeleteVideoCaptureControllerOnIOThread(controller_id);
 }
 
@@ -160,7 +158,7 @@ void VideoCaptureHost::DoSendFrameInfoOnIOThread(
   params.frame_per_second = frame_per_second;
   Send(new VideoCaptureMsg_DeviceInfo(controller_id.device_id, params));
   Send(new VideoCaptureMsg_StateChanged(controller_id.device_id,
-                                        video_capture::kStarted));
+                                        VIDEO_CAPTURE_STATE_STARTED));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -220,7 +218,7 @@ void VideoCaptureHost::DoControllerAddedOnIOThread(
 
   if (controller == NULL) {
     Send(new VideoCaptureMsg_StateChanged(device_id,
-                                          video_capture::kError));
+                                          VIDEO_CAPTURE_STATE_ERROR));
     delete it->second;
     entries_.erase(controller_id);
     return;
@@ -237,15 +235,14 @@ void VideoCaptureHost::OnStopCapture(int device_id) {
   VideoCaptureControllerID controller_id(device_id);
 
   Send(new VideoCaptureMsg_StateChanged(device_id,
-                                        video_capture::kStopped));
+                                        VIDEO_CAPTURE_STATE_STOPPED));
   DeleteVideoCaptureControllerOnIOThread(controller_id);
 }
 
 void VideoCaptureHost::OnPauseCapture(int device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Not used.
-  Send(new VideoCaptureMsg_StateChanged(device_id,
-                                        video_capture::kError));
+  Send(new VideoCaptureMsg_StateChanged(device_id, VIDEO_CAPTURE_STATE_ERROR));
 }
 
 void VideoCaptureHost::OnReceiveEmptyBuffer(int device_id, int buffer_id) {
@@ -277,7 +274,9 @@ void VideoCaptureHost::DeleteVideoCaptureControllerOnIOThread(
   entries_.erase(controller_id);
 }
 
-media_stream::VideoCaptureManager* VideoCaptureHost::GetVideoCaptureManager() {
+VideoCaptureManager* VideoCaptureHost::GetVideoCaptureManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return BrowserMainLoop::GetMediaStreamManager()->video_capture_manager();
 }
+
+}  // namespace content

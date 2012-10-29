@@ -542,7 +542,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   channel_->AddFilter(resource_message_filter);
   media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
-  media_stream::MediaStreamManager* media_stream_manager =
+  MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetMediaStreamManager();
   channel_->AddFilter(new AudioInputRendererHost(audio_manager,
                                                  media_stream_manager));
@@ -565,7 +565,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
   channel_->AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
-  channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(GetID()));
+  channel_->AddFilter(new MediaStreamDispatcherHost(GetID()));
 #endif
   channel_->AddFilter(
       GetContentClient()->browser()->AllowPepperPrivateFileAPI() ?

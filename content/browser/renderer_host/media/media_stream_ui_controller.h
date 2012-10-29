@@ -27,20 +27,15 @@
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-
-namespace media_stream {
-class SettingsRequester;
-}
-
 namespace content {
-
 class MediaStreamRequestForUI;
+class SettingsRequester;
 
 // MediaStreamUIController is responsible for getting user permission to use
 // a media capture device as well as selecting what device to use.
 class CONTENT_EXPORT MediaStreamUIController {
  public:
-  explicit MediaStreamUIController(media_stream::SettingsRequester* requester);
+  explicit MediaStreamUIController(SettingsRequester* requester);
   virtual ~MediaStreamUIController();
 
   // Called when a new request for the capture device access is made.
@@ -49,7 +44,7 @@ class CONTENT_EXPORT MediaStreamUIController {
   void MakeUIRequest(const std::string& label,
                      int render_process_id,
                      int render_view_id,
-                     const media_stream::StreamOptions& stream_components,
+                     const StreamOptions& stream_components,
                      const GURL& security_origin);
 
   // Called to cancel a pending UI request of capture device access when the
@@ -63,7 +58,7 @@ class CONTENT_EXPORT MediaStreamUIController {
   void AddAvailableDevicesToRequest(
       const std::string& label,
       MediaStreamDeviceType stream_type,
-      const media_stream::StreamDeviceInfoArray& devices);
+      const StreamDeviceInfoArray& devices);
 
   // Called by the InfoBar when the user grants/denies access to some devices
   // to the webpage. This is placed here, so the request can be cleared from the
@@ -71,19 +66,19 @@ class CONTENT_EXPORT MediaStreamUIController {
   // the requester. An empty list of devices means that access has been denied.
   // This method must be called on the IO thread.
   void PostResponse(const std::string& label,
-                    const content::MediaStreamDevices& devices);
+                    const MediaStreamDevices& devices);
 
   // Called to signal the UI indicator that the devices are opened.
   void NotifyUIIndicatorDevicesOpened(
       int render_process_id,
       int render_view_id,
-      const content::MediaStreamDevices& devices);
+      const MediaStreamDevices& devices);
 
   // Called to signal the UI indicator that the devices are closed.
   void NotifyUIIndicatorDevicesClosed(
       int render_process_id,
       int render_view_id,
-      const content::MediaStreamDevices& devices);
+      const MediaStreamDevices& devices);
 
   // Used for testing only. This function is called to use faked UI, which is
   // needed for server based tests. The first non-opened device(s) will be
@@ -107,7 +102,7 @@ class CONTENT_EXPORT MediaStreamUIController {
   // Posts a request to fake UI which is used for testing purpose.
   void PostRequestToFakeUI(const std::string& label);
 
-  media_stream::SettingsRequester* requester_;
+  SettingsRequester* requester_;
   UIRequests requests_;
 
   // See comment above for method UseFakeUI. Used for automated testing.

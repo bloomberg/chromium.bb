@@ -49,7 +49,7 @@ class RtcVideoCapturer
 
   const bool is_screencast_;
   scoped_refptr<RtcVideoCaptureDelegate> delegate_;
-  video_capture::State state_;
+  VideoCaptureState state_;
   base::Time start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcVideoCapturer);

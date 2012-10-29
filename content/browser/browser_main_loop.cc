@@ -217,7 +217,7 @@ media::AudioManager* BrowserMainLoop::GetAudioManager() {
 }
 
 // static
-media_stream::MediaStreamManager* BrowserMainLoop::GetMediaStreamManager() {
+MediaStreamManager* BrowserMainLoop::GetMediaStreamManager() {
   return g_current_browser_main_loop->media_stream_manager_.get();
 }
 // BrowserMainLoop construction / destruction =============================
@@ -342,8 +342,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 
   online_state_observer_.reset(new BrowserOnlineStateObserver);
-  media_stream_manager_.reset(
-      new media_stream::MediaStreamManager(audio_manager_.get()));
+  media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 
   // Prior to any processing happening on the io thread, we create the
   // plugin service as it is predominantly used from the io thread,

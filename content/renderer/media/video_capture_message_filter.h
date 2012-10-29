@@ -35,7 +35,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
 
     // Called when state of a video capture device has changed in the browser
     // process.
-    virtual void OnStateChanged(video_capture::State state) = 0;
+    virtual void OnStateChanged(VideoCaptureState state) = 0;
 
     // Called when device info is received from video capture device in the
     // browser process.
@@ -86,8 +86,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
                         int buffer_id, base::Time timestamp);
 
   // State of browser process' video capture device has changed.
-  void OnDeviceStateChanged(int device_id,
-                            video_capture::State state);
+  void OnDeviceStateChanged(int device_id, VideoCaptureState state);
 
   // Receive device info from browser process.
   void OnDeviceInfoReceived(int device_id,

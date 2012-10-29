@@ -41,18 +41,14 @@ namespace base {
 class Thread;
 }
 
-namespace content {
-class MediaStreamUIController;
-}
-
 namespace media {
 class AudioManager;
 }
 
-namespace media_stream {
-
+namespace content {
 class AudioInputDeviceManager;
 class MediaStreamDeviceSettings;
+class MediaStreamUIController;
 class MediaStreamRequester;
 class VideoCaptureManager;
 
@@ -141,12 +137,12 @@ class CONTENT_EXPORT MediaStreamManager
   // are not used anymore, otherwise UI will leak.
   void NotifyUIDevicesOpened(int render_process_id,
                              int render_view_id,
-                             const content::MediaStreamDevices& devices);
+                             const MediaStreamDevices& devices);
 
   // Signals the UI that the devices are being closed.
   void NotifyUIDevicesClosed(int render_process_id,
                              int render_view_id,
-                             const content::MediaStreamDevices& devices);
+                             const MediaStreamDevices& devices);
 
   // Implements MediaStreamProviderListener.
   virtual void Opened(MediaStreamType stream_type,
@@ -195,7 +191,7 @@ class CONTENT_EXPORT MediaStreamManager
   void NotifyDevicesOpened(const DeviceRequest& request);
   void NotifyDevicesClosed(const DeviceRequest& request);
   void DevicesFromRequest(const DeviceRequest& request,
-                          content::MediaStreamDevices* devices);
+                          MediaStreamDevices* devices);
 
   // Helpers.
   bool RequestDone(const MediaStreamManager::DeviceRequest& request) const;
@@ -226,7 +222,7 @@ class CONTENT_EXPORT MediaStreamManager
   // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
   scoped_ptr<base::Thread> device_thread_;
 
-  scoped_ptr<content::MediaStreamUIController> ui_controller_;
+  scoped_ptr<MediaStreamUIController> ui_controller_;
 
   media::AudioManager* const audio_manager_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
@@ -242,7 +238,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Keeps track of live enumeration commands sent to VideoCaptureManager or
   // AudioInputDeviceManager, in order to only enumerate when necessary.
-  int active_enumeration_ref_count_[content::NUM_MEDIA_TYPES];
+  int active_enumeration_ref_count_[NUM_MEDIA_TYPES];
 
   // All non-closed request.
   typedef std::map<std::string, DeviceRequest> DeviceRequests;
@@ -258,6 +254,6 @@ class CONTENT_EXPORT MediaStreamManager
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };
 
-}  // namespace media_stream
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_MANAGER_H_

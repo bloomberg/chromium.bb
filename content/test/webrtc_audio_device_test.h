@@ -22,10 +22,6 @@ namespace media {
 class AudioManager;
 }
 
-namespace media_stream {
-class MediaStreamManager;
-}
-
 namespace net {
 class URLRequestContext;
 }
@@ -47,6 +43,7 @@ namespace content {
 class AudioInputRendererHost;
 class AudioRendererHost;
 class ContentRendererClient;
+class MediaStreamManager;
 class MockResourceContext;
 class RenderThreadImpl;
 class ResourceContext;
@@ -166,7 +163,7 @@ class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
   RenderThreadImpl* render_thread_;  // Owned by mock_process_.
   scoped_ptr<WebRTCMockRenderProcess> mock_process_;
   scoped_ptr<MockMediaObserver> media_observer_;
-  scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
+  scoped_ptr<MediaStreamManager> media_stream_manager_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<net::URLRequestContext> test_request_context_;
   scoped_ptr<content::ResourceContext> resource_context_;

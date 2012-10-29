@@ -13,9 +13,7 @@
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_manager_base.h"
 
-using content::BrowserThread;
-
-namespace media_stream {
+namespace content {
 
 const int AudioInputDeviceManager::kFakeOpenSessionId = 1;
 
@@ -136,7 +134,7 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread() {
        ++it) {
     // NOTE: Only support enumeration of the MEDIA_DEVICE_AUDIO_CAPTURE type.
     devices->push_back(StreamDeviceInfo(
-        content::MEDIA_DEVICE_AUDIO_CAPTURE, it->device_name,
+        MEDIA_DEVICE_AUDIO_CAPTURE, it->device_name,
         it->unique_id, false));
   }
 
@@ -175,7 +173,7 @@ void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
   StreamDeviceMap::iterator it = devices_.find(session_id);
   if (it == devices_.end())
     return;
-  const content::MediaStreamDeviceType stream_type = it->second.stream_type;
+  const MediaStreamDeviceType stream_type = it->second.stream_type;
   devices_.erase(it);
 
   // Post a callback through the listener on IO thread since
@@ -194,20 +192,19 @@ void AudioInputDeviceManager::DevicesEnumeratedOnIOThread(
   scoped_ptr<StreamDeviceInfoArray> devices_array(devices);
   if (listener_) {
     // NOTE: Only support enumeration of the MEDIA_DEVICE_AUDIO_CAPTURE type.
-    listener_->DevicesEnumerated(content::MEDIA_DEVICE_AUDIO_CAPTURE,
-                                 *devices_array);
+    listener_->DevicesEnumerated(MEDIA_DEVICE_AUDIO_CAPTURE, *devices_array);
   }
 }
 
 void AudioInputDeviceManager::OpenedOnIOThread(
-    content::MediaStreamDeviceType stream_type, int session_id) {
+    MediaStreamDeviceType stream_type, int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (listener_)
     listener_->Opened(stream_type, session_id);
 }
 
 void AudioInputDeviceManager::ClosedOnIOThread(
-    content::MediaStreamDeviceType stream_type, int session_id) {
+    MediaStreamDeviceType stream_type, int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (listener_)
     listener_->Closed(stream_type, session_id);
@@ -217,4 +214,4 @@ bool AudioInputDeviceManager::IsOnDeviceThread() const {
   return device_loop_->BelongsToCurrentThread();
 }
 
-}  // namespace media_stream
+}  // namespace content

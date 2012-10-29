@@ -43,7 +43,7 @@ class MockAudioRendererHost : public AudioRendererHost {
  public:
   explicit MockAudioRendererHost(
       media::AudioManager* audio_manager,
-      content::MediaObserver* media_observer)
+      MediaObserver* media_observer)
       : AudioRendererHost(audio_manager, media_observer),
         shared_memory_length_(0) {
   }

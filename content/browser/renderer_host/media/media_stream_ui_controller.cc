@@ -20,10 +20,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "googleurl/src/gurl.h"
 
-using content::BrowserThread;
-using content::MediaStreamDevice;
-using content::MediaStreamRequest;
-
+namespace content {
 namespace {
 
 // Helper class to handle the callbacks to a MediaStreamUIController instance.
@@ -39,16 +36,16 @@ class ResponseCallbackHelper
     : public base::RefCountedThreadSafe<ResponseCallbackHelper> {
  public:
   explicit ResponseCallbackHelper(
-      base::WeakPtr<content::MediaStreamUIController> controller)
+      base::WeakPtr<MediaStreamUIController> controller)
       : controller_(controller) {
   }
 
   void PostResponse(const std::string& label,
-                    const content::MediaStreamDevices& devices) {
+                    const MediaStreamDevices& devices) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&content::MediaStreamUIController::PostResponse,
+          base::Bind(&MediaStreamUIController::PostResponse,
                      controller_, label, devices));
       return;
     } else if (controller_) {
@@ -60,24 +57,22 @@ class ResponseCallbackHelper
   friend class base::RefCountedThreadSafe<ResponseCallbackHelper>;
   ~ResponseCallbackHelper() {}
 
-  base::WeakPtr<content::MediaStreamUIController> controller_;
+  base::WeakPtr<MediaStreamUIController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseCallbackHelper);
 };
 
 }  // namespace
 
-namespace content {
-
 // UI request contains all data needed to keep track of requests between the
 // different calls.
-class MediaStreamRequestForUI : public content::MediaStreamRequest {
+class MediaStreamRequestForUI : public MediaStreamRequest {
  public:
   MediaStreamRequestForUI(
       int render_pid,
       int render_vid,
       const GURL& origin,
-      const media_stream::StreamOptions& options)
+      const StreamOptions& options)
       : MediaStreamRequest(render_pid, render_vid, origin),
         wait_for_audio(IsAudioMediaType(options.audio_type)),
         wait_for_video(IsVideoMediaType(options.video_type)),
@@ -113,13 +108,12 @@ void ProceedMediaAccessPermission(const MediaStreamRequestForUI& request,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Send the permission request to the web contents.
-  content::RenderViewHostImpl* host =
-      content::RenderViewHostImpl::FromID(request.render_process_id,
-                                          request.render_view_id);
+  RenderViewHostImpl* host = RenderViewHostImpl::FromID(
+      request.render_process_id, request.render_view_id);
 
   // Tab may have gone away.
   if (!host || !host->GetDelegate()) {
-    callback.Run(content::MediaStreamDevices());
+    callback.Run(MediaStreamDevices());
     return;
   }
 
@@ -129,7 +123,7 @@ void ProceedMediaAccessPermission(const MediaStreamRequestForUI& request,
 }  // namespace
 
 MediaStreamUIController::MediaStreamUIController(
-    media_stream::SettingsRequester* requester)
+    SettingsRequester* requester)
     : requester_(requester),
       use_fake_ui_(false),
       weak_ptr_factory_(this) {
@@ -142,7 +136,7 @@ MediaStreamUIController::~MediaStreamUIController() {
 
 void MediaStreamUIController::MakeUIRequest(
     const std::string& label, int render_process_id, int render_view_id,
-    const media_stream::StreamOptions& request_options,
+    const StreamOptions& request_options,
     const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -183,7 +177,7 @@ void MediaStreamUIController::CancelUIRequest(const std::string& label) {
 void MediaStreamUIController::AddAvailableDevicesToRequest(
     const std::string& label,
     MediaStreamDeviceType stream_type,
-    const media_stream::StreamDeviceInfoArray& devices) {
+    const StreamDeviceInfoArray& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   UIRequests::const_iterator request_iter = requests_.find(label);
@@ -196,10 +190,9 @@ void MediaStreamUIController::AddAvailableDevicesToRequest(
   MediaStreamRequestForUI* request = request_iter->second;
 
   // Create the simplified list of devices.
-  content::MediaStreamDevices& requested_devices =
-      request->devices[stream_type];
+  MediaStreamDevices& requested_devices = request->devices[stream_type];
   DCHECK(requested_devices.empty());
-  for (media_stream::StreamDeviceInfoArray::const_iterator it = devices.begin();
+  for (StreamDeviceInfoArray::const_iterator it = devices.begin();
        it != devices.end();
        ++it) {
     requested_devices.push_back(MediaStreamDevice(stream_type,
@@ -234,7 +227,7 @@ void MediaStreamUIController::AddAvailableDevicesToRequest(
 
 void MediaStreamUIController::PostResponse(
     const std::string& label,
-    const content::MediaStreamDevices& devices) {
+    const MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UIRequests::iterator request_iter = requests_.find(label);
   // Return if the request has been removed.
@@ -252,12 +245,12 @@ void MediaStreamUIController::PostResponse(
 
   if (devices.size() > 0) {
     // Build a list of "full" device objects for the accepted devices.
-    media_stream::StreamDeviceInfoArray device_list;
+    StreamDeviceInfoArray device_list;
     // TODO(xians): figure out if it is all right to hard code in_use to false,
     // though DevicesAccepted seems to do so.
     for (MediaStreamDevices::const_iterator dev = devices.begin();
          dev != devices.end(); ++dev) {
-      device_list.push_back(media_stream::StreamDeviceInfo(
+      device_list.push_back(StreamDeviceInfo(
           dev->type, dev->name, dev->device_id, false));
     }
 
@@ -270,11 +263,11 @@ void MediaStreamUIController::PostResponse(
 void MediaStreamUIController::NotifyUIIndicatorDevicesOpened(
     int render_process_id,
     int render_view_id,
-    const content::MediaStreamDevices& devices) {
+    const MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!devices.empty());
-  content::MediaObserver* media_observer =
-      content::GetContentClient()->browser()->GetMediaObserver();
+  MediaObserver* media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
   if (media_observer == NULL)
     return;
 
@@ -286,11 +279,11 @@ void MediaStreamUIController::NotifyUIIndicatorDevicesOpened(
 void MediaStreamUIController::NotifyUIIndicatorDevicesClosed(
     int render_process_id,
     int render_view_id,
-    const content::MediaStreamDevices& devices) {
+    const MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!devices.empty());
-  content::MediaObserver* media_observer =
-      content::GetContentClient()->browser()->GetMediaObserver();
+  MediaObserver* media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
   if (media_observer == NULL)
     return;
 
@@ -355,7 +348,7 @@ void MediaStreamUIController::PostRequestToUI(const std::string& label) {
 
   scoped_refptr<ResponseCallbackHelper> helper =
       new ResponseCallbackHelper(weak_ptr_factory_.GetWeakPtr());
-  content::MediaResponseCallback callback =
+  MediaResponseCallback callback =
       base::Bind(&ResponseCallbackHelper::PostResponse,
                  helper.get(), label);
 
@@ -386,4 +379,4 @@ void MediaStreamUIController::PostRequestToFakeUI(const std::string& label) {
                  weak_ptr_factory_.GetWeakPtr(), label, devices_to_use));
 }
 
-}  // namespace media_stream
+}  // namespace content

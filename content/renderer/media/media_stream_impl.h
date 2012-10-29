@@ -79,17 +79,17 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void OnStreamGenerated(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfoArray& audio_array,
-      const media_stream::StreamDeviceInfoArray& video_array) OVERRIDE;
+      const StreamDeviceInfoArray& audio_array,
+      const StreamDeviceInfoArray& video_array) OVERRIDE;
   virtual void OnStreamGenerationFailed(int request_id) OVERRIDE;
   virtual void OnDevicesEnumerated(
       int request_id,
-      const media_stream::StreamDeviceInfoArray& device_array) OVERRIDE;
+      const StreamDeviceInfoArray& device_array) OVERRIDE;
   virtual void OnDevicesEnumerationFailed(int request_id) OVERRIDE;
   virtual void OnDeviceOpened(
       int request_id,
       const std::string& label,
-      const media_stream::StreamDeviceInfo& device_info) OVERRIDE;
+      const StreamDeviceInfo& device_info) OVERRIDE;
   virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
 
   // RenderViewObserver OVERRIDE

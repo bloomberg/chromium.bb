@@ -12,7 +12,9 @@
 #include "media/base/media_log_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class MockMediaObserver : public content::MediaObserver {
+namespace content {
+
+class MockMediaObserver : public MediaObserver {
  public:
   MockMediaObserver();
   virtual ~MockMediaObserver();
@@ -29,14 +31,16 @@ class MockMediaObserver : public content::MediaObserver {
                void(int source, const media::MediaLogEvent& event));
   MOCK_METHOD3(OnCaptureDevicesOpened,
                void(int render_process_id, int render_view_id,
-                    const content::MediaStreamDevices& devices));
+                    const MediaStreamDevices& devices));
   MOCK_METHOD3(OnCaptureDevicesClosed,
                void(int render_process_id, int render_view_id,
-                    const content::MediaStreamDevices& devices));
+                    const MediaStreamDevices& devices));
   MOCK_METHOD4(OnMediaRequestStateChanged,
                void(int render_process_id, int render_view_id,
-                    const content::MediaStreamDevice& device,
-                    const content::MediaRequestState state));
+                    const MediaStreamDevice& device,
+                    const MediaRequestState state));
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MOCK_MEDIA_OBSERVER_H_

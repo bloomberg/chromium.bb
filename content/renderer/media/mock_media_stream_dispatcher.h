@@ -21,7 +21,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   virtual void GenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      const media_stream::StreamOptions& components,
+      const StreamOptions& components,
       const GURL& url) OVERRIDE;
   virtual void StopStream(const std::string& label) OVERRIDE;
   virtual bool IsStream(const std::string& label) OVERRIDE;
@@ -32,12 +32,8 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   int request_stream_counter() const { return request_stream_counter_; }
   int stop_stream_counter() const { return stop_stream_counter_; }
   const std::string& stream_label() const { return stream_label_;}
-  media_stream::StreamDeviceInfoArray audio_array() const {
-    return audio_array_;
-  }
-  media_stream::StreamDeviceInfoArray video_array() const {
-    return video_array_;
-  }
+  StreamDeviceInfoArray audio_array() const { return audio_array_; }
+  StreamDeviceInfoArray video_array() const { return video_array_; }
 
  private:
   int request_id_;
@@ -46,8 +42,8 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   int stop_stream_counter_;
 
   std::string stream_label_;
-  media_stream::StreamDeviceInfoArray audio_array_;
-  media_stream::StreamDeviceInfoArray video_array_;
+  StreamDeviceInfoArray audio_array_;
+  StreamDeviceInfoArray video_array_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamDispatcher);
 };

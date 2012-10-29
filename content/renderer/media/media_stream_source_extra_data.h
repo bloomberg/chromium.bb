@@ -17,11 +17,11 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
     : NON_EXPORTED_BASE(public WebKit::WebMediaStreamSource::ExtraData) {
  public:
   explicit MediaStreamSourceExtraData(
-      const media_stream::StreamDeviceInfo& device_info);
+      const StreamDeviceInfo& device_info);
   virtual ~MediaStreamSourceExtraData();
 
   // Return device information about the camera or microphone.
-  const media_stream::StreamDeviceInfo& device_info() const {
+  const StreamDeviceInfo& device_info() const {
     return device_info_;
   }
 
@@ -32,7 +32,7 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
   webrtc::VideoSourceInterface* video_source() { return video_source_; }
 
  private:
-  media_stream::StreamDeviceInfo device_info_;
+  StreamDeviceInfo device_info_;
   scoped_refptr<webrtc::VideoSourceInterface> video_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamSourceExtraData);

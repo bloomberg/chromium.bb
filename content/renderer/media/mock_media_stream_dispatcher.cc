@@ -21,7 +21,7 @@ MockMediaStreamDispatcher::~MockMediaStreamDispatcher() {}
 void MockMediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    const media_stream::StreamOptions& components,
+    const StreamOptions& components,
     const GURL& url) {
   request_id_ = request_id;
 
@@ -30,7 +30,7 @@ void MockMediaStreamDispatcher::GenerateStream(
   video_array_.clear();
 
   if (IsAudioMediaType(components.audio_type)) {
-    media_stream::StreamDeviceInfo audio;
+    StreamDeviceInfo audio;
     audio.device_id = "audio_device_id";
     audio.name = "microphone";
     audio.stream_type = components.audio_type;
@@ -38,7 +38,7 @@ void MockMediaStreamDispatcher::GenerateStream(
     audio_array_.push_back(audio);
   }
   if (IsVideoMediaType(components.video_type)) {
-    media_stream::StreamDeviceInfo video;
+    StreamDeviceInfo video;
     video.device_id = "video_device_id";
     video.name = "usb video camera";
     video.stream_type = components.video_type;

@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+namespace content {
 namespace {
 const int kTestWidth = 1280;
 const int kTestHeight = 720;
@@ -27,10 +28,9 @@ const SkColor kNotInterested = ~kNothingYet;
 // A stub implementation which returns solid-color bitmaps in calls to
 // CopyFromBackingStore().  The unit tests can change the color for successive
 // captures.
-class StubRenderWidgetHost : public content::RenderWidgetHostImpl {
+class StubRenderWidgetHost : public RenderWidgetHostImpl {
  public:
-  StubRenderWidgetHost(content::RenderProcessHost* process,
-                       int routing_id)
+  StubRenderWidgetHost(RenderProcessHost* process, int routing_id)
       : RenderWidgetHostImpl(&delegate_, process, routing_id),
         color_(kNothingYet) {}
 
@@ -55,8 +55,7 @@ class StubRenderWidgetHost : public content::RenderWidgetHostImpl {
   }
 
  private:
-  class StubRenderWidgetHostDelegate
-      : public content::RenderWidgetHostDelegate {
+  class StubRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
    public:
     StubRenderWidgetHostDelegate() {}
     virtual ~StubRenderWidgetHostDelegate() {}
@@ -154,16 +153,14 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
 
     // The CopyFromBackingStore and WebContents tracking occur on the UI thread.
-    ui_thread_.reset(
-        new content::BrowserThreadImpl(content::BrowserThread::UI));
+    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI));
     ui_thread_->Start();
 
     // And the rest...
-    browser_context_.reset(new content::TestBrowserContext());
+    browser_context_.reset(new TestBrowserContext());
     source_.reset(new StubRenderWidgetHost(
-        new content::MockRenderProcessHost(browser_context_.get()),
-        MSG_ROUTING_NONE));
-    device_.reset(content::WebContentsVideoCaptureDevice::CreateForTesting(
+        new MockRenderProcessHost(browser_context_.get()), MSG_ROUTING_NONE));
+    device_.reset(WebContentsVideoCaptureDevice::CreateForTesting(
         source_.get()));
     consumer_.reset(new StubConsumer);
   }
@@ -187,8 +184,8 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
  private:
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<content::BrowserThreadImpl> ui_thread_;
-  scoped_ptr<content::TestBrowserContext> browser_context_;
+  scoped_ptr<BrowserThreadImpl> ui_thread_;
+  scoped_ptr<TestBrowserContext> browser_context_;
   scoped_ptr<StubRenderWidgetHost> source_;
   scoped_ptr<media::VideoCaptureDevice> device_;
   scoped_ptr<StubConsumer> consumer_;
@@ -220,3 +217,5 @@ TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
   device()->Allocate(1280, 720, -2, consumer());
   EXPECT_FALSE(consumer()->WaitForNextColorOrError(kNotInterested));
 }
+
+}  // namespace content
