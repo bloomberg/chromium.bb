@@ -125,7 +125,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
   virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+      const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
       bool opaque,
       bool root) OVERRIDE;
@@ -200,7 +200,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 // this.
 //
 // Note that users outside of content must use this class by getting
-// the separate content::RenderViewHostTester interface via
+// the separate RenderViewHostTester interface via
 // RenderViewHostTester::For(rvh) on the RenderViewHost they want to
 // drive tests on.
 //
@@ -332,8 +332,7 @@ class TestRenderViewHost
 #endif
 
 // Adds methods to get straight at the impl classes.
-class RenderViewHostImplTestHarness
-    : public content::RenderViewHostTestHarness {
+class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
  public:
   RenderViewHostImplTestHarness();
   virtual ~RenderViewHostImplTestHarness();

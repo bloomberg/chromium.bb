@@ -20,9 +20,8 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
-using content::NativeWebKeyboardEvent;
-using content::RenderWidgetHostImpl;
 
+namespace content {
 namespace {
 
 // Maps a java KeyEvent into a NativeWebKeyboardEvent.
@@ -50,8 +49,6 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
 }
 
 }  // anonymous namespace
-
-namespace content {
 
 bool RegisterImeAdapter(JNIEnv* env) {
   if (!RegisterNativesImpl(env))

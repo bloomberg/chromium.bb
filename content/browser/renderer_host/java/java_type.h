@@ -9,6 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 
+namespace content {
+
 // The type of a Java value. A light-weight enum-like structure intended for
 // use by value and in STL containers.
 struct JavaType {
@@ -42,5 +44,7 @@ struct JavaType {
   Type type;
   scoped_ptr<JavaType> inner_type;  // Used for TypeArray only.
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_TYPE_H_

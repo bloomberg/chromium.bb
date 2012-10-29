@@ -14,7 +14,6 @@ class RenderViewHostDelegate;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
-}
 
 // A factory for creating RenderViewHosts. There is a global factory function
 // that can be installed for the purposes of testing to provide a specialized
@@ -24,13 +23,13 @@ class RenderViewHostFactory {
   // Creates a RenderViewHost using the currently registered factory, or the
   // default one if no factory is registered. Ownership of the returned
   // pointer will be passed to the caller.
-  static content::RenderViewHost* Create(
-      content::SiteInstance* instance,
-      content::RenderViewHostDelegate* delegate,
-      content::RenderWidgetHostDelegate* widget_delegate,
+  static RenderViewHost* Create(
+      SiteInstance* instance,
+      RenderViewHostDelegate* delegate,
+      RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       bool swapped_out,
-      content::SessionStorageNamespace* session_storage);
+      SessionStorageNamespace* session_storage);
 
   // Returns true if there is currently a globally-registered factory.
   static bool has_factory() {
@@ -43,13 +42,13 @@ class RenderViewHostFactory {
 
   // You can derive from this class and specify an implementation for this
   // function to create a different kind of RenderViewHost for testing.
-  virtual content::RenderViewHost* CreateRenderViewHost(
-      content::SiteInstance* instance,
-      content::RenderViewHostDelegate* delegate,
-      content::RenderWidgetHostDelegate* widget_delegate,
+  virtual RenderViewHost* CreateRenderViewHost(
+      SiteInstance* instance,
+      RenderViewHostDelegate* delegate,
+      RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       bool swapped_out,
-      content::SessionStorageNamespace* session_storage_namespace) = 0;
+      SessionStorageNamespace* session_storage_namespace) = 0;
 
   // Registers your factory to be called when new RenderViewHosts are created.
   // We have only one global factory, so there must be no factory registered
@@ -68,5 +67,6 @@ class RenderViewHostFactory {
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostFactory);
 };
 
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_FACTORY_H_

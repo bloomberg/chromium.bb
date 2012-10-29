@@ -18,15 +18,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
-using content::MockRenderProcessHost;
-using content::MockRenderProcessHostFactory;
-using content::RenderWidgetHostImpl;
-
-namespace {
+namespace content {
 
 const int64 kTaskDelayMs = 200;
 
-class MockRenderWidgetHostDelegate : public content::RenderWidgetHostDelegate {
+class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
   virtual ~MockRenderWidgetHostDelegate() {}
@@ -77,7 +73,7 @@ class TextInputClientMacTest : public testing::Test {
   friend class ScopedTestingThread;
 
   MessageLoop message_loop_;
-  content::TestBrowserContext browser_context_;
+  TestBrowserContext browser_context_;
 
   // Gets deleted when the last RWH in the "process" gets destroyed.
   MockRenderProcessHostFactory process_factory_;
@@ -230,4 +226,4 @@ TEST_F(TextInputClientMacTest, TimeoutSubstring) {
       TextInputClientMsg_StringForRange::ID));
 }
 
-}  // namespace
+}  // namespace content

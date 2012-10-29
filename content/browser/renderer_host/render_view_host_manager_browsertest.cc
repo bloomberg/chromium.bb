@@ -29,23 +29,22 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
-using content::WebContentsImpl;
-
+namespace content {
 namespace {
 
 bool CompareTrees(base::DictionaryValue* first, base::DictionaryValue* second) {
   string16 name1;
   string16 name2;
-  if (!first->GetString(content::kFrameTreeNodeNameKey, &name1) ||
-      !second->GetString(content::kFrameTreeNodeNameKey, &name2))
+  if (!first->GetString(kFrameTreeNodeNameKey, &name1) ||
+      !second->GetString(kFrameTreeNodeNameKey, &name2))
     return false;
   if (name1 != name2)
     return false;
 
   int id1 = 0;
   int id2 = 0;
-  if (!first->GetInteger(content::kFrameTreeNodeIdKey, &id1) ||
-      !second->GetInteger(content::kFrameTreeNodeIdKey, &id2)) {
+  if (!first->GetInteger(kFrameTreeNodeIdKey, &id1) ||
+      !second->GetInteger(kFrameTreeNodeIdKey, &id2)) {
     return false;
   }
   if (id1 != id2)
@@ -53,8 +52,8 @@ bool CompareTrees(base::DictionaryValue* first, base::DictionaryValue* second) {
 
   ListValue* subtree1 = NULL;
   ListValue* subtree2 = NULL;
-  bool result1 = first->GetList(content::kFrameTreeNodeSubtreeKey, &subtree1);
-  bool result2 = second->GetList(content::kFrameTreeNodeSubtreeKey, &subtree2);
+  bool result1 = first->GetList(kFrameTreeNodeSubtreeKey, &subtree1);
+  bool result2 = second->GetList(kFrameTreeNodeSubtreeKey, &subtree2);
   if (!result1 && !result2)
     return true;
   if (!result1 || !result2)
@@ -77,7 +76,7 @@ bool CompareTrees(base::DictionaryValue* first, base::DictionaryValue* second) {
   return true;
 }
 
-base::DictionaryValue* GetTree(content::RenderViewHostImpl* rvh) {
+base::DictionaryValue* GetTree(RenderViewHostImpl* rvh) {
   std::string frame_tree = rvh->frame_tree();
   EXPECT_FALSE(frame_tree.empty());
   base::Value* v = base::JSONReader::Read(frame_tree);
@@ -88,8 +87,6 @@ base::DictionaryValue* GetTree(content::RenderViewHostImpl* rvh) {
 }
 
 } // namespace
-
-namespace content {
 
 class RenderViewHostManagerTest : public ContentBrowserTest {
  public:
@@ -1065,7 +1062,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
 
   // Let's ensure that when we start with a blank window, navigating away to a
   // view-source URL, we create a new SiteInstance.
-  content::RenderViewHost* blank_rvh = shell()->web_contents()->
+  RenderViewHost* blank_rvh = shell()->web_contents()->
       GetRenderViewHost();
   SiteInstance* blank_site_instance = blank_rvh->GetSiteInstance();
   EXPECT_EQ(shell()->web_contents()->GetURL(), GURL::EmptyGURL());
@@ -1148,11 +1145,11 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DISABLED_FrameTreeUpdates) {
   RenderViewHostManager* opener_rvhm = static_cast<WebContentsImpl*>(
       opener_contents)->GetRenderManagerForTesting();
   frames = GetTree(opener_rvhm->current_host());
-  EXPECT_FALSE(frames->GetList(content::kFrameTreeNodeSubtreeKey, &subtree));
+  EXPECT_FALSE(frames->GetList(kFrameTreeNodeSubtreeKey, &subtree));
 
   NavigateToURL(shell(), frame_tree_url);
   frames = GetTree(opener_rvhm->current_host());
-  EXPECT_TRUE(frames->GetList(content::kFrameTreeNodeSubtreeKey, &subtree));
+  EXPECT_TRUE(frames->GetList(kFrameTreeNodeSubtreeKey, &subtree));
   EXPECT_TRUE(subtree->GetSize() == 3);
 
   scoped_refptr<SiteInstance> orig_site_instance(
@@ -1247,14 +1244,14 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DISABLED_FrameTreeUpdates) {
       &success));
   EXPECT_TRUE(success);
   frames = GetTree(opener_rvhm->current_host());
-  EXPECT_TRUE(frames->GetList(content::kFrameTreeNodeSubtreeKey, &subtree));
+  EXPECT_TRUE(frames->GetList(kFrameTreeNodeSubtreeKey, &subtree));
   EXPECT_EQ(subtree->GetSize(), 2U);
 
   // Create a load observer for the iframe that will be created by the
   // JavaScript code we will execute.
   WindowedNotificationObserver load_observer(
       NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
+      Source<NavigationController>(
               &opener_contents->GetController()));
   EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
       opener_contents->GetRenderViewHost(), L"",
@@ -1264,7 +1261,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DISABLED_FrameTreeUpdates) {
   load_observer.Wait();
 
   frames = GetTree(opener_rvhm->current_host());
-  EXPECT_TRUE(frames->GetList(content::kFrameTreeNodeSubtreeKey, &subtree));
+  EXPECT_TRUE(frames->GetList(kFrameTreeNodeSubtreeKey, &subtree));
   EXPECT_EQ(subtree->GetSize(), 3U);
 
   EXPECT_TRUE(CompareTrees(

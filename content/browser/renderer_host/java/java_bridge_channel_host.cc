@@ -12,6 +12,7 @@
 
 using base::WaitableEvent;
 
+namespace content {
 namespace {
 struct WaitableEventLazyInstanceTraits
     : public base::DefaultLazyInstanceTraits<WaitableEvent> {
@@ -80,3 +81,5 @@ bool JavaBridgeChannelHost::OnControlMessageReceived(
 void JavaBridgeChannelHost::OnGenerateRouteID(int* route_id) {
   *route_id = GenerateRouteID();
 }
+
+}  // namespace content

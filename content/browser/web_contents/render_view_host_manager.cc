@@ -34,6 +34,7 @@ using content::NavigationEntryImpl;
 using content::RenderProcessHost;
 using content::RenderProcessHostImpl;
 using content::RenderViewHost;
+using content::RenderViewHostFactory;
 using content::RenderViewHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;

@@ -11,11 +11,10 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
-class MockRenderWidgetHost;
-
 namespace content {
 
 class CoalescedWebTouchEvent;
+class MockRenderWidgetHost;
 class RenderWidgetHostImpl;
 
 // A queue for throttling and coalescing touch-events.
@@ -49,7 +48,7 @@ class TouchEventQueue {
   }
 
  private:
-  friend class ::MockRenderWidgetHost;
+  friend class MockRenderWidgetHost;
 
   CONTENT_EXPORT size_t GetQueueSize() const;
   CONTENT_EXPORT const WebKit::WebTouchEvent& GetLatestEvent() const;

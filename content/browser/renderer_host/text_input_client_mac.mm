@@ -11,8 +11,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
 
-using content::RenderWidgetHost;
-using content::RenderWidgetHostImpl;
+namespace content {
 
 // The amount of time in milliseconds that the browser process will wait for a
 // response from the renderer.
@@ -137,3 +136,5 @@ void TextInputClientMac::BeforeRequest() {
 void TextInputClientMac::AfterRequest() {
   lock_.Release();
 }
+
+}  // namespace content

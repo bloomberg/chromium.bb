@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 
+namespace content {
 namespace {
 
 JavaType JavaTypeFromJNIName(const std::string& jni_name) {
@@ -109,3 +110,5 @@ JavaType JavaType::CreateFromBinaryName(const std::string& binary_name) {
   }
   return result;
 }
+
+}  // namespace content

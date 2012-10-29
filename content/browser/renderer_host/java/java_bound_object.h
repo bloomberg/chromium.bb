@@ -14,6 +14,8 @@
 #include "content/browser/renderer_host/java/java_method.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
+namespace content {
+
 // Wrapper around a Java object.
 //
 // Represents a Java object for use in the Java bridge. Holds a global ref to
@@ -67,5 +69,7 @@ class JavaBoundObject {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(JavaBoundObject);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BOUND_OBJECT_H_

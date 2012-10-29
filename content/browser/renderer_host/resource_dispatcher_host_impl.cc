@@ -85,7 +85,6 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using content::WebContentsImpl;
 using webkit_blob::ShareableFileReference;
 using webkit_glue::ResourceRequestBody;
 

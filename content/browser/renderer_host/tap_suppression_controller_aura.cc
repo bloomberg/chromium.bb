@@ -170,4 +170,4 @@ void TapSuppressionController::MouseDownTimerExpired() {
   }
 }
 
-} // namespace content.
+} // namespace content

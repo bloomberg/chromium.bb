@@ -23,6 +23,8 @@ struct WebPluginGeometry;
 }
 }
 
+namespace content {
+
 class AcceleratedSurfaceContainerMac;
 
 // Helper class that manages the backing store and on-screen rendering
@@ -94,5 +96,7 @@ class AcceleratedSurfaceContainerManagerMac {
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerManagerMac);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_MANAGER_MAC_H_

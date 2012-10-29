@@ -41,6 +41,7 @@ struct WebPluginGeometry;
 }
 }
 
+namespace content {
 class AcceleratedSurfaceContainerManagerMac;
 
 class AcceleratedSurfaceContainerMac {
@@ -152,5 +153,7 @@ class AcceleratedSurfaceContainerMac {
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerMac);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_SURFACE_CONTAINER_MAC_H_

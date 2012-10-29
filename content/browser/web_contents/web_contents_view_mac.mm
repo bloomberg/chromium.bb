@@ -31,6 +31,7 @@
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using content::PopupMenuHelper;
+using content::RenderViewHostFactory;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewMac;
 using content::WebContents;

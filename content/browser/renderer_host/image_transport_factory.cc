@@ -32,14 +32,7 @@
 #include "ui/surface/accelerated_surface_win.h"
 #endif
 
-using content::BrowserGpuChannelHostFactory;
-using content::GLHelper;
-using content::GpuChannelHostFactory;
-using content::GpuDataManagerImpl;
-using content::GpuSurfaceTracker;
-using content::WebGraphicsContext3DCommandBufferImpl;
-using content::WebGraphicsContext3DSwapBuffersClient;
-
+namespace content {
 namespace {
 
 ImageTransportFactory* g_factory;
@@ -428,7 +421,7 @@ class GpuProcessTransportFactory :
     if (!context->Initialize(
         attrs,
         false,
-        content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
       return NULL;
     return context.release();
   }
@@ -495,7 +488,7 @@ void ImageTransportFactory::Initialize() {
   }
   if (ui::IsTestCompositorEnabled()) {
     g_factory = new DefaultTransportFactory();
-    content::WebKitPlatformSupportImpl::SetOffscreenContextFactoryForTest(
+    WebKitPlatformSupportImpl::SetOffscreenContextFactoryForTest(
         CreateTestContext);
   } else {
     g_factory = new GpuProcessTransportFactory();
@@ -514,3 +507,5 @@ void ImageTransportFactory::Terminate() {
 ImageTransportFactory* ImageTransportFactory::GetInstance() {
   return g_factory;
 }
+
+}  // namespace content

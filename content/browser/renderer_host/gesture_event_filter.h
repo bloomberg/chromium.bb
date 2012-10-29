@@ -12,10 +12,8 @@
 #include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
-class MockRenderWidgetHost;
-
 namespace content {
-
+class MockRenderWidgetHost;
 class RenderWidgetHostImpl;
 class TapSuppressionController;
 
@@ -55,7 +53,7 @@ class GestureEventFilter {
   TapSuppressionController* GetTapSuppressionController();
 
  private:
-  friend class ::MockRenderWidgetHost;
+  friend class MockRenderWidgetHost;
 
   // Invoked on the expiration of the timer to release a deferred
   // GestureTapDown to the renderer.

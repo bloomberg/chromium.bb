@@ -16,15 +16,17 @@ namespace ui {
 class Range;
 }
 
+namespace content {
+
 // This is a browser-side message filter that lives on the IO thread to handle
 // replies to messages sent by the TextInputClientMac. See
 // content/browser/renderer_host/text_input_client_mac.h for more information.
 class CONTENT_EXPORT TextInputClientMessageFilter
-    : public content::BrowserMessageFilter {
+    : public BrowserMessageFilter {
  public:
   explicit TextInputClientMessageFilter(int child_id);
 
-  // content::BrowserMessageFilter override:
+  // BrowserMessageFilter override:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -43,5 +45,7 @@ class CONTENT_EXPORT TextInputClientMessageFilter
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_

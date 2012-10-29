@@ -6,7 +6,7 @@
 
 #include "content/port/browser/render_widget_host_view_port.h"
 
-using content::RenderWidgetHostImpl;
+namespace content {
 
 void RenderWidgetHostImpl::OnMsgCreatePluginContainer(
     gfx::PluginWindowHandle id) {
@@ -35,3 +35,5 @@ void RenderWidgetHostImpl::OnMsgDestroyPluginContainer(
     }
   }
 }
+
+}  // namespace content

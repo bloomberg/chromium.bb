@@ -15,7 +15,7 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
 
-using content::BrowserMessageFilter;
+namespace content {
 
 TextInputClientMessageFilter::TextInputClientMessageFilter(int child_id)
     : BrowserMessageFilter(),
@@ -66,3 +66,5 @@ void TextInputClientMessageFilter::OnGotStringFromRange(
     string = nil;
   service->SetSubstringAndSignal(string);
 }
+
+}  // namespace content

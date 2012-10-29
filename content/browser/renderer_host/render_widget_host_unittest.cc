@@ -36,23 +36,13 @@
 #endif
 
 using base::TimeDelta;
-using content::BackingStore;
-using content::BrowserThread;
-using content::BrowserThreadImpl;
-using content::GestureEventFilter;
-using content::MockRenderProcessHost;
-using content::NativeWebKeyboardEvent;
-using content::RenderWidgetHost;
-using content::RenderWidgetHostImpl;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebTouchEvent;
 using WebKit::WebTouchPoint;
 
-namespace gfx {
-class Size;
-}
+namespace content {
 
 #if defined(OS_WIN) || defined(USE_AURA)
 bool TouchEventsAreEquivalent(const ui::TouchEvent& first,
@@ -94,7 +84,7 @@ bool EventListIsSubset(const ScopedVector<ui::TouchEvent>& subset,
 
 class RenderWidgetHostProcess : public MockRenderProcessHost {
  public:
-  explicit RenderWidgetHostProcess(content::BrowserContext* browser_context)
+  explicit RenderWidgetHostProcess(BrowserContext* browser_context)
       : MockRenderProcessHost(browser_context),
         current_update_buf_(NULL),
         update_msg_should_reply_(false),
@@ -173,10 +163,10 @@ bool RenderWidgetHostProcess::WaitForBackingStoreMsg(
 
 // This test view allows us to specify the size, and keep track of acked
 // touch-events.
-class TestView : public content::TestRenderWidgetHostView {
+class TestView : public TestRenderWidgetHostView {
  public:
   explicit TestView(RenderWidgetHostImpl* rwh)
-      : content::TestRenderWidgetHostView(rwh),
+      : TestRenderWidgetHostView(rwh),
         acked_event_count_(0) {
   }
 
@@ -212,7 +202,7 @@ class TestView : public content::TestRenderWidgetHostView {
 
 // MockRenderWidgetHostDelegate --------------------------------------------
 
-class MockRenderWidgetHostDelegate : public content::RenderWidgetHostDelegate {
+class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate()
       : prehandle_keyboard_event_(false),
@@ -273,8 +263,8 @@ class MockRenderWidgetHostDelegate : public content::RenderWidgetHostDelegate {
 class MockRenderWidgetHost : public RenderWidgetHostImpl {
  public:
   MockRenderWidgetHost(
-      content::RenderWidgetHostDelegate* delegate,
-      content::RenderProcessHost* process,
+      RenderWidgetHostDelegate* delegate,
+      RenderProcessHost* process,
       int routing_id)
       : RenderWidgetHostImpl(delegate, process, routing_id),
         unresponsive_timer_fired_(false) {
@@ -349,7 +339,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
 // MockPaintingObserver --------------------------------------------------------
 
-class MockPaintingObserver : public content::NotificationObserver {
+class MockPaintingObserver : public NotificationObserver {
  public:
   void WidgetDidReceivePaintAtSizeAck(RenderWidgetHostImpl* host,
                                       int tag,
@@ -360,15 +350,13 @@ class MockPaintingObserver : public content::NotificationObserver {
   }
 
   void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
-    if (type ==
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    if (type == NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
       std::pair<int, gfx::Size>* size_ack_details =
-          content::Details<std::pair<int, gfx::Size> >(details).ptr();
+          Details<std::pair<int, gfx::Size> >(details).ptr();
       WidgetDidReceivePaintAtSizeAck(
-          RenderWidgetHostImpl::From(
-              content::Source<RenderWidgetHost>(source).ptr()),
+          RenderWidgetHostImpl::From(Source<RenderWidgetHost>(source).ptr()),
           size_ack_details->first,
           size_ack_details->second);
     }
@@ -397,7 +385,7 @@ class RenderWidgetHostTest : public testing::Test {
  protected:
   // testing::Test
   void SetUp() {
-    browser_context_.reset(new content::TestBrowserContext());
+    browser_context_.reset(new TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
     host_.reset(
@@ -526,7 +514,7 @@ class RenderWidgetHostTest : public testing::Test {
 
   MessageLoopForUI message_loop_;
 
-  scoped_ptr<content::TestBrowserContext> browser_context_;
+  scoped_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
   scoped_ptr<MockRenderWidgetHostDelegate> delegate_;
   scoped_ptr<MockRenderWidgetHost> host_;
@@ -654,8 +642,8 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 // Tests setting custom background
 TEST_F(RenderWidgetHostTest, Background) {
 #if !defined(OS_MACOSX)
-  scoped_ptr<content::RenderWidgetHostView> view(
-      content::RenderWidgetHostView::CreateViewForWidget(host_.get()));
+  scoped_ptr<RenderWidgetHostView> view(
+      RenderWidgetHostView::CreateViewForWidget(host_.get()));
 #if defined(OS_LINUX) || defined(USE_AURA)
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
   // InitAsChild doesn't seem to work if NULL parent is passed on Windows,
@@ -705,7 +693,7 @@ TEST_F(RenderWidgetHostTest, Background) {
 #if defined(OS_LINUX) || defined(USE_AURA)
   // See the comment above |InitAsChild(NULL)|.
   host_->SetView(NULL);
-  static_cast<content::RenderWidgetHostViewPort*>(view.release())->Destroy();
+  static_cast<RenderWidgetHostViewPort*>(view.release())->Destroy();
 #endif
 
 #else
@@ -821,12 +809,12 @@ TEST_F(RenderWidgetHostTest, PaintAtSize) {
   EXPECT_TRUE(
       process_->sink().GetUniqueMessageMatching(ViewMsg_PaintAtSize::ID));
 
-  content::NotificationRegistrar registrar;
+  NotificationRegistrar registrar;
   MockPaintingObserver observer;
   registrar.Add(
       &observer,
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
-      content::Source<RenderWidgetHost>(host_.get()));
+      NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+      Source<RenderWidgetHost>(host_.get()));
 
   host_->OnMsgPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));
   EXPECT_EQ(host_.get(), observer.host());
@@ -1660,7 +1648,7 @@ TEST_F(RenderWidgetHostTest, AckedTouchEventState) {
     EXPECT_EQ(acks[i], view_->acked_event().type);
     ScopedVector<ui::TouchEvent> acked;
 
-    content::MakeUITouchEventsFromWebTouchEvents(view_->acked_event(), &acked);
+    MakeUITouchEventsFromWebTouchEvents(view_->acked_event(), &acked);
     bool success = EventListIsSubset(acked, expected_events);
     EXPECT_TRUE(success) << "Failed on step: " << i;
     if (!success)
@@ -1758,3 +1746,5 @@ TEST_F(RenderWidgetHostTest, IncorrectBitmapScaleFactor) {
   EXPECT_EQ(1, process_->bad_msg_count());
 }
 #endif
+
+}  // namespace content

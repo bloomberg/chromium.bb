@@ -11,8 +11,6 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
-using content::BrowserGpuChannelHostFactory;
-
 namespace content {
 
 // static

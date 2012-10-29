@@ -11,6 +11,8 @@
 #include "webkit/plugins/npapi/webplugin.h"
 #include "ui/gfx/rect.h"
 
+namespace content {
+
 AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
     : current_id_(0) {
 }
@@ -155,3 +157,5 @@ AcceleratedSurfaceContainerMac*
 
   return NULL;
 }
+
+}  // namespace content

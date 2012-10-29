@@ -7,7 +7,9 @@
 
 #include "content/common/np_channel_base.h"
 
-class JavaBridgeChannelHost : public content::NPChannelBase {
+namespace content {
+
+class JavaBridgeChannelHost : public NPChannelBase {
  public:
   static JavaBridgeChannelHost* GetJavaBridgeChannelHost(
       int renderer_id,
@@ -44,5 +46,7 @@ class JavaBridgeChannelHost : public content::NPChannelBase {
 
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeChannelHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_JAVA_JAVA_BRIDGE_CHANNEL_HOST_H_

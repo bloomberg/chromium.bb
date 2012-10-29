@@ -9,6 +9,8 @@
 #include "ui/surface/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
+namespace content {
+
 AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
     AcceleratedSurfaceContainerManagerMac* manager,
     bool opaque)
@@ -260,3 +262,5 @@ void AcceleratedSurfaceContainerMac::set_was_painted_to_common(
   }
   was_painted_to_ = true;
 }
+
+}  // namespace content

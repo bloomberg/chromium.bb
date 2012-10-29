@@ -12,9 +12,7 @@
 #include "base/string_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
-using content::EditCommand;
-using content::EditCommands;
-using content::NativeWebKeyboardEvent;
+namespace content {
 
 GtkKeyBindingsHandler::GtkKeyBindingsHandler(GtkWidget* parent_widget)
     : handler_(CreateNewHandler()) {
@@ -290,3 +288,5 @@ void GtkKeyBindingsHandler::MoveFocus(GtkWidget* widget,
                                       GtkDirectionType arg1) {
   // Just for disabling the default handler.
 }
+
+}  // namespace content

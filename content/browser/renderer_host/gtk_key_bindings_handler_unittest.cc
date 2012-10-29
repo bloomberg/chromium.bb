@@ -19,9 +19,7 @@
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::EditCommand;
-using content::EditCommands;
-using content::NativeWebKeyboardEvent;
+namespace content {
 
 class GtkKeyBindingsHandlerTest : public testing::Test {
  protected:
@@ -34,7 +32,7 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
       : window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
         handler_(NULL) {
     FilePath gtkrc;
-    PathService::Get(content::DIR_TEST_DATA, &gtkrc);
+    PathService::Get(DIR_TEST_DATA, &gtkrc);
     gtkrc = gtkrc.AppendASCII("gtk_key_bindings_test_gtkrc");
     EXPECT_TRUE(file_util::PathExists(gtkrc));
 
@@ -224,3 +222,5 @@ TEST_F(GtkKeyBindingsHandlerTest, OtherActions) {
   TestKeyBinding(NewNativeWebKeyboardEvent(GDK_9, GDK_CONTROL_MASK),
                  kSetAnchor, arraysize(kSetAnchor));
 }
+
+}  // namespace content

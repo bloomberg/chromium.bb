@@ -169,17 +169,16 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
   }
 }
 
-class RenderViewHostTestWebContentsObserver
-    : public content::WebContentsObserver {
+class RenderViewHostTestWebContentsObserver : public WebContentsObserver {
  public:
   explicit RenderViewHostTestWebContentsObserver(WebContents* web_contents)
-      : content::WebContentsObserver(web_contents),
+      : WebContentsObserver(web_contents),
         navigation_count_(0) {}
   virtual ~RenderViewHostTestWebContentsObserver() {}
 
   virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE {
+      const LoadCommittedDetails& details,
+      const FrameNavigateParams& params) OVERRIDE {
     observed_socket_address_ = params.socket_address;
     base_url_ = params.base_url;
     ++navigation_count_;

@@ -27,4 +27,4 @@ void TapSuppressionController::GestureFlingCancelAck(bool) {}
 void TapSuppressionController::GestureFlingCancel(double) {}
 void TapSuppressionController::MouseDownTimerExpired() {}
 
-} // namespace content.
+}  // namespace content

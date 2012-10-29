@@ -6,7 +6,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 
-using content::RenderWidgetHostImpl;
+namespace content {
 
 void RenderWidgetHostImpl::OnMsgPluginFocusChanged(bool focused,
                                                    int plugin_id) {
@@ -74,3 +74,5 @@ void RenderWidgetHostImpl::OnAcceleratedSurfaceBuffersSwapped(
     view_->AcceleratedSurfaceBuffersSwapped(params, 0);
   }
 }
+
+}  // namespace content

@@ -30,6 +30,7 @@ using WebKit::WebBindings;
 // existing behavior. These areas are marked LIVECONNECT_COMPLIANCE. We may
 // revisit this decision in the future.
 
+namespace content {
 namespace {
 
 const char kJavaLangClass[] = "java/lang/Class";
@@ -865,3 +866,5 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
     methods_.insert(std::make_pair(method->name(), method));
   }
 }
+
+}  // namespace content

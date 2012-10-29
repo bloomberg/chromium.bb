@@ -18,6 +18,7 @@ using base::android::MethodID;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
+namespace content {
 namespace {
 
 const char kGetName[] = "getName";
@@ -232,3 +233,5 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
           env, declaring_class.obj(), name_.c_str(), signature.c_str());
   java_method_.Reset();
 }
+
+}  // namespace content

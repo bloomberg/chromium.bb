@@ -44,7 +44,7 @@ RenderWidgetHostViewPort* RenderWidgetHostViewPort::FromRWHV(
 
 // static
 RenderWidgetHostViewPort* RenderWidgetHostViewPort::CreateViewForWidget(
-    content::RenderWidgetHost* widget) {
+    RenderWidgetHost* widget) {
   return FromRWHV(RenderWidgetHostView::CreateViewForWidget(widget));
 }
 

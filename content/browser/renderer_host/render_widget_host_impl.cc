@@ -65,7 +65,6 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using content::EditCommand;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;

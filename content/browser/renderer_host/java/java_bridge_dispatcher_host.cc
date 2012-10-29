@@ -17,10 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
-using content::BrowserThread;
-using content::NPObjectStub;
-using content::NPVariant_Param;
-using content::RenderViewHost;
+namespace content {
 
 namespace {
 class JavaBridgeThread : public base::Thread {
@@ -116,7 +113,7 @@ void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
 
   // Create an NPVariantParam suitable for serialization over IPC from our
   // NPVariant. See CreateNPVariantParam() in npobject_utils.
-  param->type = content::NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID;
+  param->type = NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID;
   int route_id = JavaBridgeChannelHost::ThreadsafeGenerateRouteID();
   param->npobject_routing_id = route_id;
 
@@ -147,3 +144,5 @@ void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
   // in CreateNPVariantParam().
   WebKit::WebBindings::releaseObject(object);
 }
+
+}  // namespace content

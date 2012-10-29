@@ -9,11 +9,11 @@
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
-using content::RenderViewHost;
+namespace content {
 
 JavaBridgeDispatcherHostManager::JavaBridgeDispatcherHostManager(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents) {
 }
 
 JavaBridgeDispatcherHostManager::~JavaBridgeDispatcherHostManager() {
@@ -75,9 +75,11 @@ void JavaBridgeDispatcherHostManager::RenderViewDeleted(
 }
 
 void JavaBridgeDispatcherHostManager::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+    WebContents* web_contents) {
   // When a WebContents is shutting down, it clears its observers before
   // it kills all of its RenderViewHosts, so we won't get a call to
   // RenderViewDeleted() for all RenderViewHosts.
   instances_.clear();
 }
+
+}  // namespace content
