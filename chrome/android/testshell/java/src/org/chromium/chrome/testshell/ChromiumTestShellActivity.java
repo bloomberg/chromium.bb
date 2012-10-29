@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.app.AppResource;
 import org.chromium.content.app.LibraryLoader;
@@ -29,6 +30,7 @@ public class ChromiumTestShellActivity extends Activity {
 
     private ActivityNativeWindow mWindow;
     private TabManager mTabManager;
+    private DevToolsServer mDevToolsServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,15 @@ public class ChromiumTestShellActivity extends Activity {
         mWindow = new ActivityNativeWindow(this);
         mWindow.restoreInstanceState(savedInstanceState);
         mTabManager.setWindow(mWindow);
+
+        mDevToolsServer = new DevToolsServer(true, "chromium_testshell_devtools_remote");
+        mDevToolsServer.setRemoteDebuggingEnabled(true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mDevToolsServer.destroy();
+        mDevToolsServer = null;
     }
 
     @Override

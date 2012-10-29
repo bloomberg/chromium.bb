@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/devtools_server.h"
+#include "chrome/browser/android/dev_tools_server.h"
 
 #include <cstring>
 #include <pwd.h>
 
+#include "base/android/jni_string.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "jni/DevToolsServer_jni.h"
 #include "grit/devtools_discovery_page_resources.h"
 #include "net/base/unix_domain_socket_posix.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -34,7 +36,8 @@ const char kSocketName[] = "chrome_devtools_remote";
 // instance of this gets created each time devtools is enabled.
 class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
  public:
-  DevToolsServerDelegate() {
+  explicit DevToolsServerDelegate(bool use_bundled_frontend_resources)
+      : use_bundled_frontend_resources_(use_bundled_frontend_resources) {
   }
 
   virtual std::string GetDiscoveryPageHTML() {
@@ -50,7 +53,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   }
 
   virtual bool BundlesFrontendResources() {
-    return false;
+    return use_bundled_frontend_resources_;
   }
 
   virtual FilePath GetDebugFrontendDir() {
@@ -83,12 +86,24 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
       top_sites->SyncWithHistory();
   }
 
+  bool use_bundled_frontend_resources_;
+
   DISALLOW_COPY_AND_ASSIGN(DevToolsServerDelegate);
 };
 
 }  // namespace
 
-DevToolsServer::DevToolsServer() : protocol_handler_(NULL) {
+DevToolsServer::DevToolsServer()
+    : use_bundled_frontend_resources_(false),
+      socket_name_(kSocketName),
+      protocol_handler_(NULL) {
+}
+
+DevToolsServer::DevToolsServer(bool use_bundled_frontend_resources,
+                               const std::string& socket_name)
+    : use_bundled_frontend_resources_(use_bundled_frontend_resources),
+      socket_name_(socket_name),
+      protocol_handler_(NULL) {
 }
 
 DevToolsServer::~DevToolsServer() {
@@ -103,10 +118,11 @@ void DevToolsServer::Start() {
 
   protocol_handler_ = content::DevToolsHttpHandler::Start(
       new net::UnixDomainSocketWithAbstractNamespaceFactory(
-          kSocketName,
+          socket_name_,
           base::Bind(&content::CanUserConnectToDevTools)),
-      StringPrintf(kFrontEndURL, version_info.Version().c_str()),
-      new DevToolsServerDelegate());
+      use_bundled_frontend_resources_ ?
+          "" : StringPrintf(kFrontEndURL, version_info.Version().c_str()),
+      new DevToolsServerDelegate(use_bundled_frontend_resources_));
 }
 
 void DevToolsServer::Stop() {
@@ -120,4 +136,40 @@ void DevToolsServer::Stop() {
 
 bool DevToolsServer::IsStarted() const {
   return protocol_handler_;
+}
+
+bool RegisterDevToolsServer(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+static jint InitRemoteDebugging(JNIEnv* env,
+                                jobject obj,
+                                jboolean use_bundled_frontend_resources,
+                                jstring socketName) {
+  DevToolsServer* server = new DevToolsServer(
+      use_bundled_frontend_resources,
+      base::android::ConvertJavaStringToUTF8(env, socketName));
+  return reinterpret_cast<jint>(server);
+}
+
+static void DestroyRemoteDebugging(JNIEnv* env, jobject obj, jint server) {
+  delete reinterpret_cast<DevToolsServer*>(server);
+}
+
+static jboolean IsRemoteDebuggingEnabled(JNIEnv* env,
+                                         jobject obj,
+                                         jint server) {
+  return reinterpret_cast<DevToolsServer*>(server)->IsStarted();
+}
+
+static void SetRemoteDebuggingEnabled(JNIEnv* env,
+                                      jobject obj,
+                                      jint server,
+                                      jboolean enabled) {
+  DevToolsServer* devtools_server = reinterpret_cast<DevToolsServer*>(server);
+  if (enabled) {
+    devtools_server->Start();
+  } else {
+    devtools_server->Stop();
+  }
 }

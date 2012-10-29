@@ -8,6 +8,7 @@
 #include "base/android/jni_registrar.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/content_view_util.h"
+#include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/google_location_settings_helper.h"
 #include "chrome/browser/android/google_location_settings_helper_factory.h"
 #include "chrome/browser/android/intent_helper.h"
@@ -30,6 +31,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "ChromeWebContentsDelegateAndroid",
       RegisterChromeWebContentsDelegateAndroid },
   { "ContentViewUtil", RegisterContentViewUtil },
+  { "DevToolsServer", RegisterDevToolsServer },
   { "GoogleLocationSettingsHelper",
       GoogleLocationSettingsHelper::Register },
   { "GoogleLocationSettingsHelperFactory",
