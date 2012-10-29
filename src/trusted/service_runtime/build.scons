@@ -841,7 +841,7 @@ INTEGRATION_TESTS_X86_STDIN_OUT = ['$SCONSTRUCT_DIR/tests/mandel/test',
 
 def AddIntegrationTest(test, location):
   if not test or not location:
-    return;
+    return
 
   node = env.SelUniversalTest(
       test + '_canned.out',
@@ -895,11 +895,11 @@ NOT_AVAIL_X86_64 = [ 'text_overlaps_rodata',
 
 def AddDeathTest(test, skip):
   if not test:
-    return;
+    return
 
   if test in skip:
     print 'SKIPPING test ', test
-    return;
+    return
 
   # Use an arch-specific golden file if there is one.
   # We can't use the SCons File .exists() method because that will

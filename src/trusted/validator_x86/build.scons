@@ -39,7 +39,7 @@ val_src_dir = '$MAIN_DIR/src/trusted/validator_x86'
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
-test_env = env.Clone();
+test_env = env.Clone()
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 # TODO(shcherbina): remove dead test running code (tests moved to

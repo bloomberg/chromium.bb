@@ -34,8 +34,8 @@ LLVM_BITCODE_MAGIC = 'BC\xc0\xde'
 LLVM_WRAPPER_MAGIC = '\xde\xc0\x17\x0b'
 
 def ParseError(s, leftpos, rightpos, msg):
-  Log.Error("Parse Error: %s", msg);
-  Log.Error('  ' + s);
+  Log.Error("Parse Error: %s", msg)
+  Log.Error('  ' + s)
   Log.Error('  ' + (' '*leftpos) + ('^'*(rightpos - leftpos + 1)))
   DriverExit(1)
 
@@ -674,7 +674,7 @@ def WrapBitcode(output):
 ######################################################################
 
 def DefaultOutputName(filename, outtype):
-  if outtype in ('pp','dis'): return '-'; # stdout
+  if outtype in ('pp','dis'): return '-' # stdout
 
   base = pathtools.basename(filename)
   base = RemoveExtension(base)

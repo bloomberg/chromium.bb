@@ -48,7 +48,7 @@ if generate:
   #
 
   # Define environment for generating files.
-  gen_env = env.Clone();
+  gen_env = env.Clone()
   gen_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
   # Get the directory in which we will generate checking in files.
@@ -103,7 +103,7 @@ if generate:
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
-test_env = env.Clone();
+test_env = env.Clone()
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 #---------- COMPONENTS BUILT ---------------------------

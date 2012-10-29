@@ -373,7 +373,7 @@ class TestCall(object):
       argstr += ', v_%s[%d]' % (t.id, i)
     callstr = '  F%s("%s"%s);\n' % (self.f.id, self.fmtstr, argstr)
     out.write(prettycode(callstr))
-    out.write("\n");
+    out.write("\n")
 
 
 def prettycode(str):
@@ -436,7 +436,7 @@ class TestFunction(object):
       out.write(" {\n")
     else:
       out.write(";\n")
-      out.write("\n");
+      out.write("\n")
 
   def emit(self, out):
     self.emit_prototype(out, True)
@@ -444,11 +444,11 @@ class TestFunction(object):
     out.write("  va_list ap;\n")
     out.write("  va_list ap2;\n")
     out.write("  int i = 0;\n")
-    out.write("\n");
+    out.write("\n")
 
-    out.write("  SET_CURRENT_FUNCTION(%d);\n" % self.id);
+    out.write("  SET_CURRENT_FUNCTION(%d);\n" % self.id)
     out.write("  SET_INDEX_VARIABLE(i);\n")
-    out.write("\n");
+    out.write("\n")
 
     if self.num_fixed_args > 0:
       out.write("  /* Handle fixed arguments */\n")

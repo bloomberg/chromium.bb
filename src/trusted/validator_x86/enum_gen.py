@@ -151,7 +151,7 @@ def _ReadConstants(filename):
   infile = open(filename, "r")
   constants = []
   for line in infile:
-    line = line.rstrip();
+    line = line.rstrip()
     trimmed_line = line.lstrip()
     if len(trimmed_line) > 0 and not trimmed_line.startswith("#"):
       if name_pattern.match(trimmed_line):

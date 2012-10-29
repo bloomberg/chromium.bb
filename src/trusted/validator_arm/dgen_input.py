@@ -359,7 +359,7 @@ class Parser(object):
 
   def _bit_expr5(self, context):
     """bit_expr5 ::= bit_expr6 | bit_expr5 ('<<' | '>>') bit_expr6"""
-    value = self._bit_expr6(context);
+    value = self._bit_expr6(context)
     while self._next_token().kind in ['<<', '>>']:
       op = self._read_token().value
       value = dgen_core.ShiftOp(op, value, self._bit_expr6(context))
@@ -505,7 +505,7 @@ class Parser(object):
     """ classdef       ::= 'class' word ':' word """
     self._read_token('class')
     class_name = self._read_token('word').value
-    self._read_token(':');
+    self._read_token(':')
     class_superclass = self._read_token('word').value
     if not decoder.add_class_def(class_name, class_superclass):
       self._unexpected('Inconsistent definitions for class %s' % class_name)
@@ -713,7 +713,7 @@ class Parser(object):
       else:
         # Processed patterns in this row, since width is now the
         # same as last row.
-        break;
+        break
 
     action = self._action(starred_actions, last_action)
     table.add_row(expanded_patterns, action)

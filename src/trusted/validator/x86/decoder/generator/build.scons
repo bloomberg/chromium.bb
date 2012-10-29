@@ -46,7 +46,7 @@ tables_src_dir = '$MAIN_DIR/src/trusted/validator/x86/decoder/gen'
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
-test_env = env.Clone();
+test_env = env.Clone()
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 # ------------------------------------------------------
@@ -72,7 +72,7 @@ test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 #       followed by a "valgen" to guarantee that generated sources are
 #       up to date.
 
-gen_env = env.Clone();
+gen_env = env.Clone()
 gen_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 generate = False

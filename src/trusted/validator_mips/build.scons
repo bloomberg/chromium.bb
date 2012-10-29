@@ -31,7 +31,7 @@ if env.Bit('linux'):
   GEN_LIST = [_gen_file('decode.cc')]
 
   generate = False
-  gen_env = env.Clone();
+  gen_env = env.Clone()
   if 'mipsvalgen' in COMMAND_LINE_TARGETS: generate = True
   if 'mipsvalclean' in COMMAND_LINE_TARGETS: generate = True
 

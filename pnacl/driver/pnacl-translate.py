@@ -551,7 +551,7 @@ def MakeSelUniversalScriptForLLC(infile, outfile, flags):
     script.append('readonly_file myfile %s' % infile)
     if UseDefaultCommandlineLLC():
       script.append('rpc RunWithDefaultCommandLine  h(myfile) h(objfile) *'
-                    ' i() s() s()');
+                    ' i() s() s()')
     else:
       cmdline_len, cmdline_escaped = BuildLLCCommandLine(flags)
       script.append('rpc Run h(myfile) h(objfile) C(%d,%s) * i() s() s()' %

@@ -31,7 +31,7 @@ if not env.Bit('android'):
 #       modified a file that effects source generation, run "valclean"
 #       followed by a "valgen" to guarantee that generated sources are
 #       up to date.
-gen_env = env.Clone();
+gen_env = env.Clone()
 
 # Defines this source directory.
 GEN_SRC_DIR = '${MAIN_DIR}/src/trusted/validator_arm/gen'
@@ -114,7 +114,7 @@ if TURNED_OFF_TABLES:
       [' --table_remove=' + tbl for tbl in TURNED_OFF_TABLES])
 
 generate = False
-gen_env = env.Clone();
+gen_env = env.Clone()
 if 'valgen' in COMMAND_LINE_TARGETS: generate = True
 if 'valclean' in COMMAND_LINE_TARGETS: generate = True
 
@@ -223,7 +223,7 @@ gtest_env.ComponentLibrary('decoder_test_tools',
                             'inst_classes_testers.cc',
                             'actual_vs_baseline.cc',
                             'named_class_decoder.cc',
-                            'gen/arm32_decode_named.cc']);
+                            'gen/arm32_decode_named.cc'])
 
 gtest_env.ComponentLibrary('arm_validator_tester',
                            ['validator_tests.cc'])

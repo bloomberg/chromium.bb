@@ -188,8 +188,8 @@ INITIAL_ENV = {
 ######################################################################
 
 def ParseError(s, leftpos, rightpos, msg):
-  Log.Error("Parse Error: %s", msg);
-  Log.Error('  ' + s);
+  Log.Error("Parse Error: %s", msg)
+  Log.Error('  ' + s)
   Log.Error('  ' + (' '*leftpos) + ('^'*(rightpos - leftpos + 1)))
   DriverExit(1)
 

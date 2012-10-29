@@ -1203,7 +1203,7 @@ class BitPattern(BitExpr):
             raised. Prints raised exceptions and returns None.
         """
         try:
-            return BitPattern.parse(pattern, column);
+            return BitPattern.parse(pattern, column)
         except Exception as ex:
             print "Error: %s" % ex
             return None

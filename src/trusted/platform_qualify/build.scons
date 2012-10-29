@@ -10,7 +10,7 @@
 Import('env')
 
 
-pql_inputs = [];
+pql_inputs = []
 
 #
 # OS-specific qualification routines

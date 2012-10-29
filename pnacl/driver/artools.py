@@ -67,7 +67,7 @@ class MemberHeader(object):
       return
 
     if len(header) != 60:
-      self.error = 'Short count reading archive member header';
+      self.error = 'Short count reading archive member header'
       return
 
     self.name = header[0:16]

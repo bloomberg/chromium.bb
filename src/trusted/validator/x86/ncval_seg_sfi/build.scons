@@ -21,7 +21,7 @@ env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
-test_env = env.Clone();
+test_env = env.Clone()
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 # Special purpose partial decoder used by the ncval_seg_sfi (x86-32 bit validator).

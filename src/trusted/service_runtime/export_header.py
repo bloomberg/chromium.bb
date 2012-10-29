@@ -1,9 +1,7 @@
 #!/usr/bin/python
-#
-# Copyright 2008, 2009, The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2008 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Tools for exporting Native Client ABI header files.
 
@@ -50,11 +48,11 @@ def ProcessStream(instr, outstr):
     else:
       if nostrip:
         if cnostrip_end.search(line):
-          nostrip = False;
+          nostrip = False
         print >>outstr, line,
       else:
         if cnostrip_beg.search(line):
-          nostrip = True;
+          nostrip = True
         print >>outstr, cpat.sub(r'\1', line),
     # endif
   # endfor
@@ -100,7 +98,7 @@ def main(argv):
     return 1
   # endif
   ProcessDir(argv[1], argv[2],
-             reduce(os.path.join, UNMODIFIED_DIR, argv[2]));
+             reduce(os.path.join, UNMODIFIED_DIR, argv[2]))
   return 0
 # enddef
 

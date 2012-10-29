@@ -12,7 +12,7 @@ if env.Bit('windows'):
   Return()
 # Don't run this test under valgrind -- it will fail with a different exit code.
 if env.IsRunningUnderValgrind():
-  Return();
+  Return()
 
 sigpipe_tool_test_exe = env.ComponentProgram('sigpipe_tool_test',
                                              ['sigpipe_tool_test.c'])

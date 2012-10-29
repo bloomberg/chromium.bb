@@ -1519,7 +1519,7 @@ UNSUPPORTED_VALGRIND_EXIT_STATUS = ['sigabrt',
                                     'untrusted_segfault',
                                     'untrusted_sigsegv_or_equivalent',
                                     'trusted_segfault',
-                                    'trusted_sigsegv_or_equivalent'];
+                                    'trusted_sigsegv_or_equivalent']
 
 
 def GetPerfEnvDescription(env):
@@ -1633,8 +1633,8 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     run_under_extra_args = ARGUMENTS.get('run_under_extra_args')
     if run_under_extra_args:
       run_under = run_under + ',' + run_under_extra_args
-    script_flags.append('--run_under');
-    script_flags.append(run_under);
+    script_flags.append('--run_under')
+    script_flags.append(run_under)
 
   emulator = env.GetEmulator()
   if emulator and direct_emulation:

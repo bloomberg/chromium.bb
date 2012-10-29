@@ -135,7 +135,7 @@ def generate_h(decoder, decoder_name, filename, out, cl_args):
       out.write(DECODER_DECLARE_METHOD % values)
     out.write(DECODER_DECLARE_FIELD_COMMENTS)
     for action in decoder.action_filter(['actual']).decoders():
-      values['decoder'] = action.actual();
+      values['decoder'] = action.actual()
       out.write(DECODER_DECLARE_FIELD % values)
     out.write(DECODER_DECLARE_FOOTER % values)
     out.write(H_FOOTER % values)
@@ -242,7 +242,7 @@ def generate_cc(decoder, decoder_name, filename, out, cl_args):
     _generate_methods(decoder, values, out)
     out.write(DECODER_METHOD_HEADER % values)
     if _cl_args.get('trace') == 'True':
-      out.write(DECODER_METHOD_TRACE % values);
+      out.write(DECODER_METHOD_TRACE % values)
     out.write(DECODER_METHOD_FOOTER % values)
     out.write(CC_FOOTER % values)
 

@@ -256,8 +256,8 @@ TestCase(accept=False, asm='add %r15, %r15')
 TestCase(accept=True, asm='prefetchnta (%rax)')
 
 # Segment registers manipulations are forbidden
-TestCase(accept=False, asm='mov %rax, %es');
-TestCase(accept=False, asm='mov %es, %rax');
+TestCase(accept=False, asm='mov %rax, %es')
+TestCase(accept=False, asm='mov %es, %rax')
 
 
 def Main():

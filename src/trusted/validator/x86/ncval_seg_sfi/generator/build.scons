@@ -41,7 +41,7 @@ val_src_dir = '$MAIN_DIR/src/trusted/validator/x86/ncval_seg_sfi'
 #       up to date.
 
 
-gen_env = env.Clone();
+gen_env = env.Clone()
 gen_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 generate = False

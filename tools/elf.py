@@ -1,9 +1,7 @@
 #!/usr/bin/python
-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """
 This module contains utilities and constants needed to parse ELF headers.
@@ -386,21 +384,21 @@ class Elf:
 
 
 if __name__ == '__main__':
-  print elf32_ehdr_format;
-  print elf64_ehdr_format;
-  print ehdr_format_map;
-  print phdr_format_map;
-  print shdr_format_map;
-  print ehdr_type;
-  print ehdr_type_name;
-  print ehdr_machine;
-  print ehdr_machine_name;
-  print ehdr_version;
-  print ehdr_version_name;
-  print ehdr_ident;
-  print ehdr_ident_class;
-  print ehdr_ident_data;
-  print phdr_type;
-  print phdr_type_name;
-  print phdr_flags;
-  print shdr_flags;
+  print elf32_ehdr_format
+  print elf64_ehdr_format
+  print ehdr_format_map
+  print phdr_format_map
+  print shdr_format_map
+  print ehdr_type
+  print ehdr_type_name
+  print ehdr_machine
+  print ehdr_machine_name
+  print ehdr_version
+  print ehdr_version_name
+  print ehdr_ident
+  print ehdr_ident_class
+  print ehdr_ident_data
+  print phdr_type
+  print phdr_type_name
+  print phdr_flags
+  print shdr_flags

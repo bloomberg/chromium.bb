@@ -69,9 +69,9 @@ def GetX8664Combinations():
               options.append('--cpuid-none')
             if test_annotate:
               ext += 'a'
-              options.append('--annotate');
+              options.append('--annotate')
             else:
-              options.append('--annotate=false');
+              options.append('--annotate=false')
             if validator_decoder:
               ext = "vd-" + ext
               options.append('--validator_decoder')

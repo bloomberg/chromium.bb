@@ -287,7 +287,7 @@ def PrintSyscallTableInitializer(protos, ostr):
 
 
 def PrintImplSkel(architecture, protos, ostr):
-  print >>ostr, AUTOGEN_COMMENT;
+  print >>ostr, AUTOGEN_COMMENT
   for syscall_number, func_name, alist in protos:
     values = { 'name' : func_name,
                'arglist' : ArgList(architecture, alist),

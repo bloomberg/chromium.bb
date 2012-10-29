@@ -13,7 +13,7 @@ import sys
 
 Import('env')
 
-platform_inputs = [];
+platform_inputs = []
 
 # On OSX and Windows, we have observed sleep returning early.  The
 # time_slop_args is used in nacl_clock_test to permit some extra slop

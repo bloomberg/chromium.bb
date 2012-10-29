@@ -13,7 +13,7 @@ Import('env')
 if not env.Bit('target_x86'): Return()
 
 # Create environment for building the common library for x86 validators.
-lib_env = env.Clone();
+lib_env = env.Clone()
 lib_env.Append(CPPPATH=['${TARGET_ROOT}'])
 lib_env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 
@@ -35,7 +35,7 @@ lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncval_base_verbose'), [
 # Create environment for command-line tools and testing, rather than
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
-test_env = lib_env.Clone();
+test_env = lib_env.Clone()
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 nacl_cpuid = test_env.ComponentProgram(
