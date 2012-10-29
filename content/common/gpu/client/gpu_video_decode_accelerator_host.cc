@@ -68,6 +68,9 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(
 void GpuVideoDecodeAcceleratorHost::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(CalledOnValidThread());
+  // Can happen if a decode task was posted before an error was delivered.
+  if (!channel_)
+    return;
   base::SharedMemoryHandle buffer_handle = bitstream_buffer.handle();
 #if defined(OS_WIN)
   if (!BrokerDuplicateHandle(bitstream_buffer.handle(),
