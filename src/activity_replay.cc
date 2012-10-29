@@ -121,49 +121,50 @@ bool ActivityReplay::ParseProperties(DictionaryValue* dict,
   return true;
 }
 
-#define PARSE_HP(obj, key, KeyType, KeyFn, var, VarType)        \
-  do {                                                          \
-    KeyType temp;                                               \
-    if (!obj->KeyFn(key, &temp)) {                              \
-      Err("Parse failed for key %s", key);                      \
-      return false;                                             \
-    }                                                           \
-    var = static_cast<VarType>(temp);                           \
+#define PARSE_HP(obj, key, KeyType, KeyFn, var, VarType, required)      \
+  do {                                                                  \
+    KeyType temp;                                                       \
+    if (!obj->KeyFn(key, &temp)) {                                      \
+      Err("Parse failed for key %s", key);                              \
+      if (required)                                                     \
+        return false;                                                   \
+    }                                                                   \
+    var = static_cast<VarType>(temp);                                   \
   } while (0)
 
 bool ActivityReplay::ParseHardwareProperties(DictionaryValue* obj,
                                              HardwareProperties* out_props) {
   HardwareProperties props;
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropLeft, double, GetDouble,
-           props.left, float);
+           props.left, float, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropTop, double, GetDouble,
-           props.top, float);
+           props.top, float, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropRight, double, GetDouble,
-           props.right, float);
+           props.right, float, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropBottom, double, GetDouble,
-           props.bottom, float);
+           props.bottom, float, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropXResolution, double, GetDouble,
-           props.res_x, float);
+           props.res_x, float, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropYResolution, double, GetDouble,
-           props.res_y, float);
+           props.res_y, float, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropXDpi, double, GetDouble,
-           props.screen_x_dpi, float);
+           props.screen_x_dpi, float, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropYDpi, double, GetDouble,
-           props.screen_y_dpi, float);
+           props.screen_y_dpi, float, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropOrientationMinimum,
-           double, GetDouble, props.orientation_minimum, float);
+           double, GetDouble, props.orientation_minimum, float, false);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropOrientationMaximum,
-           double, GetDouble, props.orientation_maximum, float);
+           double, GetDouble, props.orientation_maximum, float, false);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropMaxFingerCount, int, GetInteger,
-           props.max_finger_cnt, unsigned short);
+           props.max_finger_cnt, unsigned short, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropMaxTouchCount, int, GetInteger,
-           props.max_touch_cnt, unsigned short);
+           props.max_touch_cnt, unsigned short, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropSupportsT5R2, bool, GetBoolean,
-           props.supports_t5r2, bool);
+           props.supports_t5r2, bool, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropSemiMt, bool, GetBoolean,
-           props.support_semi_mt, bool);
+           props.support_semi_mt, bool, true);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropIsButtonPad, bool, GetBoolean,
-           props.is_button_pad, bool);
+           props.is_button_pad, bool, true);
   *out_props = props;
   return true;
 }
@@ -389,7 +390,7 @@ bool ActivityReplay::ParseGestureScroll(DictionaryValue* entry,
 }
 
 bool ActivityReplay::ParseGesturePinch(DictionaryValue* entry,
-                                        Gesture* out_gs) {
+                                       Gesture* out_gs) {
   out_gs->type = kGestureTypePinch;
   double dbl;
   if (!entry->GetDouble(ActivityLog::kKeyGesturePinchDZ, &dbl)) {
