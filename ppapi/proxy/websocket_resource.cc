@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/proxy/dispatch_reply_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
@@ -329,59 +330,32 @@ PP_Var WebSocketResource::GetURL() {
 void WebSocketResource::OnReplyReceived(
     const ResourceMessageReplyParams& params,
     const IPC::Message& msg) {
-  if (params.sequence())
-    return PluginResource::OnReplyReceived(params, msg);
-
-  // TODO(toyoshim): Currently, following unsolicited reply IPCs are handled
-  // manually. We should introduce more useful mechanism for that.
-  switch (msg.type()) {
-    case PpapiPluginMsg_WebSocket_ReceiveTextReply::ID: {
-      PpapiPluginMsg_WebSocket_ReceiveTextReply::Schema::Param p;
-      if (PpapiPluginMsg_WebSocket_ReceiveTextReply::Read(&msg, &p))
-        OnPluginMsgReceiveTextReply(params, p.a);
-      else
-        NOTREACHED();
-      break;
-    }
-    case PpapiPluginMsg_WebSocket_ReceiveBinaryReply::ID: {
-      PpapiPluginMsg_WebSocket_ReceiveBinaryReply::Schema::Param p;
-      if (PpapiPluginMsg_WebSocket_ReceiveBinaryReply::Read(&msg, &p))
-        OnPluginMsgReceiveBinaryReply(params, p.a);
-      else
-        NOTREACHED();
-      break;
-    }
-    case PpapiPluginMsg_WebSocket_ErrorReply::ID: {
-      OnPluginMsgErrorReply(params);
-      break;
-    }
-    case PpapiPluginMsg_WebSocket_BufferedAmountReply::ID: {
-      PpapiPluginMsg_WebSocket_BufferedAmountReply::Schema::Param p;
-      if (PpapiPluginMsg_WebSocket_BufferedAmountReply::Read(&msg, &p))
-        OnPluginMsgBufferedAmountReply(params, p.a);
-      else
-        NOTREACHED();
-      break;
-    }
-    case PpapiPluginMsg_WebSocket_StateReply::ID: {
-      PpapiPluginMsg_WebSocket_StateReply::Schema::Param p;
-      if (PpapiPluginMsg_WebSocket_StateReply::Read(&msg, &p))
-        OnPluginMsgStateReply(params, p.a);
-      else
-        NOTREACHED();
-      break;
-    }
-    case PpapiPluginMsg_WebSocket_ClosedReply::ID: {
-      PpapiPluginMsg_WebSocket_ClosedReply::Schema::Param p;
-      if (PpapiPluginMsg_WebSocket_ClosedReply::Read(&msg, &p))
-        OnPluginMsgClosedReply(params, p.a, p.b, p.c, p.d);
-      else
-        NOTREACHED();
-      break;
-    }
-    default:
-      NOTREACHED();
+  if (params.sequence()) {
+    PluginResource::OnReplyReceived(params, msg);
+    return;
   }
+
+  IPC_BEGIN_MESSAGE_MAP(WebSocketResource, msg)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
+        PpapiPluginMsg_WebSocket_ReceiveTextReply,
+        OnPluginMsgReceiveTextReply)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
+        PpapiPluginMsg_WebSocket_ReceiveBinaryReply,
+        OnPluginMsgReceiveBinaryReply)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_0(
+        PpapiPluginMsg_WebSocket_ErrorReply,
+        OnPluginMsgErrorReply)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
+        PpapiPluginMsg_WebSocket_BufferedAmountReply,
+        OnPluginMsgBufferedAmountReply)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
+        PpapiPluginMsg_WebSocket_StateReply,
+        OnPluginMsgStateReply)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
+        PpapiPluginMsg_WebSocket_ClosedReply,
+        OnPluginMsgClosedReply)
+    PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(NOTREACHED())
+  IPC_END_MESSAGE_MAP()
 }
 
 void WebSocketResource::OnPluginMsgConnectReply(

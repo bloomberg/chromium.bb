@@ -87,4 +87,3 @@ inline int32_t DispatchResourceCall(ObjT* obj, Method method,
 }  // namespace ppapi
 
 #endif  // PPAPI_HOST_DISPATCH_HOST_MESSAGE_H_
-

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file provides infrastructure for dispatching host resource reply
-// messages. Normal IPC Reply handlers can't take extra parameters.
-// We want to take a ResourceMessageReplyParams as a parameter.
+// This file provides infrastructure for dispatching messasges from host
+// resource, inlcuding reply messages or unsolicited replies. Normal IPC Reply
+// handlers can't take extra parameters. We want to take a
+// ResourceMessageReplyParams as a parameter.
 
 #ifndef PPAPI_PROXY_DISPATCH_REPLY_MESSAGE_H_
 #define PPAPI_PROXY_DISPATCH_REPLY_MESSAGE_H_
@@ -29,35 +30,35 @@ template <class ObjT, class Method, class A>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
                                   const Tuple1<A>& arg) {
-  return (obj->*method)(params, arg.a);
+  (obj->*method)(params, arg.a);
 }
 
 template<class ObjT, class Method, class A, class B>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
                                   const Tuple2<A, B>& arg) {
-  return (obj->*method)(params, arg.a, arg.b);
+  (obj->*method)(params, arg.a, arg.b);
 }
 
 template<class ObjT, class Method, class A, class B, class C>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
                                   const Tuple3<A, B, C>& arg) {
-  return (obj->*method)(params, arg.a, arg.b, arg.c);
+  (obj->*method)(params, arg.a, arg.b, arg.c);
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
                                   const Tuple4<A, B, C, D>& arg) {
-  return (obj->*method)(params, arg.a, arg.b, arg.c, arg.d);
+  (obj->*method)(params, arg.a, arg.b, arg.c, arg.d);
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D, class E>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
                                   const Tuple5<A, B, C, D, E>& arg) {
-  return (obj->*method)(params, arg.a, arg.b, arg.c, arg.d, arg.e);
+  (obj->*method)(params, arg.a, arg.b, arg.c, arg.d, arg.e);
 }
 
 // Used to dispatch resource replies. In most cases, you should not call this
@@ -124,8 +125,37 @@ void DispatchResourceReplyOrDefaultParams(
     const IPC::Message& msg) {
   DCHECK(msg.type() == MsgClass::ID || msg.type() == 0)
       << "Resource reply message of unexpected type.";
-  return (obj->*method)(reply_params);
+  (obj->*method)(reply_params);
 }
+
+// Note that this only works for message with 1 or more parameters. For
+// 0-parameter messages you need to use the _0 version below (since there are
+// no params in the message).
+#define PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(msg_class, member_func) \
+    case msg_class::ID: { \
+      msg_class::Schema::Param p; \
+      if (msg_class::Read(&ipc_message__, &p)) { \
+        ppapi::proxy::DispatchResourceReply( \
+            this, \
+            &_IpcMessageHandlerClass::member_func, \
+            params, p); \
+      } else { \
+        NOTREACHED(); \
+      } \
+      break; \
+    }
+
+#define PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_0(msg_class, member_func) \
+  case msg_class::ID: { \
+    member_func(params); \
+    break; \
+  }
+
+#define PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(code) \
+    default: { \
+        code; \
+    } \
+    break;
 
 }  // namespace proxy
 }  // namespace ppapi
