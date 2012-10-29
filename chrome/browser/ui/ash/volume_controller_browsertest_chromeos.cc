@@ -12,10 +12,13 @@
 
 namespace {
 
+// Default volume as a percentage in the range [0.0, 100.0].
+const double kDefaultVolumePercent = 75.0;
+
 class MockAudioMixer : public chromeos::AudioMixer {
  public:
   MockAudioMixer()
-      : volume_(0.0),
+      : volume_(kDefaultVolumePercent),
         is_muted_(false) {
   }
 
