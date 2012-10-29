@@ -2148,18 +2148,72 @@ switch_vt_binding(struct wl_seat *seat, uint32_t time, uint32_t key, void *data)
 	tty_activate_vt(ec->tty, key - KEY_F1 + 1);
 }
 
+/*
+ * Find primary GPU
+ * Some systems may have multiple DRM devices attached to a single seat. This
+ * function loops over all devices and tries to find a PCI device with the
+ * boot_vga sysfs attribute set to 1.
+ * If no such device is found, the first DRM device reported by udev is used.
+ */
+static struct udev_device*
+find_primary_gpu(struct drm_compositor *ec, const char *seat)
+{
+	struct udev_enumerate *e;
+	struct udev_list_entry *entry;
+	const char *path, *device_seat, *id;
+	struct udev_device *device, *drm_device, *pci;
+
+	e = udev_enumerate_new(ec->udev);
+	udev_enumerate_add_match_subsystem(e, "drm");
+	udev_enumerate_add_match_sysname(e, "card[0-9]*");
+
+	udev_enumerate_scan_devices(e);
+	drm_device = NULL;
+	udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
+		path = udev_list_entry_get_name(entry);
+		device = udev_device_new_from_syspath(ec->udev, path);
+		if (!device)
+			continue;
+		device_seat = udev_device_get_property_value(device, "ID_SEAT");
+		if (!device_seat)
+			device_seat = default_seat;
+		if (strcmp(device_seat, seat)) {
+			udev_device_unref(device);
+			continue;
+		}
+
+		pci = udev_device_get_parent_with_subsystem_devtype(device,
+								"pci", NULL);
+		if (pci) {
+			id = udev_device_get_sysattr_value(pci, "boot_vga");
+			if (id && !strcmp(id, "1")) {
+				if (drm_device)
+					udev_device_unref(drm_device);
+				drm_device = device;
+				break;
+			}
+		}
+
+		if (!drm_device)
+			drm_device = device;
+		else
+			udev_device_unref(device);
+	}
+
+	udev_enumerate_unref(e);
+	return drm_device;
+}
+
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      int connector, const char *seat, int tty,
 		      int argc, char *argv[], const char *config_file)
 {
 	struct drm_compositor *ec;
-	struct udev_enumerate *e;
-	struct udev_list_entry *entry;
-	struct udev_device *device, *drm_device;
-	const char *path, *device_seat;
+	struct udev_device *drm_device;
 	struct wl_event_loop *loop;
 	struct weston_seat *weston_seat, *next;
+	const char *path;
 	uint32_t key;
 
 	weston_log("initializing drm backend\n");
@@ -2188,30 +2242,12 @@ drm_compositor_create(struct wl_display *display,
 		goto err_udev;
 	}
 
-	e = udev_enumerate_new(ec->udev);
-	udev_enumerate_add_match_subsystem(e, "drm");
-	udev_enumerate_add_match_sysname(e, "card[0-9]*");
-
-	udev_enumerate_scan_devices(e);
-	drm_device = NULL;
-	udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
-		path = udev_list_entry_get_name(entry);
-		device = udev_device_new_from_syspath(ec->udev, path);
-		device_seat =
-			udev_device_get_property_value(device, "ID_SEAT");
-		if (!device_seat)
-			device_seat = default_seat;
-		if (strcmp(device_seat, seat) == 0) {
-			drm_device = device;
-			break;
-		}
-		udev_device_unref(device);
-	}
-
+	drm_device = find_primary_gpu(ec, seat);
 	if (drm_device == NULL) {
 		weston_log("no drm device found\n");
-		goto err_udev_enum;
+		goto err_tty;
 	}
+	path = udev_device_get_syspath(drm_device);
 
 	if (init_egl(ec, drm_device) < 0) {
 		weston_log("failed to initialize egl\n");
@@ -2268,7 +2304,6 @@ drm_compositor_create(struct wl_display *display,
 	}
 
 	udev_device_unref(drm_device);
-	udev_enumerate_unref(e);
 
 	return &ec->base;
 
@@ -2289,8 +2324,7 @@ err_sprite:
 	destroy_sprites(ec);
 err_udev_dev:
 	udev_device_unref(drm_device);
-err_udev_enum:
-	udev_enumerate_unref(e);
+err_tty:
 	tty_destroy(ec->tty);
 err_udev:
 	udev_unref(ec->udev);
