@@ -124,13 +124,11 @@
         'input_pak_files': [
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
-          '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/repack/en-US.pak',
         ],
         'copied_pak_files': [
           '<(PRODUCT_DIR)/android_webview/assets/chrome.pak',
           '<(PRODUCT_DIR)/android_webview/assets/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/android_webview/assets/resources.pak',
           '<(PRODUCT_DIR)/android_webview/assets/en-US.pak',
         ],
         'additional_input_paths': [ '<@(copied_pak_files)' ],

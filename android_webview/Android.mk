@@ -51,11 +51,6 @@ LOCAL_MODULE_STEM := chrome
 include $(LOCAL_PATH)/webview_pak.mk
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := webviewchromium_res_resources
-LOCAL_MODULE_STEM := resources
-include $(LOCAL_PATH)/webview_pak.mk
-
-include $(CLEAR_VARS)
 LOCAL_MODULE := webviewchromium_res_chrome_100_percent
 LOCAL_MODULE_STEM := chrome_100_percent
 include $(LOCAL_PATH)/webview_pak.mk

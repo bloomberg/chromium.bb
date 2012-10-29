@@ -20,7 +20,7 @@ public class AndroidWebViewTestRunnerApplication extends Application {
 
     /** The minimum set of .pak files Chrome needs. */
     private static final String[] CHROME_MANDATORY_PAKS = {
-        "chrome.pak", "chrome_100_percent.pak", "en-US.pak", "resources.pak",
+        "chrome.pak", "chrome_100_percent.pak", "en-US.pak",
     };
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "webview";
