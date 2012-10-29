@@ -1492,10 +1492,10 @@ class Strace(ApiBase):
           {
             'cmd': cmd,
             'cwd': cwd,
+            'output': out,
             # The pid of strace process, not very useful.
             'pid': child.pid,
             'trace': tracename,
-            'output': out,
           })
       return child.returncode, out
 
@@ -1516,8 +1516,8 @@ class Strace(ApiBase):
     out = []
     for item in data['traces']:
       result = {
-        'trace': item['trace'],
         'output': item['output'],
+        'trace': item['trace'],
       }
       try:
         context = cls.Context(blacklist, item['cwd'])
@@ -2234,8 +2234,8 @@ class Dtrace(ApiBase):
             'cwd': cwd,
             # The pid of strace process, not very useful.
             'pid': child.pid,
-            'trace': tracename,
             'output': out,
+            'trace': tracename,
           })
       return child.returncode, out
 
@@ -2316,15 +2316,18 @@ class Dtrace(ApiBase):
     data = read_json(logname)
     out = []
     for item in data['traces']:
-      context = cls.Context(blacklist_more, item['pid'], item['cwd'])
-      for line in open(logname + '.log', 'rb'):
-        context.on_line(line)
-      out.append(
-          {
-            'results': context.to_results(),
-            'trace': item['trace'],
-            'output': item['output'],
-          })
+      result = {
+        'output': item['output'],
+        'trace': item['trace'],
+      }
+      try:
+        context = cls.Context(blacklist_more, item['pid'], item['cwd'])
+        for line in open(logname + '.log', 'rb'):
+          context.on_line(line)
+        result['results'] = context.to_results()
+      except TracingFailure:
+        result['exception'] = sys.exc_info()
+      out.append(result)
     return out
 
 
@@ -2757,9 +2760,9 @@ class LogmanTrace(ApiBase):
         self._traces.append({
           'cmd': cmd,
           'cwd': cwd,
+          'output': out,
           'pid': child.pid,
           'trace': tracename,
-          'output': out,
         })
 
       return child.returncode, out
@@ -2949,15 +2952,18 @@ class LogmanTrace(ApiBase):
     lines = read_json(logname + '.json')
     out = []
     for item in data['traces']:
-      context = cls.Context(blacklist_more, item['pid'])
-      for line in lines:
-        context.on_line(line)
-      out.append(
-          {
-            'results': context.to_results(),
-            'trace': item['trace'],
-            'output': item['output'],
-          })
+      result = {
+        'output': item['output'],
+        'trace': item['trace'],
+      }
+      try:
+        context = cls.Context(blacklist_more, item['pid'], item['trace'])
+        for line in lines:
+          context.on_line(line)
+        result['results'] = context.to_results()
+      except TracingFailure:
+        result['exception'] = sys.exc_info()
+      out.append(result)
     return out
 
 
