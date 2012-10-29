@@ -52,7 +52,7 @@ void DriveSyncClient::GetLargestChangeStamp(
   NOTIMPLEMENTED();
 }
 
-void DriveSyncClient::ListFiles(std::string resource_id,
+void DriveSyncClient::ListFiles(const std::string& resource_id,
                                 const DocumentFeedCallback& callback) {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();

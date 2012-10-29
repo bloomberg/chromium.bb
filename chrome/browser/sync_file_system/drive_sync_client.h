@@ -71,7 +71,8 @@ class DriveSyncClient : public google_apis::DriveServiceObserver,
   // The result may be chunked and may have successive results. The caller needs
   // to call ContunueListing with the result of GetNextFeedURL to get complete
   // list of files.
-  void ListFiles(std::string resource_id, const DocumentFeedCallback& callback);
+  void ListFiles(const std::string& resource_id,
+                 const DocumentFeedCallback& callback);
 
   // Lists changes that happened after |start_changestamp|.
   // Upon completion, invokes |callback|.
