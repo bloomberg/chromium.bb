@@ -94,6 +94,13 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, DISABLED_ToolbarCycleFocus) {
   RunToolbarCycleFocusTest(browser());
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/152938 Flaky on win.
+#define MAYBE_ToolbarCycleFocusWithBookmarkBar \
+    DISABLED_ToolbarCycleFocusWithBookmarkBar
+#else
+#define MAYBE_ToolbarCycleFocusWithBookmarkBar ToolbarCycleFocusWithBookmarkBar
+#endif
 IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
                        MAYBE_ToolbarCycleFocusWithBookmarkBar) {
   CommandUpdater* updater = browser()->command_controller()->command_updater();
