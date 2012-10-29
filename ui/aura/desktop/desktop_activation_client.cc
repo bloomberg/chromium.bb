@@ -12,17 +12,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
-namespace {
-
-// Checks to make sure this window is a direct child of the Root Window. We do
-// this to mirror ash's more interesting behaviour: it checks to make sure the
-// window it's going to activate is a child of one a few container windows.
-bool IsChildOfRootWindow(aura::Window* window) {
-  return window && window->parent() == window->GetRootWindow();
-}
-
-}  // namespace
-
 namespace aura {
 
 DesktopActivationClient::DesktopActivationClient(FocusManager* focus_manager)
@@ -119,10 +108,21 @@ void DesktopActivationClient::OnWindowFocused(aura::Window* window) {
 }
 
 bool DesktopActivationClient::CanActivateWindow(aura::Window* window) const {
-  return window &&
+  bool can_activate = window &&
       window->IsVisible() &&
       (!aura::client::GetActivationDelegate(window) ||
-        aura::client::GetActivationDelegate(window)->ShouldActivate(NULL));
+       aura::client::GetActivationDelegate(window)->ShouldActivate(NULL));
+
+#if defined(OS_LINUX)
+  if (can_activate) {
+    // TODO(erg,ananta): Windows behaves differently than Linux; clicking will
+    // always send an activation message on windows while on Linux we'll need
+    // to emulate that behavior if views is expecting it.
+    can_activate = window->parent() == window->GetRootWindow();
+  }
+#endif
+
+  return can_activate;
 }
 
 aura::Window* DesktopActivationClient::GetActivatableWindow(
