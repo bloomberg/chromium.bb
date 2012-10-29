@@ -694,6 +694,10 @@ def run_test_cases(
     duration = time.time() - progress.start
 
   results = dict((item[0]['test_case'], item) for item in results if item)
+  # Total time taken to run each test case.
+  test_case_duration = dict(
+      (test_case, sum(i.get('duration', 0) for i in item))
+      for test_case, item in results.iteritems())
 
   # Classify the results
   success = []
@@ -732,17 +736,30 @@ def run_test_cases(
   for test_case in sorted(fail):
     print('%s failed' % (test_case))
 
-  total = len(results)
   if decider.should_stop():
     print('** STOPPED EARLY due to high failure rate **')
-  print('Success: %4d %5.2f%%' % (len(success), len(success) * 100. / total))
-  print('Flaky:   %4d %5.2f%%' % (len(flaky), len(flaky) * 100. / total))
-  print('Fail:    %4d %5.2f%%' % (len(fail), len(fail) * 100. / total))
-  print('%.1fs Done running %d tests with %d executions. %.1f test/s' % (
+  output = [
+    ('Success', success),
+    ('Flaky', flaky),
+    ('Fail', fail),
+  ]
+  missing = set(test_cases) - set(success) - set(flaky) - set(fail)
+  if missing:
+    output.append(('Missing', missing))
+  total_expected = len(test_cases)
+  for name, items in output:
+    number = len(items)
+    print(
+        '%7s: %4d %6.2f%% %7.2fs' % (
+          name,
+          number,
+          number * 100. / total_expected,
+          sum(test_case_duration.get(item, 0) for item in items)))
+  print('%.2fs Done running %d tests with %d executions. %.2f test/s' % (
       duration,
       len(results),
       nb_runs,
-      nb_runs / duration))
+      nb_runs / duration if duration else 0))
   return int(bool(fail))
 
 
