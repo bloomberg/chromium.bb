@@ -1786,19 +1786,20 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
     IntSize viewportSize(1000, 1000);
     m_hostImpl->setViewportSize(viewportSize, viewportSize);
 
-    m_hostImpl->setRootLayer(BlendStateCheckLayer::create(1, m_hostImpl->resourceProvider()));
-    BlendStateCheckLayer* root = static_cast<BlendStateCheckLayer*>(m_hostImpl->rootLayer());
-    root->setExpectation(false, true);
-    root->setContentsOpaque(true);
+    m_hostImpl->setRootLayer(LayerImpl::create(1));
+    m_hostImpl->rootLayer()->addChild(BlendStateCheckLayer::create(2, m_hostImpl->resourceProvider()));
+    BlendStateCheckLayer* child = static_cast<BlendStateCheckLayer*>(m_hostImpl->rootLayer()->children()[0]);
+    child->setExpectation(false, false);
+    child->setContentsOpaque(true);
 
     // No gutter rects
     {
         IntRect layerRect(0, 0, 1000, 1000);
-        root->setPosition(layerRect.location());
-        root->setBounds(layerRect.size());
-        root->setContentBounds(layerRect.size());
-        root->setQuadRect(IntRect(IntPoint(), layerRect.size()));
-        root->setQuadVisibleRect(IntRect(IntPoint(), layerRect.size()));
+        child->setPosition(layerRect.location());
+        child->setBounds(layerRect.size());
+        child->setContentBounds(layerRect.size());
+        child->setQuadRect(IntRect(IntPoint(), layerRect.size()));
+        child->setQuadVisibleRect(IntRect(IntPoint(), layerRect.size()));
 
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1810,18 +1811,18 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(0u, numGutterQuads);
         EXPECT_EQ(1u, frame.renderPasses[0]->quadList().size());
 
-        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quadList(), IntRect(-layerRect.location(), viewportSize));
+        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quadList(), IntRect(IntPoint::zero(), viewportSize));
         m_hostImpl->didDrawAllLayers(frame);
     }
 
     // Empty visible content area (fullscreen gutter rect)
     {
         IntRect layerRect(0, 0, 0, 0);
-        root->setPosition(layerRect.location());
-        root->setBounds(layerRect.size());
-        root->setContentBounds(layerRect.size());
-        root->setQuadRect(IntRect(IntPoint(), layerRect.size()));
-        root->setQuadVisibleRect(IntRect(IntPoint(), layerRect.size()));
+        child->setPosition(layerRect.location());
+        child->setBounds(layerRect.size());
+        child->setContentBounds(layerRect.size());
+        child->setQuadRect(IntRect(IntPoint(), layerRect.size()));
+        child->setQuadVisibleRect(IntRect(IntPoint(), layerRect.size()));
 
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1834,18 +1835,18 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(1u, numGutterQuads);
         EXPECT_EQ(1u, frame.renderPasses[0]->quadList().size());
 
-        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quadList(), IntRect(-layerRect.location(), viewportSize));
+        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quadList(), IntRect(IntPoint::zero(), viewportSize));
         m_hostImpl->didDrawAllLayers(frame);
     }
 
     // Content area in middle of clip rect (four surrounding gutter rects)
     {
         IntRect layerRect(500, 500, 200, 200);
-        root->setPosition(layerRect.location());
-        root->setBounds(layerRect.size());
-        root->setContentBounds(layerRect.size());
-        root->setQuadRect(IntRect(IntPoint(), layerRect.size()));
-        root->setQuadVisibleRect(IntRect(IntPoint(), layerRect.size()));
+        child->setPosition(layerRect.location());
+        child->setBounds(layerRect.size());
+        child->setContentBounds(layerRect.size());
+        child->setQuadRect(IntRect(IntPoint(), layerRect.size()));
+        child->setQuadVisibleRect(IntRect(IntPoint(), layerRect.size()));
 
         LayerTreeHostImpl::FrameData frame;
         EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1857,7 +1858,7 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
         EXPECT_EQ(4u, numGutterQuads);
         EXPECT_EQ(5u, frame.renderPasses[0]->quadList().size());
 
-        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quadList(), IntRect(-layerRect.location(), viewportSize));
+        verifyQuadsExactlyCoverRect(frame.renderPasses[0]->quadList(), IntRect(IntPoint::zero(), viewportSize));
         m_hostImpl->didDrawAllLayers(frame);
     }
 
