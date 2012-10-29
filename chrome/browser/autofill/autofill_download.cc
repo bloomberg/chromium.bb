@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/autofill/autofill_download_url.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/form_structure.h"
@@ -27,17 +28,7 @@
 using content::BrowserContext;
 
 namespace {
-const char kAutofillQueryServerRequestUrl[] =
-    "https://clients1.google.com/tbproxy/af/query?client=";
-const char kAutofillUploadServerRequestUrl[] =
-    "https://clients1.google.com/tbproxy/af/upload?client=";
 const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
-
-#if defined(GOOGLE_CHROME_BUILD)
-const char kClientName[] = "Google Chrome";
-#else
-const char kClientName[] = "Chromium";
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 const size_t kMaxFormCacheSize = 16;
 
@@ -179,17 +170,16 @@ bool AutofillDownloadManager::StartRequest(
   net::URLRequestContextGetter* request_context =
       browser_context_->GetRequestContext();
   DCHECK(request_context);
-  std::string request_url;
+  GURL request_url;
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY)
-    request_url = kAutofillQueryServerRequestUrl;
+    request_url = autofill::GetAutofillQueryUrl();
   else
-    request_url = kAutofillUploadServerRequestUrl;
-  request_url += kClientName;
+    request_url = autofill::GetAutofillUploadUrl();
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
   net::URLFetcher* fetcher = net::URLFetcher::Create(
-      fetcher_id_for_unittest_++, GURL(request_url), net::URLFetcher::POST,
+      fetcher_id_for_unittest_++, request_url, net::URLFetcher::POST,
       this);
   url_fetchers_[fetcher] = request_data;
   fetcher->SetAutomaticallyRetryOn5xx(false);

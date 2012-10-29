@@ -1090,6 +1090,7 @@
         'browser/autofill/autocomplete_history_manager_unittest.cc',
         'browser/autofill/autofill_country_unittest.cc',
         'browser/autofill/autofill_download_unittest.cc',
+        'browser/autofill/autofill_download_url_unittest.cc',
         'browser/autofill/autofill_external_delegate_unittest.cc',
         'browser/autofill/autofill_field_unittest.cc',
         'browser/autofill/autofill_ie_toolbar_import_win_unittest.cc',

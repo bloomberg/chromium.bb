@@ -49,6 +49,7 @@ extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kAuthSchemes[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutoLaunchAtStartup[];
+extern const char kAutofillServiceUrl[];
 extern const char kAutomationClientChannelID[];
 extern const char kAutomationReinitializeOnChannelError[];
 extern const char kCheckForUpdateIntervalSec[];

@@ -227,6 +227,8 @@
         'browser/autofill/autofill_country.h',
         'browser/autofill/autofill_download.cc',
         'browser/autofill/autofill_download.h',
+        'browser/autofill/autofill_download_url.cc',
+        'browser/autofill/autofill_download_url.h',
         'browser/autofill/autofill_external_delegate.cc',
         'browser/autofill/autofill_external_delegate.h',
         'browser/autofill/autofill_field.cc',
