@@ -51,7 +51,7 @@ def load_run_test_cases_results(run_test_cases_file):
 
 
 def run_all(isolated, run_test_cases_file):
-  """Runs the test cases in an isolated environment."""
+  """Runs all the test cases in an isolated environment."""
   cmd = [
     sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
     'run',
@@ -64,7 +64,28 @@ def run_all(isolated, run_test_cases_file):
   return subprocess.call(cmd)
 
 
-def trace_all(isolated, test_cases):
+def run_some(isolated, run_test_cases_file, test_cases):
+  """Runs some of the test cases in an isolated environment."""
+  handle, test_cases_file = tempfile.mkstemp(prefix='fix_test_cases')
+  os.write(handle, '\n'.join(test_cases))
+  os.close(handle)
+  try:
+    cmd = [
+      sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
+      'run',
+      '--isolated', isolated,
+      '--',
+      '--result', run_test_cases_file,
+      '--test-case-file', test_cases_file,
+      '--run-all',
+    ]
+    logging.debug(cmd)
+    return subprocess.call(cmd)
+  finally:
+    os.remove(test_cases_file)
+
+
+def trace_some(isolated, test_cases):
   """Traces the test cases."""
   handle, test_cases_file = tempfile.mkstemp(prefix='fix_test_cases')
   os.write(handle, '\n'.join(test_cases))
@@ -72,9 +93,9 @@ def trace_all(isolated, test_cases):
   try:
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate_test_cases.py'),
-      '-r', isolated,
+      '--isolated', isolated,
       '--test-case-file', test_cases_file,
-      '-v',
+      '--verbose',
     ]
     logging.debug(cmd)
     return subprocess.call(cmd)
@@ -91,9 +112,11 @@ def fix_all(isolated):
   """
   # These could have adverse side-effects.
   # TODO(maruel): Be more intelligent about it, for now be safe.
-  for i in run_test_cases.KNOWN_GTEST_ENV_VARS:
+  blacklist = set(run_test_cases.KNOWN_GTEST_ENV_VARS) - set([
+    'GTEST_SHARD_INDEX', 'GTEST_TOTAL_SHARDS'])
+  for i in blacklist:
     if i in os.environ:
-      print >> 'Please unset %s' % i
+      print >> sys.stderr, 'Please unset %s' % i
       return False
 
   handle, run_test_cases_file = tempfile.mkstemp(prefix='fix_test_cases')
@@ -109,11 +132,11 @@ def fix_all(isolated):
 
     # Trace them all and update the .isolate file.
     print('\nTracing the failing tests.')
-    if trace_all(isolated, failures):
+    if trace_some(isolated, failures):
       return False
 
     print('\nRunning again to confirm.')
-    run_all(isolated, run_test_cases_file)
+    run_some(isolated, run_test_cases_file, failures)
     fixed_success, fixed_failures = load_run_test_cases_results(
         run_test_cases_file)
 

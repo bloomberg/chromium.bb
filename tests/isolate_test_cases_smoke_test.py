@@ -85,9 +85,9 @@ class IsolateTestCases(unittest.TestCase):
     cmd = [
       sys.executable, 'isolate.py',
       'check',
-      '-V', 'FLAG', 'run',
-      '-i', os.path.join(self.tempdir, gtest_fake_pass_isolate),
-      '-r', isolated,
+      '--variable', 'FLAG', 'run',
+      '--isolate', os.path.join(self.tempdir, gtest_fake_pass_isolate),
+      '--isolated', isolated,
     ]
     if VERBOSE:
       cmd.extend(['-v'] * 3)
