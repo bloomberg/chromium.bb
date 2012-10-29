@@ -96,8 +96,7 @@ static void ThreadExitHook(struct NaClAppThread *natp) {
   UNREFERENCED_PARAMETER(natp);
 }
 
-static void ProcessExitHook(int exit_status) {
-  UNREFERENCED_PARAMETER(exit_status);
+static void ProcessExitHook(void) {
 }
 
 static const struct NaClDebugCallbacks debug_callbacks = {
