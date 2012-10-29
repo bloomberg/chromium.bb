@@ -26,12 +26,21 @@ import subprocess
 import sys
 
 
+def ShellEscape(value):
+  return '"%s"' % (
+      value
+      .replace('\\', '\\\\')
+      .replace('"', '\\"')
+      .replace('$', '\\$')
+      .replace('`', '\\`'))
+
+
 def Main():
   input_files = []
   command_args = []
 
   def AddLiteralArg(option, opt, value, parser):
-    command_args.append(value)
+    command_args.append(ShellEscape(value))
 
   def AddFileArg(option, opt, value, parser):
     # We do not attempt to preserve the relative locations of the
