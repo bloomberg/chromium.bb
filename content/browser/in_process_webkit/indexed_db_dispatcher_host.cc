@@ -33,13 +33,6 @@
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/database/database_util.h"
 
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-using content::IndexedDBKey;
-using content::IndexedDBKeyPath;
-using content::IndexedDBKeyRange;
-using content::UserMetricsAction;
-using content::SerializedScriptValue;
 using webkit_database::DatabaseUtil;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
@@ -55,6 +48,7 @@ using WebKit::WebSecurityOrigin;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebVector;
 
+namespace content {
 namespace {
 
 template <class T>
@@ -275,7 +269,7 @@ ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
   ObjectType* return_object = map->Lookup(return_object_id);
   if (!return_object) {
     NOTREACHED() << "Uh oh, couldn't find object with id " << return_object_id;
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_IDBMF"));
+    RecordAction(UserMetricsAction("BadMessageTerminate_IDBMF"));
     BadMessageReceived();
   }
   return return_object;
@@ -712,9 +706,9 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnPut(
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnSetIndexKeys(
     int32 idb_object_store_id,
-    const content::IndexedDBKey& primary_key,
+    const IndexedDBKey& primary_key,
     const std::vector<string16>& index_names,
-    const std::vector<std::vector<content::IndexedDBKey> >& index_keys,
+    const std::vector<std::vector<IndexedDBKey> >& index_keys,
     int32 transaction_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
@@ -1113,3 +1107,5 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(
   transaction_url_map_.erase(object_id);
   parent_->DestroyObject(&map_, object_id);
 }
+
+}  // namespace content

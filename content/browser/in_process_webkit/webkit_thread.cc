@@ -40,7 +40,7 @@ void WebKitThread::Initialize() {
 }
 
 WebKitThread::InternalWebKitThread::InternalWebKitThread()
-    : content::BrowserThreadImpl(BrowserThread::WEBKIT_DEPRECATED) {
+    : BrowserThreadImpl(BrowserThread::WEBKIT_DEPRECATED) {
 }
 
 WebKitThread::InternalWebKitThread::~InternalWebKitThread() {

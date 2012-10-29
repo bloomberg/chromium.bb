@@ -14,7 +14,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
 class GURL;
-class IndexedDBContextImpl;
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
@@ -38,24 +37,23 @@ struct WebIDBMetadata;
 }
 
 namespace content {
+class IndexedDBContextImpl;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class SerializedScriptValue;
-}
 
 // Handles all IndexedDB related messages from a particular renderer process.
-class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
+class IndexedDBDispatcherHost : public BrowserMessageFilter {
  public:
   // Only call the constructor from the UI thread.
   IndexedDBDispatcherHost(int process_id,
                           IndexedDBContextImpl* indexed_db_context);
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+  virtual void OverrideThreadForMessage(const IPC::Message& message,
+                                        BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -157,12 +155,12 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnGetObject(int idb_index_id,
                      int32 thread_id,
                      int32 response_id,
-                     const content::IndexedDBKeyRange& key_range,
+                     const IndexedDBKeyRange& key_range,
                      int32 transaction_id);
     void OnGetKey(int idb_index_id,
                   int32 thread_id,
                   int32 response_id,
-                  const content::IndexedDBKeyRange& key_range,
+                  const IndexedDBKeyRange& key_range,
                   int32 transaction_id);
     void OnDestroyed(int32 idb_index_id);
 
@@ -181,14 +179,14 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnGet(int idb_object_store_id,
                int32 thread_id,
                int32 response_id,
-               const content::IndexedDBKeyRange& key_range,
+               const IndexedDBKeyRange& key_range,
                int32 transaction_id);
     void OnPut(const IndexedDBHostMsg_ObjectStorePut_Params& params);
     void OnSetIndexKeys(
         int32 idb_object_store_id,
-        const content::IndexedDBKey& primary_key,
+        const IndexedDBKey& primary_key,
         const std::vector<string16>& index_names,
-        const std::vector<std::vector<content::IndexedDBKey> >& index_keys,
+        const std::vector<std::vector<IndexedDBKey> >& index_keys,
         int32 transaction_id);
     void OnSetIndexesReady(int32 idb_object_store_id,
                            const std::vector<string16>& names,
@@ -197,7 +195,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnDelete(int idb_object_store_id,
                   int32 thread_id,
                   int32 response_id,
-                  const content::IndexedDBKeyRange& key_range,
+                  const IndexedDBKeyRange& key_range,
                   int32 transaction_id);
     void OnClear(int idb_object_store_id,
                  int32 thread_id,
@@ -235,7 +233,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnUpdate(int32 idb_object_store_id,
                   int32 thread_id,
                   int32 response_id,
-                  const content::SerializedScriptValue& value);
+                  const SerializedScriptValue& value);
     void OnAdvance(int32 idb_object_store_id,
                    int32 thread_id,
                    int32 response_id,
@@ -243,7 +241,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnContinue(int32 idb_object_store_id,
                     int32 thread_id,
                     int32 response_id,
-                    const content::IndexedDBKey& key);
+                    const IndexedDBKey& key);
     void OnPrefetch(int32 idb_cursor_id,
                     int32 thread_id,
                     int32 response_id,
@@ -297,5 +295,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBDispatcherHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_

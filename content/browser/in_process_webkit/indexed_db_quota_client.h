@@ -16,6 +16,7 @@
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"
 
+namespace content {
 class IndexedDBContextImpl;
 
 // A QuotaClient implementation to integrate IndexedDB
@@ -49,5 +50,7 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClient);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWER_IN_PROCESS_WEBKIT_QUOTA_CLIENT_H_

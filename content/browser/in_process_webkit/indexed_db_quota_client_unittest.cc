@@ -18,15 +18,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
-
 // Declared to shorten the line lengths.
 static const quota::StorageType kTemp = quota::kStorageTypeTemporary;
 static const quota::StorageType kPerm = quota::kStorageTypePersistent;
 
 using namespace webkit_database;
-using content::BrowserThreadImpl;
+
+namespace content {
 
 // Base class for our test fixtures.
 class IndexedDBQuotaClientTest : public testing::Test {
@@ -48,7 +46,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         file_user_blocking_thread_(
             BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
-    browser_context_.reset(new content::TestBrowserContext());
+    browser_context_.reset(new TestBrowserContext());
     idb_context_ = static_cast<IndexedDBContextImpl*>(
         BrowserContext::GetDefaultStoragePartition(browser_context_.get())->
             GetIndexedDBContext());
@@ -171,10 +169,9 @@ class IndexedDBQuotaClientTest : public testing::Test {
   BrowserThreadImpl file_thread_;
   BrowserThreadImpl file_user_blocking_thread_;
   BrowserThreadImpl io_thread_;
-  scoped_ptr<content::TestBrowserContext> browser_context_;
+  scoped_ptr<TestBrowserContext> browser_context_;
   quota::QuotaStatusCode delete_status_;
 };
-
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {
   IndexedDBQuotaClient client(
@@ -252,3 +249,5 @@ TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kTemp));
   EXPECT_EQ(50, GetOriginUsage(&client, kOriginB, kTemp));
 }
+
+}  // namespace content

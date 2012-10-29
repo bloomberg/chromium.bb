@@ -11,9 +11,8 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/common/content_export.h"
 
-class BrowserWebKitPlatformSupportImpl;
-
 namespace content {
+class BrowserWebKitPlatformSupportImpl;
 
 // This creates a WebKit main thread on instantiation (if not in
 // --single-process mode) on construction and kills it on deletion.
@@ -26,7 +25,7 @@ class CONTENT_EXPORT WebKitThread {
 
  private:
   // Must be private so that we can carefully control its lifetime.
-  class InternalWebKitThread : public content::BrowserThreadImpl {
+  class InternalWebKitThread : public BrowserThreadImpl {
    public:
     InternalWebKitThread();
     virtual ~InternalWebKitThread();

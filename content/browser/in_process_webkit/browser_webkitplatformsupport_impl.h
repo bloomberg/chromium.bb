@@ -8,8 +8,9 @@
 #include "content/common/webkitplatformsupport_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 
-class BrowserWebKitPlatformSupportImpl :
-    public content::WebKitPlatformSupportImpl {
+namespace content {
+
+class BrowserWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
  public:
   BrowserWebKitPlatformSupportImpl();
   virtual ~BrowserWebKitPlatformSupportImpl();
@@ -42,10 +43,12 @@ class BrowserWebKitPlatformSupportImpl :
                                  bool sync_dir);
 
  protected:
-  virtual content::GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
+  virtual GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
 
  private:
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITPLATFORMSUPPORT_IMPL_H_

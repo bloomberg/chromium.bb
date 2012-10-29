@@ -7,6 +7,8 @@
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 
+namespace content {
+
 IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     IndexedDBDispatcherHost* dispatcher_host,
     int thread_id,
@@ -39,3 +41,5 @@ void IndexedDBDatabaseCallbacks::onVersionChange(
       new IndexedDBMsg_DatabaseCallbacksVersionChange(thread_id_, database_id_,
                                                       requested_version));
 }
+
+}  // namespace content

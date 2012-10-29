@@ -18,11 +18,9 @@ class RenderProcessHost;
 // This class is a message filter that handles a HyphenatorHost message. When
 // this class receives a HyphenatorHostMsg_OpenDictionary message, it opens the
 // specified dictionary and sends its file handle.
-class CONTENT_EXPORT HyphenatorMessageFilter
-    : public content::BrowserMessageFilter {
+class CONTENT_EXPORT HyphenatorMessageFilter : public BrowserMessageFilter {
  public:
-  explicit HyphenatorMessageFilter(
-      content::RenderProcessHost* render_process_host);
+  explicit HyphenatorMessageFilter(RenderProcessHost* render_process_host);
 
   // Changes the directory that includes dictionary files. This function
   // provides a method that allows applications to change the directory
@@ -31,10 +29,10 @@ class CONTENT_EXPORT HyphenatorMessageFilter
   // version number, and an extension) and use it as a dictionary file.
   void SetDictionaryBase(const FilePath& directory);
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+      BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -58,7 +56,7 @@ class CONTENT_EXPORT HyphenatorMessageFilter
   // The RenderProcessHost object that owns this filter. This class uses this
   // object to retrieve the process handle used for creating
   // PlatformFileForTransit objects.
-  content::RenderProcessHost* render_process_host_;
+  RenderProcessHost* render_process_host_;
 
   // The directory that includes dictionary files. The default value is the
   // directory containing the executable file.

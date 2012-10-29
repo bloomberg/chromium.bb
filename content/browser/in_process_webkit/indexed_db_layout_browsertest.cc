@@ -4,6 +4,8 @@
 
 #include "content/test/layout_browsertest.h"
 
+namespace content {
+
 class IndexedDBLayoutTest : public InProcessBrowserLayoutTest {
  public:
   IndexedDBLayoutTest() : InProcessBrowserLayoutTest(
@@ -132,3 +134,5 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IntVersionTests) {
 IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, RegressionTests) {
   RunLayoutTests(kRegressionTests);
 }
+
+}  // namespace content

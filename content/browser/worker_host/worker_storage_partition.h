@@ -7,8 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 
-class IndexedDBContextImpl;
-
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
@@ -23,6 +21,7 @@ class DatabaseTracker;
 
 namespace content {
 class ChromeAppCacheService;
+class IndexedDBContextImpl;
 
 // Contains the data from StoragePartition for use by Worker APIs.
 //

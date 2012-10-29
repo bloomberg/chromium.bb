@@ -33,8 +33,10 @@ class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
+namespace content {
+
 class CONTENT_EXPORT IndexedDBContextImpl
-    : NON_EXPORTED_BASE(public content::IndexedDBContext) {
+    : NON_EXPORTED_BASE(public IndexedDBContext) {
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   IndexedDBContextImpl(const FilePath& data_path,
@@ -130,5 +132,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CONTEXT_IMPL_H_

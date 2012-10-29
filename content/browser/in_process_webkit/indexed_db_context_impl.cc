@@ -24,13 +24,12 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
-using content::BrowserThread;
-using content::IndexedDBContext;
 using webkit_database::DatabaseUtil;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBFactory;
 using WebKit::WebSecurityOrigin;
 
+namespace content {
 const FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =
     FILE_PATH_LITERAL("IndexedDB");
 
@@ -369,3 +368,5 @@ void IndexedDBContextImpl::ResetCaches() {
   origin_size_map_.clear();
   space_available_map_.clear();
 }
+
+}  // namespace content

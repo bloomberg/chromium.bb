@@ -16,10 +16,9 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
-using content::BrowserThreadImpl;
 using webkit_database::DatabaseUtil;
+
+namespace content {
 
 class IndexedDBTest : public testing::Test {
  public:
@@ -49,7 +48,7 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   // Create the scope which will ensure we run the destructor of the webkit
   // context which should trigger the clean up.
   {
-    content::TestBrowserContext browser_context;
+    TestBrowserContext browser_context;
 
     const GURL kNormalOrigin("http://normal/");
     const GURL kSessionOnlyOrigin("http://session-only/");
@@ -93,7 +92,7 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   // Create the scope which will ensure we run the destructor of the webkit
   // context.
   {
-    content::TestBrowserContext browser_context;
+    TestBrowserContext browser_context;
 
     const GURL kNormalOrigin("http://normal/");
     const GURL kSessionOnlyOrigin("http://session-only/");
@@ -165,7 +164,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   // Create the scope which will ensure we run the destructor of the webkit
   // context.
   {
-    content::TestBrowserContext browser_context;
+    TestBrowserContext browser_context;
 
     const GURL kTestOrigin("http://test/");
 
@@ -200,3 +199,5 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
   EXPECT_FALSE(file_util::DirectoryExists(test_path));
 }
+
+}  // namespace content

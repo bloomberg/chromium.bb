@@ -13,7 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/base/file_path_string_conversions.h"
 
-using content::GpuChannelHostFactory;
+namespace content {
 
 BrowserWebKitPlatformSupportImpl::BrowserWebKitPlatformSupportImpl() {
   file_utilities_.set_sandbox_enabled(false);
@@ -128,5 +128,7 @@ int BrowserWebKitPlatformSupportImpl::databaseDeleteFile(
 
 GpuChannelHostFactory*
 BrowserWebKitPlatformSupportImpl::GetGpuChannelHostFactory() {
-  return content::BrowserGpuChannelHostFactory::instance();
+  return BrowserGpuChannelHostFactory::instance();
 }
+
+}  // namespace content

@@ -9,6 +9,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
+namespace content {
 class IndexedDBDispatcherHost;
 
 class IndexedDBTransactionCallbacks
@@ -28,5 +29,7 @@ class IndexedDBTransactionCallbacks
   int thread_id_;
   int transaction_id_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_TRANSACTION_CALLBACKS_H_
