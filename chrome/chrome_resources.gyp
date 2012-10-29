@@ -31,7 +31,7 @@
       ],
       'includes': [ '../build/grit_target.gypi' ],
       'conditions': [
-        ['OS != "ios"', {
+        ['OS != "ios" and OS != "android"', {
           'dependencies': [
             '../content/browser/debugger/devtools_resources.gyp:devtools_resources',
           ],
@@ -116,7 +116,7 @@
         },
       ],
       'conditions': [
-        ['OS != "ios"', {
+        ['enable_extensions==1', {
           'actions': [
             {
               'action_name': 'extensions_api_resources',
