@@ -5,7 +5,6 @@
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/native/aw_contents_container.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -20,23 +19,6 @@ namespace android_webview {
 namespace {
 
 base::LazyInstance<AwBrowserDependencyFactoryImpl>::Leaky g_lazy_instance;
-
-class WebContentsWrapper : public AwContentsContainer {
- public:
-  WebContentsWrapper(WebContents* web_contents)
-      : web_contents_(web_contents) {
-  }
-
-  virtual ~WebContentsWrapper() {}
-
-  // AwContentsContainer
-  virtual content::WebContents* GetWebContents() OVERRIDE {
-    return web_contents_.get();
-  }
-
- private:
-  scoped_ptr<content::WebContents> web_contents_;
-};
 
 }  // namespace
 
@@ -62,11 +44,6 @@ content::BrowserContext* AwBrowserDependencyFactoryImpl::GetBrowserContext(
 WebContents* AwBrowserDependencyFactoryImpl::CreateWebContents(bool incognito) {
   return content::WebContents::Create(
       GetBrowserContext(incognito), 0, MSG_ROUTING_NONE, 0);
-}
-
-AwContentsContainer* AwBrowserDependencyFactoryImpl::CreateContentsContainer(
-    content::WebContents* contents) {
-  return new WebContentsWrapper(contents);
 }
 
 }  // namespace android_webview

@@ -7,7 +7,6 @@
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
-#include "android_webview/native/aw_contents_container.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "base/android/jni_android.h"
@@ -78,29 +77,25 @@ AwContents::AwContents(JNIEnv* env,
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
 
-  WebContents* web_contents =
-      dependency_factory->CreateWebContents(private_browsing);
+  web_contents_.reset(dependency_factory->CreateWebContents(private_browsing));
 
-  DCHECK(!AwContents::FromWebContents(web_contents));
-  web_contents->SetUserData(kAwContentsUserDataKey,
-                            new AwContentsUserData(this));
+  DCHECK(!AwContents::FromWebContents(web_contents_.get()));
+  web_contents_->SetUserData(kAwContentsUserDataKey,
+                             new AwContentsUserData(this));
 
-  contents_container_.reset(dependency_factory->CreateContentsContainer(
-      web_contents));
-  web_contents->SetDelegate(web_contents_delegate_.get());
-  render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents));
+  web_contents_->SetDelegate(web_contents_delegate_.get());
+  render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents_.get()));
 }
 
 AwContents::~AwContents() {
-  WebContents* web_contents = contents_container_->GetWebContents();
-  DCHECK(AwContents::FromWebContents(web_contents) == this);
-  web_contents->RemoveUserData(kAwContentsUserDataKey);
+  DCHECK(AwContents::FromWebContents(web_contents_.get()) == this);
+  web_contents_->RemoveUserData(kAwContentsUserDataKey);
   if (find_helper_.get())
     find_helper_->SetListener(NULL);
 }
 
 jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
-  return reinterpret_cast<jint>(contents_container_->GetWebContents());
+  return reinterpret_cast<jint>(web_contents_.get());
 }
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
@@ -141,7 +136,7 @@ void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
                                jstring jpath, jobject callback) {
   ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
   j_callback->Reset(env, callback);
-  contents_container_->GetWebContents()->GenerateMHTML(
+  web_contents_->GenerateMHTML(
       FilePath(ConvertJavaStringToUTF8(env, jpath)),
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback)));
 }
@@ -216,18 +211,16 @@ void AwContents::onReceivedHttpAuthRequest(
 
 void AwContents::SetIoThreadClient(JNIEnv* env, jobject obj, jobject client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::WebContents* web_contents = contents_container_->GetWebContents();
   AwContentsIoThreadClientImpl::Associate(
-      web_contents, ScopedJavaLocalRef<jobject>(env, client));
+      web_contents_.get(), ScopedJavaLocalRef<jobject>(env, client));
 }
 
 void AwContents::SetInterceptNavigationDelegate(JNIEnv* env,
                                                 jobject obj,
                                                 jobject delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::WebContents* web_contents = contents_container_->GetWebContents();
   InterceptNavigationDelegate::Associate(
-      web_contents,
+      web_contents_.get(),
       make_scoped_ptr(new InterceptNavigationDelegate(env, delegate)));
 }
 
@@ -269,16 +262,14 @@ void AwContents::ClearCache(
   render_view_host_ext_->ClearCache();
 
   if (include_disk_files) {
-    content::WebContents* web_contents = contents_container_->GetWebContents();
-    RemoveHttpDiskCache(web_contents->GetBrowserContext(),
-                        web_contents->GetRoutingID());
+    RemoveHttpDiskCache(web_contents_->GetBrowserContext(),
+                        web_contents_->GetRoutingID());
   }
 }
 
 FindHelper* AwContents::GetFindHelper() {
   if (!find_helper_.get()) {
-    WebContents* web_contents = contents_container_->GetWebContents();
-    find_helper_.reset(new FindHelper(web_contents));
+    find_helper_.reset(new FindHelper(web_contents_.get()));
     find_helper_->SetListener(this);
   }
   return find_helper_.get();
@@ -299,9 +290,8 @@ void AwContents::OnFindResultReceived(int active_ordinal,
 base::android::ScopedJavaLocalRef<jbyteArray>
     AwContents::GetCertificate(JNIEnv* env,
                                jobject obj) {
-  WebContents* web_contents = contents_container_->GetWebContents();
   content::NavigationEntry* entry =
-      web_contents->GetController().GetActiveEntry();
+      web_contents_->GetController().GetActiveEntry();
   if (!entry)
     return ScopedJavaLocalRef<jbyteArray>();
   // Get the certificate

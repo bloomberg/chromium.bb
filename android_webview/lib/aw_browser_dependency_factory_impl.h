@@ -30,8 +30,6 @@ class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
   // AwBrowserDependencyFactory
   virtual content::BrowserContext* GetBrowserContext(bool incognito) OVERRIDE;
   virtual content::WebContents* CreateWebContents(bool incognito) OVERRIDE;
-  virtual AwContentsContainer* CreateContentsContainer(
-      content::WebContents* contents) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwBrowserDependencyFactoryImpl);

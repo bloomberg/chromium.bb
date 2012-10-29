@@ -86,7 +86,7 @@ class AwContents : public FindHelper::Listener {
 
  private:
   JavaObjectWeakGlobalRef java_ref_;
-  scoped_ptr<AwContentsContainer> contents_container_;
+  scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
   scoped_ptr<AwRenderViewHostExt> render_view_host_ext_;
   scoped_ptr<FindHelper> find_helper_;

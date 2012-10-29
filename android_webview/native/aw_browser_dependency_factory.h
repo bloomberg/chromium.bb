@@ -42,11 +42,6 @@ class AwBrowserDependencyFactory {
   // Constructs and returns ownership of a WebContents instance.
   virtual content::WebContents* CreateWebContents(bool incognito) = 0;
 
-  // Creates and returns ownership of a new content container instance. That
-  // instance will take ownership of the passed |contents|.
-  virtual AwContentsContainer* CreateContentsContainer(
-      content::WebContents* contents) = 0;
-
  protected:
   AwBrowserDependencyFactory();
 

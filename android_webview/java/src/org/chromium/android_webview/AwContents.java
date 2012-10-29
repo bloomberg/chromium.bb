@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;

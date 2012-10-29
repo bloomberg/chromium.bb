@@ -32,7 +32,6 @@
         'aw_browser_dependency_factory.h',
         'aw_contents.cc',
         'aw_contents.h',
-        'aw_contents_container.h',
         'aw_contents_io_thread_client_impl.cc',
         'aw_contents_io_thread_client_impl.h',
         'aw_http_auth_handler.cc',
