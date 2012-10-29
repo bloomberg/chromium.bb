@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_CANVAS_PAINT_WIN_H_
-#define UI_GFX_CANVAS_PAINT_WIN_H_
+#ifndef SKIA_EXT_CANVAS_PAINT_WIN_H_
+#define SKIA_EXT_CANVAS_PAINT_WIN_H_
 
+#include "skia/ext/canvas_paint_common.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_paint.h"
 
-namespace gfx {
+namespace skia {
 
 // A class designed to help with WM_PAINT operations on Windows. It will
 // do BeginPaint/EndPaint on init/destruction, and will create the bitmap and
@@ -30,24 +29,25 @@ namespace gfx {
 //     return 0;
 //   }
 // Note: The created context is always inialized to (0, 0, 0, 0).
-class CanvasSkiaPaint : public Canvas {
+template <class T>
+class CanvasPaintT : public T {
  public:
   // This constructor assumes the canvas is opaque.
-  explicit CanvasSkiaPaint(HWND hwnd) : hwnd_(hwnd), paint_dc_(NULL),
+  explicit CanvasPaintT(HWND hwnd) : hwnd_(hwnd), paint_dc_(NULL),
     for_paint_(true) {
     memset(&ps_, 0, sizeof(ps_));
     initPaint(true);
   }
 
-  CanvasSkiaPaint(HWND hwnd, bool opaque) : hwnd_(hwnd), paint_dc_(NULL),
+  CanvasPaintT(HWND hwnd, bool opaque) : hwnd_(hwnd), paint_dc_(NULL),
       for_paint_(true) {
     memset(&ps_, 0, sizeof(ps_));
     initPaint(opaque);
   }
 
-  // Creates a CanvasSkiaPaint for the specified region that paints to the
+  // Creates a CanvasPaintT for the specified region that paints to the
   // specified dc. This does NOT do BeginPaint/EndPaint.
-  CanvasSkiaPaint(HDC dc, bool opaque, int x, int y, int w, int h)
+  CanvasPaintT(HDC dc, bool opaque, int x, int y, int w, int h)
       : hwnd_(NULL),
         paint_dc_(dc),
         for_paint_(false) {
@@ -59,9 +59,9 @@ class CanvasSkiaPaint : public Canvas {
     init(opaque);
   }
 
-  virtual ~CanvasSkiaPaint() {
+  virtual ~CanvasPaintT() {
     if (!isEmpty()) {
-      skia::PlatformCanvas* canvas = platform_canvas();
+      PlatformCanvas* canvas = GetPlatformCanvas(this);
       canvas->restoreToCount(1);
       // Commit the drawing to the screen
       skia::DrawToNativeContext(canvas, paint_dc_, ps_.rcPaint.left,
@@ -102,7 +102,7 @@ class CanvasSkiaPaint : public Canvas {
   }
 
   void init(bool opaque) {
-    skia::PlatformCanvas* canvas = platform_canvas();
+    PlatformCanvas* canvas = GetPlatformCanvas(this);
     // FIXME(brettw) for ClearType, we probably want to expand the bounds of
     // painting by one pixel so that the boundaries will be correct (ClearType
     // text can depend on the adjacent pixel). Then we would paint just the
@@ -126,10 +126,12 @@ class CanvasSkiaPaint : public Canvas {
   const bool for_paint_;
 
   // Disallow copy and assign.
-  CanvasSkiaPaint(const CanvasSkiaPaint&);
-  CanvasSkiaPaint& operator=(const CanvasSkiaPaint&);
+  CanvasPaintT(const CanvasPaintT&);
+  CanvasPaintT& operator=(const CanvasPaintT&);
 };
 
-}  // namespace gfx
+typedef CanvasPaintT<PlatformCanvas> PlatformCanvasPaint;
 
-#endif  // UI_GFX_CANVAS_PAINT_WIN_H_
+}  // namespace skia
+
+#endif  // SKIA_EXT_CANVAS_PAINT_WIN_H_
