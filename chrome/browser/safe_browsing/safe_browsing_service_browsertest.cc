@@ -202,13 +202,9 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
 class TestProtocolManager :  public SafeBrowsingProtocolManager {
  public:
   TestProtocolManager(SafeBrowsingService* sb_service,
-                      const std::string& client_name,
                       net::URLRequestContextGetter* request_context_getter,
-                      const std::string& url_prefix,
-                      bool disable_auto_update)
-      : SafeBrowsingProtocolManager(sb_service, client_name,
-                                    request_context_getter, url_prefix,
-                                    disable_auto_update),
+                      const SafeBrowsingProtocolConfig& config)
+      : SafeBrowsingProtocolManager(sb_service, request_context_getter, config),
         sb_service_(sb_service),
         delay_ms_(0) {
     create_count_++;
@@ -224,7 +220,7 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
   // server's response. At the same time, latency is added to simulate real
   // life network issues.
   virtual void GetFullHash(SafeBrowsingService::SafeBrowsingCheck* check,
-                           const std::vector<SBPrefix>& prefixes) {
+                           const std::vector<SBPrefix>& prefixes) OVERRIDE {
     // When we get a valid response, always cache the result.
     bool cancache = true;
     BrowserThread::PostDelayedTask(
@@ -273,18 +269,16 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
 
   virtual SafeBrowsingProtocolManager* CreateProtocolManager(
       SafeBrowsingService* sb_service,
-      const std::string& client_name,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& url_prefix,
-      bool disable_auto_update) {
-    pm_ = new TestProtocolManager(
-        sb_service, client_name, request_context_getter,
-        url_prefix, disable_auto_update);
+      const SafeBrowsingProtocolConfig& config) OVERRIDE {
+    pm_ = new TestProtocolManager(sb_service, request_context_getter, config);
     return pm_;
   }
+
   TestProtocolManager* GetProtocolManager() {
     return pm_;
   }
+
  private:
   // Owned by the SafebrowsingService.
   TestProtocolManager* pm_;

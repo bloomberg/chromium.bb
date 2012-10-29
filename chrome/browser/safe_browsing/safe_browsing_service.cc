@@ -659,24 +659,25 @@ void SafeBrowsingService::StartOnIOThread() {
 
   MakeDatabaseAvailable();
 
+  SafeBrowsingProtocolConfig config;
   // On Windows, get the safe browsing client name from the browser
   // distribution classes in installer util. These classes don't yet have
   // an analog on non-Windows builds so just keep the name specified here.
 #if defined(OS_WIN)
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::string client_name(dist->GetSafeBrowsingName());
+  config.client_name = dist->GetSafeBrowsingName();
 #else
 #if defined(GOOGLE_CHROME_BUILD)
-  std::string client_name("googlechrome");
+  config.client_name = "googlechrome";
 #else
-  std::string client_name("chromium");
+  config.client_name = "chromium";
 #endif
 #endif
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  bool disable_auto_update =
+  config.disable_auto_update =
       cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
       cmdline->HasSwitch(switches::kDisableBackgroundNetworking);
-  std::string url_prefix =
+  config.url_prefix =
       cmdline->HasSwitch(switches::kSbURLPrefix) ?
       cmdline->GetSwitchValueASCII(switches::kSbURLPrefix) :
       kSbDefaultURLPrefix;
@@ -684,10 +685,8 @@ void SafeBrowsingService::StartOnIOThread() {
   DCHECK(!protocol_manager_);
   protocol_manager_ =
       SafeBrowsingProtocolManager::Create(this,
-                                          client_name,
                                           url_request_context_getter_,
-                                          url_prefix,
-                                          disable_auto_update);
+                                          config);
 
   protocol_manager_->Initialize();
 }

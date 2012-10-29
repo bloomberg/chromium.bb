@@ -35,7 +35,10 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
 
 // Ensure that we respect section 5 of the SafeBrowsing protocol specification.
 TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+  SafeBrowsingProtocolManager pm(NULL, NULL, config);
   pm.next_update_interval_ = base::TimeDelta::FromSeconds(1800);
   ASSERT_TRUE(pm.back_off_fuzz_ >= 0.0 && pm.back_off_fuzz_ <= 1.0);
 
@@ -83,7 +86,10 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+  SafeBrowsingProtocolManager pm(NULL, NULL, config);
 
   // Add and Sub chunks.
   SBListChunkRanges phish("goog-phish-shavar");
@@ -108,7 +114,10 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+  SafeBrowsingProtocolManager pm(NULL, NULL, config);
 
   // No errors or back off time yet.
   EXPECT_EQ(pm.gethash_error_count_, 0);
@@ -160,7 +169,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+  SafeBrowsingProtocolManager pm(NULL, NULL, config);
+
   pm.version_ = kAppVer;
   EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
             "pver=2.2" + key_param_, pm.GetHashUrl().spec());
@@ -172,7 +185,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+  SafeBrowsingProtocolManager pm(NULL, NULL, config);
+
   pm.version_ = kAppVer;
 
   EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
@@ -185,7 +202,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+  SafeBrowsingProtocolManager pm(NULL, NULL, config);
+
   pm.version_ = kAppVer;
 
   GURL malicious_url("http://malicious.url.com");
@@ -239,7 +260,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareDetailsUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+
+  SafeBrowsingProtocolManager pm(NULL, NULL, config);
 
   pm.version_ = kAppVer;
   pm.set_additional_query(kAdditionalQuery);  // AdditionalQuery is not used.
@@ -249,7 +274,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareDetailsUrl) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestNextChunkUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+
+  SafeBrowsingProtocolManager pm(NULL, NULL, config);
   pm.version_ = kAppVer;
 
   std::string url_partial = "localhost:1234/foo/bar?foo";

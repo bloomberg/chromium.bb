@@ -43,6 +43,13 @@ struct hash<const net::URLFetcher*> {
 }
 #endif
 
+struct SafeBrowsingProtocolConfig {
+  SafeBrowsingProtocolConfig() : disable_auto_update(false) {}
+  std::string client_name;
+  std::string url_prefix;
+  bool disable_auto_update;
+};
+
 class SafeBrowsingProtocolManager;
 // Interface of a factory to create ProtocolManager.  Useful for tests.
 class SBProtocolManagerFactory {
@@ -51,10 +58,8 @@ class SBProtocolManagerFactory {
   virtual ~SBProtocolManagerFactory() {}
   virtual SafeBrowsingProtocolManager* CreateProtocolManager(
       SafeBrowsingService* sb_service,
-      const std::string& client_name,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& url_prefix,
-      bool disable_auto_update) = 0;
+      const SafeBrowsingProtocolConfig& config) = 0;
  private:
   DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactory);
 };
@@ -72,10 +77,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Create an instance of the safe browsing service.
   static SafeBrowsingProtocolManager* Create(
       SafeBrowsingService* sb_service,
-      const std::string& client_name,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& url_prefix,
-      bool disable_auto_update);
+      const SafeBrowsingProtocolConfig& config);
 
   // Sets up the update schedule and internal state for making periodic requests
   // of the SafeBrowsing service.
@@ -173,10 +176,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // ForceScheduleNextUpdate is called.
   SafeBrowsingProtocolManager(
       SafeBrowsingService* sb_service,
-      const std::string& client_name,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& url_prefix,
-      bool disable_auto_update);
+      const SafeBrowsingProtocolConfig& url_prefix);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestBackOffTimes);

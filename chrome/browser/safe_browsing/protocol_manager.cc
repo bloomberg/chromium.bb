@@ -47,13 +47,10 @@ class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
   virtual ~SBProtocolManagerFactoryImpl() { }
   virtual SafeBrowsingProtocolManager* CreateProtocolManager(
       SafeBrowsingService* sb_service,
-      const std::string& client_name,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& url_prefix,
-      bool disable_auto_update) {
+      const SafeBrowsingProtocolConfig& config) OVERRIDE {
     return new SafeBrowsingProtocolManager(
-        sb_service, client_name, request_context_getter,
-        url_prefix, disable_auto_update);
+        sb_service, request_context_getter, config);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactoryImpl);
@@ -67,24 +64,19 @@ SBProtocolManagerFactory* SafeBrowsingProtocolManager::factory_ = NULL;
 // static
 SafeBrowsingProtocolManager* SafeBrowsingProtocolManager::Create(
     SafeBrowsingService* sb_service,
-    const std::string& client_name,
     net::URLRequestContextGetter* request_context_getter,
-    const std::string& url_prefix,
-    bool disable_auto_update) {
+    const SafeBrowsingProtocolConfig& config) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!factory_)
     factory_ = new SBProtocolManagerFactoryImpl();
-  return factory_->CreateProtocolManager(sb_service, client_name,
-                                         request_context_getter,
-                                         url_prefix, disable_auto_update);
+  return factory_->CreateProtocolManager(
+      sb_service, request_context_getter, config);
 }
 
 SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     SafeBrowsingService* sb_service,
-    const std::string& client_name,
     net::URLRequestContextGetter* request_context_getter,
-    const std::string& url_prefix,
-    bool disable_auto_update)
+    const SafeBrowsingProtocolConfig& config)
     : sb_service_(sb_service),
       request_type_(NO_REQUEST),
       update_error_count_(0),
@@ -96,10 +88,10 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       update_state_(FIRST_REQUEST),
       chunk_pending_to_write_(false),
       update_size_(0),
-      client_name_(client_name),
+      client_name_(config.client_name),
       request_context_getter_(request_context_getter),
-      url_prefix_(url_prefix),
-      disable_auto_update_(disable_auto_update) {
+      url_prefix_(config.url_prefix),
+      disable_auto_update_(config.disable_auto_update) {
   DCHECK(!url_prefix_.empty());
 
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
