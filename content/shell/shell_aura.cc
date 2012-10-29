@@ -30,7 +30,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/shell/shell_stacking_client_chromeos.h"
+#include "content/shell/shell_stacking_client_ash.h"
 #else
 #include "ui/aura/desktop/desktop_stacking_client.h"
 #endif
@@ -284,7 +284,7 @@ void Shell::PlatformInitialize() {
 #endif
   aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
 #if defined(OS_CHROMEOS)
-  stacking_client_ = new content::ShellStackingClientChromeos();
+  stacking_client_ = new content::ShellStackingClientAsh();
 #else
   stacking_client_ = new aura::DesktopStackingClient();
 #endif

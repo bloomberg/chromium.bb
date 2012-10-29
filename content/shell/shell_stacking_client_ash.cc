@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/shell_stacking_client_chromeos.h"
+#include "content/shell/shell_stacking_client_ash.h"
 
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -13,18 +13,18 @@
 
 namespace content {
 
-ShellStackingClientChromeos::ShellStackingClientChromeos() {
+ShellStackingClientAsh::ShellStackingClientAsh() {
   aura::client::SetStackingClient(this);
 }
 
-ShellStackingClientChromeos::~ShellStackingClientChromeos() {
+ShellStackingClientAsh::~ShellStackingClientAsh() {
   if (root_window_.get())
     root_window_event_filter_->RemoveFilter(input_method_filter_.get());
 
   aura::client::SetStackingClient(NULL);
 }
 
-aura::Window* ShellStackingClientChromeos::GetDefaultParent(
+aura::Window* ShellStackingClientAsh::GetDefaultParent(
     aura::Window* window,
     const gfx::Rect& bounds) {
   if (!root_window_.get()) {
