@@ -206,6 +206,10 @@ if test x$enable_weston_launch == xyes; then
   WESTON_LAUNCH_LIBS="$WESTON_LAUNCH_LIBS -lpam"
 fi
 
+PKG_CHECK_MODULES(GLU, [glu], [have_glu=yes], [have_glu=no])
+AM_CONDITIONAL(HAVE_GLU, test "x$have_glu" = "xyes")
+
+
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
 AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,

@@ -174,6 +174,7 @@ full_gl_client_programs = gears
 gears_SOURCES = gears.c
 gears_LDADD = $(toolkit_libs)
 
+if HAVE_GLU
 screensaver = weston-screensaver
 weston_screensaver_SOURCES =			\
 	wscreensaver.c				\
@@ -184,7 +185,10 @@ weston_screensaver_SOURCES =			\
 	wscreensaver-glue.h			\
 	glmatrix.c				\
 	matrix3.xpm
-weston_screensaver_LDADD = $(toolkit_libs) -lGLU
+weston_screensaver_LDADD = $(toolkit_libs) $(GLU_LIBS)
+weston_screensaver_CFLAGS = $(toolkit_libs) $(GLU_CFLAGS)
+endif
+
 endif
 
 @wayland_scanner_rules@
