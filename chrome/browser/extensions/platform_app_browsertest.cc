@@ -713,7 +713,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
 // This is currently expected to fail in debug builds due to a segfault in
 // WebKit triggered by a dereference between #ifndef NDEBUG guards see
 // http://crbug.com/157097 .
-#define MAYBE_DevToolsOpenedWithReload FAILS_DevToolsOpenedWithReload
+// The test is disabled because of timeouts, see http://crbug.com/158283.
+#define MAYBE_DevToolsOpenedWithReload DISABLED_DevToolsOpenedWithReload
 #endif
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DevToolsOpenedWithReload) {
