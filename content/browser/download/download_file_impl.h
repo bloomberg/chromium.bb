@@ -53,9 +53,8 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
   virtual void Rename(const FilePath& full_path,
                       bool overwrite_existing_file,
                       const RenameCompletionCallback& callback) OVERRIDE;
-  virtual void Detach(base::Closure callback) OVERRIDE;
+  virtual void Detach(const DetachCompletionCallback& callback) OVERRIDE;
   virtual void Cancel() OVERRIDE;
-  virtual void AnnotateWithSourceInformation() OVERRIDE;
   virtual FilePath FullPath() const OVERRIDE;
   virtual bool InProgress() const OVERRIDE;
   virtual int64 BytesSoFar() const OVERRIDE;

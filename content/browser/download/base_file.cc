@@ -213,7 +213,8 @@ void BaseFile::Finish() {
 
 // OS_WIN, OS_MACOSX and OS_LINUX have specialized implementations.
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
-void BaseFile::AnnotateWithSourceInformation() {
+DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 #endif
 

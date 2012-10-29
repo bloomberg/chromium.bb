@@ -63,6 +63,10 @@ enum DownloadCountTypes {
   // progress.
   APPEND_TO_DETACHED_FILE_COUNT,
 
+  // Counts the number of instances where the downloaded file is missing after a
+  // successful invocation of win_util::ScanAndSaveDownloadedFile().
+  FILE_MISSING_AFTER_SUCCESSFUL_SCAN_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 

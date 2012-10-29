@@ -69,8 +69,9 @@ class CONTENT_EXPORT BaseFile {
   // Indicate that the download has finished. No new data will be received.
   void Finish();
 
-  // Informs the OS that this file came from the internet.
-  void AnnotateWithSourceInformation();
+  // Informs the OS that this file came from the internet. Returns a
+  // DownloadInterruptReason indicating the result of the operation.
+  DownloadInterruptReason AnnotateWithSourceInformation();
 
   // Calculate and return the current speed in bytes per second.
   int64 CurrentSpeed() const;

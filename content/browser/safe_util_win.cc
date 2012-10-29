@@ -11,7 +11,9 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
+#include "googleurl/src/gurl.h"
 #include "ui/base/win/shell.h"
 
 namespace {
@@ -22,8 +24,12 @@ namespace {
 static const GUID kClientID = { 0x2676a9a2, 0xd919, 0x4fee,
   { 0x91, 0x87, 0x15, 0x21, 0x0, 0x39, 0x3a, 0xb2 } };
 
-// Directly writes the ZoneIdentifier stream, without using the
-// IAttachmentExecute service.
+// Sets the Zone Identifier on the file to "Internet" (3). Returns true if the
+// function succeeds, false otherwise. A failure is expected on system where
+// the Zone Identifier is not supported, like a machine with a FAT32 filesystem.
+// This function does not invoke Windows Attachment Execution Services.
+//
+// |full_path| is the path to the downloaded file.
 bool SetInternetZoneIdentifierDirectly(const FilePath& full_path) {
   const DWORD kShare = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   std::wstring path = full_path.value() + L":Zone.Identifier";
@@ -36,8 +42,7 @@ bool SetInternetZoneIdentifierDirectly(const FilePath& full_path) {
   // Don't include trailing null in data written.
   static const DWORD kIdentifierSize = arraysize(kIdentifier) - 1;
   DWORD written = 0;
-  BOOL result = WriteFile(file, kIdentifier, kIdentifierSize, &written,
-                          NULL);
+  BOOL result = WriteFile(file, kIdentifier, kIdentifierSize, &written, NULL);
   BOOL flush_result = FlushFileBuffers(file);
   CloseHandle(file);
 
@@ -115,41 +120,37 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
   return ui::win::OpenItemViaShellNoZoneCheck(full_path);
 }
 
-bool SetInternetZoneIdentifier(const FilePath& full_path,
-                               const std::wstring& source_url) {
+HRESULT ScanAndSaveDownloadedFile(const FilePath& full_path,
+                                  const GURL& source_url) {
   base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);
 
   if (FAILED(hr)) {
-    // We don't have Attachment Execution Services, it must be a pre-XP.SP2
-    // Windows installation, or the thread does not have COM initialized.
-    if (hr == CO_E_NOTINITIALIZED) {
-      NOTREACHED();
-      return false;
-    }
+    // The thread must have COM initialized.
+    DCHECK_NE(CO_E_NOTINITIALIZED, hr);
 
-    // Write the ZoneIdentifier file directly.
-    return SetInternetZoneIdentifierDirectly(full_path);
+    // We don't have Attachment Execution Services, it must be a pre-XP.SP2
+    // Windows installation, or the thread does not have COM initialized. Try to
+    // set the zone information directly. Failure is not considered an error.
+    SetInternetZoneIdentifierDirectly(full_path);
+    return hr;
   }
 
   hr = attachment_services->SetClientGuid(kClientID);
   if (FAILED(hr))
-    return false;
+    return hr;
 
   hr = attachment_services->SetLocalPath(full_path.value().c_str());
   if (FAILED(hr))
-    return false;
+    return hr;
 
-  // Source is necessary for files ending in ".tmp" to avoid error 0x800c000e.
-  hr = attachment_services->SetSource(source_url.c_str());
+  hr = attachment_services->SetSource(UTF8ToWide(source_url.spec()).c_str());
   if (FAILED(hr))
-    return false;
+    return hr;
 
-  hr = attachment_services->Save();
-  if (FAILED(hr))
-    return false;
-
-  return true;
+  // A failure in the Save() call below could result in the downloaded file
+  // being deleted.
+  return attachment_services->Save();
 }
 
 }  // namespace win_util

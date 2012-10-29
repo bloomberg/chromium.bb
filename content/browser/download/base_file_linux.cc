@@ -9,11 +9,12 @@
 
 namespace content {
 
-void BaseFile::AnnotateWithSourceInformation() {
+DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
   AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 }  // namespace content

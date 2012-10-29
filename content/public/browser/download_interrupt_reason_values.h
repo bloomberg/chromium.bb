@@ -36,6 +36,13 @@ INTERRUPT_REASON(FILE_VIRUS_INFECTED, 7)
 // "Temporary Problem".
 INTERRUPT_REASON(FILE_TRANSIENT_ERROR, 10)
 
+// The file was blocked due to local policy.
+// "Blocked"
+INTERRUPT_REASON(FILE_BLOCKED, 11)
+
+// An attempt to check the safety of the download failed due to unexpected
+// reasons. See http://crbug.com/153212.
+INTERRUPT_REASON(FILE_SECURITY_CHECK_FAILED, 12)
 
 // Network errors.
 

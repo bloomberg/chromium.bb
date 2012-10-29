@@ -78,16 +78,13 @@ ACTION_P(ScheduleRenameCallback, new_path) {
 
 // Schedules a task to invoke the input closure on
 // the UI thread. Should only be used as the action for
-// MockDownloadFile::Detach/Cancel as follows:
+// MockDownloadFile::Detach as follows:
 //   EXPECT_CALL(download_file, Detach(_))
-//       .WillOnce(ScheduleClosure()));
-ACTION(ScheduleClosure) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, arg0);
-}
-
-// Similarly for scheduling a completion callback.
-ACTION(ScheduleCompleteCallback) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(arg1));
+//       .WillOnce(ScheduleDetachCallback()));
+ACTION(ScheduleDetachCallback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(arg0, DOWNLOAD_INTERRUPT_REASON_NONE));
 }
 
 }  // namespace
@@ -508,7 +505,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item))
       .WillOnce(Return(true));
   EXPECT_CALL(*download_file, Detach(_))
-      .WillOnce(ScheduleClosure());
+      .WillOnce(ScheduleDetachCallback());
   item->SetIsPersisted();
   item->MaybeCompleteDownload();
   RunAllPendingInMessageLoops();

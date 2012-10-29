@@ -7,9 +7,11 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include "base/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_stats.h"
 #include "content/browser/safe_util_win.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -142,6 +144,35 @@ DownloadInterruptReason MapShFileOperationCodes(int code) {
       net::MapSystemError(code), DOWNLOAD_INTERRUPT_FROM_DISK);
 }
 
+// Maps a return code from ScanAndSaveDownloadedFile() to a
+// DownloadInterruptReason. The return code in |result| is usually from the
+// final IAttachmentExecute::Save() call.
+DownloadInterruptReason MapScanAndSaveErrorCodeToInterruptReason(
+    HRESULT result) {
+  if (SUCCEEDED(result))
+    return DOWNLOAD_INTERRUPT_REASON_NONE;
+
+  switch (result) {
+    case INET_E_SECURITY_PROBLEM:       // 0x800c000e
+      // This is returned if the download was blocked due to security
+      // restrictions. E.g. if the source URL was in the Restricted Sites zone
+      // and downloads are blocked on that zone, then the download would be
+      // deleted and this error code is returned.
+      return DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
+
+    case E_FAIL:                        // 0x80004005
+      // Returned if an anti-virus product reports an infection in the
+      // downloaded file during IAE::Save().
+      return DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED;
+
+    default:
+      // Any other error that occurs during IAttachmentExecute::Save() likely
+      // indicates a problem with the security check, but not necessarily the
+      // download. See http://crbug.com/153212.
+      return DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED;
+  }
+}
+
 } // namespace
 
 // Renames a file using the SHFileOperation API to ensure that the target file
@@ -178,14 +209,36 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
   return interrupt_reason;
 }
 
-void BaseFile::AnnotateWithSourceInformation() {
+DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
-  // Sets the Zone to tell Windows that this file comes from the internet.
-  // We ignore the return value because a failure is not fatal.
-  win_util::SetInternetZoneIdentifier(full_path_,
-                                      UTF8ToWide(source_url_.spec()));
+  bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
+  DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
+  HRESULT hr = win_util::ScanAndSaveDownloadedFile(full_path_, source_url_);
+
+  // If the download file is missing after the call, then treat this as an
+  // interrupted download.
+  //
+  // If the ScanAndSaveDownloadedFile() call failed, but the downloaded file is
+  // still around, then don't interrupt the download. Attachment Execution
+  // Services deletes the submitted file if the downloaded file is blocked by
+  // policy or if it was found to be infected.
+  //
+  // If the file is still there, then the error could be due to AES not being
+  // available or some other error during the AES invocation. In either case,
+  // we don't surface the error to the user.
+  if (!file_util::PathExists(full_path_)) {
+    DCHECK(FAILED(hr));
+    result = MapScanAndSaveErrorCodeToInterruptReason(hr);
+    if (result == DOWNLOAD_INTERRUPT_REASON_NONE) {
+      RecordDownloadCount(FILE_MISSING_AFTER_SUCCESSFUL_SCAN_COUNT);
+      result = DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED;
+    }
+    LogInterruptReason("ScanAndSaveDownloadedFile", hr, result);
+  }
+  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
+  return result;
 }
 
 }  // namespace content

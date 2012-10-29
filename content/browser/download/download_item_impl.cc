@@ -100,7 +100,8 @@ class NullDownloadRequestHandle : public DownloadRequestHandleInterface {
 // takes ownership of the DownloadFile and hence implicitly destroys it
 // at the end of the function.
 static void DownloadFileDetach(
-    scoped_ptr<DownloadFile> download_file, base::Closure callback) {
+    scoped_ptr<DownloadFile> download_file,
+    const DownloadFile::DetachCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   download_file->Detach(callback);
 }
@@ -827,7 +828,7 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
   // interrupts to race with cancels.
 
   // Whatever happens, the first one to hit the UI thread wins.
-  if (state_ != IN_PROGRESS_INTERNAL)
+  if (state_ != IN_PROGRESS_INTERNAL && state_ != COMPLETING_INTERNAL)
     return;
 
   last_reason_ = reason;
@@ -1179,7 +1180,7 @@ void DownloadItemImpl::ReadyForDownloadCompletionDone() {
   if (is_save_package_download_) {
     // Avoid doing anything on the file thread; there's nothing we control
     // there.
-    OnDownloadFileReleased();
+    OnDownloadFileReleased(DOWNLOAD_INTERRUPT_REASON_NONE);
     return;
   }
 
@@ -1246,7 +1247,11 @@ void DownloadItemImpl::ReleaseDownloadFile() {
   TransitionTo(COMPLETING_INTERNAL);
 }
 
-void DownloadItemImpl::OnDownloadFileReleased() {
+void DownloadItemImpl::OnDownloadFileReleased(DownloadInterruptReason reason) {
+  if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
+    Interrupt(reason);
+    return;
+  }
   if (delegate_->ShouldOpenDownload(this))
     Completed();
   else
@@ -1290,8 +1295,9 @@ void DownloadItemImpl::Completed() {
 void DownloadItemImpl::CancelDownloadFile() {
   // TODO(rdsmith/benjhayden): Remove condition as part of
   // SavePackage integration.
-  if (!is_save_package_download_) {
-    DCHECK(download_file_.get());
+  // download_file_ can be NULL if Interrupt() is called after the download file
+  // has been released.
+  if (!is_save_package_download_ && download_file_.get()) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         // Will be deleted at end of task execution.

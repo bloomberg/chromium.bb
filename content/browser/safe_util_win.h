@@ -9,6 +9,7 @@
 #include <windows.h>
 
 class FilePath;
+class GURL;
 
 namespace win_util {
 
@@ -40,16 +41,33 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
                            const FilePath& full_path,
                            const std::wstring& source_url);
 
-// Sets the Zone Identifier on the file to "Internet" (3). Returns true if the
-// function succeeds, false otherwise. A failure is expected on system where
-// the Zone Identifier is not supported, like a machine with a FAT32 filesystem.
-// It should not be considered fatal.
+// Invokes IAttachmentExecute::Save to validate the downloaded file. The call
+// may scan the file for viruses and if necessary, annotate it with evidence. As
+// a result of the validation, the file may be deleted.  See:
+// http://msdn.microsoft.com/en-us/bb776299
 //
-// |full_path| is the path to save the file to, and
-// |source_url| is the URL where the file was downloaded from.
-bool SetInternetZoneIdentifier(const FilePath& full_path,
-                               const std::wstring& source_url);
-
+// If Attachment Execution Services is unavailable, then this function will
+// attempt to manually annotate the file with security zone information. A
+// failure code will be returned in this case even if the file is sucessfully
+// annotated.
+//
+// IAE::Save() will delete the file if it was found to be blocked by local
+// security policy or if it was found to be infected. The call may also delete
+// the file due to other failures (http://crbug.com/153212). A failure code will
+// be returned in these cases.
+//
+// Typical return values:
+//   S_OK   : The file was okay. If any viruses were found, they were cleaned.
+//   E_FAIL : Virus infected.
+//   INET_E_SECURITY_PROBLEM : The file was blocked due to security policy.
+//
+// Any other return value indicates an unexpected error during the scan.
+//
+// |full_path| : is the path to the downloaded file. This should be the final
+//               path of the download.
+// |source_url|: the source URL for the download.
+HRESULT ScanAndSaveDownloadedFile(const FilePath& full_path,
+                                  const GURL& source_url);
 }  // namespace win_util
 
 #endif  // CONTENT_COMMON_SAFE_UTIL_WIN_H_

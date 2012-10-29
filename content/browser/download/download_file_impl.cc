@@ -132,27 +132,22 @@ void DownloadFileImpl::Rename(const FilePath& full_path,
       base::Bind(callback, reason, new_path));
 }
 
-void DownloadFileImpl::Detach(base::Closure callback) {
+void DownloadFileImpl::Detach(const DetachCompletionCallback& callback) {
   // Doing the annotation here leaves a small window during
   // which the file has the final name but hasn't been marked with the
   // Mark Of The Web.  However, it allows anti-virus scanners on Windows
   // to actually see the data (http://crbug.com/127999), and the Window
   // is pretty small (round trip to the UI thread).
-  AnnotateWithSourceInformation();
-
+  DownloadInterruptReason interrupt_reason =
+      file_.AnnotateWithSourceInformation();
   file_.Detach();
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, interrupt_reason));
 }
 
 void DownloadFileImpl::Cancel() {
   file_.Cancel();
-}
-
-void DownloadFileImpl::AnnotateWithSourceInformation() {
-  bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
-  file_.AnnotateWithSourceInformation();
-  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
 }
 
 FilePath DownloadFileImpl::FullPath() const {

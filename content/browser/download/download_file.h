@@ -36,6 +36,11 @@ class CONTENT_EXPORT DownloadFile {
   typedef base::Callback<void(DownloadInterruptReason reason,
                               const FilePath& path)> RenameCompletionCallback;
 
+  // Callback used with Detach(). On success, |reason| will be
+  // DOWNLOAD_INTERRUPT_REASON_NONE.
+  typedef base::Callback<void(DownloadInterruptReason reason)>
+      DetachCompletionCallback;
+
   virtual ~DownloadFile() {}
 
   // Returns DOWNLOAD_INTERRUPT_REASON_NONE on success, or a network
@@ -54,13 +59,10 @@ class CONTENT_EXPORT DownloadFile {
 
   // Detach the file so it is not deleted on destruction.
   // |callback| will be called on the UI thread after detach.
-  virtual void Detach(base::Closure callback) = 0;
+  virtual void Detach(const DetachCompletionCallback& callback) = 0;
 
   // Abort the download and automatically close the file.
   virtual void Cancel() = 0;
-
-  // Informs the OS that this file came from the internet.
-  virtual void AnnotateWithSourceInformation() = 0;
 
   virtual FilePath FullPath() const = 0;
   virtual bool InProgress() const = 0;

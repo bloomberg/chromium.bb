@@ -44,6 +44,9 @@ DownloadInterruptReason ConvertNetErrorToInterruptReason(
     // The file has a virus.
     FILE_ERROR_TO_INTERRUPT_REASON(FILE_VIRUS_INFECTED, VIRUS_INFECTED)
 
+    // The file was blocked by local policy.
+    FILE_ERROR_TO_INTERRUPT_REASON(BLOCKED_BY_CLIENT, BLOCKED)
+
     // Network errors.
 
     // The network operation timed out.

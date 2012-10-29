@@ -80,6 +80,7 @@ base::Value* FileErrorNetLogCallback(const char* operation,
                                      net::Error net_error,
                                      net::NetLog::LogLevel log_level);
 
+// Returns NetLog parameters for a download interruption.
 base::Value* FileInterruptedNetLogCallback(const char* operation,
                                            int os_error,
                                            DownloadInterruptReason reason,

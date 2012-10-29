@@ -97,7 +97,7 @@ class DownloadFileWithDelay : public DownloadFileImpl {
   // Wraps DownloadFileImpl::Detach and intercepts the return callback,
   // storing it in the factory that produced this object for later
   // retrieval.
-  virtual void Detach(base::Closure callback) OVERRIDE;
+  virtual void Detach(const DetachCompletionCallback& callback) OVERRIDE;
 
  private:
   static void RenameCallbackWrapper(
@@ -108,7 +108,8 @@ class DownloadFileWithDelay : public DownloadFileImpl {
 
   static void DetachCallbackWrapper(
       DownloadFileWithDelayFactory* factory,
-      const base::Closure& original_callback);
+      const DetachCompletionCallback& original_callback,
+      DownloadInterruptReason interrupt_reason);
 
   // This variable may only be read on the FILE thread, and may only be
   // indirected through (e.g. methods on DownloadFileWithDelayFactory called)
@@ -186,7 +187,7 @@ void DownloadFileWithDelay::Rename(const FilePath& full_path,
                  owner_, callback));
 }
 
-void DownloadFileWithDelay::Detach(base::Closure callback) {
+void DownloadFileWithDelay::Detach(const DetachCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DownloadFileImpl::Detach(
       base::Bind(DownloadFileWithDelay::DetachCallbackWrapper,
@@ -206,9 +207,10 @@ void DownloadFileWithDelay::RenameCallbackWrapper(
 // static
 void DownloadFileWithDelay::DetachCallbackWrapper(
     DownloadFileWithDelayFactory* factory,
-    const base::Closure& original_callback) {
+    const DetachCompletionCallback& original_callback,
+    DownloadInterruptReason interrupt_reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  factory->AddDetachCallback(original_callback);
+  factory->AddDetachCallback(base::Bind(original_callback, interrupt_reason));
 }
 
 DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()

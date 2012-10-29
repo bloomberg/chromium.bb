@@ -208,10 +208,10 @@ class CONTENT_EXPORT DownloadItemImpl
     // TODO(rdsmith): Put in state variable for file name determination.
     IN_PROGRESS_INTERNAL,
 
-    // Between commit point (dispatch of download file release) and
-    // completed.  Embedder may be opening the file in this state.
-    // Note that the DownloadItem may be deleted (by shutdown) in this
-    // state.
+    // Between commit point (dispatch of download file release) and completed.
+    // Embedder may be opening the file in this state.  Note that the
+    // DownloadItem may be deleted (by shutdown) or interrupted (e.g. due to a
+    // failure during AnnotateWithSourceInformation()) in this state.
     COMPLETING_INTERNAL,
 
     // After embedder has had a chance to auto-open.  User may now open
@@ -279,7 +279,9 @@ class CONTENT_EXPORT DownloadItemImpl
 
   void ReleaseDownloadFile();
 
-  void OnDownloadFileReleased();
+  // TODO(rdsmith,asanka): Move the AnnotateWithSourceInformation() call to the
+  //     final rename and eliminate the interrupt reason callback.
+  void OnDownloadFileReleased(DownloadInterruptReason reason);
 
   // Called when the entire download operation (including renaming etc)
   // is completed.
