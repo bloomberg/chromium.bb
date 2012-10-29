@@ -494,6 +494,8 @@
         'browser/chromeos/net/cros_network_change_notifier_factory.h',
         'browser/chromeos/net/network_change_notifier_chromeos.cc',
         'browser/chromeos/net/network_change_notifier_chromeos.h',
+        'browser/chromeos/net/network_portal_detector.cc',
+        'browser/chromeos/net/network_portal_detector.h',
         'browser/chromeos/network_login_observer.cc',
         'browser/chromeos/network_login_observer.h',
         'browser/chromeos/network_message_observer.cc',

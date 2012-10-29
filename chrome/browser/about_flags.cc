@@ -21,7 +21,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/google_chrome_strings.h"
 #include "media/base/media_switches.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -192,6 +194,14 @@ const Experiment::Choice kAshBootAnimationFunction[] = {
     ash::switches::kAshBootAnimationFunction2, ""},
   { IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION3,
     ash::switches::kAshBootAnimationFunction3, ""}
+};
+
+const Experiment::Choice kChromeCaptivePortalDetectionChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_SHILL_CAPTIVE_PORTAL_DETECTOR,
+    switches::kDisableChromeCaptivePortalDetector, ""},
+  { IDS_FLAGS_CHROME_CAPTIVE_PORTAL_DETECTOR,
+    switches::kEnableChromeCaptivePortalDetector, ""}
 };
 #endif
 
@@ -903,6 +913,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION_DESCRIPTION,
     kOsCrOS,
     MULTI_VALUE_TYPE(kAshBootAnimationFunction),
+  },
+  {
+    "captive-portal-detector",
+    IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_NAME,
+    IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kChromeCaptivePortalDetectionChoices),
   },
   {
     "new-lock-animations",

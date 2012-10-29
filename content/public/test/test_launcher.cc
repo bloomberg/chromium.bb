@@ -378,6 +378,7 @@ int RunTestInternal(const testing::TestCase* test_case,
   if (!base::LaunchProcess(new_cmd_line, options, &process_handle))
     return -1;
 
+  default_timeout = base::TimeDelta::FromHours(1);
   base::TimeDelta timeout = GetTestTerminationTimeout(
       test_name, default_timeout);
 
