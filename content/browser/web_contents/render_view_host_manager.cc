@@ -39,6 +39,7 @@ using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using content::SiteInstance;
 using content::WebUIControllerFactory;
+using content::WebUIImpl;
 
 RenderViewHostManager::RenderViewHostManager(
     content::RenderViewHostDelegate* render_view_delegate,

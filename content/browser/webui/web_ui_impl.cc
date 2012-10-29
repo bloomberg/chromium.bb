@@ -23,11 +23,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 
-using content::RenderViewHostImpl;
-using content::WebContents;
-using content::WebUIController;
-using content::WebUIMessageHandler;
-
 namespace content {
 
 const WebUI::TypeID WebUI::kNoWebUI = NULL;
@@ -49,14 +44,12 @@ string16 WebUI::GetJavascriptCall(
       char16('(') + parameters + char16(')') + char16(';');
 }
 
-}
-
 WebUIImpl::WebUIImpl(WebContents* contents)
     : hide_favicon_(false),
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
-      link_transition_type_(content::PAGE_TRANSITION_LINK),
-      bindings_(content::BINDINGS_POLICY_WEB_UI),
+      link_transition_type_(PAGE_TRANSITION_LINK),
+      bindings_(BINDINGS_POLICY_WEB_UI),
       web_contents_(contents) {
   DCHECK(contents);
 }
@@ -82,10 +75,10 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message) {
 void WebUIImpl::OnWebUISend(const GURL& source_url,
                             const std::string& message,
                             const ListValue& args) {
-  content::WebContentsDelegate* delegate = web_contents_->GetDelegate();
+  WebContentsDelegate* delegate = web_contents_->GetDelegate();
   bool data_urls_allowed = delegate && delegate->CanLoadDataURLsInWebUI();
-  content::WebUIControllerFactory* factory =
-      content::GetContentClient()->browser()->GetWebUIControllerFactory();
+  WebUIControllerFactory* factory =
+      GetContentClient()->browser()->GetWebUIControllerFactory();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           HasWebUIBindings(web_contents_->GetRenderProcessHost()->GetID()) ||
       !factory->IsURLAcceptableForWebUI(web_contents_->GetBrowserContext(),
@@ -98,12 +91,12 @@ void WebUIImpl::OnWebUISend(const GURL& source_url,
   ProcessWebUIMessage(source_url, message, args);
 }
 
-void WebUIImpl::RenderViewCreated(content::RenderViewHost* render_view_host) {
+void WebUIImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   controller_->RenderViewCreated(render_view_host);
 
   // Do not attempt to set the toolkit property if WebUI is not enabled, e.g.,
   // the bookmarks manager page.
-  if (!(bindings_ & content::BINDINGS_POLICY_WEB_UI))
+  if (!(bindings_ & BINDINGS_POLICY_WEB_UI))
     return;
 
 #if defined(TOOLKIT_VIEWS)
@@ -153,11 +146,11 @@ void WebUIImpl::OverrideTitle(const string16& title) {
   overridden_title_ = title;
 }
 
-content::PageTransition WebUIImpl::GetLinkTransitionType() const {
+PageTransition WebUIImpl::GetLinkTransitionType() const {
   return link_transition_type_;
 }
 
-void WebUIImpl::SetLinkTransitionType(content::PageTransition type) {
+void WebUIImpl::SetLinkTransitionType(PageTransition type) {
   link_transition_type_ = type;
 }
 
@@ -272,3 +265,5 @@ void WebUIImpl::ExecuteJavascript(const string16& javascript) {
       web_contents_->GetRenderViewHost())->ExecuteJavascriptInWebFrame(
       ASCIIToUTF16(frame_xpath_), javascript);
 }
+
+}  // namespace content

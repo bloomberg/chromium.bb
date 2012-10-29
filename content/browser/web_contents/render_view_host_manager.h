@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class WebUIImpl;
 
 namespace content {
 class BrowserContext;
@@ -29,6 +28,7 @@ class RenderViewHostManagerTest;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostView;
 class TestWebContents;
+class WebUIImpl;
 }
 
 // Manages RenderViewHosts for a WebContentsImpl. Normally there is only one and
@@ -79,7 +79,8 @@ class CONTENT_EXPORT RenderViewHostManager
     // Creates a WebUI object for the given URL if one applies. Ownership of the
     // returned pointer will be passed to the caller. If no WebUI applies,
     // returns NULL.
-    virtual WebUIImpl* CreateWebUIForRenderManager(const GURL& url) = 0;
+    virtual content::WebUIImpl* CreateWebUIForRenderManager(
+        const GURL& url) = 0;
 
     // Returns the navigation entry of the current navigation, or NULL if there
     // is none.
@@ -133,10 +134,10 @@ class CONTENT_EXPORT RenderViewHostManager
   content::RenderViewHostImpl* pending_render_view_host() const;
 
   // Returns the current committed Web UI or NULL if none applies.
-  WebUIImpl* web_ui() const { return web_ui_.get(); }
+  content::WebUIImpl* web_ui() const { return web_ui_.get(); }
 
   // Returns the Web UI for the pending navigation, or NULL of none applies.
-  WebUIImpl* pending_web_ui() const {
+  content::WebUIImpl* pending_web_ui() const {
     return pending_web_ui_.get() ? pending_web_ui_.get() :
                                    pending_and_current_web_ui_.get();
   }
@@ -178,7 +179,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // Set the WebUI after committing a page load. This is useful for navigations
   // initiated from a renderer, where we want to give the new renderer WebUI
   // privileges from the originating renderer.
-  void SetWebUIPostCommit(WebUIImpl* web_ui);
+  void SetWebUIPostCommit(content::WebUIImpl* web_ui);
 
   // Called when a provisional load on the given renderer is aborted.
   void RendererAbortedProvisionalLoad(
@@ -295,7 +296,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // non-DOM-UI pages). This object is responsible for all communication with
   // a child RenderView instance.
   content::RenderViewHostImpl* render_view_host_;
-  scoped_ptr<WebUIImpl> web_ui_;
+  scoped_ptr<content::WebUIImpl> web_ui_;
 
   // A RenderViewHost used to load a cross-site page. This remains hidden
   // while a cross-site request is pending until it calls DidNavigate. It may
@@ -313,8 +314,8 @@ class CONTENT_EXPORT RenderViewHostManager
   // page. The scoped_ptr is used if pending_web_ui_ != web_ui_, the WeakPtr is
   // used for when they reference the same object. If either is non-NULL, the
   // other should be NULL.
-  scoped_ptr<WebUIImpl> pending_web_ui_;
-  base::WeakPtr<WebUIImpl> pending_and_current_web_ui_;
+  scoped_ptr<content::WebUIImpl> pending_web_ui_;
+  base::WeakPtr<content::WebUIImpl> pending_and_current_web_ui_;
 
   // A map of site instance ID to swapped out RenderViewHosts.
   typedef base::hash_map<int32, content::RenderViewHostImpl*> RenderViewHostMap;

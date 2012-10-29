@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
-class WebUIImpl;
 class WebUIBrowserTest;
 
 namespace base {
@@ -23,6 +22,7 @@ class ListValue;
 namespace content {
 
 class WebUI;
+class WebUIImpl;
 
 // Messages sent from the DOM are forwarded via the WebUI to handler
 // classes. These objects are owned by WebUI and destroyed when the
@@ -68,7 +68,7 @@ class CONTENT_EXPORT WebUIMessageHandler {
 
  private:
   // Provide external classes access to web_ui() and set_web_ui().
-  friend class ::WebUIImpl;
+  friend class WebUIImpl;
   friend class ::WebUIBrowserTest;
 
   WebUI* web_ui_;
@@ -77,4 +77,3 @@ class CONTENT_EXPORT WebUIMessageHandler {
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_WEB_UI_MESSAGE_HANDLER_H_
-
