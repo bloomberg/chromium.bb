@@ -159,7 +159,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
   // Used in tests to load the root feed from the cache.
-  void LoadRootFeedFromCacheForTesting();
+  void LoadRootFeedFromCacheForTesting(const FileOperationCallback& callback);
 
   // Used in tests to update the file system from |feed_list|.
   // See also the comment at DriveFeedLoader::UpdateFromFeed().
@@ -446,7 +446,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // from CheckForUpdates().
   void OnUpdateChecked(DriveFileError error);
 
-  // Notifies that the initial load is finished and runs |callback|.
+  // Called when the initial cache load is finished. It triggers feed loading
+  // from the server. If the cache loading was successful, runs |callback| for
+  // notifying it to the callers. Otherwise, defer till the server feed arrival.
+  // |callback| must not be null.
+  void OnFeedCacheLoaded(const FileOperationCallback& callback,
+                         DriveFileError error);
+
+  // Notifies that the initial feed load is finished and runs |callback|.
   // |callback| must not be null.
   void NotifyInitialLoadFinishedAndRun(const FileOperationCallback& callback,
                                        DriveFileError error);

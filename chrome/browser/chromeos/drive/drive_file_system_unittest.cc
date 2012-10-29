@@ -598,9 +598,12 @@ class DriveFileSystemTest : public testing::Test {
 
   // Loads serialized proto file from GCache, and makes sure the root
   // filesystem has a root at 'drive'
-  void TestLoadMetadataFromCache() {
-    file_system_->LoadRootFeedFromCacheForTesting();
+  bool TestLoadMetadataFromCache() {
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    file_system_->LoadRootFeedFromCacheForTesting(
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
+    return error == DRIVE_FILE_OK;
   }
 
   // Flag for specifying the timestamp of the test filesystem cache.
@@ -1177,7 +1180,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
 
 TEST_F(DriveFileSystemTest, CachedFeedLoading) {
   SaveTestFileSystem(USE_OLD_TIMESTAMP);
-  TestLoadMetadataFromCache();
+  ASSERT_TRUE(TestLoadMetadataFromCache());
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/Dir1"))));

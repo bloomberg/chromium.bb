@@ -172,10 +172,8 @@ LoadFeedParams::~LoadFeedParams() {
 }
 
 LoadRootFeedParams::LoadRootFeedParams(
-    bool should_load_from_server,
     const FileOperationCallback& callback)
-    : should_load_from_server(should_load_from_server),
-      load_error(DRIVE_FILE_OK),
+    : load_error(DRIVE_FILE_OK),
       load_start_time(base::Time::Now()),
       callback(callback) {
 }
@@ -755,9 +753,9 @@ void DriveFeedLoader::OnNotifyDocumentFeedFetched(
   }
 }
 
-void DriveFeedLoader::LoadFromCache(bool should_load_from_server,
-                                    const FileOperationCallback& callback) {
+void DriveFeedLoader::LoadFromCache(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
   DCHECK(resource_metadata_->origin() == UNINITIALIZED);
 
   // Sets the refreshing flag, so that the caller does not send refresh requests
@@ -767,8 +765,7 @@ void DriveFeedLoader::LoadFromCache(bool should_load_from_server,
   // all the control pathes reach.
   refreshing_ = true;
 
-  LoadRootFeedParams* params = new LoadRootFeedParams(should_load_from_server,
-                                                      callback);
+  LoadRootFeedParams* params = new LoadRootFeedParams(callback);
   FilePath path = cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META);
   if (UseLevelDB()) {
     path = path.Append(kResourceMetadataDBFile);
@@ -811,35 +808,14 @@ void DriveFeedLoader::ContinueWithInitializedResourceMetadata(
     LoadRootFeedParams* params,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!params->callback.is_null());
   refreshing_ = false;
 
   DVLOG(1) << "Time elapsed to load resource metadata from disk="
            << (base::Time::Now() - params->load_start_time).InMilliseconds()
            << " milliseconds";
 
-  // TODO(satorux): Simplify the callback handling. crbug.com/142799
-  FileOperationCallback callback = params->callback;
-
-  // origin() is set to INITIALIZED in DriveResourceMetadata::ParseFromString()
-  // or DriveResourceMetadata::InitFromDB() if loading is successful.
-  if (resource_metadata_->origin() == INITIALIZED) {
-    DCHECK(error == DRIVE_FILE_OK);
-    // If we got feed content from cache, tell the client that the loading was
-    // successful.
-    if (!callback.is_null()) {
-      callback.Run(DRIVE_FILE_OK);
-      callback.Reset();
-    }
-  }
-
-  if (!params->should_load_from_server)
-    return;
-
-  // Kick off the retrieval of the feed from server. If we have previously
-  // |reported| to the original callback, then we just need to refresh the
-  // content without continuing search upon operation completion.
-  ReloadFromServerIfNeeded(resource_metadata_->largest_changestamp(),
-                           callback);
+  params->callback.Run(error);
 }
 
 void DriveFeedLoader::SaveFileSystem() {

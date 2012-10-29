@@ -80,11 +80,9 @@ struct LoadFeedParams {
 
 // Defines set of parameters sent to callback OnProtoLoaded().
 struct LoadRootFeedParams {
-  LoadRootFeedParams(bool should_load_from_server,
-                     const FileOperationCallback& callback);
+  explicit LoadRootFeedParams(const FileOperationCallback& callback);
   ~LoadRootFeedParams();
 
-  bool should_load_from_server;
   std::string proto;
   DriveFileError load_error;
   base::Time last_modified;
@@ -109,18 +107,10 @@ class DriveFeedLoader {
   void AddObserver(DriveFeedLoaderObserver* observer);
   void RemoveObserver(DriveFeedLoaderObserver* observer);
 
-  // Starts root feed load from the cache. If successful, runs |callback| to
-  // tell the caller that the loading was successful.
-  //
-  // Then, it will initiate retrieval of the root feed from the server unless
-  // |should_load_from_server| is set to false. |should_load_from_server| is
-  // false only for testing. If loading from the server is successful, runs
-  // |callback| if it was not previously run (i.e. loading from the cache was
-  // successful).
-  //
-  // |callback| may be null.
-  void LoadFromCache(bool should_load_from_server,
-                     const FileOperationCallback& callback);
+  // Starts root feed load from the cache, and runs |callback| to tell the
+  // result to the caller.
+  // |callback| must not be null.
+  void LoadFromCache(const FileOperationCallback& callback);
 
   // Starts retrieving feed for a directory specified by |directory_resource_id|
   // from the server. Upon completion, |feed_load_callback| is invoked.
