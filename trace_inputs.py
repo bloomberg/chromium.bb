@@ -1576,12 +1576,12 @@ class Dtrace(ApiBase):
         super(Dtrace.Context.Process, self).__init__(*args)
         self.cwd = self.initial_cwd
 
-    def __init__(self, blacklist, tracer_pid, initial_cwd):
+    def __init__(self, blacklist, thunk_pid, initial_cwd):
       logging.info(
-          '%s(%d, %s)' % (self.__class__.__name__, tracer_pid, initial_cwd))
+          '%s(%d, %s)' % (self.__class__.__name__, thunk_pid, initial_cwd))
       super(Dtrace.Context, self).__init__(blacklist)
       # Process ID of the temporary script created by create_thunk().
-      self._tracer_pid = tracer_pid
+      self._thunk_pid = thunk_pid
       self._initial_cwd = initial_cwd
       self._line_number = 0
 
@@ -1657,7 +1657,7 @@ class Dtrace(ApiBase):
             'Failed to parse arguments: %s' % args,
             None, None, None)
       ppid = int(match.group(1))
-      if ppid == self._tracer_pid and not self.root_process:
+      if ppid == self._thunk_pid and not self.root_process:
         proc = self.root_process = self.Process(
             self.blacklist, pid, self._initial_cwd)
       elif ppid in self._process_lookup:
@@ -1674,7 +1674,7 @@ class Dtrace(ApiBase):
     def handle_proc_exit(self, pid, _args):
       """Removes cwd."""
       if pid in self._process_lookup:
-        # self._tracer_pid is not traced itself and other traces run neither.
+        # self._thunk_pid is not traced itself and other traces run neither.
         self._process_lookup[pid].cwd = None
 
     def handle_execve(self, pid, args):
@@ -2370,15 +2370,22 @@ class LogmanTrace(ApiBase):
         # Handle file objects that succeeded.
         self.file_objects = {}
 
-    def __init__(self, blacklist, tracer_pid):
-      logging.info('%s(%d)' % (self.__class__.__name__, tracer_pid))
+    def __init__(self, blacklist, thunk_pid, trace_name, thunk_cmd):
+      logging.info(
+          '%s(%d, %s, %s)', self.__class__.__name__, thunk_pid, trace_name,
+          thunk_cmd)
       super(LogmanTrace.Context, self).__init__(blacklist)
       self._drive_map = DosDriveMap()
       # Threads mapping to the corresponding process id.
       self._threads_active = {}
-      # Process ID of the tracer, e.g. tracer_inputs.py
-      self._tracer_pid = tracer_pid
+      # Process ID of the tracer, e.g. the temporary script created by
+      # create_thunk(). This is tricky because the process id may have been
+      # reused.
+      self._thunk_pid = thunk_pid
+      self._thunk_cmd = thunk_cmd
+      self._trace_name = trace_name
       self._line_number = 0
+      self._thunk_process = None
 
     def on_line(self, line):
       """Processes a json Event line."""
@@ -2414,7 +2421,7 @@ class LogmanTrace(ApiBase):
     def to_results(self):
       if not self.root_process:
         raise TracingFailure(
-            'Failed to detect the initial process',
+            'Failed to detect the initial process %d' % self._thunk_pid,
             None, None, None)
       process = self.root_process.to_results_process()
       return Results(process)
@@ -2533,6 +2540,8 @@ class LogmanTrace(ApiBase):
         self._process_lookup[pid] = None
       else:
         logging.debug('Terminated: %d' % pid)
+      if self._thunk_process and self._thunk_process.pid == pid:
+        self._thunk_process = None
 
     def handle_Process_Start(self, line):
       """Handles a new child process started by PID."""
@@ -2552,14 +2561,40 @@ class LogmanTrace(ApiBase):
           'New process %d->%d (%s) %s' %
             (ppid, pid, line[IMAGE_FILE_NAME], line[COMMAND_LINE]))
 
-      if ppid == self._tracer_pid:
-        # Need to ignore processes we don't know about because the log is
-        # system-wide. self._tracer_pid shall start only one process.
-        if self.root_process:
+      command_line = None
+      def get_command_line():
+        # TODO(maruel): Process escapes.
+        if (not line[COMMAND_LINE].startswith('"') or
+            not line[COMMAND_LINE].endswith('"')):
           raise TracingFailure(
-              ( 'Parent process is _tracer_pid(%d) but root_process(%d) is '
-                'already set') % (self._tracer_pid, self.root_process.pid),
+              'Command line is not properly quoted: %s' % line[COMMAND_LINE],
               None, None, None)
+        return CommandLineToArgvW(line[COMMAND_LINE][1:-1])
+
+      if pid == self._thunk_pid:
+        # Need to ignore processes we don't know about because the log is
+        # system-wide. self._thunk_pid shall start only one process.
+        # This is tricky though because Windows *loves* to reuse process id and
+        # it happens often that the process ID of the thunk script created by
+        # create_thunk() is reused. So just detecting the pid here is not
+        # sufficient, we must confirm the command line.
+        command_line = get_command_line()
+        if command_line[:len(self._thunk_cmd)] != self._thunk_cmd:
+          logging.info(
+              'Ignoring duplicate pid %d for %s: %s while searching for %s',
+              pid, self._trace_name, command_line, self._thunk_cmd)
+          return
+
+        # TODO(maruel): The check is quite weak. Add the thunk path.
+        if self._thunk_process:
+          raise TracingFailure(
+              ( 'Parent process is _thunk_pid(%d) but thunk_process(%d) is '
+                'already set') % (self._thunk_pid, self._thunk_process.pid),
+              None, None, None)
+        proc = self.Process(self.blacklist, pid, None)
+        self._thunk_process = proc
+        return
+      elif ppid == self._thunk_pid and self._thunk_process:
         proc = self.Process(self.blacklist, pid, None)
         self.root_process = proc
         ppid = None
@@ -2577,13 +2612,7 @@ class LogmanTrace(ApiBase):
             'Command line is not properly quoted: %s' % line[IMAGE_FILE_NAME],
             None, None, None)
 
-      # TODO(maruel): Process escapes.
-      if (not line[COMMAND_LINE].startswith('"') or
-          not line[COMMAND_LINE].endswith('"')):
-        raise TracingFailure(
-            'Command line is not properly quoted: %s' % line[COMMAND_LINE],
-            None, None, None)
-      proc.command = CommandLineToArgvW(line[COMMAND_LINE][1:-1])
+      proc.command = command_line or get_command_line()
       proc.executable = line[IMAGE_FILE_NAME][1:-1]
       # proc.command[0] may be the absolute path of 'executable' but it may be
       # anything else too. If it happens that command[0] ends with executable,
@@ -2769,6 +2798,8 @@ class LogmanTrace(ApiBase):
           'cwd': cwd,
           'output': out,
           'pid': child.pid,
+          # Used to figure out the real process when process ids are reused.
+          'thunk_cmd': child_cmd,
           'trace': tracename,
         })
 
@@ -2966,7 +2997,8 @@ class LogmanTrace(ApiBase):
         'trace': item['trace'],
       }
       try:
-        context = cls.Context(blacklist_more, item['pid'], item['trace'])
+        context = cls.Context(
+            blacklist_more, item['pid'], item['trace'], item['thunk_cmd'])
         for line in lines:
           context.on_line(line)
         result['results'] = context.to_results()
