@@ -32,6 +32,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -493,15 +494,11 @@ void DispatchEventInternal(
     const char* event_name,
     const std::string& json_args,
     scoped_ptr<base::ListValue> event_args) {
-  if (!target_profile->GetExtensionEventRouter())
+  if (!extensions::ExtensionSystem::Get(target_profile)->event_router())
     return;
-  target_profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name,
-      event_args.Pass(),
-      target_profile,
-      GURL(),
-      extensions::EventFilteringInfo());
-
+  extensions::ExtensionSystem::Get(target_profile)->event_router()->
+      DispatchEventToRenderers(event_name, event_args.Pass(), target_profile,
+                               GURL(), extensions::EventFilteringInfo());
   ExtensionDownloadsEventRouter::DownloadsNotificationSource
     notification_source;
   notification_source.event_name = event_name;

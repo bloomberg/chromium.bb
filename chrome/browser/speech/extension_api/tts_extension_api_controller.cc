@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
@@ -121,12 +122,9 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
   scoped_ptr<ListValue> arguments(new ListValue());
   arguments->Set(0, event);
 
-  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-      src_extension_id_,
-      events::kOnEvent,
-      arguments.Pass(),
-      profile_,
-      src_url_);
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToExtension(src_extension_id_, events::kOnEvent,
+                               arguments.Pass(), profile_, src_url_);
 }
 
 void Utterance::Finish() {

@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/settings/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
 #include "chrome/browser/extensions/settings/sync_or_local_value_store_cache.h"
@@ -47,10 +48,9 @@ class DefaultObserver : public SettingsObserver {
     args->Append(base::JSONReader::Read(change_json));
     args->Append(Value::CreateStringValue(settings_namespace::ToString(
         settings_namespace)));
-
-    profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id, event_names::kOnSettingsChanged, args.Pass(), NULL,
-        GURL());
+    extensions::ExtensionSystem::Get(profile_)->event_router()->
+        DispatchEventToExtension(extension_id, event_names::kOnSettingsChanged,
+                                 args.Pass(), NULL, GURL());
   }
 
  private:

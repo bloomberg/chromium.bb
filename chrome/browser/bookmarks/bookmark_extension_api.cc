@@ -28,6 +28,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_host.h"
@@ -152,10 +153,10 @@ void BookmarkExtensionEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
     scoped_ptr<ListValue> event_args) {
-  if (profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, event_args.Pass(), NULL, GURL(),
-        extensions::EventFilteringInfo());
+  if (extensions::ExtensionSystem::Get(profile)->event_router()) {
+    extensions::ExtensionSystem::Get(profile)->event_router()->
+        DispatchEventToRenderers(event_name, event_args.Pass(), NULL, GURL(),
+                                 extensions::EventFilteringInfo());
   }
 }
 

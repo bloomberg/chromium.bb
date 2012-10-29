@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "content/public/browser/browser_thread.h"
@@ -160,11 +161,12 @@ void BluetoothGetDevicesFunction::FinishDeviceSearch() {
   info->SetInteger("expectedEventCount", device_events_sent_);
   args->Append(info.release());
 
-  profile()->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extensions::event_names::kBluetoothOnDeviceSearchFinished,
-      args.Pass(),
-      NULL,
-      GURL());
+  extensions::ExtensionSystem::Get(profile())->event_router()->
+      DispatchEventToRenderers(
+          extensions::event_names::kBluetoothOnDeviceSearchFinished,
+          args.Pass(),
+          NULL,
+          GURL());
 
   SendResponse(true);
 }

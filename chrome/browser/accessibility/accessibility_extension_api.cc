@@ -12,6 +12,7 @@
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -162,9 +163,11 @@ void ExtensionAccessibilityEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
     scoped_ptr<base::ListValue> event_args) {
-  if (enabled_ && profile && profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToRenderers(event_name,
-        event_args.Pass(), NULL, GURL(), extensions::EventFilteringInfo());
+  if (enabled_ && profile &&
+      extensions::ExtensionSystem::Get(profile)->event_router()) {
+    extensions::ExtensionSystem::Get(profile)->event_router()->
+        DispatchEventToRenderers(event_name, event_args.Pass(), NULL, GURL(),
+                                 extensions::EventFilteringInfo());
   }
 }
 

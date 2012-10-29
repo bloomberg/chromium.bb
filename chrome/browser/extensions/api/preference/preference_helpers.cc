@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -83,7 +84,8 @@ void DispatchEventToExtensions(
     extensions::APIPermission::ID permission,
     bool incognito,
     const std::string& browser_pref) {
-  extensions::EventRouter* router = profile->GetExtensionEventRouter();
+  extensions::EventRouter* router =
+      extensions::ExtensionSystem::Get(profile)->event_router();
   if (!router || !router->HasEventListener(event_name))
     return;
   ExtensionService* extension_service = profile->GetExtensionService();

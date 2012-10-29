@@ -5,6 +5,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -36,7 +37,8 @@ class MessageSender : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
     extensions::EventRouter* event_router =
-        content::Source<Profile>(source).ptr()->GetExtensionEventRouter();
+        extensions::ExtensionSystem::Get(
+            content::Source<Profile>(source).ptr())->event_router();
 
     // Sends four messages to the extension. All but the third message sent
     // from the origin http://b.com/ are supposed to arrive.

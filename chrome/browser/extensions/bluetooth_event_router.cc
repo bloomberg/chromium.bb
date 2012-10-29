@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -96,11 +97,8 @@ void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
     const char* event_name, const extensions::api::bluetooth::Device& device) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(device.ToValue().release());
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name,
-      args.Pass(),
-      NULL,
-      GURL());
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL());
 }
 
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(
@@ -170,8 +168,8 @@ void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
     const char* event_name, bool value) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(Value::CreateBooleanValue(value));
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, args.Pass(), NULL, GURL());
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL());
 }
 
 }  // namespace extensions

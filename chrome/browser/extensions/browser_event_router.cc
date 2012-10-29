@@ -360,11 +360,13 @@ void BrowserEventRouter::DispatchEvent(
     const char* event_name,
     scoped_ptr<ListValue> args,
     EventRouter::UserGestureState user_gesture) {
-  if (!profile_->IsSameProfile(profile) || !profile->GetExtensionEventRouter())
+  if (!profile_->IsSameProfile(profile) ||
+      !extensions::ExtensionSystem::Get(profile)->event_router())
     return;
 
-  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, args.Pass(), profile, GURL(), user_gesture);
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToRenderers(event_name, args.Pass(), profile, GURL(),
+                               user_gesture);
 }
 
 void BrowserEventRouter::DispatchEventToExtension(
@@ -373,12 +375,13 @@ void BrowserEventRouter::DispatchEventToExtension(
     const char* event_name,
     scoped_ptr<ListValue> event_args,
     EventRouter::UserGestureState user_gesture) {
-  if (!profile_->IsSameProfile(profile) || !profile->GetExtensionEventRouter())
+  if (!profile_->IsSameProfile(profile) ||
+      !extensions::ExtensionSystem::Get(profile)->event_router())
     return;
 
-  profile->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, event_name, event_args.Pass(), profile, GURL(),
-      user_gesture);
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToExtension(extension_id, event_name, event_args.Pass(),
+                               profile, GURL(), user_gesture);
 }
 
 void BrowserEventRouter::DispatchEventsAcrossIncognito(
@@ -386,12 +389,13 @@ void BrowserEventRouter::DispatchEventsAcrossIncognito(
     const char* event_name,
     scoped_ptr<ListValue> event_args,
     scoped_ptr<ListValue> cross_incognito_args) {
-  if (!profile_->IsSameProfile(profile) || !profile->GetExtensionEventRouter())
+  if (!profile_->IsSameProfile(profile) ||
+      !extensions::ExtensionSystem::Get(profile)->event_router())
     return;
 
-  profile->GetExtensionEventRouter()->DispatchEventsToRenderersAcrossIncognito(
-      event_name, event_args.Pass(), profile, cross_incognito_args.Pass(),
-      GURL());
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventsToRenderersAcrossIncognito(event_name, event_args.Pass(),
+          profile, cross_incognito_args.Pass(), GURL());
 }
 
 void BrowserEventRouter::DispatchSimpleBrowserEvent(

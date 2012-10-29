@@ -931,7 +931,8 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
     return;
   }
 
-  extensions::EventRouter* event_router = profile()->GetExtensionEventRouter();
+  extensions::EventRouter* event_router =
+      extensions::ExtensionSystem::Get(profile())->event_router();
   if (!event_router) {
     ExecuteDoneOnUIThread(false);
     return;

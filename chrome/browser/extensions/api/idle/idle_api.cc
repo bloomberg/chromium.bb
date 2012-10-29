@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/api/idle/idle_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
@@ -147,9 +148,9 @@ void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(CreateIdleValue(state));
 
-  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      keys::kOnStateChanged, args.Pass(), profile,
-      GURL(), extensions::EventFilteringInfo());
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToRenderers(keys::kOnStateChanged, args.Pass(), profile,
+                               GURL(), extensions::EventFilteringInfo());
 }
 
 bool ExtensionIdleQueryStateFunction::RunImpl() {

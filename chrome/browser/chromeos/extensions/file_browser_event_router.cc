@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -373,20 +374,23 @@ void FileBrowserEventRouter::MountCompleted(
 
 void FileBrowserEventRouter::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* network_library) {
-  if (!profile_ || !profile_->GetExtensionEventRouter()) {
+  if (!profile_ ||
+      !extensions::ExtensionSystem::Get(profile_)->event_router()) {
     NOTREACHED();
     return;
   }
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extensions::event_names::kOnFileBrowserNetworkConnectionChanged,
-      scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToRenderers(
+          extensions::event_names::kOnFileBrowserNetworkConnectionChanged,
+          scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
 }
 
 void FileBrowserEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (!profile_ || !profile_->GetExtensionEventRouter()) {
+  if (!profile_ ||
+      !extensions::ExtensionSystem::Get(profile_)->event_router()) {
     NOTREACHED();
     return;
   }
@@ -411,9 +415,10 @@ void FileBrowserEventRouter::Observe(
         *pref_name == prefs::kDisableDriveHostedFiles ||
         *pref_name == prefs::kDisableDrive ||
         *pref_name == prefs::kUse24HourClock) {
-      profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-          extensions::event_names::kOnFileBrowserPreferencesChanged,
-          scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
+      extensions::ExtensionSystem::Get(profile_)->event_router()->
+          DispatchEventToRenderers(
+              extensions::event_names::kOnFileBrowserPreferencesChanged,
+              scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
     }
   }
 }
@@ -431,10 +436,11 @@ void FileBrowserEventRouter::OnProgressUpdate(
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(event_list.release());
 
-  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-      std::string(kFileBrowserDomain),
-      extensions::event_names::kOnFileTransfersUpdated, args.Pass(), NULL,
-      GURL());
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToExtension(
+          std::string(kFileBrowserDomain),
+          extensions::event_names::kOnFileTransfersUpdated, args.Pass(), NULL,
+          GURL());
 }
 
 void FileBrowserEventRouter::OnDirectoryChanged(
@@ -450,10 +456,11 @@ void FileBrowserEventRouter::OnDocumentFeedFetched(
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(base::Value::CreateIntegerValue(num_accumulated_entries));
 
-  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-      std::string(kFileBrowserDomain),
-      extensions::event_names::kOnDocumentFeedFetched, args.Pass(), NULL,
-      GURL());
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToExtension(
+          std::string(kFileBrowserDomain),
+          extensions::event_names::kOnDocumentFeedFetched, args.Pass(), NULL,
+          GURL());
 }
 
 void FileBrowserEventRouter::OnFileSystemMounted() {
@@ -527,9 +534,9 @@ void FileBrowserEventRouter::DispatchFolderChangeEvent(
     watch_info->SetString("eventType",
                           got_error ? kPathWatchError : kPathChanged);
 
-    profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        iter->first, extensions::event_names::kOnFileChanged, args.Pass(), NULL,
-        GURL());
+    extensions::ExtensionSystem::Get(profile_)->event_router()->
+        DispatchEventToExtension(iter->first,
+            extensions::event_names::kOnFileChanged, args.Pass(), NULL, GURL());
   }
 }
 
@@ -549,9 +556,10 @@ void FileBrowserEventRouter::DispatchDiskEvent(
   DictionaryValue* disk_info = DiskToDictionaryValue(disk);
   mount_info->Set("volumeInfo", disk_info);
 
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extensions::event_names::kOnFileBrowserDiskChanged, args.Pass(), NULL,
-      GURL());
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToRenderers(
+          extensions::event_names::kOnFileBrowserDiskChanged, args.Pass(), NULL,
+          GURL());
 }
 
 void FileBrowserEventRouter::DispatchMountCompletedEvent(
@@ -604,9 +612,10 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
     }
   }
 
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extensions::event_names::kOnFileBrowserMountCompleted, args.Pass(), NULL,
-      GURL());
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToRenderers(
+          extensions::event_names::kOnFileBrowserMountCompleted, args.Pass(),
+          NULL, GURL());
 
   // Do not attempt to open File Manager while the login is in progress or
   // the screen is locked.

@@ -590,7 +590,8 @@ void MenuManager::ExecuteCommand(Profile* profile,
                                  WebContents* web_contents,
                                  const content::ContextMenuParams& params,
                                  const MenuItem::Id& menu_item_id) {
-  EventRouter* event_router = profile->GetExtensionEventRouter();
+  EventRouter* event_router = extensions::ExtensionSystem::Get(profile)->
+      event_router();
   if (!event_router)
     return;
 

@@ -13,6 +13,7 @@ include_rules = [
   "!chrome/browser/extensions/event_router.h",
   "!chrome/browser/extensions/extension_function.h",
   "!chrome/browser/extensions/extension_function_dispatcher.h",
+  "!chrome/browser/extensions/extension_system.h",
   "!chrome/browser/extensions/extension_web_ui.h",
   "!chrome/browser/extensions/extensions_quota_service.h",
   "!chrome/browser/favicon/favicon_service.h",

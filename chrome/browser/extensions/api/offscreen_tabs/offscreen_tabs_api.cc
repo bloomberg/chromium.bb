@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -282,9 +283,10 @@ void OffscreenTab::Observe(int type,
   // The event router only dispatches the event to renderers listening for the
   // event.
   Profile* profile = parent_tab_->tab_contents()->profile();
-  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      events::kOnOffscreenTabUpdated, args.Pass(), profile, GURL(),
-      extensions::EventFilteringInfo());
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToRenderers(
+          events::kOnOffscreenTabUpdated, args.Pass(), profile, GURL(),
+          extensions::EventFilteringInfo());
 }
 
 ParentTab::ParentTab() : tab_contents_(NULL) {}

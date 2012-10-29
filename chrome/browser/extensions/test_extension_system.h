@@ -68,9 +68,10 @@ class TestExtensionSystem : public ExtensionSystem {
   // Factory method for tests to use with SetTestingProfile.
   static ProfileKeyedService* Build(Profile* profile);
 
- private:
+ protected:
   Profile* profile_;
 
+ private:
   // The Extension Preferences. Only created if CreateExtensionService is
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;

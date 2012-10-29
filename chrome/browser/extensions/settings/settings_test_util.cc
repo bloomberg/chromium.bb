@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 
 namespace extensions {
@@ -105,11 +106,28 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
   }
 }
 
+// MockExtensionSystem
+
+MockExtensionSystem::MockExtensionSystem(Profile* profile)
+      : TestExtensionSystem(profile) {}
+MockExtensionSystem::~MockExtensionSystem() {}
+
+EventRouter* MockExtensionSystem::event_router() {
+  if (!event_router_.get())
+    event_router_.reset(new EventRouter(profile_, NULL));
+  return event_router_.get();
+}
+
+ProfileKeyedService* BuildMockExtensionSystem(Profile* profile) {
+  return new MockExtensionSystem(profile);
+}
+
 // MockProfile
 
 MockProfile::MockProfile(const FilePath& file_path)
     : TestingProfile(file_path) {
-  event_router_.reset(new EventRouter(this, NULL));
+  ExtensionSystemFactory::GetInstance()->SetTestingFactoryAndUse(this,
+      &BuildMockExtensionSystem);
 }
 
 MockProfile::~MockProfile() {}
@@ -122,10 +140,6 @@ ExtensionService* MockProfile::GetExtensionService() {
   ExtensionServiceInterface* as_interface =
       static_cast<ExtensionServiceInterface*>(&extension_service_);
   return static_cast<ExtensionService*>(as_interface);
-}
-
-EventRouter* MockProfile::GetExtensionEventRouter() {
-  return event_router_.get();
 }
 
 // ScopedSettingsFactory

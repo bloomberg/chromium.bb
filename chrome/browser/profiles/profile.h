@@ -51,10 +51,6 @@ namespace content {
 class WebUI;
 }
 
-namespace extensions {
-class EventRouter;
-}
-
 namespace fileapi {
 class FileSystemContext;
 }
@@ -196,11 +192,6 @@ class Profile : public content::BrowserContext {
   // profile. The ExtensionService is created at startup.
   // TODO(yoz): remove this accessor (bug 104095).
   virtual ExtensionService* GetExtensionService() = 0;
-
-  // DEPRECATED. Instead, use ExtensionSystem::event_router().
-  // Accessor. The instance is created at startup.
-  // TODO(yoz): remove this accessor (bug 104095).
-  virtual extensions::EventRouter* GetExtensionEventRouter() = 0;
 
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*

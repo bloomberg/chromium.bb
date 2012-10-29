@@ -400,11 +400,12 @@ void ChromeRenderMessageFilter::OnExtensionAddListener(
     const std::string& event_name) {
   content::RenderProcessHost* process =
       content::RenderProcessHost::FromID(render_process_id_);
-  if (!process || !profile_->GetExtensionEventRouter())
+  if (!process ||
+      !extensions::ExtensionSystem::Get(profile_)->event_router())
     return;
 
-  profile_->GetExtensionEventRouter()->AddEventListener(
-      event_name, process, extension_id);
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      AddEventListener(event_name, process, extension_id);
 }
 
 void ChromeRenderMessageFilter::OnExtensionRemoveListener(
@@ -412,25 +413,28 @@ void ChromeRenderMessageFilter::OnExtensionRemoveListener(
     const std::string& event_name) {
   content::RenderProcessHost* process =
       content::RenderProcessHost::FromID(render_process_id_);
-  if (!process || !profile_->GetExtensionEventRouter())
+  if (!process ||
+      !extensions::ExtensionSystem::Get(profile_)->event_router())
     return;
 
-  profile_->GetExtensionEventRouter()->RemoveEventListener(
-      event_name, process, extension_id);
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      RemoveEventListener(event_name, process, extension_id);
 }
 
 void ChromeRenderMessageFilter::OnExtensionAddLazyListener(
     const std::string& extension_id, const std::string& event_name) {
-  if (profile_->GetExtensionEventRouter())
-    profile_->GetExtensionEventRouter()->AddLazyEventListener(
-        event_name, extension_id);
+  if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
+    extensions::ExtensionSystem::Get(profile_)->event_router()->
+        AddLazyEventListener(event_name, extension_id);
+  }
 }
 
 void ChromeRenderMessageFilter::OnExtensionRemoveLazyListener(
     const std::string& extension_id, const std::string& event_name) {
-  if (profile_->GetExtensionEventRouter())
-    profile_->GetExtensionEventRouter()->RemoveLazyEventListener(
-        event_name, extension_id);
+  if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
+    extensions::ExtensionSystem::Get(profile_)->event_router()->
+        RemoveLazyEventListener(event_name, extension_id);
+  }
 }
 
 void ChromeRenderMessageFilter::OnExtensionAddFilteredListener(
@@ -440,11 +444,12 @@ void ChromeRenderMessageFilter::OnExtensionAddFilteredListener(
     bool lazy) {
   content::RenderProcessHost* process =
       content::RenderProcessHost::FromID(render_process_id_);
-  if (!process || !profile_->GetExtensionEventRouter())
+  if (!process ||
+      !extensions::ExtensionSystem::Get(profile_)->event_router())
     return;
 
-  profile_->GetExtensionEventRouter()->AddFilteredEventListener(
-      event_name, process, extension_id, filter, lazy);
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      AddFilteredEventListener(event_name, process, extension_id, filter, lazy);
 }
 
 void ChromeRenderMessageFilter::OnExtensionRemoveFilteredListener(
@@ -454,11 +459,13 @@ void ChromeRenderMessageFilter::OnExtensionRemoveFilteredListener(
     bool lazy) {
   content::RenderProcessHost* process =
       content::RenderProcessHost::FromID(render_process_id_);
-  if (!process || !profile_->GetExtensionEventRouter())
+  if (!process ||
+      !extensions::ExtensionSystem::Get(profile_)->event_router())
     return;
 
-  profile_->GetExtensionEventRouter()->RemoveFilteredEventListener(
-      event_name, process, extension_id, filter, lazy);
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      RemoveFilteredEventListener(event_name, process, extension_id, filter,
+                                  lazy);
 }
 
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id,

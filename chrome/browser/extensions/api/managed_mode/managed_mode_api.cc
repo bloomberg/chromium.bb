@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,7 +67,8 @@ void ExtensionManagedModeEventRouter::Observe(
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, dict);
 
-  extensions::EventRouter* event_router = profile_->GetExtensionEventRouter();
+  extensions::EventRouter* event_router =
+      extensions::ExtensionSystem::Get(profile_)->event_router();
   event_router->DispatchEventToRenderers(kChangeEventName, args.Pass(), NULL,
                                          GURL(),
                                          extensions::EventFilteringInfo());

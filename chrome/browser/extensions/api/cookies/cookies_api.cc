@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -130,7 +131,8 @@ void ExtensionCookiesEventRouter::DispatchEvent(
     const std::string& event_name,
     scoped_ptr<ListValue> event_args,
     GURL& cookie_domain) {
-  EventRouter* router = profile ? profile->GetExtensionEventRouter() : NULL;
+  EventRouter* router = profile ?
+      extensions::ExtensionSystem::Get(profile)->event_router() : NULL;
   if (!router)
     return;
   router->DispatchEventToRenderers(event_name, event_args.Pass(), profile,

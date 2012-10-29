@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/event_filtering_info.h"
@@ -42,9 +43,10 @@ void DispatchEvent(content::BrowserContext* browser_context,
   info.SetURL(url);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (profile && profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, args.Pass(), profile, GURL(), info);
+  if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
+    extensions::ExtensionSystem::Get(profile)->event_router()->
+        DispatchEventToRenderers(event_name, args.Pass(), profile, GURL(),
+                                 info);
   }
 }
 

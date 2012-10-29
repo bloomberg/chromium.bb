@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
 
@@ -112,7 +113,8 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
     const FilePath::StringType& location) {
   TransientDeviceIds::GetInstance()->DeviceAttached(id);
 
-  EventRouter* router = profile_->GetExtensionEventRouter();
+  EventRouter* router =
+      extensions::ExtensionSystem::Get(profile_)->event_router();
   if (!router->HasEventListener(kOnAttachEventName))
     return;
 
@@ -127,7 +129,8 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
     const std::string& id) {
-  EventRouter* router = profile_->GetExtensionEventRouter();
+  EventRouter* router =
+      extensions::ExtensionSystem::Get(profile_)->event_router();
   if (!router->HasEventListener(kOnDetachEventName))
     return;
 
@@ -142,7 +145,8 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
 void MediaGalleriesPrivateEventRouter::DispatchEvent(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  EventRouter* router = profile_->GetExtensionEventRouter();
+  EventRouter* router =
+      extensions::ExtensionSystem::Get(profile_)->event_router();
   if (!router)
     return;
   router->DispatchEventToRenderers(event_name, event_args.Pass(), profile_,

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 
 using content::BrowserThread;
@@ -30,8 +31,8 @@ int ApiFunction::ExtractSrcId(const DictionaryValue* options) {
 ApiResourceEventNotifier* ApiFunction::CreateEventNotifier(int src_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return new ApiResourceEventNotifier(
-      profile()->GetExtensionEventRouter(), profile(), extension_id(),
-      src_id, source_url());
+      extensions::ExtensionSystem::Get(profile())->event_router(), profile(),
+      extension_id(), src_id, source_url());
 }
 
 // AsyncApiFunction

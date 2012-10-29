@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -55,10 +56,12 @@ void NotifyProcessOutput(Profile* profile,
   args->Append(new base::StringValue(output_type));
   args->Append(new base::StringValue(output));
 
-  if (profile && profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id, extensions::event_names::kOnTerminalProcessOutput,
-        args.Pass(), NULL, GURL());
+  if (profile &&
+      extensions::ExtensionSystem::Get(profile)->event_router()) {
+    extensions::ExtensionSystem::Get(profile)->event_router()->
+        DispatchEventToExtension(extension_id,
+            extensions::event_names::kOnTerminalProcessOutput, args.Pass(),
+            NULL, GURL());
   }
 }
 

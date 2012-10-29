@@ -647,6 +647,7 @@ void ExtensionManagementEventRouter::Observe(
     args->Append(info->ToValue().release());
   }
 
-  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, args.Pass(), NULL, GURL(), extensions::EventFilteringInfo());
+  extensions::ExtensionSystem::Get(profile)->event_router()->
+      DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL(),
+                               extensions::EventFilteringInfo());
 }

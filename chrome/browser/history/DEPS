@@ -26,6 +26,7 @@ include_rules = [
   "!chrome/browser/diagnostics/sqlite_diagnostics.h",
   "!chrome/browser/extensions/event_router.h",
   "!chrome/browser/extensions/extension_function.h",
+  "!chrome/browser/extensions/extension_system.h",
   "!chrome/browser/favicon/favicon_service.h",
   "!chrome/browser/instant/instant_loader.h",
   "!chrome/browser/prefs/pref_service.h",

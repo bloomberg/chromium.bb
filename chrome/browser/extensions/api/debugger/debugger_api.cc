@@ -19,6 +19,7 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api_constants.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -286,13 +287,15 @@ void ExtensionDevToolsClientHost::MarkAsDismissed() {
 void ExtensionDevToolsClientHost::SendDetachedEvent() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  if (profile != NULL && profile->GetExtensionEventRouter()) {
+  if (profile != NULL &&
+      extensions::ExtensionSystem::Get(profile)->event_router()) {
     Debuggee debuggee;
     debuggee.tab_id = tab_id_;
     scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee,
                                                       detach_reason_));
-    profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, keys::kOnDetach, args.Pass(), profile, GURL());
+    extensions::ExtensionSystem::Get(profile)->event_router()->
+        DispatchEventToExtension(extension_id_, keys::kOnDetach, args.Pass(),
+                                 profile, GURL());
   }
 }
 
@@ -321,7 +324,8 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     const std::string& message) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  if (profile == NULL || !profile->GetExtensionEventRouter())
+  if (profile == NULL ||
+      !extensions::ExtensionSystem::Get(profile)->event_router())
     return;
 
   scoped_ptr<Value> result(base::JSONReader::Read(message));
@@ -344,8 +348,9 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
       params.additional_properties.Swap(params_value);
 
     scoped_ptr<ListValue> args(OnEvent::Create(debuggee, method_name, params));
-    profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, keys::kOnEvent, args.Pass(), profile, GURL());
+    extensions::ExtensionSystem::Get(profile)->event_router()->
+        DispatchEventToExtension(extension_id_, keys::kOnEvent, args.Pass(),
+                                 profile, GURL());
   } else {
     SendCommandDebuggerFunction* function = pending_requests_[id];
     if (!function)

@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "googleurl/src/gurl.h"
 
@@ -108,16 +109,16 @@ void EventRouterForwarder::CallEventRouter(Profile* profile,
   // We may not have an extension in cases like chromeos login
   // (crosbug.com/12856), chrome_frame_net_tests.exe which reuses the chrome
   // browser single process framework.
-  if (!profile->GetExtensionEventRouter())
+  if (!extensions::ExtensionSystem::Get(profile)->event_router())
     return;
 
   if (extension_id.empty()) {
-    profile->GetExtensionEventRouter()->
+    extensions::ExtensionSystem::Get(profile)->event_router()->
         DispatchEventToRenderers(
             event_name, event_args.Pass(), restrict_to_profile, event_url,
             EventFilteringInfo());
   } else {
-    profile->GetExtensionEventRouter()->
+    extensions::ExtensionSystem::Get(profile)->event_router()->
         DispatchEventToExtension(
             extension_id,
             event_name, event_args.Pass(), restrict_to_profile, event_url);

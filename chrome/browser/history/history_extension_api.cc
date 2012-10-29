@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -187,10 +188,10 @@ void HistoryExtensionEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
     scoped_ptr<ListValue> event_args) {
-  if (profile && profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, event_args.Pass(), profile, GURL(),
-        extensions::EventFilteringInfo());
+  if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
+    extensions::ExtensionSystem::Get(profile)->event_router()->
+        DispatchEventToRenderers(event_name, event_args.Pass(), profile, GURL(),
+                                 extensions::EventFilteringInfo());
   }
 }
 

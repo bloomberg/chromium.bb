@@ -520,10 +520,6 @@ ExtensionService* TestingProfile::GetExtensionService() {
   return extensions::ExtensionSystem::Get(this)->extension_service();
 }
 
-extensions::EventRouter* TestingProfile::GetExtensionEventRouter() {
-  return extensions::ExtensionSystem::Get(this)->event_router();
-}
-
 void TestingProfile::SetExtensionSpecialStoragePolicy(
     ExtensionSpecialStoragePolicy* extension_special_storage_policy) {
   extension_special_storage_policy_ = extension_special_storage_policy;

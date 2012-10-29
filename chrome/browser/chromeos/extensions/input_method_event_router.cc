@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -35,7 +36,8 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
     input_method::InputMethodManager *manager,
     bool show_message) {
   Profile *profile = ProfileManager::GetDefaultProfile();
-  extensions::EventRouter *router = profile->GetExtensionEventRouter();
+  extensions::EventRouter *router =
+      extensions::ExtensionSystem::Get(profile)->event_router();
 
   if (!router->HasEventListener(extensions::event_names::kOnInputMethodChanged))
     return;

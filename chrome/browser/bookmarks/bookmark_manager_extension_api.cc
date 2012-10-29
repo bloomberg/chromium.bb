@@ -18,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -172,11 +173,12 @@ BookmarkManagerExtensionEventRouter::~BookmarkManagerExtensionEventRouter() {
 
 void BookmarkManagerExtensionEventRouter::DispatchEvent(
     const char* event_name, scoped_ptr<ListValue> args) {
-  if (!profile_->GetExtensionEventRouter())
+  if (!extensions::ExtensionSystem::Get(profile_)->event_router())
     return;
 
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, args.Pass(), NULL, GURL(), extensions::EventFilteringInfo());
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      DispatchEventToRenderers(event_name, args.Pass(), NULL, GURL(),
+                               extensions::EventFilteringInfo());
 }
 
 void BookmarkManagerExtensionEventRouter::DispatchDragEvent(

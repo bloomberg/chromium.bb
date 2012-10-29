@@ -7,6 +7,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -34,7 +35,8 @@ TabCaptureRegistry::~TabCaptureRegistry() {
 void TabCaptureRegistry::HandleRequestUpdateOnUIThread(
     const content::MediaStreamDevice& device,
     const content::MediaRequestState new_state) {
-  EventRouter* router = profile_ ? profile_->GetExtensionEventRouter() : NULL;
+  EventRouter* router = profile_ ?
+      extensions::ExtensionSystem::Get(profile_)->event_router() : NULL;
   if (!router)
     return;
 

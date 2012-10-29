@@ -13,8 +13,10 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -461,15 +463,27 @@ class MockEventRouter : public EventRouter {
   DISALLOW_COPY_AND_ASSIGN(MockEventRouter);
 };
 
-// A mock profile for tests of MenuManager::ExecuteCommand.
-class MockTestingProfile : public TestingProfile {
+// A mock ExtensionSystem to serve our MockEventRouter.
+class MockExtensionSystem : public TestExtensionSystem {
  public:
-  MockTestingProfile() {}
-  MOCK_METHOD0(GetExtensionEventRouter, EventRouter*());
+  explicit MockExtensionSystem(Profile* profile)
+      : TestExtensionSystem(profile) {}
+
+  virtual EventRouter* event_router() {
+    if (!mock_event_router_.get())
+      mock_event_router_.reset(new MockEventRouter(profile_));
+    return mock_event_router_.get();
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockTestingProfile);
+  scoped_ptr<MockEventRouter> mock_event_router_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockExtensionSystem);
 };
+
+ProfileKeyedService* BuildMockExtensionSystem(Profile* profile) {
+  return new MockExtensionSystem(profile);
+}
 
 // Tests the RemoveAll functionality.
 TEST_F(MenuManagerTest, RemoveAll) {
@@ -524,9 +538,13 @@ TEST_F(MenuManagerTest, RemoveOneByOne) {
 }
 
 TEST_F(MenuManagerTest, ExecuteCommand) {
-  MockTestingProfile profile;
+  TestingProfile profile;
 
-  scoped_ptr<MockEventRouter> mock_event_router(new MockEventRouter(&profile));
+  MockExtensionSystem* mock_extension_system =
+      static_cast<MockExtensionSystem*>(ExtensionSystemFactory::GetInstance()->
+          SetTestingFactoryAndUse(&profile, &BuildMockExtensionSystem));
+  MockEventRouter* mock_event_router =
+      static_cast<MockEventRouter*>(mock_extension_system->event_router());
 
   content::ContextMenuParams params;
   params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
@@ -540,16 +558,12 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
   MenuItem::Id id = item->id();
   ASSERT_TRUE(manager_.AddContextItem(extension, item));
 
-  EXPECT_CALL(profile, GetExtensionEventRouter())
-      .Times(1)
-      .WillOnce(Return(mock_event_router.get()));
-
   // Use the magic of googlemock to save a parameter to our mock's
   // DispatchEventToExtension method into event_args.
   base::ListValue* list = NULL;
   {
     InSequence s;
-    EXPECT_CALL(*mock_event_router.get(),
+    EXPECT_CALL(*mock_event_router,
                 DispatchEventToExtensionMock(
                     item->extension_id(),
                     extensions::event_names::kOnContextMenus,
@@ -559,7 +573,7 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
                     EventRouter::USER_GESTURE_ENABLED))
       .Times(1)
       .WillOnce(SaveArg<2>(&list));
-  EXPECT_CALL(*mock_event_router.get(),
+    EXPECT_CALL(*mock_event_router,
               DispatchEventToExtensionMock(
                   item->extension_id(),
                   extensions::event_names::kOnContextMenuClicked,
