@@ -764,6 +764,14 @@ void DesktopRootWindowHostLinux::SetFocusWhenShown(bool focus_when_shown) {
   }
 }
 
+bool DesktopRootWindowHostLinux::CopyAreaToSkCanvas(
+    const gfx::Rect& source_bounds,
+    const gfx::Point& dest_offset,
+    SkCanvas* canvas) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool DesktopRootWindowHostLinux::GrabSnapshot(
       const gfx::Rect& snapshot_bounds,
       std::vector<unsigned char>* png_representation) {

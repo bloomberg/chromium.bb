@@ -33,7 +33,6 @@ class ToplevelWindowEventHandler;
 
 namespace internal {
 
-class ColoredWindowController;
 class PanelLayoutManager;
 class RootWindowLayoutManager;
 class ScreenDimmer;
@@ -100,8 +99,8 @@ class ASH_EXPORT RootWindowController {
   // creates
   void InitForPrimaryDisplay();
 
-  // Initializes |background_|.  |is_first_run_after_boot| determines the
-  // background's initial color.
+  // Initializes |system_background_|.  |is_first_run_after_boot| determines the
+  // background's initial content.
   void CreateSystemBackground(bool is_first_run_after_boot);
 
   // Initializes |launcher_|.  Does nothing if it's already initialized.
@@ -168,11 +167,7 @@ class ASH_EXPORT RootWindowController {
 
   scoped_ptr<Launcher> launcher_;
 
-  // A background layer that's displayed beneath all other layers.  Without
-  // this, portions of the root window that aren't covered by layers will be
-  // painted white; this can show up if e.g. it takes a long time to decode the
-  // desktop background image when displaying the login screen.
-  scoped_ptr<ColoredWindowController> background_;
+  scoped_ptr<SystemBackgroundController> system_background_;
 
   scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;

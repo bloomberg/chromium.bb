@@ -402,9 +402,18 @@ void DesktopRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
 void DesktopRootWindowHostWin::SetFocusWhenShown(bool focus_when_shown) {
 }
 
+bool DesktopRootWindowHostWin::CopyAreaToSkCanvas(
+    const gfx::Rect& source_bounds,
+    const gfx::Point& dest_offset,
+    SkCanvas* canvas) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool DesktopRootWindowHostWin::GrabSnapshot(
       const gfx::Rect& snapshot_bounds,
       std::vector<unsigned char>* png_representation) {
+  NOTIMPLEMENTED();
   return false;
 }
 

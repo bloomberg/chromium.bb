@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 
 namespace gfx {
@@ -27,7 +26,7 @@ namespace internal {
 
 // Displays onscreen animations for session state changes (lock/unlock, sign
 // out, shut down).
-class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
+class ASH_EXPORT SessionStateAnimator {
  public:
   // Animations that can be applied to groups of containers.
   enum AnimationType {
@@ -75,23 +74,10 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
     explicit TestApi(SessionStateAnimator* animator)
         : animator_(animator) {}
 
-    bool hide_black_layer_timer_is_running() const {
-      return animator_->hide_black_layer_timer_.IsRunning();
-    }
-
-    void TriggerHideBlackLayerTimeout();
-
     // Returns true if containers of a given |container_mask|
     // were last animated with |type| (probably; the analysis is fairly ad-hoc).
     // |container_mask| is a bitfield of a Container.
     bool ContainersAreAnimated(int container_mask, AnimationType type) const;
-
-    // Returns true if |black_layer_| is non-NULL and visible.
-    bool BlackLayerIsVisible() const;
-
-    // Returns |black_layer_|'s bounds, or an empty rect if the layer is
-    // NULL.
-    gfx::Rect GetBlackLayerBounds() const;
 
    private:
     SessionStateAnimator* animator_;  // not owned
@@ -109,19 +95,11 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
   SessionStateAnimator();
   virtual ~SessionStateAnimator();
 
-  // Shows or hides |black_layer_|.  The show method creates and
-  // initializes the layer if it doesn't already exist.
-  void ShowBlackLayer();
-  void DropBlackLayer();
-
   // Create |foreground_| layer if it doesn't already exist, but makes it
   // completely transparent.
   void CreateForeground();
   // Destroy |foreground_| when it is not needed anymore.
   void DropForeground();
-
-  // Drops back layer after |UNDO_SLOW_CLOSE| animation delay.
-  void ScheduleDropBlackLayer();
 
   // Apply animation |type| to all containers included in |container_mask|.
   void StartAnimation(int container_mask,
@@ -137,32 +115,15 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
   void GetContainers(int container_mask,
                      aura::Window::Windows* containers);
 
-  // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& old_size) OVERRIDE;
-
- private:
   // Apply animation |type| to window |window| and add |observer| if it is not
   // NULL to the last animation sequence.
   void RunAnimationForWindow(aura::Window* window,
                              AnimationType type,
                              ui::LayerAnimationObserver* observer);
 
-  // Layer that's stacked under all of the root window's children to provide a
-  // black background when we're scaling all of the other windows down.
-  // TODO(derat): Remove this in favor of having the compositor only clear the
-  // viewport when there are regions not covered by a layer:
-  // http://crbug.com/113445
-  scoped_ptr<ui::Layer> black_layer_;
-
   // White foreground that is used during shutdown animation to "fade
   // everything into white".
   scoped_ptr<ColoredWindowController> foreground_;
-
-  // Started when we abort the pre-lock state.  When it fires, we hide
-  // |black_layer_|, as the desktop background is now covering the whole
-  // screen.
-  base::OneShotTimer<SessionStateAnimator> hide_black_layer_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateAnimator);
 };

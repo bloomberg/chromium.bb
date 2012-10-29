@@ -27,6 +27,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
+class SkCanvas;
+
 namespace gfx {
 class Size;
 class Transform;
@@ -213,7 +215,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Sets if the window should be focused when shown.
   void SetFocusWhenShown(bool focus_when_shown);
 
-  // Grabs the snapshot of the root window by using the platform-dependent APIs.
+  // Copies |source_bounds| from the root window (as displayed on the host
+  // machine) to |canvas| at offset |dest_offset|.
+  bool CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
+                          const gfx::Point& dest_offset,
+                          SkCanvas* canvas);
+
+  // Grabs a snapshot of the root window using platform-specific APIs, encodes
+  // it in PNG format, and saves it to |png_representation|.
   bool GrabSnapshot(const gfx::Rect& snapshot_bounds,
                     std::vector<unsigned char>* png_representation);
 

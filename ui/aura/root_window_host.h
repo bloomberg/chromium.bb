@@ -12,6 +12,8 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
 
+class SkCanvas;
+
 namespace gfx {
 class Point;
 class Rect;
@@ -86,6 +88,13 @@ class AURA_EXPORT RootWindowHost {
 
   // Sets if the window should be focused when shown.
   virtual void SetFocusWhenShown(bool focus_when_shown) = 0;
+
+  // Copies |source_bounds| from the root window (as displayed on the host
+  // machine) to |canvas| at offset |dest_offset|.  The bounds need to be in
+  // physical pixels.
+  virtual bool CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
+                                  const gfx::Point& dest_offset,
+                                  SkCanvas* canvas) = 0;
 
   // Grabs the snapshot of the root window by using the platform-dependent APIs.
   // The bounds need to be in physical pixels.

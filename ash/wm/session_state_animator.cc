@@ -245,11 +245,6 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
 
 }  // namespace
 
-void SessionStateAnimator::TestApi::TriggerHideBlackLayerTimeout() {
-      animator_->DropBlackLayer();
-      animator_->hide_black_layer_timer_.Stop();
-}
-
 bool SessionStateAnimator::TestApi::ContainersAreAnimated(
     int container_mask, AnimationType type) const {
   aura::Window::Windows containers;
@@ -293,16 +288,6 @@ bool SessionStateAnimator::TestApi::ContainersAreAnimated(
   return true;
 }
 
-bool SessionStateAnimator::TestApi::BlackLayerIsVisible() const {
-  return animator_->black_layer_.get() &&
-         animator_->black_layer_->visible();
-}
-
-gfx::Rect SessionStateAnimator::TestApi::GetBlackLayerBounds() const {
-  ui::Layer* layer = animator_->black_layer_.get();
-  return layer ? layer->bounds() : gfx::Rect();
-}
-
 const int SessionStateAnimator::kAllLockScreenContainersMask =
     SessionStateAnimator::LOCK_SCREEN_BACKGROUND |
     SessionStateAnimator::LOCK_SCREEN_CONTAINERS |
@@ -315,11 +300,9 @@ const int SessionStateAnimator::kAllContainersMask =
     SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS;
 
 SessionStateAnimator::SessionStateAnimator() {
-  Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
 }
 
 SessionStateAnimator::~SessionStateAnimator() {
-  Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
 }
 
 // Fills |containers| with the containers described by |container_mask|.
@@ -452,40 +435,6 @@ void SessionStateAnimator::RunAnimationForWindow(
     default:
       NOTREACHED() << "Unhandled animation type " << type;
   }
-}
-
-void SessionStateAnimator::OnRootWindowResized(const aura::RootWindow* root,
-                                               const gfx::Size& new_size) {
-  if (black_layer_.get())
-    black_layer_->SetBounds(gfx::Rect(root->bounds().size()));
-}
-
-void SessionStateAnimator::ShowBlackLayer() {
-  if (hide_black_layer_timer_.IsRunning())
-    hide_black_layer_timer_.Stop();
-
-  if (!black_layer_.get()) {
-    black_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
-    black_layer_->SetColor(SK_ColorBLACK);
-
-    ui::Layer* root_layer = Shell::GetPrimaryRootWindow()->layer();
-    black_layer_->SetBounds(root_layer->bounds());
-    root_layer->Add(black_layer_.get());
-    root_layer->StackAtBottom(black_layer_.get());
-  }
-  black_layer_->SetVisible(true);
-}
-
-void SessionStateAnimator::DropBlackLayer() {
-  black_layer_.reset();
-}
-
-void SessionStateAnimator::ScheduleDropBlackLayer() {
-  hide_black_layer_timer_.Stop();
-  hide_black_layer_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs),
-      this, &SessionStateAnimator::DropBlackLayer);
 }
 
 void SessionStateAnimator::CreateForeground() {

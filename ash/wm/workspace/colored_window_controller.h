@@ -25,8 +25,7 @@ namespace internal {
 
 // ColoredWindowController creates a Widget whose layer is LAYER_SOLID_COLOR.
 // The Widget is sized to the supplied Window and parented to the specified
-// Window. It is used for animations and the system level background. See
-// kShellWindowId_SystemBackgroundContainer for one use case.
+// Window. It is used for animations.
 class ASH_EXPORT ColoredWindowController {
  public:
   ColoredWindowController(aura::Window* parent, const std::string& window_name);

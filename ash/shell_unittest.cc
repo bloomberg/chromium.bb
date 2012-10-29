@@ -55,8 +55,6 @@ void ExpectAllContainers() {
   EXPECT_TRUE(Shell::GetContainer(
       root_window, internal::kShellWindowId_DesktopBackgroundContainer));
   EXPECT_TRUE(Shell::GetContainer(
-      root_window, internal::kShellWindowId_SystemBackgroundContainer));
-  EXPECT_TRUE(Shell::GetContainer(
       root_window, internal::kShellWindowId_DefaultContainer));
   EXPECT_TRUE(Shell::GetContainer(
       root_window, internal::kShellWindowId_AlwaysOnTopContainer));
@@ -353,45 +351,6 @@ std::vector<aura::Window*> BuildPathToRoot(aura::Window* window) {
 }
 
 }  // namespace
-
-// The SystemBackgroundContainer needs to be behind the
-// DesktopBackgroundContainer, otherwise workspace animations don't line up.
-TEST_F(ShellTest, SystemBackgroundBehindDesktopBackground) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* desktop = Shell::GetContainer(
-      root_window, internal::kShellWindowId_DesktopBackgroundContainer);
-  ASSERT_TRUE(desktop != NULL);
-  aura::Window* system_bg = Shell::GetContainer(
-      root_window, internal::kShellWindowId_SystemBackgroundContainer);
-  ASSERT_TRUE(system_bg != NULL);
-
-  std::vector<aura::Window*> desktop_parents(BuildPathToRoot(desktop));
-  std::vector<aura::Window*> system_bg_parents(BuildPathToRoot(system_bg));
-
-  for (size_t i = 0; i < system_bg_parents.size(); ++i) {
-    std::vector<aura::Window*>::iterator desktop_i =
-        std::find(desktop_parents.begin(), desktop_parents.end(),
-                  system_bg_parents[i]);
-    if (desktop_i != desktop_parents.end()) {
-      // Found the common parent.
-      ASSERT_NE(0u, i);
-      ASSERT_TRUE(desktop_i != desktop_parents.begin());
-      aura::Window* common_parent = system_bg_parents[i];
-      int system_child = static_cast<int>(std::find(
-          common_parent->children().begin(),
-          common_parent->children().end(), system_bg_parents[i - 1]) -
-          common_parent->children().begin());
-      int desktop_child = static_cast<int>(std::find(
-          common_parent->children().begin(),
-          common_parent->children().end(), *(desktop_i - 1)) -
-          common_parent->children().begin());
-      EXPECT_LT(system_child, desktop_child);
-      return;
-    }
-  }
-  EXPECT_TRUE(false) <<
-      "system background and desktop background need to have a common parent";
-}
 
 // Various assertions around IsAutoHideMenuHideChecked() and
 // ToggleAutoHideMenu().

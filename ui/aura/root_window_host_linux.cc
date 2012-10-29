@@ -4,6 +4,7 @@
 
 #include "ui/aura/root_window_host_linux.h"
 
+#include <strings.h>
 #include <X11/cursorfont.h>
 #include <X11/extensions/Xfixes.h>
 #include <X11/extensions/XInput2.h>
@@ -11,6 +12,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
+
 #include <algorithm>
 
 #include "base/command_line.h"
@@ -18,6 +20,8 @@
 #include "base/message_pump_aurax11.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -419,123 +423,6 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
   return true;
 }
 
-bool RootWindowHostLinux::DispatchEventForRootWindow(
-    const base::NativeEvent& event) {
-  switch (event->type) {
-    case ConfigureNotify:
-      DCHECK_EQ(x_root_window_, event->xconfigure.event);
-      x_root_bounds_.SetRect(event->xconfigure.x, event->xconfigure.y,
-          event->xconfigure.width, event->xconfigure.height);
-      break;
-
-    case GenericEvent:
-      DispatchXI2Event(event);
-      break;
-  }
-
-  return true;
-}
-
-void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
-  ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
-  XEvent* xev = event;
-  if (!factory->ShouldProcessXI2Event(xev))
-    return;
-
-  ui::EventType type = ui::EventTypeFromNative(xev);
-  XEvent last_event;
-  int num_coalesced = 0;
-
-  switch (type) {
-    case ui::ET_TOUCH_MOVED:
-      num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
-      if (num_coalesced > 0)
-        xev = &last_event;
-      // fallthrough
-    case ui::ET_TOUCH_PRESSED:
-    case ui::ET_TOUCH_RELEASED: {
-      ui::TouchEvent touchev(xev);
-#if defined(OS_CHROMEOS)
-      // X maps the touch-surface to the size of the X root-window. In
-      // multi-monitor setup, the X root-window size is a combination of
-      // both the monitor sizes. So it is necessary to remap the location of
-      // the event from the X root-window to the X host-window for the aura
-      // root-window.
-      if (base::chromeos::IsRunningOnChromeOS()) {
-        touchev.CalibrateLocation(x_root_bounds_.size(), bounds_.size());
-        if (!bounds_.Contains(touchev.location())) {
-          // This might still be in the bezel region.
-          gfx::Rect expanded(bounds_);
-          expanded.Inset(-kXRootWindowPaddingLeft,
-                         -kXRootWindowPaddingTop,
-                         -kXRootWindowPaddingRight,
-                         -kXRootWindowPaddingBottom);
-          if (!expanded.Contains(touchev.location()))
-            break;
-        }
-      }
-#endif  // defined(OS_CHROMEOS)
-      delegate_->OnHostTouchEvent(&touchev);
-      break;
-    }
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_DRAGGED:
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED: {
-      if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED) {
-        // If this is a motion event, we want to coalesce all pending motion
-        // events that are at the top of the queue.
-        num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
-        if (num_coalesced > 0)
-          xev = &last_event;
-      } else if (type == ui::ET_MOUSE_PRESSED) {
-        XIDeviceEvent* xievent =
-            static_cast<XIDeviceEvent*>(xev->xcookie.data);
-        int button = xievent->detail;
-        if (button == kBackMouseButton || button == kForwardMouseButton) {
-          client::UserActionClient* gesture_client =
-              client::GetUserActionClient(delegate_->AsRootWindow());
-          if (gesture_client) {
-            bool reverse_direction =
-                ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
-            gesture_client->OnUserAction(
-                (button == kBackMouseButton && !reverse_direction) ||
-                (button == kForwardMouseButton && reverse_direction) ?
-                client::UserActionClient::BACK :
-                client::UserActionClient::FORWARD);
-          }
-          break;
-        }
-      }
-      ui::MouseEvent mouseev(xev);
-      TranslateAndDispatchMouseEvent(&mouseev);
-      break;
-    }
-    case ui::ET_MOUSEWHEEL: {
-      ui::MouseWheelEvent mouseev(xev);
-      TranslateAndDispatchMouseEvent(&mouseev);
-      break;
-    }
-    case ui::ET_SCROLL_FLING_START:
-    case ui::ET_SCROLL_FLING_CANCEL:
-    case ui::ET_SCROLL: {
-      ui::ScrollEvent scrollev(xev);
-      delegate_->OnHostScrollEvent(&scrollev);
-      break;
-    }
-    case ui::ET_UNKNOWN:
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  // If we coalesced an event we need to free its cookie.
-  if (num_coalesced > 0)
-    XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
-}
-
 void RootWindowHostLinux::SetDelegate(RootWindowHostDelegate* delegate) {
   delegate_ = delegate;
 }
@@ -728,19 +615,53 @@ void RootWindowHostLinux::SetFocusWhenShown(bool focus_when_shown) {
   }
 }
 
+bool RootWindowHostLinux::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
+                                             const gfx::Point& dest_offset,
+                                             SkCanvas* canvas) {
+  scoped_ptr<ui::XScopedImage> scoped_image(GetXImage(source_bounds));
+  if (!scoped_image.get())
+    return false;
+
+  XImage* image = scoped_image->get();
+  DCHECK(image);
+
+  if (image->bits_per_pixel == 32) {
+    // Set the alpha channel before copying to the canvas.  Otherwise, areas of
+    // the framebuffer that were cleared by ply-image rather than being obscured
+    // by an image during boot may end up transparent.
+    // TODO(derat|marcheu): Remove this if/when ply-image has been updated to
+    // set the framebuffer's alpha channel regardless of whether the device
+    // claims to support alpha or not.
+    for (int i = 0; i < image->width * image->height * 4; i += 4)
+      image->data[i + 3] = 0xff;
+
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     image->width, image->height,
+                     image->bytes_per_line);
+    bitmap.setPixels(image->data);
+    SkCanvas::Config8888 config =
+        (image->byte_order == LSBFirst) ?
+        SkCanvas::kBGRA_Unpremul_Config8888 :
+        SkCanvas::kRGBA_Unpremul_Config8888;
+    canvas->writePixels(bitmap, dest_offset.x(), dest_offset.y(), config);
+  } else if (image->bits_per_pixel == 24) {
+    NOTIMPLEMENTED() << "Unsupported bits-per-pixel " << image->bits_per_pixel;
+    return false;
+  }
+
+  return true;
+}
+
 bool RootWindowHostLinux::GrabSnapshot(
     const gfx::Rect& snapshot_bounds,
     std::vector<unsigned char>* png_representation) {
-  ui::XScopedImage image(XGetImage(
-      xdisplay_, xwindow_,
-      snapshot_bounds.x(), snapshot_bounds.y(),
-      snapshot_bounds.width(), snapshot_bounds.height(),
-      AllPlanes, ZPixmap));
-
-  if (!image.get()) {
-    LOG(ERROR) << "XGetImage failed";
+  scoped_ptr<ui::XScopedImage> scoped_image(GetXImage(snapshot_bounds));
+  if (!scoped_image.get())
     return false;
-  }
+
+  XImage* image = scoped_image->get();
+  DCHECK(image);
 
   gfx::PNGCodec::ColorFormat color_format;
 
@@ -814,6 +735,123 @@ void RootWindowHostLinux::PrepareForShutdown() {
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
 }
 
+bool RootWindowHostLinux::DispatchEventForRootWindow(
+    const base::NativeEvent& event) {
+  switch (event->type) {
+    case ConfigureNotify:
+      DCHECK_EQ(x_root_window_, event->xconfigure.event);
+      x_root_bounds_.SetRect(event->xconfigure.x, event->xconfigure.y,
+          event->xconfigure.width, event->xconfigure.height);
+      break;
+
+    case GenericEvent:
+      DispatchXI2Event(event);
+      break;
+  }
+
+  return true;
+}
+
+void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
+  ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
+  XEvent* xev = event;
+  if (!factory->ShouldProcessXI2Event(xev))
+    return;
+
+  ui::EventType type = ui::EventTypeFromNative(xev);
+  XEvent last_event;
+  int num_coalesced = 0;
+
+  switch (type) {
+    case ui::ET_TOUCH_MOVED:
+      num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
+      if (num_coalesced > 0)
+        xev = &last_event;
+      // fallthrough
+    case ui::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_RELEASED: {
+      ui::TouchEvent touchev(xev);
+#if defined(OS_CHROMEOS)
+      // X maps the touch-surface to the size of the X root-window. In
+      // multi-monitor setup, the X root-window size is a combination of
+      // both the monitor sizes. So it is necessary to remap the location of
+      // the event from the X root-window to the X host-window for the aura
+      // root-window.
+      if (base::chromeos::IsRunningOnChromeOS()) {
+        touchev.CalibrateLocation(x_root_bounds_.size(), bounds_.size());
+        if (!bounds_.Contains(touchev.location())) {
+          // This might still be in the bezel region.
+          gfx::Rect expanded(bounds_);
+          expanded.Inset(-kXRootWindowPaddingLeft,
+                         -kXRootWindowPaddingTop,
+                         -kXRootWindowPaddingRight,
+                         -kXRootWindowPaddingBottom);
+          if (!expanded.Contains(touchev.location()))
+            break;
+        }
+      }
+#endif  // defined(OS_CHROMEOS)
+      delegate_->OnHostTouchEvent(&touchev);
+      break;
+    }
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED: {
+      if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED) {
+        // If this is a motion event, we want to coalesce all pending motion
+        // events that are at the top of the queue.
+        num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
+        if (num_coalesced > 0)
+          xev = &last_event;
+      } else if (type == ui::ET_MOUSE_PRESSED) {
+        XIDeviceEvent* xievent =
+            static_cast<XIDeviceEvent*>(xev->xcookie.data);
+        int button = xievent->detail;
+        if (button == kBackMouseButton || button == kForwardMouseButton) {
+          client::UserActionClient* gesture_client =
+              client::GetUserActionClient(delegate_->AsRootWindow());
+          if (gesture_client) {
+            bool reverse_direction =
+                ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
+            gesture_client->OnUserAction(
+                (button == kBackMouseButton && !reverse_direction) ||
+                (button == kForwardMouseButton && reverse_direction) ?
+                client::UserActionClient::BACK :
+                client::UserActionClient::FORWARD);
+          }
+          break;
+        }
+      }
+      ui::MouseEvent mouseev(xev);
+      TranslateAndDispatchMouseEvent(&mouseev);
+      break;
+    }
+    case ui::ET_MOUSEWHEEL: {
+      ui::MouseWheelEvent mouseev(xev);
+      TranslateAndDispatchMouseEvent(&mouseev);
+      break;
+    }
+    case ui::ET_SCROLL_FLING_START:
+    case ui::ET_SCROLL_FLING_CANCEL:
+    case ui::ET_SCROLL: {
+      ui::ScrollEvent scrollev(xev);
+      delegate_->OnHostScrollEvent(&scrollev);
+      break;
+    }
+    case ui::ET_UNKNOWN:
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  // If we coalesced an event we need to free its cookie.
+  if (num_coalesced > 0)
+    XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
+}
+
 bool RootWindowHostLinux::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).
@@ -841,6 +879,20 @@ void RootWindowHostLinux::TranslateAndDispatchMouseEvent(
     event->set_root_location(location);
   }
   delegate_->OnHostMouseEvent(event);
+}
+
+scoped_ptr<ui::XScopedImage> RootWindowHostLinux::GetXImage(
+    const gfx::Rect& snapshot_bounds) {
+  scoped_ptr<ui::XScopedImage> image(new ui::XScopedImage(
+      XGetImage(xdisplay_, xwindow_,
+                snapshot_bounds.x(), snapshot_bounds.y(),
+                snapshot_bounds.width(), snapshot_bounds.height(),
+                AllPlanes, ZPixmap)));
+  if (!image->get()) {
+    LOG(ERROR) << "XGetImage failed";
+    image.reset();
+  }
+  return image.Pass();
 }
 
 // static

@@ -403,8 +403,18 @@ void RootWindow::SetFocusWhenShown(bool focused) {
   host_->SetFocusWhenShown(focused);
 }
 
+bool RootWindow::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
+                                    const gfx::Point& dest_offset,
+                                    SkCanvas* canvas) {
+  DCHECK(canvas);
+  DCHECK(bounds().Contains(source_bounds));
+  gfx::Rect source_pixels = ui::ConvertRectToPixel(layer(), source_bounds);
+  return host_->CopyAreaToSkCanvas(source_pixels, dest_offset, canvas);
+}
+
 bool RootWindow::GrabSnapshot(const gfx::Rect& snapshot_bounds,
                               std::vector<unsigned char>* png_representation) {
+  DCHECK(png_representation);
   DCHECK(bounds().Contains(snapshot_bounds));
   gfx::Rect snapshot_pixels = ui::ConvertRectToPixel(layer(), snapshot_bounds);
   return host_->GrabSnapshot(snapshot_pixels, png_representation);

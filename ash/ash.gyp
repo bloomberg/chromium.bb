@@ -351,6 +351,8 @@
         'wm/stacking_controller.h',
         'wm/status_area_layout_manager.cc',
         'wm/status_area_layout_manager.h',
+        'wm/system_background_controller.cc',
+        'wm/system_background_controller.h',
         'wm/system_gesture_event_filter.cc',
         'wm/system_gesture_event_filter.h',
         'wm/system_modal_container_event_filter.cc',

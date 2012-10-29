@@ -36,14 +36,6 @@ class RootWindowHostLinux : public RootWindowHost,
   // Overridden from Dispatcher overrides:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
- private:
-  bool DispatchEventForRootWindow(const base::NativeEvent& event);
-
-  // Dispatches XI2 events. Note that some events targetted for the X root
-  // window are dispatched to the aura root window (e.g. touch events after
-  // calibration).
-  void DispatchXI2Event(const base::NativeEvent& event);
-
   // RootWindowHost Overrides.
   virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
@@ -62,12 +54,23 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void SetFocusWhenShown(bool focus_when_shown) OVERRIDE;
+  virtual bool CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
+                                  const gfx::Point& dest_offset,
+                                  SkCanvas* canvas) OVERRIDE;
   virtual bool GrabSnapshot(
       const gfx::Rect& snapshot_bounds,
       std::vector<unsigned char>* png_representation) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+
+ private:
+  bool DispatchEventForRootWindow(const base::NativeEvent& event);
+
+  // Dispatches XI2 events. Note that some events targetted for the X root
+  // window are dispatched to the aura root window (e.g. touch events after
+  // calibration).
+  void DispatchXI2Event(const base::NativeEvent& event);
 
   // Returns true if there's an X window manager present... in most cases.  Some
   // window managers (notably, ion3) don't implement enough of ICCCM for us to
@@ -81,6 +84,10 @@ class RootWindowHostLinux : public RootWindowHost,
   // Translates the native mouse location into screen coordinates and and
   // dispatches the event to RootWindowHostDelegate.
   void TranslateAndDispatchMouseEvent(ui::MouseEvent* event);
+
+  // Copies and returns |snapshot_bounds| from |xwindow_|.  Helper method for
+  // CopyAreaToSkCanvas() and GrabSnapshot().
+  scoped_ptr<ui::XScopedImage> GetXImage(const gfx::Rect& snapshot_bounds);
 
   RootWindowHostDelegate* delegate_;
 

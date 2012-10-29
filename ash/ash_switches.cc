@@ -16,6 +16,12 @@ const char kAshBootAnimationFunction3[] = "ash-boot-animation-function3";
 // Constrains the pointer movement within a root window on desktop.
 const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
 
+// Copies the host window's content to the system background layer at startup.
+// Can make boot slightly slower, but also hides an even-longer awkward period
+// where we display a white background if the login wallpaper takes a long time
+// to load.
+const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
+
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
