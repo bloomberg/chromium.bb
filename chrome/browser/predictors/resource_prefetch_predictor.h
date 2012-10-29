@@ -68,7 +68,7 @@ class ResourcePrefetcherManager;
 //   ResourcePrefetcherManager, and issues net::URLRequest to fetch resources.
 //
 // TODO(shishir): Do speculative prefetching for https resources and/or https
-// main_frame urls.
+// main frame urls.
 class ResourcePrefetchPredictor
     : public ProfileKeyedService,
       public content::NotificationObserver,
@@ -100,10 +100,15 @@ class ResourcePrefetchPredictor
   static bool ShouldRecordResponse(net::URLRequest* response);
   static bool ShouldRecordRedirect(net::URLRequest* response);
 
+  // Determines the ResourceType from the mime type, defaulting to the
+  // |fallback| if the ResourceType could not be determined.
   static ResourceType::Type GetResourceTypeFromMimeType(
       const std::string& mime_type,
       ResourceType::Type fallback);
 
+  // 'ResourcePrefetchPredictorObserver' calls the below functions to inform the
+  // predictor of main frame and resource requests. Should only be called if the
+  // corresponding Should* functions return true.
   void RecordURLRequest(const URLRequestSummary& request);
   void RecordUrlResponse(const URLRequestSummary& response);
   void RecordUrlRedirect(const URLRequestSummary& response);
@@ -116,7 +121,6 @@ class ResourcePrefetchPredictor
 
  private:
   friend class ::PredictorsHandler;
-  friend class GetLastVisitTimeForUrlsTask;
   friend class ResourcePrefetchPredictorTest;
 
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, DeleteUrls);
@@ -135,28 +139,19 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            OnSubresourceResponse);
 
-  // TODO(shishir): Maybe use pointers to make the sort cheaper.
-  typedef ResourcePrefetchPredictorTables::UrlTableRow UrlTableRow;
-  typedef std::vector<UrlTableRow> UrlTableRowVector;
+  typedef ResourcePrefetchPredictorTables::UrlResourceRow UrlResourceRow;
+  typedef ResourcePrefetchPredictorTables::UrlResourceRows UrlResourceRows;
+  typedef ResourcePrefetchPredictorTables::UrlData UrlData;
+  typedef std::map<NavigationID, linked_ptr<std::vector<URLRequestSummary> > >
+      NavigationMap;
+  typedef std::map<GURL, UrlData> UrlTableCacheMap;
+  typedef std::map<NavigationID, ResourcePrefetcher::RequestVector*> ResultsMap;
 
   enum InitializationState {
     NOT_INITIALIZED = 0,
     INITIALIZING = 1,
     INITIALIZED = 2
   };
-
-  struct UrlTableCacheValue {
-    UrlTableCacheValue();
-    ~UrlTableCacheValue();
-
-    UrlTableRowVector rows;
-    base::Time last_visit;
-  };
-
-  typedef std::map<NavigationID, linked_ptr<std::vector<URLRequestSummary> > >
-      NavigationMap;
-  typedef std::map<GURL, UrlTableCacheValue> UrlTableCacheMap;
-  typedef std::map<NavigationID, ResourcePrefetcher::RequestVector*> ResultsMap;
 
   // content::NotificationObserver methods OVERRIDE.
   virtual void Observe(int type,
@@ -183,7 +178,7 @@ class ResourcePrefetchPredictor
   // Initialization code.
   void LazilyInitialize();
   void OnHistoryAndCacheLoaded();
-  void CreateCaches(std::vector<UrlTableRow>* url_rows);
+  void CreateCaches(std::vector<UrlData>* url_rows);
 
   // Database and cache cleanup code.
   void RemoveAnEntryFromUrlDB();
@@ -197,7 +192,7 @@ class ResourcePrefetchPredictor
   void MaybeReportAccuracyStats(const NavigationID& navigation_id);
   void MaybeReportSimulatedAccuracyStats(
       const NavigationID& navigation_id) const;
-  void ReportAccuracyHistograms(const UrlTableRowVector& predicted,
+  void ReportAccuracyHistograms(const UrlResourceRows& predicted,
                                 const std::map<GURL, bool>& actual_resources,
                                 int total_resources_fetched_from_network,
                                 int max_assumed_prefetched) const;
@@ -205,9 +200,6 @@ class ResourcePrefetchPredictor
       int visit_count,
       const NavigationID& navigation_id,
       const std::vector<URLRequestSummary>& requests);
-
-  void OnLastVisitTimeLookups(
-      const std::map<GURL, base::Time>& last_visit_times);
 
   void SetTablesForTesting(
       scoped_refptr<ResourcePrefetchPredictorTables> tables);

@@ -97,8 +97,9 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
       base::DictionaryValue* main = new base::DictionaryValue();
       main->SetString("main_frame_url", it->first.spec());
       base::ListValue* resources = new base::ListValue();
-      for (ResourcePrefetchPredictor::UrlTableRowVector::const_iterator row =
-           it->second.rows.begin(); row != it->second.rows.end(); ++row) {
+      for (ResourcePrefetchPredictor::UrlResourceRows::const_iterator
+           row = it->second.resources.begin();
+           row != it->second.resources.end(); ++row) {
         base::DictionaryValue* resource = new base::DictionaryValue();
         resource->SetString("resource_url", row->resource_url.spec());
         resource->SetString("resource_type",
