@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.1",
+  "version": "4.2",
   "entries": [
     {
       "id": 1,
@@ -903,6 +903,19 @@
       },
       "blacklist": [
         "all"
+      ]
+    },
+    {
+      "id": 60,
+      "description": "Multisampling is buggy on Mac with NVIDIA gpu.",
+      "cr_bugs": [137303],
+      "os": {
+        "type": "macosx"
+      },
+      "multi_gpu_category": "any",
+      "vendor_id": "0x10de",
+      "blacklist": [
+        "multisampling"
       ]
     }
   ]
