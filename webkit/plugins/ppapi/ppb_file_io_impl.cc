@@ -168,20 +168,21 @@ int32_t PPB_FileIO_Impl::TouchValidated(
             file_system_url_,
             PPTimeToTime(last_access_time),
             PPTimeToTime(last_modified_time),
-            new FileCallbacks(this, callback, NULL, NULL, NULL)))
+            new PlatformGeneralCallbackTranslator(
+                base::Bind(&PPB_FileIO_Impl::ExecutePlatformGeneralCallback,
+                           weak_factory_.GetWeakPtr()))))
       return PP_ERROR_FAILED;
-    return PP_OK_COMPLETIONPENDING;
+  } else {
+    // TODO(nhiroki): fix a failure of FileIO.Touch for an external filesystem
+    // on Mac and Linux due to sandbox restrictions (http://crbug.com/101128).
+    if (!base::FileUtilProxy::Touch(
+            plugin_delegate->GetFileThreadMessageLoopProxy(),
+            file_, PPTimeToTime(last_access_time),
+            PPTimeToTime(last_modified_time),
+            base::Bind(&PPB_FileIO_Impl::ExecutePlatformGeneralCallback,
+                       weak_factory_.GetWeakPtr())))
+      return PP_ERROR_FAILED;
   }
-
-  // TODO(nhiroki): fix a failure of FileIO.Touch for an external filesystem on
-  // Mac and Linux due to sandbox restrictions (http://crbug.com/101128).
-  if (!base::FileUtilProxy::Touch(
-          plugin_delegate->GetFileThreadMessageLoopProxy(),
-          file_, PPTimeToTime(last_access_time),
-          PPTimeToTime(last_modified_time),
-          base::Bind(&PPB_FileIO_Impl::ExecutePlatformGeneralCallback,
-                     weak_factory_.GetWeakPtr())))
-    return PP_ERROR_FAILED;
 
   RegisterCallback(OPERATION_EXCLUSIVE, callback, NULL, NULL);
   return PP_OK_COMPLETIONPENDING;
