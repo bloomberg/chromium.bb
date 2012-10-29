@@ -26,8 +26,6 @@ TEST(ClearOnExitPolicyTest, ShouldClearOriginOnExit) {
       new quota::MockSpecialStoragePolicy;
   storage_policy->AddSessionOnly(GURL("http://session.com/"));
   storage_policy->AddSessionOnly(GURL("https://secure.com/"));
-  storage_policy->AddSessionOnly(GURL("http://protected.com/"));
-  storage_policy->AddProtected(GURL("http://protected.com/"));
 
   scoped_refptr<ClearOnExitPolicy> policy =
       new ClearOnExitPolicy(storage_policy.get());
@@ -37,9 +35,6 @@ TEST(ClearOnExitPolicyTest, ShouldClearOriginOnExit) {
 
   EXPECT_FALSE(policy->ShouldClearOriginOnExit("secure.com", false));
   EXPECT_TRUE(policy->ShouldClearOriginOnExit("secure.com", true));
-
-  EXPECT_FALSE(policy->ShouldClearOriginOnExit("protected.com", false));
-  EXPECT_FALSE(policy->ShouldClearOriginOnExit("protected.com", true));
 
   EXPECT_FALSE(policy->ShouldClearOriginOnExit("other.com", false));
   EXPECT_FALSE(policy->ShouldClearOriginOnExit("other.com", true));

@@ -31,6 +31,5 @@ bool ClearOnExitPolicy::ShouldClearOriginOnExit(const std::string& domain,
   std::string host = domain[0] == '.' ? domain.substr(1) : domain;
   GURL url(scheme + content::kStandardSchemeSeparator + host);
 
-  return special_storage_policy_->IsStorageSessionOnly(url) &&
-         !special_storage_policy_->IsStorageProtected(url);
+  return special_storage_policy_->IsStorageSessionOnly(url);
 }
