@@ -6091,3 +6091,59 @@
   ...
   fun:_ZN7content63NavigationControllerTest_BackNavigationDoesNotClearFavicon_Test8TestBodyEv
 }
+{
+   bug_157669
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN17VisitedLinkMasterC1EP7Profile
+   fun:_ZN12_GLOBAL__N_122BuildVisitedLinkMasterEP7Profile
+   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
+   fun:_ZN26ProfileKeyedServiceFactory23SetTestingFactoryAndUseEP7ProfilePFP19ProfileKeyedServiceS1_E
+   fun:_ZN21VisitedLinkEventsTest5SetUpEv
+}
+{
+   bug_158312
+   Memcheck:Leak
+   fun:realloc
+   fun:__vasprintf_chk
+   fun:g_vasprintf
+   fun:g_strdup_vprintf
+   fun:g_strdup_printf
+   fun:gdk_x_error
+   fun:_XError
+   fun:process_responses
+   fun:_XReply
+   fun:_XGetWindowAttributes
+   fun:XGetWindowAttributes
+   fun:_ZN3gfx25NativeViewGLSurfaceOSMesa6ResizeERKNS_4SizeE
+   fun:_ZN3gfx15GLSurfaceOSMesa10InitializeEv
+   fun:_ZN3gfx25NativeViewGLSurfaceOSMesa10InitializeEv
+   fun:_ZN3gfx9GLSurface19CreateViewGLSurfaceEbm
+   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl15CreateForWindowEN6WebKit20WebGraphicsContext3D10AttributesEmPN3gfx12GLShareGroupE
+   fun:_ZN2ui21DefaultContextFactory19CreateContextCommonEPNS_10CompositorEb
+   fun:_ZN2ui21DefaultContextFactory13CreateContextEPNS_10CompositorE
+   fun:_ZN2ui10Compositor19createOutputSurfaceEv
+   fun:_ZN6WebKit20WebLayerTreeViewImpl19createOutputSurfaceEv
+   fun:_ZN2cc13LayerTreeHost13createContextEv
+   fun:_ZN2cc17SingleThreadProxy17initializeContextEv
+}
+{
+   bug_158314
+   Memcheck:Leak
+   fun:malloc
+   fun:__talloc
+   ...
+   fun:talloc_init
+   fun:_ZN10loop_stateC1Ev
+   fun:_ZN13loop_analysisC1Ev
+   fun:_Z22analyze_loop_variablesP9exec_list
+   fun:_Z22do_common_optimizationP9exec_listbj
+   fun:_mesa_glsl_compile_shader
+   fun:compile_shader
+   fun:_mesa_CompileShaderARB
+   fun:glCompileShader
+   fun:_ZN3gfx9RealGLApi17glCompileShaderFnEj
+   fun:_ZN6webkit3gpu33WebGraphicsContext3DInProcessImpl13compileShaderEj
+   fun:_ZN2cc18ProgramBindingBase10loadShaderEPN6WebKit20WebGraphicsContext3DEjRKSs
+   fun:_ZN2cc18ProgramBindingBase4initEPN6WebKit20WebGraphicsContext3DERKSsS5_
+}
