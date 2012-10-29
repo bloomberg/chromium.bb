@@ -16,11 +16,16 @@ import toolchain_main
 
 GIT_REVISIONS = {
     'binutils': '0d99b0776661ebbf2949c644cb060612ccc11737',
-    'gcc': '5a4bb98274d64b07a8b92e52684a445c4351bf3f',
+    'gcc': 'aa98f0ce1ad49ac7faff1ef880a8016db520d333',
     'newlib': '51a8366a0898bc47ee78a7f6ed01e8bd40eee4d0',
     }
 
 TARGET_LIST = ['arm']
+
+# These are extra arguments to pass gcc's configure that vary by target.
+TARGET_GCC_CONFIG = {
+    'arm': ['--with-tune=cortex-a15'],
+    }
 
 PACKAGE_NAME = 'Native Client SDK [%(build_signature)s]'
 BUG_URL = 'http://gonacl.com/reportissue'
@@ -140,7 +145,8 @@ def ConfigureGccCommand(target):
   return GccCommand(
       CONFIGURE_CMD +
       CONFIGURE_HOST_TOOL +
-      ConfigureTargetArgs(target) + [
+      ConfigureTargetArgs(target) +
+      TARGET_GCC_CONFIG.get(target, []) + [
           '--with-gmp=%(input1)s',
           '--with-mpfr=%(input2)s',
           '--with-mpc=%(input3)s',
@@ -161,6 +167,7 @@ def HostTools(target):
                   CONFIGURE_CMD +
                   CONFIGURE_HOST_TOOL +
                   ConfigureTargetArgs(target) + [
+                      '--enable-deterministic-archives',
                       '--enable-gold',
                       '--enable-plugins',
                       ]),
