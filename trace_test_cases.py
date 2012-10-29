@@ -95,7 +95,8 @@ def write_details(logname, outfile, root_dir, blacklist, results):
   case.
   """
   api = trace_inputs.get_api()
-  logs = dict((i.pop('trace'), i) for i in api.parse_log(logname, blacklist))
+  logs = dict(
+      (i.pop('trace'), i) for i in api.parse_log(logname, blacklist, None))
   results_processed = {}
   exception = None
   for items in results:

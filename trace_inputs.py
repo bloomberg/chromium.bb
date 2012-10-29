@@ -997,13 +997,16 @@ class ApiBase(object):
     raise NotImplementedError()
 
   @classmethod
-  def parse_log(cls, logname, blacklist):
+  def parse_log(cls, logname, blacklist, trace_name):
     """Processes trace logs and returns the files opened and the files that do
     not exist.
 
     It does not track directories.
 
-    |logname| must be an absolute path.
+    Arguments:
+      - logname: must be an absolute path.
+      - blacklist: must be a lambda.
+      - trace_name: optional trace to read, defaults to reading all traces.
 
     Most of the time, files that do not exist are temporary test files that
     should be put in /tmp instead. See http://crbug.com/116251.
@@ -1509,12 +1512,14 @@ class Strace(ApiBase):
         os.remove(i)
 
   @classmethod
-  def parse_log(cls, logname, blacklist):
-    logging.info('parse_log(%s, %s)' % (logname, blacklist))
+  def parse_log(cls, logname, blacklist, trace_name):
+    logging.info('parse_log(%s, ..., %s)', logname, trace_name)
     assert os.path.isabs(logname)
     data = read_json(logname)
     out = []
     for item in data['traces']:
+      if trace_name and item['trace'] != trace_name:
+        continue
       result = {
         'output': item['output'],
         'trace': item['trace'],
@@ -2305,8 +2310,8 @@ class Dtrace(ApiBase):
         os.remove(logname + ext)
 
   @classmethod
-  def parse_log(cls, logname, blacklist):
-    logging.info('parse_log(%s, ...)' % logname)
+  def parse_log(cls, logname, blacklist, trace_name):
+    logging.info('parse_log(%s, ..., %s)', logname, trace_name)
     assert os.path.isabs(logname)
 
     def blacklist_more(filepath):
@@ -2316,6 +2321,8 @@ class Dtrace(ApiBase):
     data = read_json(logname)
     out = []
     for item in data['traces']:
+      if trace_name and item['trace'] != trace_name:
+        continue
       result = {
         'output': item['output'],
         'trace': item['trace'],
@@ -2940,8 +2947,8 @@ class LogmanTrace(ApiBase):
         os.remove(logname + ext)
 
   @classmethod
-  def parse_log(cls, logname, blacklist):
-    logging.info('parse_log(%s, %s)' % (logname, blacklist))
+  def parse_log(cls, logname, blacklist, trace_name):
+    logging.info('parse_log(%s, ..., %s)', logname, trace_name)
     assert os.path.isabs(logname)
 
     def blacklist_more(filepath):
@@ -2952,6 +2959,8 @@ class LogmanTrace(ApiBase):
     lines = read_json(logname + '.json')
     out = []
     for item in data['traces']:
+      if trace_name and item['trace'] != trace_name:
+        continue
       result = {
         'output': item['output'],
         'trace': item['trace'],
@@ -3110,6 +3119,9 @@ def CMDread(args):
       help='Root directory to base everything off it. Anything outside of this '
            'this directory will not be reported')
   parser.add_option(
+      '--trace-name',
+      help='Only reads one of the trace. Defaults to reading all traces')
+  parser.add_option(
       '-j', '--json', action='store_true',
       help='Outputs raw result data as json')
   parser.add_option(
@@ -3124,7 +3136,7 @@ def CMDread(args):
   api = get_api()
   def blacklist(f):
     return any(re.match(b, f) for b in options.blacklist)
-  data = api.parse_log(options.log, blacklist)
+  data = api.parse_log(options.log, blacklist, options.trace_name)
   # Process each trace.
   output_as_json = []
   for item in data:

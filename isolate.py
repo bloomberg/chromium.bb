@@ -1594,7 +1594,7 @@ def read_trace_as_isolate_dict(complete_state):
     raise ExecutionError(
         'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
   try:
-    data = api.parse_log(logfile, default_blacklist)
+    data = api.parse_log(logfile, default_blacklist, None)
     exceptions = [i['exception'] for i in data if 'exception' in i]
     results = (i['results'] for i in data if 'results' in i)
     results_stripped = (i.strip_root(complete_state.root_dir) for i in results)

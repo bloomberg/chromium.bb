@@ -263,7 +263,7 @@ class TraceInputsImport(TraceInputsBase):
     #self.assertEquals('', output)
     def blacklist(f):
       return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
-    data = api.parse_log(self.log, blacklist)
+    data = api.parse_log(self.log, blacklist, None)
     self.assertEqual(1, len(data))
     self.assertTrue('exception' not in data[0])
     return data[0]['results'].strip_root(ROOT_DIR)
@@ -463,7 +463,7 @@ class TraceInputsImport(TraceInputsBase):
         trace_results = pool.join()
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
-    actual_results = api.parse_log(self.log, blacklist)
+    actual_results = api.parse_log(self.log, blacklist, None)
     self.assertEquals(8, len(trace_results))
     self.assertEquals(8, len(actual_results))
 
