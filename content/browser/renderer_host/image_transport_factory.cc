@@ -35,6 +35,7 @@
 using content::BrowserGpuChannelHostFactory;
 using content::GLHelper;
 using content::GpuChannelHostFactory;
+using content::GpuDataManagerImpl;
 using content::GpuSurfaceTracker;
 using content::WebGraphicsContext3DCommandBufferImpl;
 using content::WebGraphicsContext3DSwapBuffersClient;
