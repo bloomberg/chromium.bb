@@ -46,7 +46,10 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
+
+#if !defined(OMIT_CHROME_FRAME)
 #include "chrome_frame/chrome_tab.h"
+#endif
 
 using base::win::RegKey;
 
@@ -72,20 +75,33 @@ const wchar_t kActiveSetupVersion[] = L"23,0,0,0";
 const wchar_t kIELowRightsPolicyOldGuid[] =
     L"{6C288DD7-76FB-4721-B628-56FAC252E199}";
 
+#if defined(OMIT_CHROME_FRAME)
+// For historical reasons, this GUID is the same as CLSID_ChromeFrame. Included
+// here to break the dependency on Chrome Frame when Chrome Frame is not being
+// built.
+// TODO(robertshield): Remove this when Chrome Frame works with Aura.
+const wchar_t kIELowRightsPolicyCurrentGuid[] =
+    L"{E0A900DF-9611-4446-86BD-4B1D47E7DB2A}";
+#endif
+
 const wchar_t kElevationPolicyKeyPath[] =
     L"SOFTWARE\\Microsoft\\Internet Explorer\\Low Rights\\ElevationPolicy\\";
 
 void GetIELowRightsElevationPolicyKeyPath(ElevationPolicyId policy,
                                           string16* key_path) {
   DCHECK(policy == CURRENT_ELEVATION_POLICY || policy == OLD_ELEVATION_POLICY);
-
   key_path->assign(kElevationPolicyKeyPath,
                    arraysize(kElevationPolicyKeyPath) - 1);
   if (policy == CURRENT_ELEVATION_POLICY) {
+#if defined(OMIT_CHROME_FRAME)
+    key_path->append(kIELowRightsPolicyCurrentGuid,
+                     arraysize(kIELowRightsPolicyCurrentGuid) - 1);
+#else
     wchar_t cf_clsid[64];
     int len = StringFromGUID2(__uuidof(ChromeFrame), &cf_clsid[0],
                               arraysize(cf_clsid));
     key_path->append(&cf_clsid[0], len - 1);
+#endif
   } else {
     key_path->append(kIELowRightsPolicyOldGuid,
                      arraysize(kIELowRightsPolicyOldGuid)- 1);

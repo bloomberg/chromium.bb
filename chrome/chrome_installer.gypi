@@ -261,11 +261,11 @@
             'installer_util',
             'installer_util_strings',
             '../base/base.gyp:base',
+            '../breakpad/breakpad.gyp:breakpad_handler',
             '../build/temp_gyp/googleurl.gyp:googleurl',
             '../chrome/common_constants.gyp:common_constants',
             '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-            '../breakpad/breakpad.gyp:breakpad_handler',
             '../rlz/rlz.gyp:rlz_lib',
             '../third_party/zlib/zlib.gyp:zlib',
           ],
@@ -388,6 +388,15 @@
                  'branding_dir': 'app/theme/chromium',
                  'branding_dir_100': 'app/theme/default_100_percent/chromium',
               },
+            }],
+            ['use_aura==1', {
+              'dependencies!': [
+                '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
+                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+              ],
+              'defines': [
+                'OMIT_CHROME_FRAME',
+              ],
             }],
           ],
         },
