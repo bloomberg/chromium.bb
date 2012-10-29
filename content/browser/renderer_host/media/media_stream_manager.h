@@ -48,8 +48,8 @@ class AudioManager;
 namespace content {
 class AudioInputDeviceManager;
 class MediaStreamDeviceSettings;
-class MediaStreamUIController;
 class MediaStreamRequester;
+class MediaStreamUIController;
 class VideoCaptureManager;
 
 // MediaStreamManager is used to generate and close new media devices, not to

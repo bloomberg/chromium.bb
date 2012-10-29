@@ -60,9 +60,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   // Constructors.  The latter is used for testing.
   WebContentsVideoCaptureDevice(
       const Name& name, int render_process_id, int render_view_id);
-  explicit WebContentsVideoCaptureDevice(
-      RenderWidgetHost* test_source);
-
+  explicit WebContentsVideoCaptureDevice(RenderWidgetHost* test_source);
 
   Name device_name_;
   scoped_refptr<CaptureMachine> capturer_;

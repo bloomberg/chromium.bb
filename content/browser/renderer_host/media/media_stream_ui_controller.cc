@@ -68,11 +68,10 @@ class ResponseCallbackHelper
 // different calls.
 class MediaStreamRequestForUI : public MediaStreamRequest {
  public:
-  MediaStreamRequestForUI(
-      int render_pid,
-      int render_vid,
-      const GURL& origin,
-      const StreamOptions& options)
+  MediaStreamRequestForUI(int render_pid,
+                          int render_vid,
+                          const GURL& origin,
+                          const StreamOptions& options)
       : MediaStreamRequest(render_pid, render_vid, origin),
         wait_for_audio(IsAudioMediaType(options.audio_type)),
         wait_for_video(IsVideoMediaType(options.video_type)),
@@ -122,8 +121,7 @@ void ProceedMediaAccessPermission(const MediaStreamRequestForUI& request,
 
 }  // namespace
 
-MediaStreamUIController::MediaStreamUIController(
-    SettingsRequester* requester)
+MediaStreamUIController::MediaStreamUIController(SettingsRequester* requester)
     : requester_(requester),
       use_fake_ui_(false),
       weak_ptr_factory_(this) {

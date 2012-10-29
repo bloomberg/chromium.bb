@@ -20,9 +20,8 @@ namespace content {
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
 // MediaStreamImpl. It's the complement of MediaStreamDispatcher
 // (owned by RenderView).
-class CONTENT_EXPORT MediaStreamDispatcherHost
-    : public BrowserMessageFilter,
-      public MediaStreamRequester {
+class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
+                                                 public MediaStreamRequester {
  public:
   explicit MediaStreamDispatcherHost(int render_process_id);
 
