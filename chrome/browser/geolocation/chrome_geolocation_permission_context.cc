@@ -55,6 +55,24 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
   const GeolocationPermissionRequestID id(render_process_id, render_view_id,
                                           bridge_id);
+  ExtensionService* extension_service = profile_->GetExtensionService();
+  if (extension_service) {
+    const extensions::Extension* extension =
+        extension_service->extensions()->GetExtensionOrAppByURL(
+            ExtensionURLInfo(WebKit::WebSecurityOrigin::createFromString(
+                                 UTF8ToUTF16(requesting_frame.spec())),
+                             requesting_frame));
+    if (extension &&
+        extension->HasAPIPermission(extensions::APIPermission::kGeolocation)) {
+      // Make sure the extension is in the calling process.
+      if (extension_service->process_map()->Contains(extension->id(),
+                                                     id.render_process_id())) {
+        NotifyPermissionSet(id, requesting_frame, callback, true);
+        return;
+      }
+    }
+  }
+
   if (chrome::GetViewType(web_contents) != chrome::VIEW_TYPE_TAB_CONTENTS) {
     // The tab may have gone away, or the request may not be from a tab at all.
     // TODO(mpcomplete): the request could be from a background page or
@@ -95,24 +113,6 @@ void ChromeGeolocationPermissionContext::DecidePermission(
     const GURL& embedder,
     base::Callback<void(bool)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  ExtensionService* extension_service = profile_->GetExtensionService();
-  if (extension_service) {
-    const extensions::Extension* extension =
-        extension_service->extensions()->GetExtensionOrAppByURL(
-            ExtensionURLInfo(WebKit::WebSecurityOrigin::createFromString(
-                                 UTF8ToUTF16(requesting_frame.spec())),
-                             requesting_frame));
-    if (extension &&
-        extension->HasAPIPermission(extensions::APIPermission::kGeolocation)) {
-      // Make sure the extension is in the calling process.
-      if (extension_service->process_map()->Contains(extension->id(),
-                                                     id.render_process_id())) {
-        PermissionDecided(id, requesting_frame, embedder, callback, true);
-        return;
-      }
-    }
-  }
 
   ContentSetting content_setting =
      profile_->GetHostContentSettingsMap()->GetContentSetting(
