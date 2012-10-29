@@ -73,8 +73,8 @@ void HostPortAllocatorSession::ConfigReady(cricket::PortConfiguration* config) {
   // Filter out non-UDP relay ports, so that we don't try using TCP.
   for (cricket::PortConfiguration::RelayList::iterator relay =
            config->relays.begin(); relay != config->relays.end(); ++relay) {
-    cricket::PortConfiguration::PortList filtered_ports;
-    for (cricket::PortConfiguration::PortList::iterator port =
+    cricket::PortList filtered_ports;
+    for (cricket::PortList::iterator port =
              relay->ports.begin(); port != relay->ports.end(); ++port) {
       if (port->proto == cricket::PROTO_UDP) {
         filtered_ports.push_back(*port);

@@ -294,7 +294,7 @@ void P2PPortAllocatorSession::AddConfig() {
       new cricket::PortConfiguration(stun_server_address_, "", "");
 
   if (relay_ip_.ip() != 0) {
-    cricket::PortConfiguration::PortList ports;
+    cricket::PortList ports;
     if (relay_udp_port_ > 0) {
       talk_base::SocketAddress address(relay_ip_.ip(), relay_udp_port_);
       ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_UDP));
@@ -307,8 +307,14 @@ void P2PPortAllocatorSession::AddConfig() {
       talk_base::SocketAddress address(relay_ip_.ip(), relay_ssltcp_port_);
       ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_SSLTCP));
     }
-    if (!ports.empty())
-      config->AddRelay(ports, 0.0f);
+    if (!ports.empty()) {
+      // Passing empty credentials, our implementation of RelayServer
+      // doesn't need credentials to allocate ports. It uses a different
+      // mechanism for authentication. After migrating to standard
+      // TURN, need to push real credentials.
+      cricket::RelayCredentials credentials;
+      config->AddRelay(ports, credentials, 0.0f);
+    }
   }
   ConfigReady(config);
 }
