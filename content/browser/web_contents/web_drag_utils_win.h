@@ -9,7 +9,7 @@
 
 #include <windows.h>
 
-namespace web_drag_utils_win {
+namespace content {
 
 WebKit::WebDragOperation WinDragOpToWebDragOp(DWORD effect);
 WebKit::WebDragOperationsMask WinDragOpMaskToWebDragOpMask(DWORD effects);
@@ -17,6 +17,6 @@ WebKit::WebDragOperationsMask WinDragOpMaskToWebDragOpMask(DWORD effects);
 DWORD WebDragOpToWinDragOp(WebKit::WebDragOperation op);
 DWORD WebDragOpMaskToWinDragOpMask(WebKit::WebDragOperationsMask ops);
 
-}  // namespace web_drag_utils_win
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_UTILS_WIN_H_

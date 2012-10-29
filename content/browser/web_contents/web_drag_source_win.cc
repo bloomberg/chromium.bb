@@ -13,9 +13,8 @@
 #include "content/public/browser/web_contents.h"
 
 using WebKit::WebDragOperationNone;
-using content::BrowserThread;
-using content::WebContents;
 
+namespace content {
 namespace {
 
 static void GetCursorPositions(gfx::NativeWindow wnd, gfx::Point* client,
@@ -38,10 +37,10 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
       source_wnd_(source_wnd),
       render_view_host_(web_contents->GetRenderViewHost()),
       effect_(DROPEFFECT_NONE) {
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
-                 content::Source<WebContents>(web_contents));
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                 content::Source<WebContents>(web_contents));
+  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_SWAPPED,
+                 Source<WebContents>(web_contents));
+  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                 Source<WebContents>(web_contents));
 }
 
 WebDragSource::~WebDragSource() {
@@ -87,7 +86,7 @@ void WebDragSource::DelayedOnDragSourceDrop() {
   GetCursorPositions(source_wnd_, &client, &screen);
   render_view_host_->DragSourceEndedAt(
       client.x(), client.y(), screen.x(), screen.y(),
-      web_drag_utils_win::WinDragOpToWebDragOp(effect_));
+      WinDragOpToWebDragOp(effect_));
 }
 
 void WebDragSource::OnDragSourceMove() {
@@ -110,17 +109,19 @@ void WebDragSource::OnDragSourceMove() {
 }
 
 void WebDragSource::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (content::NOTIFICATION_WEB_CONTENTS_SWAPPED == type) {
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+  if (type == NOTIFICATION_WEB_CONTENTS_SWAPPED) {
     // When the WebContents get swapped, our render view host goes away.
     // That's OK, we can continue the drag, we just can't send messages back to
     // our drag source.
     render_view_host_ = NULL;
-  } else if (content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED == type) {
+  } else if (type == NOTIFICATION_WEB_CONTENTS_DISCONNECTED) {
     // This could be possible when we close the tab and the source is still
     // being used in DoDragDrop at the time that the virtual file is being
     // downloaded.
     render_view_host_ = NULL;
   }
 }
+
+}  // namespace content

@@ -350,7 +350,7 @@ bool WebContentsDragWin::DoDragging(const WebDropData& drop_data,
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
                drag_source_,
-               web_drag_utils_win::WebDragOpMaskToWinDragOpMask(ops),
+               WebDragOpMaskToWinDragOpMask(ops),
                &effect);
   }
 

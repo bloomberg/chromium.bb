@@ -2914,17 +2914,17 @@ TEST_F(NavigationControllerTest, ClearFaviconOnRedirect) {
   const GURL kPageWithFavicon("http://withfavicon.html");
   const GURL kPageWithoutFavicon("http://withoutfavicon.html");
   const GURL kIconURL("http://withfavicon.ico");
-  const gfx::Image kDefaultFavicon = content::FaviconStatus().image;
+  const gfx::Image kDefaultFavicon = FaviconStatus().image;
 
   NavigationControllerImpl& controller = controller_impl();
-  content::TestNotificationTracker notifications;
+  TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller);
 
   test_rvh()->SendNavigate(0, kPageWithFavicon);
   EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+      NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+  NavigationEntry* entry = controller.GetLastCommittedEntry();
   EXPECT_TRUE(entry);
   EXPECT_EQ(kPageWithFavicon, entry->GetURL());
 
@@ -2933,7 +2933,7 @@ TEST_F(NavigationControllerTest, ClearFaviconOnRedirect) {
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
   bitmap.allocPixels();
 
-  content::FaviconStatus& favicon_status = entry->GetFavicon();
+  FaviconStatus& favicon_status = entry->GetFavicon();
   favicon_status.image = gfx::Image(bitmap);
   favicon_status.url = kIconURL;
   favicon_status.valid = true;
@@ -2942,9 +2942,9 @@ TEST_F(NavigationControllerTest, ClearFaviconOnRedirect) {
   test_rvh()->SendNavigateWithTransition(
       0, // same page ID.
       kPageWithoutFavicon,
-      content::PAGE_TRANSITION_CLIENT_REDIRECT);
+      PAGE_TRANSITION_CLIENT_REDIRECT);
   EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+      NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   entry = controller.GetLastCommittedEntry();
   EXPECT_TRUE(entry);
@@ -2961,35 +2961,32 @@ TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
   const GURL kIconURL("http://www.a.com/1/favicon.ico");
 
   NavigationControllerImpl& controller = controller_impl();
-  content::TestNotificationTracker notifications;
+  TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller);
 
   test_rvh()->SendNavigate(0, kUrl1);
-  EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Simulate Chromium having set the favicon for |kUrl1|.
   SkBitmap favicon_bitmap;
   favicon_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
   favicon_bitmap.allocPixels();
 
-  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+  NavigationEntry* entry = controller.GetLastCommittedEntry();
   EXPECT_TRUE(entry);
-  content::FaviconStatus& favicon_status = entry->GetFavicon();
+  FaviconStatus& favicon_status = entry->GetFavicon();
   favicon_status.image = gfx::Image(favicon_bitmap);
   favicon_status.url = kIconURL;
   favicon_status.valid = true;
 
   // Navigate to another page and go back to the original page.
   test_rvh()->SendNavigate(1, kUrl2);
-  EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
   test_rvh()->SendNavigateWithTransition(
       0,
       kUrl1,
-      content::PAGE_TRANSITION_FORWARD_BACK);
-  EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+      PAGE_TRANSITION_FORWARD_BACK);
+  EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Verify that the favicon for the page at |kUrl1| was not cleared.
   gfx::Image favicon_after_back;

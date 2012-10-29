@@ -77,7 +77,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.should_update_history = false;
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
-  params.password_form = content::PasswordForm();
+  params.password_form = PasswordForm();
   params.security_info = std::string();
   params.gesture = NavigationGestureUser;
   params.was_within_same_page = false;
@@ -174,8 +174,8 @@ void TestWebContents::SetOpener(TestWebContents* opener) {
   // This is normally only set in the WebContents constructor, which also
   // registers an observer for when the opener gets closed.
   opener_ = opener;
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::Source<WebContents>(opener_));
+  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 Source<WebContents>(opener_));
 }
 
 void TestWebContents::ExpectSetHistoryLengthAndPrune(

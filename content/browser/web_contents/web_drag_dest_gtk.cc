@@ -21,7 +21,6 @@
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 
-using content::RenderViewHostImpl;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 
@@ -84,7 +83,7 @@ WebDragDestGtk::~WebDragDestGtk() {
 void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
   if (context_) {
     is_drop_target_ = operation != WebDragOperationNone;
-    gdk_drag_status(context_, content::WebDragOpToGdkDragAction(operation),
+    gdk_drag_status(context_, WebDragOpToGdkDragAction(operation),
                     drag_over_time_);
   }
 }
@@ -141,7 +140,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
     GetRenderViewHost()->DragTargetDragOver(
         ui::ClientPoint(widget_),
         ui::ScreenPoint(widget_),
-        content::GdkDragActionToWebDragOp(context->actions),
+        GdkDragActionToWebDragOp(context->actions),
         GetModifierFlags(widget_));
 
     if (delegate())
@@ -252,7 +251,7 @@ void WebDragDestGtk::OnDragDataReceived(
         *drop_data_.get(),
         ui::ClientPoint(widget_),
         ui::ScreenPoint(widget_),
-        content::GdkDragActionToWebDragOp(context->actions),
+        GdkDragActionToWebDragOp(context->actions),
         GetModifierFlags(widget_));
 
     if (delegate())

@@ -15,24 +15,22 @@
 namespace content {
 class RenderViewHost;
 class WebContents;
-}
 
 // An IDropSource implementation for a WebContentsImpl. Handles notifications
 // sent by an active drag-drop operation as the user mouses over other drop
 // targets on their system. This object tells Windows whether or not the drag
 // should continue, and supplies the appropriate cursors.
 class WebDragSource : public ui::DragSource,
-                      public content::NotificationObserver {
+                      public NotificationObserver {
  public:
   // Create a new DragSource for a given HWND and WebContents.
-  WebDragSource(gfx::NativeWindow source_wnd,
-                content::WebContents* web_contents);
+  WebDragSource(gfx::NativeWindow source_wnd, WebContents* web_contents);
   virtual ~WebDragSource();
 
-  // content::NotificationObserver implementation.
+  // NotificationObserver implementation.
   virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   void set_effect(DWORD effect) { effect_ = effect; }
 
@@ -56,13 +54,15 @@ class WebDragSource : public ui::DragSource,
   // We use this as a channel to the renderer to tell it about various drag
   // drop events that it needs to know about (such as when a drag operation it
   // initiated terminates).
-  content::RenderViewHost* render_view_host_;
+  RenderViewHost* render_view_host_;
 
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
 
   DWORD effect_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragSource);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_

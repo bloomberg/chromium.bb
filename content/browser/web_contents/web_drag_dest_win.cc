@@ -26,10 +26,8 @@ using WebKit::WebDragOperationCopy;
 using WebKit::WebDragOperationLink;
 using WebKit::WebDragOperationMove;
 using WebKit::WebDragOperationGeneric;
-using content::OpenURLParams;
-using content::Referrer;
-using content::WebContents;
 
+namespace content {
 namespace {
 
 const unsigned short kHighBitMaskShort = 0x8000;
@@ -91,9 +89,8 @@ class InterstitialDropTarget {
     std::wstring url;
     std::wstring title;
     ui::ClipboardUtil::GetUrl(data_object, &url, &title, true);
-    OpenURLParams params(
-        GURL(url), Referrer(), CURRENT_TAB,
-        content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
+    OpenURLParams params(GURL(url), Referrer(), CURRENT_TAB,
+                         PAGE_TRANSITION_AUTO_BOOKMARK, false);
     web_contents_->OpenURL(params);
     return GetPreferredDropEffect(effect);
   }
@@ -147,7 +144,7 @@ DWORD WebDragDest::OnDragEnter(IDataObject* data_object,
   web_contents_->GetRenderViewHost()->DragTargetDragEnter(*drop_data_,
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y),
-      web_drag_utils_win::WinDragOpMaskToWebDragOpMask(effects),
+      WinDragOpMaskToWebDragOpMask(effects),
       GetModifierFlags());
 
   if (delegate_)
@@ -155,7 +152,7 @@ DWORD WebDragDest::OnDragEnter(IDataObject* data_object,
 
   // We lie here and always return a DROPEFFECT because we don't want to
   // wait for the IPC call to return.
-  return web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
+  return WebDragOpToWinDragOp(drag_cursor_);
 }
 
 DWORD WebDragDest::OnDragOver(IDataObject* data_object,
@@ -174,13 +171,13 @@ DWORD WebDragDest::OnDragOver(IDataObject* data_object,
   web_contents_->GetRenderViewHost()->DragTargetDragOver(
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y),
-      web_drag_utils_win::WinDragOpMaskToWebDragOpMask(effects),
+      WinDragOpMaskToWebDragOpMask(effects),
       GetModifierFlags());
 
   if (delegate_)
     delegate_->OnDragOver(data_object);
 
-  return web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
+  return WebDragOpToWinDragOp(drag_cursor_);
 }
 
 void WebDragDest::OnDragLeave(IDataObject* data_object) {
@@ -228,10 +225,11 @@ DWORD WebDragDest::OnDrop(IDataObject* data_object,
 
   // This isn't always correct, but at least it's a close approximation.
   // For now, we always map a move to a copy to prevent potential data loss.
-  DWORD drop_effect = web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
-  DWORD result = drop_effect != DROPEFFECT_MOVE ?
-      drop_effect : DROPEFFECT_COPY;
+  DWORD drop_effect = WebDragOpToWinDragOp(drag_cursor_);
+  DWORD result = drop_effect != DROPEFFECT_MOVE ? drop_effect : DROPEFFECT_COPY;
 
   drop_data_.reset();
   return result;
 }
+
+}  // namespace content

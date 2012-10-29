@@ -1001,7 +1001,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   // The redirected to page should not inherit the favicon from the previous
   // page.
   if (PageTransitionIsRedirect(params.transition))
-    entry->GetFavicon() = content::FaviconStatus();
+    entry->GetFavicon() = FaviconStatus();
 
   // The site instance will normally be the same except during session restore,
   // when no site instance will be assigned.

@@ -10,31 +10,33 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 class WebContentsAttachedClass1
-    : public content::WebContentsUserData<WebContentsAttachedClass1> {
+    : public WebContentsUserData<WebContentsAttachedClass1> {
  public:
   virtual ~WebContentsAttachedClass1() {}
  private:
-  explicit WebContentsAttachedClass1(content::WebContents* contents) {}
-  friend class content::WebContentsUserData<WebContentsAttachedClass1>;
+  explicit WebContentsAttachedClass1(WebContents* contents) {}
+  friend class WebContentsUserData<WebContentsAttachedClass1>;
 };
 
 class WebContentsAttachedClass2
-    : public content::WebContentsUserData<WebContentsAttachedClass2> {
+    : public WebContentsUserData<WebContentsAttachedClass2> {
  public:
   virtual ~WebContentsAttachedClass2() {}
  private:
-  explicit WebContentsAttachedClass2(content::WebContents* contents) {}
-  friend class content::WebContentsUserData<WebContentsAttachedClass2>;
+  explicit WebContentsAttachedClass2(WebContents* contents) {}
+  friend class WebContentsUserData<WebContentsAttachedClass2>;
 };
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass1)
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass2)
 
-typedef content::RenderViewHostTestHarness WebContentsUserDataTest;
+typedef RenderViewHostTestHarness WebContentsUserDataTest;
 
 TEST_F(WebContentsUserDataTest, OneInstanceTwoAttachments) {
-  content::WebContents* contents = web_contents();
+  WebContents* contents = web_contents();
   WebContentsAttachedClass1* class1 =
       WebContentsAttachedClass1::FromWebContents(contents);
   ASSERT_EQ(NULL, class1);
@@ -59,10 +61,9 @@ TEST_F(WebContentsUserDataTest, OneInstanceTwoAttachments) {
 }
 
 TEST_F(WebContentsUserDataTest, TwoInstancesOneAttachment) {
-  content::WebContents* contents1 = web_contents();
-  scoped_ptr<content::WebContents> contents2(
-      content::WebContentsTester::CreateTestWebContents(
-          browser_context(), NULL));
+  WebContents* contents1 = web_contents();
+  scoped_ptr<WebContents> contents2(
+      WebContentsTester::CreateTestWebContents(browser_context(), NULL));
 
   WebContentsAttachedClass1* one_class =
       WebContentsAttachedClass1::FromWebContents(contents1);
@@ -88,7 +89,7 @@ TEST_F(WebContentsUserDataTest, TwoInstancesOneAttachment) {
 }
 
 TEST_F(WebContentsUserDataTest, Idempotence) {
-  content::WebContents* contents = web_contents();
+  WebContents* contents = web_contents();
   WebContentsAttachedClass1* clazz =
       WebContentsAttachedClass1::FromWebContents(contents);
   ASSERT_EQ(NULL, clazz);
@@ -103,3 +104,5 @@ TEST_F(WebContentsUserDataTest, Idempotence) {
   ASSERT_TRUE(class_again != NULL);
   ASSERT_EQ(clazz, class_again);
 }
+
+}  // namespace content

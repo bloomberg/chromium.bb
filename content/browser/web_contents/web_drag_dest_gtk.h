@@ -42,7 +42,7 @@ class CONTENT_EXPORT WebDragDestGtk {
   void set_delegate(WebDragDestDelegate* delegate) { delegate_ = delegate; }
 
  private:
-  content::RenderViewHostImpl* GetRenderViewHost() const;
+  RenderViewHostImpl* GetRenderViewHost() const;
 
   // Called when a system drag crosses over the render view. As there is no drag
   // enter event, we treat it as an enter event (and not a regular motion event)

@@ -57,11 +57,11 @@ class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
   CHROMEGTK_CALLBACK_1(WebDragSourceGtk, gboolean, OnDragIconExpose,
                        GdkEventExpose*);
 
-  content::RenderViewHostImpl* GetRenderViewHost() const;
+  RenderViewHostImpl* GetRenderViewHost() const;
   gfx::NativeView GetContentNativeView() const;
 
   // The tab we're manging the drag for.
-  content::WebContents* web_contents_;
+  WebContents* web_contents_;
 
   // The drop data for the current drag (for drags that originate in the render
   // view). Non-NULL iff there is a current drag.

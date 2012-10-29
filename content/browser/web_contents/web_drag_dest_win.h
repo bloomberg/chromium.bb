@@ -11,13 +11,11 @@
 #include "ui/base/dragdrop/drop_target.h"
 #include "webkit/glue/webdropdata.h"
 
-class InterstitialDropTarget;
-
 namespace content {
+class InterstitialDropTarget;
 class RenderViewHost;
 class WebContents;
 class WebDragDestDelegate;
-}
 
 // A helper object that provides drop capabilities to a WebContentsImpl. The
 // DropTarget handles drags that enter the region of the WebContents by
@@ -26,7 +24,7 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
  public:
   // Create a new WebDragDest associating it with the given HWND and
   // WebContents.
-  WebDragDest(HWND source_hwnd, content::WebContents* contents);
+  WebDragDest(HWND source_hwnd, WebContents* contents);
   virtual ~WebDragDest();
 
   WebDropData* current_drop_data() const { return drop_data_.get(); }
@@ -35,8 +33,8 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
     drag_cursor_ = op;
   }
 
-  content::WebDragDestDelegate* delegate() const { return delegate_; }
-  void set_delegate(content::WebDragDestDelegate* d) { delegate_ = d; }
+  WebDragDestDelegate* delegate() const { return delegate_; }
+  void set_delegate(WebDragDestDelegate* d) { delegate_ = d; }
 
  protected:
   virtual DWORD OnDragEnter(IDataObject* data_object,
@@ -58,13 +56,13 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
 
  private:
   // Our associated WebContents.
-  content::WebContents* web_contents_;
+  WebContents* web_contents_;
 
   // We keep track of the render view host we're dragging over.  If it changes
   // during a drag, we need to re-send the DragEnter message.  WARNING:
   // this pointer should never be dereferenced.  We only use it for comparing
   // pointers.
-  content::RenderViewHost* current_rvh_;
+  RenderViewHost* current_rvh_;
 
   // Used to determine what cursor we should display when dragging over web
   // content area.  This can be updated async during a drag operation.
@@ -75,12 +73,14 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
   scoped_ptr<InterstitialDropTarget> interstitial_drop_target_;
 
   // A delegate that can receive drag information about drag events.
-  content::WebDragDestDelegate* delegate_;
+  WebDragDestDelegate* delegate_;
 
   // The data for the current drag, or NULL if |context_| is NULL.
   scoped_ptr<WebDropData> drop_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragDest);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_DEST_WIN_H_

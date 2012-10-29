@@ -19,13 +19,13 @@
 
 @class FocusTracker;
 class SkBitmap;
-class WebContentsViewMac;
 @class WebDragDest;
 @class WebDragSource;
 
 namespace content {
 class WebContentsImpl;
 class WebContentsViewDelegate;
+class WebContentsViewMac;
 }
 
 namespace gfx {
@@ -34,7 +34,7 @@ class Point;
 
 @interface WebContentsViewCocoa : BaseView {
  @private
-  WebContentsViewMac* webContentsView_;  // WEAK; owns us
+  content::WebContentsViewMac* webContentsView_;  // WEAK; owns us
   scoped_nsobject<WebDragSource> dragSource_;
   scoped_nsobject<WebDragDest> dragDest_;
   BOOL mouseDownCanMoveWindow_;
@@ -47,29 +47,30 @@ class Point;
 - (content::WebContentsImpl*)webContents;
 @end
 
+namespace content {
+
 // Mac-specific implementation of the WebContentsView. It owns an NSView that
 // contains all of the contents of the tab and associated child views.
-class WebContentsViewMac
-    : public content::WebContentsView,
-      public content::RenderViewHostDelegateView {
+class WebContentsViewMac : public WebContentsView,
+                           public RenderViewHostDelegateView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  WebContentsViewMac(content::WebContentsImpl* web_contents,
-                     content::WebContentsViewDelegate* delegate);
+  WebContentsViewMac(WebContentsImpl* web_contents,
+                     WebContentsViewDelegate* delegate);
   virtual ~WebContentsViewMac();
 
   // WebContentsView implementation --------------------------------------------
 
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
-  virtual content::RenderWidgetHostView* CreateViewForWidget(
-      content::RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual RenderWidgetHostView* CreateViewForWidget(
+      RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void RenderViewCreated(content::RenderViewHost* host) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void SetPageTitle(const string16& title) OVERRIDE;
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
@@ -84,9 +85,8 @@ class WebContentsViewMac
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
-  virtual void ShowContextMenu(
-      const content::ContextMenuParams& params,
-      content::ContextMenuSourceType type) OVERRIDE;
+  virtual void ShowContextMenu(const ContextMenuParams& params,
+                               ContextMenuSourceType type) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,
@@ -106,12 +106,12 @@ class WebContentsViewMac
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
 
-  content::WebContentsImpl* web_contents() { return web_contents_; }
-  content::WebContentsViewDelegate* delegate() { return delegate_.get(); }
+  WebContentsImpl* web_contents() { return web_contents_; }
+  WebContentsViewDelegate* delegate() { return delegate_.get(); }
 
  private:
   // The WebContentsImpl whose contents we display.
-  content::WebContentsImpl* web_contents_;
+  WebContentsImpl* web_contents_;
 
   // The Cocoa NSView that lives in the view hierarchy.
   scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
@@ -121,9 +121,11 @@ class WebContentsViewMac
   scoped_nsobject<FocusTracker> focus_tracker_;
 
   // Our optional delegate.
-  scoped_ptr<content::WebContentsViewDelegate> delegate_;
+  scoped_ptr<WebContentsViewDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_MAC_H_

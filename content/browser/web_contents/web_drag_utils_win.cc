@@ -15,7 +15,7 @@ using WebKit::WebDragOperationLink;
 using WebKit::WebDragOperationMove;
 using WebKit::WebDragOperationGeneric;
 
-namespace web_drag_utils_win {
+namespace content {
 
 WebDragOperation WinDragOpToWebDragOp(DWORD effect) {
   DCHECK(effect == DROPEFFECT_NONE || effect == DROPEFFECT_COPY ||
@@ -57,5 +57,4 @@ DWORD WebDragOpMaskToWinDragOpMask(WebDragOperationsMask ops) {
   return win_ops;
 }
 
-}  // namespace web_drag_utils_win
-
+}  // namespace content

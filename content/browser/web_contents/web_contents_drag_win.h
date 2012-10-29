@@ -17,8 +17,6 @@
 #include "ui/gfx/point.h"
 
 class SkBitmap;
-class WebDragDest;
-class WebDragSource;
 struct WebDropData;
 
 namespace gfx {
@@ -28,6 +26,8 @@ class ImageSkia;
 namespace content {
 class DragDropThread;
 class WebContents;
+class WebDragDest;
+class WebDragSource;
 
 // Windows-specific drag-and-drop handling in WebContentsView.
 // If we are dragging a virtual file out of the browser, we use a background

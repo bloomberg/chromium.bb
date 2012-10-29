@@ -14,17 +14,16 @@
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/win/window_impl.h"
 
-class WebDragDest;
-
 namespace ui {
 class HWNDMessageFilter;
 }
 
 namespace content {
 class RenderWidgetHostViewWin;
-class WebContentsViewDelegate;
 class WebContentsDragWin;
 class WebContentsImpl;
+class WebContentsViewDelegate;
+class WebDragDest;
 
 // An implementation of WebContentsView for Windows.
 class CONTENT_EXPORT WebContentsViewWin
