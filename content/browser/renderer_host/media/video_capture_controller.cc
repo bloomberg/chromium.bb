@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/yuv_convert.h"
+#include "third_party/libyuv/include/libyuv.h"
 
 namespace content {
 
@@ -331,6 +332,20 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
                                frame_info_.width, frame_info_.width / 2);
       break;
     }
+#if !defined(OS_IOS)
+    case media::VideoCaptureCapability::kMJPEG: {
+      int yplane_stride = frame_info_.width;
+      int uv_plane_stride = (frame_info_.width + 1) / 2;
+      int crop_x = 0;
+      int crop_y = 0;
+      libyuv::ConvertToI420(data, length, yplane, yplane_stride, uplane,
+                            uv_plane_stride, vplane, uv_plane_stride, crop_x,
+                            crop_y, frame_info_.width, frame_info_.height,
+                            frame_info_.width, frame_info_.height,
+                            libyuv::kRotate0, libyuv::FOURCC_MJPG);
+      break;
+    }
+#endif
     default:
       NOTREACHED();
   }

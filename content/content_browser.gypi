@@ -917,6 +917,7 @@
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',
         '../printing/printing.gyp:printing',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/libyuv/libyuv.gyp:libyuv',
         '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:webkit_resources',
         '../webkit/support/webkit_support.gyp:webkit_storage',
