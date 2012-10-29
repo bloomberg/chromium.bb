@@ -917,17 +917,6 @@ bool OmniboxViewWin::OnAfterPossibleChangeInternal(bool force_text_changed) {
   return something_changed;
 }
 
-void OmniboxViewWin::OnTextUpdated() {
-  if (ignore_ime_messages_)
-    return;
-  OnAfterPossibleChangeInternal(true);
-  // Call OnBeforePossibleChange function here to get correct diff in next IME
-  // update. The Text Services Framework does not provide any notification
-  // before entering edit session, therefore we don't have good place to call
-  // OnBeforePossibleChange.
-  OnBeforePossibleChange();
-}
-
 void OmniboxViewWin::OnCandidateWindowCountChanged(size_t window_count) {
   ime_candidate_window_open_ = (window_count != 0);
   if (ime_candidate_window_open_) {
@@ -938,6 +927,17 @@ void OmniboxViewWin::OnCandidateWindowCountChanged(size_t window_count) {
     // text.
     UpdatePopup();
   }
+}
+
+void OmniboxViewWin::OnTextUpdated(const ui::Range& /*composition_range*/) {
+  if (ignore_ime_messages_)
+    return;
+  OnAfterPossibleChangeInternal(true);
+  // Call OnBeforePossibleChange function here to get correct diff in next IME
+  // update. The Text Services Framework does not provide any notification
+  // before entering edit session, therefore we don't have good place to call
+  // OnBeforePossibleChange.
+  OnBeforePossibleChange();
 }
 
 gfx::NativeView OmniboxViewWin::GetNativeView() const {

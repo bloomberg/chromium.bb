@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/range/range.h"
 #include "ui/base/ui_export.h"
 
 struct ITfDocumentMgr;
@@ -25,11 +26,18 @@ class TsfEventRouterObserver {
  public:
   TsfEventRouterObserver() {}
 
-  // Called when the text contents are updated.
-  virtual void OnTextUpdated() = 0;
-
   // Called when the number of currently opened candidate windows changes.
-  virtual void OnCandidateWindowCountChanged(size_t window_count) = 0;
+  virtual void OnCandidateWindowCountChanged(size_t window_count) {}
+
+  // Called when a composition is started.
+  virtual void OnTsfStartComposition() {}
+
+  // Called when the text contents are updated. If there is no composition,
+  // ui::Range::InvalidRange is passed to |composition_range|.
+  virtual void OnTextUpdated(const ui::Range& composition_range) {}
+
+  // Called when a composition is terminated.
+  virtual void OnTsfEndComposition() {}
 
  protected:
   virtual ~TsfEventRouterObserver() {}
@@ -46,15 +54,17 @@ class UI_EXPORT TsfEventRouter {
   explicit TsfEventRouter(TsfEventRouterObserver* observer);
   virtual ~TsfEventRouter();
 
-  // Sets |thread_manager| to be monitored. |thread_manager| can be NULL.
-  void SetManager(ITfThreadMgr* thread_manager);
-
   // Returns true if the IME is composing text.
   bool IsImeComposing();
 
   // Callbacks from the TsfEventRouterDelegate:
-  void OnTextUpdated();
   void OnCandidateWindowCountChanged(size_t window_count);
+  void OnTsfStartComposition();
+  void OnTextUpdated(const ui::Range& composition_range);
+  void OnTsfEndComposition();
+
+  // Sets |thread_manager| to be monitored. |thread_manager| can be NULL.
+  void SetManager(ITfThreadMgr* thread_manager);
 
  private:
   class TsfEventRouterDelegate;

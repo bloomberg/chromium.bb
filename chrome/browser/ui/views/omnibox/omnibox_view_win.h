@@ -329,9 +329,9 @@ class OmniboxViewWin
   // If a host name is found, it makes it visually stronger.
   virtual void EmphasizeURLComponents() OVERRIDE;
 
-  // TsfEventRouter::Observer
-  virtual void OnTextUpdated() OVERRIDE;
+  // TsfEventRouter::Observer:
   virtual void OnCandidateWindowCountChanged(size_t window_count) OVERRIDE;
+  virtual void OnTextUpdated(const ui::Range& composition_range) OVERRIDE;
 
   // Erases the portion of the selection in the font's y-adjustment area.  For
   // some reason the edit draws the selection rect here even though it's not

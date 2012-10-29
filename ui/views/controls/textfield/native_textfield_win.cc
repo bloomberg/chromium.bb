@@ -19,6 +19,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/native_theme/native_theme_win.h"
@@ -95,7 +96,10 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
       ime_composition_start_(0),
       ime_composition_length_(0),
       container_view_(new NativeViewHost),
-      bg_color_(0) {
+      bg_color_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          tsf_event_router_(base::win::IsTsfAwareRequired() ?
+              new ui::TsfEventRouter(this) : NULL)) {
   if (!loaded_libarary_module_) {
     // msftedit.dll is RichEdit ver 4.1.
     // This version is available from WinXP SP1 and has TSF support.
@@ -344,6 +348,9 @@ bool NativeTextfieldWin::IsIMEComposing() const {
   // Retrieve the length of the composition string to check if an IME is
   // composing text. (If this length is > 0 then an IME is being used to compose
   // text.)
+  if (base::win::IsTsfAwareRequired())
+    return tsf_event_router_->IsImeComposing();
+
   HIMC imm_context = ImmGetContext(m_hWnd);
   if (!imm_context)
     return false;
@@ -468,6 +475,46 @@ void NativeTextfieldWin::ExecuteCommand(int command_id) {
   OnAfterPossibleChange(true);
 }
 
+void NativeTextfieldWin::OnTextUpdated(const ui::Range& composition_range) {
+  if (ime_discard_composition_) {
+    ime_composition_start_ = composition_range.start();
+    ime_composition_length_ = composition_range.length();
+  } else {
+    ime_composition_start_ = 0;
+    ime_composition_length_ = 0;
+  }
+  OnAfterPossibleChange(false);
+  text_before_change_.clear();
+}
+
+void NativeTextfieldWin::OnImeStartCompositionInternal() {
+  // Users may press alt+shift or control+shift keys to change their keyboard
+  // layouts. So, we retrieve the input locale identifier everytime we start
+  // an IME composition.
+  int language_id = PRIMARYLANGID(GetKeyboardLayout(0));
+  ime_discard_composition_ =
+      language_id == LANG_JAPANESE || language_id == LANG_CHINESE;
+  ime_composition_start_ = 0;
+  ime_composition_length_ = 0;
+}
+
+void NativeTextfieldWin::OnImeEndCompositionInternal() {
+  // Bug 11863: Korean IMEs send a WM_IME_ENDCOMPOSITION message without
+  // sending any WM_IME_COMPOSITION messages when a user deletes all
+  // composition characters, i.e. a composition string becomes empty. To handle
+  // this case, we need to update the find results when a composition is
+  // finished or canceled.
+  textfield_->SyncText();
+}
+
+void NativeTextfieldWin::OnTsfStartComposition() {
+  OnImeStartCompositionInternal();
+}
+
+void NativeTextfieldWin::OnTsfEndComposition() {
+  OnImeEndCompositionInternal();
+}
+
 void NativeTextfieldWin::InitializeAccessibilityInfo() {
   // Set the accessible state.
   accessibility_state_ = 0;
@@ -576,6 +623,13 @@ LRESULT NativeTextfieldWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
   if (base::win::IsTsfAwareRequired()) {
     // Enable TSF support of RichEdit.
     SetEditStyle(SES_USECTF, SES_USECTF);
+
+    // When TSF is enabled, OnTextUpdated() may be called without any previous
+    // call that would have indicated the start of an editing session.  In order
+    // to guarantee we've always called OnBeforePossibleChange() before
+    // OnAfterPossibleChange(), we therefore call that here.  Note that multiple
+    // (i.e. unmatched) calls to this function in a row are safe.
+    OnBeforePossibleChange();
   }
   SetMsgHandled(FALSE);
   return 0;
@@ -617,15 +671,7 @@ LRESULT NativeTextfieldWin::OnImeChar(UINT message,
 LRESULT NativeTextfieldWin::OnImeStartComposition(UINT message,
                                                   WPARAM wparam,
                                                   LPARAM lparam) {
-  // Users may press alt+shift or control+shift keys to change their keyboard
-  // layouts. So, we retrieve the input locale identifier everytime we start
-  // an IME composition.
-  int language_id = PRIMARYLANGID(GetKeyboardLayout(0));
-  ime_discard_composition_ =
-      language_id == LANG_JAPANESE || language_id == LANG_CHINESE;
-  ime_composition_start_ = 0;
-  ime_composition_length_ = 0;
-
+  OnImeStartCompositionInternal();
   return DefWindowProc(message, wparam, lparam);
 }
 
@@ -672,12 +718,7 @@ LRESULT NativeTextfieldWin::OnImeComposition(UINT message,
 LRESULT NativeTextfieldWin::OnImeEndComposition(UINT message,
                                                 WPARAM wparam,
                                                 LPARAM lparam) {
-  // Bug 11863: Korean IMEs send a WM_IME_ENDCOMPOSITION message without
-  // sending any WM_IME_COMPOSITION messages when a user deletes all
-  // composition characters, i.e. a composition string becomes empty. To handle
-  // this case, we need to update the find results when a composition is
-  // finished or canceled.
-  textfield_->SyncText();
+  OnImeEndCompositionInternal();
   return DefWindowProc(message, wparam, lparam);
 }
 
@@ -1011,6 +1052,23 @@ void NativeTextfieldWin::OnSetFocus(HWND hwnd) {
     return;
   }
   focus_manager->SetFocusedView(textfield_);
+
+  if (!base::win::IsTsfAwareRequired()) {
+    return;
+  }
+
+  DefWindowProc();
+
+  // Document manager created by RichEdit can be obtained only after
+  // WM_SET_FOCUS event is handled.
+  tsf_event_router_->SetManager(
+      ui::TsfBridge::GetInstance()->GetThreadManager());
+  SetMsgHandled(TRUE);
+}
+
+void NativeTextfieldWin::OnKillFocus(HWND hwnd) {
+  if(tsf_event_router_)
+    tsf_event_router_->SetManager(NULL);
 }
 
 void NativeTextfieldWin::OnSysChar(TCHAR ch, UINT repeat_count, UINT flags) {
