@@ -828,6 +828,11 @@ gles2_renderer_init(struct weston_compositor *ec);
 void
 gles2_renderer_destroy(struct weston_compositor *ec);
 
+int
+noop_renderer_init(struct weston_compositor *ec);
+void
+noop_renderer_destroy(struct weston_compositor *ec);
+
 struct weston_compositor *
 backend_init(struct wl_display *display, int argc, char *argv[],
 	    const char *config_file);

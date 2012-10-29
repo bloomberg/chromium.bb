@@ -35,6 +35,7 @@ weston_SOURCES =				\
 	matrix.c				\
 	matrix.h				\
 	gles2-renderer.c			\
+	noop-renderer.c				\
 	weston-launch.h				\
 	weston-egl-ext.h
 
@@ -74,7 +75,8 @@ module_LTLIBRARIES =				\
 	$(tablet_shell)				\
 	$(x11_backend)				\
 	$(drm_backend)				\
-	$(wayland_backend)
+	$(wayland_backend)			\
+	$(headless_backend)
 
 # Do not install, since the binary produced via autotools is unusable.
 # The real backend is built by the Android build system.
@@ -141,6 +143,17 @@ android_backend_la_SOURCES =			\
 	evdev-touchpad.c			\
 	android-framebuffer.cpp			\
 	android-framebuffer.h
+endif
+
+if ENABLE_HEADLESS_COMPOSITOR
+headless_backend = headless-backend.la
+headless_backend_la_LDFLAGS = -module -avoid-version
+headless_backend_la_LIBADD = $(COMPOSITOR_LIBS) \
+	../shared/libshared.la
+headless_backend_la_CFLAGS =			\
+	$(COMPOSITOR_CFLAGS)			\
+	$(GCC_CFLAGS)
+headless_backend_la_SOURCES = compositor-headless.c
 endif
 
 if ENABLE_DESKTOP_SHELL

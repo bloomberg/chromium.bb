@@ -109,6 +109,12 @@ if test x$enable_wayland_compositor = xyes; then
 fi
 
 
+AC_ARG_ENABLE(headless-compositor, [  --enable-headless-compositor],,
+	      enable_headless_compositor=yes)
+AM_CONDITIONAL(ENABLE_HEADLESS_COMPOSITOR,
+	       test x$enable_headless_compositor = xyes)
+
+
 AC_ARG_ENABLE(android-compositor,
 	      AS_HELP_STRING([--disable-android-compositor],
 	                     [do not build-test the Android 4.0 backend]),,
