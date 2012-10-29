@@ -193,6 +193,16 @@ SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
   return fileapi::SYNC_STATUS_OK;
 }
 
+void DriveMetadataStore::SetSyncRootDirectory(const std::string& resource_id) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!resource_id.empty());
+  DCHECK(sync_root_directory_resource_id_.empty());
+
+  // TODO(tzik): Store |sync_root_directory_resource_id_| to DB.
+  // crbug.com/158029
+  sync_root_directory_resource_id_ = resource_id;
+}
+
 bool DriveMetadataStore::IsBatchSyncOrigin(const GURL& origin) const {
   DCHECK(CalledOnValidThread());
   return ContainsKey(batch_sync_origins_, origin);
@@ -203,13 +213,14 @@ bool DriveMetadataStore::IsIncrementalSyncOrigin(const GURL& origin) const {
   return ContainsKey(incremental_sync_origins_, origin);
 }
 
-void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin) {
+void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin,
+                                            const std::string& resource_id) {
   DCHECK(CalledOnValidThread());
   DCHECK(!IsBatchSyncOrigin(origin));
   DCHECK(!IsIncrementalSyncOrigin(origin));
 
   // TODO(tzik): Store |origin| to DB. crbug.com/157821
-  batch_sync_origins_.insert(origin);
+  batch_sync_origins_.insert(std::make_pair(origin, resource_id));
 }
 
 void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
@@ -218,8 +229,10 @@ void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
   DCHECK(!IsIncrementalSyncOrigin(origin));
 
   // TODO(tzik): Store |origin| to DB. crbug.com/157821
-  batch_sync_origins_.erase(origin);
-  incremental_sync_origins_.insert(origin);
+  std::map<GURL, std::string>::iterator found =
+      batch_sync_origins_.find(origin);
+  incremental_sync_origins_.insert(std::make_pair(origin, found->second));
+  batch_sync_origins_.erase(found);
 }
 
 void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {

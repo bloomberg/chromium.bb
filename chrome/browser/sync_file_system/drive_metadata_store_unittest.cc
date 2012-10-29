@@ -157,6 +157,8 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
 TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
   const GURL kOrigin1("http://www1.example.com");
   const GURL kOrigin2("http://www2.example.com");
+  const std::string kResourceID1("hoge");
+  const std::string kResourceID2("fuga");
 
   bool done = false;
   SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
@@ -174,9 +176,9 @@ TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
 
   drive_metadata_store()->IsBatchSyncOrigin(kOrigin1);
   // Mark origins as batch sync origins.
-  drive_metadata_store()->AddBatchSyncOrigin(kOrigin1);
+  drive_metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceID1);
   EXPECT_TRUE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin1));
-  drive_metadata_store()->AddBatchSyncOrigin(kOrigin2);
+  drive_metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceID2);
   EXPECT_TRUE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin2));
 
   // Mark |kOrigin1| as an incremental sync origin. |kOrigin2| should have still
