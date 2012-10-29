@@ -121,6 +121,10 @@ img {
   padding: 10px 0;
 }
 
+p img {
+  padding: 0 2px;
+}
+
 code,
 pre {
   font-family: monospace;
@@ -138,6 +142,7 @@ pre {
   padding: .99em;
   overflow: auto;
   word-wrap: break-word;
+  position: relative;
 }
 
 pre a {
@@ -146,6 +151,18 @@ pre a {
 
 pre b {
   background: yellow;
+}
+
+pre[data-filename]::after {
+  content: attr(data-filename);
+  background-color: darkGray;
+  right: 0;
+  top: 0;
+  position: absolute;
+  font-size: 16px;
+  color: #FFF;
+  padding: 2px 25px;
+  text-transform: uppercase;
 }
 
 dt {
@@ -494,4 +511,18 @@ div.gsc-input-box {
 
 #search_results {
   float: left;
+}
+
+/* List with largeish images floated to the right. */
+.imaged li {
+  clear: right;
+}
+
+.imaged li img {
+  float: right;
+  margin-bottom: 1em;
+}
+
+.imaged + p {
+  clear: right;
 }

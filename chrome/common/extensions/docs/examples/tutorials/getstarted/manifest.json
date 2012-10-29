@@ -1,13 +1,15 @@
 {
-  "name": "Hello World",
-  "version": "1.0",
   "manifest_version": 2,
-  "description": "The first extension that I made.",
+
+  "name": "One-click Kittens",
+  "description": "This extension demonstrates a 'browser action' with kittens.",
+  "version": "1.0",
+
   "browser_action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"
   },
   "permissions": [
-    "http://api.flickr.com/"
+    "https://secure.flickr.com/"
   ]
 }
