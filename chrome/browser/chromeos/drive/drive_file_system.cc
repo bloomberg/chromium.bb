@@ -390,7 +390,6 @@ void DriveFileSystem::Reload() {
   InitializeResourceMetadataAndFeedLoader();
 
   feed_loader_->ReloadFromServerIfNeeded(
-      resource_metadata_->largest_changestamp(),
       base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                  ui_weak_ptr_,
                  base::Bind(&DriveFileSystem::OnUpdateChecked,
@@ -438,7 +437,6 @@ void DriveFileSystem::CheckForUpdates() {
   if (resource_metadata_->origin() == INITIALIZED &&
       !feed_loader_->refreshing()) {
     feed_loader_->ReloadFromServerIfNeeded(
-        resource_metadata_->largest_changestamp(),
         base::Bind(&DriveFileSystem::OnUpdateChecked, ui_weak_ptr_));
   }
 }
@@ -1902,7 +1900,6 @@ void DriveFileSystem::OnFeedCacheLoaded(const FileOperationCallback& callback,
   if (error != DRIVE_FILE_OK) {
     // If cache cannot be loaded, try to load from server directly.
     feed_loader_->ReloadFromServerIfNeeded(
-        resource_metadata_->largest_changestamp(),
         base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                    ui_weak_ptr_,
                    callback));

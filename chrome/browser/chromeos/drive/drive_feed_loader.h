@@ -130,8 +130,8 @@ class DriveFeedLoader {
 
   // Retrieves account metadata and determines from the last change timestamp
   // if the feed content loading from the server needs to be initiated.
-  void ReloadFromServerIfNeeded(int64 local_changestamp,
-                                const FileOperationCallback& callback);
+  // |callback| must not be null.
+  void ReloadFromServerIfNeeded(const FileOperationCallback& callback);
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // Record file statistics as UMA histograms.
@@ -162,7 +162,6 @@ class DriveFeedLoader {
   // ReloadFromServerIfNeeded(). This method makes a decision about fetching
   // the content of the root feed during the root directory refresh process.
   void OnGetAccountMetadata(
-      int64 local_changestamp,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<base::Value> feed_data);
@@ -172,7 +171,6 @@ class DriveFeedLoader {
   // This method makes a decision about fetching the content of the root feed
   // during the root directory refresh process.
   void OnGetAboutResource(
-      int64 local_changestamp,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<base::Value> feed_data);
