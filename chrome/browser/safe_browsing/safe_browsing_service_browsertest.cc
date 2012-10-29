@@ -814,8 +814,9 @@ class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
   Profile* profile2_;
 };
 
+// Crashes, see http://crbug.com/158285.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceShutdownTest,
-                       DontStartAfterShutdown) {
+                       DISABLED_DontStartAfterShutdown) {
   CreateCSDService();
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   safe_browsing::ClientSideDetectionService* csd_service =
