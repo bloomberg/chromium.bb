@@ -24,14 +24,14 @@ import working_directory
 class TestOnce(unittest.TestCase):
 
   def GenerateTestData(self, noise, work_dir):
-    self._input_dirs = []
+    self._input_dirs = {}
     self._input_files = []
     for i in range(2):
       dir_name = os.path.join(work_dir, noise + 'input%d_dir' % i)
       os.mkdir(dir_name)
       filename = os.path.join(dir_name, 'in%d' % i)
       file_tools.WriteFile(noise + 'data%d' % i, filename)
-      self._input_dirs.append(dir_name)
+      self._input_dirs['input%d' % i] = dir_name
       self._input_files.append(filename)
     self._output_dirs = []
     self._output_files = []
@@ -47,24 +47,10 @@ class TestOnce(unittest.TestCase):
     with working_directory.TemporaryWorkingDirectory() as work_dir:
       self.GenerateTestData('FirstTime', work_dir)
       o = once.Once(storage=fake_storage.FakeStorage())
-      o.Run('test', self._input_dirs, [self._output_dirs[0]],
-            [command.Copy('%(input0)s/in0', '%(output0)s/out')])
+      o.Run('test', self._input_dirs, self._output_dirs[0],
+            [command.Copy('%(input0)s/in0', '%(output)s/out')])
       self.assertEquals('FirstTimedata0',
                         file_tools.ReadFile(self._output_files[0]))
-
-  def test_Many(self):
-    # Test that multiple inputs and outputs work.
-    with working_directory.TemporaryWorkingDirectory() as work_dir:
-      self.GenerateTestData('Many', work_dir)
-      o = once.Once(storage=fake_storage.FakeStorage())
-      o.Run('test', self._input_dirs, [self._output_dirs[0],
-                                       self._output_dirs[1]],
-            [command.Copy('%(input0)s/in0', '%(output0)s/out')],
-            [command.Copy('%(input1)s/in1', '%(output1)s/out')])
-      self.assertEquals(file_tools.ReadFile(self._input_files[0]),
-                        file_tools.ReadFile(self._output_files[0]))
-      self.assertEquals(file_tools.ReadFile(self._input_files[1]),
-                        file_tools.ReadFile(self._output_files[1]))
 
   def test_HitsCacheSecondTime(self):
     # Test that the computation is not performed on a second instance.
@@ -74,24 +60,23 @@ class TestOnce(unittest.TestCase):
       def check_call(cmd, **kwargs):
         self._tally += 1
         subprocess.check_call(cmd, **kwargs)
-      self._urls = None
-      def stash_urls(urls):
-        self._urls = urls
+      self._url = None
+      def stash_url(urls):
+        self._url = urls
       o = once.Once(storage=fake_storage.FakeStorage(), check_call=check_call,
-                    print_urls=stash_urls)
-      o.Run('test', self._input_dirs, [self._output_dirs[0]],
-            [command.Copy('%(input0)s/in0', '%(output0)s/out')])
-      initial_urls = self._urls
-      self._urls = None
-      self.assertEquals(1, len(initial_urls))
-      o.Run('test', self._input_dirs, [self._output_dirs[1]],
-            [command.Copy('%(input0)s/in0', '%(output0)s/out')])
+                    print_url=stash_url)
+      o.Run('test', self._input_dirs, self._output_dirs[0],
+            [command.Copy('%(input0)s/in0', '%(output)s/out')])
+      initial_url = self._url
+      self._url = None
+      o.Run('test', self._input_dirs, self._output_dirs[1],
+            [command.Copy('%(input0)s/in0', '%(output)s/out')])
       self.assertEquals(file_tools.ReadFile(self._input_files[0]),
                         file_tools.ReadFile(self._output_files[0]))
       self.assertEquals(file_tools.ReadFile(self._input_files[0]),
                         file_tools.ReadFile(self._output_files[1]))
       self.assertEquals(1, self._tally)
-      self.assertEquals(initial_urls, self._urls)
+      self.assertEquals(initial_url, self._url)
 
   def test_FailsWhenWritingFails(self):
     # Check that once doesn't eat the storage layer failures for writes.
@@ -107,8 +92,8 @@ class TestOnce(unittest.TestCase):
           call=call)
       o = once.Once(storage=bad_storage)
       self.assertRaises(gsd_storage.GSDStorageError, o.Run, 'test',
-          self._input_dirs, [self._output_dirs[0]],
-          [command.Copy('%(input0)s/in0', '%(output0)s/out')])
+          self._input_dirs, self._output_dirs[0],
+          [command.Copy('%(input0)s/in0', '%(output)s/out')])
 
   def test_UseCachedResultsFalse(self):
     # Check that the use_cached_results=False does indeed cause computations
@@ -121,10 +106,10 @@ class TestOnce(unittest.TestCase):
         self._tally += 1
       o = once.Once(storage=fake_storage.FakeStorage(),
                     use_cached_results=False, check_call=check_call)
-      o.Run('test', self._input_dirs, [self._output_dirs[0]],
-            [command.Copy('%(input0)s/in0', '%(output0)s/out')])
-      o.Run('test', self._input_dirs, [self._output_dirs[1]],
-            [command.Copy('%(input0)s/in0', '%(output0)s/out')])
+      o.Run('test', self._input_dirs, self._output_dirs[0],
+            [command.Copy('%(input0)s/in0', '%(output)s/out')])
+      o.Run('test', self._input_dirs, self._output_dirs[1],
+            [command.Copy('%(input0)s/in0', '%(output)s/out')])
       self.assertEquals(2, self._tally)
       self.assertEquals(file_tools.ReadFile(self._input_files[0]),
                         file_tools.ReadFile(self._output_files[0]))
@@ -138,8 +123,8 @@ class TestOnce(unittest.TestCase):
       self.GenerateTestData('CacheResultsFalse', work_dir)
       storage = fake_storage.FakeStorage()
       o = once.Once(storage=storage, cache_results=False)
-      o.Run('test', self._input_dirs, [self._output_dirs[0]],
-            [command.Copy('%(input0)s/in0', '%(output0)s/out')])
+      o.Run('test', self._input_dirs, self._output_dirs[0],
+            [command.Copy('%(input0)s/in0', '%(output)s/out')])
       self.assertEquals(0, storage.ItemCount())
       self.assertEquals(file_tools.ReadFile(self._input_files[0]),
                         file_tools.ReadFile(self._output_files[0]))
@@ -151,7 +136,7 @@ class TestOnce(unittest.TestCase):
       foo = os.path.join(work_dir, 'foo')
       o = once.Once(storage=fake_storage.FakeStorage(),
                     cache_results=False)
-      o.Run('test', self._input_dirs, [foo],
+      o.Run('test', self._input_dirs, foo,
             [command.Mkdir('hi')],
             working_dir=foo)
       self.assertTrue(os.path.isdir(os.path.join(foo, 'hi')))
@@ -161,11 +146,11 @@ class TestOnce(unittest.TestCase):
     with working_directory.TemporaryWorkingDirectory() as work_dir:
       self.GenerateTestData('Command', work_dir)
       o = once.Once(storage=fake_storage.FakeStorage())
-      o.Run('test', self._input_dirs, [self._output_dirs[0]],
+      o.Run('test', self._input_dirs, self._output_dirs[0],
             [command.Command([
                 sys.executable, '-c',
                 'import sys; open(sys.argv[1], "wb").write("hello")',
-                '%(output0)s/out'])])
+                '%(output)s/out'])])
       self.assertEquals('hello', file_tools.ReadFile(self._output_files[0]))
 
   def test_UnpackCommands(self):
@@ -178,16 +163,16 @@ class TestOnce(unittest.TestCase):
         self._tally += 1
         subprocess.check_call(cmd, **kwargs)
       o = once.Once(storage=fake_storage.FakeStorage(), check_call=check_call)
-      alt_input = os.path.join(work_dir, 'alt_input')
-      unpack_commands = [command.Copy('%(input0)s/in0', alt_input)]
-      commands = [command.Copy('%(input0)s', '%(output0)s/out')]
-      o.Run('test', self._input_dirs, [self._output_dirs[0]],
+      alt_inputs = {'input0': os.path.join(work_dir, 'alt_input')}
+      unpack_commands = [command.Copy('%(input0)s/in0', alt_inputs['input0'])]
+      commands = [command.Copy('%(input0)s', '%(output)s/out')]
+      o.Run('test', self._input_dirs, self._output_dirs[0],
             commands=commands,
             unpack_commands=unpack_commands,
-            hashed_inputs=[alt_input])
-      o.Run('test', self._input_dirs, [self._output_dirs[1]], commands=commands,
+            hashed_inputs=alt_inputs)
+      o.Run('test', self._input_dirs, self._output_dirs[1], commands=commands,
             unpack_commands=unpack_commands,
-            hashed_inputs=[alt_input])
+            hashed_inputs=alt_inputs)
       self.assertEquals(file_tools.ReadFile(self._input_files[0]),
                         file_tools.ReadFile(self._output_files[0]))
       self.assertEquals(file_tools.ReadFile(self._input_files[0]),

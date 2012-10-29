@@ -27,16 +27,13 @@ DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
 DEFAULT_OUT_DIR = os.path.join(SCRIPT_DIR, 'out')
 
 
-def PrintAnnotatorURLs(urls):
-  """Print a list of URLs in buildbot annotator form.
+def PrintAnnotatorURL(url):
+  """Print an URL in buildbot annotator form.
 
   Args:
-    urls: A list of URLs to print.
+    url: A URL to print.
   """
-  # We currently generate a single output from each package.
-  # Provide an implementation restricted to that assumption.
-  assert len(urls) == 1, urls
-  print '@@@STEP_LINK@download@%s@@@' % urls[0]
+  print '@@@STEP_LINK@download@%s@@@' % url
 
 
 class PackageBuilder(object):
@@ -74,7 +71,7 @@ class PackageBuilder(object):
     self._build_once = once.Once(
         use_cached_results=self._options.use_cached_results,
         cache_results=self._options.cache_results,
-        print_urls=PrintAnnotatorURLs,
+        print_url=PrintAnnotatorURL,
         storage=self.CreateStorage())
 
   def Main(self):
@@ -128,14 +125,17 @@ class PackageBuilder(object):
     print '@@@BUILD_STEP build %s@@@' % package
     package_info = self._packages[package]
     dependencies = package_info.get('dependencies', [])
-    # Each package is run with input0 set to either a tarball or a git repo.
+    # Collect a dict of all the inputs.
+    inputs = {}
+    # Add in either a tar source or a git source.
     if 'tar_src' in package_info:
-      inputs = [os.path.join(ROOT_DIR, package_info['tar_src'])]
+      inputs['src'] = os.path.join(ROOT_DIR, package_info['tar_src'])
     else:
-      inputs = [os.path.join(self._options.source, package)]
-    # input1..n are the install directories of the packages of each dependency.
-    inputs += [os.path.join(self._options.output,
-               d + '_install') for d in dependencies]
+      inputs['src'] = os.path.join(self._options.source, package)
+    # Add in each dependency by package name.
+    for dependency in dependencies:
+      inputs[dependency] = os.path.join(
+          self._options.output, dependency + '_install')
     # Each package generates intermediate into output/<PACKAGE>_work.
     # Clobbered here explicitly.
     work_dir = os.path.join(self._options.output, package + '_work')
@@ -143,16 +143,17 @@ class PackageBuilder(object):
     os.mkdir(work_dir)
     # Each package emits its output to output/<PACKAGE>_install.
     # Clobbered implicitly by Run().
-    outputs = [os.path.join(self._options.output, package + '_install')]
+    output = os.path.join(self._options.output, package + '_install')
     # A package may define an alternate set of inputs to be used for
     # computing the build signature. These are assumed to be in the working
     # directory.
     hashed_inputs = package_info.get('hashed_inputs')
     if hashed_inputs is not None:
-      hashed_inputs = [os.path.join(work_dir, i) for i in hashed_inputs]
+      for key, value in hashed_inputs.iteritems():
+        hashed_inputs[key] = os.path.join(work_dir, value)
     # Do it.
     self._build_once.Run(
-        package, inputs, outputs,
+        package, inputs, output,
         commands=package_info.get('commands', []),
         unpack_commands=package_info.get('unpack_commands', []),
         hashed_inputs=hashed_inputs,

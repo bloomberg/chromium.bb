@@ -35,10 +35,10 @@ GIT_BASE_URL = 'http://git.chromium.org/native_client'
 TAR_XV = ['tar', '-x', '-v']
 EXTRACT_STRIP_TGZ = TAR_XV + ['--gzip', '--strip-components=1', '-f']
 EXTRACT_STRIP_TBZ2 = TAR_XV + ['--bzip2', '--strip-components=1', '-f']
-CONFIGURE_CMD = ['%(input0)s/configure']
+CONFIGURE_CMD = ['%(src)s/configure']
 MAKE_PARALLEL_CMD = ['make', '-j%(cores)s']
 MAKE_CHECK_CMD = MAKE_PARALLEL_CMD + ['check']
-MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(output0)s']
+MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(output)s']
 
 CONFIGURE_HOST_ARCH = []
 if sys.platform.startswith('linux'):
@@ -76,7 +76,7 @@ def UnpackSrc(is_gzip):
     extract = EXTRACT_STRIP_TBZ2
   return [
       command.Mkdir('src'),
-      command.Command(extract + ['%(input0)s'], cwd='src'),
+      command.Command(extract + ['%(src)s'], cwd='src'),
       ]
 
 def PopulateDeps(dep_dirs):
@@ -86,17 +86,17 @@ def PopulateDeps(dep_dirs):
   return commands
 
 def WithDepsOptions(options):
-  return ['--with-' + option + '=%(cwd)s/../all_deps' for option in options]
+  return ['--with-' + option + '=%(all_deps)s' for option in options]
 
 # These are libraries that go into building the compiler itself.
 HOST_GCC_LIBS = {
     'gmp': {
         'tar_src': 'third_party/gmp/gmp-5.0.5.tar.bz2',
         'unpack_commands': UnpackSrc(False),
-        'hashed_inputs': ['src'],
+        'hashed_inputs': {'src': 'src'},
         'commands': CommandsInBuild([
             CONFIGURE_CMD + CONFIGURE_HOST_LIB + [
-                '--with-sysroot=%(output0)s',
+                '--with-sysroot=%(output)s',
                 '--enable-cxx',
                 ],
             MAKE_PARALLEL_CMD,
@@ -107,8 +107,8 @@ HOST_GCC_LIBS = {
     'mpfr': {
         'dependencies': ['gmp'],
         'tar_src': 'third_party/mpfr/mpfr-3.1.1.tar.bz2',
-        'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(input1)s']),
-        'hashed_inputs': ['src', 'all_deps'],
+        'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(gmp)s']),
+        'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
         'commands': CommandsInBuild([
             CONFIGURE_CMD + CONFIGURE_HOST_LIB + WithDepsOptions(['sysroot',
                                                                   'gmp']),
@@ -120,9 +120,9 @@ HOST_GCC_LIBS = {
     'mpc': {
         'dependencies': ['gmp', 'mpfr'],
         'tar_src': 'third_party/mpc/mpc-1.0.tar.gz',
-        'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(input1)s',
-                                                           '%(input2)s']),
-        'hashed_inputs': ['src', 'all_deps'],
+        'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(gmp)s',
+                                                           '%(mpfr)s']),
+        'hashed_inputs': {'src': 'src', 'all_deps': 'all_deps'},
         'commands': CommandsInBuild([
             CONFIGURE_CMD + CONFIGURE_HOST_LIB + WithDepsOptions(['sysroot',
                                                                   'gmp',
@@ -137,19 +137,21 @@ HOST_GCC_LIBS = {
 GCC_GIT_URL = GIT_BASE_URL + '/nacl-gcc.git'
 
 
-def GccCommand(cmd):
-  return command.Command(cmd, path_dirs=[os.path.join('%(input4)s', 'bin')])
+def GccCommand(target, cmd):
+  return command.Command(
+      cmd, path_dirs=[os.path.join('%(binutils_' + target + ')s', 'bin')])
 
 
 def ConfigureGccCommand(target):
   return GccCommand(
+      target,
       CONFIGURE_CMD +
       CONFIGURE_HOST_TOOL +
       ConfigureTargetArgs(target) +
       TARGET_GCC_CONFIG.get(target, []) + [
-          '--with-gmp=%(input1)s',
-          '--with-mpfr=%(input2)s',
-          '--with-mpc=%(input3)s',
+          '--with-gmp=%(gmp)s',
+          '--with-mpfr=%(mpfr)s',
+          '--with-mpc=%(mpc)s',
           '--disable-dlopen',
           '--with-newlib',
           '--with-linker-hash-style=gnu',
@@ -177,7 +179,7 @@ def HostTools(target):
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])
               # The top-level lib* directories contain host libraries
               # that we don't want to include in the distribution.
-              ] + [command.RemoveDirectory(os.path.join('%(output0)s', name))
+              ] + [command.RemoveDirectory(os.path.join('%(output)s', name))
                    for name in ['lib', 'lib32', 'lib64']],
           },
 
@@ -207,8 +209,8 @@ def HostTools(target):
                   ]],
           'commands': [
               ConfigureGccCommand(target),
-              GccCommand(MAKE_PARALLEL_CMD + ['all-gcc']),
-              GccCommand(MAKE_DESTDIR_CMD + ['install-strip-gcc']),
+              GccCommand(target, MAKE_PARALLEL_CMD + ['all-gcc']),
+              GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-gcc']),
               ],
           },
       }

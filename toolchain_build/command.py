@@ -11,13 +11,12 @@ import os
 import sys
 
 
-def PrepareCommandValues(cwd, inputs, outputs):
+def PrepareCommandValues(cwd, inputs, output):
   values = {}
   values['cwd'] = os.path.abspath(cwd)
-  for i in range(len(inputs)):
-    values['input%d' % i] = os.path.abspath(inputs[i])
-  for i in range(len(outputs)):
-    values['output%d' % i] = os.path.abspath(outputs[i])
+  for key, value in inputs.iteritems():
+    values[key] = os.path.abspath(value)
+  values['output'] = os.path.abspath(output)
   return values
 
 
@@ -36,12 +35,12 @@ class Command(object):
       values += [repr(k), repr(v)]
     return '\n'.join(values)
 
-  def Invoke(self, check_call, package, inputs, outputs, cwd,
+  def Invoke(self, check_call, package, inputs, output, cwd,
              build_signature=None):
     # TODO(bradnelson): Instead of allowing full subprocess functionality,
     #     move execution here and use polymorphism to implement things like
     #     mkdir, copy directly in python.
-    values = PrepareCommandValues(cwd, inputs, outputs)
+    values = PrepareCommandValues(cwd, inputs, output)
     kwargs = self._kwargs.copy()
     if 'cwd' in kwargs:
       kwargs['cwd'] = os.path.join(os.path.abspath(values['cwd']),
