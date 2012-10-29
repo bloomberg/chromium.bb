@@ -6,133 +6,108 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_switches.h"
 
-using content::GpuFeatureType;
+namespace content {
 
 TEST(GpuUtilsTest, GpuFeatureTypFromString) {
   // Test StringToGpuFeatureType.
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("accelerated_2d_canvas"),
-            content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("accelerated_compositing"),
-            content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("webgl"),
-            content::GPU_FEATURE_TYPE_WEBGL);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("multisampling"),
-            content::GPU_FEATURE_TYPE_MULTISAMPLING);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("flash_3d"),
-            content::GPU_FEATURE_TYPE_FLASH3D);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("flash_stage3d"),
-            content::GPU_FEATURE_TYPE_FLASH_STAGE3D);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("texture_sharing"),
-            content::GPU_FEATURE_TYPE_TEXTURE_SHARING);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("accelerated_video_decode"),
-            content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("3d_css"),
-            content::GPU_FEATURE_TYPE_3D_CSS);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("accelerated_video"),
-            content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("panel_fitting"),
-            content::GPU_FEATURE_TYPE_PANEL_FITTING);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("all"),
-            content::GPU_FEATURE_TYPE_ALL);
-  EXPECT_EQ(gpu_util::StringToGpuFeatureType("xxx"),
-            content::GPU_FEATURE_TYPE_UNKNOWN);
+  EXPECT_EQ(StringToGpuFeatureType("accelerated_2d_canvas"),
+            GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
+  EXPECT_EQ(StringToGpuFeatureType("accelerated_compositing"),
+            GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
+  EXPECT_EQ(StringToGpuFeatureType("webgl"), GPU_FEATURE_TYPE_WEBGL);
+  EXPECT_EQ(StringToGpuFeatureType("multisampling"),
+            GPU_FEATURE_TYPE_MULTISAMPLING);
+  EXPECT_EQ(StringToGpuFeatureType("flash_3d"), GPU_FEATURE_TYPE_FLASH3D);
+  EXPECT_EQ(StringToGpuFeatureType("flash_stage3d"),
+            GPU_FEATURE_TYPE_FLASH_STAGE3D);
+  EXPECT_EQ(StringToGpuFeatureType("texture_sharing"),
+            GPU_FEATURE_TYPE_TEXTURE_SHARING);
+  EXPECT_EQ(StringToGpuFeatureType("accelerated_video_decode"),
+            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE);
+  EXPECT_EQ(StringToGpuFeatureType("3d_css"), GPU_FEATURE_TYPE_3D_CSS);
+  EXPECT_EQ(StringToGpuFeatureType("accelerated_video"),
+            GPU_FEATURE_TYPE_ACCELERATED_VIDEO);
+  EXPECT_EQ(StringToGpuFeatureType("panel_fitting"),
+            GPU_FEATURE_TYPE_PANEL_FITTING);
+  EXPECT_EQ(StringToGpuFeatureType("all"), GPU_FEATURE_TYPE_ALL);
+  EXPECT_EQ(StringToGpuFeatureType("xxx"), GPU_FEATURE_TYPE_UNKNOWN);
 }
 
 TEST(GpuUtilsTest, GpuFeatureTypeToString) {
   // Test GpuFeatureTypeToString for single-bit enums using the all enum
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING).c_str(),
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING).c_str(),
       "accelerated_compositing");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS).c_str(),
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS).c_str(),
       "accelerated_2d_canvas");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_WEBGL).c_str(),
-      "webgl");
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_WEBGL).c_str(), "webgl");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_MULTISAMPLING).c_str(),
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_MULTISAMPLING).c_str(),
       "multisampling");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_FLASH3D).c_str(),
-      "flash_3d");
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_FLASH3D).c_str(), "flash_3d");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_FLASH_STAGE3D).c_str(),
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_FLASH_STAGE3D).c_str(),
       "flash_stage3d");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_TEXTURE_SHARING).c_str(),
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_TEXTURE_SHARING).c_str(),
       "texture_sharing");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE).c_str(),
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE).c_str(),
       "accelerated_video_decode");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_3D_CSS).c_str(),
-      "3d_css");
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_3D_CSS).c_str(), "3d_css");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO).c_str(),
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_ACCELERATED_VIDEO).c_str(),
       "accelerated_video");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_PANEL_FITTING).c_str(),
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_PANEL_FITTING).c_str(),
       "panel_fitting");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_ALL).c_str(),
-      "all");
-  EXPECT_STREQ(gpu_util::GpuFeatureTypeToString(
-          content::GPU_FEATURE_TYPE_UNKNOWN).c_str(),
-      "unknown");
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_ALL).c_str(), "all");
+  EXPECT_STREQ(GpuFeatureTypeToString(
+      GPU_FEATURE_TYPE_UNKNOWN).c_str(), "unknown");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          static_cast<content::GpuFeatureType>(
-              content::GPU_FEATURE_TYPE_WEBGL |
-              content::GPU_FEATURE_TYPE_MULTISAMPLING)).c_str(),
+      GpuFeatureTypeToString(
+          static_cast<GpuFeatureType>(
+              GPU_FEATURE_TYPE_WEBGL |
+              GPU_FEATURE_TYPE_MULTISAMPLING)).c_str(),
       "webgl,multisampling");
   EXPECT_STREQ(
-      gpu_util::GpuFeatureTypeToString(
-          static_cast<content::GpuFeatureType>(
-              content::GPU_FEATURE_TYPE_WEBGL |
-              content::GPU_FEATURE_TYPE_ALL)).c_str(),
+      GpuFeatureTypeToString(
+          static_cast<GpuFeatureType>(
+              GPU_FEATURE_TYPE_WEBGL |
+              GPU_FEATURE_TYPE_ALL)).c_str(),
       "all");
 }
 
 TEST(GpuUtilsTest, GpuSwitchingOptionFromString) {
   // Test StringToGpuSwitchingOption.
-  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption(
+  EXPECT_EQ(StringToGpuSwitchingOption(
                 switches::kGpuSwitchingOptionNameAutomatic),
-            content::GPU_SWITCHING_OPTION_AUTOMATIC);
-  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption(
+            GPU_SWITCHING_OPTION_AUTOMATIC);
+  EXPECT_EQ(StringToGpuSwitchingOption(
                 switches::kGpuSwitchingOptionNameForceDiscrete),
-            content::GPU_SWITCHING_OPTION_FORCE_DISCRETE);
-  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption(
+            GPU_SWITCHING_OPTION_FORCE_DISCRETE);
+  EXPECT_EQ(StringToGpuSwitchingOption(
                 switches::kGpuSwitchingOptionNameForceIntegrated),
-            content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED);
-  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("xxx"),
-            content::GPU_SWITCHING_OPTION_UNKNOWN);
+            GPU_SWITCHING_OPTION_FORCE_INTEGRATED);
+  EXPECT_EQ(StringToGpuSwitchingOption("xxx"), GPU_SWITCHING_OPTION_UNKNOWN);
 }
 
 TEST(GpuUtilsTest, GpuSwitchingOptionToString) {
   // Test GpuSwitchingOptionToString.
   EXPECT_STREQ(
-      gpu_util::GpuSwitchingOptionToString(
-          content::GPU_SWITCHING_OPTION_AUTOMATIC).c_str(),
+      GpuSwitchingOptionToString(GPU_SWITCHING_OPTION_AUTOMATIC).c_str(),
       switches::kGpuSwitchingOptionNameAutomatic);
   EXPECT_STREQ(
-      gpu_util::GpuSwitchingOptionToString(
-          content::GPU_SWITCHING_OPTION_FORCE_DISCRETE).c_str(),
+      GpuSwitchingOptionToString(GPU_SWITCHING_OPTION_FORCE_DISCRETE).c_str(),
       switches::kGpuSwitchingOptionNameForceDiscrete);
   EXPECT_STREQ(
-      gpu_util::GpuSwitchingOptionToString(
-          content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED).c_str(),
+      GpuSwitchingOptionToString(GPU_SWITCHING_OPTION_FORCE_INTEGRATED).c_str(),
       switches::kGpuSwitchingOptionNameForceIntegrated);
 }
 
+}  // namespace content

@@ -14,9 +14,7 @@
 #include "content/browser/gpu/gpu_util.h"
 #include "content/public/common/gpu_info.h"
 
-using content::GpuFeatureType;
-using content::GpuSwitchingOption;
-
+namespace content {
 namespace {
 
 // Break a version string into segments.  Return true if each segment is
@@ -88,7 +86,7 @@ int CompareLexicalNumberStrings(
 }
 
 bool GpuUnmatched(uint32 vendor_id, const std::vector<uint32>& device_id_list,
-                  const content::GPUInfo::GPUDevice& gpu) {
+                  const GPUInfo::GPUDevice& gpu) {
   if (vendor_id == 0)
     return false;
   if (vendor_id != gpu.vendor_id)
@@ -939,26 +937,25 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
   size_t size = blacklisted_features.size();
   if (size == 0)
     return false;
-  int feature_type = content::GPU_FEATURE_TYPE_UNKNOWN;
+  int feature_type = GPU_FEATURE_TYPE_UNKNOWN;
   for (size_t i = 0; i < size; ++i) {
-    GpuFeatureType type =
-        gpu_util::StringToGpuFeatureType(blacklisted_features[i]);
+    GpuFeatureType type = StringToGpuFeatureType(blacklisted_features[i]);
     switch (type) {
-      case content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS:
-      case content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING:
-      case content::GPU_FEATURE_TYPE_WEBGL:
-      case content::GPU_FEATURE_TYPE_MULTISAMPLING:
-      case content::GPU_FEATURE_TYPE_FLASH3D:
-      case content::GPU_FEATURE_TYPE_FLASH_STAGE3D:
-      case content::GPU_FEATURE_TYPE_TEXTURE_SHARING:
-      case content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE:
-      case content::GPU_FEATURE_TYPE_3D_CSS:
-      case content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO:
-      case content::GPU_FEATURE_TYPE_PANEL_FITTING:
-      case content::GPU_FEATURE_TYPE_ALL:
+      case GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS:
+      case GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING:
+      case GPU_FEATURE_TYPE_WEBGL:
+      case GPU_FEATURE_TYPE_MULTISAMPLING:
+      case GPU_FEATURE_TYPE_FLASH3D:
+      case GPU_FEATURE_TYPE_FLASH_STAGE3D:
+      case GPU_FEATURE_TYPE_TEXTURE_SHARING:
+      case GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE:
+      case GPU_FEATURE_TYPE_3D_CSS:
+      case GPU_FEATURE_TYPE_ACCELERATED_VIDEO:
+      case GPU_FEATURE_TYPE_PANEL_FITTING:
+      case GPU_FEATURE_TYPE_ALL:
         feature_type |= type;
         break;
-      case content::GPU_FEATURE_TYPE_UNKNOWN:
+      case GPU_FEATURE_TYPE_UNKNOWN:
         contains_unknown_features_ = true;
         break;
     }
@@ -969,9 +966,8 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
 
 bool GpuBlacklist::GpuBlacklistEntry::SetGpuSwitchingOption(
     const std::string& switching_string) {
-  GpuSwitchingOption switching = gpu_util::StringToGpuSwitchingOption(
-      switching_string);
-  if (switching == content::GPU_SWITCHING_OPTION_UNKNOWN)
+  GpuSwitchingOption switching = StringToGpuSwitchingOption(switching_string);
+  if (switching == GPU_SWITCHING_OPTION_UNKNOWN)
     return false;
   decision_.gpu_switching = switching;
   return true;
@@ -1008,7 +1004,7 @@ GpuBlacklist::GpuBlacklistEntry::StringToMultiGpuCategory(
 
 bool GpuBlacklist::GpuBlacklistEntry::Contains(
     OsType os_type, const std::string& os_version,
-    const content::GPUInfo& gpu_info) const {
+    const GPUInfo& gpu_info) const {
   DCHECK(os_type != kOsAny);
   if (os_info_.get() != NULL && !os_info_->Contains(os_type, os_version))
     return false;
@@ -1101,7 +1097,7 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
 }
 
 bool GpuBlacklist::GpuBlacklistEntry::NeedsMoreInfo(
-    const content::GPUInfo& gpu_info) const {
+    const GPUInfo& gpu_info) const {
   // We only check for missing info that might be collected with a gl context.
   // If certain info is missing due to some error, say, we fail to collect
   // vendor_id/device_id, then even if we launch GPU process and create a gl
@@ -1242,14 +1238,14 @@ bool GpuBlacklist::LoadGpuBlacklist(const base::DictionaryValue& parsed_json,
 GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
     GpuBlacklist::OsType os,
     std::string os_version,
-    const content::GPUInfo& gpu_info) {
+    const GPUInfo& gpu_info) {
   active_entries_.clear();
   int type = 0;
-  GpuSwitchingOption switching = content::GPU_SWITCHING_OPTION_UNKNOWN;
+  GpuSwitchingOption switching = GPU_SWITCHING_OPTION_UNKNOWN;
 
   needs_more_info_ = false;
   int possible_type = 0;
-  GpuSwitchingOption possible_switching = content::GPU_SWITCHING_OPTION_UNKNOWN;
+  GpuSwitchingOption possible_switching = GPU_SWITCHING_OPTION_UNKNOWN;
 
   if (os == kOsAny)
     os = GetOsType();
@@ -1272,7 +1268,7 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
         else
           type |= blacklist_[i]->GetGpuFeatureType();
         if (blacklist_[i]->GetGpuSwitchingOption() !=
-                content::GPU_SWITCHING_OPTION_UNKNOWN) {
+                GPU_SWITCHING_OPTION_UNKNOWN) {
           if (not_final)
             possible_switching = blacklist_[i]->GetGpuSwitchingOption();
           else
@@ -1284,8 +1280,8 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
   }
 
   if ((possible_type != 0 && (possible_type | type) != type) ||
-      (possible_switching != content::GPU_SWITCHING_OPTION_UNKNOWN &&
-       switching == content::GPU_SWITCHING_OPTION_UNKNOWN)) {
+      (possible_switching != GPU_SWITCHING_OPTION_UNKNOWN &&
+       switching == GPU_SWITCHING_OPTION_UNKNOWN)) {
     needs_more_info_ = true;
   }
 
@@ -1407,3 +1403,5 @@ GpuBlacklist::NumericOp GpuBlacklist::StringToNumericOp(
     return kBetween;
   return kUnknown;
 }
+
+}  // namespace content

@@ -20,7 +20,6 @@
 
 namespace content {
 struct GPUInfo;
-}
 
 class CONTENT_EXPORT GpuBlacklist {
  public:
@@ -41,12 +40,12 @@ class CONTENT_EXPORT GpuBlacklist {
   };
 
   struct Decision {
-    content::GpuFeatureType blacklisted_features;
-    content::GpuSwitchingOption gpu_switching;
+    GpuFeatureType blacklisted_features;
+    GpuSwitchingOption gpu_switching;
 
     Decision()
-        : blacklisted_features(content::GPU_FEATURE_TYPE_UNKNOWN),
-          gpu_switching(content::GPU_SWITCHING_OPTION_UNKNOWN) {
+        : blacklisted_features(GPU_FEATURE_TYPE_UNKNOWN),
+          gpu_switching(GPU_SWITCHING_OPTION_UNKNOWN) {
     }
   };
 
@@ -65,7 +64,7 @@ class CONTENT_EXPORT GpuBlacklist {
   // If os is kOsAny, use the current OS; if os_version is empty, use the
   // current OS version.
   Decision MakeBlacklistDecision(
-      OsType os, std::string os_version, const content::GPUInfo& gpu_info);
+      OsType os, std::string os_version, const GPUInfo& gpu_info);
 
   // Collects the active entries from the last MakeBlacklistDecision() call.
   // If disabled set to true, return entries that are disabled; otherwise,
@@ -291,11 +290,11 @@ class CONTENT_EXPORT GpuBlacklist {
     // Determines if a given os/gc/machine_model/driver is included in the
     // Entry set.
     bool Contains(OsType os_type, const std::string& os_version,
-                  const content::GPUInfo& gpu_info) const;
+                  const GPUInfo& gpu_info) const;
 
     // Determines whether we needs more gpu info to make the blacklisting
     // decision.  It should only be checked if Contains() returns true.
-    bool NeedsMoreInfo(const content::GPUInfo& gpu_info) const;
+    bool NeedsMoreInfo(const GPUInfo& gpu_info) const;
 
     // Returns the OsType.
     OsType GetOsType() const;
@@ -314,10 +313,10 @@ class CONTENT_EXPORT GpuBlacklist {
     const std::vector<int>& webkit_bugs() const { return webkit_bugs_; }
 
     // Returns the GpuFeatureType.
-    content::GpuFeatureType GetGpuFeatureType() const;
+    GpuFeatureType GetGpuFeatureType() const;
 
     // Returns the GpuSwitchingOption.
-    content::GpuSwitchingOption GetGpuSwitchingOption() const;
+    GpuSwitchingOption GetGpuSwitchingOption() const;
 
     // Returns true if an unknown field is encountered.
     bool contains_unknown_fields() const {
@@ -486,5 +485,7 @@ class CONTENT_EXPORT GpuBlacklist {
 
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklist);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GPU_GPU_BLACKLIST_H_

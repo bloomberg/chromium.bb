@@ -23,8 +23,10 @@
 
 class CommandLine;
 
+namespace content {
+
 class CONTENT_EXPORT GpuDataManagerImpl
-    : public NON_EXPORTED_BASE(content::GpuDataManager) {
+    : public NON_EXPORTED_BASE(GpuDataManager) {
  public:
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManagerImpl* GetInstance();
@@ -32,12 +34,12 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // GpuDataManager implementation.
   virtual void InitializeForTesting(
       const std::string& gpu_blacklist_json,
-      const content::GPUInfo& gpu_info) OVERRIDE;
-  virtual content::GpuFeatureType GetBlacklistedFeatures() const OVERRIDE;
-  virtual content::GpuSwitchingOption GetGpuSwitchingOption() const OVERRIDE;
+      const GPUInfo& gpu_info) OVERRIDE;
+  virtual GpuFeatureType GetBlacklistedFeatures() const OVERRIDE;
+  virtual GpuSwitchingOption GetGpuSwitchingOption() const OVERRIDE;
   virtual base::ListValue* GetBlacklistReasons() const OVERRIDE;
   virtual std::string GetBlacklistVersion() const OVERRIDE;
-  virtual content::GPUInfo GetGPUInfo() const OVERRIDE;
+  virtual GPUInfo GetGPUInfo() const OVERRIDE;
   virtual bool GpuAccessAllowed() const OVERRIDE;
   virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
   virtual bool IsCompleteGpuInfoAvailable() const OVERRIDE;
@@ -47,9 +49,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void AddLogMessage(int level, const std::string& header,
                              const std::string& message) OVERRIDE;
   virtual base::ListValue* GetLogMessages() const OVERRIDE;
-  virtual void AddObserver(content::GpuDataManagerObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      content::GpuDataManagerObserver* observer) OVERRIDE;
+  virtual void AddObserver(GpuDataManagerObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(GpuDataManagerObserver* observer) OVERRIDE;
   virtual void SetWindowCount(uint32 count) OVERRIDE;
   virtual uint32 GetWindowCount() const OVERRIDE;
 
@@ -60,10 +61,10 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   // Only update if the current GPUInfo is not finalized.  If blacklist is
   // loaded, run through blacklist and update blacklisted features.
-  void UpdateGpuInfo(const content::GPUInfo& gpu_info);
+  void UpdateGpuInfo(const GPUInfo& gpu_info);
 
   void UpdateVideoMemoryUsageStats(
-      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
+      const GPUVideoMemoryUsageStats& video_memory_usage_stats);
 
   // Insert disable-feature switches corresponding to preliminary gpu feature
   // flags into the renderer process command line.
@@ -91,7 +92,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
 #endif
 
  private:
-  typedef ObserverListThreadSafe<content::GpuDataManagerObserver>
+  typedef ObserverListThreadSafe<GpuDataManagerObserver>
       GpuDataManagerObserverList;
 
   friend class GpuDataManagerImplTest;
@@ -110,9 +111,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual ~GpuDataManagerImpl();
 
   void InitializeImpl(const std::string& gpu_blacklist_json,
-                      const content::GPUInfo& gpu_info);
+                      const GPUInfo& gpu_info);
 
-  void UpdateBlacklistedFeatures(content::GpuFeatureType features);
+  void UpdateBlacklistedFeatures(GpuFeatureType features);
 
   // This should only be called once at initialization time, when preliminary
   // gpu info is collected.
@@ -128,17 +129,14 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Try to switch to software rendering, if possible and necessary.
   void EnableSoftwareRenderingIfNecessary();
 
-  // Send UMA histograms about the disabled/enabled features.
-  void UpdateStats();
-
   bool complete_gpu_info_already_requested_;
 
-  content::GpuFeatureType blacklisted_features_;
-  content::GpuFeatureType preliminary_blacklisted_features_;
+  GpuFeatureType blacklisted_features_;
+  GpuFeatureType preliminary_blacklisted_features_;
 
-  content::GpuSwitchingOption gpu_switching_;
+  GpuSwitchingOption gpu_switching_;
 
-  content::GPUInfo gpu_info_;
+  GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;
 
   scoped_ptr<GpuBlacklist> gpu_blacklist_;
@@ -165,5 +163,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_IMPL_H_

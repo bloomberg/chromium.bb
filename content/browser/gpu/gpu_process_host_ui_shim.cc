@@ -31,10 +31,7 @@
 #include <gdk/gdkx.h>  // NOLINT
 #endif
 
-using content::BrowserThread;
-using content::GpuSurfaceTracker;
-using content::RenderWidgetHostImpl;
-using content::RenderWidgetHostViewPort;
+namespace content {
 
 namespace {
 
@@ -88,13 +85,11 @@ RenderWidgetHostViewPort* GetRenderWidgetHostViewFromSurfaceID(
         surface_id, &render_process_id, &render_widget_id))
     return NULL;
 
-  content::RenderProcessHost* process =
-      content::RenderProcessHost::FromID(render_process_id);
+  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   if (!process)
     return NULL;
 
-  content::RenderWidgetHost* host = process->GetRenderWidgetHostByID(
-      render_widget_id);
+  RenderWidgetHost* host = process->GetRenderWidgetHostByID(render_widget_id);
   return host ? RenderWidgetHostViewPort::FromRWHV(host->GetView()) : NULL;
 }
 
@@ -226,8 +221,7 @@ void GpuProcessHostUIShim::OnLogMessage(
       level, header, message);
 }
 
-void GpuProcessHostUIShim::OnGraphicsInfoCollected(
-    const content::GPUInfo& gpu_info) {
+void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
   // OnGraphicsInfoCollected is sent back after the GPU process successfully
   // initializes GL.
   TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
@@ -366,8 +360,9 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
 }
 
 void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
-    const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
+    const GPUVideoMemoryUsageStats& video_memory_usage_stats) {
   GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(
       video_memory_usage_stats);
 }
 
+}  // namespace content
