@@ -385,8 +385,6 @@
         'wm/window_util.h',
         'wm/workspace_controller.cc',
         'wm/workspace_controller.h',
-        'wm/workspace/auto_window_management.cc',
-        'wm/workspace/auto_window_management.h',
         'wm/workspace/colored_window_controller.cc',
         'wm/workspace/colored_window_controller.h',
         'wm/workspace/desktop_background_fade_controller.cc',

@@ -48,7 +48,7 @@ void SetTrackedByWorkspace(aura::Window* window, bool value) {
   window->SetProperty(internal::kWindowTrackedByWorkspaceKey, value);
 }
 
-bool GetTrackedByWorkspace(const aura::Window* window) {
+bool GetTrackedByWorkspace(aura::Window* window) {
   return window->GetProperty(internal::kWindowTrackedByWorkspaceKey);
 }
 
@@ -56,7 +56,7 @@ void SetIgnoredByShelf(aura::Window* window, bool value) {
   window->SetProperty(internal::kIgnoredByShelfKey, value);
 }
 
-bool GetIgnoredByShelf(const aura::Window* window) {
+bool GetIgnoredByShelf(aura::Window* window) {
   return window->GetProperty(internal::kIgnoredByShelfKey);
 }
 

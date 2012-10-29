@@ -6380,12 +6380,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_DESCRIPTION" desc="Description for the flag to enable Google-style dialog frames.">
         Enable Google-style dialog frames.
       </message>
-      <message name="IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_NAME" desc="Name for the option to enable/disable the auto window placement functionality.">
-        Automatic window placement.
-      </message>
-      <message name="IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_DESCRIPTION" desc="Description for the option to enable/disable the auto window placement functionality.">
-        Disable automatic window placement for one and two browser / app windows.
-      </message>
       <message name="IDS_FLAGS_AURA_DISABLE_HOLD_MOUSE_MOVES_NAME" desc="Title for the flag to disable throttling the rate of window resize.">
         Throttle the rate of window resize.
       </message>

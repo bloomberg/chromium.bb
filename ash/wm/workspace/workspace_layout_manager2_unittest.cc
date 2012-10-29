@@ -13,7 +13,9 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -145,14 +147,15 @@ TEST_F(WorkspaceLayoutManager2Test, SizeToWorkArea) {
       100, 101, work_area.width() + 1, work_area.height() + 2);
   scoped_ptr<aura::Window> window(CreateTestWindow(window_bounds));
   EXPECT_EQ(gfx::Rect(gfx::Point(100, 101), work_area).ToString(),
-      window->bounds().ToString());
+            window->bounds().ToString());
 
   // Directly setting the bounds triggers a slightly different code path. Verify
   // that too.
   window->SetBounds(window_bounds);
   EXPECT_EQ(gfx::Rect(gfx::Point(100, 101), work_area).ToString(),
-      window->bounds().ToString());
+            window->bounds().ToString());
 }
 
 }  // namespace
+
 }  // namespace ash
