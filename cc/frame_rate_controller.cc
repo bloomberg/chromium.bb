@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "cc/delay_based_time_source.h"
 #include "cc/time_source.h"
-#include <wtf/CurrentTime.h>
 
 namespace {
 

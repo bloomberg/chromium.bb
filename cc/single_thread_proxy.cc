@@ -12,7 +12,6 @@
 #include "cc/layer_tree_host.h"
 #include "cc/resource_update_controller.h"
 #include "cc/timer.h"
-#include <wtf/CurrentTime.h>
 
 namespace cc {
 
@@ -64,9 +63,9 @@ bool SingleThreadProxy::compositeAndReadback(void *pixels, const IntRect& rect)
     return true;
 }
 
-void SingleThreadProxy::startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double duration)
+void SingleThreadProxy::startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration)
 {
-    m_layerTreeHostImpl->startPageScaleAnimation(targetPosition, useAnchor, scale, monotonicallyIncreasingTime(), duration);
+    m_layerTreeHostImpl->startPageScaleAnimation(targetPosition, useAnchor, scale, base::TimeTicks::Now(), duration);
 }
 
 void SingleThreadProxy::finishAllRendering()
@@ -276,7 +275,7 @@ void SingleThreadProxy::setNeedsCommitOnImplThread()
     m_layerTreeHost->scheduleComposite();
 }
 
-void SingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector> events, double wallClockTime)
+void SingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
 {
     DCHECK(Proxy::isImplThread());
     DebugScopedSetMainThread main;
@@ -368,9 +367,7 @@ bool SingleThreadProxy::doComposite()
         if (!m_layerTreeHostImpl->visible())
             return false;
 
-        double monotonicTime = monotonicallyIncreasingTime();
-        double wallClockTime = currentTime();
-        m_layerTreeHostImpl->animate(monotonicTime, wallClockTime);
+        m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
 
         // We guard prepareToDraw() with canDraw() because it always returns a valid frame, so can only
         // be used when such a frame is possible. Since drawLayers() depends on the result of

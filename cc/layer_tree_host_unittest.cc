@@ -504,7 +504,7 @@ public:
         postSetNeedsCommitToMainThread();
     }
 
-    virtual void animate(double monotonicTime) OVERRIDE
+    virtual void animate(base::TimeTicks monotonicTime) OVERRIDE
     {
         // We skip the first commit becasue its the commit that populates the
         // impl thread with a tree.
@@ -564,7 +564,7 @@ public:
         postSetNeedsAnimateToMainThread();
     }
 
-    virtual void animate(double) OVERRIDE
+    virtual void animate(base::TimeTicks) OVERRIDE
     {
         if (!m_numAnimates) {
             m_layerTreeHost->setNeedsAnimate();
@@ -595,7 +595,6 @@ public:
         : m_numAnimates(0)
         , m_receivedAnimationStartedNotification(false)
         , m_startTime(0)
-        , m_firstMonotonicTime(0)
     {
     }
 
@@ -604,7 +603,7 @@ public:
         postAddInstantAnimationToMainThread();
     }
 
-    virtual void animateLayers(LayerTreeHostImpl* layerTreeHostImpl, double monotonicTime) OVERRIDE
+    virtual void animateLayers(LayerTreeHostImpl* layerTreeHostImpl, base::TimeTicks monotonicTime) OVERRIDE
     {
         if (!m_numAnimates) {
             // The animation had zero duration so layerTreeHostImpl should no
@@ -615,8 +614,6 @@ public:
             return;
         }
         EXPECT_LT(0, m_startTime);
-        EXPECT_LT(0, m_firstMonotonicTime);
-        EXPECT_NE(m_startTime, m_firstMonotonicTime);
         EXPECT_TRUE(m_receivedAnimationStartedNotification);
         endTest();
     }
@@ -635,7 +632,7 @@ private:
     int m_numAnimates;
     bool m_receivedAnimationStartedNotification;
     double m_startTime;
-    double m_firstMonotonicTime;
+    base::TimeTicks m_firstMonotonicTime;
 };
 
 TEST_F(LayerTreeHostTestAddAnimation, runMultiThread)
@@ -661,7 +658,7 @@ public:
     {
     }
 
-    virtual void animateLayers(LayerTreeHostImpl* layerTreeHostImpl, double monotonicTime) OVERRIDE
+    virtual void animateLayers(LayerTreeHostImpl* layerTreeHostImpl, base::TimeTicks monotonicTime) OVERRIDE
     {
         m_startedAnimating = true;
     }
@@ -703,7 +700,7 @@ public:
     // Use willAnimateLayers to set visible false before the animation runs and
     // causes a commit, so we block the second visible animate in single-thread
     // mode.
-    virtual void willAnimateLayers(LayerTreeHostImpl* layerTreeHostImpl, double monotonicTime) OVERRIDE
+    virtual void willAnimateLayers(LayerTreeHostImpl* layerTreeHostImpl, base::TimeTicks monotonicTime) OVERRIDE
     {
         if (m_numAnimates < 2) {
             if (!m_numAnimates) {
@@ -738,7 +735,7 @@ public:
         postAddAnimationToMainThread();
     }
 
-    virtual void animateLayers(LayerTreeHostImpl* layerTreeHostImpl, double monotonicTime) OVERRIDE
+    virtual void animateLayers(LayerTreeHostImpl* layerTreeHostImpl, base::TimeTicks monotonicTime) OVERRIDE
     {
         const ActiveAnimation* animation = m_layerTreeHost->rootLayer()->layerAnimationController()->getActiveAnimation(0, ActiveAnimation::Opacity);
         if (!animation)
@@ -811,8 +808,8 @@ public:
         postAddAnimationToMainThread();
     }
 
-    // This is guaranteed to be called before LayerTreeHostImpl::animateLayers.
-    virtual void willAnimateLayers(LayerTreeHostImpl* layerTreeHostImpl, double monotonicTime) OVERRIDE
+    // This is guaranteed to be called before CCLayerTreeHostImpl::animateLayers.
+    virtual void willAnimateLayers(LayerTreeHostImpl* layerTreeHostImpl, base::TimeTicks monotonicTime) OVERRIDE
     {
         m_layerTreeHostImpl = layerTreeHostImpl;
     }
@@ -1072,7 +1069,7 @@ public:
 
     void requestStartPageScaleAnimation()
     {
-        layerTreeHost()->startPageScaleAnimation(IntSize(), false, 1.25, 0);
+        layerTreeHost()->startPageScaleAnimation(IntSize(), false, 1.25, base::TimeDelta());
     }
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
@@ -3144,7 +3141,7 @@ public:
         postSetNeedsCommitToMainThread();
     }
 
-    virtual void animate(double) OVERRIDE
+    virtual void animate(base::TimeTicks) OVERRIDE
     {
         m_layerTreeHost->setNeedsAnimate();
     }

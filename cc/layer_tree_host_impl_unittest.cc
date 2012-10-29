@@ -82,11 +82,11 @@ public:
 
     virtual void didLoseContextOnImplThread() OVERRIDE { }
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE { }
-    virtual void onVSyncParametersChanged(double, double) OVERRIDE { }
+    virtual void onVSyncParametersChanged(base::TimeTicks, base::TimeDelta) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { m_onCanDrawStateChangedCalled = true; }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, double wallClockTime) OVERRIDE { }
+    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE { }
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return m_reduceMemoryResult; }
     virtual void sendManagedMemoryStats() OVERRIDE { }
 
@@ -635,10 +635,10 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
 
     const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
-    const double startTime = 1;
-    const double duration = 0.1;
-    const double halfwayThroughAnimation = startTime + duration / 2;
-    const double endTime = startTime + duration;
+    const base::TimeTicks startTime = base::TimeTicks() + base::TimeDelta::FromSeconds(1);
+    const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
+    const base::TimeTicks halfwayThroughAnimation = startTime + duration / 2;
+    const base::TimeTicks endTime = startTime + duration;
     const WebTransformationMatrix identityScaleTransform;
 
     // Non-anchor zoom-in
@@ -648,9 +648,9 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
         scrollLayer->setScrollPosition(IntPoint(50, 50));
 
         m_hostImpl->startPageScaleAnimation(IntSize(0, 0), false, 2, startTime, duration);
-        m_hostImpl->animate(halfwayThroughAnimation, halfwayThroughAnimation);
+        m_hostImpl->animate(halfwayThroughAnimation, base::Time());
         EXPECT_TRUE(m_didRequestRedraw);
-        m_hostImpl->animate(endTime, endTime);
+        m_hostImpl->animate(endTime, base::Time());
         EXPECT_TRUE(m_didRequestCommit);
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -665,7 +665,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
         scrollLayer->setScrollPosition(IntPoint(50, 50));
 
         m_hostImpl->startPageScaleAnimation(IntSize(25, 25), true, minPageScale, startTime, duration);
-        m_hostImpl->animate(endTime, endTime);
+        m_hostImpl->animate(endTime, base::Time());
         EXPECT_TRUE(m_didRequestRedraw);
         EXPECT_TRUE(m_didRequestCommit);
 
@@ -756,11 +756,10 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
 
     const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
-    const double startTime = 1;
-    const double duration = 0.1;
-    const double halfwayThroughAnimation = startTime + duration / 2;
-    const double endTime = startTime + duration;
-
+    const base::TimeTicks startTime = base::TimeTicks() + base::TimeDelta::FromSeconds(1);
+    const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
+    const base::TimeTicks halfwayThroughAnimation = startTime + duration / 2;
+    const base::TimeTicks endTime = startTime + duration;
     // Start a page scale animation.
     const float pageScaleDelta = 2;
     m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
@@ -768,7 +767,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
 
     // We should immediately get the final zoom and scroll values for the
     // animation.
-    m_hostImpl->animate(halfwayThroughAnimation, halfwayThroughAnimation);
+    m_hostImpl->animate(halfwayThroughAnimation, base::Time());
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
 
     if (!Settings::pageScalePinchZoomEnabled()) {
@@ -787,7 +786,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
 
     // The final page scale and scroll deltas should match what we got
     // earlier.
-    m_hostImpl->animate(endTime, endTime);
+    m_hostImpl->animate(endTime, base::Time());
     scrollInfo = m_hostImpl->processScrollDeltas();
     EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
     expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));

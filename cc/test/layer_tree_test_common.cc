@@ -125,7 +125,7 @@ void MockLayerTreeHostImpl::drawLayers(const FrameData& frame)
     m_testHooks->drawLayersOnThread(this);
 }
 
-void MockLayerTreeHostImpl::animateLayers(double monotonicTime, double wallClockTime)
+void MockLayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime)
 {
     m_testHooks->willAnimateLayers(this, monotonicTime);
     LayerTreeHostImpl::animateLayers(monotonicTime, wallClockTime);
@@ -216,7 +216,7 @@ public:
 
     virtual void animate(double monotonicTime) OVERRIDE
     {
-        m_testHooks->animate(monotonicTime);
+        m_testHooks->animate(base::TimeTicks::FromInternalValue(monotonicTime * base::Time::kMicrosecondsPerSecond));
     }
 
     virtual void layout() OVERRIDE

@@ -31,7 +31,6 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/software_renderer.h"
 #include "cc/texture_uploader.h"
-#include <wtf/CurrentTime.h>
 #include <algorithm>
 
 using WebKit::WebTransformationMatrix;
@@ -175,7 +174,7 @@ public:
         // would be handled by the proxy/scheduler and this could be removed.
         DebugScopedSetImplThread impl;
 
-        m_layerTreeHostImpl->animate(monotonicallyIncreasingTime(), currentTime());
+        m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
     }
 
     void setActive(bool active)
@@ -292,14 +291,14 @@ GraphicsContext* LayerTreeHostImpl::context() const
     return m_context.get();
 }
 
-void LayerTreeHostImpl::animate(double monotonicTime, double wallClockTime)
+void LayerTreeHostImpl::animate(base::TimeTicks monotonicTime, base::Time wallClockTime)
 {
     animatePageScale(monotonicTime);
     animateLayers(monotonicTime, wallClockTime);
     animateScrollbars(monotonicTime);
 }
 
-void LayerTreeHostImpl::startPageScaleAnimation(const IntSize& targetPosition, bool anchorPoint, float pageScale, double startTime, double duration)
+void LayerTreeHostImpl::startPageScaleAnimation(const IntSize& targetPosition, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration)
 {
     if (!m_rootScrollLayerImpl)
         return;
@@ -310,15 +309,16 @@ void LayerTreeHostImpl::startPageScaleAnimation(const IntSize& targetPosition, b
     IntSize scaledContentSize = contentSize();
     scaledContentSize.scale(m_pinchZoomViewport.pageScaleDelta());
 
-    m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, scaleTotal, m_deviceViewportSize, scaledContentSize, startTime);
+    double startTimeSeconds = (startTime - base::TimeTicks()).InSecondsF();
+    m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, scaleTotal, m_deviceViewportSize, scaledContentSize, startTimeSeconds);
 
     if (anchorPoint) {
         IntSize windowAnchor(targetPosition);
         windowAnchor.scale(scaleTotal / pageScale);
         windowAnchor -= scrollTotal;
-        m_pageScaleAnimation->zoomWithAnchor(windowAnchor, pageScale, duration);
+        m_pageScaleAnimation->zoomWithAnchor(windowAnchor, pageScale, duration.InSecondsF());
     } else
-        m_pageScaleAnimation->zoomTo(targetPosition, pageScale, duration);
+        m_pageScaleAnimation->zoomTo(targetPosition, pageScale, duration.InSecondsF());
 
     m_client->setNeedsRedrawOnImplThread();
     m_client->setNeedsCommitOnImplThread();
@@ -475,14 +475,15 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     return drawFrame;
 }
 
-void LayerTreeHostImpl::animateLayersRecursive(LayerImpl* current, double monotonicTime, double wallClockTime, AnimationEventsVector* events, bool& didAnimate, bool& needsAnimateLayers)
+void LayerTreeHostImpl::animateLayersRecursive(LayerImpl* current, base::TimeTicks monotonicTime, base::Time wallClockTime, AnimationEventsVector* events, bool& didAnimate, bool& needsAnimateLayers)
 {
     bool subtreeNeedsAnimateLayers = false;
 
     LayerAnimationController* currentController = current->layerAnimationController();
 
     bool hadActiveAnimation = currentController->hasActiveAnimation();
-    currentController->animate(monotonicTime, events);
+    double monotonicTimeSeconds = (monotonicTime - base::TimeTicks()).InSecondsF();
+    currentController->animate(monotonicTimeSeconds, events);
     bool startedAnimation = events->size() > 0;
 
     // We animated if we either ticked a running animation, or started a new animation.
@@ -665,7 +666,9 @@ void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy
 
 void LayerTreeHostImpl::onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds)
 {
-    m_client->onVSyncParametersChanged(monotonicTimebase, intervalInSeconds);
+    base::TimeTicks timebase = base::TimeTicks::FromInternalValue(monotonicTimebase * base::Time::kMicrosecondsPerSecond);
+    base::TimeDelta interval = base::TimeDelta::FromMicroseconds(intervalInSeconds * base::Time::kMicrosecondsPerSecond);
+    m_client->onVSyncParametersChanged(timebase, interval);
 }
 
 void LayerTreeHostImpl::drawLayers(const FrameData& frame)
@@ -1368,11 +1371,12 @@ void LayerTreeHostImpl::setFullRootLayerDamage()
     }
 }
 
-void LayerTreeHostImpl::animatePageScale(double monotonicTime)
+void LayerTreeHostImpl::animatePageScale(base::TimeTicks time)
 {
     if (!m_pageScaleAnimation || !m_rootScrollLayerImpl)
         return;
 
+    double monotonicTime = (time - base::TimeTicks()).InSecondsF();
     IntSize scrollTotal = flooredIntSize(m_rootScrollLayerImpl->scrollPosition() + m_rootScrollLayerImpl->scrollDelta());
 
     setPageScaleDelta(m_pageScaleAnimation->pageScaleAtTime(monotonicTime) / m_pinchZoomViewport.pageScaleFactor());
@@ -1387,7 +1391,7 @@ void LayerTreeHostImpl::animatePageScale(double monotonicTime)
     }
 }
 
-void LayerTreeHostImpl::animateLayers(double monotonicTime, double wallClockTime)
+void LayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime)
 {
     if (!Settings::acceleratedAnimationEnabled() || !m_needsAnimateLayers || !m_rootLayerImpl)
         return;
@@ -1472,22 +1476,23 @@ void LayerTreeHostImpl::renderingStats(RenderingStats* stats) const
     stats->numMainThreadScrolls = m_numMainThreadScrolls;
 }
 
-void LayerTreeHostImpl::animateScrollbars(double monotonicTime)
+void LayerTreeHostImpl::animateScrollbars(base::TimeTicks time)
 {
-    animateScrollbarsRecursive(m_rootLayerImpl.get(), monotonicTime);
+    animateScrollbarsRecursive(m_rootLayerImpl.get(), time);
 }
 
-void LayerTreeHostImpl::animateScrollbarsRecursive(LayerImpl* layer, double monotonicTime)
+void LayerTreeHostImpl::animateScrollbarsRecursive(LayerImpl* layer, base::TimeTicks time)
 {
     if (!layer)
         return;
 
     ScrollbarAnimationController* scrollbarController = layer->scrollbarAnimationController();
+    double monotonicTime = (time - base::TimeTicks()).InSecondsF();
     if (scrollbarController && scrollbarController->animate(monotonicTime))
         m_client->setNeedsRedrawOnImplThread();
 
     for (size_t i = 0; i < layer->children().size(); ++i)
-        animateScrollbarsRecursive(layer->children()[i], monotonicTime);
+        animateScrollbarsRecursive(layer->children()[i], time);
 }
 
 }  // namespace cc

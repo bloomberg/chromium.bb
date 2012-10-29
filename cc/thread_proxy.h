@@ -31,7 +31,7 @@ public:
 
     // Proxy implementation
     virtual bool compositeAndReadback(void *pixels, const IntRect&) OVERRIDE;
-    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double duration) OVERRIDE;
+    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
     virtual void finishAllRendering() OVERRIDE;
     virtual bool isStarted() const OVERRIDE;
     virtual bool initializeContext() OVERRIDE;
@@ -57,11 +57,11 @@ public:
     // LayerTreeHostImplClient implementation
     virtual void didLoseContextOnImplThread() OVERRIDE;
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE;
-    virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) OVERRIDE;
+    virtual void onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE;
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, double wallClockTime) OVERRIDE;
+    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE;
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
     virtual void sendManagedMemoryStats() OVERRIDE;
 
@@ -86,7 +86,7 @@ private:
         BeginFrameAndCommitState();
         ~BeginFrameAndCommitState();
 
-        double monotonicFrameBeginTime;
+        base::TimeTicks monotonicFrameBeginTime;
         scoped_ptr<ScrollAndScaleSet> scrollInfo;
         WebKit::WebTransformationMatrix implTransform;
         PrioritizedTextureManager::BackingList evictedContentsTexturesBackings;
@@ -98,7 +98,7 @@ private:
     void beginFrame();
     void didCommitAndDrawFrame();
     void didCompleteSwapBuffers();
-    void setAnimationEvents(AnimationEventsVector*, double wallClockTime);
+    void setAnimationEvents(AnimationEventsVector*, base::Time wallClockTime);
     void beginContextRecreation();
     void tryToRecreateContext();
 
@@ -113,7 +113,7 @@ private:
     void beginFrameCompleteOnImplThread(CompletionEvent*, ResourceUpdateQueue*);
     void beginFrameAbortedOnImplThread();
     void requestReadbackOnImplThread(ReadbackRequest*);
-    void requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, double durationSec);
+    void requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, base::TimeDelta duration);
     void finishAllRenderingOnImplThread(CompletionEvent*);
     void initializeImplOnImplThread(CompletionEvent*, InputHandler*);
     void setSurfaceReadyOnImplThread();

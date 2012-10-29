@@ -41,7 +41,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <wtf/CurrentTime.h>
 
 using namespace std;
 using WebKit::WebGraphicsContext3D;

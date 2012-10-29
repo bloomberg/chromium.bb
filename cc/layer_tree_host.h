@@ -13,6 +13,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "cc/animation_events.h"
 #include "cc/graphics_context.h"
 #include "cc/layer_tree_host_client.h"
@@ -106,7 +107,7 @@ public:
     // LayerTreeHost interface to Proxy.
     void willBeginFrame() { m_client->willBeginFrame(); }
     void didBeginFrame() { m_client->didBeginFrame(); }
-    void updateAnimations(double monotonicFrameBeginTime);
+    void updateAnimations(base::TimeTicks monotonicFrameBeginTime);
     void layout();
     void beginCommitOnImplThread(LayerTreeHostImpl*);
     void finishCommitOnImplThread(LayerTreeHostImpl*);
@@ -163,7 +164,7 @@ public:
     void setNeedsRedraw();
     bool commitRequested() const;
 
-    void setAnimationEvents(scoped_ptr<AnimationEventsVector>, double wallClockTime);
+    void setAnimationEvents(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime);
     virtual void didAddAnimation();
 
     Layer* rootLayer() { return m_rootLayer.get(); }
@@ -188,7 +189,7 @@ public:
     bool visible() const { return m_visible; }
     void setVisible(bool);
 
-    void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double durationSec);
+    void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration);
 
     void applyScrollAndScale(const ScrollAndScaleSet&);
     void setImplTransform(const WebKit::WebTransformationMatrix&);
@@ -230,9 +231,9 @@ private:
     void setPrioritiesForLayers(const LayerList&);
     size_t calculateMemoryForRenderSurfaces(const LayerList& updateList);
 
-    void animateLayers(double monotonicTime);
-    bool animateLayersRecursive(Layer* current, double monotonicTime);
-    void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, double wallClockTime);
+    void animateLayers(base::TimeTicks monotonicTime);
+    bool animateLayersRecursive(Layer* current, base::TimeTicks time);
+    void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, base::Time wallClockTime);
 
     bool m_animating;
     bool m_needsAnimateLayers;

@@ -30,10 +30,10 @@ public:
     virtual void commitCompleteOnThread(cc::LayerTreeHostImpl*) { }
     virtual bool prepareToDrawOnThread(cc::LayerTreeHostImpl*);
     virtual void drawLayersOnThread(cc::LayerTreeHostImpl*) { }
-    virtual void animateLayers(cc::LayerTreeHostImpl*, double monotonicTime) { }
-    virtual void willAnimateLayers(cc::LayerTreeHostImpl*, double monotonicTime) { }
+    virtual void animateLayers(cc::LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
+    virtual void willAnimateLayers(cc::LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
     virtual void applyScrollAndScale(const cc::IntSize&, float) { }
-    virtual void animate(double monotonicTime) { }
+    virtual void animate(base::TimeTicks monotonicTime) { }
     virtual void layout() { }
     virtual void didRecreateOutputSurface(bool succeeded) { }
     virtual void didAddAnimation() { }
@@ -158,7 +158,7 @@ public:
     using LayerTreeHostImpl::calculateRenderSurfaceLayerList;
 
 protected:
-    virtual void animateLayers(double monotonicTime, double wallClockTime) OVERRIDE;
+    virtual void animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime) OVERRIDE;
     virtual base::TimeDelta lowFrequencyAnimationInterval() const OVERRIDE;
 
 private:

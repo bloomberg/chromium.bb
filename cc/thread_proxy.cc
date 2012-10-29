@@ -17,7 +17,6 @@
 #include "cc/scoped_thread_proxy.h"
 #include "cc/thread_task.h"
 #include <public/WebSharedGraphicsContext3D.h>
-#include <wtf/CurrentTime.h>
 
 using WebKit::WebSharedGraphicsContext3D;
 
@@ -118,17 +117,17 @@ void ThreadProxy::requestReadbackOnImplThread(ReadbackRequest* request)
     m_schedulerOnImplThread->setNeedsForcedRedraw();
 }
 
-void ThreadProxy::startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double duration)
+void ThreadProxy::startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration)
 {
     DCHECK(Proxy::isMainThread());
     Proxy::implThread()->postTask(createThreadTask(this, &ThreadProxy::requestStartPageScaleAnimationOnImplThread, targetPosition, useAnchor, scale, duration));
 }
 
-void ThreadProxy::requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, double duration)
+void ThreadProxy::requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, base::TimeDelta duration)
 {
     DCHECK(Proxy::isImplThread());
     if (m_layerTreeHostImpl.get())
-        m_layerTreeHostImpl->startPageScaleAnimation(targetPosition, useAnchor, scale, monotonicallyIncreasingTime(), duration);
+        m_layerTreeHostImpl->startPageScaleAnimation(targetPosition, useAnchor, scale, base::TimeTicks::Now(), duration);
 }
 
 void ThreadProxy::finishAllRendering()
@@ -314,12 +313,10 @@ void ThreadProxy::onSwapBuffersCompleteOnImplThread()
     m_mainThreadProxy->postTask(createThreadTask(this, &ThreadProxy::didCompleteSwapBuffers));
 }
 
-void ThreadProxy::onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds)
+void ThreadProxy::onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval)
 {
     DCHECK(isImplThread());
-    TRACE_EVENT2("cc", "ThreadProxy::onVSyncParametersChanged", "monotonicTimebase", monotonicTimebase, "intervalInSeconds", intervalInSeconds);
-    base::TimeTicks timebase = base::TimeTicks::FromInternalValue(monotonicTimebase * base::Time::kMicrosecondsPerSecond);
-    base::TimeDelta interval = base::TimeDelta::FromMicroseconds(intervalInSeconds * base::Time::kMicrosecondsPerSecond);
+    TRACE_EVENT2("cc", "ThreadProxy::onVSyncParametersChanged", "timebase", (timebase - base::TimeTicks()).InMilliseconds(), "interval", interval.InMilliseconds());
     m_schedulerOnImplThread->setTimebaseAndInterval(timebase, interval);
 }
 
@@ -345,7 +342,7 @@ void ThreadProxy::setNeedsForcedCommitOnImplThread()
     m_schedulerOnImplThread->setNeedsForcedCommit();
 }
 
-void ThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector> events, double wallClockTime)
+void ThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
 {
     DCHECK(isImplThread());
     TRACE_EVENT0("cc", "ThreadProxy::postAnimationEventsToMainThreadOnImplThread");
@@ -505,7 +502,7 @@ void ThreadProxy::scheduledActionBeginFrame()
     TRACE_EVENT0("cc", "ThreadProxy::scheduledActionBeginFrame");
     DCHECK(!m_pendingBeginFrameRequest);
     m_pendingBeginFrameRequest = make_scoped_ptr(new BeginFrameAndCommitState());
-    m_pendingBeginFrameRequest->monotonicFrameBeginTime = monotonicallyIncreasingTime();
+    m_pendingBeginFrameRequest->monotonicFrameBeginTime = base::TimeTicks::Now();
     m_pendingBeginFrameRequest->scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
     m_pendingBeginFrameRequest->implTransform = m_layerTreeHostImpl->implTransform();
     m_pendingBeginFrameRequest->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
@@ -738,8 +735,8 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
         return result;
 
     // FIXME: compute the frame display time more intelligently
-    double monotonicTime = monotonicallyIncreasingTime();
-    double wallClockTime = currentTime();
+    base::TimeTicks monotonicTime = base::TimeTicks::Now();
+    base::Time wallClockTime = base::Time::Now();
 
     if (m_inputHandlerOnImplThread.get())
         m_inputHandlerOnImplThread->animate(monotonicTime);
@@ -864,7 +861,7 @@ void ThreadProxy::didCompleteSwapBuffers()
     m_layerTreeHost->didCompleteSwapBuffers();
 }
 
-void ThreadProxy::setAnimationEvents(AnimationEventsVector* passed_events, double wallClockTime)
+void ThreadProxy::setAnimationEvents(AnimationEventsVector* passed_events, base::Time wallClockTime)
 {
     scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(passed_events));
 
@@ -1005,7 +1002,6 @@ void ThreadProxy::renderingStatsOnImplThread(CompletionEvent* completion, Render
 }
 
 ThreadProxy::BeginFrameAndCommitState::BeginFrameAndCommitState()
-    : monotonicFrameBeginTime(0)
 {
 }
 

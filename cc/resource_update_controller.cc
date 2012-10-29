@@ -16,7 +16,6 @@
 #include <limits>
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
-#include <wtf/CurrentTime.h>
 
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebSharedGraphicsContext3D;

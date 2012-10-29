@@ -36,11 +36,11 @@ class LayerTreeHostImplClient {
 public:
     virtual void didLoseContextOnImplThread() = 0;
     virtual void onSwapBuffersCompleteOnImplThread() = 0;
-    virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) = 0;
+    virtual void onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) = 0;
     virtual void onCanDrawStateChanged(bool canDraw) = 0;
     virtual void setNeedsRedrawOnImplThread() = 0;
     virtual void setNeedsCommitOnImplThread() = 0;
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, double wallClockTime) = 0;
+    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) = 0;
     // Returns true if resources were deleted by this call.
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) = 0;
     virtual void sendManagedMemoryStats() = 0;
@@ -114,7 +114,7 @@ public:
     virtual void pinchGestureBegin() OVERRIDE;
     virtual void pinchGestureUpdate(float, const IntPoint&) OVERRIDE;
     virtual void pinchGestureEnd() OVERRIDE;
-    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool anchorPoint, float pageScale, double startTime, double duration) OVERRIDE;
+    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
 
     struct FrameData : public RenderPassSink {
@@ -134,7 +134,7 @@ public:
     // Virtual for testing.
     virtual void beginCommit();
     virtual void commitComplete();
-    virtual void animate(double monotonicTime, double wallClockTime);
+    virtual void animate(base::TimeTicks monotonicTime, base::Time wallClockTime);
 
     // Returns false if problems occured preparing the frame, and we should try
     // to avoid displaying the frame. If prepareToDraw is called,
@@ -210,7 +210,7 @@ public:
     scoped_ptr<ScrollAndScaleSet> processScrollDeltas();
     WebKit::WebTransformationMatrix implTransform() const;
 
-    void startPageScaleAnimation(const IntSize& tragetPosition, bool useAnchor, float scale, double durationSec);
+    void startPageScaleAnimation(const IntSize& tragetPosition, bool useAnchor, float scale, base::TimeDelta duration);
 
     SkColor backgroundColor() const { return m_backgroundColor; }
     void setBackgroundColor(SkColor color) { m_backgroundColor = color; }
@@ -264,14 +264,14 @@ public:
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*);
 
-    void animatePageScale(double monotonicTime);
-    void animateScrollbars(double monotonicTime);
+    void animatePageScale(base::TimeTicks monotonicTime);
+    void animateScrollbars(base::TimeTicks monotonicTime);
 
     // Exposed for testing.
     void calculateRenderSurfaceLayerList(LayerList&);
 
     // Virtual for testing.
-    virtual void animateLayers(double monotonicTime, double wallClockTime);
+    virtual void animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime);
 
     // Virtual for testing.
     virtual base::TimeDelta lowFrequencyAnimationInterval() const;
@@ -292,7 +292,7 @@ private:
     // only be called from prepareToDraw, as didDrawAllLayers must be called
     // if this helper function is called.
     bool calculateRenderPasses(FrameData&);
-    void animateLayersRecursive(LayerImpl*, double monotonicTime, double wallClockTime, AnimationEventsVector*, bool& didAnimate, bool& needsAnimateLayers);
+    void animateLayersRecursive(LayerImpl*, base::TimeTicks monotonicTime, base::Time wallClockTime, AnimationEventsVector*, bool& didAnimate, bool& needsAnimateLayers);
     void setBackgroundTickingEnabled(bool);
     IntSize contentSize() const;
 
@@ -301,7 +301,7 @@ private:
     bool ensureRenderSurfaceLayerList();
     void clearCurrentlyScrollingLayer();
 
-    void animateScrollbarsRecursive(LayerImpl*, double monotonicTime);
+    void animateScrollbarsRecursive(LayerImpl*, base::TimeTicks monotonicTime);
 
     void dumpRenderSurfaces(std::string*, int indent, const LayerImpl*) const;
 

@@ -6,6 +6,7 @@
 #define CCInputHandler_h
 
 #include "base/basictypes.h"
+#include "base/time.h"
 
 namespace cc {
 
@@ -52,8 +53,8 @@ public:
     virtual void startPageScaleAnimation(const IntSize& targetPosition,
                                          bool anchorPoint,
                                          float pageScale,
-                                         double startTime,
-                                         double duration) = 0;
+                                         base::TimeTicks startTime,
+                                         base::TimeDelta duration) = 0;
 
     // Request another callback to InputHandler::animate().
     virtual void scheduleAnimation() = 0;
@@ -71,7 +72,7 @@ public:
     virtual ~InputHandler() { }
 
     virtual void bindToClient(InputHandlerClient*) = 0;
-    virtual void animate(double monotonicTime) = 0;
+    virtual void animate(base::TimeTicks time) = 0;
 
 protected:
     InputHandler() { }

@@ -46,11 +46,11 @@ public:
     // LayerTreeHostImplClient implementation.
     virtual void didLoseContextOnImplThread() OVERRIDE { }
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE { }
-    virtual void onVSyncParametersChanged(double, double) OVERRIDE { }
+    virtual void onVSyncParametersChanged(base::TimeTicks, base::TimeDelta) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool) OVERRIDE { }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { }
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, double wallClockTime) OVERRIDE { }
+    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE { }
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return true; }
     virtual void sendManagedMemoryStats() OVERRIDE { }
 

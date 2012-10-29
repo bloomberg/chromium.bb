@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/time.h"
 #include <public/WebCompositorOutputSurface.h>
 
 namespace cc {
@@ -35,7 +36,7 @@ public:
 
     virtual bool compositeAndReadback(void *pixels, const IntRect&) = 0;
 
-    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double durationSec) = 0;
+    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration) = 0;
 
     virtual void finishAllRendering() = 0;
 

@@ -223,11 +223,11 @@ void LayerTreeHost::acquireLayerTextures()
     m_proxy->acquireLayerTextures();
 }
 
-void LayerTreeHost::updateAnimations(double monotonicFrameBeginTime)
+void LayerTreeHost::updateAnimations(base::TimeTicks frameBeginTime)
 {
     m_animating = true;
-    m_client->animate(monotonicFrameBeginTime);
-    animateLayers(monotonicFrameBeginTime);
+    m_client->animate((frameBeginTime - base::TimeTicks()).InSecondsF());
+    animateLayers(frameBeginTime);
     m_animating = false;
 
     m_renderingStats.numAnimationFrames++;
@@ -392,7 +392,7 @@ bool LayerTreeHost::commitRequested() const
     return m_proxy->commitRequested();
 }
 
-void LayerTreeHost::setAnimationEvents(scoped_ptr<AnimationEventsVector> events, double wallClockTime)
+void LayerTreeHost::setAnimationEvents(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
 {
     DCHECK(ThreadProxy::isMainThread());
     setAnimationEventsRecursive(*events.get(), m_rootLayer.get(), wallClockTime);
@@ -451,9 +451,9 @@ void LayerTreeHost::setVisible(bool visible)
     m_proxy->setVisible(visible);
 }
 
-void LayerTreeHost::startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double durationSec)
+void LayerTreeHost::startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration)
 {
-    m_proxy->startPageScaleAnimation(targetPosition, useAnchor, scale, durationSec);
+    m_proxy->startPageScaleAnimation(targetPosition, useAnchor, scale, duration);
 }
 
 void LayerTreeHost::loseContext(int numTimes)
@@ -769,22 +769,23 @@ void LayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)
     setNeedsCommit();
 }
 
-void LayerTreeHost::animateLayers(double monotonicTime)
+void LayerTreeHost::animateLayers(base::TimeTicks time)
 {
     if (!Settings::acceleratedAnimationEnabled() || !m_needsAnimateLayers)
         return;
 
     TRACE_EVENT0("cc", "LayerTreeHostImpl::animateLayers");
-    m_needsAnimateLayers = animateLayersRecursive(m_rootLayer.get(), monotonicTime);
+    m_needsAnimateLayers = animateLayersRecursive(m_rootLayer.get(), time);
 }
 
-bool LayerTreeHost::animateLayersRecursive(Layer* current, double monotonicTime)
+bool LayerTreeHost::animateLayersRecursive(Layer* current, base::TimeTicks time)
 {
     if (!current)
         return false;
 
     bool subtreeNeedsAnimateLayers = false;
     LayerAnimationController* currentController = current->layerAnimationController();
+    double monotonicTime = (time - base::TimeTicks()).InSecondsF();
     currentController->animate(monotonicTime, 0);
 
     // If the current controller still has an active animation, we must continue animating layers.
@@ -792,14 +793,14 @@ bool LayerTreeHost::animateLayersRecursive(Layer* current, double monotonicTime)
          subtreeNeedsAnimateLayers = true;
 
     for (size_t i = 0; i < current->children().size(); ++i) {
-        if (animateLayersRecursive(current->children()[i].get(), monotonicTime))
+        if (animateLayersRecursive(current->children()[i].get(), time))
             subtreeNeedsAnimateLayers = true;
     }
 
     return subtreeNeedsAnimateLayers;
 }
 
-void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& events, Layer* layer, double wallClockTime)
+void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& events, Layer* layer, base::Time wallClockTime)
 {
     if (!layer)
         return;
@@ -807,9 +808,9 @@ void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& eve
     for (size_t eventIndex = 0; eventIndex < events.size(); ++eventIndex) {
         if (layer->id() == events[eventIndex].layerId) {
             if (events[eventIndex].type == AnimationEvent::Started)
-                layer->notifyAnimationStarted(events[eventIndex], wallClockTime);
+                layer->notifyAnimationStarted(events[eventIndex], wallClockTime.ToDoubleT());
             else
-                layer->notifyAnimationFinished(wallClockTime);
+                layer->notifyAnimationFinished(wallClockTime.ToDoubleT());
         }
     }
 

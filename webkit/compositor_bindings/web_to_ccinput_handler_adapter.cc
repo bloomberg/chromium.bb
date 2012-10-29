@@ -80,9 +80,11 @@ public:
     virtual void startPageScaleAnimation(WebSize targetPosition,
                                          bool anchorPoint,
                                          float pageScale,
-                                         double startTime,
-                                         double duration) OVERRIDE
+                                         double startTimeSec,
+                                         double durationSec) OVERRIDE
     {
+        base::TimeTicks startTime = base::TimeTicks::FromInternalValue(startTimeSec * base::Time::kMicrosecondsPerSecond);
+        base::TimeDelta duration = base::TimeDelta::FromMicroseconds(durationSec * base::Time::kMicrosecondsPerSecond);
         m_client->startPageScaleAnimation(convert(targetPosition), anchorPoint, pageScale, startTime, duration);
     }
 
@@ -102,9 +104,10 @@ void WebToCCInputHandlerAdapter::bindToClient(cc::InputHandlerClient* client)
     m_handler->bindToClient(m_clientAdapter.get());
 }
 
-void WebToCCInputHandlerAdapter::animate(double monotonicTime)
+void WebToCCInputHandlerAdapter::animate(base::TimeTicks time)
 {
-    m_handler->animate(monotonicTime);
+    double monotonicTimeSeconds = (time - base::TimeTicks()).InSecondsF();
+    m_handler->animate(monotonicTimeSeconds);
 }
 
 }
