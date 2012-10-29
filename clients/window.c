@@ -2691,6 +2691,9 @@ input_set_pointer_image(struct input *input, int pointer)
 {
 	int force = 0;
 
+	if (!input->pointer)
+		return;
+
 	if (input->pointer_enter_serial > input->cursor_serial)
 		force = 1;
 
