@@ -349,7 +349,6 @@ GestureSequence::GestureSequence(GestureEventHelper* helper)
       pinch_distance_start_(0.f),
       pinch_distance_current_(0.f),
       scroll_type_(ST_FREE),
-      long_press_timer_(CreateTimer()),
       point_count_(0),
       helper_(helper) {
 }
@@ -545,7 +544,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
              << " touch id: " << event.touch_id();
 
   if (last_state == GS_PENDING_SYNTHETIC_CLICK && state_ != last_state)
-    long_press_timer_->Stop();
+    GetLongPressTimer()->Stop();
 
   // The set of point_ids must be contiguous and include 0.
   // When a touch point is released, all points with ids greater than the
@@ -608,6 +607,12 @@ void GestureSequence::ResetVelocities() {
 
 base::OneShotTimer<GestureSequence>* GestureSequence::CreateTimer() {
   return new base::OneShotTimer<GestureSequence>();
+}
+
+base::OneShotTimer<GestureSequence>* GestureSequence::GetLongPressTimer() {
+  if (!long_press_timer_.get())
+    long_press_timer_.reset(CreateTimer());
+  return long_press_timer_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -917,7 +922,7 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
                                 Gestures* gestures) {
   DCHECK(state_ == GS_NO_GESTURE);
   AppendTapDownGestureEvent(point, gestures);
-  long_press_timer_->Start(
+  GetLongPressTimer()->Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(
           GestureConfiguration::long_press_time_in_seconds() * 1000),
@@ -1136,7 +1141,7 @@ bool GestureSequence::MaybeSwipe(const TouchEvent& event,
 }
 
 void GestureSequence::StopLongPressTimerIfRequired(const TouchEvent& event) {
-  if (!long_press_timer_->IsRunning() ||
+  if (!GetLongPressTimer()->IsRunning() ||
       event.type() != ui::ET_TOUCH_MOVED)
     return;
 
@@ -1144,7 +1149,7 @@ void GestureSequence::StopLongPressTimerIfRequired(const TouchEvent& event) {
   const GesturePoint* point = GetPointByPointId(0);
   if (!ui::gestures::IsInsideManhattanSquare(point->first_touch_position(),
       event.location()))
-    long_press_timer_->Stop();
+    GetLongPressTimer()->Stop();
 }
 
 }  // namespace ui

@@ -54,9 +54,7 @@ class UI_EXPORT GestureSequence {
 
  protected:
   virtual base::OneShotTimer<GestureSequence>* CreateTimer();
-  base::OneShotTimer<GestureSequence>* long_press_timer() {
-    return long_press_timer_.get();
-  }
+  base::OneShotTimer<GestureSequence>* GetLongPressTimer();
 
  private:
   // Recreates the axis-aligned bounding box that contains all the touch-points

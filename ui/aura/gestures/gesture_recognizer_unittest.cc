@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
@@ -86,7 +88,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_velocity_y_(0),
         velocity_x_(0),
         velocity_y_(0),
-        tap_count_(0) {
+        tap_count_(0),
+        wait_until_event_(ui::ET_UNKNOWN) {
   }
 
   virtual ~GestureEventConsumeDelegate() {}
@@ -165,6 +168,13 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   int tap_count() const { return tap_count_; }
 
+  void WaitUntilReceivedGesture(ui::EventType type) {
+    wait_until_event_ = type;
+    run_loop_.reset(new base::RunLoop(
+        Env::GetInstance()->GetDispatcher()));
+    run_loop_->Run();
+  }
+
   virtual ui::EventResult OnGestureEvent(
       ui::GestureEvent* gesture) OVERRIDE {
     events_.push_back(gesture->type());
@@ -238,10 +248,15 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       default:
         NOTREACHED();
     }
+    if (wait_until_event_ == gesture->type() && run_loop_.get()) {
+      run_loop_->Quit();
+      wait_until_event_ = ui::ET_UNKNOWN;
+    }
     return ui::ER_CONSUMED;
   }
 
  private:
+  scoped_ptr<base::RunLoop> run_loop_;
   std::vector<ui::EventType> events_;
 
   bool tap_;
@@ -276,6 +291,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   int touch_id_;
   gfx::Rect bounding_box_;
   int tap_count_;
+
+  ui::EventType wait_until_event_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventConsumeDelegate);
 };
@@ -391,12 +408,17 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
 class TestOneShotGestureSequenceTimer
     : public base::OneShotTimer<ui::GestureSequence> {
  public:
+  TestOneShotGestureSequenceTimer() {}
+
   void ForceTimeout() {
     if (IsRunning()) {
       user_task().Run();
       Stop();
     }
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestOneShotGestureSequenceTimer);
 };
 
 class TimerTestGestureSequence : public ui::GestureSequence {
@@ -407,20 +429,23 @@ class TimerTestGestureSequence : public ui::GestureSequence {
 
   void ForceTimeout() {
     static_cast<TestOneShotGestureSequenceTimer*>(
-        long_press_timer())->ForceTimeout();
+        GetLongPressTimer())->ForceTimeout();
   }
 
   bool IsTimerRunning() {
-    return long_press_timer()->IsRunning();
+    return GetLongPressTimer()->IsRunning();
   }
 
-  base::OneShotTimer<ui::GestureSequence>* CreateTimer() {
+  virtual base::OneShotTimer<ui::GestureSequence>* CreateTimer() OVERRIDE {
     return new TestOneShotGestureSequenceTimer();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TimerTestGestureSequence);
 };
 
 class TestGestureRecognizer : public ui::GestureRecognizerImpl {
-  public:
+ public:
   explicit TestGestureRecognizer(RootWindow* root_window)
       : GestureRecognizerImpl(root_window) {
   }
@@ -428,6 +453,9 @@ class TestGestureRecognizer : public ui::GestureRecognizerImpl {
   ui::GestureSequence* GetGestureSequenceForTesting(Window* window) {
     return GetGestureSequenceForConsumer(window);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestGestureRecognizer);
 };
 
 class TimerTestGestureRecognizer : public TestGestureRecognizer {
@@ -440,6 +468,9 @@ class TimerTestGestureRecognizer : public TestGestureRecognizer {
       ui::GestureEventHelper* helper) OVERRIDE {
     return new TimerTestGestureSequence(helper);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TimerTestGestureRecognizer);
 };
 
 base::TimeDelta GetTime() {
@@ -1026,15 +1057,8 @@ TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
   EXPECT_GT(delegate->velocity_y(), 0);
 }
 
-#if defined(OS_WIN)
-// Fails on win_aura. http://crbug.com/157596
-#define MAYBE_GestureEventLongPress DISABLED_GestureEventLongPress
-#else
-#define MAYBE_GestureEventLongPress GestureEventLongPress
-#endif
-
 // Check that appropriate touch events generate long press events
-TEST_F(GestureRecognizerTest, MAYBE_GestureEventLongPress) {
+TEST_F(GestureRecognizerTest, GestureEventLongPress) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
@@ -1048,9 +1072,6 @@ TEST_F(GestureRecognizerTest, MAYBE_GestureEventLongPress) {
 
   TimerTestGestureRecognizer* gesture_recognizer =
       new TimerTestGestureRecognizer(root_window());
-  TimerTestGestureSequence* gesture_sequence =
-      static_cast<TimerTestGestureSequence*>(
-          gesture_recognizer->GetGestureSequenceForTesting(window.get()));
 
   root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
@@ -1065,7 +1086,7 @@ TEST_F(GestureRecognizerTest, MAYBE_GestureEventLongPress) {
   EXPECT_FALSE(delegate->long_press());
 
   // Wait until the timer runs out
-  gesture_sequence->ForceTimeout();
+  delegate->WaitUntilReceivedGesture(ui::ET_GESTURE_LONG_PRESS);
   EXPECT_TRUE(delegate->long_press());
   EXPECT_EQ(0, delegate->touch_id());
   EXPECT_FALSE(delegate->tap_cancel());
