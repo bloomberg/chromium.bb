@@ -291,6 +291,8 @@ class BrowserWindowGtk
 
   // Top level window.
   GtkWindow* window_;
+  // Determines whether window was shown.
+  bool window_has_shown_;
   // GtkAlignment that holds the interior components of the chromium window.
   // This is used to draw the custom frame border and content shadow.
   GtkWidget* window_container_;

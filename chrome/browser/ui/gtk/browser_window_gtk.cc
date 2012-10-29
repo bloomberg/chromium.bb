@@ -223,6 +223,7 @@ GQuark GetBrowserWindowQuarkKey() {
 
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  window_(NULL),
+       window_has_shown_(false),
        window_container_(NULL),
        window_vbox_(NULL),
        render_area_vbox_(NULL),
@@ -597,7 +598,10 @@ void BrowserWindowGtk::Show() {
   // size.
   gtk_widget_set_size_request(contents_container_->widget(), -1, -1);
 
+  window_has_shown_ = true;
   browser()->OnWindowDidShow();
+  if (devtools_window_)
+    UpdateDevToolsSplitPosition();
 }
 
 void BrowserWindowGtk::ShowInactive() {
@@ -673,6 +677,7 @@ void BrowserWindowGtk::Close() {
   // To help catch bugs in any event handlers that might get fired during the
   // destruction, set window_ to NULL before any handlers will run.
   window_ = NULL;
+  window_has_shown_ = false;
   titlebar_->set_window(NULL);
 
   // We don't want GlobalMenuBar handling any notifications or commands after
@@ -2385,6 +2390,8 @@ void BrowserWindowGtk::HideDevToolsContainer() {
 }
 
 void BrowserWindowGtk::UpdateDevToolsSplitPosition() {
+  if (!window_has_shown_)
+    return;
   GtkAllocation contents_rect;
   gtk_widget_get_allocation(contents_vsplit_, &contents_rect);
 
