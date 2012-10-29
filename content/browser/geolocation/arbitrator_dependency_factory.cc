@@ -37,14 +37,14 @@ DefaultGeolocationArbitratorDependencyFactory::NewNetworkLocationProvider(
   // Android uses its own SystemLocationProvider.
   return NULL;
 #else
-  return NewNetworkLocationProvider(access_token_store, context, url,
-                                    access_token);
+  return content::NewNetworkLocationProvider(access_token_store, context, url,
+                                             access_token);
 #endif
 }
 
 LocationProviderBase*
 DefaultGeolocationArbitratorDependencyFactory::NewSystemLocationProvider() {
-  return NewSystemLocationProvider();
+  return content::NewSystemLocationProvider();
 }
 
 DefaultGeolocationArbitratorDependencyFactory::
