@@ -32,6 +32,7 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgGenerateKeyRequest(PP_Instance instance,
                                SerializedVarReceiveInput key_system,
+                               SerializedVarReceiveInput type,
                                SerializedVarReceiveInput init_data);
   void OnMsgAddKey(PP_Instance instance,
                    SerializedVarReceiveInput session_id,

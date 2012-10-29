@@ -630,9 +630,10 @@ IPC_MESSAGE_ROUTED3(
     int32_t /* result */)
 
 // PPP_ContentDecryptor_Dev
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* key_system, String */,
+                    ppapi::proxy::SerializedVar /* type, String */,
                     ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_AddKey,
                     PP_Instance /* instance */,

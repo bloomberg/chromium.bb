@@ -131,6 +131,7 @@ bool InitializePppDecryptorBuffer(PP_Instance instance,
 
 void GenerateKeyRequest(PP_Instance instance,
                         PP_Var key_system,
+                        PP_Var type,
                         PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
@@ -143,6 +144,7 @@ void GenerateKeyRequest(PP_Instance instance,
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
           SerializedVarSendInput(dispatcher, key_system),
+          SerializedVarSendInput(dispatcher, type),
           SerializedVarSendInput(dispatcher, init_data)));
 }
 
@@ -411,11 +413,13 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
 void PPP_ContentDecryptor_Private_Proxy::OnMsgGenerateKeyRequest(
     PP_Instance instance,
     SerializedVarReceiveInput key_system,
+    SerializedVarReceiveInput type,
     SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->GenerateKeyRequest,
                       instance,
                       ExtractReceivedVarAndAddRef(dispatcher(), &key_system),
+                      ExtractReceivedVarAndAddRef(dispatcher(), &type),
                       ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
   }
 }

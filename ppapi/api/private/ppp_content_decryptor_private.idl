@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M24 = 0.5
+  M24 = 0.6
 };
 
 /**
@@ -22,8 +22,8 @@ label Chrome {
 interface PPP_ContentDecryptor_Private {
   /**
    * Generates a key request. key_system specifies the key or licensing system
-   * to use. init_data is a data buffer containing data for use in generating
-   * the request.
+   * to use. type contains the MIME type of init_data. init_data is a data
+   * buffer containing data for use in generating the request.
    *
    * Note: <code>GenerateKeyRequest()</code> must create the session ID used in
    * other methods on this interface. The session ID must be provided to the
@@ -33,6 +33,9 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] key_system A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
    *
+   * @param[in] type A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the MIME type for init_data.
+   *
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
    * initialization data.
@@ -40,6 +43,7 @@ interface PPP_ContentDecryptor_Private {
   void GenerateKeyRequest(
       [in] PP_Instance instance,
       [in] PP_Var key_system,
+      [in] PP_Var type,
       [in] PP_Var init_data);
 
   /**

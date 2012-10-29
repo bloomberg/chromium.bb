@@ -54,6 +54,7 @@ static bool g_cdm_module_initialized = InitializeFFmpegLibraries();
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
 static const char kClearKeyCdmVersion[] = "0.1.0.0";
+static const char kExternalClearKey[] = "org.chromium.externalclearkey";
 
 // Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
 // empty, an empty (end-of-stream) media::DecoderBuffer is returned.
@@ -116,9 +117,12 @@ void INITIALIZE_CDM_MODULE() {
 void DeInitializeCdmModule() {
 }
 
-cdm::ContentDecryptionModule* CreateCdmInstance(
-    cdm::Allocator* allocator, cdm::CdmHost* host) {
+cdm::ContentDecryptionModule* CreateCdmInstance(const char* key_system_arg,
+                                                int key_system_size,
+                                                cdm::Allocator* allocator,
+                                                cdm::CdmHost* host) {
   DVLOG(1) << "CreateCdmInstance()";
+  DCHECK_EQ(std::string(key_system_arg, key_system_size), kExternalClearKey);
   return new webkit_media::ClearKeyCdm(allocator, host);
 }
 
@@ -196,14 +200,16 @@ ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost*)
 
 ClearKeyCdm::~ClearKeyCdm() {}
 
-cdm::Status ClearKeyCdm::GenerateKeyRequest(const uint8_t* init_data,
+cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
+                                            const uint8_t* init_data,
                                             int init_data_size,
                                             cdm::KeyMessage* key_request) {
   DVLOG(1) << "GenerateKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  // TODO(tomfinegan): Pass "type" here once ContentDecryptionModule is updated.
-  decryptor_.GenerateKeyRequest("", "", init_data, init_data_size);
+  decryptor_.GenerateKeyRequest(kExternalClearKey,
+                                std::string(type, type_size),
+                                init_data, init_data_size);
 
   if (client_.status() != Client::kKeyMessage)
     return cdm::kSessionError;

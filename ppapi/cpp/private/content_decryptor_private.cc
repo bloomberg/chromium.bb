@@ -25,6 +25,7 @@ static const char kPPPContentDecryptorInterface[] =
 
 void GenerateKeyRequest(PP_Instance instance,
                         PP_Var key_system_arg,
+                        PP_Var type_arg,
                         PP_Var init_data_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
@@ -32,16 +33,21 @@ void GenerateKeyRequest(PP_Instance instance,
     return;
 
   pp::Var key_system_var(pp::PASS_REF, key_system_arg);
-  if (key_system_var.is_string() == false)
+  if (!key_system_var.is_string())
+    return;
+
+  pp::Var type_var(pp::PASS_REF, type_arg);
+  if (!type_var.is_string())
     return;
 
   pp::Var init_data_var(pp::PASS_REF, init_data_arg);
-  if (init_data_var.is_array_buffer() == false)
+  if (!init_data_var.is_array_buffer())
     return;
   pp::VarArrayBuffer init_data_array_buffer(init_data_var);
 
   static_cast<ContentDecryptor_Private*>(object)->GenerateKeyRequest(
       key_system_var.AsString(),
+      type_var.AsString(),
       init_data_array_buffer);
 }
 
@@ -55,16 +61,16 @@ void AddKey(PP_Instance instance,
     return;
 
   pp::Var session_id_var(pp::PASS_REF, session_id_arg);
-  if (session_id_var.is_string() == false)
+  if (!session_id_var.is_string())
     return;
 
   pp::Var key_var(pp::PASS_REF, key_arg);
-  if (key_var.is_array_buffer() == false)
+  if (!key_var.is_array_buffer())
     return;
   pp::VarArrayBuffer key(key_var);
 
   pp::Var init_data_var(pp::PASS_REF, init_data_arg);
-  if (init_data_var.is_array_buffer() == false)
+  if (!init_data_var.is_array_buffer())
     return;
   pp::VarArrayBuffer init_data(init_data_var);
 
@@ -82,7 +88,7 @@ void CancelKeyRequest(PP_Instance instance, PP_Var session_id_arg) {
     return;
 
   pp::Var session_id_var(pp::PASS_REF, session_id_arg);
-  if (session_id_var.is_string() == false)
+  if (!session_id_var.is_string())
     return;
 
   static_cast<ContentDecryptor_Private*>(object)->CancelKeyRequest(

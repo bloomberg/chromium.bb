@@ -125,7 +125,7 @@ const PPB_ContentDecryptor_Private g_ppb_decryption_thunk = {
 }  // namespace
 
 const PPB_ContentDecryptor_Private*
-    GetPPB_ContentDecryptor_Private_0_5_Thunk() {
+    GetPPB_ContentDecryptor_Private_0_6_Thunk() {
   return &g_ppb_decryption_thunk;
 }
 

@@ -440,6 +440,7 @@ class CdmWrapper : public pp::Instance,
   // Note: Results of calls to these methods must be reported through the
   // PPB_ContentDecryptor_Private interface.
   virtual void GenerateKeyRequest(const std::string& key_system,
+                                  const std::string& type,
                                   pp::VarArrayBuffer init_data) OVERRIDE;
   virtual void AddKey(const std::string& session_id,
                       pp::VarArrayBuffer key,
@@ -530,11 +531,13 @@ CdmWrapper::~CdmWrapper() {
 }
 
 void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
+                                    const std::string& type,
                                     pp::VarArrayBuffer init_data) {
   PP_DCHECK(!key_system.empty());
 
   if (!cdm_) {
-    cdm_ = CreateCdmInstance(&allocator_, this);
+    cdm_ = CreateCdmInstance(key_system.data(), key_system.size(),
+                             &allocator_, this);
     PP_DCHECK(cdm_);
     if (!cdm_) {
       FireKeyError("");
@@ -544,6 +547,7 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
 
   LinkedKeyMessage key_request(new KeyMessageImpl());
   cdm::Status status = cdm_->GenerateKeyRequest(
+      type.data(), type.size(),
       static_cast<const uint8_t*>(init_data.Map()),
       init_data.ByteLength(),
       key_request.get());

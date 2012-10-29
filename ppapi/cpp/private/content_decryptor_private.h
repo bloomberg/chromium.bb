@@ -29,6 +29,7 @@ class ContentDecryptor_Private {
   // strings. The change would allow the CDM wrapper to reuse vars when
   // replying to the browser.
   virtual void GenerateKeyRequest(const std::string& key_system,
+                                  const std::string& type,
                                   pp::VarArrayBuffer init_data) = 0;
   virtual void AddKey(const std::string& session_id,
                       pp::VarArrayBuffer key,

@@ -1635,10 +1635,10 @@ bool PluginInstance::GenerateKeyRequest(const std::string& key_system,
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data.size(), init_data.data());
 
-  // TODO(tomfinegan): Pass "type" once PPP_ContentDecryptor_Private is updated.
   plugin_decryption_interface_->GenerateKeyRequest(
       pp_instance(),
       StringVar::StringToPPVar(key_system),
+      StringVar::StringToPPVar(type),
       init_data_array);
   return true;
 }

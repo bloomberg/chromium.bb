@@ -33,7 +33,10 @@ CDM_EXPORT void DeInitializeCdmModule();
 // Caller retains ownership of arguments, which must outlive the call to
 // DestroyCdmInstance below.
 CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance(
-    cdm::Allocator* allocator, cdm::CdmHost* host);
+    const char* key_system,
+    int key_system_size,
+    cdm::Allocator* allocator,
+    cdm::CdmHost* host);
 CDM_EXPORT void DestroyCdmInstance(cdm::ContentDecryptionModule* instance);
 CDM_EXPORT const char* GetCdmVersion();
 }
@@ -211,7 +214,7 @@ enum StreamType {
 // when a Buffer is created that will never be returned to the caller.
 class ContentDecryptionModule {
  public:
-  // Generates a |key_request| given the |init_data|.
+  // Generates a |key_request| given |type| and |init_data|.
   //
   // Returns kSuccess if the key request was successfully generated,
   // in which case the callee should have allocated memory for the output
@@ -219,32 +222,26 @@ class ContentDecryptionModule {
   // to the caller.
   // Returns kSessionError if any error happened, in which case the
   // |key_request| should not be used by the caller.
-  //
-  // TODO(xhwang): It's not safe to pass the ownership of the dynamically
-  // allocated memory over library boundaries. Fix it after related PPAPI change
-  // and sample CDM are landed.
-  virtual Status GenerateKeyRequest(const uint8_t* init_data,
-                                    int init_data_size,
-                                    KeyMessage* key_request) = 0;
+  virtual Status GenerateKeyRequest(
+      const char* type, int type_size,
+      const uint8_t* init_data, int init_data_size,
+      KeyMessage* key_request) = 0;
 
   // Adds the |key| to the CDM to be associated with |key_id|.
   //
   // Returns kSuccess if the key was successfully added, kSessionError
   // otherwise.
-  virtual Status AddKey(const char* session_id,
-                        int session_id_size,
-                        const uint8_t* key,
-                        int key_size,
-                        const uint8_t* key_id,
-                        int key_id_size) = 0;
+  virtual Status AddKey(const char* session_id, int session_id_size,
+                        const uint8_t* key, int key_size,
+                        const uint8_t* key_id, int key_id_size) = 0;
 
   // Cancels any pending key request made to the CDM for |session_id|.
   //
   // Returns kSuccess if all pending key requests for |session_id| were
   // successfully canceled or there was no key request to be canceled,
   // kSessionError otherwise.
-  virtual Status CancelKeyRequest(const char* session_id,
-                                  int session_id_size) = 0;
+  virtual Status CancelKeyRequest(
+      const char* session_id, int session_id_size) = 0;
 
   // Optionally populates |*msg| and indicates so in |*populated|.
   virtual void TimerExpired(KeyMessage* msg, bool* populated) = 0;

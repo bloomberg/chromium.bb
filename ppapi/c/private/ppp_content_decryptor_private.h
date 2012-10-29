@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Mon Oct 22 19:47:57 2012.
+ *   modified Fri Oct 26 15:36:54 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_5 \
-    "PPP_ContentDecryptor_Private;0.5"
+#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_6 \
+    "PPP_ContentDecryptor_Private;0.6"
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_5
+    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_6
 
 /**
  * @file
@@ -42,11 +42,11 @@
  * Decryption Module (CDM) for v0.1 of the proposed Encrypted Media Extensions:
  * http://goo.gl/rbdnR
  */
-struct PPP_ContentDecryptor_Private_0_5 {
+struct PPP_ContentDecryptor_Private_0_6 {
   /**
    * Generates a key request. key_system specifies the key or licensing system
-   * to use. init_data is a data buffer containing data for use in generating
-   * the request.
+   * to use. type contains the MIME type of init_data. init_data is a data
+   * buffer containing data for use in generating the request.
    *
    * Note: <code>GenerateKeyRequest()</code> must create the session ID used in
    * other methods on this interface. The session ID must be provided to the
@@ -56,12 +56,16 @@ struct PPP_ContentDecryptor_Private_0_5 {
    * @param[in] key_system A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
    *
+   * @param[in] type A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the MIME type for init_data.
+   *
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
    * initialization data.
    */
   void (*GenerateKeyRequest)(PP_Instance instance,
                              struct PP_Var key_system,
+                             struct PP_Var type,
                              struct PP_Var init_data);
   /**
    * Provides a key or license to the decryptor for decrypting media data.
@@ -222,7 +226,7 @@ struct PPP_ContentDecryptor_Private_0_5 {
       const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
-typedef struct PPP_ContentDecryptor_Private_0_5 PPP_ContentDecryptor_Private;
+typedef struct PPP_ContentDecryptor_Private_0_6 PPP_ContentDecryptor_Private;
 /**
  * @}
  */
