@@ -150,13 +150,6 @@ static const char kReadmeText[] =
 const char* const kPrefExitTypeCrashed = "Crashed";
 const char* const kPrefExitTypeSessionEnded = "SessionEnded";
 
-// Helper method needed because PostTask cannot currently take a Callback
-// function with non-void return type.
-// TODO(jhawkins): Remove once IgnoreResult is fixed.
-void CreateDirectoryNoResult(const FilePath& path) {
-  file_util::CreateDirectory(path);
-}
-
 FilePath GetCachePath(const FilePath& base) {
   return base.Append(chrome::kCacheDirname);
 }
@@ -212,7 +205,7 @@ Profile* Profile::CreateProfile(const FilePath& path,
     // This is safe while all file operations are done on the FILE thread.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&CreateDirectoryNoResult, path));
+        base::Bind(base::IgnoreResult(&file_util::CreateDirectory), path));
   } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
     if (!file_util::PathExists(path)) {
       // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
@@ -362,7 +355,8 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   // Always create the cache directory asynchronously.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateDirectoryNoResult, base_cache_path_));
+      base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
+                 base_cache_path_));
 
   // Now that the profile is hooked up to receive pref change notifications to
   // kGoogleServicesUsername, initialize components that depend on it to reflect
