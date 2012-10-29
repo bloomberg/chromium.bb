@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.0",
+  "version": "4.1",
   "entries": [
     {
       "id": 1,
@@ -887,6 +887,22 @@
       },
       "blacklist": [
         "texture_sharing"
+      ]
+    },
+    {
+      "id": 59,
+      "description": "NVidia driver 8.15.11.8593 is crashy on Windows.",
+      "cr_bugs": [155749],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "=",
+        "number": "8.15.11.8593"
+      },
+      "blacklist": [
+        "all"
       ]
     }
   ]
