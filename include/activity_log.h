@@ -181,7 +181,7 @@ class ActivityLog {
   // Encode user-configurable properties
   ::Value* EncodePropRegistry();
 
-  static const size_t kBufferSize = 16384;
+  static const size_t kBufferSize = 8192;
 
   Entry buffer_[kBufferSize];
   size_t head_idx_;

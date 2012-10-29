@@ -36,7 +36,8 @@ ActivityLog::ActivityLog(PropRegistry* prop_reg)
 
 void ActivityLog::SetHardwareProperties(const HardwareProperties& hwprops) {
   hwprops_ = hwprops;
-  max_fingers_ = hwprops.max_finger_cnt;
+  max_fingers_ = std::min<size_t>(hwprops.max_finger_cnt,
+                                  hwprops.max_touch_cnt);
   finger_states_.reset(new FingerState[kBufferSize * max_fingers_]);
 }
 
