@@ -1810,9 +1810,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenBasicClickTest) {
 // well defined.  Should we add tests so we know if it changes?
 
 // Shift-clicks open in a new window.
-// TODO(ericu): Disabled until https://bugs.webkit.org/show_bug.cgi?id=99202
-// lands, fixing http://crbug.com/31631.
-IN_PROC_BROWSER_TEST_F(ClickModifierTest, DISABLED_WindowOpenShiftClickTest) {
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenShiftClickTest) {
   int modifiers = WebKit::WebInputEvent::ShiftKey;
   WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = NEW_WINDOW;
