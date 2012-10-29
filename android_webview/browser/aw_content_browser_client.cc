@@ -12,12 +12,33 @@
 #include "android_webview/common/url_constants.h"
 #include "base/base_paths_android.h"
 #include "base/path_service.h"
+#include "content/public/browser/access_token_store.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace {
+
+class DummyAccessTokenStore : public content::AccessTokenStore {
+ public:
+  DummyAccessTokenStore() { }
+
+  virtual void LoadAccessTokens(
+      const LoadAccessTokensCallbackType& request) OVERRIDE { }
+
+ private:
+  virtual ~DummyAccessTokenStore() { }
+
+  virtual void SaveAccessToken(
+      const GURL& server_url, const string16& access_token) OVERRIDE { }
+
+  DISALLOW_COPY_AND_ASSIGN(DummyAccessTokenStore);
+};
+
+}
 
 namespace android_webview {
 
@@ -240,7 +261,7 @@ net::NetLog* AwContentBrowserClient::GetNetLog() {
 
 content::AccessTokenStore* AwContentBrowserClient::CreateAccessTokenStore() {
   // TODO(boliu): Implement as part of geolocation code.
-  return NULL;
+  return new DummyAccessTokenStore();
 }
 
 bool AwContentBrowserClient::IsFastShutdownPossible() {
