@@ -673,7 +673,7 @@ void Shell::SetDimming(bool should_dim) {
     (*iter)->screen_dimmer()->SetDimming(should_dim);
 }
 
-void Shell::CreateModalBackground() {
+void Shell::CreateModalBackground(aura::Window* window) {
   if (!modality_filter_.get()) {
     modality_filter_.reset(new internal::SystemModalContainerEventFilter(this));
     AddEnvEventFilter(modality_filter_.get());
@@ -681,7 +681,7 @@ void Shell::CreateModalBackground() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
-    (*iter)->GetSystemModalLayoutManager(NULL)->CreateModalBackground();
+    (*iter)->GetSystemModalLayoutManager(window)->CreateModalBackground();
 }
 
 void Shell::OnModalWindowRemoved(aura::Window* removed) {

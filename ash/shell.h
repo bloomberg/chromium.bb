@@ -350,9 +350,9 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // Dims or undims the screen.
   void SetDimming(bool should_dim);
 
-  // Creates modal background, which is a partially-opaque fullscreen
-  // window, on all displays.
-  void CreateModalBackground();
+  // Creates a modal background (a partially-opaque fullscreen window)
+  // on all displays for |window|.
+  void CreateModalBackground(aura::Window* window);
 
   // Called when a modal window is removed. It will activate
   // another modal window if any, or remove modal screens

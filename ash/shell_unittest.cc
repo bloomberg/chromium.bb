@@ -216,6 +216,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   EXPECT_TRUE(GetDefaultContainer()->Contains(
                   widget->GetNativeWindow()->parent()));
 
+  Shell::GetInstance()->delegate()->LockScreen();
   // Create a LockScreen window.
   views::Widget* lock_widget = CreateTestWindow(widget_params);
   ash::Shell::GetContainer(
