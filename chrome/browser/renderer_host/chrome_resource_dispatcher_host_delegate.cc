@@ -253,11 +253,18 @@ ResourceDispatcherHostLoginDelegate*
   return CreateLoginPrompt(auth_info, request);
 }
 
-void ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
+bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url, int child_id, int route_id) {
+#if defined(OS_ANDROID)
+  // Android use a resource throttle to handle external as well as internal
+  // protocols.
+  return false;
+#else
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
+  return true;
+#endif
 }
 
 void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(

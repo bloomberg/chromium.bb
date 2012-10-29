@@ -95,8 +95,10 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info, net::URLRequest* request);
 
-  // Launches the url for the given tab.
-  virtual void HandleExternalProtocol(const GURL& url,
+  // Launches the url for the given tab. Returns true if an attempt to handle
+  // the url was made, e.g. by launching an app. Note that this does not
+  // guarantee that the app successfully handled it.
+  virtual bool HandleExternalProtocol(const GURL& url,
                                       int child_id,
                                       int route_id);
 

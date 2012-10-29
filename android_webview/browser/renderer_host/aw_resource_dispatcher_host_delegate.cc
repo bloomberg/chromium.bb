@@ -115,12 +115,13 @@ content::ResourceDispatcherHostLoginDelegate*
   return new AwLoginDelegate(auth_info, request);
 }
 
-void AwResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
+bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
                                                               int child_id,
                                                               int route_id) {
   // The AwURLRequestJobFactory implementation should ensure this method never
   // gets called.
   NOTREACHED();
+  return false;
 }
 
 void AwResourceDispatcherHostDelegate::SetOnlyAllowLoadFromCache(

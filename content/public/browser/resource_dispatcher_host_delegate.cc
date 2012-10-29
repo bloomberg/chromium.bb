@@ -57,9 +57,10 @@ ResourceDispatcherHostLoginDelegate*
   return NULL;
 }
 
-void ResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
+bool ResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
                                                             int child_id,
                                                             int route_id) {
+  return true;
 }
 
 bool ResourceDispatcherHostDelegate::ShouldForceDownloadResource(

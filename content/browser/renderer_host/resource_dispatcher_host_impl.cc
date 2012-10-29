@@ -671,9 +671,8 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (job_factory->IsHandledURL(url))
     return false;
 
-  delegate_->HandleExternalProtocol(url, info->GetChildID(),
-                                    info->GetRouteID());
-  return true;
+  return delegate_->HandleExternalProtocol(url, info->GetChildID(),
+                                           info->GetRouteID());
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
