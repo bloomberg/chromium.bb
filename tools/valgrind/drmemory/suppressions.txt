@@ -317,6 +317,13 @@ system call NtGdiDeleteObjectApp
 ...
 *!skia::BitmapPlatformDevice::BitmapPlatformDeviceData::ReleaseBitmapDC
 
+GDI USAGE ERROR
+name=http://crbug.com/109963 c
+system call NtGdiDeleteObjectApp
+...
+skia.dll!skia::PlatformBitmap::~PlatformBitmap
+*!skia::PlatformBitmap*
+
 # GDI usage errors in 3rd-party components
 GDI USAGE ERROR
 name=http://crbug.com/119552 a
@@ -369,4 +376,4 @@ system call NtUserCallOneParam.RELEASEDC
 ui.dll!gfx::ReadColorProfile
 ui.dll!gfx::GetColorProfile
 content.dll!content::RenderMessageFilter::OnGetMonitorColorProfile
-content.dll!DispatchToMethod
+content.dll!DispatchToMethod*
