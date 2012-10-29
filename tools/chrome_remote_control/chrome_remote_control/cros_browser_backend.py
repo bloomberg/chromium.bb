@@ -39,8 +39,7 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
       logging.debug('stopping ui')
       self._cri.GetCmdOutput(['stop', 'ui'])
 
-    args = ['/opt/google/chrome/chrome']
-    args.extend(self.GetBrowserStartupArgs())
+    # Set up user data dir.
     if not is_content_shell:
       logging.info('Preparing user data dir')
       self._tmpdir = '/tmp/chrome_remote_control'
@@ -50,6 +49,10 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
 
       # Ensure a clean user_data_dir.
       self._cri.RmRF(self._tmpdir)
+
+    # Set startup args.
+    args = ['/opt/google/chrome/chrome']
+    args.extend(self.GetBrowserStartupArgs())
 
     # Final bits of command line prep.
     def EscapeIfNeeded(arg):
