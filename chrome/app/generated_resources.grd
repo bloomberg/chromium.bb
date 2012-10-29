@@ -13000,10 +13000,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         You have chosen to encrypt data using your Google password; you can always change your mind later by changing your sync settings.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT" desc="Message when explicit passphrase is selected.">
-        Only someone with your passphrase can read your encrypted data -- the passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to reset sync.
+        Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to reset sync.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX" desc="Message when explicit passphrase is selected.">
-        Only someone with your passphrase can read your encrypted data -- the passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to
+        Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX" desc="Postfix of the message show when explicit passphrase is selected.">
         reset sync
@@ -13204,20 +13204,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
         For added security, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will encrypt your data.
       </message>
       <message name="IDS_SYNC_BASIC_ENCRYPTION_DATA" desc="Text of the radio that when selected enables basic encryption.">
-        Encrypt passwords with my Google credentials
+        Encrypt synced passwords with your Google credentials
       </message>
       <message name="IDS_SYNC_FULL_ENCRYPTION_DATA" desc="Text of the radio that when selected enables full encryption.">
-        Encrypt all synced data with a custom passphrase
+        Encrypt all synced data with your own sync passphrase
       </message>
       <message name="IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM" desc="Text of the radio that when selected enables full encryption.">
-        All data was encrypted with a custom passphrase
+        All data is encrypted with your sync passphrase
       </message>
       <message name="IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE" desc="Text of the radio that when selected enables full encryption.">
-        All data was encrypted with a custom passphrase on
+        All data was encrypted with your sync passphrase on
         <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>
       </message>
       <message name="IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE" desc="Text of the radio that when selected enables full encryption.">
-        All data was encrypted with your Google password on
+        All data was encrypted with your Google password as of
         <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>
       </message>
 
@@ -13226,16 +13226,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Enter your sync passphrase
       </message>
       <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters the passphrase.">
-        You already have data that is encrypted with a passphrase. Please enter it below.
+        Your data is encrypted with your sync passphrase. Please enter it below.
       </message>
       <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY" desc="Instructions for the dialog where the user needs to enter their previous google passphrase.">
         You already have data that is encrypted using a different version of your Google Account password. Please enter it below.
       </message>
       <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE" desc="Instructions for the dialog where the user enters the passphrase.">
-        Your data was encrypted with a custom passphrase on <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Please enter it below.
+        Your data was encrypted with your sync passphrase on <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Please enter it below.
       </message>
       <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE" desc="Instructions for the dialog where the user needs to enter their previous google passphrase.">
-        Your data was encrypted with your Google password on <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Please enter it below.
+        Your data was encrypted with your Google password as of <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Please enter it below.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_LABEL" desc="Label for the passphrase field.">
         Passphrase

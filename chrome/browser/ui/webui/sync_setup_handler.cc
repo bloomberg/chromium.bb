@@ -466,7 +466,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
               GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
           break;
       }
-    } else {
+    } else if (passphrase_type == syncer::CUSTOM_PASSPHRASE) {
       args.SetString(
           "fullEncryptionBody",
           GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
