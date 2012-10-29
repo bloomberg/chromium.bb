@@ -39,6 +39,7 @@ class InstantUnloadHandler::WebContentsDelegateImpl
   }
 
   virtual void CloseContents(content::WebContents* source) OVERRIDE {
+    tab_contents_->web_contents()->SetDelegate(NULL);
     handler_->Destroy(this);
   }
 
@@ -70,10 +71,7 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContents* tab,
 
   // Tab has before unload listener. Install a delegate and fire the before
   // unload listener.
-  WebContentsDelegateImpl* delegate =
-      new WebContentsDelegateImpl(this, tab, index);
-  delegates_.push_back(delegate);
-
+  delegates_.push_back(new WebContentsDelegateImpl(this, tab, index));
   tab->web_contents()->GetRenderViewHost()->FirePageBeforeUnload(false);
 }
 
