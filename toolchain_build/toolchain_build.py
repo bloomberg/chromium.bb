@@ -16,7 +16,7 @@ import toolchain_main
 
 GIT_REVISIONS = {
     'binutils': '0d99b0776661ebbf2949c644cb060612ccc11737',
-    'gcc': 'aa98f0ce1ad49ac7faff1ef880a8016db520d333',
+    'gcc': '878b7a31473da405b8302f3aebdf8e8c343363f2',
     'newlib': '51a8366a0898bc47ee78a7f6ed01e8bd40eee4d0',
     }
 
@@ -24,7 +24,8 @@ TARGET_LIST = ['arm']
 
 # These are extra arguments to pass gcc's configure that vary by target.
 TARGET_GCC_CONFIG = {
-    'arm': ['--with-tune=cortex-a15'],
+# TODO(mcgrathr): Disabled tuning for now, tickling a constant-pool layout bug.
+#    'arm': ['--with-tune=cortex-a15'],
     }
 
 PACKAGE_NAME = 'Native Client SDK [%(build_signature)s]'
@@ -142,7 +143,7 @@ def GccCommand(target, cmd):
       cmd, path_dirs=[os.path.join('%(binutils_' + target + ')s', 'bin')])
 
 
-def ConfigureGccCommand(target):
+def ConfigureGccCommand(target, extra_args=[]):
   return GccCommand(
       target,
       CONFIGURE_CMD +
@@ -156,7 +157,7 @@ def ConfigureGccCommand(target):
           '--with-newlib',
           '--with-linker-hash-style=gnu',
           '--enable-languages=c,c++,lto',
-          ])
+          ] + extra_args)
 
 
 def HostTools(target):
@@ -217,12 +218,94 @@ def HostTools(target):
       }
 
 
+def NewlibTargetCflags(target):
+  if target == 'arm':
+    tls_option = '-mtp=soft'
+  else:
+    tls_option = '-mtls-use-call'
+  return ' '.join([
+      '-O2',
+      '-D_I386MACH_ALLOW_HW_INTERRUPTS',
+      '-DSIGNAL_PROVIDED',
+      tls_option,
+      ])
+
+
+def TargetCommands(target, command_list):
+  # First we have to copy the host tools into a common directory.
+  # We can't just have both directories in our PATH, because the
+  # compiler looks for the assembler and linker relative to itself.
+  commands = PopulateDeps(['%(binutils_' + target + ')s',
+                           '%(gcc_' + target + ')s'])
+  bindir = os.path.join('%(cwd)s', 'all_deps', 'bin')
+  commands += [command.Command(cmd, path_dirs=[bindir])
+               for cmd in command_list]
+  return commands
+
+
+def TargetLibs(target):
+  lib_deps = ['binutils_' + target, 'gcc_' + target]
+
+  # We have to populate the newlib source tree with the "exported" form of
+  # some headers from the native_client source tree.  The newlib build
+  # needs these to be in the expected place.  By doing this in the
+  # 'unpack_commands' stage, these files will be part of the input hash and
+  # so we don't need to do anything else to keep track of when they might
+  # have changed in the native_client source tree.
+  newlib_sys_nacl = os.path.join('%(src)s', 'newlib', 'libc', 'sys', 'nacl')
+  newlib_unpack = [command.RemoveDirectory(os.path.join(newlib_sys_nacl,
+                                                        dirname))
+                   for dirname in ['bits', 'sys', 'machine']]
+  newlib_unpack.append(command.Command([
+      'python',
+      os.path.join('%(top_srcdir)s',
+                   'src', 'trusted', 'service_runtime', 'export_header.py'),
+      os.path.join('%(top_srcdir)s',
+                   'src', 'trusted', 'service_runtime', 'include'),
+      newlib_sys_nacl,
+      ]))
+
+  libs = {
+      'newlib_' + target: {
+          'dependencies': lib_deps,
+          'git_url': GIT_BASE_URL + '/nacl-newlib.git',
+          'git_revision': GIT_REVISIONS['newlib'],
+          'unpack_commands': newlib_unpack,
+          'commands': TargetCommands(target, [
+              CONFIGURE_CMD +
+              CONFIGURE_HOST_TOOL +
+              ConfigureTargetArgs(target) + [
+                  '--disable-libgloss',
+                  '--enable-newlib-iconv',
+                  '--enable-newlib-io-long-long',
+                  '--enable-newlib-io-long-double',
+                  '--enable-newlib-io-c99-formats',
+                  '--enable-newlib-mb',
+                  'CFLAGS=-O2',
+                  'CFLAGS_FOR_TARGET=' + NewlibTargetCflags(target),
+                  ],
+              MAKE_PARALLEL_CMD,
+              MAKE_DESTDIR_CMD + ['install-strip'],
+              # TODO(mcgrathr): Needs some additional steps:
+              # rm pthread.h
+              # mv libc.a libcrt_common.a
+              # Write libc.a with linker script text.
+              ]),
+          },
+
+      # TODO(mcgrathr): gcc_libs
+      }
+  return libs
+
+
 def CollectPackages(targets):
   packages = HOST_GCC_LIBS.copy()
   for target in targets:
     packages.update(HostTools(target))
-    # TODO(mcgrathr): target libraries
+    # TODO(mcgrathr): Eventually build target libraries on only one host type.
+    packages.update(TargetLibs(target))
   return packages
+
 
 PACKAGES = CollectPackages(TARGET_LIST)
 
