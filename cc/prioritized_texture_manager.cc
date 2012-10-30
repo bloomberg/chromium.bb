@@ -273,8 +273,11 @@ void PrioritizedTextureManager::reduceMemory(ResourceProvider* resourceProvider)
 {
     DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
 
+    // Note that it will not always be the case that memoryUseBytes() <= maxMemoryLimitBytes(),
+    // because we are not at liberty to delete textures that are referenced by the impl tree to 
+    // get more space.
+
     evictBackingsToReduceMemory(m_memoryAvailableBytes, PriorityCalculator::allowEverythingCutoff(), EvictOnlyRecyclable, resourceProvider);
-    DCHECK(memoryUseBytes() <= maxMemoryLimitBytes());
 
     // We currently collect backings from deleted textures for later recycling.
     // However, if we do that forever we will always use the max limit even if
