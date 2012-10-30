@@ -22,7 +22,7 @@ deps = {
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
     'third_party/lss':
-        Var('git_url') + '/external/linux-syscall-support/lss.git@2c73abf02fd8af961e38024882b9ce0df6b4d19b',
+        Var('git_url') + '/external/linux-syscall-support/lss.git@8dce3586424b5811ca0c8c1938bc7d0826558e77',
     'tools/clang':
         Var('git_url') + '/chromium/src/tools/clang.git@b363ee90f841578d66b4c4f6481f0107bcf800e9',
     'tools/gyp':
