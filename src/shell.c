@@ -267,6 +267,9 @@ destroy_shell_grab_shsurf(struct wl_listener *listener, void *data)
 }
 
 static void
+popup_grab_end(struct wl_pointer *pointer);
+
+static void
 shell_grab_start(struct shell_grab *grab,
 		 const struct wl_pointer_grab_interface *interface,
 		 struct shell_surface *shsurf,
@@ -274,6 +277,8 @@ shell_grab_start(struct shell_grab *grab,
 		 enum desktop_shell_cursor cursor)
 {
 	struct desktop_shell *shell = shsurf->shell;
+
+	popup_grab_end(pointer);
 
 	grab->grab.interface = interface;
 	grab->shsurf = shsurf;
@@ -1827,9 +1832,7 @@ popup_grab_button(struct wl_pointer_grab *grab,
 	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
 		   (shsurf->popup.initial_up ||
 		    time - shsurf->popup.seat->pointer->grab_time > 500)) {
-		wl_shell_surface_send_popup_done(&shsurf->resource);
-		wl_pointer_end_grab(grab->pointer);
-		shsurf->popup.grab.pointer = NULL;
+		popup_grab_end(grab->pointer);
 	}
 
 	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
@@ -1841,6 +1844,20 @@ static const struct wl_pointer_grab_interface popup_grab_interface = {
 	popup_grab_motion,
 	popup_grab_button,
 };
+
+static void
+popup_grab_end(struct wl_pointer *pointer)
+{
+	struct wl_pointer_grab *grab = pointer->grab;
+	struct shell_surface *shsurf =
+		container_of(grab, struct shell_surface, popup.grab);
+
+	if (pointer->grab->interface == &popup_grab_interface) {
+		wl_shell_surface_send_popup_done(&shsurf->resource);
+		wl_pointer_end_grab(grab->pointer);
+		shsurf->popup.grab.pointer = NULL;
+	}
+}
 
 static void
 shell_map_popup(struct shell_surface *shsurf)
