@@ -104,6 +104,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   base::Closure quit_closure_;
 
+  // Used to track if this object is deleted while running a nested message
+  // loop. If non-null the destructor sets this to true.
+  bool* destroyed_;
+
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandler);
 };
 

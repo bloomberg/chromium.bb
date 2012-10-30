@@ -109,7 +109,8 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
 ToplevelWindowEventHandler::ToplevelWindowEventHandler(aura::Window* owner)
     : in_move_loop_(false),
       move_cancelled_(false),
-      in_gesture_resize_(false) {
+      in_gesture_resize_(false),
+      destroyed_(NULL) {
   aura::client::SetWindowMoveClient(owner, this);
   Shell::GetInstance()->display_controller()->AddObserver(this);
   owner->AddPreTargetHandler(this);
@@ -118,6 +119,8 @@ ToplevelWindowEventHandler::ToplevelWindowEventHandler(aura::Window* owner)
 
 ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  if (destroyed_)
+    *destroyed_ = true;
 }
 
 ui::EventResult ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
@@ -263,6 +266,8 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
     cursor_client->SetCursor(ui::kCursorPointer);
+  bool destroyed = false;
+  destroyed_ = &destroyed;
 #if !defined(OS_MACOSX)
   MessageLoopForUI* loop = MessageLoopForUI::current();
   MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
@@ -270,6 +275,9 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
 #endif  // !defined(OS_MACOSX)
+  if (destroyed)
+    return aura::client::MOVE_CANCELED;
+  destroyed_ = NULL;
   in_gesture_resize_ = in_move_loop_ = false;
   return move_cancelled_ ? aura::client::MOVE_CANCELED :
       aura::client::MOVE_SUCCESSFUL;

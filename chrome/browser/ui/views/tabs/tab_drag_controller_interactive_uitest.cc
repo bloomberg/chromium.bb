@@ -1349,10 +1349,9 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Drags from browser from a second display to primary and releases input.
-// Disabled, http://crbug.com/158360 .
 IN_PROC_BROWSER_TEST_F(
     DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
-    DISABLED_CancelDragTabToWindowIn1stDisplay) {
+    CancelDragTabToWindowIn1stDisplay) {
   std::vector<aura::RootWindow*> roots(ash::Shell::GetAllRootWindows());
   ASSERT_EQ(2u, roots.size());
 
