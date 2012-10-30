@@ -150,10 +150,6 @@ class DriveResourceMetadata {
   ContentOrigin origin() const { return origin_; }
   void set_origin(ContentOrigin value) { origin_ = value; }
 
-  // Creates a DriveEntry from a google_apis::DocumentEntry.
-  scoped_ptr<DriveEntry> FromDocumentEntry(
-      const google_apis::DocumentEntry& doc);
-
   // Creates a DriveFile instance.
   scoped_ptr<DriveFile> CreateDriveFile();
 

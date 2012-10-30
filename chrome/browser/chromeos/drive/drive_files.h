@@ -40,9 +40,6 @@ class DriveEntry {
   virtual DriveFile* AsDriveFile();
   virtual DriveDirectory* AsDriveDirectory();
 
-  // Initializes from google_apis::DocumentEntry.
-  virtual void InitFromDocumentEntry(const google_apis::DocumentEntry& doc);
-
   // const versions of AsDriveFile and AsDriveDirectory.
   const DriveFile* AsDriveFileConst() const;
   const DriveDirectory* AsDriveDirectoryConst() const;
@@ -191,10 +188,6 @@ class DriveFile : public DriveEntry {
   friend class DriveResourceMetadata;  // For access to ctor.
 
   explicit DriveFile(DriveResourceMetadata* resource_metadata);
-  // Initializes from google_apis::DocumentEntry.
-  virtual void InitFromDocumentEntry(
-      const google_apis::DocumentEntry& doc) OVERRIDE;
-
   virtual DriveFile* AsDriveFile() OVERRIDE;
 
   google_apis::DriveEntryKind kind_;  // Not saved in proto.
@@ -229,11 +222,6 @@ class DriveDirectory : public DriveEntry {
   friend class DriveFeedProcessor;
 
   explicit DriveDirectory(DriveResourceMetadata* resource_metadata);
-
-  // Initializes from google_apis::DocumentEntry.
-  virtual void InitFromDocumentEntry(
-      const google_apis::DocumentEntry& doc) OVERRIDE;
-
   virtual DriveDirectory* AsDriveDirectory() OVERRIDE;
 
   // Adds child file to the directory and takes over the ownership of |file|

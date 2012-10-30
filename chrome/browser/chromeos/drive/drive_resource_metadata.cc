@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/tracked_objects.h"
+#include "chrome/browser/chromeos/drive/document_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
 #include "chrome/browser/google_apis/gdata_util.h"
@@ -208,19 +209,6 @@ DriveResourceMetadata::~DriveResourceMetadata() {
                                       resource_metadata_db_.release());
 }
 
-scoped_ptr<DriveEntry> DriveResourceMetadata::FromDocumentEntry(
-    const google_apis::DocumentEntry& doc) {
-  scoped_ptr<DriveEntry> entry;
-  if (doc.is_folder())
-    entry = CreateDriveDirectory().Pass();
-  else if (doc.is_hosted_document() || doc.is_file())
-    entry = CreateDriveFile().Pass();
-
-  if (entry.get())
-    entry->InitFromDocumentEntry(doc);
-  return entry.Pass();
-}
-
 scoped_ptr<DriveFile> DriveResourceMetadata::CreateDriveFile() {
   return scoped_ptr<DriveFile>(new DriveFile(this));
 }
@@ -262,7 +250,8 @@ void DriveResourceMetadata::AddEntryToDirectory(
     return;
   }
 
-  scoped_ptr<DriveEntry> new_entry = FromDocumentEntry(*doc_entry);
+  scoped_ptr<DriveEntry> new_entry = CreateDriveEntryFromProto(
+      ConvertDocumentEntryToDriveEntryProto(*doc_entry));
   if (!new_entry.get()) {
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_FAILED);
     return;
@@ -533,7 +522,8 @@ void DriveResourceMetadata::RefreshFile(
     return;
   }
 
-  scoped_ptr<DriveEntry> drive_entry(FromDocumentEntry(*doc_entry));
+  scoped_ptr<DriveEntry> drive_entry = CreateDriveEntryFromProto(
+      ConvertDocumentEntryToDriveEntryProto(*doc_entry));
   if (!drive_entry.get()) {
     PostGetEntryInfoWithFilePathCallbackError(
         callback, DRIVE_FILE_ERROR_FAILED);

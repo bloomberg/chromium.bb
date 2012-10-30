@@ -36,37 +36,6 @@ DriveDirectory* DriveEntry::AsDriveDirectory() {
   return NULL;
 }
 
-void DriveEntry::InitFromDocumentEntry(const google_apis::DocumentEntry& doc) {
-  // For regular files, the 'filename' and 'title' attribute in the metadata
-  // may be different (e.g. due to rename). To be consistent with the web
-  // interface and other client to use the 'title' attribute, instead of
-  // 'filename', as the file name in the local snapshot.
-  title_ = UTF16ToUTF8(doc.title());
-  // SetBaseNameFromTitle() must be called after |title_| is set.
-  SetBaseNameFromTitle();
-
-  file_info_.last_modified = doc.updated_time();
-  // If doc.last_viewed_time().is_null() then, we will pass 0 to the
-  // protocol buffer. Moreover, this value may be unreliable.
-  // See: crbug.com/152628.
-  file_info_.last_accessed = doc.last_viewed_time();
-  file_info_.creation_time = doc.published_time();
-
-  resource_id_ = doc.resource_id();
-  content_url_ = doc.content_url();
-  deleted_ = doc.deleted();
-
-  const google_apis::Link* edit_link =
-      doc.GetLinkByType(google_apis::Link::LINK_EDIT);
-  if (edit_link)
-    edit_url_ = edit_link->href();
-
-  const google_apis::Link* parent_link =
-      doc.GetLinkByType(google_apis::Link::LINK_PARENT);
-  if (parent_link)
-    parent_resource_id_ = util::ExtractResourceIdFromUrl(parent_link->href());
-}
-
 const DriveFile* DriveEntry::AsDriveFileConst() const {
   // cast away const and call the non-const version. This is safe.
   return const_cast<DriveEntry*>(this)->AsDriveFile();
@@ -118,54 +87,6 @@ void DriveFile::SetBaseNameFromTitle() {
   }
 }
 
-void DriveFile::InitFromDocumentEntry(const google_apis::DocumentEntry& doc) {
-  DriveEntry::InitFromDocumentEntry(doc);
-
-  // Check if this entry is a true file, or...
-  if (doc.is_file()) {
-    file_info_.size = doc.file_size();
-    file_md5_ = doc.file_md5();
-
-    // The resumable-edit-media link should only be present for regular
-    // files as hosted documents are not uploadable.
-    const google_apis::Link* upload_link =
-        doc.GetLinkByType(google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA);
-    if (upload_link)
-      upload_url_ = upload_link->href();
-  } else {
-    // ... a hosted document.
-    // Attach .g<something> extension to hosted documents so we can special
-    // case their handling in UI.
-    // TODO(zelidrag): Figure out better way how to pass entry info like kind
-    // to UI through the File API stack.
-    document_extension_ = doc.GetHostedDocumentExtension();
-    // We don't know the size of hosted docs and it does not matter since
-    // is has no effect on the quota.
-    file_info_.size = 0;
-  }
-  kind_ = doc.kind();
-  content_mime_type_ = doc.content_mime_type();
-  is_hosted_document_ = doc.is_hosted_document();
-  // SetBaseNameFromTitle() must be called after |title_|,
-  // |is_hosted_document_| and |document_extension_| are set.
-  SetBaseNameFromTitle();
-
-  const google_apis::Link* thumbnail_link = doc.GetLinkByType(
-      google_apis::Link::LINK_THUMBNAIL);
-  if (thumbnail_link)
-    thumbnail_url_ = thumbnail_link->href();
-
-  const google_apis::Link* alternate_link = doc.GetLinkByType(
-      google_apis::Link::LINK_ALTERNATE);
-  if (alternate_link)
-    alternate_url_ = alternate_link->href();
-
-  const google_apis::Link* share_link = doc.GetLinkByType(
-      google_apis::Link::LINK_SHARE);
-  if (share_link)
-    share_url_ = share_link->href();
-}
-
 // DriveDirectory class implementation.
 
 DriveDirectory::DriveDirectory(DriveResourceMetadata* resource_metadata)
@@ -179,16 +100,6 @@ DriveDirectory::~DriveDirectory() {
 
 DriveDirectory* DriveDirectory::AsDriveDirectory() {
   return this;
-}
-
-void DriveDirectory::InitFromDocumentEntry(
-    const google_apis::DocumentEntry& doc) {
-  DriveEntry::InitFromDocumentEntry(doc);
-
-  const google_apis::Link* upload_link =
-      doc.GetLinkByType(google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
-  if (upload_link)
-    upload_url_ = upload_link->href();
 }
 
 void DriveDirectory::AddEntry(DriveEntry* entry) {
