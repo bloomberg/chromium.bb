@@ -19,6 +19,8 @@ class MediaGalleriesPreferences;
 // Profiles.
 class MediaGalleriesPreferencesFactory : public ProfileKeyedServiceFactory {
  public:
+  // Use MediaFileSystemRegistry::GetPreferences() to get
+  // MediaGalleriesPreferences.
   static chrome::MediaGalleriesPreferences* GetForProfile(Profile* profile);
 
   static MediaGalleriesPreferencesFactory* GetInstance();

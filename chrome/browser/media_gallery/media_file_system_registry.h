@@ -90,6 +90,13 @@ class MediaFileSystemRegistry
       const extensions::Extension* extension,
       const MediaFileSystemsCallback& callback);
 
+  // Returns the initialized media galleries preferences for the specified
+  // |profile|. This method should be used instead of calling
+  // MediaGalleriesPreferences directly because this method also ensures that
+  // currently attached removable devices are added to the preferences.
+  // Called on the UI thread.
+  MediaGalleriesPreferences* GetPreferences(Profile* profile);
+
   // base::SystemMonitor::DevicesChangedObserver implementation.
   virtual void OnRemovableStorageAttached(
       const std::string& id, const string16& name,
@@ -128,10 +135,6 @@ class MediaFileSystemRegistry
   void RemoveScopedMtpDeviceMapEntry(
       const FilePath::StringType& device_location);
 #endif
-
-  // Register all the media devices found in system monitor as auto-detected
-  // galleries for the passed |preferences|.
-  void AddAttachedMediaDeviceGalleries(MediaGalleriesPreferences* preferences);
 
   void OnExtensionGalleriesHostEmpty(Profile* profile,
                                      const std::string& extension_id);

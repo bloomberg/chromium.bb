@@ -480,11 +480,7 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
 
   Profile* profile =
       Profile::FromBrowserContext(rvh->GetProcess()->GetBrowserContext());
-  MediaGalleriesPreferences* preferences =
-      MediaGalleriesPreferencesFactory::GetForProfile(profile);
-
-  if (!ContainsKey(extension_hosts_map_, profile))
-    AddAttachedMediaDeviceGalleries(preferences);
+  MediaGalleriesPreferences* preferences = GetPreferences(profile);
   MediaGalleryPrefIdSet galleries =
       preferences->GalleriesForExtension(*extension);
 
@@ -513,6 +509,29 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
                                       callback);
 }
 
+MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
+    Profile* profile) {
+  MediaGalleriesPreferences* preferences =
+      MediaGalleriesPreferencesFactory::GetForProfile(profile);
+  if (ContainsKey(extension_hosts_map_, profile))
+    return preferences;
+
+  // SystemMonitor may be NULL in unit tests.
+  SystemMonitor* system_monitor = SystemMonitor::Get();
+  if (!system_monitor)
+    return preferences;
+  std::vector<SystemMonitor::RemovableStorageInfo> existing_devices =
+      system_monitor->GetAttachedRemovableStorage();
+  for (size_t i = 0; i < existing_devices.size(); i++) {
+    if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
+      continue;
+    preferences->AddGallery(existing_devices[i].device_id,
+                            existing_devices[i].name, FilePath(),
+                            false /*not user added*/);
+  }
+  return preferences;
+}
+
 void MediaFileSystemRegistry::OnRemovableStorageAttached(
     const std::string& id, const string16& name,
     const FilePath::StringType& location) {
@@ -525,8 +544,7 @@ void MediaFileSystemRegistry::OnRemovableStorageAttached(
            extension_hosts_map_.begin();
        profile_it != extension_hosts_map_.end();
        ++profile_it) {
-    MediaGalleriesPreferences* preferences =
-        MediaGalleriesPreferencesFactory::GetForProfile(profile_it->first);
+    MediaGalleriesPreferences* preferences = GetPreferences(profile_it->first);
     preferences->AddGallery(id, name, FilePath(), false /*not user added*/);
   }
 }
@@ -546,8 +564,7 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
            extension_hosts_map_.begin();
        profile_it != extension_hosts_map_.end();
        ++profile_it) {
-    MediaGalleriesPreferences* preferences =
-        MediaGalleriesPreferencesFactory::GetForProfile(profile_it->first);
+    MediaGalleriesPreferences* preferences = GetPreferences(profile_it->first);
     InvalidatedGalleriesInfo invalid_galleries_in_profile;
     invalid_galleries_in_profile.pref_ids =
         preferences->LookUpGalleriesByDeviceId(id);
@@ -677,24 +694,6 @@ void MediaFileSystemRegistry::RemoveScopedMtpDeviceMapEntry(
   mtp_delegate_map_.erase(delegate_it);
 }
 #endif
-
-void MediaFileSystemRegistry::AddAttachedMediaDeviceGalleries(
-    MediaGalleriesPreferences* preferences) {
-  // SystemMonitor may be NULL in unit tests.
-  SystemMonitor* system_monitor = SystemMonitor::Get();
-  if (!system_monitor)
-    return;
-
-  std::vector<SystemMonitor::RemovableStorageInfo> existing_devices =
-      system_monitor->GetAttachedRemovableStorage();
-  for (size_t i = 0; i < existing_devices.size(); i++) {
-    if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
-      continue;
-    preferences->AddGallery(existing_devices[i].device_id,
-                            existing_devices[i].name, FilePath(),
-                            false /*not user added*/);
-  }
-}
 
 void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(
     Profile* profile, const std::string& extension_id) {

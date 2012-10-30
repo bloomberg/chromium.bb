@@ -6,7 +6,7 @@
 
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
+#include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -28,7 +28,7 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
       : web_contents_(web_contents),
         extension_(&extension),
         on_finish_(on_finish),
-        preferences_(MediaGalleriesPreferencesFactory::GetForProfile(
+        preferences_(MediaFileSystemRegistry::GetInstance()->GetPreferences(
             Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
   LookUpPermissions();
 
