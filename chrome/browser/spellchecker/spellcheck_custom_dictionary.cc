@@ -12,6 +12,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 
+#include <functional>
+
 using content::BrowserThread;
 using chrome::spellcheck_common::WordList;
 
