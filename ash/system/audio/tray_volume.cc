@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "ash/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"

@@ -5,6 +5,7 @@
 #include "ash/system/brightness/tray_brightness.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"

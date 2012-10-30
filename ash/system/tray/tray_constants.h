@@ -43,8 +43,6 @@ extern const SkColor kBorderDarkColor;
 extern const SkColor kBorderLightColor;
 extern const SkColor kButtonStrokeColor;
 
-extern const SkColor kFocusBorderColor;
-
 extern const SkColor kHeaderTextColorNormal;
 extern const SkColor kHeaderTextColorHover;
 

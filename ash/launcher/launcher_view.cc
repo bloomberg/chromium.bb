@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/ash_constants.h"
 #include "ash/launcher/app_list_button.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
@@ -33,6 +34,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_search.h"
+#include "ui/views/focus_border.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
@@ -91,6 +93,22 @@ class LauncherFocusSearch : public views::FocusSearch {
   views::ViewModel* view_model_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherFocusSearch);
+};
+
+class LauncherButtonFocusBorder : public views::FocusBorder {
+ public:
+  LauncherButtonFocusBorder() {}
+  virtual ~LauncherButtonFocusBorder() {}
+
+ private:
+  // views::FocusBorder overrides:
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
+    gfx::Rect rect(view.GetLocalBounds());
+    rect.Inset(1, 1);
+    canvas->DrawRect(rect, kFocusBorderColor);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherButtonFocusBorder);
 };
 
 // ui::SimpleMenuModel::Delegate implementation that remembers the id of the
@@ -532,6 +550,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       break;
   }
   view->set_context_menu_controller(this);
+  view->set_focus_border(new LauncherButtonFocusBorder);
 
   DCHECK(view);
   ConfigureChildView(view);

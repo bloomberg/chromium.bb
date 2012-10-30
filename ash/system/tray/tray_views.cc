@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_views.h"
 
+#include "ash/ash_constants.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "grit/ash_resources.h"
