@@ -708,6 +708,9 @@
       'media_stream_infobar',
       'webrtc_brutality_test',
       'webrtc_call',
+
+      # crbug.com/158512
+      '-webrtc_brutality_test.WebrtcBrutalityTest.testReloadsAfterGetUserMedia',
     ],
   },
 
