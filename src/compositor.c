@@ -1234,6 +1234,13 @@ static void
 surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
 	struct weston_surface *surface = resource->data;
+	pixman_region32_t opaque;
+
+	if (surface->pending.sx || surface->pending.sy ||
+	    (surface->pending.buffer &&
+	     (surface->pending.buffer->width != surface->geometry.width ||
+	      surface->pending.buffer->height != surface->geometry.height)))
+		surface->geometry.dirty = 1;
 
 	/* wl_surface.attach */
 	if (surface->pending.buffer || surface->pending.remove_contents)
@@ -1249,13 +1256,18 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	empty_region(&surface->pending.damage);
 
 	/* wl_surface.set_opaque_region */
-	pixman_region32_fini(&surface->opaque);
-	pixman_region32_init_rect(&surface->opaque, 0, 0,
+	pixman_region32_init_rect(&opaque, 0, 0,
 				  surface->geometry.width,
 				  surface->geometry.height);
-	pixman_region32_intersect(&surface->opaque,
-				  &surface->opaque, &surface->pending.opaque);
-	surface->geometry.dirty = 1;
+	pixman_region32_intersect(&opaque,
+				  &opaque, &surface->pending.opaque);
+
+	if (!pixman_region32_equal(&opaque, &surface->opaque)) {
+		pixman_region32_copy(&surface->opaque, &opaque);
+		surface->geometry.dirty = 1;
+	}
+
+	pixman_region32_fini(&opaque);
 
 	/* wl_surface.set_input_region */
 	pixman_region32_fini(&surface->input);
