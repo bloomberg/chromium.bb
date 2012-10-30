@@ -76,7 +76,7 @@ public:
     void endTestAfterDelay(int delayMilliseconds);
 
     void postSetNeedsAnimateToMainThread();
-    void postAddAnimationToMainThread(cc::Layer*);
+    void postAddAnimationToMainThread();
     void postAddInstantAnimationToMainThread();
     void postSetNeedsCommitToMainThread();
     void postAcquireLayerTextures();
@@ -103,7 +103,7 @@ protected:
 
     void dispatchSetNeedsAnimate();
     void dispatchAddInstantAnimation();
-    void dispatchAddAnimation(cc::Layer*);
+    void dispatchAddAnimation();
     void dispatchSetNeedsAnimateAndCommit();
     void dispatchSetNeedsCommit();
     void dispatchAcquireLayerTextures();

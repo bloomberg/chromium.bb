@@ -350,9 +350,9 @@ void ThreadedTest::postSetNeedsAnimateToMainThread()
     m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchSetNeedsAnimate));
 }
 
-void ThreadedTest::postAddAnimationToMainThread(Layer* layerToReceiveAnimation)
+void ThreadedTest::postAddAnimationToMainThread()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchAddAnimation, layerToReceiveAnimation));
+    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchAddAnimation));
 }
 
 void ThreadedTest::postAddInstantAnimationToMainThread()
@@ -456,15 +456,15 @@ void ThreadedTest::dispatchAddInstantAnimation()
         addOpacityTransitionToLayer(*m_layerTreeHost->rootLayer(), 0, 0, 0.5, false);
 }
 
-void ThreadedTest::dispatchAddAnimation(Layer* layerToReceiveAnimation)
+void ThreadedTest::dispatchAddAnimation()
 {
     DCHECK(Proxy::isMainThread());
 
     if (m_finished)
         return;
 
-    if (layerToReceiveAnimation)
-        addOpacityTransitionToLayer(*layerToReceiveAnimation, 10, 0, 0.5, true);
+    if (m_layerTreeHost.get() && m_layerTreeHost->rootLayer())
+        addOpacityTransitionToLayer(*m_layerTreeHost->rootLayer(), 10, 0, 0.5, true);
 }
 
 void ThreadedTest::dispatchSetNeedsAnimateAndCommit()
