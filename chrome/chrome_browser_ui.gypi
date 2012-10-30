@@ -10,15 +10,14 @@
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       # Since browser and browser_ui actually depend on each other,
-      # we must omit the dependency from browser_extensions to browser.
+      # we must omit the dependency from browser_ui to browser.
       # However, this means browser_ui and browser should more or less
       # have the same dependencies. Once browser_ui is untangled from
       # browser, then we can clean up these dependencies.
       'dependencies': [
+        # NOTE: New dependencies should generally be added in the OS!="ios"
+        # dependencies block below, rather than here.
         'app/policy/cloud_policy_codegen.gyp:policy',
-        'autofill_regexes',
-        'browser_extensions',
-        'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
         'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
@@ -26,11 +25,8 @@
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
         'common',
-        'common/extensions/api/api.gyp:api',
         'common_net',
-        'debugger',
         'in_memory_url_index_cache_proto',
-        'installer_util',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'feedback_proto',
@@ -39,45 +35,25 @@
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
-        '../device/device.gyp:device_bluetooth',
         '../media/media.gyp:media',
-        '../net/net.gyp:net_with_v8',
-        '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
-        '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../sync/protocol/sync_proto.gyp:sync_proto',
         # TODO(akalin): Depend only on syncapi_service from sync.
         '../sync/sync.gyp:syncapi_core',
         '../sync/sync.gyp:syncapi_service',
         '../sync/sync.gyp:sync_notifier',
-        '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
-        '../third_party/cld/cld.gyp:cld',
-        '../third_party/expat/expat.gyp:expat',
-        '../third_party/hunspell/hunspell.gyp:hunspell',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
-        '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
         '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/npapi/npapi.gyp:npapi',
-        '../third_party/re2/re2.gyp:re2',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
-        '../ui/compositor/compositor.gyp:compositor',
-        '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
-        '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:user_agent',
-        '../webkit/support/webkit_support.gyp:webkit_resources',
-        '../webkit/support/webkit_support.gyp:webkit_storage',
       ],
       'include_dirs': [
         '..',
@@ -85,14 +61,6 @@
         # Needed by pepper_flash_component_installer.cc.
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
-      'defines': [
-        '<@(nacl_defines)',
-      ],
-      'direct_dependent_settings': {
-        'defines': [
-          '<@(nacl_defines)',
-        ],
-      },
       'export_dependent_settings': [
         '../sync/sync.gyp:sync_notifier',
       ],
@@ -2114,6 +2082,55 @@
         'browser/ui/zoom/zoom_observer.h',
       ],
       'conditions': [
+        ['OS != "ios"', {
+          'dependencies': [
+            'autofill_regexes',
+            'browser_extensions',
+            'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
+            'common/extensions/api/api.gyp:api',
+            'debugger',
+            'installer_util',
+            '../device/device.gyp:device_bluetooth',
+            '../net/net.gyp:net_with_v8',
+            '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
+            '../printing/printing.gyp:printing',
+            '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
+            '../third_party/cld/cld.gyp:cld',
+            '../third_party/expat/expat.gyp:expat',
+            '../third_party/hunspell/hunspell.gyp:hunspell',
+            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
+            '../third_party/npapi/npapi.gyp:npapi',
+            '../third_party/re2/re2.gyp:re2',
+            '../ui/compositor/compositor.gyp:compositor',
+            '../ui/surface/surface.gyp:surface',
+            '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
+            '../v8/tools/gyp/v8.gyp:v8',
+            '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/support/webkit_support.gyp:webkit_storage',
+            '../webkit/support/webkit_support.gyp:webkit_resources',
+          ],
+          'defines': [
+            '<@(nacl_defines)',
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              '<@(nacl_defines)',
+            ],
+          },
+        }, {  # OS == "ios"
+          'dependencies': [
+            '../net/net.gyp:net',
+          ],
+          'sources/': [
+            # iOS uses only small portions of browser/ui/.
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '_ios\\.(cc|mm)$'],
+            ['include', '(^|/)ios/'],
+            # TODO(ios): Add files here as they are updated to compile on iOS.
+          ],
+        }],
         ['enable_one_click_signin==0', {
           'sources!': [
             'browser/ui/cocoa/one_click_signin_bubble_controller.h',
@@ -2351,7 +2368,7 @@
             '../ui/gl/gl.gyp:gl',
           ],
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "android"', {
+        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
           'link_settings': {
             'libraries': [
               '-lXss',
