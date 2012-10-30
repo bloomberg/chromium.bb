@@ -31,6 +31,7 @@ class CommonSwitches {
         script_bubble(
             switches::kScriptBubble,
             FeatureSwitch::DEFAULT_DISABLED),
+        // TODO(finnur): When enabling this, only enable for OS_WIN.
         sideload_wipeout(
             switches::kSideloadWipeout,
             FeatureSwitch::DEFAULT_DISABLED),

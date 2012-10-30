@@ -157,7 +157,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
 
   string16 location_text;
   if (extension->location() == Extension::INTERNAL &&
-      !extension->from_webstore()) {
+      !extension->UpdatesFromGallery()) {
     location_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SIDELOAD_WIPEOUT_DISABLE_REASON_UNKNOWN);
   } else if (extension->location() == Extension::EXTERNAL_REGISTRY) {

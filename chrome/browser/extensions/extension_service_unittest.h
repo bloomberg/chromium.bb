@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,6 +66,7 @@ class ExtensionServiceTestBase : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
+  extensions::FeatureSwitch::ScopedOverride override_sideload_wipeout_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_

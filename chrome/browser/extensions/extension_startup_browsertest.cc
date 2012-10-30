@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -27,13 +28,17 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 
+using extensions::FeatureSwitch;
+
 // This file contains high-level startup tests for the extensions system. We've
 // had many silly bugs where command line flags did not get propagated correctly
 // into the services, so we didn't start correctly.
 
 class ExtensionStartupTestBase : public InProcessBrowserTest {
  public:
-  ExtensionStartupTestBase() : enable_extensions_(false) {
+  ExtensionStartupTestBase() :
+      enable_extensions_(false),
+      override_sideload_wipeout_(FeatureSwitch::sideload_wipeout(), false) {
     num_expected_extensions_ = 3;
   }
 
@@ -142,6 +147,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   bool enable_extensions_;
   // Extensions to load from the command line.
   std::vector<FilePath::StringType> load_extensions_;
+
+  // Disable the sideload wipeout UI.
+  FeatureSwitch::ScopedOverride override_sideload_wipeout_;
 
   int num_expected_extensions_;
 };

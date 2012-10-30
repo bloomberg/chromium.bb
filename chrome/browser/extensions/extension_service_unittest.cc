@@ -63,7 +63,6 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
@@ -111,6 +110,7 @@ using extensions::Extension;
 using extensions::ExtensionCreator;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionSystem;
+using extensions::FeatureSwitch;
 using extensions::PermissionSet;
 
 namespace keys = extension_manifest_keys;
@@ -393,7 +393,9 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
       webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &loop_),
       file_thread_(BrowserThread::FILE, &loop_),
       file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING, &loop_),
-      io_thread_(BrowserThread::IO, &loop_) {
+      io_thread_(BrowserThread::IO, &loop_),
+      override_sideload_wipeout_(
+          FeatureSwitch::sideload_wipeout(), false) {
   FilePath test_data_dir;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
     ADD_FAILURE();
@@ -518,8 +520,7 @@ class ExtensionServiceTest
   ExtensionServiceTest()
       : installed_(NULL),
         override_external_install_prompt_(
-            extensions::FeatureSwitch::prompt_for_external_extensions(),
-            false) {
+            FeatureSwitch::prompt_for_external_extensions(), false) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -1007,7 +1008,7 @@ class ExtensionServiceTest
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
   const Extension* installed_;
-  extensions::FeatureSwitch::ScopedOverride override_external_install_prompt_;
+  FeatureSwitch::ScopedOverride override_external_install_prompt_;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -5614,8 +5615,8 @@ TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
 
 // Test that installing an external extension displays a GlobalError.
 TEST_F(ExtensionServiceTest, DISABLED_ExternalInstallGlobalError) {
-  extensions::FeatureSwitch::ScopedOverride prompt(
-      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
   MockExtensionProvider* provider =
@@ -5661,8 +5662,8 @@ TEST_F(ExtensionServiceTest, DISABLED_ExternalInstallGlobalError) {
 // Test that external extensions are initially disabled, and that enabling
 // them clears the prompt.
 TEST_F(ExtensionServiceTest, DISABLED_ExternalInstallInitiallyDisabled) {
-  extensions::FeatureSwitch::ScopedOverride prompt(
-      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
   MockExtensionProvider* provider =
@@ -5689,8 +5690,8 @@ TEST_F(ExtensionServiceTest, DISABLED_ExternalInstallInitiallyDisabled) {
 
 // Test that installing multiple external extensions works.
 TEST_F(ExtensionServiceTest, DISABLED_ExternalInstallMultiple) {
-  extensions::FeatureSwitch::ScopedOverride prompt(
-      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
   MockExtensionProvider* provider =
@@ -5717,4 +5718,35 @@ TEST_F(ExtensionServiceTest, DISABLED_ExternalInstallMultiple) {
   EXPECT_TRUE(extensions::HasExternalInstallError(service_));
   service_->EnableExtension(good_crx);
   EXPECT_FALSE(extensions::HasExternalInstallError(service_));
+}
+
+// Test that a sideloaded extension gets wiped out.
+TEST_F(ExtensionServiceTest, WipeOutExtension) {
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::sideload_wipeout(), true);
+
+  InitializeEmptyExtensionService();
+  MockExtensionProvider* provider_registry =
+      new MockExtensionProvider(service_, Extension::EXTERNAL_REGISTRY);
+  AddMockExternalProvider(provider_registry);
+  MockExtensionProvider* provider_pref =
+      new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
+  AddMockExternalProvider(provider_pref);
+
+  provider_registry->UpdateOrAddExtension(good_crx, "1.0.0.0",
+      data_dir_.AppendASCII("good.crx"));
+  provider_pref->UpdateOrAddExtension(good_crx, "1.0.0.0",
+      data_dir_.AppendASCII("good.crx"));
+
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
+  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_TRUE(service_->IsExtensionEnabled(page_action));
+
+  ExtensionPrefs* prefs = service_->extension_prefs();
+  EXPECT_NE(0, prefs->GetDisableReasons(good_crx) &
+      Extension::DISABLE_SIDELOAD_WIPEOUT);
+  EXPECT_EQ(0, prefs->GetDisableReasons(page_action) &
+      Extension::DISABLE_SIDELOAD_WIPEOUT);
 }

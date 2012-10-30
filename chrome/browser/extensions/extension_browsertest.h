@@ -256,6 +256,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // Disable external install UI.
   extensions::FeatureSwitch::ScopedOverride
       override_prompt_for_external_extensions_;
+
+  // Disable the sideload wipeout UI.
+  extensions::FeatureSwitch::ScopedOverride
+      override_sideload_wipeout_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSERTEST_H_
