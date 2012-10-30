@@ -182,6 +182,7 @@ extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
+extern const char kEnableWebView[];
 extern const char kEventPageIdleTime[];
 extern const char kEventPageUnloadingTime[];
 extern const char kExplicitlyAllowedPorts[];

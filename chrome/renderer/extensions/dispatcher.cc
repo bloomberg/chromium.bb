@@ -803,6 +803,9 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("platformApp");
 
   if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
+      (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebView) ||
+      (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserPluginForAllViewTypes))) &&
       extension->HasAPIPermission(APIPermission::kWebView)) {
     module_system->Require("webview");
   }

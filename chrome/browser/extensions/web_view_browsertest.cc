@@ -5,6 +5,7 @@
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -17,6 +18,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    // Enable <webview> for running test.
+    command_line->AppendSwitch(switches::kEnableWebView);
 #if !defined(OS_MACOSX)
     CHECK(test_launcher_utils::OverrideGLImplementation(
           command_line, gfx::kGLImplementationOSMesaName)) <<
