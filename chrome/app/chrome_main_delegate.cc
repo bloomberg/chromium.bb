@@ -559,9 +559,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
         chrome::ProcessNeedsProfileDir(process_type)));
   }
 
-  base::StatsCounterTimer stats_counter_timer("Chrome.Init");
+  stats_counter_timer_.reset(new base::StatsCounterTimer("Chrome.Init"));
   startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>
-                       (stats_counter_timer));
+                       (*stats_counter_timer_));
 
   // Enable the heap profiler as early as possible!
   EnableHeapProfiler(command_line);

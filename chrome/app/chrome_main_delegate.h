@@ -48,6 +48,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 
   chrome::ChromeContentClient chrome_content_client_;
   scoped_ptr<base::StatsScope<base::StatsCounterTimer> > startup_timer_;
+  scoped_ptr<base::StatsCounterTimer> stats_counter_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegate);
 };
