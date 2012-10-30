@@ -137,6 +137,7 @@ IGNORED_FILENAMES = (
 )
 
 # File paths starting with one of these will be ignored as well.
+# Please consider fixing your file permissions, rather than adding to this list.
 IGNORED_PATHS = (
   # TODO(maruel): Detect ELF files.
   'chrome/test/data/extensions/uitest/plugins',
