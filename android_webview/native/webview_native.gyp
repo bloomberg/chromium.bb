@@ -24,8 +24,6 @@
         'android_protocol_handler.h',
         'android_stream_reader_url_request_job.cc',
         'android_stream_reader_url_request_job.h',
-        'android_web_view_util.cc',
-        'android_web_view_util.h',
         'android_webview_jni_registrar.cc',
         'android_webview_jni_registrar.h',
         'aw_browser_dependency_factory.cc',
@@ -65,7 +63,6 @@
       'type': 'none',
       'sources': [
           '../java/src/org/chromium/android_webview/AndroidProtocolHandler.java',
-          '../java/src/org/chromium/android_webview/AndroidWebViewUtil.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
           '../java/src/org/chromium/android_webview/AwContentsIoThreadClient.java',
           '../java/src/org/chromium/android_webview/AwHttpAuthHandler.java',
