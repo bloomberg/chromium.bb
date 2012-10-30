@@ -1,12 +1,12 @@
 // Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CCThreadTask_h
 #define CCThreadTask_h
 
 #include "cc/thread.h"
 #include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
 
 namespace cc {
 
@@ -300,6 +300,6 @@ PassOwnPtr<Thread::Task> createThreadTask(
 
 }
 
-} // namespace cc
+}  // namespace cc
 
 #endif // CCThreadTask_h

@@ -6,11 +6,11 @@
 #define CCScopedThreadProxy_h
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
 #include "cc/thread_task.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/ThreadSafeRefCounted.h>
 
 namespace cc {
 
@@ -24,21 +24,20 @@ namespace cc {
 // Implementation note: Unlike ScopedRunnableMethodFactory in Chromium, pending tasks are not cancelled by actually
 // destroying the proxy. Instead each pending task holds a reference to the proxy to avoid maintaining an explicit
 // list of outstanding tasks.
-class ScopedThreadProxy : public ThreadSafeRefCounted<ScopedThreadProxy> {
+class ScopedThreadProxy : public base::RefCountedThreadSafe<ScopedThreadProxy> {
 public:
-    static PassRefPtr<ScopedThreadProxy> create(Thread* targetThread)
+    static scoped_refptr<ScopedThreadProxy> create(Thread* targetThread)
     {
         DCHECK(base::PlatformThread::CurrentId() == targetThread->threadID());
-        return adoptRef(new ScopedThreadProxy(targetThread));
+        return make_scoped_refptr(new ScopedThreadProxy(targetThread));
     }
 
-    ~ScopedThreadProxy();
 
     // Can be called from any thread. Posts a task to the target thread that runs unless
     // shutdown() is called before it runs.
     void postTask(PassOwnPtr<Thread::Task> task)
     {
-        ref();
+        AddRef();
         m_targetThread->postTask(createThreadTask(this, &ScopedThreadProxy::runTaskIfNotShutdown, task));
     }
 
@@ -50,6 +49,9 @@ public:
     }
 
 private:
+    friend class base::RefCountedThreadSafe<ScopedThreadProxy>;
+    ~ScopedThreadProxy();
+
     explicit ScopedThreadProxy(Thread* targetThread);
 
     void runTaskIfNotShutdown(PassOwnPtr<Thread::Task> popTask)
@@ -58,18 +60,18 @@ private:
         // If our shutdown flag is set, it's possible that m_targetThread has already been destroyed so don't
         // touch it.
         if (m_shutdown) {
-            deref();
+            Release();
             return;
         }
         DCHECK(base::PlatformThread::CurrentId() == m_targetThread->threadID());
         task->performTask();
-        deref();
+        Release();
     }
 
     Thread* m_targetThread;
     bool m_shutdown; // Only accessed on the target thread
 };
 
-}
+}  // namespace cc
 
 #endif

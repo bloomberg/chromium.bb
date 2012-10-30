@@ -5,8 +5,9 @@
 #ifndef CC_TEST_LAYER_TREE_TEST_COMMON_H_
 #define CC_TEST_LAYER_TREE_TEST_COMMON_H_
 
-#include "cc/layer_tree_host.h"
 #include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
+#include "cc/layer_tree_host.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/scoped_thread_proxy.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
@@ -120,7 +121,7 @@ protected:
     scoped_ptr<cc::LayerTreeHost> m_layerTreeHost;
 
 protected:
-    RefPtr<cc::ScopedThreadProxy> m_mainThreadProxy;
+    scoped_refptr<cc::ScopedThreadProxy> m_mainThreadProxy;
 
 private:
     bool m_beginning;

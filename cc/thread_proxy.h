@@ -148,7 +148,7 @@ private:
 
     scoped_ptr<Scheduler> m_schedulerOnImplThread;
 
-    RefPtr<ScopedThreadProxy> m_mainThreadProxy;
+    scoped_refptr<ScopedThreadProxy> m_mainThreadProxy;
 
     // Holds on to the context we might use for compositing in between initializeContext()
     // and initializeRenderer() calls.
@@ -180,6 +180,6 @@ private:
     bool m_deferredCommitPending;
 };
 
-}
+}  // namespace cc
 
 #endif
