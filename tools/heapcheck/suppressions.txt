@@ -218,34 +218,27 @@
    bug_148477_b
    Heapcheck:Leak
    ...
+   fun:gfx::RealGLApi::glCompileShaderFn
    fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
-   fun:WebCore::ProgramBindingBase::loadShader
-   fun:WebCore::ProgramBindingBase::init
-   fun:WebCore::ProgramBinding::ProgramBinding
+   fun:cc::ProgramBindingBase::loadShader
+   fun:cc::ProgramBindingBase::init
+   fun:ProgramBinding
    ...
-   fun:WebCore::CCSingleThreadProxy::commitAndComposite
-   fun:WebCore::CCSingleThreadProxy::compositeImmediately
-   fun:WebCore::CCLayerTreeHost::composite
-   fun:WebKit::WebLayerTreeViewImpl::composite
+   fun:cc::SingleThreadProxy::commitAndComposite
+   fun:cc::SingleThreadProxy::compositeImmediately
 }
 {
    bug_148477_c
    Heapcheck:Leak
    ...
+   fun:gfx::RealGLApi::glLinkProgramFn
    fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::linkProgram
-   fun:WebCore::ProgramBindingBase::link
-   fun:WebCore::ProgramBinding::initialize
+   fun:cc::ProgramBindingBase::link
+   fun:cc::ProgramBinding::initialize
    ...
-   fun:WebCore::CCRendererGL::drawQuad
-   fun:WebCore::CCDirectRenderer::drawRenderPass
-   fun:WebCore::CCDirectRenderer::drawFrame
-   fun:WebCore::CCLayerTreeHostImpl::drawLayers
-   fun:WebCore::CCSingleThreadProxy::doComposite
-   fun:WebCore::CCSingleThreadProxy::commitAndComposite
-   fun:WebCore::CCSingleThreadProxy::compositeImmediately
-   fun:WebCore::CCLayerTreeHost::composite
-   fun:WebKit::WebLayerTreeViewImpl::composite
-   fun:ui::Compositor::Draw
+   fun:cc::GLRenderer::drawQuad
+   fun:cc::DirectRenderer::drawRenderPass
+   fun:cc::DirectRenderer::drawFrame
 }
 # There is not CloseTestNSSDB due to NSS bug 588269.
 # When NSS 3.14 is the minimum version required, this should be removed.
