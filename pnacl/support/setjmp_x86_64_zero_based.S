@@ -4,12 +4,14 @@
  * found in the LICENSE file.
  */
 
+#include "nacl_x86_defs.h"
+
 /*
  * jump_buf is organized as follows
  * rbx, rbp, rsp, r12, r13, r14, r15, pc
  */
     .text
-    .p2align NACLENTRYALIGN
+    .p2align NACL_BLOCK_SHIFT
     .globl   setjmp
     .type    setjmp, @function
 
@@ -32,7 +34,7 @@ setjmp:
 
 
     .text
-    .p2align NACLENTRYALIGN
+    .p2align NACL_BLOCK_SHIFT
     .globl   longjmp
     .type    longjmp, @function
 
@@ -57,5 +59,5 @@ longjmp:
     movq    %nacl:48(%rdi), %r15    /* restore r15 */
     movq    %nacl:56(%rdi), %rcx
     nacljmp    %ecx
-    .p2align NACLENTRYALIGN
+    .p2align NACL_BLOCK_SHIFT
 

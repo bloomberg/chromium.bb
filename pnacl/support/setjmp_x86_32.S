@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "nacl_x86_defs.h"
 
 /*
  * jump_buf is organized as follows
@@ -11,7 +12,7 @@
  * NOTE: eax, ecx, edx are NOT preserved
  */
     .text
-    .p2align NACLENTRYALIGN
+    .p2align NACL_BLOCK_SHIFT
     .globl   setjmp
     .type    setjmp, @function
 
@@ -33,7 +34,7 @@ setjmp:
 
 
     .text
-    .p2align NACLENTRYALIGN
+    .p2align NACL_BLOCK_SHIFT
     .globl   longjmp
     .type    longjmp, @function
 
@@ -53,5 +54,5 @@ longjmp:
     movl    16(%ecx), %edi    /* restore edi */
     movl    20(%ecx), %ecx
     nacljmp %ecx
-    .p2align NACLENTRYALIGN
+    .p2align NACL_BLOCK_SHIFT
 
