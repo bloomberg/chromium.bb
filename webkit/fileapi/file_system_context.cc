@@ -206,7 +206,6 @@ void FileSystemContext::OpenSyncableFileSystem(
   DCHECK(!callback.is_null());
 
   DCHECK(type == kFileSystemTypeSyncable);
-  RegisterSyncableFileSystem(mount_name);
 
   GURL root_url = GetSyncableFileSystemRootURI(origin_url, mount_name);
   std::string name = GetFileSystemName(origin_url, kFileSystemTypeSyncable);

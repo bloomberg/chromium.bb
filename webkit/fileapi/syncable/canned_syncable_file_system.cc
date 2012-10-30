@@ -209,6 +209,7 @@ SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
   VerifySameTaskRunner(io_task_runner_, sync_context->io_task_runner_);
   sync_context->MaybeInitializeFileSystemContext(
       test_helper_.origin(),
+      service_name_,
       file_system_context_,
       base::Bind(&CannedSyncableFileSystem::DidInitializeFileSystemContext,
                  base::Unretained(this)));

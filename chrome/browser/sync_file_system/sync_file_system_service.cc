@@ -47,7 +47,7 @@ void SyncFileSystemService::InitializeForApp(
   // |service_name| if it hasn't been initialized.
 
   local_file_service_->MaybeInitializeFileSystemContext(
-      app_url.GetOrigin(), file_system_context, callback);
+      app_url.GetOrigin(), service_name, file_system_context, callback);
 
   // TODO(tzik): Uncomment this line after its implementation lands.
   // remote_file_service_->RegisterOriginForTrackingChanges(

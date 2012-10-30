@@ -35,10 +35,11 @@ void LocalFileSyncService::Shutdown() {
 
 void LocalFileSyncService::MaybeInitializeFileSystemContext(
     const GURL& app_origin,
+    const std::string& service_name,
     fileapi::FileSystemContext* file_system_context,
     const StatusCallback& callback) {
   sync_context_->MaybeInitializeFileSystemContext(
-      app_origin, file_system_context,
+      app_origin, service_name, file_system_context,
       base::Bind(&LocalFileSyncService::DidInitializeFileSystemContext,
                  AsWeakPtr(), app_origin, file_system_context, callback));
 }

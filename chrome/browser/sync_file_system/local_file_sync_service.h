@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_FILE_SYNC_SERVICE_H_
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -39,6 +40,7 @@ class LocalFileSyncService
 
   void MaybeInitializeFileSystemContext(
       const GURL& app_origin,
+      const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
       const fileapi::StatusCallback& callback);
 

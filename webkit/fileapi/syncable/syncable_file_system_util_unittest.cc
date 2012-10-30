@@ -5,8 +5,12 @@
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/syncable/canned_syncable_file_system.h"
+#include "webkit/fileapi/syncable/local_file_sync_context.h"
 
 namespace fileapi {
 
@@ -33,15 +37,13 @@ FilePath CreateNormalizedFilePath(const FilePath::CharType* path) {
 
 }  // namespace
 
-class SyncableFileSystemUtilTest : public testing::Test {};
-
-TEST_F(SyncableFileSystemUtilTest, GetSyncableFileSystemRootURI) {
+TEST(SyncableFileSystemUtilTest, GetSyncableFileSystemRootURI) {
   const GURL root = GetSyncableFileSystemRootURI(GURL(kOrigin), kServiceName);
   EXPECT_TRUE(root.is_valid());
   EXPECT_EQ(GURL(kSyncableFileSystemRootURI), root);
 }
 
-TEST_F(SyncableFileSystemUtilTest, CreateSyncableFileSystemURL) {
+TEST(SyncableFileSystemUtilTest, CreateSyncableFileSystemURL) {
   ScopedExternalFileSystem scoped_fs(
       kServiceName, kFileSystemTypeSyncable, FilePath());
 
@@ -55,7 +57,7 @@ TEST_F(SyncableFileSystemUtilTest, CreateSyncableFileSystemURL) {
   EXPECT_EQ(expected_url, url);
 }
 
-TEST_F(SyncableFileSystemUtilTest,
+TEST(SyncableFileSystemUtilTest,
        SerializeAndDesirializeSyncableFileSystemURL) {
   ScopedExternalFileSystem scoped_fs(
       kServiceName, kFileSystemTypeSyncable, FilePath());
@@ -76,8 +78,8 @@ TEST_F(SyncableFileSystemUtilTest,
   EXPECT_EQ(expected_url, deserialized);
 }
 
-TEST_F(SyncableFileSystemUtilTest,
-       FailInSerializingAndDeserializingSyncableFileSystemURL) {
+TEST(SyncableFileSystemUtilTest,
+     FailInSerializingAndDeserializingSyncableFileSystemURL) {
   ScopedExternalFileSystem scoped_fs(
       kServiceName, kFileSystemTypeSyncable, FilePath());
 
@@ -102,6 +104,42 @@ TEST_F(SyncableFileSystemUtilTest,
       non_registered_url, &deserialized));
   EXPECT_FALSE(DeserializeSyncableFileSystemURL(
       non_syncable_url, &deserialized));
+}
+
+TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
+  const std::string serialized = kSyncableFileSystemRootURI +
+      CreateNormalizedFilePath(kPath).AsUTF8Unsafe();
+  FileSystemURL deserialized;
+  MessageLoop message_loop;
+
+  // Setting up a full syncable filesystem environment.
+  CannedSyncableFileSystem file_system(GURL(kOrigin), kServiceName,
+                                       base::MessageLoopProxy::current(),
+                                       base::MessageLoopProxy::current());
+  file_system.SetUp();
+  scoped_refptr<LocalFileSyncContext> sync_context =
+      new LocalFileSyncContext(base::MessageLoopProxy::current(),
+                               base::MessageLoopProxy::current());
+
+  // Before calling initialization we would not be able to get a valid
+  // deserialized URL.
+  EXPECT_FALSE(DeserializeSyncableFileSystemURL(serialized, &deserialized));
+  EXPECT_FALSE(deserialized.is_valid());
+
+  ASSERT_EQ(SYNC_STATUS_OK,
+            file_system.MaybeInitializeFileSystemContext(sync_context));
+
+  // After initialization this should be ok (even before opening the file
+  // system).
+  EXPECT_TRUE(DeserializeSyncableFileSystemURL(serialized, &deserialized));
+  EXPECT_TRUE(deserialized.is_valid());
+
+  // Shutting down.
+  file_system.TearDown();
+  RevokeSyncableFileSystem(kServiceName);
+  sync_context->ShutdownOnUIThread();
+  sync_context = NULL;
+  MessageLoop::current()->RunAllPending();
 }
 
 }  // namespace fileapi
