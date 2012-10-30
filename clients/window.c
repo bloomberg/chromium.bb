@@ -304,6 +304,7 @@ struct menu {
 	uint32_t time;
 	int current;
 	int count;
+	int release_count;
 	menu_func_t func;
 };
 
@@ -3350,8 +3351,8 @@ menu_button_handler(struct widget *widget,
 {
 	struct menu *menu = data;
 
-	if (state == WL_POINTER_BUTTON_STATE_PRESSED &&
-	    time - menu->time > 500) {
+	if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
+	    (menu->release_count > 0 || time - menu->time > 500)) {
 		/* Either relase after press-drag-release or
 		 * click-motion-click. */
 		menu->func(menu->window->parent, 
@@ -3359,6 +3360,9 @@ menu_button_handler(struct widget *widget,
 		input_ungrab(input);
 		menu_destroy(menu);
 	}
+
+	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
+		menu->release_count++;
 }
 
 static void
@@ -3426,6 +3430,7 @@ window_show_menu(struct display *display,
 	menu->widget = window_add_widget(menu->window, menu);
 	menu->entries = entries;
 	menu->count = count;
+	menu->release_count = 0;
 	menu->current = -1;
 	menu->time = time;
 	menu->func = func;
