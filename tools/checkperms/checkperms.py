@@ -44,7 +44,6 @@ EXECUTABLE_EXTENSIONS = (
 # These files must have executable bit set.
 EXECUTABLE_PATHS = (
   # TODO(maruel): Detect ELF files.
-  'chrome/test/data/webrtc/linux/peerconnection_server',
   'chrome/installer/mac/sign_app.sh.in',
   'chrome/installer/mac/sign_versioned_dir.sh.in',
 )
@@ -140,9 +139,10 @@ IGNORED_FILENAMES = (
 # Please consider fixing your file permissions, rather than adding to this list.
 IGNORED_PATHS = (
   # TODO(maruel): Detect ELF files.
-  'chrome/test/data/extensions/uitest/plugins',
-  'chrome/test/data/extensions/uitest/plugins_private',
-  'chrome/test/data/webrtc/linux/peerconnection_server',
+  'chrome/test/data/extensions/uitest/plugins/plugin.plugin/contents/'
+      'macos/testnetscapeplugin',
+  'chrome/test/data/extensions/uitest/plugins_private/plugin.plugin/contents/'
+      'macos/testnetscapeplugin',
   'chrome/installer/mac/sign_app.sh.in',
   'chrome/installer/mac/sign_versioned_dir.sh.in',
   'native_client_sdk/src/build_tools/sdk_tools/third_party/',
