@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/logging.h"
 #include "base/platform_file.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
@@ -53,6 +55,21 @@ void PostBlockingPoolSequencedTaskAndReply(
     base::SequencedTaskRunner* blocking_task_runner,
     const base::Closure& request_task,
     const base::Closure& reply_task);
+
+// Similar to PostBlockingPoolSequencedTaskAndReply() but this one runs the
+// reply callback with the return value of the request task.
+template <typename ReturnType>
+void PostBlockingPoolSequencedTaskAndReplyWithResult(
+    const tracked_objects::Location& from_here,
+    base::SequencedTaskRunner* blocking_task_runner,
+    const base::Callback<ReturnType(void)>& request_task,
+    const base::Callback<void(ReturnType)>& reply_task) {
+  const bool posted = base::PostTaskAndReplyWithResult(blocking_task_runner,
+                                                       from_here,
+                                                       request_task,
+                                                       reply_task);
+  DCHECK(posted);
+}
 
 }  // namespace util
 }  // namespace google_apis

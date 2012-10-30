@@ -174,16 +174,16 @@ class CopyOperation {
 
   // Kicks off file upload once it receives |file_size| and |content_type|.
   void StartFileUpload(const StartFileUploadParams& params,
-                       DriveFileError* error,
                        int64* file_size,
-                       std::string* content_type);
+                       std::string* content_type,
+                       DriveFileError error);
 
   // Part of StartFileUpload(). Called after GetEntryInfoByPath()
   // is complete.
   void StartFileUploadAfterGetEntryInfo(
       const StartFileUploadParams& params,
       int64 file_size,
-      std::string content_type,
+      const std::string& content_type,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 

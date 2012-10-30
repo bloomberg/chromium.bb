@@ -399,7 +399,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                        google_apis::GDataErrorCode status,
                                        const GURL& content_url,
                                        const FilePath& downloaded_file_path,
-                                       bool* has_enough_space);
+                                       bool has_enough_space);
 
   // Callback for handling internal StoreToCache() calls after downloading
   // file content.
@@ -491,7 +491,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void StartDownloadFileIfEnoughSpace(const GetFileFromCacheParams& params,
                                       const GURL& content_url,
                                       const FilePath& cache_file_path,
-                                      bool* has_enough_space);
+                                      bool has_enough_space);
 
   // Changes state of hosted documents visibility, triggers directory refresh.
   void SetHideHostedDocuments(bool hide);
@@ -568,8 +568,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto,
       const FilePath& cache_file_path,
-      DriveFileError* error,
-      int64* file_size);
+      int64* file_size,
+      bool get_file_size_result);
 
   // Part of UpdateFileByResourceId().
   // Called when DriveUploader::UploadUpdatedFile() is completed for
@@ -704,7 +704,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
       base::PlatformFileInfo* file_info,
-      bool* get_file_info_result);
+      bool get_file_info_result);
 
   // All members should be accessed only on UI thread. Do not post tasks to
   // other threads with base::Unretained(this).

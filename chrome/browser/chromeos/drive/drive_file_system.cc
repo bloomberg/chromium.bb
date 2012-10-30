@@ -58,17 +58,13 @@ const int kSlowPollingIntervalInSec = 300;
 // Runs GetFileCallback with pointers dereferenced.
 // Used for PostTaskAndReply().
 void RunGetFileCallbackHelper(const GetFileCallback& callback,
-                              DriveFileError* error,
                               FilePath* file_path,
-                              std::string* mime_type,
-                              DriveFileType* file_type) {
-  DCHECK(error);
+                              const std::string& mime_type,
+                              DriveFileType file_type,
+                              DriveFileError error) {
+  DCHECK(!callback.is_null());
   DCHECK(file_path);
-  DCHECK(mime_type);
-  DCHECK(file_type);
-
-  if (!callback.is_null())
-    callback.Run(*error, *file_path, *mime_type, *file_type);
+  callback.Run(error, *file_path, mime_type, file_type);
 }
 
 // Callback for cache file operations invoked by AddUploadedFileOnUIThread.
@@ -145,35 +141,16 @@ void OnStartInitialFeedFetchFinished(DriveFileError error) {
   DVLOG(1) << "Loading from StartInitialFeedFetch() finished";
 }
 
-// Gets the file size of |local_file|.
-void GetLocalFileSizeOnBlockingPool(const FilePath& local_file,
-                                    DriveFileError* error,
-                                    int64* file_size) {
-  DCHECK(error);
-  DCHECK(file_size);
-
-  *file_size = 0;
-  *error = file_util::GetFileSize(local_file, file_size) ?
-      DRIVE_FILE_OK :
-      DRIVE_FILE_ERROR_NOT_FOUND;
-}
-
 // Creates a temporary JSON file representing a document with |edit_url|
 // and |resource_id| under |document_dir| on blocking pool.
-void CreateDocumentJsonFileOnBlockingPool(
+DriveFileError CreateDocumentJsonFileOnBlockingPool(
     const FilePath& document_dir,
     const GURL& edit_url,
     const std::string& resource_id,
-    DriveFileError* error,
-    FilePath* temp_file_path,
-    std::string* mime_type,
-    DriveFileType* file_type) {
-  DCHECK(error);
+    FilePath* temp_file_path) {
   DCHECK(temp_file_path);
-  DCHECK(mime_type);
-  DCHECK(file_type);
 
-  *error = DRIVE_FILE_ERROR_FAILED;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
 
   if (file_util::CreateTemporaryFileInDir(document_dir, temp_file_path)) {
     std::string document_content = base::StringPrintf(
@@ -182,22 +159,13 @@ void CreateDocumentJsonFileOnBlockingPool(
     int document_size = static_cast<int>(document_content.size());
     if (file_util::WriteFile(*temp_file_path, document_content.data(),
                              document_size) == document_size) {
-      *error = DRIVE_FILE_OK;
+      error = DRIVE_FILE_OK;
     }
   }
 
-  *mime_type = kMimeTypeJson;
-  *file_type = HOSTED_DOCUMENT;
-  if (*error != DRIVE_FILE_OK)
-      temp_file_path->clear();
-}
-
-// Gets the information of the file at local path |path|. The information is
-// filled in |file_info|, and if it fails |result| will be assigned false.
-void GetFileInfoOnBlockingPool(const FilePath& path,
-                               base::PlatformFileInfo* file_info,
-                               bool* result) {
-  *result = file_util::GetFileInfo(path, file_info);
+  if (error != DRIVE_FILE_OK)
+    temp_file_path->clear();
+  return error;
 }
 
 // Helper function for binding |path| to GetEntryInfoWithFilePathCallback and
@@ -906,12 +874,10 @@ void DriveFileSystem::GetResolvedFileByPath(
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
   if (entry_proto->file_specific_info().is_hosted_document()) {
-    DriveFileError* error =
-        new DriveFileError(DRIVE_FILE_OK);
     FilePath* temp_file_path = new FilePath;
-    std::string* mime_type = new std::string;
-    DriveFileType* file_type = new DriveFileType(REGULAR_FILE);
-    google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+    const std::string mime_type = kMimeTypeJson;
+    const DriveFileType file_type = HOSTED_DOCUMENT;
+    google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
         FROM_HERE,
         blocking_task_runner_,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
@@ -919,16 +885,12 @@ void DriveFileSystem::GetResolvedFileByPath(
                        DriveCache::CACHE_TYPE_TMP_DOCUMENTS),
                    GURL(entry_proto->file_specific_info().alternate_url()),
                    entry_proto->resource_id(),
-                   error,
-                   temp_file_path,
-                   mime_type,
-                   file_type),
+                   temp_file_path),
         base::Bind(&RunGetFileCallbackHelper,
                    get_file_callback,
-                   base::Owned(error),
                    base::Owned(temp_file_path),
-                   base::Owned(mime_type),
-                   base::Owned(file_type)));
+                   mime_type,
+                   file_type));
     return;
   }
 
@@ -1101,31 +1063,28 @@ void DriveFileSystem::CheckForSpaceBeforeDownload(
     return;
   }
 
-  bool* has_enough_space = new bool(false);
-  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(cache_),
-                 file_size,
-                 has_enough_space),
+                 file_size),
       base::Bind(&DriveFileSystem::StartDownloadFileIfEnoughSpace,
                  ui_weak_ptr_,
                  params,
                  content_url,
-                 params.cache_file_path,
-                 base::Owned(has_enough_space)));
+                 params.cache_file_path));
 }
 
 void DriveFileSystem::StartDownloadFileIfEnoughSpace(
     const GetFileFromCacheParams& params,
     const GURL& content_url,
     const FilePath& cache_file_path,
-    bool* has_enough_space) {
+    bool has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.get_file_callback.is_null());
 
-  if (!*has_enough_space) {
+  if (!has_enough_space) {
     // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
     params.get_file_callback.Run(DRIVE_FILE_ERROR_NO_SPACE,
                                  cache_file_path,
@@ -1418,14 +1377,12 @@ void DriveFileSystem::OnGetFileCompleteForUpdateFile(
 
   // Gets the size of the cache file. Since the file is locally modified, the
   // file size information stored in DriveEntry is not correct.
-  DriveFileError* get_size_error = new DriveFileError(DRIVE_FILE_ERROR_FAILED);
-  int64* file_size = new int64(-1);
-  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+  int64* file_size = new int64(0);
+  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
       FROM_HERE,
       blocking_task_runner_,
-      base::Bind(&GetLocalFileSizeOnBlockingPool,
+      base::Bind(&file_util::GetFileSize,
                  cache_file_path,
-                 get_size_error,
                  file_size),
       base::Bind(&DriveFileSystem::OnGetFileSizeCompleteForUpdateFile,
                  ui_weak_ptr_,
@@ -1433,7 +1390,6 @@ void DriveFileSystem::OnGetFileCompleteForUpdateFile(
                  drive_file_path,
                  base::Passed(&entry_proto),
                  cache_file_path,
-                 base::Owned(get_size_error),
                  base::Owned(file_size)));
 }
 
@@ -1442,16 +1398,16 @@ void DriveFileSystem::OnGetFileSizeCompleteForUpdateFile(
     const FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto,
     const FilePath& cache_file_path,
-    DriveFileError* error,
-    int64* file_size) {
+    int64* file_size,
+    bool get_file_size_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   // |entry_proto| has been checked in UpdateFileByEntryInfo().
   DCHECK(entry_proto.get());
   DCHECK(!entry_proto->file_info().is_directory());
 
-  if (*error != DRIVE_FILE_OK) {
-    callback.Run(*error);
+  if (!get_file_size_result) {
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -1785,21 +1741,18 @@ void DriveFileSystem::OnFileDownloaded(
   //
   // If we don't have enough space, we return PLATFORM_FILE_ERROR_NO_SPACE,
   // and try to free up space, even if the file was downloaded successfully.
-  bool* has_enough_space = new bool(false);
-  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(cache_),
-                 0,
-                 has_enough_space),
+                 0),
       base::Bind(&DriveFileSystem::OnFileDownloadedAndSpaceChecked,
                  ui_weak_ptr_,
                  params,
                  status,
                  content_url,
-                 downloaded_file_path,
-                 base::Owned(has_enough_space)));
+                 downloaded_file_path));
 }
 
 void DriveFileSystem::UnpinIfPinned(
@@ -1819,7 +1772,7 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
     google_apis::GDataErrorCode status,
     const GURL& content_url,
     const FilePath& downloaded_file_path,
-    bool* has_enough_space) {
+    bool has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.get_file_callback.is_null());
 
@@ -1829,7 +1782,7 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
   // to wait for this operation to finish since the user can already use the
   // downloaded file.
   if (error == DRIVE_FILE_OK) {
-    if (*has_enough_space) {
+    if (has_enough_space) {
       cache_->StoreOnUIThread(
           params.resource_id,
           params.md5,
@@ -2516,31 +2469,28 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
 
   // If the cache is dirty, obtain the file info from the cache file itself.
   base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
-  bool* get_file_info_result = new bool(false);
-  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
       FROM_HERE,
       blocking_task_runner_,
-      base::Bind(&GetFileInfoOnBlockingPool,
+      base::Bind(&file_util::GetFileInfo,
                  local_cache_path,
-                 base::Unretained(file_info),
-                 base::Unretained(get_file_info_result)),
+                 base::Unretained(file_info)),
       base::Bind(&DriveFileSystem::CheckLocalModificationAndRunAfterGetFileInfo,
                  ui_weak_ptr_,
                  base::Passed(&entry_proto),
                  callback,
-                 base::Owned(file_info),
-                 base::Owned(get_file_info_result)));
+                 base::Owned(file_info)));
 }
 
 void DriveFileSystem::CheckLocalModificationAndRunAfterGetFileInfo(
     scoped_ptr<DriveEntryProto> entry_proto,
     const GetEntryInfoCallback& callback,
     base::PlatformFileInfo* file_info,
-    bool* get_file_info_result) {
+    bool get_file_info_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (!*get_file_info_result) {
+  if (!get_file_info_result) {
     callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, scoped_ptr<DriveEntryProto>());
     return;
   }

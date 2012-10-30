@@ -27,33 +27,18 @@ namespace {
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 // Copies a file from |src_file_path| to |dest_file_path| on the local
-// file system using file_util::CopyFile. |error| is set to
-// DRIVE_FILE_OK on success or DRIVE_FILE_ERROR_FAILED
-// otherwise.
-void CopyLocalFileOnBlockingPool(const FilePath& src_file_path,
-                                 const FilePath& dest_file_path,
-                                 DriveFileError* error) {
-  DCHECK(error);
-
-  *error = file_util::CopyFile(src_file_path, dest_file_path) ?
+// file system using file_util::CopyFile.
+// Returns DRIVE_FILE_OK on success or DRIVE_FILE_ERROR_FAILED otherwise.
+DriveFileError CopyLocalFileOnBlockingPool(const FilePath& src_file_path,
+                                           const FilePath& dest_file_path) {
+  return file_util::CopyFile(src_file_path, dest_file_path) ?
       DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
-void RunFileOperationCallbackHelper(
-    const FileOperationCallback& callback,
-    DriveFileError* error) {
-  DCHECK(error);
-
-  if (!callback.is_null())
-    callback.Run(*error);
-}
-
 // Gets the file size and the content type of |local_file|.
-void GetLocalFileInfoOnBlockingPool(const FilePath& local_file,
-                                    DriveFileError* error,
-                                    int64* file_size,
-                                    std::string* content_type) {
-  DCHECK(error);
+DriveFileError GetLocalFileInfoOnBlockingPool(const FilePath& local_file,
+                                              int64* file_size,
+                                              std::string* content_type) {
   DCHECK(file_size);
   DCHECK(content_type);
 
@@ -61,9 +46,8 @@ void GetLocalFileInfoOnBlockingPool(const FilePath& local_file,
     *content_type = kMimeTypeOctetStream;
 
   *file_size = 0;
-  *error = file_util::GetFileSize(local_file, file_size) ?
-      DRIVE_FILE_OK :
-      DRIVE_FILE_ERROR_NOT_FOUND;
+  return file_util::GetFileSize(local_file, file_size) ?
+      DRIVE_FILE_OK : DRIVE_FILE_ERROR_NOT_FOUND;
 }
 
 // Helper function called upon completion of AddUploadFile invoked by
@@ -79,9 +63,8 @@ void OnAddUploadFileCompleted(const FileOperationCallback& callback,
 // Checks if a local file at |local_file_path| is a JSON file referencing a
 // hosted document on blocking pool, and if so, gets the resource ID of the
 // document.
-void GetDocumentResourceIdOnBlockingPool(
-    const FilePath& local_file_path,
-    std::string* resource_id) {
+void GetDocumentResourceIdOnBlockingPool(const FilePath& local_file_path,
+                                         std::string* resource_id) {
   DCHECK(resource_id);
 
   if (DocumentEntry::HasHostedDocumentExtension(local_file_path)) {
@@ -178,20 +161,14 @@ void CopyOperation::OnGetFileCompleteForTransferFile(
   // GetFileByPath downloads the file from Drive to a local cache, which is then
   // copied to the actual destination path on the local file system using
   // CopyLocalFileOnBlockingPool.
-  DriveFileError* copy_file_error =
-      new DriveFileError(DRIVE_FILE_OK);
-  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&CopyLocalFileOnBlockingPool,
                  local_file_path,
-                 local_dest_file_path,
-                 copy_file_error),
-      base::Bind(&RunFileOperationCallbackHelper,
-                 callback,
-                 base::Owned(copy_file_error)));
+                 local_dest_file_path),
+      callback);
 }
-
 
 void CopyOperation::TransferFileFromLocalToRemote(
     const FilePath& local_src_file_path,
@@ -217,16 +194,13 @@ void CopyOperation::TransferRegularFile(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError* error =
-      new DriveFileError(DRIVE_FILE_OK);
   int64* file_size = new int64;
   std::string* content_type = new std::string;
-  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&GetLocalFileInfoOnBlockingPool,
                  local_file_path,
-                 error,
                  file_size,
                  content_type),
       base::Bind(&CopyOperation::StartFileUpload,
@@ -234,7 +208,6 @@ void CopyOperation::TransferRegularFile(
                  StartFileUploadParams(local_file_path,
                                        remote_dest_file_path,
                                        callback),
-                 base::Owned(error),
                  base::Owned(file_size),
                  base::Owned(content_type)));
 }
@@ -450,19 +423,18 @@ void CopyOperation::OnGetFileCompleteForCopy(
 
 void CopyOperation::StartFileUpload(
     const StartFileUploadParams& params,
-    DriveFileError* error,
     int64* file_size,
-    std::string* content_type) {
+    std::string* content_type,
+    DriveFileError error) {
   // This method needs to run on the UI thread as required by
   // DriveUploader::UploadNewFile().
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(error);
   DCHECK(file_size);
   DCHECK(content_type);
 
-  if (*error != DRIVE_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!params.callback.is_null())
-      params.callback.Run(*error);
+      params.callback.Run(error);
 
     return;
   }
@@ -481,7 +453,7 @@ void CopyOperation::StartFileUpload(
 void CopyOperation::StartFileUploadAfterGetEntryInfo(
     const StartFileUploadParams& params,
     int64 file_size,
-    std::string content_type,
+    const std::string& content_type,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

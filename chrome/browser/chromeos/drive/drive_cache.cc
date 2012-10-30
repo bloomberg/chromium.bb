@@ -454,14 +454,12 @@ void DriveCache::GetResourceIdsOfAllFilesOnUIThread(
                  base::Owned(resource_ids)));
 }
 
-void DriveCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
-                                          bool* has_enough_space) {
+bool DriveCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   AssertOnSequencedWorkerPool();
 
   // Do nothing and return if we have enough space.
-  *has_enough_space = HasEnoughSpaceFor(num_bytes);
-  if (*has_enough_space)
-    return;
+  if (HasEnoughSpaceFor(num_bytes))
+    return true;
 
   // Otherwise, try to free up the disk space.
   DVLOG(1) << "Freeing up disk space for " << num_bytes;
@@ -471,7 +469,7 @@ void DriveCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
   RemoveAllFiles(GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP));
 
   // Check the disk space again.
-  *has_enough_space = HasEnoughSpaceFor(num_bytes);
+  return HasEnoughSpaceFor(num_bytes);
 }
 
 void DriveCache::GetFileOnUIThread(const std::string& resource_id,
@@ -848,8 +846,7 @@ void DriveCache::Store(const std::string& resource_id,
       return;
     }
 
-    bool enough_space = false;
-    FreeDiskSpaceIfNeededFor(file_size, &enough_space);
+    const bool enough_space = FreeDiskSpaceIfNeededFor(file_size);
     if (!enough_space) {
       *error = DRIVE_FILE_ERROR_NO_SPACE;
       return;
@@ -1536,13 +1533,10 @@ void DriveCache::OnUnpinned(DriveFileError* error,
 
   // Now the file is moved from "persistent" to "tmp" directory.
   // It's a chance to free up space if needed.
-  bool* has_enough_space = new bool(false);
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
-                 base::Unretained(this),
-                 0,
-                 base::Owned(has_enough_space)));
+      base::Bind(base::IgnoreResult(&DriveCache::FreeDiskSpaceIfNeededFor),
+                 base::Unretained(this), 0));
 }
 
 void DriveCache::OnCommitDirty(DriveFileError* error,

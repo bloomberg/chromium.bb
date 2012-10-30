@@ -168,10 +168,9 @@ class DriveCache {
       const GetResourceIdsCallback& callback);
 
   // Frees up disk space to store the given number of bytes, while keeping
-  // kMinFreSpace bytes on the disk, if needed.  |has_enough_space| is
-  // updated to indicate if we have enough space.
-  void FreeDiskSpaceIfNeededFor(int64 num_bytes,
-                                bool* has_enough_space);
+  // kMinFreeSpace bytes on the disk, if needed.
+  // Returns true when we successfully manage to have enough space.
+  bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
 
   // Checks if file corresponding to |resource_id| and |md5| exists in cache.
   void GetFileOnUIThread(const std::string& resource_id,
