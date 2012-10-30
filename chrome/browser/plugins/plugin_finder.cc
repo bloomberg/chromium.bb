@@ -222,13 +222,14 @@ bool PluginFinder::FindPluginWithIdentifier(
     PluginInstaller** installer,
     scoped_ptr<PluginMetadata>* plugin_metadata) {
   base::AutoLock lock(mutex_);
-  std::map<std::string, PluginInstaller*>::const_iterator it =
-      installers_.find(identifier);
-  if (it != installers_.end()) {
-    if (installer)
-      *installer = it->second;
-    PluginMap::const_iterator metadata_it = identifier_plugin_.find(identifier);
-    DCHECK(metadata_it != identifier_plugin_.end());
+  PluginMap::const_iterator metadata_it = identifier_plugin_.find(identifier);
+  if (metadata_it != identifier_plugin_.end()) {
+    if (installer) {
+      std::map<std::string, PluginInstaller*>::const_iterator installer_it =
+          installers_.find(identifier);
+      if (installer_it != installers_.end())
+        *installer = installer_it->second;
+    }
     *plugin_metadata = metadata_it->second->Clone();
     return true;
   }
