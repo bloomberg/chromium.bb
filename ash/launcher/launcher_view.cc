@@ -399,7 +399,13 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   if (!available_size)
     return;
 
-  int x = primary_axis_coordinate(leading_inset(), 0);
+  // Initial x,y values account both leading_inset in primary
+  // coordinate and secondary coordinate based on the dynamic edge of the
+  // launcher (eg top edge on bottom-aligned launcher).
+  int x = alignment_based_value(leading_inset(),
+      width() - kLauncherPreferredSize,
+      std::max(width() - kLauncherPreferredSize,
+          ShelfLayoutManager::kAutoHideSize + 1));
   int y = primary_axis_coordinate(0, leading_inset());
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
@@ -410,8 +416,8 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     int w = primary_axis_coordinate(kLauncherPreferredSize, width());
     int h = primary_axis_coordinate(height(), kLauncherPreferredSize);
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    x = primary_axis_coordinate(x + w + kButtonSpacing, 0);
-    y = primary_axis_coordinate(0, y + h + kButtonSpacing);
+    x = primary_axis_coordinate(x + w + kButtonSpacing, x);
+    y = primary_axis_coordinate(y, y + h + kButtonSpacing);
   }
 
   int app_list_index = view_model_->view_size() - 1;
@@ -422,15 +428,6 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
           i >= first_visible_index_ && i <= last_visible_index_);
     }
     return;
-  }
-
-  if (view_model_->view_size() > 0) {
-    // Makes the first launcher button include the leading inset.
-    view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
-        primary_axis_coordinate(leading_inset() + kLauncherPreferredSize,
-                                width()),
-        primary_axis_coordinate(height(),
-                                leading_inset() + kLauncherPreferredSize))));
   }
 
   bounds->overflow_bounds.set_size(gfx::Size(
@@ -450,19 +447,24 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
     if (last_visible_index_ == -1) {
-      x = primary_axis_coordinate(leading_inset(), 0);
+      x = alignment_based_value(leading_inset(),
+              width() - kLauncherPreferredSize,
+              std::max(width() - kLauncherPreferredSize,
+                  ShelfLayoutManager::kAutoHideSize + 1));
       y = primary_axis_coordinate(0, leading_inset());
     } else {
       x = primary_axis_coordinate(
-          view_model_->ideal_bounds(last_visible_index_).right(), 0);
-      y = primary_axis_coordinate(0,
+          view_model_->ideal_bounds(last_visible_index_).right(),
+          view_model_->ideal_bounds(last_visible_index_).x());
+      y = primary_axis_coordinate(
+          view_model_->ideal_bounds(last_visible_index_).y(),
           view_model_->ideal_bounds(last_visible_index_).bottom());
     }
     gfx::Rect app_list_bounds = view_model_->ideal_bounds(app_list_index);
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(y);
-    x = primary_axis_coordinate(x + kLauncherPreferredSize + kButtonSpacing, 0);
-    y = primary_axis_coordinate(0, y + kLauncherPreferredSize + kButtonSpacing);
+    x = primary_axis_coordinate(x + kLauncherPreferredSize + kButtonSpacing, x);
+    y = primary_axis_coordinate(y, y + kLauncherPreferredSize + kButtonSpacing);
     app_list_bounds.set_x(x);
     app_list_bounds.set_y(y);
     view_model_->set_ideal_bounds(app_list_index, app_list_bounds);

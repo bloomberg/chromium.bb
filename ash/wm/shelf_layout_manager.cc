@@ -638,52 +638,63 @@ void ShelfLayoutManager::CalculateTargetBounds(
       (state.visibility_state == AUTO_HIDE &&
        state.auto_hide_state == AUTO_HIDE_SHOWN)) {
     shelf_size = std::max(shelf_width, shelf_height);
+    launcher_size.set_width(std::max(shelf_width,launcher_size.width()));
+    launcher_size.set_height(std::max(shelf_height,launcher_size.height()));
   } else if (state.visibility_state == AUTO_HIDE &&
              state.auto_hide_state == AUTO_HIDE_HIDDEN) {
     shelf_size = kAutoHideSize;
     // Keep the launcher to its full height when dragging is in progress.
-    if (gesture_drag_status_ == GESTURE_DRAG_NONE)
-      launcher_size.set_height(kAutoHideSize);
+    if (gesture_drag_status_ == GESTURE_DRAG_NONE) {
+      if (SHELF_ALIGNMENT_BOTTOM == alignment_)
+        launcher_size.set_height(kAutoHideSize);
+      else
+        launcher_size.set_width(kAutoHideSize);
+    }
   }
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
-    int y = available_bounds.bottom();
-    y -= shelf_size;
-    // The status widget should extend to the bottom and right edges.
-    target_bounds->status_bounds_in_root = gfx::Rect(
-        base::i18n::IsRTL() ? available_bounds.x() :
-        available_bounds.right() - status_size.width(),
-        y + shelf_height - status_size.height(),
-        status_size.width(), status_size.height());
-    if (launcher_widget()) {
-      target_bounds->launcher_bounds_in_root = gfx::Rect(
-          available_bounds.x(),
-          y,
-          available_bounds.width(),
-          launcher_size.height());
-    }
-    target_bounds->work_area_insets.Set(
-        0, 0, GetWorkAreaSize(state, shelf_height), 0);
-  } else {
-    int x = (alignment_ == SHELF_ALIGNMENT_LEFT) ?
-        available_bounds.x() + shelf_size - shelf_width :
-        available_bounds.right() - shelf_size;
-    target_bounds->status_bounds_in_root = gfx::Rect(
-        x, available_bounds.bottom() - status_size.height(),
-        shelf_width, status_size.height());
-    if (launcher_widget()) {
-      target_bounds->launcher_bounds_in_root = gfx::Rect(
-          x,
-          available_bounds.y(),
-          launcher_size.width(),
-          available_bounds.height());
-    }
-    if (alignment_ == SHELF_ALIGNMENT_LEFT) {
+  switch(alignment_) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      // The status widget should extend to the bottom and right edges.
+      target_bounds->status_bounds_in_root = gfx::Rect(
+          base::i18n::IsRTL() ? available_bounds.x() :
+              available_bounds.right() - status_size.width(),
+          available_bounds.bottom() - shelf_size + shelf_height -
+              status_size.height(),
+         status_size.width(), status_size.height());
+      if (launcher_widget())
+        target_bounds->launcher_bounds_in_root = gfx::Rect(
+            available_bounds.x(),
+            available_bounds.bottom() - shelf_size,
+            available_bounds.width(),
+            launcher_size.height());
       target_bounds->work_area_insets.Set(
-          0, GetWorkAreaSize(state, shelf_width), 0, 0);
-    } else {
+          0, 0, GetWorkAreaSize(state, shelf_height), 0);
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      target_bounds->status_bounds_in_root = gfx::Rect(
+          available_bounds.x() + launcher_size.width() - status_size.width(),
+          available_bounds.bottom() - status_size.height(),
+          shelf_width, status_size.height());
+      if (launcher_widget())
+        target_bounds->launcher_bounds_in_root = gfx::Rect(
+            available_bounds.x(), available_bounds.y(),
+            launcher_size.width(), available_bounds.height());
       target_bounds->work_area_insets.Set(
-          0, 0, 0, GetWorkAreaSize(state, shelf_width));
-    }
+          0, GetWorkAreaSize(state, launcher_size.width()), 0, 0);
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      target_bounds->status_bounds_in_root = gfx::Rect(
+          available_bounds.right()- status_size.width() -
+              shelf_size + shelf_width,
+          available_bounds.bottom() - status_size.height(),
+          shelf_width, status_size.height());
+      if (launcher_widget())
+        target_bounds->launcher_bounds_in_root = gfx::Rect(
+            available_bounds.right() - launcher_size.width(),
+            available_bounds.y(),
+            launcher_size.width(), available_bounds.height());
+      target_bounds->work_area_insets.Set(
+          0, 0, 0, GetWorkAreaSize(state, launcher_size.width()));
+      break;
   }
   target_bounds->opacity =
       (gesture_drag_status_ != GESTURE_DRAG_NONE ||

@@ -606,11 +606,11 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
 TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   ShelfLayoutManager* shelf = shelf_layout_manager();
   // Force an initial layout.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->LayoutShelf();
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
-
   gfx::Rect launcher_bounds(
       shelf->launcher_widget()->GetWindowBoundsInScreen());
   const aura::DisplayManager* manager =
@@ -637,15 +637,21 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_EQ(display.bounds().x(), launcher_bounds.x());
   EXPECT_EQ(display.bounds().y(), launcher_bounds.y());
   EXPECT_EQ(display.bounds().height(), launcher_bounds.height());
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
+      display.GetWorkAreaInsets().left());
+  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize, display.work_area().x());
 
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   launcher_bounds = shelf->launcher_widget()->GetWindowBoundsInScreen();
   display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());
   EXPECT_EQ(shelf->GetIdealBounds().width(),
             display.GetWorkAreaInsets().right());
-  EXPECT_GE(
-      launcher_bounds.width(),
+  EXPECT_GE(launcher_bounds.width(),
       shelf->launcher_widget()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT,
             Shell::GetInstance()->system_tray()->shelf_alignment());
@@ -660,6 +666,12 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_EQ(display.work_area().right(), launcher_bounds.x());
   EXPECT_EQ(display.bounds().y(), launcher_bounds.y());
   EXPECT_EQ(display.bounds().height(), launcher_bounds.height());
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
+      display.GetWorkAreaInsets().right());
+  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
+      display.bounds().right() - display.work_area().right());
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {

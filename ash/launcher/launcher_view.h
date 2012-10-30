@@ -115,6 +115,12 @@ class ASH_EXPORT LauncherView : public views::View,
     return alignment_ == SHELF_ALIGNMENT_BOTTOM;
   }
 
+  // Used in calculating ideal bounds.
+  int alignment_based_value(int bottom, int left, int right) const {
+    return (SHELF_ALIGNMENT_BOTTOM == alignment_ ? bottom :
+        (SHELF_ALIGNMENT_LEFT == alignment_ ? left : right));
+  }
+
   bool is_overflow_mode() const {
     return first_visible_index_ > 0;
   }
