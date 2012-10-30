@@ -888,7 +888,7 @@ void CdmWrapper::DeliverFrame(
     const PP_DecryptTrackingInfo& tracking_info) {
   PP_DCHECK(result == PP_OK);
   PP_DecryptedFrameInfo decrypted_frame_info;
-  decrypted_frame_info.tracking_info = tracking_info;
+  decrypted_frame_info.tracking_info.request_id = tracking_info.request_id;
   decrypted_frame_info.result = CdmStatusToPpDecryptResult(status);
 
   pp::Buffer_Dev buffer;
@@ -910,6 +910,7 @@ void CdmWrapper::DeliverFrame(
     } else {
       buffer = static_cast<PpbBuffer*>(
           video_frame->frame_buffer())->buffer_dev();
+      decrypted_frame_info.tracking_info.timestamp = video_frame->timestamp();
       decrypted_frame_info.width = video_frame->size().width;
       decrypted_frame_info.height = video_frame->size().height;
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_Y] =
@@ -935,11 +936,9 @@ void CdmWrapper::DeliverSamples(int32_t result,
                                 const LinkedAudioFrames& audio_frames,
                                 const PP_DecryptTrackingInfo& tracking_info) {
   PP_DCHECK(result == PP_OK);
-  // TODO(tomfinegan): Add PP_DecryptedSamplesInfo (or better name) for
-  // cdm::AudioFrames.
+
   PP_DecryptedBlockInfo decrypted_block_info;
   decrypted_block_info.tracking_info = tracking_info;
-  // TODO(tomfinegan): Remove this after PP_DecryptedSamplesInfo is added.
   decrypted_block_info.tracking_info.timestamp = 0;
   decrypted_block_info.result = CdmStatusToPpDecryptResult(status);
 

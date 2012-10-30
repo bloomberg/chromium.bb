@@ -322,6 +322,8 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
   cdm_video_frame->set_stride(cdm::VideoFrame::kUPlane, uv_stride);
   cdm_video_frame->set_stride(cdm::VideoFrame::kVPlane, uv_stride);
 
+  cdm_video_frame->set_timestamp(av_frame_->reordered_opaque);
+
   return true;
 }
 
