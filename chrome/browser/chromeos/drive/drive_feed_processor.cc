@@ -113,62 +113,51 @@ void DriveFeedProcessor::ApplyEntryProtoMap(
 
     DriveEntry* old_entry =
         resource_metadata_->GetEntryByResourceId(entry->resource_id());
-    DriveDirectory* parent = NULL;
 
-    if (entry->is_deleted()) {  // Deleted file/directory.
+    if (entry->is_deleted()) {
+      // Deleted file/directory.
       DVLOG(1) << "Removing file " << entry->base_name();
       if (!old_entry)
         continue;
-
-      parent = old_entry->parent();
       RemoveEntryFromParentAndCollectChangedDirectories(
           old_entry, changed_dirs);
-    } else if (old_entry) {  // Change or move of existing entry.
+
+    } else if (old_entry) {
+      // Change or move of existing entry.
       // Please note that entry rename is just a special case of change here
       // since name is just one of the properties that can change.
       DVLOG(1) << "Changed file " << entry->base_name();
-      parent = old_entry->parent();
-      if (!parent) {
-        NOTREACHED();
-        continue;
-      }
+
       // Move children files over if we are dealing with directories.
       if (old_entry->AsDriveDirectory() && entry->AsDriveDirectory()) {
         entry->AsDriveDirectory()->TakeOverEntries(
             old_entry->AsDriveDirectory());
       }
+
       // Remove the old instance of this entry.
       RemoveEntryFromParentAndCollectChangedDirectories(
           old_entry, changed_dirs);
-      // Did we actually move the new file to another directory?
-      if (parent->resource_id() != entry->parent_resource_id()) {
-        changed_dirs->insert(parent->GetFilePath());
-        parent = FindDirectoryForNewEntry(entry.get(), resource_map);
-      }
-      AddEntryToDirectoryAndCollectChangedDirectories(
-          entry.release(),
-          parent,
-          changed_dirs);
-    } else {  // Adding a new file.
-      parent = FindDirectoryForNewEntry(entry.get(), resource_map);
-      AddEntryToDirectoryAndCollectChangedDirectories(
-          entry.release(),
-          parent,
-          changed_dirs);
-    }
 
-    // Record the parent if it was already in the tree and this is a delta feed.
-    if (parent &&
-        (parent->parent() || parent == resource_metadata_->root()) &&
-        is_delta_feed) {
-      changed_dirs->insert(parent->GetFilePath());
+      DriveDirectory* parent = ResolveParentDirectoryForNewEntry(entry.get(),
+                                                                 resource_map);
+      AddEntryToDirectoryAndCollectChangedDirectories(
+          entry.release(),
+          parent,
+          changed_dirs);
+    } else {
+      // Adding a new file.
+      DriveDirectory* parent = ResolveParentDirectoryForNewEntry(entry.get(),
+                                                                 resource_map);
+      AddEntryToDirectoryAndCollectChangedDirectories(
+          entry.release(),
+          parent,
+          changed_dirs);
     }
   }
   // All entries must be erased from the map.
   DCHECK(resource_map.empty());
 }
 
-// static
 void DriveFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
     DriveEntry* entry,
     DriveDirectory* directory,
@@ -178,11 +167,19 @@ void DriveFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
     return;
   }
   directory->AddEntry(entry);
+
+  // Notify this directory that has been created.
   if (entry->AsDriveDirectory())
     changed_dirs->insert(entry->GetFilePath());
+
+  // Notify the parent directory |directory| only if it already exists by
+  // checking if it is attached to the tree (has parent) or if it is root.
+  // The parent directory may not exist here if it is about to be created later
+  // in the same feed.
+  if (directory->parent() || directory == resource_metadata_->root())
+    changed_dirs->insert(directory->GetFilePath());
 }
 
-// static
 void DriveFeedProcessor::RemoveEntryFromParentAndCollectChangedDirectories(
     DriveEntry* entry,
     std::set<FilePath>* changed_dirs) {
@@ -196,14 +193,17 @@ void DriveFeedProcessor::RemoveEntryFromParentAndCollectChangedDirectories(
   if (dir) {
     // We need to notify all children of entry if entry is a directory.
     dir->GetChildDirectoryPaths(changed_dirs);
-    // Notify this directory if the removed entry is a directory.
+    // Besides children, notify this removed directory too.
     changed_dirs->insert(dir->GetFilePath());
   }
 
   parent->RemoveEntry(entry);
+
+  // Notify parent.
+  changed_dirs->insert(parent->GetFilePath());
 }
 
-DriveDirectory* DriveFeedProcessor::FindDirectoryForNewEntry(
+DriveDirectory* DriveFeedProcessor::ResolveParentDirectoryForNewEntry(
     DriveEntry* new_entry,
     const ResourceMap& resource_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
