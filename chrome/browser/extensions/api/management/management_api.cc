@@ -226,6 +226,7 @@ bool GetAllExtensionsFunction::RunImpl() {
 
   AddExtensionInfo(*service()->extensions(), system, &extensions);
   AddExtensionInfo(*service()->disabled_extensions(), system, &extensions);
+  AddExtensionInfo(*service()->terminated_extensions(), system, &extensions);
 
   results_ = management::GetAll::Results::Create(extensions);
   return true;

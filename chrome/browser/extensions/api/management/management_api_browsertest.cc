@@ -19,14 +19,30 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
 
 namespace keys = extension_management_api_constants;
 namespace util = extension_function_test_utils;
 
-class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {};
+class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {
+ protected:
+  bool CrashEnabledExtension(const std::string& extension_id) {
+    content::WindowedNotificationObserver extension_crash_observer(
+        chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+        content::NotificationService::AllSources());
+    extensions::ExtensionHost* background_host =
+        extensions::ExtensionSystem::Get(browser()->profile())->
+            process_manager()->GetBackgroundHostForExtension(extension_id);
+    if (!background_host)
+      return false;
+    background_host->host_contents()->GetController().LoadURL(
+        GURL(chrome::kChromeUICrashURL), content::Referrer(),
+        content::PAGE_TRANSITION_LINK, std::string());
+    extension_crash_observer.Wait();
+    return true;
+  }
+};
 
 // We test this here instead of in an ExtensionApiTest because normal extensions
 // are not allowed to call the install function.
@@ -114,7 +130,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   EXPECT_TRUE(service->GetExtensionById(id, false) == NULL);
 }
 
-class ExtensionManagementApiEscalationTest : public ExtensionBrowserTest {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
+                       GetAllIncludesTerminated) {
+  // Load an extension with a background page, so that we know it has a process
+  // running.
+  ExtensionTestMessageListener listener("ready", false);
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("management/install_event"));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  // The management API should list this extension.
+  scoped_refptr<GetAllExtensionsFunction> function =
+      new GetAllExtensionsFunction();
+  scoped_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
+      function.get(), "[]", browser()));
+  base::ListValue* list;
+  ASSERT_TRUE(result->GetAsList(&list));
+  EXPECT_EQ(1U, list->GetSize());
+
+  // And it should continue to do so even after it crashes.
+  ASSERT_TRUE(CrashEnabledExtension(extension->id()));
+
+  function = new GetAllExtensionsFunction();
+  result.reset(util::RunFunctionAndReturnSingleResult(
+      function.get(), "[]", browser()));
+  ASSERT_TRUE(result->GetAsList(&list));
+  EXPECT_EQ(1U, list->GetSize());
+}
+
+class ExtensionManagementApiEscalationTest :
+    public ExtensionManagementApiBrowserTest {
  protected:
   // The id of the permissions escalation test extension we use.
   static const char kId[];
@@ -167,21 +213,6 @@ class ExtensionManagementApiEscalationTest : public ExtensionBrowserTest {
     }
   }
 
-  bool CrashEnabledExtension(const std::string& extension_id) {
-    content::WindowedNotificationObserver extension_crash_observer(
-        chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-        content::NotificationService::AllSources());
-    extensions::ExtensionHost* background_host =
-        extensions::ExtensionSystem::Get(browser()->profile())->
-            process_manager()->GetBackgroundHostForExtension(extension_id);
-    if (!background_host)
-      return false;
-    background_host->host_contents()->GetController().LoadURL(
-        GURL(chrome::kChromeUICrashURL), content::Referrer(),
-        content::PAGE_TRANSITION_LINK, std::string());
-    extension_crash_observer.Wait();
-    return true;
-  }
 
  private:
   ScopedTempDir scoped_temp_dir_;
