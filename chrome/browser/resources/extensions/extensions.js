@@ -38,6 +38,7 @@ cr.define('extensions', function() {
     },
     // @inheritdoc
     doDragOver: function(e) {
+      e.preventDefault();
     },
     // @inheritdoc
     doDrop: function(e) {
