@@ -70,17 +70,6 @@ get_scale(struct image *image)
 }
 
 static void
-center_view(struct image *image)
-{
-	struct rectangle allocation;
-	double scale = get_scale(image);
-
-	widget_get_allocation(image->widget, &allocation);
-	image->matrix.x0 = (allocation.width - image->width * scale) / 2;
-	image->matrix.y0 = (allocation.height - image->height * scale) / 2;
-}
-
-static void
 clamp_view(struct image *image)
 {
 	struct rectangle allocation;
@@ -91,14 +80,25 @@ clamp_view(struct image *image)
 	sh = image->height * scale;
 	widget_get_allocation(image->widget, &allocation);
 
-	if (image->matrix.x0 > 0.0)
-		image->matrix.x0 = 0.0;
-	if (image->matrix.y0 > 0.0)
-		image->matrix.y0 = 0.0;
-	if (sw + image->matrix.x0 < allocation.width)
-		image->matrix.x0 = allocation.width - sw;
-	if (sh + image->matrix.y0 < allocation.height)
-		image->matrix.y0 = allocation.height - sh;
+	if (sw < allocation.width) {
+		image->matrix.x0 =
+			(allocation.width - image->width * scale) / 2;
+	} else {
+		if (image->matrix.x0 > 0.0)
+			image->matrix.x0 = 0.0;
+		if (sw + image->matrix.x0 < allocation.width)
+			image->matrix.x0 = allocation.width - sw;
+	}
+
+	if (sh < allocation.width) {
+		image->matrix.y0 =
+			(allocation.height - image->height * scale) / 2;
+	} else {
+		if (image->matrix.y0 > 0.0)
+			image->matrix.y0 = 0.0;
+		if (sh + image->matrix.y0 < allocation.height)
+			image->matrix.y0 = allocation.height - sh;
+	}
 }
 
 static void
@@ -141,7 +141,7 @@ redraw_handler(struct widget *widget, void *data)
 		image->height = height;
 		cairo_matrix_init_scale(&image->matrix, scale, scale);
 
-		center_view(image);
+		clamp_view(image);
 	}
 
 	matrix = image->matrix;
@@ -166,7 +166,7 @@ resize_handler(struct widget *widget,
 {
 	struct image *image = data;
 
-	center_view(image);
+	clamp_view(image);
 }
 
 static void
@@ -196,18 +196,6 @@ enter_handler(struct widget *widget,
 	return 1;
 }
 
-static bool
-image_is_smaller(struct image *image)
-{
-	double scale;
-	struct rectangle allocation;
-
-	scale = get_scale(image);
-	widget_get_allocation(image->widget, &allocation);
-
-	return scale * image->width < allocation.width;
-}
-
 static void
 move_viewport(struct image *image, double dx, double dy)
 {
@@ -217,11 +205,7 @@ move_viewport(struct image *image, double dx, double dy)
 		return;
 
 	cairo_matrix_translate(&image->matrix, -dx/scale, -dy/scale);
-
-	if (image_is_smaller(image))
-		center_view(image);
-	else
-		clamp_view(image);
+	clamp_view(image);
 
 	window_schedule_redraw(image->window);
 }
@@ -288,8 +272,7 @@ zoom(struct image *image, double scale)
 	cairo_matrix_translate(&scale_matrix, -x, -y);
 
 	cairo_matrix_multiply(&image->matrix, &image->matrix, &scale_matrix);
-	if (image_is_smaller(image))
-		center_view(image);
+	clamp_view(image);
 }
 
 static void
