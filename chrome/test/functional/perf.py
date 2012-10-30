@@ -414,15 +414,16 @@ class BasePerfTest(pyauto.PyUITest):
       assert isinstance(value, list)
 
     if self.IsChromeOS():
-      # ChromeOS results don't support lists.
+      # Autotest doesn't support result lists.
+      autotest_value = value
       if (isinstance(value, list) and value[0] is not None and
           not isinstance(value[0], tuple)):
-        value = Mean(value)
+        autotest_value = Mean(value)
 
       if units_x:
         # TODO(dennisjeffrey): Support long-running performance measurements on
         # ChromeOS in a way that can be graphed: crosbug.com/21881.
-        pyauto_utils.PrintPerfResult(graph_name, description, value,
+        pyauto_utils.PrintPerfResult(graph_name, description, autotest_value,
                                      units + ' ' + units_x)
       else:
         # Output short-running performance results in a format understood by
@@ -433,8 +434,14 @@ class BasePerfTest(pyauto.PyUITest):
                           '(length 30) when added to the autotest database.',
                           perf_key, perf_key[:30])
         print '\n%s(\'%s\', %f)%s' % (self._PERF_OUTPUT_MARKER_PRE,
-                                        perf_key, value,
+                                        perf_key, autotest_value,
                                         self._PERF_OUTPUT_MARKER_POST)
+
+        # Also output results in the format recognized by buildbot, for cases
+        # in which these tests are run on chromeOS through buildbot.  Since
+        # buildbot supports result lists, it's ok for |value| to be a list here.
+        pyauto_utils.PrintPerfResult(graph_name, description, value, units)
+
         sys.stdout.flush()
     else:
       # TODO(dmikurube): Support stacked graphs in PrintPerfResult.
