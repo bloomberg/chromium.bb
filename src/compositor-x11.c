@@ -668,6 +668,23 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 	xcb_button_press_event_t *button_event =
 		(xcb_button_press_event_t *) event;
 	uint32_t button;
+	struct x11_output *output;
+
+	output = x11_compositor_find_output(c, button_event->event);
+
+	if (state)
+		xcb_grab_pointer(c->conn, 0, output->window,
+				 XCB_EVENT_MASK_BUTTON_PRESS |
+				 XCB_EVENT_MASK_BUTTON_RELEASE |
+				 XCB_EVENT_MASK_POINTER_MOTION |
+				 XCB_EVENT_MASK_ENTER_WINDOW |
+				 XCB_EVENT_MASK_LEAVE_WINDOW,
+				 XCB_GRAB_MODE_ASYNC,
+				 XCB_GRAB_MODE_ASYNC,
+				 output->window, XCB_CURSOR_NONE,
+				 button_event->time);
+	else
+		xcb_ungrab_pointer(c->conn, button_event->time);
 
 	if (!c->has_xkb)
 		update_xkb_state_from_core(c, button_event->state);
