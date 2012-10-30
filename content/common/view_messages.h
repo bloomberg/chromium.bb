@@ -228,6 +228,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(text_autosizing_enabled)
   IPC_STRUCT_TRAITS_MEMBER(font_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(force_enable_zoom)
+  IPC_STRUCT_TRAITS_MEMBER(supports_multiple_windows)
 #endif
 IPC_STRUCT_TRAITS_END()
 

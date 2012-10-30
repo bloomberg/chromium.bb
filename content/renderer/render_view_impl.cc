@@ -2343,12 +2343,19 @@ void RenderViewImpl::didBlur() {
 // created RenderView (i.e., as a blocked popup or as a new tab).
 //
 void RenderViewImpl::show(WebNavigationPolicy policy) {
-  DCHECK(!did_show_) << "received extraneous Show call";
-  DCHECK(opener_id_ != MSG_ROUTING_NONE);
-
-  if (did_show_)
+  if (did_show_) {
+#if defined(OS_ANDROID)
+    // When supports_multiple_windows is disabled, popups are reusing
+    // the same view. In some scenarios, this makes WebKit to call show() twice.
+    if (!webkit_preferences_.supports_multiple_windows)
+      return;
+#endif
+    NOTREACHED() << "received extraneous Show call";
     return;
+  }
   did_show_ = true;
+
+  DCHECK(opener_id_ != MSG_ROUTING_NONE);
 
   if (GetContentClient()->renderer()->AllowPopup(creator_url_))
     opened_by_user_gesture_ = true;

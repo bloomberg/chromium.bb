@@ -76,6 +76,8 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mAllowFileAccessFromFileURLs", "Z");
     java_script_can_open_windows_automatically =
         GetFieldID(env, clazz, "mJavaScriptCanOpenWindowsAutomatically", "Z");
+    support_multiple_windows =
+        GetFieldID(env, clazz, "mSupportMultipleWindows", "Z");
     dom_storage_enabled =
         GetFieldID(env, clazz, "mDomStorageEnabled", "Z");
   }
@@ -100,6 +102,7 @@ struct ContentSettings::FieldIds {
   jfieldID allow_universal_access_from_file_urls;
   jfieldID allow_file_access_from_file_urls;
   jfieldID java_script_can_open_windows_automatically;
+  jfieldID support_multiple_windows;
   jfieldID dom_storage_enabled;
 };
 
@@ -236,6 +239,12 @@ void ContentSettings::SyncFromNativeImpl() {
       prefs.javascript_can_open_windows_automatically);
   CheckException(env);
 
+  env->SetBooleanField(
+      obj,
+      field_ids_->support_multiple_windows,
+      prefs.supports_multiple_windows);
+  CheckException(env);
+
   Java_ContentSettings_setPluginsDisabled(env, obj, !prefs.plugins_enabled);
   CheckException(env);
 
@@ -336,6 +345,9 @@ void ContentSettings::SyncToNativeImpl() {
 
   prefs.javascript_can_open_windows_automatically = env->GetBooleanField(
       obj, field_ids_->java_script_can_open_windows_automatically);
+
+  prefs.supports_multiple_windows = env->GetBooleanField(
+      obj, field_ids_->support_multiple_windows);
 
   prefs.plugins_enabled = !Java_ContentSettings_getPluginsDisabled(env, obj);
 

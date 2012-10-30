@@ -74,6 +74,7 @@ public class ContentSettings {
     private boolean mAllowUniversalAccessFromFileURLs = false;
     private boolean mAllowFileAccessFromFileURLs = false;
     private boolean mJavaScriptCanOpenWindowsAutomatically = false;
+    private boolean mSupportMultipleWindows = false;
     private PluginState mPluginState = PluginState.OFF;
     private boolean mDomStorageEnabled = false;
 
@@ -883,6 +884,34 @@ public class ContentSettings {
     public boolean getJavaScriptCanOpenWindowsAutomatically() {
         synchronized (mContentSettingsLock) {
             return mJavaScriptCanOpenWindowsAutomatically;
+        }
+    }
+
+    /**
+     * Tells the WebView whether it supports multiple windows. True means
+     * that {@link WebChromeClient#onCreateWindow(WebView, boolean,
+     * boolean, Message)} is implemented by the host application.
+     */
+    public void setSupportMultipleWindows(boolean support) {
+        assert mCanModifySettings;
+        synchronized (mContentSettingsLock) {
+            if (mSupportMultipleWindows != support) {
+                mSupportMultipleWindows = support;
+                mEventHandler.syncSettingsLocked();
+            }
+        }
+    }
+
+    /**
+     * Gets whether the WebView is supporting multiple windows.
+     *
+     * @return true if the WebView is supporting multiple windows. This means
+     *         that {@link WebChromeClient#onCreateWindow(WebView, boolean,
+     *         boolean, Message)} is implemented by the host application.
+     */
+    public boolean supportMultipleWindows() {
+        synchronized (mContentSettingsLock) {
+            return mSupportMultipleWindows;
         }
     }
 

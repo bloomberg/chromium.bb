@@ -117,12 +117,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool fullscreen_enabled;
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
-#if defined(OS_ANDROID)
-  bool text_autosizing_enabled;
-  float font_scale_factor;
-  bool force_enable_zoom;
-  bool user_gesture_required_for_media_playback;
-#endif
   bool password_echo_enabled;
   bool should_print_backgrounds;
   bool enable_scroll_animator;
@@ -150,6 +144,14 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool cookie_enabled;
 
   bool apply_page_scale_factor_in_compositor;
+
+#if defined(OS_ANDROID)
+  bool text_autosizing_enabled;
+  float font_scale_factor;
+  bool force_enable_zoom;
+  bool user_gesture_required_for_media_playback;
+  bool supports_multiple_windows;
+#endif
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

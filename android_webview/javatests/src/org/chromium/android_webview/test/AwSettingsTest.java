@@ -875,6 +875,72 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
+    class AwSettingsJavaScriptPopupsTestHelper extends AwSettingsTestHelper<Boolean> {
+        static private final String POPUP_ENABLED = "Popup enabled";
+        static private final String POPUP_BLOCKED = "Popup blocked";
+
+        AwSettingsJavaScriptPopupsTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient,
+                int index) throws Throwable {
+            super(awContents, contentViewClient, true);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getJavaScriptCanOpenWindowsAutomatically();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mContentSettings.setJavaScriptCanOpenWindowsAutomatically(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            loadDataSync(getData());
+            final boolean expectPopupEnabled = value;
+            assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    try {
+                        String title = getTitleOnUiThread();
+                        return expectPopupEnabled ? POPUP_ENABLED.equals(title) :
+                                POPUP_BLOCKED.equals(title);
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                        fail("Failed to getTitleOnUiThread: " + t.toString());
+                        return false;
+                    }
+                }
+            }, TEST_TIMEOUT, CHECK_INTERVAL));
+            assertEquals(value ? POPUP_ENABLED : POPUP_BLOCKED, getTitleOnUiThread());
+        }
+
+        private String getData() {
+            return "<html><head>" +
+                    "<script>" +
+                    "    function tryOpenWindow() {" +
+                    "        var newWindow = window.open(" +
+                    "           'data:text/html;charset=utf-8," +
+                    "           <html><head><title>" + POPUP_ENABLED + "</title></head></html>');" +
+                    "        if (!newWindow) document.title = '" + POPUP_BLOCKED + "';" +
+                    "    }" +
+                    "</script></head>" +
+                    "<body onload='tryOpenWindow()'></body></html>";
+        }
+    }
+
     // The test verifies that JavaScript is disabled upon WebView
     // creation without accessing ContentSettings. If the test passes,
     // it means that WebView-specific web preferences configuration
@@ -1823,6 +1889,27 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         runPerViewSettingsTest(
             new AwSettingsTextZoomTestHelper(views.getContents0(), views.getClient0()),
             new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    public void testJavaScriptPopupsNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0(), 0),
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
+    }
+
+    public void testJavaScriptPopupsIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0(), 0),
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
+    }
+
+    public void testJavaScriptPopupsBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0(), 0),
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1(), 1));
     }
 
     class ViewPair {
