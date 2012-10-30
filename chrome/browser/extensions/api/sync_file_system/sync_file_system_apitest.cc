@@ -21,25 +21,15 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
       : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {
   }
 
-  void SetUp() {
-    // TODO(calvinlo): Update test code after default quota is made const
-    // (http://crbug.com/155488).
-    real_default_quota_ = quota::QuotaManager::kSyncableStorageDefaultHostQuota;
-    quota::QuotaManager::kSyncableStorageDefaultHostQuota = 123456789;
-  }
-
-  void TearDown() {
-    quota::QuotaManager::kSyncableStorageDefaultHostQuota = real_default_quota_;
-  }
-
  private:
   extensions::Feature::ScopedCurrentChannel current_channel_;
-  int64 real_default_quota_;
 };
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
+  // TODO(calvinlo): Check value against mock syncFileSystem quota value instead
+  // of comparing against the default. (http://crbug.com/153501).
   ASSERT_TRUE(RunExtensionTest("sync_file_system/get_usage_and_quota"))
       << message_;
 }
