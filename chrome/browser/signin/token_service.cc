@@ -103,9 +103,9 @@ void TokenService::AddAuthTokenManually(const std::string& service,
   token_map_[service] = auth_token;
   FireTokenAvailableNotification(service, auth_token);
   SaveAuthTokenToDB(service, auth_token);
-  // If we got ClientLogin token for "lso" service, then start fetching OAuth2
-  // login scoped token pair.
-  if (service == GaiaConstants::kLSOService) {
+  // If we got ClientLogin token for "lso" service, and we don't already have
+  // OAuth2 tokens, start fetching OAuth2 login scoped token pair.
+  if (service == GaiaConstants::kLSOService && !HasOAuthLoginToken()) {
     int index = GetServiceIndex(service);
     CHECK_GE(index, 0);
     fetchers_[index]->StartLsoForOAuthLoginTokenExchange(auth_token);

@@ -30,6 +30,9 @@ bool GaiaAuthConsumer::ClientLoginResult::operator==(
       two_factor == b.two_factor;
 }
 
+GaiaAuthConsumer::ClientOAuthResult::ClientOAuthResult()
+    : expires_in_secs(0) {}
+
 GaiaAuthConsumer::ClientOAuthResult::ClientOAuthResult(
     const std::string& new_refresh_token,
     const std::string& new_access_token,

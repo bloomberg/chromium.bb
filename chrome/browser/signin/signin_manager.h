@@ -213,6 +213,11 @@ class SigninManager : public GaiaAuthConsumer,
   // successful or not.
   SigninType type_;
 
+  // Temporarily saves the oauth2 refresh and access tokens when signing in
+  // with credentials.  These will be passed to TokenService so that it does
+  // not need to mint new ones.
+  ClientOAuthResult temp_oauth_login_tokens_;
+
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };
 

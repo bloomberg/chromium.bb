@@ -328,6 +328,7 @@ void SigninManager::ClearTransientSigninData() {
   password_.clear();
   had_two_factor_error_ = false;
   type_ = SIGNIN_TYPE_NONE;
+  temp_oauth_login_tokens_ = ClientOAuthResult();
 }
 
 void SigninManager::HandleAuthError(const GoogleServiceAuthError& error,
@@ -409,6 +410,7 @@ void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
   switch (type_) {
     case SIGNIN_TYPE_CLIENT_OAUTH:
     case SIGNIN_TYPE_WITH_CREDENTIALS:
+      temp_oauth_login_tokens_ = result;
       client_login_->StartOAuthLogin(result.access_token,
                                      GaiaConstants::kGaiaService);
       break;
@@ -485,6 +487,13 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
   token_service->UpdateCredentials(last_result_);
   DCHECK(token_service->AreCredentialsValid());
   token_service->StartFetchingTokens();
+
+  // If we have oauth2 tokens, tell token service about them so it does not
+  // need to fetch them again.
+  if (!temp_oauth_login_tokens_.refresh_token.empty()) {
+    token_service->OnClientOAuthSuccess(temp_oauth_login_tokens_);
+    temp_oauth_login_tokens_ = ClientOAuthResult();
+  }
 }
 
 void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {

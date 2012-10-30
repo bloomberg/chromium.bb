@@ -266,6 +266,10 @@ TEST_F(SigninManagerTest, SignInWithCredentials) {
   SimulateValidResponseSignInWithCredentials();
   EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
 
+  // This is flow, the oauth2 credentials should already be available in
+  // the token service.
+  EXPECT_TRUE(service_->HasOAuthLoginToken());
+
   // Should go into token service and stop.
   EXPECT_EQ(1U, google_login_success_.size());
   EXPECT_EQ(0U, google_login_failure_.size());
@@ -287,6 +291,10 @@ TEST_F(SigninManagerTest, SignInWithCredentialsWrongEmail) {
 
   SimulateValidResponseSignInWithCredentials();
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  // The oauth2 credentials should not be available in the token service
+  // because the email was incorrect.
+  EXPECT_FALSE(service_->HasOAuthLoginToken());
 
   // Should go into token service and stop.
   EXPECT_EQ(0U, google_login_success_.size());
