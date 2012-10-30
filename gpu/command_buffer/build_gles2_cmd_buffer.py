@@ -5,6 +5,7 @@
 
 """code generator for GLES2 command buffers."""
 
+import itertools
 import os
 import os.path
 import sys
@@ -55,6 +56,376 @@ _GL_TYPES = {
   'GLclampx': 'int',
   'GLintptr': 'long int',
   'GLsizeiptr': 'long int',
+}
+
+# Capabilites selected with glEnable
+_CAPABILITY_FLAGS = [
+  {'name': 'blend'},
+  {'name': 'cull_face'},
+  {'name': 'depth_test', 'state_flag': 'clear_state_dirty_'},
+  {'name': 'dither', 'default': True},
+  {'name': 'polygon_offset_fill'},
+  {'name': 'sample_alpha_to_coverage'},
+  {'name': 'sample_coverage'},
+  {'name': 'scissor_test'},
+  {'name': 'stencil_test', 'state_flag': 'clear_state_dirty_'},
+]
+
+_STATES = {
+  'ClearColor': {
+    'type': 'Normal',
+    'func': 'ClearColor',
+    'enum': 'GL_COLOR_CLEAR_VALUE',
+    'states': [
+      {'name': 'color_clear_red', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'color_clear_green', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'color_clear_blue', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'color_clear_alpha', 'type': 'GLfloat', 'default': '0.0f'},
+    ],
+  },
+  'ClearDepthf': {
+    'type': 'Normal',
+    'func': 'ClearDepth',
+    'enum': 'GL_DEPTH_CLEAR_VALUE',
+    'states': [
+      {'name': 'depth_clear', 'type': 'GLclampf', 'default': '1.0f'},
+    ],
+  },
+  'ColorMask': {
+    'type': 'Normal',
+    'func': 'ColorMask',
+    'enum': 'GL_COLOR_WRITEMASK',
+    'states': [
+      {'name': 'color_mask_red', 'type': 'GLboolean', 'default': 'true'},
+      {'name': 'color_mask_green', 'type': 'GLboolean', 'default': 'true'},
+      {'name': 'color_mask_blue', 'type': 'GLboolean', 'default': 'true'},
+      {'name': 'color_mask_alpha', 'type': 'GLboolean', 'default': 'true'},
+    ],
+    'state_flag': 'clear_state_dirty_',
+  },
+  'ClearStencil': {
+    'type': 'Normal',
+    'func': 'ClearStencil',
+    'enum': 'GL_STENCIL_CLEAR_VALUE',
+    'states': [
+      {'name': 'stencil_clear', 'type': 'GLint', 'default': '0'},
+    ],
+  },
+  'BlendColor': {
+    'type': 'Normal',
+    'func': 'BlendColor',
+    'enum': 'GL_BLEND_COLOR',
+    'states': [
+      {'name': 'blend_color_red', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'blend_color_green', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'blend_color_blue', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'blend_color_alpha', 'type': 'GLfloat', 'default': '0.0f'},
+    ],
+  },
+  'BlendEquation': {
+    'type': 'SrcDst',
+    'func': 'BlendEquationSeparate',
+    'states': [
+      {
+        'name': 'blend_equation_rgb',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_EQUATION_RGB',
+        'default': 'GL_FUNC_ADD',
+      },
+      {
+        'name': 'blend_equation_alpha',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_EQUATION_ALPHA',
+        'default': 'GL_FUNC_ADD',
+      },
+    ],
+  },
+  'BlendFunc': {
+    'type': 'SrcDst',
+    'func': 'BlendFuncSeparate',
+    'states': [
+      {
+        'name': 'blend_source_rgb',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_SRC_RGB',
+        'default': 'GL_ONE',
+      },
+      {
+        'name': 'blend_dest_rgb',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_DST_RGB',
+        'default': 'GL_ZERO',
+      },
+      {
+        'name': 'blend_source_alpha',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_SRC_ALPHA',
+        'default': 'GL_ONE',
+      },
+      {
+        'name': 'blend_dest_alpha',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_DST_ALPHA',
+        'default': 'GL_ZERO',
+      },
+    ],
+  },
+  'PolygonOffset': {
+    'type': 'Normal',
+    'func': 'PolygonOffset',
+    'states': [
+      {
+        'name': 'polygon_offset_factor',
+        'type': 'GLfloat',
+        'enum': 'GL_POLYGON_OFFSET_FACTOR',
+        'default': '0.0f',
+      },
+      {
+        'name': 'polygon_offset_units',
+        'type': 'GLfloat',
+        'enum': 'GL_POLYGON_OFFSET_UNITS',
+        'default': '0.0f',
+      },
+    ],
+  },
+  'CullFace':  {
+    'type': 'Normal',
+    'func': 'CullFace',
+    'enum': 'GL_CULL_FACE_MODE',
+    'states': [
+      {
+        'name': 'cull_mode',
+        'type': 'GLenum',
+        'default': 'GL_BACK',
+      },
+    ],
+  },
+  'FrontFace': {
+    'type': 'Normal',
+    'func': 'FrontFace',
+    'enum': 'GL_FRONT_FACE',
+    'states': [{'name': 'front_face', 'type': 'GLenum', 'default': 'GL_CCW'}],
+  },
+  'DepthFunc': {
+    'type': 'Normal',
+    'func': 'DepthFunc',
+    'enum': 'GL_DEPTH_FUNC',
+    'states': [{'name': 'depth_func', 'type': 'GLenum', 'default': 'GL_LESS'}],
+  },
+  'DepthRange': {
+    'type': 'Normal',
+    'func': 'DepthRange',
+    'enum': 'GL_DEPTH_RANGE',
+    'states': [
+      {'name': 'z_near', 'type': 'GLclampf', 'default': '0.0f'},
+      {'name': 'z_far', 'type': 'GLclampf', 'default': '1.0f'},
+    ],
+  },
+  'SampleCoverage': {
+    'type': 'Normal',
+    'func': 'SampleCoverage',
+    'states': [
+      {
+        'name': 'sample_coverage_value',
+        'type': 'GLclampf',
+        'enum': 'GL_SAMPLE_COVERAGE_VALUE',
+        'default': '0.0f',
+      },
+      {
+        'name': 'sample_coverage_invert',
+        'type': 'GLboolean',
+        'enum': 'GL_SAMPLE_COVERAGE_INVERT',
+        'default': 'false',
+      },
+    ],
+  },
+  'StencilMask': {
+    'type': 'FrontBack',
+    'func': 'StencilMaskSeparate',
+    'state_flag': 'clear_state_dirty_',
+    'states': [
+      {
+        'name': 'stencil_front_writemask',
+        'type': 'GLuint',
+        'enum': 'GL_STENCIL_WRITEMASK',
+        'default': '0xFFFFFFFFU',
+      },
+      {
+        'name': 'stencil_back_writemask',
+        'type': 'GLuint',
+        'enum': 'GL_STENCIL_BACK_WRITEMASK',
+        'default': '0xFFFFFFFFU',
+      },
+    ],
+  },
+  'StencilOp': {
+    'type': 'FrontBack',
+    'func': 'StencilOpSeparate',
+    'states': [
+      {
+        'name': 'stencil_front_fail_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_FAIL',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_front_z_fail_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_PASS_DEPTH_FAIL',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_front_z_pass_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_PASS_DEPTH_PASS',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_back_fail_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_BACK_FAIL',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_back_z_fail_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_BACK_PASS_DEPTH_FAIL',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_back_z_pass_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_BACK_PASS_DEPTH_PASS',
+        'default': 'GL_KEEP',
+      },
+    ],
+  },
+  'StencilFunc': {
+    'type': 'FrontBack',
+    'func': 'StencilFuncSeparate',
+    'states': [
+      {
+        'name': 'stencil_front_func',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_FUNC',
+        'default': 'GL_ALWAYS',
+      },
+      {
+        'name': 'stencil_front_ref',
+        'type': 'GLint',
+        'enum': 'GL_STENCIL_REF',
+        'default': '0',
+      },
+      {
+        'name': 'stencil_front_mask',
+        'type': 'GLuint',
+        'enum': 'GL_STENCIL_VALUE_MASK',
+        'default': '0xFFFFFFFFU',
+      },
+      {
+        'name': 'stencil_back_func',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_BACK_FUNC',
+        'default': 'GL_ALWAYS',
+      },
+      {
+        'name': 'stencil_back_ref',
+        'type': 'GLint',
+        'enum': 'GL_STENCIL_BACK_REF',
+        'default': '0',
+      },
+      {
+        'name': 'stencil_back_mask',
+        'type': 'GLuint',
+        'enum': 'GL_STENCIL_BACK_VALUE_MASK',
+        'default': '0xFFFFFFFFU',
+      },
+    ],
+  },
+  # TODO: Consider implemenenting these states
+  # GL_GENERATE_MIPMAP_HINT
+  # GL_ACTIVE_TEXTURE,
+  # GL_PACK_ALIGNMENT,
+  # GL_UNPACK_ALIGNMENT
+  'LineWidth': {
+    'type': 'Normal',
+    'func': 'LineWidth',
+    'enum': 'GL_LINE_WIDTH',
+    'states': [{'name': 'line_width', 'type': 'GLfloat', 'default': '1.0f'}],
+  },
+  'DepthMask': {
+    'type': 'Normal',
+    'func': 'DepthMask',
+    'enum': 'GL_DEPTH_WRITEMASK',
+    'states': [
+      {'name': 'depth_mask', 'type': 'GLboolean', 'default': 'true'},
+    ],
+    'state_flag': 'clear_state_dirty_',
+  },
+  'Scissor': {
+    'type': 'Normal',
+    'func': 'Scissor',
+    'enum': 'GL_SCISSOR_BOX',
+    'states': [
+      # NOTE: These defaults reset at GLES2DecoderImpl::Initialization.
+      {
+        'name': 'scissor_x',
+        'type': 'GLfloat',
+        'default': '0.0f',
+        'expected': 'kViewportX',
+      },
+      {
+        'name': 'scissor_y',
+        'type': 'GLfloat',
+        'default': '0.0f',
+        'expected': 'kViewportY',
+      },
+      {
+        'name': 'scissor_width',
+        'type': 'GLfloat',
+        'default': '1.0f',
+        'expected': 'kViewportWidth',
+      },
+      {
+        'name': 'scissor_height',
+        'type': 'GLfloat',
+        'default': '1.0f',
+        'expected': 'kViewportHeight',
+      },
+    ],
+  },
+  'Viewport': {
+    'type': 'Normal',
+    'func': 'Viewport',
+    'enum': 'GL_VIEWPORT',
+    'states': [
+      # NOTE: These defaults reset at GLES2DecoderImpl::Initialization.
+      {
+        'name': 'viewport_x',
+        'type': 'GLfloat',
+        'default': '0.0f',
+        'expected': 'kViewportX',
+      },
+      {
+        'name': 'viewport_y',
+        'type': 'GLfloat',
+        'default': '0.0f',
+        'expected': 'kViewportY',
+      },
+      {
+        'name': 'viewport_width',
+        'type': 'GLfloat',
+        'default': '1.0f',
+        'expected': 'kViewportWidth',
+      },
+      {
+        'name': 'viewport_height',
+        'type': 'GLfloat',
+        'default': '1.0f',
+        'expected': 'kViewportHeight',
+      },
+    ],
+  },
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -118,41 +489,23 @@ _ENUM_LISTS = {
   'GLState': {
     'type': 'GLenum',
     'valid': [
+      # NOTE: State an Capability entries added later.
       'GL_ACTIVE_TEXTURE',
       'GL_ALIASED_LINE_WIDTH_RANGE',
       'GL_ALIASED_POINT_SIZE_RANGE',
       'GL_ALPHA_BITS',
       'GL_ARRAY_BUFFER_BINDING',
-      'GL_BLEND',
-      'GL_BLEND_COLOR',
-      'GL_BLEND_DST_ALPHA',
-      'GL_BLEND_DST_RGB',
-      'GL_BLEND_EQUATION_ALPHA',
-      'GL_BLEND_EQUATION_RGB',
-      'GL_BLEND_SRC_ALPHA',
-      'GL_BLEND_SRC_RGB',
       'GL_BLUE_BITS',
-      'GL_COLOR_CLEAR_VALUE',
-      'GL_COLOR_WRITEMASK',
       'GL_COMPRESSED_TEXTURE_FORMATS',
-      'GL_CULL_FACE',
-      'GL_CULL_FACE_MODE',
       'GL_CURRENT_PROGRAM',
       'GL_DEPTH_BITS',
-      'GL_DEPTH_CLEAR_VALUE',
-      'GL_DEPTH_FUNC',
       'GL_DEPTH_RANGE',
-      'GL_DEPTH_TEST',
-      'GL_DEPTH_WRITEMASK',
-      'GL_DITHER',
       'GL_ELEMENT_ARRAY_BUFFER_BINDING',
       'GL_FRAMEBUFFER_BINDING',
-      'GL_FRONT_FACE',
       'GL_GENERATE_MIPMAP_HINT',
       'GL_GREEN_BITS',
       'GL_IMPLEMENTATION_COLOR_READ_FORMAT',
       'GL_IMPLEMENTATION_COLOR_READ_TYPE',
-      'GL_LINE_WIDTH',
       'GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS',
       'GL_MAX_CUBE_MAP_TEXTURE_SIZE',
       'GL_MAX_FRAGMENT_UNIFORM_VECTORS',
@@ -167,9 +520,6 @@ _ENUM_LISTS = {
       'GL_NUM_COMPRESSED_TEXTURE_FORMATS',
       'GL_NUM_SHADER_BINARY_FORMATS',
       'GL_PACK_ALIGNMENT',
-      'GL_POLYGON_OFFSET_FACTOR',
-      'GL_POLYGON_OFFSET_FILL',
-      'GL_POLYGON_OFFSET_UNITS',
       'GL_RED_BITS',
       'GL_RENDERBUFFER_BINDING',
       'GL_SAMPLE_BUFFERS',
@@ -177,27 +527,10 @@ _ENUM_LISTS = {
       'GL_SAMPLE_COVERAGE_VALUE',
       'GL_SAMPLES',
       'GL_SCISSOR_BOX',
-      'GL_SCISSOR_TEST',
       'GL_SHADER_BINARY_FORMATS',
       'GL_SHADER_COMPILER',
-      'GL_STENCIL_BACK_FAIL',
-      'GL_STENCIL_BACK_FUNC',
-      'GL_STENCIL_BACK_PASS_DEPTH_FAIL',
-      'GL_STENCIL_BACK_PASS_DEPTH_PASS',
-      'GL_STENCIL_BACK_REF',
-      'GL_STENCIL_BACK_VALUE_MASK',
-      'GL_STENCIL_BACK_WRITEMASK',
-      'GL_STENCIL_BITS',
-      'GL_STENCIL_CLEAR_VALUE',
-      'GL_STENCIL_FAIL',
-      'GL_STENCIL_FUNC',
-      'GL_STENCIL_PASS_DEPTH_FAIL',
-      'GL_STENCIL_PASS_DEPTH_PASS',
-      'GL_STENCIL_REF',
-      'GL_STENCIL_TEST',
-      'GL_STENCIL_VALUE_MASK',
-      'GL_STENCIL_WRITEMASK',
       'GL_SUBPIXEL_BITS',
+      'GL_STENCIL_BITS',
       'GL_TEXTURE_BINDING_2D',
       'GL_TEXTURE_BINDING_CUBE_MAP',
       'GL_UNPACK_ALIGNMENT',
@@ -337,17 +670,7 @@ _ENUM_LISTS = {
   },
   'Capability': {
     'type': 'GLenum',
-    'valid': [
-      'GL_DITHER',  # 1st one is a non-cached value so autogen unit tests work.
-      'GL_BLEND',
-      'GL_CULL_FACE',
-      'GL_DEPTH_TEST',
-      'GL_POLYGON_OFFSET_FILL',
-      'GL_SAMPLE_ALPHA_TO_COVERAGE',
-      'GL_SAMPLE_COVERAGE',
-      'GL_SCISSOR_TEST',
-      'GL_STENCIL_TEST',
-    ],
+    'valid': ["GL_%s" % cap['name'].upper() for cap in _CAPABILITY_FLAGS],
     'invalid': [
       'GL_CLIP_PLANE0',
       'GL_POINT_SPRITE',
@@ -881,30 +1204,17 @@ _FUNCTION_INFO = {
   },
   'ClearColor': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'color_clear_red'},
-      {'name': 'color_clear_green'},
-      {'name': 'color_clear_blue'},
-      {'name': 'color_clear_alpha'},
-    ],
+    'state': 'ClearColor',
   },
   'ClearDepthf': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'depth_clear'},
-    ],
+    'state': 'ClearDepthf',
     'decoder_func': 'glClearDepth',
     'gl_test_func': 'glClearDepth',
   },
   'ColorMask': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'color_mask_red'},
-      {'name': 'color_mask_green'},
-      {'name': 'color_mask_blue'},
-      {'name': 'color_mask_alpha'},
-    ],
-    'state_flag': 'clear_state_dirty_',
+    'state': 'ColorMask',
     'no_gl': True,
     'expectation': False,
   },
@@ -919,9 +1229,7 @@ _FUNCTION_INFO = {
   },
   'ClearStencil': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'stencil_clear'},
-    ],
+    'state': 'ClearStencil',
   },
   'EnableFeatureCHROMIUM': {
     'type': 'Custom',
@@ -962,47 +1270,49 @@ _FUNCTION_INFO = {
   },
   'BlendColor': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'blend_color_red'},
-      {'name': 'blend_color_green'},
-      {'name': 'blend_color_blue'},
-      {'name': 'blend_color_alpha'},
-    ],
+    'state': 'BlendColor',
   },
-  'BlendEquation': {'decoder_func': 'DoBlendEquation'},
+  'BlendEquation': {
+    'type': 'StateSetRGBAlpha',
+    'state': 'BlendEquation',
+  },
   'BlendEquationSeparate': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'blend_equation_rgb'},
-      {'name': 'blend_equation_alpha'},
-    ],
+    'state': 'BlendEquation',
   },
-  'BlendFunc': {'decoder_func': 'DoBlendFunc'},
+  'BlendFunc': {
+    'type': 'StateSetRGBAlpha',
+    'state': 'BlendFunc',
+  },
   'BlendFuncSeparate': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'blend_source_rgb'},
-      {'name': 'blend_dest_rgb'},
-      {'name': 'blend_source_alpha'},
-      {'name': 'blend_dest_alpha'},
-    ],
+    'state': 'BlendFunc',
   },
   'SampleCoverage': {'decoder_func': 'DoSampleCoverage'},
-  'StencilFunc': {'decoder_func': 'DoStencilFunc'},
-  'StencilFuncSeparate': {'decoder_func': 'DoStencilFuncSeparate'},
-  'StencilOp': {'decoder_func': 'DoStencilOp'},
-  'StencilOpSeparate': {'decoder_func': 'DoStencilOpSeparate'},
+  'StencilFunc': {
+    'type': 'StencilFrontBack',
+    'state': 'StencilFunc',
+  },
+  'StencilFuncSeparate': {
+    'type': 'StencilFrontBack',
+    'state': 'StencilFunc',
+  },
+  'StencilOp': {
+    'type': 'StateSetFrontBack',
+    'state': 'StencilOp',
+  },
+  'StencilOpSeparate': {
+    'type': 'StateSetFrontBackSeparate',
+    'state': 'StencilOp',
+  },
   'Hint': {'decoder_func': 'DoHint'},
-  'CullFace': {'type': 'StateSet', 'states': [{'name': 'cull_mode'}]},
-  'FrontFace': {'type': 'StateSet', 'states': [{'name': 'front_face'}]},
-  'DepthFunc': {'type': 'StateSet', 'states': [{'name': 'depth_func'}]},
-  'LineWidth': {'type': 'StateSet', 'states': [{'name': 'line_width'}]},
+  'CullFace': {'type': 'StateSet', 'state': 'CullFace'},
+  'FrontFace': {'type': 'StateSet', 'state': 'FrontFace'},
+  'DepthFunc': {'type': 'StateSet', 'state': 'DepthFunc'},
+  'LineWidth': {'type': 'StateSet', 'state': 'LineWidth'},
   'PolygonOffset': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'polygon_offset_factor'},
-      {'name': 'polygon_offset_units'},
-    ],
+    'state': 'PolygonOffset',
   },
   'DeleteBuffers': {
     'type': 'DELn',
@@ -1044,10 +1354,7 @@ _FUNCTION_INFO = {
   },
   'DepthMask': {
     'type': 'StateSet',
-    'states': [
-      {'name': 'depth_mask'},
-    ],
-    'state_flag': 'clear_state_dirty_',
+    'state': 'DepthMask',
     'no_gl': True,
     'expectation': False,
   },
@@ -1480,9 +1787,16 @@ _FUNCTION_INFO = {
     'cmd_args':
         'GLuint shader, const char* data',
   },
-  'StencilMask': {'decoder_func': 'DoStencilMask', 'expectation': False},
+  'StencilMask': {
+    'type': 'StateSetFrontBack',
+    'state': 'StencilMask',
+    'no_gl': True,
+    'expectation': False,
+  },
   'StencilMaskSeparate': {
-    'decoder_func': 'DoStencilMaskSeparate',
+    'type': 'StateSetFrontBackSeparate',
+    'state': 'StencilMask',
+    'no_gl': True,
     'expectation': False,
   },
   'SwapBuffers': {
@@ -1863,6 +2177,12 @@ _FUNCTION_INFO = {
 }
 
 
+def Grouper(n, iterable, fillvalue=None):
+  """Collect data into fixed-length chunks or blocks"""
+  args = [iter(iterable)] * n
+  return itertools.izip_longest(fillvalue=fillvalue, *args)
+
+
 def SplitWords(input_string):
   """Transforms a input_string into a list of lower-case components.
 
@@ -2135,19 +2455,15 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd")
     args = func.GetCmdArgs()
-    value = 11
-    for arg in args:
-      file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value))
-      value += 1
+    for value, arg in enumerate(args):
+      file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value + 11))
     file.Write(");\n")
-    value = 11
     file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
     file.Write("            cmd.header.command);\n")
     func.type_handler.WriteCmdSizeTest(func, file)
-    for arg in args:
+    for value, arg in enumerate(args):
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
-                 (arg.type, value, arg.name))
-      value += 1
+                 (arg.type, value + 11, arg.name))
     file.Write("  CheckBytesWrittenMatchesExpectedSize(\n")
     file.Write("      next_cmd, sizeof(cmd));\n")
     file.Write("}\n")
@@ -2241,15 +2557,11 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
       test = self._remove_expected_call_re.sub('', test)
     name = func.name
     arg_strings = []
-    count = 0
-    for arg in func.GetOriginalArgs():
+    for count, arg in enumerate(func.GetOriginalArgs()):
       arg_strings.append(arg.GetValidArg(func, count, 0))
-      count += 1
     gl_arg_strings = []
-    count = 0
-    for arg in func.GetOriginalArgs():
+    for count, arg in enumerate(func.GetOriginalArgs()):
       gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
-      count += 1
     gl_func_name = func.GetGLTestFunctionName()
     vars = {
       'test_name': 'GLES2DecoderTest%d' % file.file_num,
@@ -2263,27 +2575,22 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteInvalidUnitTest(self, func, file, test, extra = {}):
     """Writes a invalid unit test."""
-    arg_index = 0
-    for arg in func.GetOriginalArgs():
+    for arg_index, arg in enumerate(func.GetOriginalArgs()):
       num_invalid_values = arg.GetNumInvalidValues(func)
       for value_index in range(0, num_invalid_values):
         arg_strings = []
         parse_result = "kNoError"
         gl_error = None
-        count = 0
-        for arg in func.GetOriginalArgs():
+        for count, arg in enumerate(func.GetOriginalArgs()):
           if count == arg_index:
             (arg_string, parse_result, gl_error) = arg.GetInvalidArg(
                 count, value_index)
           else:
             arg_string = arg.GetValidArg(func, count, 0)
           arg_strings.append(arg_string)
-          count += 1
         gl_arg_strings = []
-        count = 0
         for arg in func.GetOriginalArgs():
           gl_arg_strings.append("_")
-          count += 1
         gl_func_name = func.GetGLTestFunctionName()
         gl_error_test = ''
         if not gl_error == None:
@@ -2303,7 +2610,6 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         }
         vars.update(extra)
         file.Write(test % vars)
-      arg_index += 1
 
   def WriteServiceUnitTest(self, func, file):
     """Writes the service unit test for a command."""
@@ -2449,15 +2755,12 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 }
 """
       cmd_arg_strings = []
-      count = 0
-      for arg in func.GetCmdArgs():
+      for count, arg in enumerate(func.GetCmdArgs()):
         cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
         count += 1
       gl_arg_strings = []
-      count = 0
-      for arg in func.GetOriginalArgs():
+      for count, arg in enumerate(func.GetOriginalArgs()):
         gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
-        count += 1
       file.Write(code % {
             'name': func.name,
             'args': ", ".join(gl_arg_strings),
@@ -2539,19 +2842,91 @@ class StateSetHandler(TypeHandler):
 
   def WriteHandlerImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    states = func.GetInfo('states')
+    state_name = func.GetInfo('state')
+    state = _STATES[state_name]
+    states = state['states']
     args = func.GetOriginalArgs()
-    ndx = 0
-    for state in states:
+    for ndx,state in enumerate(states):
       file.Write("  state_.%s = %s;\n" % (state['name'], args[ndx].name))
-      ndx += 1
-    state_flag = func.GetInfo('state_flag')
-    if state_flag:
-      file.Write("  %s = true;\n" % state_flag)
+    if 'state_flag' in state:
+      file.Write("  %s = true;\n" % state['state_flag'])
     if not func.GetInfo("no_gl"):
       file.Write("  %s(%s);\n" %
                  (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
+
+class StateSetRGBAlphaHandler(TypeHandler):
+  """Handler for commands that simply set state that have rgb/alpha."""
+
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def WriteHandlerImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    state_name = func.GetInfo('state')
+    state = _STATES[state_name]
+    states = state['states']
+    args = func.GetOriginalArgs()
+    num_args = len(args)
+    for ndx, item in enumerate(states):
+      file.Write("  state_.%s = %s;\n" %
+                 (item['name'], args[ndx % num_args].name))
+    if 'state_flag' in state:
+      file.Write("  %s = true;\n" % state['state_flag'])
+    if not func.GetInfo("no_gl"):
+      file.Write("  %s(%s);\n" %
+                 (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+
+
+class StateSetFrontBackSeparateHandler(TypeHandler):
+  """Handler for commands that simply set state that have front/back."""
+
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def WriteHandlerImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    state_name = func.GetInfo('state')
+    state = _STATES[state_name]
+    states = state['states']
+    args = func.GetOriginalArgs()
+    face = args[0].name
+    num_args = len(args)
+    for group_ndx, group in enumerate(Grouper(num_args - 1, states)):
+      file.Write("  if (%s == %s || %s == GL_FRONT_AND_BACK) {\n" %
+                 (face, ('GL_FRONT', 'GL_BACK')[group_ndx], face))
+      for ndx, item in enumerate(group):
+        file.Write("    state_.%s = %s;\n" % (item['name'], args[ndx + 1].name))
+      file.Write("  }\n")
+    if 'state_flag' in state:
+      file.Write("  %s = true;\n" % state['state_flag'])
+    if not func.GetInfo("no_gl"):
+      file.Write("  %s(%s);\n" %
+                 (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+
+
+class StateSetFrontBackHandler(TypeHandler):
+  """Handler for commands that simply set state that set both front/back."""
+
+  def __init__(self):
+    TypeHandler.__init__(self)
+
+  def WriteHandlerImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    state_name = func.GetInfo('state')
+    state = _STATES[state_name]
+    states = state['states']
+    args = func.GetOriginalArgs()
+    face = args[0].name
+    num_args = len(args)
+    for group_ndx, group in enumerate(Grouper(num_args, states)):
+      for ndx, item in enumerate(group):
+        file.Write("  state_.%s = %s;\n" % (item['name'], args[ndx].name))
+    if 'state_flag' in state:
+      file.Write("  %s = true;\n" % state['state_flag'])
+    if not func.GetInfo("no_gl"):
+      file.Write("  %s(%s);\n" %
+                 (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
 class CustomHandler(TypeHandler):
   """Handler for commands that are auto-generated but require minor tweaks."""
@@ -3725,16 +4100,12 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 }
 """
     cmd_arg_strings = []
-    count = 0
-    for arg in func.GetCmdArgs()[0:-2]:
+    for count, arg in enumerate(func.GetCmdArgs()[0:-2]):
       cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
-      count += 1
     cmd_arg_strings[0] = '123'
     gl_arg_strings = []
-    count = 0
-    for arg in func.GetOriginalArgs()[0:-1]:
+    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
       gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
-      count += 1
     gl_arg_strings[0] = '123'
     file.Write(code % {
           'name': func.name,
@@ -3766,13 +4137,11 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 """
     gl_arg_strings = []
     valid_pname = ''
-    count = 0
-    for arg in func.GetOriginalArgs()[:-1]:
+    for count, arg in enumerate(func.GetOriginalArgs()[:-1]):
       arg_value = arg.GetValidGLArg(func, count, 0)
       gl_arg_strings.append(arg_value)
       if arg.name == 'pname':
         valid_pname = arg_value
-      count += 1
     if func.GetInfo('gl_test_func') == 'glGetIntegerv':
       gl_arg_strings.append("_")
     else:
@@ -3855,11 +4224,9 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 """
     gl_arg_strings = []
     gl_any_strings = []
-    count = 0
-    for arg in func.GetOriginalArgs()[0:-1]:
+    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
       gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
       gl_any_strings.append("_")
-      count += 1
     extra = {
       'data_type': func.GetInfo('data_type'),
       'data_count': func.GetInfo('count'),
@@ -3933,15 +4300,11 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 }
 """
     cmd_arg_strings = []
-    count = 0
-    for arg in func.GetCmdArgs()[0:-2]:
+    for count, arg in enumerate(func.GetCmdArgs()[0:-2]):
       cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
-      count += 1
     gl_arg_strings = []
-    count = 0
-    for arg in func.GetOriginalArgs()[0:-1]:
+    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
       gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
-      count += 1
     file.Write(code % {
           'name': func.name,
           'type': func.GetInfo('data_type'),
@@ -4034,22 +4397,18 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd")
     args = func.GetCmdArgs()
-    value = 11
-    for arg in args:
-      file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value))
-      value += 1
+    for value, arg in enumerate(args):
+      file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value + 11))
     file.Write(",\n      data);\n")
     args = func.GetCmdArgs()
-    value = 11
     file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
     file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd) +\n")
     file.Write("            RoundSizeToMultipleOfEntries(sizeof(data)),\n")
     file.Write("            cmd.header.size * 4u);\n")
-    for arg in args:
+    for value, arg in enumerate(args):
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
-                 (arg.type, value, arg.name))
-      value += 1
+                 (arg.type, value + 11, arg.name))
     file.Write("  CheckBytesWrittenMatchesExpectedSize(\n")
     file.Write("      next_cmd, sizeof(cmd) +\n")
     file.Write("      RoundSizeToMultipleOfEntries(sizeof(data)));\n")
@@ -4080,8 +4439,7 @@ TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
 """
     gl_arg_strings = []
     arg_strings = []
-    count = 0
-    for arg in func.GetOriginalArgs():
+    for count, arg in enumerate(func.GetOriginalArgs()):
       # hardcoded to match unit tests.
       if count == 0:
         # the location of the second element of the 2nd uniform.
@@ -4096,7 +4454,6 @@ TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
       else:
         gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
         arg_strings.append(arg.GetValidArg(func, count, 0))
-      count += 1
     extra = {
       'gl_args': ", ".join(gl_arg_strings),
       'args': ", ".join(arg_strings),
@@ -4123,12 +4480,10 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     gl_arg_strings = []
     gl_any_strings = []
     arg_strings = []
-    count = 0
-    for arg in func.GetOriginalArgs()[0:-1]:
+    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
       gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
       gl_any_strings.append("_")
       arg_strings.append(arg.GetValidArg(func, count, 0))
-      count += 1
     extra = {
       'data_type': func.GetInfo('data_type'),
       'data_count': func.GetInfo('count'),
@@ -4210,15 +4565,11 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 }
 """
     cmd_arg_strings = []
-    count = 0
-    for arg in func.GetCmdArgs()[0:-2]:
+    for count, arg in enumerate(func.GetCmdArgs()[0:-2]):
       cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
-      count += 1
     gl_arg_strings = []
-    count = 0
-    for arg in func.GetOriginalArgs()[0:-1]:
+    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
       gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
-      count += 1
     file.Write(code % {
           'name': func.name,
           'type': func.GetInfo('data_type'),
@@ -4315,20 +4666,16 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd")
     args = func.GetCmdArgs()
-    value = 1
-    for arg in args:
-      file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value))
-      value += 1
+    for value, arg in enumerate(args):
+      file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value + 1))
     file.Write(",\n      data);\n")
     args = func.GetCmdArgs()
-    value = 1
     file.Write("  EXPECT_EQ(static_cast<uint32>(%s::kCmdId),\n" % func.name)
     file.Write("            cmd.header.command);\n")
     file.Write("  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);\n")
-    for arg in args:
+    for value, arg in enumerate(args):
       file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
-                 (arg.type, value, arg.name))
-      value += 1
+                 (arg.type, value + 1, arg.name))
     file.Write("  CheckBytesWrittenMatchesExpectedSize(\n")
     file.Write("      next_cmd, sizeof(cmd) +\n")
     file.Write("      RoundSizeToMultipleOfEntries(sizeof(data)));\n")
@@ -4476,15 +4823,11 @@ class GLcharHandler(CustomHandler):
     init_code = []
     check_code = []
     all_but_last_arg = func.GetCmdArgs()[:-1]
-    value = 11
-    for arg in all_but_last_arg:
-      init_code.append("      static_cast<%s>(%d)," % (arg.type, value))
-      value += 1
-    value = 11
-    for arg in all_but_last_arg:
+    for value, arg in enumerate(all_but_last_arg):
+      init_code.append("      static_cast<%s>(%d)," % (arg.type, value + 11))
+    for value, arg in enumerate(all_but_last_arg):
       check_code.append("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);" %
-                        (arg.type, value, arg.name))
-      value += 1
+                        (arg.type, value + 11, arg.name))
     code = """
 TEST_F(GLES2FormatTest, %(func_name)s) {
   %(func_name)s& cmd = *GetBufferAs<%(func_name)s>();
@@ -5941,6 +6284,9 @@ class GLGenerator(object):
       'PUTn': PUTnHandler(),
       'PUTXn': PUTXnHandler(),
       'StateSet': StateSetHandler(),
+      'StateSetRGBAlpha': StateSetRGBAlphaHandler(),
+      'StateSetFrontBack': StateSetFrontBackHandler(),
+      'StateSetFrontBackSeparate': StateSetFrontBackSeparateHandler(),
       'STRn': STRnHandler(),
       'Todo': TodoHandler(),
     }
@@ -6138,6 +6484,78 @@ class GLGenerator(object):
 
     file.Close()
 
+  def WriteContextStateHeader(self, filename):
+    """Writes the context state header."""
+    file = CHeaderWriter(
+        filename,
+        "// It is included by context_state.h\n")
+    file.Write("struct EnableFlags {\n")
+    file.Write("  EnableFlags();\n")
+    for capability in _CAPABILITY_FLAGS:
+      file.Write("  bool %s;\n" % capability['name'])
+    file.Write("};\n\n")
+
+    for state_name in sorted(_STATES.keys()):
+      state = _STATES[state_name]
+      for item in state['states']:
+        file.Write("%s %s;\n" % (item['type'], item['name']))
+    file.Write("\n")
+
+    file.Close()
+
+  def WriteContextStateImpl(self, filename):
+    """Writes the context state implementation."""
+    file = CHeaderWriter(
+        filename,
+        "// It is included by context_state.cc\n")
+    code = []
+    for capability in _CAPABILITY_FLAGS:
+      code.append("%s(%s)" %
+                  (capability['name'],
+                   ('false', 'true')['default' in capability]))
+    file.Write("ContextState::EnableFlags::EnableFlags()\n    : %s {\n}\n" %
+               ",\n      ".join(code))
+    file.Write("\n")
+
+    file.Write("void ContextState::Initialize() {\n")
+    for state_name in sorted(_STATES.keys()):
+      state = _STATES[state_name]
+      for item in state['states']:
+        file.Write("  %s = %s;\n" % (item['name'], item['default']))
+    file.Write("}\n")
+
+    file.Write("""
+void ContextState::InitCapabilities() {
+""")
+    for capability in _CAPABILITY_FLAGS:
+      file.Write("  EnableDisable(GL_%s, enable_flags.%s);\n" %
+                 (capability['name'].upper(), capability['name']))
+    file.Write("""}
+
+void ContextState::InitState() {
+""")
+
+    # We need to sort the keys so the expectations match
+    for state_name in sorted(_STATES.keys()):
+      state = _STATES[state_name]
+      if state['type'] == 'FrontBack':
+        num_states = len(state['states'])
+        for ndx, group in enumerate(Grouper(num_states / 2, state['states'])):
+          args = []
+          for item in group:
+            args.append('%s' % item['name'])
+          file.Write(
+              "  gl%s(%s, %s);\n" %
+              (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
+      else:
+        args = []
+        for item in state['states']:
+          args.append('%s' % item['name'])
+        file.Write("  gl%s(%s);\n" % (state['func'], ", ".join(args)))
+    file.Write("}\n")
+
+    file.Close()
+
   def WriteServiceImplementation(self, filename):
     """Writes the service decorder implementation."""
     file = CHeaderWriter(
@@ -6150,6 +6568,77 @@ class GLGenerator(object):
       #if gen_cmd == True or gen_cmd == None:
         func.WriteServiceImplementation(file)
 
+    file.Write("""
+bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
+  switch (cap) {
+""")
+    for capability in _CAPABILITY_FLAGS:
+      file.Write("    case GL_%s:\n" % capability['name'].upper())
+      if 'state_flag' in capability:
+        file.Write("""      if (state_.enable_flags.%(name)s != enabled) {
+        state_.enable_flags.%(name)s = enabled;
+        %(state_flag)s = true;
+      }
+      return false;
+""" % capability)
+      else:
+        file.Write("""      state_.enable_flags.%(name)s = enabled;
+      return true;
+""" % capability)
+    file.Write("""    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool GLES2DecoderImpl::DoIsEnabled(GLenum cap) {
+  switch (cap) {
+""")
+    for capability in _CAPABILITY_FLAGS:
+      file.Write("    case GL_%s:\n" % capability['name'].upper())
+      file.Write("      return state_.enable_flags.%s;\n" %
+                 capability['name'])
+    file.Write("""    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool GLES2DecoderImpl::GetState(
+    GLenum pname, GLint* params, GLsizei* num_written) {
+  switch (pname) {
+""")
+    for state_name in _STATES.keys():
+      state = _STATES[state_name]
+      if 'enum' in state:
+        file.Write("    case %s:\n" % state['enum'])
+        file.Write("      *num_written = %d;\n" % len(state['states']))
+        file.Write("      if (params) {\n")
+        for ndx,item in enumerate(state['states']):
+          file.Write("        params[%d] = state_.%s;\n" % (ndx, item['name']))
+        file.Write("      }\n")
+        file.Write("      return true;\n")
+      else:
+        for item in state['states']:
+          file.Write("    case %s:\n" % item['enum'])
+          file.Write("      *num_written = 1;\n")
+          file.Write("      if (params) {\n")
+          file.Write("        params[0] = state_.%s;\n" % item['name'])
+          file.Write("      }\n")
+          file.Write("      return true;\n")
+    for capability in _CAPABILITY_FLAGS:
+          file.Write("    case GL_%s:\n" % capability['name'].upper())
+          file.Write("      *num_written = 1;\n")
+          file.Write("      if (params) {\n")
+          file.Write("        params[0] = state_.enable_flags.%s;\n" %
+                     capability['name'])
+          file.Write("      }\n")
+          file.Write("      return true;\n")
+    file.Write("""    default:
+      return false;
+  }
+}
+""")
     file.Close()
 
   def WriteServiceUnitTests(self, filename):
@@ -6178,6 +6667,52 @@ class GLGenerator(object):
             func.WriteServiceUnitTest(file)
 
       file.Close()
+    file = CHeaderWriter(
+        filename % 0,
+        "// It is included by gles2_cmd_decoder_unittest_base.cc\n")
+    file.Write(
+"""void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations() {
+""")
+    for capability in _CAPABILITY_FLAGS:
+      file.Write("  ExpectEnableDisable(GL_%s, %s);\n" %
+                 (capability['name'].upper(),
+                  ('false', 'true')['default' in capability]))
+    file.Write("""}
+
+void GLES2DecoderTestBase::SetupInitStateExpectations() {
+""")
+
+    # We need to sort the keys so the expectations match
+    for state_name in sorted(_STATES.keys()):
+      state = _STATES[state_name]
+      if state['type'] == 'FrontBack':
+        num_states = len(state['states'])
+        for ndx, group in enumerate(Grouper(num_states / 2, state['states'])):
+          args = []
+          for item in group:
+            if 'expected' in item:
+              args.append(item['expected'])
+            else:
+              args.append(item['default'])
+          file.Write(
+              "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+              (state['func'], ('GL_FRONT', 'GL_BACK')[ndx], ", ".join(args)))
+          file.Write("      .Times(1)\n")
+          file.Write("      .RetiresOnSaturation();\n")
+      else:
+        args = []
+        for item in state['states']:
+          if 'expected' in item:
+            args.append(item['expected'])
+          else:
+            args.append(item['default'])
+        file.Write("  EXPECT_CALL(*gl_, %s(%s))\n" %
+                   (state['func'], ", ".join(args)))
+        file.Write("      .Times(1)\n")
+        file.Write("      .RetiresOnSaturation();\n")
+    file.Write("""}
+""")
+    file.Close()
 
 
   def WriteGLES2CLibImplementation(self, filename):
@@ -6274,10 +6809,8 @@ class GLGenerator(object):
     file.Write("Validators::Validators()\n")
     pre = ': '
     post = ','
-    count = 0
-    for enum in enums:
-      count += 1
-      if count == len(enums):
+    for count, enum in enumerate(enums):
+      if count + 1 == len(enums):
         post = ' {'
       if len(_ENUM_LISTS[enum]['valid']) > 0:
         code = """    %(pre)s%(name)s(
@@ -6582,6 +7115,17 @@ def main(argv):
 
   (options, args) = parser.parse_args(args=argv)
 
+  # Add in states and capabilites to GLState
+  for state_name in sorted(_STATES.keys()):
+    state = _STATES[state_name]
+    if 'enum' in state:
+      _ENUM_LISTS['GLState']['valid'].append(state['enum'])
+    else:
+      for item in state['states']:
+        _ENUM_LISTS['GLState']['valid'].append(item['enum'])
+  for capability in _CAPABILITY_FLAGS:
+    _ENUM_LISTS['GLState']['valid'].append("GL_%s" % capability['name'].upper())
+
   # This script lives under gpu/command_buffer, cd to base directory.
   os.chdir(os.path.dirname(__file__) + "/../..")
 
@@ -6625,6 +7169,8 @@ def main(argv):
     gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")
     gen.WriteCmdHelperHeader("client/gles2_cmd_helper_autogen.h")
     gen.WriteServiceImplementation("service/gles2_cmd_decoder_autogen.h")
+    gen.WriteContextStateHeader("service/context_state_autogen.h")
+    gen.WriteContextStateImpl("service/context_state_impl_autogen.h")
     gen.WriteServiceUnitTests("service/gles2_cmd_decoder_unittest_%d_autogen.h")
     gen.WriteServiceUtilsHeader("service/gles2_cmd_validation_autogen.h")
     gen.WriteServiceUtilsImplementation(

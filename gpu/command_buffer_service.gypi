@@ -35,6 +35,8 @@
     'command_buffer/service/context_group.h',
     'command_buffer/service/context_group.cc',
     'command_buffer/service/context_state.h',
+    'command_buffer/service/context_state_autogen.h',
+    'command_buffer/service/context_state_impl_autogen.h',
     'command_buffer/service/context_state.cc',
     'command_buffer/service/feature_info.h',
     'command_buffer/service/feature_info.cc',

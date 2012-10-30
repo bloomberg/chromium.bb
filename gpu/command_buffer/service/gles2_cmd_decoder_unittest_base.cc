@@ -184,11 +184,6 @@ void GLES2DecoderTestBase::InitDecoder(
       .Times(1)
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*gl_, Viewport(
-      kViewportX, kViewportY, kViewportWidth, kViewportHeight))
-      .Times(1)
-      .RetiresOnSaturation();
-
   static GLint max_viewport_dims[] = {
     kMaxViewportWidth,
     kMaxViewportHeight
@@ -198,110 +193,16 @@ void GLES2DecoderTestBase::InitDecoder(
           max_viewport_dims, max_viewport_dims + arraysize(max_viewport_dims)))
       .RetiresOnSaturation();
 
+  SetupInitCapabilitiesExpectations();
+  SetupInitStateExpectations();
+
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_BLEND))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BlendColor(0.0f, 0.0, 0.0f, 0.0f))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BlendFunc(GL_ONE, GL_ZERO))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BlendFuncSeparate(GL_ONE, GL_ZERO, GL_ONE, GL_ZERO))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BlendEquation(GL_FUNC_ADD))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0, 0.0f, 0.0f))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ColorMask(true, true, true, true))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_CULL_FACE))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, CullFace(GL_BACK))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ClearDepth(1.0f))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, DepthFunc(GL_LESS))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, DepthRange(0.0f, 1.0f))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_DEPTH_TEST))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Enable(GL_DITHER))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, FrontFace(GL_CCW))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, LineWidth(1.0f))
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 4))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, PolygonOffset(0.0f, 0.0f))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_POLYGON_OFFSET_FILL))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_SAMPLE_ALPHA_TO_COVERAGE))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_SAMPLE_COVERAGE))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, SampleCoverage(1.0, false))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Scissor(
-      kViewportX, kViewportY, kViewportWidth, kViewportHeight))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Disable(GL_STENCIL_TEST))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ClearStencil(0))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilFuncSeparate(GL_FRONT, GL_ALWAYS, 0, 0xFFFFFFFFU))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilFuncSeparate(GL_BACK, GL_ALWAYS, 0, 0xFFFFFFFFU))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_KEEP))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, 0xFFFFFFFFU))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, 0xFFFFFFFFU))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ALIGNMENT, 4))
@@ -398,6 +299,19 @@ void GLES2DecoderTestBase::TearDown() {
   ::gfx::GLInterface::SetGLInterface(NULL);
   gl_.reset();
 }
+
+void GLES2DecoderTestBase::ExpectEnableDisable(GLenum cap, bool enable) {
+  if (enable) {
+    EXPECT_CALL(*gl_, Enable(cap))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(cap))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+}
+
 
 GLint GLES2DecoderTestBase::GetGLError() {
   EXPECT_CALL(*gl_, GetError())
@@ -1458,6 +1372,11 @@ void GLES2DecoderWithShaderTestBase::SetUp() {
   GLES2DecoderTestBase::SetUp();
   SetupDefaultProgram();
 }
+
+// Include the auto-generated part of this file. We split this because it means
+// we can easily edit the non-auto generated parts right here in this file
+// instead of having to edit some template or the code generator.
+#include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_0_autogen.h"
 
 }  // namespace gles2
 }  // namespace gpu

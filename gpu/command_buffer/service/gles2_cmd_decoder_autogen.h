@@ -94,7 +94,9 @@ error::Error GLES2DecoderImpl::HandleBlendEquation(
     SetGLErrorInvalidEnum("glBlendEquation", mode, "mode");
     return error::kNoError;
   }
-  DoBlendEquation(mode);
+  state_.blend_equation_rgb = mode;
+  state_.blend_equation_alpha = mode;
+  glBlendEquation(mode);
   return error::kNoError;
 }
 
@@ -128,7 +130,11 @@ error::Error GLES2DecoderImpl::HandleBlendFunc(
     SetGLErrorInvalidEnum("glBlendFunc", dfactor, "dfactor");
     return error::kNoError;
   }
-  DoBlendFunc(sfactor, dfactor);
+  state_.blend_source_rgb = sfactor;
+  state_.blend_dest_rgb = dfactor;
+  state_.blend_source_alpha = sfactor;
+  state_.blend_dest_alpha = dfactor;
+  glBlendFunc(sfactor, dfactor);
   return error::kNoError;
 }
 
@@ -265,7 +271,6 @@ error::Error GLES2DecoderImpl::HandleColorMask(
   state_.color_mask_green = green;
   state_.color_mask_blue = blue;
   state_.color_mask_alpha = alpha;
-  clear_state_dirty_ = true;
   return error::kNoError;
 }
 
@@ -600,7 +605,6 @@ error::Error GLES2DecoderImpl::HandleDepthMask(
     uint32 immediate_data_size, const gles2::DepthMask& c) {
   GLboolean flag = static_cast<GLboolean>(c.flag);
   state_.depth_mask = flag;
-  clear_state_dirty_ = true;
   return error::kNoError;
 }
 
@@ -1514,7 +1518,7 @@ error::Error GLES2DecoderImpl::HandleStencilFunc(
     SetGLErrorInvalidEnum("glStencilFunc", func, "func");
     return error::kNoError;
   }
-  DoStencilFunc(func, ref, mask);
+  glStencilFunc(func, ref, mask);
   return error::kNoError;
 }
 
@@ -1532,14 +1536,16 @@ error::Error GLES2DecoderImpl::HandleStencilFuncSeparate(
     SetGLErrorInvalidEnum("glStencilFuncSeparate", func, "func");
     return error::kNoError;
   }
-  DoStencilFuncSeparate(face, func, ref, mask);
+  glStencilFuncSeparate(face, func, ref, mask);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleStencilMask(
     uint32 immediate_data_size, const gles2::StencilMask& c) {
   GLuint mask = static_cast<GLuint>(c.mask);
-  DoStencilMask(mask);
+  state_.stencil_front_writemask = mask;
+  state_.stencil_back_writemask = mask;
+  clear_state_dirty_ = true;
   return error::kNoError;
 }
 
@@ -1551,7 +1557,13 @@ error::Error GLES2DecoderImpl::HandleStencilMaskSeparate(
     SetGLErrorInvalidEnum("glStencilMaskSeparate", face, "face");
     return error::kNoError;
   }
-  DoStencilMaskSeparate(face, mask);
+  if (face == GL_FRONT || face == GL_FRONT_AND_BACK) {
+    state_.stencil_front_writemask = mask;
+  }
+  if (face == GL_BACK || face == GL_FRONT_AND_BACK) {
+    state_.stencil_back_writemask = mask;
+  }
+  clear_state_dirty_ = true;
   return error::kNoError;
 }
 
@@ -1572,7 +1584,13 @@ error::Error GLES2DecoderImpl::HandleStencilOp(
     SetGLErrorInvalidEnum("glStencilOp", zpass, "zpass");
     return error::kNoError;
   }
-  DoStencilOp(fail, zfail, zpass);
+  state_.stencil_front_fail_op = fail;
+  state_.stencil_front_z_fail_op = zfail;
+  state_.stencil_front_z_pass_op = zpass;
+  state_.stencil_back_fail_op = fail;
+  state_.stencil_back_z_fail_op = zfail;
+  state_.stencil_back_z_pass_op = zpass;
+  glStencilOp(fail, zfail, zpass);
   return error::kNoError;
 }
 
@@ -1598,7 +1616,17 @@ error::Error GLES2DecoderImpl::HandleStencilOpSeparate(
     SetGLErrorInvalidEnum("glStencilOpSeparate", zpass, "zpass");
     return error::kNoError;
   }
-  DoStencilOpSeparate(face, fail, zfail, zpass);
+  if (face == GL_FRONT || face == GL_FRONT_AND_BACK) {
+    state_.stencil_front_fail_op = fail;
+    state_.stencil_front_z_fail_op = zfail;
+    state_.stencil_front_z_pass_op = zpass;
+  }
+  if (face == GL_BACK || face == GL_FRONT_AND_BACK) {
+    state_.stencil_back_fail_op = fail;
+    state_.stencil_back_z_fail_op = zfail;
+    state_.stencil_back_z_pass_op = zpass;
+  }
+  glStencilOpSeparate(face, fail, zfail, zpass);
   return error::kNoError;
 }
 
@@ -2938,5 +2966,372 @@ error::Error GLES2DecoderImpl::HandleReleaseTexImage2DCHROMIUM(
   return error::kNoError;
 }
 
+
+bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
+  switch (cap) {
+    case GL_BLEND:
+      state_.enable_flags.blend = enabled;
+      return true;
+    case GL_CULL_FACE:
+      state_.enable_flags.cull_face = enabled;
+      return true;
+    case GL_DEPTH_TEST:
+      if (state_.enable_flags.depth_test != enabled) {
+        state_.enable_flags.depth_test = enabled;
+        clear_state_dirty_ = true;
+      }
+      return false;
+    case GL_DITHER:
+      state_.enable_flags.dither = enabled;
+      return true;
+    case GL_POLYGON_OFFSET_FILL:
+      state_.enable_flags.polygon_offset_fill = enabled;
+      return true;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      state_.enable_flags.sample_alpha_to_coverage = enabled;
+      return true;
+    case GL_SAMPLE_COVERAGE:
+      state_.enable_flags.sample_coverage = enabled;
+      return true;
+    case GL_SCISSOR_TEST:
+      state_.enable_flags.scissor_test = enabled;
+      return true;
+    case GL_STENCIL_TEST:
+      if (state_.enable_flags.stencil_test != enabled) {
+        state_.enable_flags.stencil_test = enabled;
+        clear_state_dirty_ = true;
+      }
+      return false;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool GLES2DecoderImpl::DoIsEnabled(GLenum cap) {
+  switch (cap) {
+    case GL_BLEND:
+      return state_.enable_flags.blend;
+    case GL_CULL_FACE:
+      return state_.enable_flags.cull_face;
+    case GL_DEPTH_TEST:
+      return state_.enable_flags.depth_test;
+    case GL_DITHER:
+      return state_.enable_flags.dither;
+    case GL_POLYGON_OFFSET_FILL:
+      return state_.enable_flags.polygon_offset_fill;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      return state_.enable_flags.sample_alpha_to_coverage;
+    case GL_SAMPLE_COVERAGE:
+      return state_.enable_flags.sample_coverage;
+    case GL_SCISSOR_TEST:
+      return state_.enable_flags.scissor_test;
+    case GL_STENCIL_TEST:
+      return state_.enable_flags.stencil_test;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool GLES2DecoderImpl::GetState(
+    GLenum pname, GLint* params, GLsizei* num_written) {
+  switch (pname) {
+    case GL_VIEWPORT:
+      *num_written = 4;
+      if (params) {
+        params[0] = state_.viewport_x;
+        params[1] = state_.viewport_y;
+        params[2] = state_.viewport_width;
+        params[3] = state_.viewport_height;
+      }
+      return true;
+    case GL_BLEND_SRC_RGB:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.blend_source_rgb;
+      }
+      return true;
+    case GL_BLEND_DST_RGB:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.blend_dest_rgb;
+      }
+      return true;
+    case GL_BLEND_SRC_ALPHA:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.blend_source_alpha;
+      }
+      return true;
+    case GL_BLEND_DST_ALPHA:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.blend_dest_alpha;
+      }
+      return true;
+    case GL_LINE_WIDTH:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.line_width;
+      }
+      return true;
+    case GL_BLEND_COLOR:
+      *num_written = 4;
+      if (params) {
+        params[0] = state_.blend_color_red;
+        params[1] = state_.blend_color_green;
+        params[2] = state_.blend_color_blue;
+        params[3] = state_.blend_color_alpha;
+      }
+      return true;
+    case GL_STENCIL_CLEAR_VALUE:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_clear;
+      }
+      return true;
+    case GL_COLOR_WRITEMASK:
+      *num_written = 4;
+      if (params) {
+        params[0] = state_.color_mask_red;
+        params[1] = state_.color_mask_green;
+        params[2] = state_.color_mask_blue;
+        params[3] = state_.color_mask_alpha;
+      }
+      return true;
+    case GL_COLOR_CLEAR_VALUE:
+      *num_written = 4;
+      if (params) {
+        params[0] = state_.color_clear_red;
+        params[1] = state_.color_clear_green;
+        params[2] = state_.color_clear_blue;
+        params[3] = state_.color_clear_alpha;
+      }
+      return true;
+    case GL_DEPTH_RANGE:
+      *num_written = 2;
+      if (params) {
+        params[0] = state_.z_near;
+        params[1] = state_.z_far;
+      }
+      return true;
+    case GL_DEPTH_CLEAR_VALUE:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.depth_clear;
+      }
+      return true;
+    case GL_STENCIL_FAIL:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_front_fail_op;
+      }
+      return true;
+    case GL_STENCIL_PASS_DEPTH_FAIL:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_front_z_fail_op;
+      }
+      return true;
+    case GL_STENCIL_PASS_DEPTH_PASS:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_front_z_pass_op;
+      }
+      return true;
+    case GL_STENCIL_BACK_FAIL:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_back_fail_op;
+      }
+      return true;
+    case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_back_z_fail_op;
+      }
+      return true;
+    case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_back_z_pass_op;
+      }
+      return true;
+    case GL_SCISSOR_BOX:
+      *num_written = 4;
+      if (params) {
+        params[0] = state_.scissor_x;
+        params[1] = state_.scissor_y;
+        params[2] = state_.scissor_width;
+        params[3] = state_.scissor_height;
+      }
+      return true;
+    case GL_FRONT_FACE:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.front_face;
+      }
+      return true;
+    case GL_SAMPLE_COVERAGE_VALUE:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.sample_coverage_value;
+      }
+      return true;
+    case GL_SAMPLE_COVERAGE_INVERT:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.sample_coverage_invert;
+      }
+      return true;
+    case GL_POLYGON_OFFSET_FACTOR:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.polygon_offset_factor;
+      }
+      return true;
+    case GL_POLYGON_OFFSET_UNITS:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.polygon_offset_units;
+      }
+      return true;
+    case GL_CULL_FACE_MODE:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.cull_mode;
+      }
+      return true;
+    case GL_DEPTH_FUNC:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.depth_func;
+      }
+      return true;
+    case GL_STENCIL_FUNC:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_front_func;
+      }
+      return true;
+    case GL_STENCIL_REF:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_front_ref;
+      }
+      return true;
+    case GL_STENCIL_VALUE_MASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_front_mask;
+      }
+      return true;
+    case GL_STENCIL_BACK_FUNC:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_back_func;
+      }
+      return true;
+    case GL_STENCIL_BACK_REF:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_back_ref;
+      }
+      return true;
+    case GL_STENCIL_BACK_VALUE_MASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_back_mask;
+      }
+      return true;
+    case GL_DEPTH_WRITEMASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.depth_mask;
+      }
+      return true;
+    case GL_BLEND_EQUATION_RGB:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.blend_equation_rgb;
+      }
+      return true;
+    case GL_BLEND_EQUATION_ALPHA:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.blend_equation_alpha;
+      }
+      return true;
+    case GL_STENCIL_WRITEMASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_front_writemask;
+      }
+      return true;
+    case GL_STENCIL_BACK_WRITEMASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.stencil_back_writemask;
+      }
+      return true;
+    case GL_BLEND:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.blend;
+      }
+      return true;
+    case GL_CULL_FACE:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.cull_face;
+      }
+      return true;
+    case GL_DEPTH_TEST:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.depth_test;
+      }
+      return true;
+    case GL_DITHER:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.dither;
+      }
+      return true;
+    case GL_POLYGON_OFFSET_FILL:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.polygon_offset_fill;
+      }
+      return true;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.sample_alpha_to_coverage;
+      }
+      return true;
+    case GL_SAMPLE_COVERAGE:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.sample_coverage;
+      }
+      return true;
+    case GL_SCISSOR_TEST:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.scissor_test;
+      }
+      return true;
+    case GL_STENCIL_TEST:
+      *num_written = 1;
+      if (params) {
+        params[0] = state_.enable_flags.stencil_test;
+      }
+      return true;
+    default:
+      return false;
+  }
+}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

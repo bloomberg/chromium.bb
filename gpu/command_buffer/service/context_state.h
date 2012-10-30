@@ -81,6 +81,15 @@ struct GPU_EXPORT ContextState {
   ContextState();
   ~ContextState();
 
+  void Initialize();
+
+  void InitCapabilities();
+  void InitState();
+
+  #include "gpu/command_buffer/service/context_state_autogen.h"
+
+  EnableFlags enable_flags;
+
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment;
 
@@ -92,43 +101,9 @@ struct GPU_EXPORT ContextState {
   // be 2.
   GLuint active_texture_unit;
 
-  GLfloat color_clear_red;
-  GLfloat color_clear_green;
-  GLfloat color_clear_blue;
-  GLfloat color_clear_alpha;
-  GLboolean color_mask_red;
-  GLboolean color_mask_green;
-  GLboolean color_mask_blue;
-  GLboolean color_mask_alpha;
-
-  GLclampf depth_clear;
-  GLboolean depth_mask;
-  GLenum depth_func;
-  float z_near;
-  float z_far;
-
-  bool enable_blend;
-  bool enable_cull_face;
-  bool enable_scissor_test;
-  bool enable_depth_test;
-  bool enable_stencil_test;
-  bool enable_polygon_offset_fill;
-  bool enable_dither;
-  bool enable_sample_alpha_to_coverage;
-  bool enable_sample_coverage;
-
   // Cached values of the currently assigned viewport dimensions.
-  GLint viewport_x;
-  GLint viewport_y;
-  GLsizei viewport_width;
-  GLsizei viewport_height;
   GLsizei viewport_max_width;
   GLsizei viewport_max_height;
-
-  GLint scissor_x;
-  GLint scissor_y;
-  GLsizei scissor_width;
-  GLsizei scissor_height;
 
   // The currently bound array buffer. If this is 0 it is illegal to call
   // glVertexAttribPointer.
@@ -151,44 +126,6 @@ struct GPU_EXPORT ContextState {
   RenderbufferManager::RenderbufferInfo::Ref bound_renderbuffer;
 
   QueryManager::Query::Ref current_query;
-
-  GLenum cull_mode;
-  GLenum front_face;
-
-  GLenum blend_source_rgb;
-  GLenum blend_dest_rgb;
-  GLenum blend_source_alpha;
-  GLenum blend_dest_alpha;
-  GLenum blend_equation_rgb;
-  GLenum blend_equation_alpha;
-  GLfloat blend_color_red;
-  GLfloat blend_color_green;
-  GLfloat blend_color_blue;
-  GLfloat blend_color_alpha;
-
-  GLint stencil_clear;
-  GLuint stencil_front_writemask;
-  GLenum stencil_front_func;
-  GLint stencil_front_ref;
-  GLuint stencil_front_mask;
-  GLenum stencil_front_fail_op;
-  GLenum stencil_front_z_fail_op;
-  GLenum stencil_front_z_pass_op;
-  GLuint stencil_back_writemask;
-  GLenum stencil_back_func;
-  GLint stencil_back_ref;
-  GLuint stencil_back_mask;
-  GLenum stencil_back_fail_op;
-  GLenum stencil_back_z_fail_op;
-  GLenum stencil_back_z_pass_op;
-
-  GLfloat polygon_offset_factor;
-  GLfloat polygon_offset_units;
-
-  GLclampf sample_coverage_value;
-  bool sample_coverage_invert;
-
-  GLfloat line_width;
 
   GLenum hint_generate_mipmap;
   GLenum hint_fragment_shader_derivative;

@@ -178,6 +178,10 @@ class GLES2DecoderTestBase : public testing::Test {
         gl_.get(), uniforms, num_uniforms);
   }
 
+  void SetupInitCapabilitiesExpectations();
+  void SetupInitStateExpectations();
+  void ExpectEnableDisable(GLenum cap, bool enable);
+
   // Setups up a shader for testing glUniform.
   void SetupShaderForUniform();
   void SetupDefaultProgram();

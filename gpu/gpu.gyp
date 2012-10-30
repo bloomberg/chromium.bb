@@ -176,6 +176,7 @@
         'command_buffer/service/feature_info_unittest.cc',
         'command_buffer/service/framebuffer_manager_unittest.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_0_autogen.h',
         'command_buffer/service/gles2_cmd_decoder_unittest_1.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h',
         'command_buffer/service/gles2_cmd_decoder_unittest_2.cc',
