@@ -83,7 +83,7 @@ void Syncer::RequestEarlyExit() {
   early_exit_requested_ = true;
 }
 
-void Syncer::SyncShare(sessions::SyncSession* session,
+bool Syncer::SyncShare(sessions::SyncSession* session,
                        SyncerStep first_step,
                        SyncerStep last_step) {
   ScopedSessionContextConflictResolver scoped(session->context(),
@@ -179,17 +179,16 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       }
       default:
         LOG(ERROR) << "Unknown command: " << current_step;
-    }
+    }  // switch
     DVLOG(2) << "last step: " << SyncerStepToString(last_step) << ", "
              << "current step: " << SyncerStepToString(current_step) << ", "
              << "next step: " << SyncerStepToString(next_step) << ", "
              << "snapshot: " << session->TakeSnapshot().ToString();
-    if (last_step == current_step) {
-      session->SetFinished();
-      break;
-    }
+    if (last_step == current_step)
+      return true;
     current_step = next_step;
-  }
+  }  // while
+  return false;
 }
 
 void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {

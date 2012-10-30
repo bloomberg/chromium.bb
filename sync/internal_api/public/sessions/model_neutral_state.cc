@@ -30,5 +30,13 @@ ModelNeutralState::ModelNeutralState()
 
 ModelNeutralState::~ModelNeutralState() {}
 
+bool HasSyncerError(const ModelNeutralState& state) {
+  const bool get_key_error = SyncerErrorIsError(state.last_get_key_result);
+  const bool download_updates_error =
+      SyncerErrorIsError(state.last_download_updates_result);
+  const bool commit_error = SyncerErrorIsError(state.commit_result);
+  return get_key_error || download_updates_error || commit_error;
+}
+
 }  // namespace sessions
 }  // namespace syncer
