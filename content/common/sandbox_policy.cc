@@ -748,12 +748,13 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   // TODO(jschuh): Make NaCl work with DEP and SEHOP. crbug.com/147752
   sandbox::MitigationFlags mitigations = sandbox::MITIGATION_HEAP_TERMINATE |
-                                         sandbox::MITIGATION_BOTTOM_UP_ASLR |
-                                         sandbox::MITIGATION_HIGH_ENTROPY_ASLR;
+                                         sandbox::MITIGATION_BOTTOM_UP_ASLR;
 #if !defined(NACL_WIN64)
+  // TODO(jschuh,bsy): Make NaCl work with HIGH_ENTROPY_ASLR. crbug.com/158133
   mitigations |= sandbox::MITIGATION_DEP |
                  sandbox::MITIGATION_DEP_NO_ATL_THUNK |
-                 sandbox::MITIGATION_SEHOP;
+                 sandbox::MITIGATION_SEHOP |
+                 sandbox::MITIGATION_HIGH_ENTROPY_ASLR;
 #if defined(NDEBUG)
   mitigations |= sandbox::MITIGATION_RELOCATE_IMAGE |
                  sandbox::MITIGATION_RELOCATE_IMAGE_REQUIRED;
