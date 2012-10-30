@@ -7,6 +7,8 @@
 #include "base/synchronization/lock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 class MachBrokerTest : public testing::Test {
  public:
   // Helper function to acquire/release locks and call |PlaceholderForPid()|.
@@ -58,3 +60,5 @@ TEST_F(MachBrokerTest, FinalizeUnknownPid) {
   FinalizePid(1u, MachBroker::MachInfo().SetTask(100u));
   EXPECT_EQ(0u, broker_.TaskForPid(1u));
 }
+
+}  // namespace content

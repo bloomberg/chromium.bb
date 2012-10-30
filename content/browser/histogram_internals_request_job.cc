@@ -34,7 +34,7 @@ void AboutHistogram(std::string* data, const std::string& path) {
   // (in official builds).
   base::StatisticsRecorder::CollectHistogramStats("Browser");
 #endif
-  content::HistogramSynchronizer::FetchHistograms();
+  HistogramSynchronizer::FetchHistograms();
 
   std::string unescaped_query;
   std::string unescaped_title("About Histograms");

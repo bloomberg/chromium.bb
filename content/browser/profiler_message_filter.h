@@ -21,10 +21,10 @@ class ProfilerMessageFilter : public BrowserMessageFilter {
  public:
   explicit ProfilerMessageFilter(ProcessType process_type);
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

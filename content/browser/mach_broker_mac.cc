@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 
-using content::BrowserThread;
+namespace content {
 
 namespace {
 // Prints a string representation of a Mach error code.
@@ -173,25 +173,23 @@ mach_port_t MachBroker::TaskForPid(base::ProcessHandle pid) const {
 }
 
 void MachBroker::Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) {
+                         const NotificationSource& source,
+                         const NotificationDetails& details) {
   // TODO(rohitrao): These notifications do not always carry the proper PIDs,
   // especially when the renderer is already gone or has crashed.  Find a better
   // way to listen for child process deaths.  http://crbug.com/55734
   base::ProcessHandle handle = 0;
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
-      handle =
-          content::Details<content::RenderProcessHost::RendererClosedDetails>(
-              details)->handle;
+    case NOTIFICATION_RENDERER_PROCESS_CLOSED:
+      handle = Details<RenderProcessHost::RendererClosedDetails>(
+          details)->handle;
       break;
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-      handle = content::Source<content::RenderProcessHost>(source)->
-          GetHandle();
+    case NOTIFICATION_RENDERER_PROCESS_TERMINATED:
+      handle = Source<RenderProcessHost>(source)->GetHandle();
       break;
-    case content::NOTIFICATION_CHILD_PROCESS_CRASHED:
-    case content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
-      handle = content::Details<content::ChildProcessData>(details)->handle;
+    case NOTIFICATION_CHILD_PROCESS_CRASHED:
+    case NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
+      handle = Details<ChildProcessData>(details)->handle;
       break;
     default:
       NOTREACHED() << "Unexpected notification";
@@ -216,12 +214,14 @@ MachBroker::MachBroker() : listener_thread_started_(false) {
 MachBroker::~MachBroker() {}
 
 void MachBroker::RegisterNotifications() {
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_CRASHED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_CHILD_PROCESS_CRASHED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
+                 NotificationService::AllBrowserContextsAndSources());
 }
+
+}  // namespace content

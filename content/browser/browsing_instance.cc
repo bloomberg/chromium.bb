@@ -12,9 +12,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
-using content::SiteInstance;
+namespace content {
 
-BrowsingInstance::BrowsingInstance(content::BrowserContext* browser_context)
+BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
     : browser_context_(browser_context) {
 }
 
@@ -83,3 +83,5 @@ BrowsingInstance::~BrowsingInstance() {
   // us are gone.
   DCHECK(site_instance_map_.empty());
 }
+
+}  // namespace content

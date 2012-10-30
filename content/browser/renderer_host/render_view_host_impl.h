@@ -27,7 +27,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class ChildProcessSecurityPolicyImpl;
 class SkBitmap;
 class ViewMsg_Navigate;
 struct AccessibilityHostMsg_NotificationParams;
@@ -50,9 +49,7 @@ struct SelectedFileInfo;
 
 namespace content {
 
-#if defined(OS_ANDROID)
-class MediaPlayerManagerAndroid;
-#endif
+class ChildProcessSecurityPolicyImpl;
 class PowerSaveBlocker;
 class RenderViewHostObserver;
 class RenderWidgetHostDelegate;
@@ -63,6 +60,10 @@ struct ContextMenuParams;
 struct FileChooserParams;
 struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
+
+#if defined(OS_ANDROID)
+class MediaPlayerManagerAndroid;
+#endif
 
 // NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
 // notifications.

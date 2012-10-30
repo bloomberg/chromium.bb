@@ -18,7 +18,7 @@ class TraceSubscriberStdioImpl;
 
 // Stdio implementation of TraceSubscriber. Use this to write traces to a file.
 class CONTENT_EXPORT TraceSubscriberStdio
-    : NON_EXPORTED_BASE(public content::TraceSubscriber) {
+    : NON_EXPORTED_BASE(public TraceSubscriber) {
  public:
   // Creates or overwrites the specified file. Check IsValid() for success.
   explicit TraceSubscriberStdio(const FilePath& path);

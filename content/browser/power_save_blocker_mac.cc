@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace content {
 namespace {
 
 // Power management cannot be done on the UI thread. IOPMAssertionCreate does a
@@ -35,8 +36,6 @@ base::LazyInstance<base::Thread, PowerSaveBlockerLazyInstanceTraits>
     g_power_thread = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace content {
 
 class PowerSaveBlocker::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {

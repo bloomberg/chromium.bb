@@ -12,6 +12,8 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
 
+namespace content {
+
 namespace {
 const wchar_t kWindowClassName[] = L"Chrome_SystemMessageWindow";
 
@@ -149,3 +151,5 @@ LRESULT CALLBACK SystemMessageWindowWin::WndProc(HWND hwnd, UINT message,
 
   return ::DefWindowProc(hwnd, message, wparam, lparam);
 }
+
+}  // namespace content

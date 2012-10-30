@@ -36,10 +36,10 @@ static const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 static const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 static const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 
+namespace content {
 
-class EncryptedMediaTest
-    : public testing::WithParamInterface<const char*>,
-      public content::ContentBrowserTest {
+class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
+                           public ContentBrowserTest {
  public:
   void TestSimplePlayback(const char* encrypted_media, const char* media_type,
                           const char* key_system, const string16 expectation) {
@@ -64,18 +64,18 @@ class EncryptedMediaTest
     GURL player_gurl = test_server()->GetURL(base::StringPrintf(
         "files/media/%s?keysystem=%s&mediafile=%s&mediatype=%s", html_page,
         key_system, media_file, media_type));
-    content::TitleWatcher title_watcher(shell()->web_contents(), expectation);
+    TitleWatcher title_watcher(shell()->web_contents(), expectation);
     title_watcher.AlsoWaitForTitle(kError);
     title_watcher.AlsoWaitForTitle(kFailed);
 
-    content::NavigateToURL(shell(), player_gurl);
+    NavigateToURL(shell(), player_gurl);
 
     string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expectation, final_title);
 
     if (final_title == kFailed) {
       std::string fail_message;
-      EXPECT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
           shell()->web_contents()->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(failMessage);", &fail_message));
       LOG(INFO) << "Test failed: " << fail_message;
@@ -171,3 +171,5 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
+
+}  // namespace content

@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(PluginDataRemoverTest, RemoveData) {
   base::WaitableEvent* event =
       plugin_data_remover.StartRemoving(base::Time());
   watcher.StartWatching(event, this);
-  content::RunMessageLoop();
+  RunMessageLoop();
 }
 
 }  // namespace content

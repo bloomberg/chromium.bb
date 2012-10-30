@@ -16,8 +16,6 @@
 #include "base/system_monitor/system_monitor.h"
 #endif
 
-extern int BrowserMain(const content::MainFunctionParams&);
-
 namespace {
 
 #if defined(OS_POSIX)
@@ -38,6 +36,8 @@ static void DumpStackTraceSignalHandler(int signal) {
 }  // namespace
 
 namespace content {
+
+extern int BrowserMain(const content::MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase() {
 #if defined(OS_MACOSX)

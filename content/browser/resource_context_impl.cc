@@ -36,7 +36,6 @@ static const char* kHostZoomMapKeyName = "content_host_zoom_map";
 
 using appcache::AppCacheService;
 using base::UserDataAdapter;
-using content::BrowserThread;
 using fileapi::FileSystemContext;
 using webkit_blob::BlobStorageController;
 using webkit_database::DatabaseTracker;

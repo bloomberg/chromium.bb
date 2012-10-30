@@ -14,6 +14,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 class SystemMessageWindowWinTest : public testing::Test {
  public:
   virtual ~SystemMessageWindowWinTest() { }
@@ -39,3 +41,5 @@ TEST_F(SystemMessageWindowWinTest, RandomMessage) {
   window_.OnDeviceChange(DBT_DEVICEQUERYREMOVE, NULL);
   message_loop_.RunAllPending();
 }
+
+}  // namespace content

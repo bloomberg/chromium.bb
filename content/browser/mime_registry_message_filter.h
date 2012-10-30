@@ -8,13 +8,15 @@
 #include "base/file_path.h"
 #include "content/public/browser/browser_message_filter.h"
 
-class MimeRegistryMessageFilter : public content::BrowserMessageFilter {
+namespace content {
+
+class MimeRegistryMessageFilter : public BrowserMessageFilter {
  public:
   MimeRegistryMessageFilter();
 
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+      BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -28,5 +30,7 @@ class MimeRegistryMessageFilter : public content::BrowserMessageFilter {
   void OnGetPreferredExtensionForMimeType(const std::string& mime_type,
                                           FilePath::StringType* extension);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_MIME_REGISTRY_MESSAGE_FILTER_H_

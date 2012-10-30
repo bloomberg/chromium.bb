@@ -13,6 +13,8 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
+namespace content {
+
 // CrossSiteRequestManager is used to handle bookkeeping for cross-site
 // requests and responses between the UI and IO threads.  Such requests involve
 // a transition from one RenderViewHost to another within WebContentsImpl, and
@@ -55,5 +57,7 @@ class CrossSiteRequestManager {
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteRequestManager);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_CROSS_SITE_REQUEST_MANAGER_H_

@@ -23,7 +23,7 @@ namespace {
 base::LazyInstance<TraceControllerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
 
-class AutoStopTraceSubscriberStdio : public content::TraceSubscriberStdio {
+class AutoStopTraceSubscriberStdio : public TraceSubscriberStdio {
  public:
   AutoStopTraceSubscriberStdio(const FilePath& file_path)
       : TraceSubscriberStdio(file_path) {}

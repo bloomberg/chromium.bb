@@ -49,7 +49,7 @@ namespace content {
 // outstanding sequence number, the pickled data is accepted into the browser,
 // but there is no impact on the counters.
 
-class HistogramSynchronizer : public content::HistogramSubscriber {
+class HistogramSynchronizer : public HistogramSubscriber {
  public:
   enum ProcessHistogramRequester {
     UNKNOWN,

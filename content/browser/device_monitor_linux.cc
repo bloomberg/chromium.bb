@@ -53,7 +53,7 @@ void DeviceMonitorLinux::Initialize() {
 
   std::vector<UdevLinux::UdevMonitorFilter> filters;
   for (size_t i = 0; i < arraysize(kSubsystemMap); ++i) {
-    filters.push_back(content::UdevLinux::UdevMonitorFilter(
+    filters.push_back(UdevLinux::UdevMonitorFilter(
         kSubsystemMap[i].subsystem, kSubsystemMap[i].devtype));
   }
   udev_.reset(new UdevLinux(filters,

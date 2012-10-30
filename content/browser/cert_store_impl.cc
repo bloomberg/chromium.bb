@@ -26,8 +26,10 @@ struct MatchSecond {
   T value;
 };
 
+namespace content {
+
 // static
-content::CertStore* content::CertStore::GetInstance() {
+CertStore* CertStore::GetInstance() {
   return CertStoreImpl::GetInstance();
 }
 
@@ -37,11 +39,11 @@ CertStoreImpl* CertStoreImpl::GetInstance() {
 }
 
 CertStoreImpl::CertStoreImpl() : next_cert_id_(1) {
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     RegisterForNotification();
   } else {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&CertStoreImpl::RegisterForNotification,
                    base::Unretained(this)));
   }
@@ -57,10 +59,10 @@ void CertStoreImpl::RegisterForNotification() {
   //                removed from cache, and remove the cert when we know it
   //                is not used anymore.
 
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 int CertStoreImpl::StoreCert(net::X509Certificate* cert, int process_id) {
@@ -168,12 +170,13 @@ void CertStoreImpl::RemoveCertsForRenderProcesHost(int process_id) {
 }
 
 void CertStoreImpl::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
-         type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED);
-  content::RenderProcessHost* rph =
-      content::Source<content::RenderProcessHost>(source).ptr();
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+  DCHECK(type == NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
+         type == NOTIFICATION_RENDERER_PROCESS_CLOSED);
+  RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
   DCHECK(rph);
   RemoveCertsForRenderProcesHost(rph->GetID());
 }
+
+}  // namespace content

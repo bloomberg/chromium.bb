@@ -7,12 +7,13 @@
 #include "base/debug/trace_event.h"
 #include "content/public/browser/browser_main_runner.h"
 
+namespace content {
+
 // Main routine for running as the Browser process.
-int BrowserMain(const content::MainFunctionParams& parameters) {
+int BrowserMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
 
-  scoped_ptr<content::BrowserMainRunner> main_runner_(
-      content::BrowserMainRunner::Create());
+  scoped_ptr<BrowserMainRunner> main_runner_(BrowserMainRunner::Create());
 
   int exit_code = main_runner_->Initialize(parameters);
   if (exit_code >= 0)
@@ -26,3 +27,5 @@ int BrowserMain(const content::MainFunctionParams& parameters) {
 
   return exit_code;
 }
+
+}  // namespace content

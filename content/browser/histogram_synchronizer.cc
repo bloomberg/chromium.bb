@@ -165,7 +165,7 @@ HistogramSynchronizer::HistogramSynchronizer()
       callback_thread_(NULL),
       last_used_sequence_number_(kNeverUsableSequenceNumber),
       async_sequence_number_(kNeverUsableSequenceNumber) {
-  content::HistogramController::GetInstance()->Register(this);
+  HistogramController::GetInstance()->Register(this);
 }
 
 HistogramSynchronizer::~HistogramSynchronizer() {
@@ -239,8 +239,7 @@ void HistogramSynchronizer::RegisterAndNotifyAllProcesses(
   RequestContext::Register(callback, sequence_number);
 
   // Get histogram data from renderer and browser child processes.
-  content::HistogramController::GetInstance()->GetHistogramData(
-      sequence_number);
+  HistogramController::GetInstance()->GetHistogramData(sequence_number);
 
   // Post a task that would be called after waiting for wait_time.  This acts
   // as a watchdog, to cancel the requests for non-responsive processes.

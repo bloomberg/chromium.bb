@@ -14,19 +14,18 @@
 
 namespace content {
 class RenderProcessHostFactory;
-}
 
-class CONTENT_EXPORT SiteInstanceImpl : public content::SiteInstance,
-                                        public content::NotificationObserver {
+class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
+                                        public NotificationObserver {
  public:
-  // content::SiteInstance interface overrides.
+  // SiteInstance interface overrides.
   virtual int32 GetId() OVERRIDE;
   virtual bool HasProcess() const OVERRIDE;
-  virtual  content::RenderProcessHost* GetProcess() OVERRIDE;
+  virtual  RenderProcessHost* GetProcess() OVERRIDE;
   virtual const GURL& GetSiteURL() const OVERRIDE;
   virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) OVERRIDE;
   virtual bool IsRelatedSiteInstance(const SiteInstance* instance) OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual BrowserContext* GetBrowserContext() const OVERRIDE;
 
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -50,18 +49,17 @@ class CONTENT_EXPORT SiteInstanceImpl : public content::SiteInstance,
   // The factory must outlive the SiteInstance; ownership is not transferred. It
   // may be NULL, in which case the default BrowserRenderProcessHost will be
   // created (this is the behavior if you don't call this function).
-  void set_render_process_host_factory(
-      content::RenderProcessHostFactory* rph_factory) {
+  void set_render_process_host_factory(RenderProcessHostFactory* rph_factory) {
     render_process_host_factory_ = rph_factory;
   }
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
-  static GURL GetSiteForURL(content::BrowserContext* context, const GURL& url);
+  static GURL GetSiteForURL(BrowserContext* context, const GURL& url);
 
  protected:
   friend class BrowsingInstance;
-  friend class content::SiteInstance;
+  friend class SiteInstance;
 
   // Virtual to allow tests to extend it.
   virtual ~SiteInstanceImpl();
@@ -73,13 +71,13 @@ class CONTENT_EXPORT SiteInstanceImpl : public content::SiteInstance,
 
  private:
   // Get the effective URL for the given actual URL.
-  static GURL GetEffectiveURL(content::BrowserContext* browser_context,
+  static GURL GetEffectiveURL(BrowserContext* browser_context,
                               const GURL& url);
 
-  // content::NotificationObserver implementation.
+  // NotificationObserver implementation.
   virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   // Used to restrict a process' origin access rights.
   void LockToOrigin();
@@ -90,20 +88,20 @@ class CONTENT_EXPORT SiteInstanceImpl : public content::SiteInstance,
   // A unique ID for this SiteInstance.
   int32 id_;
 
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
 
   // BrowsingInstance to which this SiteInstance belongs.
   scoped_refptr<BrowsingInstance> browsing_instance_;
 
   // Factory for new RenderProcessHosts, not owned by this class. NULL indiactes
   // that the default BrowserRenderProcessHost should be created.
-  const content::RenderProcessHostFactory* render_process_host_factory_;
+  const RenderProcessHostFactory* render_process_host_factory_;
 
   // Current RenderProcessHost that is rendering pages for this SiteInstance.
   // This pointer will only change once the RenderProcessHost is destructed.  It
   // will still remain the same even if the process crashes, since in that
   // scenario the RenderProcessHost remains the same.
-  content::RenderProcessHost* process_;
+  RenderProcessHost* process_;
 
   // The web site that this SiteInstance is rendering pages for.
   GURL site_;
@@ -113,5 +111,7 @@ class CONTENT_EXPORT SiteInstanceImpl : public content::SiteInstance,
 
   DISALLOW_COPY_AND_ASSIGN(SiteInstanceImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SITE_INSTANCE_IMPL_H_

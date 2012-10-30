@@ -17,12 +17,13 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace content {
+
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
-class CONTENT_EXPORT HostZoomMapImpl
-    : public NON_EXPORTED_BASE(content::HostZoomMap),
-      public content::NotificationObserver,
-      public base::SupportsUserData::Data {
+class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
+                                       public NotificationObserver,
+                                       public base::SupportsUserData::Data {
  public:
   HostZoomMapImpl();
   virtual ~HostZoomMapImpl();
@@ -50,10 +51,10 @@ class CONTENT_EXPORT HostZoomMapImpl
                              int render_view_id,
                              double level);
 
-  // content::NotificationObserver implementation.
+  // NotificationObserver implementation.
   virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   typedef std::map<std::string, double> HostZoomLevels;
@@ -76,9 +77,11 @@ class CONTENT_EXPORT HostZoomMapImpl
   // |temporary_zoom_levels_| to guarantee thread safety.
   mutable base::Lock lock_;
 
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HostZoomMapImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_HOST_ZOOM_MAP_IMPL_H_

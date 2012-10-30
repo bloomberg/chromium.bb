@@ -13,12 +13,9 @@
 #include "content/public/browser/profiler_subscriber.h"
 #include "content/public/browser/render_process_host.h"
 
-using content::BrowserChildProcessHostIterator;
-using content::BrowserThread;
-
 namespace content {
 
-content::ProfilerController* content::ProfilerController::GetInstance() {
+ProfilerController* ProfilerController::GetInstance() {
   return ProfilerControllerImpl::GetInstance();
 }
 
@@ -43,7 +40,7 @@ void ProfilerControllerImpl::OnPendingProcesses(int sequence_number,
 void ProfilerControllerImpl::OnProfilerDataCollected(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    content::ProcessType process_type) {
+    ProcessType process_type) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

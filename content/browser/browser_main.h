@@ -14,8 +14,8 @@ struct MainFunctionParams;
 
 bool ExitedMainMessageLoop();
 
-}  // namespace content
-
 CONTENT_EXPORT int BrowserMain(const content::MainFunctionParams& parameters);
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSER_MAIN_H_

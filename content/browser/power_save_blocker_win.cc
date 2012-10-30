@@ -12,6 +12,7 @@
 #include "base/win/windows_version.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace content {
 namespace {
 
 int g_blocker_count[2];
@@ -79,7 +80,7 @@ void DeletePowerRequest(POWER_REQUEST_TYPE type, HANDLE handle) {
   DCHECK(success);
 }
 
-void ApplySimpleBlock(content::PowerSaveBlocker::PowerSaveBlockerType type,
+void ApplySimpleBlock(PowerSaveBlocker::PowerSaveBlockerType type,
                       int delta) {
   g_blocker_count[type] += delta;
   DCHECK_GE(g_blocker_count[type], 0);
@@ -88,7 +89,7 @@ void ApplySimpleBlock(content::PowerSaveBlocker::PowerSaveBlockerType type,
     return;
 
   DWORD this_flag = 0;
-  if (type == content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension)
+  if (type == PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension)
     this_flag |= ES_SYSTEM_REQUIRED;
   else
     this_flag |= ES_DISPLAY_REQUIRED;
@@ -105,8 +106,6 @@ void ApplySimpleBlock(content::PowerSaveBlocker::PowerSaveBlockerType type,
 }
 
 }  // namespace.
-
-namespace content {
 
 class PowerSaveBlocker::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {

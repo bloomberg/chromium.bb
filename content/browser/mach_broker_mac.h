@@ -17,6 +17,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace content {
+
 // On OS X, the mach_port_t of a process is required to collect metrics about
 // the process. Running |task_for_pid()| is only allowed for privileged code.
 // However, a process has port rights to all its subprocesses, so let the
@@ -32,7 +34,7 @@
 // Since this data arrives over a separate channel, it is not available
 // immediately after a child process has been started.
 class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
-                   public content::NotificationObserver {
+                                  public NotificationObserver {
  public:
   // Returns the global MachBroker.
   static MachBroker* GetInstance();
@@ -80,10 +82,10 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   // Implement |ProcessMetrics::PortProvider|.
   virtual mach_port_t TaskForPid(base::ProcessHandle process) const OVERRIDE;
 
-  // Implement |content::NotificationObserver|.
+  // Implement |NotificationObserver|.
   virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
  private:
   friend class MachBrokerTest;
   friend struct DefaultSingletonTraits<MachBroker>;
@@ -99,7 +101,7 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
 
   // Used to register for notifications received by NotificationObserver.
   // Accessed only on the UI thread.
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
 
   // Stores mach info for every process in the broker.
   typedef std::map<base::ProcessHandle, MachInfo> MachMap;
@@ -110,5 +112,7 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
 
   DISALLOW_COPY_AND_ASSIGN(MachBroker);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_MACH_BROKER_MAC_H_

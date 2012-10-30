@@ -32,7 +32,6 @@
 #include "webkit/fileapi/file_system_url_request_job_factory.h"
 
 using appcache::AppCacheService;
-using content::BrowserThread;
 using fileapi::FileSystemContext;
 using webkit_blob::BlobStorageController;
 

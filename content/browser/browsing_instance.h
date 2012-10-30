@@ -12,11 +12,10 @@
 #include "content/public/browser/browser_context.h"
 
 class GURL;
-class SiteInstanceImpl;
 
 namespace content {
 class SiteInstance;
-}
+class SiteInstanceImpl;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -56,10 +55,10 @@ class CONTENT_EXPORT BrowsingInstance
     : public base::RefCounted<BrowsingInstance> {
  protected:
   // Create a new BrowsingInstance.
-  explicit BrowsingInstance(content::BrowserContext* context);
+  explicit BrowsingInstance(BrowserContext* context);
 
   // Get the browser context to which this BrowsingInstance belongs.
-  content::BrowserContext* browser_context() const { return browser_context_; }
+  BrowserContext* browser_context() const { return browser_context_; }
 
   // Returns whether this BrowsingInstance has registered a SiteInstance for
   // the site of the given URL.
@@ -68,20 +67,20 @@ class CONTENT_EXPORT BrowsingInstance
   // Get the SiteInstance responsible for rendering the given URL.  Should
   // create a new one if necessary, but should not create more than one
   // SiteInstance per site.
-  content::SiteInstance* GetSiteInstanceForURL(const GURL& url);
+  SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
   // Adds the given SiteInstance to our map, to ensure that we do not create
   // another SiteInstance for the same site.
-  void RegisterSiteInstance(content::SiteInstance* site_instance);
+  void RegisterSiteInstance(SiteInstance* site_instance);
 
   // Removes the given SiteInstance from our map, after all references to it
   // have been deleted.  This means it is safe to create a new SiteInstance
   // if the user later visits a page from this site, within this
   // BrowsingInstance.
-  void UnregisterSiteInstance(content::SiteInstance* site_instance);
+  void UnregisterSiteInstance(SiteInstance* site_instance);
 
   friend class SiteInstanceImpl;
-  friend class content::SiteInstance;
+  friend class SiteInstance;
 
   friend class base::RefCounted<BrowsingInstance>;
 
@@ -90,11 +89,11 @@ class CONTENT_EXPORT BrowsingInstance
 
  private:
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
-  typedef base::hash_map<std::string, content::SiteInstance*> SiteInstanceMap;
+  typedef base::hash_map<std::string, SiteInstance*> SiteInstanceMap;
 
   // Common browser context to which all SiteInstances in this BrowsingInstance
   // must belong.
-  content::BrowserContext* const browser_context_;
+  BrowserContext* const browser_context_;
 
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
   // site.  The site string should be the possibly_invalid_spec() of a GURL
@@ -105,5 +104,7 @@ class CONTENT_EXPORT BrowsingInstance
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSING_INSTANCE_H_

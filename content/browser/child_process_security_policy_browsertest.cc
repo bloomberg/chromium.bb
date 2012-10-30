@@ -16,8 +16,10 @@
 #include "content/test/content_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 class ChildProcessSecurityPolicyInProcessBrowserTest
-    : public content::ContentBrowserTest {
+    : public ContentBrowserTest {
  public:
   virtual void SetUp() {
     EXPECT_EQ(
@@ -39,19 +41,21 @@ IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, DISABLED_
 #else
 IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
 #endif
-  GURL url = content::GetTestUrl("", "simple_page.html");
+  GURL url = GetTestUrl("", "simple_page.html");
 
-  content::NavigateToURL(shell(), url);
+  NavigateToURL(shell(), url);
   EXPECT_EQ(
       ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size(),
           1U);
 
-  content::WebContents* web_contents = shell()->web_contents();
+  WebContents* web_contents = shell()->web_contents();
   base::KillProcess(web_contents->GetRenderProcessHost()->GetHandle(),
-                    content::RESULT_CODE_KILLED, true);
+                    RESULT_CODE_KILLED, true);
 
   web_contents->GetController().Reload(true);
   EXPECT_EQ(
       1U,
       ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size());
 }
+
+}  // namespace content

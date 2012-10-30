@@ -10,10 +10,9 @@
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
-class BrowsingInstance;
-
 namespace content {
 class BrowserContext;
+class BrowsingInstance;
 class RenderProcessHost;
 
 ///////////////////////////////////////////////////////////////////////////////

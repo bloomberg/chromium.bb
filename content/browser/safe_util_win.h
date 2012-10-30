@@ -11,7 +11,7 @@
 class FilePath;
 class GURL;
 
-namespace win_util {
+namespace content {
 
 // Open or run a downloaded file via the Windows shell, possibly showing first
 // a consent dialog if the the file is deemed dangerous. This function is an
@@ -68,6 +68,6 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
 // |source_url|: the source URL for the download.
 HRESULT ScanAndSaveDownloadedFile(const FilePath& full_path,
                                   const GURL& source_url);
-}  // namespace win_util
+}  // namespace content
 
 #endif  // CONTENT_COMMON_SAFE_UTIL_WIN_H_

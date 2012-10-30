@@ -11,6 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
+namespace content {
+
 class CONTENT_EXPORT SystemMessageWindowWin {
  public:
   SystemMessageWindowWin();
@@ -43,5 +45,7 @@ class CONTENT_EXPORT SystemMessageWindowWin {
 
   DISALLOW_COPY_AND_ASSIGN(SystemMessageWindowWin);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SYSTEM_MESSAGE_WINDOW_WIN_H_

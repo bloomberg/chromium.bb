@@ -215,7 +215,7 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
 
   bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
   DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
-  HRESULT hr = win_util::ScanAndSaveDownloadedFile(full_path_, source_url_);
+  HRESULT hr = ScanAndSaveDownloadedFile(full_path_, source_url_);
 
   // If the download file is missing after the call, then treat this as an
   // interrupted download.

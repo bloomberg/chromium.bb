@@ -16,6 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/win/shell.h"
 
+namespace content {
 namespace {
 
 // This GUID is associated with any 'don't ask me again' settings that the
@@ -55,8 +56,6 @@ bool SetInternetZoneIdentifierDirectly(const FilePath& full_path) {
 }
 
 }
-
-namespace win_util {
 
 // This function implementation is based on the attachment execution
 // services functionally deployed with IE6 or Service pack 2. This
@@ -153,4 +152,4 @@ HRESULT ScanAndSaveDownloadedFile(const FilePath& full_path,
   return attachment_services->Save();
 }
 
-}  // namespace win_util
+}  // namespace content

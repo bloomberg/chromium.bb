@@ -12,7 +12,6 @@
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
-class SystemMessageWindowWin;
 
 namespace base {
 class SystemMonitor;
@@ -34,6 +33,7 @@ class BrowserThreadImpl;
 class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SpeechRecognitionManagerImpl;
+class SystemMessageWindowWin;
 class WebKitThread;
 struct MainFunctionParams;
 
@@ -48,7 +48,7 @@ class DeviceMonitorMac;
 // All functions are to be called only on the UI thread unless otherwise noted.
 class BrowserMainLoop {
  public:
-  explicit BrowserMainLoop(const content::MainFunctionParams& parameters);
+  explicit BrowserMainLoop(const MainFunctionParams& parameters);
   virtual ~BrowserMainLoop();
 
   void Init();
@@ -85,7 +85,7 @@ class BrowserMainLoop {
   void MainMessageLoopRun();
 
   // Members initialized on construction ---------------------------------------
-  const content::MainFunctionParams& parameters_;
+  const MainFunctionParams& parameters_;
   const CommandLine& parsed_command_line_;
   int result_code_;
 

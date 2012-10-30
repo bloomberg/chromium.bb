@@ -7,9 +7,7 @@
 #include "content/browser/trace_controller_impl.h"
 #include "content/common/child_process_messages.h"
 
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-using content::TraceControllerImpl;
+namespace content {
 
 TraceMessageFilter::TraceMessageFilter() :
     has_child_(false),
@@ -126,3 +124,4 @@ void TraceMessageFilter::OnTraceBufferPercentFullReply(float percent_full) {
   }
 }
 
+}  // namespace content

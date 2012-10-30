@@ -9,10 +9,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
+namespace content {
 namespace {
-
-using content::BrowserThread;
-using content::UserMetricsAction;
 
 // Forward declare because of circular dependency.
 void CallRecordOnUI(const std::string& action);
@@ -26,10 +24,10 @@ void Record(const char *action) {
     return;
   }
 
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_USER_ACTION,
-      content::NotificationService::AllSources(),
-      content::Details<const char*>(&action));
+  NotificationService::current()->Notify(
+      NOTIFICATION_USER_ACTION,
+      NotificationService::AllSources(),
+      Details<const char*>(&action));
 }
 
 void CallRecordOnUI(const std::string& action) {
@@ -37,8 +35,6 @@ void CallRecordOnUI(const std::string& action) {
 }
 
 }  // namespace
-
-namespace content {
 
 void RecordAction(const UserMetricsAction& action) {
   Record(action.str_);

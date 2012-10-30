@@ -27,7 +27,7 @@ class DatabaseTest : public ContentBrowserTest {
                                const std::string& script,
                                const std::string& result) {
     std::string data;
-    ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+    ASSERT_TRUE(ExecuteJavaScriptAndExtractString(
         shell->web_contents()->GetRenderViewHost(), L"",
         ASCIIToWide(script), &data));
     ASSERT_EQ(data, result);
@@ -62,7 +62,7 @@ class DatabaseTest : public ContentBrowserTest {
 
   bool HasTable(Shell* shell) {
     std::string data;
-    CHECK(content::ExecuteJavaScriptAndExtractString(
+    CHECK(ExecuteJavaScriptAndExtractString(
         shell->web_contents()->GetRenderViewHost(), L"",
         ASCIIToWide("getRecords()"), &data));
     return data != "getRecords error: [object SQLError]";
