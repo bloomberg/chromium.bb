@@ -55,6 +55,9 @@ class PolicyWatcher {
   // The name of the host domain policy.
   static const char kHostDomainPolicyName[];
 
+  // The name of the username policy.
+  static const char kHostMatchUsernamePolicyName[];
+
   // The name of the policy that controls the host talkgadget prefix.
   static const char kHostTalkGadgetPrefixPolicyName[];
 

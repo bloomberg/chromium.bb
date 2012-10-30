@@ -98,6 +98,7 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetBoolean(PolicyWatcher::kNatPolicyName, true);
     dict.SetBoolean(PolicyWatcher::kHostRequireTwoFactorPolicyName, false);
     dict.SetString(PolicyWatcher::kHostDomainPolicyName, "");
+    dict.SetBoolean(PolicyWatcher::kHostMatchUsernamePolicyName, false);
     dict.SetString(PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
                    kDefaultHostTalkGadgetPrefix);
     dict.SetBoolean(PolicyWatcher::kHostRequireCurtainPolicyName, false);

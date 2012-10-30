@@ -20,8 +20,8 @@ SIGTERM_EXIT_CODE=143
 # Range of exit codes returned by the host to indicate that a permanent error
 # has occurred and that the host should not be restarted. Please, keep these
 # constants in sync with remoting/host/host_exit_codes.h.
-MIN_PERMANENT_ERROR_EXIT_CODE=2
-MAX_PERMANENT_ERROR_EXIT_CODE=6
+MIN_PERMANENT_ERROR_EXIT_CODE=100
+MAX_PERMANENT_ERROR_EXIT_CODE=105
 
 HOST_PID=0
 SIGNAL_WAS_TRAPPED=0

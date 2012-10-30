@@ -16,20 +16,21 @@ enum HostExitCodes {
   // Error codes that don't indicate a permanent error condition.
   kSuccessExitCode = 0,
   kReservedForX11ExitCode = 1,
-  kInitializationFailed = 7,
-  kUsageExitCode = 8,
+  kInitializationFailed = 2,
+  kUsageExitCode = 3,
 
   // Error codes that do indicate a permanent error condition.
-  kInvalidHostConfigurationExitCode = 2,
-  kInvalidHostIdExitCode = 3,
-  kInvalidOauthCredentialsExitCode = 4,
-  kInvalidHostDomainExitCode = 5,
-  kLoginScreenNotSupportedExitCode = 6,
+  kInvalidHostConfigurationExitCode = 100,
+  kInvalidHostIdExitCode = 101,
+  kInvalidOauthCredentialsExitCode = 102,
+  kInvalidHostDomainExitCode = 103,
+  kLoginScreenNotSupportedExitCode = 104,
+  kUsernameMismatchExitCode = 105,
 
   // The range of the exit codes that should be interpreted as a permanent error
   // condition.
   kMinPermanentErrorExitCode = kInvalidHostConfigurationExitCode,
-  kMaxPermanentErrorExitCode = kLoginScreenNotSupportedExitCode
+  kMaxPermanentErrorExitCode = kUsernameMismatchExitCode
 };
 
 }  // namespace remoting

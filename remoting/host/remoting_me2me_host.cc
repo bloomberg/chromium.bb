@@ -76,6 +76,7 @@
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_LINUX)
+#include <pwd.h>
 #include "remoting/host/audio_capturer_linux.h"
 #include "remoting/host/pam_authorization_factory_posix.h"
 #endif  // defined(OS_LINUX)
@@ -105,6 +106,35 @@ const char kAudioPipeSwitchName[] = "audio-pipe-name";
 
 void QuitMessageLoop(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+}
+
+// Returns true if GetUsername() is implemented on this platform.
+bool CanGetUsername() {
+#if defined(OS_LINUX)
+  return true;
+#else  // defined(OS_LINUX)
+  return false;
+#endif  // defined(OS_LINUX)
+}  // namespace
+
+// Returns the username associated with this process, or the empty string on
+// error.
+std::string GetUsername() {
+#if defined(OS_LINUX)
+  long buf_size = sysconf(_SC_GETPW_R_SIZE_MAX);
+  if (buf_size <= 0)
+    return "";
+  scoped_array<char> buf(new char[buf_size]);
+  struct passwd passwd;
+  struct passwd* passwd_result = NULL;
+  getpwuid_r(getuid(), &passwd, buf.get(), buf_size, &passwd_result);
+  if (!passwd_result)
+    return "";
+  return std::string(passwd_result->pw_name);
+#else  // defined(OS_LINUX)
+  NOTREACHED();
+  return "";
+#endif  // defined(OS_LINUX)
 }
 
 }  // namespace
@@ -155,6 +185,7 @@ class HostProcess
 
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
   bool OnHostDomainPolicyUpdate(const std::string& host_domain);
+  bool OnUsernamePolicyUpdate(bool username_match_required);
   bool OnNatPolicyUpdate(bool nat_traversal_enabled);
   bool OnCurtainPolicyUpdate(bool curtain_required);
   bool OnHostTalkGadgetPrefixPolicyUpdate(const std::string& talkgadget_prefix);
@@ -586,6 +617,11 @@ void HostProcess::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
                           &string_value)) {
     restart_required |= OnHostDomainPolicyUpdate(string_value);
   }
+  if (policies->GetBoolean(
+      policy_hack::PolicyWatcher::kHostMatchUsernamePolicyName,
+      &bool_value)) {
+    restart_required |= OnUsernamePolicyUpdate(bool_value);
+  }
   if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
                            &bool_value)) {
     restart_required |= OnNatPolicyUpdate(bool_value);
@@ -614,6 +650,20 @@ bool HostProcess::OnHostDomainPolicyUpdate(const std::string& host_domain) {
   if (!host_domain.empty() &&
       !EndsWith(xmpp_login_, std::string("@") + host_domain, false)) {
     Shutdown(kInvalidHostDomainExitCode);
+  }
+  return false;
+}
+
+bool HostProcess::OnUsernamePolicyUpdate(bool host_username_match_required) {
+  // Returns false: never restart the host after this policy update.
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (host_username_match_required) {
+    if (!CanGetUsername() ||
+        !StartsWithASCII(xmpp_login_, GetUsername() + std::string("@"),
+                         false)) {
+      Shutdown(kUsernameMismatchExitCode);
+    }
   }
   return false;
 }

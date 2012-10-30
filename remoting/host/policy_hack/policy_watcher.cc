@@ -94,6 +94,9 @@ scoped_ptr<base::DictionaryValue> AddDefaultValuesWhenNecessary(
                        false, false);
   CopyStringOrDefault(to.get(), from,
                       PolicyWatcher::kHostDomainPolicyName, "", "");
+  CopyBooleanOrDefault(to.get(), from,
+                       PolicyWatcher::kHostMatchUsernamePolicyName,
+                       false, false);
   CopyStringOrDefault(to.get(), from,
                       PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
                       kDefaultHostTalkGadgetPrefix,
@@ -116,6 +119,9 @@ const char PolicyWatcher::kHostRequireTwoFactorPolicyName[] =
 const char PolicyWatcher::kHostDomainPolicyName[] =
     "RemoteAccessHostDomain";
 
+const char PolicyWatcher::kHostMatchUsernamePolicyName[] =
+    "RemoteAccessHostMatchUsername";
+
 const char PolicyWatcher::kHostTalkGadgetPrefixPolicyName[] =
     "RemoteAccessHostTalkGadgetPrefix";
 
@@ -125,6 +131,7 @@ const char PolicyWatcher::kHostRequireCurtainPolicyName[] =
 const char* const PolicyWatcher::kBooleanPolicyNames[] =
     { PolicyWatcher::kNatPolicyName,
       PolicyWatcher::kHostRequireTwoFactorPolicyName,
+      PolicyWatcher::kHostMatchUsernamePolicyName,
       PolicyWatcher::kHostRequireCurtainPolicyName
     };
 

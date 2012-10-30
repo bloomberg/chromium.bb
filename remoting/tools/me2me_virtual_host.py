@@ -995,27 +995,31 @@ Web Store: https://chrome.google.com/remotedesktop"""
       # Delete the host or auth configuration depending on the returned error
       # code, so the next time this script is run, a new configuration
       # will be created and registered.
-      if os.WEXITSTATUS(status) == 2:
+      if os.WEXITSTATUS(status) == 100:
         logging.info("Host configuration is invalid - exiting.")
         host_config.clear_auth()
         host_config.clear_host_info()
         host_config.save()
         return 0
-      elif os.WEXITSTATUS(status) == 3:
+      elif os.WEXITSTATUS(status) == 101:
         logging.info("Host ID has been deleted - exiting.")
         host_config.clear_host_info()
         host_config.save()
         return 0
-      elif os.WEXITSTATUS(status) == 4:
+      elif os.WEXITSTATUS(status) == 102:
         logging.info("OAuth credentials are invalid - exiting.")
         host_config.clear_auth()
         host_config.save()
         return 0
-      elif os.WEXITSTATUS(status) == 5:
+      elif os.WEXITSTATUS(status) == 103:
         logging.info("Host domain is blocked by policy - exiting.")
         os.remove(host.config_file)
         return 0
-      # Nothing to do for Mac-only status 6 (login screen unsupported)
+      # Nothing to do for Mac-only status 104 (login screen unsupported)
+      elif os.WEXITSTATUS(status) == 105:
+        logging.info("Username is blocked by policy - exiting.")
+        os.remove(host.config_file)
+        return 0
 
 
 if __name__ == "__main__":
