@@ -3555,6 +3555,7 @@
           'dependencies': [
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
+            '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
         }],
       ],  # conditions
