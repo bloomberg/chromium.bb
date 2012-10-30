@@ -161,6 +161,20 @@ ExtensionPageCaptureApiTest.*
 # DrM-i#1052-c#22
 WebUIAssertionsTest.*
 WebUIBrowserAsyncGenDeferredTest.*
+# DrM-i#1052-c#29
+ExtensionManagementApiBrowserTest.*
+RestoreOnStartupPolicyTestInstance*
+# DrM-i#1052-c#30
+CollectedCookiesTest.*
+InfoBarsTest.*
+CookiePolicyBrowserTest.*
+ExtensionIconSourceTest.*
+WebstoreStandaloneInstallUnpackFailureTest.*
+ExtensionManagementApiTest.*
+FastShutdown.*
+IPBTP/InProcessBrowserTestP.*
+FormStructureBrowserTest.*
+AutomationMiscBrowserTest.*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
@@ -205,3 +219,6 @@ PolicyStatisticsCollectorTest.*
 HistoryExtensionApiTest.*
 # DrM-i#1052-c#27
 SystemInfoStorageApiTest.*
+# DrM-i#1052-c#28
+PanelExtensionBrowserTest.*
+ToolbarViewTest.*
