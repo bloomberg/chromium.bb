@@ -256,10 +256,10 @@ class ExtensionsTest(pyauto.PyUITest):
     print permissions_api
     self.assertTrue(len(permissions_api) == 4 and
                     'bookmarks' in permissions_api and
-                    'experimental' in permissions_api and
+                    'bookmarkManagerPrivate' in permissions_api and
                     'systemPrivate' in permissions_api and
                     'tabs' in permissions_api,
-                    msg='Unexpected host permissions information.')
+                    msg='Unexpected API permissions information.')
 
   def testSetExtensionStates(self):
     """Test setting different extension states."""
