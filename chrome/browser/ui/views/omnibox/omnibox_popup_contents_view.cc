@@ -98,7 +98,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   // pointer to a non-const object.
   views::BubbleBorder* bubble_border =
       new views::BubbleBorder(views::BubbleBorder::NONE,
-                              views::BubbleBorder::SMALL_SHADOW);
+                              views::BubbleBorder::NO_SHADOW);
   bubble_border_ = bubble_border;
   set_border(bubble_border);
   // The contents is owned by the LocationBarView.
