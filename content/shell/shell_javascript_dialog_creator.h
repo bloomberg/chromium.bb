@@ -42,9 +42,8 @@ class ShellJavaScriptDialogCreator : public JavaScriptDialogCreator {
   void DialogClosed(ShellJavaScriptDialog* dialog);
 
   // Used for content_browsertests.
-  void set_dialog_request_callback(
-      base::Callback<void()> dialog_request_callback) {
-    dialog_request_callback_ = dialog_request_callback;
+  void set_dialog_request_callback(const base::Closure& callback) {
+    dialog_request_callback_ = callback;
   }
 
  private:
@@ -55,7 +54,7 @@ class ShellJavaScriptDialogCreator : public JavaScriptDialogCreator {
   // TODO: implement ShellJavaScriptDialog for other platforms, drop this #if
 #endif
 
-  base::Callback<void()> dialog_request_callback_;
+  base::Closure dialog_request_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellJavaScriptDialogCreator);
 };
