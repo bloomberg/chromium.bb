@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'device_bluetooth',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
           '../chrome/chrome_resources.gyp:chrome_strings',
           '../third_party/libxml/libxml.gyp:libxml',
@@ -53,7 +53,7 @@
     },
     {
       'target_name': 'device_bluetooth_mocks',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         'device_bluetooth',
         '../testing/gmock.gyp:gmock',
