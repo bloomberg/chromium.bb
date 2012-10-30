@@ -660,4 +660,47 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
 }
 #endif
 
+namespace {
+
+class FocusInAboutToRequestFocusFromTabTraversalView : public View {
+ public:
+  FocusInAboutToRequestFocusFromTabTraversalView() : view_to_focus_(NULL) {}
+
+  void set_view_to_focus(View* view) { view_to_focus_ = view; }
+
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE {
+    view_to_focus_->RequestFocus();
+  }
+
+ private:
+  views::View* view_to_focus_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusInAboutToRequestFocusFromTabTraversalView);
+};
+}  // namespace
+
+// Verifies a focus change done during a call to
+// AboutToRequestFocusFromTabTraversal() is honored.
+TEST_F(FocusManagerTest, FocusInAboutToRequestFocusFromTabTraversal) {
+  // Create 3 views focuses the 3 and advances to the second. The 2nd views
+  // implementation of AboutToRequestFocusFromTabTraversal() focuses the first.
+  views::View* v1 = new View;
+  v1->set_focusable(true);
+  GetContentsView()->AddChildView(v1);
+
+  FocusInAboutToRequestFocusFromTabTraversalView* v2 =
+      new FocusInAboutToRequestFocusFromTabTraversalView;
+  v2->set_focusable(true);
+  v2->set_view_to_focus(v1);
+  GetContentsView()->AddChildView(v2);
+
+  views::View* v3 = new View;
+  v3->set_focusable(true);
+  GetContentsView()->AddChildView(v3);
+
+  v3->RequestFocus();
+  GetWidget()->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_TRUE(v1->HasFocus());
+}
+
 }  // namespace views

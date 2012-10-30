@@ -142,8 +142,12 @@ void FocusManager::AdvanceFocus(bool reverse) {
   // fullscreen mode), we need to run this block in order to cycle around to the
   // first element on the page.
   if (v) {
+    views::View* focused_view = focused_view_;
     v->AboutToRequestFocusFromTabTraversal(reverse);
-    SetFocusedViewWithReason(v, kReasonFocusTraversal);
+    // AboutToRequestFocusFromTabTraversal() may have changed focus. If it did,
+    // don't change focus again.
+    if (focused_view == focused_view_)
+      SetFocusedViewWithReason(v, kReasonFocusTraversal);
   }
 }
 
