@@ -7,13 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "cc/resource_update_queue.h"
-#include "cc/timer.h"
 
 namespace cc {
 
 class ResourceProvider;
+class Thread;
 
 class ResourceUpdateControllerClient {
 public:
@@ -23,7 +24,7 @@ protected:
     virtual ~ResourceUpdateControllerClient() { }
 };
 
-class ResourceUpdateController : public TimerClient {
+class ResourceUpdateController {
 public:
     static scoped_ptr<ResourceUpdateController> create(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     {
@@ -39,8 +40,6 @@ public:
     void performMoreUpdates(base::TimeTicks timeLimit);
     void finalize();
 
-    // TimerClient implementation.
-    virtual void onTimerFired() OVERRIDE;
 
     // Virtual for testing.
     virtual base::TimeTicks now() const;
@@ -50,6 +49,7 @@ public:
 protected:
     ResourceUpdateController(ResourceUpdateControllerClient*, Thread*, scoped_ptr<ResourceUpdateQueue>, ResourceProvider*);
 
+private:
     static size_t maxFullUpdatesPerTick(ResourceProvider*);
 
     size_t maxBlockingUpdates() const;
@@ -59,17 +59,19 @@ protected:
     // This returns true when there were textures left to update.
     bool updateMoreTexturesIfEnoughTimeRemaining();
     void updateMoreTexturesNow();
+    void onTimerFired();
 
     ResourceUpdateControllerClient* m_client;
-    scoped_ptr<Timer> m_timer;
     scoped_ptr<ResourceUpdateQueue> m_queue;
     bool m_contentsTexturesPurged;
     ResourceProvider* m_resourceProvider;
     base::TimeTicks m_timeLimit;
     size_t m_textureUpdatesPerTick;
     bool m_firstUpdateAttempt;
+    Thread* m_thread;
+    base::WeakPtrFactory<ResourceUpdateController> m_weakFactory;
+    bool m_taskPosted;
 
-private:
     DISALLOW_COPY_AND_ASSIGN(ResourceUpdateController);
 };
 

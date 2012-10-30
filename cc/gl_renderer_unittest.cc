@@ -13,7 +13,6 @@
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/test_common.h"
-#include "cc/test/web_compositor_initializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -114,7 +113,6 @@ protected:
     GLRendererTest()
         : m_suggestHaveBackbufferYes(1, true)
         , m_suggestHaveBackbufferNo(1, false)
-        , m_compositorInitializer(0)
         , m_context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FrameCountingMemoryAllocationSettingContext())))
         , m_resourceProvider(ResourceProvider::create(m_context.get()))
         , m_renderer(&m_mockClient, m_resourceProvider.get())
@@ -136,7 +134,6 @@ protected:
     WebGraphicsMemoryAllocation m_suggestHaveBackbufferYes;
     WebGraphicsMemoryAllocation m_suggestHaveBackbufferNo;
 
-    WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<GraphicsContext> m_context;
     FakeRendererClient m_mockClient;
     scoped_ptr<ResourceProvider> m_resourceProvider;

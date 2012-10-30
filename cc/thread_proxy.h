@@ -21,7 +21,6 @@ class ResourceUpdateQueue;
 class Scheduler;
 class ScopedThreadProxy;
 class Thread;
-class ThreadProxyContextRecreationTimer;
 
 class ThreadProxy : public Proxy, LayerTreeHostImplClient, SchedulerClient, ResourceUpdateControllerClient {
 public:
@@ -79,7 +78,6 @@ public:
 
 private:
     explicit ThreadProxy(LayerTreeHost*);
-    friend class ThreadProxyContextRecreationTimer;
 
     // Set on impl thread, read on main thread.
     struct BeginFrameAndCommitState {
@@ -134,7 +132,7 @@ private:
     bool m_commitRequested; // Set only when setNeedsCommit is called.
     bool m_commitRequestSentToImplThread; // Set by setNeedsCommit and setNeedsAnimate.
     bool m_forcedCommitRequested;
-    scoped_ptr<ThreadProxyContextRecreationTimer> m_contextRecreationTimer;
+    base::CancelableClosure m_contextRecreationCallback;
     LayerTreeHost* m_layerTreeHost;
     bool m_rendererInitialized;
     RendererCapabilities m_RendererCapabilitiesMainThreadCopy;

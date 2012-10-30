@@ -24,24 +24,31 @@ FakeThread::~FakeThread()
 {
 }
 
-void FakeThread::postTask(PassOwnPtr<Task>)
+void FakeThread::runPendingTask()
 {
-    NOTREACHED();
+    ASSERT_TRUE(m_pendingTask);
+    scoped_ptr<base::Closure> task = m_pendingTask.Pass();
+    task->Run();
 }
 
-void FakeThread::postDelayedTask(PassOwnPtr<Task> task, long long delay)
+void FakeThread::postTask(base::Closure cb)
+{
+    postDelayedTask(cb, 0);
+}
+
+void FakeThread::postDelayedTask(base::Closure cb, long long delay)
 {
     if (m_runPendingTaskOnOverwrite && hasPendingTask())
         runPendingTask();
 
-    EXPECT_TRUE(!hasPendingTask());
-    m_pendingTask = task;
+    ASSERT_FALSE(hasPendingTask());
+    m_pendingTask.reset(new base::Closure(cb));
     m_pendingTaskDelay = delay;
 }
 
-base::PlatformThreadId FakeThread::threadID() const
+bool FakeThread::belongsToCurrentThread() const
 {
-    return 0;
+    return true;
 }
 
 void FakeTimeSource::setClient(cc::TimeSourceClient* client)

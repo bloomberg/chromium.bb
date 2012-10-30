@@ -13,29 +13,6 @@
 
 namespace cc {
 
-class RateLimiter::Task : public Thread::Task {
-public:
-    static PassOwnPtr<Task> create(RateLimiter* rateLimiter)
-    {
-        return adoptPtr(new Task(rateLimiter));
-    }
-    virtual ~Task() { }
-
-private:
-    explicit Task(RateLimiter* rateLimiter)
-        : Thread::Task(this)
-        , m_rateLimiter(rateLimiter)
-    {
-    }
-
-    virtual void performTask() OVERRIDE
-    {
-        m_rateLimiter->rateLimitContext();
-    }
-
-    scoped_refptr<RateLimiter> m_rateLimiter;
-};
-
 scoped_refptr<RateLimiter> RateLimiter::create(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client)
 {
     return make_scoped_refptr(new RateLimiter(context, client));
@@ -60,7 +37,7 @@ void RateLimiter::start()
 
     TRACE_EVENT0("cc", "RateLimiter::start");
     m_active = true;
-    Proxy::mainThread()->postTask(RateLimiter::Task::create(this));
+    Proxy::mainThread()->postTask(base::Bind(&RateLimiter::rateLimitContext, this));
 }
 
 void RateLimiter::stop()

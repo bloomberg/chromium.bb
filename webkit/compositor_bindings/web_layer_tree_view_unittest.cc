@@ -4,19 +4,21 @@
 
 #include "config.h"
 
+#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread.h"
+#include "cc/proxy.h"
+#include "cc/thread_impl.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebThread.h"
-#include "web_layer_impl.h"
-#include "web_layer_tree_view_impl.h"
-#include "web_layer_tree_view_test_common.h"
+#include "webkit/compositor_bindings/test/web_layer_tree_view_test_common.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
 
 using namespace WebKit;
 using testing::Mock;
@@ -28,7 +30,7 @@ class MockWebLayerTreeViewClientForThreadedTests : public MockWebLayerTreeViewCl
 public:
     virtual void didBeginFrame() OVERRIDE
     {
-        WebKit::Platform::current()->currentThread()->exitRunLoop();
+        MessageLoop::current()->Quit();
         MockWebLayerTreeViewClient::didBeginFrame();
     }
 };
@@ -55,7 +57,6 @@ public:
 
         m_rootLayer.reset();
         m_view.reset();
-        WebKit::Platform::current()->compositorSupport()->shutdown();
     }
 
 protected:
@@ -72,7 +73,6 @@ protected:
 
     virtual void initializeCompositor() OVERRIDE
     {
-        WebKit::Platform::current()->compositorSupport()->initialize(0);
     }
 
     virtual WebLayerTreeViewClient* client() OVERRIDE
@@ -83,78 +83,30 @@ protected:
     MockWebLayerTreeViewClient m_client;
 };
 
-class CancelableTaskWrapper : public base::RefCounted<CancelableTaskWrapper> {
-    class Task : public WebThread::Task {
-    public:
-        Task(CancelableTaskWrapper* cancelableTask)
-            : m_cancelableTask(cancelableTask)
-        {
-        }
-
-    private:
-        virtual void run() OVERRIDE
-        {
-            m_cancelableTask->runIfNotCanceled();
-        }
-
-        scoped_refptr<CancelableTaskWrapper> m_cancelableTask;
-    };
-
-public:
-    CancelableTaskWrapper(scoped_ptr<WebThread::Task> task)
-        : m_task(task.Pass())
-    {
-    }
-
-    void cancel()
-    {
-        m_task.reset();
-    }
-
-    WebThread::Task* createTask()
-    {
-        ASSERT(m_task);
-        return new Task(this);
-    }
-
-    void runIfNotCanceled()
-    {
-        if (!m_task)
-            return;
-        m_task->run();
-        m_task.reset();
-    }
-
-private:
-    friend class base::RefCounted<CancelableTaskWrapper>;
-    ~CancelableTaskWrapper() { }
-
-    scoped_ptr<WebThread::Task> m_task;
-};
-
 class WebLayerTreeViewThreadedTest : public WebLayerTreeViewTestBase {
 protected:
-    class TimeoutTask : public WebThread::Task {
-        virtual void run() OVERRIDE
-        {
-            WebKit::Platform::current()->currentThread()->exitRunLoop();
-        }
-    };
+    virtual ~WebLayerTreeViewThreadedTest()
+    {
+        cc::Proxy::setImplThread(0);
+    }
 
     void composite()
     {
         m_view->setNeedsRedraw();
-        scoped_refptr<CancelableTaskWrapper> timeoutTask(new CancelableTaskWrapper(scoped_ptr<WebThread::Task>(new TimeoutTask())));
-        WebKit::Platform::current()->currentThread()->postDelayedTask(timeoutTask->createTask(), 5000);
-        WebKit::Platform::current()->currentThread()->enterRunLoop();
-        timeoutTask->cancel();
+        base::CancelableClosure timeout(base::Bind(&MessageLoop::Quit, base::Unretained(MessageLoop::current())));
+        MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                                timeout.callback(),
+                                                base::TimeDelta::FromSeconds(5));
+        MessageLoop::current()->Run();
         m_view->finishAllRendering();
     }
 
     virtual void initializeCompositor() OVERRIDE
     {
-        m_webThread.reset(WebKit::Platform::current()->createThread("WebLayerTreeViewTest"));
-        WebKit::Platform::current()->compositorSupport()->initialize(m_webThread.get());
+        m_implThread.reset(new base::Thread("ThreadedTest"));
+        ASSERT_TRUE(m_implThread->Start());
+        m_implCCThread = cc::ThreadImpl::createForDifferentThread(m_implThread->message_loop_proxy());
+        cc::Proxy::setImplThread(m_implCCThread.get());
     }
 
     virtual WebLayerTreeViewClient* client() OVERRIDE
@@ -163,7 +115,9 @@ protected:
     }
 
     MockWebLayerTreeViewClientForThreadedTests m_client;
-    scoped_ptr<WebThread> m_webThread;
+    scoped_ptr<base::Thread> m_implThread;
+    scoped_ptr<cc::Thread> m_implCCThread;
+    base::CancelableClosure m_timeout;
 };
 
 TEST_F(WebLayerTreeViewSingleThreadTest, InstrumentationCallbacks)
