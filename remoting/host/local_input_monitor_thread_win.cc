@@ -10,7 +10,7 @@
 #include "remoting/host/mouse_move_observer.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
-using namespace remoting;
+namespace remoting {
 
 namespace {
 LocalInputMonitorThread* g_local_input_monitor_thread = NULL;
@@ -118,3 +118,5 @@ void LocalInputMonitorThread::RemoveMouseMoveObserver(
     g_local_input_monitor_thread = NULL;
   }
 }
+
+}  // namespace remoting
