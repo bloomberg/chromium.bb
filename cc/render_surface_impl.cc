@@ -233,8 +233,8 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
 
     float maskTexCoordScaleX = 1;
     float maskTexCoordScaleY = 1;
-    float maskTexCoordOffsetX = 1;
-    float maskTexCoordOffsetY = 1;
+    float maskTexCoordOffsetX = 0;
+    float maskTexCoordOffsetY = 0;
     if (maskLayer) {
         maskTexCoordScaleX = static_cast<float>(contentRect().width()) / maskLayer->contentBounds().width();
         maskTexCoordScaleY = static_cast<float>(contentRect().height()) / maskLayer->contentBounds().height();

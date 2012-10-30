@@ -254,8 +254,8 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
     }
 
     // FIXME: Add support for non-premultiplied alpha.
-    ResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
-    const SkBitmap* bitmap = quadResourceLock.skBitmap();
+    ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resourceId());
+    const SkBitmap* bitmap = lock.skBitmap();
     gfx::RectF uvRect = gfx::ScaleRect(quad->uvRect(), bitmap->width(), bitmap->height());
     SkIRect skUvRect = toSkIRect(gfx::ToEnclosingRect(uvRect));
     if (quad->flipped())
@@ -266,46 +266,52 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
 void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* quad)
 {
     DCHECK(isSoftwareResource(quad->resourceId()));
-    ResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
+    ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resourceId());
 
     SkIRect uvRect = toSkIRect(gfx::Rect(quad->textureOffset(), quad->quadRect().size()));
-    m_skCurrentCanvas->drawBitmapRect(*quadResourceLock.skBitmap(), &uvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
+    m_skCurrentCanvas->drawBitmapRect(*lock.skBitmap(), &uvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
 }
 
 void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const RenderPassDrawQuad* quad)
 {
-    CachedTexture* contentsTexture = m_renderPassTextures.get(quad->renderPassId());
-    if (!contentsTexture || !contentsTexture->id())
+    CachedTexture* contentTexture = m_renderPassTextures.get(quad->renderPassId());
+    if (!contentTexture || !contentTexture->id())
         return;
 
-    DCHECK(isSoftwareResource(contentsTexture->id()));
-    ResourceProvider::ScopedReadLockSoftware contentsTextureLock(m_resourceProvider, contentsTexture->id());
-
-    const SkBitmap* bitmap = contentsTextureLock.skBitmap();
-
-    SkRect sourceRect;
-    bitmap->getBounds(&sourceRect);
+    DCHECK(isSoftwareResource(contentTexture->id()));
+    ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, contentTexture->id());
 
     SkRect destRect = toSkRect(quadVertexRect());
 
-    SkMatrix matrix;
-    matrix.setRectToRect(sourceRect, destRect, SkMatrix::kFill_ScaleToFit);
+    const SkBitmap* content = lock.skBitmap();
 
-    SkAutoTUnref<SkShader> shader(SkShader::CreateBitmapShader(*bitmap,
+    SkRect contentRect;
+    content->getBounds(&contentRect);
+
+    SkMatrix contentMat;
+    contentMat.setRectToRect(contentRect, destRect, SkMatrix::kFill_ScaleToFit);
+
+    SkAutoTUnref<SkShader> shader(SkShader::CreateBitmapShader(*content,
                                                                SkShader::kClamp_TileMode,
                                                                SkShader::kClamp_TileMode));
-    shader->setLocalMatrix(matrix);
+    shader->setLocalMatrix(contentMat);
     m_skCurrentPaint.setShader(shader);
 
     if (quad->maskResourceId()) {
-        ResourceProvider::ScopedReadLockSoftware maskResourceLock(m_resourceProvider, quad->maskResourceId());
-        const SkBitmap* maskBitmap = maskResourceLock.skBitmap();
+        ResourceProvider::ScopedReadLockSoftware maskLock(m_resourceProvider, quad->maskResourceId());
+
+        const SkBitmap* mask = maskLock.skBitmap();
+
+        SkRect maskRect = SkRect::MakeXYWH(
+            quad->maskTexCoordOffsetX() * mask->width(),
+            quad->maskTexCoordOffsetY() * mask->height(),
+            quad->maskTexCoordScaleX() * mask->width(),
+            quad->maskTexCoordScaleY() * mask->height());
 
         SkMatrix maskMat;
-        maskMat.setRectToRect(toSkRect(quad->quadRect()), destRect, SkMatrix::kFill_ScaleToFit);
-        maskMat.postTranslate(quad->maskTexCoordOffsetX(), quad->maskTexCoordOffsetY());
+        maskMat.setRectToRect(maskRect, destRect, SkMatrix::kFill_ScaleToFit);
 
-        SkAutoTUnref<SkShader> maskShader(SkShader::CreateBitmapShader(*maskBitmap,
+        SkAutoTUnref<SkShader> maskShader(SkShader::CreateBitmapShader(*mask,
                                                                        SkShader::kClamp_TileMode,
                                                                        SkShader::kClamp_TileMode));
         maskShader->setLocalMatrix(maskMat);
@@ -319,7 +325,7 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
         m_skCurrentPaint.setRasterizer(maskRasterizer);
         m_skCurrentCanvas->drawRect(destRect, m_skCurrentPaint);
     } else {
-        // FIXME: Apply background filters and blend with contents
+        // FIXME: Apply background filters and blend with content
         m_skCurrentCanvas->drawRect(destRect, m_skCurrentPaint);
     }
 }
