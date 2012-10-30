@@ -104,7 +104,8 @@ bool BrowserDesktopRootWindowHostWin::PreHandleMSG(UINT message,
     browser::SessionEnding();
     return true;
   }
-  return false;
+  return DesktopRootWindowHostWin::PreHandleMSG(
+      message, w_param, l_param, result);
 }
 
 void BrowserDesktopRootWindowHostWin::PostHandleMSG(UINT message,

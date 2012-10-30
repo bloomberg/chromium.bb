@@ -130,11 +130,8 @@ aura::Window* DesktopActivationClient::GetActivatableWindow(
   aura::Window* parent = window->parent();
   aura::Window* child = window;
   while (parent) {
-    if (CanActivateWindow(child)) {
-      if (child->transient_parent())
-        child = GetActivatableWindow(child->transient_parent());
+    if (CanActivateWindow(child))
       return child;
-    }
     // If |child| isn't activatable, but has transient parent, trace
     // that path instead.
     if (child->transient_parent())

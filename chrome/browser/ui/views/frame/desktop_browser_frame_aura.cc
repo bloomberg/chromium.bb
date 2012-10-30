@@ -59,7 +59,8 @@ void DesktopBrowserFrameAura::InitNativeWidget(
   visibility_controller_.reset(new ash::internal::VisibilityController);
   aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(),
                                     visibility_controller_.get());
-  ash::SetChildWindowVisibilityChangesAnimated(GetNativeView());
+  ash::SetChildWindowVisibilityChangesAnimated(
+      GetNativeView()->GetRootWindow());
 #endif
 }
 
