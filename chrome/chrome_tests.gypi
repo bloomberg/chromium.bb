@@ -1099,6 +1099,7 @@
         'browser/autofill/autofill_metrics_unittest.cc',
         'browser/autofill/autofill_profile_unittest.cc',
         'browser/autofill/autofill_popup_unittest.cc',
+        'browser/autofill/autofill_regexes_unittest.cc',
         'browser/autofill/autofill_type_unittest.cc',
         'browser/autofill/autofill_xml_parser_unittest.cc',
         'browser/autofill/contact_info_unittest.cc',
