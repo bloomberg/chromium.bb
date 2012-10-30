@@ -622,7 +622,7 @@ class DriveFileSystemTest : public testing::Test {
   void SaveTestFileSystem(SaveTestFileSystemParam param) {
     DriveRootDirectoryProto root;
     root.set_version(kProtoVersion);
-    root.set_largest_changestamp(param == USE_SERVER_TIMESTAMP ? 654321 : 0);
+    root.set_largest_changestamp(param == USE_SERVER_TIMESTAMP ? 654321 : 1);
     DriveDirectoryProto* root_dir = root.mutable_drive_directory();
     DriveEntryProto* dir_base = root_dir->mutable_drive_entry();
     PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
@@ -1198,9 +1198,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
 
   // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
   // so no request for new feeds (i.e., call to GetDocuments) should happen.
-  mock_drive_service_->set_account_metadata(
-      google_apis::test_util::LoadJSONFile(
-          "gdata/account_metadata.json").release());
+  // Account metadata is already set up in MockDriveService's constructor.
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
   EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _)).Times(0);
@@ -1224,9 +1222,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
 TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
   SaveTestFileSystem(USE_OLD_TIMESTAMP);
 
-  mock_drive_service_->set_account_metadata(
-      google_apis::test_util::LoadJSONFile(
-          "gdata/account_metadata.json").release());
+  // Account metadata is already set up in MockDriveService's constructor.
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
@@ -1249,6 +1245,10 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
   EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _)).Times(1);
 
   file_system_->CheckForUpdates();
+  // Expected value from reading gdata/basic_feed.json.
+  // See MockDriveService's |feed_data_|.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_)).Times(2);
+
   google_apis::test_util::RunBlockingPoolTask();
 }
 
