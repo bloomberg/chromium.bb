@@ -58,11 +58,9 @@ std::string ContentOriginToString(ContentOrigin origin);
 // name is used in URLs for the file manager, hence user-visible.
 const FilePath::CharType kDriveRootDirectory[] = FILE_PATH_LITERAL("drive");
 
-// The resource ID for the root directory for WAPI is defined in the spec:
+// The resource ID for the root directory is defined in the spec:
 // https://developers.google.com/google-apps/documents-list/
-// Note that this special ID only applies to WAPI. Drive uses a non-constant
-// unique ID given in About resource.
-const char kWAPIRootDirectoryResourceId[] = "folder:root";
+const char kDriveRootDirectoryResourceId[] = "folder:root";
 
 // This should be incremented when incompatibility change is made in
 // drive.proto.
@@ -158,8 +156,8 @@ class DriveResourceMetadata {
   // Creates a DriveDirectory instance.
   scoped_ptr<DriveDirectory> CreateDriveDirectory();
 
-  // Sets root directory resource ID and put root to ResourceMap.
-  void InitializeRootEntry(const std::string& id);
+  // Sets root directory resource id and initialize the root entry.
+  void InitializeRootEntry(const std::string& root_id);
 
   // Add |doc entry| to directory with path |directory_path| and invoke the
   // callback asynchronously.

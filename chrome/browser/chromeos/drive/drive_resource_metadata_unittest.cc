@@ -17,17 +17,12 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
-#include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 namespace {
-
-// The root directory resource ID for WAPI.
-// TODO(haruki): Make Drive API equivalent work. http://crbug.com/157114
-const char kTestRootDirectoryResourceId[] = "folder:testroot";
 
 // See drive.proto for the difference between the two URLs.
 const char kResumableEditMediaUrl[] = "http://resumable-edit-media/";
@@ -89,8 +84,6 @@ DriveResourceMetadataTest::DriveResourceMetadataTest()
 }
 
 void DriveResourceMetadataTest::Init() {
-  resource_metadata_.InitializeRootEntry(kTestRootDirectoryResourceId);
-
   int sequence_id = 1;
   DriveDirectory* dir1 = AddDirectory(resource_metadata_.root(), sequence_id++);
   DriveDirectory* dir2 = AddDirectory(resource_metadata_.root(), sequence_id++);
@@ -140,7 +133,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   DriveEntryProto* mutable_entry =
       proto.mutable_drive_directory()->mutable_drive_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
-  mutable_entry->set_resource_id(kTestRootDirectoryResourceId);
+  mutable_entry->set_resource_id(kDriveRootDirectoryResourceId);
   mutable_entry->set_upload_url(kResumableCreateMediaUrl);
   mutable_entry->set_title("drive");
 
@@ -172,14 +165,11 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
 
 TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
   DriveResourceMetadata resource_metadata;
-  resource_metadata.InitializeRootEntry(kTestRootDirectoryResourceId);
-  EXPECT_EQ(kTestRootDirectoryResourceId,
-            resource_metadata.root()->resource_id());
   // Look up the root directory by its resource ID.
   DriveEntry* entry = resource_metadata.GetEntryByResourceId(
-      resource_metadata.root()->resource_id());
+      kDriveRootDirectoryResourceId);
   ASSERT_TRUE(entry);
-  EXPECT_EQ(kTestRootDirectoryResourceId, entry->resource_id());
+  EXPECT_EQ(kDriveRootDirectoryResourceId, entry->resource_id());
 }
 
 TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
@@ -370,7 +360,6 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
 
   // InitFromDB should succeed.
   DriveResourceMetadata test_resource_metadata;
-  test_resource_metadata.InitializeRootEntry(kTestRootDirectoryResourceId);
   test_resource_metadata.InitFromDB(db_path, blocking_task_runner,
       base::Bind(&InitFromDBCallback, DRIVE_FILE_OK));
   google_apis::test_util::RunBlockingPoolTask();
@@ -462,7 +451,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
 
   // Try removing root. This should fail.
   resource_metadata_.RemoveEntryFromParent(
-      resource_metadata_.root()->resource_id(),
+      kDriveRootDirectoryResourceId,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();

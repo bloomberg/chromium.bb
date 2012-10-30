@@ -196,8 +196,8 @@ DriveResourceMetadata::DriveResourceMetadata()
       origin_(UNINITIALIZED),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   root_ = CreateDriveDirectory().Pass();
-  root_->set_title(kDriveRootDirectory);
-  root_->SetBaseNameFromTitle();
+  if (!google_apis::util::IsDriveV2ApiEnabled())
+    InitializeRootEntry(kDriveRootDirectoryResourceId);
 }
 
 DriveResourceMetadata::~DriveResourceMetadata() {
@@ -217,9 +217,11 @@ scoped_ptr<DriveDirectory> DriveResourceMetadata::CreateDriveDirectory() {
   return scoped_ptr<DriveDirectory>(new DriveDirectory(this));
 }
 
-void DriveResourceMetadata::InitializeRootEntry(const std::string& id) {
-  DCHECK(root_->resource_id().empty());
-  root_->set_resource_id(id);
+void DriveResourceMetadata::InitializeRootEntry(const std::string& root_id) {
+  root_ = CreateDriveDirectory().Pass();
+  root_->set_title(kDriveRootDirectory);
+  root_->SetBaseNameFromTitle();
+  root_->set_resource_id(root_id);
   AddEntryToResourceMap(root_.get());
 }
 
@@ -227,17 +229,11 @@ void DriveResourceMetadata::ClearRoot() {
   if (!root_.get())
     return;
 
-  // The root is not yet initialized.
-  if (root_->resource_id().empty())
-    return;
-
   // Note that children have a reference to root_,
   // so we need to delete them here.
   root_->RemoveChildren();
   RemoveEntryFromResourceMap(root_->resource_id());
   DCHECK(resource_map_.empty());
-  // The resource_map_ should be empty here, but to make sure for non-Debug
-  // build.
   resource_map_.clear();
   root_.reset();
 }
@@ -355,7 +351,7 @@ void DriveResourceMetadata::RemoveEntryFromParent(
   DCHECK(!callback.is_null());
 
   // Disallow deletion of root.
-  if (resource_id == root_->resource_id()) {
+  if (resource_id == kDriveRootDirectoryResourceId) {
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_ACCESS_DENIED);
     return;
   }
@@ -643,6 +639,7 @@ void DriveResourceMetadata::InitResourceMap(
   DCHECK(!resource_metadata_db_.get());
   DCHECK(!callback.is_null());
 
+
   SerializedMap* serialized_resources = &create_params->serialized_resources;
   resource_metadata_db_ = create_params->db.Pass();
   if (serialized_resources->empty()) {
@@ -650,8 +647,6 @@ void DriveResourceMetadata::InitResourceMap(
     return;
   }
 
-  // Save root directory resource ID as ClearRoot() resets |root_|.
-  std::string saved_root_resource_id = root_->resource_id();
   ClearRoot();
 
   // Version check.
@@ -713,7 +708,7 @@ void DriveResourceMetadata::InitResourceMap(
       } else {
         NOTREACHED() << "Parent is not a directory " << parent->resource_id();
       }
-    } else if (entry->resource_id() == saved_root_resource_id) {
+    } else if (entry->resource_id() == kDriveRootDirectoryResourceId) {
       root_.reset(entry->AsDriveDirectory());
       DCHECK(root_.get());
       AddEntryToResourceMap(root_.get());
@@ -799,9 +794,6 @@ bool DriveResourceMetadata::ParseFromString(
   }
 
   root_->FromProto(proto.drive_directory());
-  // Call AddEntryToResourceMap() instead of InitializeRootEntry() as the root
-  // resource is already set from proto.
-  AddEntryToResourceMap(root_.get());
 
   origin_ = INITIALIZED;
   largest_changestamp_ = proto.largest_changestamp();

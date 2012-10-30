@@ -49,10 +49,6 @@ using ::testing::_;
 namespace drive {
 namespace {
 
-// The root directory resource ID for WAPI.
-// TODO(haruki): Make Drive API equivalent work. http://crbug.com/157114
-const char kTestRootDirectoryResourceId[] = "folder:testroot";
-
 const char kSymLinkToDevNull[] = "/dev/null";
 
 const int64 kLotsOfSpace = kMinFreeSpace * 10;
@@ -631,7 +627,7 @@ class DriveFileSystemTest : public testing::Test {
     DriveEntryProto* dir_base = root_dir->mutable_drive_entry();
     PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
     dir_base->set_title("drive");
-    dir_base->set_resource_id(kTestRootDirectoryResourceId);
+    dir_base->set_resource_id(kDriveRootDirectoryResourceId);
     dir_base->set_upload_url("http://resumable-create-media/1");
     platform_info->set_is_directory(true);
 
@@ -879,9 +875,7 @@ TEST_F(DriveFileSystemTest, SearchRootDirectory) {
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(
       FilePath(FILE_PATH_LITERAL(kFilePath)));
   ASSERT_TRUE(entry.get());
-  // We get kWAPIRootDirectoryResourceId instead of kTestRootDirectoryResourceId
-  // here, as the root ID is set in DriveFeedLoader::UpdateFromFeed().
-  EXPECT_EQ(kWAPIRootDirectoryResourceId, entry->resource_id());
+  EXPECT_EQ(kDriveRootDirectoryResourceId, entry->resource_id());
 }
 
 TEST_F(DriveFileSystemTest, SearchExistingFile) {
@@ -2583,10 +2577,8 @@ TEST_F(DriveFileSystemTest, RequestDirectoryRefresh) {
   LoadRootFeedDocument("gdata/root_feed.json");
 
   // We'll fetch documents in the root directory with its resource ID.
-  // kWAPIRootDirectoryResourceId instead of kTestRootDirectoryResourceId
-  // is used here as the root ID is set in DriveFeedLoader::UpdateFromFeed().
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(Eq(GURL()), _, _, kWAPIRootDirectoryResourceId, _))
+              GetDocuments(Eq(GURL()), _, _, kDriveRootDirectoryResourceId, _))
       .Times(1);
   // We'll notify the directory change to the observer.
   EXPECT_CALL(*mock_directory_observer_,
