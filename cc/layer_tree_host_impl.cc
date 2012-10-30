@@ -169,6 +169,11 @@ public:
 
     virtual void onTimerTick() OVERRIDE
     {
+        // FIXME: We require that animate be called on the impl thread. This
+        // avoids asserts in single threaded mode. Ideally background ticking
+        // would be handled by the proxy/scheduler and this could be removed.
+        DebugScopedSetImplThread impl;
+
         m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
     }
 

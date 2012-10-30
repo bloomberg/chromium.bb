@@ -11,6 +11,7 @@
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebThread.h>
 
@@ -65,6 +66,7 @@ public:
     ResourceUpdateControllerTest()
         : m_queue(make_scoped_ptr(new ResourceUpdateQueue))
         , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool))
+        , m_compositorInitializer(m_thread.get())
         , m_fullUploadCountExpected(0)
         , m_partialCountExpected(0)
         , m_totalUploadCountExpected(0)
@@ -186,6 +188,7 @@ protected:
     scoped_ptr<ResourceUpdateQueue> m_queue;
     scoped_ptr<PrioritizedTexture> m_textures[4];
     scoped_ptr<WebThread> m_thread;
+    WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<PrioritizedTextureManager> m_textureManager;
     SkBitmap m_bitmap;
 

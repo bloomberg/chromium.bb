@@ -4,17 +4,18 @@
 
 #include "base/message_loop.h"
 #include "base/test/test_suite.h"
-#include "cc/thread_impl.h"
-#include "cc/proxy.h"
+#include "cc/test/test_webkit_platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleMock(&argc, argv);
   TestSuite test_suite(argc, argv);
+  cc::TestWebKitPlatform platform;
   MessageLoop message_loop;
-  scoped_ptr<cc::Thread> mainCCThread = cc::ThreadImpl::createForCurrentThread();
-  cc::Proxy::setMainThread(mainCCThread.get());
+  WebKit::Platform::initialize(&platform);
   int result = test_suite.Run();
+  WebKit::Platform::shutdown();
 
   return result;
 }

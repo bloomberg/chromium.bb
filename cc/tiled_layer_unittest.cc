@@ -17,6 +17,7 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
@@ -48,7 +49,8 @@ private:
 class TiledLayerTest : public testing::Test {
 public:
     TiledLayerTest()
-        : m_context(WebKit::createFakeGraphicsContext())
+        : m_compositorInitializer(0)
+        , m_context(WebKit::createFakeGraphicsContext())
         , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
         , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool))
         , m_occlusion(0)
@@ -155,6 +157,7 @@ public:
     }
 
 public:
+    WebKitTests::WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;

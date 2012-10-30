@@ -6,6 +6,7 @@
 #include <public/WebLayer.h>
 
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "web_layer_impl.h"
 #include "web_layer_tree_view_test_common.h"
 #include <public/WebContentLayer.h>
@@ -39,6 +40,7 @@ public:
 class WebLayerTest : public Test {
 public:
     WebLayerTest()
+        : m_compositorInitializer(0)
     {
     }
 
@@ -60,6 +62,7 @@ public:
     }
 
 protected:
+    WebKitTests::WebCompositorInitializer m_compositorInitializer;
     MockWebLayerTreeViewClient m_client;
     scoped_ptr<WebLayer> m_rootLayer;
     scoped_ptr<WebLayerTreeView> m_view;

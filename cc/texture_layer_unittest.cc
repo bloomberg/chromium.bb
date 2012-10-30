@@ -10,6 +10,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/texture_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +41,7 @@ private:
 class TextureLayerTest : public testing::Test {
 public:
     TextureLayerTest()
+        : m_compositorInitializer(0)
     {
     }
 
@@ -61,6 +63,7 @@ protected:
 
     scoped_ptr<MockLayerImplTreeHost> m_layerTreeHost;
 private:
+    WebKitTests::WebCompositorInitializer m_compositorInitializer;
 };
 
 TEST_F(TextureLayerTest, syncImplWhenChangingTextureId)

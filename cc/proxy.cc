@@ -6,7 +6,7 @@
 
 #include "cc/proxy.h"
 
-#include "cc/thread.h"
+#include "cc/thread_task.h"
 
 namespace cc {
 
@@ -14,6 +14,7 @@ namespace {
 #ifndef NDEBUG
 bool implThreadIsOverridden = false;
 bool s_isMainThreadBlocked = false;
+base::PlatformThreadId threadIDOverridenToBeImplThread;
 #endif
 Thread* s_mainThread = 0;
 Thread* s_implThread = 0;
@@ -46,9 +47,10 @@ Thread* Proxy::implThread()
 
 Thread* Proxy::currentThread()
 {
-    if (s_mainThread && s_mainThread->belongsToCurrentThread())
+    base::PlatformThreadId currentThreadIdentifier = base::PlatformThread::CurrentId();
+    if (s_mainThread && s_mainThread->threadID() == currentThreadIdentifier)
         return s_mainThread;
-    if (s_implThread && s_implThread->belongsToCurrentThread())
+    if (s_implThread && s_implThread->threadID() == currentThreadIdentifier)
         return s_implThread;
     return 0;
 }
@@ -57,9 +59,9 @@ bool Proxy::isMainThread()
 {
 #ifndef NDEBUG
     DCHECK(s_mainThread);
-    if (implThreadIsOverridden)
+    if (implThreadIsOverridden && base::PlatformThread::CurrentId() == threadIDOverridenToBeImplThread)
         return false;
-    return s_mainThread->belongsToCurrentThread();
+    return base::PlatformThread::CurrentId() == s_mainThread->threadID();
 #else
     return true;
 #endif
@@ -68,9 +70,10 @@ bool Proxy::isMainThread()
 bool Proxy::isImplThread()
 {
 #ifndef NDEBUG
-    if (implThreadIsOverridden)
+    base::PlatformThreadId implThreadID = s_implThread ? s_implThread->threadID() : 0;
+    if (implThreadIsOverridden && base::PlatformThread::CurrentId() == threadIDOverridenToBeImplThread)
         return true;
-    return s_implThread && s_implThread->belongsToCurrentThread();
+    return base::PlatformThread::CurrentId() == implThreadID;
 #else
     return true;
 #endif
@@ -80,6 +83,8 @@ bool Proxy::isImplThread()
 void Proxy::setCurrentThreadIsImplThread(bool isImplThread)
 {
     implThreadIsOverridden = isImplThread;
+    if (isImplThread)
+        threadIDOverridenToBeImplThread = base::PlatformThread::CurrentId();
 }
 #endif
 

@@ -5,6 +5,8 @@
 {
   'variables': {
     'webkit_compositor_bindings_sources': [
+      'ccthread_impl.cc',
+      'ccthread_impl.h',
       'web_animation_curve_common.cc',
       'web_animation_curve_common.h',
       'web_animation_impl.cc',

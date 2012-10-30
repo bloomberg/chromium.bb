@@ -7,20 +7,19 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread.h"
 #include "cc/layer_tree_host.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/scoped_thread_proxy.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebAnimationDelegate.h>
+#include <public/WebThread.h>
 
 namespace cc {
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
-class Thread;
 }
 
 namespace WebKitTests {
@@ -90,6 +89,8 @@ public:
     void doBeginTest();
     void timeout();
 
+    void clearTimeout() { m_timeoutTask = 0; }
+
     cc::LayerTreeHost* layerTreeHost() { return m_layerTreeHost.get(); }
 
 protected:
@@ -113,8 +114,7 @@ protected:
     void dispatchDidAddAnimation();
 
     virtual void runTest(bool threaded);
-
-    cc::Thread* implThread() { return m_implCCThread.get(); }
+    WebKit::WebThread* webThread() const { return m_webThread.get(); }
 
     cc::LayerTreeSettings m_settings;
     scoped_ptr<MockLayerImplTreeHostClient> m_client;
@@ -131,10 +131,9 @@ private:
     bool m_scheduled;
     bool m_started;
 
-    scoped_ptr<cc::Thread> m_mainCCThread;
-    scoped_ptr<cc::Thread> m_implCCThread;
-    scoped_ptr<base::Thread> m_implThread;
-    base::CancelableClosure m_timeout;
+    scoped_ptr<WebKit::WebThread> m_webThread;
+    TimeoutTask* m_timeoutTask;
+    BeginTask* m_beginTask;
 };
 
 class ThreadedTestThreadOnly : public ThreadedTest {

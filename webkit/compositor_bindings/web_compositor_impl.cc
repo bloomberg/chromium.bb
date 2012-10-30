@@ -13,7 +13,7 @@
 #include "cc/layer_tree_host.h"
 #include "cc/proxy.h"
 #include "cc/settings.h"
-#include "cc/thread_impl.h"
+#include "ccthread_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "webkit/glue/webthread_impl.h"
 
@@ -45,12 +45,10 @@ void WebCompositorImpl::initialize(WebThread* implThread)
     ASSERT(!s_initialized);
     s_initialized = true;
 
-    s_mainThread = cc::ThreadImpl::createForCurrentThread().release();
+    s_mainThread = CCThreadImpl::createForCurrentThread().release();
     Proxy::setMainThread(s_mainThread);
     if (implThread) {
-        webkit_glue::WebThreadImpl* webThreadImpl = static_cast<webkit_glue::WebThreadImpl*>(implThread);
-        MessageLoop* implMessageLoop = webThreadImpl->message_loop();
-        s_implThread = cc::ThreadImpl::createForDifferentThread(implMessageLoop->message_loop_proxy()).release();
+        s_implThread = CCThreadImpl::createForDifferentThread(implThread).release();
         Proxy::setImplThread(s_implThread);
     } else
         Proxy::setImplThread(0);

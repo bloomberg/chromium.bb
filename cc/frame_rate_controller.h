@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time.h"
+#include "cc/timer.h"
 
 namespace cc {
 
@@ -26,7 +26,7 @@ protected:
 
 class FrameRateControllerTimeSourceAdapter;
 
-class FrameRateController {
+class FrameRateController : public TimerClient {
 public:
     explicit FrameRateController(scoped_refptr<TimeSource>);
     // Alternate form of FrameRateController with unthrottled frame-rate.
@@ -59,7 +59,9 @@ protected:
     void onTimerTick();
 
     void postManualTick();
-    void manualTick();
+
+    // TimerClient implementation (used for unthrottled frame-rate).
+    virtual void onTimerFired() OVERRIDE;
 
     FrameRateControllerClient* m_client;
     int m_numFramesPending;
@@ -71,10 +73,7 @@ protected:
 
     // Members for unthrottled frame-rate.
     bool m_isTimeSourceThrottling;
-    base::WeakPtrFactory<FrameRateController> m_weakFactory;
-    Thread* m_thread;
-
-    DISALLOW_COPY_AND_ASSIGN(FrameRateController);
+    scoped_ptr<Timer> m_manualTicker;
 };
 
 }  // namespace cc

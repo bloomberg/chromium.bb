@@ -5,16 +5,18 @@
 #ifndef CCDelayBasedTimeSource_h
 #define CCDelayBasedTimeSource_h
 
-#include "base/memory/weak_ptr.h"
 #include "cc/time_source.h"
+#include "cc/timer.h"
 
 namespace cc {
 
+class Thread;
+
 // This timer implements a time source that achieves the specified interval
 // in face of millisecond-precision delayed callbacks and random queueing delays.
-class DelayBasedTimeSource : public TimeSource {
+class DelayBasedTimeSource : public TimeSource, TimerClient {
 public:
-    static scoped_refptr<DelayBasedTimeSource> create(base::TimeDelta interval, Thread* thread);
+    static scoped_refptr<DelayBasedTimeSource> create(base::TimeDelta interval, Thread*);
 
     virtual void setClient(TimeSourceClient* client) OVERRIDE;
 
@@ -29,17 +31,18 @@ public:
     virtual base::TimeTicks lastTickTime() OVERRIDE;
     virtual base::TimeTicks nextTickTime() OVERRIDE;
 
+    // TimerClient implementation.
+    virtual void onTimerFired() OVERRIDE;
 
     // Virtual for testing.
     virtual base::TimeTicks now() const;
 
 protected:
-    DelayBasedTimeSource(base::TimeDelta interval, Thread* thread);
+    DelayBasedTimeSource(base::TimeDelta interval, Thread*);
     virtual ~DelayBasedTimeSource();
 
     base::TimeTicks nextTickTarget(base::TimeTicks now);
     void postNextTickTask(base::TimeTicks now);
-    void onTimerFired();
 
     enum State {
         STATE_INACTIVE,
@@ -67,10 +70,8 @@ protected:
     Parameters m_nextParameters;
 
     State m_state;
-
     Thread* m_thread;
-    base::WeakPtrFactory<DelayBasedTimeSource> m_weakFactory;
-    DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSource);
+    Timer m_timer;
 };
 
 }  // namespace cc

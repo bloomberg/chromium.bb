@@ -15,6 +15,7 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_common.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
@@ -58,6 +59,7 @@ public:
 class LayerTest : public testing::Test {
 public:
     LayerTest()
+        : m_compositorInitializer(0)
     {
     }
 
@@ -133,6 +135,7 @@ protected:
 
     scoped_ptr<MockLayerImplTreeHost> m_layerTreeHost;
     scoped_refptr<Layer> m_parent, m_child1, m_child2, m_child3, m_grandChild1, m_grandChild2, m_grandChild3;
+    WebCompositorInitializer m_compositorInitializer;
 };
 
 TEST_F(LayerTest, basicCreateAndDestroy)
@@ -635,6 +638,7 @@ void assertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host)
 
 TEST(LayerLayerTreeHostTest, enteringTree)
 {
+    WebCompositorInitializer compositorInitializer(0);
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
     scoped_refptr<Layer> mask = Layer::create();
@@ -663,6 +667,7 @@ TEST(LayerLayerTreeHostTest, enteringTree)
 
 TEST(LayerLayerTreeHostTest, addingLayerSubtree)
 {
+    WebCompositorInitializer compositorInitializer(0);
     scoped_refptr<Layer> parent = Layer::create();
     scoped_ptr<FakeLayerImplTreeHost> layerTreeHost(FakeLayerImplTreeHost::create());
 
@@ -691,6 +696,7 @@ TEST(LayerLayerTreeHostTest, addingLayerSubtree)
 
 TEST(LayerLayerTreeHostTest, changeHost)
 {
+    WebCompositorInitializer compositorInitializer(0);
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
     scoped_refptr<Layer> mask = Layer::create();
@@ -720,6 +726,7 @@ TEST(LayerLayerTreeHostTest, changeHost)
 
 TEST(LayerLayerTreeHostTest, changeHostInSubtree)
 {
+    WebCompositorInitializer compositorInitializer(0);
     scoped_refptr<Layer> firstParent = Layer::create();
     scoped_refptr<Layer> firstChild = Layer::create();
     scoped_refptr<Layer> secondParent = Layer::create();
@@ -753,6 +760,7 @@ TEST(LayerLayerTreeHostTest, changeHostInSubtree)
 
 TEST(LayerLayerTreeHostTest, replaceMaskAndReplicaLayer)
 {
+    WebCompositorInitializer compositorInitializer(0);
     scoped_refptr<Layer> parent = Layer::create();
     scoped_refptr<Layer> mask = Layer::create();
     scoped_refptr<Layer> replica = Layer::create();
@@ -787,6 +795,7 @@ TEST(LayerLayerTreeHostTest, replaceMaskAndReplicaLayer)
 
 TEST(LayerLayerTreeHostTest, destroyHostWithNonNullRootLayer)
 {
+    WebCompositorInitializer compositorInitializer(0);
     scoped_refptr<Layer> root = Layer::create();
     scoped_refptr<Layer> child = Layer::create();
     root->addChild(child);
@@ -814,6 +823,7 @@ TEST(LayerLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
     ScopedSettings scopedSettings;
     Settings::setAcceleratedAnimationEnabled(true);
 
+    WebCompositorInitializer compositorInitializer(0);
     scoped_refptr<Layer> layer = Layer::create();
 
     // Case 1: without a layerTreeHost, the animation should not be accepted.

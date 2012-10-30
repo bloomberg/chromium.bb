@@ -10,6 +10,7 @@
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "cc/texture.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,6 +24,7 @@ public:
     PrioritizedTextureTest()
         : m_textureSize(256, 256)
         , m_textureFormat(GL_RGBA)
+        , m_compositorInitializer(0)
         , m_context(WebKit::createFakeGraphicsContext())
     {
         DebugScopedSetImplThread implThread;
@@ -91,6 +93,7 @@ public:
 protected:
     const IntSize m_textureSize;
     const GLenum m_textureFormat;
+    WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
 };

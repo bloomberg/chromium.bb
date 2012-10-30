@@ -11,6 +11,7 @@
 #include "cc/graphics_context.h"
 #include "cc/layer_tree_host.h"
 #include "cc/resource_update_controller.h"
+#include "cc/timer.h"
 
 namespace cc {
 

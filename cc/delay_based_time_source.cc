@@ -11,8 +11,6 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
-#include "cc/thread.h"
 
 namespace cc {
 
@@ -42,8 +40,7 @@ DelayBasedTimeSource::DelayBasedTimeSource(base::TimeDelta interval, Thread* thr
     , m_currentParameters(interval, base::TimeTicks())
     , m_nextParameters(interval, base::TimeTicks())
     , m_state(STATE_INACTIVE)
-    , m_thread(thread)
-    , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
+    , m_timer(thread, this)
 {
 }
 
@@ -56,7 +53,7 @@ void DelayBasedTimeSource::setActive(bool active)
     TRACE_EVENT1("cc", "DelayBasedTimeSource::setActive", "active", active);
     if (!active) {
         m_state = STATE_INACTIVE;
-        m_weakFactory.InvalidateWeakPtrs();
+        m_timer.stop();
         return;
     }
 
@@ -68,7 +65,7 @@ void DelayBasedTimeSource::setActive(bool active)
         // it runs, we use that to establish the timebase, become truly active, and
         // fire the first tick.
         m_state = STATE_STARTING;
-        m_thread->postTask(base::Bind(&DelayBasedTimeSource::onTimerFired, m_weakFactory.GetWeakPtr()));
+        m_timer.startOneShot(0);
         return;
     }
 
@@ -225,9 +222,7 @@ void DelayBasedTimeSource::postNextTickTask(base::TimeTicks now)
     base::TimeDelta delay = newTickTarget - now;
     DCHECK(delay.InMillisecondsF() <=
            m_nextParameters.interval.InMillisecondsF() * (1.0 + doubleTickThreshold));
-    m_thread->postDelayedTask(base::Bind(&DelayBasedTimeSource::onTimerFired,
-                                         m_weakFactory.GetWeakPtr()),
-                              delay.InMilliseconds());
+    m_timer.startOneShot(delay.InSecondsF());
 
     m_nextParameters.tickTarget = newTickTarget;
     m_currentParameters = m_nextParameters;

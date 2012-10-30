@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "cc/delay_based_time_source.h"
 #include "cc/time_source.h"
-#include "cc/thread.h"
 
 namespace {
 
@@ -48,8 +47,6 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
     , m_active(false)
     , m_swapBuffersCompleteSupported(true)
     , m_isTimeSourceThrottling(true)
-    , m_thread(0)
-    , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
 {
     m_timeSourceClientAdapter = FrameRateControllerTimeSourceAdapter::create(this);
     m_timeSource->setClient(m_timeSourceClientAdapter.get());
@@ -62,8 +59,7 @@ FrameRateController::FrameRateController(Thread* thread)
     , m_active(false)
     , m_swapBuffersCompleteSupported(true)
     , m_isTimeSourceThrottling(false)
-    , m_thread(thread)
-    , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
+    , m_manualTicker(new Timer(thread, this))
 {
 }
 
@@ -86,7 +82,7 @@ void FrameRateController::setActive(bool active)
         if (active)
             postManualTick();
         else
-            m_weakFactory.InvalidateWeakPtrs();
+            m_manualTicker->stop();
     }
 }
 
@@ -124,10 +120,10 @@ void FrameRateController::onTimerTick()
 void FrameRateController::postManualTick()
 {
     if (m_active)
-        m_thread->postTask(base::Bind(&FrameRateController::manualTick, m_weakFactory.GetWeakPtr()));
+        m_manualTicker->startOneShot(0);
 }
 
-void FrameRateController::manualTick()
+void FrameRateController::onTimerFired()
 {
     onTimerTick();
 }

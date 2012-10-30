@@ -5,8 +5,9 @@
 #ifndef CCThread_h
 #define CCThread_h
 
-#include "base/callback.h"
 #include "base/basictypes.h"
+#include "base/threading/platform_thread.h"
+#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -16,13 +17,25 @@ class Thread {
 public:
     virtual ~Thread() { }
 
-    // Executes the callback on context's thread asynchronously.
-    virtual void postTask(base::Closure cb) = 0;
+    class Task {
+    public:
+        virtual ~Task() { }
+        virtual void performTask() = 0;
+        void* instance() const { return m_instance; }
+    protected:
+        Task(void* instance) : m_instance(instance) { }
+        void* m_instance;
+    private:
+        DISALLOW_COPY_AND_ASSIGN(Task);
+    };
+
+    // Executes the task on context's thread asynchronously.
+    virtual void postTask(PassOwnPtr<Task>) = 0;
 
     // Executes the task after the specified delay.
-    virtual void postDelayedTask(base::Closure cb, long long delayMs) = 0;
+    virtual void postDelayedTask(PassOwnPtr<Task>, long long delayMs) = 0;
 
-    virtual bool belongsToCurrentThread() const = 0;
+    virtual base::PlatformThreadId threadID() const = 0;
 };
 
 }

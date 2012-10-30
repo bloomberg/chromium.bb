@@ -11,7 +11,6 @@
 #include "cc/proxy.h"
 #include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
-#include "cc/thread.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include <limits>
@@ -72,13 +71,11 @@ size_t ResourceUpdateController::maxFullUpdatesPerTick(
 
 ResourceUpdateController::ResourceUpdateController(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     : m_client(client)
+    , m_timer(new Timer(thread, this))
     , m_queue(queue.Pass())
     , m_resourceProvider(resourceProvider)
     , m_textureUpdatesPerTick(maxFullUpdatesPerTick(resourceProvider))
     , m_firstUpdateAttempt(true)
-    , m_thread(thread)
-    , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
-    , m_taskPosted(false)
 {
 }
 
@@ -92,7 +89,7 @@ void ResourceUpdateController::performMoreUpdates(
     m_timeLimit = timeLimit;
 
     // Update already in progress.
-    if (m_taskPosted)
+    if (m_timer->isActive())
         return;
 
     // Call updateMoreTexturesNow() directly unless it's the first update
@@ -101,11 +98,8 @@ void ResourceUpdateController::performMoreUpdates(
     if (m_firstUpdateAttempt) {
         // Post a 0-delay task when no updates were left. When it runs,
         // readyToFinalizeTextureUpdates() will be called.
-        if (!updateMoreTexturesIfEnoughTimeRemaining()) {
-            m_taskPosted = true;
-            m_thread->postTask(base::Bind(&ResourceUpdateController::onTimerFired,
-                                          m_weakFactory.GetWeakPtr()));
-        }
+        if (!updateMoreTexturesIfEnoughTimeRemaining())
+            m_timer->startOneShot(0);
 
         m_firstUpdateAttempt = false;
     } else
@@ -228,7 +222,6 @@ void ResourceUpdateController::finalize()
 
 void ResourceUpdateController::onTimerFired()
 {
-    m_taskPosted = false;
     ResourceProvider::debugNotifyEnterZone(0xB000000);
     if (!updateMoreTexturesIfEnoughTimeRemaining())
         m_client->readyToFinalizeTextureUpdates();
@@ -261,10 +254,7 @@ bool ResourceUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
     // time estimate. We use a different timeout here to prevent unnecessary
     // amounts of idle time when blocking uploads have reached the max.
     if (m_resourceProvider->numBlockingUploads() >= maxBlockingUpdates()) {
-        m_taskPosted = true;
-        m_thread->postDelayedTask(base::Bind(&ResourceUpdateController::onTimerFired,
-                                             m_weakFactory.GetWeakPtr()),
-                                 uploaderBusyTickRate * 1000);
+        m_timer->startOneShot(uploaderBusyTickRate);
         return true;
     }
 
@@ -283,10 +273,9 @@ void ResourceUpdateController::updateMoreTexturesNow()
 {
     size_t uploads = std::min(
         m_queue->fullUploadSize(), updateMoreTexturesSize());
-    m_taskPosted = true;
-    m_thread->postDelayedTask(base::Bind(&ResourceUpdateController::onTimerFired,
-                                         m_weakFactory.GetWeakPtr()),
-                              updateMoreTexturesTime().InSecondsF() / updateMoreTexturesSize() * uploads * 1000);
+    m_timer->startOneShot(
+        updateMoreTexturesTime().InSecondsF() / updateMoreTexturesSize() *
+        uploads);
 
     if (!uploads)
         return;
