@@ -478,6 +478,11 @@ class TabDragController : public content::WebContentsDelegate,
   // elements are NULLd at various points during the lifetime of this object.
   gfx::Screen* screen_;
 
+  // The desktop type that this drag is associated with. Cached, because other
+  // UI elements are NULLd at various points during the lifetime of this
+  // object.
+  chrome::HostDesktopType host_desktop_type_;
+
   // The visual representation of the dragged Tab.
   scoped_ptr<DraggedTabView> view_;
 

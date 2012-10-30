@@ -427,6 +427,8 @@ void TabDragController::Init(
   source_tabstrip_ = source_tabstrip;
   screen_ = gfx::Screen::GetScreenFor(
       source_tabstrip->GetWidget()->GetNativeView());
+  host_desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
+      source_tabstrip->GetWidget()->GetNativeView());
   source_tab_offset_ = source_tab_offset;
   start_point_in_screen_ = gfx::Point(source_tab_offset, mouse_offset.y());
   views::View::ConvertPointToScreen(source_tab, &start_point_in_screen_);
@@ -1047,7 +1049,10 @@ DockInfo TabDragController::GetDockInfoAtPoint(
 
   gfx::NativeView dragged_view = view_->GetWidget()->GetNativeView();
   dock_windows_.insert(dragged_view);
-  DockInfo info = DockInfo::GetDockInfoAtPoint(point_in_screen, dock_windows_);
+  DockInfo info = DockInfo::GetDockInfoAtPoint(
+      host_desktop_type_,
+      point_in_screen,
+      dock_windows_);
   dock_windows_.erase(dragged_view);
   return info;
 }
@@ -1072,7 +1077,10 @@ TabStrip* TabDragController::GetTargetTabStripForPoint(
   if (dragged_view)
     dock_windows_.insert(dragged_view);
   gfx::NativeWindow local_window =
-      DockInfo::GetLocalProcessWindowAtPoint(point_in_screen, dock_windows_);
+      DockInfo::GetLocalProcessWindowAtPoint(
+          host_desktop_type_,
+          point_in_screen,
+          dock_windows_);
   if (dragged_view)
     dock_windows_.erase(dragged_view);
   TabStrip* tab_strip = GetTabStripForWindow(local_window);
@@ -1925,8 +1933,10 @@ void TabDragController::BringWindowUnderPointToFront(
     gfx::NativeView dragged_native_view =
         dragged_view->GetWidget()->GetNativeView();
     dock_windows_.insert(dragged_native_view);
-    window =
-        DockInfo::GetLocalProcessWindowAtPoint(point_in_screen, dock_windows_);
+    window = DockInfo::GetLocalProcessWindowAtPoint(
+        host_desktop_type_,
+        point_in_screen,
+        dock_windows_);
     dock_windows_.erase(dragged_native_view);
   }
   if (window) {
@@ -1998,7 +2008,10 @@ Browser* TabDragController::CreateBrowserForDrag(
 
   *drag_offset = point_in_screen.Subtract(new_bounds.origin());
 
-  Browser::CreateParams create_params(drag_data_[0].contents->profile());
+  Browser::CreateParams create_params(
+      Browser::TYPE_TABBED,
+      drag_data_[0].contents->profile(),
+      host_desktop_type_);
   create_params.initial_bounds = new_bounds;
   Browser* browser = new Browser(create_params);
   SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -171,7 +172,8 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
 };
 
 // static
-DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
+DockInfo DockInfo::GetDockInfoAtPoint(chrome::HostDesktopType host_desktop_type,
+                                      const gfx::Point& screen_point,
                                       const std::set<GtkWidget*>& ignore) {
   NOTIMPLEMENTED();
   return DockInfo();
@@ -179,6 +181,7 @@ DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
 
 // static
 GtkWindow* DockInfo::GetLocalProcessWindowAtPoint(
+    chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
     const std::set<GtkWidget*>& ignore) {
   XID xid =

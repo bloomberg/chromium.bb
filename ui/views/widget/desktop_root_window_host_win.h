@@ -39,6 +39,9 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
       const gfx::Rect& initial_bounds);
   virtual ~DesktopRootWindowHostWin();
 
+  // A way of converting an HWND into a content window.
+  static aura::Window* GetContentWindowForHWND(HWND hwnd);
+
  protected:
   // Overridden from DesktopRootWindowHost:
   virtual aura::RootWindow* Init(aura::Window* content_window,

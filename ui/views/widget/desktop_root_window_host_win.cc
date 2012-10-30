@@ -14,6 +14,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
@@ -29,6 +30,9 @@
 #include "ui/views/window/native_frame_view.h"
 
 namespace views {
+
+DEFINE_WINDOW_PROPERTY_KEY(
+    aura::Window*, kContentWindowForRootWindow, NULL);
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, public:
@@ -46,6 +50,12 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
 }
 
 DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
+}
+
+// static
+aura::Window* DesktopRootWindowHostWin::GetContentWindowForHWND(HWND hwnd) {
+  aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(hwnd);
+  return root ? root->GetProperty(kContentWindowForRootWindow) : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,6 +125,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   root_window_event_filter_->AddFilter(input_method_filter_.get());
 
   focus_manager_->SetFocusedWindow(content_window_, NULL);
+  root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
   return root_window_;
 }
 

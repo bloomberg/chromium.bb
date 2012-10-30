@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -71,7 +72,8 @@ class DockInfo {
   //
   // If there is no docking position for the specified location the returned
   // DockInfo has a type of NONE.
-  static DockInfo GetDockInfoAtPoint(const gfx::Point& screen_point,
+  static DockInfo GetDockInfoAtPoint(chrome::HostDesktopType host_desktop_type,
+                                     const gfx::Point& screen_point,
                                      const std::set<gfx::NativeView>& ignore);
 
   // Returns the top most window from the current process at |screen_point|.
@@ -79,6 +81,7 @@ class DockInfo {
   // there is no window from the current process at |screen_point|, or another
   // window obscures the topmost window from our process at |screen_point|.
   static gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      chrome::HostDesktopType host_desktop_type,
       const gfx::Point& screen_point,
       const std::set<gfx::NativeView>& ignore);
 

@@ -356,7 +356,8 @@ TabStripGtk* DraggedTabControllerGtk::GetTabStripForPoint(
   GtkWidget* dragged_window = dragged_view_->widget();
   dock_windows_.insert(dragged_window);
   gfx::NativeWindow local_window =
-      DockInfo::GetLocalProcessWindowAtPoint(screen_point, dock_windows_);
+      DockInfo::GetLocalProcessWindowAtPoint(
+          chrome::HOST_DESKTOP_TYPE_NATIVE, screen_point, dock_windows_);
   dock_windows_.erase(dragged_window);
   if (!local_window)
     return NULL;
@@ -879,6 +880,7 @@ void DraggedTabControllerGtk::BringWindowUnderMouseToFront() {
     gfx::NativeView dragged_tab = dragged_view_->widget();
     dock_windows_.insert(dragged_tab);
     window = DockInfo::GetLocalProcessWindowAtPoint(
+        chrome::HOST_DESKTOP_TYPE_NATIVE,
         gfx::Screen::GetNativeScreen()->GetCursorScreenPoint(),
         dock_windows_);
     dock_windows_.erase(dragged_tab);
