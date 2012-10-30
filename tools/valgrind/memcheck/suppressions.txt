@@ -4140,7 +4140,6 @@
    fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
    fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
    fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEii
-   fun:_ZNK7WebCore15NativeImageSkia13resizedBitmapERK7SkIRectiiS3_
    ...
    fun:_ZN7WebCore15GraphicsContext*
 }
@@ -4540,17 +4539,14 @@
    fun:shade_texture_span
    fun:_swrast_write_rgba_span
    fun:general_triangle
-   fun:_swrast_validate_triangle
+   ...
    fun:_swrast_Triangle
    fun:triangle_rgba
-   fun:_tnl_render_tri_fan_verts
+   ...
    fun:run_render
    fun:_tnl_run_pipeline
    fun:_tnl_draw_prims
    fun:_tnl_vbo_draw_prims
-   fun:vbo_exec_DrawArrays
-   fun:neutral_DrawArrays
-   fun:glDrawArrays
 }
 {
    bug_112315
@@ -6098,4 +6094,20 @@
    fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
    fun:_ZN26ProfileKeyedServiceFactory23SetTestingFactoryAndUseEP7ProfilePFP19ProfileKeyedServiceS1_E
    fun:_ZN21VisitedLinkEventsTest5SetUpEv
+}
+{
+   bug_158510
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore11RenderTable6layoutEv
+   ...
+   fun:_ZN7WebCore11RenderBlock6layoutEv
+}
+{
+   bug_158514
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN2v88internal16ProfileGenerator16RecordTickSampleERKNS0_10TickSampleE
+   fun:_ZN2v88internal23ProfilerEventsProcessor12ProcessTicksEj
+   fun:_ZN2v88internal23ProfilerEventsProcessor3RunEv
+   fun:_ZN2v88internalL11ThreadEntryEPv
 }
