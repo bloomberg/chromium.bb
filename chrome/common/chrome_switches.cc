@@ -1378,6 +1378,11 @@ const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 
+// Disables Chrome Captive Portal detector, which initiates Captive
+// Portal detection for new active networks.
+const char kDisableChromeCaptivePortalDetector[] =
+    "disable-chrome-captive-portal-detector";
+
 // Disables Google Drive integration.
 const char kDisableDrive[]                  = "disable-drive";
 
@@ -1405,6 +1410,11 @@ const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 // Enables component extension that initializes background pages of
 // certain hosted applications.
 const char kEnableBackgroundLoader[]        = "enable-background-loader";
+
+// Enables Chrome Captive Portal detector, which initiates Captive
+// Portal detection for new active networks.
+const char kEnableChromeCaptivePortalDetector[] =
+    "enable-chrome-captive-portal-detector";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
