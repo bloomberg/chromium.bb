@@ -291,7 +291,8 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttachedAdjacentBits) {
   DoDevicesAttachedTest(device_indices);
 }
 
-TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetached) {
+// Disabled until http://crbug.com/155910 is resolved.
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DISABLED_DevicesDetached) {
   PreAttachDevices();
 
   std::vector<int> device_indices;
@@ -303,7 +304,9 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetached) {
   DoDevicesDetachedTest(device_indices);
 }
 
-TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedHighBoundary) {
+// Disabled until http://crbug.com/155910 is resolved.
+TEST_F(RemovableDeviceNotificationsWindowWinTest,
+       DISABLED_DevicesDetachedHighBoundary) {
   PreAttachDevices();
 
   std::vector<int> device_indices;
@@ -312,7 +315,9 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedHighBoundary) {
   DoDevicesDetachedTest(device_indices);
 }
 
-TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedLowBoundary) {
+// Disabled until http://crbug.com/155910 is resolved.
+TEST_F(RemovableDeviceNotificationsWindowWinTest,
+       DISABLED_DevicesDetachedLowBoundary) {
   PreAttachDevices();
 
   std::vector<int> device_indices;
@@ -321,7 +326,9 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedLowBoundary) {
   DoDevicesDetachedTest(device_indices);
 }
 
-TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedAdjacentBits) {
+// Disabled until http://crbug.com/155910 is resolved.
+TEST_F(RemovableDeviceNotificationsWindowWinTest,
+       DISABLED_DevicesDetachedAdjacentBits) {
   PreAttachDevices();
 
   std::vector<int> device_indices;
@@ -333,7 +340,8 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedAdjacentBits) {
   DoDevicesDetachedTest(device_indices);
 }
 
-TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoFoPath) {
+// Disabled until http://crbug.com/155910 is resolved.
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DISABLED_DeviceInfoForPath) {
   PreAttachDevices();
 
   // An invalid path.
