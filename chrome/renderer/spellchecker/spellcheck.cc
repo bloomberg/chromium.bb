@@ -5,22 +5,18 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
-#include "base/metrics/histogram.h"
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
-#include "content/public/renderer/render_thread.h"
-#include "third_party/hunspell/src/hunspell/hunspell.hxx"
+#include "chrome/renderer/spellchecker/hunspell_engine.h"
+#include "chrome/renderer/spellchecker/spelling_engine.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 using base::TimeTicks;
-using content::RenderThread;
 using WebKit::WebVector;
 using WebKit::WebTextCheckingResult;
 using WebKit::WebTextCheckingType;
@@ -66,81 +62,7 @@ class SpellCheck::SpellCheckRequestParam
   DISALLOW_COPY_AND_ASSIGN(SpellCheckRequestParam);
 };
 
-
-class PlatformSpellingEngine {
- public:
-  void RequestTextChecking(const string16& text,
-                           int offset,
-                           WebKit::WebTextCheckingCompletion* completion);
-
-  bool InitializeIfNeeded();
-  bool CheckSpelling(const string16& word_to_check, int tag);
-  void FillSuggestionList(const string16& wrong_word,
-                          std::vector<string16>* optional_suggestions);
-
-};
-
-#if defined (OS_MACOSX)
-void PlatformSpellingEngine::RequestTextChecking(
-    const string16& text,
-    int offset,
-    WebKit::WebTextCheckingCompletion* completion) {
-  NOTREACHED();  // Cannot be invoked on OSX. (TODO(groby):why?)
-}
-
-bool PlatformSpellingEngine::InitializeIfNeeded() {
-  return false;
-}
-
-bool PlatformSpellingEngine::CheckSpelling(const string16& word_to_check,
-                                           int tag) {
-  bool word_correct = false;
-
-  RenderThread::Get()->Send(new SpellCheckHostMsg_CheckSpelling(
-      word_to_check, tag, &word_correct));
-  return word_correct;
-}
-
-void PlatformSpellingEngine::FillSuggestionList(
-    const string16& wrong_word,
-    std::vector<string16>* optional_suggestions) {
-    RenderThread::Get()->Send(new SpellCheckHostMsg_FillSuggestionList(
-        wrong_word, optional_suggestions));
-}
-#else
-
-// Dummy implementation of a SpellingEngine - only needed to satisfy compiler.
-void PlatformSpellingEngine::RequestTextChecking(
-    const string16& text,
-    int offset,
-    WebKit::WebTextCheckingCompletion* completion) {
-  NOTREACHED();
-}
-
-bool PlatformSpellingEngine::InitializeIfNeeded() {
-  NOTREACHED();
-  return false;
-}
-
-bool PlatformSpellingEngine::CheckSpelling(const string16&,
-                                           int) {
-  NOTREACHED();
-  return false;
-}
-
-void PlatformSpellingEngine::FillSuggestionList(
-    const string16&,
-    std::vector<string16>*) {
-  NOTREACHED();
-}
-#endif
-
-SpellCheck::SpellCheck()
-    : file_(base::kInvalidPlatformFileValue),
-      auto_spell_correct_turned_on_(false),
-      initialized_(false),
-      dictionary_requested_(false) {
-  // Wait till we check the first word before doing any initializing.
+SpellCheck::SpellCheck() : auto_spell_correct_turned_on_(false) {
 }
 
 SpellCheck::~SpellCheck() {
@@ -171,15 +93,7 @@ void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
 }
 
 void SpellCheck::OnWordAdded(const std::string& word) {
-  if (platform_spelling_engine_.get())
-    return;
-
-  if (!hunspell_.get()) {
-    // Save it for later---add it when hunspell is initialized.
-    custom_words_.push_back(word);
-  } else {
-    AddWordToHunspell(word);
-  }
+  platform_spelling_engine_->OnWordAdded(word);
 }
 
 void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
@@ -189,29 +103,22 @@ void SpellCheck::OnEnableAutoSpellCorrect(bool enable) {
 void SpellCheck::Init(base::PlatformFile file,
                       const std::vector<std::string>& custom_words,
                       const std::string& language) {
-  initialized_ = true;
-  hunspell_.reset();
-  bdict_file_.reset();
-  file_ = file;
   bool use_platform_spelling_engine =
       file == base::kInvalidPlatformFileValue && !language.empty();
 
-#if defined (OS_MACOSX)
   // Some tests under OSX still exercise hunspell. Only init native engine
   // when no dictionary was specified.
-  if (use_platform_spelling_engine)
-    platform_spelling_engine_.reset(new PlatformSpellingEngine);
-#else
-  DCHECK(!use_platform_spelling_engine);
-#endif
+  // TODO(groby): Figure out if we can kill the hunspell dependency for OSX.
+  if (use_platform_spelling_engine) {
+    platform_spelling_engine_.reset(CreateNativeSpellingEngine());
+  } else {
+    HunspellEngine* engine = new HunspellEngine;
+    engine->Init(file, custom_words);
+    platform_spelling_engine_.reset(engine);
+  }
   character_attributes_.SetDefaultLanguage(language);
   text_iterator_.Reset();
   contraction_iterator_.Reset();
-
-  custom_words_.insert(custom_words_.end(),
-                       custom_words.begin(), custom_words.end());
-
-  // We delay the actual initialization of hunspell until it is needed.
 }
 
 bool SpellCheck::SpellCheckWord(
@@ -230,10 +137,8 @@ bool SpellCheck::SpellCheckWord(
     return true;
 
   // Do nothing if spell checking is disabled.
-  if (initialized_ && file_ == base::kInvalidPlatformFileValue &&
-      !platform_spelling_engine_.get()) {
+  if (!platform_spelling_engine_->IsEnabled())
     return true;
-  }
 
   *misspelling_start = 0;
   *misspelling_len = 0;
@@ -373,12 +278,14 @@ void SpellCheck::RequestTextChecking(
     const string16& text,
     int offset,
     WebKit::WebTextCheckingCompletion* completion) {
-#if !defined(OS_MACOSX)
+#if defined(OS_MAXOSX)
   // Commented out on Mac, because SpellCheckRequest::PerformSpellCheck is not
   // implemented on Mac. Mac uses its own spellchecker, so this method
   // will not be used.
-  DCHECK(!platform_spelling_engine_.get());
-
+  NOTREACHED();
+  (void)text, offset, completion;
+  return;
+#else
   // Clean up the previous request before starting a new request.
   if (pending_request_param_.get()) {
     pending_request_param_->completion()->didCancelCheckingText();
@@ -397,98 +304,44 @@ void SpellCheck::RequestTextChecking(
   requested_params_.push(new SpellCheckRequestParam(text, offset, completion));
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(&SpellCheck::PerformSpellCheck, AsWeakPtr()));
-#else
-  DCHECK(platform_spelling_engine_.get());
-  platform_spelling_engine_->RequestTextChecking(text, offset, completion);
 #endif
 }
 
-void SpellCheck::InitializeHunspell() {
-  if (hunspell_.get())
-    return;
-
-  bdict_file_.reset(new file_util::MemoryMappedFile);
-
-  if (bdict_file_->Initialize(file_)) {
-    TimeTicks debug_start_time = base::Histogram::DebugNow();
-
-    hunspell_.reset(
-        new Hunspell(bdict_file_->data(), bdict_file_->length()));
-
-    // Add custom words to Hunspell.
-    for (std::vector<std::string>::iterator it = custom_words_.begin();
-         it != custom_words_.end(); ++it) {
-      AddWordToHunspell(*it);
-    }
-
-    DHISTOGRAM_TIMES("Spellcheck.InitTime",
-                     base::Histogram::DebugNow() - debug_start_time);
-  } else {
-    NOTREACHED() << "Could not mmap spellchecker dictionary.";
-  }
-}
-
-void SpellCheck::AddWordToHunspell(const std::string& word) {
-  if (!word.empty() && word.length() < MAXWORDLEN)
-    hunspell_->add(word.c_str());
-}
 
 bool SpellCheck::InitializeIfNeeded() {
-  if (platform_spelling_engine_.get())
-    return platform_spelling_engine_->InitializeIfNeeded();
+  // TODO(groby): OSX creates a hunspell engine here, too. That seems
+  // wrong, but is (AFAICT) the existing flow. Fix that.
+  if (!platform_spelling_engine_.get())
+    platform_spelling_engine_.reset(new HunspellEngine);
 
-  if (!initialized_ && !dictionary_requested_) {
-    // RenderThread will not exist in test.
-    if (RenderThread::Get())
-      RenderThread::Get()->Send(new SpellCheckHostMsg_RequestDictionary);
-    dictionary_requested_ = true;
-    return true;
-  }
-
-  // Don't initialize if hunspell is disabled.
-  if (file_ != base::kInvalidPlatformFileValue)
-    InitializeHunspell();
-
-  return !initialized_;
+  return platform_spelling_engine_->InitializeIfNeeded();
 }
 
 // When called, relays the request to check the spelling to the proper
 // backend, either hunspell or a platform-specific backend.
 bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
-
-  if (platform_spelling_engine_.get())
-    return platform_spelling_engine_->CheckSpelling(word_to_check, tag);
-
-  bool word_correct = false;
-  std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
-  // Hunspell shouldn't let us exceed its max, but check just in case
-  if (word_to_check_utf8.length() < MAXWORDLEN) {
-    if (hunspell_.get()) {
-      // |hunspell_->spell| returns 0 if the word is spelled correctly and
-      // non-zero otherwsie.
-      word_correct = (hunspell_->spell(word_to_check_utf8.c_str()) != 0);
-    } else {
-      // If |hunspell_| is NULL here, an error has occurred, but it's better
-      // to check rather than crash.
-      word_correct = true;
-    }
-  }
-
-  return word_correct;
+  DCHECK(platform_spelling_engine_.get());
+  return platform_spelling_engine_->CheckSpelling(word_to_check, tag);
 }
 
 void SpellCheck::PostDelayedSpellCheckTask() {
   if (!pending_request_param_)
     return;
 
-  if (file_ == base::kInvalidPlatformFileValue) {
+#if defined(OS_MAXOSX)
+  NOTREACHED();  // OSX should never have a pending_request_param_
+                 // OSX doesn't do PerformSpellCheck, which posts pending reqs.
+#endif
+
+  DCHECK(platform_spelling_engine_.get());
+
+  if (!platform_spelling_engine_->IsEnabled()) {
     pending_request_param_->completion()->didCancelCheckingText();
   } else {
     requested_params_.push(pending_request_param_);
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(&SpellCheck::PerformSpellCheck, AsWeakPtr()));
   }
-
   pending_request_param_ = NULL;
 }
 
@@ -513,29 +366,8 @@ void SpellCheck::PerformSpellCheck() {
 void SpellCheck::FillSuggestionList(
     const string16& wrong_word,
     std::vector<string16>* optional_suggestions) {
-  if (platform_spelling_engine_.get()) {
-    platform_spelling_engine_->FillSuggestionList(wrong_word,
-                                                  optional_suggestions);
-    return;
-  }
-
-  // If |hunspell_| is NULL here, an error has occurred, but it's better
-  // to check rather than crash.
-  if (!hunspell_.get())
-    return;
-
-  char** suggestions;
-  int number_of_suggestions =
-      hunspell_->suggest(&suggestions, UTF16ToUTF8(wrong_word).c_str());
-
-  // Populate the vector of WideStrings.
-  for (int i = 0; i < number_of_suggestions; ++i) {
-    if (i < chrome::spellcheck_common::kMaxSuggestions)
-      optional_suggestions->push_back(UTF8ToUTF16(suggestions[i]));
-    free(suggestions[i]);
-  }
-  if (suggestions != NULL)
-    free(suggestions);
+  platform_spelling_engine_->FillSuggestionList(wrong_word,
+                                                optional_suggestions);
 }
 
 // Returns whether or not the given string is a valid contraction.

@@ -5,8 +5,8 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 
-#include <string>
 #include <queue>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -21,8 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "unicode/uscript.h"
 
-class Hunspell;
-class PlatformSpellingEngine;
+class SpellingEngine;
 struct SpellCheckResult;
 
 namespace file_util {
@@ -118,10 +117,6 @@ class SpellCheck : public content::RenderProcessObserver,
   void OnWordAdded(const std::string& word);
   void OnEnableAutoSpellCorrect(bool enable);
 
-  // Initializes the Hunspell dictionary, or does nothing if |hunspell_| is
-  // non-null. This blocks.
-  void InitializeHunspell();
-
   // If there is no dictionary file, then this requests one from the browser
   // and does not block. In this case it returns true.
   // If there is a dictionary file, but Hunspell has not been loaded, then
@@ -149,18 +144,6 @@ class SpellCheck : public content::RenderProcessObserver,
   // (e.g. "word:word").
   bool IsValidContraction(const string16& word, int tag);
 
-  // Add the given custom word to |hunspell_|.
-  void AddWordToHunspell(const std::string& word);
-
-  // We memory-map the BDict file.
-  scoped_ptr<file_util::MemoryMappedFile> bdict_file_;
-
-  // The hunspell dictionary in use.
-  scoped_ptr<Hunspell> hunspell_;
-
-  base::PlatformFile file_;
-  std::vector<std::string> custom_words_;
-
   // Represents character attributes used for filtering out characters which
   // are not supported by this SpellCheck object.
   SpellcheckCharAttribute character_attributes_;
@@ -182,16 +165,7 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // Pointer to a platform-specific spelling engine, if it is in use. This
   // should only be set if hunspell is not used. (I.e. on OSX, for now)
-  scoped_ptr<PlatformSpellingEngine> platform_spelling_engine_;
-
-  // This flags is true if we have been intialized.
-  // The value indicates whether we should request a
-  // dictionary from the browser when the render view asks us to check the
-  // spelling of a word.
-  bool initialized_;
-
-  // This flags is true if we have requested dictionary.
-  bool dictionary_requested_;
+  scoped_ptr<SpellingEngine> platform_spelling_engine_;
 
   // The parameters of a pending background-spellchecking request. When WebKit
   // sends a background-spellchecking request before initializing hunspell,
