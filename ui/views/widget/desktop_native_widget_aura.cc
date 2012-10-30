@@ -142,6 +142,8 @@ ui::Compositor* DesktopNativeWidgetAura::GetCompositor() {
 void DesktopNativeWidgetAura::CalculateOffsetToAncestorWithLayer(
       gfx::Point* offset,
       ui::Layer** layer_parent) {
+  if (layer_parent)
+    *layer_parent = window_->layer();
 }
 
 void DesktopNativeWidgetAura::ViewRemoved(View* view) {
