@@ -14,6 +14,12 @@
           }, {
             'skia_support_gpu': 1,
           }],
+
+          ['inside_chromium_build==0', {
+            'webkit_src_dir': '<(DEPTH)/../../..',
+          },{
+            'webkit_src_dir': '<(DEPTH)/third_party/WebKit',
+          }],
         ],
 
         'optimize': 'max',
@@ -220,22 +226,11 @@
         # this flag can be removed entirely once this has baked for a while
         'SK_ALLOW_OVER_32K_BITMAPS',
 
-        # temporary for landing Skia rev 3077 with minimal layout test breakage
-        'SK_SIMPLE_TWOCOLOR_VERTICAL_GRADIENTS',
-
         # skia uses static initializers to initialize the serialization logic
         # of its "pictures" library. This is currently not used in chrome; if
         # it ever gets used the processes that use it need to call
         # SkGraphics::Init().
         'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
-
-        # Temporarily disable the Skia fix in
-        # http://code.google.com/p/skia/source/detail?r=3037 ; enabling that
-        # fix will require substantial rebaselining.
-        'SK_DRAW_POS_TEXT_IGNORE_SUBPIXEL_LEFT_ALIGN_FIX',
-
-        # Temporarily ignore fix to antialias coverage, until we can rebaseline
-        'SK_USE_LEGACY_AA_COVERAGE',
 
         # Temporarily keep old int-srcrect behavior, until we determine if
         # the few failures are a bug or not.
@@ -557,6 +552,8 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../third_party/sfntly/sfntly.gyp:sfntly',
         '../third_party/zlib/zlib.gyp:zlib',
+
+        '<(webkit_src_dir)/Source/WebKit/chromium/skia_webkit.gyp:skia_webkit',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
