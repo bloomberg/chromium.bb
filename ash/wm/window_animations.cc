@@ -41,6 +41,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(int)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationType)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationTransition)
 DECLARE_WINDOW_PROPERTY_TYPE(float)
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, bool)
 
 using aura::Window;
 using base::TimeDelta;

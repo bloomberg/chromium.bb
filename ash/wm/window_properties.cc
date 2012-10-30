@@ -11,8 +11,6 @@
 #include "ui/aura/window_property.h"
 #include "ui/ui_controls/ui_controls_aura.h"
 
-// Property type for bool and ui::WindowShowState are
-// defined in aura.
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::AlwaysOnTopController*);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::ShadowType);
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, ash::FramePainter*);

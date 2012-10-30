@@ -9,7 +9,6 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/shadow_types.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 
 namespace ui_controls {

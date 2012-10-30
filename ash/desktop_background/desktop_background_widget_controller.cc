@@ -6,6 +6,7 @@
 
 #include "ash/ash_export.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window_property.h"
 #include "ui/views/widget/widget.h"
 
 // Exported for tests.

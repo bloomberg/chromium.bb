@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window_property.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"

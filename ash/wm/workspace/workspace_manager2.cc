@@ -36,6 +36,7 @@
 #include "ui/views/widget/widget.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::Workspace2*);
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, ui::WindowShowState);
 
 using aura::Window;
 
