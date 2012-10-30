@@ -12,12 +12,11 @@
 #include "content/public/browser/notification_service.h"
 
 namespace content {
+
 class NotificationObserver;
 class NotificationRegistrar;
-}
 
-class CONTENT_EXPORT NotificationServiceImpl
-    : public content::NotificationService {
+class CONTENT_EXPORT NotificationServiceImpl : public NotificationService {
  public:
   static NotificationServiceImpl* current();
 
@@ -26,15 +25,15 @@ class CONTENT_EXPORT NotificationServiceImpl
   NotificationServiceImpl();
   virtual ~NotificationServiceImpl();
 
-  // content::NotificationService
+  // NotificationService:
   virtual void Notify(int type,
-                      const content::NotificationSource& source,
-                      const content::NotificationDetails& details) OVERRIDE;
+                      const NotificationSource& source,
+                      const NotificationDetails& details) OVERRIDE;
 
  private:
-  friend class content::NotificationRegistrar;
+  friend class NotificationRegistrar;
 
-  typedef ObserverList<content::NotificationObserver> NotificationObserverList;
+  typedef ObserverList<NotificationObserver> NotificationObserverList;
   typedef std::map<uintptr_t, NotificationObserverList*> NotificationSourceMap;
   typedef std::map<int, NotificationSourceMap> NotificationObserverMap;
   typedef std::map<int, int> NotificationObserverCount;
@@ -42,7 +41,7 @@ class CONTENT_EXPORT NotificationServiceImpl
   // Convenience function to determine whether a source has a
   // NotificationObserverList in the given map;
   static bool HasKey(const NotificationSourceMap& map,
-                     const content::NotificationSource& source);
+                     const NotificationSource& source);
 
   // NOTE: Rather than using this directly, you should use a
   // NotificationRegistrar.
@@ -51,7 +50,7 @@ class CONTENT_EXPORT NotificationServiceImpl
   // notification is posted.  Observer is a pointer to an object subclassing
   // NotificationObserver to be notified when an event matching the other two
   // parameters is posted to this service.  Type is the type of events to be
-  // notified about (or content::NOTIFICATION_ALL to receive events of all
+  // notified about (or NOTIFICATION_ALL to receive events of all
   // types).
   // Source is a NotificationSource object (created using
   // "Source<classname>(pointer)"), if this observer only wants to
@@ -63,8 +62,9 @@ class CONTENT_EXPORT NotificationServiceImpl
   // it must be removed for each of those combinations of type and source later.
   //
   // The caller retains ownership of the object pointed to by observer.
-  void AddObserver(content::NotificationObserver* observer,
-                   int type, const content::NotificationSource& source);
+  void AddObserver(NotificationObserver* observer,
+                   int type,
+                   const NotificationSource& source);
 
   // NOTE: Rather than using this directly, you should use a
   // NotificationRegistrar.
@@ -72,8 +72,9 @@ class CONTENT_EXPORT NotificationServiceImpl
   // Removes the object pointed to by observer from receiving notifications
   // that match type and source.  If no object matching the parameters is
   // currently registered, this method is a no-op.
-  void RemoveObserver(content::NotificationObserver* observer,
-                      int type, const content::NotificationSource& source);
+  void RemoveObserver(NotificationObserver* observer,
+                      int type,
+                      const NotificationSource& source);
 
   // Keeps track of the observers for each type of notification.
   // Until we get a prohibitively large number of notification types,
@@ -88,5 +89,7 @@ class CONTENT_EXPORT NotificationServiceImpl
 
   DISALLOW_COPY_AND_ASSIGN(NotificationServiceImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_IMPL_H_

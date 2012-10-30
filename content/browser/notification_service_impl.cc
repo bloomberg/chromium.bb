@@ -9,8 +9,14 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
 
-static base::LazyInstance<base::ThreadLocalPointer<NotificationServiceImpl> >
+namespace  content {
+
+namespace {
+
+base::LazyInstance<base::ThreadLocalPointer<NotificationServiceImpl> >
     lazy_tls_ptr = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 // static
 NotificationServiceImpl* NotificationServiceImpl::current() {
@@ -18,18 +24,18 @@ NotificationServiceImpl* NotificationServiceImpl::current() {
 }
 
 // static
-content::NotificationService* content::NotificationService::current() {
+NotificationService* NotificationService::current() {
   return NotificationServiceImpl::current();
 }
 
 // static
-content::NotificationService* content::NotificationService::Create() {
+NotificationService* NotificationService::Create() {
   return new NotificationServiceImpl;
 }
 
 // static
 bool NotificationServiceImpl::HasKey(const NotificationSourceMap& map,
-                                 const content::NotificationSource& source) {
+                                     const NotificationSource& source) {
   return map.find(source.map_key()) != map.end();
 }
 
@@ -38,10 +44,9 @@ NotificationServiceImpl::NotificationServiceImpl() {
   lazy_tls_ptr.Pointer()->Set(this);
 }
 
-void NotificationServiceImpl::AddObserver(
-    content::NotificationObserver* observer,
-    int type,
-    const content::NotificationSource& source) {
+void NotificationServiceImpl::AddObserver(NotificationObserver* observer,
+                                          int type,
+                                          const NotificationSource& source) {
   // We have gotten some crashes where the observer pointer is NULL. The problem
   // is that this happens when we actually execute a notification, so have no
   // way of knowing who the bad observer was. We want to know when this happens
@@ -63,10 +68,9 @@ void NotificationServiceImpl::AddObserver(
 #endif
 }
 
-void NotificationServiceImpl::RemoveObserver(
-    content::NotificationObserver* observer,
-    int type,
-    const content::NotificationSource& source) {
+void NotificationServiceImpl::RemoveObserver(NotificationObserver* observer,
+                                             int type,
+                                             const NotificationSource& source) {
   // This is a very serious bug.  An object is most likely being deleted on
   // the wrong thread, and as a result another thread's NotificationServiceImpl
   // has its deleted pointer in its map.  A garbge object will be called in the
@@ -89,42 +93,41 @@ void NotificationServiceImpl::RemoveObserver(
   }
 }
 
-void NotificationServiceImpl::Notify(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type > content::NOTIFICATION_ALL) <<
+void NotificationServiceImpl::Notify(int type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  DCHECK_GT(type, NOTIFICATION_ALL) <<
       "Allowed for observing, but not posting.";
 
   // There's no particular reason for the order in which the different
   // classes of observers get notified here.
 
   // Notify observers of all types and all sources
-  if (HasKey(observers_[content::NOTIFICATION_ALL], AllSources()) &&
+  if (HasKey(observers_[NOTIFICATION_ALL], AllSources()) &&
       source != AllSources()) {
-    FOR_EACH_OBSERVER(content::NotificationObserver,
-       *observers_[content::NOTIFICATION_ALL][AllSources().map_key()],
-       Observe(type, source, details));
+    FOR_EACH_OBSERVER(NotificationObserver,
+                      *observers_[NOTIFICATION_ALL][AllSources().map_key()],
+                      Observe(type, source, details));
   }
 
   // Notify observers of all types and the given source
-  if (HasKey(observers_[content::NOTIFICATION_ALL], source)) {
-    FOR_EACH_OBSERVER(content::NotificationObserver,
-        *observers_[content::NOTIFICATION_ALL][source.map_key()],
-        Observe(type, source, details));
+  if (HasKey(observers_[NOTIFICATION_ALL], source)) {
+    FOR_EACH_OBSERVER(NotificationObserver,
+                      *observers_[NOTIFICATION_ALL][source.map_key()],
+                      Observe(type, source, details));
   }
 
   // Notify observers of the given type and all sources
   if (HasKey(observers_[type], AllSources()) &&
       source != AllSources()) {
-    FOR_EACH_OBSERVER(content::NotificationObserver,
+    FOR_EACH_OBSERVER(NotificationObserver,
                       *observers_[type][AllSources().map_key()],
                       Observe(type, source, details));
   }
 
   // Notify observers of the given type and the given source
   if (HasKey(observers_[type], source)) {
-    FOR_EACH_OBSERVER(content::NotificationObserver,
+    FOR_EACH_OBSERVER(NotificationObserver,
                       *observers_[type][source.map_key()],
                       Observe(type, source, details));
   }
@@ -152,3 +155,5 @@ NotificationServiceImpl::~NotificationServiceImpl() {
       delete it->second;
   }
 }
+
+}  // namespace content
