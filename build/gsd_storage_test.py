@@ -5,10 +5,11 @@
 
 """Tests of a Google Storage reader/writer."""
 
+import os
+import unittest
+
 import file_tools
 import gsd_storage
-
-import unittest
 
 
 class TestGSDStorage(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestGSDStorage(unittest.TestCase):
     def call(cmd):
       self.assertEqual(
           ['mygsutil', 'cp', '-a', 'public-read'], cmd[0:4])
-      self.assertEqual('foo', file_tools.ReadFile(cmd[4]))
+      self.assertEqual('foo', file_tools.ReadFile(cmd[4][len('file://'):]))
       self.assertEqual('gs://mybucket/bar', cmd[5])
       return 0
     storage = gsd_storage.GSDStorage(
@@ -36,7 +37,9 @@ class TestGSDStorage(unittest.TestCase):
     path = 'my/path'
     def call(cmd):
       self.assertEqual(
-          ['mygsutil', 'cp', '-a', 'public-read', path, 'gs://mybucket/bar'],
+          ['mygsutil', 'cp', '-a', 'public-read',
+           'file://' + os.path.abspath(path).replace(os.sep, '/'),
+           'gs://mybucket/bar'],
           cmd)
       return 0
     storage = gsd_storage.GSDStorage(

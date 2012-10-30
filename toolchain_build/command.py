@@ -6,17 +6,44 @@
 """Class capturing a command invocation as data."""
 
 
+# Done first to setup python module path.
+import toolchain_env
+
 import multiprocessing
 import os
 import sys
 
+import file_tools
+
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+NACL_DIR = os.path.dirname(SCRIPT_DIR)
+
+
+def FixPath(path):
+  """Convert to msys paths on windows."""
+  if sys.platform != 'win32':
+    return path
+  drive, path = os.path.splitdrive(path)
+  # Replace X:\... with /x/....
+  # Msys does not like x:\ style paths (especially with mixed slashes).
+  if drive:
+    drive = '/' + drive.lower()[0]
+  path = drive + path
+  path = path.replace('\\', '/')
+  return path
+
 
 def PrepareCommandValues(cwd, inputs, output):
   values = {}
-  values['cwd'] = os.path.abspath(cwd)
+  values['cwd'] = FixPath(os.path.abspath(cwd))
   for key, value in inputs.iteritems():
-    values[key] = os.path.abspath(value)
-  values['output'] = os.path.abspath(output)
+    if key.startswith('abs_'):
+      raise Exception('Invalid key starts with "abs_": %s' % key)
+    values['abs_' + key] = FixPath(os.path.abspath(value))
+    values[key] = FixPath(os.path.relpath(value, cwd))
+  values['abs_output'] = FixPath(os.path.abspath(output))
+  values['output'] = FixPath(os.path.relpath(output, cwd))
   return values
 
 
@@ -40,14 +67,9 @@ class Command(object):
     # TODO(bradnelson): Instead of allowing full subprocess functionality,
     #     move execution here and use polymorphism to implement things like
     #     mkdir, copy directly in python.
-    values = PrepareCommandValues(cwd, inputs, output)
     kwargs = self._kwargs.copy()
-    if 'cwd' in kwargs:
-      kwargs['cwd'] = os.path.join(os.path.abspath(values['cwd']),
-                                   kwargs['cwd'] % values)
-    else:
-      kwargs['cwd'] = values['cwd']
-    values['cwd'] = kwargs['cwd']
+    kwargs['cwd'] = os.path.join(os.path.abspath(cwd), kwargs.get('cwd', '.'))
+    values = PrepareCommandValues(kwargs['cwd'], inputs, output)
     try:
       values['cores'] = multiprocessing.cpu_count()
     except NotImplementedError:
@@ -55,6 +77,19 @@ class Command(object):
     values['package'] = package
     if build_signature is not None:
       values['build_signature'] = build_signature
+    values['top_srcdir'] = FixPath(os.path.relpath(NACL_DIR, kwargs['cwd']))
+    values['abs_top_srcdir'] = FixPath(os.path.abspath(NACL_DIR))
+
+    # Use mingw on windows.
+    if sys.platform == 'win32':
+      mingw = os.environ.get('MINGW', r'c:\mingw')
+      # We need both msys (posix like build environment) and MinGW (windows
+      # build of tools like gcc). We add <MINGW>/msys/1.0/bin to the path to
+      # get sh.exe. We also add an msys style path (/mingw/bin) to get things
+      # like gcc from inside msys.
+      kwargs['path_dirs'] = (
+          ['/mingw/bin', os.path.join(mingw, 'msys', '1.0', 'bin')] +
+          kwargs.get('path_dirs', []))
 
     if 'path_dirs' in kwargs:
       path_dirs = [dirname % values for dirname in kwargs['path_dirs']]
@@ -67,6 +102,8 @@ class Command(object):
       command = self._command % values
     else:
       command = [arg % values for arg in self._command]
+      paths = kwargs.get('env', os.environ).get('PATH', '').split(os.pathsep)
+      command[0] = file_tools.Which(command[0], paths=paths)
     check_call(command, **kwargs)
 
 

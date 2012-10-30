@@ -8,6 +8,7 @@
 
 import os
 import shutil
+import sys
 
 
 def WriteFile(data, filename):
@@ -52,10 +53,15 @@ def Which(command, paths=None):
   """
   if paths is None:
     paths = os.environ.get('PATH', '').split(os.pathsep)
+  exe_suffixes = ['']
+  if sys.platform == 'win32':
+    exe_suffixes += ['.exe']
   for p in paths:
     np = os.path.abspath(os.path.join(p, command))
-    if os.path.isfile(np) and os.access(np, os.X_OK):
-      return np
+    for suffix in exe_suffixes:
+      full_path = np + suffix
+      if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+        return full_path
   raise ExecutableNotFound('Unable to find: ' + command)
 
 

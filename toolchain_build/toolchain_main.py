@@ -27,13 +27,25 @@ DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
 DEFAULT_OUT_DIR = os.path.join(SCRIPT_DIR, 'out')
 
 
+def PrintFlush(message):
+  """Print to stdout and flush.
+
+  Windows flushes stdout very intermittently (particularly through the
+  buildbot). Forcing an immediate flush so that buildbot annotator section
+  headings appear at the right place in relation to logging output which goes
+  to stderr.
+  """
+  print message
+  sys.stdout.flush()
+
+
 def PrintAnnotatorURL(url):
   """Print an URL in buildbot annotator form.
 
   Args:
     url: A URL to print.
   """
-  print '@@@STEP_LINK@download@%s@@@' % url
+  PrintFlush('@@@STEP_LINK@download@%s@@@' % url)
 
 
 class PackageBuilder(object):
@@ -77,7 +89,7 @@ class PackageBuilder(object):
   def Main(self):
     """Main entry point."""
     if self._options.clobber:
-      print '@@@BUILD_STEP clobber@@@'
+      PrintFlush('@@@BUILD_STEP clobber@@@')
       file_tools.RemoveDirectoryIfPresent(self._options.source)
       file_tools.RemoveDirectoryIfPresent(self._options.output)
     self.SyncAll()
@@ -97,7 +109,7 @@ class PackageBuilder(object):
     Args:
       package: Package name to sync.
     """
-    print '@@@BUILD_STEP sync %s@@@' % package
+    PrintFlush('@@@BUILD_STEP sync %s@@@' % package)
     package_info = self._packages[package]
     url = package_info['git_url']
     revision = package_info['git_revision']
@@ -105,14 +117,22 @@ class PackageBuilder(object):
     logging.info('Syncing %s...' % package)
     if self._options.reclone:
       file_tools.RemoveDirectoryIfPresent(destination)
+    if sys.platform == 'win32':
+      # On windows, we want to use the depot_tools version of git, which has
+      # git.bat as an entry point. When running through the msys command
+      # prompt, subprocess does not handle batch files. Explicitly invoking
+      # cmd.exe to be sure we run the correct git in this case.
+      git = ['cmd.exe', '/c', 'git.bat']
+    else:
+      git = ['git']
     if not os.path.exists(destination):
       logging.info('Cloning %s...' % package)
-      log_tools.CheckCall(['git', 'clone', '-n', url, destination])
+      log_tools.CheckCall(git + ['clone', '-n', url, destination])
     if self._options.pinned:
       logging.info('Checking out pinned revision...')
-      log_tools.CheckCall(['git', 'fetch', '--all'], cwd=destination)
-      log_tools.CheckCall(['git', 'checkout', '-f', revision], cwd=destination)
-      log_tools.CheckCall(['git', 'clean', '-dffx'], cwd=destination)
+      log_tools.CheckCall(git + ['fetch', '--all'], cwd=destination)
+      log_tools.CheckCall(git + ['checkout', '-f', revision], cwd=destination)
+      log_tools.CheckCall(git + ['clean', '-dffx'], cwd=destination)
     logging.info('Done syncing %s.' % package)
 
   def BuildPackage(self, package):
@@ -122,7 +142,7 @@ class PackageBuilder(object):
     Args:
       package: Package to build.
     """
-    print '@@@BUILD_STEP build %s@@@' % package
+    PrintFlush('@@@BUILD_STEP build %s@@@' % package)
     package_info = self._packages[package]
     dependencies = package_info.get('dependencies', [])
     # Collect a dict of all the inputs.
@@ -252,7 +272,7 @@ class PackageBuilder(object):
         help='Run and cache as if on a non-trybot buildbot.')
     options, targets = parser.parse_args(args)
     if options.trybot and options.buildbot:
-      print 'ERROR: Tried to run with both --trybot and --buildbot.'
+      PrintFlush('ERROR: Tried to run with both --trybot and --buildbot.')
       sys.exit(1)
     if options.trybot or options.buildbot:
       options.verbose = True

@@ -35,10 +35,10 @@ GIT_BASE_URL = 'http://git.chromium.org/native_client'
 TAR_XV = ['tar', '-x', '-v']
 EXTRACT_STRIP_TGZ = TAR_XV + ['--gzip', '--strip-components=1', '-f']
 EXTRACT_STRIP_TBZ2 = TAR_XV + ['--bzip2', '--strip-components=1', '-f']
-CONFIGURE_CMD = ['%(src)s/configure']
+CONFIGURE_CMD = ['sh', '%(src)s/configure']
 MAKE_PARALLEL_CMD = ['make', '-j%(cores)s']
 MAKE_CHECK_CMD = MAKE_PARALLEL_CMD + ['check']
-MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(output)s']
+MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
 CONFIGURE_HOST_ARCH = []
 if sys.platform.startswith('linux'):
@@ -86,7 +86,7 @@ def PopulateDeps(dep_dirs):
   return commands
 
 def WithDepsOptions(options):
-  return ['--with-' + option + '=%(all_deps)s' for option in options]
+  return ['--with-' + option + '=%(abs_all_deps)s' for option in options]
 
 # These are libraries that go into building the compiler itself.
 HOST_GCC_LIBS = {
@@ -96,7 +96,7 @@ HOST_GCC_LIBS = {
         'hashed_inputs': {'src': 'src'},
         'commands': CommandsInBuild([
             CONFIGURE_CMD + CONFIGURE_HOST_LIB + [
-                '--with-sysroot=%(output)s',
+                '--with-sysroot=%(abs_output)s',
                 '--enable-cxx',
                 ],
             MAKE_PARALLEL_CMD,
@@ -149,9 +149,9 @@ def ConfigureGccCommand(target):
       CONFIGURE_HOST_TOOL +
       ConfigureTargetArgs(target) +
       TARGET_GCC_CONFIG.get(target, []) + [
-          '--with-gmp=%(gmp)s',
-          '--with-mpfr=%(mpfr)s',
-          '--with-mpc=%(mpc)s',
+          '--with-gmp=%(abs_gmp)s',
+          '--with-mpfr=%(abs_mpfr)s',
+          '--with-mpc=%(abs_mpc)s',
           '--disable-dlopen',
           '--with-newlib',
           '--with-linker-hash-style=gnu',
@@ -179,8 +179,9 @@ def HostTools(target):
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])
               # The top-level lib* directories contain host libraries
               # that we don't want to include in the distribution.
-              ] + [command.RemoveDirectory(os.path.join('%(output)s', name))
-                   for name in ['lib', 'lib32', 'lib64']],
+              ] +
+              [command.RemoveDirectory(os.path.join('%(output)s', name))
+               for name in ['lib', 'lib32', 'lib64']],
           },
 
       'gcc_' + target: {

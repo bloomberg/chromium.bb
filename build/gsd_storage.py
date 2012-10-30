@@ -86,7 +86,12 @@ class GSDStorage(object):
     if self._write_bucket is None:
       raise GSDStorageError('no bucket when storing %s to %s' % (path, key))
     obj = self._write_bucket + '/' + key
-    cmd = self._gsutil + ['cp', '-a', 'public-read', path, GS_PATTERN % obj]
+    # Using file://c:/foo/bar form of path as gsutil does not like drive
+    # letters without it.
+    cmd = self._gsutil + [
+        'cp', '-a', 'public-read',
+        'file://' + os.path.abspath(path).replace(os.sep, '/'),
+        GS_PATTERN % obj]
     logging.info('Running: %s' % str(cmd))
     if self._call(cmd) != 0:
       raise GSDStorageError('failed when storing %s to %s (%s)' % (
