@@ -9,7 +9,10 @@
 #include "ipc/ipc_message.h"
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
+#include "content/public/common/content_ipc_logging.h"
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
+#define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
+    content::RegisterIPCLogger(msg_id, logger)
 
 // We need to do this real early to be sure IPC_MESSAGE_MACROS_LOG_ENABLED
 // doesn't get undefined.
@@ -54,16 +57,6 @@ enum {
   kProcessColumn,
   kParamsColumn,
 };
-
-// This class registers the browser IPC logger functions with IPC::Logging.
-class RegisterLoggerFuncs {
- public:
-  RegisterLoggerFuncs() {
-    IPC::Logging::set_log_function_map(&g_log_function_mapping);
-  }
-};
-
-RegisterLoggerFuncs g_register_logger_funcs;
 
 // The singleton dialog box. This is non-NULL when a dialog is active so we
 // know not to create a new one.

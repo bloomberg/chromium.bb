@@ -16,6 +16,9 @@
 // IPC_MESSAGE_MACROS_LOG_ENABLED doesn't get undefined.
 #if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
+#include "content/public/common/content_ipc_logging.h"
+#define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
+    content::RegisterIPCLogger(msg_id, logger)
 #include "chrome/common/all_messages.h"
 #endif
 
@@ -258,9 +261,6 @@ void InitChromeLogging(const CommandLine& command_line,
   DCHECK(!chrome_logging_initialized_) <<
     "Attempted to initialize logging when it was already initialized.";
 
-#if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
-  IPC::Logging::set_log_function_map(&g_log_function_mapping);
-#endif
   LoggingDestination logging_dest = DetermineLogMode(command_line);
   LogLockingState log_locking_state = LOCK_LOG_FILE;
   FilePath log_path;

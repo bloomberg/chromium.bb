@@ -21,6 +21,16 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/gl_switches.h"
 
+#include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+#define IPC_MESSAGE_MACROS_LOG_ENABLED
+#include "content/public/common/content_ipc_logging.h"
+#define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
+    content::RegisterIPCLogger(msg_id, logger)
+#include "content/shell/shell_messages.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "base/global_descriptors_posix.h"
 #include "content/shell/android/shell_descriptors.h"

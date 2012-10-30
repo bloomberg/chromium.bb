@@ -800,19 +800,9 @@
 
 #elif defined(IPC_MESSAGE_MACROS_LOG_ENABLED)
 
-#ifndef IPC_LOG_TABLE_CREATED
-#define IPC_LOG_TABLE_CREATED
-
-#include "base/hash_tables.h"
-
-typedef void (*LogFunction)(std::string* name,
-                            const IPC::Message* msg,
-                            std::string* params);
-
-typedef base::hash_map<uint32, LogFunction > LogFunctionMap;
-LogFunctionMap g_log_function_mapping;
-
-#endif  // IPC_LOG_TABLE_CREATED
+#ifndef IPC_LOG_TABLE_ADD_ENTRY
+#error You need to define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger)
+#endif
 
 // "Log table" inclusion produces extra logging registration code.
 #define IPC_MESSAGE_EXTRA(sync, kind, msg_class,                        \
@@ -821,7 +811,7 @@ LogFunctionMap g_log_function_mapping;
  public:                                                                \
     LoggerRegisterHelper##msg_class() {                                 \
       const uint32 msg_id = static_cast<uint32>(msg_class::ID);         \
-      g_log_function_mapping[msg_id] = msg_class::Log;                  \
+      IPC_LOG_TABLE_ADD_ENTRY(msg_id, msg_class::Log);                  \
     }                                                                   \
   };                                                                    \
   LoggerRegisterHelper##msg_class g_LoggerRegisterHelper##msg_class;

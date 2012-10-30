@@ -28,7 +28,14 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
+#include "base/hash_tables.h"
+
+LogFunctionMap g_log_function_mapping;
+
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
+#define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
+  g_log_function_mapping[msg_id] = logger
+
 #endif
 #include "ppapi/proxy/ppapi_messages.h"
 
