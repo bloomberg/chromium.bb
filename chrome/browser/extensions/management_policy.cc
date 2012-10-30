@@ -55,9 +55,9 @@ bool ManagementPolicy::UserMayLoad(const Extension* extension,
       std::string id;
       std::string name;
       GetExtensionNameAndId(extension, &name, &id);
-      DLOG(WARNING) << "Installation of extension " << name
-                    << " (" << id << ")"
-                    << " prohibited by " << (*it)->GetDebugPolicyProviderName();
+      DVLOG(1) << "Installation of extension " << name
+               << " (" << id << ")"
+               << " prohibited by " << (*it)->GetDebugPolicyProviderName();
       return false;
     }
   }
@@ -72,9 +72,9 @@ bool ManagementPolicy::UserMayModifySettings(const Extension* extension,
       std::string id;
       std::string name;
       GetExtensionNameAndId(extension, &name, &id);
-      DLOG(WARNING) << "Modification of extension " << name
-                    << " (" << id << ")"
-                    << " prohibited by " << (*it)->GetDebugPolicyProviderName();
+      DVLOG(1) << "Modification of extension " << name
+               << " (" << id << ")"
+               << " prohibited by " << (*it)->GetDebugPolicyProviderName();
       return false;
     }
   }
@@ -89,10 +89,10 @@ bool ManagementPolicy::MustRemainEnabled(const Extension* extension,
       std::string id;
       std::string name;
       GetExtensionNameAndId(extension, &name, &id);
-      DLOG(WARNING) << "Extension " << name
-                    << " (" << id << ")"
-                    << " required to remain enabled by "
-                    << (*it)->GetDebugPolicyProviderName();
+      DVLOG(1) << "Extension " << name
+               << " (" << id << ")"
+               << " required to remain enabled by "
+               << (*it)->GetDebugPolicyProviderName();
       return true;
     }
   }
