@@ -153,16 +153,12 @@ WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl() {
   DVLOG(1) << "WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl()";
   if (playing_)
     StopPlayout();
-  {
-    // It is necessary to stop the |renderer_| before going away.
-    base::AutoLock auto_lock(lock_);
-    if (renderer_)
-      renderer_->Stop();
-  }
-  if (recording_)
-    StopRecording();
-  if (initialized_)
-    Terminate();
+
+  // It is necessary to stop the |renderer_| before going away.
+  if (renderer_)
+    renderer_->Stop();
+
+  Terminate();
 }
 
 int32_t WebRtcAudioDeviceImpl::AddRef() {
@@ -319,15 +315,13 @@ void WebRtcAudioDeviceImpl::OnDeviceStarted(const std::string& device_id) {
     return;
 
   base::AutoLock auto_lock(lock_);
-  if (recording_)
-    recording_ = false;
+  recording_ = false;
 }
 
 void WebRtcAudioDeviceImpl::OnDeviceStopped() {
   DVLOG(1) << "OnDeviceStopped";
   base::AutoLock auto_lock(lock_);
-  if (recording_)
-    recording_ = false;
+  recording_ = false;
 }
 
 int32_t WebRtcAudioDeviceImpl::ChangeUniqueId(const int32_t id) {
@@ -399,6 +393,11 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   }
 
   // Calling Init() multiple times in a row is OK.
+  // TODO(henrika): Figure out why we need to call Init()/Terminate() for
+  // multiple times. This feels like a bug on the webrtc side if Init is called
+  // multiple times. Init() in my mind feels like a constructor, so unless
+  // Terminate() is called (the equivalent of a dtor), then Init() should not
+  // be called randomly after it has already been called.
   if (initialized_)
     return 0;
 
@@ -423,7 +422,11 @@ int32_t WebRtcAudioDeviceImpl::Init() {
                 in_sample_rate) ==
       &kValidInputRates[arraysize(kValidInputRates)]) {
     DLOG(ERROR) << in_sample_rate << " is not a supported input rate.";
-    return -1;
+    // We need to return a success to continue the initialization of WebRtc VoE
+    // because failure on the input side should not prevent WebRTC from working.
+    // See issue 144421 for details.
+    initialized_ = true;
+    return 0;
   }
 
   // Ask the browser for the default number of audio input channels.
@@ -544,7 +547,8 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
   if (!initialized_)
     return 0;
 
-  DCHECK(audio_input_device_);
+  StopRecording();
+
   DCHECK(input_buffer_.get());
 
   // Release all resources allocated in Init().
@@ -657,6 +661,10 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
   }
 
   {
+    // TODO(xians): We're calling out while under a lock.  This opens up
+    // possibilities for deadlocks.  Instead lock, transfer ownership of the
+    // renderer_ pointer over to a local variable, release the lock, and call
+    // Play() using the local variable.
     base::AutoLock auto_lock(lock_);
     if (!renderer_)
       return -1;
@@ -687,6 +695,8 @@ int32_t WebRtcAudioDeviceImpl::StopPlayout() {
 
   {
     base::AutoLock auto_lock(lock_);
+    // TODO(xians): transfer ownership of the renderer_ pointer over to a local
+    // variable, release the lock, and call Pause() using the local variable.
     if (!renderer_)
       return -1;
 
@@ -702,9 +712,10 @@ bool WebRtcAudioDeviceImpl::Playing() const {
 }
 
 int32_t WebRtcAudioDeviceImpl::StartRecording() {
+  DCHECK(initialized_);
   DVLOG(1) << "StartRecording()";
   LOG_IF(ERROR, !audio_transport_callback_) << "Audio transport is missing";
-  if (!audio_transport_callback_) {
+  if (!audio_transport_callback_ || !audio_input_device_) {
     return -1;
   }
 
@@ -740,6 +751,9 @@ int32_t WebRtcAudioDeviceImpl::StopRecording() {
     }
   }
 
+  if (!audio_input_device_)
+    return -1;
+
   // Add histogram data to be uploaded as part of an UMA logging event.
   // This histogram keeps track of total recording times.
   if (!start_capture_time_.is_null()) {
@@ -759,11 +773,14 @@ bool WebRtcAudioDeviceImpl::Recording() const {
 }
 
 int32_t WebRtcAudioDeviceImpl::SetAGC(bool enable) {
+  DCHECK(initialized_);
   DVLOG(1) <<  "SetAGC(enable=" << enable << ")";
   // The current implementation does not support changing the AGC state while
   // recording. Using this approach simplifies the design and it is also
   // inline with the  latest WebRTC standard.
-  DCHECK(initialized_);
+  if (!audio_input_device_)
+    return -1;
+
   DCHECK(!recording_) << "Unable to set AGC state while recording is active.";
   if (recording_) {
     return -1;
@@ -867,7 +884,11 @@ int32_t WebRtcAudioDeviceImpl::MicrophoneVolumeIsAvailable(bool* available) {
 }
 
 int32_t WebRtcAudioDeviceImpl::SetMicrophoneVolume(uint32_t volume) {
+  DCHECK(initialized_);
   DVLOG(1) << "SetMicrophoneVolume(" << volume << ")";
+  if (!audio_input_device_)
+    return -1;
+
   if (volume > kMaxVolumeLevel)
     return -1;
 
@@ -951,6 +972,7 @@ int32_t WebRtcAudioDeviceImpl::MicrophoneBoost(bool* enabled) const {
 
 int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
   DCHECK(initialized_) << "Init() must be called first.";
+
   *available = (output_channels() == 2);
   return 0;
 }
@@ -970,6 +992,9 @@ int32_t WebRtcAudioDeviceImpl::StereoPlayout(bool* enabled) const {
 int32_t WebRtcAudioDeviceImpl::StereoRecordingIsAvailable(
     bool* available) const {
   DCHECK(initialized_) << "Init() must be called first.";
+  if (!audio_input_device_)
+    return -1;
+
   *available = (input_channels() == 2);
   return 0;
 }
@@ -1098,6 +1123,7 @@ void WebRtcAudioDeviceImpl::SetSessionId(int session_id) {
   session_id_ = session_id;
 }
 
+// TODO(xians): Change the name to SetAudioRenderer().
 bool WebRtcAudioDeviceImpl::SetRenderer(WebRtcAudioRenderer* renderer) {
   DCHECK(renderer);
 
