@@ -14,7 +14,6 @@ from chrome_remote_control import page_runner
 from chrome_remote_control import page_set
 
 import perf_tools.first_paint_time_benchmark
-import perf_tools.kraken
 import perf_tools.scrolling_benchmark
 import perf_tools.skpicture_printer
 import perf_tools.texture_upload_benchmark
@@ -23,8 +22,6 @@ import perf_tools.texture_upload_benchmark
 _BENCHMARKS = {
   'first_paint_time_benchmark':
       perf_tools.first_paint_time_benchmark.FirstPaintTimeBenchmark,
-  'kraken':
-      perf_tools.kraken.Kraken,
   'scrolling_benchmark':
       perf_tools.scrolling_benchmark.ScrollingBenchmark,
   'skpicture_printer':
