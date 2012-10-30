@@ -68,17 +68,6 @@ class BrowsingDataCookieHelperTest : public testing::Test {
         net::CookieMonster::SetCookiesCallback());
   }
 
-  void CreateCookiesForDomainCookieTest() {
-    scoped_refptr<net::CookieMonster> cookie_monster =
-        testing_profile_->GetCookieMonster();
-    cookie_monster->SetCookieWithOptionsAsync(
-        GURL("http://www.google.com"), "A=1", net::CookieOptions(),
-        net::CookieMonster::SetCookiesCallback());
-    cookie_monster->SetCookieWithOptionsAsync(
-        GURL("http://www.google.com"), "A=2; Domain=.www.google.com ",
-        net::CookieOptions(), net::CookieMonster::SetCookiesCallback());
-  }
-
   void FetchCallback(const net::CookieList& cookies) {
     ASSERT_EQ(2UL, cookies.size());
     cookie_list_ = cookies;
@@ -92,26 +81,6 @@ class BrowsingDataCookieHelperTest : public testing::Test {
     ASSERT_TRUE(++it != cookies.end());
     EXPECT_EQ("www.gmail.google.com", it->Domain());
     EXPECT_EQ("B", it->Name());
-
-    ASSERT_TRUE(++it == cookies.end());
-    MessageLoop::current()->Quit();
-  }
-
-  void DomainCookieCallback(const net::CookieList& cookies) {
-    ASSERT_EQ(2UL, cookies.size());
-    cookie_list_ = cookies;
-    net::CookieList::const_iterator it = cookies.begin();
-
-    // Correct because fetching cookies will get a sorted cookie list.
-    ASSERT_TRUE(it != cookies.end());
-    EXPECT_EQ("www.google.com", it->Domain());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("1", it->Value());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ(".www.google.com", it->Domain());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("2", it->Value());
 
     ASSERT_TRUE(++it == cookies.end());
     MessageLoop::current()->Quit();
@@ -137,24 +106,6 @@ class BrowsingDataCookieHelperTest : public testing::Test {
     ASSERT_TRUE(it != cookies.end());
     EXPECT_EQ("http://www.google.com/", it->Source());
     EXPECT_EQ("A", it->Name());
-
-    ASSERT_TRUE(++it == cookies.end());
-  }
-
-  void CannedDomainCookieCallback(const net::CookieList& cookies) {
-    ASSERT_EQ(2UL, cookies.size());
-    cookie_list_ = cookies;
-    net::CookieList::const_iterator it = cookies.begin();
-
-    ASSERT_TRUE(it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ("www.google.com", it->Domain());
-
-    ASSERT_TRUE(++it != cookies.end());
-    EXPECT_EQ("http://www.google.com/", it->Source());
-    EXPECT_EQ("A", it->Name());
-    EXPECT_EQ(".www.google.com", it->Domain());
 
     ASSERT_TRUE(++it == cookies.end());
   }
@@ -185,19 +136,6 @@ TEST_F(BrowsingDataCookieHelperTest, FetchData) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(BrowsingDataCookieHelperTest, DomainCookie) {
-  CreateCookiesForDomainCookieTest();
-  scoped_refptr<BrowsingDataCookieHelper> cookie_helper(
-      new BrowsingDataCookieHelper(testing_profile_->GetRequestContext()));
-
-  cookie_helper->StartFetching(
-      base::Bind(&BrowsingDataCookieHelperTest::DomainCookieCallback,
-                 base::Unretained(this)));
-
-  // Blocks until BrowsingDataCookieHelperTest::FetchCallback is notified.
-  MessageLoop::current()->Run();
-}
-
 TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
   CreateCookiesForTest();
   scoped_refptr<BrowsingDataCookieHelper> cookie_helper(
@@ -217,33 +155,6 @@ TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
       base::Bind(&BrowsingDataCookieHelperTest::DeleteCallback,
                  base::Unretained(this)));
   MessageLoop::current()->Run();
-}
-
-TEST_F(BrowsingDataCookieHelperTest, CannedDomainCookie) {
-  const GURL origin("http://www.google.com");
-  net::CookieList cookie;
-
-  scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(
-          testing_profile_->GetRequestContext()));
-
-  ASSERT_TRUE(helper->empty());
-  helper->AddChangedCookie(origin, origin, "A=1", net::CookieOptions());
-  helper->AddChangedCookie(origin, origin, "A=1; Domain=.www.google.com",
-                           net::CookieOptions());
-
-  helper->StartFetching(
-      base::Bind(&BrowsingDataCookieHelperTest::CannedDomainCookieCallback,
-                 base::Unretained(this)));
-  cookie = cookie_list_;
-
-  helper->Reset();
-  ASSERT_TRUE(helper->empty());
-
-  helper->AddReadCookies(origin, origin, cookie);
-  helper->StartFetching(
-      base::Bind(&BrowsingDataCookieHelperTest::CannedDomainCookieCallback,
-                 base::Unretained(this)));
 }
 
 TEST_F(BrowsingDataCookieHelperTest, CannedUnique) {

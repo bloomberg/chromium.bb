@@ -147,7 +147,7 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
   // form cookie line and the url don't have the same domain+registry, or url
   // host isn't cookie domain or one of its subdomains.
   scoped_ptr<net::CanonicalCookie> cookie(
-      new net::CanonicalCookie(url, parsed_cookie));
+      net::CanonicalCookie::Create(url, parsed_cookie));
   if (cookie.get())
     AddCookie(frame_url, *cookie);
 }
