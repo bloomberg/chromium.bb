@@ -199,7 +199,7 @@ class BrowserEventRouter : public TabStripModelObserver,
   // event to send based on what the extension wants.
   void ExtensionActionExecuted(Profile* profile,
                                const ExtensionAction& extension_action,
-                               TabContents* tab_contents);
+                               content::WebContents* web_contents);
 
   std::map<int, TabEntry> tab_entries_;
 

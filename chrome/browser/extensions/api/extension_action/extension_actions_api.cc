@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -343,7 +342,7 @@ bool ExtensionActionFunction::RunImpl() {
     }
   }
 
-  // Find the TabContents that contains this tab id if one is required.
+  // Find the WebContents that contains this tab id if one is required.
   if (tab_id_ == ExtensionAction::kDefaultTabId) {
     EXTENSION_FUNCTION_VALIDATE(
         extensions::ExtensionActionManager::Get(profile_)->
@@ -388,7 +387,7 @@ void ExtensionActionFunction::NotifyBrowserActionChange() {
 }
 
 void ExtensionActionFunction::NotifyLocationBarChange() {
-  extensions::TabHelper::FromWebContents(contents_->web_contents())->
+  extensions::TabHelper::FromWebContents(contents_)->
       location_bar_controller()->NotifyChange();
 }
 
@@ -438,7 +437,7 @@ bool ExtensionActionFunction::SetVisible(bool visible) {
 
 extensions::TabHelper& ExtensionActionFunction::tab_helper() const {
   CHECK(contents_);
-  return *extensions::TabHelper::FromWebContents(contents_->web_contents());
+  return *extensions::TabHelper::FromWebContents(contents_);
 }
 
 bool ExtensionActionShowFunction::RunExtensionAction() {

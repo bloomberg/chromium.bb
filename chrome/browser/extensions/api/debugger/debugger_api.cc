@@ -24,7 +24,6 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/debugger.h"
@@ -412,19 +411,19 @@ DebuggerFunction::DebuggerFunction()
       client_host_(0) {
 }
 
-bool DebuggerFunction::InitTabContents() {
-  // Find the TabContents that contains this tab id.
+bool DebuggerFunction::InitWebContents() {
+  // Find the WebContents that contains this tab id.
   contents_ = NULL;
-  TabContents* tab_contents = NULL;
+  WebContents* web_contents = NULL;
   bool result = ExtensionTabUtil::GetTabById(
-      tab_id_, profile(), include_incognito(), NULL, NULL, &tab_contents, NULL);
-  if (!result || !tab_contents) {
+      tab_id_, profile(), include_incognito(), NULL, NULL, &web_contents, NULL);
+  if (!result || !web_contents) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kNoTabError,
         base::IntToString(tab_id_));
     return false;
   }
-  contents_ = tab_contents->web_contents();
+  contents_ = web_contents;
 
   if (content::GetContentClient()->HasWebUIScheme(
           contents_->GetURL())) {
@@ -438,7 +437,7 @@ bool DebuggerFunction::InitTabContents() {
 }
 
 bool DebuggerFunction::InitClientHost() {
-  if (!InitTabContents())
+  if (!InitWebContents())
     return false;
 
   // Don't fetch rvh from the contents since it'll be wrong upon navigation.
@@ -464,7 +463,7 @@ bool AttachDebuggerFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   tab_id_ = params->target.tab_id;
-  if (!InitTabContents())
+  if (!InitWebContents())
     return false;
 
   if (!webkit_glue::IsInspectorProtocolVersionSupported(

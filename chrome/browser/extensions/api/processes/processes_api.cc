@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -554,7 +553,7 @@ void GetProcessIdForTabFunction::Observe(
 }
 
 void GetProcessIdForTabFunction::GetProcessIdForTab() {
-  TabContents* contents = NULL;
+  content::WebContents* contents = NULL;
   int tab_index = -1;
   if (!ExtensionTabUtil::GetTabById(tab_id_, profile(), include_incognito(),
                                     NULL, NULL, &contents, &tab_index)) {
@@ -564,7 +563,7 @@ void GetProcessIdForTabFunction::GetProcessIdForTab() {
     SetResult(Value::CreateIntegerValue(-1));
     SendResponse(false);
   } else {
-    int process_id = contents->web_contents()->GetRenderProcessHost()->GetID();
+    int process_id = contents->GetRenderProcessHost()->GetID();
     SetResult(Value::CreateIntegerValue(process_id));
     SendResponse(true);
   }

@@ -65,7 +65,7 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
 }
 
 bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
-                                     TabContents** contents,
+                                     content::WebContents** contents,
                                      int* tab_id) {
   NOTIMPLEMENTED();
   return false;
@@ -76,7 +76,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
                                   bool include_incognito,
                                   Browser** browser,
                                   TabStripModel** tab_strip,
-                                  TabContents** contents,
+                                  content::WebContents** contents,
                                   int* tab_index) {
   NOTIMPLEMENTED();
   return false;

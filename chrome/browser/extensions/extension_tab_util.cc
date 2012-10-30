@@ -81,11 +81,10 @@ ListValue* ExtensionTabUtil::CreateTabList(
   ListValue* tab_list = new ListValue();
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
-    tab_list->Append(CreateTabValue(
-        tab_strip->GetTabContentsAt(i)->web_contents(),
-        tab_strip,
-        i,
-        extension));
+    tab_list->Append(CreateTabValue(tab_strip->GetWebContentsAt(i),
+                                    tab_strip,
+                                    i,
+                                    extension));
   }
 
   return tab_list;
@@ -157,15 +156,15 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
 }
 
 bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
-                                     TabContents** contents,
+                                     WebContents** contents,
                                      int* tab_id) {
   DCHECK(browser);
   DCHECK(contents);
 
-  *contents = chrome::GetActiveTabContents(browser);
+  *contents = chrome::GetActiveWebContents(browser);
   if (*contents) {
     if (tab_id)
-      *tab_id = GetTabId((*contents)->web_contents());
+      *tab_id = GetTabId(*contents);
     return true;
   }
 
@@ -177,7 +176,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
                                   bool include_incognito,
                                   Browser** browser,
                                   TabStripModel** tab_strip,
-                                  TabContents** contents,
+                                  WebContents** contents,
                                   int* tab_index) {
   Profile* incognito_profile =
       include_incognito && profile->HasOffTheRecordProfile() ?
@@ -189,8 +188,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
         target_browser->profile() == incognito_profile) {
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();
       for (int i = 0; i < target_tab_strip->count(); ++i) {
-        TabContents* target_contents = target_tab_strip->GetTabContentsAt(i);
-        if (SessionID::IdForTab(target_contents->web_contents()) == tab_id) {
+        WebContents* target_contents = target_tab_strip->GetWebContentsAt(i);
+        if (SessionID::IdForTab(target_contents) == tab_id) {
           if (browser)
             *browser = target_browser;
           if (tab_strip)

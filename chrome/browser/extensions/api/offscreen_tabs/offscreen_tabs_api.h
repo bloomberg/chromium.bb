@@ -27,10 +27,10 @@
 
 class BackingStore;
 class SkBitmap;
-class TabContents;
+
 namespace content {
 class WebContents;
-}  // namespace content
+}
 
 // Creates an offscreen tab.
 class CreateOffscreenTabFunction : public SyncExtensionFunction {

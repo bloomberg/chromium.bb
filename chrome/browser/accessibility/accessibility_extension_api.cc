@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -200,7 +199,7 @@ bool GetAlertsForTabFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
 
   TabStripModel* tab_strip = NULL;
-  TabContents* contents = NULL;
+  content::WebContents* contents = NULL;
   int tab_index = -1;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
                                     NULL, &tab_strip, &contents, &tab_index)) {
@@ -213,7 +212,7 @@ bool GetAlertsForTabFunction::RunImpl() {
   ListValue* alerts_value = new ListValue;
 
   InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(contents->web_contents());
+      InfoBarTabHelper::FromWebContents(contents);
   for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
     // TODO(hashimoto): Make other kind of alerts available.  crosbug.com/24281
     InfoBarDelegate* infobar_delegate = infobar_helper->GetInfoBarDelegateAt(i);

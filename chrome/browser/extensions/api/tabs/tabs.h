@@ -18,7 +18,6 @@ class BackingStore;
 class GURL;
 class PrefService;
 class SkBitmap;
-class TabContents;
 
 namespace base {
 class DictionaryValue;
@@ -130,7 +129,7 @@ class UpdateTabFunction : public AsyncExtensionFunction {
                                   bool* is_async);
   virtual void PopulateResult();
 
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
  private:
   virtual bool RunImpl() OVERRIDE;

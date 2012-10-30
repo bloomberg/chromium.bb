@@ -89,8 +89,7 @@ void BrowserEventRouter::Init() {
     Browser* browser = *iter;
     if (browser->tab_strip_model()) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-        WebContents* contents =
-            chrome::GetTabContentsAt(browser, i)->web_contents();
+        WebContents* contents = chrome::GetWebContentsAt(browser, i);
         int tab_id = ExtensionTabUtil::GetTabId(contents);
         tab_entries_[tab_id] = TabEntry();
       }
@@ -121,8 +120,7 @@ void BrowserEventRouter::RegisterForBrowserNotifications(Browser* browser) {
   browser->tab_strip_model()->AddObserver(this);
 
   for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-    RegisterForTabNotifications(
-        chrome::GetTabContentsAt(browser, i)->web_contents());
+    RegisterForTabNotifications(chrome::GetWebContentsAt(browser, i));
   }
 }
 
@@ -295,10 +293,10 @@ void BrowserEventRouter::TabSelectionChanged(
 
   for (size_t i = 0; i < new_selection.size(); ++i) {
     int index = new_selection[i];
-    TabContents* contents = tab_strip_model->GetTabContentsAt(index);
+    WebContents* contents = tab_strip_model->GetWebContentsAt(index);
     if (!contents)
       break;
-    int tab_id = ExtensionTabUtil::GetTabId(contents->web_contents());
+    int tab_id = ExtensionTabUtil::GetTabId(contents);
     all->Append(Value::CreateIntegerValue(tab_id));
   }
 
@@ -528,11 +526,11 @@ void BrowserEventRouter::BrowserActionExecuted(
     const ExtensionAction& browser_action,
     Browser* browser) {
   Profile* profile = browser->profile();
-  TabContents* tab_contents = NULL;
+  WebContents* web_contents = NULL;
   int tab_id = 0;
-  if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
+  if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
     return;
-  ExtensionActionExecuted(profile, browser_action, tab_contents);
+  ExtensionActionExecuted(profile, browser_action, web_contents);
 }
 
 void BrowserEventRouter::PageActionExecuted(Profile* profile,
@@ -542,24 +540,24 @@ void BrowserEventRouter::PageActionExecuted(Profile* profile,
                                             int button) {
   DispatchOldPageActionEvent(profile, page_action.extension_id(),
                              page_action.id(), tab_id, url, button);
-  TabContents* tab_contents = NULL;
+  WebContents* web_contents = NULL;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
-                                    NULL, NULL, &tab_contents, NULL)) {
+                                    NULL, NULL, &web_contents, NULL)) {
     return;
   }
-  ExtensionActionExecuted(profile, page_action, tab_contents);
+  ExtensionActionExecuted(profile, page_action, web_contents);
 }
 
 void BrowserEventRouter::ScriptBadgeExecuted(
     Profile* profile,
     const ExtensionAction& script_badge,
     int tab_id) {
-  TabContents* tab_contents = NULL;
+  WebContents* web_contents = NULL;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
-                                    NULL, NULL, &tab_contents, NULL)) {
+                                    NULL, NULL, &web_contents, NULL)) {
     return;
   }
-  ExtensionActionExecuted(profile, script_badge, tab_contents);
+  ExtensionActionExecuted(profile, script_badge, web_contents);
 }
 
 void BrowserEventRouter::CommandExecuted(Profile* profile,
@@ -578,7 +576,7 @@ void BrowserEventRouter::CommandExecuted(Profile* profile,
 void BrowserEventRouter::ExtensionActionExecuted(
     Profile* profile,
     const ExtensionAction& extension_action,
-    TabContents* tab_contents) {
+    WebContents* web_contents) {
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
     case Extension::ActionInfo::TYPE_BROWSER:
@@ -595,7 +593,7 @@ void BrowserEventRouter::ExtensionActionExecuted(
   if (event_name) {
     scoped_ptr<ListValue> args(new ListValue());
     DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
-        tab_contents->web_contents(),
+        web_contents,
         ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS);
     args->Append(tab_value);
 

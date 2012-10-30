@@ -30,7 +30,7 @@ class DebuggerFunction : public AsyncExtensionFunction {
   DebuggerFunction();
   virtual ~DebuggerFunction() {}
 
-  bool InitTabContents();
+  bool InitWebContents();
   bool InitClientHost();
 
   content::WebContents* contents_;

@@ -14,10 +14,14 @@
 namespace base {
 class DictionaryValue;
 }
+
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class TabHelper;
 }
-class TabContents;
 
 namespace extensions {
 
@@ -80,8 +84,8 @@ class ExtensionActionFunction : public SyncExtensionFunction {
   // kDefaultTabId if none was specified.
   int tab_id_;
 
-  // Tab content for |tab_id_| if one exists.
-  TabContents* contents_;
+  // WebContents for |tab_id_| if one exists.
+  content::WebContents* contents_;
 
   // The extension action for the current extension.
   ExtensionAction* extension_action_;

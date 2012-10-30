@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -263,17 +262,17 @@ void MessageService::OpenChannelToTab(
     return;
   Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
 
-  TabContents* contents = NULL;
+  WebContents* contents = NULL;
   scoped_ptr<MessagePort> receiver;
   if (ExtensionTabUtil::GetTabById(tab_id, profile, true,
                                    NULL, NULL, &contents, NULL)) {
     receiver.reset(new ExtensionMessagePort(
-        contents->web_contents()->GetRenderProcessHost(),
-        contents->web_contents()->GetRenderViewHost()->GetRoutingID(),
+        contents->GetRenderProcessHost(),
+        contents->GetRenderViewHost()->GetRoutingID(),
         extension_id));
   }
 
-  if (contents && contents->web_contents()->GetController().NeedsReload()) {
+  if (contents && contents->GetController().NeedsReload()) {
     // The tab isn't loaded yet. Don't attempt to connect. Treat this as a
     // disconnect.
     ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, extension_id);

@@ -809,7 +809,7 @@ bool UpdateOffscreenTabFunction::RunImpl() {
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
-  tab_contents_ = offscreen_tab->tab_contents();
+  web_contents_ = offscreen_tab->tab_contents()->web_contents();
   bool is_async = false;
   if (!UpdateURLIfPresent(update_props, offscreen_tab_id, &is_async))
     return false;
@@ -817,8 +817,7 @@ bool UpdateOffscreenTabFunction::RunImpl() {
   // Update the width and height, if specified.
   if (update_props->HasKey(tabs_keys::kWidthKey) ||
       update_props->HasKey(tabs_keys::kHeightKey)) {
-    const gfx::Size& size =
-        tab_contents_->web_contents()->GetView()->GetContainerSize();
+    const gfx::Size& size = web_contents_->GetView()->GetContainerSize();
 
     int width;
     if (update_props->HasKey(tabs_keys::kWidthKey))

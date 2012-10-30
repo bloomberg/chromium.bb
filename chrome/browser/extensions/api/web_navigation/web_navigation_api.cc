@@ -648,18 +648,17 @@ bool GetFrameFunction::RunImpl() {
 
   SetResult(Value::CreateNullValue());
 
-  TabContents* tab_contents;
+  content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id,
                                     profile(),
                                     include_incognito(),
                                     NULL, NULL,
-                                    &tab_contents,
+                                    &web_contents,
                                     NULL) ||
-      !tab_contents) {
+      !web_contents) {
     return true;
   }
 
-  content::WebContents* web_contents = tab_contents->web_contents();
   WebNavigationTabObserver* observer =
       WebNavigationTabObserver::Get(web_contents);
   DCHECK(observer);
@@ -703,18 +702,17 @@ bool GetAllFramesFunction::RunImpl() {
 
   SetResult(Value::CreateNullValue());
 
-  TabContents* tab_contents;
+  content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id,
                                     profile(),
                                     include_incognito(),
                                     NULL, NULL,
-                                    &tab_contents,
+                                    &web_contents,
                                     NULL) ||
-      !tab_contents) {
+      !web_contents) {
     return true;
   }
 
-  content::WebContents* web_contents = tab_contents->web_contents();
   WebNavigationTabObserver* observer =
       WebNavigationTabObserver::Get(web_contents);
   DCHECK(observer);

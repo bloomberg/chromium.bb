@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -63,7 +62,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     return false;
   }
 
-  TabContents* contents = NULL;
+  content::WebContents* contents = NULL;
 
   // If |tab_id| is specified, look for the tab. Otherwise default to selected
   // tab in the current window.
@@ -77,12 +76,11 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
   CHECK(contents);
-  if (!GetExtension()->CanExecuteScriptOnPage(
-          contents->web_contents()->GetURL(),
-          contents->web_contents()->GetURL(),
-          execute_tab_id_,
-          NULL,
-          &error_)) {
+  if (!GetExtension()->CanExecuteScriptOnPage(contents->GetURL(),
+                                              contents->GetURL(),
+                                              execute_tab_id_,
+                                              NULL,
+                                              &error_)) {
     return false;
   }
 
@@ -146,8 +144,8 @@ bool ExecuteCodeInTabFunction::Init() {
     Browser* browser = GetCurrentBrowser();
     if (!browser)
       return false;
-    TabContents* tab_contents = NULL;
-    if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
+    content::WebContents* web_contents = NULL;
+    if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
       return false;
   }
 
@@ -223,7 +221,7 @@ void ExecuteCodeInTabFunction::DidLoadAndLocalizeFile(bool success,
 }
 
 bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
-  TabContents* contents = NULL;
+  content::WebContents* contents = NULL;
   Browser* browser = NULL;
 
   bool success = ExtensionTabUtil::GetTabById(
@@ -265,7 +263,7 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   }
   CHECK_NE(UserScript::UNDEFINED, run_at);
 
-  extensions::TabHelper::FromWebContents(contents->web_contents())->
+  extensions::TabHelper::FromWebContents(contents)->
       script_executor()->ExecuteScript(
           extension->id(),
           script_type,

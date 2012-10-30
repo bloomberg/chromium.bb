@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -65,8 +64,8 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
     return false;
   }
 
-  // Find the TabContents that contains this tab id.
-  TabContents* contents = NULL;
+  // Find the WebContents that contains this tab id.
+  content::WebContents* contents = NULL;
   bool result = ExtensionTabUtil::GetTabById(
       tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
   if (!result || !contents) {
@@ -76,8 +75,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   }
 
   // Make sure the URL hasn't changed.
-  NavigationEntry* entry =
-      contents->web_contents()->GetController().GetActiveEntry();
+  NavigationEntry* entry = contents->GetController().GetActiveEntry();
   if (!entry || url != entry->GetURL().spec()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kUrlNotActiveError, url);
     return false;
@@ -87,7 +85,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   page_action->SetAppearance(
       tab_id, enable ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
   page_action->SetTitle(tab_id, title);
-  extensions::TabHelper::FromWebContents(contents->web_contents())->
+  extensions::TabHelper::FromWebContents(contents)->
       location_bar_controller()->NotifyChange();
 
   return true;

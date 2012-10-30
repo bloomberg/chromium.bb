@@ -58,14 +58,14 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
 
   Browser* browser;
   TabStripModel* tab_strip;
-  TabContents* contents;
+  WebContents* contents;
   int tab_index;
   if (ExtensionTabUtil::GetTabById(tab_id_, profile_, true,
                                    &browser, &tab_strip,
                                    &contents, &tab_index)) {
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
     DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
-        contents->web_contents()->GetRenderViewHost());
+        contents->GetRenderViewHost());
     if (devtools_manager->GetDevToolsClientHostFor(agent))
       return false;
 
