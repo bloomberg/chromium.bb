@@ -14,12 +14,12 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
-#include "chrome/browser/chromeos/drive/mock_drive_service.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/mock_drive_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -276,7 +276,7 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
     drive::DriveSystemServiceFactory::set_cache_root_for_test(
         test_cache_root_.path().value());
 
-    mock_drive_service_ = new drive::MockDriveService();
+    mock_drive_service_ = new google_apis::MockDriveService();
 
     // |mock_drive_service_| will eventually get owned by a system service.
     drive::DriveSystemServiceFactory::set_drive_service_for_test(
@@ -294,7 +294,7 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
 
  protected:
   ScopedTempDir test_cache_root_;
-  drive::MockDriveService* mock_drive_service_;
+  google_apis::MockDriveService* mock_drive_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {
