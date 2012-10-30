@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
 }
 
 // Page cannot steal focus when focus is on location bar.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_LocationBarLockFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
