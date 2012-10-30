@@ -1074,7 +1074,12 @@ int MetricsService::GetLowEntropySource() {
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
   // Only try to load the value from prefs if the user did not request a reset.
   // Otherwise, skip to generating a new value.
-  if (!command_line->HasSwitch(switches::kResetVariationState)) {
+  bool reset_variations =
+      command_line->HasSwitch(switches::kResetVariationState);
+  // TODO(stevet): This histogram is temporary. Remove this after default group
+  // investigations are complete.
+  UMA_HISTOGRAM_BOOLEAN("UMA.UsedResetVariationsFlag", reset_variations);
+  if (!reset_variations) {
     const int value = pref->GetInteger(prefs::kMetricsLowEntropySource);
     if (value != kLowEntropySourceNotSet) {
       // Ensure the prefs value is in the range [0, kMaxLowEntropySize). Old
