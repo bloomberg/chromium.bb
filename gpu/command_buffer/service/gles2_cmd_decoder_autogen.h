@@ -271,6 +271,7 @@ error::Error GLES2DecoderImpl::HandleColorMask(
   state_.color_mask_green = green;
   state_.color_mask_blue = blue;
   state_.color_mask_alpha = alpha;
+  clear_state_dirty_ = true;
   return error::kNoError;
 }
 
@@ -605,6 +606,7 @@ error::Error GLES2DecoderImpl::HandleDepthMask(
     uint32 immediate_data_size, const gles2::DepthMask& c) {
   GLboolean flag = static_cast<GLboolean>(c.flag);
   state_.depth_mask = flag;
+  clear_state_dirty_ = true;
   return error::kNoError;
 }
 

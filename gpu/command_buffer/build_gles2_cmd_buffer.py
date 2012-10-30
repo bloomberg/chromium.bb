@@ -229,7 +229,7 @@ _STATES = {
         'name': 'sample_coverage_value',
         'type': 'GLclampf',
         'enum': 'GL_SAMPLE_COVERAGE_VALUE',
-        'default': '0.0f',
+        'default': '1.0f',
       },
       {
         'name': 'sample_coverage_invert',
@@ -2846,8 +2846,8 @@ class StateSetHandler(TypeHandler):
     state = _STATES[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
-    for ndx,state in enumerate(states):
-      file.Write("  state_.%s = %s;\n" % (state['name'], args[ndx].name))
+    for ndx,item in enumerate(states):
+      file.Write("  state_.%s = %s;\n" % (item['name'], args[ndx].name))
     if 'state_flag' in state:
       file.Write("  %s = true;\n" % state['state_flag'])
     if not func.GetInfo("no_gl"):

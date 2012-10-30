@@ -52,7 +52,7 @@ void ContextState::Initialize() {
   line_width = 1.0f;
   polygon_offset_factor = 0.0f;
   polygon_offset_units = 0.0f;
-  sample_coverage_value = 0.0f;
+  sample_coverage_value = 1.0f;
   sample_coverage_invert = false;
   scissor_x = 0.0f;
   scissor_y = 0.0f;

@@ -65,7 +65,7 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
   EXPECT_CALL(*gl_, PolygonOffset(0.0f, 0.0f))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, SampleCoverage(0.0f, false))
+  EXPECT_CALL(*gl_, SampleCoverage(1.0f, false))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(
