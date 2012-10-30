@@ -30,16 +30,6 @@ namespace {
 
 const char16 kCreditCardObfuscationSymbol = '*';
 
-const AutofillFieldType kAutofillCreditCardTypes[] = {
-  CREDIT_CARD_NAME,
-  CREDIT_CARD_NUMBER,
-  CREDIT_CARD_TYPE,
-  CREDIT_CARD_EXP_MONTH,
-  CREDIT_CARD_EXP_4_DIGIT_YEAR,
-};
-
-const int kAutofillCreditCardLength = arraysize(kAutofillCreditCardTypes);
-
 // Returns a version of |number| that has any separator characters removed.
 const string16 StripSeparators(const string16& number) {
   const char16 kSeparators[] = {'-', ' ', '\0'};
