@@ -7,10 +7,25 @@
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
+namespace {
+
+void WriteFailedStderrSetupMessage(int out_fd) {
+  const char* error_string = strerror(errno);
+  static const char msg[] = "Failed to set up stderr: ";
+  if (HANDLE_EINTR(write(out_fd, msg, sizeof(msg)-1)) > 0 && error_string &&
+      HANDLE_EINTR(write(out_fd, error_string, strlen(error_string))) > 0 &&
+      HANDLE_EINTR(write(out_fd, "\n", 1))) {
+  }
+}
+
+}  // namespace
+
 // The kernel gives us a sandbox, we turn it into a playground :-)
 // This is version 2 of the playground; version 1 was built on top of
 // pre-BPF seccomp mode.
 namespace playground2 {
+
+const int kExpectedExitCode = 100;
 
 // We define a really simple sandbox policy. It is just good enough for us
 // to tell that the sandbox has actually been activated.
@@ -30,7 +45,7 @@ ErrorCode Sandbox::probeEvaluator(int signo) {
 
 void Sandbox::probeProcess(void) {
   if (syscall(__NR_getpid) < 0 && errno == EPERM) {
-    syscall(__NR_exit_group, (intptr_t)100);
+    syscall(__NR_exit_group, static_cast<intptr_t>(kExpectedExitCode));
   }
 }
 
@@ -51,7 +66,7 @@ void Sandbox::tryVsyscallProcess(void) {
   // vsyscall=emulate and some versions of the seccomp BPF patch
   // we may get SIGKILL-ed. Detect this!
   if (time(&current_time) != static_cast<time_t>(-1)) {
-    syscall(__NR_exit_group, (intptr_t)100);
+    syscall(__NR_exit_group, static_cast<intptr_t>(kExpectedExitCode));
   }
 }
 
@@ -68,6 +83,10 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
   int fds[2];
   if (pipe2(fds, O_NONBLOCK|O_CLOEXEC)) {
     SANDBOX_DIE("pipe() failed");
+  }
+
+  if (fds[0] <= 2 || fds[1] <= 2) {
+    SANDBOX_DIE("Process started without standard file descriptors");
   }
 
   pid_t pid = fork();
@@ -87,29 +106,38 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
     // Test a very simple sandbox policy to verify that we can
     // successfully turn on sandboxing.
     Die::EnableSimpleExit();
-    errno = 0;
-    if (HANDLE_EINTR(close(fds[0])) ||
-        HANDLE_EINTR(dup2(fds[1], 2)) != 2 ||
-        HANDLE_EINTR(close(fds[1]))) {
-      const char* error_string = strerror(errno);
-      static const char msg[] = "Failed to set up stderr: ";
-      if (HANDLE_EINTR(write(fds[1], msg, sizeof(msg)-1)) > 0 && error_string &&
-          HANDLE_EINTR(write(fds[1], error_string, strlen(error_string))) > 0 &&
-          HANDLE_EINTR(write(fds[1], "\n", 1))) {
-      }
-    } else {
-      evaluators_.clear();
-      setSandboxPolicy(syscallEvaluator, NULL);
-      setProcFd(proc_fd);
 
-      // By passing "quiet=true" to "startSandboxInternal()" we suppress
-      // messages for expected and benign failures (e.g. if the current
-      // kernel lacks support for BPF filters).
-      startSandboxInternal(true);
-
-      // Run our code in the sandbox
-      CodeInSandbox();
+    if (HANDLE_EINTR(close(fds[0]))) {
+      WriteFailedStderrSetupMessage(fds[1]);
+      SANDBOX_DIE(NULL);
     }
+    if (HANDLE_EINTR(dup2(fds[1], 2)) != 2) {
+      // Stderr could very well be a file descriptor to .xsession-errors, or
+      // another file, which could be backed by a file system that could cause
+      // dup2 to fail while trying to close stderr. It's important that we do
+      // not fail on trying to close stderr.
+      // If dup2 fails here, we will continue normally, this means that our
+      // parent won't cause a fatal failure if something writes to stderr in
+      // this child.
+    }
+    if (HANDLE_EINTR(close(fds[1]))) {
+      WriteFailedStderrSetupMessage(fds[1]);
+      SANDBOX_DIE(NULL);
+    }
+
+    evaluators_.clear();
+    setSandboxPolicy(syscallEvaluator, NULL);
+    setProcFd(proc_fd);
+
+    // By passing "quiet=true" to "startSandboxInternal()" we suppress
+    // messages for expected and benign failures (e.g. if the current
+    // kernel lacks support for BPF filters).
+    startSandboxInternal(true);
+
+    // Run our code in the sandbox.
+    CodeInSandbox();
+
+    // CodeInSandbox() is not supposed to return here.
     SANDBOX_DIE(NULL);
   }
 
@@ -124,7 +152,7 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
   if (HANDLE_EINTR(waitpid(pid, &status, 0)) != pid) {
     SANDBOX_DIE("waitpid() failed unexpectedly");
   }
-  bool rc = WIFEXITED(status) && WEXITSTATUS(status) == 100;
+  bool rc = WIFEXITED(status) && WEXITSTATUS(status) == kExpectedExitCode;
 
   // If we fail to support sandboxing, there might be an additional
   // error message. If so, this was an entirely unexpected and fatal
