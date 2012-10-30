@@ -455,12 +455,14 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
     int create_instance_id;
     std::string storage_partition;
     bool persist_storage = true;
+    bool focused = false;
     bool visible = false;
     BrowserPluginHostMsg_CreateGuest::Read(
         create_msg,
         &create_instance_id,
         &storage_partition,
         &persist_storage,
+        &focused,
         &visible);
     EXPECT_STREQ("storage", storage_partition.c_str());
     EXPECT_FALSE(persist_storage);

@@ -37,10 +37,11 @@ IPC_ENUM_TRAITS(WebKit::WebDragStatus)
 // This message is sent to the browser process to create the browser plugin
 // embedder and helper. It is sent once prior to sending the first
 // BrowserPluginHostMsg_NavigateGuest message.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_CreateGuest,
+IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_CreateGuest,
                     int /* instance_id */,
                     std::string /* storage_partition_id */,
                     bool /* persist_storage */,
+                    bool /* focused */,
                     bool /* visible */)
 
 // Tells the browser process to terminate the guest associated with the

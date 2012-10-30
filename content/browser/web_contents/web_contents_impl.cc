@@ -397,6 +397,7 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
 WebContentsImpl* WebContentsImpl::CreateGuest(BrowserContext* browser_context,
                                               const std::string& host_url,
                                               int guest_instance_id,
+                                              bool focused,
                                               bool visible) {
   // The SiteInstance of a given guest is based on the fact that it's a guest
   // in addition to which platform application the guest belongs to, rather
@@ -420,6 +421,7 @@ WebContentsImpl* WebContentsImpl::CreateGuest(BrowserContext* browser_context,
           guest_instance_id,
           new_contents_impl,
           new_contents_impl->GetRenderViewHost(),
+          focused,
           visible));
   return new_contents;
 }
@@ -2323,6 +2325,7 @@ void WebContentsImpl::OnBrowserPluginCreateGuest(
     int instance_id,
     const std::string& storage_partition_id,
     bool persist_storage,
+    bool focused,
     bool visible) {
   // This creates a BrowserPluginEmbedder, which handles all the BrowserPlugin
   // specific messages for this WebContents (through its
@@ -2343,6 +2346,7 @@ void WebContentsImpl::OnBrowserPluginCreateGuest(
                                         instance_id,
                                         storage_partition_id,
                                         persist_storage,
+                                        focused,
                                         visible);
 }
 

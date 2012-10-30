@@ -93,6 +93,7 @@ BrowserPlugin::BrowserPlugin(
       process_id_(-1),
       persist_storage_(false),
       content_window_routing_id_(MSG_ROUTING_NONE),
+      focused_(false),
       visible_(true),
       current_nav_entry_index_(0),
       nav_entry_count_(0) {
@@ -138,6 +139,7 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
             instance_id_,
             storage_partition_id_,
             persist_storage_,
+            focused_,
             visible_));
   }
 
@@ -773,6 +775,13 @@ TransportDIB* BrowserPlugin::CreateTransportDIB(const size_t size) {
 }
 
 void BrowserPlugin::updateFocus(bool focused) {
+  if (focused_ == focused)
+    return;
+
+  focused_ = focused;
+  if (!navigate_src_sent_)
+    return;
+
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetFocus(
       render_view_routing_id_,
       instance_id_,

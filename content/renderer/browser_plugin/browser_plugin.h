@@ -229,6 +229,7 @@ class CONTENT_EXPORT BrowserPlugin :
   std::string storage_partition_id_;
   bool persist_storage_;
   int content_window_routing_id_;
+  bool focused_;
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;

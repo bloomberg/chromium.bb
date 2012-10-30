@@ -95,6 +95,7 @@ class CONTENT_EXPORT WebContentsImpl
   static WebContentsImpl* CreateGuest(BrowserContext* browser_context,
                                       const std::string& host,
                                       int guest_instance_id,
+                                      bool focused,
                                       bool visible);
 
   // Returns the content specific prefs for the given RVH.
@@ -565,6 +566,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnBrowserPluginCreateGuest(int instance_id,
                                   const std::string& storage_partition_id,
                                   bool persist_storage,
+                                  bool focused,
                                   bool visible);
 
   // Changes the IsLoading state and notifies delegate as needed

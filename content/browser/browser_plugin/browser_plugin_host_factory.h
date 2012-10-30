@@ -25,6 +25,7 @@ class CONTENT_EXPORT BrowserPluginHostFactory {
       int instance_id,
       WebContentsImpl* web_contents,
       RenderViewHost* render_view_host,
+      bool focused,
       bool visible) = 0;
 
   virtual BrowserPluginEmbedder* CreateBrowserPluginEmbedder(

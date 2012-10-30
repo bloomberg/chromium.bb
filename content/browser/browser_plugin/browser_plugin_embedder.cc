@@ -82,6 +82,7 @@ void BrowserPluginEmbedder::CreateGuest(RenderViewHost* render_view_host,
                                         int instance_id,
                                         std::string storage_partition_id,
                                         bool persist_storage,
+                                        bool focused,
                                         bool visible) {
   WebContentsImpl* guest_web_contents = NULL;
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
@@ -93,6 +94,7 @@ void BrowserPluginEmbedder::CreateGuest(RenderViewHost* render_view_host,
       web_contents()->GetBrowserContext(),
       host,
       instance_id,
+      focused,
       visible);
 
   guest = guest_web_contents->GetBrowserPluginGuest();

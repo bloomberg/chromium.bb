@@ -71,6 +71,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   static BrowserPluginGuest* Create(int instance_id,
                                     WebContentsImpl* web_contents,
                                     content::RenderViewHost* render_view_host,
+                                    bool focused,
                                     bool visible);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
@@ -87,6 +88,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
     embedder_web_contents_ = web_contents;
   }
 
+  bool focused() const { return focused_; }
   bool visible() const { return visible_; }
 
   // NotificationObserver implementation.
@@ -128,6 +130,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
   virtual void RunFileChooser(WebContents* web_contents,
                               const FileChooserParams& params) OVERRIDE;
+  virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
 
   void UpdateRect(RenderViewHost* render_view_host,
                   const ViewHostMsg_UpdateRect_Params& params);
@@ -216,6 +219,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   BrowserPluginGuest(int instance_id,
                      WebContentsImpl* web_contents,
                      RenderViewHost* render_view_host,
+                     bool focused,
                      bool visible);
 
   // Returns the identifier that uniquely identifies a browser plugin guest
@@ -256,6 +260,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   IDMap<RenderViewHost> pending_updates_;
   int pending_update_counter_;
   base::TimeDelta guest_hang_timeout_;
+  bool focused_;
   bool visible_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);

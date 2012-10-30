@@ -58,6 +58,7 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
   void OnCreateGuest(int instance_id,
                      const std::string& storage_partition_id,
                      bool persist_storage,
+                     bool focused,
                      bool visible);
   void OnNavigateGuest(int instance_id,
                        const std::string& src,

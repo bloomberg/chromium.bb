@@ -71,6 +71,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                    int instance_id,
                    std::string storage_partition_id,
                    bool persist_storage,
+                   bool focused,
                    bool visible);
 
   // Navigates in a guest (new or existing).

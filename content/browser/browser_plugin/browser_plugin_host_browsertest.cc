@@ -91,10 +91,12 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
       int instance_id,
       WebContentsImpl* web_contents,
       RenderViewHost* render_view_host,
+      bool focused,
       bool visible) OVERRIDE {
     return new TestBrowserPluginGuest(instance_id,
                                       web_contents,
                                       render_view_host,
+                                      focused,
                                       visible);
   }
 
@@ -147,10 +149,12 @@ class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
       int instance_id,
       WebContentsImpl* web_contents,
       RenderViewHost* render_view_host,
+      bool focused,
       bool visible) OVERRIDE {
     BrowserPluginGuest* guest = new TestBrowserPluginGuest(instance_id,
                                                          web_contents,
                                                          render_view_host,
+                                                         focused,
                                                          visible);
     guest->set_guest_hang_timeout_for_testing(TestTimeouts::tiny_timeout());
     return guest;
@@ -239,6 +243,15 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Enable browser plugin in content_shell for running test.
     command_line->AppendSwitch(switches::kEnableBrowserPluginForAllViewTypes);
+  }
+
+  static void SimulateSpaceKeyPress(WebContents* web_contents) {
+    SimulateKeyPress(web_contents,
+                     ui::VKEY_SPACE,
+                     false,   // control.
+                     false,   // shift.
+                     false,   // alt.
+                     false);  // command.
   }
 
   static void SimulateTabKeyPress(WebContents* web_contents) {
@@ -1031,5 +1044,69 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, VisibilityPreservation) {
   test_guest()->WaitUntilHidden();
 }
 
+// This test verifies that if a browser plugin is focused before navigation then
+// the guest starts off focused.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusBeforeNavigation) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  const std::string embedder_code =
+      "document.getElementById('plugin').focus();";
+  StartBrowserPluginTest(
+      kEmbedderURL, kHTMLForGuest, true, embedder_code);
+  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+      test_guest()->web_contents()->GetRenderViewHost());
+  // Verify that the guest is focused.
+  scoped_ptr<base::Value> value(
+      guest_rvh->ExecuteJavascriptAndGetValue(string16(),
+          ASCIIToUTF16("document.hasFocus()")));
+  bool result = false;
+  ASSERT_TRUE(value->GetAsBoolean(&result));
+  EXPECT_TRUE(result);
+}
+
+// This test verifies that if we lose the guest, and get a new one,
+// the new guest will inherit the focus state of the old guest.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusPreservation) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+      test_guest()->web_contents()->GetRenderViewHost());
+  {
+    // Focus the BrowserPlugin. This will have the effect of also focusing the
+    // current guest.
+    ExecuteSyncJSFunction(
+        rvh, ASCIIToUTF16("document.getElementById('plugin').focus();"));
+    // Verify that key presses go to the guest.
+    SimulateSpaceKeyPress(test_embedder()->web_contents());
+    test_guest()->WaitForInput();
+    // Verify that the guest is focused.
+    scoped_ptr<base::Value> value(
+        guest_rvh->ExecuteJavascriptAndGetValue(string16(),
+            ASCIIToUTF16("document.hasFocus()")));
+    bool result = false;
+    ASSERT_TRUE(value->GetAsBoolean(&result));
+    EXPECT_TRUE(result);
+  }
+
+  // Kill the current guest.
+  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
+      "document.getElementById('plugin').terminate();"));
+  test_guest()->WaitForExit();
+
+  {
+    // Get a new guest.
+    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
+        "document.getElementById('plugin').reload();"));
+    test_guest()->WaitForLoadStop();
+    // Verify that the guest is focused.
+    scoped_ptr<base::Value> value(
+        guest_rvh->ExecuteJavascriptAndGetValue(string16(),
+            ASCIIToUTF16("document.hasFocus()")));
+    bool result = false;
+    ASSERT_TRUE(value->GetAsBoolean(&result));
+    EXPECT_TRUE(result);
+  }
+}
 
 }  // namespace content

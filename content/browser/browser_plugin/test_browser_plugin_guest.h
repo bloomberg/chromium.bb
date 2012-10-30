@@ -26,6 +26,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   TestBrowserPluginGuest(int instance_id,
                          WebContentsImpl* web_contents,
                          RenderViewHost* render_view_host,
+                         bool focused,
                          bool visible);
   virtual ~TestBrowserPluginGuest();
 
@@ -77,7 +78,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   void WaitForInput();
   // Waits until 'loadstop' is observed.
   void WaitForLoadStop();
-
 
  private:
   // Overridden methods from BrowserPluginGuest to intercept in test objects.

@@ -42,6 +42,7 @@ const int kGuestHangTimeoutMs = 5000;
 BrowserPluginGuest::BrowserPluginGuest(int instance_id,
                                        WebContentsImpl* web_contents,
                                        RenderViewHost* render_view_host,
+                                       bool focused,
                                        bool visible)
     : WebContentsObserver(web_contents),
       embedder_web_contents_(NULL),
@@ -53,6 +54,7 @@ BrowserPluginGuest::BrowserPluginGuest(int instance_id,
       pending_update_counter_(0),
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kGuestHangTimeoutMs)),
+      focused_(focused),
       visible_(visible) {
   DCHECK(web_contents);
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
@@ -71,18 +73,18 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     int instance_id,
     WebContentsImpl* web_contents,
     content::RenderViewHost* render_view_host,
+    bool focused,
     bool visible) {
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
   if (factory_) {
     return factory_->CreateBrowserPluginGuest(instance_id,
                                               web_contents,
                                               render_view_host,
+                                              focused,
                                               visible);
   }
-  return new BrowserPluginGuest(instance_id,
-                                web_contents,
-                                render_view_host,
-                                visible);
+  return new BrowserPluginGuest(
+      instance_id, web_contents, render_view_host, focused, visible);
 }
 
 void BrowserPluginGuest::Observe(int type,
@@ -144,6 +146,12 @@ void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
 void BrowserPluginGuest::RunFileChooser(WebContents* web_contents,
                                         const FileChooserParams& params) {
   embedder_web_contents_->GetDelegate()->RunFileChooser(web_contents, params);
+}
+
+bool BrowserPluginGuest::ShouldFocusPageAfterCrash() {
+  // Rather than managing focus in WebContentsImpl::RenderViewReady, we will
+  // manage the focus ourselves.
+  return false;
 }
 
 void BrowserPluginGuest::SetIsAcceptingTouchEvents(bool accept) {
@@ -367,6 +375,9 @@ void BrowserPluginGuest::Reload() {
 }
 
 void BrowserPluginGuest::SetFocus(bool focused) {
+  if (focused_ == focused)
+      return;
+  focused_ = focused;
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   render_view_host->Send(
       new ViewMsg_SetFocus(render_view_host->GetRoutingID(), focused));
@@ -453,6 +464,9 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
 void BrowserPluginGuest::RenderViewReady() {
   // TODO(fsamuel): Investigate whether it's possible to update state earlier
   // here (see http://www.crbug.com/158151).
+  RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
+  render_view_host->Send(
+      new ViewMsg_SetFocus(render_view_host->GetRoutingID(), focused_));
   bool embedder_visible =
       embedder_web_contents_->GetBrowserPluginEmbedder()->visible();
   SetVisibility(embedder_visible, visible());
