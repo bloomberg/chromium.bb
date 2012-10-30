@@ -293,6 +293,37 @@ zoom(struct image *image, double scale)
 }
 
 static void
+key_handler(struct window *window, struct input *input, uint32_t time,
+	    uint32_t key, uint32_t sym, enum wl_keyboard_key_state state,
+	    void *data)
+{
+	struct image *image = data;
+
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED)
+		return;
+
+	switch (sym) {
+	case XKB_KEY_minus:
+		zoom(image, 0.8);
+		window_schedule_redraw(image->window);
+		break;
+	case XKB_KEY_equal:
+	case XKB_KEY_plus:
+		zoom(image, 1.2);
+		window_schedule_redraw(image->window);
+		break;
+	case XKB_KEY_1:
+		image->matrix.xx = 1.0;
+		image->matrix.xy = 0.0;
+		image->matrix.yx = 0.0;
+		image->matrix.yy = 1.0;
+		clamp_view(image);
+		window_schedule_redraw(image->window);
+		break;
+	}
+}
+
+static void
 axis_handler(struct widget *widget, struct input *input, uint32_t time,
 	     uint32_t axis, wl_fixed_t value, void *data)
 {
@@ -382,6 +413,7 @@ image_create(struct display *display, const char *filename,
 	widget_set_motion_handler(image->widget, motion_handler);
 	widget_set_button_handler(image->widget, button_handler);
 	widget_set_axis_handler(image->widget, axis_handler);
+	window_set_key_handler(image->window, key_handler);
 	widget_schedule_resize(image->widget, 500, 400);
 
 	return image;
