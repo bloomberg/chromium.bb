@@ -134,20 +134,21 @@ SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
 // multiple GetHash requests pending since we don't want to serialize them and
 // slow down the user.
 void SafeBrowsingProtocolManager::GetFullHash(
-    SafeBrowsingService::SafeBrowsingCheck* check,
-    const std::vector<SBPrefix>& prefixes) {
+    const std::vector<SBPrefix>& prefixes,
+    FullHashCallback callback,
+    bool is_download) {
   // If we are in GetHash backoff, we need to check if we're past the next
   // allowed time. If we are, we can proceed with the request. If not, we are
   // required to return empty results (i.e. treat the page as safe).
   if (gethash_error_count_ && Time::Now() <= next_gethash_time_) {
     std::vector<SBFullHashResult> full_hashes;
-    sb_service_->HandleGetHashResults(check, full_hashes, false);
+    callback.Run(full_hashes, false);
     return;
   }
   GURL gethash_url = GetHashUrl();
   net::URLFetcher* fetcher = net::URLFetcher::Create(
       gethash_url, net::URLFetcher::POST, this);
-  hash_requests_[fetcher] = check;
+  hash_requests_[fetcher] = FullHashDetails(callback, is_download);
 
   std::string get_hash;
   SafeBrowsingProtocolParser parser;
@@ -195,7 +196,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
   if (it != hash_requests_.end()) {
     // GetHash response.
     fetcher.reset(it->first);
-    SafeBrowsingService::SafeBrowsingCheck* check = it->second;
+    const FullHashDetails& details = it->second;
     std::vector<SBFullHashResult> full_hashes;
     bool can_cache = false;
     if (source->GetStatus().is_success() &&
@@ -204,9 +205,9 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       // For tracking our GetHash false positive (204) rate, compared to real
       // (200) responses.
       if (source->GetResponseCode() == 200)
-        RecordGetHashResult(check->is_download, GET_HASH_STATUS_200);
+        RecordGetHashResult(details.is_download, GET_HASH_STATUS_200);
       else
-        RecordGetHashResult(check->is_download, GET_HASH_STATUS_204);
+        RecordGetHashResult(details.is_download, GET_HASH_STATUS_204);
       can_cache = true;
       gethash_error_count_ = 0;
       gethash_back_off_mult_ = 1;
@@ -237,7 +238,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     // Call back the SafeBrowsingService with full_hashes, even if there was a
     // parse error or an error response code (in which case full_hashes will be
     // empty). We can't block the user regardless of the error status.
-    sb_service_->HandleGetHashResults(check, full_hashes, can_cache);
+    details.callback.Run(full_hashes, can_cache);
 
     hash_requests_.erase(it);
   } else {
@@ -742,4 +743,18 @@ GURL SafeBrowsingProtocolManager::NextChunkUrl(const std::string& url) const {
     next_url.append(additional_query_);
   }
   return GURL(next_url);
+}
+
+SafeBrowsingProtocolManager::FullHashDetails::FullHashDetails()
+    : callback(),
+      is_download(false) {
+}
+
+SafeBrowsingProtocolManager::FullHashDetails::FullHashDetails(
+    FullHashCallback callback, bool is_download)
+    : callback(callback),
+      is_download(is_download) {
+}
+
+SafeBrowsingProtocolManager::FullHashDetails::~FullHashDetails() {
 }

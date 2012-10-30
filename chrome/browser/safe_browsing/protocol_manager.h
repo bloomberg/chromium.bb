@@ -66,6 +66,15 @@ class SBProtocolManagerFactory {
 
 class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
  public:
+  // FullHashCallback is invoked when GetFullHash completes.
+  // Parameters:
+  //   - The vector of full hash results. If empty, indicates that there
+  //     were no matches, and that the resource is safe.
+  //   - Whether the result can be cached. This may not be the case when
+  //     the result did not come from the SB server, for example.
+  typedef base::Callback<void(const std::vector<SBFullHashResult>&,
+                              bool)> FullHashCallback;
+
   virtual ~SafeBrowsingProtocolManager();
 
   // Makes the passed |factory| the factory used to instantiate
@@ -87,10 +96,12 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate interface.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // API used by the SafeBrowsingService for issuing queries. When the results
-  // are available, SafeBrowsingService::HandleGetHashResults is called.
-  virtual void GetFullHash(SafeBrowsingService::SafeBrowsingCheck* check,
-                           const std::vector<SBPrefix>& prefixes);
+  // Retrieve the full hash for a set of prefixes, and invoke the callback
+  // argument when the results are retrieved. The callback may be invoked
+  // synchronously.
+  virtual void GetFullHash(const std::vector<SBPrefix>& prefixes,
+                           FullHashCallback callback,
+                           bool is_download);
 
   // Forces the start of next update after |interval| time.
   void ForceScheduleNextUpdate(base::TimeDelta interval);
@@ -276,6 +287,17 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   void UpdateResponseTimeout();
 
  private:
+  // Map of GetHash requests to parameters which created it.
+  struct FullHashDetails {
+    FullHashDetails();
+    FullHashDetails(FullHashCallback callback, bool is_download);
+    ~FullHashDetails();
+
+    FullHashCallback callback;
+    bool is_download;
+  };
+  typedef base::hash_map<const net::URLFetcher*, FullHashDetails> HashRequests;
+
   // The factory that controls the creation of SafeBrowsingProtocolManager.
   // This is used by tests.
   static SBProtocolManagerFactory* factory_;
@@ -313,9 +335,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // All chunk requests that need to be made.
   std::deque<ChunkUrl> chunk_request_urls_;
 
-  // Map of GetHash requests.
-  typedef base::hash_map<const net::URLFetcher*,
-                         SafeBrowsingService::SafeBrowsingCheck*> HashRequests;
   HashRequests hash_requests_;
 
   // The next scheduled update has special behavior for the first 2 requests.

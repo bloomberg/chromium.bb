@@ -858,7 +858,14 @@ void SafeBrowsingService::OnCheckDone(SafeBrowsingCheck* check) {
     // Reset the start time so that we can measure the network time without the
     // database time.
     check->start = base::TimeTicks::Now();
-    protocol_manager_->GetFullHash(check, check->prefix_hits);
+    // Note: If |this| is deleted or stopped, the protocol_manager will
+    // be destroyed as well - hence it's OK to do unretained in this case.
+    protocol_manager_->GetFullHash(
+        check->prefix_hits,
+        base::Bind(&SafeBrowsingService::HandleGetHashResults,
+                   base::Unretained(this),
+                   check),
+        check->is_download);
   } else {
     // We may have cached results for previous GetHash queries.  Since
     // this data comes from cache, don't histogram hits.

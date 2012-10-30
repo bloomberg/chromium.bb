@@ -49,6 +49,16 @@ using ::testing::_;
 using ::testing::Mock;
 using ::testing::StrictMock;
 
+namespace {
+
+void InvokeFullHashCallback(
+    SafeBrowsingProtocolManager::FullHashCallback callback,
+    const std::vector<SBFullHashResult>& result) {
+  callback.Run(result, true);
+}
+
+}  // namespace
+
 // A SafeBrowingDatabase class that allows us to inject the malicious URLs.
 class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
  public:
@@ -205,7 +215,6 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
                       net::URLRequestContextGetter* request_context_getter,
                       const SafeBrowsingProtocolConfig& config)
       : SafeBrowsingProtocolManager(sb_service, request_context_getter, config),
-        sb_service_(sb_service),
         delay_ms_(0) {
     create_count_++;
   }
@@ -219,14 +228,13 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
   // We return a result from the prefilled full_hashes_ hash_map to simulate
   // server's response. At the same time, latency is added to simulate real
   // life network issues.
-  virtual void GetFullHash(SafeBrowsingService::SafeBrowsingCheck* check,
-                           const std::vector<SBPrefix>& prefixes) OVERRIDE {
-    // When we get a valid response, always cache the result.
-    bool cancache = true;
+  virtual void GetFullHash(
+      const std::vector<SBPrefix>& prefixes,
+      SafeBrowsingProtocolManager::FullHashCallback callback,
+      bool is_download) OVERRIDE {
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SafeBrowsingService::HandleGetHashResults,
-                   sb_service_, check, full_hashes_, cancache),
+        base::Bind(InvokeFullHashCallback, callback, full_hashes_),
         base::TimeDelta::FromMilliseconds(delay_ms_));
   }
 
@@ -250,7 +258,6 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
 
  private:
   std::vector<SBFullHashResult> full_hashes_;
-  SafeBrowsingService* sb_service_;
   int64 delay_ms_;
   static int create_count_;
   static int delete_count_;
