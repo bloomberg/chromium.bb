@@ -2,18 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/tray_bubble_view.h"
+#include "ui/views/bubble/tray_bubble_view.h"
 
-#include "ash/root_window_controller.h"
-#include "ash/wm/property_util.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,7 +28,7 @@ const int kBubbleSpacing = 20;
 
 }  // namespace
 
-namespace message_center {
+namespace views {
 
 namespace internal {
 
@@ -240,7 +235,7 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
 }
 
 // static
-TrayBubbleView* TrayBubbleView::Create(aura::Window* parent_window,
+TrayBubbleView* TrayBubbleView::Create(gfx::NativeView parent_window,
                                        views::View* anchor,
                                        Delegate* delegate,
                                        InitParams* init_params) {
@@ -262,7 +257,7 @@ TrayBubbleView* TrayBubbleView::Create(aura::Window* parent_window,
   return new TrayBubbleView(parent_window, anchor, delegate, *init_params);
 }
 
-TrayBubbleView::TrayBubbleView(aura::Window* parent_window,
+TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
                                views::View* anchor,
                                Delegate* delegate,
                                const InitParams& init_params)
@@ -307,16 +302,16 @@ void TrayBubbleView::InitializeAndShowBubble() {
 void TrayBubbleView::UpdateBubble() {
   SizeToContents();
   GetWidget()->GetRootView()->SchedulePaint();
-  aura::RootWindow* root_window = GetWidget()->GetNativeView()->GetRootWindow();
-  ash::internal::ShelfLayoutManager* shelf =
-      ash::GetRootWindowController(root_window)->shelf();
-  bubble_border_->set_paint_arrow(shelf->IsVisible());
 }
 
 void TrayBubbleView::SetMaxHeight(int height) {
   params_.max_height = height;
   if (GetWidget())
     SizeToContents();
+}
+
+void TrayBubbleView::SetPaintArrow(bool paint_arrow) {
+  bubble_border_->set_paint_arrow(paint_arrow);
 }
 
 void TrayBubbleView::GetBorderInsets(gfx::Insets* insets) const {
@@ -398,4 +393,4 @@ void TrayBubbleView::ViewHierarchyChanged(bool is_add,
   }
 }
 
-}  // namespace message_center
+}  // namespace views

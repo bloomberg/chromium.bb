@@ -6,14 +6,11 @@
 
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
-#include "ash/system/web_notification/message_center_bubble.h"
-#include "ash/system/web_notification/popup_bubble.h"
-#include "ash/system/web_notification/web_notification.h"
-#include "ash/system/web_notification/web_notification_bubble.h"
+#include "ui/message_center/message_center_bubble.h"
+#include "ui/message_center/message_popup_bubble.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -22,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace {
@@ -36,12 +34,6 @@ const int kPaddingFromTopEdgeOfSystemTrayVerticalAlignment = 10;
 
 }  // namespace
 
-using message_center::MessageCenterBubble;
-using message_center::PopupBubble;
-using message_center::TrayBubbleView;
-using message_center::WebNotification;
-using message_center::WebNotificationBubble;
-
 namespace ash {
 
 namespace internal {
@@ -53,31 +45,31 @@ class WebNotificationBubbleWrapper {
  public:
   // Takes ownership of |bubble| and creates |bubble_wrapper_|.
   WebNotificationBubbleWrapper(WebNotificationTray* tray,
-                               WebNotificationBubble* bubble) {
+                               message_center::MessageBubbleBase* bubble) {
     bubble_.reset(bubble);
-    TrayBubbleView::AnchorAlignment anchor_alignment =
+    views::TrayBubbleView::AnchorAlignment anchor_alignment =
         tray->GetAnchorAlignment();
-    TrayBubbleView::InitParams init_params =
+    views::TrayBubbleView::InitParams init_params =
         bubble->GetInitParams(anchor_alignment);
     views::View* anchor = tray->tray_container();
-    if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
+    if (anchor_alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
       gfx::Point bounds(anchor->width() / 2, 0);
       views::View::ConvertPointToWidget(anchor, &bounds);
       init_params.arrow_offset = bounds.x();
     }
-    TrayBubbleView* bubble_view = TrayBubbleView::Create(
+    views::TrayBubbleView* bubble_view = views::TrayBubbleView::Create(
         tray->GetBubbleWindowContainer(), anchor, tray, &init_params);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_view));
     bubble->InitializeContents(bubble_view);
   }
 
-  WebNotificationBubble* bubble() const { return bubble_.get(); }
+  message_center::MessageBubbleBase* bubble() const { return bubble_.get(); }
 
   // Convenience accessors.
-  TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
+  views::TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
 
  private:
-  scoped_ptr<WebNotificationBubble> bubble_;
+  scoped_ptr<message_center::MessageBubbleBase> bubble_;
   scoped_ptr<internal::TrayBubbleWrapper> bubble_wrapper_;
 };
 
@@ -113,7 +105,8 @@ void WebNotificationTray::ShowMessageCenterBubble() {
   message_center_->SetMessageCenterVisible(true);
   UpdateTray();
   HidePopupBubble();
-  MessageCenterBubble* bubble = new MessageCenterBubble(message_center_.get());
+  message_center::MessageCenterBubble* bubble =
+      new message_center::MessageCenterBubble(message_center_.get());
   message_center_bubble_.reset(
       new internal::WebNotificationBubbleWrapper(this, bubble));
 
@@ -152,7 +145,8 @@ void WebNotificationTray::ShowPopupBubble() {
   } else if (message_center_->HasPopupNotifications()) {
     popup_bubble_.reset(
         new internal::WebNotificationBubbleWrapper(
-            this, new PopupBubble(message_center_.get())));
+            this, new message_center::MessagePopupBubble(
+                message_center_.get())));
   }
 }
 
@@ -202,9 +196,12 @@ void WebNotificationTray::AnchorUpdated() {
     popup_bubble_->bubble_view()->UpdateBubble();
     // Ensure that the notification buble is above the launcher/status area.
     popup_bubble_->bubble_view()->GetWidget()->StackAtTop();
+    UpdateBubbleViewArrow(popup_bubble_->bubble_view());
   }
-  if (message_center_bubble_.get())
+  if (message_center_bubble_.get()) {
     message_center_bubble_->bubble_view()->UpdateBubble();
+    UpdateBubbleViewArrow(message_center_bubble_->bubble_view());
+  }
 }
 
 string16 WebNotificationTray::GetAccessibleNameForTray() {
@@ -213,7 +210,7 @@ string16 WebNotificationTray::GetAccessibleNameForTray() {
 }
 
 void WebNotificationTray::HideBubbleWithView(
-    const TrayBubbleView* bubble_view) {
+    const views::TrayBubbleView* bubble_view) {
   if (message_center_bubble() &&
       bubble_view == message_center_bubble()->bubble_view()) {
     HideMessageCenterBubble();
@@ -254,7 +251,7 @@ gfx::Rect WebNotificationTray::GetAnchorRect(views::Widget* anchor_widget,
   return GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
 }
 
-void WebNotificationTray::HideBubble(const TrayBubbleView* bubble_view) {
+void WebNotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
@@ -332,16 +329,20 @@ bool WebNotificationTray::ClickedOutsideBubble() {
 
 // Methods for testing
 
-MessageCenterBubble* WebNotificationTray::GetMessageCenterBubbleForTest() {
+message_center::MessageCenterBubble*
+WebNotificationTray::GetMessageCenterBubbleForTest() {
   if (!message_center_bubble_.get())
     return NULL;
-  return static_cast<MessageCenterBubble*>(message_center_bubble_->bubble());
+  return static_cast<message_center::MessageCenterBubble*>(
+      message_center_bubble_->bubble());
 }
 
-PopupBubble* WebNotificationTray::GetPopupBubbleForTest() {
+message_center::MessagePopupBubble*
+WebNotificationTray::GetPopupBubbleForTest() {
   if (!popup_bubble_.get())
     return NULL;
-  return static_cast<PopupBubble*>(popup_bubble_->bubble());
+  return static_cast<message_center::MessagePopupBubble*>(
+      popup_bubble_->bubble());
 }
 
 }  // namespace ash

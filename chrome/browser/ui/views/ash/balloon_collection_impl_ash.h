@@ -7,9 +7,9 @@
 
 #include <set>
 
-#include "ash/system/web_notification/message_center.h"
 #include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/balloon_collection_impl.h"
+#include "ui/message_center/message_center.h"
 
 // Wrapper on top of ::BalloonCollectionImpl to provide integration between
 // the Chrome notification UI and Ash notifications (ash::WebNotificationTray).

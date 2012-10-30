@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/popup_bubble.h"
+#include "ui/message_center/message_popup_bubble.h"
 
-#include "ash/system/tray/tray_bubble_view.h"
-#include "ash/system/web_notification/web_notification_view.h"
+#include "ui/message_center/message_view.h"
+#include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -17,8 +17,7 @@ const int kAutocloseDelaySeconds = 5;
 // Popup notifications contents.
 class PopupBubbleContentsView : public views::View {
  public:
-  explicit PopupBubbleContentsView(
-      WebNotificationList::Delegate* list_delegate)
+  explicit PopupBubbleContentsView(NotificationList::Delegate* list_delegate)
       : list_delegate_(list_delegate) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
@@ -33,13 +32,12 @@ class PopupBubbleContentsView : public views::View {
     content_->layer()->SetMasksToBounds(true);
   }
 
-  void Update(const WebNotificationList::Notifications& popup_notifications) {
+  void Update(const NotificationList::Notifications& popup_notifications) {
     content_->RemoveAllChildViews(true);
-    for (WebNotificationList::Notifications::const_iterator iter =
+    for (NotificationList::Notifications::const_iterator iter =
              popup_notifications.begin();
          iter != popup_notifications.end(); ++iter) {
-      WebNotificationView* view = new WebNotificationView(
-          list_delegate_, *iter, 0);
+      MessageView* view = new MessageView(list_delegate_, *iter, 0);
       content_->AddChildView(view);
     }
     content_->SizeToPreferredSize();
@@ -54,25 +52,25 @@ class PopupBubbleContentsView : public views::View {
   }
 
  private:
-  WebNotificationList::Delegate* list_delegate_;
+  NotificationList::Delegate* list_delegate_;
   views::View* content_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBubbleContentsView);
 };
 
-// PopupBubble
-PopupBubble::PopupBubble(WebNotificationList::Delegate* delegate) :
-    WebNotificationBubble(delegate),
-    contents_view_(NULL),
-    num_popups_(0) {
+// MessagePopupBubble
+MessagePopupBubble::MessagePopupBubble(NotificationList::Delegate* delegate)
+    : MessageBubbleBase(delegate),
+      contents_view_(NULL),
+      num_popups_(0) {
 }
 
-PopupBubble::~PopupBubble() {
+MessagePopupBubble::~MessagePopupBubble() {
 }
 
-TrayBubbleView::InitParams PopupBubble::GetInitParams(
-    TrayBubbleView::AnchorAlignment anchor_alignment) {
-  TrayBubbleView::InitParams init_params =
+views::TrayBubbleView::InitParams MessagePopupBubble::GetInitParams(
+    views::TrayBubbleView::AnchorAlignment anchor_alignment) {
+  views::TrayBubbleView::InitParams init_params =
       GetDefaultInitParams(anchor_alignment);
   init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kBackgroundColor;
@@ -80,19 +78,20 @@ TrayBubbleView::InitParams PopupBubble::GetInitParams(
   return init_params;
 }
 
-void PopupBubble::InitializeContents(TrayBubbleView* bubble_view) {
+void MessagePopupBubble::InitializeContents(
+    views::TrayBubbleView* bubble_view) {
   bubble_view_ = bubble_view;
   contents_view_ = new PopupBubbleContentsView(list_delegate_);
   bubble_view_->AddChildView(contents_view_);
   UpdateBubbleView();
 }
 
-void PopupBubble::OnBubbleViewDestroyed() {
+void MessagePopupBubble::OnBubbleViewDestroyed() {
   contents_view_ = NULL;
 }
 
-void PopupBubble::UpdateBubbleView() {
-  WebNotificationList::Notifications popup_notifications;
+void MessagePopupBubble::UpdateBubbleView() {
+  NotificationList::Notifications popup_notifications;
   list_delegate_->GetNotificationList()->GetPopupNotifications(
       &popup_notifications);
   if (popup_notifications.size() == 0) {
@@ -110,32 +109,32 @@ void PopupBubble::UpdateBubbleView() {
   bubble_view_->UpdateBubble();
 }
 
-void PopupBubble::OnMouseEnteredView() {
+void MessagePopupBubble::OnMouseEnteredView() {
   StopAutoCloseTimer();
 }
 
-void PopupBubble::OnMouseExitedView() {
+void MessagePopupBubble::OnMouseExitedView() {
   StartAutoCloseTimer();
 }
 
-void PopupBubble::StartAutoCloseTimer() {
+void MessagePopupBubble::StartAutoCloseTimer() {
   autoclose_.Start(FROM_HERE,
                    base::TimeDelta::FromSeconds(
                        kAutocloseDelaySeconds),
-                   this, &PopupBubble::OnAutoClose);
+                   this, &MessagePopupBubble::OnAutoClose);
 }
 
-void PopupBubble::StopAutoCloseTimer() {
+void MessagePopupBubble::StopAutoCloseTimer() {
   autoclose_.Stop();
 }
 
-void PopupBubble::OnAutoClose() {
+void MessagePopupBubble::OnAutoClose() {
   list_delegate_->GetNotificationList()->MarkPopupsAsShown();
   num_popups_ = 0;
   UpdateBubbleView();
 }
 
-size_t PopupBubble::NumMessageViewsForTest() const {
+size_t MessagePopupBubble::NumMessageViewsForTest() const {
   return contents_view_->NumMessageViews();
 }
 

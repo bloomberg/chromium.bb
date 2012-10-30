@@ -2,36 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
+#ifndef UI_MESSAGE_CENTER_MESSAGE_BUBBLE_BASE_H_
+#define UI_MESSAGE_CENTER_MESSAGE_BUBBLE_BASE_H_
 
-#include "ash/ash_export.h"
-#include "ash/system/tray/tray_bubble_view.h"
-#include "ash/system/web_notification/web_notification_list.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/message_center/message_center_export.h"
+#include "ui/message_center/notification_list.h"
+#include "ui/views/bubble/tray_bubble_view.h"
 
 namespace message_center {
 
-class WebNotificationContentsView;
-class WebNotificationView;
-
-class ASH_EXPORT WebNotificationBubble {
+class MESSAGE_CENTER_EXPORT MessageBubbleBase {
  public:
-  explicit WebNotificationBubble(WebNotificationList::Delegate* list_delegate);
+  explicit MessageBubbleBase(NotificationList::Delegate* list_delegate);
 
-  virtual ~WebNotificationBubble();
+  virtual ~MessageBubbleBase();
 
   // Gets called when when the bubble view associated with this bubble is
   // destroyed. Clears |bubble_view_| and calls OnBubbleViewDestroyed.
   void BubbleViewDestroyed();
 
   // Gets the init params for the implementation.
-  virtual TrayBubbleView::InitParams GetInitParams(
-      TrayBubbleView::AnchorAlignment anchor_alignment) = 0;
+  virtual views::TrayBubbleView::InitParams GetInitParams(
+      views::TrayBubbleView::AnchorAlignment anchor_alignment) = 0;
 
   // Called after the bubble view has been constructed. Creates and initializes
   // the bubble contents.
-  virtual void InitializeContents(TrayBubbleView* bubble_view) = 0;
+  virtual void InitializeContents(views::TrayBubbleView* bubble_view) = 0;
 
   // Called from BubbleViewDestroyed for implementation specific details.
   virtual void OnBubbleViewDestroyed() = 0;
@@ -49,23 +46,23 @@ class ASH_EXPORT WebNotificationBubble {
 
   bool IsVisible() const;
 
-  TrayBubbleView* bubble_view() const { return bubble_view_; }
+  views::TrayBubbleView* bubble_view() const { return bubble_view_; }
 
   static const SkColor kBackgroundColor;
   static const SkColor kHeaderBackgroundColorLight;
   static const SkColor kHeaderBackgroundColorDark;
 
  protected:
-  TrayBubbleView::InitParams GetDefaultInitParams(
-      TrayBubbleView::AnchorAlignment anchor_alignment);
+  views::TrayBubbleView::InitParams GetDefaultInitParams(
+      views::TrayBubbleView::AnchorAlignment anchor_alignment);
 
-  WebNotificationList::Delegate* list_delegate_;
-  TrayBubbleView* bubble_view_;
-  base::WeakPtrFactory<WebNotificationBubble> weak_ptr_factory_;
+  NotificationList::Delegate* list_delegate_;
+  views::TrayBubbleView* bubble_view_;
+  base::WeakPtrFactory<MessageBubbleBase> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationBubble);
+  DISALLOW_COPY_AND_ASSIGN(MessageBubbleBase);
 };
 
 }  // namespace message_center
 
-#endif // ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
+#endif // UI_MESSAGE_CENTER_MESSAGE_BUBBLE_BASE_H_

@@ -57,6 +57,8 @@
         'bubble/bubble_delegate.h',
         'bubble/bubble_frame_view.cc',
         'bubble/bubble_frame_view.h',
+        'bubble/tray_bubble_view.cc',
+        'bubble/tray_bubble_view.h',
         'button_drag_utils.cc',
         'button_drag_utils.h',
         'color_chooser/color_chooser_listener.h',

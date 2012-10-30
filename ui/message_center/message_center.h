@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_H_
+#ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_H_
+#define UI_MESSAGE_CENTER_MESSAGE_CENTER_H_
 
-#include "ash/ash_export.h"
-#include "ash/system/web_notification/web_notification_list.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/message_center/message_center_export.h"
+#include "ui/message_center/notification_list.h"
 
-// Class for managing the WebNotificationList. The client (e.g. Chrome) calls
+// Class for managing the NotificationList. The client (e.g. Chrome) calls
 // [Add|Remove|Update]Notification to create and update notifications in the
 // list. It can also implement Delegate to receive callbacks when a
 // notification is removed (closed), or clicked on.
@@ -19,10 +19,10 @@
 
 namespace message_center {
 
-class ASH_EXPORT MessageCenter : public WebNotificationList::Delegate {
+class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
  public:
   // Class that hosts the message center.
-  class ASH_EXPORT Host {
+  class MESSAGE_CENTER_EXPORT Host {
    public:
     // Called when the notification list has changed. |new_notification| will
     // be true if a notification was added or updated.
@@ -32,7 +32,7 @@ class ASH_EXPORT MessageCenter : public WebNotificationList::Delegate {
     virtual ~Host() {}
   };
 
-  class ASH_EXPORT Delegate {
+  class MESSAGE_CENTER_EXPORT Delegate {
    public:
     // Called when the notification associated with |notification_id| is
     // removed (i.e. closed by the user).
@@ -100,19 +100,19 @@ class ASH_EXPORT MessageCenter : public WebNotificationList::Delegate {
   void SetNotificationImage(const std::string& id,
                             const gfx::ImageSkia& image);
 
-  WebNotificationList* notification_list() { return notification_list_.get(); }
+  NotificationList* notification_list() { return notification_list_.get(); }
 
-  // Overridden from WebNotificationList::Delegate.
+  // Overridden from NotificationList::Delegate.
   virtual void SendRemoveNotification(const std::string& id) OVERRIDE;
   virtual void SendRemoveAllNotifications() OVERRIDE;
   virtual void DisableNotificationByExtension(const std::string& id) OVERRIDE;
   virtual void DisableNotificationByUrl(const std::string& id) OVERRIDE;
   virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;
   virtual void OnNotificationClicked(const std::string& id) OVERRIDE;
-  virtual message_center::WebNotificationList* GetNotificationList() OVERRIDE;
+  virtual NotificationList* GetNotificationList() OVERRIDE;
 
  private:
-  scoped_ptr<WebNotificationList> notification_list_;
+  scoped_ptr<NotificationList> notification_list_;
   Host* host_;
   Delegate* delegate_;
 
@@ -121,4 +121,4 @@ class ASH_EXPORT MessageCenter : public WebNotificationList::Delegate {
 
 }  // namespace message_center
 
-#endif  // ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_H_
+#endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_H_

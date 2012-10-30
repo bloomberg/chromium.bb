@@ -53,7 +53,7 @@
 #include "ash/system/chromeos/network/tray_vpn.h"
 #endif
 
-using message_center::TrayBubbleView;
+using views::TrayBubbleView;
 
 namespace ash {
 
@@ -505,9 +505,12 @@ void SystemTray::AnchorUpdated() {
     notification_bubble_->bubble_view()->UpdateBubble();
     // Ensure that the notification buble is above the launcher/status area.
     notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
+    UpdateBubbleViewArrow(notification_bubble_->bubble_view());
   }
-  if (system_bubble_.get())
+  if (system_bubble_.get()) {
     system_bubble_->bubble_view()->UpdateBubble();
+    UpdateBubbleViewArrow(system_bubble_->bubble_view());
+  }
 }
 
 string16 SystemTray::GetAccessibleNameForTray() {

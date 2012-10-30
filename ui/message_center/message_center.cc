@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/message_center.h"
+#include "ui/message_center/message_center.h"
+
 #include "base/logging.h"
 
 namespace message_center {
@@ -12,7 +13,7 @@ namespace message_center {
 MessageCenter::MessageCenter(Host* host)
     : host_(host),
       delegate_(NULL) {
-  notification_list_.reset(new WebNotificationList(this));
+  notification_list_.reset(new NotificationList(this));
 }
 
 MessageCenter::~MessageCenter() {
@@ -80,7 +81,7 @@ void MessageCenter::SetNotificationImage(const std::string& id,
 }
 
 //------------------------------------------------------------------------------
-// Overridden from WebNotificationList::Delegate.
+// Overridden from NotificationList::Delegate.
 
 void MessageCenter::SendRemoveNotification(const std::string& id) {
   if (delegate_)
@@ -89,12 +90,12 @@ void MessageCenter::SendRemoveNotification(const std::string& id) {
 
 void MessageCenter::SendRemoveAllNotifications() {
   if (delegate_) {
-    const WebNotificationList::Notifications& notifications =
+    const NotificationList::Notifications& notifications =
         notification_list_->notifications();
-    for (WebNotificationList::Notifications::const_iterator loopiter =
+    for (NotificationList::Notifications::const_iterator loopiter =
              notifications.begin();
          loopiter != notifications.end(); ) {
-      WebNotificationList::Notifications::const_iterator curiter = loopiter++;
+      NotificationList::Notifications::const_iterator curiter = loopiter++;
       std::string notification_id = curiter->id;
       // May call RemoveNotification and erase curiter.
       delegate_->NotificationRemoved(notification_id);
@@ -127,7 +128,7 @@ void MessageCenter::OnNotificationClicked(const std::string& id) {
     delegate_->OnClicked(id);
 }
 
-WebNotificationList* MessageCenter::GetNotificationList() {
+NotificationList* MessageCenter::GetNotificationList() {
   return notification_list_.get();
 }
 

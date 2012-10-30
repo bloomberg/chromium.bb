@@ -11,8 +11,11 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/property_util.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ui/aura/event_filter.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
@@ -36,7 +39,7 @@ const int kAnimationDurationForPopupMS = 200;
 
 }  // namespace
 
-using message_center::TrayBubbleView;
+using views::TrayBubbleView;
 
 namespace ash {
 namespace internal {
@@ -50,6 +53,11 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
   }
 
   virtual void OnWidgetMoved(views::Widget* widget) OVERRIDE {
+    host_->AnchorUpdated();
+  }
+
+  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
+                                         bool visible) OVERRIDE {
     host_->AnchorUpdated();
   }
 
@@ -353,6 +361,15 @@ TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
   }
   NOTREACHED();
   return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
+}
+
+void TrayBackgroundView::UpdateBubbleViewArrow(
+    views::TrayBubbleView* bubble_view) {
+  aura::RootWindow* root_window =
+      bubble_view->GetWidget()->GetNativeView()->GetRootWindow();
+  ash::internal::ShelfLayoutManager* shelf =
+      ash::GetRootWindowController(root_window)->shelf();
+  bubble_view->SetPaintArrow(shelf->IsVisible());
 }
 
 }  // namespace internal

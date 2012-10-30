@@ -5,11 +5,11 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_
 
-#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/base_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "ui/views/bubble/tray_bubble_view.h"
 
 #include <vector>
 
@@ -41,10 +41,10 @@ class SystemTrayBubble {
   // Also creates |bubble_wrapper_|. |init_params| may be modified.
   void InitView(views::View* anchor,
                 user::LoginStatus login_status,
-                message_center::TrayBubbleView::InitParams* init_params);
+                views::TrayBubbleView::InitParams* init_params);
 
   BubbleType bubble_type() const { return bubble_type_; }
-  message_center::TrayBubbleView* bubble_view() const { return bubble_view_; }
+  views::TrayBubbleView* bubble_view() const { return bubble_view_; }
 
   void DestroyItemViews();
   void BubbleViewDestroyed();
@@ -63,7 +63,7 @@ class SystemTrayBubble {
   void CreateItemViews(user::LoginStatus login_status);
 
   ash::SystemTray* tray_;
-  message_center::TrayBubbleView* bubble_view_;
+  views::TrayBubbleView* bubble_view_;
   std::vector<ash::SystemTrayItem*> items_;
   BubbleType bubble_type_;
 

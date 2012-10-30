@@ -2255,6 +2255,7 @@
             '../ash/ash.gyp:ash',
             '../ash/ash_strings.gyp:ash_strings',
             '../ui/app_list/app_list.gyp:app_list',
+            '../ui/message_center/message_center.gyp:message_center',
           ],
         }],
         ['use_aura==1 and use_ash==0 and OS=="linux"', {

@@ -429,6 +429,24 @@ need to be translated for each locale.-->
       <message name="IDS_APP_PEBIBYTES_PER_SECOND" desc="Units tag indicating a speed of petabytes/second">
         <ph name="QUANTITY">$1<ex>42.0</ex></ph> PB/s
       </message>
+
+      <!-- Message center -->
+      <message name="IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE" desc="The menu entry for disabling extensions from a notification.">
+        Disable extension
+      </message>
+      <message name="IDS_MESSAGE_CENTER_SITE_DISABLE" desc="The menu entry for disabling notification from a site.">
+        Disable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
+      </message>
+      <message name="IDS_MESSAGE_CENTER_SETTINGS" desc="The menu entry or button for visiting the appropriate settings page.">
+        Settings...
+      </message>
+      <message name="IDS_MESSAGE_CENTER_CLEAR_ALL" desc="The button for clearing all notifications.">
+        Clear All
+      </message>
+      <message name="IDS_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
+        You have no notifications. Relax!
+      </message>
+      
     </messages>
   </release>
 </grit>

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_
+#ifndef UI_MESSAGE_CENTER_MESSAGE_VIEW_H_
+#define UI_MESSAGE_CENTER_MESSAGE_VIEW_H_
 
-#include "ash/system/web_notification/web_notification.h"
-#include "ash/system/web_notification/web_notification_list.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/message_center/notification_list.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -25,15 +24,15 @@ const int kWebNotificationButtonWidth = 32;
 const int kWebNotificationIconSize = 40;
 
 // The view for a notification entry (icon + message + buttons).
-class WebNotificationView : public views::View,
-                            public views::ButtonListener,
-                            public ui::ImplicitAnimationObserver {
+class MessageView : public views::View,
+                    public views::ButtonListener,
+                    public ui::ImplicitAnimationObserver {
  public:
-  WebNotificationView(WebNotificationList::Delegate* list_delegate,
-                      const WebNotification& notification,
-                      int scroll_bar_width);
+  MessageView(NotificationList::Delegate* list_delegate,
+              const NotificationList::Notification& notification,
+              int scroll_bar_width);
 
-  virtual ~WebNotificationView();
+  virtual ~MessageView();
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
@@ -65,17 +64,17 @@ class WebNotificationView : public views::View,
   // Slides the view out and closes it after the animation.
   void SlideOutAndClose(SlideDirection direction);
 
-  WebNotificationList::Delegate* list_delegate_;
-  WebNotification notification_;
+  NotificationList::Delegate* list_delegate_;
+  NotificationList::Notification notification_;
   views::ImageView* icon_;
   views::ImageButton* close_button_;
 
   views::ScrollView* scroller_;
   float gesture_scroll_amount_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationView);
+  DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
 
 }  // namespace message_center
 
-#endif // ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_
+#endif // UI_MESSAGE_CENTER_MESSAGE_VIEW_H_

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/web_notification_view.h"
+#include "ui/message_center/message_view.h"
 
-#include "grit/ash_resources.h"
-#include "grit/ash_strings.h"
+#include "grit/ui_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -38,8 +38,8 @@ const int kShowSettingsCommand = 2;
 class WebNotificationMenuModel : public ui::SimpleMenuModel,
                                  public ui::SimpleMenuModel::Delegate {
  public:
-  WebNotificationMenuModel(WebNotificationList::Delegate* list_delegate,
-                           const WebNotification& notification)
+  WebNotificationMenuModel(NotificationList::Delegate* list_delegate,
+                           const NotificationList::Notification& notification)
       : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
         list_delegate_(list_delegate),
         notification_(notification) {
@@ -65,15 +65,12 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
   virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE {
     switch (command_id) {
       case kToggleExtensionCommand:
-        return l10n_util::GetStringUTF16(
-            IDS_ASH_WEB_NOTFICATION_TRAY_EXTENSIONS_DISABLE);
+        return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE);
       case kTogglePermissionCommand:
-        return l10n_util::GetStringFUTF16(
-            IDS_ASH_WEB_NOTFICATION_TRAY_SITE_DISABLE,
-            notification_.display_source);
+        return l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_SITE_DISABLE,
+                                          notification_.display_source);
       case kShowSettingsCommand:
-        return l10n_util::GetStringUTF16(
-            IDS_ASH_WEB_NOTFICATION_TRAY_SETTINGS);
+        return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS);
       default:
         NOTREACHED();
     }
@@ -112,15 +109,15 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
   }
 
  private:
-  WebNotificationList::Delegate* list_delegate_;
-  WebNotification notification_;
+  NotificationList::Delegate* list_delegate_;
+  NotificationList::Notification notification_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationMenuModel);
 };
 
-WebNotificationView::WebNotificationView(
-    WebNotificationList::Delegate* list_delegate,
-    const WebNotification& notification,
+MessageView::MessageView(
+    NotificationList::Delegate* list_delegate,
+    const NotificationList::Notification& notification,
     int scroll_bar_width)
     : list_delegate_(list_delegate),
       notification_(notification),
@@ -149,8 +146,7 @@ WebNotificationView::WebNotificationView(
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(
       views::CustomButton::BS_NORMAL,
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NOTIFY_CLOSE));
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_MESSAGE_CLOSE));
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
 
@@ -201,10 +197,10 @@ WebNotificationView::WebNotificationView(
   layout->AddPaddingRow(0, kPaddingBetweenItems);
 }
 
-WebNotificationView::~WebNotificationView() {
+MessageView::~MessageView() {
 }
 
-bool WebNotificationView::OnMousePressed(const ui::MouseEvent& event) {
+bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
   if (event.flags() & ui::EF_RIGHT_MOUSE_BUTTON) {
     ShowMenu(event.location());
     return true;
@@ -213,7 +209,7 @@ bool WebNotificationView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-ui::EventResult WebNotificationView::OnGestureEvent(
+ui::EventResult MessageView::OnGestureEvent(
     const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
     list_delegate_->OnNotificationClicked(notification_.id);
@@ -268,17 +264,17 @@ ui::EventResult WebNotificationView::OnGestureEvent(
   return ui::ER_CONSUMED;
 }
 
-void WebNotificationView::ButtonPressed(views::Button* sender,
+void MessageView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   if (sender == close_button_)
     list_delegate_->SendRemoveNotification(notification_.id);
 }
 
-void WebNotificationView::OnImplicitAnimationsCompleted() {
+void MessageView::OnImplicitAnimationsCompleted() {
   list_delegate_->SendRemoveNotification(notification_.id);
 }
 
-void WebNotificationView::ShowMenu(gfx::Point screen_location) {
+void MessageView::ShowMenu(gfx::Point screen_location) {
   WebNotificationMenuModel menu_model(list_delegate_, notification_);
   if (menu_model.GetItemCount() == 0)
     return;
@@ -295,7 +291,7 @@ void WebNotificationView::ShowMenu(gfx::Point screen_location) {
       views::MenuRunner::HAS_MNEMONICS));
 }
 
-void WebNotificationView::RestoreVisualState() {
+void MessageView::RestoreVisualState() {
   // Restore the layer state.
   const int kSwipeRestoreDurationMS = 150;
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
@@ -305,7 +301,7 @@ void WebNotificationView::RestoreVisualState() {
   layer()->SetOpacity(1.f);
 }
 
-void WebNotificationView::SlideOutAndClose(SlideDirection direction) {
+void MessageView::SlideOutAndClose(SlideDirection direction) {
   const int kSwipeOutTotalDurationMS = 150;
   int swipe_out_duration = kSwipeOutTotalDurationMS * layer()->opacity();
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());

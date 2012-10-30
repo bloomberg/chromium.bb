@@ -7,9 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
-#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/wm/shelf_types.h"
+#include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {
 namespace internal {
@@ -87,8 +87,7 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
 
   // Hides the bubble associated with |bubble_view|. Called when the widget
   // is closed.
-  virtual void HideBubbleWithView(
-      const message_center::TrayBubbleView* bubble_view) = 0;
+  virtual void HideBubbleWithView(const views::TrayBubbleView* bubble_view) = 0;
 
   // Called by the bubble wrapper when a click event occurs outside the bubble.
   // May close the bubble. Returns true if the event is handled.
@@ -115,11 +114,11 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   // Returns the anchor rect for the bubble.
   gfx::Rect GetBubbleAnchorRect(
       views::Widget* anchor_widget,
-      message_center::TrayBubbleView::AnchorType anchor_type,
-      message_center::TrayBubbleView::AnchorAlignment anchor_alignment) const;
+      views::TrayBubbleView::AnchorType anchor_type,
+      views::TrayBubbleView::AnchorAlignment anchor_alignment) const;
 
   // Returns the bubble anchor alignment based on |shelf_alignment_|.
-  message_center::TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
+  views::TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
 
   StatusAreaWidget* status_area_widget() {
     return status_area_widget_;
@@ -131,6 +130,9 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
 
   ShelfLayoutManager* GetShelfLayoutManager();
+
+  // Updates the arrow visibilty based on the launcher visibilty.
+  void UpdateBubbleViewArrow(views::TrayBubbleView* bubble_view);
 
  private:
   class TrayWidgetObserver;

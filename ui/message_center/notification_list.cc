@@ -2,23 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/web_notification_list.h"
+#include "ui/message_center/notification_list.h"
 
 namespace message_center {
 
-const size_t WebNotificationList::kMaxVisibleMessageCenterNotifications = 100;
-const size_t WebNotificationList::kMaxVisiblePopupNotifications = 5;
+const size_t NotificationList::kMaxVisibleMessageCenterNotifications = 100;
+const size_t NotificationList::kMaxVisiblePopupNotifications = 5;
 
-WebNotificationList::WebNotificationList(Delegate* delegate)
+NotificationList::Notification::Notification() : is_read(false),
+                                                 shown_as_popup(false) {
+}
+
+NotificationList::Notification::~Notification() {
+}
+
+NotificationList::NotificationList(Delegate* delegate)
     : delegate_(delegate),
       message_center_visible_(false),
       unread_count_(0) {
 }
 
-WebNotificationList::~WebNotificationList() {
+NotificationList::~NotificationList() {
 }
 
-void WebNotificationList::SetMessageCenterVisible(bool visible) {
+void NotificationList::SetMessageCenterVisible(bool visible) {
   if (message_center_visible_ == visible)
     return;
   message_center_visible_ = visible;
@@ -34,12 +41,12 @@ void WebNotificationList::SetMessageCenterVisible(bool visible) {
   }
 }
 
-void WebNotificationList::AddNotification(const std::string& id,
-                                          const string16& title,
-                                          const string16& message,
-                                          const string16& display_source,
-                                          const std::string& extension_id) {
-  WebNotification notification;
+void NotificationList::AddNotification(const std::string& id,
+                                       const string16& title,
+                                       const string16& message,
+                                       const string16& display_source,
+                                       const std::string& extension_id) {
+  Notification notification;
   notification.id = id;
   notification.title = title;
   notification.message = message;
@@ -48,15 +55,15 @@ void WebNotificationList::AddNotification(const std::string& id,
   PushNotification(notification);
 }
 
-void WebNotificationList::UpdateNotificationMessage(const std::string& old_id,
-                                                    const std::string& new_id,
-                                                    const string16& title,
-                                                    const string16& message) {
+void NotificationList::UpdateNotificationMessage(const std::string& old_id,
+                                                 const std::string& new_id,
+                                                 const string16& title,
+                                                 const string16& message) {
   Notifications::iterator iter = GetNotification(old_id);
   if (iter == notifications_.end())
     return;
   // Copy and update notification, then move it to the front of the list.
-  WebNotification notification(*iter);
+  Notification notification(*iter);
   notification.id = new_id;
   notification.title = title;
   notification.message = message;
@@ -64,7 +71,7 @@ void WebNotificationList::UpdateNotificationMessage(const std::string& old_id,
   PushNotification(notification);
 }
 
-bool WebNotificationList::RemoveNotification(const std::string& id) {
+bool NotificationList::RemoveNotification(const std::string& id) {
   Notifications::iterator iter = GetNotification(id);
   if (iter == notifications_.end())
     return false;
@@ -72,11 +79,11 @@ bool WebNotificationList::RemoveNotification(const std::string& id) {
   return true;
 }
 
-void WebNotificationList::RemoveAllNotifications() {
+void NotificationList::RemoveAllNotifications() {
   notifications_.clear();
 }
 
-void WebNotificationList::SendRemoveNotificationsBySource(
+void NotificationList::SendRemoveNotificationsBySource(
     const std::string& id) {
   Notifications::iterator source_iter = GetNotification(id);
   if (source_iter == notifications_.end())
@@ -90,7 +97,7 @@ void WebNotificationList::SendRemoveNotificationsBySource(
   }
 }
 
-void WebNotificationList::SendRemoveNotificationsByExtension(
+void NotificationList::SendRemoveNotificationsByExtension(
     const std::string& id) {
   Notifications::iterator source_iter = GetNotification(id);
   if (source_iter == notifications_.end())
@@ -104,8 +111,8 @@ void WebNotificationList::SendRemoveNotificationsByExtension(
   }
 }
 
-bool WebNotificationList::SetNotificationImage(const std::string& id,
-                                               const gfx::ImageSkia& image) {
+bool NotificationList::SetNotificationImage(const std::string& id,
+                                            const gfx::ImageSkia& image) {
   Notifications::iterator iter = GetNotification(id);
   if (iter == notifications_.end())
     return false;
@@ -113,16 +120,16 @@ bool WebNotificationList::SetNotificationImage(const std::string& id,
   return true;
 }
 
-bool WebNotificationList::HasNotification(const std::string& id) {
+bool NotificationList::HasNotification(const std::string& id) {
   return GetNotification(id) != notifications_.end();
 }
 
-bool WebNotificationList::HasPopupNotifications() {
+bool NotificationList::HasPopupNotifications() {
   return !notifications_.empty() && !notifications_.front().shown_as_popup;
 }
 
-void WebNotificationList::GetPopupNotifications(
-    WebNotificationList::Notifications* notifications) {
+void NotificationList::GetPopupNotifications(
+    NotificationList::Notifications* notifications) {
   Notifications::iterator first, last;
   GetPopupIterators(first, last);
   notifications->clear();
@@ -130,15 +137,14 @@ void WebNotificationList::GetPopupNotifications(
     notifications->push_back(*iter);
 }
 
-void WebNotificationList::MarkPopupsAsShown() {
+void NotificationList::MarkPopupsAsShown() {
   Notifications::iterator first, last;
   GetPopupIterators(first, last);
   for (Notifications::iterator iter = first; iter != last; ++iter)
     iter->shown_as_popup = true;
 }
 
-WebNotificationList::Notifications::iterator
-WebNotificationList::GetNotification(
+NotificationList::Notifications::iterator NotificationList::GetNotification(
     const std::string& id) {
   for (Notifications::iterator iter = notifications_.begin();
        iter != notifications_.end(); ++iter) {
@@ -148,14 +154,13 @@ WebNotificationList::GetNotification(
   return notifications_.end();
 }
 
-void WebNotificationList::EraseNotification(
-    WebNotificationList::Notifications::iterator iter) {
+void NotificationList::EraseNotification(Notifications::iterator iter) {
   if (!message_center_visible_ && !iter->is_read)
     --unread_count_;
   notifications_.erase(iter);
 }
 
-void WebNotificationList::PushNotification(WebNotification& notification) {
+void NotificationList::PushNotification(Notification& notification) {
   // Ensure that notification.id is unique by erasing any existing
   // notification with the same id (shouldn't normally happen).
   Notifications::iterator iter = GetNotification(notification.id);
@@ -171,8 +176,8 @@ void WebNotificationList::PushNotification(WebNotification& notification) {
   notifications_.push_front(notification);
 }
 
-void WebNotificationList::GetPopupIterators(Notifications::iterator& first,
-                                            Notifications::iterator& last) {
+void NotificationList::GetPopupIterators(Notifications::iterator& first,
+                                         Notifications::iterator& last) {
   size_t popup_count = 0;
   first = notifications_.begin();
   last = first;

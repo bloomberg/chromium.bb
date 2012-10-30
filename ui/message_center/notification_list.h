@@ -2,23 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_LIST_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_LIST_H_
+#ifndef UI_MESSAGE_CENTER_NOTIFICATION_LIST_H_
+#define UI_MESSAGE_CENTER_NOTIFICATION_LIST_H_
 
 #include <list>
 #include <string>
 
-#include "ash/ash_export.h"
-#include "ash/system/web_notification/web_notification.h"
+#include "base/string16.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/message_center_export.h"
 
 namespace message_center {
 
 // A helper class to manage the list of notifications.
-class ASH_EXPORT WebNotificationList {
+class MESSAGE_CENTER_EXPORT NotificationList {
  public:
-  typedef std::list<WebNotification> Notifications;
+  struct MESSAGE_CENTER_EXPORT Notification {
+    Notification();
+    virtual ~Notification();
 
-  class ASH_EXPORT Delegate {
+    std::string id;
+    string16 title;
+    string16 message;
+    string16 display_source;
+    std::string extension_id;
+    gfx::ImageSkia image;
+    bool is_read;  // True if this has been seen in the message center
+    bool shown_as_popup;  // True if this has been shown as a popup notification
+  };
+
+  typedef std::list<Notification> Notifications;
+
+  class MESSAGE_CENTER_EXPORT Delegate {
    public:
     Delegate() {}
     virtual ~Delegate() {}
@@ -38,11 +53,11 @@ class ASH_EXPORT WebNotificationList {
     virtual void OnNotificationClicked(const std::string& id) = 0;
 
     // Returns the list of notifications to display.
-    virtual WebNotificationList* GetNotificationList() = 0;
+    virtual NotificationList* GetNotificationList() = 0;
   };
 
-  explicit WebNotificationList(Delegate* delegate);
-  virtual ~WebNotificationList();
+  explicit NotificationList(Delegate* delegate);
+  virtual ~NotificationList();
 
   // Affects whether or not a message has been "read".
   void SetMessageCenterVisible(bool visible);
@@ -97,7 +112,7 @@ class ASH_EXPORT WebNotificationList {
 
   void EraseNotification(Notifications::iterator iter);
 
-  void PushNotification(WebNotification& notification);
+  void PushNotification(Notification& notification);
 
   // Returns the |kMaxVisiblePopupNotifications| least recent notifications
   // that have not been shown as a popup.
@@ -109,9 +124,9 @@ class ASH_EXPORT WebNotificationList {
   bool message_center_visible_;
   size_t unread_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationList);
+  DISALLOW_COPY_AND_ASSIGN(NotificationList);
 };
 
 }  // namespace message_center
 
-#endif // ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_LIST_H_
+#endif // UI_MESSAGE_CENTER_NOTIFICATION_LIST_H_

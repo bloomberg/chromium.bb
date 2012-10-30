@@ -149,7 +149,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="common/status_wifi_disabled_h.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="common/status_wifi_enabled.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="common/status_wifi_enabled_h.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFY_CLOSE" file="common/status_notify_x.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_NORMAL" file="common/notification/notification_button_active_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_HOVER" file="common/notification/notification_button_active_hover.png" />

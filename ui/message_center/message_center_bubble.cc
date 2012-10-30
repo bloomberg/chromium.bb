@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/message_center_bubble.h"
+#include "ui/message_center/message_center_bubble.h"
 
-#include "ash/system/web_notification/web_notification_view.h"
-#include "grit/ash_strings.h"
+#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
+#include "ui/message_center/message_view.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -22,23 +22,22 @@ namespace message_center {
 
 namespace {
 
-const int kWebNotificationBubbleMinHeight = 80;
-const int kWebNotificationBubbleMaxHeight = 400;
+const int kMessageBubbleBaseMinHeight = 80;
+const int kMessageBubbleBaseMaxHeight = 400;
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 
 // The view for the buttons at the bottom of the web notification tray.
 class WebNotificationButtonView : public views::View,
                                   public views::ButtonListener {
  public:
-  explicit WebNotificationButtonView(
-      WebNotificationList::Delegate* list_delegate)
+  explicit WebNotificationButtonView(NotificationList::Delegate* list_delegate)
       : list_delegate_(list_delegate),
         close_all_button_(NULL) {
     set_background(views::Background::CreateBackgroundPainter(
         true,
         views::Painter::CreateVerticalGradient(
-            WebNotificationBubble::kHeaderBackgroundColorLight,
-            WebNotificationBubble::kHeaderBackgroundColorDark)));
+            MessageBubbleBase::kHeaderBackgroundColorLight,
+            MessageBubbleBase::kHeaderBackgroundColorDark)));
     set_border(views::Border::CreateSolidSidedBorder(
         2, 0, 0, 0, kBorderDarkColor));
 
@@ -53,7 +52,7 @@ class WebNotificationButtonView : public views::View,
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_all_button_ = new views::TextButton(
-        this, rb.GetLocalizedString(IDS_ASH_WEB_NOTFICATION_TRAY_CLEAR_ALL));
+        this, rb.GetLocalizedString(IDS_MESSAGE_CENTER_CLEAR_ALL));
     close_all_button_->set_alignment(views::TextButton::ALIGN_CENTER);
     close_all_button_->set_focusable(true);
     close_all_button_->set_request_focus_on_press(false);
@@ -77,7 +76,7 @@ class WebNotificationButtonView : public views::View,
   }
 
  private:
-  WebNotificationList::Delegate* list_delegate_;
+  NotificationList::Delegate* list_delegate_;
   views::TextButton* close_all_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonView);
@@ -167,8 +166,7 @@ class ScrollContentView : public views::View {
 // Message Center contents.
 class MessageCenterContentsView : public views::View {
  public:
-  explicit MessageCenterContentsView(
-      WebNotificationList::Delegate* list_delegate)
+  explicit MessageCenterContentsView(NotificationList::Delegate* list_delegate)
       : list_delegate_(list_delegate) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
@@ -190,24 +188,24 @@ class MessageCenterContentsView : public views::View {
     scroller_->RequestFocus();
   }
 
-  void Update(const WebNotificationList::Notifications& notifications)  {
+  void Update(const NotificationList::Notifications& notifications)  {
     scroll_content_->RemoveAllChildViews(true);
     scroll_content_->set_preferred_size(gfx::Size());
     size_t num_children = 0;
-    for (WebNotificationList::Notifications::const_iterator iter =
+    for (NotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
-      WebNotificationView* view = new WebNotificationView(
+      MessageView* view = new MessageView(
           list_delegate_, *iter, scroller_->GetScrollBarWidth());
       view->set_scroller(scroller_);
       scroll_content_->AddChildView(view);
       if (++num_children >=
-          WebNotificationList::kMaxVisibleMessageCenterNotifications) {
+          NotificationList::kMaxVisibleMessageCenterNotifications) {
         break;
       }
     }
     if (num_children == 0) {
       views::Label* label = new views::Label(l10n_util::GetStringUTF16(
-          IDS_ASH_WEB_NOTFICATION_TRAY_NO_MESSAGES));
+          IDS_MESSAGE_CENTER_NO_MESSAGES));
       label->SetFont(label->font().DeriveFont(1));
       label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
       label->SetEnabledColor(SK_ColorGRAY);
@@ -230,8 +228,8 @@ class MessageCenterContentsView : public views::View {
   void SizeScrollContent() {
     gfx::Size scroll_size = scroll_content_->GetPreferredSize();
     const int button_height = button_view_->GetPreferredSize().height();
-    const int min_height = kWebNotificationBubbleMinHeight - button_height;
-    const int max_height = kWebNotificationBubbleMaxHeight - button_height;
+    const int min_height = kMessageBubbleBaseMinHeight - button_height;
+    const int max_height = kMessageBubbleBaseMaxHeight - button_height;
     int scroll_height = std::min(std::max(
         scroll_size.height(), min_height), max_height);
     scroll_size.set_height(scroll_height);
@@ -244,7 +242,7 @@ class MessageCenterContentsView : public views::View {
     scroll_content_->InvalidateLayout();
   }
 
-  WebNotificationList::Delegate* list_delegate_;
+  NotificationList::Delegate* list_delegate_;
   FixedSizedScrollView* scroller_;
   ScrollContentView* scroll_content_;
   WebNotificationButtonView* button_view_;
@@ -253,24 +251,24 @@ class MessageCenterContentsView : public views::View {
 };
 
 // Message Center Bubble.
-MessageCenterBubble::MessageCenterBubble(
-    WebNotificationList::Delegate* delegate)
-    : WebNotificationBubble(delegate),
+MessageCenterBubble::MessageCenterBubble(NotificationList::Delegate* delegate)
+    : MessageBubbleBase(delegate),
       contents_view_(NULL) {
 }
 
 MessageCenterBubble::~MessageCenterBubble() {}
 
-TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
-    TrayBubbleView::AnchorAlignment anchor_alignment) {
-  TrayBubbleView::InitParams init_params =
+views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
+    views::TrayBubbleView::AnchorAlignment anchor_alignment) {
+  views::TrayBubbleView::InitParams init_params =
       GetDefaultInitParams(anchor_alignment);
-  init_params.max_height = message_center::kWebNotificationBubbleMaxHeight;
+  init_params.max_height = kMessageBubbleBaseMaxHeight;
   init_params.can_activate = true;
   return init_params;
 }
 
-void MessageCenterBubble::InitializeContents(TrayBubbleView* bubble_view) {
+void MessageCenterBubble::InitializeContents(
+    views::TrayBubbleView* bubble_view) {
   bubble_view_ = bubble_view;
   contents_view_ = new MessageCenterContentsView(list_delegate_);
   bubble_view_->AddChildView(contents_view_);

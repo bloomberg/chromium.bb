@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/ash/balloon_view_ash.h"
 
 #include "ash/shell.h"
-#include "ash/system/web_notification/message_center.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -23,6 +22,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/message_center.h"
 #include "webkit/glue/image_resource_fetcher.h"
 
 namespace {

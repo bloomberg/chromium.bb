@@ -452,21 +452,6 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_STATUS_TRAY_PREVIOUS_MENU" desc="The accessible text for header entries for detailed versions of status tray items.">
         Previous menu
       </message>
-      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_EXTENSIONS_DISABLE" desc="The menu entry for disabling extensions from a notification.">
-        Disable extension
-      </message>
-      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_SITE_DISABLE" desc="The menu entry for disabling notification from a site.">
-        Disable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
-      </message>
-      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_SETTINGS" desc="The menu entry or button for visiting the appropriate settings page.">
-        Settings...
-      </message>
-      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_CLEAR_ALL" desc="The button for clearing all notifications.">
-        Clear All
-      </message>
-      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
-        You have no notifications. Relax!
-      </message>
       <message name="IDS_ASH_WEB_NOTIFICATION_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the web notification tray (message center).">
         Message Center
       </message>

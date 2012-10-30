@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace message_center {
+namespace views {
 class TrayBubbleView;
 }
 
@@ -24,19 +24,19 @@ class TrayEventFilter;
 class TrayBubbleWrapper : public views::WidgetObserver {
  public:
   TrayBubbleWrapper(TrayBackgroundView* tray,
-                    message_center::TrayBubbleView* bubble_view);
+                    views::TrayBubbleView* bubble_view);
   virtual ~TrayBubbleWrapper();
 
   // views::WidgetObserver overrides:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   TrayBackgroundView* tray() { return tray_; }
-  message_center::TrayBubbleView* bubble_view() { return bubble_view_; }
+  views::TrayBubbleView* bubble_view() { return bubble_view_; }
   views::Widget* bubble_widget() { return bubble_widget_; }
 
  private:
   TrayBackgroundView* tray_;
-  message_center::TrayBubbleView* bubble_view_;  // unowned
+  views::TrayBubbleView* bubble_view_;  // unowned
   views::Widget* bubble_widget_;
   scoped_ptr<TrayEventFilter> tray_event_filter_;
 

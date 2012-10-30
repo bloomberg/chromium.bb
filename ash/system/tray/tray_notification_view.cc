@@ -6,8 +6,8 @@
 
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
-#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/image_button.h"
@@ -41,7 +41,7 @@ void TrayNotificationView::InitView(views::View* contents) {
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
                          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_AURA_UBER_TRAY_NOTIFY_CLOSE));
+                             IDR_MESSAGE_CLOSE));
   close_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                   views::ImageButton::ALIGN_MIDDLE);
 

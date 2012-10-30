@@ -20,7 +20,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-using message_center::TrayBubbleView;
+using views::TrayBubbleView;
 
 namespace ash {
 

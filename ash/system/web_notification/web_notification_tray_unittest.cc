@@ -9,9 +9,9 @@
 #include "ash/root_window_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/web_notification/message_center_bubble.h"
-#include "ash/system/web_notification/popup_bubble.h"
-#include "ash/system/web_notification/web_notification_list.h"
+#include "ui/message_center/message_center_bubble.h"
+#include "ui/message_center/message_popup_bubble.h"
+#include "ui/message_center/notification_list.h"
 #include "ash/test/ash_test_base.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -156,7 +156,7 @@ TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
   EXPECT_TRUE(tray->popup_bubble() == NULL);
 }
 
-using message_center::WebNotificationList;
+using message_center::NotificationList;
 
 TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
   WebNotificationTray* tray = GetWebNotificationTray();
@@ -165,7 +165,7 @@ TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
 
   // Add the max visible notifications +1, ensure the correct visible number.
   size_t notifications_to_add =
-      WebNotificationList::kMaxVisibleMessageCenterNotifications + 1;
+      NotificationList::kMaxVisibleMessageCenterNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = StringPrintf("test_id%d", static_cast<int>(i));
     delegate->AddNotification(tray, id);
@@ -175,7 +175,7 @@ TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
   EXPECT_TRUE(tray->message_center_bubble() != NULL);
   EXPECT_EQ(notifications_to_add,
             tray->message_center()->NotificationCount());
-  EXPECT_EQ(WebNotificationList::kMaxVisibleMessageCenterNotifications,
+  EXPECT_EQ(NotificationList::kMaxVisibleMessageCenterNotifications,
             tray->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
 }
 
@@ -186,7 +186,7 @@ TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
 
   // Add the max visible popup notifications +1, ensure the correct num visible.
   size_t notifications_to_add =
-      WebNotificationList::kMaxVisiblePopupNotifications + 1;
+      NotificationList::kMaxVisiblePopupNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = StringPrintf("test_id%d", static_cast<int>(i));
     delegate->AddNotification(tray, id);
@@ -197,7 +197,7 @@ TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
   EXPECT_TRUE(tray->popup_bubble() != NULL);
   EXPECT_EQ(notifications_to_add,
             tray->message_center()->NotificationCount());
-  EXPECT_EQ(WebNotificationList::kMaxVisiblePopupNotifications,
+  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications,
             tray->GetPopupBubbleForTest()->NumMessageViewsForTest());
 }
 

@@ -9,8 +9,8 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/system/user/login_status.h"
-#include "ash/system/web_notification/message_center.h"
 #include "base/gtest_prod_util.h"
+#include "ui/message_center/message_center.h"
 
 // Status area tray for showing browser and app notifications. This hosts
 // a MessageCenter class which manages the notification list. This class
@@ -34,7 +34,7 @@ class ImageButton;
 
 namespace message_center {
 class MessageCenterBubble;
-class PopupBubble;
+class MessagePopupBubble;
 }
 
 namespace ash {
@@ -46,7 +46,7 @@ class WebNotificationBubbleWrapper;
 
 class ASH_EXPORT WebNotificationTray
     : public internal::TrayBackgroundView,
-      public message_center::TrayBubbleView::Delegate,
+      public views::TrayBubbleView::Delegate,
       public message_center::MessageCenter::Host,
       public views::ButtonListener {
  public:
@@ -74,13 +74,13 @@ class ASH_EXPORT WebNotificationTray
   virtual void AnchorUpdated() OVERRIDE;
   virtual string16 GetAccessibleNameForTray() OVERRIDE;
   virtual void HideBubbleWithView(
-      const message_center::TrayBubbleView* bubble_view) OVERRIDE;
+      const views::TrayBubbleView* bubble_view) OVERRIDE;
   virtual bool ClickedOutsideBubble() OVERRIDE;
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
-  // Overridden from message_center::TrayBubbleView::Delegate.
+  // Overridden from views::TrayBubbleView::Delegate.
   virtual void BubbleViewDestroyed() OVERRIDE;
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
@@ -88,8 +88,7 @@ class ASH_EXPORT WebNotificationTray
   virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
                                   AnchorType anchor_type,
                                   AnchorAlignment anchor_alignment) OVERRIDE;
-  virtual void HideBubble(
-      const message_center::TrayBubbleView* bubble_view) OVERRIDE;
+  virtual void HideBubble(const views::TrayBubbleView* bubble_view) OVERRIDE;
 
   // Overridden from message_center::MessageCenter::Host.
   virtual void MessageCenterChanged(bool new_notification) OVERRIDE;
@@ -133,7 +132,7 @@ class ASH_EXPORT WebNotificationTray
 
   // Testing accessors.
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
-  message_center::PopupBubble* GetPopupBubbleForTest();
+  message_center::MessagePopupBubble* GetPopupBubbleForTest();
 
   scoped_ptr<message_center::MessageCenter> message_center_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> message_center_bubble_;

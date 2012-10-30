@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
-#define ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
+#ifndef UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
+#define UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
 
-#include "ash/ash_export.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/views_export.h"
 
 // Specialized bubble view for bubbles associated with a tray icon (e.g. the
 // Ash status area). Mostly this handles custom anchor location and arrow and
@@ -22,15 +22,14 @@ class View;
 class Widget;
 }
 
-// TODO(stevenjb): Move this out of message_center namespace once in views.
-namespace message_center {
+namespace views {
 
 namespace internal {
 class TrayBubbleBorder;
 class TrayBubbleBackground;
 }
 
-class ASH_EXPORT TrayBubbleView : public views::BubbleDelegateView {
+class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
  public:
   enum AnchorType {
     ANCHOR_TYPE_TRAY,
@@ -43,7 +42,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDelegateView {
     ANCHOR_ALIGNMENT_RIGHT
   };
 
-  class ASH_EXPORT Delegate {
+  class VIEWS_EXPORT Delegate {
    public:
     typedef TrayBubbleView::AnchorType AnchorType;
     typedef TrayBubbleView::AnchorAlignment AnchorAlignment;
@@ -77,7 +76,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDelegateView {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  struct InitParams {
+  struct VIEWS_EXPORT InitParams {
     static const int kArrowDefaultOffset;
 
     InitParams(AnchorType anchor_type,
@@ -97,7 +96,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   };
 
   // Constructs and returns a TrayBubbleView. init_params may be modified.
-  static TrayBubbleView* Create(aura::Window* parent_window,
+  static TrayBubbleView* Create(gfx::NativeView parent_window,
                                 views::View* anchor,
                                 Delegate* delegate,
                                 InitParams* init_params);
@@ -113,6 +112,9 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDelegateView {
 
   // Sets the maximum bubble height and resizes the bubble.
   void SetMaxHeight(int height);
+
+  // Sets whether or not to paint the bubble border arrow.
+  void SetPaintArrow(bool paint_arrow);
 
   // Returns the border insets. Called by TrayEventFilter.
   void GetBorderInsets(gfx::Insets* insets) const;
@@ -142,7 +144,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  protected:
-  TrayBubbleView(aura::Window* parent_window,
+  TrayBubbleView(gfx::NativeView parent_window,
                  views::View* anchor,
                  Delegate* delegate,
                  const InitParams& init_params);
@@ -166,6 +168,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };
 
-}  // namespace message_center
+}  // namespace views
 
-#endif  // ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
+#endif  // UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
