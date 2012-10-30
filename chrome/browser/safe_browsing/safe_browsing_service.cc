@@ -570,11 +570,6 @@ void SafeBrowsingService::UpdateFinished(bool update_succeeded) {
   }
 }
 
-bool SafeBrowsingService::IsUpdateInProgress() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return update_in_progress_;
-}
-
 void SafeBrowsingService::OnBlockingPageDone(
     const std::vector<UnsafeResource>& resources,
     bool proceed) {
