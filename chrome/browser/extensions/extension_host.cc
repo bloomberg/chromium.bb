@@ -56,6 +56,10 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using content::NativeWebKeyboardEvent;
@@ -410,6 +414,14 @@ void ExtensionHost::CloseContents(WebContents* contents) {
     Close();
   }
 }
+
+#if defined(OS_CHROMEOS)
+bool ExtensionHost::ShouldSuppressDialogs() {
+  // Prevent extensions from creating dialogs while user session hasn't
+  // started yet.
+  return !chromeos::UserManager::Get()->IsSessionStarted();
+}
+#endif
 
 void ExtensionHost::OnStartDownload(
     content::WebContents* source, content::DownloadItem* download) {

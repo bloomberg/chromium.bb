@@ -166,6 +166,9 @@ class ExtensionHost : public content::WebContentsDelegate,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
+#if defined(OS_CHROMEOS)
+  virtual bool ShouldSuppressDialogs() OVERRIDE;
+#endif
   virtual void OnStartDownload(content::WebContents* source,
                                content::DownloadItem* download) OVERRIDE;
   virtual void WebIntentDispatch(
