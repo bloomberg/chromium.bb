@@ -12,6 +12,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/media/media_internals.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
@@ -21,6 +23,8 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -87,6 +91,8 @@ const double kMiniTitleChangeThrobOpacity = 0.75;
 // Duration for when the title of an inactive mini-tab changes.
 const int kMiniTitleChangeThrobDuration = 1000;
 
+const int kRecordingDurationMs = 1000;
+
 // The horizontal offset used to position the close button in the tab.
 const int kCloseButtonHorzFuzz = 4;
 
@@ -102,6 +108,41 @@ gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
   return gfx::Rect(widget_pos.x() - parent_pos.x(),
                    widget_pos.y() - parent_pos.y(),
                    allocation.width, allocation.height);
+}
+
+// Returns a GdkPixbuf after resizing the SkBitmap as necessary. Caller must
+// g_object_unref the returned pixbuf when no longer used.
+GdkPixbuf* GetResizedGdkPixbufFromSkBitmap(const SkBitmap& bitmap,
+                                           int src_w,
+                                           int src_h) {
+  float float_src_w = static_cast<float>(src_w);
+  float float_src_h = static_cast<float>(src_h);
+  float scalable_w, scalable_h;
+  if (src_w <= gfx::kFaviconSize && src_h <= gfx::kFaviconSize) {
+    scalable_w = scalable_h = gfx::kFaviconSize;
+  } else {
+    scalable_w = float_src_w;
+    scalable_h = float_src_h;
+  }
+
+  // Scale proportionately.
+  float float_size = gfx::kFaviconSize;
+  float scale = std::min(float_size / scalable_w,
+                         float_size / scalable_h);
+  int dest_w = static_cast<int>(float_src_w * scale);
+  int dest_h = static_cast<int>(float_src_h * scale);
+
+  GdkPixbuf* pixbuf;
+  if (dest_w == src_w && dest_h == src_h) {
+    pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
+  } else {
+    SkBitmap resized_icon = skia::ImageOperations::Resize(
+        bitmap,
+        skia::ImageOperations::RESIZE_BETTER,
+        dest_w, dest_h);
+    pixbuf = gfx::GdkPixbufFromSkBitmap(resized_icon);
+  }
+  return pixbuf;
 }
 
 }  // namespace
@@ -349,36 +390,8 @@ void TabRendererGtk::UpdateData(WebContents* contents,
       // For source images smaller than the favicon square, scale them as if
       // they were padded to fit the favicon square, so we don't blow up tiny
       // falcons into larger or nonproportional results.
-      int src_w = data_.favicon.width();
-      int src_h = data_.favicon.height();
-      float float_src_w = static_cast<float>(src_w);
-      float float_src_h = static_cast<float>(src_h);
-      float scalable_w, scalable_h;
-      if (src_w <= gfx::kFaviconSize && src_h <= gfx::kFaviconSize) {
-        scalable_w = scalable_h = gfx::kFaviconSize;
-      } else {
-        scalable_w = float_src_w;
-        scalable_h = float_src_h;
-      }
-
-      // Scale proportionately.
-      float float_size = gfx::kFaviconSize;
-      float scale = std::min(float_size / scalable_w,
-                             float_size / scalable_h);
-      int dest_w = static_cast<int>(float_src_w * scale);
-      int dest_h = static_cast<int>(float_src_h * scale);
-
-      GdkPixbuf* pixbuf;
-      if (dest_w == src_w && dest_h == src_h) {
-        pixbuf = gfx::GdkPixbufFromSkBitmap(data_.favicon);
-      } else {
-        SkBitmap resized_icon = skia::ImageOperations::Resize(
-            data_.favicon,
-            skia::ImageOperations::RESIZE_BETTER,
-            dest_w, dest_h);
-        pixbuf = gfx::GdkPixbufFromSkBitmap(resized_icon);
-      }
-
+      GdkPixbuf* pixbuf = GetResizedGdkPixbufFromSkBitmap(data_.favicon,
+          data_.favicon.width(), data_.favicon.height());
       data_.cairo_favicon.UsePixbuf(pixbuf);
       g_object_unref(pixbuf);
     } else {
@@ -394,6 +407,8 @@ void TabRendererGtk::UpdateData(WebContents* contents,
         (data_.favicon.pixelRef() ==
         ui::ResourceBundle::GetSharedInstance().GetImageNamed(
             IDR_DEFAULT_FAVICON).AsBitmap().pixelRef());
+
+    UpdateForRecordingState(contents);
   }
 
   // Loading state also involves whether we show the favicon, since that's where
@@ -662,6 +677,34 @@ void TabRendererGtk::ResetCrashedFavicon() {
   should_display_crashed_favicon_ = false;
 }
 
+void TabRendererGtk::UpdateForRecordingState(WebContents* contents) {
+  int render_process_id = contents->GetRenderProcessHost()->GetID();
+  int render_view_id = contents->GetRenderViewHost()->GetRoutingID();
+  scoped_refptr<MediaStreamCaptureIndicator> capture_indicator =
+      MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
+  if (capture_indicator->IsProcessCapturing(render_process_id,
+                                            render_view_id)) {
+    gfx::Image recording = theme_service_->GetImageNamed(IDR_TAB_RECORDING);
+    GdkPixbuf* pixbuf = data_.favicon.isNull() ?
+        gfx::GdkPixbufFromSkBitmap(*recording.ToSkBitmap()) :
+        GetResizedGdkPixbufFromSkBitmap(*recording.ToSkBitmap(),
+            data_.favicon.width(), data_.favicon.height());
+    data_.cairo_overlay.UsePixbuf(pixbuf);
+    g_object_unref(pixbuf);
+
+    if (!favicon_overlay_animation_.get()) {
+      favicon_overlay_animation_.reset(new ui::ThrobAnimation(this));
+      favicon_overlay_animation_->SetThrobDuration(kRecordingDurationMs);
+    }
+    if (!favicon_overlay_animation_->is_animating())
+      favicon_overlay_animation_->StartThrobbing(-1);
+  } else {
+    data_.cairo_overlay.Reset();
+    if (favicon_overlay_animation_.get())
+      favicon_overlay_animation_->Stop();
+  }
+}
+
 void TabRendererGtk::Paint(GtkWidget* widget, cairo_t* cr) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
@@ -879,6 +922,13 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
                           favicon_bounds_.x(),
                           favicon_bounds_.y() + favicon_hiding_offset_);
     cairo_paint(cr);
+  }
+
+  if (data_.cairo_overlay.valid() && favicon_overlay_animation_.get() &&
+      favicon_overlay_animation_->is_animating()) {
+    data_.cairo_overlay.SetSource(cr, widget, favicon_bounds_.x(),
+        favicon_bounds_.y() + favicon_hiding_offset_);
+    cairo_paint_with_alpha(cr, favicon_overlay_animation_->GetCurrentValue());
   }
 }
 
