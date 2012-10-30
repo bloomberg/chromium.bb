@@ -196,7 +196,7 @@ void OmniboxPopupModel::TryDeletingCurrentItem() {
 gfx::Image OmniboxPopupModel::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   Profile* profile = edit_model_->profile();
-  const TemplateURL* template_url = match.GetTemplateURL(profile);
+  const TemplateURL* template_url = match.GetTemplateURL(profile, false);
   if (template_url && template_url->IsExtensionKeyword()) {
     return profile->GetExtensionService()->GetOmniboxPopupIcon(
         template_url->GetExtensionId());

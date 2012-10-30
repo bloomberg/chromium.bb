@@ -188,7 +188,11 @@ struct AutocompleteMatch {
   // remove likely duplicates; these URLs are not used as actual
   // destination URLs.  This method is invoked internally by the
   // AutocompleteResult and does not normally need to be invoked.
-  void ComputeStrippedDestinationURL();
+  // If |profile| is not NULL, it is used to get a template URL corresponding
+  // to this match.  The template is used to strip off query args other than
+  // the search terms themselves that would otherwise prevent from proper
+  // deduping.
+  void ComputeStrippedDestinationURL(Profile* profile);
 
   // Gets data relevant to whether there should be any special keyword-related
   // UI shown for this match.  If this match represents a selected keyword, i.e.
@@ -217,7 +221,11 @@ struct AutocompleteMatch {
   // Returns the TemplateURL associated with this match.  This may be NULL if
   // the match has no keyword OR if the keyword no longer corresponds to a valid
   // TemplateURL.  See comments on |keyword| below.
-  TemplateURL* GetTemplateURL(Profile* profile) const;
+  // If |allow_fallback_to_destination_host| is true and the keyword does
+  // not map to a valid TemplateURL, we'll then check for a TemplateURL that
+  // corresponds to the destination_url's hostname.
+  TemplateURL* GetTemplateURL(Profile* profile,
+                              bool allow_fallback_to_destination_host) const;
 
   // Adds optional information to the |additional_info| dictionary.
   void RecordAdditionalInfo(const std::string& property,

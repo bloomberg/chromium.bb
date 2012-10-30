@@ -15,6 +15,7 @@
 
 class AutocompleteInput;
 class AutocompleteProvider;
+class Profile;
 
 // All matches from all providers for a particular query.  This also tracks
 // what the default match should be if the user doesn't manually select another
@@ -71,7 +72,8 @@ class AutocompleteResult {
   // Copies matches from |old_matches| to provide a consistant result set. See
   // comments in code for specifics.
   void CopyOldMatches(const AutocompleteInput& input,
-                      const AutocompleteResult& old_matches);
+                      const AutocompleteResult& old_matches,
+                      Profile* profile);
 
   // Adds a single match. The match is inserted at the appropriate position
   // based on relevancy and display order. This is ONLY for use after
@@ -84,7 +86,7 @@ class AutocompleteResult {
   // Removes duplicates, puts the list in sorted order and culls to leave only
   // the best kMaxMatches matches.  Sets the default match to the best match
   // and updates the alternate nav URL.
-  void SortAndCull(const AutocompleteInput& input);
+  void SortAndCull(const AutocompleteInput& input, Profile* profile);
 
   // Returns true if at least one match was copied from the last result.
   bool HasCopiedMatches() const;

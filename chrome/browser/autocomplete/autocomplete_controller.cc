@@ -278,7 +278,7 @@ void AutocompleteController::OnProviderUpdate(bool updated_matches) {
     // because results from other providers are stale.
     result_.Reset();
     result_.AppendMatches(zero_suggest_provider_->matches());
-    result_.SortAndCull(input_);
+    result_.SortAndCull(input_, profile_);
     NotifyChanged(true);
   } else {
     CheckIfDone();
@@ -311,7 +311,7 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
     result_.AppendMatches((*i)->matches());
 
   // Sort the matches and trim to a small number of "best" matches.
-  result_.SortAndCull(input_);
+  result_.SortAndCull(input_, profile_);
 
   // Need to validate before invoking CopyOldMatches as the old matches are not
   // valid against the current input.
@@ -322,7 +322,7 @@ void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
   if (!done_) {
     // This conditional needs to match the conditional in Start that invokes
     // StartExpireTimer.
-    result_.CopyOldMatches(input_, last_result);
+    result_.CopyOldMatches(input_, last_result, profile_);
   }
 
   UpdateKeywordDescriptions(&result_);
@@ -409,7 +409,7 @@ void AutocompleteController::UpdateAssistedQueryStats(
   // Go over all matches and set AQS if the match supports it.
   for (size_t index = 0; index < result->size(); ++index) {
     AutocompleteMatch* match = result->match_at(index);
-    const TemplateURL* template_url = match->GetTemplateURL(profile_);
+    const TemplateURL* template_url = match->GetTemplateURL(profile_, false);
     if (!template_url || !match->search_terms_args.get())
       continue;
     match->search_terms_args->assisted_query_stats =
@@ -434,7 +434,7 @@ void AutocompleteController::UpdateKeywordDescriptions(
       i->description_class.clear();
       DCHECK(!i->keyword.empty());
       if (i->keyword != last_keyword) {
-        const TemplateURL* template_url = i->GetTemplateURL(profile_);
+        const TemplateURL* template_url = i->GetTemplateURL(profile_, false);
         if (template_url) {
           i->description = l10n_util::GetStringFUTF16(
               IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,

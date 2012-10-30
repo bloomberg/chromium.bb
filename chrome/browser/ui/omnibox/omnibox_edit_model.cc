@@ -527,7 +527,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     match.transition = content::PAGE_TRANSITION_LINK;
   }
 
-  const TemplateURL* template_url = match.GetTemplateURL(profile_);
+  const TemplateURL* template_url = match.GetTemplateURL(profile_, false);
   if (template_url && template_url->url_ref().HasGoogleBaseURLs())
     GoogleURLTracker::GoogleURLSearchCommitted(profile_);
 
@@ -578,7 +578,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     HISTOGRAM_ENUMERATION("Omnibox.EventCount", 1, 2);
   }
 
-  TemplateURL* template_url = match.GetTemplateURL(profile_);
+  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
   if (template_url) {
     if (match.transition == content::PAGE_TRANSITION_KEYWORD) {
       // The user is using a non-substituting keyword or is explicitly in

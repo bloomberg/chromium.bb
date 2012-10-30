@@ -1099,7 +1099,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   // Bail out now if we don't actually have a valid provider.
   match.keyword = is_keyword ?
       providers_.keyword_provider() : providers_.default_provider();
-  const TemplateURL* provider_url = match.GetTemplateURL(profile_);
+  const TemplateURL* provider_url = match.GetTemplateURL(profile_, false);
   if (provider_url == NULL)
     return;
 

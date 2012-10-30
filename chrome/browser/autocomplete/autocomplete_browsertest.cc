@@ -15,6 +15,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -48,6 +49,11 @@ string16 AutocompleteResultAsString(const AutocompleteResult& result) {
 
 class AutocompleteBrowserTest : public ExtensionBrowserTest {
  protected:
+  void WaitForTemplateURLServiceToLoad() {
+    ui_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+  }
+
   LocationBar* GetLocationBar() const {
     return browser()->window()->GetLocationBar();
   }
@@ -59,6 +65,7 @@ class AutocompleteBrowserTest : public ExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
+  WaitForTemplateURLServiceToLoad();
   LocationBar* location_bar = GetLocationBar();
   OmniboxView* location_entry = location_bar->GetLocationEntry();
 
@@ -102,6 +109,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
+  WaitForTemplateURLServiceToLoad();
   // The results depend on the history backend being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
   ui_test_utils::WaitForHistoryToLoad(
@@ -145,6 +153,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
+  WaitForTemplateURLServiceToLoad();
   // http://code.google.com/p/chromium/issues/detail?id=38385
   // Make sure that tabbing away from an empty omnibar causes a revert
   // and select all.
@@ -165,6 +174,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
+  WaitForTemplateURLServiceToLoad();
   LocationBar* location_bar = GetLocationBar();
   OmniboxView* location_entry = location_bar->GetLocationEntry();
 
@@ -251,6 +261,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
+  WaitForTemplateURLServiceToLoad();
   ExtensionService* service = browser()->profile()->GetExtensionService();
   size_t extension_count = service->extensions()->size();
 

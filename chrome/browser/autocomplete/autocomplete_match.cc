@@ -358,10 +358,26 @@ bool AutocompleteMatch::IsSearchType(Type type) {
          type == SEARCH_OTHER_ENGINE;
 }
 
-void AutocompleteMatch::ComputeStrippedDestinationURL() {
+void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
   stripped_destination_url = destination_url;
   if (!stripped_destination_url.is_valid())
     return;
+
+  // If the destination URL looks like it was generated from a TemplateURL,
+  // remove all substitutions other than the search terms.  This allows us
+  // to eliminate cases like past search URLs from history that differ only
+  // by some obscure query param from each other or from the search/keyword
+  // provider matches.
+  TemplateURL* template_url = GetTemplateURL(profile, true);
+  if (template_url != NULL && template_url->SupportsReplacement()) {
+    string16 search_terms;
+    if (template_url->ExtractSearchTermsFromURL(stripped_destination_url,
+                                                &search_terms)) {
+      stripped_destination_url =
+          GURL(template_url->url_ref().ReplaceSearchTerms(
+              TemplateURLRef::SearchTermsArgs(search_terms)));
+    }
+  }
 
   // |replacements| keeps all the substitions we're going to make to
   // from {destination_url} to {stripped_destination_url}.  |need_replacement|
@@ -373,7 +389,7 @@ void AutocompleteMatch::ComputeStrippedDestinationURL() {
   // Remove the www. prefix from the host.
   static const char prefix[] = "www.";
   static const size_t prefix_len = arraysize(prefix) - 1;
-  std::string host = destination_url.host();
+  std::string host = stripped_destination_url.host();
   if (host.compare(0, prefix_len, prefix) == 0) {
     host = host.substr(prefix_len);
     replacements.SetHostStr(host);
@@ -389,7 +405,8 @@ void AutocompleteMatch::ComputeStrippedDestinationURL() {
   }
 
   if (needs_replacement)
-    stripped_destination_url = destination_url.ReplaceComponents(replacements);
+    stripped_destination_url = stripped_destination_url.ReplaceComponents(
+        replacements);
 }
 
 void AutocompleteMatch::GetKeywordUIState(Profile* profile,
@@ -404,15 +421,24 @@ string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
     Profile* profile) const {
   if (transition != content::PAGE_TRANSITION_KEYWORD)
     return string16();
-  const TemplateURL* t_url = GetTemplateURL(profile);
+  const TemplateURL* t_url = GetTemplateURL(profile, false);
   return (t_url && t_url->SupportsReplacement()) ? keyword : string16();
 }
 
-TemplateURL* AutocompleteMatch::GetTemplateURL(Profile* profile) const {
+TemplateURL* AutocompleteMatch::GetTemplateURL(
+    Profile* profile, bool allow_fallback_to_destination_host) const {
   DCHECK(profile);
-  return keyword.empty() ? NULL :
-      TemplateURLServiceFactory::GetForProfile(profile)->
-          GetTemplateURLForKeyword(keyword);
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (template_url_service == NULL)
+    return NULL;
+  TemplateURL* template_url = keyword.empty() ? NULL :
+      template_url_service->GetTemplateURLForKeyword(keyword);
+  if (template_url == NULL && allow_fallback_to_destination_host) {
+    template_url = template_url_service->GetTemplateURLForHost(
+        destination_url.host());
+  }
+  return template_url;
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,

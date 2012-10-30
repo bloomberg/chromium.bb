@@ -137,7 +137,7 @@ void TestProvider::AddResultsWithSearchTermsArgs(
         new TemplateURLRef::SearchTermsArgs(search_terms_args));
     if (!match_keyword_.empty()) {
       match.keyword = match_keyword_;
-      ASSERT_TRUE(match.GetTemplateURL(profile_) != NULL);
+      ASSERT_TRUE(match.GetTemplateURL(profile_, false) != NULL);
     }
 
     matches_.push_back(match);
@@ -199,7 +199,7 @@ class AutocompleteProviderTest : public testing::Test,
   TestingProfile profile_;
 };
 
-void AutocompleteProviderTest:: RegisterTemplateURL(
+void AutocompleteProviderTest::RegisterTemplateURL(
     const string16 keyword,
     const std::string& template_url) {
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -212,6 +212,7 @@ void AutocompleteProviderTest:: RegisterTemplateURL(
       TemplateURLServiceFactory::GetForProfile(&profile_);
   turl_model->Add(default_t_url);
   turl_model->SetDefaultSearchProvider(default_t_url);
+  turl_model->Load();
   TemplateURLID default_provider_id = default_t_url->id();
   ASSERT_NE(0, default_provider_id);
 }

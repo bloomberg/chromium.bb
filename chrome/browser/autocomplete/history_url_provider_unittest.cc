@@ -246,7 +246,7 @@ void HistoryURLProviderTest::RunTest(const string16 text,
   matches_ = autocomplete_->matches();
   if (sort_matches_) {
     for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i)
-      i->ComputeStrippedDestinationURL();
+      i->ComputeStrippedDestinationURL(profile_.get());
     std::sort(matches_.begin(), matches_.end(),
               &AutocompleteMatch::DestinationSortFunc);
     matches_.erase(std::unique(matches_.begin(), matches_.end(),

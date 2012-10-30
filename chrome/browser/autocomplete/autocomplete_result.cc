@@ -47,7 +47,8 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
 }
 
 void AutocompleteResult::CopyOldMatches(const AutocompleteInput& input,
-                                        const AutocompleteResult& old_matches) {
+                                        const AutocompleteResult& old_matches,
+                                        Profile* profile) {
   if (old_matches.empty())
     return;
 
@@ -82,7 +83,7 @@ void AutocompleteResult::CopyOldMatches(const AutocompleteInput& input,
     MergeMatchesByProvider(i->second, matches_per_provider[i->first]);
   }
 
-  SortAndCull(input);
+  SortAndCull(input, profile);
 }
 
 void AutocompleteResult::AppendMatches(const ACMatches& matches) {
@@ -112,9 +113,10 @@ void AutocompleteResult::AddMatch(const AutocompleteMatch& match) {
   default_match_ = begin() + default_offset;
 }
 
-void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
+void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
+                                     Profile* profile) {
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i)
-    i->ComputeStrippedDestinationURL();
+    i->ComputeStrippedDestinationURL(profile);
 
   // Remove duplicates.
   std::sort(matches_.begin(), matches_.end(),

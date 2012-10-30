@@ -201,7 +201,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // not valid, it's likely a URL; in EXTENDED mode, try using the default
   // search engine's TemplateURL instead.
   const GURL& tab_url = active_tab->web_contents()->GetURL();
-  if (GetInstantURL(match.GetTemplateURL(profile), tab_url, &instant_url)) {
+  if (GetInstantURL(match.GetTemplateURL(profile, false), tab_url,
+                    &instant_url)) {
     ResetLoader(instant_url, active_tab);
   } else if (mode_ != EXTENDED || !CreateDefaultLoader()) {
     Hide();
