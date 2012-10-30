@@ -10,6 +10,7 @@
 
 namespace WebKit {
 class WebTouchEvent;
+class WebTouchPoint;
 }
 
 namespace ui {
@@ -26,6 +27,15 @@ namespace content {
 CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
     const WebKit::WebTouchEvent& touch,
     ScopedVector<ui::TouchEvent>* list);
+
+int EventFlagsToWebEventModifiers(int flags);
+
+// Updates the WebTouchEvent based on the TouchEvent. It returns the updated
+// WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
+// updated.
+WebKit::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
+    ui::TouchEvent* event,
+    WebKit::WebTouchEvent* web_event);
 }
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_UI_EVENTS_HELPER_H_

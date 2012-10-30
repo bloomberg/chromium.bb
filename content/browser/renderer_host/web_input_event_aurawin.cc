@@ -44,10 +44,4 @@ WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
   return  WebKit::WebGestureEvent();
 }
 
-WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
-    base::NativeEvent native_event, WebKit::WebTouchEvent* web_event) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 }  // namespace content

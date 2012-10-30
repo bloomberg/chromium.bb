@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/web_input_event_aura.h"
 
+#include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 
@@ -18,8 +19,6 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event);
 WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     base::NativeEvent native_event);
-WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
-    base::NativeEvent native_event, WebKit::WebTouchEvent* web_event);
 #else
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::MouseWheelEvent* event);
@@ -31,8 +30,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::GestureEvent* event);
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::ScrollEvent* event);
-WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
-    ui::TouchEvent* event, WebKit::WebTouchEvent* web_event);
 #endif
 
 WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event);
@@ -186,35 +183,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFlingCancel() {
   // All other fields are ignored on a GestureFlingCancel event.
   gesture_event.type = WebKit::WebInputEvent::GestureFlingCancel;
   return gesture_event;
-}
-
-WebKit::WebTouchPoint* UpdateWebTouchEvent(ui::TouchEvent* event,
-                                           WebKit::WebTouchEvent* web_event) {
-#if defined(OS_WIN)
-  return UpdateWebTouchEventFromNativeEvent(event->native_event(), web_event);
-#else
-  return UpdateWebTouchEventFromAuraEvent(event, web_event);
-#endif
-}
-
-int EventFlagsToWebEventModifiers(int flags) {
-  int modifiers = 0;
-  if (flags & ui::EF_SHIFT_DOWN)
-    modifiers |= WebKit::WebInputEvent::ShiftKey;
-  if (flags & ui::EF_CONTROL_DOWN)
-    modifiers |= WebKit::WebInputEvent::ControlKey;
-  if (flags & ui::EF_ALT_DOWN)
-    modifiers |= WebKit::WebInputEvent::AltKey;
-  // TODO(beng): MetaKey/META_MASK
-  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
-    modifiers |= WebKit::WebInputEvent::LeftButtonDown;
-  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-    modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
-  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
-    modifiers |= WebKit::WebInputEvent::RightButtonDown;
-  if (flags & ui::EF_CAPS_LOCK_DOWN)
-    modifiers |= WebKit::WebInputEvent::CapsLockOn;
-  return modifiers;
 }
 
 WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {

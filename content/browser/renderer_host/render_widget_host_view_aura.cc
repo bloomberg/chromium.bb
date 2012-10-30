@@ -1578,8 +1578,8 @@ ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 ui::EventResult RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnTouchEvent");
   // Update the touch event first.
-  WebKit::WebTouchPoint* point = UpdateWebTouchEvent(event,
-      &touch_event_);
+  WebKit::WebTouchPoint* point = UpdateWebTouchEventFromUIEvent(event,
+                                                                &touch_event_);
 
   // Forward the touch event only if a touch point was updated, and there's a
   // touch-event handler in the page, and no other touch-event is in the queue.
