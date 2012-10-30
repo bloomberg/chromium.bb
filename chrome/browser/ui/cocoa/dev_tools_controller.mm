@@ -89,22 +89,14 @@ using content::WebContents;
       devToolsWindow_->SetHeight(NSHeight([devToolsView frame]));
   }
 
-  // Show / hide container if necessary. Changing dock orientation is
-  // hide + show.
-  BOOL shouldHide = devToolsWindow_ && (!newDevToolsWindow ||
-      dockSide_ != newDevToolsWindow->dock_side());
-  BOOL shouldShow = newDevToolsWindow && (!devToolsWindow_ || shouldHide);
-
-  if (shouldHide)
+  if (devToolsWindow_)
     [self hideDevToolsContainer];
 
   devToolsWindow_ = newDevToolsWindow;
 
-  if (shouldShow) {
-    dockSide_ = newDevToolsWindow->dock_side();
+  if (devToolsWindow_) {
+    dockSide_ = devToolsWindow_->dock_side();
     [self showDevToolsContainer];
-  } else if (newDevToolsWindow) {
-    [self updateDevToolsSplitPosition];
   }
 }
 
