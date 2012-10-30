@@ -20,15 +20,21 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -207,6 +213,28 @@ class ExtensionGalleriesHost
         base::Owned(device_ids), galleries, galleries_info, callback));
   }
 
+  void RevokeOldGalleries(const MediaGalleryPrefIdSet& new_galleries) {
+    if (new_galleries.size() == pref_id_map_.size())
+      return;
+
+    MediaGalleryPrefIdSet old_galleries;
+    for (PrefIdFsInfoMap::const_iterator it = pref_id_map_.begin();
+         it != pref_id_map_.end();
+         ++it) {
+      old_galleries.insert(it->first);
+    }
+    MediaGalleryPrefIdSet invalid_galleries;
+    std::set_difference(old_galleries.begin(), old_galleries.end(),
+                        new_galleries.begin(), new_galleries.end(),
+                        std::inserter(invalid_galleries,
+                                      invalid_galleries.begin()));
+    for (MediaGalleryPrefIdSet::const_iterator it = invalid_galleries.begin();
+         it != invalid_galleries.end();
+         ++it) {
+      RevokeGalleryByPrefId(*it);
+    }
+  }
+
   // TODO(kmadhusu): Clean up this code. http://crbug.com/140340.
   // Revoke the file system for |id| if this extension has created one for |id|.
   void RevokeGalleryByPrefId(MediaGalleryPrefId id) {
@@ -248,6 +276,29 @@ class ExtensionGalleriesHost
     }
   }
 
+ private:
+  typedef std::map<MediaGalleryPrefId, MediaFileSystemInfo>
+      PrefIdFsInfoMap;
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+  typedef std::map<MediaGalleryPrefId,
+                   scoped_refptr<ScopedMtpDeviceMapEntry> >
+      MediaDeviceEntryReferencesMap;
+#endif
+  typedef std::map<const RenderProcessHost*, std::set<const WebContents*> >
+      RenderProcessHostRefCount;
+
+  // Private destructor and friend declaration for ref counted implementation.
+  friend class base::RefCountedThreadSafe<ExtensionGalleriesHost>;
+
+  virtual ~ExtensionGalleriesHost() {
+    DCHECK(rph_refs_.empty());
+    DCHECK(pref_id_map_.empty());
+
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+    DCHECK(media_device_map_references_.empty());
+#endif
+  }
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -275,29 +326,6 @@ class ExtensionGalleriesHost
         break;
       }
     }
-  }
-
- private:
-  typedef std::map<MediaGalleryPrefId, MediaFileSystemInfo>
-      PrefIdFsInfoMap;
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  typedef std::map<MediaGalleryPrefId,
-                   scoped_refptr<ScopedMtpDeviceMapEntry> >
-      MediaDeviceEntryReferencesMap;
-#endif
-  typedef std::map<const RenderProcessHost*, std::set<const WebContents*> >
-      RenderProcessHostRefCount;
-
-  // Private destructor and friend declaration for ref counted implementation.
-  friend class base::RefCountedThreadSafe<ExtensionGalleriesHost>;
-
-  virtual ~ExtensionGalleriesHost() {
-    DCHECK(rph_refs_.empty());
-    DCHECK(pref_id_map_.empty());
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-    DCHECK(media_device_map_references_.empty());
-#endif
   }
 
   void GetMediaFileSystemsForAttachedDevices(
@@ -363,30 +391,6 @@ class ExtensionGalleriesHost
 
     callback.Run(result);
   }
-
-  void RevokeOldGalleries(const MediaGalleryPrefIdSet& new_galleries) {
-    // TODO(vandebo) We need a way of getting notification when permission for
-    // galleries are revoked (http://crbug.com/145855).  For now, invalidate
-    // any fsid we have that we didn't get this time around.
-    if (new_galleries.size() != pref_id_map_.size()) {
-      MediaGalleryPrefIdSet old_galleries;
-      for (PrefIdFsInfoMap::const_iterator it = pref_id_map_.begin();
-           it != pref_id_map_.end();
-           ++it) {
-        old_galleries.insert(it->first);
-      }
-      MediaGalleryPrefIdSet invalid_galleries;
-      std::set_difference(old_galleries.begin(), old_galleries.end(),
-                          new_galleries.begin(), new_galleries.end(),
-                          std::inserter(invalid_galleries,
-                                        invalid_galleries.begin()));
-      for (MediaGalleryPrefIdSet::const_iterator it = invalid_galleries.begin();
-           it != invalid_galleries.end();
-           ++it) {
-        RevokeGalleryByPrefId(*it);
-      }
-    }
-  };
 
   void OnRendererProcessClosed(const RenderProcessHost* rph) {
     RenderProcessHostRefCount::const_iterator rph_info = rph_refs_.find(rph);
@@ -484,14 +488,16 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
   MediaGalleryPrefIdSet galleries =
       preferences->GalleriesForExtension(*extension);
 
-  // If the extension has no galleries and it didn't have any last time, just
-  // return the empty list. The second check is needed because of
-  // http://crbug.com/145855.
-  bool has_extension_host = ContainsKey(extension_hosts_map_, profile) &&
-      ContainsKey(extension_hosts_map_[profile], extension->id());
-  if (galleries.empty() && !has_extension_host) {
+  if (galleries.empty()) {
     callback.Run(std::vector<MediaFileSystemInfo>());
     return;
+  }
+
+  if (!ContainsKey(pref_change_registrar_map_, profile)) {
+    PrefChangeRegistrar* pref_registrar = new PrefChangeRegistrar;
+    pref_registrar->Init(profile->GetPrefs());
+    pref_registrar->Add(prefs::kMediaGalleriesRememberedGalleries, this);
+    pref_change_registrar_map_[profile] = pref_registrar;
   }
 
   ExtensionGalleriesHost* extension_host =
@@ -653,6 +659,8 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 
  private:
   MediaFileSystemRegistry* registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaFileSystemContextImpl);
 };
 
 MediaFileSystemRegistry::MediaFileSystemRegistry()
@@ -668,6 +676,50 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
   SystemMonitor* system_monitor = SystemMonitor::Get();
   if (system_monitor)
     system_monitor->RemoveDevicesChangedObserver(this);
+}
+
+void MediaFileSystemRegistry::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+  const std::string& pref_name =
+      *content::Details<std::string>(details).ptr();
+  DCHECK_EQ(std::string(prefs::kMediaGalleriesRememberedGalleries), pref_name);
+
+  // Find the Profile that contains the source PrefService.
+  PrefService* prefs = content::Source<PrefService>(source).ptr();
+  PrefChangeRegistrarMap::iterator pref_change_it =
+      pref_change_registrar_map_.begin();
+  for (; pref_change_it != pref_change_registrar_map_.end(); ++pref_change_it) {
+    if (pref_change_it->first->GetPrefs() == prefs)
+      break;
+  }
+  DCHECK(pref_change_it != pref_change_registrar_map_.end());
+  Profile* profile = pref_change_it->first;
+
+  // Get the Extensions, MediaGalleriesPreferences and ExtensionHostMap for
+  // |profile|.
+  const ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  const ExtensionSet* extensions_set = extension_service->extensions();
+  const MediaGalleriesPreferences* preferences = GetPreferences(profile);
+  ExtensionGalleriesHostMap::const_iterator host_map_it =
+      extension_hosts_map_.find(profile);
+  DCHECK(host_map_it != extension_hosts_map_.end());
+  const ExtensionHostMap& extension_host_map = host_map_it->second;
+
+  // Go through ExtensionsHosts, get the updated galleries list and use it to
+  // revoke the old galleries.
+  for (ExtensionHostMap::const_iterator gallery_host_it =
+           extension_host_map.begin();
+       gallery_host_it != extension_host_map.end();
+       ++gallery_host_it) {
+    const extensions::Extension* extension =
+        extensions_set->GetByID(gallery_host_it->first);
+    gallery_host_it->second->RevokeOldGalleries(
+        preferences->GalleriesForExtension(*extension));
+  }
 }
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
@@ -705,8 +757,15 @@ void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(
   ExtensionHostMap::size_type erase_count =
       extension_hosts->second.erase(extension_id);
   DCHECK_EQ(1U, erase_count);
-  if (extension_hosts->second.empty())
+  if (extension_hosts->second.empty()) {
     extension_hosts_map_.erase(extension_hosts);
+
+    PrefChangeRegistrarMap::iterator pref_it =
+        pref_change_registrar_map_.find(profile);
+    DCHECK(pref_it != pref_change_registrar_map_.end());
+    delete pref_it->second;
+    pref_change_registrar_map_.erase(pref_it);
+  }
 }
 
 }  // namespace chrome

@@ -18,7 +18,9 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "base/system_monitor/system_monitor.h"
+#include "content/public/browser/notification_observer.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 class Profile;
@@ -78,7 +80,8 @@ typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
     MediaFileSystemsCallback;
 
 class MediaFileSystemRegistry
-    : public base::SystemMonitor::DevicesChangedObserver {
+    : public base::SystemMonitor::DevicesChangedObserver,
+      public content::NotificationObserver {
  public:
   // The instance is lazily created per browser process.
   static MediaFileSystemRegistry* GetInstance();
@@ -99,7 +102,8 @@ class MediaFileSystemRegistry
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
   virtual void OnRemovableStorageAttached(
-      const std::string& id, const string16& name,
+      const std::string& id,
+      const string16& name,
       const FilePath::StringType& location) OVERRIDE;
   virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
 
@@ -112,6 +116,8 @@ class MediaFileSystemRegistry
                    scoped_refptr<ExtensionGalleriesHost> > ExtensionHostMap;
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
+  // Map a profile to a PrefChangeRegistrar.
+  typedef std::map<Profile*, PrefChangeRegistrar*> PrefChangeRegistrarMap;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Map a mtp or ptp device location to the weak pointer of
@@ -124,6 +130,11 @@ class MediaFileSystemRegistry
   // Obtain an instance of this class via GetInstance().
   MediaFileSystemRegistry();
   virtual ~MediaFileSystemRegistry();
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Returns ScopedMtpDeviceMapEntry object for the given |device_location|.
@@ -142,6 +153,8 @@ class MediaFileSystemRegistry
   // Only accessed on the UI thread. This map owns all the
   // ExtensionGalleriesHost objects created.
   ExtensionGalleriesHostMap extension_hosts_map_;
+
+  PrefChangeRegistrarMap pref_change_registrar_map_;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Only accessed on the UI thread.
