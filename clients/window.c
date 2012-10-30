@@ -3363,10 +3363,9 @@ menu_button_handler(struct widget *widget,
 			   menu->current, menu->window->parent->user_data);
 		input_ungrab(input);
 		menu_destroy(menu);
-	}
-
-	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
+	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		menu->release_count++;
+	}
 }
 
 static void
