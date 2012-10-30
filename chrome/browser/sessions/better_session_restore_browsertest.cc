@@ -114,22 +114,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BetterSessionRestoreTest);
 };
 
-// BetterSessionRestoreTest tests fail under AddressSanitizer, see
-// http://crbug.com/156444.
-#if defined(ADDRESS_SANITIZER)
-# define MAYBE_PRE_SessionCookies DISABLED_PRE_SessionCookies
-# define MAYBE_SessionCookies DISABLED_SessionCookies
-# define MAYBE_PRE_SessionStorage DISABLED_PRE_SessionStorage
-# define MAYBE_SessionStorage DISABLED_SessionStorage
-#else
-# define MAYBE_PRE_SessionCookies PRE_SessionCookies
-# define MAYBE_SessionCookies SessionCookies
-# define MAYBE_PRE_SessionStorage PRE_SessionStorage
-# define MAYBE_SessionStorage SessionStorage
-#endif
-
-// crbug.com/156981
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, MAYBE_PRE_SessionCookies) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionCookies) {
   // Set the startup preference to "continue where I left off" and visit a page
   // which stores a session cookie.
   SessionStartupPref::SetStartupPref(
@@ -137,15 +122,13 @@ IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, MAYBE_PRE_SessionCookies) {
   StoreDataWithPage("session_cookies.html");
 }
 
-// crbug.com/156981
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, MAYBE_SessionCookies) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionCookies) {
   // The browsing session will be continued; just wait for the page to reload
   // and check the stored data.
   CheckReloadedPage();
 }
 
-// crbug.com/156981
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, MAYBE_PRE_SessionStorage) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionStorage) {
   // Write the data on disk less lazily.
   dom_storage::DomStorageArea::DisableCommitDelayForTesting();
   SessionStartupPref::SetStartupPref(
@@ -153,7 +136,6 @@ IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, MAYBE_PRE_SessionStorage) {
   StoreDataWithPage("session_storage.html");
 }
 
-// crbug.com/156981
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, MAYBE_SessionStorage) {
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionStorage) {
   CheckReloadedPage();
 }
