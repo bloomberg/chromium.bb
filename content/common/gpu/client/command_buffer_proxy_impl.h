@@ -18,6 +18,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -124,6 +125,8 @@ class CommandBufferProxyImpl
   // ints redundantly when only the error is needed for the
   // CommandBufferProxyImpl implementation.
   virtual gpu::error::Error GetLastError() OVERRIDE;
+
+  void SendManagedMemoryStats(const GpuManagedMemoryStats& stats);
 
   GpuChannelHost* channel() const { return channel_; }
 

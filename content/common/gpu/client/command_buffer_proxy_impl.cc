@@ -564,4 +564,10 @@ void CommandBufferProxyImpl::TryUpdateState() {
     shared_state_->Read(&last_state_);
 }
 
+void CommandBufferProxyImpl::SendManagedMemoryStats(
+    const GpuManagedMemoryStats& stats) {
+  Send(new GpuCommandBufferMsg_SendClientManagedMemoryStats(route_id_,
+                                                            stats));
+}
+
 }  // namespace content

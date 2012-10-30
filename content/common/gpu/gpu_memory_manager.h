@@ -55,7 +55,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   // a GpuCommandBufferStubBase for some time point.
   struct StubMemoryStat {
     bool visible;
-    GpuMemoryAllocationRequest requested_allocation;
     GpuMemoryAllocation allocation;
   };
 

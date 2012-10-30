@@ -598,13 +598,16 @@ TEST_F(GpuMemoryManagerTest, GpuMemoryAllocationCompareTests) {
       int buffer_allocation = suggested_buffer_allocation_values[j];
       GpuMemoryAllocation allocation(sz, buffer_allocation);
 
-      EXPECT_EQ(allocation, GpuMemoryAllocation(sz, buffer_allocation));
-      EXPECT_NE(allocation, GpuMemoryAllocation(sz+1, buffer_allocation));
+      EXPECT_TRUE(allocation.Equals(
+          GpuMemoryAllocation(sz, buffer_allocation)));
+      EXPECT_FALSE(allocation.Equals(
+          GpuMemoryAllocation(sz+1, buffer_allocation)));
 
       for(size_t k = 0; k != suggested_buffer_allocation_values.size(); ++k) {
         int buffer_allocation_other = suggested_buffer_allocation_values[k];
         if (buffer_allocation == buffer_allocation_other) continue;
-        EXPECT_NE(allocation, GpuMemoryAllocation(sz, buffer_allocation_other));
+        EXPECT_FALSE(allocation.Equals(
+            GpuMemoryAllocation(sz, buffer_allocation_other)));
       }
     }
   }

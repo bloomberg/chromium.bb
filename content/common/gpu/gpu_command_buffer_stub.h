@@ -59,6 +59,7 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
     // The last used time is determined by the last time that visibility
     // was changed.
     base::TimeTicks last_used_time;
+    GpuManagedMemoryStats managed_memory_stats;
 
     MemoryManagerState(
        bool has_surface,
@@ -225,6 +226,7 @@ class GpuCommandBufferStub
   void OnSignalSyncPoint(uint32 sync_point, uint32 id);
   void OnSignalSyncPointAck(uint32 id);
 
+  void OnReceivedClientManagedMemoryStats(const GpuManagedMemoryStats& stats);
   void OnSetClientHasMemoryAllocationChangedCallback(bool);
 
   void OnReschedule();
