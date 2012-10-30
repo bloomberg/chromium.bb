@@ -43,7 +43,6 @@
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 #include "chrome/browser/chromeos/power/output_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
@@ -476,13 +475,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   removable_device_notifications_ =
       new chromeos::RemovableDeviceNotificationsCros();
 
-  // Initialize the network portal detector for Chrome OS. The network
-  // portal detector starts to listen for notifications from
-  // NetworkLibrary about changes in the NetworkManager and initiates
-  // captive portal detection for active networks.
-  if (chromeos::NetworkPortalDetector::GetInstance())
-    chromeos::NetworkPortalDetector::GetInstance()->Init();
-
   chromeos::NotifyDisplayLocalStatePrefChanged();
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
@@ -549,9 +541,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // the network manager.
   if (chromeos::CrosNetworkChangeNotifierFactory::GetInstance())
     chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Shutdown();
-
-  if (chromeos::NetworkPortalDetector::GetInstance())
-    chromeos::NetworkPortalDetector::GetInstance()->Shutdown();
 
   // Tell DeviceSettingsService to stop talking to session_manager.
   chromeos::DeviceSettingsService::Get()->Shutdown();

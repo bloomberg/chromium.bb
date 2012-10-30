@@ -2478,23 +2478,6 @@ Battery full
     Connect Requested
   </message>
 
-  <!-- Captive Portal state strings for ChromeOS -->
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_UNKNOWN" desc="Captive Portal state in about:network: Unknown">
-    Unknown state
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_OFFLINE" desc="Captive Portal state in about:network: Offline">
-    Offline state
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_ONLINE" desc="Captive Portal state in about:network: Online">
-    Online state
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_PORTAL" desc="Captive Portal state in about:network: Portal">
-    Portal state
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATE_UNRECOGNIZED" desc="Captive Portal state in about:network: Unrecognized">
-    Unrecognized state
-  </message>
-
   <!-- Network error strings for ChromeOS -->
   <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error in about:network: UNKNOWN">
     Unknown network error

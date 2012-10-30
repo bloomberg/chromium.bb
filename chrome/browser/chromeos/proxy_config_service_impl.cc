@@ -562,20 +562,6 @@ void ProxyConfigServiceImpl::OnNetworkChanged(NetworkLibrary* network_lib,
 }
 
 // static
-bool ProxyConfigServiceImpl::ParseProxyConfig(const Network* network,
-                                              net::ProxyConfig* proxy_config) {
-  if (!network || !proxy_config)
-    return false;
-  JSONStringValueSerializer serializer(network->proxy_config());
-  scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
-  if (!value.get() || value->GetType() != Value::TYPE_DICTIONARY)
-    return false;
-  ProxyConfigDictionary proxy_dict(static_cast<DictionaryValue*>(value.get()));
-  return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(proxy_dict,
-                                                           proxy_config);
-}
-
-// static
 void ProxyConfigServiceImpl::RegisterPrefs(PrefService* pref_service) {
   // Use shared proxies default to off.  GetUseSharedProxies will return the
   // correct value based on pre-login and login.
@@ -729,10 +715,16 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfig(const Network* network,
       network_availability = net::ProxyConfigService::CONFIG_VALID;
     } else if (!network->proxy_config().empty()) {
       // Network is private or shared with user using shared proxies.
-      if (ParseProxyConfig(network, &network_config)) {
-        VLOG(1) << this << ": using network proxy: "
-                << network->proxy_config();
-        network_availability = net::ProxyConfigService::CONFIG_VALID;
+      JSONStringValueSerializer serializer(network->proxy_config());
+      scoped_ptr<Value> value(serializer.Deserialize(NULL, NULL));
+      if (value.get() && value->GetType() == Value::TYPE_DICTIONARY) {
+        DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+        ProxyConfigDictionary proxy_dict(dict);
+        if (PrefConfigToNetConfig(proxy_dict, &network_config)) {
+          VLOG(1) << this << ": using network proxy: "
+                           << network->proxy_config();
+          network_availability = net::ProxyConfigService::CONFIG_VALID;
+        }
       }
     }
   }

@@ -5,15 +5,14 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_STATE_INFORMER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_STATE_INFORMER_H_
 
-#include <map>
 #include <string>
 
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -34,7 +33,6 @@ class NetworkStateInformerDelegate {
 // changed. Also, it answers to the requests about current network state.
 class NetworkStateInformer
     : public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public chromeos::NetworkPortalDetector::Observer,
       public content::NotificationObserver,
       public CaptivePortalWindowProxyDelegate,
       public base::RefCounted<NetworkStateInformer> {
@@ -72,11 +70,6 @@ class NetworkStateInformer
   // NetworkLibrary::NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros) OVERRIDE;
 
-  // NetworkPortalDetector::Observer implementation:
-  virtual void OnPortalStateChanged(
-      const Network* network,
-      NetworkPortalDetector::CaptivePortalState state) OVERRIDE;
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -97,21 +90,6 @@ class NetworkStateInformer
   ConnectionType last_network_type() const { return last_network_type_; }
 
  private:
-  struct ProxyState {
-    ProxyState() : configured(false) {
-    }
-
-    ProxyState(const std::string& proxy_config, bool configured)
-        : proxy_config(proxy_config),
-          configured(configured) {
-    }
-
-    std::string proxy_config;
-    bool configured;
-  };
-
-  typedef std::map<std::string, ProxyState> ProxyStateMap;
-
   friend class base::RefCounted<NetworkStateInformer>;
 
   virtual ~NetworkStateInformer();
@@ -121,10 +99,6 @@ class NetworkStateInformer
   void UpdateStateAndNotify();
 
   void SendStateToObservers(const std::string& reason);
-
-  State GetNetworkState(const Network* network);
-  bool IsRestrictedPool(const Network* network);
-  bool IsProxyConfigured(const Network* network);
 
   content::NotificationRegistrar registrar_;
   State state_;
@@ -136,9 +110,6 @@ class NetworkStateInformer
   std::string last_online_network_id_;
   std::string last_connected_network_id_;
   std::string last_network_id_;
-
-  // Caches proxy state for active networks.
-  ProxyStateMap proxy_state_map_;
 };
 
 }  // namespace chromeos
