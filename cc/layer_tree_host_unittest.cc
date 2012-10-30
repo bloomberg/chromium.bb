@@ -651,7 +651,7 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        postAddAnimationToMainThread();
+        postAddAnimationToMainThread(m_layerTreeHost->rootLayer());
     }
 
     virtual void afterTest() OVERRIDE
@@ -694,7 +694,7 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        postAddAnimationToMainThread();
+        postAddAnimationToMainThread(m_layerTreeHost->rootLayer());
     }
 
     // Use willAnimateLayers to set visible false before the animation runs and
@@ -732,7 +732,7 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        postAddAnimationToMainThread();
+        postAddAnimationToMainThread(m_layerTreeHost->rootLayer());
     }
 
     virtual void animateLayers(LayerTreeHostImpl* layerTreeHostImpl, base::TimeTicks monotonicTime) OVERRIDE
@@ -761,40 +761,6 @@ private:
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestAddAnimationWithTimingFunction)
 
-// Ensures that when opacity is being animated, this value does not cause the subtree to be skipped.
-class LayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity()
-    {
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        m_layerTreeHost->rootLayer()->setDrawOpacity(1);
-        m_layerTreeHost->setViewportSize(IntSize(10, 10), IntSize(10, 10));
-        m_layerTreeHost->rootLayer()->setOpacity(0);
-        postAddAnimationToMainThread();
-    }
-
-    virtual void commitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE
-    {
-        // If the subtree was skipped when preparing to draw, the layer's draw opacity
-        // will not have been updated. It should be set to 0 due to the animation.
-        // Without the animation, the layer will be skipped since it has zero opacity.
-        EXPECT_EQ(0, m_layerTreeHost->rootLayer()->drawOpacity());
-        endTest();
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-    }
-};
-
-TEST_F(LayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity, runMultiThread)
-{
-    runTest(true);
-}
-
 // Ensures that main thread animations have their start times synchronized with impl thread animations.
 class LayerTreeHostTestSynchronizeAnimationStartTimes : public LayerTreeHostTest {
 public:
@@ -805,7 +771,7 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        postAddAnimationToMainThread();
+        postAddAnimationToMainThread(m_layerTreeHost->rootLayer());
     }
 
     // This is guaranteed to be called before CCLayerTreeHostImpl::animateLayers.
@@ -1155,19 +1121,25 @@ TEST_F(LayerTreeHostTestSetVisible, runMultiThread)
 
 class TestOpacityChangeLayerDelegate : public ContentLayerClient {
 public:
-    TestOpacityChangeLayerDelegate(LayerTreeHostTest* test)
-        : m_test(test)
+    TestOpacityChangeLayerDelegate()
+        : m_testLayer(0)
     {
+    }
+
+    void setTestLayer(Layer* testLayer)
+    {
+        m_testLayer = testLayer;
     }
 
     virtual void paintContents(SkCanvas*, const IntRect&, FloatRect&) OVERRIDE
     {
         // Set layer opacity to 0.
-        m_test->layerTreeHost()->rootLayer()->setOpacity(0);
+        if (m_testLayer)
+            m_testLayer->setOpacity(0);
     }
 
 private:
-    LayerTreeHostTest* m_test;
+    Layer* m_testLayer;
 };
 
 class ContentLayerWithUpdateTracking : public ContentLayer {
@@ -1203,15 +1175,16 @@ private:
 class LayerTreeHostTestOpacityChange : public LayerTreeHostTest {
 public:
     LayerTreeHostTestOpacityChange()
-        : m_testOpacityChangeDelegate(this)
+        : m_testOpacityChangeDelegate()
         , m_updateCheckLayer(ContentLayerWithUpdateTracking::create(&m_testOpacityChangeDelegate))
     {
+        m_testOpacityChangeDelegate.setTestLayer(m_updateCheckLayer.get());
     }
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setRootLayer(m_updateCheckLayer);
         m_layerTreeHost->setViewportSize(IntSize(10, 10), IntSize(10, 10));
+        m_layerTreeHost->rootLayer()->addChild(m_updateCheckLayer);
 
         postSetNeedsCommitToMainThread();
     }
@@ -1259,6 +1232,47 @@ private:
         : ContentLayer(client) { }
     virtual ~NoScaleContentLayer() { }
 };
+
+// Ensures that when opacity is being animated, this value does not cause the subtree to be skipped.
+class LayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity()
+        : m_updateCheckLayer(ContentLayerWithUpdateTracking::create(&m_client))
+    {
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        m_layerTreeHost->setViewportSize(IntSize(10, 10), IntSize(10, 10));
+        m_layerTreeHost->rootLayer()->addChild(m_updateCheckLayer);
+        m_updateCheckLayer->setOpacity(0);
+        m_updateCheckLayer->setDrawOpacity(0);
+        postAddAnimationToMainThread(m_updateCheckLayer.get());
+    }
+
+    virtual void commitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE
+    {
+        endTest();
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+        // update() should have been called once, proving that the layer was not skipped.
+        EXPECT_EQ(1, m_updateCheckLayer->paintContentsCount());
+
+        // clear m_updateCheckLayer so LayerTreeHost dies.
+        m_updateCheckLayer = NULL;
+    }
+
+private:
+    MockContentLayerClient m_client;
+    scoped_refptr<ContentLayerWithUpdateTracking> m_updateCheckLayer;
+};
+
+TEST_F(LayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity, runMultiThread)
+{
+    runTest(true);
+}
 
 class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers : public LayerTreeHostTest {
 public:
