@@ -1800,7 +1800,7 @@ struct kernel_statfs {
           LSS_RETURN(type, __res)
     #undef _syscall0
     #define _syscall0(type,name)                                              \
-      type LSS_NAME(name)() {                                                 \
+      type LSS_NAME(name)(void) {                                             \
         LSS_BODY(type, name);                                                 \
       }
     #undef _syscall1
@@ -1969,7 +1969,7 @@ struct kernel_statfs {
           LSS_RETURN(type, __res)
     #undef _syscall0
     #define _syscall0(type, name)                                             \
-      type LSS_NAME(name)() {                                                 \
+      type LSS_NAME(name)(void) {                                             \
         LSS_BODY(type, name);                                                 \
       }
     #undef _syscall1
@@ -2095,7 +2095,7 @@ struct kernel_statfs {
           LSS_RETURN(type, __res)
     #undef _syscall0
     #define _syscall0(type, name)                                             \
-      type LSS_NAME(name)() {                                                 \
+      type LSS_NAME(name)(void) {                                             \
         LSS_BODY(type, name);                                                 \
       }
     #undef _syscall1
@@ -2245,7 +2245,7 @@ struct kernel_statfs {
           LSS_RETURN(type, __v0, __r7)
     #undef _syscall0
     #define _syscall0(type, name)                                             \
-      type LSS_NAME(name)() {                                                 \
+      type LSS_NAME(name)(void) {                                             \
         register unsigned long __r7 __asm__("$7");                            \
         LSS_BODY(type, name, "=r");                                           \
       }
@@ -3396,7 +3396,7 @@ struct kernel_statfs {
     return LSS_NAME(execve)(path, argv, (const char *const *)environ);
   }
 
-  LSS_INLINE pid_t LSS_NAME(gettid)() {
+  LSS_INLINE pid_t LSS_NAME(gettid)(void) {
     pid_t tid = LSS_NAME(_gettid)();
     if (tid != -1) {
       return tid;
@@ -3443,7 +3443,7 @@ struct kernel_statfs {
     return LSS_NAME(kill)(LSS_NAME(getpid)(), sig);
   }
 
-  LSS_INLINE int LSS_NAME(setpgrp)() {
+  LSS_INLINE int LSS_NAME(setpgrp)(void) {
     return LSS_NAME(setpgid)(0, 0);
   }
 
