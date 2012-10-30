@@ -276,7 +276,8 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
     scoped_refptr<WebRtcAudioRenderer> renderer =
         CreateRemoteAudioRenderer(extra_data->remote_stream());
 
-    if (dependency_factory_->GetWebRtcAudioDevice()->SetRenderer(renderer)) {
+    if (renderer &&
+        dependency_factory_->GetWebRtcAudioDevice()->SetRenderer(renderer)) {
       return renderer;
     }
 
