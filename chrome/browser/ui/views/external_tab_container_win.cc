@@ -161,7 +161,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
                                    DWORD style,
                                    bool load_requests_via_automation,
                                    bool handle_top_level_requests,
-                                   TabContents* existing_contents,
+                                   content::WebContents* existing_contents,
                                    const GURL& initial_url,
                                    const GURL& referrer,
                                    bool infobars_enabled,
@@ -191,46 +191,42 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   prop_.reset(new ViewProp(GetNativeView(), kWindowObjectKey, this));
 
   if (existing_contents) {
-    tab_contents_.reset(existing_contents);
-    tab_contents_->web_contents()->GetController().SetBrowserContext(profile);
+    existing_contents->GetController().SetBrowserContext(profile);
   } else {
-    WebContents* new_contents = WebContents::Create(
-        profile, NULL, MSG_ROUTING_NONE, NULL);
-    tab_contents_.reset(TabContents::Factory::CreateTabContents(new_contents));
-  }
-
-  if (!infobars_enabled) {
-    InfoBarTabHelper* infobar_tab_helper =
-        InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
-    infobar_tab_helper->set_infobars_enabled(false);
-  }
-
-  tab_contents_->web_contents()->SetDelegate(this);
-
-  tab_contents_->web_contents()->
-      GetMutableRendererPrefs()->browser_handles_non_local_top_level_requests =
-          handle_top_level_requests;
-
-  if (!existing_contents) {
-    tab_contents_->web_contents()->GetRenderViewHost()->AllowBindings(
+    existing_contents =
+        WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL);
+    existing_contents->GetRenderViewHost()->AllowBindings(
         content::BINDINGS_POLICY_EXTERNAL_HOST);
   }
 
-  NavigationController* controller =
-      &tab_contents_->web_contents()->GetController();
+  existing_contents->SetDelegate(this);
+  existing_contents->GetMutableRendererPrefs()->
+      browser_handles_non_local_top_level_requests = handle_top_level_requests;
+
+  NavigationController* controller = &existing_contents->GetController();
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
-                 content::Source<WebContents>(tab_contents_->web_contents()));
+                 content::Source<WebContents>(existing_contents));
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
                  content::NotificationService::AllSources());
 
-  content::WebContentsObserver::Observe(tab_contents_->web_contents());
+  content::WebContentsObserver::Observe(existing_contents);
+
+  // TODO(avi): Rather than create a TabContents, attach desired tab helpers.
+  tab_contents_.reset(
+      TabContents::Factory::CreateTabContents(existing_contents));
+
+  if (!infobars_enabled) {
+    InfoBarTabHelper* infobar_tab_helper =
+        InfoBarTabHelper::FromWebContents(existing_contents);
+    infobar_tab_helper->set_infobars_enabled(false);
+  }
 
   // Start loading initial URL
   if (!initial_url.is_empty()) {
@@ -256,11 +252,11 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   if (parent)
     SetParent(GetNativeView(), parent);
 
-  ::ShowWindow(tab_contents_->web_contents()->GetNativeView(), SW_SHOWNA);
+  ::ShowWindow(existing_contents->GetNativeView(), SW_SHOWNA);
 
   LoadAccelerators();
   SetupExternalTabView();
-  BlockedContentTabHelper::FromWebContents(tab_contents_->web_contents())->
+  BlockedContentTabHelper::FromWebContents(existing_contents)->
       set_delegate(this);
   return true;
 }
@@ -517,24 +513,22 @@ void ExternalTabContainerWin::AddNewContents(WebContents* source,
 
   // Make sure that ExternalTabContainer instance is initialized with
   // an unwrapped Profile.
-  scoped_ptr<TabContents> tab_contents(
-      TabContents::Factory::CreateTabContents(new_contents));
-  bool result = new_container->Init(
-      tab_contents->profile()->GetOriginalProfile(),
-      NULL,
-      initial_pos,
-      WS_CHILD,
-      load_requests_via_automation_,
-      handle_top_level_requests_,
-      tab_contents.get(),
-      GURL(),
-      GURL(),
-      true,
-      route_all_top_level_navigations_);
+  Profile* profile =
+      Profile::FromBrowserContext(new_contents->GetBrowserContext())->
+          GetOriginalProfile();
+  bool result = new_container->Init(profile,
+                                    NULL,
+                                    initial_pos,
+                                    WS_CHILD,
+                                    load_requests_via_automation_,
+                                    handle_top_level_requests_,
+                                    new_contents,
+                                    GURL(),
+                                    GURL(),
+                                    true,
+                                    route_all_top_level_navigations_);
 
   if (result) {
-    Profile* profile = tab_contents->profile();
-    tab_contents.release();  // Ownership has been transferred.
     if (route_all_top_level_navigations_) {
       return;
     }

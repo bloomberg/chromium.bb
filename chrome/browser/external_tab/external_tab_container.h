@@ -49,7 +49,7 @@ class ExternalTabContainer : public base::RefCounted<ExternalTabContainer> {
                     DWORD style,
                     bool load_requests_via_automation,
                     bool handle_top_level_requests,
-                    TabContents* existing_tab_contents,
+                    content::WebContents* existing_contents,
                     const GURL& initial_url,
                     const GURL& referrer,
                     bool infobars_enabled,
