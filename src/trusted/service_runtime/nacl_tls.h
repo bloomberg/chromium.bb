@@ -36,14 +36,14 @@ void NaClTlsFini();
  * index is the gs segment number.  On x86-64 and ARM, the thread
  * index is used internally in NaCl but has no other meaning.
  * This is called for the main thread and all subsequent threads
- * being created via NaClAppThreadCtor().
+ * being created via NaClAppThreadMake().
  * On error, returns NACL_TLS_INDEX_INVALID.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp) NACL_WUR;
 
 /*
  * Free a tls descriptor.
- * This is called from NaClAppThreadDtor which in turn is called
+ * This is called from NaClAppThreadDelete() which in turn is called
  * after a thread terminates.
  */
 void NaClTlsFree(struct NaClAppThread *natp);

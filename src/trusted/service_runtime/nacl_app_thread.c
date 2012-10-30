@@ -95,10 +95,10 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClXMutexLock(&natp->mu);
   /*
    * Remove ourselves from the ldt-indexed global tables.  The ldt
-   * entry is released as part of NaClAppThreadDtor (via
-   * NaClAppThreadDecRef), and if another thread is immediately
-   * created (from some other running thread) we want to be sure that
-   * any ldt-based lookups will not reach this dying thread's data.
+   * entry is released as part of NaClAppThreadDelete(), and if
+   * another thread is immediately created (from some other running
+   * thread) we want to be sure that any ldt-based lookups will not
+   * reach this dying thread's data.
    */
   thread_idx = NaClGetThreadIdx(natp);
   /*
@@ -124,8 +124,7 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClLog(3, " unregistering signal stack\n");
   NaClSignalStackUnregister();
   NaClLog(3, " freeing thread object\n");
-  NaClAppThreadDtor(natp);
-  free(natp);
+  NaClAppThreadDelete(natp);
   NaClLog(3, " NaClThreadExit\n");
 
   NaClXMutexLock(&nap->mu);
@@ -147,14 +146,19 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
 }
 
 
-int NaClAppThreadCtor(struct NaClAppThread  *natp,
-                      struct NaClApp        *nap,
-                      uintptr_t             usr_entry,
-                      uintptr_t             usr_stack_ptr,
-                      uint32_t              user_tls1,
-                      uint32_t              user_tls2) {
+struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
+                                        uintptr_t      usr_entry,
+                                        uintptr_t      usr_stack_ptr,
+                                        uint32_t       user_tls1,
+                                        uint32_t       user_tls2) {
+  struct NaClAppThread *natp;
   int rv;
   uint32_t tls_idx;
+
+  natp = malloc(sizeof(*natp));
+  if (natp == NULL) {
+    return NULL;
+  }
 
   NaClLog(4, "         natp = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) natp);
   NaClLog(4, "          nap = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) nap);
@@ -177,7 +181,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   tls_idx = NaClTlsAllocate(natp);
   if (NACL_TLS_INDEX_INVALID == tls_idx) {
     NaClLog(LOG_ERROR, "No tls for thread, num_thread %d\n", nap->num_threads);
-    return 0;
+    goto cleanup_free;
   }
 
   NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, tls_idx);
@@ -190,7 +194,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   natp->exception_flag = 0;
 
   if (!NaClMutexCtor(&natp->mu)) {
-    return 0;
+    goto cleanup_free;
   }
 
   if (!NaClSignalStackAllocate(&natp->signal_stack)) {
@@ -211,7 +215,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       (void *) natp,
                       NACL_KERN_STACK_SIZE);
   if (rv != 0) {
-    return rv; /* Success */
+    return natp; /* Success */
   }
 
   NaClMutexDtor(&natp->suspend_mu);
@@ -221,11 +225,13 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
     NaClSignalStackFree(&natp->signal_stack);
     natp->signal_stack = NULL;
   }
-  return 0;
+ cleanup_free:
+  free(natp);
+  return NULL;
 }
 
 
-void NaClAppThreadDtor(struct NaClAppThread *natp) {
+void NaClAppThreadDelete(struct NaClAppThread *natp) {
   /*
    * the thread must not be still running, else this crashes the system
    */
@@ -237,4 +243,5 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   natp->signal_stack = NULL;
   NaClTlsFree(natp);
   NaClMutexDtor(&natp->mu);
+  free(natp);
 }

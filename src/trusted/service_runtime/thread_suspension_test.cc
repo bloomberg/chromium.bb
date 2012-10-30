@@ -49,7 +49,7 @@ struct ThreadArgs {
 };
 
 // Perform some minimal initialisation of the NaClAppThread based on
-// what we observe we need for the test.  Reusing NaClAppThreadCtor()
+// what we observe we need for the test.  Reusing NaClAppThreadMake()
 // here is difficult because it launches an untrusted thread.
 static void AppThreadInitMinimal(struct NaClAppThread *natp) {
   memset(natp, 0xff, sizeof(*natp));

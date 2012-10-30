@@ -151,14 +151,13 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp);
  * responsible for error checking: usr_entry is a valid entry point (0
  * mod N) and sys_tls_base is in the NaClApp's address space.
  */
-int NaClAppThreadCtor(struct NaClAppThread  *natp,
-                      struct NaClApp        *nap,
-                      uintptr_t             usr_entry,
-                      uintptr_t             usr_stack_ptr,
-                      uint32_t              user_tls1,
-                      uint32_t              user_tls2) NACL_WUR;
+struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
+                                        uintptr_t      usr_entry,
+                                        uintptr_t      usr_stack_ptr,
+                                        uint32_t       user_tls1,
+                                        uint32_t       user_tls2) NACL_WUR;
 
-void NaClAppThreadDtor(struct NaClAppThread *natp);
+void NaClAppThreadDelete(struct NaClAppThread *natp);
 
 /*
  * This function can be called from the thread hosting the

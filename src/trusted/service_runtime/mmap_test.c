@@ -30,7 +30,7 @@
 
 /*
  * Perform some minimal initialisation of the NaClAppThread based on
- * what we need for the test.  Reusing NaClAppThreadCtor() here is
+ * what we need for the test.  Reusing NaClAppThreadMake() here is
  * difficult because it launches an untrusted thread.
  */
 static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {

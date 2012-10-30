@@ -837,11 +837,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   CHECK((char *) p == (char *) stack_ptr + ptr_tbl_size);
 
   /* now actually spawn the thread */
-  natp = malloc(sizeof *natp);
-  if (!natp) {
-    goto cleanup;
-  }
-
   NaClXMutexLock(&nap->mu);
   nap->running = 1;
   NaClXMutexUnlock(&nap->mu);
@@ -864,12 +859,12 @@ int NaClCreateMainThread(struct NaClApp     *nap,
           NaClSysToUserStackAddr(nap, stack_ptr));
 
   /* e_entry is user addr */
-  if (!NaClAppThreadCtor(natp,
-                         nap,
-                         nap->initial_entry_pt,
-                         NaClSysToUserStackAddr(nap, stack_ptr),
-                         /* user_tls1= */ (uint32_t) nap->break_addr,
-                         /* user_tls2= */ 0)) {
+  natp = NaClAppThreadMake(nap,
+                           nap->initial_entry_pt,
+                           NaClSysToUserStackAddr(nap, stack_ptr),
+                           /* user_tls1= */ (uint32_t) nap->break_addr,
+                           /* user_tls2= */ 0);
+  if (natp == NULL) {
     retval = 0;
     goto cleanup;
   }
@@ -913,24 +908,15 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uint32_t       user_tls2) {
   struct NaClAppThread  *natp;
 
-  natp = malloc(sizeof *natp);
-  if (NULL == natp) {
+  natp = NaClAppThreadMake(nap,
+                           prog_ctr,
+                           NaClSysToUserStackAddr(nap, sys_stack_ptr),
+                           user_tls1,
+                           user_tls2);
+  if (natp == NULL) {
     NaClLog(LOG_WARNING,
-            ("NaClCreateAdditionalThread: no memory for new thread context."
+            ("NaClCreateAdditionalThread: could not allocate thread."
              "  Returning EAGAIN per POSIX specs.\n"));
-    return -NACL_ABI_EAGAIN;
-  }
-
-  if (!NaClAppThreadCtor(natp,
-                         nap,
-                         prog_ctr,
-                         NaClSysToUserStackAddr(nap, sys_stack_ptr),
-                         user_tls1,
-                         user_tls2)) {
-    NaClLog(LOG_WARNING,
-            ("NaClCreateAdditionalThread: could not allocate thread index."
-             "  Returning EAGAIN per POSIX specs.\n"));
-    free(natp);
     return -NACL_ABI_EAGAIN;
   }
   return 0;

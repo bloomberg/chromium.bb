@@ -171,7 +171,7 @@ TEST_F(SelLdrTest, MinimumThreadGenerationTest) {
   struct NaClAppThread thread2;
   // Perform some minimal initialisation of our NaClAppThreads based
   // on what we know NaClMinimumThreadGeneration() does.  Reusing
-  // NaClAppThreadCtor() here is difficult because it launches an
+  // NaClAppThreadMake() here is difficult because it launches an
   // untrusted thread.
   memset(&thread1, 0xff, sizeof(thread1));
   memset(&thread2, 0xff, sizeof(thread2));
