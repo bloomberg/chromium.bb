@@ -18,7 +18,6 @@ namespace remoting {
 
 AuthCodeGetter::AuthCodeGetter() :
     browser_(NULL),
-    browser_running_(false),
     timer_interval_(base::TimeDelta::FromMilliseconds(kUrlPollIntervalMs)) {
 }
 
@@ -28,7 +27,7 @@ AuthCodeGetter::~AuthCodeGetter() {
 
 void AuthCodeGetter::GetAuthCode(
     base::Callback<void(const std::string&)> on_auth_code) {
-  if (browser_running_) {
+  if (browser_) {
     on_auth_code.Run("");
     return;
   }
@@ -39,7 +38,6 @@ void AuthCodeGetter::GetAuthCode(
     on_auth_code_.Run("");
     return;
   }
-  browser_running_ = true;
   base::win::ScopedBstr url(UTF8ToWide(
       GetOauthStartUrl(GetDefaultOauthRedirectUrl())).c_str());
   base::win::ScopedVariant empty_variant;
@@ -69,7 +67,7 @@ void AuthCodeGetter::OnTimer() {
 
 bool AuthCodeGetter::TestBrowserUrl(std::string* auth_code) {
   *auth_code = "";
-  if (!browser_running_) {
+  if (!browser_) {
     return true;
   }
   base::win::ScopedBstr url;
@@ -88,9 +86,9 @@ bool AuthCodeGetter::TestBrowserUrl(std::string* auth_code) {
 }
 
 void AuthCodeGetter::KillBrowser() {
-  if (browser_running_) {
+  if (browser_) {
     browser_->Quit();
-    browser_running_ = false;
+    browser_.Release();
   }
 }
 
