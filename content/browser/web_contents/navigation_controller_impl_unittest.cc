@@ -40,6 +40,36 @@
 
 using base::Time;
 
+namespace {
+
+// Creates an image with a 1x1 SkBitmap of the specified |color|.
+gfx::Image CreateImage(SkColor color) {
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+  bitmap.allocPixels();
+  bitmap.eraseColor(color);
+  return gfx::Image(bitmap);
+}
+
+// Returns true if images |a| and |b| have the same pixel data.
+bool DoImagesMatch(const gfx::Image& a, const gfx::Image& b) {
+  // Assume that if the 1x bitmaps match, the images match.
+  SkBitmap a_bitmap = a.AsBitmap();
+  SkBitmap b_bitmap = b.AsBitmap();
+
+  if (a_bitmap.width() != b_bitmap.width() ||
+      a_bitmap.height() != b_bitmap.height()) {
+    return false;
+  }
+  SkAutoLockPixels a_bitmap_lock(a_bitmap);
+  SkAutoLockPixels b_bitmap_lock(b_bitmap);
+  return memcmp(a_bitmap.getPixels(),
+                b_bitmap.getPixels(),
+                a_bitmap.getSize()) == 0;
+}
+
+}  // namespace
+
 namespace content {
 
 // TimeSmoother tests ----------------------------------------------------------
@@ -107,25 +137,6 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness {
 
   NavigationControllerImpl& controller_impl() {
     return static_cast<NavigationControllerImpl&>(controller());
-  }
-
-  bool DoImagesMatch(const gfx::Image& a, const gfx::Image& b) {
-    // Assume that if the 1x bitmaps match, the images match.
-    SkBitmap a_bitmap = a.AsBitmap();
-    SkBitmap b_bitmap = b.AsBitmap();
-
-    if (a_bitmap.width() != b_bitmap.width() ||
-        a_bitmap.height() != b_bitmap.height()) {
-      return false;
-    }
-
-    SkAutoLockPixels a_bitmap_lock(a_bitmap);
-    SkAutoLockPixels b_bitmap_lock(b_bitmap);
-
-    return memcmp(a_bitmap.getPixels(),
-                  b_bitmap.getPixels(),
-                  b_bitmap.getSize()) == 0;
-
   }
 };
 
@@ -2929,12 +2940,8 @@ TEST_F(NavigationControllerTest, ClearFaviconOnRedirect) {
   EXPECT_EQ(kPageWithFavicon, entry->GetURL());
 
   // Simulate Chromium having set the favicon for |kPageWithFavicon|.
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  bitmap.allocPixels();
-
-  FaviconStatus& favicon_status = entry->GetFavicon();
-  favicon_status.image = gfx::Image(bitmap);
+  content::FaviconStatus& favicon_status = entry->GetFavicon();
+  favicon_status.image = CreateImage(SK_ColorWHITE);
   favicon_status.url = kIconURL;
   favicon_status.valid = true;
   EXPECT_FALSE(DoImagesMatch(kDefaultFavicon, entry->GetFavicon().image));
@@ -2968,14 +2975,11 @@ TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
   EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Simulate Chromium having set the favicon for |kUrl1|.
-  SkBitmap favicon_bitmap;
-  favicon_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  favicon_bitmap.allocPixels();
-
-  NavigationEntry* entry = controller.GetLastCommittedEntry();
+  gfx::Image favicon_image = CreateImage(SK_ColorWHITE);
+  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
   EXPECT_TRUE(entry);
-  FaviconStatus& favicon_status = entry->GetFavicon();
-  favicon_status.image = gfx::Image(favicon_bitmap);
+  content::FaviconStatus& favicon_status = entry->GetFavicon();
+  favicon_status.image = favicon_image;
   favicon_status.url = kIconURL;
   favicon_status.valid = true;
 
@@ -2989,12 +2993,10 @@ TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
   EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
 
   // Verify that the favicon for the page at |kUrl1| was not cleared.
-  gfx::Image favicon_after_back;
   entry = controller.GetEntryAtIndex(0);
   EXPECT_TRUE(entry);
   EXPECT_EQ(kUrl1, entry->GetURL());
-  EXPECT_TRUE(DoImagesMatch(gfx::Image(favicon_bitmap),
-                            entry->GetFavicon().image));
+  EXPECT_TRUE(DoImagesMatch(favicon_image, entry->GetFavicon().image));
 }
 
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot

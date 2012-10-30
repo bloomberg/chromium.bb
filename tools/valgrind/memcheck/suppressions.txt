@@ -6080,12 +6080,6 @@
   fun:_ZN7content23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
 }
 {
-  bug_157616
-  Memcheck:Uninitialized
-  ...
-  fun:_ZN7content63NavigationControllerTest_BackNavigationDoesNotClearFavicon_Test8TestBodyEv
-}
-{
    bug_157669
    Memcheck:Leak
    fun:_Znw*
