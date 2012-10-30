@@ -462,9 +462,11 @@ TemplateURL* TemplateURLService::GetTemplateURLForGUID(
 
 TemplateURL* TemplateURLService::GetTemplateURLForHost(
     const std::string& host) {
-  TemplateURL* t_url = provider_map_->GetTemplateURLForHost(host);
-  if (t_url)
-    return t_url;
+  if (loaded_) {
+    TemplateURL* t_url = provider_map_->GetTemplateURLForHost(host);
+    if (t_url)
+      return t_url;
+  }
   return ((!loaded_ || load_failed_) &&
       initial_default_search_provider_.get() &&
       (GenerateSearchURL(initial_default_search_provider_.get()).host() ==
