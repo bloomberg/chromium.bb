@@ -4,6 +4,8 @@
 
 #include "content/test/layout_browsertest.h"
 
+namespace content {
+
 class AudioLayoutTest : public InProcessBrowserLayoutTest {
  protected:
   AudioLayoutTest() : InProcessBrowserLayoutTest(
@@ -59,3 +61,5 @@ IN_PROC_BROWSER_TEST_F(AudioLayoutTest, MediaCanPlayWavAudio) {
 IN_PROC_BROWSER_TEST_F(AudioLayoutTest, MediaDocumentAudioSize) {
   RunLayoutTest("media-document-audio-size.html");
 }
+
+}  // namespace content

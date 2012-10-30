@@ -75,6 +75,8 @@ using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadPersistentStoreInfo;
 using content::DownloadUrlParameters;
+using content::URLRequestMockHTTPJob;
+using content::URLRequestSlowDownloadJob;
 using content::WebContents;
 using extensions::Extension;
 using extensions::FeatureSwitch;

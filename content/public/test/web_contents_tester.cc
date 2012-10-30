@@ -15,7 +15,7 @@ namespace {
 
 class TestWebContentsCountFocus : public TestWebContents {
  public:
-  explicit TestWebContentsCountFocus(content::BrowserContext* browser_context)
+  explicit TestWebContentsCountFocus(BrowserContext* browser_context)
       : TestWebContents(browser_context), focus_called_(0) {
   }
 
@@ -34,7 +34,7 @@ class TestWebContentsCountFocus : public TestWebContents {
 class TestWebContentsCountSetFocusToLocationBar : public TestWebContents {
  public:
   explicit TestWebContentsCountSetFocusToLocationBar(
-      content::BrowserContext* browser_context)
+      BrowserContext* browser_context)
       : TestWebContents(browser_context), focus_called_(0) {
   }
 

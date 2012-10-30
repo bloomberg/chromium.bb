@@ -38,9 +38,9 @@ TestContentClientInitializer::~TestContentClientInitializer() {
 
 void TestContentClientInitializer::CreateTestRenderViewHosts() {
 #if !defined(OS_IOS)
-  rph_factory_.reset(new content::MockRenderProcessHostFactory());
+  rph_factory_.reset(new MockRenderProcessHostFactory());
   test_render_view_host_factory_.reset(
-      new content::TestRenderViewHostFactory(rph_factory_.get()));
+      new TestRenderViewHostFactory(rph_factory_.get()));
 #endif  // OS_IOS
 }
 

@@ -9,7 +9,7 @@
 
 #include "content/test/net/url_request_mock_http_job.h"
 
-class URLRequestMockLinkDoctorJob : public URLRequestMockHTTPJob {
+class URLRequestMockLinkDoctorJob : public content::URLRequestMockHTTPJob {
  public:
   URLRequestMockLinkDoctorJob(net::URLRequest* request,
                               net::NetworkDelegate* network_delegate);

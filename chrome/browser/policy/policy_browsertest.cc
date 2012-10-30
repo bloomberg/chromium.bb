@@ -105,6 +105,7 @@
 #endif
 
 using content::BrowserThread;
+using content::URLRequestMockHTTPJob;
 using testing::Return;
 
 namespace policy {

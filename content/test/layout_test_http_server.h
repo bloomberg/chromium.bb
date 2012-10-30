@@ -12,6 +12,8 @@
 #include "base/win/scoped_handle.h"
 #endif
 
+namespace content {
+
 // This object bounds the lifetime of an external HTTP server
 // used for layout tests.
 //
@@ -49,5 +51,7 @@ class LayoutTestHttpServer {
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestHttpServer);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_LAYOUT_TEST_HTTP_SERVER_H_

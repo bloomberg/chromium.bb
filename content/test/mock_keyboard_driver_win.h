@@ -11,6 +11,8 @@
 #include <vector>
 #include "base/basictypes.h"
 
+namespace content {
+
 // Implements the platform-dependent part of a pseudo keyboard device for
 // Windows.
 class MockKeyboardDriverWin {
@@ -37,5 +39,7 @@ class MockKeyboardDriverWin {
 
   DISALLOW_COPY_AND_ASSIGN(MockKeyboardDriverWin);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_MOCK_KEYBOARD_DRIVER_WIN_H_

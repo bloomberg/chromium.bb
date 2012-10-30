@@ -11,7 +11,7 @@
 namespace content {
 
 TestRenderViewHostFactory::TestRenderViewHostFactory(
-    content::RenderProcessHostFactory* rph_factory)
+    RenderProcessHostFactory* rph_factory)
     : render_process_host_factory_(rph_factory) {
   RenderViewHostFactory::RegisterFactory(this);
 }
@@ -21,11 +21,11 @@ TestRenderViewHostFactory::~TestRenderViewHostFactory() {
 }
 
 void TestRenderViewHostFactory::set_render_process_host_factory(
-    content::RenderProcessHostFactory* rph_factory) {
+    RenderProcessHostFactory* rph_factory) {
   render_process_host_factory_ = rph_factory;
 }
 
-content::RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
+RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,

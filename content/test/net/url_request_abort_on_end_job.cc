@@ -17,6 +17,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_status.h"
 
+namespace content {
 namespace {
 const char kPageContent[] = "some data\r\n";
 }
@@ -36,7 +37,7 @@ net::URLRequestJob* URLRequestAbortOnEndJob::Factory(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return new URLRequestAbortOnEndJob(request, network_delegate);
 }
 
@@ -105,4 +106,4 @@ bool URLRequestAbortOnEndJob::ReadRawData(net::IOBuffer* buf,
   return false;
 }
 
-
+}  // namespace content

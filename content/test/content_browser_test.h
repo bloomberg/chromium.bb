@@ -39,7 +39,7 @@ class ContentBrowserTest : public BrowserTestBase {
   Shell* shell() const { return shell_; }
 
  private:
-  scoped_ptr<content::ShellMainDelegate> shell_main_delegate_;
+  scoped_ptr<ShellMainDelegate> shell_main_delegate_;
 
   Shell* shell_;
 

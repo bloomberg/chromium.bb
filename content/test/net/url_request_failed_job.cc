@@ -12,6 +12,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 
+namespace content {
 namespace {
 
 const char kMockHostname[] = "mock.failed.request";
@@ -89,3 +90,5 @@ void URLRequestFailedJob::StartAsync() {
   NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                          net_error_));
 }
+
+}  // namespace content

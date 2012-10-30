@@ -10,6 +10,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_filter.h"
 
+using content::URLRequestMockHTTPJob;
+
 namespace {
 
 FilePath GetMockFilePath() {

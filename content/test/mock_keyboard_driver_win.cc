@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "content/test/mock_keyboard.h"
 
+namespace content {
+
 MockKeyboardDriverWin::MockKeyboardDriverWin() {
   // Save the keyboard layout and status of the application.
   // This class changes the keyboard layout and status of this application.
@@ -161,3 +163,5 @@ int MockKeyboardDriverWin::GetCharacters(int key_code,
     output->assign(code);
   return length;
 }
+
+}  // namespace content

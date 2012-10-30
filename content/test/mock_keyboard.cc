@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+namespace content {
+
 MockKeyboard::MockKeyboard()
     : keyboard_layout_(LAYOUT_NULL),
       keyboard_modifiers_(INVALID) {
@@ -45,3 +47,5 @@ int MockKeyboard::GetCharacters(Layout layout,
   return -1;
 #endif
 }
+
+}  // namespace content

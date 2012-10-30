@@ -55,6 +55,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::URLRequestFailedJob;
+using content::URLRequestMockHTTPJob;
 
 namespace captive_portal {
 

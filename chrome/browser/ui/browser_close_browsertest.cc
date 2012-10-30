@@ -33,6 +33,7 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::URLRequestSlowDownloadJob;
 
 class BrowserCloseTest : public InProcessBrowserTest {
  public:

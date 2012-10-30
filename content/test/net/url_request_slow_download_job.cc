@@ -17,7 +17,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 
-using content::BrowserThread;
+namespace content {
 
 const char URLRequestSlowDownloadJob::kUnknownSizeUrl[] =
   "http://url.handled.by.slow.download/download-unknown-size";
@@ -243,3 +243,5 @@ bool URLRequestSlowDownloadJob::GetMimeType(std::string* mime_type) const {
   GetResponseInfoConst(&info);
   return info.headers && info.headers->GetMimeType(mime_type);
 }
+
+}  // namespace content

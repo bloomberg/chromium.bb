@@ -51,6 +51,7 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadPersistentStoreInfo;
+using content::URLRequestMockHTTPJob;
 using content::WebContents;
 
 const FilePath::CharType kTestDir[] = FILE_PATH_LITERAL("save_page");

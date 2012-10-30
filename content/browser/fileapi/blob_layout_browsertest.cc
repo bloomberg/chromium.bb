@@ -4,6 +4,8 @@
 
 #include "content/test/layout_browsertest.h"
 
+namespace content {
+
 class BlobLayoutTest : public InProcessBrowserLayoutTest {
  public:
   BlobLayoutTest() :
@@ -16,3 +18,5 @@ class BlobLayoutTest : public InProcessBrowserLayoutTest {
 IN_PROC_BROWSER_TEST_F(BlobLayoutTest, SliceTests) {
   RunLayoutTest("blob-slice-test.html");
 }
+
+}  // namespace content

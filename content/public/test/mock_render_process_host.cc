@@ -184,7 +184,7 @@ bool MockRenderProcessHost::SuddenTerminationAllowed() const {
   return true;
 }
 
-content::RenderWidgetHost* MockRenderProcessHost::GetRenderWidgetHostByID(
+RenderWidgetHost* MockRenderProcessHost::GetRenderWidgetHostByID(
     int routing_id) {
   return render_widget_hosts_.Lookup(routing_id);
 }

@@ -10,6 +10,8 @@
 #include "base/timer.h"
 #include "content/test/net/url_request_mock_http_job.h"
 
+namespace content {
+
 class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
  public:
   URLRequestSlowHTTPJob(net::URLRequest* request,
@@ -36,5 +38,7 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
 
   base::OneShotTimer<URLRequestSlowHTTPJob> delay_timer_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_NET_URL_REQUEST_SLOW_HTTP_JOB_H_

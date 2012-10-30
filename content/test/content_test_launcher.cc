@@ -101,7 +101,7 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
   }
 
  protected:
-  virtual content::ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {
+  virtual ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {
     return new ShellMainDelegate();
   }
 

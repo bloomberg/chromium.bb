@@ -33,6 +33,7 @@
 #endif
 
 using content::BrowserThread;
+using content::URLRequestMockHTTPJob;
 
 class ContentSettingsTest : public InProcessBrowserTest {
  public:

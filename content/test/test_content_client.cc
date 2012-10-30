@@ -10,6 +10,8 @@
 #include "base/path_service.h"
 #include "base/string_piece.h"
 
+namespace content {
+
 TestContentClient::TestContentClient()
     : data_pack_(ui::SCALE_FACTOR_100P) {
   // content_resources.pak is not built on iOS as it is not required.
@@ -43,3 +45,5 @@ base::StringPiece TestContentClient::GetDataResource(
   data_pack_.GetStringPiece(resource_id, &resource);
   return resource;
 }
+
+}  // namespace content

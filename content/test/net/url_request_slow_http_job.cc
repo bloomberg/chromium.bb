@@ -10,6 +10,7 @@
 
 static const char kMockHostname[] = "mock.slow.http";
 
+namespace content {
 namespace {
 
 // This is the file path leading to the root of the directory to use as the
@@ -73,3 +74,5 @@ URLRequestSlowHTTPJob::~URLRequestSlowHTTPJob() {
 void URLRequestSlowHTTPJob::RealStart() {
   URLRequestMockHTTPJob::Start();
 }
+
+}  // namespace content

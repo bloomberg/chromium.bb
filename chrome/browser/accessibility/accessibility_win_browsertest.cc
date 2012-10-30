@@ -350,8 +350,10 @@ void AccessibleChecker::CheckIA2Role(IAccessible* accessible) {
   ASSERT_EQ(S_OK, hr);
   EXPECT_EQ(ia2_role_, ia2_role);
   if (ia2_role_ != ia2_role) {
-    LOG(ERROR) << "Expected ia2 role: " << IAccessible2RoleToString(ia2_role_);
-    LOG(ERROR) << "Got ia2 role: " << IAccessible2RoleToString(ia2_role);
+    LOG(ERROR) << "Expected ia2 role: " <<
+        content::IAccessible2RoleToString(ia2_role_);
+    LOG(ERROR) << "Got ia2 role: " <<
+        content::IAccessible2RoleToString(ia2_role);
   }
 }
 
@@ -377,8 +379,10 @@ void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
   ASSERT_EQ(VT_I4, V_VT(&var_state));
   EXPECT_EQ(state_, V_I4(&var_state));
   if (state_ != V_I4(&var_state)) {
-    LOG(ERROR) << "Expected state: " << IAccessibleStateToString(state_);
-    LOG(ERROR) << "Got state: " << IAccessibleStateToString(V_I4(&var_state));
+    LOG(ERROR) << "Expected state: " <<
+        content::IAccessibleStateToString(state_);
+    LOG(ERROR) << "Got state: " <<
+        content::IAccessibleStateToString(V_I4(&var_state));
   }
 }
 
@@ -408,7 +412,7 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
 
 string16 AccessibleChecker::RoleVariantToString(VARIANT* role_variant) {
   if (V_VT(role_variant) == VT_I4)
-    return IAccessibleRoleToString(V_I4(role_variant));
+    return content::IAccessibleRoleToString(V_I4(role_variant));
   else if (V_VT(role_variant) == VT_BSTR)
     return string16(V_BSTR(role_variant), SysStringLen(V_BSTR(role_variant)));
   return string16();

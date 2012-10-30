@@ -7,12 +7,12 @@
 #include "content/test/content_browser_test.h"
 
 class GURL;
-class LayoutTestHttpServer;
-namespace content {
-class WebKitTestController;
-}
 
-class InProcessBrowserLayoutTest : public content::ContentBrowserTest {
+namespace content {
+class LayoutTestHttpServer;
+class WebKitTestController;
+
+class InProcessBrowserLayoutTest : public ContentBrowserTest {
  public:
   explicit InProcessBrowserLayoutTest(const FilePath& test_parent_dir,
                                       const FilePath& test_case_dir);
@@ -53,7 +53,9 @@ class InProcessBrowserLayoutTest : public content::ContentBrowserTest {
   int port_;  // -2 means no port.  -1 means random.
   scoped_ptr<LayoutTestHttpServer> test_http_server_;
 
-  scoped_ptr<content::WebKitTestController> test_controller_;
+  scoped_ptr<WebKitTestController> test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessBrowserLayoutTest);
 };
+
+}  // namespace content

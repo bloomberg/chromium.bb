@@ -13,6 +13,8 @@
 #include "content/test/mock_keyboard_driver_win.h"
 #endif
 
+namespace content {
+
 // A mock keyboard interface.
 // This class defines a pseudo keyboard device, which implements mappings from
 // a tuple (layout, key code, modifiers) to Unicode characters so that
@@ -102,5 +104,7 @@ class MockKeyboard {
 
   DISALLOW_COPY_AND_ASSIGN(MockKeyboard);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_MOCK_KEYBOARD_H_

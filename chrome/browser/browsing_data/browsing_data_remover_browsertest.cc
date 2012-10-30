@@ -28,7 +28,7 @@ using content::BrowserThread;
 
 namespace {
 void SetUrlRequestMock(const FilePath& path) {
-  URLRequestMockHTTPJob::AddUrlHandler(path);
+  content::URLRequestMockHTTPJob::AddUrlHandler(path);
 }
 }
 
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
 
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+  GURL url(content::URLRequestMockHTTPJob::GetMockUrl(
       FilePath().AppendASCII("simple_database.html")));
   ui_test_utils::NavigateToURL(browser(), url);
 

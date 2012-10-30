@@ -125,7 +125,7 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
 
   // See comment above browser_context_ decl for why we check for NULL here.
   if (!browser_context_.get())
-    browser_context_.reset(new content::TestBrowserContext());
+    browser_context_.reset(new TestBrowserContext());
 
   // This will be deleted when the WebContentsImpl goes away.
   SiteInstance* instance = SiteInstance::Create(browser_context_.get());

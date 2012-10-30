@@ -33,7 +33,6 @@ using WebKit::WebScriptController;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
-using content::NativeWebKeyboardEvent;
 
 namespace {
 const int32 kOpenerId = -2;
@@ -137,7 +136,7 @@ void RenderViewTest::SetUp() {
   render_thread_->set_new_window_routing_id(kNewWindowRouteId);
 
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  params_.reset(new content::MainFunctionParams(*command_line_));
+  params_.reset(new MainFunctionParams(*command_line_));
   platform_.reset(new RendererMainPlatformDelegate(*params_));
   platform_->PlatformInitialize();
 
@@ -163,7 +162,7 @@ void RenderViewTest::SetUp() {
   RenderViewImpl* view = RenderViewImpl::Create(
       0,
       kOpenerId,
-      content::RendererPreferences(),
+      RendererPreferences(),
       webkit_glue::WebPreferences(),
       new SharedRenderViewCounter(0),
       kRouteId,
@@ -355,7 +354,7 @@ void RenderViewTest::GoToOffset(int offset,
 
   ViewMsg_Navigate_Params navigate_params;
   navigate_params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  navigate_params.transition = content::PAGE_TRANSITION_FORWARD_BACK;
+  navigate_params.transition = PAGE_TRANSITION_FORWARD_BACK;
   navigate_params.current_history_list_length = history_list_length;
   navigate_params.current_history_list_offset = impl->history_list_offset();
   navigate_params.pending_history_list_offset = pending_offset;

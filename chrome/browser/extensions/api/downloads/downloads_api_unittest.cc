@@ -59,6 +59,7 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadPersistentStoreInfo;
+using content::URLRequestSlowDownloadJob;
 
 namespace events = extensions::event_names;
 

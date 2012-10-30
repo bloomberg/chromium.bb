@@ -16,6 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_job.h"
 
+namespace content {
+
 class URLRequestSlowDownloadJob : public net::URLRequestJob {
  public:
   // Test URLs.
@@ -93,5 +95,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
 
   base::WeakPtrFactory<URLRequestSlowDownloadJob> weak_factory_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_

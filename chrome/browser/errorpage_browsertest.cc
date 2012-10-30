@@ -20,6 +20,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::URLRequestFailedJob;
 
 class ErrorPageTest : public InProcessBrowserTest {
  public:
@@ -32,7 +33,7 @@ class ErrorPageTest : public InProcessBrowserTest {
   void NavigateToFileURL(const FilePath::StringType& file_path) {
     ui_test_utils::NavigateToURL(
         browser(),
-        URLRequestMockHTTPJob::GetMockUrl(FilePath(file_path)));
+        content::URLRequestMockHTTPJob::GetMockUrl(FilePath(file_path)));
   }
 
   // Navigates to the given URL and waits for |num_navigations| to occur, and
@@ -194,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
 // Test that a DNS error occuring in an iframe.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
   NavigateToURLAndWaitForTitle(
-      URLRequestMockHTTPJob::GetMockUrl(
+      content::URLRequestMockHTTPJob::GetMockUrl(
           FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))),
       "Blah",
       1);
@@ -232,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBackAndForward) {
 // Checks that the Link Doctor is not loaded when we receive an actual 404 page.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
   NavigateToURLAndWaitForTitle(
-      URLRequestMockHTTPJob::GetMockUrl(
+      content::URLRequestMockHTTPJob::GetMockUrl(
           FilePath(FILE_PATH_LITERAL("page404.html"))),
       "SUCCESS",
       1);

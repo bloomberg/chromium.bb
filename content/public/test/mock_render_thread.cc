@@ -119,15 +119,14 @@ void MockRenderThread::SetOutgoingMessageFilter(
     IPC::ChannelProxy::OutgoingMessageFilter* filter) {
 }
 
-void MockRenderThread::AddObserver(content::RenderProcessObserver* observer) {
+void MockRenderThread::AddObserver(RenderProcessObserver* observer) {
 }
 
-void MockRenderThread::RemoveObserver(
-    content::RenderProcessObserver* observer) {
+void MockRenderThread::RemoveObserver(RenderProcessObserver* observer) {
 }
 
 void MockRenderThread::SetResourceDispatcherDelegate(
-    content::ResourceDispatcherDelegate* delegate) {
+    ResourceDispatcherDelegate* delegate) {
 }
 
 void MockRenderThread::WidgetHidden() {

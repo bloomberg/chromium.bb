@@ -34,14 +34,14 @@ void SetUrlRequestMocksEnabled(bool enabled) {
 
     net::URLRequestFilter::GetInstance()->ClearHandlers();
 
-    URLRequestFailedJob::AddUrlHandler();
+    content::URLRequestFailedJob::AddUrlHandler();
     URLRequestMockLinkDoctorJob::AddUrlHandler();
-    URLRequestSlowDownloadJob::AddUrlHandler();
+    content::URLRequestSlowDownloadJob::AddUrlHandler();
 
     FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
-    URLRequestMockHTTPJob::AddUrlHandler(root_http);
-    URLRequestSlowHTTPJob::AddUrlHandler(root_http);
+    content::URLRequestMockHTTPJob::AddUrlHandler(root_http);
+    content::URLRequestSlowHTTPJob::AddUrlHandler(root_http);
   } else {
     // Revert to the default handlers.
     net::URLRequestFilter::GetInstance()->ClearHandlers();

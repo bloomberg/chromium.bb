@@ -39,6 +39,7 @@ static const char kPlatformName[] = "chromium-openbsd";
 #error No known OS defined
 #endif
 
+namespace content {
 namespace {
 
 bool ReadExpectedResult(const FilePath& result_dir_path,
@@ -75,7 +76,7 @@ InProcessBrowserLayoutTest::~InProcessBrowserLayoutTest() {
 
 void InProcessBrowserLayoutTest::SetUpInProcessBrowserTestFixture() {
   FilePath src_dir;
-  ASSERT_TRUE(PathService::Get(content::DIR_LAYOUT_TESTS, &src_dir));
+  ASSERT_TRUE(PathService::Get(DIR_LAYOUT_TESTS, &src_dir));
   FilePath absolute_parent_dir = src_dir.Append(test_parent_dir_);
   ASSERT_TRUE(file_util::DirectoryExists(absolute_parent_dir));
   layout_test_dir_ = absolute_parent_dir.Append(test_case_dir_);
@@ -124,7 +125,7 @@ void InProcessBrowserLayoutTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 void InProcessBrowserLayoutTest::SetUpOnMainThread() {
-  test_controller_.reset(new content::WebKitTestController);
+  test_controller_.reset(new WebKitTestController);
 }
 
 void InProcessBrowserLayoutTest::RunLayoutTest(
@@ -146,8 +147,8 @@ void InProcessBrowserLayoutTest::RunHttpLayoutTest(
 void InProcessBrowserLayoutTest::RunLayoutTestInternal(
     const std::string& test_case_file_name, const GURL& url) {
   std::stringstream result;
-  scoped_ptr<content::WebKitTestResultPrinter> printer(
-      new content::WebKitTestResultPrinter(&result, NULL));
+  scoped_ptr<WebKitTestResultPrinter> printer(
+      new WebKitTestResultPrinter(&result, NULL));
   printer->set_capture_text_only(true);
   test_controller_->set_printer(printer.release());
 
@@ -204,3 +205,5 @@ std::string InProcessBrowserLayoutTest::SaveResults(const std::string& expected,
                       expected_filename.value().c_str(),
                       actual_filename.value().c_str());
 }
+
+}  // namespace content

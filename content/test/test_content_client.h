@@ -12,12 +12,14 @@
 #include "content/public/common/content_client.h"
 #include "ui/base/resource/data_pack.h"
 
-class TestContentClient : public content::ContentClient {
+namespace content {
+
+class TestContentClient : public ContentClient {
  public:
   TestContentClient();
   virtual ~TestContentClient();
 
-  // content::ContentClient:
+  // ContentClient:
   virtual std::string GetUserAgent() const OVERRIDE;
   virtual base::StringPiece GetDataResource(
       int resource_id,
@@ -28,5 +30,7 @@ class TestContentClient : public content::ContentClient {
 
   DISALLOW_COPY_AND_ASSIGN(TestContentClient);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_TEST_CONTENT_CLIENT_H_

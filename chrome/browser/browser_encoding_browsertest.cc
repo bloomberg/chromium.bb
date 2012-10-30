@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, SLOW_TestEncodingAliasMapping) {
     test_file_path = test_file_path.AppendASCII(
         kEncodingTestDatas[i].file_name);
 
-    GURL url = URLRequestMockHTTPJob::GetMockUrl(test_file_path);
+    GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
 
     // When looping through all the above files in one WebContents, there's a
     // race condition on Windows trybots that causes the previous encoding to be
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 
   FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kOverrideTestDir);
   test_dir_path = test_dir_path.AppendASCII(kTestFileName);
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
+  GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   EXPECT_EQ("ISO-8859-1", web_contents->GetEncoding());
@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
 
     FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
-    GURL url = URLRequestMockHTTPJob::GetMockUrl(test_file_path);
+    GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
     ui_test_utils::NavigateToURL(browser(), url);
 
     // Get the encoding used for the page, it must be the default charset we

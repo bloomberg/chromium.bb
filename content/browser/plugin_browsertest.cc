@@ -21,6 +21,7 @@
 #include "base/win/registry.h"
 #endif
 
+namespace content {
 namespace {
 
 void SetUrlRequestMock(const FilePath& path) {
@@ -28,8 +29,6 @@ void SetUrlRequestMock(const FilePath& path) {
 }
 
 }
-
-namespace content {
 
 class PluginTest : public ContentBrowserTest {
  protected:

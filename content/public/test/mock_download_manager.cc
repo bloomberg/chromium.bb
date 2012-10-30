@@ -16,9 +16,9 @@ MockDownloadManager::MockDownloadManager() {}
 
 MockDownloadManager::~MockDownloadManager() {}
 
-content::DownloadItem* MockDownloadManager::StartDownload(
+DownloadItem* MockDownloadManager::StartDownload(
     scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<content::ByteStreamReader> stream) {
+    scoped_ptr<ByteStreamReader> stream) {
   return MockStartDownload(info.get(), stream.get());
 }
 

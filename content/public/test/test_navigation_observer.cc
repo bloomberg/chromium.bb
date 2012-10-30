@@ -89,7 +89,7 @@ void TestNavigationObserver::Wait() {
   base::RunLoop run_loop;
   WaitForObservation(
       base::Bind(&base::RunLoop::Run, base::Unretained(&run_loop)),
-      content::GetQuitTaskForRunLoop(&run_loop));
+      GetQuitTaskForRunLoop(&run_loop));
 }
 
 TestNavigationObserver::TestNavigationObserver(

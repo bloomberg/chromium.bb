@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 
+namespace content {
 namespace {
 
 class AccessibilityRoleStateMap {
@@ -263,3 +264,5 @@ string16 IAccessible2StateToString(int32 ia2_state) {
   IAccessible2StateToStringVector(ia2_state, &strings);
   return JoinString(strings, ',');
 }
+
+}  // namespace content

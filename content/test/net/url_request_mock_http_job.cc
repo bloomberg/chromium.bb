@@ -29,6 +29,8 @@ FilePath& BasePath() {
 
 }  // namespace
 
+namespace content {
+
 // static
 net::URLRequestJob* URLRequestMockHTTPJob::Factory(
     net::URLRequest* request,
@@ -139,3 +141,5 @@ bool URLRequestMockHTTPJob::GetCharset(std::string* charset) {
   GetResponseInfo(&info);
   return info.headers && info.headers->GetCharset(charset);
 }
+
+}  // namespace content
