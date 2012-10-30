@@ -57,18 +57,9 @@ IndexedDBDispatcher::~IndexedDBDispatcher() {
 
   // Clear any pending callbacks - which may result in dispatch requests -
   // before marking the dispatcher as deleted.
-  for (IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer>::iterator
-           it(&pending_callbacks_); !it.IsAtEnd(); it.Advance()) {
-    pending_callbacks_.Remove(it.GetCurrentKey());
-  }
-  for (IDMap<WebKit::WebIDBDatabaseCallbacks, IDMapOwnPointer>::iterator
-           it(&pending_database_callbacks_); !it.IsAtEnd(); it.Advance()) {
-    pending_database_callbacks_.Remove(it.GetCurrentKey());
-  }
-  for (IDMap<WebKit::WebIDBTransactionCallbacks, IDMapOwnPointer>::iterator
-           it(&pending_transaction_callbacks_); !it.IsAtEnd(); it.Advance()) {
-    pending_transaction_callbacks_.Remove(it.GetCurrentKey());
-  }
+  pending_callbacks_.Clear();
+  pending_database_callbacks_.Clear();
+  pending_transaction_callbacks_.Clear();
 
   DCHECK(pending_callbacks_.IsEmpty());
   DCHECK(pending_database_callbacks_.IsEmpty());
