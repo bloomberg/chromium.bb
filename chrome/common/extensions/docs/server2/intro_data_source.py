@@ -4,6 +4,7 @@
 
 from HTMLParser import HTMLParser
 import re
+import logging
 
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
@@ -12,7 +13,7 @@ from third_party.handlebar import Handlebar
 
 # Increment this version if there are changes to the table of contents dict that
 # IntroDataSource caches.
-_VERSION = 0
+_VERSION = 1
 
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
@@ -70,13 +71,24 @@ class IntroDataSource(object):
       self._base_paths = base_paths
 
     def _MakeIntroDict(self, intro):
-      parser = _IntroParser()
-      parser.feed(intro)
+      apps_parser = _IntroParser()
+      apps_parser.feed(Handlebar(intro).render({ 'is_apps': True }).text)
+      extensions_parser = _IntroParser()
+      extensions_parser.feed(Handlebar(intro).render({ 'is_apps': False }).text)
+      # TODO(cduvall): Use the normal template rendering system, so we can check
+      # errors.
+      if extensions_parser.page_title != apps_parser.page_title:
+        logging.error(
+            'Title differs for apps and extensions: Apps: %s, Extensions: %s.' %
+                (extensions_parser.page_title, apps_parser.page_title))
       intro = re.sub(_H1_REGEX, '', intro, count=1)
       return {
         'intro': Handlebar(intro),
-        'toc': parser.toc,
-        'title': parser.page_title
+        'title': apps_parser.page_title,
+        # TODO(cduvall): Take this out, this is so the old TOCs don't break.
+        'toc': extensions_parser.toc,
+        'apps_toc': apps_parser.toc,
+        'extensions_toc': extensions_parser.toc,
       }
 
     def Create(self):
