@@ -131,11 +131,11 @@ RenderViewHost* RenderViewHost::From(RenderWidgetHost* rwh) {
 }
 
 // static
-void RenderViewHost::FilterURL(int renderer_id,
+void RenderViewHost::FilterURL(const RenderProcessHost* process,
                                bool empty_allowed,
                                GURL* url) {
   RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
-                                renderer_id, empty_allowed, url);
+                                process, empty_allowed, url);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -268,6 +268,8 @@ bool RenderViewHostImpl::CreateRenderView(
 
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
+  if (GetProcess()->IsGuest())
+    DCHECK_EQ(0, enabled_bindings_);
   Send(new ViewMsg_AllowBindings(GetRoutingID(), enabled_bindings_));
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
@@ -289,14 +291,18 @@ void RenderViewHostImpl::SyncRendererPrefs() {
 }
 
 void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-      GetProcess()->GetID(), params.url);
-  if (params.url.SchemeIs(chrome::kDataScheme) &&
-      params.base_url_for_data_url.SchemeIs(chrome::kFileScheme)) {
-    // If 'data:' is used, and we have a 'file:' base url, grant access to
-    // local files.
+  // Browser plugin guests are not allowed to navigate outside web-safe schemes,
+  // so do not grant them the ability to request additional URLs.
+  if (!GetProcess()->IsGuest()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-        GetProcess()->GetID(), params.base_url_for_data_url);
+        GetProcess()->GetID(), params.url);
+    if (params.url.SchemeIs(chrome::kDataScheme) &&
+        params.base_url_for_data_url.SchemeIs(chrome::kFileScheme)) {
+      // If 'data:' is used, and we have a 'file:' base url, grant access to
+      // local files.
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
+          GetProcess()->GetID(), params.base_url_for_data_url);
+    }
   }
 
   ViewMsg_Navigate* nav_message = new ViewMsg_Navigate(GetRoutingID(), params);
@@ -591,7 +597,7 @@ void RenderViewHostImpl::DragTargetDragEnter(
   // The URL could have been cobbled together from any highlighted text string,
   // and can't be interpreted as a capability.
   WebDropData filtered_data(drop_data);
-  FilterURL(policy, renderer_id, true, &filtered_data.url);
+  FilterURL(policy, GetProcess(), true, &filtered_data.url);
 
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.
@@ -815,6 +821,12 @@ void RenderViewHostImpl::AllowBindings(int bindings_flags) {
         static_cast<RenderProcessHostImpl*>(GetProcess());
     if (process->GetActiveViewCount() > 1)
       return;
+  }
+
+  // Never grant any bindings to browser plugin guests.
+  if (GetProcess()->IsGuest()) {
+    NOTREACHED() << "Never grant bindings to a guest process.";
+    return;
   }
 
   if (bindings_flags & BINDINGS_POLICY_WEB_UI) {
@@ -1221,7 +1233,7 @@ void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
   if (is_waiting_for_unload_ack_)
     return;
 
-  const int renderer_id = GetProcess()->GetID();
+  RenderProcessHost* process = GetProcess();
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   // Without this check, an evil renderer can trick the browser into creating
@@ -1231,15 +1243,15 @@ void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
   // renderer to load the URL and grant the renderer the privileges to request
   // the URL.  To prevent this attack, we block the renderer from inserting
   // banned URLs into the navigation controller in the first place.
-  FilterURL(policy, renderer_id, false, &validated_params.url);
-  FilterURL(policy, renderer_id, true, &validated_params.referrer.url);
+  FilterURL(policy, process, false, &validated_params.url);
+  FilterURL(policy, process, true, &validated_params.referrer.url);
   for (std::vector<GURL>::iterator it(validated_params.redirects.begin());
       it != validated_params.redirects.end(); ++it) {
-    FilterURL(policy, renderer_id, false, &(*it));
+    FilterURL(policy, process, false, &(*it));
   }
-  FilterURL(policy, renderer_id, true, &validated_params.searchable_form_url);
-  FilterURL(policy, renderer_id, true, &validated_params.password_form.origin);
-  FilterURL(policy, renderer_id, true, &validated_params.password_form.action);
+  FilterURL(policy, process, true, &validated_params.searchable_form_url);
+  FilterURL(policy, process, true, &validated_params.password_form.origin);
+  FilterURL(policy, process, true, &validated_params.password_form.action);
 
   delegate_->DidNavigate(this, validated_params);
 
@@ -1323,16 +1335,16 @@ void RenderViewHostImpl::OnMsgContextMenu(const ContextMenuParams& params) {
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
-  int renderer_id = GetProcess()->GetID();
+  RenderProcessHost* process = GetProcess();
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // We don't validate |unfiltered_link_url| so that this field can be used
   // when users want to copy the original link URL.
-  FilterURL(policy, renderer_id, true, &validated_params.link_url);
-  FilterURL(policy, renderer_id, true, &validated_params.src_url);
-  FilterURL(policy, renderer_id, false, &validated_params.page_url);
-  FilterURL(policy, renderer_id, true, &validated_params.frame_url);
+  FilterURL(policy, process, true, &validated_params.link_url);
+  FilterURL(policy, process, true, &validated_params.src_url);
+  FilterURL(policy, process, false, &validated_params.page_url);
+  FilterURL(policy, process, true, &validated_params.frame_url);
 
   ContextMenuSourceType type = CONTEXT_MENU_SOURCE_MOUSE;
   if (!in_process_event_types_.empty()) {
@@ -1357,7 +1369,7 @@ void RenderViewHostImpl::OnMsgOpenURL(const GURL& url,
                                       int64 source_frame_id) {
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
-            GetProcess()->GetID(), false, &validated_url);
+            GetProcess(), false, &validated_url);
 
   delegate_->RequestOpenURL(
       this, validated_url, referrer, disposition, source_frame_id);
@@ -1452,13 +1464,14 @@ void RenderViewHostImpl::OnMsgStartDragging(
     return;
 
   WebDropData filtered_data(drop_data);
+  RenderProcessHost* process = GetProcess();
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
   if (!filtered_data.url.SchemeIs(chrome::kJavaScriptScheme))
-    FilterURL(policy, GetProcess()->GetID(), true, &filtered_data.url);
-  FilterURL(policy, GetProcess()->GetID(), false, &filtered_data.html_base_url);
+    FilterURL(policy, process, true, &filtered_data.url);
+  FilterURL(policy, process, false, &filtered_data.html_base_url);
   // Filter out any paths that the renderer didn't have access to. This prevents
   // the following attack on a malicious renderer:
   // 1. StartDragging IPC sent with renderer-specified filesystem paths that it
@@ -1699,7 +1712,7 @@ void RenderViewHostImpl::ToggleSpeechInput() {
 }
 
 void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
-                                   int renderer_id,
+                                   const RenderProcessHost* process,
                                    bool empty_allowed,
                                    GURL* url) {
   if (empty_allowed && url->is_empty())
@@ -1720,7 +1733,12 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
     *url = GURL(chrome::kAboutBlankURL);
   }
 
-  if (!policy->CanRequestURL(renderer_id, *url)) {
+  // Do not allow browser plugin guests to navigate to non-web URLs, since they
+  // cannot swap processes or grant bindings.
+  bool non_web_url_in_guest = process->IsGuest() &&
+      !(url->is_valid() && policy->IsWebSafeScheme(url->scheme()));
+
+  if (non_web_url_in_guest || !policy->CanRequestURL(process->GetID(), *url)) {
     // If this renderer is not permitted to request this URL, we invalidate the
     // URL.  This prevents us from storing the blocked URL and becoming confused
     // later.

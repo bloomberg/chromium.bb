@@ -39,10 +39,7 @@ void CheckIfShouldIgnoreNavigationOnUIThread(
 
   if (rvh) {
     GURL validated_url(url);
-    RenderViewHost::FilterURL(
-        rvh->GetProcess()->GetID(),
-        false,
-        &validated_url);
+    RenderViewHost::FilterURL(rvh->GetProcess(), false, &validated_url);
 
     should_ignore_navigation = should_ignore_callback.Run(
         rvh, validated_url, referrer, has_user_gesture);

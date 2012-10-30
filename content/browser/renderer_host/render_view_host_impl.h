@@ -442,7 +442,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // about:blank.
   // empty_allowed must be set to false for navigations for security reasons.
   static void FilterURL(ChildProcessSecurityPolicyImpl* policy,
-                        int renderer_id,
+                        const RenderProcessHost* process,
                         bool empty_allowed,
                         GURL* url);
 

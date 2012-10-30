@@ -556,12 +556,16 @@ ProfileImplIOData::InitializeAppRequestContext(
 
   // Overwrite the job factory that we inherit from the main context so
   // that we can later provide our own handles for storage related protocols.
+  // Install all the usual protocol handlers unless we are in a browser plugin
+  // guest process, in which case only web-safe schemes are allowed.
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
-  SetUpJobFactory(job_factory.get(), protocol_handler_interceptor.Pass(),
-                  network_delegate(),
-                  context->ftp_transaction_factory(),
-                  context->ftp_auth_cache());
+  if (!is_guest_process) {
+    SetUpJobFactory(job_factory.get(), protocol_handler_interceptor.Pass(),
+                    network_delegate(),
+                    context->ftp_transaction_factory(),
+                    context->ftp_auth_cache());
+  }
   context->SetJobFactory(job_factory.PassAs<net::URLRequestJobFactory>());
 
   return context;

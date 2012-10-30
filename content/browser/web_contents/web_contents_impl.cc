@@ -1961,14 +1961,8 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
   GURL validated_opener_url(opener_url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  RenderViewHost::FilterURL(
-      render_process_host->GetID(),
-      false,
-      &validated_url);
-  RenderViewHost::FilterURL(
-      render_process_host->GetID(),
-      true,
-      &validated_opener_url);
+  RenderViewHost::FilterURL(render_process_host, false, &validated_url);
+  RenderViewHost::FilterURL(render_process_host, true, &validated_opener_url);
 
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -1999,21 +1993,9 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
   GURL validated_opener_url(opener_url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  RenderViewHostImpl::FilterURL(
-      ChildProcessSecurityPolicyImpl::GetInstance(),
-      render_process_host->GetID(),
-      false,
-      &validated_source_url);
-  RenderViewHostImpl::FilterURL(
-      ChildProcessSecurityPolicyImpl::GetInstance(),
-      render_process_host->GetID(),
-      false,
-      &validated_target_url);
-  RenderViewHostImpl::FilterURL(
-      ChildProcessSecurityPolicyImpl::GetInstance(),
-      render_process_host->GetID(),
-      true,
-      &validated_opener_url);
+  RenderViewHost::FilterURL(render_process_host, false, &validated_source_url);
+  RenderViewHost::FilterURL(render_process_host, false, &validated_target_url);
+  RenderViewHost::FilterURL(render_process_host, true, &validated_opener_url);
   NavigationEntry* entry;
   if (page_id == -1) {
     entry = controller_.GetPendingEntry();
@@ -2044,10 +2026,7 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
   GURL validated_url(params.url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  RenderViewHost::FilterURL(
-      render_process_host->GetID(),
-      false,
-      &validated_url);
+  RenderViewHost::FilterURL(render_process_host, false, &validated_url);
 
   if (net::ERR_ABORTED == params.error_code) {
     // EVIL HACK ALERT! Ignore failed loads when we're showing interstitials.

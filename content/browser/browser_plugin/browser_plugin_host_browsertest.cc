@@ -746,19 +746,47 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
 
-  const string16 expected_title = ASCIIToUTF16("ERR_EMPTY_RESPONSE");
-  content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                      expected_title);
+  {
+    // Navigate the guest to "close-socket".
+    const string16 expected_title = ASCIIToUTF16("ERR_EMPTY_RESPONSE");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
+    RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+        test_embedder()->web_contents()->GetRenderViewHost());
+    GURL test_url = test_server()->GetURL("close-socket");
+    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
+        StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
 
-  // Renavigate the guest to "close-socket".
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  GURL test_url = test_server()->GetURL("close-socket");
-  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
-      StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+  {
+    // Navigate the guest to an illegal chrome:// URL.
+    const string16 expected_title = ASCIIToUTF16("ERR_FAILED");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
+    RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+        test_embedder()->web_contents()->GetRenderViewHost());
+    GURL test_url("chrome://newtab");
+    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
+        StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
 
-  string16 actual_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, actual_title);
+  {
+    // Navigate the guest to an illegal file:// URL.
+    const string16 expected_title = ASCIIToUTF16("ERR_ABORTED");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
+    RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+        test_embedder()->web_contents()->GetRenderViewHost());
+    GURL test_url("file://foo");
+    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
+        StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {

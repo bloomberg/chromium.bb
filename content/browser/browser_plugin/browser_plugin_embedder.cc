@@ -142,7 +142,10 @@ void BrowserPluginEmbedder::NavigateGuest(
   // should never be sent to BrowserPluginEmbedder (browser process).
   DCHECK(!src.empty());
   if (!src.empty()) {
-    // TODO(creis): Check the validity of the URL: http://crbug.com/139397.
+    // Because guests do not swap processes on navigation, only navigations to
+    // normal web URLs are supported.  No protocol handlers are installed for
+    // other schemes (e.g., WebUI or extensions), and no permissions or bindings
+    // can be granted to the guest process.
     guest_web_contents->GetController().LoadURL(url,
                                                 Referrer(),
                                                 PAGE_TRANSITION_AUTO_TOPLEVEL,

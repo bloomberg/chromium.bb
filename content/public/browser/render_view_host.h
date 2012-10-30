@@ -37,6 +37,7 @@ struct WebPluginAction;
 namespace content {
 
 class ChildProcessSecurityPolicy;
+class RenderProcessHost;
 class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -66,7 +67,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Checks that the given renderer can request |url|, if not it sets it to
   // about:blank.
   // |empty_allowed| must be set to false for navigations for security reasons.
-  static void FilterURL(int renderer_id,
+  static void FilterURL(const RenderProcessHost* process,
                         bool empty_allowed,
                         GURL* url);
 
