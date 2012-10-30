@@ -82,11 +82,17 @@ def main():
   subprocess2.check_output(
       ['git', 'checkout', '-b', 'webkit_roll', options.upstream])
   try:
-    old_rev = process_deps(os.path.join(root_dir, 'DEPS'), new_rev)
+    old_rev = int(process_deps(os.path.join(root_dir, 'DEPS'), new_rev))
     review_field = 'TBR' if options.commit else 'R'
-    commit_msg = 'Webkit roll %s:%s\n\n%s=%s\n' % (old_rev, new_rev,
-                                                   review_field,
-                                                   options.reviewers)
+    commit_msg = ('Webkit roll %s:%s\n'
+                 '\n'
+                 'http://trac.webkit.org/log/?'
+                 'rev=%s&stop_rev=%s&verbose=on\n'
+                 '\n'
+                 '%s=%s\n' % (old_rev, new_rev,
+                              new_rev, old_rev+1,
+                              review_field,
+                              options.reviewers))
     subprocess2.check_output(['git', 'commit', '-m', commit_msg, 'DEPS'])
     subprocess2.check_call(['git', 'diff', options.upstream])
     upload_cmd = ['git', 'cl', 'upload']
