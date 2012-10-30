@@ -5,6 +5,7 @@
 """Utility functions for sdk_update.py and sdk_update_main.py."""
 
 import errno
+import logging
 import os
 import shutil
 import subprocess
@@ -15,6 +16,12 @@ import time
 class Error(Exception):
   """Generic error/exception for sdk_update module"""
   pass
+
+
+def MakeDirs(directory):
+  if not os.path.exists(directory):
+    logging.info('Making directory %s' % (directory,))
+    os.makedirs(directory)
 
 
 def RemoveDir(outdir):
@@ -30,18 +37,46 @@ def RemoveDir(outdir):
     outdir: The directory to delete
 
   Raises:
-    CalledProcessError - if the delete operation fails on Windows
-    OSError - if the delete operation fails on Linux
+    Error - If this operation fails for any reason.
   """
 
-  try:
-    shutil.rmtree(outdir)
-  except OSError:
-    if not os.path.exists(outdir):
+  max_tries = 5
+  last_exception = None
+  for num_tries in xrange(max_tries):
+    try:
+      shutil.rmtree(outdir)
       return
-    # On Windows this could be an issue with junctions, so try again with rmdir
+    except OSError as e:
+      if not os.path.exists(outdir):
+        # The directory can't be removed because it doesn't exist.
+        return
+      last_exception = e
+
+    # On Windows this could be an issue with junctions, so try again with
+    # rmdir.
     if sys.platform == 'win32':
-      subprocess.check_call(['rmdir', '/S', '/Q', outdir], shell=True)
+      try:
+        cmd = ['rmdir', '/S', '/Q', outdir]
+        process = subprocess.Popen(cmd, stderr=subprocess.PIPE, shell=True)
+        _, stderr = process.communicate()
+        if process.returncode != 0:
+          raise Error('\"%s\" failed with code %d. Output:\n  %s' % (
+            ' '.join(cmd), process.returncode, stderr))
+        return
+        # Ignore failures, we'll just try again.
+      except subprocess.CalledProcessError as e:
+        # CalledProcessError has no error message, generate one.
+        last_exception = Error('\"%s\" failed with code %d.' % (
+          ' '.join(e.cmd), e.returncode))
+      except Error as e:
+        last_exception = e
+
+    # Didn't work, sleep and try again.
+    time.sleep(num_tries + 1)
+
+  # Failed.
+  raise Error('Unable to remove directory "%s"\n  %s' % (outdir,
+                                                         last_exception))
 
 
 def RenameDir(srcdir, destdir):
@@ -67,4 +102,4 @@ def RenameDir(srcdir, destdir):
   raise Error('Could not RenameDir %s => %s after %d tries.\n'
               'Please check that no shells or applications '
               'are accessing files in %s.'
-              % (srcdir, destdir, num_tries, destdir))
+              % (srcdir, destdir, num_tries + 1, destdir))

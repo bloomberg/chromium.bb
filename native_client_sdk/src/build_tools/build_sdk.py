@@ -786,8 +786,8 @@ def BuildStepTestUpdater(platform, pepper_ver, revision, tarfile):
     naclsdk_sh = os.path.join(OUT_DIR, 'nacl_sdk', 'naclsdk')
     if platform == 'win':
       naclsdk_sh += '.bat'
-    buildbot_common.Run([naclsdk_sh, '-U',
-        server.GetURL(manifest_name), 'update', 'pepper_' + pepper_ver])
+    buildbot_common.Run([naclsdk_sh, 'update', 'pepper_' + pepper_ver,
+        '-U', server.GetURL(manifest_name), '-v'])
 
     # Return the new pepper directory as the one inside the downloaded SDK.
     return os.path.join(OUT_DIR, 'nacl_sdk', 'pepper_' + pepper_ver)

@@ -52,7 +52,7 @@ def UpdateSDKTools(args):
   Returns:
     True if the sdk_tools bundle was updated.
   """
-  cmd = MakeSdkUpdateMainCmd(['--update-sdk-tools'] + args)
+  cmd = MakeSdkUpdateMainCmd(args + ['--update-sdk-tools'])
   process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
   stdout, _ = process.communicate()
   if process.returncode == 0:

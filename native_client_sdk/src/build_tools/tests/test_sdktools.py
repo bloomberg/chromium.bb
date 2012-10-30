@@ -112,15 +112,16 @@ class SdkToolsTestCase(unittest.TestCase):
     naclsdk_shell_script = os.path.join(self.basedir, 'nacl_sdk', 'naclsdk')
     if getos.GetPlatform() == 'win':
       naclsdk_shell_script += '.bat'
-    cmd = [naclsdk_shell_script, '-U', self.server.GetURL(MANIFEST_BASENAME)]
+    cmd = [naclsdk_shell_script]
     cmd.extend(args)
+    cmd.extend(['-U', self.server.GetURL(MANIFEST_BASENAME)])
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
     self.assertEqual(process.returncode, 0)
     return stdout
-  
+
   def _RunAndExtractRevision(self):
-    stdout = self._Run(['-v'])
+    stdout = self._Run(['version'])
     match = re.search('version r(\d+)', stdout)
     self.assertTrue(match is not None)
     return int(match.group(1))
@@ -195,10 +196,11 @@ class TestAutoUpdateSdkTools(SdkToolsTestCase):
     self.sdk_tools_bundle.revision = new_revision
     self._WriteManifest()
 
-    stdout = self._Run(['update', 'sdk_tools'])
-    self.assertTrue(stdout.find('Ignoring manual update request.') != -1)
     sdk_tools_update_dir = os.path.join(self.basedir, 'nacl_sdk',
         'sdk_tools_update')
+    self.assertFalse(os.path.exists(sdk_tools_update_dir))
+    stdout = self._Run(['update', 'sdk_tools'])
+    self.assertTrue(stdout.find('Ignoring manual update request.') != -1)
     self.assertFalse(os.path.exists(sdk_tools_update_dir))
 
 
@@ -211,10 +213,7 @@ class TestAutoUpdateSdkToolsDifferentFilesystem(TestAutoUpdateSdkTools):
 
 
 def main():
-  suite = unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__])
-  result = unittest.TextTestRunner(verbosity=2).run(suite)
-
-  return int(not result.wasSuccessful())
+  unittest.main()
 
 if __name__ == '__main__':
   sys.exit(main())

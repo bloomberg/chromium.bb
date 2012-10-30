@@ -11,6 +11,7 @@ tool users run to download new bundles, update existing bundles, etc.
 
 import buildbot_common
 import build_utils
+import glob
 import optparse
 import os
 import sys
@@ -38,18 +39,14 @@ UPDATER_FILES = [
 
   # SDK tools
   ('build_tools/sdk_tools/cacerts.txt', 'nacl_sdk/sdk_tools/cacerts.txt'),
-  ('build_tools/sdk_tools/sdk_update.py', 'nacl_sdk/sdk_tools/sdk_update.py'),
-  ('build_tools/sdk_tools/sdk_update_common.py',
-      'nacl_sdk/sdk_tools/sdk_update_common.py'),
-  ('build_tools/sdk_tools/sdk_update_main.py',
-      'nacl_sdk/sdk_tools/sdk_update_main.py'),
-  ('build_tools/manifest_util.py', 'nacl_sdk/sdk_tools/manifest_util.py'),
-  ('build_tools/sdk_tools/third_party/__init__.py',
-      'nacl_sdk/sdk_tools/third_party/__init__.py'),
-  ('build_tools/sdk_tools/third_party/fancy_urllib/__init__.py',
-      'nacl_sdk/sdk_tools/third_party/fancy_urllib/__init__.py'),
+  ('build_tools/sdk_tools/*.py', 'nacl_sdk/sdk_tools/'),
+  ('build_tools/sdk_tools/command/*.py', 'nacl_sdk/sdk_tools/command/'),
+  ('build_tools/sdk_tools/third_party/*.py', 'nacl_sdk/sdk_tools/third_party/'),
+  ('build_tools/sdk_tools/third_party/fancy_urllib/*.py',
+      'nacl_sdk/sdk_tools/third_party/fancy_urllib/'),
   ('build_tools/sdk_tools/third_party/fancy_urllib/README',
       'nacl_sdk/sdk_tools/third_party/fancy_urllib/README'),
+  ('build_tools/manifest_util.py', 'nacl_sdk/sdk_tools/manifest_util.py'),
   ('LICENSE', 'nacl_sdk/sdk_tools/LICENSE'),
   (CYGTAR, 'nacl_sdk/sdk_tools/cygtar.py'),
 ]
@@ -73,6 +70,30 @@ def MakeUpdaterFilesAbsolute(out_dir):
       in_file = os.path.join(SDK_SRC_DIR, in_file)
     out_file = os.path.join(out_dir, out_file)
     result.append((in_file, out_file))
+  return result
+
+
+def GlobFiles(files):
+  """Expand wildcards for 2-tuples of sources/destinations.
+
+  This function also will convert destinations from directories into filenames.
+  For example:
+    ('foo/*.py', 'bar/') => [('foo/a.py', 'bar/a.py'), ('foo/b.py', 'bar/b.py')]
+
+  Args:
+    files: A list of 2-tuples of (source, dest) paths.
+  Returns:
+    A new list of 2-tuples, after the sources have been wildcard-expanded, and
+    the destinations have been changed from directories to filenames.
+  """
+  result = []
+  for in_file_glob, out_file in files:
+    if out_file.endswith('/'):
+      for in_file in glob.glob(in_file_glob):
+        result.append((in_file,
+                      os.path.join(out_file, os.path.basename(in_file))))
+    else:
+      result.append((in_file_glob, out_file))
   return result
 
 
@@ -129,6 +150,7 @@ def BuildUpdater(out_dir, revision_number=None):
   buildbot_common.RemoveDir(os.path.join(out_dir, 'nacl_sdk'))
 
   updater_files = MakeUpdaterFilesAbsolute(out_dir)
+  updater_files = GlobFiles(updater_files)
 
   CopyFiles(updater_files)
   UpdateRevisionNumber(out_dir, revision_number)

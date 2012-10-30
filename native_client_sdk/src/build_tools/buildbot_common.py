@@ -49,7 +49,7 @@ def BuildStep(name):
 
 def Run(args, cwd=None, env=None, shell=False):
   """Start a process with the provided arguments.
-  
+
   Starts a process in the provided directory given the provided arguments. If
   shell is not False, the process is launched via the shell to provide shell
   interpretation of the arguments.  Shell behavior can differ between platforms
@@ -74,7 +74,7 @@ def CopyDir(src, dst, excludes=('.svn', '*/.svn')):
 
 
 def CopyFile(src, dst):
-  print 'cp -r %s %s' % (src, dst)
+  print 'cp %s %s' % (src, dst)
   if os.path.abspath(src) == os.path.abspath(dst):
     ErrorExit('ERROR: Copying file onto itself: ' + src)
   args = [src, dst]
