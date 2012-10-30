@@ -310,6 +310,9 @@
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
     },
+    'predictors': {
+      'filepath': 'predictors',
+    },
     'prerender': {
       'filepath': 'prerender'
     },
@@ -536,8 +539,8 @@
     'installer': ['grt+watch@chromium.org'],
     'instant': ['sreeram@chromium.org', 'gideonwald@chromium.org',
                 'dcblack@chromium.org', 'jered@chromium.org',
-                'shishir@chromium.org', 'dominich@chromium.org',
-                'samarth@chromium.org', 'melevin@chromium.org'],
+                'dominich@chromium.org', 'samarth@chromium.org',
+                'melevin@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'labs': ['thakis@chromium.org'],
     'linux-sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
@@ -563,6 +566,7 @@
                    'yusukes+watch@chromium.org', 'raymes+watch@chromium.org'],
     'plugin': ['darin-cc@chromium.org', 'jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
+    'predictors': ['dominich+watch@chromium.org', 'shishir+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
                   'dominich+watch@chromium.org', 'mmenke@chromium.org',
                   'gavinp+prer@chromium.org'],
