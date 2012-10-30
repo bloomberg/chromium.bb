@@ -71,7 +71,9 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner,
     if (parse_new_field_types) {
       string16 type_pattern = UTF8ToUTF16(autofill::kCardTypeRe);
       if (!credit_card_field->type_ &&
-          ParseField(scanner, type_pattern, &credit_card_field->type_)) {
+          ParseFieldSpecifics(scanner, type_pattern,
+                              MATCH_DEFAULT | MATCH_SELECT,
+                              &credit_card_field->type_)) {
         continue;
       }
     }

@@ -1,4 +1,4 @@
-UNKNOWN_TYPE | drpdwnCardTypes | *Card type: | JCP1
+CREDIT_CARD_TYPE | drpdwnCardTypes | *Card type: | JCP1
 CREDIT_CARD_NAME | txtNameOnCreditCard | *Name on the card: | 
 CREDIT_CARD_NUMBER | txtCreditCardNumber | *Card number: | 
 CREDIT_CARD_EXP_MONTH | drpdwnExpirationMonth | *Expiration date: | 00

@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -36,9 +38,12 @@ class FormStructureBrowserTest : public InProcessBrowserTest,
   FormStructureBrowserTest();
   virtual ~FormStructureBrowserTest();
 
+  // InProcessBrowserTest:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+
   // DataDrivenTest:
   virtual void GenerateResults(const std::string& input,
-                               std::string* output);
+                               std::string* output) OVERRIDE;
 
   // Serializes the given |forms| into a string.
   std::string FormStructuresToString(const std::vector<FormStructure*>& forms);
@@ -51,6 +56,11 @@ FormStructureBrowserTest::FormStructureBrowserTest() {
 }
 
 FormStructureBrowserTest::~FormStructureBrowserTest() {
+}
+
+void FormStructureBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+  // Include new field types and heuristics in the regression test.
+  command_line->AppendSwitch(switches::kEnableNewAutofillHeuristics);
 }
 
 void FormStructureBrowserTest::GenerateResults(const std::string& input,

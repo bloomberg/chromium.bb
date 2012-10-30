@@ -6,7 +6,7 @@ UNKNOWN_TYPE | txtSSN | XXX-XX- |
 UNKNOWN_TYPE | selBirthMonth | * Date of Birth: | Month
 UNKNOWN_TYPE | selBirthDate | * Date of Birth: | Date
 UNKNOWN_TYPE | selBirthYear | * Date of Birth: | Year
-UNKNOWN_TYPE | cardType | Type: | VI
+CREDIT_CARD_TYPE | cardType | Type: | VI
 CREDIT_CARD_NUMBER | CreditCardNumber | Number: | 
 CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | CreditCardExpYYMM | Expiration: | 092011
 UNKNOWN_TYPE | CVV | Security Code: | 

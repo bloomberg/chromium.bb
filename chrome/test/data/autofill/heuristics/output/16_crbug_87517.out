@@ -20,7 +20,7 @@ ADDRESS_HOME_LINE1 | Tribute_NotifyAddr | Street: |
 ADDRESS_HOME_CITY | Tribute_NotifyCity | City / St. / Zip: | 
 ADDRESS_HOME_STATE | Tribute_NotifyState | City / St. / Zip: | 
 ADDRESS_HOME_ZIP | Tribute_NotifyZip | City / St. / Zip: | 
-UNKNOWN_TYPE | cctype | Credit Card Type * | Visa
+CREDIT_CARD_TYPE | cctype | Credit Card Type * | Visa
 CREDIT_CARD_NUMBER | ccard | Credit Card Number * | 
 UNKNOWN_TYPE | csc | CSC Number * What Is This? | 
 CREDIT_CARD_EXP_MONTH | ExpMon | Month | 1

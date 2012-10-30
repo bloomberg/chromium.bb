@@ -15,7 +15,7 @@ UNKNOWN_TYPE | addrsForm[0].faxNumber1 | Fax: |
 UNKNOWN_TYPE | addrsForm[0].faxNumber2 | - | 
 UNKNOWN_TYPE | addrsForm[0].faxNumber3 | - | 
 EMAIL_ADDRESS | addrsForm[0].email | *Email Address: | 
-UNKNOWN_TYPE | paymentFormInfo.creditCardType | Credit Card Type: |  
+CREDIT_CARD_TYPE | paymentFormInfo.creditCardType | Credit Card Type: |  
 CREDIT_CARD_NUMBER | paymentFormInfo.creditCardNumber | Credit Card Number: | 
 CREDIT_CARD_EXP_MONTH | paymentFormInfo.creditCardExpMonth | Expiration Date: |  
 CREDIT_CARD_EXP_4_DIGIT_YEAR | paymentFormInfo.creditCardExpYear | / | -1
