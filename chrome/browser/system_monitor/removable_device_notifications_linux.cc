@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
@@ -141,11 +140,7 @@ std::string MakeDeviceUniqueId(struct udev_device* device) {
   if (vendor.empty() && model.empty() && serial_short.empty())
     return std::string();
 
-  return base::StringPrintf("%s%s%s%s%s%s",
-                            kVendorModelSerialPrefix,
-                            vendor.c_str(), kNonSpaceDelim,
-                            model.c_str(), kNonSpaceDelim,
-                            serial_short.c_str());
+  return kVendorModelSerialPrefix + vendor + ":" + model + ":" + serial_short;
 }
 
 // Records GetDeviceInfo result, to see how often we fail to get device details.
@@ -202,7 +197,7 @@ void GetDeviceInfo(const FilePath& device_path, std::string* unique_id,
       if (device_label.empty())
         device_label = model_name;
       else if (!model_name.empty())
-        device_label += kSpaceDelim + model_name;
+        device_label += " " + model_name;
     }
     if (IsStringUTF8(device_label))
       *name = UTF8ToUTF16(device_label);

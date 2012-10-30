@@ -8,7 +8,6 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
-#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
@@ -55,26 +54,16 @@ std::string GetDeviceIdFromStorageInfo(const MtpStorageInfo& storage_info) {
   // part of unique id along with vendor, model and volume information.
   const std::string vendor_id = base::UintToString(storage_info.vendor_id());
   const std::string model_id = base::UintToString(storage_info.product_id());
-  const std::string& volume_id = storage_info.volume_identifier();
-  std::string unique_id = base::StringPrintf(
-      "%s%s%s%s%s%s%s%s",
-      kVendorModelVolumeStoragePrefix,
-      vendor_id.c_str(),
-      kNonSpaceDelim,
-      model_id.c_str(),
-      kNonSpaceDelim,
-      volume_id.c_str(),
-      kNonSpaceDelim,
-      storage_id.c_str());
-  return MediaStorageUtil::MakeDeviceId(MediaStorageUtil::MTP_OR_PTP,
-                                        unique_id);
+  return MediaStorageUtil::MakeDeviceId(
+      MediaStorageUtil::MTP_OR_PTP,
+      kVendorModelVolumeStoragePrefix + vendor_id + ":" + model_id + ":" +
+          storage_info.volume_identifier() + ":" + storage_id);
 }
 
 // Returns the |data_store_id| string in the required format.
 // If the |data_store_id| is 65537, this function returns " (65537)".
 std::string GetFormattedIdString(const std::string& data_store_id) {
-  return base::StringPrintf(" %s%s%s", kLeftParen, data_store_id.c_str(),
-                            kRightParen);
+  return ("(" + data_store_id + ")");
 }
 
 // Helper function to get device label from storage information.
@@ -86,7 +75,7 @@ string16 GetDeviceLabelFromStorageInfo(const MtpStorageInfo& storage_info) {
   const std::string& product_name = storage_info.product();
   if (!product_name.empty()) {
     if (!device_label.empty())
-      device_label += kSpaceDelim;
+      device_label += " ";
     device_label += product_name;
   }
 

@@ -14,16 +14,8 @@ extern const char kFSUniqueIdPrefix[];
 extern const char kVendorModelSerialPrefix[];
 
 #if defined(OS_LINUX)
-// Delimiter constants used in device label to specify data storage id.
-extern const char kLeftParen[];
-extern const char kRightParen[];
-
 extern const char kVendorModelVolumeStoragePrefix[];
 #endif
-
-// Delimiter constants used in device label and unique id.
-extern const char kNonSpaceDelim[];
-extern const char kSpaceDelim[];
 
 }  // namespace chrome
 

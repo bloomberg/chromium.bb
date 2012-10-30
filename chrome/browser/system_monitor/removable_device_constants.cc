@@ -10,12 +10,7 @@ const char kFSUniqueIdPrefix[] = "UUID:";
 const char kVendorModelSerialPrefix[] = "VendorModelSerial:";
 
 #if defined(OS_LINUX)
-const char kLeftParen[] = "(";
-const char kRightParen[] = ")";
 const char kVendorModelVolumeStoragePrefix[] = "VendorModelVolumeStorage:";
 #endif
-
-const char kNonSpaceDelim[] = ":";
-const char kSpaceDelim[] = " ";
 
 }  // namespace chrome

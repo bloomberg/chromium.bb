@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
@@ -32,7 +31,7 @@ string16 GetDeviceName(const disks::DiskMountManager::Disk& disk) {
     const std::string& product_name = disk.product_name();
     if (!product_name.empty()) {
       if (!device_name.empty())
-        device_name += chrome::kSpaceDelim;
+        device_name += " ";
       device_name += product_name;
     }
   }
@@ -55,10 +54,7 @@ std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
   const std::string& product = disk.product_id();
   if (vendor.empty() && product.empty())
     return std::string();
-  return base::StringPrintf("%s%s%s%s%s",
-                            chrome::kVendorModelSerialPrefix,
-                            vendor.c_str(), chrome::kNonSpaceDelim,
-                            product.c_str(), chrome::kNonSpaceDelim);
+  return chrome::kVendorModelSerialPrefix + vendor + ":" + product + ":";
 }
 
 static RemovableDeviceNotificationsCros*
