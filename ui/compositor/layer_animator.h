@@ -194,6 +194,8 @@ class COMPOSITOR_EXPORT LayerAnimator
   virtual void ProgressAnimation(LayerAnimationSequence* sequence,
                                  base::TimeDelta delta);
 
+  void ProgressAnimationToEnd(LayerAnimationSequence* sequence);
+
   // Returns true if the sequence is owned by this animator.
   bool HasAnimation(LayerAnimationSequence* sequence) const;
 
@@ -202,14 +204,21 @@ class COMPOSITOR_EXPORT LayerAnimator
   friend class ScopedLayerAnimationSettings;
 
   // We need to keep track of the start time of every running animation.
-  struct RunningAnimation {
-    RunningAnimation(LayerAnimationSequence* sequence,
-                     base::TimeTicks start_time)
-        : sequence(sequence),
-          start_time(start_time) {
-    }
-    LayerAnimationSequence* sequence;
-    base::TimeTicks start_time;
+  class RunningAnimation {
+   public:
+    RunningAnimation(const base::WeakPtr<LayerAnimationSequence>& sequence,
+                     base::TimeTicks start_time);
+    ~RunningAnimation();
+
+    bool is_sequence_alive() const { return !!sequence_; }
+    LayerAnimationSequence* sequence() const { return sequence_.get(); }
+    base::TimeTicks start_time() const { return start_time_; }
+
+   private:
+    base::WeakPtr<LayerAnimationSequence> sequence_;
+    base::TimeTicks start_time_;
+
+    // Copy and assign are allowed.
   };
 
   typedef std::vector<RunningAnimation> RunningAnimations;
@@ -290,6 +299,9 @@ class COMPOSITOR_EXPORT LayerAnimator
   // Clears the animation queues and notifies any running animations that they
   // have been aborted.
   void ClearAnimationsInternal();
+
+  // Cleans up any running animations that may have been deleted.
+  void PurgeDeletedAnimations();
 
   // This is the queue of animations to run.
   AnimationQueue animation_queue_;

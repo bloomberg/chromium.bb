@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "ui/compositor/compositor_export.h"
@@ -27,7 +28,13 @@ class LayerAnimationObserver;
 //
 // TODO(vollick) Create a 'blended' sequence for transitioning between
 // sequences.
-class COMPOSITOR_EXPORT LayerAnimationSequence {
+// TODO(vollick) Eventually, the LayerAnimator will switch to a model where new
+// work is scheduled rather than calling methods directly. This should make it
+// impossible for temporary pointers to running animations to go stale. When
+// this happens, there will be no need for LayerAnimationSequences to support
+// weak pointers.
+class COMPOSITOR_EXPORT LayerAnimationSequence
+    : public base::SupportsWeakPtr<LayerAnimationSequence> {
  public:
   LayerAnimationSequence();
   // Takes ownership of the given element and adds it to the sequence.
