@@ -70,7 +70,7 @@ namespace {
 
 // Returns the date at which the current metrics client ID was created as
 // a string containing milliseconds since the epoch, or "0" if none was found.
-std::string GetInstallDate(PrefService* pref) {
+std::string GetMetricsEnabledDate(PrefService* pref) {
   if (!pref) {
     NOTREACHED();
     return "0";
@@ -644,7 +644,7 @@ void MetricsLog::WriteInstallElement() {
   // Write the XML version.
   // We'll write the protobuf version in RecordEnvironmentProto().
   OPEN_ELEMENT_FOR_SCOPE("install");
-  WriteAttribute("installdate", GetInstallDate(GetPrefService()));
+  WriteAttribute("installdate", GetMetricsEnabledDate(GetPrefService()));
   WriteIntAttribute("buildid", 0);  // We're using appversion instead.
 }
 
@@ -757,11 +757,11 @@ void MetricsLog::RecordEnvironmentProto(
     const std::vector<webkit::WebPluginInfo>& plugin_list,
     const GoogleUpdateMetrics& google_update_metrics) {
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
-  int install_date;
-  bool success = base::StringToInt(GetInstallDate(GetPrefService()),
-                                   &install_date);
+  int enabled_date;
+  bool success = base::StringToInt(GetMetricsEnabledDate(GetPrefService()),
+                                   &enabled_date);
   DCHECK(success);
-  system_profile->set_install_date(install_date);
+  system_profile->set_uma_enabled_date(enabled_date);
 
   system_profile->set_application_locale(
       content::GetContentClient()->browser()->GetApplicationLocale());
