@@ -26,7 +26,7 @@ import org.chromium.ui.gfx.ActivityNativeWindow;
 public class ChromiumTestShellActivity extends Activity {
     private static final String TAG = ChromiumTestShellActivity.class.getCanonicalName();
     private static final String COMMAND_LINE_FILE =
-            "/data/local/tmp/chrome-test-shell-command-line";
+            "/data/local/tmp/chromium-testshell-command-line";
 
     private ActivityNativeWindow mWindow;
     private TabManager mTabManager;
