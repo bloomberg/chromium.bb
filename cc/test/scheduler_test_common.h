@@ -5,12 +5,11 @@
 #ifndef CCSchedulerTestCommon_h
 #define CCSchedulerTestCommon_h
 
-#include "base/threading/platform_thread.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/delay_based_time_source.h"
 #include "cc/frame_rate_controller.h"
 #include "cc/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <wtf/OwnPtr.h>
 
 namespace WebKitTests {
 
@@ -34,7 +33,7 @@ public:
     void reset()
     {
         m_pendingTaskDelay = 0;
-        m_pendingTask.clear();
+        m_pendingTask.reset();
         m_runPendingTaskOnOverwrite = false;
     }
 
@@ -44,12 +43,7 @@ public:
     }
 
     bool hasPendingTask() const { return m_pendingTask; }
-    void runPendingTask()
-    {
-        ASSERT_TRUE(m_pendingTask);
-        OwnPtr<Task> task = m_pendingTask.release();
-        task->performTask();
-    }
+    void runPendingTask();
 
     long long pendingDelayMs() const
     {
@@ -57,12 +51,12 @@ public:
         return m_pendingTaskDelay;
     }
 
-    virtual void postTask(PassOwnPtr<Task>) OVERRIDE;
-    virtual void postDelayedTask(PassOwnPtr<Task> task, long long delay) OVERRIDE;
-    virtual base::PlatformThreadId threadID() const OVERRIDE;
+    virtual void postTask(base::Closure cb) OVERRIDE;
+    virtual void postDelayedTask(base::Closure cb, long long delay) OVERRIDE;
+    virtual bool belongsToCurrentThread() const OVERRIDE;
 
 protected:
-    OwnPtr<Task> m_pendingTask;
+    scoped_ptr<base::Closure> m_pendingTask;
     long long m_pendingTaskDelay;
     bool m_runPendingTaskOnOverwrite;
 };

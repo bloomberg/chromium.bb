@@ -22,7 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include <public/Platform.h>
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>
 
@@ -1046,7 +1045,7 @@ public:
 
         // We request animation only once.
         if (!m_animationRequested) {
-            m_mainThreadProxy->postTask(createThreadTask(this, &LayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation));
+            m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&LayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation, base::Unretained(this)));
             m_animationRequested = true;
         }
     }
@@ -2720,24 +2719,17 @@ public:
         postSetNeedsCommitToMainThread();
     }
 
-    class EvictTexturesTask : public WebKit::WebThread::Task {
-    public:
-        EvictTexturesTask(LayerTreeHostTestEvictTextures* test) : m_test(test) { }
-        virtual ~EvictTexturesTask() { }
-        virtual void run() OVERRIDE
-        {
-            DCHECK(m_test->m_implForEvictTextures);
-            m_test->m_implForEvictTextures->enforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
-        }
-
-    private:
-        LayerTreeHostTestEvictTextures* m_test;
-    };
-
     void postEvictTextures()
     {
-        DCHECK(webThread());
-        webThread()->postTask(new EvictTexturesTask(this));
+        DCHECK(implThread());
+        implThread()->postTask(base::Bind(&LayerTreeHostTestEvictTextures::evictTexturesOnImplThread,
+                               base::Unretained(this)));
+    }
+
+    void evictTexturesOnImplThread()
+    {
+        DCHECK(m_implForEvictTextures);
+        m_implForEvictTextures->enforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
     }
 
     // Commit 1: Just commit and draw normally, then post an eviction at the end
@@ -2860,24 +2852,12 @@ public:
         postSetNeedsCommitToMainThread();
     }
 
-    class EvictTexturesTask : public WebKit::WebThread::Task {
-    public:
-        EvictTexturesTask(LayerTreeHostTestLostContextAfterEvictTextures* test) : m_test(test) { }
-        virtual ~EvictTexturesTask() { }
-        virtual void run() OVERRIDE
-        {
-            m_test->evictTexturesOnImplThread();
-        }
-
-    private:
-        LayerTreeHostTestLostContextAfterEvictTextures* m_test;
-    };
-
     void postEvictTextures()
     {
-        if (webThread())
-            webThread()->postTask(new EvictTexturesTask(this));
-        else {
+        if (implThread()) {
+            implThread()->postTask(base::Bind(&LayerTreeHostTestLostContextAfterEvictTextures::evictTexturesOnImplThread,
+                                              base::Unretained(this)));
+        } else {
             DebugScopedSetImplThread impl;
             evictTexturesOnImplThread();
         }
