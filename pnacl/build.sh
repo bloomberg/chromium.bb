@@ -681,9 +681,6 @@ everything-translator() {
 #@                      This must run before pexes are pruned.
 translator-archive-pexes() {
   local tarball=$1
-  # Assume this will only ever get used for "srpc" mode.
-  # This helps us identify the install location.
-  SB_SRPCMODE=srpc
 
   if [[ "${tarball#*.}" != "tar.bz2" ]]; then
     echo "translator-archive-pexes: ${tarball} not named with .tar.bz2 suffix"
@@ -738,11 +735,9 @@ translator-clean-all() {
 translator-all() {
   StepBanner \
     "SANDBOXED TC [prod=${SBTC_PRODUCTION}] [arches=${SBTC_ARCHES_ALL}]"
-  local srpc_kind=srpc
-  local libmode=newlib
 
   # Build the SDK if it not already present.
-  if ! [ -d "$(GetInstallDir ${libmode})/sdk/lib" ]; then
+  if ! [ -d "$(GetInstallDir newlib)/sdk/lib" ]; then
     sdk newlib
     # Also build private libs to allow building nexes without the IRT
     # segment gap.  Specifically, only the sandboxed translator nexes
@@ -756,20 +751,20 @@ translator-all() {
     # Build each architecture separately.
     local arch
     for arch in ${SBTC_ARCHES_LLVM} ; do
-      llvm-sb ${arch} ${srpc_kind} ${libmode}
+      llvm-sb ${arch}
     done
     for arch in ${SBTC_ARCHES_ALL} ; do
-      binutils-gold-sb ${arch} ${srpc_kind} ${libmode}
+      binutils-gold-sb ${arch}
     done
   else
     # Using arch `universal` builds the sandboxed tools from a single
     # .pexe which support all targets.
-    llvm-sb universal ${srpc_kind} ${libmode}
-    binutils-gold-sb universal ${srpc_kind} ${libmode}
+    llvm-sb universal
+    binutils-gold-sb universal
     if ${PNACL_PRUNE}; then
       # The universal pexes have already been translated.
       # They don't need to stick around.
-      rm -rf "${SB_INSTALL_DIR}"
+      rm -rf "$(GetTranslatorInstallDir universal)"
     fi
   fi
 
@@ -792,13 +787,13 @@ translator-prune() {
 }
 
 
-#+ translator-clean <arch> <srpcmode> <libmode> -
+#+ translator-clean <arch> -
 #+     Clean one translator install/build
 translator-clean() {
-  sb-setup "$@"
-  StepBanner "TRANSLATOR" "Clean ${SB_LABEL}"
-  rm -rf "${SB_INSTALL_DIR}"
-  rm -rf "${SB_OBJDIR}"
+  local arch=$1
+  StepBanner "TRANSLATOR" "Clean ${arch}"
+  rm -rf "$(GetTranslatorInstallDir ${arch})"
+  rm -rf "$(GetTranslatorBuildDir ${arch})"
 }
 
 newlib-shared() {
@@ -2104,14 +2099,6 @@ binutils-liberty-make() {
 #     CLIENT BINARIES (SANDBOXED)
 #########################################################################
 
-check-srpcmode() {
-  local mode=$1
-  if [ ${mode} != "srpc" ] && [ ${mode} != "nonsrpc" ]; then
-    echo "ERROR: Unsupported mode. Choose one of: srpc, nonsrpc"
-    exit -1
-  fi
-}
-
 check-arch() {
   local arch=$1
   for valid_arch in i686 x86_64 armv7 universal ; do
@@ -2123,93 +2110,43 @@ check-arch() {
   Fatal "ERROR: Unsupported arch [$1]. Must be: i686, x86_64, armv7, universal"
 }
 
-SB_SETUP=false
-sb-setup() {
-  if ${SB_SETUP} && [ $# -eq 0 ]; then
-    return 0
-  fi
-  if [ $# -ne 3 ] ; then
-    Fatal "Please specify arch, mode(srpc/nonsrpc) and libmode(newlib/glibc)"
-  fi
-
-  SB_SETUP=true
-  SB_ARCH=$1
-  SB_SRPCMODE=$2
-  SB_LIBMODE=$3
-  check-arch ${SB_ARCH}
-  check-srpcmode ${SB_SRPCMODE}
-  check-libmode ${SB_LIBMODE}
-
-  SB_LOG_PREFIX="${SB_ARCH}.${SB_SRPCMODE}.${SB_LIBMODE}"
-  SB_LABEL="${SB_ARCH}_${SB_SRPCMODE}_${SB_LIBMODE}"
-  SB_OBJDIR="${TC_BUILD}/translator-${SB_LABEL//_/-}"
-  SB_INSTALL_DIR="$(GetTranslatorInstallDir ${SB_ARCH})"
-
-  StepBanner "SB-SETUP" "ARCH: ${SB_ARCH}"
-  StepBanner "SB-SETUP" "OBJ_DIR: ${SB_OBJDIR}"
-  StepBanner "SB-SETUP" "INSTALL_DIR: ${SB_INSTALL_DIR}"
-}
-
-LLVM_SB_SETUP=false
 llvm-sb-setup() {
-  sb-setup "$@"
+  local arch=$1
   if ${SB_JIT}; then
-    llvm-sb-setup-jit "$@"
+    llvm-sb-setup-jit ${arch}
     return
   fi
-  local flags=""
-  LLVM_SB_LOG_PREFIX="llvm.sb.${SB_LOG_PREFIX}"
-  LLVM_SB_OBJDIR="${SB_OBJDIR}/llvm-sb"
+  LLVM_SB_LOG_PREFIX="llvm.sb.${arch}"
+  LLVM_SB_OBJDIR="$(GetTranslatorBuildDir ${arch})/llvm-sb"
 
-  if [ ${SB_LIBMODE} == newlib ]; then
-    flags+=" -static"
-  fi
-
-  case ${SB_SRPCMODE} in
-    # The SRPC headers are included directly from the nacl tree, as they are
-    # not in the SDK. libsrpc should have already been built by the
-    # build.sh sdk step
-    srpc)    flags+=" -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) " ;;
-    nonsrpc) ;;
-  esac
-
+  # The SRPC headers are included directly from the nacl tree, as they are
+  # not in the SDK. libsrpc should have already been built by the
+  # build.sh sdk step.
+  # This is always statically linked.
+  local flags=" -static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) "
   LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized \
   --target=${CROSS_TARGET_ARM}"
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="$(GetTool cc ${SB_LIBMODE}) ${flags}" \
-    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags}" \
-    LD="$(GetTool ld ${SB_LIBMODE}) ${flags}" \
+    CC="$(GetTool cc newlib) ${flags}" \
+    CXX="$(GetTool cxx newlib) ${flags}" \
+    LD="$(GetTool ld newlib) ${flags}" \
     NM="${PNACL_NM}" \
-    RANLIB="${PNACL_RANLIB}" \
-    LDFLAGS="") # TODO(pdox): Support -s
+    RANLIB="${PNACL_RANLIB}")
 }
 
 # TODO(pdox): Unify with llvm-sb-setup above.
 llvm-sb-setup-jit() {
-  sb-setup "$@"
-  if ${LLVM_SB_SETUP}; then
-    return 0
-  fi
-  LLVM_SB_SETUP=true
-  LLVM_SB_LOG_PREFIX="llvm.sb.${SB_LOG_PREFIX}"
-  LLVM_SB_OBJDIR="${SB_OBJDIR}/llvm-sb"
+  local arch=$1
+  LLVM_SB_LOG_PREFIX="llvm.sb.jit.${arch}"
+  LLVM_SB_OBJDIR="$(GetTranslatorBuildDir ${arch})/llvm-sb-jit"
 
-  local flags=""
-  case ${SB_SRPCMODE} in
-    srpc)    flags+=" -DNACL_SRPC -I${NACL_ROOT} " ;;
-    nonsrpc) ;;
-  esac
-
-  local naclgcc_root="";
-  case ${SB_LIBMODE} in
-    newlib)   naclgcc_root="${NNACL_NEWLIB_ROOT}";;
-    glibc)    naclgcc_root="${NNACL_GLIBC_ROOT}";;
-  esac
+  local flags=" -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) "
+  local naclgcc_root="${NNACL_GLIBC_ROOT}"
   local gcc_arch=""
-  case ${SB_ARCH} in
+  case ${arch} in
     i686)  gcc_arch="i686";;
     x86_64)  gcc_arch="x86_64";;
     default) Fatal "Can't build universal/arm translator with nacl-gcc";;
@@ -2225,39 +2162,39 @@ llvm-sb-setup-jit() {
     CXX="${naclgcc_root}/bin/${gcc_arch}-nacl-g++ ${flags}" \
     LD="${naclgcc_root}/bin/${gcc_arch}-nacl-ld" \
     NM="${naclgcc_root}/bin/${gcc_arch}-nacl-nm" \
-    RANLIB="${naclgcc_root}/bin/${gcc_arch}-nacl-ranlib" \
-    LDFLAGS="") # TODO(pdox): Support -s
+    RANLIB="${naclgcc_root}/bin/${gcc_arch}-nacl-ranlib")
 }
 
 #+-------------------------------------------------------------------------
-#+ llvm-sb <arch> <mode> - Build and install llvm tools (sandboxed)
+#+ llvm-sb <arch>- Build and install llvm tools (sandboxed)
 llvm-sb() {
-  llvm-sb-setup "$@"
-  StepBanner "LLVM-SB" "Sandboxed llc + lli [${SB_LABEL}]"
+  local arch=$1
+  check-arch ${arch}
+  llvm-sb-setup ${arch}
+  StepBanner "LLVM-SB" "Sandboxed llc + lli [${arch}]"
   local srcdir="${TC_SRC_LLVM}"
   assert-dir "${srcdir}" "You need to checkout llvm."
 
-  if llvm-sb-needs-configure ; then
-    llvm-sb-clean
-    llvm-sb-configure
+  if llvm-sb-needs-configure ${arch} ; then
+    llvm-sb-clean ${arch}
+    llvm-sb-configure ${arch}
   else
-    SkipBanner "LLVM-SB" "configure ${SB_ARCH} ${SB_SRPCMODE}"
+    SkipBanner "LLVM-SB" "configure ${arch}"
   fi
 
-  llvm-sb-make
-  llvm-sb-install
+  llvm-sb-make ${arch}
+  llvm-sb-install ${arch}
 }
 
 llvm-sb-needs-configure() {
-  llvm-sb-setup "$@"
   [ ! -f "${LLVM_SB_OBJDIR}/config.status" ]
   return $?
 }
 
 # llvm-sb-clean          - Clean llvm tools (sandboxed)
 llvm-sb-clean() {
-  llvm-sb-setup "$@"
-  StepBanner "LLVM-SB" "Clean ${SB_ARCH} ${SB_SRPCMODE}"
+  local arch=$1
+  StepBanner "LLVM-SB" "Clean ${arch}"
   local objdir="${LLVM_SB_OBJDIR}"
 
   rm -rf "${objdir}"
@@ -2266,15 +2203,15 @@ llvm-sb-clean() {
 
 # llvm-sb-configure - Configure llvm tools (sandboxed)
 llvm-sb-configure() {
-  llvm-sb-setup "$@"
+  local arch=$1
 
-  StepBanner "LLVM-SB" "Configure ${SB_ARCH} ${SB_SRPCMODE}"
+  StepBanner "LLVM-SB" "Configure ${arch}"
   local srcdir="${TC_SRC_LLVM}"
   local objdir="${LLVM_SB_OBJDIR}"
-  local installdir="${SB_INSTALL_DIR}"
+  local installdir="$(GetTranslatorInstallDir ${arch})"
   local targets=""
   # For LLVM, "x86" brings in both i686 and x86_64.
-  case ${SB_ARCH} in
+  case ${arch} in
     i686) targets=x86 ;;
     x86_64) targets=x86 ;;
     armv7) targets=arm ;;
@@ -2300,9 +2237,8 @@ llvm-sb-configure() {
 
 # llvm-sb-make - Make llvm tools (sandboxed)
 llvm-sb-make() {
-  llvm-sb-setup "$@"
-
-  StepBanner "LLVM-SB" "Make ${SB_ARCH} ${SB_SRPCMODE}"
+  local arch=$1
+  StepBanner "LLVM-SB" "Make ${arch}"
   local objdir="${LLVM_SB_OBJDIR}"
 
   spushd "${objdir}"
@@ -2330,35 +2266,34 @@ llvm-sb-make() {
 
 # llvm-sb-install - Install llvm tools (sandboxed)
 llvm-sb-install() {
-  llvm-sb-setup "$@"
-
-  StepBanner "LLVM-SB" "Install ${SB_ARCH} ${SB_SRPCMODE}"
-  local objdir="${LLVM_SB_OBJDIR}"
+  local arch=$1
+  StepBanner "LLVM-SB" "Install ${arch}"
 
   # Install only llc or lli
   local toolname="llc"
   if ${SB_JIT}; then
     toolname="lli"
   fi
-  mkdir -p "${SB_INSTALL_DIR}"/bin
-  spushd "${SB_INSTALL_DIR}"/bin
+  local installdir="$(GetTranslatorInstallDir ${arch})"/bin
+  mkdir -p "${installdir}"
+  spushd "${installdir}"
+  local objdir="${LLVM_SB_OBJDIR}"
   cp -f "${objdir}"/Release*/bin/${toolname} .
   if ${SB_JIT} ; then
     # JIT is always built as .nexe
     mv -f ${toolname} ${toolname}.nexe
   else
     mv -f ${toolname} ${toolname}.pexe
-    if [[ "${SB_ARCH}" == "universal" ]]; then
-      translate-sb-tool ${toolname} "${SBTC_ARCHES_ALL}"
-      install-sb-tool ${toolname} "${SBTC_ARCHES_ALL}"
-    elif [[ "${SB_ARCH}" == "i686" ]]; then
+    local arches=${arch}
+    if [[ "${arch}" == "universal" ]]; then
+      arches="${SBTC_ARCHES_ALL}"
+    elif [[ "${arch}" == "i686" ]]; then
       # LLVM does not separate the i686 and x86_64 backends.
-      translate-sb-tool ${toolname} "i686 x86_64"
-      install-sb-tool ${toolname} "i686 x86_64"
-    else
-      translate-sb-tool ${toolname} "${SB_ARCH}"
-      install-sb-tool ${toolname} "${SB_ARCH}"
+      # Translate twice to get both nexes.
+      arches="i686 x86_64"
     fi
+    translate-sb-tool ${toolname} "${arches}"
+    install-sb-tool ${toolname} "${arches}"
   fi
   spopd
 }
@@ -2370,12 +2305,13 @@ translate-sb-tool() {
   local toolname=$1
   local arches=$2
   local pexe="${toolname}.pexe"
-  ${PNACL_STRIP} "${pexe}"
+  if ${PNACL_PRUNE}; then
+    ${PNACL_STRIP} "${pexe}"
+  fi
 
   local tarch
   for tarch in ${arches}; do
     local nexe="${toolname}.${tarch}.nexe"
-    # TODO(pdox): Get the SDK location based on libmode.
     StepBanner "TRANSLATE" \
                "Translating ${toolname}.pexe to ${tarch} (background)"
     # NOTE: we are using --noirt to build without a segment gap
@@ -2397,11 +2333,13 @@ translate-sb-tool() {
   StepBanner "TRANSLATE" "Waiting for translation processes to finish"
   QueueWait
 
-  # Strip the nexes
-  for tarch in ${arches}; do
-    local nexe="${toolname}.${tarch}.nexe"
-    ${PNACL_STRIP} "${nexe}"
-  done
+  if ${PNACL_PRUNE}; then
+    # Strip the nexes.
+    for tarch in ${arches}; do
+      local nexe="${toolname}.${tarch}.nexe"
+      ${PNACL_STRIP} "${nexe}"
+    done
+  fi
   StepBanner "TRANSLATE" "Done."
 }
 
@@ -2426,13 +2364,20 @@ install-sb-tool() {
   done
 }
 
+GetTranslatorBuildDir() {
+  local arch="$1"
+  local extra=""
+  if ${SB_JIT}; then
+    extra+="_jit"
+  fi
+  echo "${TC_BUILD}/translator-${arch//_/-}"
+}
+
 GetTranslatorInstallDir() {
   local arch="$1"
   local extra=""
   if ${SB_JIT}; then
     extra+="_jit"
-  elif [ ${SB_SRPCMODE} == "nonsrpc" ]; then
-    extra+="_nonsrpc"
   fi
   echo "${INSTALL_TRANSLATOR}"${extra}/${arch}
 }
@@ -2563,68 +2508,29 @@ binutils-gold-install() {
 
 #+-------------------------------------------------------------------------
 #+ binutils-gold-sb - Build and install gold (sandboxed)
-#+                 This is the replacement for the old
-#+                 final sandboxed linker which was bfd based.
-#+                 It has nothing to do with the bitcode linker
-#+                 which is also gold based.
+#+                    This is the replacement for the old
+#+                    final sandboxed linker which was bfd based.
+#+                    It has nothing to do with the bitcode linker
+#+                    which is also gold based.
 binutils-gold-sb() {
-  StepBanner "GOLD-NATIVE-SB" "(libiberty + gold)"
+  local arch=$1
+  check-arch ${arch}
+  StepBanner "GOLD-NATIVE-SB" "(libiberty + gold) ${arch}"
 
   local srcdir="${TC_SRC_GOLD}"
   assert-dir "${srcdir}" "You need to checkout gold."
 
-  binutils-gold-sb-setup "$@"
-  binutils-gold-sb-clean
-  binutils-gold-sb-configure
-  binutils-gold-sb-make
-  binutils-gold-sb-install
+  binutils-gold-sb-clean ${arch}
+  binutils-gold-sb-configure ${arch}
+  binutils-gold-sb-make ${arch}
+  binutils-gold-sb-install ${arch}
 }
-
-# Internal setup function for binutils-sb-gold.
-# This defines a few global variables like the objdir.
-BINUTILS_GOLD_SB_SETUP=false
-binutils-gold-sb-setup() {
-  sb-setup "$@"
-
-  if ${BINUTILS_GOLD_SB_SETUP} && [ $# -eq 0 ]; then
-    return 0
-  fi
-  BINUTILS_GOLD_SB_SETUP=true
-  BINUTILS_GOLD_SB_LOG_PREFIX="binutils-gold.sb.${SB_LOG_PREFIX}"
-  BINUTILS_GOLD_SB_OBJDIR="${SB_OBJDIR}/binutils-gold-sb"
-
-  # The SRPC headers are included directly from the nacl tree, as they are
-  # not in the SDK. libsrpc should have already been built by the
-  # build.sh sdk step
-  local flags="-static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    -fno-exceptions -O3"
-
-  BINUTILS_GOLD_SB_CONFIGURE_ENV=(
-    AR="${PNACL_AR}" \
-    AS="${PNACL_AS}" \
-    CC="$(GetTool cc ${SB_LIBMODE}) ${flags}" \
-    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags}" \
-    CC_FOR_BUILD="${CC}" \
-    CXX_FOR_BUILD="${CXX}" \
-    LD="$(GetTool ld ${SB_LIBMODE}) ${flags}" \
-    NM="${PNACL_NM}" \
-    RANLIB="${PNACL_RANLIB}"
-  )
-
-  case ${SB_ARCH} in
-    i686)      BINUTILS_GOLD_SB_ELF_TARGETS=i686-pc-nacl ;;
-    x86_64)    BINUTILS_GOLD_SB_ELF_TARGETS=x86_64-pc-nacl ;;
-    armv7)     BINUTILS_GOLD_SB_ELF_TARGETS=arm-pc-nacl ;;
-    universal)
-      BINUTILS_GOLD_SB_ELF_TARGETS=i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl ;;
-  esac
-}
-
 
 # binutils-gold-sb-clean - Clean gold
 binutils-gold-sb-clean() {
-  StepBanner "GOLD-NATIVE-SB" "Clean"
-  local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
+  local arch=$1
+  StepBanner "GOLD-NATIVE-SB" "Clean ${arch}"
+  local objdir="$(GetTranslatorBuildDir ${arch})/binutils-gold-sb"
 
   rm -rf "${objdir}"
   mkdir -p "${objdir}"
@@ -2632,21 +2538,46 @@ binutils-gold-sb-clean() {
 
 # binutils-gold-sb-configure - Configure binutils for gold (unsandboxed)
 binutils-gold-sb-configure() {
+  local arch=$1
   local srcdir="${TC_SRC_GOLD}"
-  local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
-  local installbin="${SB_INSTALL_DIR}/bin"
+  local objdir="$(GetTranslatorBuildDir ${arch})/binutils-gold-sb"
+  local installbin="$(GetTranslatorInstallDir ${arch})/bin"
+
+  # The SRPC headers are included directly from the nacl tree, as they are
+  # not in the SDK. libsrpc should have already been built by the
+  # build.sh sdk step
+  local flags="-static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) \
+    -fno-exceptions -O3"
+  local configure_env=(
+    AR="${PNACL_AR}" \
+    AS="${PNACL_AS}" \
+    CC="$(GetTool cc newlib) ${flags}" \
+    CXX="$(GetTool cxx newlib) ${flags}" \
+    CC_FOR_BUILD="${CC}" \
+    CXX_FOR_BUILD="${CXX}" \
+    LD="$(GetTool ld newlib) ${flags}" \
+    NM="${PNACL_NM}" \
+    RANLIB="${PNACL_RANLIB}"
+  )
+  local gold_targets=""
+  case ${arch} in
+    i686)      gold_targets=i686-pc-nacl ;;
+    x86_64)    gold_targets=x86_64-pc-nacl ;;
+    armv7)     gold_targets=arm-pc-nacl ;;
+    universal)
+      gold_targets=i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl ;;
+  esac
 
   # gold always adds "target" to the enabled targets so we are
   # little careful to not build too much
   # Note: we are (ab)using target for both --host and --target
   #       which configure expects to be present
   local target
-  if [ ${SB_ARCH} == "universal" ] ; then
-      target=i686-pc-nacl
+  if [ ${arch} == "universal" ] ; then
+    target=i686-pc-nacl
   else
-      target=${BINUTILS_GOLD_SB_ELF_TARGETS}
+    target=${gold_targets}
   fi
-  local gold_targets=${BINUTILS_GOLD_SB_ELF_TARGETS}
 
   StepBanner "GOLD-NATIVE-SB" "Configure (libiberty)"
   # Gold depends on liberty only for a few functions:
@@ -2656,26 +2587,27 @@ binutils-gold-sb-configure() {
   mkdir -p "${objdir}/libiberty"
   spushd "${objdir}/libiberty"
   StepBanner "GOLD-NATIVE-SB" "Dir [$(pwd)]"
-  RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".configure \
+  local log_prefix="binutils-gold.sb.${arch}"
+  RunWithLog "${log_prefix}".configure \
     env -i \
     PATH="/usr/bin:/bin" \
-    "${BINUTILS_GOLD_SB_CONFIGURE_ENV[@]}" \
+    "${configure_env[@]}" \
     ${srcdir}/libiberty/configure --prefix="${installbin}" \
     --host=${target} \
     --target=${target}
   spopd
 
-  StepBanner "GOLD-NATIVE-SB" "Configure (gold)"
+  StepBanner "GOLD-NATIVE-SB" "Configure (gold) ${arch}"
   mkdir -p "${objdir}/gold"
   spushd "${objdir}/gold"
   StepBanner "GOLD-NATIVE-SB" "Dir [$(pwd)]"
   # Removed -Werror until upstream gold no longer has problems with new clang
   # warnings. http://code.google.com/p/nativeclient/issues/detail?id=2861
   # TODO(sehr,robertm): remove this when gold no longer has these.
-  RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".configure \
+  RunWithLog "${log_prefix}".configure \
     env -i \
     PATH="/usr/bin:/bin" \
-    "${BINUTILS_GOLD_SB_CONFIGURE_ENV[@]}" \
+    "${configure_env[@]}" \
     CXXFLAGS="" \
     CFLAGS="" \
     ac_cv_search_zlibVersion=no \
@@ -2711,20 +2643,22 @@ binutils-gold-sb-configure() {
 
 # binutils-gold-sb-make - Make binutils (unsandboxed)
 binutils-gold-sb-make() {
-  local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
+  local arch=${arch}
+  local objdir="$(GetTranslatorBuildDir ${arch})/binutils-gold-sb"
   ts-touch-open "${objdir}/"
 
-  StepBanner "GOLD-NATIVE-SB" "Make (liberty)"
+  StepBanner "GOLD-NATIVE-SB" "Make (liberty) ${arch}"
   spushd "${objdir}/libiberty"
 
-  RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".make \
+  local log_prefix="binutils-gold.sb.${arch}"
+  RunWithLog "${log_prefix}".make \
       env -i PATH="/usr/bin:/bin" \
       make ${MAKE_OPTS}
   spopd
 
-  StepBanner "GOLD-NATIVE-SB" "Make (gold)"
+  StepBanner "GOLD-NATIVE-SB" "Make (gold) ${arch}"
   spushd "${objdir}/gold"
-  RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".make \
+  RunWithLog "${log_prefix}".make \
       env -i PATH="/usr/bin:/bin" \
       make ${MAKE_OPTS} ld-new
   spopd
@@ -2734,10 +2668,10 @@ binutils-gold-sb-make() {
 
 # binutils-gold-sb-install - Install gold
 binutils-gold-sb-install() {
-  local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
-  local installbin="${SB_INSTALL_DIR}/bin"
+  local objdir="$(GetTranslatorBuildDir ${arch})/binutils-gold-sb"
+  local installbin="$(GetTranslatorInstallDir ${arch})/bin"
 
-  StepBanner "GOLD-NATIVE-SB" "Install [${installbin}]"
+  StepBanner "GOLD-NATIVE-SB" "Install [${installbin}] ${arch}"
 
   mkdir -p "${installbin}"
   spushd "${installbin}"
@@ -2746,13 +2680,12 @@ binutils-gold-sb-install() {
   cp "${objdir}"/gold/ld-new ld.pexe
 
   # Translate and install
-  if [[ "${SB_ARCH}" == "universal" ]]; then
-    translate-sb-tool ld "${SBTC_ARCHES_ALL}"
-    install-sb-tool ld "${SBTC_ARCHES_ALL}"
-  else
-    translate-sb-tool ld "${SB_ARCH}"
-    install-sb-tool ld "${SB_ARCH}"
+  local arches=${arch}
+  if [[ "${arch}" == "universal" ]]; then
+    arches="${SBTC_ARCHES_ALL}"
   fi
+  translate-sb-tool ld "${arches}"
+  install-sb-tool ld "${arches}"
   spopd
 }
 
@@ -3628,27 +3561,21 @@ verify-native() {
   done
 }
 
-#+ verify-triple-build <arch> <srpcmode> <libmode>
+#+ verify-triple-build <arch>
 #+     Verify that the sandboxed translator produces an identical
 #+     translation of itself (llc.pexe) as the unsandboxed translator.
 #+     (NOTE: This function is experimental/untested)
 verify-triple-build() {
-  sb-setup "$@"
-  StepBanner "VERIFY" "Verifying triple build for ${SB_LABEL}"
+  local arch=$1
+  StepBanner "VERIFY" "Verifying triple build for ${arch}"
 
-  local arch="${SB_ARCH}"
-  local bindir="${SB_INSTALL_DIR}/bin"
+  local bindir="$(GetTranslatorInstallDir ${arch})/bin"
   local llc_nexe="${bindir}/llc.nexe"
   local llc_pexe="${bindir}/llc.pexe"
   assert-file "${llc_nexe}" "sandboxed llc for ${arch} does not exist"
   assert-file "${llc_pexe}" "llc.pexe does not exist"
 
   local flags="--pnacl-sb --pnacl-driver-verbose"
-  if [ ${SB_SRPCMODE} == "srpc" ] ; then
-    flags+=" --pnacl-driver-set-SRPC=1"
-  else
-    flags+=" --pnacl-driver-set-SRPC=0"
-  fi
 
   if [ ${arch} == "arm" ] ; then
     # Use emulator if we are not on ARM
@@ -3658,13 +3585,14 @@ verify-triple-build() {
     fi
   fi
 
-  local objdir="${SB_INSTALL_DIR}/triple-build"
-  local new_llc_nexe="${objdir}/llc.rebuild.nexe"
-  mkdir -p "${objdir}"
+  local triple_install_dir="$(GetTranslatorInstallDir ${arch})/triple-build"
+  mkdir -p ${triple_install_dir}
+  local new_llc_nexe="${triple_install_dir}/llc.rebuild.nexe"
+  mkdir -p "${triple_install_dir}"
   StepBanner "VERIFY" "Translating ${llc_pexe} using sandboxed tools (${arch})"
+  local sb_translator="${INSTALL_TRANSLATOR}/bin/pnacl-translate"
   RunWithLog "verify.triple.build" \
-    "${PNACL_TRANSLATE}" ${flags} -arch ${arch} "${llc_pexe}" \
-                         -o "${new_llc_nexe}"
+    "${sb_translator}" ${flags} -arch ${arch} "${llc_pexe}" -o "${new_llc_nexe}"
 
   if ! cmp --silent "${llc_nexe}" "${new_llc_nexe}" ; then
     Banner "TRIPLE BUILD VERIFY FAILED"
