@@ -40,6 +40,7 @@ void FileWriteHelper::PrepareWritableFileAndRun(
     const FilePath& file_path,
     const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   file_system_->CreateFile(
       file_path,
@@ -55,13 +56,12 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile(
     const OpenFileCallback& callback,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null()) {
-      content::BrowserThread::GetBlockingPool()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, error, FilePath()));
-    }
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, error, FilePath()));
     return;
   }
   file_system_->OpenFile(
@@ -78,26 +78,21 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile(
     DriveFileError error,
     const FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null()) {
-      content::BrowserThread::GetBlockingPool()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, error, FilePath()));
-    }
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, error, FilePath()));
     return;
   }
 
-  if (!callback.is_null()) {
-    content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(callback, DRIVE_FILE_OK, local_cache_path),
-        base::Bind(&FileWriteHelper::PrepareWritableFileAndRunAfterCallback,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   file_path));
-  } else {
-    PrepareWritableFileAndRunAfterCallback(file_path);
-  }
+  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(callback, DRIVE_FILE_OK, local_cache_path),
+      base::Bind(&FileWriteHelper::PrepareWritableFileAndRunAfterCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_path));
 }
 
 void FileWriteHelper::PrepareWritableFileAndRunAfterCallback(
