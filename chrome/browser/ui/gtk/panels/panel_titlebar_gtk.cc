@@ -205,6 +205,11 @@ void PanelTitlebarGtk::UpdateTitleAndIcon() {
   gtk_label_set_markup(GTK_LABEL(title_), title_text_with_markup);
   g_free(escaped_title_text);
   g_free(title_text_with_markup);
+
+  // Update icon from the web contents.
+  content::WebContents* web_contents = panel_gtk_->panel()->GetWebContents();
+  if (web_contents)
+    UpdateThrobber(web_contents);
 }
 
 void PanelTitlebarGtk::UpdateThrobber(
