@@ -58,6 +58,7 @@ class FakeRendererClient : public RendererClient {
 public:
     FakeRendererClient()
         : m_setFullRootLayerDamageCount(0)
+        , m_lastCallWasSetVisibility(0)
         , m_rootLayer(LayerImpl::create(1))
         , m_memoryAllocationLimitBytes(PrioritizedTextureManager::defaultMemoryAllocationLimit())
     {
@@ -75,10 +76,11 @@ public:
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { m_setFullRootLayerDamageCount++; }
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { m_memoryAllocationLimitBytes = policy.bytesLimitWhenVisible; }
-    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
+    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
 
     // Methods added for test.
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
+    void setLastCallWasSetVisibilityPointer(bool* lastCallWasSetVisibility) { m_lastCallWasSetVisibility = lastCallWasSetVisibility; }
 
     RenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.back(); }
     const RenderPassList& renderPassesInDrawOrder() const { return m_renderPassesInDrawOrder; }
@@ -88,6 +90,7 @@ public:
 
 private:
     int m_setFullRootLayerDamageCount;
+    bool* m_lastCallWasSetVisibility;
     DebugScopedSetImplThread m_implThread;
     scoped_ptr<LayerImpl> m_rootLayer;
     RenderPassList m_renderPassesInDrawOrder;
@@ -425,4 +428,61 @@ TEST(GLRendererTest2, transparentBackground)
     renderer.drawFrame(mockClient.renderPassesInDrawOrder(), mockClient.renderPasses());
 
     EXPECT_EQ(1, context->clearCount());
+}
+
+class VisibilityChangeIsLastCallTrackingContext : public FakeWebGraphicsContext3D {
+public:
+    VisibilityChangeIsLastCallTrackingContext()
+        : m_lastCallWasSetVisibility(0)
+    {
+    }
+
+    // WebGraphicsContext3D methods.
+    virtual void setVisibilityCHROMIUM(bool visible) {
+        if (!m_lastCallWasSetVisibility)
+            return;
+        DCHECK(*m_lastCallWasSetVisibility == false);
+        *m_lastCallWasSetVisibility = true;
+    }
+    virtual void flush() { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
+    virtual void deleteTexture(WebGLId) { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
+    virtual void deleteFramebuffer(WebGLId) { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
+    virtual void deleteRenderbuffer(WebGLId) { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
+
+    // This method would normally do a glSwapBuffers under the hood.
+    virtual WebString getString(WebKit::WGC3Denum name)
+    {
+        if (name == GL_EXTENSIONS)
+            return WebString("GL_CHROMIUM_set_visibility GL_CHROMIUM_gpu_memory_manager GL_CHROMIUM_discard_framebuffer");
+        return WebString();
+    }
+
+    // Methods added for test.
+    void setLastCallWasSetVisibilityPointer(bool* lastCallWasSetVisibility) { m_lastCallWasSetVisibility = lastCallWasSetVisibility; }
+
+private:
+    bool* m_lastCallWasSetVisibility;
+};
+
+TEST(GLRendererTest2, visibilityChangeIsLastCall)
+{
+    FakeRendererClient mockClient;
+    scoped_ptr<GraphicsContext> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new VisibilityChangeIsLastCallTrackingContext)));
+    VisibilityChangeIsLastCallTrackingContext* context = static_cast<VisibilityChangeIsLastCallTrackingContext*>(outputSurface->context3D());
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+
+    EXPECT_TRUE(renderer.initialize());
+
+    bool lastCallWasSetVisiblity = false;
+    // Ensure that the call to setVisibilityCHROMIUM is the last call issue to the GPU
+    // process, after glFlush is called, and after the RendererClient's enforceManagedMemoryPolicy
+    // is called. Plumb this tracking between both the RenderClient and the Context by giving
+    // them both a pointer to a variable on the stack.
+    context->setLastCallWasSetVisibilityPointer(&lastCallWasSetVisiblity);
+    mockClient.setLastCallWasSetVisibilityPointer(&lastCallWasSetVisiblity);
+    renderer.setVisible(true);
+    renderer.drawFrame(mockClient.renderPassesInDrawOrder(), mockClient.renderPasses());
+    renderer.setVisible(false);
+    EXPECT_TRUE(lastCallWasSetVisiblity);
 }

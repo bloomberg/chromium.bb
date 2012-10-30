@@ -85,6 +85,7 @@ protected:
 
 private:
     static void toGLMatrix(float*, const WebKit::WebTransformationMatrix&);
+    static int priorityCutoffValue(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff);
 
     void drawCheckerboardQuad(const DrawingFrame&, const CheckerboardDrawQuad*);
     void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);

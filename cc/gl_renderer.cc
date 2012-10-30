@@ -17,6 +17,7 @@
 #include "cc/layer_quad.h"
 #include "cc/math_util.h"
 #include "cc/platform_color.h"
+#include "cc/priority_calculator.h"
 #include "cc/proxy.h"
 #include "cc/render_pass.h"
 #include "cc/render_surface_filters.h"
@@ -174,17 +175,22 @@ void GLRenderer::setVisible(bool visible)
         return;
     m_visible = visible;
 
+    enforceMemoryPolicy();
+
     // TODO: Replace setVisibilityCHROMIUM with an extension to explicitly manage front/backbuffers
     // crbug.com/116049
     if (m_capabilities.usingSetVisibility)
         m_context->setVisibilityCHROMIUM(visible);
-
-    enforceMemoryPolicy();
 }
 
 void GLRenderer::sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated)
 {
-    // This message cannot reach the GPU process until WebKit changes land.
+    WebKit::WebGraphicsManagedMemoryStats stats;
+    stats.bytesVisible = bytesVisible;
+    stats.bytesVisibleAndNearby = bytesVisibleAndNearby;
+    stats.bytesAllocated = bytesAllocated;
+    stats.backbufferRequested = !m_isFramebufferDiscarded;
+    m_context->sendManagedMemoryStatsCHROMIUM(&stats);
 }
 
 void GLRenderer::releaseRenderPassTextures()
@@ -1147,15 +1153,45 @@ void GLRenderer::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocatio
     }
 }
 
+int GLRenderer::priorityCutoffValue(WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priorityCutoff)
+{
+    switch (priorityCutoff) {
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing:
+        return PriorityCalculator::allowNothingCutoff();
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly:
+        return PriorityCalculator::allowVisibleOnlyCutoff();
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleAndNearby:
+        return PriorityCalculator::allowVisibleAndNearbyCutoff();
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything:
+        return PriorityCalculator::allowEverythingCutoff();
+    }
+    NOTREACHED();
+    return 0;
+}
+
 void GLRenderer::onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemoryAllocation allocation)
 {
-    m_discardFramebufferWhenNotVisible = !allocation.suggestHaveBackbuffer;
     // Just ignore the memory manager when it says to set the limit to zero
     // bytes. This will happen when the memory manager thinks that the renderer
     // is not visible (which the renderer knows better).
-    if (allocation.gpuResourceSizeInBytes)
-        m_client->setManagedMemoryPolicy(ManagedMemoryPolicy(allocation.gpuResourceSizeInBytes));
+    if (allocation.bytesLimitWhenVisible) {
+        ManagedMemoryPolicy policy(
+            allocation.bytesLimitWhenVisible,
+            priorityCutoffValue(allocation.priorityCutoffWhenVisible),
+            allocation.bytesLimitWhenNotVisible,
+            priorityCutoffValue(allocation.priorityCutoffWhenNotVisible));
+
+        if (allocation.enforceButDoNotKeepAsPolicy)
+            m_client->enforceManagedMemoryPolicy(policy);
+        else
+            m_client->setManagedMemoryPolicy(policy);
+    }
+
+    bool oldDiscardFramebufferWhenNotVisible = m_discardFramebufferWhenNotVisible;
+    m_discardFramebufferWhenNotVisible = !allocation.suggestHaveBackbuffer;
     enforceMemoryPolicy();
+    if (allocation.enforceButDoNotKeepAsPolicy)
+        m_discardFramebufferWhenNotVisible = oldDiscardFramebufferWhenNotVisible;
 }
 
 void GLRenderer::enforceMemoryPolicy()

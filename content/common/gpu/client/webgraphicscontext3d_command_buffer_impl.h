@@ -48,6 +48,8 @@ using WebKit::WGC3Dfloat;
 using WebKit::WGC3Dclampf;
 using WebKit::WGC3Dintptr;
 using WebKit::WGC3Dsizeiptr;
+using WebKit::WebGraphicsManagedMemoryStats;
+using WebKit::WebGraphicsMemoryAllocation;
 
 namespace content {
 class GpuChannelHost;
@@ -519,6 +521,9 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void setMemoryAllocationChangedCallbackCHROMIUM(
       WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback);
 
+  virtual void sendManagedMemoryStatsCHROMIUM(
+      const WebGraphicsManagedMemoryStats* stats);
+
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);
 
@@ -668,6 +673,10 @@ class WebGraphicsContext3DCommandBufferImpl
   // MemoryAllocationChanged callback.
   void OnMemoryAllocationChanged(const GpuMemoryAllocationForRenderer&
       allocation);
+
+  // Convert the gpu cutoff enum to the WebKit enum.
+  static WebGraphicsMemoryAllocation::PriorityCutoff WebkitPriorityCutoff(
+      GpuMemoryAllocationForRenderer::PriorityCutoff priorityCutoff);
 
   bool initialize_failed_;
 
