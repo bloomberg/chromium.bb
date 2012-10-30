@@ -206,14 +206,14 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 	}
 	c->xkb_event_base = ext->first_event;
 
-	select = xcb_xkb_select_events(c->conn,
-				       XCB_XKB_ID_USE_CORE_KBD,
-				       XCB_XKB_EVENT_TYPE_STATE_NOTIFY,
-				       0,
-				       XCB_XKB_EVENT_TYPE_STATE_NOTIFY,
-				       0,
-				       0,
-				       NULL);
+	select = xcb_xkb_select_events_checked(c->conn,
+					       XCB_XKB_ID_USE_CORE_KBD,
+					       XCB_XKB_EVENT_TYPE_STATE_NOTIFY,
+					       0,
+					       XCB_XKB_EVENT_TYPE_STATE_NOTIFY,
+					       0,
+					       0,
+					       NULL);
 	error = xcb_request_check(c->conn, select);
 	if (error) {
 		weston_log("error: failed to select for XKB state events\n");
