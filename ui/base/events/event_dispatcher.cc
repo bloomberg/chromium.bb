@@ -6,10 +6,13 @@
 
 namespace ui {
 
-EventDispatcher::EventDispatcher() {
+EventDispatcher::EventDispatcher()
+    : set_on_destroy_(NULL) {
 }
 
 EventDispatcher::~EventDispatcher() {
+  if (set_on_destroy_)
+    *set_on_destroy_ = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

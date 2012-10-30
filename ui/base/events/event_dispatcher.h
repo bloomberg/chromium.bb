@@ -5,6 +5,7 @@
 #ifndef UI_BASE_EVENTS_EVENT_DISPATCHER_H_
 #define UI_BASE_EVENTS_EVENT_DISPATCHER_H_
 
+#include "base/auto_reset.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_target.h"
@@ -45,7 +46,7 @@ class UI_EXPORT EventDispatcher {
     // abstraction.
     if (CanDispatchToTarget(target)) {
       dispatch_helper.set_phase(EP_TARGET);
-      result |= DispatchEventToSingleHandler(target, event);
+      result |= DispatchEvent(target, event);
       dispatch_helper.set_result(event->result() | result);
       if (result & ER_CONSUMED)
         return result;
@@ -77,11 +78,26 @@ class UI_EXPORT EventDispatcher {
     Event::DispatcherApi dispatch_helper(event);
     for (EventHandlerList::const_iterator it = list.begin(),
             end = list.end(); it != end; ++it) {
-      result |= DispatchEventToSingleHandler((*it), event);
+      result |= DispatchEvent((*it), event);
       dispatch_helper.set_result(event->result() | result);
       if (result & ER_CONSUMED)
         return result;
     }
+    return result;
+  }
+
+  // Dispatches an event, and makes sure it sets ER_CONSUMED on the
+  // event-handling result if the dispatcher itself has been destroyed during
+  // dispatching the event to the event handler.
+  template<class T>
+  int DispatchEvent(EventHandler* handler, T* event) {
+    bool destroyed = false;
+    set_on_destroy_ = &destroyed;
+    int result = DispatchEventToSingleHandler(handler, event);
+    if (destroyed)
+      result |= ui::ER_CONSUMED;
+    else
+      set_on_destroy_ = NULL;
     return result;
   }
 
@@ -95,6 +111,10 @@ class UI_EXPORT EventDispatcher {
                                            TouchEvent* event);
   EventResult DispatchEventToSingleHandler(EventHandler* handler,
                                            GestureEvent* event);
+
+  // This is used to track whether the dispatcher has been destroyed in the
+  // middle of dispatching an event.
+  bool* set_on_destroy_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

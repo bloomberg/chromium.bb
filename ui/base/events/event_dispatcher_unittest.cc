@@ -55,7 +55,7 @@ class TestEventHandler : public EventHandler {
 
   virtual ~TestEventHandler() {}
 
-  void ReceivedEvent(Event* event) {
+  virtual void ReceivedEvent(Event* event) {
     static_cast<TestTarget*>(event->target())->AddHandlerId(id_);
     if (event->phase() == ui::EP_POSTTARGET) {
       EXPECT_TRUE(expect_post_target_);
@@ -108,6 +108,28 @@ class TestEventHandler : public EventHandler {
   bool received_pre_target_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
+};
+
+// Destroys the dispatcher when it receives any event.
+class EventHandlerDestroyDispatcher : public TestEventHandler {
+ public:
+  EventHandlerDestroyDispatcher(EventDispatcher* dispatcher,
+                      int id)
+      : TestEventHandler(id),
+        dispatcher_(dispatcher) {
+  }
+
+  virtual ~EventHandlerDestroyDispatcher() {}
+
+ private:
+  virtual void ReceivedEvent(Event* event) OVERRIDE {
+    TestEventHandler::ReceivedEvent(event);
+    delete dispatcher_;
+  }
+
+  EventDispatcher* dispatcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventHandlerDestroyDispatcher);
 };
 
 class TestEventDispatcher : public EventDispatcher {
@@ -235,6 +257,64 @@ TEST(EventDispatcherTest, EventDispatchPhase) {
   EXPECT_EQ(
       std::vector<int>(handlers, handlers + sizeof(handlers) / sizeof(int)),
       target.handler_list());
+}
+
+// Tests that if the dispatcher is destroyed in the middle of pre or post-target
+// dispatching events, it doesn't cause a crash.
+TEST(EventDispatcherTest, EventDispatcherDestroyTarget) {
+  // Test for pre-target first.
+  {
+    TestEventDispatcher* dispatcher = new TestEventDispatcher();
+    TestTarget target;
+    EventHandlerDestroyDispatcher handler(dispatcher, 5);
+    TestEventHandler h1(1), h2(2);
+
+    target.AddPreTargetHandler(&h1);
+    target.AddPreTargetHandler(&handler);
+    target.AddPreTargetHandler(&h2);
+
+    h1.set_expect_pre_target(true);
+    handler.set_expect_pre_target(true);
+    // |h2| should not receive any events at all since |handler| will have
+    // destroyed the dispatcher.
+    h2.set_expect_pre_target(false);
+
+    MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4),
+        gfx::Point(3, 4), 0);
+    Event::DispatcherApi event_mod(&mouse);
+    int result = dispatcher->ProcessEvent(&target, &mouse);
+    EXPECT_EQ(ER_CONSUMED, result);
+    EXPECT_EQ(2U, target.handler_list().size());
+    EXPECT_EQ(1, target.handler_list()[0]);
+    EXPECT_EQ(5, target.handler_list()[1]);
+  }
+
+  // Now test for post-target.
+  {
+    TestEventDispatcher* dispatcher = new TestEventDispatcher();
+    TestTarget target;
+    EventHandlerDestroyDispatcher handler(dispatcher, 5);
+    TestEventHandler h1(1), h2(2);
+
+    target.AddPostTargetHandler(&h1);
+    target.AddPostTargetHandler(&handler);
+    target.AddPostTargetHandler(&h2);
+
+    h1.set_expect_post_target(true);
+    handler.set_expect_post_target(true);
+    // |h2| should not receive any events at all since |handler| will have
+    // destroyed the dispatcher.
+    h2.set_expect_post_target(false);
+
+    MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(3, 4),
+        gfx::Point(3, 4), 0);
+    Event::DispatcherApi event_mod(&mouse);
+    int result = dispatcher->ProcessEvent(&target, &mouse);
+    EXPECT_EQ(ER_CONSUMED, result);
+    EXPECT_EQ(2U, target.handler_list().size());
+    EXPECT_EQ(1, target.handler_list()[0]);
+    EXPECT_EQ(5, target.handler_list()[1]);
+  }
 }
 
 }  // namespace ui
