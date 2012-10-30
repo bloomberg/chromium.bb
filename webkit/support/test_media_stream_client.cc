@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "webkit/media/media_stream_audio_renderer.h"
 #include "webkit/media/simple_video_frame_provider.h"
 
 using namespace WebKit;
@@ -71,6 +72,11 @@ scoped_refptr<media::VideoDecoder> TestMediaStreamClient::GetVideoDecoder(
       message_loop_factory->GetMessageLoop(media::MessageLoopFactory::kDecoder),
       gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
       base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs));
+}
+
+scoped_refptr<webkit_media::MediaStreamAudioRenderer>
+TestMediaStreamClient::GetAudioRenderer(const GURL& url) {
+  return NULL;
 }
 
 }  // namespace webkit_support

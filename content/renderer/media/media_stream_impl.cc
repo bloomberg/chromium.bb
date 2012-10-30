@@ -17,6 +17,7 @@
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "content/renderer/media/rtc_video_renderer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/base/message_loop_factory.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
@@ -27,6 +28,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "webkit/media/media_stream_audio_renderer.h"
 
 namespace content {
 namespace {
@@ -253,6 +255,40 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
   webrtc::MediaStreamInterface* stream = GetNativeMediaStream(descriptor);
   if (stream)
     return CreateVideoDecoder(stream, message_loop_factory);
+  NOTREACHED();
+  return NULL;
+}
+
+scoped_refptr<webkit_media::MediaStreamAudioRenderer>
+MediaStreamImpl::GetAudioRenderer(const GURL& url) {
+  DCHECK(CalledOnValidThread());
+  WebKit::WebMediaStreamDescriptor descriptor(GetMediaStream(url));
+
+  if (descriptor.isNull() || !descriptor.extraData())
+    return NULL;  // This is not a valid stream.
+
+  DVLOG(1) << "MediaStreamImpl::GetAudioRenderer stream:"
+           << UTF16ToUTF8(descriptor.label());
+
+  MediaStreamExtraData* extra_data =
+      static_cast<MediaStreamExtraData*>(descriptor.extraData());
+  if (extra_data->remote_stream()) {
+    scoped_refptr<WebRtcAudioRenderer> renderer =
+        CreateRemoteAudioRenderer(extra_data->remote_stream());
+
+    if (dependency_factory_->GetWebRtcAudioDevice()->SetRenderer(renderer)) {
+      return renderer;
+    }
+
+    // WebRtcAudioDeviceImpl can only support one renderer.
+    return NULL;
+  }
+
+  if (extra_data->local_stream()) {
+    // TODO(xians): Implement a WebRtcAudioFIFO to handle the local loopback.
+    return NULL;
+  }
+
   NOTREACHED();
   return NULL;
 }
@@ -501,6 +537,17 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateVideoDecoder(
       message_loop_factory->GetMessageLoop(media::MessageLoopFactory::kDecoder),
       base::MessageLoopProxy::current(),
       stream->video_tracks()->at(0));
+}
+
+scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
+    webrtc::MediaStreamInterface* stream) {
+  if (!stream->audio_tracks() || stream->audio_tracks()->count() == 0)
+    return NULL;
+
+  DVLOG(1) << "MediaStreamImpl::CreateRemoteAudioRenderer label:"
+           << stream->label();
+
+  return new WebRtcAudioRenderer();
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(

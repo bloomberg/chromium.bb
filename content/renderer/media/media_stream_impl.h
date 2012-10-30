@@ -24,10 +24,15 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaRequest.h"
 #include "webkit/media/media_stream_client.h"
 
+namespace webkit_media {
+class MediaStreamAudioRenderer;
+}
+
 namespace content {
 class MediaStreamDependencyFactory;
 class MediaStreamDispatcher;
 class VideoCaptureImplManager;
+class WebRtcAudioRenderer;
 
 // MediaStreamImpl is a delegate for the Media Stream API messages used by
 // WebKit. It ties together WebKit, native PeerConnection in libjingle and
@@ -74,6 +79,8 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url,
       media::MessageLoopFactory* message_loop_factory) OVERRIDE;
+  virtual scoped_refptr<webkit_media::MediaStreamAudioRenderer>
+      GetAudioRenderer(const GURL& url) OVERRIDE;
 
   // MediaStreamDispatcherEventHandler implementation.
   virtual void OnStreamGenerated(
@@ -160,6 +167,8 @@ class CONTENT_EXPORT MediaStreamImpl
   scoped_refptr<media::VideoDecoder> CreateVideoDecoder(
       webrtc::MediaStreamInterface* stream,
       media::MessageLoopFactory* message_loop_factory);
+  scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
+        webrtc::MediaStreamInterface* stream);
 
   // Weak ref to a MediaStreamDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.

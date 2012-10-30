@@ -125,6 +125,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       int sdp_mline_index,
       const std::string& sdp);
 
+  WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
+
  protected:
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual scoped_refptr<webrtc::LocalMediaStreamInterface>

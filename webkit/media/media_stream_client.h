@@ -18,6 +18,8 @@ class MessageLoopFactory;
 
 namespace webkit_media {
 
+class MediaStreamAudioRenderer;
+
 // Define an interface for media stream client to get some information about
 // the media stream.
 class MediaStreamClient {
@@ -33,6 +35,9 @@ class MediaStreamClient {
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url,
       media::MessageLoopFactory* message_loop_factory) = 0;
+
+  virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
+      const GURL& url) = 0;
 
  protected:
   virtual ~MediaStreamClient() {}

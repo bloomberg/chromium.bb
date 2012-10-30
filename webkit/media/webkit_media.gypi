@@ -62,6 +62,8 @@
         'crypto/proxy_decryptor.h',
         'filter_helpers.cc',
         'filter_helpers.h',
+        'media_stream_audio_renderer.cc',
+        'media_stream_audio_renderer.h',
         'media_stream_client.h',
         'preload.h',
         'simple_video_frame_provider.cc',

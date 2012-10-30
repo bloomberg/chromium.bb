@@ -14,6 +14,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/webrtc_audio_renderer.h"
 #include "media/audio/audio_input_device.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/webrtc/modules/audio_device/include/audio_device.h"
@@ -204,11 +205,30 @@
 
 namespace content {
 
+// TODO(xians): Move this interface to webrtc so that libjingle can own a
+// reference to the renderer object.
+class WebRtcAudioRendererSource {
+ public:
+  // Callback to get the rendered interleaved data.
+  virtual void RenderData(uint8* audio_data,
+                          int number_of_channels,
+                          int number_of_frames,
+                          int audio_delay_milliseconds) = 0;
+
+  // Set the format for the capture audio parameters.
+  virtual void SetRenderFormat(const media::AudioParameters& params) = 0;
+
+ protected:
+  virtual ~WebRtcAudioRendererSource() {}
+};
+
+class WebRtcAudioRenderer;
+
 class CONTENT_EXPORT WebRtcAudioDeviceImpl
     : NON_EXPORTED_BASE(public webrtc::AudioDeviceModule),
-      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
       NON_EXPORTED_BASE(public media::AudioInputDevice::CaptureCallback),
-      NON_EXPORTED_BASE(public media::AudioInputDevice::CaptureEventHandler) {
+      NON_EXPORTED_BASE(public media::AudioInputDevice::CaptureEventHandler),
+      NON_EXPORTED_BASE(public WebRtcAudioRendererSource) {
  public:
   // Methods called on main render thread.
   WebRtcAudioDeviceImpl();
@@ -219,10 +239,12 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual int32_t AddRef() OVERRIDE;
   virtual int32_t Release() OVERRIDE;
 
-  // media::AudioRendererSink::RenderCallback implementation.
-  virtual int Render(media::AudioBus* audio_bus,
-                     int audio_delay_milliseconds) OVERRIDE;
-  virtual void OnRenderError() OVERRIDE;
+  // WebRtcAudioRendererSource implementation.
+  virtual void RenderData(uint8* audio_data,
+                          int number_of_channels,
+                          int number_of_frames,
+                          int audio_delay_milliseconds) OVERRIDE;
+  virtual void SetRenderFormat(const media::AudioParameters& params) OVERRIDE;
 
   // AudioInputDevice::CaptureCallback implementation.
   virtual void Capture(media::AudioBus* audio_bus,
@@ -360,6 +382,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Sets the session id.
   void SetSessionId(int session_id);
 
+  // Sets the |renderer_|, returns false if |renderer_| has already existed.
+  bool SetRenderer(WebRtcAudioRenderer* renderer);
+
   // Accessors.
   int input_buffer_size() const {
     return input_audio_parameters_.frames_per_buffer();
@@ -401,8 +426,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Provides access to the native audio input layer in the browser process.
   scoped_refptr<media::AudioInputDevice> audio_input_device_;
 
-  // Provides access to the native audio output layer in the browser process.
-  scoped_refptr<media::AudioRendererSink> audio_output_device_;
+  // Provides access to the audio renderer in the browser process.
+  scoped_refptr<WebRtcAudioRenderer> renderer_;
 
   // Weak reference to the audio callback.
   // The webrtc client defines |audio_transport_callback_| by calling
@@ -422,7 +447,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Buffers used for temporary storage during capture/render callbacks.
   // Allocated during initialization to save stack.
   scoped_array<int16> input_buffer_;
-  scoped_array<int16> output_buffer_;
 
   webrtc::AudioDeviceModule::ErrorCode last_error_;
 
@@ -432,7 +456,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // on the input/capture side.
   int session_id_;
 
-  // Protects |recording_|, |output_delay_ms_|, |input_delay_ms_|.
+  // Protects |recording_|, |output_delay_ms_|, |input_delay_ms_|, |renderer_|.
   mutable base::Lock lock_;
 
   int bytes_per_sample_;

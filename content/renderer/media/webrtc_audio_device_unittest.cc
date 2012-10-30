@@ -6,6 +6,7 @@
 #include "base/test/test_timeouts.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/test/webrtc_audio_device_test.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_util.h"
@@ -223,9 +224,9 @@ TEST_F(WebRTCAudioDeviceTest, TestValidOutputRates) {
 TEST_F(WebRTCAudioDeviceTest, Construct) {
   AudioUtilNoHardware audio_util(48000, 48000, media::CHANNEL_LAYOUT_MONO);
   SetAudioUtilCallback(&audio_util);
+
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
-
   webrtc_audio_device->SetSessionId(1);
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
@@ -264,9 +265,12 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
   EXPECT_CALL(media_observer(),
       OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
+  scoped_refptr<WebRtcAudioRenderer> renderer = new WebRtcAudioRenderer();
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
   webrtc_audio_device->SetSessionId(1);
+  EXPECT_TRUE(webrtc_audio_device->SetRenderer(renderer));
+
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
 
@@ -288,6 +292,7 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
       ch, webrtc::kPlaybackPerChannel, *media_process.get()));
 
   EXPECT_EQ(0, base->StartPlayout(ch));
+  renderer->Play();
 
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
   WaitForIOThreadCompletion();
@@ -302,6 +307,7 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
   EXPECT_EQ(0, external_media->DeRegisterExternalMediaProcessing(
       ch, webrtc::kPlaybackPerChannel));
   EXPECT_EQ(0, base->StopPlayout(ch));
+  renderer->Stop();
 
   EXPECT_EQ(0, base->DeleteChannel(ch));
   EXPECT_EQ(0, base->Terminate());
@@ -331,10 +337,10 @@ TEST_F(WebRTCAudioDeviceTest, StartRecording) {
   // TODO(tommi): extend MediaObserver and MockMediaObserver with support
   // for new interfaces, like OnSetAudioStreamRecording(). When done, add
   // EXPECT_CALL() macros here.
-
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
   webrtc_audio_device->SetSessionId(1);
+
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
 
@@ -408,9 +414,12 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
   EXPECT_CALL(media_observer(),
       OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
+  scoped_refptr<WebRtcAudioRenderer> renderer = new WebRtcAudioRenderer();
+
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
   webrtc_audio_device->SetSessionId(1);
+  EXPECT_TRUE(webrtc_audio_device->SetRenderer(renderer));
 
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
@@ -423,6 +432,7 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
   EXPECT_EQ(0, base->StartPlayout(ch));
+  renderer->Play();
 
   ScopedWebRTCPtr<webrtc::VoEFile> file(engine.get());
   ASSERT_TRUE(file.valid());
@@ -440,7 +450,7 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
                                 base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 
-
+  renderer->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->StopPlayout(ch));
   EXPECT_EQ(0, base->DeleteChannel(ch));
@@ -476,9 +486,13 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudioWithAGC) {
   EXPECT_CALL(media_observer(),
       OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
+  scoped_refptr<WebRtcAudioRenderer> renderer = new WebRtcAudioRenderer();
+
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
   webrtc_audio_device->SetSessionId(1);
+  EXPECT_TRUE(webrtc_audio_device->SetRenderer(renderer));
+
   WebRTCAutoDelete<webrtc::VoiceEngine> engine(webrtc::VoiceEngine::Create());
   ASSERT_TRUE(engine.valid());
 
@@ -505,6 +519,7 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudioWithAGC) {
   EXPECT_EQ(0, network->RegisterExternalTransport(ch, *transport.get()));
   EXPECT_EQ(0, base->StartPlayout(ch));
   EXPECT_EQ(0, base->StartSend(ch));
+  renderer->Play();
 
   LOG(INFO) << ">> You should now be able to hear yourself in loopback...";
   message_loop_.PostDelayedTask(FROM_HERE,
@@ -512,6 +527,7 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudioWithAGC) {
                                 base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 
+  renderer->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->StopPlayout(ch));
 

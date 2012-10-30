@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "webkit/media/media_stream_audio_renderer.h"
 #include "webkit/media/media_stream_client.h"
 #include "webkit/media/video_frame_provider.h"
 #include "webkit/media/webmediaplayer_delegate.h"
@@ -65,6 +66,10 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
     video_frame_provider_->Stop();
   }
 
+  if (audio_renderer_) {
+    audio_renderer_->Stop();
+  }
+
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
@@ -88,7 +93,10 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
       url,
       base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr()),
       base::Bind(&WebMediaPlayerMS::OnFrameAvailable, AsWeakPtr()));
-  if (video_frame_provider_) {
+
+  audio_renderer_ = media_stream_client_->GetAudioRenderer(url);
+
+  if (video_frame_provider_ || audio_renderer_) {
     SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
     GetClient()->sourceOpened();
     GetClient()->setOpaque(true);
@@ -106,12 +114,13 @@ void WebMediaPlayerMS::play() {
   DVLOG(1) << "WebMediaPlayerMS::play";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (video_frame_provider_ && paused_) {
+  if (video_frame_provider_ && paused_)
     video_frame_provider_->Play();
-  }
-  paused_ = false;
 
-  // TODO(wjia): add audio. See crbug.com/142988.
+  if (audio_renderer_ && paused_)
+    audio_renderer_->Play();
+
+  paused_ = false;
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
 
@@ -125,7 +134,10 @@ void WebMediaPlayerMS::pause() {
 
   if (video_frame_provider_)
     video_frame_provider_->Pause();
-  // TODO(wjia): add audio. See crbug.com/142988.
+
+  if (audio_renderer_)
+    audio_renderer_->Pause();
+
   paused_ = true;
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
@@ -158,8 +170,8 @@ void WebMediaPlayerMS::setRate(float rate) {
 
 void WebMediaPlayerMS::setVolume(float volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(wjia): set audio volume. See crbug.com/142988.
-  NOTIMPLEMENTED();
+  if (audio_renderer_)
+    audio_renderer_->SetVolume(volume);
 }
 
 void WebMediaPlayerMS::setVisible(bool visible) {
@@ -182,8 +194,7 @@ bool WebMediaPlayerMS::hasVideo() const {
 
 bool WebMediaPlayerMS::hasAudio() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(wjia): add audio support. See crbug.com/142988.
-  return false;
+  return (audio_renderer_ != NULL);
 }
 
 WebKit::WebSize WebMediaPlayerMS::naturalSize() const {

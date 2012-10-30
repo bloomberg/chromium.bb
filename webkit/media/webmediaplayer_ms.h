@@ -24,6 +24,7 @@ class MediaLog;
 
 namespace webkit_media {
 
+class MediaStreamAudioRenderer;
 class MediaStreamClient;
 class VideoFrameProvider;
 class WebMediaPlayerDelegate;
@@ -159,6 +160,8 @@ class WebMediaPlayerMS
   unsigned total_frame_count_;
   unsigned dropped_frame_count_;
   media::SkCanvasVideoRenderer video_renderer_;
+
+  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
 
   scoped_refptr<media::MediaLog> media_log_;
 

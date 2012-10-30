@@ -411,6 +411,11 @@ webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
   return webrtc::CreateIceCandidate(sdp_mid, sdp_mline_index, sdp);
 }
 
+WebRtcAudioDeviceImpl*
+MediaStreamDependencyFactory::GetWebRtcAudioDevice() {
+  return audio_device_;
+}
+
 void MediaStreamDependencyFactory::SetAudioDeviceSessionId(int session_id) {
   audio_device_->SetSessionId(session_id);
 }
