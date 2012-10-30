@@ -43,8 +43,6 @@ class DevToolsClient : public RenderViewObserver,
   virtual void activateWindow() OVERRIDE;
   virtual void closeWindow() OVERRIDE;
   virtual void moveWindowBy(const WebKit::WebFloatPoint& offset) OVERRIDE;
-  virtual void requestDockWindow() OVERRIDE;
-  virtual void requestUndockWindow() OVERRIDE;
   virtual void requestSetDockSide(const WebKit::WebString& side) OVERRIDE;
   virtual void openInNewTab(const WebKit::WebString& side) OVERRIDE;
   virtual void save(const WebKit::WebString& url,
@@ -56,7 +54,6 @@ class DevToolsClient : public RenderViewObserver,
   void OnDispatchOnInspectorFrontend(const std::string& message);
 
   scoped_ptr<WebKit::WebDevToolsFrontend> web_tools_frontend_;
-  std::string last_dock_side_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClient);
 };

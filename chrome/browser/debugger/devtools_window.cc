@@ -538,7 +538,6 @@ void DevToolsWindow::ScheduleAction(DevToolsToggleAction action) {
 
 void DevToolsWindow::DoAction() {
   UpdateFrontendDockSide();
-  // TODO: these messages should be pushed through the WebKit API instead.
   switch (action_on_load_) {
     case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
       CallClientFunction("InspectorFrontendAPI.showConsole", NULL);
@@ -579,12 +578,9 @@ GURL DevToolsWindow::GetDevToolsUrl(Profile* profile,
   bool experiments_enabled =
       command_line.HasSwitch(switches::kEnableDevToolsExperiments);
 
-  // TODO(pfeldman): remove docked parameter once migrated to
-  // setDockSide.
   std::string url_string = StringPrintf("%sdevtools.html?"
-      "docked=%s&dockSide=%s&toolbarColor=%s&textColor=%s%s%s",
+      "dockSide=%s&toolbarColor=%s&textColor=%s%s%s",
       chrome::kChromeUIDevToolsURL,
-      dock_side == DEVTOOLS_DOCK_SIDE_UNDOCKED ? "false" : "true",
       SideToString(dock_side).c_str(),
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str(),
