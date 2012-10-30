@@ -91,6 +91,9 @@ class UI_EXPORT EventDispatcher {
   // dispatching the event to the event handler.
   template<class T>
   int DispatchEvent(EventHandler* handler, T* event) {
+    // If the target has been invalidated or deleted, don't dispatch the event.
+    if (!CanDispatchToTarget(event->target()))
+      return ui::ER_CONSUMED;
     bool destroyed = false;
     set_on_destroy_ = &destroyed;
     int result = DispatchEventToSingleHandler(handler, event);
