@@ -33,6 +33,17 @@ class WebVideoFrameImpl : public WebKit::WebVideoFrame {
   DISALLOW_COPY_AND_ASSIGN(WebVideoFrameImpl);
 };
 
+// TODO(skaslev) This is temporarily inline pending the removal of
+// WebKit::WebVideoFrame and WebVideoFrameImpl which are currently unused.
+inline media::VideoFrame* WebVideoFrameImpl::toVideoFrame(
+    WebKit::WebVideoFrame* web_video_frame) {
+  WebVideoFrameImpl* wrapped_frame =
+      static_cast<WebVideoFrameImpl*>(web_video_frame);
+  if (wrapped_frame)
+    return wrapped_frame->video_frame_.get();
+  return NULL;
+}
+
 }  // namespace webkit_media
 
 #endif  // WEBKIT_MEDIA_WEBVIDEOFRAME_IMPL_H_

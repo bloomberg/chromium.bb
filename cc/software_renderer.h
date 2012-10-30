@@ -7,7 +7,10 @@
 
 #include "base/basictypes.h"
 #include "cc/direct_renderer.h"
-#include <public/WebCompositorSoftwareOutputDevice.h>
+
+namespace WebKit {
+class WebCompositorSoftwareOutputDevice;
+}
 
 namespace cc {
 

@@ -17,12 +17,12 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkLayerRasterizer.h"
 #include "ui/gfx/rect_conversions.h"
+#include <public/WebCompositorSoftwareOutputDevice.h>
 #include <public/WebImage.h>
 #include <public/WebSize.h>
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebCompositorSoftwareOutputDevice;
-using WebKit::WebImage;
 using WebKit::WebSize;
 using WebKit::WebTransformationMatrix;
 
@@ -255,11 +255,12 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
 
     // FIXME: Add support for non-premultiplied alpha.
     ResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
-    gfx::RectF uvRect = gfx::ScaleRect(quad->uvRect(), quad->quadRect().width(), quad->quadRect().height());
+    const SkBitmap* bitmap = quadResourceLock.skBitmap();
+    gfx::RectF uvRect = gfx::ScaleRect(quad->uvRect(), bitmap->width(), bitmap->height());
     SkIRect skUvRect = toSkIRect(gfx::ToEnclosingRect(uvRect));
     if (quad->flipped())
         m_skCurrentCanvas->scale(1, -1);
-    m_skCurrentCanvas->drawBitmapRect(*quadResourceLock.skBitmap(), &skUvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
+    m_skCurrentCanvas->drawBitmapRect(*bitmap, &skUvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
 }
 
 void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* quad)

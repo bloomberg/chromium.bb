@@ -37,7 +37,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
-#include <public/WebVideoFrame.h>
 #include <set>
 #include <string>
 #include <vector>

@@ -12,15 +12,6 @@ using WebKit::WebVideoFrame;
 
 namespace webkit_media {
 
-media::VideoFrame* WebVideoFrameImpl::toVideoFrame(
-    WebVideoFrame* web_video_frame) {
-  WebVideoFrameImpl* wrapped_frame =
-      static_cast<WebVideoFrameImpl*>(web_video_frame);
-  if (wrapped_frame)
-    return wrapped_frame->video_frame_.get();
-  return NULL;
-}
-
 WebVideoFrameImpl::WebVideoFrameImpl(
     scoped_refptr<media::VideoFrame> video_frame)
     : video_frame_(video_frame) {

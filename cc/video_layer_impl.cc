@@ -6,7 +6,7 @@
 
 #include "cc/video_layer_impl.h"
 
-#include "NotImplemented.h"
+#include "base/logging.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/proxy.h"
@@ -15,16 +15,21 @@
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/yuv_video_draw_quad.h"
+#include "media/filters/skcanvas_video_renderer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include <public/WebVideoFrame.h>
 
 namespace cc {
 
-VideoLayerImpl::VideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider)
+VideoLayerImpl::VideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider,
+                               const FrameUnwrapper& unwrapper)
     : LayerImpl(id)
     , m_provider(provider)
+    , m_unwrapper(unwrapper)
+    , m_webFrame(0)
     , m_frame(0)
+    , m_format(GL_INVALID_VALUE)
+    , m_convertYUV(false)
     , m_externalTextureResource(0)
 {
     // This matrix is the default transformation for stream textures, and flips on the Y axis.
@@ -53,8 +58,8 @@ VideoLayerImpl::~VideoLayerImpl()
     freePlaneData(layerTreeHostImpl()->resourceProvider());
 
 #ifndef NDEBUG
-    for (unsigned i = 0; i < WebKit::WebVideoFrame::maxPlanes; ++i)
-      DCHECK(!m_framePlanes[i].resourceId);
+    for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; ++i)
+        DCHECK(!m_framePlanes[i].resourceId);
     DCHECK(!m_externalTextureResource);
 #endif
 }
@@ -68,22 +73,48 @@ void VideoLayerImpl::stopUsingProvider()
     m_provider = 0;
 }
 
-// Convert WebKit::WebVideoFrame::Format to GraphicsContext3D's format enum values.
-static GLenum convertVFCFormatToGC3DFormat(const WebKit::WebVideoFrame& frame)
+// Convert media::VideoFrame::Format to OpenGL enum values.
+static GLenum convertVFCFormatToGLenum(const media::VideoFrame& frame)
 {
     switch (frame.format()) {
-    case WebKit::WebVideoFrame::FormatYV12:
-    case WebKit::WebVideoFrame::FormatYV16:
+    case media::VideoFrame::YV12:
+    case media::VideoFrame::YV16:
         return GL_LUMINANCE;
-    case WebKit::WebVideoFrame::FormatNativeTexture:
-        return frame.textureTarget();
-    case WebKit::WebVideoFrame::FormatInvalid:
-    case WebKit::WebVideoFrame::FormatRGB32:
-    case WebKit::WebVideoFrame::FormatEmpty:
-    case WebKit::WebVideoFrame::FormatI420:
-        notImplemented();
+    case media::VideoFrame::NATIVE_TEXTURE:
+        return frame.texture_target();
+    case media::VideoFrame::INVALID:
+    case media::VideoFrame::RGB32:
+    case media::VideoFrame::EMPTY:
+    case media::VideoFrame::I420:
+        NOTREACHED();
+        break;
     }
     return GL_INVALID_VALUE;
+}
+
+size_t VideoLayerImpl::numPlanes() const
+{
+    if (!m_frame)
+        return 0;
+
+    if (m_convertYUV)
+        return 1;
+
+    switch (m_frame->format()) {
+    case media::VideoFrame::RGB32:
+        return 1;
+    case media::VideoFrame::YV12:
+    case media::VideoFrame::YV16:
+        return 3;
+    case media::VideoFrame::INVALID:
+    case media::VideoFrame::EMPTY:
+    case media::VideoFrame::I420:
+        break;
+    case media::VideoFrame::NATIVE_TEXTURE:
+        return 0;
+    }
+    NOTREACHED();
+    return 0;
 }
 
 void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
@@ -117,39 +148,45 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
         return;
     }
 
-    m_frame = m_provider->getCurrentFrame();
+    m_webFrame = m_provider->getCurrentFrame();
+    m_frame = m_unwrapper.Run(m_webFrame);
 
     if (!m_frame)
         return;
 
-    m_format = convertVFCFormatToGC3DFormat(*m_frame);
+    m_format = convertVFCFormatToGLenum(*m_frame);
 
     if (m_format == GL_INVALID_VALUE) {
-        m_provider->putCurrentFrame(m_frame);
+        m_provider->putCurrentFrame(m_webFrame);
         m_frame = 0;
         return;
     }
 
-    if (m_frame->planes() > WebKit::WebVideoFrame::maxPlanes) {
-        m_provider->putCurrentFrame(m_frame);
-        m_frame = 0;
-        return;
-    }
+    // FIXME: If we're in software compositing mode, we do the YUV -> RGB
+    // conversion here. That involves an extra copy of each frame to a bitmap.
+    // Obviously, this is suboptimal and should be addressed once ubercompositor
+    // starts shaping up.
+    m_convertYUV = resourceProvider->defaultResourceType() == ResourceProvider::Bitmap &&
+        (m_frame->format() == media::VideoFrame::YV12 ||
+         m_frame->format() == media::VideoFrame::YV16);
+
+    if (m_convertYUV)
+        m_format = GL_RGBA;
 
     if (!allocatePlaneData(resourceProvider)) {
-        m_provider->putCurrentFrame(m_frame);
+        m_provider->putCurrentFrame(m_webFrame);
         m_frame = 0;
         return;
     }
 
     if (!copyPlaneData(resourceProvider)) {
-        m_provider->putCurrentFrame(m_frame);
+        m_provider->putCurrentFrame(m_webFrame);
         m_frame = 0;
         return;
     }
 
     if (m_format == GL_TEXTURE_2D)
-        m_externalTextureResource = resourceProvider->createResourceFromExternalTexture(m_frame->textureId());
+        m_externalTextureResource = resourceProvider->createResourceFromExternalTexture(m_frame->texture_id());
 }
 
 void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
@@ -165,25 +202,24 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     // FIXME: When we pass quads out of process, we need to double-buffer, or
     // otherwise synchonize use of all textures in the quad.
 
-    IntRect quadRect(IntPoint(), contentBounds());
+    gfx::Rect quadRect(contentBounds());
 
     switch (m_format) {
     case GL_LUMINANCE: {
         // YUV software decoder.
-        const FramePlane& yPlane = m_framePlanes[WebKit::WebVideoFrame::yPlane];
-        const FramePlane& uPlane = m_framePlanes[WebKit::WebVideoFrame::uPlane];
-        const FramePlane& vPlane = m_framePlanes[WebKit::WebVideoFrame::vPlane];
+        const FramePlane& yPlane = m_framePlanes[media::VideoFrame::kYPlane];
+        const FramePlane& uPlane = m_framePlanes[media::VideoFrame::kUPlane];
+        const FramePlane& vPlane = m_framePlanes[media::VideoFrame::kVPlane];
         scoped_ptr<YUVVideoDrawQuad> yuvVideoQuad = YUVVideoDrawQuad::create(sharedQuadState, quadRect, yPlane, uPlane, vPlane);
         quadSink.append(yuvVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     case GL_RGBA: {
         // RGBA software decoder.
-        const FramePlane& plane = m_framePlanes[WebKit::WebVideoFrame::rgbPlane];
-        float widthScaleFactor = static_cast<float>(plane.visibleSize.width()) / plane.size.width();
-
+        const FramePlane& plane = m_framePlanes[media::VideoFrame::kRGBPlane];
         bool premultipliedAlpha = true;
-        FloatRect uvRect(0, 0, widthScaleFactor, 1);
+        float widthScaleFactor = static_cast<float>(plane.visibleSize.width()) / plane.size.width();
+        gfx::RectF uvRect(widthScaleFactor, 1);
         bool flipped = false;
         scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::create(sharedQuadState, quadRect, plane.resourceId, premultipliedAlpha, uvRect, flipped);
         quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
@@ -192,26 +228,26 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     case GL_TEXTURE_2D: {
         // NativeTexture hardware decoder.
         bool premultipliedAlpha = true;
-        FloatRect uvRect(0, 0, 1, 1);
+        gfx::RectF uvRect(1, 1);
         bool flipped = false;
         scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, premultipliedAlpha, uvRect, flipped);
         quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_RECTANGLE_ARB: {
-        IntSize textureSize(m_frame->width(), m_frame->height()); 
-        scoped_ptr<IOSurfaceDrawQuad> ioSurfaceQuad = IOSurfaceDrawQuad::create(sharedQuadState, quadRect, textureSize, m_frame->textureId(), IOSurfaceDrawQuad::Unflipped);
+        scoped_ptr<IOSurfaceDrawQuad> ioSurfaceQuad = IOSurfaceDrawQuad::create(sharedQuadState, quadRect, m_frame->data_size(), m_frame->texture_id(), IOSurfaceDrawQuad::Unflipped);
         quadSink.append(ioSurfaceQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_EXTERNAL_OES: {
         // StreamTexture hardware decoder.
-        scoped_ptr<StreamVideoDrawQuad> streamVideoQuad = StreamVideoDrawQuad::create(sharedQuadState, quadRect, m_frame->textureId(), m_streamTextureMatrix);
+        scoped_ptr<StreamVideoDrawQuad> streamVideoQuad = StreamVideoDrawQuad::create(sharedQuadState, quadRect, m_frame->texture_id(), m_streamTextureMatrix);
         quadSink.append(streamVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     default:
-        CRASH(); // Someone updated convertVFCFormatToGC3DFormat above but update this!
+        NOTREACHED();  // Someone updated convertVFCFormatToGLenum above but update this!
+        break;
     }
 }
 
@@ -233,29 +269,29 @@ void VideoLayerImpl::didDraw(ResourceProvider* resourceProvider)
         m_externalTextureResource = 0;
     }
 
-    m_provider->putCurrentFrame(m_frame);
+    m_provider->putCurrentFrame(m_webFrame);
     m_frame = 0;
 
     m_providerLock.Release();
 }
 
-static int videoFrameDimension(int originalDimension, unsigned plane, int format)
+static int videoFrameDimension(int originalDimension, size_t plane, int format)
 {
-    if (format == WebKit::WebVideoFrame::FormatYV12 && plane != WebKit::WebVideoFrame::yPlane)
+    if (format == media::VideoFrame::YV12 && plane != media::VideoFrame::kYPlane)
         return originalDimension / 2;
     return originalDimension;
 }
 
-static bool hasPaddingBytes(const WebKit::WebVideoFrame& frame, unsigned plane)
+static bool hasPaddingBytes(const media::VideoFrame& frame, size_t plane)
 {
-    return frame.stride(plane) > videoFrameDimension(frame.width(), plane, frame.format());
+    return frame.stride(plane) > videoFrameDimension(frame.data_size().width(), plane, frame.format());
 }
 
-IntSize VideoLayerImpl::computeVisibleSize(const WebKit::WebVideoFrame& frame, unsigned plane)
+IntSize computeVisibleSize(const media::VideoFrame& frame, size_t plane)
 {
-    int visibleWidth = videoFrameDimension(frame.width(), plane, frame.format());
+    int visibleWidth = videoFrameDimension(frame.data_size().width(), plane, frame.format());
     int originalWidth = visibleWidth;
-    int visibleHeight = videoFrameDimension(frame.height(), plane, frame.format());
+    int visibleHeight = videoFrameDimension(frame.data_size().height(), plane, frame.format());
 
     // When there are dead pixels at the edge of the texture, decrease
     // the frame width by 1 to prevent the rightmost pixels from
@@ -267,8 +303,8 @@ IntSize VideoLayerImpl::computeVisibleSize(const WebKit::WebVideoFrame& frame, u
     // one V value. If we decrease the width of the UV plane, we must decrease the
     // width of the Y texture by 2 for proper alignment. This must happen
     // always, even if Y's texture does not have padding bytes.
-    if (plane == WebKit::WebVideoFrame::yPlane && frame.format() == WebKit::WebVideoFrame::FormatYV12) {
-        if (hasPaddingBytes(frame, WebKit::WebVideoFrame::uPlane))
+    if (plane == media::VideoFrame::kYPlane && frame.format() == media::VideoFrame::YV12) {
+        if (hasPaddingBytes(frame, media::VideoFrame::kUPlane))
             visibleWidth = originalWidth - 2;
     }
 
@@ -295,11 +331,12 @@ void VideoLayerImpl::FramePlane::freeData(ResourceProvider* resourceProvider)
 
 bool VideoLayerImpl::allocatePlaneData(ResourceProvider* resourceProvider)
 {
-    int maxTextureSize = resourceProvider->maxTextureSize();
-    for (unsigned planeIndex = 0; planeIndex < m_frame->planes(); ++planeIndex) {
+    const int maxTextureSize = resourceProvider->maxTextureSize();
+    const size_t planeCount = numPlanes();
+    for (size_t planeIndex = 0; planeIndex < planeCount; ++planeIndex) {
         VideoLayerImpl::FramePlane& plane = m_framePlanes[planeIndex];
 
-        IntSize requiredTextureSize(m_frame->stride(planeIndex), videoFrameDimension(m_frame->height(), planeIndex, m_frame->format()));
+        IntSize requiredTextureSize(m_frame->stride(planeIndex), videoFrameDimension(m_frame->data_size().height(), planeIndex, m_frame->format()));
         // FIXME: Remove the test against maxTextureSize when tiled layers are implemented.
         if (requiredTextureSize.isZero() || requiredTextureSize.width() > maxTextureSize || requiredTextureSize.height() > maxTextureSize)
             return false;
@@ -321,13 +358,22 @@ bool VideoLayerImpl::allocatePlaneData(ResourceProvider* resourceProvider)
 
 bool VideoLayerImpl::copyPlaneData(ResourceProvider* resourceProvider)
 {
-    size_t softwarePlaneCount = m_frame->planes();
-    if (!softwarePlaneCount)
+    const size_t planeCount = numPlanes();
+    if (!planeCount)
         return true;
 
-    for (size_t softwarePlaneIndex = 0; softwarePlaneIndex < softwarePlaneCount; ++softwarePlaneIndex) {
-        VideoLayerImpl::FramePlane& plane = m_framePlanes[softwarePlaneIndex];
-        const uint8_t* softwarePlanePixels = static_cast<const uint8_t*>(m_frame->data(softwarePlaneIndex));
+    if (m_convertYUV) {
+        if (!m_videoRenderer)
+            m_videoRenderer.reset(new media::SkCanvasVideoRenderer);
+        VideoLayerImpl::FramePlane& plane = m_framePlanes[media::VideoFrame::kRGBPlane];
+        ResourceProvider::ScopedWriteLockSoftware lock(resourceProvider, plane.resourceId);
+        m_videoRenderer->Paint(m_frame, lock.skCanvas(), gfx::Rect(plane.size), 0xFF);
+        return true;
+    }
+
+    for (size_t planeIndex = 0; planeIndex < planeCount; ++planeIndex) {
+        VideoLayerImpl::FramePlane& plane = m_framePlanes[planeIndex];
+        const uint8_t* softwarePlanePixels = m_frame->data(planeIndex);
         IntRect planeRect(IntPoint(), plane.size);
         resourceProvider->upload(plane.resourceId, softwarePlanePixels, planeRect, planeRect, IntSize());
     }
@@ -336,14 +382,14 @@ bool VideoLayerImpl::copyPlaneData(ResourceProvider* resourceProvider)
 
 void VideoLayerImpl::freePlaneData(ResourceProvider* resourceProvider)
 {
-    for (unsigned i = 0; i < WebKit::WebVideoFrame::maxPlanes; ++i)
+    for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; ++i)
         m_framePlanes[i].freeData(resourceProvider);
 }
 
 void VideoLayerImpl::freeUnusedPlaneData(ResourceProvider* resourceProvider)
 {
-    unsigned firstUnusedPlane = m_frame ? m_frame->planes() : 0;
-    for (unsigned i = firstUnusedPlane; i < WebKit::WebVideoFrame::maxPlanes; ++i)
+    size_t firstUnusedPlane = numPlanes();
+    for (size_t i = firstUnusedPlane; i < media::VideoFrame::kMaxPlanes; ++i)
         m_framePlanes[i].freeData(resourceProvider);
 }
 
