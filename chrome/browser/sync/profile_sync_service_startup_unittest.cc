@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -267,61 +266,6 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
       GaiaConstants::kSyncService, "sync_token");
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
-}
-
-// Test that we can recover from a case where a bug in the code resulted in
-// OnUserChoseDatatypes not being properly called and datatype preferences
-// therefore being left unset.
-TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
-  DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state()).
-      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-
-  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
-
-  // Clear the datatype preference fields (simulating bug 154940).
-  profile_->GetPrefs()->ClearPref(prefs::kSyncKeepEverythingSynced);
-  for (syncer::ModelTypeSet::Iterator iter = syncer::UserTypes().First();
-       iter.Good(); iter.Inc()) {
-    profile_->GetPrefs()->ClearPref(
-        browser_sync::SyncPrefs::GetPrefNameForDataType(iter.Get()));
-  }
-
-  // Pre load the tokens
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
-  service_->Initialize();
-
-  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(
-      prefs::kSyncKeepEverythingSynced));
-}
-
-// Verify that the recovery of datatype preferences doesn't overwrite a valid
-// case where only bookmarks are enabled.
-TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
-  DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_, _));
-  EXPECT_CALL(*data_type_manager, state()).
-      WillRepeatedly(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-
-  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
-
-  // Explicitly set Keep Everything Synced to false and have only bookmarks
-  // enabled.
-  profile_->GetPrefs()->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
-
-  // Pre load the tokens
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
-  service_->Initialize();
-
-  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
-      prefs::kSyncKeepEverythingSynced));
 }
 
 TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
