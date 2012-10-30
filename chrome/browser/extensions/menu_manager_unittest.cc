@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/menu_manager.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -44,7 +45,13 @@ class MenuManagerTest : public testing::Test {
   MenuManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_),
                       file_thread_(BrowserThread::FILE, &message_loop_),
                       manager_(&profile_),
+                      prefs_(message_loop_.message_loop_proxy()),
                       next_id_(1) {
+  }
+
+  virtual void TearDown() OVERRIDE {
+    prefs_.pref_service()->CommitPendingWrite();
+    message_loop_.RunAllPending();
   }
 
   // Returns a test item.

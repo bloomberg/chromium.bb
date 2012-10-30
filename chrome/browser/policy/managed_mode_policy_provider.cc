@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 
 #include "base/prefs/json_pref_store.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -19,11 +20,11 @@ const char ManagedModePolicyProvider::kPolicies[] = "policies";
 
 // static
 ManagedModePolicyProvider* ManagedModePolicyProvider::Create(Profile* profile) {
-  JsonPrefStore* pref_store =
-      new JsonPrefStore(profile->GetPath().Append(
-                            chrome::kManagedModePolicyFilename),
-                        BrowserThread::GetMessageLoopProxyForThread(
-                            BrowserThread::FILE));
+  FilePath path = profile->GetPath().Append(chrome::kManagedModePolicyFilename);
+  JsonPrefStore* pref_store = new JsonPrefStore(
+      path,
+      JsonPrefStore::GetTaskRunnerForFile(path,
+                                          BrowserThread::GetBlockingPool()));
   return new ManagedModePolicyProvider(pref_store);
 }
 

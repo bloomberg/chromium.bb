@@ -16,6 +16,7 @@ class PrefService;
 
 namespace base {
 class DictionaryValue;
+class SequencedTaskRunner;
 }
 
 namespace extensions {
@@ -25,7 +26,7 @@ class ExtensionPrefs;
 // in tests.
 class TestExtensionPrefs {
  public:
-  TestExtensionPrefs();
+  explicit TestExtensionPrefs(base::SequencedTaskRunner* task_runner);
   virtual ~TestExtensionPrefs();
 
   ExtensionPrefs* prefs() { return prefs_.get(); }
@@ -76,6 +77,7 @@ class TestExtensionPrefs {
   scoped_ptr<PrefService> pref_service_;
   scoped_ptr<ExtensionPrefs> prefs_;
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
  private:
   bool extensions_disabled_;

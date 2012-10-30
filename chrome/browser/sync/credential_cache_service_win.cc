@@ -693,8 +693,9 @@ void CredentialCacheService::LookForCachedCredentialsInAlternateProfile() {
   // Attempt to read cached credentials from the alternate profile. If no file
   // exists, ReadPrefsAsync() will cause PREF_READ_ERROR_NO_FILE to be returned
   // after initialization is complete.
+  FilePath path = GetCredentialPathInAlternateProfile();
   alternate_store_ = new JsonPrefStore(
-      GetCredentialPathInAlternateProfile(),
+      path,
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE));
   alternate_store_observer_ = new AlternateStoreObserver(this,

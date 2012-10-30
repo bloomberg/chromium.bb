@@ -31,6 +31,10 @@ class PrefServiceObserver;
 class PrefStore;
 class PrefValueStore;
 
+namespace base {
+  class SequencedTaskRunner;
+}
+
 namespace syncer {
 class SyncableService;
 }
@@ -108,10 +112,12 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // the created PrefService or NULL if creation has failed. Note, it is
   // guaranteed that in asynchronous version initialization happens after this
   // function returned.
-  static PrefService* CreatePrefService(const FilePath& pref_filename,
-                                        policy::PolicyService* policy_service,
-                                        PrefStore* extension_pref_store,
-                                        bool async);
+  static PrefService* CreatePrefService(
+      const FilePath& pref_filename,
+      base::SequencedTaskRunner* pref_io_task_runner,
+      policy::PolicyService* policy_service,
+      PrefStore* extension_pref_store,
+      bool async);
 
   // Creates an incognito copy of the pref service that shares most pref stores
   // but uses a fresh non-persistent overlay for the user pref store and an

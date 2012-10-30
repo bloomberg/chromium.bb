@@ -131,7 +131,9 @@ using content::ChildProcessSecurityPolicy;
 using content::PluginService;
 using content::ResourceDispatcherHost;
 
-BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
+BrowserProcessImpl::BrowserProcessImpl(
+    base::SequencedTaskRunner* local_state_task_runner,
+    const CommandLine& command_line)
     : created_metrics_service_(false),
       created_watchdog_thread_(false),
       created_browser_policy_connector_(false),
@@ -145,7 +147,8 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       checked_for_new_frames_(false),
       using_new_frames_(false),
       render_widget_snapshot_taker_(new RenderWidgetSnapshotTaker),
-      download_status_updater_(new DownloadStatusUpdater) {
+      download_status_updater_(new DownloadStatusUpdater),
+      local_state_task_runner_(local_state_task_runner) {
   g_browser_process = this;
 
 #if defined(ENABLE_PRINTING)
@@ -712,10 +715,10 @@ void BrowserProcessImpl::CreateLocalState() {
   created_local_state_ = true;
 
   FilePath local_state_path;
-  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
+  CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   local_state_.reset(
-      PrefService::CreatePrefService(local_state_path, policy_service(), NULL,
-                                     false));
+      PrefService::CreatePrefService(local_state_path, local_state_task_runner_,
+                                     policy_service(), NULL, false));
 
   // Initialize the prefs of the local state.
   chrome::RegisterLocalState(local_state_.get());

@@ -52,10 +52,11 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 ExtensionPrefsTest::ExtensionPrefsTest()
     : ui_thread_(BrowserThread::UI, &message_loop_),
-      file_thread_(BrowserThread::FILE, &message_loop_) {
+      prefs_(message_loop_.message_loop_proxy()) {
 }
 
-ExtensionPrefsTest::~ExtensionPrefsTest() {}
+ExtensionPrefsTest::~ExtensionPrefsTest() {
+}
 
 void ExtensionPrefsTest::RegisterPreferences() {}
 
@@ -71,6 +72,8 @@ void ExtensionPrefsTest::TearDown() {
   prefs_.RecreateExtensionPrefs();
   RegisterPreferences();
   Verify();
+  prefs_.pref_service()->CommitPendingWrite();
+  message_loop_.RunAllPending();
 }
 
 // Tests the LastPingDay/SetLastPingDay functions.

@@ -274,8 +274,11 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line,
 }
 
 // Returns the new local state object, guaranteed non-NULL.
-PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
-                                  bool is_first_run) {
+// |local_state_task_runner| must be a shutdown-blocking task runner.
+PrefService* InitializeLocalState(
+    base::SequencedTaskRunner* local_state_task_runner,
+    const CommandLine& parsed_command_line,
+    bool is_first_run) {
   FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = file_util::PathExists(local_state_path);
@@ -329,7 +332,7 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
     FilePath parent_profile =
         parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
     scoped_ptr<PrefService> parent_local_state(
-        PrefService::CreatePrefService(parent_profile,
+        PrefService::CreatePrefService(parent_profile, local_state_task_runner,
                                        g_browser_process->policy_service(),
                                        NULL, false));
     parent_local_state->RegisterStringPref(prefs::kApplicationLocale,
@@ -710,7 +713,14 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
           parsed_command_line().HasSwitch(switches::kFirstRun)) &&
       !HasImportSwitch(parsed_command_line());
 #endif
-  browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
+
+  FilePath local_state_path;
+  CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
+  scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
+      JsonPrefStore::GetTaskRunnerForFile(local_state_path,
+                                          BrowserThread::GetBlockingPool());
+  browser_process_.reset(new BrowserProcessImpl(local_state_task_runner,
+                                                parsed_command_line()));
 
   if (parsed_command_line().HasSwitch(switches::kEnableProfiling)) {
     // User wants to override default tracking status.
@@ -732,7 +742,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
             switches::kProfilingOutputFile));
   }
 
-  local_state_ = InitializeLocalState(parsed_command_line(), is_first_run_);
+  local_state_ = InitializeLocalState(local_state_task_runner,
+                                      parsed_command_line(),
+                                      is_first_run_);
 
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);

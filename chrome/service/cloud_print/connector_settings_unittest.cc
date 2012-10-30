@@ -44,7 +44,7 @@ const char kServiceStateContent[] =
 
 class ConnectorSettingsTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     message_loop_proxy_ = base::MessageLoopProxy::current();
   }
@@ -58,7 +58,7 @@ class ConnectorSettingsTest : public testing::Test {
       file_util::WriteFile(file_name, content.c_str(), content.size());
     }
     ServiceProcessPrefs* prefs =
-        new ServiceProcessPrefs(file_name, message_loop_proxy_.get());
+        new ServiceProcessPrefs(file_name, message_loop_proxy_);
     prefs->ReadPrefs();
     return prefs;
   }

@@ -162,10 +162,12 @@ class NotificationsObserver : public content::NotificationObserver {
 // Base class for further specialized test classes.
 class MockService : public TestExtensionService {
  public:
-  MockService()
-      : pending_extension_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(*this)) {
+  explicit MockService(TestExtensionPrefs* prefs)
+      : prefs_(prefs),
+        pending_extension_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(*this)) {
     profile_.CreateRequestContext();
   }
+
   virtual ~MockService() {}
 
   virtual PendingExtensionManager* pending_extension_manager() OVERRIDE {
@@ -180,9 +182,9 @@ class MockService : public TestExtensionService {
     return profile_.GetRequestContext();
   }
 
-  ExtensionPrefs* extension_prefs() { return prefs_.prefs(); }
+  ExtensionPrefs* extension_prefs() { return prefs_->prefs(); }
 
-  PrefService* pref_service() { return prefs_.pref_service(); }
+  PrefService* pref_service() { return prefs_->pref_service(); }
 
   // Creates test extensions and inserts them into list. The name and
   // version are all based on their index. If |update_url| is non-null, it
@@ -201,15 +203,15 @@ class MockService : public TestExtensionService {
       if (update_url)
         manifest.SetString(extension_manifest_keys::kUpdateURL, *update_url);
       scoped_refptr<Extension> e =
-          prefs_.AddExtensionWithManifest(manifest, location);
+          prefs_->AddExtensionWithManifest(manifest, location);
       ASSERT_TRUE(e != NULL);
       list->push_back(e);
     }
   }
 
  protected:
+  TestExtensionPrefs* const prefs_;
   PendingExtensionManager pending_extension_manager_;
-  TestExtensionPrefs prefs_;
   TestingProfile profile_;
 
  private:
@@ -260,7 +262,9 @@ void SetupPendingExtensionManagerForTest(
 
 class ServiceForManifestTests : public MockService {
  public:
-  ServiceForManifestTests() {}
+  explicit ServiceForManifestTests(TestExtensionPrefs* prefs)
+      : MockService(prefs) {
+  }
 
   virtual ~ServiceForManifestTests() {}
 
@@ -305,8 +309,8 @@ class ServiceForManifestTests : public MockService {
 
 class ServiceForDownloadTests : public MockService {
  public:
-  ServiceForDownloadTests()
-      : MockService() {
+  explicit ServiceForDownloadTests(TestExtensionPrefs* prefs)
+      : MockService(prefs) {
   }
 
   // Add a fake crx installer to be returned by a call to UpdateExtension()
@@ -369,8 +373,8 @@ class ServiceForDownloadTests : public MockService {
 
 class ServiceForBlacklistTests : public MockService {
  public:
-  ServiceForBlacklistTests()
-     : MockService(),
+  explicit ServiceForBlacklistTests(TestExtensionPrefs* prefs)
+     : MockService(prefs),
        processed_blacklist_(false) {
   }
   virtual void UpdateExtensionBlacklist(
@@ -417,16 +421,26 @@ class ExtensionUpdaterTest : public testing::Test {
   ExtensionUpdaterTest()
       : ui_thread_(BrowserThread::UI, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
-        io_thread_(BrowserThread::IO, &loop_) {}
+        io_thread_(BrowserThread::IO, &loop_) {
+  }
+
+  virtual ~ExtensionUpdaterTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy()));
+  }
 
   virtual void TearDown() OVERRIDE {
     // Some tests create URLRequestContextGetters, whose destruction must run
     // on the IO thread. Make sure the IO loop spins before shutdown so that
     // those objects are released.
-    loop_.RunAllPending();
+    RunAllPending();
+    prefs_.reset();
   }
 
   void RunAllPending() {
+    prefs_->pref_service()->CommitPendingWrite();
     loop_.RunAllPending();
   }
 
@@ -466,7 +480,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestExtensionUpdateCheckRequests(bool pending) {
     // Create an extension with an update_url.
-    ServiceForManifestTests service;
+    ServiceForManifestTests service(prefs_.get());
     std::string update_url("http://foo.com/bar");
     ExtensionList extensions;
     PendingExtensionManager* pending_extension_manager =
@@ -526,7 +540,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestBlacklistUpdateCheckRequests() {
     // Setup and start the updater.
-    ServiceForManifestTests service;
+    ServiceForManifestTests service(prefs_.get());
 
     net::TestURLFetcherFactory factory;
     ExtensionUpdater updater(
@@ -608,7 +622,7 @@ class ExtensionUpdaterTest : public testing::Test {
   void TestUpdateUrlDataFromGallery(const std::string& gallery_url) {
     net::TestURLFetcherFactory factory;
 
-    MockService service;
+    MockService service(prefs_.get());
     MockExtensionDownloaderDelegate delegate;
     ExtensionDownloader downloader(&delegate, service.request_context());
     ExtensionList extensions;
@@ -689,7 +703,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestDetermineUpdatesPending() {
     // Create a set of test extensions
-    ServiceForManifestTests service;
+    ServiceForManifestTests service(prefs_.get());
     PendingExtensionManager* pending_extension_manager =
         service.pending_extension_manager();
     SetupPendingExtensionManagerForTest(3, GURL(), pending_extension_manager);
@@ -731,7 +745,7 @@ class ExtensionUpdaterTest : public testing::Test {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
     NotificationsObserver observer;
-    MockService service;
+    MockService service(prefs_.get());
     MockExtensionDownloaderDelegate delegate;
     ExtensionDownloader downloader(&delegate, service.request_context());
 
@@ -843,7 +857,8 @@ class ExtensionUpdaterTest : public testing::Test {
   void TestSingleExtensionDownloading(bool pending) {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
-    scoped_ptr<ServiceForDownloadTests> service(new ServiceForDownloadTests);
+    scoped_ptr<ServiceForDownloadTests> service(
+        new ServiceForDownloadTests(prefs_.get()));
     ExtensionUpdater updater(service.get(), service->extension_prefs(),
                              service->pref_service(),
                              service->profile(),
@@ -899,7 +914,7 @@ class ExtensionUpdaterTest : public testing::Test {
   void TestBlacklistDownloading() {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
-    ServiceForBlacklistTests service;
+    ServiceForBlacklistTests service(prefs_.get());
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
@@ -947,7 +962,7 @@ class ExtensionUpdaterTest : public testing::Test {
   void TestMultipleExtensionDownloading(bool updates_start_running) {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
-    ServiceForDownloadTests service;
+    ServiceForDownloadTests service(prefs_.get());
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
         service.profile(), kUpdateFrequencySecs);
@@ -1116,7 +1131,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Set up 2 mock extensions, one with a google.com update url and one
     // without.
-    ServiceForManifestTests service;
+    prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy()));
+    ServiceForManifestTests service(prefs_.get());
     ExtensionList tmp;
     GURL url1("http://clients2.google.com/service/update2/crx");
     GURL url2("http://www.somewebsite.com");
@@ -1228,6 +1244,8 @@ class ExtensionUpdaterTest : public testing::Test {
     // queries.
     EXPECT_TRUE(url1_query.find(brand_string) == std::string::npos);
 #endif
+
+    RunAllPending();
   }
 
   // This makes sure that the extension updater properly stores the results
@@ -1235,7 +1253,7 @@ class ExtensionUpdaterTest : public testing::Test {
   // the first time we fetched the extension, or 2) We sent a ping value of
   // >= 1 day for the extension.
   void TestHandleManifestResults() {
-    ServiceForManifestTests service;
+    ServiceForManifestTests service(prefs_.get());
     GURL update_url("http://www.google.com/manifest");
     ExtensionList tmp;
     service.CreateTestExtensions(1, 1, &tmp, &update_url.spec(),
@@ -1264,6 +1282,9 @@ class ExtensionUpdaterTest : public testing::Test {
     int64 seconds_diff = (Time::Now() - last_ping_day).InSeconds();
     EXPECT_LT(seconds_diff - results.daystart_elapsed_seconds, 5);
   }
+
+ protected:
+  scoped_ptr<TestExtensionPrefs> prefs_;
 
  private:
   MessageLoop loop_;
@@ -1345,7 +1366,7 @@ TEST_F(ExtensionUpdaterTest, TestHandleManifestResults) {
 
 TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
   net::TestURLFetcherFactory factory;
-  ServiceForManifestTests service;
+  ServiceForManifestTests service(prefs_.get());
   ExtensionUpdater updater(&service, service.extension_prefs(),
                            service.pref_service(), service.profile(),
                            kUpdateFrequencySecs);
@@ -1376,7 +1397,7 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
 
 TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
   net::TestURLFetcherFactory factory;
-  ServiceForManifestTests service;
+  ServiceForManifestTests service(prefs_.get());
   ExtensionUpdater updater(&service, service.extension_prefs(),
                            service.pref_service(), service.profile(),
                            kUpdateFrequencySecs);
@@ -1414,7 +1435,7 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
 
 TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   net::TestURLFetcherFactory factory;
-  MockService service;
+  MockService service(prefs_.get());
   MockExtensionDownloaderDelegate delegate;
   scoped_ptr<ExtensionDownloader> downloader(
       new ExtensionDownloader(&delegate, service.request_context()));
@@ -1466,7 +1487,7 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
 
 TEST_F(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
   net::TestURLFetcherFactory factory;
-  MockService service;
+  MockService service(prefs_.get());
   MockExtensionDownloaderDelegate delegate;
   ExtensionDownloader downloader(&delegate, service.request_context());
 
@@ -1480,7 +1501,7 @@ TEST_F(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
 }
 
 TEST_F(ExtensionUpdaterTest, TestCheckSoon) {
-  ServiceForManifestTests service;
+  ServiceForManifestTests service(prefs_.get());
   net::TestURLFetcherFactory factory;
   ExtensionUpdater updater(
       &service, service.extension_prefs(), service.pref_service(),

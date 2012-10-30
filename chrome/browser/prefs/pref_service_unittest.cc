@@ -315,7 +315,7 @@ TEST_F(PrefServiceUserFilePrefsTest, PreserveEmptyValue) {
       pref_file));
 
   PrefServiceMockBuilder builder;
-  builder.WithUserFilePrefs(pref_file, base::MessageLoopProxy::current());
+  builder.WithUserFilePrefs(pref_file, message_loop_.message_loop_proxy());
   scoped_ptr<PrefService> prefs(builder.Create());
 
   // Register testing prefs.
@@ -344,7 +344,7 @@ TEST_F(PrefServiceUserFilePrefsTest, PreserveEmptyValue) {
 
   // Write to file.
   prefs->CommitPendingWrite();
-  MessageLoop::current()->RunAllPending();
+  message_loop_.RunAllPending();
 
   // Compare to expected output.
   FilePath golden_output_file =

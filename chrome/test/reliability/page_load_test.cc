@@ -739,7 +739,8 @@ class PageLoadTest : public UITest {
   // returned PrefService object.
   PrefService* GetLocalState() {
     FilePath path = user_data_dir().Append(chrome::kLocalStateFilename);
-    return PrefServiceMockBuilder().WithUserFilePrefs(path).Create();
+    return PrefServiceMockBuilder().WithUserFilePrefs(
+        path, MessageLoop::current()->message_loop_proxy()).Create();
   }
 
   void GetStabilityMetrics(NavigationMetrics* metrics) {

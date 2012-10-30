@@ -32,6 +32,10 @@ class RemoteDebuggingServer;
 class PluginsResourceService;
 #endif
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace policy {
 class BrowserPolicyConnector;
 class PolicyService;
@@ -42,7 +46,9 @@ class BrowserProcessImpl : public BrowserProcess,
                            public base::NonThreadSafe,
                            public content::NotificationObserver {
  public:
-  explicit BrowserProcessImpl(const CommandLine& command_line);
+  // |local_state_task_runner| must be a shutdown-blocking task runner.
+  BrowserProcessImpl(base::SequencedTaskRunner* local_state_task_runner,
+                     const CommandLine& command_line);
   virtual ~BrowserProcessImpl();
 
   // Called before the browser threads are created.
@@ -224,6 +230,9 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<DownloadStatusUpdater> download_status_updater_;
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
+
+  // Sequenced task runner for local state related I/O tasks.
+  const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;
 
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.
