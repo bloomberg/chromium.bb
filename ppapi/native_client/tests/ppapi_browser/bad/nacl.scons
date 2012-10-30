@@ -91,8 +91,8 @@ nmf = '${TEST_DIR}/partly_invalid.nmf'
 if not env.Bit('nacl_glibc'):
   ppapi_bad_native_files = [
       env.File('ppapi_bad_native.html'),
-      env.File('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
-               'ppapi_progress_events.js'),
+      env.File('${SCONSTRUCT_DIR}/tests/ppapi_browser/' +
+               'progress_event_listener.js'),
       nacltest_js]
   replicated_files = env.Replicate('${STAGING_DIR}', ppapi_bad_native_files)
   env.Alias('all_programs', replicated_files)

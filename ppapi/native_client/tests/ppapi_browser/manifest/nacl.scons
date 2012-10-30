@@ -36,8 +36,7 @@ env.ComponentProgram(manifest_bad_target,
 env.Publish(manifest_good_target, 'run', [
     'manifest.html',
     manifest_bad_target,
-    ('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
-     'ppapi_progress_events.js'),
+    '${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_event_listener.js',
     '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
 ])
 

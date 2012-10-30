@@ -25,4 +25,8 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPICore, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_core.html"));
 })
 
+NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
+})
+
 }  // namespace anonymous
