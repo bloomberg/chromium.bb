@@ -870,8 +870,6 @@ window_attach_surface(struct window *window)
 				  window->allocation.height);
 		wl_surface_commit(window->surface);
 		window->server_allocation = window->allocation;
-		cairo_surface_destroy(window->cairo_surface);
-		window->cairo_surface = NULL;
 		break;
 	default:
 		return;
