@@ -161,6 +161,15 @@ redraw_handler(struct widget *widget, void *data)
 }
 
 static void
+resize_handler(struct widget *widget,
+	       int32_t width, int32_t height, void *data)
+{
+	struct image *image = data;
+
+	center_view(image);
+}
+
+static void
 keyboard_focus_handler(struct window *window,
 		       struct input *device, void *data)
 {
@@ -363,6 +372,7 @@ image_create(struct display *display, const char *filename,
 
 	window_set_user_data(image->window, image);
 	widget_set_redraw_handler(image->widget, redraw_handler);
+	widget_set_resize_handler(image->widget, resize_handler);
 	window_set_keyboard_focus_handler(image->window,
 					  keyboard_focus_handler);
 	window_set_fullscreen_handler(image->window, fullscreen_handler);
