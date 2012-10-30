@@ -6,7 +6,7 @@ vars = {
   # Be sure to update them when updating chrome_rev, above.
   "gtest_rev": "621",
   "gyp_rev": "1519",
-  "lss_rev": "13",
+  "lss_rev": "17",
 
   "lcov_rev": "54822",
   "python_26_rev": "53573",
