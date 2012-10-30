@@ -103,7 +103,7 @@ EXTRA_ENV = {
   'LIBS_X8664'       : '${BASE_LIB_NATIVE}x86-64',
 
   # Note: this is only used in the unsandboxed case
-  'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}" ' +
+  'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o ${output}' +
              '${#METADATA_FILE ? --metadata ${METADATA_FILE}}',
 }
 

@@ -100,8 +100,7 @@ EXTRA_ENV = {
   'BCLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
                 '${!SHARED && !RELOCATABLE ? --undef-sym-check} ' +
                 '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
-  'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} '
-               '-o "${output}"'),
+  'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
 }
 
 def AddToBCLinkFlags(*args):
