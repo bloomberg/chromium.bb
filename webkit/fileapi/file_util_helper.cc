@@ -10,6 +10,7 @@
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/file_system_util.h"
 
 using base::PlatformFileError;
 
@@ -371,7 +372,7 @@ base::PlatformFileError FileUtilHelper::ReadDirectory(
   while (!(current = file_enum->Next()).empty()) {
     base::FileUtilProxy::Entry entry;
     entry.is_directory = file_enum->IsDirectory();
-    entry.name = current.BaseName().value();
+    entry.name = VirtualPath::BaseName(current).value();
     entry.size = file_enum->Size();
     entry.last_modified_time = file_enum->LastModifiedTime();
     entries->push_back(entry);
