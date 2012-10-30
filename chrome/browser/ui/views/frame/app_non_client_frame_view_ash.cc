@@ -113,6 +113,15 @@ class AppNonClientFrameViewAsh::ControlView
     }
   }
 
+  // Returns the insets of the control which are only covered by the shadow.
+  gfx::Insets GetShadowInsets() {
+    return gfx::Insets(
+        0,
+        shadow_->width() - close_button_->width() - restore_button_->width(),
+        shadow_->height() - close_button_->height(),
+        0);
+  }
+
  private:
   // Sets images whose ids are passed in for each of the respective states
   // of |button|.
@@ -183,6 +192,8 @@ AppNonClientFrameViewAsh::AppNonClientFrameViewAsh(
   control_widget_->SetContentsView(control_view_);
   aura::Window* window = control_widget_->GetNativeView();
   window->SetName(kControlWindowName);
+  // Need to exclude the shadow from the active control area.
+  window->SetHitTestBoundsOverrideOuter(control_view_->GetShadowInsets(), 1);
   gfx::Rect control_bounds = GetControlBounds();
   window->SetBounds(control_bounds);
   control_widget_->Show();
