@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/extensions/extension.h"
 
@@ -25,10 +26,14 @@ base::Value* GetValueForRegistrationCodeType(std::string& type) {
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
   std::string result;
-  if (type == kCouponType)
-    provider->GetMachineStatistic(kCouponCodeKey, &result);
-  else if (type == kGroupType)
-    provider->GetMachineStatistic(kGroupCodeKey, &result);
+  if (!chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
+    // In Kiosk mode, we effectively disable the registration API
+    // by always returning an empty code.
+    if (type == kCouponType)
+      provider->GetMachineStatistic(kCouponCodeKey, &result);
+    else if (type == kGroupType)
+      provider->GetMachineStatistic(kGroupCodeKey, &result);
+  }
   return Value::CreateStringValue(result);
 }
 
