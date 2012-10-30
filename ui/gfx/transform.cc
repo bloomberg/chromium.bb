@@ -97,6 +97,12 @@ void Transform::ConcatTranslate(float x, float y) {
   matrix_.postConcat(translate);
 }
 
+void Transform::ConcatPerspectiveDepth(float depth) {
+  SkMatrix44 m;
+  m.set(3, 2, -1 / depth);
+  matrix_.postConcat(m);
+}
+
 void Transform::PreconcatTransform(const Transform& transform) {
   if (!transform.matrix_.isIdentity()) {
     matrix_.preConcat(transform.matrix_);

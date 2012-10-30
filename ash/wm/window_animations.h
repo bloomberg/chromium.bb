@@ -35,6 +35,7 @@ enum WindowVisibilityAnimationType {
                                                     // to its launcher icon.
   // Fade in/out using brightness and grayscale web filters.
   WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE,
+  WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE,          // Window rotates in.
 };
 
 // Type of visibility change transition that a window should animate.

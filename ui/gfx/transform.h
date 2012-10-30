@@ -66,6 +66,9 @@ class UI_EXPORT Transform {
   // Applies translation on current transform.
   void ConcatTranslate(float x, float y);
 
+  // Applies a perspective on current transform.
+  void ConcatPerspectiveDepth(float depth);
+
   // Applies a transformation on the current transformation
   // (i.e. 'this = this * transform;').
   void PreconcatTransform(const Transform& transform);

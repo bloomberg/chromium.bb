@@ -62,6 +62,7 @@
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/visibility_controller.h"
+#include "ash/wm/window_animations.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -623,6 +624,13 @@ ConstrainedWindowViews::~ConstrainedWindowViews() {
 }
 
 void ConstrainedWindowViews::ShowConstrainedWindow() {
+#if defined(USE_ASH)
+  if (enable_chrome_style_) {
+    ash::SetWindowVisibilityAnimationType(
+        GetNativeWindow(),
+        ash::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
+  }
+#endif
   Show();
   FocusConstrainedWindow();
 }
