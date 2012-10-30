@@ -57,7 +57,6 @@
           '../third_party/tlslite/tlslite/',
           '../tools/swarm_client/run_test_cases.py',
           '<(PRODUCT_DIR)/pyproto/google/__init__.py',
-          '<(PRODUCT_DIR)/pyproto/sync/protocol/',
           '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
