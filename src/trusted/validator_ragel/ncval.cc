@@ -50,17 +50,20 @@ struct Segment {
 };
 
 
-Segment FindTextSegment32(const vector<uint8_t> &data) {
+template<typename ElfEhdrType, typename ElfPhdrType>
+Segment FindTextSegment(const vector<uint8_t> &data) {
   Segment segment = {NULL, 0, 0}; // only to suppress 'uninitialized' warning
   bool found = false;
 
-  const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&data[0]);
+  const ElfEhdrType &header = *reinterpret_cast<const ElfEhdrType *>(&data[0]);
   CHECK(sizeof(header) <= data.size());
   CHECK(memcmp(header.e_ident, ELFMAG, SELFMAG) == 0);
 
-  for (int index = 0; index < header.e_phnum; ++index) {
-    const Elf32_Phdr &phdr = *reinterpret_cast<const Elf32_Phdr *>(
-        &data[header.e_phoff + header.e_phentsize * index]);
+  for (uint64_t index = 0; index < header.e_phnum; ++index) {
+    uint64_t phdr_offset = header.e_phoff + header.e_phentsize * index;
+    // static_cast to silence msvc on 32-bit platform
+    const ElfPhdrType &phdr = *reinterpret_cast<const ElfPhdrType *>(
+        &data[static_cast<size_t>(phdr_offset)]);
 
     // TODO(shcherbina): size of other loadable segments
     if (phdr.p_type == PT_LOAD && (phdr.p_flags & PF_X)) {
@@ -94,7 +97,7 @@ Segment FindTextSegment32(const vector<uint8_t> &data) {
         exit(1);
       }
 
-      segment.data = &data[phdr.p_offset];
+      segment.data = &data[static_cast<size_t>(phdr.p_offset)];
       segment.size = static_cast<uint32_t>(phdr.p_filesz);
       segment.vaddr = static_cast<uint32_t>(phdr.p_vaddr);
       found = true;
@@ -120,8 +123,9 @@ struct UserData {
 };
 
 
-Bool ProcessError(const uint8_t *begin, const uint8_t *end,
-                  uint32_t validation_info, void *user_data_ptr) {
+Bool ProcessErrorStrict(
+    const uint8_t *begin, const uint8_t *end,
+    uint32_t validation_info, void *user_data_ptr) {
   UNREFERENCED_PARAMETER(end);
   UserData &user_data = *reinterpret_cast<UserData *>(user_data_ptr);
   Error error;
@@ -145,7 +149,18 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
 }
 
 
-bool Validate32(const Segment &segment, vector<Error> *errors) {
+typedef Bool ValidateChunkFunc(
+    const uint8_t *data, size_t size,
+    enum ValidationOptions options,
+    const NaClCPUFeaturesX86 *cpu_features,
+    ValidationCallbackFunc user_callback,
+    void *callback_data);
+
+
+bool ValidateStrict(
+    const Segment &segment,
+    ValidateChunkFunc validate_chunk,
+    vector<Error> *errors) {
   CHECK(segment.size % kBundleSize == 0);
   CHECK(segment.vaddr % kBundleSize == 0);
 
@@ -159,16 +174,16 @@ bool Validate32(const Segment &segment, vector<Error> *errors) {
   const NaClCPUFeaturesX86 *cpu_features = &kFullCPUIDFeatures;
   ValidationOptions options = static_cast<ValidationOptions>(0);
 
-  return ValidateChunkIA32(
+  return validate_chunk(
       segment.data, segment.size,
       options, cpu_features,
-      ProcessError, &user_data);
+      ProcessErrorStrict, &user_data);
 }
 
 
 void Usage() {
   printf("Usage:\n");
-  printf("    ncval <elf file>\n");
+  printf("    ncval <ELF file>\n");
   exit(1);
 }
 
@@ -183,15 +198,44 @@ const char* ParseOptions(int argc, const char * const *argv) {
 
 int main(int argc, char **argv) {
   const char *input_file = ParseOptions(argc, argv);
-
   printf("Validating %s ...\n", input_file);
 
   vector<uint8_t> data;
   ReadImage(input_file, &data);
-  Segment segment = FindTextSegment32(data);
+
+  const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&data[0]);
+  if (data.size() < sizeof(header) ||
+      memcmp(header.e_ident, ELFMAG, SELFMAG) != 0) {
+    printf("Not an ELF file.\n");
+    exit(1);
+  }
+
+  Segment segment;
+  switch (header.e_ident[EI_CLASS]) {
+    case ELFCLASS32:
+      segment = FindTextSegment<Elf32_Ehdr, Elf32_Phdr>(data);
+      break;
+    case ELFCLASS64:
+      segment = FindTextSegment<Elf64_Ehdr, Elf64_Phdr>(data);
+      break;
+    default:
+      printf("Invalid ELF class %d.\n", header.e_ident[EI_CLASS]);
+      exit(1);
+  }
 
   vector<Error> errors;
-  bool result = Validate32(segment, &errors);
+  bool result = false;
+  switch(header.e_machine) {
+    case EM_386:
+      result = ValidateStrict(segment, ValidateChunkIA32, &errors);
+      break;
+    case EM_X86_64:
+      result = ValidateStrict(segment, ValidateChunkAMD64, &errors);
+      break;
+    default:
+      printf("Unsupported e_machine %"NACL_PRIu16".\n", header.e_machine);
+      exit(1);
+  }
 
   for (size_t i = 0; i < errors.size(); i++) {
     const Error &e = errors[i];
