@@ -655,15 +655,12 @@ class ExtensionService
   // Specialization of syncer::SyncableService::AsWeakPtr.
   base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
 
-#if defined(OS_CHROMEOS)
-  // TODO(jamescook): Remove ifdef after M23 backport, crbug.com/155994
   bool browser_terminating() const { return browser_terminating_; }
 
   // For testing.
   void set_browser_terminating_for_test(bool value) {
     browser_terminating_ = value;
   }
-#endif  // OS_CHROMEOS
 
  private:
   // Contains Extension data that can change during the life of the process,
@@ -918,13 +915,10 @@ class ExtensionService
   // install pending extensions.
   bool update_once_all_providers_are_ready_;
 
-#if defined(OS_CHROMEOS)
-  // TODO(jamescook): Remove ifdef after M23 backport, crbug.com/155994
   // Set when the browser is terminating. Prevents us from installing or
   // updating additional extensions and allows in-progress installations to
   // decide to abort.
   bool browser_terminating_;
-#endif
 
   NaClModuleInfoList nacl_module_list_;
 

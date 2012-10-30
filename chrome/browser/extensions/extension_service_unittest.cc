@@ -1501,8 +1501,6 @@ TEST_F(ExtensionServiceTest, DISABLED_InstallUserScript) {
   ExtensionErrorReporter::GetInstance()->ClearErrors();
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(jamescook): Remove ifdef after M23 backport, crbug.com/155994
 // Extensions don't install during shutdown.
 TEST_F(ExtensionServiceTest, DISABLED_InstallExtensionDuringShutdown) {
   InitializeEmptyExtensionService();
@@ -1519,7 +1517,6 @@ TEST_F(ExtensionServiceTest, DISABLED_InstallExtensionDuringShutdown) {
   EXPECT_FALSE(installed_) << "Extension installed during shutdown.";
   ASSERT_EQ(0u, loaded_.size()) << "Extension loaded during shutdown.";
 }
-#endif  // OS_CHROMEOS
 
 // This tests that the granted permissions preferences are correctly set when
 // installing an extension.
@@ -2388,8 +2385,6 @@ TEST_F(ExtensionServiceTest, DISABLED_UpdateExtension) {
             version()->GetString());
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(jamescook): Remove ifdef after M23 backport, crbug.com/155994
 // Extensions should not be updated during browser shutdown.
 TEST_F(ExtensionServiceTest, DISABLED_UpdateExtensionDuringShutdown) {
   InitializeEmptyExtensionService();
@@ -2410,7 +2405,6 @@ TEST_F(ExtensionServiceTest, DISABLED_UpdateExtensionDuringShutdown) {
             service_->GetExtensionById(good_crx, false)->
                 version()->GetString());
 }
-#endif
 
 // Test updating a not-already-installed extension - this should fail
 TEST_F(ExtensionServiceTest, DISABLED_UpdateNotInstalledExtension) {
