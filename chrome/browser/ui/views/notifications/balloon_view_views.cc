@@ -109,7 +109,7 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
 
   views::BubbleBorder* bubble_border =
       new views::BubbleBorder(views::BubbleBorder::FLOAT,
-                              views::BubbleBorder::SMALL_SHADOW);
+                              views::BubbleBorder::NO_SHADOW);
   set_border(bubble_border);
 }
 
