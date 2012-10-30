@@ -121,7 +121,6 @@ void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
     requested_size_ = gfx::Size(size.width(), size.height());
     host_->WasResized();
   }
-  texture_layer_->layer()->setBounds(size);
 }
 
 void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
@@ -133,17 +132,21 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 
 WebKit::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
     const gfx::Size& size) {
-  if (!CompositorImpl::IsInitialized() || texture_id_in_layer_ == 0)
+  if (!CompositorImpl::IsInitialized() ||
+      texture_id_in_layer_ == 0 ||
+      texture_size_in_layer_.IsEmpty())
     return 0;
 
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
   return helper->CopyAndScaleTexture(texture_id_in_layer_,
-                                     requested_size_,
+                                     texture_size_in_layer_,
                                      size);
 }
 
 bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
-  if (!CompositorImpl::IsInitialized() || texture_id_in_layer_ == 0)
+  if (!CompositorImpl::IsInitialized() ||
+      texture_id_in_layer_ == 0 ||
+      texture_size_in_layer_.IsEmpty())
     return false;
 
   gfx::JavaBitmap bitmap(jbitmap);
@@ -157,9 +160,9 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
 
   // If we're trying to read to a bitmap of a different size, we need to copy
   // and scale the texture before we can read it back.
-  if (bitmap.size() != requested_size_) {
+  if (bitmap.size() != texture_size_in_layer_) {
     texture = helper->CopyAndScaleTexture(texture_id_in_layer_,
-                                          requested_size_,
+                                          texture_size_in_layer_,
                                           bitmap.size());
     if (texture == 0)
       return false;
@@ -365,12 +368,9 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
   texture_layer_->setTextureId(params.surface_handle);
+  texture_layer_->layer()->setBounds(params.size);
   texture_id_in_layer_ = params.surface_handle;
-  texture_layer_->layer()->invalidate();
-  // TODO(sievers): The view and layer should get sized proactively.
-  if (((gfx::Size)texture_layer_->layer()->bounds()).IsEmpty())
-    texture_layer_->layer()->setBounds(
-        DrawDelegateImpl::GetInstance()->GetBounds());
+  texture_size_in_layer_ = params.size;
 
   // TODO(sievers): When running the impl thread in the browser we
   // need to delay the ACK until after commit.

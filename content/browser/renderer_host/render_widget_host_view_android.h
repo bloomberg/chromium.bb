@@ -166,6 +166,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // The most recent texture id that was pushed to the texture layer.
   unsigned int texture_id_in_layer_;
 
+  // The most recent texture size that was pushed to the texture layer.
+  gfx::Size texture_size_in_layer_;
+
   // The handle for the transport surface (between renderer and browser-side
   // compositor) for this view.
   gfx::GLSurfaceHandle shared_surface_;
