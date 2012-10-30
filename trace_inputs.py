@@ -1307,6 +1307,13 @@ class Strace(ApiBase):
         """Removes cwd."""
         self.cwd = None
 
+      @parse_args(r'^(\d+|AT_FDCWD), \"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', True)
+      def handle_faccessat(self, args, _results):
+        if args[0] == 'AT_FDCWD':
+          self._handle_file(args[1], True)
+        else:
+          raise Exception('Relative faccess not implemented.')
+
       def handle_fork(self, args, result):
         self._handle_unknown('fork', args, result)
 
@@ -1338,7 +1345,7 @@ class Strace(ApiBase):
       def handle_openat(self, args, _result):
         if 'O_DIRECTORY' in args[2]:
           return
-        if args[1] == 'AT_FDCWD':
+        if args[0] == 'AT_FDCWD':
           self._handle_file(args[1], False)
         else:
           # TODO(maruel): Implement relative open if necessary instead of the
@@ -1372,7 +1379,14 @@ class Strace(ApiBase):
         # In theory, the file had to be created anyway.
         pass
 
+      def handle_unlinkat(self, _args, _result):
+        # In theory, the file had to be created anyway.
+        pass
+
       def handle_statfs(self, _args, _result):
+        pass
+
+      def handle_utimensat(self, _args, _result):
         pass
 
       def handle_vfork(self, args, result):

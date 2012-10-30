@@ -364,6 +364,23 @@ if sys.platform != 'win32':
       }
       self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
 
+    def test_faccess(self):
+      lines = [
+        (self._ROOT_PID,
+         'faccessat(AT_FDCWD, "/home_foo_bar_user/file", W_OK) = 0'),
+      ]
+      expected = {
+        'root': {
+          'children': [],
+          'command': None,
+          'executable': None,
+          'files': [{'path': '/home_foo_bar_user/file', 'size': 0}],
+          'initial_cwd': unicode(ROOT_DIR),
+          'pid': self._ROOT_PID,
+        },
+      }
+      self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
+
     def test_futex_died(self):
       # That's a pretty bad fork, copy-pasted from a real log.
       lines = [
@@ -490,6 +507,27 @@ if sys.platform != 'win32':
           'size': -1,
         },
       ]
+      self._test_lines(lines, '/home/foo_bar_user/src', files)
+
+    def test_openat(self):
+      lines = [
+        (self._ROOT_PID,
+          'execve("../out/unittests", '
+            '["../out/unittests"...], [/* 44 vars */])         = 0'),
+        (self._ROOT_PID,
+         'openat(AT_FDCWD, "/home/foo_bar_user/file", O_RDONLY) = 0'),
+      ]
+      files = [
+        {
+          'path': u'/home/foo_bar_user/file',
+          'size': -1,
+        },
+        {
+          'path': u'/home/foo_bar_user/out/unittests',
+          'size': -1,
+        },
+      ]
+
       self._test_lines(lines, '/home/foo_bar_user/src', files)
 
     def test_rmdir(self):
