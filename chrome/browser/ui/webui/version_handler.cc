@@ -98,8 +98,14 @@ void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
   // always be an even number of tokens left.
   tokens.pop_back();
   DCHECK_EQ(0U, tokens.size() % 2);
-  for (size_t i = 0; i < tokens.size(); i += 2)
-    variations.push_back(tokens[i] + ":" + tokens[i + 1]);
+  const unsigned char kNonBreakingHyphenUTF8[] = { 0xE2, 0x80, 0x91, '\0' };
+  const std::string kNonBreakingHyphenUTF8String(
+      reinterpret_cast<const char*>(kNonBreakingHyphenUTF8));
+  for (size_t i = 0; i < tokens.size(); i += 2) {
+    std::string line = tokens[i] + ":" + tokens[i + 1];
+    ReplaceChars(line, "-", kNonBreakingHyphenUTF8String, &line);
+    variations.push_back(line);
+  }
 #else
   // In release mode, display the hashes only.
   std::vector<string16> selected_groups;
