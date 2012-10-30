@@ -400,7 +400,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember control;
-  control.Init(prefs::kLanguageXkbRemapControlKeyTo, &prefs, NULL);
+  control.Init(prefs::kLanguageRemapControlKeyTo, &prefs, NULL);
   control.SetValue(chromeos::input_method::kAltKey);
 
   EventRewriter rewriter;
@@ -1000,10 +1000,10 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
-  search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
+  search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs, NULL);
   search.SetValue(chromeos::input_method::kVoidKey);
   IntegerPrefMember control;
-  control.Init(prefs::kLanguageXkbRemapControlKeyTo, &prefs, NULL);
+  control.Init(prefs::kLanguageRemapControlKeyTo, &prefs, NULL);
   control.SetValue(chromeos::input_method::kVoidKey);
 
   EventRewriter rewriter;
@@ -1099,7 +1099,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
 
   // Remap Alt to Control.
   IntegerPrefMember alt;
-  alt.Init(prefs::kLanguageXkbRemapAltKeyTo, &prefs, NULL);
+  alt.Init(prefs::kLanguageRemapAltKeyTo, &prefs, NULL);
   alt.SetValue(chromeos::input_method::kControlKey);
 
   // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L
@@ -1138,7 +1138,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
-  search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
+  search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs, NULL);
   search.SetValue(chromeos::input_method::kControlKey);
 
   EventRewriter rewriter;
@@ -1160,7 +1160,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
 
   // Remap Alt to Control too.
   IntegerPrefMember alt;
-  alt.Init(prefs::kLanguageXkbRemapAltKeyTo, &prefs, NULL);
+  alt.Init(prefs::kLanguageRemapAltKeyTo, &prefs, NULL);
   alt.SetValue(chromeos::input_method::kControlKey);
 
   // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L.
@@ -1258,7 +1258,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
-  search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
+  search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs, NULL);
   search.SetValue(chromeos::input_method::kAltKey);
 
   EventRewriter rewriter;
@@ -1280,7 +1280,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   // Remap Alt to Control.
   IntegerPrefMember alt;
-  alt.Init(prefs::kLanguageXkbRemapAltKeyTo, &prefs, NULL);
+  alt.Init(prefs::kLanguageRemapAltKeyTo, &prefs, NULL);
   alt.SetValue(chromeos::input_method::kControlKey);
 
   // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L.
@@ -1299,7 +1299,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   // Remap Control to Search.
   IntegerPrefMember control;
-  control.Init(prefs::kLanguageXkbRemapControlKeyTo, &prefs, NULL);
+  control.Init(prefs::kLanguageRemapControlKeyTo, &prefs, NULL);
   control.SetValue(chromeos::input_method::kSearchKey);
 
   // Press left Control. Confirm the event is now VKEY_LWIN.
@@ -1370,7 +1370,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
-  search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
+  search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs, NULL);
   search.SetValue(chromeos::input_method::kCapsLockKey);
 
   chromeos::input_method::MockXKeyboard xkeyboard;
@@ -1661,7 +1661,7 @@ TEST_F(EventRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember search;
-  search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
+  search.Init(prefs::kLanguageRemapSearchKeyTo, &prefs, NULL);
   search.SetValue(chromeos::input_method::kControlKey);
 
   EventRewriter rewriter;
@@ -1701,7 +1701,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
   TestingPrefService prefs;
   chromeos::Preferences::RegisterUserPrefs(&prefs);
   IntegerPrefMember control;
-  control.Init(prefs::kLanguageXkbRemapControlKeyTo, &prefs, NULL);
+  control.Init(prefs::kLanguageRemapControlKeyTo, &prefs, NULL);
   control.SetValue(chromeos::input_method::kAltKey);
 
   EventRewriter rewriter;

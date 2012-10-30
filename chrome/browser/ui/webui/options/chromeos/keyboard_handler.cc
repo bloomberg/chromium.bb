@@ -14,22 +14,22 @@ const struct ModifierKeysSelectItem {
   int message_id;
   chromeos::input_method::ModifierKey value;
 } kModifierKeysSelectItems[] = {
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH,
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH,
     chromeos::input_method::kSearchKey },
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_CTRL,
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_CTRL,
     chromeos::input_method::kControlKey },
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_ALT,
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_ALT,
     chromeos::input_method::kAltKey },
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_VOID,
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_VOID,
     chromeos::input_method::kVoidKey },
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPS_LOCK,
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK,
     chromeos::input_method::kCapsLockKey },
 };
 
 const char* kDataValuesNames[] = {
-  "xkbRemapSearchKeyToValue",
-  "xkbRemapControlKeyToValue",
-  "xkbRemapAltKeyToValue",
+  "remapSearchKeyToValue",
+  "remapControlKeyToValue",
+  "remapAltKeyToValue",
 };
 }  // namespace
 
@@ -47,15 +47,15 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   localized_strings->SetString("keyboardOverlayTitle",
       l10n_util::GetStringUTF16(IDS_OPTIONS_KEYBOARD_OVERLAY_TITLE));
-  localized_strings->SetString("xkbRemapSearchKeyToContent",
+  localized_strings->SetString("remapSearchKeyToContent",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH_LABEL));
-  localized_strings->SetString("xkbRemapControlKeyToContent",
+          IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH_LABEL));
+  localized_strings->SetString("remapControlKeyToContent",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_CTRL_LABEL));
-  localized_strings->SetString("xkbRemapAltKeyToContent",
+          IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_CTRL_LABEL));
+  localized_strings->SetString("remapAltKeyToContent",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_ALT_LABEL));
+          IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_ALT_LABEL));
 
   for (size_t i = 0; i < arraysize(kDataValuesNames); ++i) {
     ListValue* list_value = new ListValue();
@@ -64,7 +64,7 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
           kModifierKeysSelectItems[j].value;
       const int message_id = kModifierKeysSelectItems[j].message_id;
       // Only the seach key can be remapped to the caps lock key.
-      if (kDataValuesNames[i] != std::string("xkbRemapSearchKeyToValue") &&
+      if (kDataValuesNames[i] != std::string("remapSearchKeyToValue") &&
           value == input_method::kCapsLockKey) {
         continue;
       }

@@ -738,10 +738,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     pref_registrar_.reset(new PrefChangeRegistrar);
     pref_registrar_->Init(profile->GetPrefs());
     pref_registrar_->Add(prefs::kUse24HourClock, this);
-    pref_registrar_->Add(prefs::kLanguageXkbRemapSearchKeyTo, this);
+    pref_registrar_->Add(prefs::kLanguageRemapSearchKeyTo, this);
     UpdateClockType(profile->GetPrefs());
     search_key_mapped_to_ =
-        profile->GetPrefs()->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo);
+        profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
   }
 
   void ObserveGDataUpdates() {
@@ -1093,9 +1093,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         PrefService* service = content::Source<PrefService>(source).ptr();
         if (pref == prefs::kUse24HourClock) {
           UpdateClockType(service);
-        } else if (pref == prefs::kLanguageXkbRemapSearchKeyTo) {
+        } else if (pref == prefs::kLanguageRemapSearchKeyTo) {
           search_key_mapped_to_ =
-              service->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo);
+              service->GetInteger(prefs::kLanguageRemapSearchKeyTo);
         } else if (pref == prefs::kSpokenFeedbackEnabled) {
           ash::AccessibilityObserver* observer =
               tray_->accessibility_observer();

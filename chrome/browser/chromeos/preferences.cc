@@ -219,13 +219,13 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
         language_prefs::kMozcIntegerPrefs[i].default_pref_value,
         language_prefs::kMozcIntegerPrefs[i].sync_status);
   }
-  prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapSearchKeyTo,
+  prefs->RegisterIntegerPref(prefs::kLanguageRemapSearchKeyTo,
                              input_method::kSearchKey,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapControlKeyTo,
+  prefs->RegisterIntegerPref(prefs::kLanguageRemapControlKeyTo,
                              input_method::kControlKey,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapAltKeyTo,
+  prefs->RegisterIntegerPref(prefs::kLanguageRemapAltKeyTo,
                              input_method::kAltKey,
                              PrefService::SYNCABLE_PREF);
   // We don't sync the following keyboard prefs since they are not user-

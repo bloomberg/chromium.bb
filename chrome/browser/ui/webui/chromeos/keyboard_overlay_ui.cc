@@ -308,11 +308,11 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
   typedef std::map<ModifierKey, ModifierKey> ModifierMap;
   ModifierMap modifier_map;
   modifier_map[chromeos::input_method::kSearchKey] = static_cast<ModifierKey>(
-      pref_service->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo));
+      pref_service->GetInteger(prefs::kLanguageRemapSearchKeyTo));
   modifier_map[chromeos::input_method::kControlKey] = static_cast<ModifierKey>(
-      pref_service->GetInteger(prefs::kLanguageXkbRemapControlKeyTo));
+      pref_service->GetInteger(prefs::kLanguageRemapControlKeyTo));
   modifier_map[chromeos::input_method::kAltKey] = static_cast<ModifierKey>(
-      pref_service->GetInteger(prefs::kLanguageXkbRemapAltKeyTo));
+      pref_service->GetInteger(prefs::kLanguageRemapAltKeyTo));
 
   DictionaryValue dict;
   for (ModifierMap::const_iterator i = modifier_map.begin();

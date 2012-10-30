@@ -73,14 +73,14 @@ const struct ModifierFlagToPrefName {
   int flag;
   const char* pref_name;
 } kModifierFlagToPrefName[] = {
-  { Mod4Mask, 0, prefs::kLanguageXkbRemapSearchKeyTo },
-  { ControlMask, ui::EF_CONTROL_DOWN, prefs::kLanguageXkbRemapControlKeyTo },
-  { Mod1Mask, ui::EF_ALT_DOWN, prefs::kLanguageXkbRemapAltKeyTo },
+  { Mod4Mask, 0, prefs::kLanguageRemapSearchKeyTo },
+  { ControlMask, ui::EF_CONTROL_DOWN, prefs::kLanguageRemapControlKeyTo },
+  { Mod1Mask, ui::EF_ALT_DOWN, prefs::kLanguageRemapAltKeyTo },
 };
 
 // Gets a remapped key for |pref_name| key. For example, to find out which
 // key Search is currently remapped to, call the function with
-// prefs::kLanguageXkbRemapSearchKeyTo.
+// prefs::kLanguageRemapSearchKeyTo.
 const ModifierRemapping* GetRemappedKey(const std::string& pref_name,
                                         const PrefService& pref_service) {
   if (!pref_service.FindPreference(pref_name.c_str()))
@@ -448,17 +448,17 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   switch (keysym) {
     case XK_Super_L:
     case XK_Super_R:
-      pref_name = prefs::kLanguageXkbRemapSearchKeyTo;
+      pref_name = prefs::kLanguageRemapSearchKeyTo;
       break;
     case XK_Control_L:
     case XK_Control_R:
-      pref_name = prefs::kLanguageXkbRemapControlKeyTo;
+      pref_name = prefs::kLanguageRemapControlKeyTo;
       break;
     case XK_Alt_L:
     case XK_Alt_R:
     case XK_Meta_L:
     case XK_Meta_R:
-      pref_name = prefs::kLanguageXkbRemapAltKeyTo;
+      pref_name = prefs::kLanguageRemapAltKeyTo;
       break;
     default:
       break;

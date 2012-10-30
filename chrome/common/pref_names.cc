@@ -704,14 +704,16 @@ const char kLanguageMozcUseDictionarySuggest[] =
 const char kLanguageMozcSuggestionsSize[] =
     "settings.language.mozc_suggestions_size";
 
-// A integer prefs which determine how we remap modifier keys (e.g. swap Alt-L
-// and Control-L.) Possible values for these prefs are 0-4. See ModifierKey enum
-// in src/chrome/browser/chromeos/input_method/xkeyboard.h
-const char kLanguageXkbRemapSearchKeyTo[] =
+// A integer prefs which determine how we remap modifier keys (e.g. swap Alt and
+// Control.) Possible values for these prefs are 0-4. See ModifierKey enum in
+// src/chrome/browser/chromeos/input_method/xkeyboard.h
+const char kLanguageRemapSearchKeyTo[] =
+    // Note: we no longer use XKB for remapping these keys, but we can't change
+    // the pref names since the names are already synced with the cloud.
     "settings.language.xkb_remap_search_key_to";
-const char kLanguageXkbRemapControlKeyTo[] =
+const char kLanguageRemapControlKeyTo[] =
     "settings.language.xkb_remap_control_key_to";
-const char kLanguageXkbRemapAltKeyTo[] =
+const char kLanguageRemapAltKeyTo[] =
     "settings.language.xkb_remap_alt_key_to";
 
 // A boolean pref which determines whether key repeat is enabled.
