@@ -111,20 +111,15 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   # Copy all the locales, preserving directory structure
   destination_locales = os.path.join(destination, "_locales")
   os.mkdir(destination_locales , 0775)
-  chromium_locale_dir = "/_locales/"
-  chrome_locale_dir = "/_locales.official/"
+  locale_dir = "/_locales/"
   for current_locale in locales:
-    pos = current_locale.find(chromium_locale_dir)
-    locale_len = len(chromium_locale_dir)
+    pos = current_locale.find(locale_dir)
     if (pos == -1):
-      pos = current_locale.find(chrome_locale_dir)
-      locale_len = len(chrome_locale_dir)
-    if (pos == -1):
-      raise "Missing locales directory in " + current_locale
-    subtree = current_locale[pos+locale_len:]
+      raise Exception("Missing locales directory in " + current_locale)
+    subtree = current_locale[pos + len(locale_dir):]
     pos = subtree.find("/")
     if (pos == -1):
-      raise "Malformed locale: " + current_locale
+      raise Exception("Malformed locale: " + current_locale)
     locale_id = subtree[:pos]
     messages = subtree[pos+1:]
     destination_dir = os.path.join(destination_locales, locale_id)

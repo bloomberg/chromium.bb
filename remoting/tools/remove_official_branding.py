@@ -17,18 +17,24 @@ def update_xml_node(element):
       child.replaceWholeText(
           child.data.replace("Chrome Remote Desktop", "Chromoting"))
 
-def remove_official_branding(input, output):
-  xml = minidom.parse(input)
+def remove_official_branding(input_file, output_file):
+  xml = minidom.parse(input_file)
 
   # Remove all translations.
   for translations in xml.getElementsByTagName("translations"):
-    for translation in xml.getElementsByTagName("translation"):
+    for translation in translations.getElementsByTagName("file"):
       translations.removeChild(translation)
+
+  for outputs in xml.getElementsByTagName("outputs"):
+    for output in outputs.getElementsByTagName("output"):
+      lang = output.getAttribute("lang")
+      if lang and lang != "en":
+        outputs.removeChild(output)
 
   # Update branding.
   update_xml_node(xml)
 
-  out = file(output, "w")
+  out = file(output_file, "w")
   out.write(xml.toxml(encoding = "UTF-8"))
   out.close()
 
