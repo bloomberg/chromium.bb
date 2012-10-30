@@ -1271,35 +1271,47 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
       break;
     }
   }
-
-  int automatic_ip_config;
-  scoped_ptr<DictionaryValue> static_ip_dict(
-      BuildIPInfoDictionary(*shill_properties, true, &automatic_ip_config));
-  dictionary.SetBoolean(kIpConfigAutoConfig, automatic_ip_config == 0);
-  DCHECK(automatic_ip_config == 3 || automatic_ip_config == 0)
-      << "UI doesn't support automatic specification of individual "
-      << "static ip parameters.";
-  scoped_ptr<DictionaryValue> saved_ip_dict(
-      BuildIPInfoDictionary(*shill_properties, false, NULL));
-  dictionary.Set(kDictionarySavedIp, saved_ip_dict.release());
-
-  // Determine what kind of name server setting we have by comparing the
-  // StaticIP and Google values with the ipconfig values.
-  std::string name_server_type = kNameServerTypeAutomatic;
-  std::string static_ip_nameservers;
-  static_ip_dict->GetString(kIpConfigNameServers, &static_ip_nameservers);
-  if (!static_ip_nameservers.empty() &&
-      static_ip_nameservers == ipconfig_name_servers) {
-    name_server_type = kNameServerTypeUser;
-  }
-  if (ipconfig_name_servers == kGoogleNameServers) {
-    name_server_type = kNameServerTypeGoogle;
-  }
-
   SetValueDictionary(&dictionary, kDictionaryIpConfig, ipconfig_dhcp.release(),
                      property_ui_data);
-  SetValueDictionary(&dictionary, kDictionaryStaticIp, static_ip_dict.release(),
-                     property_ui_data);
+
+  std::string name_server_type = kNameServerTypeAutomatic;
+  if (shill_properties) {
+    int automatic_ip_config = 0;
+    scoped_ptr<DictionaryValue> static_ip_dict(
+        BuildIPInfoDictionary(*shill_properties, true, &automatic_ip_config));
+    dictionary.SetBoolean(kIpConfigAutoConfig, automatic_ip_config == 0);
+    DCHECK(automatic_ip_config == 3 || automatic_ip_config == 0)
+        << "UI doesn't support automatic specification of individual "
+        << "static IP parameters.";
+    scoped_ptr<DictionaryValue> saved_ip_dict(
+        BuildIPInfoDictionary(*shill_properties, false, NULL));
+    dictionary.Set(kDictionarySavedIp, saved_ip_dict.release());
+
+    // Determine what kind of name server setting we have by comparing the
+    // StaticIP and Google values with the ipconfig values.
+    std::string static_ip_nameservers;
+    static_ip_dict->GetString(kIpConfigNameServers, &static_ip_nameservers);
+
+    if (!static_ip_nameservers.empty() &&
+        static_ip_nameservers == ipconfig_name_servers) {
+      name_server_type = kNameServerTypeUser;
+    }
+    if (ipconfig_name_servers == kGoogleNameServers) {
+      name_server_type = kNameServerTypeGoogle;
+    }
+    SetValueDictionary(&dictionary,
+                       kDictionaryStaticIp,
+                       static_ip_dict.release(),
+                       property_ui_data);
+  } else {
+    LOG(ERROR) << "Unable to fetch IP configuration for " << service_path;
+    // If we were unable to fetch shill_properties for some reason,
+    // then just go with some defaults.
+    dictionary.SetBoolean(kIpConfigAutoConfig, false);
+    dictionary.Set(kDictionarySavedIp, new DictionaryValue);
+    SetValueDictionary(&dictionary, kDictionaryStaticIp, new DictionaryValue,
+                       property_ui_data);
+  }
 
   chromeos::ConnectionType type = network->type();
   dictionary.SetInteger(kTagType, type);
