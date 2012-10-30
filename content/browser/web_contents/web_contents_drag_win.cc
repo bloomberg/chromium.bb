@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/threading/platform_thread.h"
@@ -242,13 +243,23 @@ void WebContentsDragWin::PrepareDragForDownload(
                             UTF16ToUTF8(file_name.value()),
                             UTF16ToUTF8(mime_type),
                             default_name);
+  FilePath temp_dir_path;
+  if (!file_util::CreateNewTempDirectory(
+          FILE_PATH_LITERAL("chrome_drag"), &temp_dir_path))
+    return;
+  FilePath download_path = temp_dir_path.Append(generated_download_file_name);
+
+  // We cannot know when the target application will be done using the temporary
+  // file, so schedule it to be deleted after rebooting.
+  file_util::DeleteAfterReboot(download_path);
+  file_util::DeleteAfterReboot(temp_dir_path);
 
   // Provide the data as file (CF_HDROP). A temporary download file with the
   // Zone.Identifier ADS (Alternate Data Stream) attached will be created.
   scoped_refptr<DragDownloadFile> download_file =
       new DragDownloadFile(
-          generated_download_file_name,
-          scoped_ptr<net::FileStream>(),
+          download_path,
+          scoped_ptr<net::FileStream>(NULL),
           download_url,
           Referrer(page_url, drop_data.referrer_policy),
           page_encoding,

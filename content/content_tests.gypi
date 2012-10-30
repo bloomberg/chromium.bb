@@ -659,6 +659,7 @@
             'browser/device_orientation/device_orientation_browsertest.cc',
             'browser/dom_storage/dom_storage_browsertest.cc',
             'browser/download/download_browsertest.cc',
+            'browser/download/drag_download_file_browsertest.cc',
             'browser/download/mhtml_generation_browsertest.cc',
             'browser/download/save_package_browsertest.cc',
             'browser/encrypted_media_browsertest.cc',

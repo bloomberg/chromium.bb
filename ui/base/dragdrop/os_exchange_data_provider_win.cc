@@ -668,7 +668,8 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
 
         // Now we can start the download.
         if ((*iter)->downloader.get()) {
-          if (!(*iter)->downloader->Start(this)) {
+          (*iter)->downloader->Start(this);
+          if (!(*iter)->downloader->Wait()) {
             is_aborting_ = true;
             return DV_E_FORMATETC;
           }

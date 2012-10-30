@@ -7,8 +7,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "content/browser/download/download_file.h"
+#include "content/common/content_export.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/common/referrer.h"
@@ -22,24 +26,17 @@ class FileStream;
 }
 
 namespace content {
+
 class DownloadManager;
 class WebContents;
 
-class DragDownloadFile
-    : public ui::DownloadFileProvider,
-      public DownloadManager::Observer,
-      public DownloadItem::Observer {
+class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
  public:
-  // On Windows, we need to download into a temporary file. Two threads are
-  // involved: background drag-and-drop thread and UI thread.
-  // The first parameter file_name_or_path should contain file name while the
-  // second parameter file_stream should be NULL.
-  //
-  // On MacOSX, we need to download into a file stream that has already been
-  // created. Only UI thread is involved.
-  // The file path and file stream should be provided as the first two
-  // parameters.
-  DragDownloadFile(const FilePath& file_name_or_path,
+  // On Windows, we need to download into a temporary file. On posix, we need to
+  // download into a file stream that has already been created, so only the UI
+  // thread is involved. |file_stream| must be null on windows but non-null on
+  // posix systems. |file_path| is an absolute path on all systems.
+  DragDownloadFile(const FilePath& file_path,
                    scoped_ptr<net::FileStream> file_stream,
                    const GURL& url,
                    const Referrer& referrer,
@@ -47,73 +44,27 @@ class DragDownloadFile
                    WebContents* web_contents);
 
   // DownloadFileProvider methods.
-  // Called on drag-and-drop thread (Windows).
-  // Called on UI thread (MacOSX).
-  virtual bool Start(ui::DownloadFileObserver* observer) OVERRIDE;
+  virtual void Start(ui::DownloadFileObserver* observer) OVERRIDE;
+  virtual bool Wait() OVERRIDE;
   virtual void Stop() OVERRIDE;
-#if defined(OS_WIN)
-  virtual IStream* GetStream() { return NULL; }
-#endif
-
-  // DownloadManager::Observer methods.
-  // Called on UI thread.
-  virtual void ModelChanged(DownloadManager* manager) OVERRIDE;
-
-  // DownloadItem::Observer methods.
-  // Called on UI thread.
-  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
 
  private:
-  // Called on drag-and-drop thread (Windows).
-  // Called on UI thread (Windows).
+  class DragDownloadFileUI;
+  enum State {INITIALIZED, STARTED, SUCCESS, FAILURE};
+
   virtual ~DragDownloadFile();
 
-  // Called on drag-and-drop thread (Windows only).
-#if defined(OS_WIN)
-  void StartNestedMessageLoop();
-  void QuitNestedMessageLoop();
-#endif
-
-  // Called on either drag-and-drop thread or UI thread (Windows).
-  // Called on UI thread (MacOSX).
-  void InitiateDownload();
   void DownloadCompleted(bool is_successful);
+  void CheckThread();
 
-  // Helper methods to make sure we're in the correct thread.
-  void AssertCurrentlyOnDragThread();
-  void AssertCurrentlyOnUIThread();
-
-  void RemoveObservers();
-
-  // Initialized on drag-and-drop thread. Accessed on either thread after that
-  // (Windows).
-  // Accessed on UI thread (MacOSX).
   FilePath file_path_;
-  FilePath file_name_;
   scoped_ptr<net::FileStream> file_stream_;
-  GURL url_;
-  Referrer referrer_;
-  std::string referrer_encoding_;
-  WebContents* web_contents_;
   MessageLoop* drag_message_loop_;
-  FilePath temp_dir_path_;
-
-  // Accessed on drag-and-drop thread (Windows).
-  // Accessed on UI thread (MacOSX).
-  bool is_started_;
-  bool is_successful_;
+  State state_;
   scoped_refptr<ui::DownloadFileObserver> observer_;
-
-  // Accessed on drag-and-drop thread (Windows only).
-#if defined(OS_WIN)
-  bool is_running_nested_message_loop_;
-#endif
-
-  // Access on UI thread.
-  DownloadManager* download_manager_;
-  bool download_manager_observer_added_;
-  DownloadItem* download_item_;
+  base::RunLoop nested_loop_;
+  DragDownloadFileUI* drag_ui_;
+  base::WeakPtrFactory<DragDownloadFile> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFile);
 };

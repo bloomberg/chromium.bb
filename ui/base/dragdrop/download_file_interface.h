@@ -20,6 +20,8 @@ class FilePath;
 
 namespace ui {
 
+// TODO(benjhayden, anybody): Do these need to be RefCountedThreadSafe?
+
 // Defines the interface to observe the status of file download.
 class UI_EXPORT DownloadFileObserver
     : public base::RefCountedThreadSafe<DownloadFileObserver> {
@@ -36,11 +38,15 @@ class UI_EXPORT DownloadFileObserver
 class UI_EXPORT DownloadFileProvider
     : public base::RefCountedThreadSafe<DownloadFileProvider> {
  public:
-  virtual bool Start(DownloadFileObserver* observer) = 0;
+  // Starts the download asynchronously and returns immediately.
+  virtual void Start(DownloadFileObserver* observer) = 0;
+
+  // Returns true if the download succeeded and false otherwise. Waits until the
+  // download is completed/cancelled/interrupted before returning.
+  virtual bool Wait() = 0;
+
+  // Cancels the download.
   virtual void Stop() = 0;
-#if defined(OS_WIN)
-  virtual IStream* GetStream() = 0;
-#endif
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadFileProvider>;

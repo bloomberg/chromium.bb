@@ -37,7 +37,7 @@ bool ParseDownloadMetadata(const string16& metadata,
 // insert the sequential unifier to produce a new file, like foo-01.txt.
 // Return a FileStream if successful.
 // |net_log| is a NetLog for the stream.
-net::FileStream* CreateFileStreamForDrop(
+CONTENT_EXPORT net::FileStream* CreateFileStreamForDrop(
     FilePath* file_path, net::NetLog* net_log);
 
 // Implementation of DownloadFileObserver to finalize the download process.

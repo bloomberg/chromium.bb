@@ -18,144 +18,211 @@
 
 namespace content {
 
-DragDownloadFile::DragDownloadFile(
-    const FilePath& file_name_or_path,
-    scoped_ptr<net::FileStream> file_stream,
-    const GURL& url,
-    const Referrer& referrer,
-    const std::string& referrer_encoding,
-    WebContents* web_contents)
-    : file_stream_(file_stream.Pass()),
-      url_(url),
-      referrer_(referrer),
-      referrer_encoding_(referrer_encoding),
-      web_contents_(web_contents),
-      drag_message_loop_(MessageLoop::current()),
-      is_started_(false),
-      is_successful_(false),
-#if defined(OS_WIN)
-      is_running_nested_message_loop_(false),
-#endif
-      download_manager_(NULL),
-      download_manager_observer_added_(false),
-      download_item_(NULL) {
-#if defined(OS_WIN)
-  DCHECK(!file_name_or_path.empty() && !file_stream.get());
-  file_name_ = file_name_or_path;
-#elif defined(OS_POSIX)
-  DCHECK(!file_name_or_path.empty() && file_stream.get());
-  file_path_ = file_name_or_path;
-#endif
-}
+namespace {
 
-DragDownloadFile::~DragDownloadFile() {
-  AssertCurrentlyOnDragThread();
+typedef base::Callback<void(bool)> OnCompleted;
 
-  // Since the target application can still hold and use the dragged file,
-  // we do not know the time that it can be safely deleted. To solve this
-  // problem, we schedule it to be removed after the system is restarted.
-#if defined(OS_WIN)
-  if (!temp_dir_path_.empty()) {
-    if (!file_path_.empty())
-      file_util::DeleteAfterReboot(file_path_);
-    file_util::DeleteAfterReboot(temp_dir_path_);
+}  // anonymous namespace
+
+// On windows, DragDownloadFile runs on a thread other than the UI thread.
+// DownloadItem and DownloadManager may not be accessed on any thread other than
+// the UI thread. DragDownloadFile may run on either the "drag" thread or the UI
+// thread depending on the platform, but DragDownloadFileUI strictly always runs
+// on the UI thread. On platforms where DragDownloadFile runs on the UI thread,
+// none of the PostTasks are necessary, but it simplifies the code to do them
+// anyway.
+class DragDownloadFile::DragDownloadFileUI
+    : public content::DownloadItem::Observer {
+ public:
+  DragDownloadFileUI(const GURL& url,
+                     const content::Referrer& referrer,
+                     const std::string& referrer_encoding,
+                     content::WebContents* web_contents,
+                     MessageLoop* on_completed_loop,
+                     const OnCompleted& on_completed)
+      : on_completed_loop_(on_completed_loop),
+        on_completed_(on_completed),
+        url_(url),
+        referrer_(referrer),
+        referrer_encoding_(referrer_encoding),
+        web_contents_(web_contents),
+        download_item_(NULL),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    DCHECK(on_completed_loop_);
+    DCHECK(!on_completed_.is_null());
+    DCHECK(web_contents_);
+    // May be called on any thread.
+    // Do not call weak_ptr_factory_.GetWeakPtr() outside the UI thread.
   }
-#endif
 
-  RemoveObservers();
-}
+  void InitiateDownload(scoped_ptr<net::FileStream> file_stream,
+                        const FilePath& file_path) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    content::DownloadManager* download_manager =
+        BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext());
 
-void DragDownloadFile::RemoveObservers() {
-  if (download_item_) {
+    scoped_ptr<content::DownloadSaveInfo> save_info(
+        new content::DownloadSaveInfo());
+    save_info->file_path = file_path;
+    save_info->file_stream.reset(file_stream.release());
+
+    RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
+    scoped_ptr<content::DownloadUrlParameters> params(
+        content::DownloadUrlParameters::FromWebContents(
+            web_contents_, url_, save_info.Pass()));
+    params->set_referrer(referrer_);
+    params->set_referrer_encoding(referrer_encoding_);
+    params->set_callback(base::Bind(&DragDownloadFileUI::OnDownloadStarted,
+                                    weak_ptr_factory_.GetWeakPtr()));
+    download_manager->DownloadUrl(params.Pass());
+  }
+
+  void Cancel() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (download_item_)
+      download_item_->Cancel(true);
+  }
+
+  void Delete() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    delete this;
+  }
+
+ private:
+  virtual ~DragDownloadFileUI() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (download_item_)
+      download_item_->RemoveObserver(this);
+  }
+
+  void OnDownloadStarted(content::DownloadItem* item, net::Error error) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!item) {
+      DCHECK_NE(net::OK, error);
+      on_completed_loop_->PostTask(FROM_HERE, base::Bind(on_completed_, false));
+      return;
+    }
+    DCHECK_EQ(net::OK, error);
+    download_item_ = item;
+    download_item_->AddObserver(this);
+  }
+
+  // content::DownloadItem::Observer
+  virtual void OnDownloadUpdated(content::DownloadItem* item) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_EQ(download_item_, item);
+    if (download_item_->IsComplete() ||
+        download_item_->IsCancelled() ||
+        download_item_->IsInterrupted()) {
+      if (!on_completed_.is_null()) {
+        on_completed_loop_->PostTask(FROM_HERE, base::Bind(
+            on_completed_, download_item_->IsComplete()));
+        on_completed_.Reset();
+      }
+      download_item_->RemoveObserver(this);
+      download_item_ = NULL;
+    }
+    // Ignore other states.
+  }
+
+  virtual void OnDownloadDestroyed(content::DownloadItem* item) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_EQ(download_item_, item);
+    if (!on_completed_.is_null()) {
+      on_completed_loop_->PostTask(FROM_HERE, base::Bind(
+          on_completed_, download_item_->IsComplete()));
+      on_completed_.Reset();
+    }
     download_item_->RemoveObserver(this);
     download_item_ = NULL;
   }
 
-  if (download_manager_observer_added_) {
-    download_manager_observer_added_ = false;
-    download_manager_->RemoveObserver(this);
-  }
+  MessageLoop* on_completed_loop_;
+  OnCompleted on_completed_;
+  GURL url_;
+  content::Referrer referrer_;
+  std::string referrer_encoding_;
+  content::WebContents* web_contents_;
+  content::DownloadItem* download_item_;
+
+  // Only used in the callback from DownloadManager::DownloadUrl().
+  base::WeakPtrFactory<DragDownloadFileUI> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DragDownloadFileUI);
+};
+
+DragDownloadFile::DragDownloadFile(
+    const FilePath& file_path,
+    scoped_ptr<net::FileStream> file_stream,
+    const GURL& url,
+    const content::Referrer& referrer,
+    const std::string& referrer_encoding,
+    WebContents* web_contents)
+    : file_path_(file_path),
+      file_stream_(file_stream.Pass()),
+      drag_message_loop_(MessageLoop::current()),
+      state_(INITIALIZED),
+      drag_ui_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  drag_ui_ = new DragDownloadFileUI(
+      url,
+      referrer,
+      referrer_encoding,
+      web_contents,
+      drag_message_loop_,
+      base::Bind(&DragDownloadFile::DownloadCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
+  DCHECK(!file_path_.empty());
 }
 
-bool DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
-  AssertCurrentlyOnDragThread();
+DragDownloadFile::~DragDownloadFile() {
+  CheckThread();
 
-  if (is_started_)
-    return true;
-  is_started_ = true;
+  // This is the only place that drag_ui_ can be deleted from. Post a message to
+  // the UI thread so that it calls RemoveObserver on the right thread, and so
+  // that this task will run after the InitiateDownload task runs on the UI
+  // thread.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+      &DragDownloadFileUI::Delete, base::Unretained(drag_ui_)));
+  drag_ui_ = NULL;
+}
+
+void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
+  CheckThread();
+
+  if (state_ != INITIALIZED)
+    return;
+  state_ = STARTED;
 
   DCHECK(!observer_.get());
   observer_ = observer;
+  DCHECK(observer_);
 
-  if (!file_stream_.get()) {
-    // Create a temporary directory to save the temporary download file. We do
-    // not want to use the default download directory since we do not want the
-    // twisted file name shown in the download shelf if the file with the same
-    // name already exists.
-    if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome"),
-                                           &temp_dir_path_))
-      return false;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+      &DragDownloadFileUI::InitiateDownload, base::Unretained(drag_ui_),
+      base::Passed(file_stream_.Pass()), file_path_));
+}
 
-    file_path_ = temp_dir_path_.Append(file_name_);
-  }
-
-  InitiateDownload();
-
-  // On Windows, we need to wait till the download file is completed.
-#if defined(OS_WIN)
-  StartNestedMessageLoop();
-#endif
-
-  return is_successful_;
+bool DragDownloadFile::Wait() {
+  CheckThread();
+  if (state_ == STARTED)
+    nested_loop_.Run();
+  return state_ == SUCCESS;
 }
 
 void DragDownloadFile::Stop() {
-}
-
-void DragDownloadFile::InitiateDownload() {
-#if defined(OS_WIN)
-  // DownloadManager could only be invoked from the UI thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DragDownloadFile::InitiateDownload, this));
-    return;
+  CheckThread();
+  if (drag_ui_) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+        &DragDownloadFileUI::Cancel, base::Unretained(drag_ui_)));
   }
-#endif
-
-  download_manager_ = BrowserContext::GetDownloadManager(
-      web_contents_->GetBrowserContext());
-  download_manager_observer_added_ = true;
-  download_manager_->AddObserver(this);
-
-  scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
-  save_info->file_path = file_path_;
-  save_info->file_stream = file_stream_.Pass(); // Nulls file_stream_
-
-  RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
-  scoped_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(
-          web_contents_, url_, save_info.Pass()));
-  params->set_referrer(referrer_);
-  params->set_referrer_encoding(referrer_encoding_);
-  download_manager_->DownloadUrl(params.Pass());
 }
 
 void DragDownloadFile::DownloadCompleted(bool is_successful) {
-#if defined(OS_WIN)
-  // If not in drag-and-drop thread, defer the running to it.
-  if (drag_message_loop_ != MessageLoop::current()) {
-    drag_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&DragDownloadFile::DownloadCompleted, this, is_successful));
-    return;
-  }
-#endif
+  CheckThread();
 
-  is_successful_ = is_successful;
+  state_ = is_successful ? SUCCESS : FAILURE;
 
-  // Call the observer.
-  DCHECK(observer_);
   if (is_successful)
     observer_->OnDownloadCompleted(file_path_);
   else
@@ -164,89 +231,16 @@ void DragDownloadFile::DownloadCompleted(bool is_successful) {
   // Release the observer since we do not need it any more.
   observer_ = NULL;
 
-  // On Windows, we need to stop the waiting.
-#if defined(OS_WIN)
-  QuitNestedMessageLoop();
-#endif
+  if (nested_loop_.running())
+    nested_loop_.Quit();
 }
 
-void DragDownloadFile::ModelChanged(DownloadManager* manager) {
-  AssertCurrentlyOnUIThread();
-  DCHECK_EQ(manager, download_manager_);
-
-  if (download_item_)
-    return;
-
-  std::vector<DownloadItem*> downloads;
-  download_manager_->GetAllDownloads(&downloads);
-  for (std::vector<DownloadItem*>::const_iterator i = downloads.begin();
-       i != downloads.end(); ++i) {
-    DownloadItem* item = *i;
-    if (item->IsTemporary() &&
-        item->GetOriginalUrl() == url_ &&
-        file_path_.DirName() == item->GetTargetFilePath().DirName()) {
-      download_item_ = item;
-      download_item_->AddObserver(this);
-      break;
-    }
-  }
-}
-
-void DragDownloadFile::OnDownloadUpdated(DownloadItem* download) {
-  AssertCurrentlyOnUIThread();
-  if (download->IsCancelled()) {
-    RemoveObservers();
-    DownloadCompleted(false);
-  } else if (download->IsComplete()) {
-    RemoveObservers();
-    DownloadCompleted(true);
-  }
-  // Ignore other states.
-}
-
-// If the download completes or is cancelled, then OnDownloadUpdated() will
-// handle it and RemoveObserver() so that OnDownloadDestroyed is never called.
-// OnDownloadDestroyed is only called if OnDownloadUpdated() does not detect
-// completion or cancellation (in which cases it removes this observer).
-// TODO(benjhayden): Try to change this to NOTREACHED()?
-void DragDownloadFile::OnDownloadDestroyed(DownloadItem* download) {
-  AssertCurrentlyOnUIThread();
-  RemoveObservers();
-  DownloadCompleted(false);
-}
-
-void DragDownloadFile::AssertCurrentlyOnDragThread() {
-  // Only do the check on Windows where two threads are involved.
+void DragDownloadFile::CheckThread() {
 #if defined(OS_WIN)
   DCHECK(drag_message_loop_ == MessageLoop::current());
-#endif
-}
-
-void DragDownloadFile::AssertCurrentlyOnUIThread() {
-  // Only do the check on Windows where two threads are involved.
-#if defined(OS_WIN)
+#else
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #endif
 }
-
-#if defined(OS_WIN)
-void DragDownloadFile::StartNestedMessageLoop() {
-  AssertCurrentlyOnDragThread();
-
-  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  is_running_nested_message_loop_ = true;
-  MessageLoop::current()->Run();
-  DCHECK(!is_running_nested_message_loop_);
-}
-
-void DragDownloadFile::QuitNestedMessageLoop() {
-  AssertCurrentlyOnDragThread();
-
-  if (is_running_nested_message_loop_) {
-    is_running_nested_message_loop_ = false;
-    MessageLoop::current()->Quit();
-  }
-}
-#endif
 
 }  // namespace content
