@@ -57,7 +57,7 @@ TabModel* TabModelList::FindTabModelWithId(
 bool TabModelList::IsOffTheRecordSessionActive() {
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); i++) {
-    if ((*i)->GetProfile()->IsOffTheRecord())
+    if ((*i)->GetProfile()->IsOffTheRecord() && (*i)->GetTabCount() > 0)
       return true;
   }
 
