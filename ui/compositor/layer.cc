@@ -494,6 +494,9 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 
 void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           const WebKit::WebRect& clip,
+#if WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
+                          bool can_paint_lcd_text,
+#endif  // WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
                           WebKit::WebFloatRect& opaque) {
   TRACE_EVENT0("ui", "Layer::paintContents");
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(

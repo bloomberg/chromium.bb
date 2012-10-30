@@ -263,7 +263,10 @@ class COMPOSITOR_EXPORT Layer
   // WebContentLayerClient
   virtual void paintContents(WebKit::WebCanvas*,
                              const WebKit::WebRect& clip,
-                             WebKit::WebFloatRect& opaque);
+#if WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
+                             bool can_paint_lcd_text,
+#endif  // WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
+                             WebKit::WebFloatRect& opaque) OVERRIDE;
 
   WebKit::WebLayer* web_layer() { return web_layer_; }
 
