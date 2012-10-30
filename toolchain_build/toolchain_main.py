@@ -17,14 +17,12 @@ import file_tools
 import gsd_storage
 import log_tools
 import once
-import local_storage_cache
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 ROOT_DIR = os.path.dirname(NACL_DIR)
 
-DEFAULT_CACHE_DIR = os.path.join(SCRIPT_DIR, 'cache')
 DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
 DEFAULT_OUT_DIR = os.path.join(SCRIPT_DIR, 'out')
 
@@ -241,10 +239,6 @@ class PackageBuilder(object):
         default=False, action='store_true',
         help='Clobber source and output directories.')
     parser.add_option(
-        '--cache', dest='cache',
-        default=DEFAULT_CACHE_DIR,
-        help='Select directory containing local storage cache.')
-    parser.add_option(
         '-s', '--source', dest='source',
         default=DEFAULT_SRC_DIR,
         help='Select directory containing source checkouts.')
@@ -257,13 +251,9 @@ class PackageBuilder(object):
         default=True, action='store_false',
         help='Do not rely on cached results.')
     parser.add_option(
-        '--no-use-remote-cache', dest='use_remote_cache',
-        default=True, action='store_false',
-        help='Do not rely on non-local cached results.')
-    parser.add_option(
-        '--no-cache-results', dest='cache_results',
-        default=True, action='store_false',
-        help='Do not cache results.')
+        '--cache-results', dest='cache_results',
+        default=False, action='store_true',
+        help='Cache results to the datastore.')
     parser.add_option(
         '--reclone', dest='reclone',
         default=False, action='store_true',
@@ -287,6 +277,7 @@ class PackageBuilder(object):
     if options.trybot or options.buildbot:
       options.verbose = True
       options.clobber = True
+      options.cache_results = True
     if not targets:
       targets = sorted(packages.keys())
     targets = self.BuildOrder(targets)
@@ -300,19 +291,14 @@ class PackageBuilder(object):
       A storage object (GSDStorage).
     """
     if self._options.buildbot:
-      return gsd_storage.GSDStorage(
-          write_bucket='nativeclient-once',
-          read_buckets=['nativeclient-once'])
+      write_bucket = 'nativeclient-once'
+      read_buckets = ['nativeclient-once']
     elif self._options.trybot:
-      return gsd_storage.GSDStorage(
-          write_bucket='nativeclient-once-try',
-          read_buckets=['nativeclient-once', 'nativeclient-once-try'])
+      write_bucket = 'nativeclient-once-try'
+      read_buckets = ['nativeclient-once', 'nativeclient-once-try']
     else:
-      read_buckets = []
-      if self._options.use_remote_cache:
-        read_buckets += ['nativeclient-once']
-      return local_storage_cache.LocalStorageCache(
-          cache_path=self._options.cache,
-          storage=gsd_storage.GSDStorage(
-              write_bucket=None,
-              read_buckets=read_buckets))
+      write_bucket = None
+      read_buckets = ['nativeclient-once']
+    return gsd_storage.GSDStorage(
+        write_bucket=write_bucket,
+        read_buckets=read_buckets)

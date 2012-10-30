@@ -9,28 +9,6 @@
 import os
 import shutil
 import sys
-import tempfile
-
-
-def AtomicWriteFile(data, filename):
-  """Write a file atomically.
-
-  NOTE: Not atomic on Windows!
-  Args:
-    data: String to write to the file.
-    filename: Filename to write.
-  """
-  filename = os.path.abspath(filename)
-  handle, temp_file = tempfile.mkstemp(
-      prefix='atomic_write', suffix='.tmp',
-      dir=os.path.dirname(filename))
-  fh = os.fdopen(handle, 'wb')
-  fh.write(data)
-  fh.close()
-  # Window's can't move into place atomically, delete first.
-  if sys.platform in ['win32', 'cygwin']:
-    os.remove(filename)
-  os.rename(temp_file, filename)
 
 
 def WriteFile(data, filename):
