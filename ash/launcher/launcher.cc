@@ -226,15 +226,16 @@ Launcher::Launcher(aura::Window* window_container,
   params.delegate = delegate_view_;
   widget_->Init(params);
   widget_->GetNativeWindow()->SetName("LauncherWindow");
-  gfx::Size pref =
-      static_cast<views::View*>(launcher_view_)->GetPreferredSize();
-  widget_->SetBounds(gfx::Rect(pref));
   // The launcher should not take focus when it is initially shown.
   widget_->set_focus_on_creation(false);
   widget_->SetContentsView(delegate_view_);
   widget_->GetNativeView()->SetName("LauncherView");
   widget_->GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey,
                                         true);
+  // SetBounds() has to be called after kStayInSameRootWindowKey is set.
+  gfx::Size pref =
+      static_cast<views::View*>(launcher_view_)->GetPreferredSize();
+  widget_->SetBounds(gfx::Rect(pref));
 }
 
 Launcher::~Launcher() {
