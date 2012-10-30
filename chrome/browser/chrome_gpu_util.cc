@@ -176,12 +176,6 @@ void InitializeCompositingFieldTrial() {
     // Enable force-compositing-mode on the Mac.
     force_compositing_mode_probability = kDivisor;
 #endif
-  } else if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
-    // Continuous and local builds on windows and mac
-    // enable force-compositing-mode
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    force_compositing_mode_probability = kDivisor;
-#endif
   }
 
   int force_compositing_group = trial->AppendGroup(
