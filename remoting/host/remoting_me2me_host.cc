@@ -730,8 +730,13 @@ void HostProcess::StartHost() {
       new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get()));
   host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
 
+#if defined(OS_LINUX)
+  // Desktop resizing is implemented on all three platforms, but may not be
+  // the right thing to do for non-virtual desktops. Disable it until we can
+  // implement a configuration UI.
   resizing_host_observer_.reset(
       new ResizingHostObserver(desktop_resizer_.get(), host_));
+#endif
 
   // Curtain mode is currently broken on Mac (the only supported platform),
   // so it's disabled until we've had time to fully investigate.
