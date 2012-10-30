@@ -9,11 +9,13 @@
 #include "content/common/content_export.h"
 
 namespace WebKit {
+class WebGestureEvent;
 class WebTouchEvent;
 class WebTouchPoint;
 }
 
 namespace ui {
+class GestureEvent;
 class TouchEvent;
 }
 
@@ -28,13 +30,19 @@ CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
     const WebKit::WebTouchEvent& touch,
     ScopedVector<ui::TouchEvent>* list);
 
+// Creates a WebGestureEvent from a ui::GestureEvent. Note that it does not
+// populate the event coordinates (i.e. |x|, |y|, |globalX|, and |globalY|). So
+// the caller must populate these fields.
+WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
+    const ui::GestureEvent& event);
+
 int EventFlagsToWebEventModifiers(int flags);
 
 // Updates the WebTouchEvent based on the TouchEvent. It returns the updated
 // WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
 // updated.
 WebKit::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
-    ui::TouchEvent* event,
+    const ui::TouchEvent& event,
     WebKit::WebTouchEvent* web_event);
 }
 

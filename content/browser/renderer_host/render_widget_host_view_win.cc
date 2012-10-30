@@ -249,122 +249,22 @@ ui::EventType ConvertToUIEvent(WebKit::WebTouchPoint::State t) {
   }
 }
 
-WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
-  switch (t) {
-    case ui::ET_UNKNOWN:
-      return WebKit::WebInputEvent::Undefined;
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      return WebKit::WebGestureEvent::GestureScrollBegin;
-    case ui::ET_GESTURE_SCROLL_END:
-      return WebKit::WebGestureEvent::GestureScrollEnd;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      return WebKit::WebGestureEvent::GestureScrollUpdate;
-    case ui::ET_SCROLL_FLING_START:
-      return WebKit::WebGestureEvent::GestureFlingStart;
-    case ui::ET_SCROLL_FLING_CANCEL:
-      return WebKit::WebGestureEvent::GestureFlingCancel;
-    case ui::ET_GESTURE_TAP:
-      return WebKit::WebGestureEvent::GestureTap;
-    case ui::ET_GESTURE_TAP_DOWN:
-      return WebKit::WebGestureEvent::GestureTapDown;
-    case ui::ET_GESTURE_TAP_CANCEL:
-      return WebKit::WebGestureEvent::GestureTapCancel;
-    case ui::ET_GESTURE_DOUBLE_TAP:
-      return WebKit::WebGestureEvent::GestureDoubleTap;
-    case ui::ET_GESTURE_LONG_PRESS:
-      return WebKit::WebGestureEvent::GestureLongPress;
-    case ui::ET_GESTURE_PINCH_BEGIN:
-      return WebKit::WebGestureEvent::GesturePinchBegin;
-    case ui::ET_GESTURE_PINCH_END:
-      return WebKit::WebGestureEvent::GesturePinchEnd;
-    case ui::ET_GESTURE_PINCH_UPDATE:
-      return WebKit::WebGestureEvent::GesturePinchUpdate;
-    case ui::ET_GESTURE_BEGIN:
-      return WebKit::WebGestureEvent::Undefined;
-    case ui::ET_GESTURE_END:
-      return WebKit::WebGestureEvent::Undefined;
-    case ui::ET_GESTURE_MULTIFINGER_SWIPE:
-      return WebKit::WebGestureEvent::Undefined;
-    case ui::ET_GESTURE_TWO_FINGER_TAP:
-      return WebKit::WebGestureEvent::GestureTwoFingerTap;
-    case ui::ET_TOUCH_PRESSED:
-      return WebKit::WebInputEvent::TouchStart;
-    case ui::ET_TOUCH_MOVED:
-    case ui::ET_TOUCH_STATIONARY:
-      return WebKit::WebInputEvent::TouchMove;
-    case ui::ET_TOUCH_RELEASED:
-      return WebKit::WebInputEvent::TouchEnd;
-    case ui::ET_TOUCH_CANCELLED:
-      return WebKit::WebInputEvent::TouchCancel;
-    default:
-      DCHECK(false) << "Unexpected ui type. " << t;
-      return WebKit::WebInputEvent::Undefined;
-  }
-}
-
 // Creates a WebGestureEvent corresponding to the given |gesture|
 WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
                                               const ui::GestureEvent& gesture) {
+  WebKit::WebGestureEvent gesture_event =
+      MakeWebGestureEventFromUIEvent(gesture);
+
   POINT client_point = gesture.location().ToPOINT();
   POINT screen_point = gesture.location().ToPOINT();
   MapWindowPoints(::GetParent(hwnd), hwnd, &client_point, 1);
   MapWindowPoints(hwnd, HWND_DESKTOP, &screen_point, 1);
 
-  WebKit::WebGestureEvent gesture_event;
-  gesture_event.timeStampSeconds = gesture.time_stamp().InSecondsF();
-  gesture_event.type = ConvertToWebInputEvent(gesture.type());
   gesture_event.x = client_point.x;
   gesture_event.y = client_point.y;
   gesture_event.globalX = screen_point.x;
   gesture_event.globalY = screen_point.y;
-  gesture_event.modifiers =
-      (base::win::IsShiftPressed() ? WebKit::WebGestureEvent::ShiftKey : 0)
-      | (base::win::IsCtrlPressed() ? WebKit::WebGestureEvent::ControlKey : 0)
-      | (base::win::IsAltPressed() ? WebKit::WebGestureEvent::AltKey : 0);
 
-  // Copy any event-type specific data.
-  switch (gesture.type()) {
-    case ui::ET_GESTURE_TAP:
-      gesture_event.data.tap.tapCount = gesture.details().tap_count();
-      gesture_event.data.tap.width =
-          gesture.details().bounding_box().width();
-      gesture_event.data.tap.height =
-          gesture.details().bounding_box().height();
-      break;
-    case ui::ET_GESTURE_TAP_DOWN:
-      gesture_event.data.tapDown.width =
-          gesture.details().bounding_box().width();
-      gesture_event.data.tapDown.height =
-          gesture.details().bounding_box().height();
-      break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      gesture_event.data.scrollUpdate.deltaX = gesture.details().scroll_x();
-      gesture_event.data.scrollUpdate.deltaY = gesture.details().scroll_y();
-      break;
-    case ui::ET_GESTURE_PINCH_UPDATE:
-      gesture_event.data.pinchUpdate.scale = gesture.details().scale();
-      break;
-    case ui::ET_SCROLL_FLING_START:
-      gesture_event.data.flingStart.velocityX = gesture.details().velocity_x();
-      gesture_event.data.flingStart.velocityY = gesture.details().velocity_y();
-      gesture_event.data.flingStart.sourceDevice =
-          WebKit::WebGestureEvent::Touchscreen;
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      gesture_event.data.longPress.width =
-          gesture.details().bounding_box().width();
-      gesture_event.data.longPress.height =
-          gesture.details().bounding_box().height();
-      break;
-    case ui::ET_GESTURE_TWO_FINGER_TAP:
-      gesture_event.data.twoFingerTap.firstFingerWidth =
-          gesture.details().first_finger_width();
-      gesture_event.data.twoFingerTap.firstFingerHeight =
-          gesture.details().first_finger_height();
-      break;
-    default:
-      break;
-  }
   return gesture_event;
 }
 

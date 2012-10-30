@@ -27,8 +27,6 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event);
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
-    ui::GestureEvent* event);
-WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::ScrollEvent* event);
 #endif
 
@@ -145,7 +143,7 @@ WebKit::WebGestureEvent MakeWebGestureEvent(ui::GestureEvent* event) {
 #if defined(OS_WIN)
   gesture_event = MakeWebGestureEventFromNativeEvent(event->native_event());
 #else
-  gesture_event = MakeWebGestureEventFromAuraEvent(event);
+  gesture_event = MakeWebGestureEventFromUIEvent(*event);
 #endif
 
   gesture_event.x = event->x();
