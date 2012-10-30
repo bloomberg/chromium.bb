@@ -240,14 +240,14 @@ button_handler(struct widget *widget,
 	       void *data)
 {
 	struct image *image = data;
-	bool was_pressed;
 
 	if (button == BTN_LEFT) {
-		was_pressed = image->button_pressed;
 		image->button_pressed =
 			state == WL_POINTER_BUTTON_STATE_PRESSED;
 
-		if (!image->button_pressed && was_pressed)
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+			input_set_pointer_image(input, CURSOR_DRAGGING);
+		else
 			input_set_pointer_image(input, CURSOR_LEFT_PTR);
 	}
 }
