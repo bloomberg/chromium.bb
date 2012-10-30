@@ -14,7 +14,6 @@
                 'symbols/chromeos/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
               'binaries/chromeos/<(target_arch)/libwidevinecdm.so',
-              'binaries/chromeos/<(target_arch)/manifest.json',
             ],
           }],
           [ 'OS == "linux" and chromeos == 0', {
@@ -22,7 +21,6 @@
                 'symbols/linux/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
               'binaries/linux/<(target_arch)/libwidevinecdm.so',
-              'binaries/linux/<(target_arch)/manifest.json',
             ],
           }],
           [ 'OS == "mac"', {
@@ -30,7 +28,6 @@
                 'symbols/mac/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
               'binaries/mac/<(target_arch)/libwidevinecdm.dylib',
-              'binaries/mac/<(target_arch)/manifest.json',
             ],
           }],
           [ 'OS == "win"', {
@@ -38,7 +35,6 @@
                 'symbols/win/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
               'binaries/win/<(target_arch)/widevinecdm.dll',
-              'binaries/win/<(target_arch)/manifest.json',
             ],
           }],
         ],
@@ -67,11 +63,14 @@
             [ 'os_posix == 1 and OS != "mac"', {
               'cflags': ['-fvisibility=hidden'],
               'type': 'loadable_module',
-              # -gstabs, used in the official builds, causes an ICE. Simply
-              # remove it.
-              'cflags!': ['-gstabs'],
               # Allow the plugin wrapper to find the CDM in the same directory.
-              'ldflags': ['-Wl,-rpath=\$$ORIGIN']
+              'ldflags': ['-Wl,-rpath=\$$ORIGIN'],
+            }],
+            [ 'chromeos == 1 and target_arch == "arm"', {
+              'libraries': [
+                # Copied by widevine_cdm_binaries.
+                '<(PRODUCT_DIR)/libwidevinecdm.so',
+              ],
             }],
             [ 'OS == "win" and 0', {
               'type': 'shared_library',
@@ -104,7 +103,8 @@
       'target_name': 'widevine_cdm_binaries',
       'type': 'none',
       'copies': [{
-        # TODO(ddorwin): Do we need a sub-directory?
+        # TODO(ddorwin): Do we need a sub-directory? We either need a
+        # sub-directory or to rename manifest.json before we can copy it.
         'destination': '<(PRODUCT_DIR)',
         'files': [ '<@(widevine_cdm_binary_files)' ],
       }],
