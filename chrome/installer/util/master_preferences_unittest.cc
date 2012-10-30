@@ -52,7 +52,8 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "     \"import_bookmarks\": true,\n"
     "     \"import_bookmarks_from_file\": \"c:\\\\foo\",\n"
     "     \"import_home_page\": true,\n"
-    "     \"create_all_shortcuts\": true,\n"
+    "     \"do_not_create_desktop_shortcut\": true,\n"
+    "     \"do_not_create_quick_launch_shortcut\": true,\n"
     "     \"do_not_launch_chrome\": true,\n"
     "     \"make_chrome_default\": true,\n"
     "     \"make_chrome_default_for_user\": true,\n"
@@ -78,7 +79,8 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     installer::master_preferences::kDistroImportHistoryPref,
     installer::master_preferences::kDistroImportBookmarksPref,
     installer::master_preferences::kDistroImportHomePagePref,
-    installer::master_preferences::kCreateAllShortcuts,
+    installer::master_preferences::kDoNotCreateDesktopShortcut,
+    installer::master_preferences::kDoNotCreateQuickLaunchShortcut,
     installer::master_preferences::kDoNotLaunchChrome,
     installer::master_preferences::kMakeChromeDefault,
     installer::master_preferences::kMakeChromeDefaultForUser,
@@ -119,7 +121,8 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
     "     \"import_search_engine\": true,\n"
     "     \"import_bookmarks\": false,\n"
     "     \"import_bookmarks_from_file\": \"\",\n"
-    "     \"create_all_shortcuts\": true,\n"
+    "     \"do_not_create_desktop_shortcut\": true,\n"
+    "     \"do_not_create_quick_launch_shortcut\": true,\n"
     "     \"do_not_launch_chrome\": true,\n"
     "     \"chrome_shortcut_icon_index\": \"bac\"\n"
     "  }\n"
@@ -132,7 +135,8 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
     { installer::master_preferences::kDistroSkipFirstRunPref, true },
     { installer::master_preferences::kDistroImportSearchPref, true },
     { installer::master_preferences::kDistroImportBookmarksPref, false },
-    { installer::master_preferences::kCreateAllShortcuts, true },
+    { installer::master_preferences::kDoNotCreateDesktopShortcut, true },
+    { installer::master_preferences::kDoNotCreateQuickLaunchShortcut, true },
     { installer::master_preferences::kDoNotLaunchChrome, true },
   };
 
@@ -237,7 +241,8 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
     "{ \n"
     "  \"distribution\": { \n"
     "     \"skip_first_run_ui\": true,\n"
-    "     \"create_all_shortcuts\": false,\n"
+    "     \"do_not_create_desktop_shortcut\": false,\n"
+    "     \"do_not_create_quick_launch_shortcut\": false,\n"
     "     \"do_not_launch_chrome\": true,\n"
     "     \"system_level\": true,\n"
     "     \"verbose_logging\": false\n"
@@ -248,18 +253,14 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   // Make sure command line values override the values in master preferences.
   std::wstring cmd_str(
       L"setup.exe --installerdata=\"" + prefs_file.value() + L"\"");
-  cmd_str.append(L" --create-all-shortcuts");
   cmd_str.append(L" --do-not-launch-chrome");
-  cmd_str.append(L" --alt-desktop-shortcut");
   CommandLine cmd_line = CommandLine::FromString(cmd_str);
   installer::MasterPreferences prefs(cmd_line);
 
   // Check prefs that do not have any equivalent command line option.
   ExpectedBooleans expected_bool[] = {
     { installer::master_preferences::kDistroSkipFirstRunPref, true },
-    { installer::master_preferences::kCreateAllShortcuts, true },
     { installer::master_preferences::kDoNotLaunchChrome, true },
-    { installer::master_preferences::kAltShortcutText, true },
     { installer::master_preferences::kSystemLevel, true },
     { installer::master_preferences::kVerboseLogging, false },
   };
@@ -276,14 +277,11 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
 
   // Check that if master prefs doesn't exist, we can still parse the common
   // prefs.
-  cmd_str = L"setup.exe --create-all-shortcuts --do-not-launch-chrome"
-            L" --alt-desktop-shortcut";
+  cmd_str = L"setup.exe --do-not-launch-chrome";
   cmd_line.ParseFromString(cmd_str);
   installer::MasterPreferences prefs2(cmd_line);
   ExpectedBooleans expected_bool2[] = {
-    { installer::master_preferences::kCreateAllShortcuts, true },
     { installer::master_preferences::kDoNotLaunchChrome, true },
-    { installer::master_preferences::kAltShortcutText, true },
   };
 
   for (int i = 0; i < arraysize(expected_bool2); ++i) {
@@ -350,3 +348,68 @@ TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
   EXPECT_TRUE(pref_chrome_cf.install_chrome_frame());
 }
 
+TEST_F(MasterPreferencesTest, EnforceLegacyCreateAllShortcutsFalse) {
+  static const char kCreateAllShortcutsFalsePrefs[] =
+      "{"
+      "  \"distribution\": {"
+      "     \"create_all_shortcuts\": false"
+      "  }"
+      "}";
+
+    installer::MasterPreferences prefs(kCreateAllShortcutsFalsePrefs);
+
+    bool do_not_create_desktop_shortcut = false;
+    bool do_not_create_quick_launch_shortcut = false;
+    prefs.GetBool(
+        installer::master_preferences::kDoNotCreateDesktopShortcut,
+        &do_not_create_desktop_shortcut);
+    prefs.GetBool(
+        installer::master_preferences::kDoNotCreateQuickLaunchShortcut,
+        &do_not_create_quick_launch_shortcut);
+    EXPECT_TRUE(do_not_create_desktop_shortcut);
+    EXPECT_TRUE(do_not_create_quick_launch_shortcut);
+}
+
+TEST_F(MasterPreferencesTest, DontEnforceLegacyCreateAllShortcutsTrue) {
+  static const char kCreateAllShortcutsFalsePrefs[] =
+      "{"
+      "  \"distribution\": {"
+      "     \"create_all_shortcuts\": true"
+      "  }"
+      "}";
+
+    installer::MasterPreferences prefs(kCreateAllShortcutsFalsePrefs);
+
+    bool do_not_create_desktop_shortcut = false;
+    bool do_not_create_quick_launch_shortcut = false;
+    prefs.GetBool(
+        installer::master_preferences::kDoNotCreateDesktopShortcut,
+        &do_not_create_desktop_shortcut);
+    prefs.GetBool(
+        installer::master_preferences::kDoNotCreateQuickLaunchShortcut,
+        &do_not_create_quick_launch_shortcut);
+    EXPECT_FALSE(do_not_create_desktop_shortcut);
+    EXPECT_FALSE(do_not_create_quick_launch_shortcut);
+}
+
+TEST_F(MasterPreferencesTest, DontEnforceLegacyCreateAllShortcutsNotSpecified) {
+  static const char kCreateAllShortcutsFalsePrefs[] =
+      "{"
+      "  \"distribution\": {"
+      "     \"some_other_pref\": true"
+      "  }"
+      "}";
+
+    installer::MasterPreferences prefs(kCreateAllShortcutsFalsePrefs);
+
+    bool do_not_create_desktop_shortcut = false;
+    bool do_not_create_quick_launch_shortcut = false;
+    prefs.GetBool(
+        installer::master_preferences::kDoNotCreateDesktopShortcut,
+        &do_not_create_desktop_shortcut);
+    prefs.GetBool(
+        installer::master_preferences::kDoNotCreateQuickLaunchShortcut,
+        &do_not_create_quick_launch_shortcut);
+    EXPECT_FALSE(do_not_create_desktop_shortcut);
+    EXPECT_FALSE(do_not_create_quick_launch_shortcut);
+}

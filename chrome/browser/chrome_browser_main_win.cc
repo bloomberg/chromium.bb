@@ -142,17 +142,20 @@ int DoUninstallTasks(bool chrome_still_running) {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     FilePath chrome_exe;
     if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
-      if (!ShellUtil::RemoveChromeShortcut(
-              ShellUtil::SHORTCUT_DESKTOP, dist, chrome_exe.value(),
-              ShellUtil::CURRENT_USER, NULL)) {
-        VLOG(1) << "Failed to delete desktop shortcut.";
+      ShellUtil::ChromeShortcutLocation user_shortcut_locations[] = {
+        ShellUtil::SHORTCUT_DESKTOP,
+        ShellUtil::SHORTCUT_QUICK_LAUNCH,
+        ShellUtil::SHORTCUT_START_MENU,
+      };
+      for (size_t i = 0; i < arraysize(user_shortcut_locations); ++i) {
+        if (!ShellUtil::RemoveChromeShortcut(
+                user_shortcut_locations[i], dist, chrome_exe.value(),
+                ShellUtil::CURRENT_USER, NULL)) {
+          VLOG(1) << "Failed to delete shortcut at location "
+                  << user_shortcut_locations[i];
+        }
       }
       // TODO(rlp): Cleanup profiles shortcuts.
-      if (!ShellUtil::RemoveChromeShortcut(
-              ShellUtil::SHORTCUT_QUICK_LAUNCH, dist, chrome_exe.value(),
-              ShellUtil::CURRENT_USER, NULL)) {
-        VLOG(1) << "Failed to delete quick launch shortcut.";
-      }
     } else {
       NOTREACHED();
     }

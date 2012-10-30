@@ -48,10 +48,6 @@ const char kChromeSxS[] = "chrome-sxs";
 // this option is not compatible with any other installer options.
 const char kConfigureUserSettings[] = "configure-user-settings";
 
-// Create Desktop and QuickLaunch shortcuts (also forces all other shortcuts
-// to be recreated if they were deleted).
-const char kCreateAllShortcuts[] = "create-all-shortcuts";
-
 // The version number of an update containing critical fixes, for which an
 // in-use Chrome should be restarted ASAP.
 const char kCriticalUpdateVersion[] = "critical-update-version";
@@ -81,6 +77,12 @@ const char kEnableLogging[] = "enable-logging";
 
 // Ensures that Google Update is present at the current level of installation.
 const char kEnsureGoogleUpdatePresent[] = "ensure-google-update-present";
+
+// Same as kConfigureUserSettings above; except the checks to know whether
+// first run already occured are bypassed and shortcuts are created either way
+// (kConfigureUserSettings also needs to be on the command-line for this to have
+// any effect).
+const char kForceConfigureUserSettings[] = "force-configure-user-settings";
 
 // If present, setup will uninstall chrome without asking for any
 // confirmation from user.
@@ -161,9 +163,6 @@ const char kShowEula[] = "show-eula";
 // Show the embedded EULA dialog, relaunch metro Chrome on acceptance.
 const char kShowEulaForMetro[] = "show-eula-for-metro";
 
-// Use the alternate desktop shortcut name.
-const char kAltDesktopShortcut[] = "alt-desktop-shortcut";
-
 // Perform the inactive user toast experiment.
 const char kInactiveUserToast[] = "inactive-user-toast";
 
@@ -195,7 +194,7 @@ const wchar_t kCmdQuickEnableApplicationHost[] =
     L"quick-enable-application-host";
 const wchar_t kCmdQuickEnableCf[] = L"quick-enable-cf";
 const wchar_t kDelegateExecuteExe[] = L"delegate_execute.exe";
-const char kEULASentinelFile[] = "EULA Accepted";
+const wchar_t kEULASentinelFile[] = L"EULA Accepted";
 const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";
 const wchar_t kGoogleChromeInstallSubDir2[] = L"Chrome";
 const wchar_t kInstallBinaryDir[] = L"Application";

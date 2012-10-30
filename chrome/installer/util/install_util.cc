@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -27,8 +28,8 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
-#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/installation_state.h"
+#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -118,6 +119,43 @@ HWND CreateUACForegroundWindow() {
 }
 
 }  // namespace
+
+string16 InstallUtil::GetActiveSetupPath(BrowserDistribution* dist) {
+  static const wchar_t kInstalledComponentsPath[] =
+      L"Software\\Microsoft\\Active Setup\\Installed Components\\";
+  return kInstalledComponentsPath + dist->GetAppGuid();
+}
+
+void InstallUtil::TriggerActiveSetupCommandIfNeeded() {
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+  } else if (InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
+    return;
+  }
+
+  string16 active_setup_reg(
+      GetActiveSetupPath(BrowserDistribution::GetDistribution()));
+  base::win::RegKey active_setup_key(
+      HKEY_LOCAL_MACHINE, active_setup_reg.c_str(), KEY_QUERY_VALUE);
+  string16 cmd_str;
+  LONG read_status = active_setup_key.ReadValue(L"StubPath", &cmd_str);
+  if (read_status != ERROR_SUCCESS) {
+    LOG(ERROR) << active_setup_reg << ", " << read_status;
+    // This should never fail if Chrome is registered at system-level, but if it
+    // does there is not much else to be done.
+    return;
+  }
+
+  CommandLine cmd(CommandLine::FromString(cmd_str));
+  // Force creation of shortcuts as the First Run beacon might land between now
+  // and the time setup.exe checks for it.
+  cmd.AppendSwitch(installer::switches::kForceConfigureUserSettings);
+
+  base::LaunchOptions default_options;
+  if (!base::LaunchProcess(cmd.GetCommandLineString(), default_options, NULL))
+    PLOG(ERROR) << cmd.GetCommandLineString();
+}
 
 bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
   FilePath::StringType program(cmd.GetProgram().value());
@@ -361,7 +399,7 @@ bool InstallUtil::HasDelegateExecuteHandler(BrowserDistribution* dist,
   return found;
 }
 
-bool InstallUtil::GetSentinelFilePath(const char* file,
+bool InstallUtil::GetSentinelFilePath(const FilePath::CharType* file,
                                       BrowserDistribution* dist,
                                       FilePath* path) {
   FilePath exe_path;
@@ -380,7 +418,7 @@ bool InstallUtil::GetSentinelFilePath(const char* file,
       return false;
   }
 
-  *path = path->AppendASCII(file);
+  *path = path->Append(file);
   return true;
 }
 

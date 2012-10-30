@@ -53,12 +53,7 @@ std::vector<GURL> GetNamedList(const char* name,
   return list;
 }
 
-DictionaryValue* ParseDistributionPreferences(
-    const FilePath& master_prefs_path) {
-  std::string json_data;
-  if (!file_util::ReadFileToString(master_prefs_path, &json_data))
-    return NULL;
-
+DictionaryValue* ParseDistributionPreferences(const std::string& json_data) {
   JSONStringValueSerializer json(json_data);
   std::string error;
   scoped_ptr<Value> root(json.Deserialize(NULL, &error));
@@ -101,18 +96,23 @@ MasterPreferences::MasterPreferences(const FilePath& prefs_path)
     : distribution_(NULL), preferences_read_from_file_(false),
       chrome_(true), chrome_app_host_(false), chrome_frame_(false),
       multi_install_(false) {
-  master_dictionary_.reset(ParseDistributionPreferences(prefs_path));
-
-  if (!master_dictionary_.get()) {
-    master_dictionary_.reset(new DictionaryValue());
-  } else {
-    preferences_read_from_file_ = true;
-    // Cache a pointer to the distribution dictionary.
-    master_dictionary_->GetDictionary(
-        installer::master_preferences::kDistroDict, &distribution_);
+  std::string json_data;
+  // Failure to read the file is ignored as |json_data| will be the empty string
+  // and the remainder of this MasterPreferences objet should still be
+  // initialized as best as possible.
+  if (!file_util::ReadFileToString(prefs_path, &json_data)) {
+    LOG(ERROR) << "Failed to read master_preferences file at "
+               << prefs_path.value()
+               << ". Falling back to default preferences.";
   }
+  InitializeFromString(json_data);
+}
 
-  InitializeProductFlags();
+MasterPreferences::MasterPreferences(const std::string& prefs)
+    : distribution_(NULL), preferences_read_from_file_(false),
+      chrome_(true), chrome_app_host_(false), chrome_frame_(false),
+      multi_install_(false) {
+  InitializeFromString(prefs);
 }
 
 MasterPreferences::~MasterPreferences() {
@@ -147,8 +147,6 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
       installer::master_preferences::kChromeFrame },
     { installer::switches::kChromeFrameReadyMode,
       installer::master_preferences::kChromeFrameReadyMode },
-    { installer::switches::kCreateAllShortcuts,
-      installer::master_preferences::kCreateAllShortcuts },
     { installer::switches::kDisableLogging,
       installer::master_preferences::kDisableLogging },
     { installer::switches::kMsi,
@@ -165,8 +163,6 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
       installer::master_preferences::kSystemLevel },
     { installer::switches::kVerboseLogging,
       installer::master_preferences::kVerboseLogging },
-    { installer::switches::kAltDesktopShortcut,
-      installer::master_preferences::kAltShortcutText },
   };
 
   std::string name(installer::master_preferences::kDistroDict);
@@ -209,6 +205,21 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
 #endif
 }
 
+void MasterPreferences::InitializeFromString(const std::string& json_data) {
+  master_dictionary_.reset(ParseDistributionPreferences(json_data));
+
+  if (!master_dictionary_.get()) {
+    master_dictionary_.reset(new DictionaryValue());
+  } else {
+    // Cache a pointer to the distribution dictionary.
+    master_dictionary_->GetDictionary(
+        installer::master_preferences::kDistroDict, &distribution_);
+  }
+
+  InitializeProductFlags();
+  EnforceLegacyPreferences();
+}
+
 void MasterPreferences::InitializeProductFlags() {
   // Make sure we start out with the correct defaults.
   multi_install_ = false;
@@ -234,6 +245,20 @@ void MasterPreferences::InitializeProductFlags() {
   } else {
     // If chrome-frame is on the command line however, we only install CF.
     chrome_ = !chrome_frame_;
+  }
+}
+
+void MasterPreferences::EnforceLegacyPreferences() {
+  // If create_all_shortcuts was explicitly set to false, set
+  // do_not_create_(desktop|quick_launch)_shortcut to true.
+  bool create_all_shortcuts = true;
+  GetBool(installer::master_preferences::kCreateAllShortcuts,
+          &create_all_shortcuts);
+  if (!create_all_shortcuts) {
+    distribution_->SetBoolean(
+        installer::master_preferences::kDoNotCreateDesktopShortcut, true);
+    distribution_->SetBoolean(
+        installer::master_preferences::kDoNotCreateQuickLaunchShortcut, true);
   }
 }
 

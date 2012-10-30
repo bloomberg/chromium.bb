@@ -875,7 +875,8 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
     return;
   }
 
-  const string16 active_setup_path(GetActiveSetupPath(distribution));
+  const string16 active_setup_path(
+      InstallUtil::GetActiveSetupPath(distribution));
   InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, active_setup_path);
 
   // Windows leaves keys behind in HKCU\\Software\\(Wow6432Node\\)?Microsoft\\
@@ -1150,11 +1151,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
     ProcessOnOsUpgradeWorkItems(installer_state, product);
 
-// TODO(gab): This is only disabled for M22 as the shortcut CL using Active
-// Setup will not make it in M22.
-#if 0
     UninstallActiveSetupEntries(installer_state, product);
-#endif
 
     // Notify the shell that associations have changed since Chrome was likely
     // unregistered.

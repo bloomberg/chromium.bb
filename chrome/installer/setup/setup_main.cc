@@ -1179,8 +1179,10 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
         installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
     installer::InstallStatus status = installer::INVALID_STATE_FOR_OPTION;
     if (chrome_install && installer_state->system_install()) {
-      // TODO(gab): Implement the new shortcut functionality here.
-      LOG(ERROR) << "--configure-user-settings is not implemented.";
+      bool force =
+          cmd_line.HasSwitch(installer::switches::kForceConfigureUserSettings);
+      installer::HandleActiveSetupForBrowser(installer_state->target_path(),
+                                             *chrome_install, force);
       status = installer::INSTALL_REPAIRED;
     } else {
       LOG(DFATAL) << "chrome_install:" << chrome_install
@@ -1266,8 +1268,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     installer::InstallStatus status = installer::INVALID_STATE_FOR_OPTION;
     if (chrome_install) {
       installer::HandleOsUpgradeForBrowser(*installer_state,
-                                           *chrome_install,
-                                           cmd_line.GetProgram());
+                                           *chrome_install);
       status = installer::INSTALL_REPAIRED;
     } else {
       LOG(DFATAL) << "Chrome product not found.";

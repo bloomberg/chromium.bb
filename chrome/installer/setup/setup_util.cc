@@ -200,12 +200,6 @@ bool DeleteFileFromTempProcess(const FilePath& path,
   return ok != FALSE;
 }
 
-string16 GetActiveSetupPath(BrowserDistribution* dist) {
-  static const wchar_t kInstalledComponentsPath[] =
-      L"Software\\Microsoft\\Active Setup\\Installed Components\\";
-  return kInstalledComponentsPath + dist->GetAppGuid();
-}
-
 bool GetExistingHigherInstaller(
     const InstallationState& original_state,
     bool system_install,

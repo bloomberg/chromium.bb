@@ -66,7 +66,7 @@ enum ElevationPolicyId {
 // on user login by way of Active Setup.  Increase this value if the work done
 // in setup_main.cc's handling of kConfigureUserSettings changes and should be
 // executed again for all users.
-const wchar_t kActiveSetupVersion[] = L"23,0,0,0";
+const wchar_t kActiveSetupVersion[] = L"24,0,0,0";
 
 // Although the UUID of the ChromeFrame class is used for the "current" value,
 // this is done only as a convenience; there is no need for the GUID of the Low
@@ -1102,12 +1102,8 @@ void AddInstallWorkItems(const InstallationState& original_state,
     AddDelegateExecuteWorkItems(installer_state, src_path, new_version,
                                 product, install_list);
 
-// TODO(gab): This is only disabled for M22 as the shortcut CL using Active
-// Setup will not make it in M22.
-#if 0
-    AddActiveSetupWorkItems(installer_state, setup_path, new_version, *product,
+    AddActiveSetupWorkItems(installer_state, setup_path, new_version, product,
                             install_list);
-#endif
   }
 
   // Add any remaining work items that involve special settings for
@@ -1400,7 +1396,8 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
   }
 
   const HKEY root = HKEY_LOCAL_MACHINE;
-  const string16 active_setup_path(GetActiveSetupPath(distribution));
+  const string16 active_setup_path(
+      InstallUtil::GetActiveSetupPath(distribution));
 
   VLOG(1) << "Adding registration items for Active Setup.";
   list->AddCreateRegKeyWorkItem(root, active_setup_path);

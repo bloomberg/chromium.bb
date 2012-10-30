@@ -31,6 +31,7 @@
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -101,46 +102,6 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 };
-
-// Creates the desktop shortcut to chrome for the current user. Returns
-// false if it fails. It will overwrite the shortcut if it exists.
-bool CreateChromeDesktopShortcut() {
-  FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
-    return false;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!dist || !dist->CanCreateDesktopShortcuts())
-    return false;
-  ShellUtil::ChromeShortcutProperties shortcut_properties(
-      ShellUtil::CURRENT_USER);
-  shortcut_properties.set_chrome_exe(chrome_exe);
-  return ShellUtil::CreateOrUpdateChromeShortcut(
-      ShellUtil::SHORTCUT_DESKTOP, dist, shortcut_properties,
-      ShellUtil::SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
-}
-
-// Creates the quick launch shortcut to chrome for the current user. Returns
-// false if it fails. It will overwrite the shortcut if it exists.
-bool CreateChromeQuickLaunchShortcut() {
-  FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
-    return false;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  ShellUtil::ChromeShortcutProperties shortcut_properties(
-      ShellUtil::CURRENT_USER);
-  shortcut_properties.set_chrome_exe(chrome_exe);
-  return ShellUtil::CreateOrUpdateChromeShortcut(
-      ShellUtil::SHORTCUT_QUICK_LAUNCH, dist, shortcut_properties,
-      ShellUtil::SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
-}
-
-void PlatformSetup(Profile* profile) {
-  CreateChromeDesktopShortcut();
-
-  // Windows 7 has deprecated the quick launch bar.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    CreateChromeQuickLaunchShortcut();
-}
 
 // Launches the setup exe with the given parameter/value on the command-line.
 // For non-metro Windows, it waits for its termination, returns its exit code
@@ -511,7 +472,7 @@ bool ImportSettings(Profile* profile,
 
 bool GetFirstRunSentinelFilePath(FilePath* path) {
   return InstallUtil::GetSentinelFilePath(
-      kSentinelFile,
+      chrome::kFirstRunSentinel,
       BrowserDistribution::GetDistribution(),
       path);
 }
@@ -572,8 +533,6 @@ void AutoImport(
   // when a CopyData message comes in; this causes the message to be silently
   // discarded, which is the correct behavior during the import process.
   process_singleton->Lock(NULL);
-
-  PlatformSetup(profile);
 
   scoped_refptr<ImporterHost> importer_host;
   importer_host = new ImporterHost;

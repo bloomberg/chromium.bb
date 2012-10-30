@@ -49,10 +49,6 @@ Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path);
 bool DeleteFileFromTempProcess(const FilePath& path,
                                uint32 delay_before_delete_ms);
 
-// Get the path to this distribution's Active Setup registry entries.
-// e.g. Software\Microsoft\Active Setup\Installed Components\<dist_guid>
-string16 GetActiveSetupPath(BrowserDistribution* dist);
-
 // Returns true and populates |setup_exe| with the path to an existing product
 // installer if one is found that is newer than the currently running installer
 // (|installer_version|).

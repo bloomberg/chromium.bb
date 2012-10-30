@@ -12,6 +12,7 @@
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
@@ -66,7 +67,7 @@ bool GetFirstRunSentinelFilePath(FilePath* path) {
   if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
     return false;
 
-  *path = first_run_sentinel.AppendASCII(kSentinelFile);
+  *path = first_run_sentinel.Append(chrome::kFirstRunSentinel);
   return true;
 }
 

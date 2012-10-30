@@ -30,7 +30,11 @@ extern const char kChromeFrame[];
 extern const char kChromeFrameReadyMode[];
 // Integer. Icon index from chrome.exe to use for shortcuts.
 extern const char kChromeShortcutIconIndex[];
-// Boolean. Create Desktop and QuickLaunch shortcuts. Cmd line override present.
+// Boolean. This is a legacy preference and should no longer be used; it is
+// kept around so that old master_preferences which specify
+// "create_all_shortcuts":false still enforce the new
+// "do_not_create_(desktop|quick_launch)_shortcut" preferences. Setting this to
+// true no longer has any impact.
 extern const char kCreateAllShortcuts[];
 // Boolean pref that disables all logging.
 extern const char kDisableLogging[];
@@ -55,6 +59,12 @@ extern const char kDistroShowWelcomePage[];
 extern const char kDistroSkipFirstRunPref[];
 // Boolean. Do not show first run bubble, even if it would otherwise be shown.
 extern const char kDistroSuppressFirstRunBubble[];
+// Boolean. Prevent creation of the Desktop shortcut on install (and later on
+// Active Setup for each user on a system-level install).
+extern const char kDoNotCreateDesktopShortcut[];
+// Boolean. Prevent creation of the Quick Launch shortcut on install (and later
+// on Active Setup for each user on a system-level install).
+extern const char kDoNotCreateQuickLaunchShortcut[];
 // Boolean. Do not launch Chrome after first install. Cmd line override present.
 extern const char kDoNotLaunchChrome[];
 // Boolean. Do not register with Google Update to have Chrome launched after

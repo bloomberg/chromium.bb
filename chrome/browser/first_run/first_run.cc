@@ -147,7 +147,6 @@ int ImportFromFile(Profile* profile, const CommandLine& cmdline) {
 namespace first_run {
 namespace internal {
 
-const char* const kSentinelFile = "First Run";
 FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
 
 installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path)

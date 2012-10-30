@@ -27,6 +27,7 @@
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -1166,6 +1167,21 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // preferences are registered, since some of the code that the importer
   // touches reads preferences.
   if (is_first_run_) {
+#if defined(OS_WIN)
+    // On Windows, trigger the Active Setup command in some scenarios to finish
+    // configuring this user's install (e.g. per-user shortcuts on system-level
+    // installs).
+    // Delay the task slightly to give Chrome launch I/O priority while also
+    // making sure shortcuts are created promptly to avoid annoying the user by
+    // re-creating shortcuts he previously deleted.
+    // TODO(gab): Add a first run section to ChromeBrowserMainParts and remove
+    // OS specific sections below.
+    static const int64 kTiggerActiveSetupDelaySeconds = 5;
+    BrowserThread::GetBlockingPool()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&InstallUtil::TriggerActiveSetupCommandIfNeeded),
+        base::TimeDelta::FromSeconds(kTiggerActiveSetupDelaySeconds));
+#endif  // OS_WIN
     if (!first_run_ui_bypass_) {
       first_run::AutoImport(profile_,
                             master_prefs_->homepage_defined,

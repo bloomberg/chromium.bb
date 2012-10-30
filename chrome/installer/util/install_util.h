@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/string16.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -27,6 +28,14 @@ class WorkItemList;
 // independently.
 class InstallUtil {
  public:
+  // Get the path to this distribution's Active Setup registry entries.
+  // e.g. Software\Microsoft\Active Setup\Installed Components\<dist_guid>
+  static string16 GetActiveSetupPath(BrowserDistribution* dist);
+
+  // Attempts to trigger the command that would be triggered for Chrome on
+  // Active Setup. This will be a no-op for user-level installs.
+  static void TriggerActiveSetupCommandIfNeeded();
+
   // Launches given exe as admin on Vista.
   static bool ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code);
 
@@ -101,7 +110,7 @@ class InstallUtil {
   // Populates |path| with the path to |file| in the sentinel directory. This is
   // the application directory for user-level installs, and the default user
   // data dir for system-level installs. Returns false on error.
-  static bool GetSentinelFilePath(const char* file,
+  static bool GetSentinelFilePath(const FilePath::CharType* file,
                                   BrowserDistribution* dist,
                                   FilePath* path);
 

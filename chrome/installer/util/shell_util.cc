@@ -965,11 +965,13 @@ base::win::ShortcutProperties GetShortcutPropertiesFromChromeShortcutProperties(
     shortcut_properties.set_icon(properties.icon, 0);
   } else if (create) {
     int icon_index = dist->GetIconIndex();
-    installer::MasterPreferences prefs(
-        properties.chrome_exe.DirName().AppendASCII(
-            installer::kDefaultMasterPrefs));
-    prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
-                 &icon_index);
+    FilePath prefs_path(properties.chrome_exe.DirName().AppendASCII(
+        installer::kDefaultMasterPrefs));
+    if (file_util::PathExists(prefs_path)) {
+      installer::MasterPreferences prefs(prefs_path);
+      prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
+                   &icon_index);
+    }
     shortcut_properties.set_icon(properties.chrome_exe, icon_index);
   }
 
@@ -1267,7 +1269,8 @@ bool ShellUtil::CreateOrUpdateChromeShortcut(
   DCHECK(dist);
   // |pin_to_taskbar| is only acknowledged when first creating the shortcut.
   DCHECK(!properties.pin_to_taskbar ||
-         operation == base::win::SHORTCUT_CREATE_ALWAYS);
+         operation == SHORTCUT_CREATE_ALWAYS ||
+         operation == SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
 
   FilePath user_shortcut_path;
   FilePath system_shortcut_path;
@@ -1323,7 +1326,8 @@ bool ShellUtil::CreateOrUpdateChromeShortcut(
   bool ret = base::win::CreateOrUpdateShortcutLink(
       *chosen_path, shortcut_properties, shortcut_operation);
 
-  if (ret && operation == SHORTCUT_CREATE_ALWAYS && properties.pin_to_taskbar &&
+  if (ret && shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
+      properties.pin_to_taskbar &&
       base::win::GetVersion() >= base::win::VERSION_WIN7) {
     ret = base::win::TaskbarPinShortcutLink(chosen_path->value().c_str());
     if (!ret) {

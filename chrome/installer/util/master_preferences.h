@@ -93,6 +93,10 @@ class MasterPreferences {
   // switches with the distribution dictionary.
   explicit MasterPreferences(const FilePath& prefs_path);
 
+  // Parses a preferences directly from |prefs| and does not merge any command
+  // line switches with the distribution dictionary.
+  explicit MasterPreferences(const std::string& prefs);
+
   ~MasterPreferences();
 
   // Each of the Get methods below returns true if the named value was found in
@@ -183,9 +187,15 @@ class MasterPreferences {
   static const MasterPreferences& ForCurrentProcess();
 
  protected:
+  void InitializeFromCommandLine(const CommandLine& cmd_line);
+
+  void InitializeFromString(const std::string& json_data);
+
   void InitializeProductFlags();
 
-  void InitializeFromCommandLine(const CommandLine& cmd_line);
+  // Enforces legacy preferences that should no longer be used, but could be
+  // found in older master_preferences files.
+  void EnforceLegacyPreferences();
 
  protected:
   scoped_ptr<base::DictionaryValue> master_dictionary_;
