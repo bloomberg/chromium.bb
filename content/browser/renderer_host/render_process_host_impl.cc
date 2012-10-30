@@ -702,6 +702,10 @@ bool RenderProcessHostImpl::IsGuest() const {
   return is_guest_;
 }
 
+StoragePartition* RenderProcessHostImpl::GetStoragePartition() const {
+  return storage_partition_impl_;
+}
+
 void RenderProcessHostImpl::AppendRendererCommandLine(
     CommandLine* command_line) const {
   // Pass the process type first, so it shows first in process listings.

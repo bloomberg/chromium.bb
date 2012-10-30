@@ -14,6 +14,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "net/base/completion_callback.h"
@@ -92,11 +94,13 @@ DataDeleter::DataDeleter(
   if (storage_origin.SchemeIs(chrome::kExtensionScheme)) {
     extension_request_context_ = profile->GetRequestContextForExtensions();
   } else if (is_storage_isolated) {
-    extension_request_context_ =
-        profile->GetRequestContextForStoragePartition(extension_id);
-    isolated_app_path_ =
-        profile->GetPath().Append(
-            content::StoragePartition::GetPartitionPath(extension_id));
+    const GURL& url = Extension::GetBaseURLFromExtensionId(extension_id);
+    content::StoragePartition* storage_partition =
+        BrowserContext::GetStoragePartitionForSite(profile, url);
+    // TODO(ajwong): Cookies are not properly isolated for
+    // chrome-extension:// scheme. See bug http://crbug.com/158386.
+    extension_request_context_ = storage_partition->GetURLRequestContext();
+    isolated_app_path_ = storage_partition->GetPath();
   } else {
     extension_request_context_ = profile->GetRequestContext();
   }

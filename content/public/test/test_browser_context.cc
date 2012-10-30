@@ -112,7 +112,8 @@ TestBrowserContext::GetRequestContextForRenderProcess(int renderer_child_id) {
 
 net::URLRequestContextGetter*
 TestBrowserContext::GetRequestContextForStoragePartition(
-    const std::string& partition_id) {
+    const FilePath& partition_path,
+    bool in_memory) {
   return NULL;
 }
 
@@ -128,7 +129,8 @@ TestBrowserContext::GetMediaRequestContextForRenderProcess(
 
 net::URLRequestContextGetter*
 TestBrowserContext::GetMediaRequestContextForStoragePartition(
-    const std::string& partition_id) {
+    const FilePath& partition_path,
+    bool in_memory) {
   return NULL;
 }
 

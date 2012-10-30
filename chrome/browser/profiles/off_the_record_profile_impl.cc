@@ -48,6 +48,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
@@ -257,28 +258,9 @@ net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
 net::URLRequestContextGetter*
     OffTheRecordProfileImpl::GetRequestContextForRenderProcess(
         int renderer_child_id) {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(this)->extension_service();
-  if (extension_service) {
-    const extensions::Extension* extension =
-        extension_service->GetIsolatedAppForRenderer(renderer_child_id);
-    if (extension)
-      return GetRequestContextForStoragePartition(extension->id());
-  }
-
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
       renderer_child_id);
-  if (rph && rph->IsGuest()) {
-    // For guest processes (used by the browser tag), we need to isolate the
-    // storage.
-    // TODO(nasko): Until we have proper storage partitions, create a
-    // non-persistent context using the RPH's id.
-    std::string id("guest-");
-    id.append(base::IntToString(renderer_child_id));
-    return GetRequestContextForStoragePartition(id);
-  }
-
-  return GetRequestContext();
+  return rph->GetStoragePartition()->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*
@@ -296,8 +278,9 @@ net::URLRequestContextGetter*
 
 net::URLRequestContextGetter*
 OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
-    const std::string& partition_id) {
-  return GetRequestContextForStoragePartition(partition_id);
+    const FilePath& partition_path,
+    bool in_memory) {
+  return GetRequestContextForStoragePartition(partition_path, in_memory);
 }
 
 net::URLRequestContextGetter*
@@ -307,8 +290,9 @@ net::URLRequestContextGetter*
 
 net::URLRequestContextGetter*
     OffTheRecordProfileImpl::GetRequestContextForStoragePartition(
-        const std::string& partition_id) {
-  return io_data_.GetIsolatedAppRequestContextGetter(partition_id);
+        const FilePath& partition_path,
+        bool in_memory) {
+  return io_data_.GetIsolatedAppRequestContextGetter(partition_path, in_memory);
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {

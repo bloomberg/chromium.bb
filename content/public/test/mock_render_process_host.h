@@ -11,6 +11,7 @@
 #include "content/public/browser/render_process_host_factory.h"
 #include "ipc/ipc_test_sink.h"
 
+class StoragePartition;
 class TransportDIB;
 
 namespace content {
@@ -46,6 +47,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void WidgetHidden() OVERRIDE;
   virtual int VisibleWidgetCount() const OVERRIDE;
   virtual bool IsGuest() const OVERRIDE;
+  virtual StoragePartition* GetStoragePartition() const OVERRIDE;
   virtual void AddWord(const string16& word);
   virtual bool FastShutdownIfPossible() OVERRIDE;
   virtual bool FastShutdownStarted() const OVERRIDE;

@@ -60,13 +60,15 @@ class ProfileImpl : public Profile,
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const std::string& partition_id) OVERRIDE;
+      const FilePath& partition_path,
+      bool in_memory) OVERRIDE;
   virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const std::string& partition_id) OVERRIDE;
+          const FilePath& partition_path,
+          bool in_memory) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;

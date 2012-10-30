@@ -22,9 +22,12 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -223,28 +226,37 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
     Profile* profile = Profile::FromWebUI(web_ui());
     ContainerMap apps_map;
     const ExtensionService* service = profile->GetExtensionService();
-    if (service) {
-      const ExtensionSet* extensions = service->extensions();
-      for (ExtensionSet::const_iterator it = extensions->begin();
-           it != extensions->end(); ++it) {
-        if ((*it)->is_storage_isolated()) {
-          net::URLRequestContextGetter* context_getter =
-              profile->GetRequestContextForStoragePartition((*it)->id());
-          // TODO(nasko): When new types of storage are isolated, add the
-          // appropriate browsing data helper objects to the constructor.
-          // For now, just cookies are isolated, so other parameters are NULL.
-          apps_map[(*it)->id()] = new LocalDataContainer(
-              (*it)->name(), (*it)->id(),
-              new BrowsingDataCookieHelper(context_getter),
-              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-        }
+    if (!service)
+      return;
+
+    ExtensionProcessManager* process_manager =
+        extensions::ExtensionSystem::Get(profile)->process_manager();
+    if (!process_manager)
+      return;
+
+    const ExtensionSet* extensions = service->extensions();
+    for (ExtensionSet::const_iterator it = extensions->begin();
+         it != extensions->end(); ++it) {
+      if ((*it)->is_storage_isolated()) {
+        content::StoragePartition* storage_partition =
+            content::BrowserContext::GetStoragePartitionForSite(profile,
+                                                                (*it)->url());
+        net::URLRequestContextGetter* context_getter =
+            storage_partition->GetURLRequestContext();
+        // TODO(nasko): When new types of storage are isolated, add the
+        // appropriate browsing data helper objects to the constructor.
+        // For now, just cookies are isolated, so other parameters are NULL.
+        apps_map[(*it)->id()] = new LocalDataContainer(
+            (*it)->name(), (*it)->id(),
+            new BrowsingDataCookieHelper(context_getter),
+            NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
       }
-      app_cookies_tree_model_.reset(
-          new CookiesTreeModel(apps_map,
-                               profile->GetExtensionSpecialStoragePolicy(),
-                               false));
-      app_cookies_tree_model_->AddCookiesTreeObserver(this);
     }
+    app_cookies_tree_model_.reset(
+        new CookiesTreeModel(apps_map,
+                             profile->GetExtensionSpecialStoragePolicy(),
+                             false));
+    app_cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 }
 

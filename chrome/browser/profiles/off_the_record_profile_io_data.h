@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiles/storage_partition_descriptor.h"
 
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
@@ -51,12 +52,14 @@ class OffTheRecordProfileIOData : public ProfileIOData {
         GetExtensionsRequestContextGetter() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetIsolatedAppRequestContextGetter(
-            const std::string& app_id) const;
+            const FilePath& partition_path,
+            bool in_memory) const;
 
    private:
-    typedef base::hash_map<std::string,
-                           scoped_refptr<ChromeURLRequestContextGetter> >
-        ChromeURLRequestContextGetterMap;
+    typedef std::map<StoragePartitionDescriptor,
+                     scoped_refptr<ChromeURLRequestContextGetter>,
+                     StoragePartitionDescriptorLess>
+      ChromeURLRequestContextGetterMap;
 
     // Lazily initialize ProfileParams. We do this on the calls to
     // Get*RequestContextGetter(), so we only initialize ProfileParams right
@@ -99,24 +102,25 @@ class OffTheRecordProfileIOData : public ProfileIOData {
       ProfileParams* profile_params) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
-      const std::string& app_id,
+      const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<net::URLRequestJobFactory::Interceptor>
           protocol_handler_interceptor) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeMediaRequestContext(
       ChromeURLRequestContext* original_context,
-      const std::string& app_id) const OVERRIDE;
+      const StoragePartitionDescriptor& partition_descriptor) const OVERRIDE;
   virtual ChromeURLRequestContext*
       AcquireMediaRequestContext() const OVERRIDE;
   virtual ChromeURLRequestContext*
       AcquireIsolatedAppRequestContext(
           ChromeURLRequestContext* main_context,
-          const std::string& app_id,
+          const StoragePartitionDescriptor& partition_descriptor,
           scoped_ptr<net::URLRequestJobFactory::Interceptor>
               protocol_handler_interceptor) const OVERRIDE;
   virtual ChromeURLRequestContext*
       AcquireIsolatedMediaRequestContext(
           ChromeURLRequestContext* app_context,
-          const std::string& app_id) const OVERRIDE;
+          const StoragePartitionDescriptor& partition_descriptor)
+              const OVERRIDE;
 
   virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const OVERRIDE;

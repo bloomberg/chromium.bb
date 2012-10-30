@@ -20,6 +20,7 @@ class ChromeURLRequestContextFactory;
 class IOThread;
 class Profile;
 class ProfileIOData;
+struct StoragePartitionDescriptor;
 
 namespace chrome_browser_net {
 class LoadTimeStats;
@@ -145,7 +146,7 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   static ChromeURLRequestContextGetter* CreateOriginalForIsolatedApp(
       Profile* profile,
       const ProfileIOData* profile_io_data,
-      const std::string& app_id,
+      const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<net::URLRequestJobFactory::Interceptor>
           protocol_handler_interceptor);
 
@@ -155,7 +156,7 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
       Profile* profile,
       ChromeURLRequestContextGetter* app_context,
       const ProfileIOData* profile_io_data,
-      const std::string& app_id);
+      const StoragePartitionDescriptor& partition_descriptor);
 
   // Create an instance for use with an OTR profile. This is expected to get
   // called on the UI thread.
@@ -172,7 +173,7 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   static ChromeURLRequestContextGetter* CreateOffTheRecordForIsolatedApp(
       Profile* profile,
       const ProfileIOData* profile_io_data,
-      const std::string& app_id,
+      const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<net::URLRequestJobFactory::Interceptor>
           protocol_handler_interceptor);
 

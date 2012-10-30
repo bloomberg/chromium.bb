@@ -730,28 +730,20 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
     int renderer_child_id) {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(this)->extension_service();
-  if (extension_service) {
-    const extensions::Extension* extension =
-        extension_service->GetIsolatedAppForRenderer(renderer_child_id);
-    if (extension)
-      return GetRequestContextForStoragePartition(extension->id());
-  }
-
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
       renderer_child_id);
-  if (rph && rph->IsGuest()) {
-    // For guest processes (used by the browser tag), we need to isolate the
-    // storage.
-    // TODO(nasko): Until we have proper storage partitions, create a
-    // non-persistent context using the RPH's id.
-    std::string id("guest-");
-    id.append(base::IntToString(renderer_child_id));
-    return GetRequestContextForStoragePartition(id);
+  content::StoragePartition* storage_partition = rph->GetStoragePartition();
+
+  // TODO(nasko): Remove this conditional, once webview tag creates a proper
+  // storage partition.
+  if (rph->IsGuest()) {
+    // For guest processes, we only allow in-memory partitions for now, so
+    // hardcode the parameter here.
+    return GetRequestContextForStoragePartition(
+        storage_partition->GetPath(), true);
   }
 
-  return GetRequestContext();
+  return storage_partition->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetMediaRequestContext() {
@@ -762,34 +754,28 @@ net::URLRequestContextGetter* ProfileImpl::GetMediaRequestContext() {
 net::URLRequestContextGetter*
 ProfileImpl::GetMediaRequestContextForRenderProcess(
     int renderer_child_id) {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(this)->extension_service();
-  if (extension_service) {
-    const extensions::Extension* extension =
-        extension_service->GetIsolatedAppForRenderer(renderer_child_id);
-    if (extension)
-      return io_data_.GetIsolatedMediaRequestContextGetter(extension->id());
-  }
-
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
       renderer_child_id);
-  if (rph && rph->IsGuest()) {
-    // For guest processes (used by the browser tag), we need to isolate the
-    // storage.
-    // TODO(nasko): Until we have proper storage partitions, create a
-    // non-persistent context using the RPH's id.
-    std::string id("guest-");
-    id.append(base::IntToString(renderer_child_id));
-    return io_data_.GetIsolatedMediaRequestContextGetter(id);
+  content::StoragePartition* storage_partition = rph->GetStoragePartition();
+
+  // TODO(nasko): Remove this conditional, once webview tag creates a proper
+  // storage partition.
+  if (rph->IsGuest()) {
+    // For guest processes, we only allow in-memory partitions for now, so
+    // hardcode the parameter here.
+    return GetMediaRequestContextForStoragePartition(
+        storage_partition->GetPath(), true);
   }
 
-  return io_data_.GetMediaRequestContextGetter();
+  return storage_partition->GetMediaURLRequestContext();
 }
 
 net::URLRequestContextGetter*
 ProfileImpl::GetMediaRequestContextForStoragePartition(
-    const std::string& partition_id) {
-  return io_data_.GetIsolatedMediaRequestContextGetter(partition_id);
+    const FilePath& partition_path,
+    bool in_memory) {
+  return io_data_.GetIsolatedMediaRequestContextGetter(partition_path,
+                                                       in_memory);
 }
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {
@@ -801,8 +787,9 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForStoragePartition(
-    const std::string& partition_id) {
-  return io_data_.GetIsolatedAppRequestContextGetter(partition_id);
+    const FilePath& partition_path,
+    bool in_memory) {
+  return io_data_.GetIsolatedAppRequestContextGetter(partition_path, in_memory);
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {

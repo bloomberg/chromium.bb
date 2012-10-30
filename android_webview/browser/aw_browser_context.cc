@@ -42,7 +42,8 @@ AwBrowserContext::GetRequestContextForRenderProcess(
 
 net::URLRequestContextGetter*
 AwBrowserContext::GetRequestContextForStoragePartition(
-    const std::string& partition_id) {
+    const FilePath& partition_path,
+    bool in_memory) {
   return GetRequestContext();
 }
 
@@ -58,7 +59,8 @@ AwBrowserContext::GetMediaRequestContextForRenderProcess(
 
 net::URLRequestContextGetter*
 AwBrowserContext::GetMediaRequestContextForStoragePartition(
-        const std::string& partition_id) {
+    const FilePath& partition_path,
+    bool in_memory) {
   return GetRequestContext();
 }
 

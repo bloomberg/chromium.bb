@@ -376,14 +376,16 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
   MOCK_METHOD1(GetRequestContextForRenderProcess,
                net::URLRequestContextGetter*(int renderer_child_id));
-  MOCK_METHOD1(GetRequestContextForStoragePartition,
-               net::URLRequestContextGetter*(const std::string& id));
+  MOCK_METHOD2(GetRequestContextForStoragePartition,
+               net::URLRequestContextGetter*(
+                   const FilePath& partition_path, bool in_memory));
   MOCK_METHOD0(GetMediaRequestContext,
                net::URLRequestContextGetter*());
   MOCK_METHOD1(GetMediaRequestContextForRenderProcess,
                net::URLRequestContextGetter*(int renderer_child_id));
-  MOCK_METHOD1(GetMediaRequestContextForStoragePartition,
-               net::URLRequestContextGetter*(const std::string& id));
+  MOCK_METHOD2(GetMediaRequestContextForStoragePartition,
+               net::URLRequestContextGetter*(
+                   const FilePath& partition_path, bool in_memory));
   MOCK_METHOD0(GetResourceContext, ResourceContext*());
   MOCK_METHOD0(GetDownloadManagerDelegate, DownloadManagerDelegate*());
   MOCK_METHOD0(GetGeolocationPermissionContext,

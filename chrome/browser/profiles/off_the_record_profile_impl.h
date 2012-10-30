@@ -51,7 +51,8 @@ class OffTheRecordProfileImpl : public Profile,
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const std::string& partition_id) OVERRIDE;
+      const FilePath& partition_path,
+      bool in_memory) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
@@ -94,7 +95,8 @@ class OffTheRecordProfileImpl : public Profile,
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const std::string& partition_id) OVERRIDE;
+          const FilePath& partition_path,
+          bool in_memory) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;

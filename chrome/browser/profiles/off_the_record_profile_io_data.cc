@@ -117,14 +117,16 @@ OffTheRecordProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
 
 scoped_refptr<ChromeURLRequestContextGetter>
 OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
-    const std::string& app_id) const {
+    const FilePath& partition_path,
+    bool in_memory) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!app_id.empty());
+  DCHECK(!partition_path.empty());
   LazyInitialize();
 
   // Keep a map of request context getters, one per requested app ID.
+  StoragePartitionDescriptor descriptor(partition_path, in_memory);
   ChromeURLRequestContextGetterMap::iterator iter =
-      app_request_context_getter_map_.find(app_id);
+      app_request_context_getter_map_.find(descriptor);
   if (iter != app_request_context_getter_map_.end())
     return iter->second;
 
@@ -134,8 +136,9 @@ OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
               CreateURLInterceptor());
   ChromeURLRequestContextGetter* context =
       ChromeURLRequestContextGetter::CreateOffTheRecordForIsolatedApp(
-          profile_, io_data_, app_id, protocol_handler_interceptor.Pass());
-  app_request_context_getter_map_[app_id] = context;
+          profile_, io_data_, descriptor,
+          protocol_handler_interceptor.Pass());
+  app_request_context_getter_map_[descriptor] = context;
 
   return context;
 }
@@ -273,7 +276,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
 ChromeURLRequestContext*
 OffTheRecordProfileIOData::InitializeAppRequestContext(
     ChromeURLRequestContext* main_context,
-    const std::string& app_id,
+    const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<net::URLRequestJobFactory::Interceptor>
         protocol_handler_interceptor) const {
   AppRequestContext* context = new AppRequestContext(load_time_stats());
@@ -310,7 +313,7 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
 ChromeURLRequestContext*
 OffTheRecordProfileIOData::InitializeMediaRequestContext(
     ChromeURLRequestContext* original_context,
-    const std::string& app_id) const {
+    const StoragePartitionDescriptor& partition_descriptor) const {
   NOTREACHED();
   return NULL;
 }
@@ -324,12 +327,12 @@ OffTheRecordProfileIOData::AcquireMediaRequestContext() const {
 ChromeURLRequestContext*
 OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
     ChromeURLRequestContext* main_context,
-    const std::string& app_id,
+    const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<net::URLRequestJobFactory::Interceptor>
         protocol_handler_interceptor) const {
   // We create per-app contexts on demand, unlike the others above.
   ChromeURLRequestContext* app_request_context =
-      InitializeAppRequestContext(main_context, app_id,
+      InitializeAppRequestContext(main_context, partition_descriptor,
                                   protocol_handler_interceptor.Pass());
   DCHECK(app_request_context);
   return app_request_context;
@@ -338,7 +341,7 @@ OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
 ChromeURLRequestContext*
 OffTheRecordProfileIOData::AcquireIsolatedMediaRequestContext(
     ChromeURLRequestContext* app_context,
-    const std::string& app_id) const {
+    const StoragePartitionDescriptor& partition_descriptor) const {
   NOTREACHED();
   return NULL;
 }

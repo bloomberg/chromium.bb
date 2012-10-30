@@ -213,12 +213,13 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   partition->SetURLRequestContext(
       partition_id.empty() ?
       browser_context_->GetRequestContext() :
-      browser_context_->GetRequestContextForStoragePartition(partition_id));
+      browser_context_->GetRequestContextForStoragePartition(
+          partition->GetPath(), false));
   partition->SetMediaURLRequestContext(
       partition_id.empty() ?
       browser_context_->GetMediaRequestContext() :
       browser_context_->GetMediaRequestContextForStoragePartition(
-          partition_id));
+          partition->GetPath(), false));
 
   PostCreateInitialization(partition);
 

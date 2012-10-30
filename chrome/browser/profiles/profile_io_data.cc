@@ -373,17 +373,18 @@ ProfileIOData::GetExtensionsRequestContext() const {
 ChromeURLRequestContext*
 ProfileIOData::GetIsolatedAppRequestContext(
     ChromeURLRequestContext* main_context,
-    const std::string& app_id,
+    const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<net::URLRequestJobFactory::Interceptor>
         protocol_handler_interceptor) const {
   LazyInitialize();
   ChromeURLRequestContext* context = NULL;
-  if (ContainsKey(app_request_context_map_, app_id)) {
-    context = app_request_context_map_[app_id];
+  if (ContainsKey(app_request_context_map_, partition_descriptor)) {
+    context = app_request_context_map_[partition_descriptor];
   } else {
     context = AcquireIsolatedAppRequestContext(
-        main_context, app_id, protocol_handler_interceptor.Pass());
-    app_request_context_map_[app_id] = context;
+        main_context, partition_descriptor,
+        protocol_handler_interceptor.Pass());
+    app_request_context_map_[partition_descriptor] = context;
   }
   DCHECK(context);
   return context;
@@ -392,14 +393,15 @@ ProfileIOData::GetIsolatedAppRequestContext(
 ChromeURLRequestContext*
 ProfileIOData::GetIsolatedMediaRequestContext(
     ChromeURLRequestContext* app_context,
-    const std::string& app_id) const {
+    const StoragePartitionDescriptor& partition_descriptor) const {
   LazyInitialize();
   ChromeURLRequestContext* context = NULL;
-  if (ContainsKey(isolated_media_request_context_map_, app_id)) {
-    context = isolated_media_request_context_map_[app_id];
+  if (ContainsKey(isolated_media_request_context_map_, partition_descriptor)) {
+    context = isolated_media_request_context_map_[partition_descriptor];
   } else {
-    context = AcquireIsolatedMediaRequestContext(app_context, app_id);
-    isolated_media_request_context_map_[app_id] = context;
+    context = AcquireIsolatedMediaRequestContext(app_context,
+                                                 partition_descriptor);
+    isolated_media_request_context_map_[partition_descriptor] = context;
   }
   DCHECK(context);
   return context;

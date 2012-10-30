@@ -228,7 +228,8 @@ class Profile : public content::BrowserContext {
 
   // Returns the request context used within |partition_id|.
   virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const std::string& partition_id) = 0;
+      const FilePath& partition_path,
+      bool in_memory) = 0;
 
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;

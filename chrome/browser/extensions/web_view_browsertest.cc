@@ -103,15 +103,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Isolation) {
                               &cookie_size, &cookie_value);
   EXPECT_EQ("testCookie=1", cookie_value);
 
-  // Now, test the browser tags to ensure we have properly set the cookie and
-  // we have only one per browser tag and they are not the same.
+  // The default behavior is to combine webview tags with no explicit partition
+  // declaration into the same in-memory partition. Test the webview tags to
+  // ensure we have properly set the cookies and we have both cookies in both
+  // tags.
   automation_util::GetCookies(GURL("http://localhost"),
                               source1->GetWebContents(),
                               &cookie_size, &cookie_value);
-  EXPECT_EQ("guest1=true", cookie_value);
+  EXPECT_EQ("guest1=true; guest2=true", cookie_value);
 
   automation_util::GetCookies(GURL("http://localhost"),
                               source2->GetWebContents(),
                               &cookie_size, &cookie_value);
-  EXPECT_EQ("guest2=true", cookie_value);
+  EXPECT_EQ("guest1=true; guest2=true", cookie_value);
 }

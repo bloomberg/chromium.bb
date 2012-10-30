@@ -94,7 +94,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       int renderer_child_id) = 0;
 
   virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const std::string& partition_id) = 0;
+      const FilePath& partition_path,
+      bool in_memory) = 0;
 
   // Returns the default request context for media resources associated with
   // this context.
@@ -107,7 +108,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       int renderer_child_id) = 0;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const std::string& partition_id) = 0;
+          const FilePath& partition_path,
+          bool in_memory) = 0;
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;

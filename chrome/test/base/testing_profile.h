@@ -244,9 +244,11 @@ class TestingProfile : public Profile {
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const std::string& partition_id) OVERRIDE;
+          const FilePath& partition_path,
+          bool in_memory) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForStoragePartition(
-      const std::string& partition_id) OVERRIDE;
+      const FilePath& partition_path,
+      bool in_memory) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
   virtual std::wstring GetName();

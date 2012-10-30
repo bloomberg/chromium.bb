@@ -77,6 +77,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void WidgetHidden() OVERRIDE;
   virtual int VisibleWidgetCount() const OVERRIDE;
   virtual bool IsGuest() const OVERRIDE;
+  virtual StoragePartition* GetStoragePartition() const OVERRIDE;
   virtual bool FastShutdownIfPossible() OVERRIDE;
   virtual void DumpHandles() OVERRIDE;
   virtual base::ProcessHandle GetHandle() OVERRIDE;

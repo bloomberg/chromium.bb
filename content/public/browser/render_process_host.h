@@ -94,6 +94,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // renderer process.
   virtual bool IsGuest() const = 0;
 
+  // Returns the storage partition associated with this process.
+  //
+  // TODO(nasko): Remove this function from the public API once
+  // URLRequestContextGetter's creation is moved into StoragePartition.
+  // http://crbug.com/158595
+  virtual StoragePartition* GetStoragePartition() const = 0;
+
   // Try to shutdown the associated renderer process as fast as possible.
   // If this renderer has any RenderViews with unload handlers, then this
   // function does nothing.  The current implementation uses TerminateProcess.
