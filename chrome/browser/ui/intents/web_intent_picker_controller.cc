@@ -194,6 +194,8 @@ WebIntentPickerController::WebIntentPickerController(
 WebIntentPickerController::~WebIntentPickerController() {
   if (picker_)
     picker_->InvalidateDelegate();
+  if (webstore_installer_.get())
+    webstore_installer_->InvalidateDelegate();
 }
 
 // TODO(gbillock): combine this with ShowDialog.
@@ -444,13 +446,12 @@ void WebIntentPickerController::OnExtensionInstallRequested(
       &WebIntentPickerController::OnShowExtensionInstallDialog,
       weak_ptr_factory_.GetWeakPtr());
 
-  scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile_, this,
+  webstore_installer_ = new WebstoreInstaller(profile_, this,
       &web_contents_->GetController(), extension_id,
       approval.Pass(), WebstoreInstaller::FLAG_INLINE_INSTALL);
 
   pending_async_count_++;
-  installer->Start();
+  webstore_installer_->Start();
 }
 
 void WebIntentPickerController::OnExtensionLinkClicked(
@@ -523,6 +524,8 @@ void WebIntentPickerController::OnExtensionDownloadProgress(
 
 void WebIntentPickerController::OnExtensionInstallSuccess(
     const std::string& extension_id) {
+  webstore_installer_ = NULL;  // Release reference.
+
   // OnExtensionInstallSuccess is called via NotificationService::Notify before
   // the extension is added to the ExtensionService. Dispatch via PostTask to
   // allow ExtensionService to update.
@@ -567,6 +570,8 @@ void WebIntentPickerController::OnExtensionInstallFailure(
     const std::string& id,
     const std::string& error,
     WebstoreInstaller::FailureReason reason) {
+  webstore_installer_ = NULL;  // Release reference.
+
   // If the user cancelled the install then don't show an error message.
   if (reason == WebstoreInstaller::FAILURE_REASON_CANCELLED)
     picker_model_->ClearPendingExtensionInstall();

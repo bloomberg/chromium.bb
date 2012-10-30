@@ -362,6 +362,9 @@ class WebIntentPickerController
   // The ID of a pending extension download.
   content::DownloadId download_id_;
 
+  // Manager for a pending extension download and installation.
+  scoped_refptr<extensions::WebstoreInstaller> webstore_installer_;
+
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerController);
 };
 

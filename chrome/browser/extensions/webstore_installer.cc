@@ -267,6 +267,10 @@ void WebstoreInstaller::Observe(int type,
   }
 }
 
+void WebstoreInstaller::InvalidateDelegate() {
+  delegate_ = NULL;
+}
+
 void WebstoreInstaller::SetDownloadDirectoryForTests(FilePath* directory) {
   g_download_directory_for_tests = directory;
 }

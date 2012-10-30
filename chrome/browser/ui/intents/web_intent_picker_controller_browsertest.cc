@@ -334,6 +334,10 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     controller_->OnExtensionInstallRequested(extension_id);
   }
 
+  extensions::WebstoreInstaller* GetWebstoreInstaller() const {
+    return controller_->webstore_installer_.get();
+  }
+
   void CreateFakeIcon() {
     gfx::Image image(gfx::test::CreateImage());
     std::vector<unsigned char> image_data;
@@ -565,6 +569,33 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   // inline disposition, it will create no tabs and invoke OnInlineDisposition.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1, picker_.num_inline_disposition_);
+}
+
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
+                       WebstoreInstallerLifetime) {
+  const char extension_id[] = "nnhendkbgefomfgdlnmfhhmihihlljpi";
+  AddCWSExtensionServiceWithResult(extension_id, kAction1, kType2);
+
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType2;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
+  controller_->ShowDialog(kAction1, kType2);
+  picker_.Wait();
+
+  // We haven't yet created a WebstoreInstaller.
+  EXPECT_FALSE(GetWebstoreInstaller());
+
+  // While extension install is pending, we have a WebstoreInstaller.
+  OnExtensionInstallRequested(extension_id);
+  EXPECT_TRUE(GetWebstoreInstaller());
+
+  // After extension install the WebstoreInstaller is cleaned up.
+  picker_.Wait();
+  EXPECT_EQ(1, picker_.num_extensions_installed_);
+  EXPECT_FALSE(GetWebstoreInstaller());
 }
 
 // Test that an explicit intent does not trigger loading intents from the

@@ -136,6 +136,10 @@ class WebstoreInstaller :public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Removes the reference to the delegate passed in the constructor. Used when
+  // the delegate object must be deleted before this object.
+  void InvalidateDelegate();
+
   // Instead of using the default download directory, use |directory| instead.
   // This does *not* transfer ownership of |directory|.
   static void SetDownloadDirectoryForTests(FilePath* directory);
