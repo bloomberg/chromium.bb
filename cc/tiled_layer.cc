@@ -371,7 +371,7 @@ void TiledLayer::markOcclusionsAndRequestTextures(int left, int top, int right, 
                 continue;
             DCHECK(!tile->occluded); // Did resetUpdateState get skipped? Are we doing more than one occlusion pass?
             IntRect visibleTileRect = intersection(m_tiler->tileBounds(i, j), visibleContentRect());
-            if (occlusion && occlusion->occluded(this, visibleTileRect)) {
+            if (occlusion && occlusion->occluded(renderTarget(), visibleTileRect, drawTransform(), drawTransformIsAnimating(), drawableContentRect())) {
                 tile->occluded = true;
                 occludedTileCount++;
             } else {

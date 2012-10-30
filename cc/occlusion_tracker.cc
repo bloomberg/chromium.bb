@@ -315,7 +315,7 @@ static inline bool testContentRectOccluded(const IntRect& contentRect, const Web
 }
 
 template<typename LayerType, typename RenderSurfaceType>
-bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::occluded(const LayerType* layer, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const
+bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::occluded(const LayerType* renderTarget, const IntRect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const IntRect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const
 {
     if (hasOcclusionFromOutsideTargetSurface)
         *hasOcclusionFromOutsideTargetSurface = false;
@@ -326,12 +326,14 @@ bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::occluded(const LayerTyp
     if (contentRect.isEmpty())
         return true;
 
-    DCHECK(layer->renderTarget() == m_stack.last().target);
+    DCHECK(renderTarget == m_stack.last().target);
 
-    if (layerTransformsToTargetKnown(layer) && testContentRectOccluded(contentRect, layer->drawTransform(), layerClipRectInTarget(layer), m_stack.last().occlusionInTarget))
+    if (!implDrawTransformIsUnknown && testContentRectOccluded(contentRect, drawTransform, clippedRectInTarget, m_stack.last().occlusionInTarget))
         return true;
 
-    if (layerTransformsToScreenKnown(layer) && testContentRectOccluded(contentRect, layer->screenSpaceTransform(), m_rootTargetRect, m_stack.last().occlusionInScreen)) {
+    // renderTarget can be NULL in some tests.
+    bool transformToScreenKnown = renderTarget && !implDrawTransformIsUnknown && layerTransformsToScreenKnown(renderTarget);
+    if (transformToScreenKnown && testContentRectOccluded(contentRect, renderTarget->renderSurface()->screenSpaceTransform() * drawTransform, m_rootTargetRect, m_stack.last().occlusionInScreen)) {
         if (hasOcclusionFromOutsideTargetSurface)
             *hasOcclusionFromOutsideTargetSurface = true;
         return true;
@@ -363,7 +365,7 @@ static inline IntRect computeUnoccludedContentRect(const IntRect& contentRect, c
 }
 
 template<typename LayerType, typename RenderSurfaceType>
-IntRect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContentRect(const LayerType* layer, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const
+IntRect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContentRect(const LayerType* renderTarget, const IntRect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const IntRect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const
 {
     DCHECK(!m_stack.isEmpty());
     if (m_stack.isEmpty())
@@ -371,18 +373,20 @@ IntRect OcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContentRec
     if (contentRect.isEmpty())
         return contentRect;
 
-    DCHECK(layer->renderTarget() == m_stack.last().target);
+    DCHECK(renderTarget->renderTarget() == renderTarget);
+    DCHECK(renderTarget->renderSurface());
+    DCHECK(renderTarget == m_stack.last().target);
 
     // We want to return a rect that contains all the visible parts of |contentRect| in both screen space and in the target surface.
     // So we find the visible parts of |contentRect| in each space, and take the intersection.
 
     IntRect unoccludedInScreen = contentRect;
-    if (layerTransformsToScreenKnown(layer))
-        unoccludedInScreen = computeUnoccludedContentRect(contentRect, layer->screenSpaceTransform(), m_rootTargetRect, m_stack.last().occlusionInScreen);
+    if (layerTransformsToScreenKnown(renderTarget) && !implDrawTransformIsUnknown)
+        unoccludedInScreen = computeUnoccludedContentRect(contentRect, renderTarget->renderSurface()->screenSpaceTransform() * drawTransform, m_rootTargetRect, m_stack.last().occlusionInScreen);
 
     IntRect unoccludedInTarget = contentRect;
-    if (layerTransformsToTargetKnown(layer))
-        unoccludedInTarget = computeUnoccludedContentRect(contentRect, layer->drawTransform(), layerClipRectInTarget(layer), m_stack.last().occlusionInTarget);
+    if (!implDrawTransformIsUnknown)
+        unoccludedInTarget = computeUnoccludedContentRect(contentRect, drawTransform, clippedRectInTarget, m_stack.last().occlusionInTarget);
 
     if (hasOcclusionFromOutsideTargetSurface)
         *hasOcclusionFromOutsideTargetSurface = (intersection(unoccludedInScreen, unoccludedInTarget) != unoccludedInTarget);
@@ -461,8 +465,8 @@ template void OcclusionTrackerBase<Layer, RenderSurface>::enterRenderTarget(cons
 template void OcclusionTrackerBase<Layer, RenderSurface>::finishedRenderTarget(const Layer* finishedTarget);
 template void OcclusionTrackerBase<Layer, RenderSurface>::leaveToRenderTarget(const Layer* newTarget);
 template void OcclusionTrackerBase<Layer, RenderSurface>::markOccludedBehindLayer(const Layer*);
-template bool OcclusionTrackerBase<Layer, RenderSurface>::occluded(const Layer*, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const;
-template IntRect OcclusionTrackerBase<Layer, RenderSurface>::unoccludedContentRect(const Layer*, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const;
+template bool OcclusionTrackerBase<Layer, RenderSurface>::occluded(const Layer*, const IntRect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const IntRect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const;
+template IntRect OcclusionTrackerBase<Layer, RenderSurface>::unoccludedContentRect(const Layer*, const IntRect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const IntRect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const;
 template IntRect OcclusionTrackerBase<Layer, RenderSurface>::unoccludedContributingSurfaceContentRect(const Layer*, bool forReplica, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const;
 template IntRect OcclusionTrackerBase<Layer, RenderSurface>::layerClipRectInTarget(const Layer*) const;
 
@@ -473,8 +477,8 @@ template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::enterRenderTar
 template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::finishedRenderTarget(const LayerImpl* finishedTarget);
 template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::leaveToRenderTarget(const LayerImpl* newTarget);
 template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::markOccludedBehindLayer(const LayerImpl*);
-template bool OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::occluded(const LayerImpl*, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const;
-template IntRect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::unoccludedContentRect(const LayerImpl*, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const;
+template bool OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::occluded(const LayerImpl*, const IntRect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const IntRect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const;
+template IntRect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::unoccludedContentRect(const LayerImpl*, const IntRect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const IntRect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const;
 template IntRect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::unoccludedContributingSurfaceContentRect(const LayerImpl*, bool forReplica, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const;
 template IntRect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::layerClipRectInTarget(const LayerImpl*) const;
 

@@ -77,11 +77,12 @@ bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQu
 
     IntRect culledRect;
     bool hasOcclusionFromOutsideTargetSurface;
+    bool implDrawTransformIsUnknown = false;
 
     if (m_forSurface)
         culledRect = m_occlusionTracker->unoccludedContributingSurfaceContentRect(m_layer, false, cc::IntRect(drawQuad->quadRect()), &hasOcclusionFromOutsideTargetSurface);
     else
-        culledRect = m_occlusionTracker->unoccludedContentRect(m_layer, cc::IntRect(drawQuad->quadRect()), &hasOcclusionFromOutsideTargetSurface);
+        culledRect = m_occlusionTracker->unoccludedContentRect(m_layer->renderTarget(), cc::IntRect(drawQuad->quadRect()), drawQuad->quadTransform(), implDrawTransformIsUnknown, cc::IntRect(drawQuad->clippedRectInTarget()), &hasOcclusionFromOutsideTargetSurface);
 
     appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
 

@@ -85,6 +85,9 @@ private:
     IntRect m_opaqueContentsRect;
 };
 
+static inline bool layerImplDrawTransformIsUnknown(const Layer* layer) { return layer->drawTransformIsAnimating(); }
+static inline bool layerImplDrawTransformIsUnknown(const LayerImpl*) { return false; }
+
 template<typename LayerType, typename RenderSurfaceType>
 class TestOcclusionTrackerWithClip : public TestOcclusionTrackerBase<LayerType, RenderSurfaceType> {
 public:
@@ -96,6 +99,17 @@ public:
 
     void setLayerClipRect(const IntRect& rect) { m_overrideLayerClipRect = true; m_layerClipRect = rect;}
     void useDefaultLayerClipRect() { m_overrideLayerClipRect = false; }
+    // Returns true if the given rect in content space for the layer is fully occluded in either screen space or the layer's target surface.
+    bool occludedLayer(const LayerType* layer, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface = 0) const
+    {
+        return this->occluded(layer->renderTarget(), contentRect, layer->drawTransform(), layerImplDrawTransformIsUnknown(layer), layerClipRectInTarget(layer), hasOcclusionFromOutsideTargetSurface);
+    }
+    // Gives an unoccluded sub-rect of |contentRect| in the content space of the layer. Simple wrapper around unoccludedContentRect.
+    IntRect unoccludedLayerContentRect(const LayerType* layer, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface = 0) const
+    {
+        return this->unoccludedContentRect(layer->renderTarget(), contentRect, layer->drawTransform(), layerImplDrawTransformIsUnknown(layer), layerClipRectInTarget(layer), hasOcclusionFromOutsideTargetSurface);
+    }
+
 
 protected:
     virtual IntRect layerClipRectInTarget(const LayerType* layer) const { return m_overrideLayerClipRect ? m_layerClipRect : OcclusionTrackerBase<LayerType, RenderSurfaceType>::layerClipRectInTarget(layer); }
@@ -462,33 +476,75 @@ protected:
         EXPECT_RECT_EQ(IntRect(30, 30, 70, 70), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 29, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(31, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 31, 70, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 29, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(31, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 31, 70, 70)));
 
         occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 29, 70, 70)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(31, 30, 70, 70)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 31, 70, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 29, 70, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(31, 30, 70, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 31, 70, 70)));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(30, 30, 70, 70)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(29, 30, 1, 70), occlusion.unoccludedContentRect(parent, IntRect(29, 30, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(29, 29, 70, 70), occlusion.unoccludedContentRect(parent, IntRect(29, 29, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(30, 29, 70, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 29, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(31, 29, 70, 70), occlusion.unoccludedContentRect(parent, IntRect(31, 29, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(100, 30, 1, 70), occlusion.unoccludedContentRect(parent, IntRect(31, 30, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(31, 31, 70, 70), occlusion.unoccludedContentRect(parent, IntRect(31, 31, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(30, 100, 70, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 31, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(29, 31, 70, 70), occlusion.unoccludedContentRect(parent, IntRect(29, 31, 70, 70)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(30, 30, 70, 70)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(29, 30, 1, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 30, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(29, 29, 70, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 29, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(30, 29, 70, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 29, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(31, 29, 70, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 29, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(100, 30, 1, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 30, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(31, 31, 70, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 31, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(30, 100, 70, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 31, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(29, 31, 70, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 31, 70, 70)));
     }
 };
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestIdentityTransforms);
+
+template<class Types>
+class OcclusionTrackerTestQuadsMismatchLayer : public OcclusionTrackerTest<Types> {
+protected:
+    OcclusionTrackerTestQuadsMismatchLayer(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    void runMyTest()
+    {
+        WebTransformationMatrix layerTransform;
+        layerTransform.translate(10, 10);
+
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
+        typename Types::ContentLayerType* layer1 = this->createDrawingLayer(parent, layerTransform, FloatPoint(0, 0), IntSize(90, 90), true);
+        typename Types::ContentLayerType* layer2 = this->createDrawingLayer(layer1, layerTransform, FloatPoint(0, 0), IntSize(50, 50), true);
+        this->calcDrawEtc(parent);
+
+        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+
+        this->visitLayer(layer2, occlusion);
+        this->enterLayer(layer1, occlusion);
+
+        EXPECT_RECT_EQ(IntRect(20, 20, 50, 50), occlusion.occlusionInScreenSpace().bounds());
+        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_RECT_EQ(IntRect(20, 20, 50, 50), occlusion.occlusionInTargetSurface().bounds());
+        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+
+        // This checks cases where the quads don't match their "containing"
+        // layers, e.g. in terms of transforms or clip rect. This is typical for
+        // DelegatedRendererLayer.
+
+        WebTransformationMatrix quadTransform;
+        quadTransform.translate(30, 30);
+        IntRect clipRectInTarget(0, 0, 100, 100);
+
+        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 0, 10, 10), quadTransform, false, clipRectInTarget).isEmpty());
+        EXPECT_RECT_EQ(IntRect(0, 0, 10, 10), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 10, 10), quadTransform, true, clipRectInTarget));
+        EXPECT_RECT_EQ(IntRect(40, 40, 10, 10), occlusion.unoccludedContentRect(parent, IntRect(40, 40, 10, 10), quadTransform, false, clipRectInTarget));
+        EXPECT_RECT_EQ(IntRect(40, 30, 5, 10), occlusion.unoccludedContentRect(parent, IntRect(35, 30, 10, 10), quadTransform, false, clipRectInTarget));
+        EXPECT_RECT_EQ(IntRect(40, 40, 5, 5), occlusion.unoccludedContentRect(parent, IntRect(40, 40, 10, 10), quadTransform, false, IntRect(0, 0, 75, 75)));
+    }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestQuadsMismatchLayer);
 
 template<class Types>
 class OcclusionTrackerTestRotatedChild : public OcclusionTrackerTest<Types> {
@@ -516,29 +572,29 @@ protected:
         EXPECT_RECT_EQ(IntRect(30, 30, 70, 70), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 29, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(31, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 31, 70, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 29, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(31, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 31, 70, 70)));
 
         occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 30, 70, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 29, 70, 70)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(31, 30, 70, 70)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 31, 70, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 29, 70, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(31, 30, 70, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 31, 70, 70)));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(30, 30, 70, 70)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(29, 30, 1, 70), occlusion.unoccludedContentRect(parent, IntRect(29, 30, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(29, 29, 70, 70), occlusion.unoccludedContentRect(parent, IntRect(29, 29, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(30, 29, 70, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 29, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(31, 29, 70, 70), occlusion.unoccludedContentRect(parent, IntRect(31, 29, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(100, 30, 1, 70), occlusion.unoccludedContentRect(parent, IntRect(31, 30, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(31, 31, 70, 70), occlusion.unoccludedContentRect(parent, IntRect(31, 31, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(30, 100, 70, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 31, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(29, 31, 70, 70), occlusion.unoccludedContentRect(parent, IntRect(29, 31, 70, 70)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(30, 30, 70, 70)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(29, 30, 1, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 30, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(29, 29, 70, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 29, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(30, 29, 70, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 29, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(31, 29, 70, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 29, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(100, 30, 1, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 30, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(31, 31, 70, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 31, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(30, 100, 70, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 31, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(29, 31, 70, 70), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 31, 70, 70)));
     }
 };
 
@@ -568,40 +624,40 @@ protected:
         EXPECT_RECT_EQ(IntRect(50, 50, 50, 50), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(50, 50, 50, 50)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(49, 50, 50, 50)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(50, 49, 50, 50)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(51, 50, 50, 50)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(50, 51, 50, 50)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(50, 50, 50, 50)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(49, 50, 50, 50)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(50, 49, 50, 50)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(51, 50, 50, 50)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(50, 51, 50, 50)));
 
         occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(50, 50, 50, 50)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(49, 50, 50, 50)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(50, 49, 50, 50)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(51, 50, 50, 50)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(50, 51, 50, 50)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(50, 50, 50, 50)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(49, 50, 50, 50)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(50, 49, 50, 50)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(51, 50, 50, 50)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(50, 51, 50, 50)));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(50, 50, 50, 50)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(49, 50, 1, 50), occlusion.unoccludedContentRect(parent, IntRect(49, 50, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(49, 49, 50, 50), occlusion.unoccludedContentRect(parent, IntRect(49, 49, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(50, 49, 50, 1), occlusion.unoccludedContentRect(parent, IntRect(50, 49, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(51, 49, 50, 50), occlusion.unoccludedContentRect(parent, IntRect(51, 49, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(100, 50, 1, 50), occlusion.unoccludedContentRect(parent, IntRect(51, 50, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(51, 51, 50, 50), occlusion.unoccludedContentRect(parent, IntRect(51, 51, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(50, 100, 50, 1), occlusion.unoccludedContentRect(parent, IntRect(50, 51, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(49, 51, 50, 50), occlusion.unoccludedContentRect(parent, IntRect(49, 51, 50, 50)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(50, 50, 50, 50)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(49, 50, 1, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(49, 50, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(49, 49, 50, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(49, 49, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(50, 49, 50, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(50, 49, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(51, 49, 50, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(51, 49, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(100, 50, 1, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(51, 50, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(51, 51, 50, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(51, 51, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(50, 100, 50, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(50, 51, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(49, 51, 50, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(49, 51, 50, 50)));
 
         occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(50, 50, 50, 50)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(49, 50, 1, 50), occlusion.unoccludedContentRect(parent, IntRect(49, 50, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(49, 49, 50, 50), occlusion.unoccludedContentRect(parent, IntRect(49, 49, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(50, 49, 50, 1), occlusion.unoccludedContentRect(parent, IntRect(50, 49, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(51, 49, 49, 1), occlusion.unoccludedContentRect(parent, IntRect(51, 49, 50, 50)));
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(51, 50, 50, 50)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(51, 51, 50, 50)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(50, 51, 50, 50)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(49, 51, 1, 49), occlusion.unoccludedContentRect(parent, IntRect(49, 51, 50, 50)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(50, 50, 50, 50)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(49, 50, 1, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(49, 50, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(49, 49, 50, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(49, 49, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(50, 49, 50, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(50, 49, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(51, 49, 49, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(51, 49, 50, 50)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(51, 50, 50, 50)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(51, 51, 50, 50)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(50, 51, 50, 50)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(49, 51, 1, 49), occlusion.unoccludedLayerContentRect(parent, IntRect(49, 51, 50, 50)));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
     }
 };
@@ -645,18 +701,18 @@ protected:
         EXPECT_RECT_EQ(IntRect(30, 40, 70, 60), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 39, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(31, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 41, 70, 60)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 39, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(31, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 41, 70, 60)));
 
         occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 39, 70, 60)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(31, 40, 70, 60)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 41, 70, 60)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 39, 70, 60)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(31, 40, 70, 60)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 41, 70, 60)));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
 
@@ -688,6 +744,45 @@ protected:
 };
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestChildInRotatedChild);
+
+template<class Types>
+class OcclusionTrackerTestScaledRenderSurface : public OcclusionTrackerTest<Types> {
+protected:
+    OcclusionTrackerTestScaledRenderSurface(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+
+    void runMyTest()
+    {
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200));
+
+        WebTransformationMatrix layer1Matrix;
+        layer1Matrix.scale(2);
+        typename Types::ContentLayerType* layer1 = this->createDrawingLayer(parent, layer1Matrix, FloatPoint(0, 0), IntSize(100, 100), true);
+        layer1->setForceRenderSurface(true);
+
+        WebTransformationMatrix layer2Matrix;
+        layer2Matrix.translate(25, 25);
+        typename Types::ContentLayerType* layer2 = this->createDrawingLayer(layer1, layer2Matrix, FloatPoint(0, 0), IntSize(50, 50), true);
+        typename Types::ContentLayerType* occluder = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 100), IntSize(500, 500), true);
+        this->calcDrawEtc(parent);
+
+        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+
+        this->visitLayer(occluder, occlusion);
+        this->enterLayer(layer2, occlusion);
+
+        EXPECT_RECT_EQ(IntRect(100, 100, 100, 100), occlusion.occlusionInScreenSpace().bounds());
+        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_TRUE(occlusion.occlusionInTargetSurface().isEmpty());
+        EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
+
+        EXPECT_RECT_EQ(IntRect(0, 0, 25, 25), occlusion.unoccludedLayerContentRect(layer2, IntRect(0, 0, 25, 25)));
+        EXPECT_RECT_EQ(IntRect(10, 25, 15, 25), occlusion.unoccludedLayerContentRect(layer2, IntRect(10, 25, 25, 25)));
+        EXPECT_RECT_EQ(IntRect(25, 10, 25, 15), occlusion.unoccludedLayerContentRect(layer2, IntRect(25, 10, 25, 25)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(layer2, IntRect(25, 25, 25, 25)).isEmpty());
+    }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestScaledRenderSurface);
 
 template<class Types>
 class OcclusionTrackerTestVisitTargetTwoTimes : public OcclusionTrackerTest<Types> {
@@ -743,35 +838,35 @@ protected:
         EXPECT_RECT_EQ(IntRect(30, 30, 70, 70), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 30, 70, 70)));
-        EXPECT_RECT_EQ(IntRect(90, 30, 10, 10), occlusion.unoccludedContentRect(parent, IntRect(30, 30, 70, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 30, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(90, 30, 10, 10), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 30, 70, 70)));
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 30, 60, 10)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 30, 60, 10)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 29, 60, 10)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(31, 30, 60, 10)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 31, 60, 10)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 30, 60, 10)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 30, 60, 10)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 29, 60, 10)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(31, 30, 60, 10)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 31, 60, 10)));
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 39, 70, 60)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 39, 70, 60)));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(30, 30, 60, 10)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(29, 30, 1, 10), occlusion.unoccludedContentRect(parent, IntRect(29, 30, 60, 10)));
-        EXPECT_RECT_EQ(IntRect(30, 29, 60, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 29, 60, 10)));
-        EXPECT_RECT_EQ(IntRect(90, 30, 1, 10), occlusion.unoccludedContentRect(parent, IntRect(31, 30, 60, 10)));
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(30, 31, 60, 10)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(30, 30, 60, 10)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(29, 30, 1, 10), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 30, 60, 10)));
+        EXPECT_RECT_EQ(IntRect(30, 29, 60, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 29, 60, 10)));
+        EXPECT_RECT_EQ(IntRect(90, 30, 1, 10), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 30, 60, 10)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(30, 31, 60, 10)).isEmpty());
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(30, 40, 70, 60)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(29, 40, 1, 60), occlusion.unoccludedContentRect(parent, IntRect(29, 40, 70, 60)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(30, 40, 70, 60)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(29, 40, 1, 60), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 40, 70, 60)));
         // This rect is mostly occluded by |child2|.
-        EXPECT_RECT_EQ(IntRect(90, 39, 10, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 39, 70, 60)));
+        EXPECT_RECT_EQ(IntRect(90, 39, 10, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 39, 70, 60)));
         // This rect extends past top/right ends of |child2|.
-        EXPECT_RECT_EQ(IntRect(30, 29, 70, 11), occlusion.unoccludedContentRect(parent, IntRect(30, 29, 70, 70)));
+        EXPECT_RECT_EQ(IntRect(30, 29, 70, 11), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 29, 70, 70)));
         // This rect extends past left/right ends of |child2|.
-        EXPECT_RECT_EQ(IntRect(20, 39, 80, 60), occlusion.unoccludedContentRect(parent, IntRect(20, 39, 80, 60)));
-        EXPECT_RECT_EQ(IntRect(100, 40, 1, 60), occlusion.unoccludedContentRect(parent, IntRect(31, 40, 70, 60)));
-        EXPECT_RECT_EQ(IntRect(30, 100, 70, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 41, 70, 60)));
+        EXPECT_RECT_EQ(IntRect(20, 39, 80, 60), occlusion.unoccludedLayerContentRect(parent, IntRect(20, 39, 80, 60)));
+        EXPECT_RECT_EQ(IntRect(100, 40, 1, 60), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 40, 70, 60)));
+        EXPECT_RECT_EQ(IntRect(30, 100, 70, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 41, 70, 60)));
 
         /* Justification for the above occlusion from |layer|:
                    100
@@ -835,23 +930,23 @@ protected:
         EXPECT_RECT_EQ(clippedLayerInChild, occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(child, clippedLayerInChild));
-        EXPECT_TRUE(occlusion.unoccludedContentRect(child, clippedLayerInChild).isEmpty());
+        EXPECT_TRUE(occlusion.occludedLayer(child, clippedLayerInChild));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).isEmpty());
         clippedLayerInChild.move(-1, 0);
-        EXPECT_FALSE(occlusion.occluded(child, clippedLayerInChild));
-        EXPECT_FALSE(occlusion.unoccludedContentRect(child, clippedLayerInChild).isEmpty());
+        EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
+        EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).isEmpty());
         clippedLayerInChild.move(1, 0);
         clippedLayerInChild.move(1, 0);
-        EXPECT_FALSE(occlusion.occluded(child, clippedLayerInChild));
-        EXPECT_FALSE(occlusion.unoccludedContentRect(child, clippedLayerInChild).isEmpty());
+        EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
+        EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).isEmpty());
         clippedLayerInChild.move(-1, 0);
         clippedLayerInChild.move(0, -1);
-        EXPECT_FALSE(occlusion.occluded(child, clippedLayerInChild));
-        EXPECT_FALSE(occlusion.unoccludedContentRect(child, clippedLayerInChild).isEmpty());
+        EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
+        EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).isEmpty());
         clippedLayerInChild.move(0, 1);
         clippedLayerInChild.move(0, 1);
-        EXPECT_FALSE(occlusion.occluded(child, clippedLayerInChild));
-        EXPECT_FALSE(occlusion.unoccludedContentRect(child, clippedLayerInChild).isEmpty());
+        EXPECT_FALSE(occlusion.occludedLayer(child, clippedLayerInChild));
+        EXPECT_FALSE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).isEmpty());
         clippedLayerInChild.move(0, -1);
 
         this->leaveContributingSurface(child, occlusion);
@@ -862,8 +957,8 @@ protected:
         EXPECT_RECT_EQ(IntRect(), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(75, 55, 1, 1)));
-        EXPECT_RECT_EQ(IntRect(75, 55, 1, 1), occlusion.unoccludedContentRect(parent, IntRect(75, 55, 1, 1)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(75, 55, 1, 1)));
+        EXPECT_RECT_EQ(IntRect(75, 55, 1, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(75, 55, 1, 1)));
     }
 };
 
@@ -900,17 +995,17 @@ protected:
         EXPECT_RECT_EQ(IntRect(10, 430, 60, 70), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(child, IntRect(10, 430, 60, 70)));
-        EXPECT_FALSE(occlusion.occluded(child, IntRect(9, 430, 60, 70)));
-        EXPECT_FALSE(occlusion.occluded(child, IntRect(10, 429, 60, 70)));
-        EXPECT_FALSE(occlusion.occluded(child, IntRect(11, 430, 60, 70)));
-        EXPECT_FALSE(occlusion.occluded(child, IntRect(10, 431, 60, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(child, IntRect(10, 430, 60, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(child, IntRect(9, 430, 60, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(child, IntRect(10, 429, 60, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(child, IntRect(11, 430, 60, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(child, IntRect(10, 431, 60, 70)));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(child, IntRect(10, 430, 60, 70)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(9, 430, 1, 70), occlusion.unoccludedContentRect(child, IntRect(9, 430, 60, 70)));
-        EXPECT_RECT_EQ(IntRect(10, 429, 60, 1), occlusion.unoccludedContentRect(child, IntRect(10, 429, 60, 70)));
-        EXPECT_RECT_EQ(IntRect(70, 430, 1, 70), occlusion.unoccludedContentRect(child, IntRect(11, 430, 60, 70)));
-        EXPECT_RECT_EQ(IntRect(10, 500, 60, 1), occlusion.unoccludedContentRect(child, IntRect(10, 431, 60, 70)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(child, IntRect(10, 430, 60, 70)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(9, 430, 1, 70), occlusion.unoccludedLayerContentRect(child, IntRect(9, 430, 60, 70)));
+        EXPECT_RECT_EQ(IntRect(10, 429, 60, 1), occlusion.unoccludedLayerContentRect(child, IntRect(10, 429, 60, 70)));
+        EXPECT_RECT_EQ(IntRect(70, 430, 1, 70), occlusion.unoccludedLayerContentRect(child, IntRect(11, 430, 60, 70)));
+        EXPECT_RECT_EQ(IntRect(10, 500, 60, 1), occlusion.unoccludedLayerContentRect(child, IntRect(10, 431, 60, 70)));
 
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
@@ -920,15 +1015,15 @@ protected:
         EXPECT_RECT_EQ(IntRect(30, 40, 70, 60), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 40, 70, 60)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 39, 70, 60)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 40, 70, 60)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 39, 70, 60)));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(30, 40, 70, 60)).isEmpty());
-        EXPECT_RECT_EQ(IntRect(29, 40, 1, 60), occlusion.unoccludedContentRect(parent, IntRect(29, 40, 70, 60)));
-        EXPECT_RECT_EQ(IntRect(30, 39, 70, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 39, 70, 60)));
-        EXPECT_RECT_EQ(IntRect(100, 40, 1, 60), occlusion.unoccludedContentRect(parent, IntRect(31, 40, 70, 60)));
-        EXPECT_RECT_EQ(IntRect(30, 100, 70, 1), occlusion.unoccludedContentRect(parent, IntRect(30, 41, 70, 60)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(30, 40, 70, 60)).isEmpty());
+        EXPECT_RECT_EQ(IntRect(29, 40, 1, 60), occlusion.unoccludedLayerContentRect(parent, IntRect(29, 40, 70, 60)));
+        EXPECT_RECT_EQ(IntRect(30, 39, 70, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 39, 70, 60)));
+        EXPECT_RECT_EQ(IntRect(100, 40, 1, 60), occlusion.unoccludedLayerContentRect(parent, IntRect(31, 40, 70, 60)));
+        EXPECT_RECT_EQ(IntRect(30, 100, 70, 1), occlusion.unoccludedLayerContentRect(parent, IntRect(30, 41, 70, 60)));
 
         /* Justification for the above occlusion from |layer1| and |layer2|:
 
@@ -989,18 +1084,18 @@ protected:
         EXPECT_RECT_EQ(IntRect(-10, 420, 70, 80), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(child2, IntRect(-10, 420, 70, 80)));
-        EXPECT_FALSE(occlusion.occluded(child2, IntRect(-11, 420, 70, 80)));
-        EXPECT_FALSE(occlusion.occluded(child2, IntRect(-10, 419, 70, 80)));
-        EXPECT_FALSE(occlusion.occluded(child2, IntRect(-10, 420, 71, 80)));
-        EXPECT_FALSE(occlusion.occluded(child2, IntRect(-10, 420, 70, 81)));
+        EXPECT_TRUE(occlusion.occludedLayer(child2, IntRect(-10, 420, 70, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(child2, IntRect(-11, 420, 70, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(child2, IntRect(-10, 419, 70, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(child2, IntRect(-10, 420, 71, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(child2, IntRect(-10, 420, 70, 81)));
 
         occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occluded(child2, IntRect(-10, 420, 70, 80)));
-        EXPECT_TRUE(occlusion.occluded(child2, IntRect(-11, 420, 70, 80)));
-        EXPECT_TRUE(occlusion.occluded(child2, IntRect(-10, 419, 70, 80)));
-        EXPECT_TRUE(occlusion.occluded(child2, IntRect(-10, 420, 71, 80)));
-        EXPECT_TRUE(occlusion.occluded(child2, IntRect(-10, 420, 70, 81)));
+        EXPECT_TRUE(occlusion.occludedLayer(child2, IntRect(-10, 420, 70, 80)));
+        EXPECT_TRUE(occlusion.occludedLayer(child2, IntRect(-11, 420, 70, 80)));
+        EXPECT_TRUE(occlusion.occludedLayer(child2, IntRect(-10, 419, 70, 80)));
+        EXPECT_TRUE(occlusion.occludedLayer(child2, IntRect(-10, 420, 71, 80)));
+        EXPECT_TRUE(occlusion.occludedLayer(child2, IntRect(-10, 420, 70, 81)));
         occlusion.setLayerClipRect(IntRect(-20, -20, 1000, 1000));
 
         // There is nothing above child2's surface in the z-order.
@@ -1015,11 +1110,11 @@ protected:
         EXPECT_RECT_EQ(IntRect(-10, 430, 80, 70), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(child1, IntRect(-10, 430, 80, 70)));
-        EXPECT_FALSE(occlusion.occluded(child1, IntRect(-11, 430, 80, 70)));
-        EXPECT_FALSE(occlusion.occluded(child1, IntRect(-10, 429, 80, 70)));
-        EXPECT_FALSE(occlusion.occluded(child1, IntRect(-10, 430, 81, 70)));
-        EXPECT_FALSE(occlusion.occluded(child1, IntRect(-10, 430, 80, 71)));
+        EXPECT_TRUE(occlusion.occludedLayer(child1, IntRect(-10, 430, 80, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(child1, IntRect(-11, 430, 80, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(child1, IntRect(-10, 429, 80, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(child1, IntRect(-10, 430, 81, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(child1, IntRect(-10, 430, 80, 71)));
 
         // child2's contents will occlude child1 below it.
         EXPECT_RECT_EQ(IntRect(-10, 430, 10, 70), occlusion.unoccludedContributingSurfaceContentRect(child1, false, IntRect(-10, 430, 80, 70)));
@@ -1032,15 +1127,15 @@ protected:
         EXPECT_RECT_EQ(IntRect(20, 20, 80, 80), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(20, 20, 80, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(20, 20, 80, 80)));
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(30, 20, 70, 80)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(29, 20, 70, 80)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(30, 19, 70, 80)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(30, 20, 70, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(29, 20, 70, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(30, 19, 70, 80)));
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(20, 30, 80, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(19, 30, 80, 70)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(20, 29, 80, 70)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(20, 30, 80, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(19, 30, 80, 70)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(20, 29, 80, 70)));
 
         /* Justification for the above occlusion:
                    100
@@ -1105,11 +1200,11 @@ protected:
         EXPECT_RECT_EQ(IntRect(-10, 420, 70, 80), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(child2, IntRect(-10, 420, 70, 80)));
-        EXPECT_FALSE(occlusion.occluded(child2, IntRect(-11, 420, 70, 80)));
-        EXPECT_FALSE(occlusion.occluded(child2, IntRect(-10, 419, 70, 80)));
-        EXPECT_FALSE(occlusion.occluded(child2, IntRect(-10, 420, 71, 80)));
-        EXPECT_FALSE(occlusion.occluded(child2, IntRect(-10, 420, 70, 81)));
+        EXPECT_TRUE(occlusion.occludedLayer(child2, IntRect(-10, 420, 70, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(child2, IntRect(-11, 420, 70, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(child2, IntRect(-10, 419, 70, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(child2, IntRect(-10, 420, 71, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(child2, IntRect(-10, 420, 70, 81)));
 
         this->leaveLayer(child2, occlusion);
         this->enterContributingSurface(child2, occlusion);
@@ -1126,11 +1221,11 @@ protected:
         EXPECT_RECT_EQ(IntRect(420, -20, 80, 90), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(child1, IntRect(420, -20, 80, 90)));
-        EXPECT_FALSE(occlusion.occluded(child1, IntRect(419, -20, 80, 90)));
-        EXPECT_FALSE(occlusion.occluded(child1, IntRect(420, -21, 80, 90)));
-        EXPECT_FALSE(occlusion.occluded(child1, IntRect(420, -19, 80, 90)));
-        EXPECT_FALSE(occlusion.occluded(child1, IntRect(421, -20, 80, 90)));
+        EXPECT_TRUE(occlusion.occludedLayer(child1, IntRect(420, -20, 80, 90)));
+        EXPECT_FALSE(occlusion.occludedLayer(child1, IntRect(419, -20, 80, 90)));
+        EXPECT_FALSE(occlusion.occludedLayer(child1, IntRect(420, -21, 80, 90)));
+        EXPECT_FALSE(occlusion.occludedLayer(child1, IntRect(420, -19, 80, 90)));
+        EXPECT_FALSE(occlusion.occludedLayer(child1, IntRect(421, -20, 80, 90)));
 
         // child2's contents will occlude child1 below it.
         EXPECT_RECT_EQ(IntRect(420, -20, 80, 90), occlusion.unoccludedContributingSurfaceContentRect(child1, false, IntRect(420, -20, 80, 90)));
@@ -1145,11 +1240,11 @@ protected:
         EXPECT_RECT_EQ(IntRect(10, 20, 90, 80), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(10, 20, 90, 80)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(9, 20, 90, 80)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(10, 19, 90, 80)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(11, 20, 90, 80)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(10, 21, 90, 80)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(10, 20, 90, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(9, 20, 90, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(10, 19, 90, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(11, 20, 90, 80)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(10, 21, 90, 80)));
 
         /* Justification for the above occlusion:
                       100
@@ -1377,31 +1472,31 @@ protected:
 
         this->enterLayer(layer, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(200, 100, 100, 100)));
 
         occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(200, 100, 100, 100)));
         occlusion.setLayerClipRect(IntRect(200, 100, 100, 100));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
 
-        EXPECT_RECT_EQ(IntRect(200, 100, 100, 100), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(200, 100, 100, 100), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
     }
 };
 
@@ -1422,31 +1517,31 @@ protected:
 
         this->enterLayer(layer, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(200, 100, 100, 100)));
 
         occlusion.useDefaultLayerClipRect();
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(200, 100, 100, 100)));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
 
-        EXPECT_RECT_EQ(IntRect(200, 100, 100, 100), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(200, 100, 100, 100), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
     }
 };
 
@@ -1467,26 +1562,26 @@ protected:
 
         this->enterLayer(layer, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)).isEmpty());
     }
 };
 
@@ -1507,26 +1602,26 @@ protected:
 
         this->enterLayer(layer, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)).isEmpty());
     }
 };
 
@@ -1547,30 +1642,30 @@ protected:
 
         this->enterLayer(layer, occlusion);
 
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(0, 200, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(100, 200, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(0, 200, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
 
-        EXPECT_RECT_EQ(IntRect(50, 50, 200, 200), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
-        EXPECT_RECT_EQ(IntRect(200, 50, 50, 50), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 100)));
-        EXPECT_RECT_EQ(IntRect(200, 100, 50, 100), occlusion.unoccludedContentRect(parent, IntRect(0, 100, 300, 100)));
-        EXPECT_RECT_EQ(IntRect(200, 100, 50, 100), occlusion.unoccludedContentRect(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_RECT_EQ(IntRect(100, 200, 100, 50), occlusion.unoccludedContentRect(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(50, 50, 200, 200), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(200, 50, 50, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 100)));
+        EXPECT_RECT_EQ(IntRect(200, 100, 50, 100), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 100, 300, 100)));
+        EXPECT_RECT_EQ(IntRect(200, 100, 50, 100), occlusion.unoccludedLayerContentRect(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(100, 200, 100, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(100, 200, 100, 100)));
     }
 };
 
@@ -1591,30 +1686,30 @@ protected:
 
         this->enterLayer(layer, occlusion);
 
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(0, 200, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(100, 200, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(0, 200, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
 
-        EXPECT_RECT_EQ(IntRect(50, 50, 200, 200), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
-        EXPECT_RECT_EQ(IntRect(200, 50, 50, 50), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 100)));
-        EXPECT_RECT_EQ(IntRect(200, 100, 50, 100), occlusion.unoccludedContentRect(parent, IntRect(0, 100, 300, 100)));
-        EXPECT_RECT_EQ(IntRect(200, 100, 50, 100), occlusion.unoccludedContentRect(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_RECT_EQ(IntRect(100, 200, 100, 50), occlusion.unoccludedContentRect(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(50, 50, 200, 200), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(200, 50, 50, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 100)));
+        EXPECT_RECT_EQ(IntRect(200, 100, 50, 100), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 100, 300, 100)));
+        EXPECT_RECT_EQ(IntRect(200, 100, 50, 100), occlusion.unoccludedLayerContentRect(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(100, 200, 100, 50), occlusion.unoccludedLayerContentRect(parent, IntRect(100, 200, 100, 100)));
     }
 };
 
@@ -1635,30 +1730,30 @@ protected:
 
         this->enterLayer(layer, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 100)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 100, 300, 100)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(200, 100, 100, 100)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(100, 200, 100, 100)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 100)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(0, 100, 300, 100)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(200, 100, 100, 100)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(100, 200, 100, 100)).isEmpty());
     }
 };
 
@@ -1679,30 +1774,30 @@ protected:
 
         this->enterLayer(layer, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
 
         this->leaveLayer(layer, occlusion);
         this->visitContributingSurface(layer, occlusion);
         this->enterLayer(parent, occlusion);
 
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 100, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 0, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(0, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 200, 100, 100)));
-        EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 0, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(0, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 200, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
 
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 100)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(0, 100, 300, 100)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(200, 100, 100, 100)).isEmpty());
-        EXPECT_TRUE(occlusion.unoccludedContentRect(parent, IntRect(100, 200, 100, 100)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 100)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(0, 100, 300, 100)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(200, 100, 100, 100)).isEmpty());
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(parent, IntRect(100, 200, 100, 100)).isEmpty());
     }
 };
 
@@ -1724,10 +1819,10 @@ protected:
         // This layer is translated when drawn into its target. So if the clip rect given from the target surface
         // is not in that target space, then after translating these query rects into the target, they will fall outside
         // the clip and be considered occluded.
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
     }
 };
 
@@ -1746,17 +1841,17 @@ protected:
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         this->enterLayer(layer, occlusion);
 
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 0, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 100, 100, 100)));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(100, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(0, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 0, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(0, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(100, 100, 100, 100)));
 
         // Occluded since its outside the surface bounds.
-        EXPECT_TRUE(occlusion.occluded(layer, IntRect(200, 100, 100, 100)));
+        EXPECT_TRUE(occlusion.occludedLayer(layer, IntRect(200, 100, 100, 100)));
 
         // Test without any clip rect.
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
-        EXPECT_FALSE(occlusion.occluded(layer, IntRect(200, 100, 100, 100)));
+        EXPECT_FALSE(occlusion.occludedLayer(layer, IntRect(200, 100, 100, 100)));
         occlusion.useDefaultLayerClipRect();
 
         this->leaveLayer(layer, occlusion);
@@ -1791,9 +1886,9 @@ protected:
             EXPECT_RECT_EQ(IntRect(100, 100, 100, 100), occlusion.occlusionInScreenSpace().bounds());
             EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
 
-            EXPECT_FALSE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-            EXPECT_TRUE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-            EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+            EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+            EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+            EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
         }
 
         {
@@ -1807,9 +1902,9 @@ protected:
             EXPECT_RECT_EQ(IntRect(120, 120, 180, 180), occlusion.occlusionInScreenSpace().bounds());
             EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
 
-            EXPECT_FALSE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-            EXPECT_FALSE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-            EXPECT_TRUE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+            EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+            EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+            EXPECT_TRUE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
         }
 
         {
@@ -1823,9 +1918,9 @@ protected:
             EXPECT_RECT_EQ(IntRect(250, 250, 50, 50), occlusion.occlusionInScreenSpace().bounds());
             EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
 
-            EXPECT_FALSE(occlusion.occluded(parent, IntRect(0, 100, 100, 100)));
-            EXPECT_FALSE(occlusion.occluded(parent, IntRect(100, 100, 100, 100)));
-            EXPECT_FALSE(occlusion.occluded(parent, IntRect(200, 200, 100, 100)));
+            EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(0, 100, 100, 100)));
+            EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(100, 100, 100, 100)));
+            EXPECT_FALSE(occlusion.occludedLayer(parent, IntRect(200, 200, 100, 100)));
         }
     }
 };
@@ -1850,7 +1945,7 @@ protected:
         this->enterLayer(layer, occlusion);
 
         // The layer is rotated in 3d but without preserving 3d, so it only gets resized.
-        EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), occlusion.unoccludedContentRect(layer, IntRect(0, 0, 200, 200)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), occlusion.unoccludedLayerContentRect(layer, IntRect(0, 0, 200, 200)));
     }
 };
 
@@ -1917,7 +2012,7 @@ protected:
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         this->enterLayer(layer, occlusion);
 
-        EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), occlusion.unoccludedContentRect(layer, IntRect(0, 0, 200, 200)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), occlusion.unoccludedLayerContentRect(layer, IntRect(0, 0, 200, 200)));
     }
 };
 
@@ -1951,7 +2046,7 @@ protected:
 
         // The bottom 11 pixel rows of this layer remain visible inside the container, after translation to the target surface. When translated back,
         // this will include many more pixels but must include at least the bottom 11 rows.
-        EXPECT_TRUE(occlusion.unoccludedContentRect(layer, IntRect(0, 0, 500, 500)).contains(IntRect(0, 489, 500, 11)));
+        EXPECT_TRUE(occlusion.unoccludedLayerContentRect(layer, IntRect(0, 0, 500, 500)).contains(IntRect(0, 489, 500, 11)));
     }
 };
 
@@ -2051,15 +2146,15 @@ protected:
         this->visitLayer(topmost, occlusion);
         this->enterLayer(parent2, occlusion);
         // This occlusion will affect all surfaces.
-        EXPECT_RECT_EQ(IntRect(0, 0, 250, 300), occlusion.unoccludedContentRect(parent2, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 250, 300), occlusion.unoccludedLayerContentRect(parent2, IntRect(0, 0, 300, 300)));
         this->leaveLayer(parent2, occlusion);
 
         this->visitLayer(surfaceChild2, occlusion);
         this->enterLayer(surfaceChild, occlusion);
-        EXPECT_RECT_EQ(IntRect(100, 0, 100, 300), occlusion.unoccludedContentRect(surfaceChild, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(100, 0, 100, 300), occlusion.unoccludedLayerContentRect(surfaceChild, IntRect(0, 0, 300, 300)));
         this->leaveLayer(surfaceChild, occlusion);
         this->enterLayer(surface, occlusion);
-        EXPECT_RECT_EQ(IntRect(200, 0, 50, 300), occlusion.unoccludedContentRect(surface, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(200, 0, 50, 300), occlusion.unoccludedLayerContentRect(surface, IntRect(0, 0, 300, 300)));
         this->leaveLayer(surface, occlusion);
 
         this->enterContributingSurface(surface, occlusion);
@@ -2071,7 +2166,7 @@ protected:
         this->enterLayer(parent, occlusion);
 
         // Occlusion is not added for the animating |layer|.
-        EXPECT_RECT_EQ(IntRect(0, 0, 250, 300), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 250, 300), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
     }
 };
 
@@ -2104,15 +2199,15 @@ protected:
         this->visitLayer(topmost, occlusion);
         this->enterLayer(parent2, occlusion);
         // This occlusion will affect all surfaces.
-        EXPECT_RECT_EQ(IntRect(0, 0, 250, 300), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 250, 300), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
         this->leaveLayer(parent2, occlusion);
 
         this->visitLayer(surfaceChild2, occlusion);
         this->enterLayer(surfaceChild, occlusion);
-        EXPECT_RECT_EQ(IntRect(100, 0, 100, 300), occlusion.unoccludedContentRect(surfaceChild, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(100, 0, 100, 300), occlusion.unoccludedLayerContentRect(surfaceChild, IntRect(0, 0, 300, 300)));
         this->leaveLayer(surfaceChild, occlusion);
         this->enterLayer(surface, occlusion);
-        EXPECT_RECT_EQ(IntRect(200, 0, 50, 300), occlusion.unoccludedContentRect(surface, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(200, 0, 50, 300), occlusion.unoccludedLayerContentRect(surface, IntRect(0, 0, 300, 300)));
         this->leaveLayer(surface, occlusion);
 
         this->enterContributingSurface(surface, occlusion);
@@ -2124,7 +2219,7 @@ protected:
         this->enterLayer(parent, occlusion);
 
         // Occlusion is not added for the animating |layer|.
-        EXPECT_RECT_EQ(IntRect(0, 0, 250, 300), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 250, 300), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
     }
 };
 
@@ -2171,22 +2266,22 @@ protected:
 
         // surfaceChild2 is moving in screen space but not relative to its target, so occlusion should happen in its target space only.
         // It also means that things occluding in screen space (e.g. surface2) cannot occlude this layer.
-        EXPECT_RECT_EQ(IntRect(0, 0, 100, 300), occlusion.unoccludedContentRect(surfaceChild2, IntRect(0, 0, 100, 300)));
-        EXPECT_FALSE(occlusion.occluded(surfaceChild, IntRect(0, 0, 50, 300)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 100, 300), occlusion.unoccludedLayerContentRect(surfaceChild2, IntRect(0, 0, 100, 300)));
+        EXPECT_FALSE(occlusion.occludedLayer(surfaceChild, IntRect(0, 0, 50, 300)));
 
         this->leaveLayer(surfaceChild2, occlusion);
         this->enterLayer(surfaceChild, occlusion);
-        EXPECT_FALSE(occlusion.occluded(surfaceChild, IntRect(0, 0, 100, 300)));
+        EXPECT_FALSE(occlusion.occludedLayer(surfaceChild, IntRect(0, 0, 100, 300)));
         EXPECT_RECT_EQ(IntRect(0, 0, 50, 300), occlusion.occlusionInScreenSpace().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
         EXPECT_RECT_EQ(IntRect(0, 0, 100, 300), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
-        EXPECT_RECT_EQ(IntRect(100, 0, 200, 300), occlusion.unoccludedContentRect(surface, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(100, 0, 200, 300), occlusion.unoccludedLayerContentRect(surface, IntRect(0, 0, 300, 300)));
 
         // The surfaceChild is occluded by the surfaceChild2, but is moving relative its target and the screen, so it
         // can't be occluded.
-        EXPECT_RECT_EQ(IntRect(0, 0, 200, 300), occlusion.unoccludedContentRect(surfaceChild, IntRect(0, 0, 200, 300)));
-        EXPECT_FALSE(occlusion.occluded(surfaceChild, IntRect(0, 0, 50, 300)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 200, 300), occlusion.unoccludedLayerContentRect(surfaceChild, IntRect(0, 0, 200, 300)));
+        EXPECT_FALSE(occlusion.occludedLayer(surfaceChild, IntRect(0, 0, 50, 300)));
 
         this->leaveLayer(surfaceChild, occlusion);
         this->enterLayer(surface, occlusion);
@@ -2195,7 +2290,7 @@ protected:
         EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
         EXPECT_RECT_EQ(IntRect(0, 0, 100, 300), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
-        EXPECT_RECT_EQ(IntRect(100, 0, 200, 300), occlusion.unoccludedContentRect(surface, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(100, 0, 200, 300), occlusion.unoccludedLayerContentRect(surface, IntRect(0, 0, 300, 300)));
 
         this->leaveLayer(surface, occlusion);
         // The surface's owning layer is moving in screen space but not relative to its target, so occlusion should happen in its target space only.
@@ -2203,7 +2298,7 @@ protected:
         EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
         EXPECT_RECT_EQ(IntRect(0, 0, 300, 300), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
-        EXPECT_RECT_EQ(IntRect(0, 0, 0, 0), occlusion.unoccludedContentRect(surface, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 0, 0), occlusion.unoccludedLayerContentRect(surface, IntRect(0, 0, 300, 300)));
 
         this->enterContributingSurface(surface, occlusion);
         // The contributing |surface| is animating so it can't be occluded.
@@ -2212,12 +2307,12 @@ protected:
 
         this->enterLayer(layer, occlusion);
         // The |surface| is moving in the screen and in its target, so all occlusion within the surface is lost when leaving it.
-        EXPECT_RECT_EQ(IntRect(50, 0, 250, 300), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(50, 0, 250, 300), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
         this->leaveLayer(layer, occlusion);
 
         this->enterLayer(parent, occlusion);
         // The |layer| is animating in the screen and in its target, so no occlusion is added.
-        EXPECT_RECT_EQ(IntRect(50, 0, 250, 300), occlusion.unoccludedContentRect(parent, IntRect(0, 0, 300, 300)));
+        EXPECT_RECT_EQ(IntRect(50, 0, 250, 300), occlusion.unoccludedLayerContentRect(parent, IntRect(0, 0, 300, 300)));
     }
 };
 
@@ -2615,15 +2710,15 @@ protected:
 
         // Everything outside the surface/replica is occluded but the surface/replica itself is not.
         this->enterLayer(filteredSurface, occlusion);
-        EXPECT_RECT_EQ(IntRect(1, 0, 99, 100), occlusion.unoccludedContentRect(filteredSurface, IntRect(1, 0, 100, 100)));
-        EXPECT_RECT_EQ(IntRect(0, 1, 100, 99), occlusion.unoccludedContentRect(filteredSurface, IntRect(0, 1, 100, 100)));
-        EXPECT_RECT_EQ(IntRect(0, 0, 99, 100), occlusion.unoccludedContentRect(filteredSurface, IntRect(-1, 0, 100, 100)));
-        EXPECT_RECT_EQ(IntRect(0, 0, 100, 99), occlusion.unoccludedContentRect(filteredSurface, IntRect(0, -1, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(1, 0, 99, 100), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(1, 0, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(0, 1, 100, 99), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(0, 1, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 99, 100), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(-1, 0, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 100, 99), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(0, -1, 100, 100)));
 
-        EXPECT_RECT_EQ(IntRect(300 + 1, 0, 99, 100), occlusion.unoccludedContentRect(filteredSurface, IntRect(300 + 1, 0, 100, 100)));
-        EXPECT_RECT_EQ(IntRect(300 + 0, 1, 100, 99), occlusion.unoccludedContentRect(filteredSurface, IntRect(300 + 0, 1, 100, 100)));
-        EXPECT_RECT_EQ(IntRect(300 + 0, 0, 99, 100), occlusion.unoccludedContentRect(filteredSurface, IntRect(300 - 1, 0, 100, 100)));
-        EXPECT_RECT_EQ(IntRect(300 + 0, 0, 100, 99), occlusion.unoccludedContentRect(filteredSurface, IntRect(300 + 0, -1, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(300 + 1, 0, 99, 100), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(300 + 1, 0, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(300 + 0, 1, 100, 99), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(300 + 0, 1, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(300 + 0, 0, 99, 100), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(300 - 1, 0, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(300 + 0, 0, 100, 99), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(300 + 0, -1, 100, 100)));
         this->leaveLayer(filteredSurface, occlusion);
 
         // The filtered layer/replica does not occlude.
@@ -2648,44 +2743,44 @@ protected:
         // Nothing in the blur outsets for the filteredSurface is occluded.
         outsetRect = IntRect(50 - outsetLeft, 50 - outsetTop, 50 + outsetLeft + outsetRight, 50 + outsetTop + outsetBottom);
         testRect = outsetRect;
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
 
         // Stuff outside the blur outsets is still occluded though.
         testRect = outsetRect;
         testRect.expand(1, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
         testRect = outsetRect;
         testRect.expand(0, 1);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
         testRect = outsetRect;
         testRect.move(-1, 0);
         testRect.expand(1, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
         testRect = outsetRect;
         testRect.move(0, -1);
         testRect.expand(0, 1);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
 
         // Nothing in the blur outsets for the filteredSurface's replica is occluded.
         outsetRect = IntRect(200 - outsetLeft, 50 - outsetTop, 50 + outsetLeft + outsetRight, 50 + outsetTop + outsetBottom);
         testRect = outsetRect;
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
 
         // Stuff outside the blur outsets is still occluded though.
         testRect = outsetRect;
         testRect.expand(1, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
         testRect = outsetRect;
         testRect.expand(0, 1);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
         testRect = outsetRect;
         testRect.move(-1, 0);
         testRect.expand(1, 0);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
         testRect = outsetRect;
         testRect.move(0, -1);
         testRect.expand(0, 1);
-        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedContentRect(parent, testRect));
+        EXPECT_RECT_EQ(outsetRect, occlusion.unoccludedLayerContentRect(parent, testRect));
     }
 };
 
@@ -2797,15 +2892,15 @@ protected:
 
         // Everything outside the surface/replica is occluded but the surface/replica itself is not.
         this->enterLayer(filteredSurface, occlusion);
-        EXPECT_RECT_EQ(IntRect(1, 0, 49, 50), occlusion.unoccludedContentRect(filteredSurface, IntRect(1, 0, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(0, 1, 50, 49), occlusion.unoccludedContentRect(filteredSurface, IntRect(0, 1, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(0, 0, 49, 50), occlusion.unoccludedContentRect(filteredSurface, IntRect(-1, 0, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(0, 0, 50, 49), occlusion.unoccludedContentRect(filteredSurface, IntRect(0, -1, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(1, 0, 49, 50), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(1, 0, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(0, 1, 50, 49), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(0, 1, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 49, 50), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(-1, 0, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 50, 49), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(0, -1, 50, 50)));
 
-        EXPECT_RECT_EQ(IntRect(150 + 1, 0, 49, 50), occlusion.unoccludedContentRect(filteredSurface, IntRect(150 + 1, 0, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(150 + 0, 1, 50, 49), occlusion.unoccludedContentRect(filteredSurface, IntRect(150 + 0, 1, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(150 + 0, 0, 49, 50), occlusion.unoccludedContentRect(filteredSurface, IntRect(150 - 1, 0, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(150 + 0, 0, 50, 49), occlusion.unoccludedContentRect(filteredSurface, IntRect(150 + 0, -1, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(150 + 1, 0, 49, 50), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(150 + 1, 0, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(150 + 0, 1, 50, 49), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(150 + 0, 1, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(150 + 0, 0, 49, 50), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(150 - 1, 0, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(150 + 0, 0, 50, 49), occlusion.unoccludedLayerContentRect(filteredSurface, IntRect(150 + 0, -1, 50, 50)));
         this->leaveLayer(filteredSurface, occlusion);
 
         // The filtered layer/replica does not occlude.
@@ -2830,45 +2925,45 @@ protected:
         outsetRect = IntRect(50 - outsetLeft, 50 - outsetTop, 50 + outsetLeft + outsetRight, 50 + outsetTop + outsetBottom);
         clippedOutsetRect = intersection(outsetRect, IntRect(0 - outsetLeft, 0 - outsetTop, 300 + outsetLeft + outsetRight, 70 + outsetTop + outsetBottom));
         testRect = outsetRect;
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
 
         // Stuff outside the (clipped) blur outsets is still occluded though.
         testRect = outsetRect;
         testRect.expand(1, 0);
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
         testRect = outsetRect;
         testRect.expand(0, 1);
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
         testRect = outsetRect;
         testRect.move(-1, 0);
         testRect.expand(1, 0);
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
         testRect = outsetRect;
         testRect.move(0, -1);
         testRect.expand(0, 1);
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
 
         // Nothing in the (clipped) blur outsets for the filteredSurface's replica is occluded.
         outsetRect = IntRect(200 - outsetLeft, 50 - outsetTop, 50 + outsetLeft + outsetRight, 50 + outsetTop + outsetBottom);
         clippedOutsetRect = intersection(outsetRect, IntRect(0 - outsetLeft, 0 - outsetTop, 300 + outsetLeft + outsetRight, 70 + outsetTop + outsetBottom));
         testRect = outsetRect;
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
 
         // Stuff outside the (clipped) blur outsets is still occluded though.
         testRect = outsetRect;
         testRect.expand(1, 0);
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
         testRect = outsetRect;
         testRect.expand(0, 1);
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
         testRect = outsetRect;
         testRect.move(-1, 0);
         testRect.expand(1, 0);
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
         testRect = outsetRect;
         testRect.move(0, -1);
         testRect.expand(0, 1);
-        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedContentRect(clippingSurface, testRect));
+        EXPECT_RECT_EQ(clippedOutsetRect, occlusion.unoccludedLayerContentRect(clippingSurface, testRect));
     }
 };
 

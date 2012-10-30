@@ -32,10 +32,10 @@ public:
     // Called at the end of each step in the LayerIterator's front-to-back traversal.
     void leaveLayer(const LayerIteratorPosition<LayerType>&);
 
-    // Returns true if the given rect in content space for the layer is fully occluded in either screen space or the layer's target surface.
-    bool occluded(const LayerType*, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
-    // Gives an unoccluded sub-rect of |contentRect| in the content space of the layer. Used when considering occlusion for a layer that paints/draws something.
-    IntRect unoccludedContentRect(const LayerType*, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
+    // Returns true if the given rect in content space for a layer is fully occluded in either screen space or the layer's target surface.  |renderTarget| is the contributing layer's render target, and |drawTransform|, |transformsToTargetKnown| and |clippedRectInTarget| are relative to that.
+    bool occluded(const LayerType* renderTarget, const IntRect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const IntRect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
+    // Gives an unoccluded sub-rect of |contentRect| in the content space of a layer. Used when considering occlusion for a layer that paints/draws something. |renderTarget| is the contributing layer's render target, and |drawTransform|, |transformsToTargetKnown| and |clippedRectInTarget| are relative to that.
+    IntRect unoccludedContentRect(const LayerType* renderTarget, const IntRect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const IntRect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface = 0) const;
 
     // Gives an unoccluded sub-rect of |contentRect| in the content space of the renderTarget owned by the layer.
     // Used when considering occlusion for a contributing surface that is rendering into another target.
