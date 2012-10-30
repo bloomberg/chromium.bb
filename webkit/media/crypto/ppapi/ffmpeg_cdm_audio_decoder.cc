@@ -21,9 +21,8 @@ MSVC_POP_WARNING();
 
 namespace webkit_media {
 
-// Maximum number of channels with defined order in the Vorbis specification.
-// http://www.xiph.org/vorbis/doc/Vorbis_I_spec.html
-static const int kMaxVorbisChannels = 8;
+// Maximum number of channels with defined layout in src/media.
+static const int kMaxChannels = 8;
 
 static CodecID CdmAudioCodecToCodecID(
     cdm::AudioDecoderConfig::AudioCodec audio_codec) {
@@ -151,9 +150,9 @@ void FFmpegCdmAudioDecoder::Reset() {
 // static
 bool FFmpegCdmAudioDecoder::IsValidConfig(
     const cdm::AudioDecoderConfig& config) {
-  return config.codec == cdm::AudioDecoderConfig::kCodecVorbis &&
+  return config.codec != cdm::AudioDecoderConfig::kUnknownAudioCodec &&
          config.channel_count > 0 &&
-         config.channel_count <= kMaxVorbisChannels &&
+         config.channel_count <= kMaxChannels &&
          config.bits_per_channel > 0 &&
          config.bits_per_channel <= media::limits::kMaxBitsPerSample &&
          config.samples_per_second > 0 &&
