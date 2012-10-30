@@ -706,17 +706,25 @@ WebNotificationTray* Shell::GetWebNotificationTray() {
       web_notification_tray();
 }
 
+internal::StatusAreaWidget* Shell::status_area_widget() {
+  return GetPrimaryRootWindowController()->status_area_widget();
+}
+
 SystemTrayDelegate* Shell::tray_delegate() {
   // TODO(oshima): Decouple system tray and its delegate.
-  internal::StatusAreaWidget* status_area_widget =
-      GetPrimaryRootWindowController()->status_area_widget();
-  return status_area_widget ? status_area_widget->system_tray_delegate() : NULL;
+  // We assume in throughout the code that this will not return NULL. If code
+  // triggers this for valid reasons, it should test status_area_widget first.
+  internal::StatusAreaWidget* status_area = status_area_widget();
+  CHECK(status_area);
+  return status_area->system_tray_delegate();
 }
 
 SystemTray* Shell::system_tray() {
-  internal::StatusAreaWidget* status_area_widget =
-      GetPrimaryRootWindowController()->status_area_widget();
-  return status_area_widget ? status_area_widget->system_tray() : NULL;
+  // We assume in throughout the code that this will not return NULL. If code
+  // triggers this for valid reasons, it should test status_area_widget first.
+  internal::StatusAreaWidget* status_area = status_area_widget();
+  CHECK(status_area);
+  return status_area->system_tray();
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
