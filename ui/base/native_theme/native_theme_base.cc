@@ -46,6 +46,7 @@ const unsigned int kDefaultScrollbarButtonLength = 14;
 const SkColor kCheckboxTinyColor = SK_ColorGRAY;
 const SkColor kCheckboxShadowColor = SkColorSetARGB(0x15, 0, 0, 0);
 const SkColor kCheckboxShadowHoveredColor = SkColorSetARGB(0x1F, 0, 0, 0);
+const SkColor kCheckboxShadowDisabledColor = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kCheckboxGradientColors[] = {
     SkColorSetRGB(0xed, 0xed, 0xed),
     SkColorSetRGB(0xde, 0xde, 0xde) };
@@ -56,15 +57,15 @@ const SkColor kCheckboxGradientHoveredColors[] = {
     SkColorSetRGB(0xf0, 0xf0, 0xf0),
     SkColorSetRGB(0xe0, 0xe0, 0xe0) };
 const SkColor kCheckboxGradientDisabledColors[] = {
-    SkColorSetARGB(0xB3, 0xed, 0xed, 0xed),
-    SkColorSetARGB(0xB3, 0xed, 0xed, 0xed) };
+    SkColorSetARGB(0x80, 0xed, 0xed, 0xed),
+    SkColorSetARGB(0x80, 0xde, 0xde, 0xde) };
 const SkColor kCheckboxBorderColor = SkColorSetARGB(0x40, 0, 0, 0);
 const SkColor kCheckboxBorderHoveredColor = SkColorSetARGB(0x4D, 0, 0, 0);
-const SkColor kCheckboxBorderDisabledColor = SkColorSetARGB(0x30, 0, 0, 0);
+const SkColor kCheckboxBorderDisabledColor = SkColorSetARGB(0x20, 0, 0, 0);
 const SkColor kCheckboxStrokeColor = SkColorSetARGB(0xB3, 0, 0, 0);
-const SkColor kCheckboxStrokeDisabledColor = SkColorSetARGB(0x86, 0, 0, 0);
+const SkColor kCheckboxStrokeDisabledColor = SkColorSetARGB(0x59, 0, 0, 0);
 const SkColor kRadioDotColor = SkColorSetRGB(0x66, 0x66, 0x66);
-const SkColor kRadioDotDisabledColor = SkColorSetARGB(0xC0, 0x66, 0x66, 0x66);
+const SkColor kRadioDotDisabledColor = SkColorSetARGB(0x80, 0x66, 0x66, 0x66);
 
 // Get lightness adjusted color.
 SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
@@ -550,7 +551,9 @@ SkRect NativeThemeBase::PaintCheckboxRadioNewCommon(
     paint.setAntiAlias(true);
     SkRect shadowRect = skrect;
     shadowRect.offset(0, 1);
-    if (state == kHovered)
+    if (state == kDisabled)
+     paint.setColor(kCheckboxShadowDisabledColor);
+    else if (state == kHovered)
       paint.setColor(kCheckboxShadowHoveredColor);
     else
       paint.setColor(kCheckboxShadowColor);
@@ -620,7 +623,7 @@ void NativeThemeBase::PaintCheckboxNew(SkCanvas* canvas,
       dash.moveTo(skrect.x() + skrect.width() * 0.16,
                   (skrect.y() + skrect.bottom()) / 2);
       dash.rLineTo(skrect.width() * 0.68, 0);
-      paint.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.08));
+      paint.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.2));
       canvas->drawPath(dash, paint);
     } else if (button.checked) {
       SkPath check;
