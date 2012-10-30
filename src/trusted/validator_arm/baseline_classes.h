@@ -722,7 +722,7 @@ class LoadStore2RegisterImm8Op : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
-  virtual Register base_address_register(Instruction i) const;
+  virtual Register base_address_register(const Instruction i) const;
 
   bool HasWriteBack(const Instruction i) const {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
@@ -944,7 +944,7 @@ class LoadStore2RegisterImm12Op : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
-  virtual Register base_address_register(Instruction i) const;
+  virtual Register base_address_register(const Instruction i) const;
   bool HasWriteBack(const Instruction i) const {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
   }
@@ -1362,7 +1362,7 @@ class LoadStore3RegisterOp : public ClassDecoder {
   static const ConditionBits28To31Interface cond;
 
   virtual SafetyLevel safety(Instruction i) const;
-  virtual Register base_address_register(Instruction i) const;
+  virtual Register base_address_register(const Instruction i) const;
   bool HasWriteBack(const Instruction i) const {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
   }
@@ -1530,7 +1530,7 @@ class LoadStore3RegisterImm5Op : public ClassDecoder {
   static const Imm5Bits7To11Interface imm;
 
   virtual SafetyLevel safety(Instruction i) const;
-  virtual Register base_address_register(Instruction i) const;
+  virtual Register base_address_register(const Instruction i) const;
 
   bool HasWriteBack(const Instruction i) const {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);

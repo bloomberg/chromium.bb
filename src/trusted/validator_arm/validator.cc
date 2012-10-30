@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include <inttypes.h>
+
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator_arm/validator.h"

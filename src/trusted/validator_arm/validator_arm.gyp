@@ -34,7 +34,7 @@
   # ----------------------------------------------------------------------
   # actual targets
   # ----------------------------------------------------------------------
-  'targets': [
+    'targets': [
     # ----------------------------------------------------------------------
     {
       'target_name': 'arm_validator_core',
@@ -44,7 +44,6 @@
         'actual_classes.cc',
         'baseline_classes.cc',
         'inst_classes.cc',
-        'model.cc',
         'validator.cc',
         'gen/arm32_decode.cc'
       ],
@@ -57,12 +56,6 @@
       'dependencies': [
         'arm_validator_core'
       ],
-    },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'arm_validator_reporters',
-      'type': 'static_library',
-      'sources': [ 'problem_reporter.cc' ],
     },
   ],
 }
