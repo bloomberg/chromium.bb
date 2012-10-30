@@ -16,6 +16,7 @@ public class ChromiumTestShellUrlTest extends ChromiumTestShellTestBase {
     @Feature({"Main"})
     public void testBaseStartup() throws Exception {
         ChromiumTestShellActivity activity = launchChromiumTestShellWithUrl(URL);
+        waitForActiveShellToBeDoneLoading();
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);

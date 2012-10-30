@@ -92,8 +92,7 @@ public class TabManager extends LinearLayout {
     public void createTab(String url) {
         if (!isRenderTargetInitialized()) return;
 
-        TabBase tab = new TabBase(getContext(), url, mWindow,
-                new TabManagerWebContentsDelegateAndroid());
+        TabBase tab = new TabBase(getContext(), url, mWindow);
         setCurrentTab(tab);
     }
 
@@ -114,18 +113,6 @@ public class TabManager extends LinearLayout {
         mContentViewHolder.addView(mCurrentTab.getContentView());
         mCurrentTab.getContentView().requestFocus();
         nativeShowTab(mCurrentTab.getNativeTab());
-    }
-
-    private class TabManagerWebContentsDelegateAndroid extends ChromeWebContentsDelegateAndroid {
-        @Override
-        public void onLoadProgressChanged(int progress) {
-            mToolbar.onLoadProgressChanged(progress);
-        }
-
-        @Override
-        public void onUpdateUrl(String url) {
-            mToolbar.onUpdateUrl(url);
-        }
     }
 
     private static native void nativeShowTab(int jtab);

@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.TabObserver;
 import org.chromium.content.browser.LoadUrlParams;
 
 /**
@@ -42,6 +43,7 @@ public class TestShellToolbar extends LinearLayout {
     private ClipDrawable mProgressDrawable;
 
     private TabBase mTab;
+    private TabObserver mTabObserver = new TabObserverImpl();
 
     /**
      * @param context The Context the view is running in.
@@ -56,25 +58,17 @@ public class TestShellToolbar extends LinearLayout {
      * @param tab The TabBase that should be represented.
      */
     public void showTab(TabBase tab) {
+        if (mTab != null) mTab.removeObserver(mTabObserver);
         mTab = tab;
+        mTab.addObserver(mTabObserver);
         mUrlTextView.setText(mTab.getContentView().getUrl());
     }
 
-    /**
-     * To be called when the URL of the represented {@link TabBase} updates.
-     *
-     * @param url The new URL of the currently represented {@link TabBase}.
-     */
-    public void onUpdateUrl(String url) {
+    private void onUpdateUrl(String url) {
         mUrlTextView.setText(url);
     }
 
-    /**
-     * To be called when the load progress of the represented {@link TabBase} updates.
-     *
-     * @param progress The current load progress.  Should be a number between 0 and 100.
-     */
-    public void onLoadProgressChanged(int progress) {
+    private void onLoadProgressChanged(int progress) {
         removeCallbacks(mClearProgressRunnable);
         mProgressDrawable.setLevel((int) (100.0 * progress));
         if (progress == 100) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
@@ -145,6 +139,18 @@ public class TestShellToolbar extends LinearLayout {
             imm.showSoftInput(mUrlTextView, InputMethodManager.SHOW_IMPLICIT);
         } else {
             imm.hideSoftInputFromWindow(mUrlTextView.getWindowToken(), 0);
+        }
+    }
+
+    private class TabObserverImpl implements TabObserver {
+        @Override
+        public void onLoadProgressChanged(TabBase tab, int progress) {
+            if (tab == mTab) TestShellToolbar.this.onLoadProgressChanged(progress);
+        }
+
+        @Override
+        public void onUpdateUrl(TabBase tab, String url) {
+            if (tab == mTab) TestShellToolbar.this.onUpdateUrl(url);
         }
     }
 }

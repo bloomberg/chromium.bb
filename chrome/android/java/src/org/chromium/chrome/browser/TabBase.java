@@ -15,6 +15,10 @@ import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.ui.gfx.NativeWindow;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
  */
@@ -23,19 +27,20 @@ public class TabBase {
     private ContentView mContentView;
     private ChromeWebContentsDelegateAndroid mWebContentsDelegate;
     private int mNativeTabBaseAndroidImpl;
+    private List<TabObserver> mObservers = new ArrayList<TabObserver>();
 
     private CleanupReference mCleanupReference;
+
+    // Tab state
+    private boolean mIsLoading = false;
 
     /**
      * @param context  The Context the view is running in.
      * @param url      The URL to start this tab with.
      * @param window   The NativeWindow should represent this tab.
-     * @param delegate The {@link ChromeWebContentsDelegateAndroid} that should be notified of any
-     *                 WebContents changes.
      */
-    public TabBase(Context context, String url, NativeWindow window,
-            ChromeWebContentsDelegateAndroid delegate) {
-        this(context, 0, window, delegate);
+    public TabBase(Context context, String url, NativeWindow window) {
+        this(context, 0, window);
         loadUrlWithSanitization(url);
     }
 
@@ -43,11 +48,8 @@ public class TabBase {
      * @param context           The Context the view is running in.
      * @param nativeWebContents A native pointer to the WebContents this tab represents.
      * @param window            The NativeWindow should represent this tab.
-     * @param delegate          The {@link ChromeWebContentsDelegateAndroid} that should be notified
-     *                          of any WebContents changes.
      */
-    public TabBase(Context context, int nativeWebContentsPtr,
-            NativeWindow window, ChromeWebContentsDelegateAndroid delegate) {
+    public TabBase(Context context, int nativeWebContentsPtr, NativeWindow window) {
         mWindow = window;
 
         // Build the WebContents and the ContentView/ContentViewCore
@@ -59,7 +61,7 @@ public class TabBase {
         mNativeTabBaseAndroidImpl = nativeInit(nativeWebContentsPtr, window.getNativePointer());
 
         // Build the WebContentsDelegate
-        mWebContentsDelegate = delegate == null ? new ChromeWebContentsDelegateAndroid() : delegate;
+        mWebContentsDelegate = new TabBaseChromeWebContentsDelegateAndroid();
         nativeInitWebContentsDelegate(mNativeTabBaseAndroidImpl, mWebContentsDelegate);
 
         // To be called after everything is initialized.
@@ -77,6 +79,27 @@ public class TabBase {
             mCleanupReference.cleanupNow();
             mNativeTabBaseAndroidImpl = 0;
         }
+    }
+
+    /**
+     * @param observer The {@link TabObserver} that should be notified of changes.
+     */
+    public void addObserver(TabObserver observer) {
+        mObservers.add(observer);
+    }
+
+    /**
+     * @param observer The {@link TabObserver} that should no longer be notified of changes.
+     */
+    public void removeObserver(TabObserver observer) {
+        mObservers.remove(observer);
+    }
+
+    /**
+     * @return Whether or not the tab is currently loading.
+     */
+    public boolean isLoading() {
+        return mIsLoading;
     }
 
     /**
@@ -128,6 +151,32 @@ public class TabBase {
         @Override
         public void run() {
             nativeDestroy(mNativeTabBaseAndroidImpl);
+        }
+    }
+
+    private class TabBaseChromeWebContentsDelegateAndroid extends ChromeWebContentsDelegateAndroid {
+        @Override
+        public void onLoadProgressChanged(int progress) {
+            for (int i = 0; i < mObservers.size(); ++i) {
+                mObservers.get(i).onLoadProgressChanged(TabBase.this, progress);
+            }
+        }
+
+        @Override
+        public void onUpdateUrl(String url) {
+            for (int i = 0; i < mObservers.size(); ++i) {
+                mObservers.get(i).onUpdateUrl(TabBase.this, url);
+            }
+        }
+
+        @Override
+        public void onLoadStarted() {
+            mIsLoading = true;
+        }
+
+        @Override
+        public void onLoadStopped() {
+            mIsLoading = false;
         }
     }
 

@@ -110,7 +110,10 @@ public class ChromiumTestShellActivity extends Activity {
         mWindow.onActivityResult(requestCode, resultCode, data);
     }
 
-    private TabBase getActiveTab() {
+    /**
+     * @return The {@link TabBase} that is currently visible.
+     */
+    public TabBase getActiveTab() {
         return mTabManager != null ? mTabManager.getCurrentTab() : null;
     }
 
