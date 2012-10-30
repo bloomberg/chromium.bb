@@ -495,8 +495,6 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
                     PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
     // The position should be right flush.
     EXPECT_EQ("384,32 640x320", window_bounds.ToString());
-    // In addition the other window should have moved left flush.
-    EXPECT_EQ("0,32 640x320", window->bounds().ToString());
   }
 
   { // With the window shown - but more on the right side then on the left
@@ -509,8 +507,6 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
                     PERSISTED, browser.get(), gfx::Rect(), &window_bounds);
     // The position should be left & bottom flush.
     EXPECT_EQ("0,448 640x320", window_bounds.ToString());
-    // In addition the other window should have moved right flush.
-    EXPECT_EQ("384,600 640x320", window->bounds().ToString());
   }
 
   { // If the second windows right side is already over the right side of the

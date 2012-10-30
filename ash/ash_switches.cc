@@ -25,6 +25,10 @@ const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
+// Disable support for auto window placement.
+const char kAshDisableAutoWindowPlacement[] =
+    "ash-enable-auto-window-placement";
+
 // Disables boot animation v2, go back to v1.
 const char kAshDisableBootAnimation2[] = "ash-disable-boot-animation2";
 

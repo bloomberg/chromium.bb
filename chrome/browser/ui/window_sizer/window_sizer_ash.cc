@@ -156,22 +156,14 @@ bool WindowSizer::GetBoundsOverrideAsh(const gfx::Rect& specified_bounds,
     if (maximized)
       return true;
 
-    gfx::Rect other_bounds_in_screen = top_window->GetBoundsInScreen();
-    bool move_right =
-        other_bounds_in_screen.CenterPoint().x() < work_area.CenterPoint().x();
-
-    // In case we have only one window, we move the other window fully to the
-    // "other side" - making room for this new window.
-    if (count == 1) {
-      gfx::Display display = ash::Shell::GetScreen()->GetDisplayMatching(
-          top_window->GetRootWindow()->GetBoundsInScreen());
-      if (MoveRect(work_area, other_bounds_in_screen, !move_right))
-        top_window->SetBoundsInScreen(other_bounds_in_screen, display);
-    }
     // Use the size of the other window, and mirror the location to the
     // opposite side. Then make sure that it is inside our work area
     // (if possible).
-    *bounds_in_screen = other_bounds_in_screen;
+    *bounds_in_screen = top_window->GetBoundsInScreen();
+
+    bool move_right =
+        bounds_in_screen->CenterPoint().x() < work_area.CenterPoint().x();
+
     MoveRect(work_area, *bounds_in_screen, move_right);
     if (bounds_in_screen->bottom() > work_area.bottom())
       bounds_in_screen->set_y(std::max(work_area.y(),
