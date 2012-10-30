@@ -810,6 +810,24 @@ const SkBitmap& MenuManager::GetIconForExtension(
   return icon_manager_.GetIcon(extension_id);
 }
 
+void MenuManager::RemoveAllIncognitoContextItems() {
+  // Get all context menu items with "incognito" set to "split".
+  std::set<MenuItem::Id> items_to_remove;
+  std::map<MenuItem::Id, MenuItem*>::const_iterator iter;
+  for (iter = items_by_id_.begin();
+       iter != items_by_id_.end();
+       ++iter) {
+    if (iter->first.incognito)
+      items_to_remove.insert(iter->first);
+  }
+
+  std::set<MenuItem::Id>::iterator remove_iter;
+  for (remove_iter = items_to_remove.begin();
+       remove_iter != items_to_remove.end();
+       ++remove_iter)
+    RemoveContextMenuItem(*remove_iter);
+}
+
 MenuItem::Id::Id()
     : incognito(false), extension_id(""), uid(0), string_uid("") {
 }

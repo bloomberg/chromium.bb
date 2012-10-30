@@ -566,3 +566,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserLazyTest, EventPage) {
   EXPECT_TRUE(menu->IsCommandIdChecked(command_id));
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest,
+                       IncognitoSplitContextMenuCount) {
+  ExtensionTestMessageListener created("created item regular", false);
+  ExtensionTestMessageListener created_incognito("created item incognito",
+                                                 false);
+
+  // Create an incognito profile.
+  ASSERT_TRUE(browser()->profile()->GetOffTheRecordProfile());
+  ASSERT_TRUE(LoadContextMenuExtensionIncognito("incognito"));
+
+  // Wait for the extension's processes to tell us they've created an item.
+  ASSERT_TRUE(created.WaitUntilSatisfied());
+  ASSERT_TRUE(created_incognito.WaitUntilSatisfied());
+  ASSERT_EQ(2u, GetItems().size());
+
+  browser()->profile()->DestroyOffTheRecordProfile();
+  ASSERT_EQ(1u, GetItems().size());
+}

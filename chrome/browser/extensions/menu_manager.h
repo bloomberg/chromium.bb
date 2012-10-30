@@ -315,6 +315,9 @@ class MenuManager : public content::NotificationObserver,
   void ReadFromStorage(const std::string& extension_id,
                        scoped_ptr<base::Value> value);
 
+  // Removes all "incognito" "split" mode context items.
+  void RemoveAllIncognitoContextItems();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MenuManagerTest, DeleteParent);
   FRIEND_TEST_ALL_PREFIXES(MenuManagerTest, RemoveOneByOne);
