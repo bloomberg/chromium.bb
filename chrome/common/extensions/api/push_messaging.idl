@@ -24,7 +24,10 @@ namespace pushMessaging{
     // Typically an app or extension will want to send this value
     // to its application server so the server can use it
     // to trigger push messages back to the app or extension.
-    static void getChannelId(ChannelIdCallback callback);
+    // If the interactive flag is set, we will ask the user to log in
+    // when they are not already logged in.
+    static void getChannelId(optional boolean interactive,
+                             ChannelIdCallback callback);
   };
 
   interface Events {

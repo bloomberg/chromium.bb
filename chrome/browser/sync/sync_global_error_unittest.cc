@@ -41,7 +41,7 @@ class BrowserMock: public Browser {
 
 class LoginUIServiceMock: public LoginUIService {
  public:
-  explicit LoginUIServiceMock() : LoginUIService() {}
+  explicit LoginUIServiceMock() : LoginUIService(NULL) {}
   MOCK_METHOD1(ShowLoginUI, void(Browser*));
 };
 

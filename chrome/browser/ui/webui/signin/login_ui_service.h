@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
 class Browser;
+class Profile;
 
 // The LoginUIService helps track per-profile information for the login UI -
 // for example, whether there is login UI currently on-screen.
@@ -44,7 +45,7 @@ class LoginUIService : public ProfileKeyedService {
     virtual ~Observer() {}
   };
 
-  LoginUIService();
+  explicit LoginUIService(Profile* profile);
   virtual ~LoginUIService();
 
   // Gets the currently active login UI, or null if no login UI is active.
@@ -69,9 +70,15 @@ class LoginUIService : public ProfileKeyedService {
   // Virtual for mocking purposes.
   virtual void ShowLoginUI(Browser* browser);
 
+  // Delegate to an existing login dialog if one exists.
+  // If not, we make a new popup dialog window, and set it to
+  // chrome://signin to ask the user to sign in to chrome.
+  void ShowLoginPopup();
+
  private:
   // Weak pointer to the currently active login UI, or null if none.
   LoginUI* ui_;
+  Profile* profile_;
 
   // List of observers.
   ObserverList<Observer> observer_list_;

@@ -148,10 +148,10 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, GetChannelId) {
   extensions::LaunchPlatformApp(
       browser()->profile(), extension, NULL, FilePath());
 
-  // Just loading the page will cause a getChannelId call, so we check
-  // for a callback.  It should fail because there is no auth token.
+  // Just loading the page will cause a getChannelId call.
+  // It should fail because no user is logged in.
 
-  // Make sure we got a failure (but we do get a result).
+  // Check the result of the test.
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 

@@ -45,7 +45,7 @@ class TestObserver : public LoginUIService::Observer {
 
 class LoginUIServiceTest : public testing::Test {
  public:
-  LoginUIServiceTest() { }
+  LoginUIServiceTest() : service_(NULL) { }
   virtual ~LoginUIServiceTest() { }
 
  protected:

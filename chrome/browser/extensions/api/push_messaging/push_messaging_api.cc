@@ -6,12 +6,10 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -22,6 +20,7 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/push_messaging.h"
 #include "chrome/common/extensions/extension.h"
@@ -37,6 +36,8 @@ using content::BrowserThread;
 
 namespace {
 const char kChannelIdSeparator[] = "/";
+const char kUserNotSignedIn[] = "The user is not signed in.";
+const char kTokenServiceNotAvailable[] = "Failed to get token service.";
 }
 
 namespace extensions {
@@ -141,17 +142,51 @@ void PushMessagingEventRouter::Observe(
 
 // GetChannelId class functions
 
-PushMessagingGetChannelIdFunction::PushMessagingGetChannelIdFunction() {}
+PushMessagingGetChannelIdFunction::PushMessagingGetChannelIdFunction()
+    : interactive_(false) {}
 
 PushMessagingGetChannelIdFunction::~PushMessagingGetChannelIdFunction() {}
 
 bool PushMessagingGetChannelIdFunction::RunImpl() {
+  // Fetch the function arguments.
+  scoped_ptr<glue::GetChannelId::Params> params(
+      glue::GetChannelId::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (params && params->interactive) {
+    interactive_ = *params->interactive;
+  }
+
+  // Balanced in ReportResult()
+  AddRef();
+
+  if (!IsUserLoggedIn()) {
+    if (interactive_) {
+      LoginUIService* login_ui_service =
+          LoginUIServiceFactory::GetForProfile(profile());
+      login_ui_service->AddObserver(this);
+      // OnLoginUICLosed will be called when UI is closed.
+      login_ui_service->ShowLoginPopup();
+      return true;
+    } else {
+      error_ = kUserNotSignedIn;
+      ReportResult(std::string(), error_);
+      return false;
+    }
+  }
+
+  return StartGaiaIdFetch();
+}
+
+bool PushMessagingGetChannelIdFunction::StartGaiaIdFetch() {
   // Start the async fetch of the GAIA ID.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::URLRequestContextGetter* context = profile()->GetRequestContext();
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-  if (!token_service)
+  if (!token_service) {
+    ReportResult(std::string(), std::string(kTokenServiceNotAvailable));
     return false;
+  }
   const std::string& refresh_token =
       token_service->GetOAuth2LoginRefreshToken();
   fetcher_.reset(new ObfuscatedGaiaIdFetcher(context, this, refresh_token));
@@ -161,17 +196,38 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
   const std::string& gaia_id =
       token_service->GetTokenForService(GaiaConstants::kObfuscatedGaiaId);
   if (!gaia_id.empty()) {
-    BuildAndSendResult(gaia_id, std::string());
+    ReportResult(gaia_id, std::string());
     return true;
   }
-
-  // Balanced in ReportResult()
-  AddRef();
 
   fetcher_->Start();
 
   // Will finish asynchronously.
   return true;
+}
+
+// Check if the user is logged in.
+bool PushMessagingGetChannelIdFunction::IsUserLoggedIn() const {
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
+  if (!token_service)
+    return false;
+  return token_service->HasOAuthLoginToken();
+}
+
+void PushMessagingGetChannelIdFunction::OnLoginUIShown(
+    LoginUIService::LoginUI* ui) {
+  // Do nothing when login ui is shown.
+}
+
+// If the login succeeds, continue with our logic to fetch the ChannelId.
+void PushMessagingGetChannelIdFunction::OnLoginUIClosed(
+    LoginUIService::LoginUI* ui) {
+  LoginUIService* login_ui_service =
+      LoginUIServiceFactory::GetForProfile(profile());
+  login_ui_service->RemoveObserver(this);
+  if (!StartGaiaIdFetch()) {
+    SendResponse(false);
+  }
 }
 
 void PushMessagingGetChannelIdFunction::ReportResult(
@@ -193,7 +249,7 @@ void PushMessagingGetChannelIdFunction::ReportResult(
     }
   }
 
-  // Balanced in RunImpl
+  // Balanced in RunImpl.
   Release();
 }
 
@@ -228,7 +284,7 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchSuccess(
 void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
       const GoogleServiceAuthError& error) {
   std::string error_text = error.error_message();
-  // if the error message is blank, see if we can set it from the state
+  // If the error message is blank, see if we can set it from the state.
   if (error_text.empty() &&
       (0 != error.state())) {
     error_text = base::IntToString(error.state());

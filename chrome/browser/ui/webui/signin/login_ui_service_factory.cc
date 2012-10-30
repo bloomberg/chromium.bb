@@ -30,6 +30,5 @@ LoginUIServiceFactory* LoginUIServiceFactory::GetInstance() {
 
 ProfileKeyedService* LoginUIServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new LoginUIService();
+  return new LoginUIService(profile);
 }
-

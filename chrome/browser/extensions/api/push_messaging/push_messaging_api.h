@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -63,7 +64,9 @@ class PushMessagingEventRouter
 };
 
 class PushMessagingGetChannelIdFunction
-    : public AsyncExtensionFunction, public ObfuscatedGaiaIdFetcher::Delegate {
+    : public AsyncExtensionFunction,
+      public ObfuscatedGaiaIdFetcher::Delegate,
+      public LoginUIService::Observer {
  public:
   PushMessagingGetChannelIdFunction();
 
@@ -81,12 +84,23 @@ class PushMessagingGetChannelIdFunction
   void BuildAndSendResult(const std::string& gaia_id,
                           const std::string& error_message);
 
+  // Begin the async fetch of the Gaia ID.
+  bool StartGaiaIdFetch();
+
+  // LoginUIService::Observer implementation.
+  virtual void OnLoginUIShown(LoginUIService::LoginUI* ui) OVERRIDE;
+  virtual void OnLoginUIClosed(LoginUIService::LoginUI* ui) OVERRIDE;
+
+  // Check if the user is signed into chrome.
+  bool IsUserLoggedIn() const;
+
   // ObfuscatedGiaiaIdFetcher::Delegate implementation.
   virtual void OnObfuscatedGaiaIdFetchSuccess(const std::string& gaia_id)
       OVERRIDE;
   virtual void OnObfuscatedGaiaIdFetchFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
   scoped_ptr<ObfuscatedGaiaIdFetcher> fetcher_;
+  bool interactive_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingGetChannelIdFunction);
 };
