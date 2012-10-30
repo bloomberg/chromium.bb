@@ -253,13 +253,13 @@ function initPlotSwitcher(tabs) {
  * Adds data to existing arrays indicating what data should be plotted.
  *
  * @param {number} revisionNum The revision number of the data to plot.
- * @param {Object} dataRows The |Rows| object containing the plot data.
+ * @param {Rows} dataRows The |Rows| object containing the plot data.
  * @param {Array} plotData A list of data lines to plot, to which new data will
  *     be appended.
  * @param {Array} dataDescriptions A list of string descriptions corresponding
  *     to data lines in |plotData|, to which new data will be appended.
- * @return {boolean} Whether or not new plot data was actually appended to the
- *     given arrays.
+ * @return {Object} A row object specified by {@code revisionNum} on success,
+ *     otherwise returns null.
  */
 function addToPlotData(revisionNum, dataRows, plotData, dataDescriptions) {
   // Get data for the revision number(s) to plot.
@@ -375,15 +375,22 @@ function receivedSummary(data, error) {
   if (!row) {
     errorMessages += 'No data for the specified revision.<br>';
   }
+  // From index {@code plotData.length} onwards, any graph lines in
+  // {@code plotData} are considered to be part of a second set of graphs.
+  var graphsOtherStartIndex = plotData.length;
 
+  var rowOther = null;
   if ('revisionOther' in params) {
-    if (!addToPlotData(params.revisionOther, rows, plotData, dataDescriptions))
+    rowOther = addToPlotData(params.revisionOther, rows, plotData,
+                             dataDescriptions);
+    if (!rowOther)
       errorMessages += 'No data for the revision to compare against.<br>';
   }
 
   if ('graphOther' in params) {
-    if (addToPlotData(params.revision, graphDataOtherRows, plotData,
-                      dataDescriptions)) {
+    rowOther = addToPlotData(params.revision, graphDataOtherRows, plotData,
+                             dataDescriptions);
+    if (rowOther) {
       for (var i = 0; i < graphList.length; ++i) {
         if (graphList[i].name == params.graphOther) {
           unitsYOther = graphList[i].units;
@@ -429,10 +436,11 @@ function receivedSummary(data, error) {
         plotData,
         dataDescriptions,
         eventNameToPlot, eventInfoToPlot,
-        unitsX, unitsY, unitsYOther,
+        unitsX, unitsY, unitsYOther, graphsOtherStartIndex,
         document.getElementById('output'),
         'lookout' in params,
-        !!row.stack);
+        !!row.stack,
+        rowOther && !!rowOther.stack);
 
     plotter.plot();
   } else {

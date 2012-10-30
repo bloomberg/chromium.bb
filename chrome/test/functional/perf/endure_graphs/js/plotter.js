@@ -102,7 +102,10 @@ HorizontalMarker.prototype.remove = function() {
 
 /**
  * An information indicator hovering around the mouse cursor on the graph.
- * This class is used to show a legend.
+ * This class is used to show a legend near the mouse cursor.
+ *
+ * A set of legends under the graph is managed separately in
+ * {@code Plotter.createLegendsSummaryElement_}.
  *
  * @constructor
  */
@@ -120,10 +123,14 @@ function HoveringInfo() {
   this.colorIndicator_.style.verticalAlign = 'text-bottom';
   this.colorIndicator_.style.margin = '0 0.24em 0 0';
   this.colorIndicator_.style.border = '1px solid #000';
-  this.textSpan_ = document.createElement('span');
+  this.legendText_ = document.createElement('span');
+  this.itemValueText_ = document.createElement('span');
 
   this.containerDiv_.appendChild(this.colorIndicator_);
-  this.containerDiv_.appendChild(this.textSpan_);
+  this.containerDiv_.appendChild(this.legendText_);
+  var div = document.createElement('div');
+  div.appendChild(this.itemValueText_);
+  this.containerDiv_.appendChild(div);
 }
 
 /**
@@ -166,21 +173,30 @@ HoveringInfo.prototype.locateAtPageXY = function(x, y) {
 };
 
 /**
- * Returns the text content.
+ * Returns the legend text.
  *
- * @return {?string} The text content.
+ * @return {?string} The legend text.
  */
-HoveringInfo.prototype.getText = function() {
-  return this.textSpan_.textContent;
+HoveringInfo.prototype.getLegendText = function() {
+  return this.legendText_.textContent;
 };
 
 /**
- * Changes the text content.
+ * Changes the legend text.
  *
  * @param {string} text The new text to be set.
  */
-HoveringInfo.prototype.setText = function(text) {
-  this.textSpan_.textContent = text;
+HoveringInfo.prototype.setLegendText = function(text) {
+  this.legendText_.textContent = text;
+};
+
+/**
+ * Changes the item value.
+ *
+ * @param {number} value The new value to be shown.
+ */
+HoveringInfo.prototype.setItemValue = function(value) {
+  this.itemValueText_.textContent = 'Item value = ' + addCommas(value);
 };
 
 /**
@@ -213,15 +229,25 @@ HoveringInfo.prototype.setColorIndicator = function(color) {
  * @param {string} unitsX The x-axis units of the data being plotted.
  * @param {string} unitsY The y-axis units of the data being plotted.
  * @param {string} unitsYOther If another graph (with different y-axis units) is
- *    being overlayed over the first graph, this represents the units of the
- *    other graph.  Otherwise, this should be 'null'.
- * @param {string} resultNode A DOM Element object representing the DOM node to
+ *     being overlayed over the first graph, this represents the units of the
+ *     other graph.  Otherwise, this should be 'null'.
+ * @param {?number} graphsOtherStartIndex Specifies the starting index of
+ *     the second set of lines.  {@code plotData} in the range of
+ *     [0, {@code graphsOtherStartIndex}) are treated as the first set of lines,
+ *     and ones in the range of
+ *     [{@code graphsOtherStartIndex}, {@code plotData.length}) are as
+ *     the second set.  0, {@code plotData.length} and {@code null} mean
+ *     no second set, i.e. all the data in {@code plotData} represent the single
+ *     set of lines.
+ * @param {Element} resultNode A DOM Element object representing the DOM node to
  *     which the plot should be attached.
  * @param {boolean} is_lookout Whether or not the graph should be drawn
  *     in 'lookout' mode, which is a summarized view that is made for overview
  *     pages when the graph is drawn in a more confined space.
- * @param {boolean} fillAreaUnderLine Whether or not fill the area under
- *     the lines.  Should be set to true when drawing stacked graphs.
+ * @param {boolean} stackedGraph Whether or not the first set of lines is
+ *     a stacked graph.
+ * @param {boolean} stackedGraphOther Whether or not the second set of lines is
+ *     a stacked graph.
  *
  * Example of the |plotData|:
  *  [
@@ -232,8 +258,8 @@ HoveringInfo.prototype.setColorIndicator = function(color) {
  *  And individual points are [x value, y value]
  */
 function Plotter(plotData, dataDescriptions, eventName, eventInfo, unitsX,
-                 unitsY, unitsYOther, resultNode, is_lookout,
-                 fillAreaUnderLine) {
+                 unitsY, unitsYOther, graphsOtherStartIndex, resultNode,
+                 is_lookout, stackedGraph, stackedGraphOther) {
   this.plotData_ = plotData;
   this.dataDescriptions_ = dataDescriptions;
   this.eventName_ = eventName;
@@ -241,18 +267,24 @@ function Plotter(plotData, dataDescriptions, eventName, eventInfo, unitsX,
   this.unitsX_ = unitsX;
   this.unitsY_ = unitsY;
   this.unitsYOther_ = unitsYOther;
+  this.graphsOtherStartIndex_ =
+      (0 < graphsOtherStartIndex && graphsOtherStartIndex < plotData.length) ?
+      graphsOtherStartIndex : null;
   this.resultNode_ = resultNode;
   this.is_lookout_ = is_lookout;
-  this.fillAreaUnderLine_ = fillAreaUnderLine;
+  this.stackedGraph_ = stackedGraph;
+  this.stackedGraphOther_ = stackedGraphOther;
 
   this.dataColors_ = [];
 
   this.coordinates = null;
   this.coordinatesOther = null;
-  if (this.unitsYOther_) {
+  if (this.unitsYOther_ && this.graphsOtherStartIndex_) {
     // Need two different coordinate systems to overlay on the same graph.
-    this.coordinates = new Coordinates([this.plotData_[0]]);
-    this.coordinatesOther = new Coordinates([this.plotData_[1]]);
+    this.coordinates = new Coordinates(
+        this.plotData_.slice(0, this.graphsOtherStartIndex_));
+    this.coordinatesOther = new Coordinates(
+        this.plotData_.slice(this.graphsOtherStartIndex_));
   } else {
     this.coordinates = new Coordinates(this.plotData_);
   }
@@ -334,6 +366,8 @@ Plotter.prototype.getFillColor = function(i) {
  * Does the actual plotting.
  */
 Plotter.prototype.plot = function() {
+  var self = this;
+
   this.canvasElement_ = this.canvas_();
   this.rulerDiv_ = this.ruler_();
 
@@ -361,18 +395,25 @@ Plotter.prototype.plot = function() {
 
   // Draw all data lines in the reverse order so the last graph appears on
   // the backmost and the first graph appears on the frontmost.
-  for (var i = this.plotData_.length - 1; i >= 0; --i) {
-    var coordinateSystem = this.coordinates;
-    if (i > 0 && this.unitsYOther_)
-      coordinateSystem = this.coordinatesOther;
-
-    if (this.fillAreaUnderLine_) {
-      this.plotAreaUnderLine_(ctx, this.getFillColor(i), this.plotData_[i],
-                              coordinateSystem);
+  function draw(plotData, coordinates, colorOffset, stack) {
+    for (var i = plotData.length - 1; i >= 0; --i) {
+      if (stack) {
+        self.plotAreaUnderLine_(ctx, self.getFillColor(colorOffset + i),
+                                plotData[i], coordinates);
+      }
+      self.plotLine_(ctx, self.getDataColor(colorOffset + i),
+                     plotData[i], coordinates);
     }
-
-    this.plotLine_(ctx, this.getDataColor(i), this.plotData_[i],
-                   coordinateSystem);
+  }
+  draw(this.plotData_.slice(0,
+                            this.graphsOtherStartIndex_ ?
+                            this.graphsOtherStartIndex_ :
+                            this.plotData_.length),
+       this.coordinates, 0, this.stackedGraph_);
+  if (this.graphsOtherStartIndex_) {
+    draw(this.plotData_.slice(this.graphsOtherStartIndex_),
+         this.unitsYOther_ ? this.coordinatesOther : this.coordinates,
+         this.graphsOtherStartIndex_, this.stackedGraphOther_);
   }
 
   // Draw events overlayed on graph if needed.
@@ -593,7 +634,7 @@ Plotter.prototype.updateCursor_ = function(coordinateSystem, currentIndex,
   if (currentIndex == this.plotData_[dataIndex].length - 1) {
     var curr_x = this.canvasElement_.offsetLeft +
         coordinateSystem.xPixel(this.plotData_[dataIndex][currentIndex][0]);
-    c.style.width = curr_x - left_point;
+    c.style.width = curr_x - leftPoint;
   }
   else {
     var next_x = this.canvasElement_.offsetLeft +
@@ -639,9 +680,11 @@ Plotter.prototype.updateHoveringInfo_ = function(evt, show) {
   var canvasPageXY = domUtils.pageXY(this.canvasElement_);
 
   var coord = this.coordinates;
+  // p = the mouse cursor position in value coordinates.
   var p = {'x': coord.xValue(evtPageXY.x - canvasPageXY.x),
            'y': coord.yValue(evtPageXY.y - canvasPageXY.y)};
   if (!show ||
+      !(this.stackedGraph_ || this.stackedGraphOther_) ||
       p.x < coord.xMinValue() || coord.xMaxValue() < p.x ||
       p.y < coord.yMinValue() || coord.yMaxValue() < p.y) {
     this.hoveringInfo_.show(false);
@@ -650,32 +693,97 @@ Plotter.prototype.updateHoveringInfo_ = function(evt, show) {
     this.hoveringInfo_.show(true);
   }
 
-  var closestLineIndex = null;
-  var closestDistance = coord.yValueRange();
-  for (var lineIndex = 0, line; line = this.plotData_[lineIndex]; ++lineIndex) {
-    for (var i = 1; line[i]; ++i) {
-      var p0 = line[i - 1], p1 = line[i];
-      if (p0[0] <= p.x && p.x < p1[0]) {
-        // Calculate y-value of the line at p.x, which is the cursor point.
-        var y = (p.x - p0[0]) / (p1[0] - p0[0]) * (p1[1] - p0[1]) + p0[1];
-        if (p.y < y && y - p.y < closestDistance) {
-          closestLineIndex = lineIndex;
-          closestDistance = y - p.y;
+  /**
+   * Finds the closest lines (upside and downside of the cursor position).
+   * Returns a set of upside/downside line indices and point index on success
+   * or null.
+   */
+  function findClosestLines(lines, opt_startIndex, opt_endIndex) {
+    var offsetIndex = opt_startIndex || 0;
+    lines =
+        opt_endIndex != null ? lines.slice(offsetIndex, opt_endIndex) :
+        opt_startIndex != null ? lines.slice(offsetIndex) :
+        lines;
+
+    var upsideClosestLineIndex = null;
+    var upsideClosestYDistance = coord.yValueRange();
+    var downsideClosestLineIndex = null;
+    var downsideClosestYDistance = coord.yValueRange();
+    var upsideClosestPointIndex = null;
+
+    for (var lineIndex = 0, line; line = lines[lineIndex]; ++lineIndex) {
+      for (var i = 1; line[i]; ++i) {
+        var p0 = line[i - 1], p1 = line[i];
+        if (p0[0] <= p.x && p.x < p1[0]) {
+          // Calculate y-value of the line at p.x, which is the cursor point.
+          var y = (p.x - p0[0]) / (p1[0] - p0[0]) * (p1[1] - p0[1]) + p0[1];
+          if (p.y < y && y - p.y < upsideClosestYDistance) {
+            upsideClosestLineIndex = lineIndex;
+            upsideClosestYDistance = y - p.y;
+
+            if (p.x - p0[0] < p1[0] - p.x) {
+              upsideClosestPointIndex = i - 1;
+            } else {
+              upsideClosestPointIndex = i;
+            }
+          } else if (y <= p.y && p.y - y < downsideClosestYDistance) {
+            downsideClosestLineIndex = lineIndex;
+            downsideClosestYDistance = p.y - y;
+          }
+          break;
         }
-        break;
       }
     }
+
+    return (upsideClosestLineIndex != null &&
+            upsideClosestPointIndex != null) ?
+        {'upsideLineIndex': offsetIndex + upsideClosestLineIndex,
+         'downsideLineIndex': downsideClosestYDistance == null ? null :
+                              offsetIndex + downsideClosestLineIndex,
+         'upsidePointIndex': offsetIndex + upsideClosestPointIndex} :
+        null;
   }
-  if (!(closestLineIndex && this.dataDescriptions_[closestLineIndex])) {
+
+  // Find the closest lines above and below the mouse cursor.
+  var closest = null;
+  // Since the other set of graphs are drawn over the first set, try to find
+  // the closest lines from the other set of graphs first.
+  if (this.graphsOtherStartIndex_ && this.stackedGraphOther_) {
+    closest = findClosestLines(this.plotData_, this.graphsOtherStartIndex_);
+  }
+  if (!closest && this.stackedGraph_) {
+    closest = this.graphsOtherStartIndex_ ?
+        findClosestLines(this.plotData_, 0, this.graphsOtherStartIndex_) :
+        findClosestLines(this.plotData_);
+  }
+  if (!closest) {
     this.hoveringInfo_.show(false);
     return;
   }
 
+  // Update the contents of the hovering info box.
+  // Color indicator, description and the value of the item.
+  this.hoveringInfo_.setColorIndicator(
+    this.getDataColor(closest.upsideLineIndex));
+  this.hoveringInfo_.setLegendText(
+    this.dataDescriptions_[closest.upsideLineIndex]);
+  var y1 = this.plotData_[closest.upsideLineIndex][closest.upsidePointIndex][1];
+  var y0 = closest.downsideLineIndex == null ?
+      0 :
+      this.plotData_[closest.downsideLineIndex][closest.upsidePointIndex][1];
+  this.hoveringInfo_.setItemValue(y1 - y0);
+
+  // Locate the hovering info box near the mouse cursor.
   var DIV_X_OFFSET = 10, DIV_Y_OFFSET = -20;
-  this.hoveringInfo_.setText(this.dataDescriptions_[closestLineIndex]);
-  this.hoveringInfo_.setColorIndicator(this.getDataColor(closestLineIndex));
-  this.hoveringInfo_.locateAtPageXY(evtPageXY.x + DIV_X_OFFSET,
-                                    evtPageXY.y + DIV_Y_OFFSET);
+  if (evtPageXY.x + this.hoveringInfo_.getElement().offsetWidth <
+      canvasPageXY.x + this.canvasElement_.offsetWidth) {
+    this.hoveringInfo_.locateAtPageXY(evtPageXY.x + DIV_X_OFFSET,
+                                      evtPageXY.y + DIV_Y_OFFSET);
+  } else {  // If lacking space at the right side, locate it at the left side.
+    this.hoveringInfo_.locateAtPageXY(
+      evtPageXY.x - this.hoveringInfo_.getElement().offsetWidth - DIV_X_OFFSET,
+      evtPageXY.y + DIV_Y_OFFSET);
+  }
 };
 
 /**
@@ -684,6 +792,8 @@ Plotter.prototype.updateHoveringInfo_ = function(evt, show) {
  * @param {Object} evt A mouse event object representing a mouse move event.
  */
 Plotter.prototype.onMouseMove_ = function(evt) {
+  var self = this;
+
   var canvas = evt.currentTarget.firstChild;
   var evtPageXY = domUtils.pageXYOfEvent(evt);
   var canvasPageXY = domUtils.pageXY(this.canvasElement_);
@@ -692,10 +802,14 @@ Plotter.prototype.onMouseMove_ = function(evt) {
 
   // Identify the index of the x value that is closest to the mouse x value.
   var xValue = this.coordinates.xValue(positionX);
-  var min_diff = Math.abs(this.plotData_[0][0][0] - xValue);
+  var lineIndex = !this.stackedGraph_ ? 0 :
+      this.graphsOtherStartIndex_ ? this.graphsOtherStartIndex_ - 1 :
+      this.plotData_.length - 1;
+  var line = this.plotData_[lineIndex];
+  var min_diff = Math.abs(line[0][0] - xValue);
   indexValueX = 0;
-  for (var i = 1; i < this.plotData_[0].length; ++i) {
-    var diff = Math.abs(this.plotData_[0][i][0] - xValue);
+  for (var i = 1; i < line.length; ++i) {
+    var diff = Math.abs(line[i][0] - xValue);
     if (diff < min_diff) {
       min_diff = diff;
       indexValueX = i;
@@ -706,10 +820,13 @@ Plotter.prototype.onMouseMove_ = function(evt) {
   // other graph being overlayed on top of the original graph, if one exists.
   if (this.unitsYOther_) {
     var xValue = this.coordinatesOther.xValue(positionX);
-    var min_diff = Math.abs(this.plotData_[1][0][0] - xValue);
+    var lineIndexOther = !this.stackedGraphOther_ ?
+        this.graphsOtherStartIndex_ : this.plotData_.length - 1;
+    var lineOther = this.plotData_[lineIndexOther];
+    var min_diff = Math.abs(lineOther[0][0] - xValue);
     var indexValueXOther = 0;
-    for (var i = 1; i < this.plotData_[1].length; ++i) {
-      var diff = Math.abs(this.plotData_[1][i][0] - xValue);
+    for (var i = 1; i < lineOther.length; ++i) {
+      var diff = Math.abs(lineOther[i][0] - xValue);
       if (diff < min_diff) {
         min_diff = diff;
         indexValueXOther = i;
@@ -718,37 +835,49 @@ Plotter.prototype.onMouseMove_ = function(evt) {
   }
 
   // Update coordinate information displayed directly underneath the graph.
-  var yValue = this.coordinates.yValue(positionY);
-
-  this.coordinatesTd_.innerHTML =
-      '<font style="color:' + this.dataColors_[0] + '">' +
-      this.plotData_[0][indexValueX][0] + ' ' + this.unitsX_ + ': ' +
-      addCommas(this.plotData_[0][indexValueX][1].toFixed(2)) + ' ' +
-      this.unitsY_  + '</font> [hovering at ' + addCommas(yValue.toFixed(2)) +
-      ' ' + this.unitsY_ + ']';
-
-  if (this.unitsYOther_) {
-    var yValue2 = this.coordinatesOther.yValue(positionY);
-    this.coordinatesTdOther_.innerHTML =
-      '<font style="color:' + this.dataColors_[1] + '">' +
-      this.plotData_[1][indexValueXOther][0] + ' ' + this.unitsX_ + ': ' +
-      addCommas(this.plotData_[1][indexValueXOther][1].toFixed(2)) + ' ' +
-      (this.unitsYOther_ ? this.unitsYOther_ : this.unitsY_)  +
-      '</font> [hovering at ' + addCommas(yValue2.toFixed(2)) + ' ' +
-      this.unitsYOther_ + ']';
+  function legendLabel(lineIndex, opt_labelText) {
+    return '<span style="color:' + self.getDataColor(lineIndex) + '">' +
+        (opt_labelText || self.dataDescriptions_[lineIndex]) +
+        '</span>:&nbsp;&nbsp;';
   }
-  else if (this.dataDescriptions_.length > 1) {
-    this.coordinatesTdOther_.innerHTML =
-        '<font style="color:' + this.dataColors_[1] + '">' +
-        this.plotData_[1][indexValueX][0] + ' ' + this.unitsX_ + ': ' +
-        addCommas(this.plotData_[1][indexValueX][1].toFixed(2)) + ' ' +
-        (this.unitsYOther_ ? this.unitsYOther_ : this.unitsY_)  + '</font>';
+  function valuesAtCursor(lineIndex, pointIndex, unitsY, yValue) {
+    return '<span style="color:' + self.getDataColor(lineIndex) + '">' +
+        self.plotData_[lineIndex][pointIndex][0] + ' ' + self.unitsX_ + ': ' +
+        addCommas(self.plotData_[lineIndex][pointIndex][1].toFixed(2)) + ' ' +
+        unitsY  + '</span> [hovering at ' + addCommas(yValue.toFixed(2)) +
+        ' ' + unitsY + ']';
+  }
+
+  this.infoBox_.rows[0].label.innerHTML = legendLabel(lineIndex);
+  this.infoBox_.rows[0].content.innerHTML = valuesAtCursor(
+    lineIndex, indexValueX, this.unitsY_, this.coordinates.yValue(positionY));
+  var row = this.infoBox_.rows[1];
+  if (this.unitsYOther_) {
+    row.label.innerHTML = legendLabel(lineIndexOther);
+    row.content.innerHTML = valuesAtCursor(
+      lineIndexOther, indexValueXOther, this.unitsYOther_,
+      this.coordinatesOther.yValue(positionY));
+  } else if (this.graphsOtherStartIndex_) {
+    row.label.innerHTML = legendLabel(
+      this.stackedGraphOther_ ?
+          this.plotData_.length - 1 : this.graphsOtherStartIndex_);
+    row.content.innerHTML = valuesAtCursor(
+      this.stackedGraphOther_ ?
+          this.plotData_.length - 1 : this.graphsOtherStartIndex_,
+      indexValueX, this.unitsY_, this.coordinates.yValue(positionY));
+  } else if (!this.stackedGraph_ && this.dataDescriptions_.length > 1) {
+    row.label.innerHTML = legendLabel(1);
+    row.content.innerHTML = valuesAtCursor(
+      1, indexValueX, this.unitsY_, this.coordinates.yValue(positionY));
+  } else if (row) {
+    row.label.innerHTML = '';
+    row.content.innerHTML = '';
   }
 
   // If there is a horizontal marker, also display deltas relative to it.
   if (this.horizontal_marker_) {
     var baseline = this.horizontal_marker_.value;
-    var delta = yValue - baseline;
+    var delta = this.coordinates.yValue(positionY) - baseline;
     var fraction = delta / baseline;  // Allow division by 0.
 
     var deltaStr = (delta >= 0 ? '+' : '') + delta.toFixed(0) + ' ' +
@@ -774,14 +903,16 @@ Plotter.prototype.onMouseMove_ = function(evt) {
 
   this.updateRuler_(evt);
   this.updateCursor_(this.coordinates, indexValueX, this.cursorDiv_, 0);
-  if (this.unitsYOther_) {
+  if (this.unitsYOther_ && this.graphsOtherStartIndex_) {
     this.updateCursor_(this.coordinatesOther, indexValueXOther,
-                       this.cursorDivOther_, 1);
+                       this.cursorDivOther_, this.graphsOtherStartIndex_);
   }
 
   // If there are events displayed, see if we're hovering close to an existing
   // event on the graph, and if so, display the metadata associated with it.
   if (this.eventName_ != null && this.eventInfo_ != null) {
+    this.infoBox_.rows[1].label.innerHTML = 'Event "' + this.eventName_ +
+        '":&nbsp;&nbsp;';
     var data = this.eventInfo_;
     var showed_event = false;
     var x = 0;
@@ -794,8 +925,8 @@ Plotter.prototype.onMouseMove_ = function(evt) {
         for (var meta_key in metadata)
           metadata_str += meta_key + ': ' + metadata[meta_key] + ', ';
         metadata_str = metadata_str.substring(0, metadata_str.length - 2);
-        this.coordinatesTdOther_.innerHTML = event_time + ' ' + this.unitsX_ +
-            ': {' + metadata_str + '}';
+        this.infoBox_.rows[1].content.innerHTML = event_time + ' ' +
+            this.unitsX_ + ': {' + metadata_str + '}';
         showed_event = true;
         this.updateEventDiv_(x, true);
         break;
@@ -978,32 +1109,13 @@ Plotter.prototype.coordinates_ = function() {
   if (this.is_lookout_) {
     table_html += ' style="font-size:0.8em"';
   }
-  table_html += '><tbody><tr>'
-
-  table_html += '<td><span class="legend_item" style="color:' +
-      this.getDataColor(0) + '">' + this.dataDescriptions_[0] +
-      '</span>:&nbsp;&nbsp;<span class="plot-coordinates">' +
-      '<i>move mouse over graph</i></span></td>';
-
+  table_html += '><tbody><tr>';
+  table_html += '<td><span class="legend_item"></span>' +
+      '<span class="plot-coordinates"><i>move mouse over graph</i></span></td>';
   table_html += '<td align="right">x-axis is ' + this.unitsX_ + '</td>';
-
-  table_html += '</tr><tr>'
-
-  table_html += '<td>';
-  if (this.dataDescriptions_.length > 1) {
-    // A second line will be drawn, so add information about it.
-    table_html += '<span class="legend_item" style="color:' +
-        this.getDataColor(1) + '">' + this.dataDescriptions_[1] +
-        '</span>:&nbsp;&nbsp;<span class="plot-coordinates">' +
-        '<i>move mouse over graph</i></span>';
-  } else if (this.eventName_ != null) {
-    // Event information will be overlayed on the graph, so add info about it.
-    table_html += '<span class="legend_item" style="color:' +
-        this.getDataColor(1) + '">Event "' + this.eventName_ + '":</span>' +
-        '&nbsp;&nbsp;<span class="plot-coordinates">' +
-        '<i>move mouse over graph</i></span>';
-  }
-  table_html += '</td>';
+  table_html += '</tr><tr>';
+  table_html += '<td><span class="legend_item"></span>' +
+      '<span class="plot-coordinates"></span></td>';
 
   if (!this.is_lookout_) {
     table_html += '<td align="right" style="color: ' + HorizontalMarker.COLOR +
@@ -1012,17 +1124,76 @@ Plotter.prototype.coordinates_ = function() {
   table_html += '</tr></tbody></table>';
   coordinatesDiv.innerHTML = table_html;
 
-  var tr = coordinatesDiv.firstChild.firstChild.childNodes[0];
-  this.coordinatesTd_ = tr.childNodes[0].childNodes[2];
-  tr = coordinatesDiv.firstChild.firstChild.childNodes[1];
-  if (this.dataDescriptions_.length > 1) {
-    // For second graph line.
-    this.coordinatesTdOther_ = tr.childNodes[0].childNodes[2];
-  } else if (this.eventName_ != null) {
-    // For event metadata.
-    this.coordinatesTdOther_ = tr.childNodes[0].childNodes[2];
+  var trs = coordinatesDiv.querySelectorAll('tr');
+  this.infoBox_ = {rows: []};
+  this.infoBox_.rows.push({
+    label: trs[0].querySelector('span.legend_item'),
+    content: trs[0].querySelector('span.plot-coordinates')});
+  if (this.dataDescriptions_.length > 1 || this.eventName_) {
+    this.infoBox_.rows.push({
+      label: trs[1].querySelector('span.legend_item'),
+      content: trs[1].querySelector('span.plot-coordinates')});
   }
-  this.baselineDeltasTd_ = tr.childNodes[1];
+
+  this.baselineDeltasTd_ = trs[1].childNodes[1];
+
+  // Add a summary of legends in case of stacked graphs.
+  if (this.stackedGraph_ || this.stackedGraphOther_) {
+    var legendPane = document.createElement('div');
+    legendPane.style.fontSize = '80%';
+    coordinatesDiv.appendChild(legendPane);
+
+    if (this.graphsOtherStartIndex_) {
+      legendPane.appendChild(
+        this.createLegendsSummaryElement_(
+          this.dataDescriptions_.slice(0, this.graphsOtherStartIndex_),
+          0));
+      legendPane.appendChild(
+        this.createLegendsSummaryElement_(
+          this.dataDescriptions_.slice(this.graphsOtherStartIndex_),
+          this.graphsOtherStartIndex_));
+    } else {
+      legendPane.appendChild(
+        this.createLegendsSummaryElement_(this.dataDescriptions_, 0));
+    }
+  }
 
   return coordinatesDiv;
+};
+
+/**
+ * Creates and returns a DOM element which shows a summary of legends.
+ *
+ * @param {!Array.<string>} legendTexts An array of legend texts.
+ * @param {number} colorIndexOffset Offset index for color.  i-th legend text
+ *     has an indicator in {@code (colorIndexOffset + i)}-th color
+ * @return {!Element} An element which shows a summary of legends.
+ */
+Plotter.prototype.createLegendsSummaryElement_ = function(legendTexts,
+                                                          colorIndexOffset) {
+  var containerElem = document.createElement('div');
+
+  for (var i = 0, text; text = legendTexts[i]; ++i) {
+    var colorIndicatorElem = document.createElement('div');
+    colorIndicatorElem.style.display = 'inline-block';
+    colorIndicatorElem.style.width = '1em';
+    colorIndicatorElem.style.height = '1em';
+    colorIndicatorElem.style.verticalAlign = 'text-bottom';
+    colorIndicatorElem.style.margin = '0 0.24em 0 0';
+    colorIndicatorElem.style.border = '1px solid #000';
+    colorIndicatorElem.style.backgroundColor =
+        this.getDataColor(colorIndexOffset + i);
+    var legendTextElem = document.createElement('span');
+    legendTextElem.textContent = text;
+    var legendElem = document.createElement('span');
+    legendElem.style.whiteSpace = 'nowrap';
+    legendElem.appendChild(colorIndicatorElem);
+    legendElem.appendChild(legendTextElem);
+    legendElem.style.margin = '0 0.8em 0 0';
+    containerElem.appendChild(legendElem);
+    // Add a space to break lines if necessary.
+    containerElem.appendChild(document.createTextNode(' '));
+  }
+
+  return containerElem;
 };
