@@ -263,7 +263,7 @@
    bug_156829
    Heapcheck:Leak
    ...
-   fun:media_stream::AudioInputDeviceManager::EnumerateOnDeviceThread
+   fun:content::AudioInputDeviceManager::EnumerateOnDeviceThread
 }
 
 
