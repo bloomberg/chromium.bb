@@ -1766,24 +1766,24 @@ frame_menu_func(struct window *window, int index, void *data)
 		else
 			display_exit(window->display);
 		break;
-	case 1: /* fullscreen */
-		/* we don't have a way to get out of fullscreen for now */
-		if (window->fullscreen_handler)
-			window->fullscreen_handler(window, window->user_data);
-		break;
-	case 2: /* move to workspace above */
+	case 1: /* move to workspace above */
 		display = window->display;
 		if (display->workspace > 0)
 			workspace_manager_move_surface(display->workspace_manager,
 						       window->surface,
 						       display->workspace - 1);
 		break;
-	case 3: /* move to workspace below */
+	case 2: /* move to workspace below */
 		display = window->display;
 		if (display->workspace < display->workspace_count - 1)
 			workspace_manager_move_surface(display->workspace_manager,
 						       window->surface,
 						       display->workspace + 1);
+	case 3: /* fullscreen */
+		/* we don't have a way to get out of fullscreen for now */
+		if (window->fullscreen_handler)
+			window->fullscreen_handler(window, window->user_data);
+		break;
 		break;
 	}
 }
@@ -1793,16 +1793,22 @@ window_show_frame_menu(struct window *window,
 		       struct input *input, uint32_t time)
 {
 	int32_t x, y;
+	int count;
 
 	static const char *entries[] = {
-		"Close", "Fullscreen",
-		"Move to workspace above", "Move to workspace below"
+		"Close",
+		"Move to workspace above", "Move to workspace below",
+		"Fullscreen"
 	};
+
+	if (window->fullscreen_handler)
+		count = ARRAY_LENGTH(entries);
+	else
+		count = ARRAY_LENGTH(entries) - 1;
 
 	input_get_position(input, &x, &y);
 	window_show_menu(window->display, input, time, window,
-			 x - 10, y - 10, frame_menu_func, entries,
-			 ARRAY_LENGTH(entries));
+			 x - 10, y - 10, frame_menu_func, entries, count);
 }
 
 static int
