@@ -5,37 +5,19 @@
 #ifndef UI_GFX_CANVAS_SKIA_PAINT_H_
 #define UI_GFX_CANVAS_SKIA_PAINT_H_
 
-#include "base/logging.h"
-#include "skia/ext/canvas_paint.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/size.h"
+// This file provides an easy way to include the appropriate CanvasPaint
+// header file on your platform.
 
-// Define a gfx::CanvasSkiaPaint type that wraps our gfx::Canvas like the
-// skia::PlatformCanvasPaint wraps PlatformCanvas.
-
-namespace skia {
-
-template<> inline
-PlatformCanvas* GetPlatformCanvas(skia::CanvasPaintT<gfx::Canvas>* canvas) {
-  PlatformCanvas* platform_canvas = canvas->platform_canvas();
-  DCHECK(platform_canvas);
-  return platform_canvas;
-}
-
-template<> inline
-void RecreateBackingCanvas(skia::CanvasPaintT<gfx::Canvas>* canvas,
-    int width, int height, float scale, bool opaque) {
-  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
-  canvas->RecreateBackingCanvas(gfx::Size(width, height), scale_factor,
-      opaque);
-}
-
-}  // namespace skia
-
-namespace gfx {
-
-typedef skia::CanvasPaintT<Canvas> CanvasSkiaPaint;
-
-}  // namespace gfx
+#if defined(WIN32)
+#include "ui/gfx/canvas_paint_win.h"
+#elif defined(__APPLE__)
+#include "ui/gfx/canvas_paint_mac.h"
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
+#if defined(TOOLKIT_GTK)
+#include "ui/gfx/canvas_paint_gtk.h"
+#else
+#error "No canvas paint for this platform"
+#endif
+#endif
 
 #endif  // UI_GFX_CANVAS_SKIA_PAINT_H_
