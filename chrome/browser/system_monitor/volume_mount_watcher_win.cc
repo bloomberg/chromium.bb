@@ -106,11 +106,8 @@ void VolumeMountWatcherWin::Init() {
   // When VolumeMountWatcherWin is created, the message pumps are not running
   // so a posted task from the constructor would never run. Therefore, do all
   // the initializations here.
-  //
-  // This should call AddExistingDevicesOnFileThread. The call is disabled
-  // until a fix for http://crbug.com/155910 can land.
-  // BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-  //     &VolumeMountWatcherWin::AddExistingDevicesOnFileThread, this));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &VolumeMountWatcherWin::AddExistingDevicesOnFileThread, this));
 }
 
 bool VolumeMountWatcherWin::GetDeviceInfo(const FilePath& device_path,
