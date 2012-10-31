@@ -46,7 +46,7 @@ var WELCOME_HEADER_COUNTER_KEY = 'gdataWelcomeHeaderCounter';
 /**
  * Maximum times Drive Welcome banner could have shown.
  */
-var WELCOME_HEADER_COUNTER_LIMIT = 5;
+var WELCOME_HEADER_COUNTER_LIMIT = 25;
 
 /**
  * Location of the FAQ about Google Drive.
