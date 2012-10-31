@@ -92,10 +92,9 @@ namespace {
 enum {
   kExtensionContextName = 0,
   kExtensionContextOptions = 2,
-  kExtensionContextDisable = 3,
-  kExtensionContextUninstall = 4,
-  kExtensionContextHide = 5,
-  kExtensionContextManage = 7,
+  kExtensionContextUninstall = 3,
+  kExtensionContextHide = 4,
+  kExtensionContextManage = 6,
 };
 
 }  // namespace
@@ -112,7 +111,6 @@ enum {
         base::SysUTF8ToNSString(extension->name()),
         [NSMenuItem separatorItem],
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_OPTIONS_MENU_ITEM),
-        l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_DISABLE),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_UNINSTALL),
         l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_HIDE_BUTTON),
         [NSMenuItem separatorItem],
@@ -164,15 +162,6 @@ enum {
       DCHECK(!extension_->options_url().is_empty());
       extensions::ExtensionSystem::Get(browser_->profile())->process_manager()->
           OpenOptionsPage(extension_, browser_);
-      break;
-    }
-    case kExtensionContextDisable: {
-      ExtensionService* extensionService =
-          browser_->profile()->GetExtensionService();
-      if (!extensionService)
-        return; // Incognito mode.
-      extensionService->DisableExtension(extension_->id(),
-                                         Extension::DISABLE_USER_ACTION);
       break;
     }
     case kExtensionContextUninstall: {

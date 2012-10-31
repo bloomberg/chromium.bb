@@ -51,7 +51,6 @@ TEST_F(ExtensionContextMenuModelTest, PolicyDisablesItems) {
   system->management_policy()->UnregisterAllProviders();
 
   // Actions should be enabled.
-  ASSERT_TRUE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::DISABLE));
   ASSERT_TRUE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
 
   extensions::TestManagementPolicyProvider policy_provider(
@@ -59,7 +58,6 @@ TEST_F(ExtensionContextMenuModelTest, PolicyDisablesItems) {
   system->management_policy()->RegisterProvider(&policy_provider);
 
   // Now the actions are disabled.
-  ASSERT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::DISABLE));
   ASSERT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
 }
 

@@ -80,8 +80,8 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
 
     return extension_action_ &&
         extension_action_->HasPopup(SessionID::IdForTab(web_contents));
-  } else if (command_id == DISABLE || command_id == UNINSTALL) {
-    // Some extension types can not be disabled or uninstalled.
+  } else if (command_id == UNINSTALL) {
+    // Some extension types can not be uninstalled.
     return extensions::ExtensionSystem::Get(
         profile_)->management_policy()->UserMayModifySettings(extension, NULL);
   }
@@ -115,12 +115,6 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       ExtensionService* extension_service = profile_->GetExtensionService();
       extension_service->extension_prefs()->
           SetBrowserActionVisibility(extension, false);
-      break;
-    }
-    case DISABLE: {
-      ExtensionService* extension_service = profile_->GetExtensionService();
-      extension_service->DisableExtension(extension_id_,
-                                          Extension::DISABLE_USER_ACTION);
       break;
     }
     case UNINSTALL: {
@@ -171,7 +165,6 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
-  AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
   AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   if (extension_action_manager->GetBrowserAction(*extension))
     AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);

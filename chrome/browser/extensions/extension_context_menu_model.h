@@ -31,7 +31,6 @@ class ExtensionContextMenuModel
     NAME = 0,
     CONFIGURE,
     HIDE,
-    DISABLE,
     UNINSTALL,
     MANAGE,
     INSPECT_POPUP
