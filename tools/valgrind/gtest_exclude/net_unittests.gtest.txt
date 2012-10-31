@@ -8,3 +8,6 @@ DirectoryListerTest.BigDirRecursiveTest
 # http://crbug.com/88228
 SSLClientSocketTest.Connect
 SSLClientSocketTest.ConnectClientAuthSendNullCert
+
+# These tests are broken http://crbug.com/118883
+*SpdyNetworkTransactionSpdy*Test.*

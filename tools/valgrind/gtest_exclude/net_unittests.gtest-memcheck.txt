@@ -24,6 +24,3 @@ DiskCacheBackendTest.ShutdownWithPendingIO_Fast
 # flaky failure on Linux Tests (valgrind)(2), 
 # see http://code.google.com/p/chromium/issues/detail?id=117196
 SSLClientSocketTest.VerifyReturnChainProperlyOrdered
-
-# http://crbug.com/118883
-SpdyNetworkTransactionSpdy21Test.WriteError
