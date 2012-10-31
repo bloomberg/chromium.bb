@@ -10,7 +10,7 @@ loop over a list of locales when repacking pak files, thus avoiding a
 proliferation of mostly duplicate, cut-n-paste gyp actions.
 """
 
-import getopt
+import optparse
 import os
 import sys
 
@@ -29,6 +29,9 @@ INT_DIR = None
 # The target platform. If it is not defined, sys.platform will be used.
 OS = None
 
+# Extra input files.
+EXTRA_INPUT_FILES = []
+
 class Usage(Exception):
   def __init__(self, msg):
     self.msg = msg
@@ -41,7 +44,7 @@ def calc_output(locale):
   # reference it.
   if locale == 'fake-bidi':
     return '%s/%s.pak' % (INT_DIR, locale)
-  if OS == 'mac':
+  if OS == 'mac' or OS == 'ios':
     # For Cocoa to find the locale at runtime, it needs to use '_' instead
     # of '-' (http://crbug.com/20441).  Also, 'en-US' should be represented
     # simply as 'en' (http://crbug.com/19165, http://crbug.com/25578).
@@ -66,27 +69,32 @@ def calc_inputs(locale):
   inputs.append(os.path.join(GRIT_DIR,
                 'platform_locale_settings_%s.pak' % locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak'
-  inputs.append(os.path.join(SHARE_INT_DIR, 'webkit',
-                'webkit_strings_%s.pak' % locale))
+  if OS != 'ios':
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak'
+    inputs.append(os.path.join(SHARE_INT_DIR, 'webkit',
+                  'webkit_strings_%s.pak' % locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings_da.pak',
-  inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'ui_strings',
-                'ui_strings_%s.pak' % locale))
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'ui_strings',
+                  'ui_strings_%s.pak' % locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash_strings/ash_strings_da.pak',
-  inputs.append(os.path.join(SHARE_INT_DIR, 'ash_strings',
-                'ash_strings_%s.pak' % locale))
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash_strings/ash_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ash_strings',
+                  'ash_strings_%s.pak' % locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings_da.pak',
-  inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'app_locale_settings',
-                'app_locale_settings_%s.pak' % locale))
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'app_locale_settings',
+                  'app_locale_settings_%s.pak' % locale))
 
   #e.g. '<(grit_out_dir)/google_chrome_strings_da.pak'
   #     or
   #     '<(grit_out_dir)/chromium_strings_da.pak'
   inputs.append(os.path.join(
       GRIT_DIR, '%s_strings_%s.pak' % (BRANDING, locale)))
+
+  # Add any extra input files.
+  for extra_file in EXTRA_INPUT_FILES:
+    inputs.append('%s_%s.pak' % (extra_file, locale))
 
   return inputs
 
@@ -134,53 +142,39 @@ def DoMain(argv):
   global SHARE_INT_DIR
   global INT_DIR
   global OS
+  global EXTRA_INPUT_FILES
 
-  short_options = 'iog:s:x:b:hp:'
-  long_options = 'help'
-
-  print_inputs = False
-  print_outputs = False
-  usage_msg = ''
-
-  helpstr = """\
-Usage:  %s [-h] [-i | -o] -g <DIR> -x <DIR> -s <DIR> -b <branding> [-p <os>]
-        <locale> [...]
-  -h, --help     Print this help, then exit.
-  -i             Print the expected input file list, then exit.
-  -o             Print the expected output file list, then exit.
-  -g DIR         GRIT build files output directory.
-  -x DIR         Intermediate build files output directory.
-  -s DIR         Shared intermediate build files output directory.
-  -b branding    Branding type of this build.
-  -p os          The target os. (e.g. mac, linux, win, etc.)
-  locale [...]   One or more locales to repack.""" % (
-      os.path.basename(__file__))
-
-  try:
-    opts, locales = getopt.getopt(argv, short_options, long_options)
-  except getopt.GetoptError, msg:
-    raise Usage(str(msg))
+  parser = optparse.OptionParser("usage: %prog [options] locales")
+  parser.add_option("-i", action="store_true", dest="inputs", default=False,
+                    help="Print the expected input file list, then exit.")
+  parser.add_option("-o", action="store_true", dest="outputs", default=False,
+                    help="Print the expected output file list, then exit.")
+  parser.add_option("-g", action="store", dest="grit_dir",
+                    help="GRIT build files output directory.")
+  parser.add_option("-x", action="store", dest="int_dir",
+                    help="Intermediate build files output directory.")
+  parser.add_option("-s", action="store", dest="share_int_dir",
+                    help="Shared intermediate build files output directory.")
+  parser.add_option("-b", action="store", dest="branding",
+                    help="Branding type of this build.")
+  parser.add_option("-e", action="append", dest="extra_input", default=[],
+                    help="Full path to an extra input pak file without the\
+                         locale suffix and \".pak\" extension.")
+  parser.add_option("-p", action="store", dest="os",
+                    help="The target OS. (e.g. mac, linux, win, etc.)")
+  options, locales = parser.parse_args(argv)
 
   if not locales:
-    usage_msg = 'Please specificy at least one locale to process.\n'
+    parser.error('Please specificy at least one locale to process.\n')
 
-  for o, a in opts:
-    if o == '-i':
-      print_inputs = True
-    elif o == '-o':
-      print_outputs = True
-    elif o == '-g':
-      GRIT_DIR = a
-    elif o == '-s':
-      SHARE_INT_DIR = a
-    elif o == '-x':
-      INT_DIR = a
-    elif o == '-b':
-      BRANDING = a
-    elif o == '-p':
-      OS = a
-    elif o in ('-h', '--help'):
-      raise Usage(helpstr)
+  print_inputs = options.inputs
+  print_outputs = options.outputs
+  GRIT_DIR = options.grit_dir
+  INT_DIR = options.int_dir
+  SHARE_INT_DIR = options.share_int_dir
+  BRANDING = options.branding
+  EXTRA_INPUT_FILES = options.extra_input
+  OS = options.os
 
   if not OS:
     if sys.platform == 'darwin':
@@ -193,15 +187,12 @@ Usage:  %s [-h] [-i | -o] -g <DIR> -x <DIR> -s <DIR> -b <branding> [-p <os>]
       OS = sys.platform
 
   if not (GRIT_DIR and INT_DIR and SHARE_INT_DIR):
-    usage_msg += 'Please specify all of "-g" and "-x" and "-s".\n'
+    parser.error('Please specify all of "-g" and "-x" and "-s".\n')
   if print_inputs and print_outputs:
-    usage_msg += 'Please specify only one of "-i" or "-o".\n'
+    parser.error('Please specify only one of "-i" or "-o".\n')
   # Need to know the branding, unless we're just listing the outputs.
   if not print_outputs and not BRANDING:
-    usage_msg += 'Please specify "-b" to determine the input files.\n'
-
-  if usage_msg:
-    raise Usage(usage_msg)
+    parser.error('Please specify "-b" to determine the input files.\n')
 
   if print_inputs:
     return list_inputs(locales)
