@@ -74,6 +74,7 @@ hyphenate_SOURCES =				\
 	brl_checks.h				\
 	hyphenate.c
 
+
 pass1Only_SOURCES =				\
 	brl_checks.c				\
 	brl_checks.h				\
@@ -85,6 +86,10 @@ outpos_SOURCES =			\
 	outpos.c	
 
 getTable_SOURCES = getTable.c
+
+typeform_SOURCES =				\
+typeform.c
+
 
 check_PROGRAMS =				\
 	pass2					\
@@ -103,7 +108,9 @@ check_PROGRAMS =				\
 	hyphenate				\
 	pass1Only				\
 	outpos				\
-	getTable
+	getTable \
+	typeform
+
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\
