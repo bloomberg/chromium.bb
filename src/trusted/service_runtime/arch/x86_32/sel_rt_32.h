@@ -87,6 +87,10 @@ struct NaClGsSegment {
  * The layout of NaClThreadContext must be kept in sync with the
  * #defines below.
  */
+#if NACL_WINDOWS
+/* Align gs_segment for better performance on Intel Atom */
+__declspec(align(64))
+#endif
 struct NaClThreadContext {
   /* ecx, edx, eax, eflags not saved */
   nacl_reg_t  ebx, esi, edi, prog_ctr; /* return addr */
@@ -147,9 +151,33 @@ struct NaClThreadContext {
   uint16_t    trusted_gs;
   /*          4a */
 
-  struct NaClGsSegment gs_segment;
+  /*
+   * We align gs_segment to a multiple of 64 bytes because otherwise
+   * memory accesses through the %gs segment are slow on Intel Atom
+   * CPUs.
+   *
+   * While GCC allows __attribute__((aligned(X))) on a field in a
+   * struct, MSVC does not, so we use a struct-level attribute (plus a
+   * padding field) on all platforms for consistency.  Note that we do
+   * not put __attribute__((aligned(X))) on struct NaClGsSegment
+   * because that would increase sizeof(struct NaClGsSegment) to 64.
+   *
+   * TODO(mseaborn): We could reduce the padding here by putting
+   * gs_segment at the start of NaClThreadContext, but that involves
+   * fixing the Windows incremental build problem noted above.
+   */
+  uint8_t     align_padding3[0x34];
   /*          4c */
-};
+  struct NaClGsSegment gs_segment;
+  /*          80 */
+  uint8_t     align_padding4[0x30];
+  /*          90 */
+}
+#if defined(__GNUC__)
+    /* Align gs_segment for better performance on Intel Atom */
+    __attribute__((aligned(64)))
+#endif
+    ;
 
 #endif /* !defined(__ASSEMBLER__) */
 
@@ -179,7 +207,9 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES         0x46
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS         0x48
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS         0x4a
-#define NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT         0x4c
+#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING3     0x4c
+#define NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT         0x80
+#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING4     0x90
 
 #if !defined(__ASSEMBLER__)
 
@@ -223,7 +253,9 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES, trusted_es);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS, trusted_fs);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS, trusted_gs);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING3, align_padding3);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT, gs_segment);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING4, align_padding4);
   CHECK(offset == sizeof(struct NaClThreadContext));
 
 #undef NACL_CHECK_FIELD

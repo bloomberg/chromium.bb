@@ -7,6 +7,7 @@
 /*
  * NaCl Server Runtime user thread state.
  */
+#include "native_client/src/shared/platform/aligned_malloc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -155,7 +156,7 @@ struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
   int rv;
   uint32_t tls_idx;
 
-  natp = malloc(sizeof(*natp));
+  natp = NaClAlignedMalloc(sizeof *natp, __alignof(struct NaClAppThread));
   if (natp == NULL) {
     return NULL;
   }
@@ -226,7 +227,7 @@ struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
     natp->signal_stack = NULL;
   }
  cleanup_free:
-  free(natp);
+  NaClAlignedFree(natp);
   return NULL;
 }
 
@@ -243,5 +244,5 @@ void NaClAppThreadDelete(struct NaClAppThread *natp) {
   natp->signal_stack = NULL;
   NaClTlsFree(natp);
   NaClMutexDtor(&natp->mu);
-  free(natp);
+  NaClAlignedFree(natp);
 }

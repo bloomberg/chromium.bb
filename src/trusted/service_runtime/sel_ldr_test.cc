@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/shared/platform/aligned_malloc.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
@@ -252,3 +253,21 @@ TEST_F(SelLdrTest, NaClUserToSysAddrRangeTest) {
   ASSERT_EQ(kNaClBadAddress,
             NaClUserToSysAddrRange(&app, addr_test, obj_size));
 }
+
+// On Intel Atom CPUs, memory accesses through the %gs segment are
+// slow unless the start of the %gs segment is 64-byte-aligned.  This
+// is a sanity check to ensure our alignment declarations work.
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+TEST_F(SelLdrTest, GsSegmentAlignmentTest) {
+  struct NaClAppThread *natp =
+      (struct NaClAppThread *)
+      NaClAlignedMalloc(sizeof(*natp), __alignof(struct NaClAppThread));
+  ASSERT_TRUE(natp);
+  // We use "volatile" in an attempt to prevent the compiler from
+  // optimizing away our assertion based on the compiler's own
+  // knowledge of the alignment of the struct it allocated.
+  volatile uintptr_t addr = (uintptr_t) &natp->user.gs_segment;
+  ASSERT_EQ((int) (addr % 64), 0);
+  NaClAlignedFree(natp);
+}
+#endif

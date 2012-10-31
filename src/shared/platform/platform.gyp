@@ -41,17 +41,6 @@
           'linux/nacl_clock.c',
           'linux/nacl_host_dir.c',
           'linux/nacl_semaphore.c',
-          'posix/condition_variable.c',
-          'posix/lock.c',
-          'posix/nacl_exit.c',
-          'posix/nacl_fast_mutex.c',
-          'posix/nacl_find_addrsp.c',
-          'posix/nacl_host_desc.c',
-          'posix/nacl_secure_random.c',
-          'posix/nacl_thread_id.c',
-          'posix/nacl_threads.c',
-          'posix/nacl_time.c',
-          'posix/nacl_timestamp.c',
         ],
       }],
       ['OS=="mac"', {
@@ -60,6 +49,11 @@
           'osx/nacl_host_dir.c',
           'osx/nacl_semaphore.c',
           'osx/strnlen_osx.c',
+        ],
+      }],
+      ['OS=="linux" or OS=="mac"', {
+        'platform_sources': [
+          'posix/aligned_malloc.c',
           'posix/condition_variable.c',
           'posix/lock.c',
           'posix/nacl_exit.c',
@@ -75,6 +69,7 @@
       }],
       ['OS=="win"', {
         'platform_sources': [
+          'win/aligned_malloc.c',
           'win/condition_variable.cc',
           'win/lock.cc',
           'win/nacl_clock.c',
