@@ -21,7 +21,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/point3.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/point3_f.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/background.h"
@@ -1410,7 +1411,7 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
   if (GetTransform().HasChange()) {
     gfx::Point translation;
     float rotation;
-    gfx::Point3f scale;
+    gfx::Point3F scale;
     if (ui::InterpolatedTransform::FactorTRS(GetTransform(),
                                              &translation,
                                              &rotation,
@@ -1431,7 +1432,7 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
         result.append(bounds_buffer);
       }
 
-      if (scale.AsPoint() != gfx::Point(0, 0)) {
+      if (!gfx::ToFlooredPoint(scale.AsPointF()).IsOrigin()) {
         base::snprintf(bounds_buffer,
                        arraysize(bounds_buffer),
                        "\\n scale: (%2.4f, %2.4f)",
@@ -1786,9 +1787,9 @@ bool View::ConvertPointForAncestor(const View* ancestor,
   gfx::Transform trans;
   // TODO(sad): Have some way of caching the transformation results.
   bool result = GetTransformRelativeTo(ancestor, &trans);
-  gfx::Point3f p(*point);
+  gfx::Point3F p(*point);
   trans.TransformPoint(p);
-  *point = p.AsPoint();
+  *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
 }
 
@@ -1796,9 +1797,9 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
                                     gfx::Point* point) const {
   gfx::Transform trans;
   bool result = GetTransformRelativeTo(ancestor, &trans);
-  gfx::Point3f p(*point);
+  gfx::Point3F p(*point);
   trans.TransformPointReverse(p);
-  *point = p.AsPoint();
+  *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
 }
 

@@ -105,7 +105,7 @@ void InterpolatedTransform::SetChild(InterpolatedTransform* child) {
 bool InterpolatedTransform::FactorTRS(const gfx::Transform& transform,
                                       gfx::Point* translation,
                                       float* rotation,
-                                      gfx::Point3f* scale) {
+                                      gfx::Point3F* scale) {
   const SkMatrix44& m = transform.matrix();
   float m00 = m.get(0, 0);
   float m01 = m.get(0, 1);
@@ -152,7 +152,7 @@ bool InterpolatedTransform::FactorTRS(const gfx::Transform& transform,
   if (rotation)
     *rotation = radians * 180 / M_PI;
   if (scale)
-    *scale = gfx::Point3f(scale_x, scale_y, 1.0f);
+    *scale = gfx::Point3F(scale_x, scale_y, 1.0f);
 
   return true;
 }
@@ -217,7 +217,7 @@ gfx::Transform InterpolatedRotation::InterpolateButDoNotCompose(float t) const {
 //
 
 InterpolatedAxisAngleRotation::InterpolatedAxisAngleRotation(
-    gfx::Point3f axis,
+    gfx::Point3F axis,
     float start_degrees,
     float end_degrees)
     : InterpolatedTransform(),
@@ -227,7 +227,7 @@ InterpolatedAxisAngleRotation::InterpolatedAxisAngleRotation(
 }
 
 InterpolatedAxisAngleRotation::InterpolatedAxisAngleRotation(
-    gfx::Point3f axis,
+    gfx::Point3F axis,
     float start_degrees,
     float end_degrees,
     float start_time,
@@ -253,26 +253,26 @@ InterpolatedAxisAngleRotation::InterpolateButDoNotCompose(float t) const {
 
 InterpolatedScale::InterpolatedScale(float start_scale, float end_scale)
     : InterpolatedTransform(),
-      start_scale_(gfx::Point3f(start_scale, start_scale, start_scale)),
-      end_scale_(gfx::Point3f(end_scale, end_scale, end_scale)) {
+      start_scale_(gfx::Point3F(start_scale, start_scale, start_scale)),
+      end_scale_(gfx::Point3F(end_scale, end_scale, end_scale)) {
 }
 
 InterpolatedScale::InterpolatedScale(float start_scale, float end_scale,
                                      float start_time, float end_time)
     : InterpolatedTransform(start_time, end_time),
-      start_scale_(gfx::Point3f(start_scale, start_scale, start_scale)),
-      end_scale_(gfx::Point3f(end_scale, end_scale, end_scale)) {
+      start_scale_(gfx::Point3F(start_scale, start_scale, start_scale)),
+      end_scale_(gfx::Point3F(end_scale, end_scale, end_scale)) {
 }
 
-InterpolatedScale::InterpolatedScale(const gfx::Point3f& start_scale,
-                                     const gfx::Point3f& end_scale)
+InterpolatedScale::InterpolatedScale(const gfx::Point3F& start_scale,
+                                     const gfx::Point3F& end_scale)
     : InterpolatedTransform(),
       start_scale_(start_scale),
       end_scale_(end_scale) {
 }
 
-InterpolatedScale::InterpolatedScale(const gfx::Point3f& start_scale,
-                                     const gfx::Point3f& end_scale,
+InterpolatedScale::InterpolatedScale(const gfx::Point3F& start_scale,
+                                     const gfx::Point3F& end_scale,
                                      float start_time,
                                      float end_time)
     : InterpolatedTransform(start_time, end_time),
@@ -415,7 +415,7 @@ InterpolatedTRSTransform::InterpolateButDoNotCompose(float t) const {
 void InterpolatedTRSTransform::Init(const gfx::Transform& start_transform,
                                     const gfx::Transform& end_transform) {
   gfx::Point start_translation, end_translation;
-  gfx::Point3f start_scale, end_scale;
+  gfx::Point3F start_scale, end_scale;
   float start_degrees, end_degrees;
   if (FactorTRS(start_transform,
                 &start_translation,

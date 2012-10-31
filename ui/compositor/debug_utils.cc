@@ -15,6 +15,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -68,12 +69,12 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
   if (layer->transform().HasChange()) {
     gfx::Point translation;
     float rotation;
-    gfx::Point3f scale;
+    gfx::Point3F scale;
     if (ui::InterpolatedTransform::FactorTRS(layer->transform(),
                                              &translation,
                                              &rotation,
                                              &scale)) {
-      if (translation != gfx::Point()) {
+      if (!translation.IsOrigin()) {
         buf << L'\n' << UTF8ToWide(content_indent_str);
         buf << L"translation: " << translation.x() << L", " << translation.y();
       }
@@ -83,7 +84,7 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
         buf << L"rotation: " << std::setprecision(4) << rotation;
       }
 
-      if (scale.AsPoint() != gfx::Point()) {
+      if (!gfx::ToFlooredPoint(scale.AsPointF()).IsOrigin()) {
         buf << L'\n' << UTF8ToWide(content_indent_str);
         buf << std::setprecision(4);
         buf << L"scale: " << scale.x() << L", " << scale.y();

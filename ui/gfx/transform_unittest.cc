@@ -9,12 +9,13 @@
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/point3.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/point3_f.h"
 
 namespace {
 
-bool PointsAreNearlyEqual(const gfx::Point3f& lhs,
-                          const gfx::Point3f& rhs) {
+bool PointsAreNearlyEqual(const gfx::Point3F& lhs,
+                          const gfx::Point3F& rhs) {
   float epsilon = 0.0001f;
   return lhs.SquaredDistanceTo(rhs) < epsilon;
 }
@@ -73,8 +74,8 @@ TEST(XFormTest, ConcatTranslate) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatTranslate(value.tx, value.ty);
-    gfx::Point3f p1(value.x1, value.y1, 0);
-    gfx::Point3f p2(value.x2, value.y2, 0);
+    gfx::Point3F p1(value.x1, value.y1, 0);
+    gfx::Point3F p2(value.x2, value.y2, 0);
     xform.TransformPoint(p1);
     if (value.tx == value.tx &&
         value.ty == value.ty) {
@@ -100,8 +101,8 @@ TEST(XFormTest, ConcatScale) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatScale(value.scale, value.scale);
-    gfx::Point3f p1(value.before, value.before, 0);
-    gfx::Point3f p2(value.after, value.after, 0);
+    gfx::Point3F p1(value.before, value.before, 0);
+    gfx::Point3F p2(value.after, value.after, 0);
     xform.TransformPoint(p1);
     if (value.scale == value.scale) {
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
@@ -129,8 +130,8 @@ TEST(XFormTest, ConcatRotate) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatRotate(value.degrees);
-    gfx::Point3f p1(value.x1, value.y1, 0);
-    gfx::Point3f p2(value.x2, value.y2, 0);
+    gfx::Point3F p1(value.x1, value.y1, 0);
+    gfx::Point3F p2(value.x2, value.y2, 0);
     xform.TransformPoint(p1);
     if (value.degrees == value.degrees) {
       EXPECT_TRUE(PointsAreNearlyEqual(p1, p2));
@@ -156,7 +157,7 @@ TEST(XFormTest, SetTranslate) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     for (int k = 0; k < 3; ++k) {
-      gfx::Point3f p0, p1, p2;
+      gfx::Point3F p0, p1, p2;
       gfx::Transform xform;
       switch (k) {
       case 0:
@@ -203,7 +204,7 @@ TEST(XFormTest, SetScale) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     for (int k = 0; k < 3; ++k) {
-      gfx::Point3f p0, p1, p2;
+      gfx::Point3F p0, p1, p2;
       gfx::Transform xform;
       switch (k) {
       case 0:
@@ -255,9 +256,9 @@ TEST(XFormTest, SetRotate) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(set_rotate_cases); ++i) {
     const SetRotateCase& value = set_rotate_cases[i];
-    gfx::Point3f p0;
-    gfx::Point3f p1(value.x, value.y, 0);
-    gfx::Point3f p2(value.xprime, value.yprime, 0);
+    gfx::Point3F p0;
+    gfx::Point3F p1(value.x, value.y, 0);
+    gfx::Point3F p2(value.xprime, value.yprime, 0);
     p0 = p1;
     gfx::Transform xform;
     xform.SetRotate(value.degree);

@@ -12,7 +12,7 @@ namespace gfx {
 
 class Rect;
 class Point;
-class Point3f;
+class Point3F;
 
 // 4x4 transformation matrix. Transform is cheap and explicitly allows
 // copy/assign.
@@ -37,7 +37,7 @@ class UI_EXPORT Transform {
   void SetRotate(float degree);
 
   // Sets the rotation of the transform (about a vector).
-  void SetRotateAbout(const Point3f& point, float degree);
+  void SetRotateAbout(const Point3F& point, float degree);
 
   // Sets the scaling parameters.
   void SetScaleX(float x);
@@ -58,7 +58,7 @@ class UI_EXPORT Transform {
   void ConcatRotate(float degree);
 
   // Applies an axis-angle rotation on the current transformation.
-  void ConcatRotateAbout(const Point3f& point, float degree);
+  void ConcatRotateAbout(const Point3F& point, float degree);
 
   // Applies scaling on current transform.
   void ConcatScale(float x, float y);
@@ -85,7 +85,7 @@ class UI_EXPORT Transform {
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully.
-  void TransformPoint(Point3f& point) const;
+  void TransformPoint(Point3F& point) const;
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully. Rounds the result to the nearest point.
@@ -93,7 +93,7 @@ class UI_EXPORT Transform {
 
   // Applies the reverse transformation on the point. Returns true if the
   // transformation can be inverted.
-  bool TransformPointReverse(Point3f& point) const;
+  bool TransformPointReverse(Point3F& point) const;
 
   // Applies the reverse transformation on the point. Returns true if the
   // transformation can be inverted. Rounds the result to the nearest point.
@@ -119,7 +119,7 @@ class UI_EXPORT Transform {
                               Point& point) const;
 
   void TransformPointInternal(const SkMatrix44& xform,
-                              Point3f& point) const;
+                              Point3F& point) const;
 
   SkMatrix44 matrix_;
 

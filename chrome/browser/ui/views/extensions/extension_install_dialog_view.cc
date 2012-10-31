@@ -22,7 +22,6 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/point3.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"

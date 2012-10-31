@@ -355,8 +355,8 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   float scale_y = static_cast<float>(target_bounds.width()) / bounds.height();
 
   scoped_ptr<ui::InterpolatedTransform> scale(
-      new ui::InterpolatedScale(gfx::Point3f(1, 1, 1),
-                                gfx::Point3f(scale_x, scale_y, 1)));
+      new ui::InterpolatedScale(gfx::Point3F(1, 1, 1),
+                                gfx::Point3F(scale_x, scale_y, 1)));
 
   scoped_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
@@ -548,7 +548,7 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
 
   scoped_ptr<ui::InterpolatedTransform> rotation(
       new ui::InterpolatedAxisAngleRotation(
-          gfx::Point3f(1, 0, 0), 0, kWindowAnimation_Rotate_DegreesX));
+          gfx::Point3F(1, 0, 0), 0, kWindowAnimation_Rotate_DegreesX));
 
   scale_about_pivot->SetChild(perspective.release());
   translation->SetChild(scale_about_pivot.release());

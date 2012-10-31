@@ -26,7 +26,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/point3.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/point3_f.h"
 #include "ui/gfx/size_conversions.h"
 
 namespace {
@@ -560,9 +561,9 @@ bool Layer::ConvertPointForAncestor(const Layer* ancestor,
                                     gfx::Point* point) const {
   gfx::Transform transform;
   bool result = GetTransformRelativeTo(ancestor, &transform);
-  gfx::Point3f p(*point);
+  gfx::Point3F p(*point);
   transform.TransformPoint(p);
-  *point = p.AsPoint();
+  *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
 }
 
@@ -570,9 +571,9 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
                                      gfx::Point* point) const {
   gfx::Transform transform;
   bool result = GetTransformRelativeTo(ancestor, &transform);
-  gfx::Point3f p(*point);
+  gfx::Point3F p(*point);
   transform.TransformPointReverse(p);
-  *point = p.AsPoint();
+  *point = gfx::ToFlooredPoint(p.AsPointF());
   return result;
 }
 

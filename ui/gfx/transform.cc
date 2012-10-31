@@ -4,7 +4,7 @@
 
 #include "ui/gfx/transform.h"
 
-#include "ui/gfx/point3.h"
+#include "ui/gfx/point3_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -29,7 +29,7 @@ void Transform::SetRotate(float degree) {
   matrix_.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
 }
 
-void Transform::SetRotateAbout(const Point3f& axis, float degree) {
+void Transform::SetRotateAbout(const Point3F& axis, float degree) {
   matrix_.setRotateDegreesAbout(axis.x(),
                                 axis.y(),
                                 axis.z(),
@@ -76,7 +76,7 @@ void Transform::ConcatRotate(float degree) {
   matrix_.postConcat(rot);
 }
 
-void Transform::ConcatRotateAbout(const Point3f& axis, float degree) {
+void Transform::ConcatRotateAbout(const Point3F& axis, float degree) {
   SkMatrix44 rot;
   rot.setRotateDegreesAbout(axis.x(),
                             axis.y(),
@@ -127,7 +127,7 @@ void Transform::TransformPoint(Point& point) const {
   TransformPointInternal(matrix_, point);
 }
 
-void Transform::TransformPoint(Point3f& point) const {
+void Transform::TransformPoint(Point3F& point) const {
   TransformPointInternal(matrix_, point);
 }
 
@@ -141,7 +141,7 @@ bool Transform::TransformPointReverse(Point& point) const {
   return true;
 }
 
-bool Transform::TransformPointReverse(Point3f& point) const {
+bool Transform::TransformPointReverse(Point3F& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
   SkMatrix44 inverse;
   if (!matrix_.invert(&inverse))
@@ -170,7 +170,7 @@ bool Transform::TransformRectReverse(Rect* rect) const {
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
-                                       Point3f& point) const {
+                                       Point3F& point) const {
   SkScalar p[4] = {
     SkFloatToScalar(point.x()),
     SkFloatToScalar(point.y()),

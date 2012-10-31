@@ -107,7 +107,7 @@ gfx::Transform Tween::ValueBetween(double value,
   gfx::Transform to_return;
   gfx::Point start_translation, end_translation;
   float start_rotation, end_rotation;
-  gfx::Point3f start_scale, end_scale;
+  gfx::Point3F start_scale, end_scale;
   if (InterpolatedTransform::FactorTRS(start_transform,
                                        &start_translation,
                                        &start_rotation,

@@ -13,7 +13,8 @@
 
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/point3.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/point3_f.h"
 #include "ui/gfx/transform.h"
 
 #if defined(USE_X11)
@@ -147,9 +148,9 @@ LocatedEvent::LocatedEvent(EventType type,
 void LocatedEvent::UpdateForRootTransform(
     const gfx::Transform& root_transform) {
   // Transform has to be done at root level.
-  gfx::Point3f p(location_);
+  gfx::Point3F p(location_);
   root_transform.TransformPointReverse(p);
-  root_location_ = location_ = p.AsPoint();
+  root_location_ = location_ = gfx::ToFlooredPoint(p.AsPointF());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -333,7 +334,7 @@ void TouchEvent::CalibrateLocation(const gfx::Size& from, const gfx::Size& to) {
 
 void TouchEvent::UpdateForRootTransform(const gfx::Transform& root_transform) {
   LocatedEvent::UpdateForRootTransform(root_transform);
-  gfx::Point3f scale;
+  gfx::Point3F scale;
   InterpolatedTransform::FactorTRS(root_transform, NULL, NULL, &scale);
   if (scale.x())
     radius_x_ /= scale.x();

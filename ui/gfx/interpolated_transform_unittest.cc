@@ -47,10 +47,10 @@ TEST(InterpolatedTransformTest, InterpolatedRotation) {
 }
 
 TEST(InterpolatedTransformTest, InterpolatedScale) {
-  ui::InterpolatedScale interpolated_scale(gfx::Point3f(0, 0, 0),
-                                           gfx::Point3f(100, 100, 100));
+  ui::InterpolatedScale interpolated_scale(gfx::Point3F(0, 0, 0),
+                                           gfx::Point3F(100, 100, 100));
   ui::InterpolatedScale interpolated_scale_diff_start_end(
-      gfx::Point3f(0, 0, 0), gfx::Point3f(100, 100, 100), 100, 200);
+      gfx::Point3F(0, 0, 0), gfx::Point3F(100, 100, 100), 100, 200);
 
   for (int i = 0; i <= 100; ++i) {
     gfx::Transform scale;
@@ -102,7 +102,7 @@ TEST(InterpolatedTransformTest, InterpolatedScaleAboutPivot) {
   gfx::Point above_pivot(100, 200);
   ui::InterpolatedTransformAboutPivot interpolated_xform(
       pivot,
-      new ui::InterpolatedScale(gfx::Point3f(1, 1, 1), gfx::Point3f(2, 2, 2)));
+      new ui::InterpolatedScale(gfx::Point3F(1, 1, 1), gfx::Point3F(2, 2, 2)));
   gfx::Transform result = interpolated_xform.Interpolate(0.0f);
   CheckApproximatelyEqual(gfx::Transform(), result);
   result = interpolated_xform.Interpolate(1.0f);
@@ -125,7 +125,7 @@ TEST(InterpolatedTransformTest, FactorTRS) {
     // factor the matrix
     gfx::Point translation;
     float rotation;
-    gfx::Point3f scale;
+    gfx::Point3F scale;
     bool success = ui::InterpolatedTransform::FactorTRS(transform,
                                                         &translation,
                                                         &rotation,
@@ -219,8 +219,8 @@ ui::InterpolatedTransform* GetMaximize() {
       target_bounds.width()) / initial_bounds.height();
 
   scoped_ptr<ui::InterpolatedTransform> scale(
-      new ui::InterpolatedScale(gfx::Point3f(1, 1, 1),
-                                gfx::Point3f(scale_x, scale_y, 1)));
+      new ui::InterpolatedScale(gfx::Point3F(1, 1, 1),
+                                gfx::Point3F(scale_x, scale_y, 1)));
 
   scoped_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
