@@ -8,9 +8,6 @@
 import os.path
 import sys
 
-TOP_DIR = 'native_client'
-MAIN_DEPS = os.path.join(TOP_DIR, 'DEPS')
-
 # List of directories to not apply presubmit project checks, relative
 # to the NaCl top directory
 EXCLUDE_PROJECT_CHECKS_DIRS = [
@@ -31,11 +28,10 @@ EXCLUDE_PROJECT_CHECKS_DIRS = [
     ]
 
 def NaclTopDir():
-  cwd = os.getcwd()
-  pos = cwd.rfind(TOP_DIR)
-  if pos < 0:
-    print 'ERROR: expected to be called from with %s' % TOP_DIR
-  return cwd[:pos + len(TOP_DIR)]
+  # git-cl and gcl run PRESUBMIT.py with the current directory set to
+  # the native_client directory (which may have a different basename
+  # in a standalone checkout).
+  return os.getcwd()
 
 def _CommonChecks(input_api, output_api):
   """Checks for both upload and commit."""
