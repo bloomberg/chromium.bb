@@ -3190,7 +3190,6 @@
         'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_view_browsertest.cc',
         'browser/ui/views/panels/panel_view_browsertest.cc',
-        'browser/ui/views/search/search_view_controller_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/toolbar_view_browsertest.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',

@@ -71,7 +71,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
-#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -375,9 +374,6 @@ BrowserView::~BrowserView() {
   // TabstripModel, which is destroyed by the browser.
   launcher_item_controller_.reset();
 #endif
-
-  // Destroy SearchViewController before the Browser.
-  search_view_controller_.reset(NULL);
 
   preview_controller_.reset(NULL);
 
@@ -1398,8 +1394,6 @@ void BrowserView::TabDetachedAt(TabContents* contents, int index) {
     contents_container_->SetWebContents(NULL);
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
-    if (search_view_controller_.get())
-      search_view_controller_->SetTabContents(NULL);
   }
 }
 
@@ -1419,8 +1413,6 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
 
   // See if the Instant preview is being activated (committed).
   if (contents_->preview_web_contents() == new_contents->web_contents()) {
-    if (search_view_controller_.get())
-      search_view_controller_->WillCommitInstant();
     contents_->MakePreviewContentsActiveContents();
     views::WebView* old_container = contents_container_;
     contents_container_ = preview_controller_->release_preview_container();
@@ -1441,8 +1433,6 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
   // When we toggle the NTP floating bookmarks bar and/or the info bar,
   // we don't want any WebContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a WebContents.
-  // This also applies to the |search_view_controller_| logic, as it can
-  // reparent the |contents_container_|.
   if (change_tab_contents)
     contents_container_->SetWebContents(NULL);
   InfoBarTabHelper* new_infobar_tab_helper =
@@ -1455,11 +1445,6 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
         browser_->search_model()->mode());
   }
   UpdateUIForContents(new_contents);
-
-  // |change_tab_contents| can mean same WebContents but different TabContents,
-  // so let SearchViewController decide how it would handle |new_contents|.
-  if (search_view_controller_.get())
-    search_view_controller_->SetTabContents(new_contents);
 
   // Layout for DevTools _before_ setting the main WebContents to avoid
   // toggling the size of the main WebContents.
@@ -1971,19 +1956,7 @@ void BrowserView::Init() {
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
 
-  // SearchViewController doesn't work on windows yet.
-  Profile* profile = browser_->profile();
-  if (chrome::search::IsInstantExtendedAPIEnabled(profile)) {
-    search_view_controller_.reset(new SearchViewController(profile, contents_,
-        &browser()->search_delegate()->toolbar_search_animator(), this));
-  }
-
   toolbar_->Init(this);
-
-  if (search_view_controller_.get()) {
-    search_view_controller_->set_location_bar_container(
-        toolbar_->location_bar_container());
-  }
 
   preview_controller_.reset(
       new InstantPreviewControllerViews(browser(), this, contents_));
@@ -2575,8 +2548,6 @@ void BrowserView::ShowPasswordGenerationBubble(
 }
 
 void BrowserView::RestackLocationBarContainer() {
-  if (search_view_controller_.get())
-    search_view_controller_->StackAtTop();
   if (preview_controller_ && preview_controller_->preview_container() &&
       preview_controller_->preview_container()->web_contents()) {
 #if defined(USE_AURA)

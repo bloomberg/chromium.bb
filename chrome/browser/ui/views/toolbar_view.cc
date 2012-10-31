@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
-#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -409,39 +408,6 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
   return gfx::ImageSkia(source, source->size());
 }
 
-void ToolbarView::LayoutForSearch() {
-  if (!(chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()) &&
-        browser_->search_model()->mode().is_ntp()))
-    return;
-
-  const BrowserView* browser_view =
-      static_cast<BrowserView*>(browser_->window());
-  if (!browser_view)
-    return;
-
-  gfx::Rect location_container_bounds =
-      browser_view->search_view_controller()->GetNTPOmniboxBounds(
-          location_bar_container_->parent());
-  if (location_container_bounds.width() == 0)
-    return;
-
-  location_bar_container_->SetInToolbar(false);
-  location_container_bounds.set_height(
-      location_bar_container_->GetPreferredSize().height());
-
-  // If bounds of |location_bar_container_| is not contained within its
-  // parent's, adjust the former's to within the latter's.  This will clip its
-  // child |location_bar_view_| within its bounds without resizing it.
-  // Note that parent of |location_bar_container_| i.e. BrowserView can't clip
-  // its children, else it loses the 3D shadows.
-  gfx::Rect parent_rect = location_bar_container_->parent()->GetLocalBounds();
-  gfx::Rect intersect_rect =
-      gfx::IntersectRects(parent_rect, location_container_bounds);
-  // If the two bounds don't intersect, set bounds of |location_bar_container_|
-  // to 0.
-  location_bar_container_->SetBoundsRect(intersect_rect);
-}
-
 views::View* ToolbarView::GetBookmarkBubbleAnchor() {
   views::View* star_view = location_bar()->star_view();
   if (star_view && star_view->visible())
@@ -547,7 +513,6 @@ void ToolbarView::ModeChanged(const chrome::search::Mode& old_mode,
     location_bar_->Layout();
 
   Layout();
-  LayoutForSearch();
   SchedulePaint();
 }
 

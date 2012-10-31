@@ -233,10 +233,6 @@ class BrowserView : public BrowserWindow,
   }
 #endif
 
-  SearchViewController* search_view_controller() const {
-    return search_view_controller_.get();
-  }
-
   BookmarkBarView* bookmark_bar() const {
     return bookmark_bar_view_.get();
   }
@@ -723,8 +719,6 @@ class BrowserView : public BrowserWindow,
   PendingFullscreenRequest fullscreen_request_;
 
   gfx::ScopedSysColorChangeListener color_change_listener_;
-
-  scoped_ptr<SearchViewController> search_view_controller_;
 
   scoped_ptr<InstantPreviewControllerViews> preview_controller_;
 

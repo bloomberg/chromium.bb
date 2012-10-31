@@ -86,11 +86,6 @@ class ToolbarView : public views::AccessiblePaneView,
 
   virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
-  // Layout toolbar for the various modes when --enable-instant-extended-api
-  // is specified. Depending on the toolbar mode, this can result in
-  // some toolbar children views change in visibility.
-  void LayoutForSearch();
-
   // Returns the view to which the bookmark bubble should be anchored.
   views::View* GetBookmarkBubbleAnchor();
 
