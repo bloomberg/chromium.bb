@@ -431,15 +431,6 @@ void SwizzleInit() {
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  // TODO(shess): Squirrel away some info to direct debugging.
-  // Current hypothesis is that it's a keyboard accelerator.
-  // http://crbug.com/154483
-  static NSString* const kSendEventKey = @"sendevent";
-  // For NSEventType 28, recursive -description causes a crash.
-  // Not much to be done, that type is undocumented.
-  NSString* value = [event type] == 28 ? @"type=28" : [event description];
-  base::mac::ScopedCrashKey key(kSendEventKey, value);
-
   base::mac::ScopedSendingEvent sendingEventScoper;
   for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
     [handler hookForEvent:event];
