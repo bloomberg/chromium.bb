@@ -1,6 +1,5 @@
 #!/bin/bash
-#
-# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,6 +18,12 @@ readonly SDK_ROOT=$(dirname $0)
 readonly QEMU=${SDK_ROOT}/qemu-arm
 readonly QEMU_STOCK=/usr/bin/qemu-arm
 readonly QEMU_JAIL=${SDK_ROOT}
+
+# qemu occasionally hangs - so force a timeout, default (10min)
+readonly QEMU_MAX_RUN_TIME_SECS=${QEMU_MAX_RUN_TIME_SECS:-600}
+# Note: timeouts will be reported as error code 124
+readonly TIMEOUT_CMD="timeout --kill-after=5 ${QEMU_MAX_RUN_TIME_SECS}"
+
 # NOTE: some useful debugging options for qemu:
 #       env vars:
 #                  QEMU_STRACE=1
@@ -76,7 +81,7 @@ help () {
 #@   run emulation using a locally patched qemu
 run() {
   CheckPrerequisites
-  exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
+  exec ${TIMEOUT_CMD} ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
 }
 
 #@
@@ -84,7 +89,7 @@ run() {
 #@
 #@   run emulation using the stock qemu
 run_stock() {
-  exec ${QEMU_STOCK} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
+  exec ${TIMEOUT_CMD} ${QEMU_STOCK} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
 }
 
 #@
