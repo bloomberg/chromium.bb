@@ -240,7 +240,7 @@ void ResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
         GLC(context3d, context3d->deleteTexture(resource->glId));
     }
     if (resource->pixels)
-        delete resource->pixels;
+        delete[] resource->pixels;
 
     g_debugResDestroyed[g_debugResDestroyedCount % g_debugMaxResourcesTracked] = (*it).first | g_debugZone;
     m_resources.erase(it);
