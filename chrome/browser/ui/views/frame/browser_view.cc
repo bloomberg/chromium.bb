@@ -1118,6 +1118,10 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
                                  browser_->profile(), url, !already_bookmarked);
 }
 
+void BrowserView::ShowBookmarkPrompt() {
+  GetLocationBarView()->ShowBookmarkPrompt();
+}
+
 void BrowserView::ShowChromeToMobileBubble() {
   GetLocationBarView()->ShowChromeToMobileBubble();
 }
