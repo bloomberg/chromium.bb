@@ -8,7 +8,7 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_layout_manager2.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

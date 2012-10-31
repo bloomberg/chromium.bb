@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_manager2.h"
+#include "ash/wm/workspace/workspace_manager.h"
 #include "base/command_line.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
@@ -19,7 +19,7 @@ namespace internal {
 WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport) {
   aura::RootWindow* root_window = viewport->GetRootWindow();
-  workspace_manager_.reset(new WorkspaceManager2(viewport));
+  workspace_manager_.reset(new WorkspaceManager(viewport));
   aura::client::GetActivationClient(root_window)->AddObserver(this);
 }
 

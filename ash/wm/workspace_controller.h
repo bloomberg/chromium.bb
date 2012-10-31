@@ -21,7 +21,7 @@ namespace internal {
 class ShelfLayoutManager;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventHandler;
-class WorkspaceManager2;
+class WorkspaceManager;
 
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces.
@@ -54,7 +54,7 @@ class ASH_EXPORT WorkspaceController
 
   aura::Window* viewport_;
 
-  scoped_ptr<WorkspaceManager2> workspace_manager_;
+  scoped_ptr<WorkspaceManager> workspace_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);
 };

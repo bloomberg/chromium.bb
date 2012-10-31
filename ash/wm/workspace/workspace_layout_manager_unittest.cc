@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_layout_manager2.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -19,23 +19,23 @@ namespace ash {
 
 namespace {
 
-class WorkspaceLayoutManager2Test : public test::AshTestBase {
+class WorkspaceLayoutManagerTest : public test::AshTestBase {
  public:
-  WorkspaceLayoutManager2Test() {}
-  virtual ~WorkspaceLayoutManager2Test() {}
+  WorkspaceLayoutManagerTest() {}
+  virtual ~WorkspaceLayoutManagerTest() {}
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     return aura::test::CreateTestWindowWithBounds(bounds, NULL);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager2Test);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerTest);
 };
 
 // Verifies that a window containing a restore coordinate will be restored to
 // to the size prior to minimize, keeping the restore rectangle in tact (if
 // there is one).
-TEST_F(WorkspaceLayoutManager2Test, RestoreFromMinimizeKeepsRestore) {
+TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
@@ -83,7 +83,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 // Creates a window, maximized the window and from within the maximized
 // notification sets the bounds of a window to overlap the shelf. Verifies this
 // doesn't effect the restore bounds.
-TEST_F(WorkspaceLayoutManager2Test, DontClobberRestoreBounds) {
+TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
   DontClobberRestoreBoundsWindowObserver window_observer;
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
@@ -107,7 +107,7 @@ TEST_F(WorkspaceLayoutManager2Test, DontClobberRestoreBounds) {
 }
 
 // Verifies when a window is maximized all descendant windows have a size.
-TEST_F(WorkspaceLayoutManager2Test, ChildBoundsResetOnMaximize) {
+TEST_F(WorkspaceLayoutManagerTest, ChildBoundsResetOnMaximize) {
   scoped_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 20, 30, 40)));
   window->Show();
@@ -120,7 +120,7 @@ TEST_F(WorkspaceLayoutManager2Test, ChildBoundsResetOnMaximize) {
   EXPECT_EQ("5,6 7x8", child_window->bounds().ToString());
 }
 
-TEST_F(WorkspaceLayoutManager2Test, WindowShouldBeOnScreenWhenAdded) {
+TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   // Normal window bounds shouldn't be changed.
   gfx::Rect window_bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(window_bounds));
@@ -137,7 +137,7 @@ TEST_F(WorkspaceLayoutManager2Test, WindowShouldBeOnScreenWhenAdded) {
 }
 
 // Verifies the size of a window is enforced to be smaller than the work area.
-TEST_F(WorkspaceLayoutManager2Test, SizeToWorkArea) {
+TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
   // Normal window bounds shouldn't be changed.
   gfx::Size work_area(
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size());

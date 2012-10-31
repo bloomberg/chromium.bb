@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_layout_manager2.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
@@ -12,8 +12,8 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace2.h"
-#include "ash/wm/workspace/workspace_manager2.h"
+#include "ash/wm/workspace/workspace.h"
+#include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -70,7 +70,7 @@ void ResetConstrainedWindowBoundsIfNecessary(const BoundsMap& bounds_map,
 
 }  // namespace
 
-WorkspaceLayoutManager2::WorkspaceLayoutManager2(Workspace2* workspace)
+WorkspaceLayoutManager::WorkspaceLayoutManager(Workspace* workspace)
     : root_window_(workspace->window()->GetRootWindow()),
       workspace_(workspace),
       work_area_(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
@@ -80,7 +80,7 @@ WorkspaceLayoutManager2::WorkspaceLayoutManager2(Workspace2* workspace)
   root_window_->AddObserver(this);
 }
 
-WorkspaceLayoutManager2::~WorkspaceLayoutManager2() {
+WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   if (root_window_) {
     root_window_->RemoveObserver(this);
     root_window_->RemoveRootWindowObserver(this);
@@ -90,7 +90,7 @@ WorkspaceLayoutManager2::~WorkspaceLayoutManager2() {
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
-void WorkspaceLayoutManager2::OnWindowAddedToLayout(Window* child) {
+void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   // Adjust window bounds in case that the new child is out of the workspace.
   AdjustWindowSizeForScreenChange(child, ADJUST_WINDOW_DISPLAY_INSETS_CHANGED);
 
@@ -105,18 +105,18 @@ void WorkspaceLayoutManager2::OnWindowAddedToLayout(Window* child) {
   workspace_manager()->OnWindowAddedToWorkspace(workspace_, child);
 }
 
-void WorkspaceLayoutManager2::OnWillRemoveWindowFromLayout(Window* child) {
+void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {
   windows_.erase(child);
   child->RemoveObserver(this);
   workspace_manager()->OnWillRemoveWindowFromWorkspace(workspace_, child);
 }
 
-void WorkspaceLayoutManager2::OnWindowRemovedFromLayout(Window* child) {
+void WorkspaceLayoutManager::OnWindowRemovedFromLayout(Window* child) {
   workspace_manager()->OnWindowRemovedFromWorkspace(workspace_, child);
 }
 
-void WorkspaceLayoutManager2::OnChildWindowVisibilityChanged(Window* child,
-                                                             bool visible) {
+void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
+                                                            bool visible) {
   if (visible && wm::IsWindowMinimized(child)) {
     // Attempting to show a minimized window. Unminimize it.
     child->SetProperty(aura::client::kShowStateKey,
@@ -127,7 +127,7 @@ void WorkspaceLayoutManager2::OnChildWindowVisibilityChanged(Window* child,
                                                                child);
 }
 
-void WorkspaceLayoutManager2::SetChildBounds(
+void WorkspaceLayoutManager::SetChildBounds(
     Window* child,
     const gfx::Rect& requested_bounds) {
   if (!GetTrackedByWorkspace(child)) {
@@ -147,12 +147,12 @@ void WorkspaceLayoutManager2::SetChildBounds(
   workspace_manager()->OnWorkspaceWindowChildBoundsChanged(workspace_, child);
 }
 
-void WorkspaceLayoutManager2::OnRootWindowResized(const aura::RootWindow* root,
-                                                  const gfx::Size& old_size) {
+void WorkspaceLayoutManager::OnRootWindowResized(const aura::RootWindow* root,
+                                                 const gfx::Size& old_size) {
   AdjustWindowSizesForScreenChange(ADJUST_WINDOW_SCREEN_SIZE_CHANGED);
 }
 
-void WorkspaceLayoutManager2::OnDisplayWorkAreaInsetsChanged() {
+void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   if (workspace_manager()->active_workspace_ == workspace_) {
     const gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
                                   workspace_->window()->parent()));
@@ -161,17 +161,17 @@ void WorkspaceLayoutManager2::OnDisplayWorkAreaInsetsChanged() {
   }
 }
 
-void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
-                                                      const void* key,
-                                                      intptr_t old) {
+void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
+                                                     const void* key,
+                                                     intptr_t old) {
   if (key == aura::client::kShowStateKey) {
     ui::WindowShowState old_state = static_cast<ui::WindowShowState>(old);
     ui::WindowShowState new_state =
         window->GetProperty(aura::client::kShowStateKey);
     if (old_state != ui::SHOW_STATE_MINIMIZED &&
         GetRestoreBoundsInScreen(window) == NULL &&
-        WorkspaceManager2::IsMaximizedState(new_state) &&
-        !WorkspaceManager2::IsMaximizedState(old_state)) {
+        WorkspaceManager::IsMaximizedState(new_state) &&
+        !WorkspaceManager::IsMaximizedState(old_state)) {
       SetRestoreBoundsInParent(window, window->bounds());
     }
     // When restoring from a minimized state, we want to restore to the
@@ -194,10 +194,10 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
     ui::Layer* cloned_layer = NULL;
     BoundsMap bounds_map;
     if (wm::IsActiveWindow(window) &&
-        ((WorkspaceManager2::IsMaximizedState(new_state) &&
+        ((WorkspaceManager::IsMaximizedState(new_state) &&
           wm::IsWindowStateNormal(old_state)) ||
-         (!WorkspaceManager2::IsMaximizedState(new_state) &&
-          WorkspaceManager2::IsMaximizedState(old_state) &&
+         (!WorkspaceManager::IsMaximizedState(new_state) &&
+          WorkspaceManager::IsMaximizedState(old_state) &&
           new_state != ui::SHOW_STATE_MINIMIZED))) {
       BuildWindowBoundsMap(window, &bounds_map);
       cloned_layer = wm::RecreateWindowLayers(window, false);
@@ -236,14 +236,14 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
   }
 }
 
-void WorkspaceLayoutManager2::OnWindowDestroying(aura::Window* window) {
+void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
   if (root_window_ == window) {
     root_window_->RemoveObserver(this);
     root_window_ = NULL;
   }
 }
 
-void WorkspaceLayoutManager2::ShowStateChanged(
+void WorkspaceLayoutManager::ShowStateChanged(
     Window* window,
     ui::WindowShowState last_show_state,
     ui::Layer* cloned_layer) {
@@ -271,7 +271,7 @@ void WorkspaceLayoutManager2::ShowStateChanged(
   }
 }
 
-void WorkspaceLayoutManager2::AdjustWindowSizesForScreenChange(
+void WorkspaceLayoutManager::AdjustWindowSizesForScreenChange(
     AdjustWindowReason reason) {
   work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
       workspace_->window()->parent());
@@ -287,7 +287,7 @@ void WorkspaceLayoutManager2::AdjustWindowSizesForScreenChange(
   }
 }
 
-void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(
+void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(
     Window* window,
     AdjustWindowReason reason) {
   if (GetTrackedByWorkspace(window) &&
@@ -326,7 +326,7 @@ void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(
   }
 }
 
-void WorkspaceLayoutManager2::UpdateBoundsFromShowState(Window* window) {
+void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
   // See comment in SetMaximizedOrFullscreenBounds() as to why we use parent in
   // these calculation.
   switch (window->GetProperty(aura::client::kShowStateKey)) {
@@ -357,7 +357,7 @@ void WorkspaceLayoutManager2::UpdateBoundsFromShowState(Window* window) {
   }
 }
 
-bool WorkspaceLayoutManager2::SetMaximizedOrFullscreenBounds(
+bool WorkspaceLayoutManager::SetMaximizedOrFullscreenBounds(
     aura::Window* window) {
   if (!GetTrackedByWorkspace(window))
     return false;
@@ -380,7 +380,7 @@ bool WorkspaceLayoutManager2::SetMaximizedOrFullscreenBounds(
   return false;
 }
 
-WorkspaceManager2* WorkspaceLayoutManager2::workspace_manager() {
+WorkspaceManager* WorkspaceLayoutManager::workspace_manager() {
   return workspace_->workspace_manager();
 }
 

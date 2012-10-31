@@ -18,7 +18,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/workspace_layout_manager2.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "ui/aura/root_window.h"

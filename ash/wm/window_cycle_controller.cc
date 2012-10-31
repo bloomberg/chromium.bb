@@ -93,8 +93,8 @@ void AddAllChildren(aura::Window* window,
 }
 
 // Adds all the children of all of |window|s children to |windows|.
-void AddWorkspace2Children(aura::Window* window,
-                           WindowCycleList::WindowList* windows) {
+void AddWorkspaceChildren(aura::Window* window,
+                          WindowCycleList::WindowList* windows) {
   for (size_t i = 0; i < window->children().size(); ++i)
     AddAllChildren(window->children()[i], windows);
 }
@@ -106,7 +106,7 @@ void AddCycleWindows(aura::RootWindow* root,
                      WindowCycleList::WindowList* windows) {
   aura::Window* container = Shell::GetContainer(root, container_id);
   if (container_id == internal::kShellWindowId_DefaultContainer)
-    AddWorkspace2Children(container, windows);
+    AddWorkspaceChildren(container, windows);
   else
     AddAllChildren(container, windows);
 }

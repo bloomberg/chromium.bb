@@ -106,8 +106,8 @@ void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
     internal::kShellWindowId_LockSystemModalContainer,
     internal::kShellWindowId_InputMethodContainer,
   };
-  // For Workspace2 we need to manually reparent the windows. This way
-  // Workspace2 can move the windows to the appropriate workspace.
+  // For workspace windows we need to manually reparent the windows. This way
+  // workspace can move the windows to the appropriate workspace.
   std::vector<aura::Window*> windows(GetWorkspaceWindows(src));
   internal::WorkspaceController* workspace_controller =
       GetRootWindowController(dst)->workspace_controller();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER2_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER2_H_
+#ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
+#define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
 
 #include <set>
 
@@ -33,22 +33,22 @@ const int kMinimumOnScreenArea = 10;
 
 namespace internal {
 
-class Workspace2;
-class WorkspaceManager2;
+class Workspace;
+class WorkspaceManager;
 
 // LayoutManager used on the window created for a Workspace.
 // TODO(sky): this code shares a fair amount of similarities with
 // BaseLayoutManager, yet its different enough that subclassing is painful.
 // See if I can refactor the code to make it easier to share common bits.
-class ASH_EXPORT WorkspaceLayoutManager2
+class ASH_EXPORT WorkspaceLayoutManager
     : public aura::LayoutManager,
       public aura::RootWindowObserver,
       public ash::ShellObserver,
       public aura::WindowObserver {
  public:
  public:
-  explicit WorkspaceLayoutManager2(Workspace2* workspace);
-  virtual ~WorkspaceLayoutManager2();
+  explicit WorkspaceLayoutManager(Workspace* workspace);
+  virtual ~WorkspaceLayoutManager();
 
   // Overridden from BaseWorkspaceLayoutManager:
   virtual void OnWindowResized() OVERRIDE {}
@@ -109,11 +109,11 @@ class ASH_EXPORT WorkspaceLayoutManager2
   // true is returned. Does nothing otherwise.
   bool SetMaximizedOrFullscreenBounds(aura::Window* window);
 
-  WorkspaceManager2* workspace_manager();
+  WorkspaceManager* workspace_manager();
 
   aura::RootWindow* root_window_;
 
-  Workspace2* workspace_;
+  Workspace* workspace_;
 
   // Set of windows we're listening to.
   WindowSet windows_;
@@ -122,10 +122,10 @@ class ASH_EXPORT WorkspaceLayoutManager2
   // workspace switch.
   gfx::Rect work_area_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager2);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER2_H_
+#endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_

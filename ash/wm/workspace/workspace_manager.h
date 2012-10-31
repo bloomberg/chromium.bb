@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_MANAGER2_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_MANAGER2_H_
+#ifndef ASH_WM_WORKSPACE_WORKSPACE_MANAGER_H_
+#define ASH_WM_WORKSPACE_WORKSPACE_MANAGER_H_
 
 #include <set>
 #include <string>
@@ -41,20 +41,20 @@ namespace internal {
 
 class DesktopBackgroundFadeController;
 class ShelfLayoutManager;
-class WorkspaceLayoutManager2;
+class WorkspaceLayoutManager;
 class WorkspaceManagerTest2;
-class Workspace2;
+class Workspace;
 
 // WorkspaceManager manages multiple workspaces in the desktop. Workspaces are
 // implicitly created as windows are maximized (or made fullscreen), and
 // destroyed when maximized windows are closed or restored. There is always one
 // workspace for the desktop.
-// Internally WorkspaceManager2 creates a Window for each Workspace. As windows
+// Internally WorkspaceManager creates a Window for each Workspace. As windows
 // are maximized and restored they are reparented to the right Window.
-class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
+class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
  public:
-  explicit WorkspaceManager2(aura::Window* viewport);
-  virtual ~WorkspaceManager2();
+  explicit WorkspaceManager(aura::Window* viewport);
+  virtual ~WorkspaceManager();
 
   // Returns true if |window| is considered maximized and should exist in its
   // own workspace.
@@ -85,12 +85,12 @@ class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
   virtual void OnAppTerminating() OVERRIDE;
 
  private:
-  friend class WorkspaceLayoutManager2;
-  friend class WorkspaceManager2Test;
+  friend class WorkspaceLayoutManager;
+  friend class WorkspaceManagerTest;
 
   class LayoutManagerImpl;
 
-  typedef std::vector<Workspace2*> Workspaces;
+  typedef std::vector<Workspace*> Workspaces;
 
   // Reason for the workspace switch. Used to determine the characterstics of
   // the animation.
@@ -115,10 +115,10 @@ class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
   void UpdateShelfVisibility();
 
   // Returns the workspace that contains |window|.
-  Workspace2* FindBy(aura::Window* window) const;
+  Workspace* FindBy(aura::Window* window) const;
 
   // Sets the active workspace.
-  void SetActiveWorkspace(Workspace2* workspace,
+  void SetActiveWorkspace(Workspace* workspace,
                           SwitchReason reason,
                           base::TimeDelta duration);
 
@@ -126,20 +126,20 @@ class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
   gfx::Rect GetWorkAreaBounds() const;
 
   // Returns an iterator into |workspaces_| for |workspace|.
-  Workspaces::iterator FindWorkspace(Workspace2* workspace);
+  Workspaces::iterator FindWorkspace(Workspace* workspace);
 
-  Workspace2* desktop_workspace() { return workspaces_[0]; }
-  const Workspace2* desktop_workspace() const { return workspaces_[0]; }
+  Workspace* desktop_workspace() { return workspaces_[0]; }
+  const Workspace* desktop_workspace() const { return workspaces_[0]; }
 
   // Creates a new workspace. The Workspace is not added to anything and is
   // owned by the caller.
-  Workspace2* CreateWorkspace(bool maximized);
+  Workspace* CreateWorkspace(bool maximized);
 
   // Moves all the non-maximized child windows of |workspace| to the desktop
   // stacked beneath |stack_beneath| (if non-NULL). After moving child windows
   // if |workspace| contains no children it is deleted, otherwise it it moved to
   // |pending_workspaces_|.
-  void MoveWorkspaceToPendingOrDelete(Workspace2* workspace,
+  void MoveWorkspaceToPendingOrDelete(Workspace* workspace,
                                       aura::Window* stack_beneath,
                                       SwitchReason reason);
 
@@ -152,14 +152,14 @@ class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
 
   // Schedules |workspace| for deletion when it no longer contains any layers.
   // See comments above |to_delete_| as to why we do this.
-  void ScheduleDelete(Workspace2* workspace);
+  void ScheduleDelete(Workspace* workspace);
 
   // Deletes any workspaces scheduled via ScheduleDelete() that don't contain
   // any layers.
   void ProcessDeletion();
 
   // Sets |unminimizing_workspace_| to |workspace|.
-  void SetUnminimizingWorkspace(Workspace2* workspace);
+  void SetUnminimizingWorkspace(Workspace* workspace);
 
   // Fades the desktop. This is only used when maximizing or restoring a
   // window. The actual fade is handled by
@@ -175,33 +175,33 @@ class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
                                    bool show) const;
 
   // Shows/hides |workspace| animating as necessary.
-  void ShowWorkspace(Workspace2* workspace,
-                     Workspace2* last_active,
+  void ShowWorkspace(Workspace* workspace,
+                     Workspace* last_active,
                      SwitchReason reason) const;
-  void HideWorkspace(Workspace2* workspace,
+  void HideWorkspace(Workspace* workspace,
                      SwitchReason reason,
                      bool is_unminimizing_maximized_window) const;
 
   // These methods are forwarded from the LayoutManager installed on the
   // Workspace's window.
-  void OnWindowAddedToWorkspace(Workspace2* workspace, aura::Window* child);
-  void OnWillRemoveWindowFromWorkspace(Workspace2* workspace,
+  void OnWindowAddedToWorkspace(Workspace* workspace, aura::Window* child);
+  void OnWillRemoveWindowFromWorkspace(Workspace* workspace,
                                        aura::Window* child);
-  void OnWindowRemovedFromWorkspace(Workspace2* workspace, aura::Window* child);
-  void OnWorkspaceChildWindowVisibilityChanged(Workspace2* workspace,
+  void OnWindowRemovedFromWorkspace(Workspace* workspace, aura::Window* child);
+  void OnWorkspaceChildWindowVisibilityChanged(Workspace* workspace,
                                                aura::Window* child);
-  void OnWorkspaceWindowChildBoundsChanged(Workspace2* workspace,
+  void OnWorkspaceWindowChildBoundsChanged(Workspace* workspace,
                                            aura::Window* child);
-  void OnWorkspaceWindowShowStateChanged(Workspace2* workspace,
+  void OnWorkspaceWindowShowStateChanged(Workspace* workspace,
                                          aura::Window* child,
                                          ui::WindowShowState last_show_state,
                                          ui::Layer* old_layer);
-  void OnTrackedByWorkspaceChanged(Workspace2* workspace,
+  void OnTrackedByWorkspaceChanged(Workspace* workspace,
                                    aura::Window* window);
 
   aura::Window* contents_view_;
 
-  Workspace2* active_workspace_;
+  Workspace* active_workspace_;
 
   // The set of active workspaces. There is always at least one in this stack,
   // which identifies the desktop.
@@ -214,7 +214,7 @@ class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
   // . When the maximized window is minimized the workspace is added here.
   // Once any window in the workspace is activated the workspace is moved to
   // |workspaces_|.
-  std::set<Workspace2*> pending_workspaces_;
+  std::set<Workspace*> pending_workspaces_;
 
   // Owned by the Shell. May be NULL.
   ShelfLayoutManager* shelf_;
@@ -229,14 +229,14 @@ class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
   // would effectively cancel animations. Instead when a workspace is no longer
   // needed we add it here and start a timer. When the timer fires any windows
   // no longer contain layers are deleted.
-  std::set<Workspace2*> to_delete_;
-  base::OneShotTimer<WorkspaceManager2> delete_timer_;
+  std::set<Workspace*> to_delete_;
+  base::OneShotTimer<WorkspaceManager> delete_timer_;
 
   // See comments in SetUnminimizingWorkspace() for details.
-  base::WeakPtrFactory<WorkspaceManager2> clear_unminimizing_workspace_factory_;
+  base::WeakPtrFactory<WorkspaceManager> clear_unminimizing_workspace_factory_;
 
   // See comments in SetUnminimizingWorkspace() for details.
-  Workspace2* unminimizing_workspace_;
+  Workspace* unminimizing_workspace_;
 
   // Set to true if the app is terminating. If true we don't animate the
   // background, otherwise it can get stuck in the fading position when chrome
@@ -250,10 +250,10 @@ class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
   // DesktopBackgroundFadeController.
   bool creating_fade_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceManager2);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceManager);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_MANAGER2_H_
+#endif  // ASH_WM_WORKSPACE_WORKSPACE_MANAGER_H_

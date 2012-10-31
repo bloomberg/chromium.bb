@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_manager2.h"
+#include "ash/wm/workspace/workspace_manager.h"
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
@@ -16,7 +16,7 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace2.h"
+#include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace_controller_test_helper.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
@@ -36,10 +36,10 @@ using aura::Window;
 namespace ash {
 namespace internal {
 
-class WorkspaceManager2Test : public test::AshTestBase {
+class WorkspaceManagerTest : public test::AshTestBase {
  public:
-  WorkspaceManager2Test() : manager_(NULL) {}
-  virtual ~WorkspaceManager2Test() {}
+  WorkspaceManagerTest() : manager_(NULL) {}
+  virtual ~WorkspaceManagerTest() {}
 
   aura::Window* CreateTestWindowUnparented() {
     aura::Window* window = new aura::Window(NULL);
@@ -63,7 +63,7 @@ class WorkspaceManager2Test : public test::AshTestBase {
                                kShellWindowId_DefaultContainer);
   }
 
-  const std::vector<Workspace2*>& workspaces() const {
+  const std::vector<Workspace*>& workspaces() const {
     return manager_->workspaces_;
   }
 
@@ -71,7 +71,7 @@ class WorkspaceManager2Test : public test::AshTestBase {
     return Shell::GetScreen()->GetDisplayNearestWindow(window).bounds();
   }
 
-  Workspace2* active_workspace() {
+  Workspace* active_workspace() {
     return manager_->active_workspace_;
   }
 
@@ -83,11 +83,11 @@ class WorkspaceManager2Test : public test::AshTestBase {
     return shelf_layout_manager()->window_overlaps_shelf();
   }
 
-  Workspace2* FindBy(aura::Window* window) const {
+  Workspace* FindBy(aura::Window* window) const {
     return manager_->FindBy(window);
   }
 
-  std::string WorkspaceStateString(Workspace2* workspace) {
+  std::string WorkspaceStateString(Workspace* workspace) {
     return (workspace->is_maximized() ? "M" : "") +
         base::IntToString(static_cast<int>(
                               workspace->window()->children().size()));
@@ -109,7 +109,7 @@ class WorkspaceManager2Test : public test::AshTestBase {
 
     if (!manager_->pending_workspaces_.empty()) {
       result += " P=";
-      for (std::set<Workspace2*>::const_iterator i =
+      for (std::set<Workspace*>::const_iterator i =
                manager_->pending_workspaces_.begin();
            i != manager_->pending_workspaces_.end(); ++i) {
         if (i != manager_->pending_workspaces_.begin())
@@ -127,7 +127,7 @@ class WorkspaceManager2Test : public test::AshTestBase {
     test::AshTestBase::SetUp();
     WorkspaceControllerTestHelper workspace_helper(
         Shell::TestApi(Shell::GetInstance()).workspace_controller());
-    manager_ = workspace_helper.workspace_manager2();
+    manager_ = workspace_helper.workspace_manager();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -136,16 +136,16 @@ class WorkspaceManager2Test : public test::AshTestBase {
   }
 
  protected:
-  WorkspaceManager2* manager_;
+  WorkspaceManager* manager_;
 
  private:
   scoped_ptr<ActivationController> activation_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceManager2Test);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceManagerTest);
 };
 
 // Assertions around adding a normal window.
-TEST_F(WorkspaceManager2Test, AddNormalWindowWhenEmpty) {
+TEST_F(WorkspaceManagerTest, AddNormalWindowWhenEmpty) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
 
@@ -166,7 +166,7 @@ TEST_F(WorkspaceManager2Test, AddNormalWindowWhenEmpty) {
 }
 
 // Assertions around maximizing/unmaximizing.
-TEST_F(WorkspaceManager2Test, SingleMaximizeWindow) {
+TEST_F(WorkspaceManagerTest, SingleMaximizeWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
 
@@ -203,7 +203,7 @@ TEST_F(WorkspaceManager2Test, SingleMaximizeWindow) {
 }
 
 // Assertions around closing the last window in a workspace.
-TEST_F(WorkspaceManager2Test, CloseLastWindowInWorkspace) {
+TEST_F(WorkspaceManagerTest, CloseLastWindowInWorkspace) {
   scoped_ptr<Window> w1(CreateTestWindow());
   scoped_ptr<Window> w2(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
@@ -227,7 +227,7 @@ TEST_F(WorkspaceManager2Test, CloseLastWindowInWorkspace) {
 }
 
 // Assertions around adding a maximized window when empty.
-TEST_F(WorkspaceManager2Test, AddMaximizedWindowWhenEmpty) {
+TEST_F(WorkspaceManagerTest, AddMaximizedWindowWhenEmpty) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
@@ -247,7 +247,7 @@ TEST_F(WorkspaceManager2Test, AddMaximizedWindowWhenEmpty) {
 }
 
 // Assertions around two windows and toggling one to be maximized.
-TEST_F(WorkspaceManager2Test, MaximizeWithNormalWindow) {
+TEST_F(WorkspaceManagerTest, MaximizeWithNormalWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
   scoped_ptr<Window> w2(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
@@ -281,7 +281,7 @@ TEST_F(WorkspaceManager2Test, MaximizeWithNormalWindow) {
 }
 
 // Assertions around two maximized windows.
-TEST_F(WorkspaceManager2Test, TwoMaximized) {
+TEST_F(WorkspaceManagerTest, TwoMaximized) {
   scoped_ptr<Window> w1(CreateTestWindow());
   scoped_ptr<Window> w2(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
@@ -305,7 +305,7 @@ TEST_F(WorkspaceManager2Test, TwoMaximized) {
 }
 
 // Makes sure requests to change the bounds of a normal window go through.
-TEST_F(WorkspaceManager2Test, ChangeBoundsOfNormalWindow) {
+TEST_F(WorkspaceManagerTest, ChangeBoundsOfNormalWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->Show();
 
@@ -317,7 +317,7 @@ TEST_F(WorkspaceManager2Test, ChangeBoundsOfNormalWindow) {
 }
 
 // Verifies the bounds is not altered when showing and grid is enabled.
-TEST_F(WorkspaceManager2Test, SnapToGrid) {
+TEST_F(WorkspaceManagerTest, SnapToGrid) {
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   w1->SetBounds(gfx::Rect(1, 6, 25, 30));
   w1->SetParent(NULL);
@@ -329,7 +329,7 @@ TEST_F(WorkspaceManager2Test, SnapToGrid) {
 }
 
 // Assertions around a fullscreen window.
-TEST_F(WorkspaceManager2Test, SingleFullscreenWindow) {
+TEST_F(WorkspaceManagerTest, SingleFullscreenWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 0, 250, 251));
   // Make the window fullscreen.
@@ -365,7 +365,7 @@ TEST_F(WorkspaceManager2Test, SingleFullscreenWindow) {
 }
 
 // Makes sure switching workspaces doesn't show transient windows.
-TEST_F(WorkspaceManager2Test, DontShowTransientsOnSwitch) {
+TEST_F(WorkspaceManagerTest, DontShowTransientsOnSwitch) {
   scoped_ptr<Window> w1(CreateTestWindow());
   scoped_ptr<Window> w2(CreateTestWindow());
 
@@ -391,7 +391,7 @@ TEST_F(WorkspaceManager2Test, DontShowTransientsOnSwitch) {
 }
 
 // Assertions around minimizing a single window.
-TEST_F(WorkspaceManager2Test, MinimizeSingleWindow) {
+TEST_F(WorkspaceManagerTest, MinimizeSingleWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
 
   w1->Show();
@@ -409,7 +409,7 @@ TEST_F(WorkspaceManager2Test, MinimizeSingleWindow) {
 }
 
 // Assertions around minimizing a maximized window.
-TEST_F(WorkspaceManager2Test, MinimizeMaximizedWindow) {
+TEST_F(WorkspaceManagerTest, MinimizeMaximizedWindow) {
   // Two windows, w1 normal, w2 maximized.
   scoped_ptr<Window> w1(CreateTestWindow());
   scoped_ptr<Window> w2(CreateTestWindow());
@@ -453,7 +453,7 @@ TEST_F(WorkspaceManager2Test, MinimizeMaximizedWindow) {
 
 // Verifies ShelfLayoutManager's visibility/auto-hide state is correctly
 // updated.
-TEST_F(WorkspaceManager2Test, ShelfStateUpdated) {
+TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   aura::test::EventGenerator generator(
@@ -584,7 +584,7 @@ TEST_F(WorkspaceManager2Test, ShelfStateUpdated) {
 }
 
 // Verifies persist across all workspaces.
-TEST_F(WorkspaceManager2Test, PersistAcrossAllWorkspaces) {
+TEST_F(WorkspaceManagerTest, PersistAcrossAllWorkspaces) {
   // Create a maximized window.
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->Show();
@@ -631,7 +631,7 @@ TEST_F(WorkspaceManager2Test, PersistAcrossAllWorkspaces) {
 
 // Verifies that when a window persists across all workpaces is activated that
 // it moves to the current workspace.
-TEST_F(WorkspaceManager2Test, ActivatePersistAcrossAllWorkspacesWhenNotActive) {
+TEST_F(WorkspaceManagerTest, ActivatePersistAcrossAllWorkspacesWhenNotActive) {
   // Create a window that persists across all workspaces.
   scoped_ptr<Window> w2(CreateTestWindow());
   SetPersistsAcrossAllWorkspaces(
@@ -660,7 +660,7 @@ TEST_F(WorkspaceManager2Test, ActivatePersistAcrossAllWorkspacesWhenNotActive) {
 
 // Verifies Show()ing a minimized window that persists across all workspaces
 // unminimizes the window.
-TEST_F(WorkspaceManager2Test, ShowMinimizedPersistWindow) {
+TEST_F(WorkspaceManagerTest, ShowMinimizedPersistWindow) {
   // Create a window that persists across all workspaces.
   scoped_ptr<Window> w1(CreateTestWindow());
   SetPersistsAcrossAllWorkspaces(
@@ -676,7 +676,7 @@ TEST_F(WorkspaceManager2Test, ShowMinimizedPersistWindow) {
 
 // Test that we report we're in the fullscreen state even if the fullscreen
 // window isn't being managed by us (http://crbug.com/123931).
-TEST_F(WorkspaceManager2Test, GetWindowStateWithUnmanagedFullscreenWindow) {
+TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
   ShelfLayoutManager* shelf = shelf_layout_manager();
 
   // We need to create a regular window first so there's an active workspace.
@@ -718,7 +718,7 @@ TEST_F(WorkspaceManager2Test, GetWindowStateWithUnmanagedFullscreenWindow) {
 
 // Variant of GetWindowStateWithUnmanagedFullscreenWindow that uses a maximized
 // window rather than a normal window.
-TEST_F(WorkspaceManager2Test,
+TEST_F(WorkspaceManagerTest,
        GetWindowStateWithUnmanagedFullscreenWindowWithMaximized) {
   ShelfLayoutManager* shelf = shelf_layout_manager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
@@ -757,7 +757,7 @@ TEST_F(WorkspaceManager2Test,
 
 // Verifies a window marked as persisting across all workspaces ends up in its
 // own workspace when maximized.
-TEST_F(WorkspaceManager2Test, MaximizeDontPersistEndsUpInOwnWorkspace) {
+TEST_F(WorkspaceManagerTest, MaximizeDontPersistEndsUpInOwnWorkspace) {
   scoped_ptr<Window> w1(CreateTestWindow());
 
   SetPersistsAcrossAllWorkspaces(
@@ -778,7 +778,7 @@ TEST_F(WorkspaceManager2Test, MaximizeDontPersistEndsUpInOwnWorkspace) {
 
 // Verifies going from maximized to minimized sets the right state for painting
 // the background of the launcher.
-TEST_F(WorkspaceManager2Test, MinimizeResetsVisibility) {
+TEST_F(WorkspaceManagerTest, MinimizeResetsVisibility) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->Show();
   wm::ActivateWindow(w1.get());
@@ -790,7 +790,7 @@ TEST_F(WorkspaceManager2Test, MinimizeResetsVisibility) {
 }
 
 // Verifies transients are moved when maximizing.
-TEST_F(WorkspaceManager2Test, MoveTransientOnMaximize) {
+TEST_F(WorkspaceManagerTest, MoveTransientOnMaximize) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->Show();
   scoped_ptr<Window> w2(CreateTestWindow());
@@ -823,7 +823,7 @@ TEST_F(WorkspaceManager2Test, MoveTransientOnMaximize) {
 }
 
 // Verifies window visibility during various workspace changes.
-TEST_F(WorkspaceManager2Test, VisibilityTests) {
+TEST_F(WorkspaceManagerTest, VisibilityTests) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->Show();
   EXPECT_TRUE(w1->IsVisible());
@@ -880,7 +880,7 @@ TEST_F(WorkspaceManager2Test, VisibilityTests) {
 }
 
 // Verifies windows that are offscreen don't move when switching workspaces.
-TEST_F(WorkspaceManager2Test, DontMoveOnSwitch) {
+TEST_F(WorkspaceManagerTest, DontMoveOnSwitch) {
   aura::test::EventGenerator generator(
       Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
@@ -908,7 +908,7 @@ TEST_F(WorkspaceManager2Test, DontMoveOnSwitch) {
 
 // Verifies that windows that are completely offscreen move when switching
 // workspaces.
-TEST_F(WorkspaceManager2Test, MoveOnSwitch) {
+TEST_F(WorkspaceManagerTest, MoveOnSwitch) {
   aura::test::EventGenerator generator(
       Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(0, 0);
@@ -941,7 +941,7 @@ TEST_F(WorkspaceManager2Test, MoveOnSwitch) {
 }
 
 // Verifies Focus() works in a window that isn't in the active workspace.
-TEST_F(WorkspaceManager2Test, FocusOnFullscreenInSeparateWorkspace) {
+TEST_F(WorkspaceManagerTest, FocusOnFullscreenInSeparateWorkspace) {
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
   w1->Show();
@@ -992,7 +992,7 @@ class DontCrashOnChangeAndActivateDelegate
 // . remove the window (which happens when switching displays).
 // . add the window back.
 // . show the window and during the bounds change activate it.
-TEST_F(WorkspaceManager2Test, DontCrashOnChangeAndActivate) {
+TEST_F(WorkspaceManagerTest, DontCrashOnChangeAndActivate) {
   // Force the shelf
   ShelfLayoutManager* shelf = shelf_layout_manager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
@@ -1018,7 +1018,7 @@ TEST_F(WorkspaceManager2Test, DontCrashOnChangeAndActivate) {
 }
 
 // Verifies a window with a transient parent not managed by workspace works.
-TEST_F(WorkspaceManager2Test, TransientParent) {
+TEST_F(WorkspaceManagerTest, TransientParent) {
   // Normal window with no transient parent.
   scoped_ptr<Window> w2(CreateTestWindow());
   w2->SetBounds(gfx::Rect(10, 11, 250, 251));
@@ -1040,7 +1040,7 @@ TEST_F(WorkspaceManager2Test, TransientParent) {
 }
 
 // Verifies changing TrackedByWorkspace works.
-TEST_F(WorkspaceManager2Test, TrackedByWorkspace) {
+TEST_F(WorkspaceManagerTest, TrackedByWorkspace) {
   // Create a window maximized.
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->Show();
@@ -1082,7 +1082,7 @@ TEST_F(WorkspaceManager2Test, TrackedByWorkspace) {
 
 // Verifies a window marked as persisting across all workspaces ends up in its
 // own workspace when maximized.
-TEST_F(WorkspaceManager2Test, DeactivateDropsToDesktop) {
+TEST_F(WorkspaceManagerTest, DeactivateDropsToDesktop) {
   // Create a window maximized.
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->Show();
@@ -1109,7 +1109,7 @@ TEST_F(WorkspaceManager2Test, DeactivateDropsToDesktop) {
 
 // Test the basic auto placement of one and or two windows in a "simulated
 // session" of sequential window operations.
-TEST_F(WorkspaceManager2Test, BasicAutoPlacing) {
+TEST_F(WorkspaceManagerTest, BasicAutoPlacing) {
   // Test 1: In case there is no manageable window, no window should shift.
 
   scoped_ptr<aura::Window> window1(
@@ -1188,7 +1188,7 @@ TEST_F(WorkspaceManager2Test, BasicAutoPlacing) {
 }
 
 // Test the proper usage of user window movement interaction.
-TEST_F(WorkspaceManager2Test, TestUserMovedWindowRepositioning) {
+TEST_F(WorkspaceManagerTest, TestUserMovedWindowRepositioning) {
   scoped_ptr<aura::Window> window1(
       aura::test::CreateTestWindowWithId(0, NULL));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
@@ -1235,7 +1235,7 @@ TEST_F(WorkspaceManager2Test, TestUserMovedWindowRepositioning) {
 }
 
 // Test that a window from normal to minimize will repos the remaining.
-TEST_F(WorkspaceManager2Test, ToMinimizeRepositionsRemaining) {
+TEST_F(WorkspaceManagerTest, ToMinimizeRepositionsRemaining) {
   scoped_ptr<aura::Window> window1(
       aura::test::CreateTestWindowWithId(0, NULL));
   ash::wm::SetWindowPositionManaged(window1.get(), true);
@@ -1265,7 +1265,7 @@ TEST_F(WorkspaceManager2Test, ToMinimizeRepositionsRemaining) {
 }
 
 // Test that minimizing an initially maximized window will repos the remaining.
-TEST_F(WorkspaceManager2Test, MaxToMinRepositionsRemaining) {
+TEST_F(WorkspaceManagerTest, MaxToMinRepositionsRemaining) {
   scoped_ptr<aura::Window> window1(
       aura::test::CreateTestWindowWithId(0, NULL));
   ash::wm::SetWindowPositionManaged(window1.get(), true);
@@ -1288,7 +1288,7 @@ TEST_F(WorkspaceManager2Test, MaxToMinRepositionsRemaining) {
 }
 
 // Test that nomral, maximize, minimizing will repos the remaining.
-TEST_F(WorkspaceManager2Test, NormToMaxToMinRepositionsRemaining) {
+TEST_F(WorkspaceManagerTest, NormToMaxToMinRepositionsRemaining) {
   scoped_ptr<aura::Window> window1(
       aura::test::CreateTestWindowWithId(0, NULL));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
@@ -1322,7 +1322,7 @@ TEST_F(WorkspaceManager2Test, NormToMaxToMinRepositionsRemaining) {
 }
 
 // Test that nomral, maximize, normal will repos the remaining.
-TEST_F(WorkspaceManager2Test, NormToMaxToNormRepositionsRemaining) {
+TEST_F(WorkspaceManagerTest, NormToMaxToNormRepositionsRemaining) {
   scoped_ptr<aura::Window> window1(
       aura::test::CreateTestWindowWithId(0, NULL));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
@@ -1355,7 +1355,7 @@ TEST_F(WorkspaceManager2Test, NormToMaxToNormRepositionsRemaining) {
 }
 
 // Test that animations are triggered.
-TEST_F(WorkspaceManager2Test, AnimatedNormToMaxToNormRepositionsRemaining) {
+TEST_F(WorkspaceManagerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
   ui::LayerAnimator::set_disable_animations_for_test(false);
   scoped_ptr<aura::Window> window1(
       aura::test::CreateTestWindowWithId(0, NULL));

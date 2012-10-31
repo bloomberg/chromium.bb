@@ -357,7 +357,7 @@ aura::Window* ActivationController::GetTopmostWindowToActivate(
 aura::Window* ActivationController::GetTopmostWindowToActivateInContainer(
     aura::Window* container,
     aura::Window* ignore) const {
-  // Workspace2 has an extra level of windows that needs to be special cased.
+  // Workspace has an extra level of windows that needs to be special cased.
   if (container->id() == kShellWindowId_DefaultContainer) {
     for (aura::Window::Windows::const_reverse_iterator i =
              container->children().rbegin();
