@@ -856,7 +856,9 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
           os.symlink(properties['link'], outfile)  # pylint: disable=E1101
           if 'mode' in properties:
             # It's not set on Windows.
-            os.chmod(outfile, properties['mode'])
+            lchmod = getattr(os, 'lchmod', None)
+            if lchmod:
+              lchmod(outfile, properties['mode'])
 
         # Remaining files to be processed.
         # Note that files could still be not be downloaded yet here.
