@@ -856,7 +856,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     if (process_startup &&
         google_util::IsGoogleHomePageUrl(tabs[i].url.spec())) {
       params.extra_headers = RLZTracker::GetAccessPointHttpHeader(
-          rlz_lib::CHROME_HOME_PAGE);
+          RLZTracker::CHROME_HOME_PAGE);
     }
 #endif
 

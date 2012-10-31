@@ -171,6 +171,7 @@ RLZTracker::RLZTracker()
 RLZTracker::~RLZTracker() {
 }
 
+// static
 bool RLZTracker::InitRlzDelayed(bool first_run,
                                 int delay,
                                 bool is_google_default_search,
@@ -370,6 +371,7 @@ void RLZTracker::Observe(int type,
   }
 }
 
+// static
 bool RLZTracker::RecordProductEvent(rlz_lib::Product product,
                                     rlz_lib::AccessPoint point,
                                     rlz_lib::Event event_id) {

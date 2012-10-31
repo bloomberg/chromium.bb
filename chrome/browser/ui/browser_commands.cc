@@ -399,7 +399,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
     std::string home_page = pref_service->GetString(prefs::kHomePage);
     if (google_util::IsGoogleHomePageUrl(home_page)) {
       extra_headers = RLZTracker::GetAccessPointHttpHeader(
-          rlz_lib::CHROME_HOME_PAGE);
+          RLZTracker::CHROME_HOME_PAGE);
     }
   }
 #endif

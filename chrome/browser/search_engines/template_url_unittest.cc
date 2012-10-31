@@ -474,7 +474,7 @@ TEST_F(TemplateURLTest, RLZ) {
   std::string brand;
   if (google_util::GetBrand(&brand) && !brand.empty() &&
       !google_util::IsOrganic(brand)) {
-    RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
+    RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
   }
 #endif
 

@@ -2152,7 +2152,7 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
       // Needs to be evaluated. See http://crbug.com/62328.
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       RLZTracker::RecordProductEvent(rlz_lib::CHROME,
-                                     rlz_lib::CHROME_OMNIBOX,
+                                     RLZTracker::CHROME_OMNIBOX,
                                      rlz_lib::SET_TO_GOOGLE);
 #endif
     }

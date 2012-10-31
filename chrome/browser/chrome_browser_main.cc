@@ -1285,7 +1285,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Prime the RLZ cache for the home page access point so that its avaiable
   // for the startup page if needed (i.e., when the startup page is set to
   // the home page).
-  RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, NULL);
+  RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, NULL);
 #endif  // defined(ENABLE_RLZ)
 
   // Configure modules that need access to resources.
