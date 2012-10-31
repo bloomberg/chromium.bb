@@ -62,33 +62,27 @@ int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
     return base::kInvalidPlatformFileValue;
   }
 
-  MinidumpInfo minidump_info;
-  minidump_info.file = minidump_file;
-  minidump_info.path = minidump_path;
   {
-    base::AutoLock auto_lock(child_process_id_to_minidump_info_lock_);
-    DCHECK(!ContainsKey(child_process_id_to_minidump_info_, child_process_id));
-    child_process_id_to_minidump_info_[child_process_id] = minidump_info;
+    base::AutoLock auto_lock(child_process_id_to_minidump_path_lock_);
+    DCHECK(!ContainsKey(child_process_id_to_minidump_path_, child_process_id));
+    child_process_id_to_minidump_path_[child_process_id] = minidump_path;
   }
   return minidump_file;
 }
 
-void CrashDumpManager::ProcessMinidump(const MinidumpInfo& minidump) {
+void CrashDumpManager::ProcessMinidump(const FilePath& minidump_path,
+                                       base::ProcessHandle pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // Close the file descriptor, it is still open.
-  bool r = base::ClosePlatformFile(minidump.file);
-  DCHECK(r) << "Failed to close minidump file descriptor.";
-
   int64 file_size = 0;
-  r = file_util::GetFileSize(minidump.path, &file_size);
+  int r = file_util::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump "
-            << minidump.path.value();
+            << minidump_path.value();
 
   if (file_size == 0) {
     // Empty minidump, this process did not crash. Just remove the file.
-    r = file_util::Delete(minidump.path, false);
+    r = file_util::Delete(minidump_path, false);
     DCHECK(r) << "Failed to delete temporary minidump file "
-              << minidump.path.value();
+              << minidump_path.value();
     return;
   }
 
@@ -104,13 +98,13 @@ void CrashDumpManager::ProcessMinidump(const MinidumpInfo& minidump) {
   const uint64 rand = base::RandUint64();
   const std::string filename =
       base::StringPrintf("chromium-renderer-minidump-%016" PRIx64 ".dmp%d",
-                         rand, minidump.pid);
+                         rand, pid);
   FilePath dest_path = crash_dump_dir.Append(filename);
-  r = file_util::Move(minidump.path, dest_path);
+  r = file_util::Move(minidump_path, dest_path);
   if (!r) {
-    LOG(ERROR) << "Failed to move crash dump from " << minidump.path.value()
+    LOG(ERROR) << "Failed to move crash dump from " << minidump_path.value()
                << " to " << dest_path.value();
-    file_util::Delete(minidump.path, false);
+    file_util::Delete(minidump_path, false);
     return;
   }
   LOG(INFO) << "Crash minidump successfully generated: " <<
@@ -121,6 +115,7 @@ void CrashDumpManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   int child_process_id;
+  base::ProcessHandle pid;
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
       // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer
@@ -130,6 +125,7 @@ void CrashDumpManager::Observe(int type,
       content::RenderProcessHost* rph =
           content::Source<content::RenderProcessHost>(source).ptr();
       child_process_id = rph->GetID();
+      pid = rph->GetHandle();
       break;
     }
     case content::NOTIFICATION_CHILD_PROCESS_CRASHED:
@@ -137,26 +133,27 @@ void CrashDumpManager::Observe(int type,
       content::ChildProcessData* child_process_data =
           content::Details<content::ChildProcessData>(details).ptr();
       child_process_id = child_process_data->id;
+      pid = child_process_data->handle;
       break;
     }
     default:
       NOTREACHED();
       return;
   }
-  MinidumpInfo minidump_info;
+  FilePath minidump_path;
   {
-    base::AutoLock auto_lock(child_process_id_to_minidump_info_lock_);
-    ChildProcessIDToMinidumpInfo::iterator iter =
-        child_process_id_to_minidump_info_.find(child_process_id);
-    if (iter == child_process_id_to_minidump_info_.end()) {
+    base::AutoLock auto_lock(child_process_id_to_minidump_path_lock_);
+    ChildProcessIDToMinidumpPath::iterator iter =
+        child_process_id_to_minidump_path_.find(child_process_id);
+    if (iter == child_process_id_to_minidump_path_.end()) {
       // We might get a NOTIFICATION_RENDERER_PROCESS_TERMINATED and a
       // NOTIFICATION_RENDERER_PROCESS_CLOSED.
       return;
     }
-    minidump_info = iter->second;
-    child_process_id_to_minidump_info_.erase(iter);
+    minidump_path = iter->second;
+    child_process_id_to_minidump_path_.erase(iter);
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CrashDumpManager::ProcessMinidump, minidump_info));
+      base::Bind(&CrashDumpManager::ProcessMinidump, minidump_path, pid));
 }

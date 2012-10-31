@@ -9,6 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/platform_file.h"
+#include "base/process.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -37,16 +38,10 @@ class CrashDumpManager : public content::NotificationObserver {
   int CreateMinidumpFile(int child_process_id);
 
  private:
-  struct MinidumpInfo {
-    MinidumpInfo() : file(base::kInvalidPlatformFileValue) {}
-    base::PlatformFile file;
-    FilePath path;
-    int pid;
-  };
+  typedef std::map<int, FilePath> ChildProcessIDToMinidumpPath;
 
-  typedef std::map<int, MinidumpInfo> ChildProcessIDToMinidumpInfo;
-
-  static void ProcessMinidump(const MinidumpInfo& minidump);
+  static void ProcessMinidump(const FilePath& minidump_path,
+                              base::ProcessHandle pid);
 
   // NotificationObserver implementation:
   virtual void Observe(int type,
@@ -57,8 +52,8 @@ class CrashDumpManager : public content::NotificationObserver {
 
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER and UI threads.
-  base::Lock child_process_id_to_minidump_info_lock_;
-  ChildProcessIDToMinidumpInfo child_process_id_to_minidump_info_;
+  base::Lock child_process_id_to_minidump_path_lock_;
+  ChildProcessIDToMinidumpPath child_process_id_to_minidump_path_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashDumpManager);
 };
