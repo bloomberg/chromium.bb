@@ -132,14 +132,6 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     profile_.reset(NULL);
   }
 
-  // Loads test json file as root ("/drive") element.
-  void LoadRootFeedDocument(const std::string& filename) {
-    test_util::LoadChangeFeed(filename,
-                              file_system_,
-                              0,
-                              root_feed_changestamp_++);
-  }
-
   MessageLoopForUI message_loop_;
   // The order of the test threads is important, do not change the order.
   // See also content/browser/browser_thread_impl.cc.
@@ -183,9 +175,9 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   EXPECT_TRUE(file_util::PathExists(path));
 
   // Verify that the corresponding file entry doesn't exist.
-  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(2);
   EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "", _, _))
-      .Times(1);
+      .Times(2);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   DriveFileError error(DRIVE_FILE_OK);
@@ -209,8 +201,8 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());
 
-  // Load a root feed.
-  LoadRootFeedDocument("gdata/root_feed.json");
+  // Load a root feed again to kick the StaleCacheFilesRemover.
+  file_system_->Reload();
 
   // Wait for StaleCacheFilesRemover to finish cleaning up the stale file.
   google_apis::test_util::RunBlockingPoolTask();
