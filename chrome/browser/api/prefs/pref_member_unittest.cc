@@ -47,6 +47,10 @@ class GetPrefValueCallback
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 
+  void Destroy() {
+    pref_.Destroy();
+  }
+
   bool FetchValue() {
     if (!BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -314,6 +318,11 @@ TEST(PrefMemberTest, MoveToThread) {
   EXPECT_FALSE(callback->value());
 
   prefs.SetBoolean(kBoolPref, true);
+
+  ASSERT_TRUE(callback->FetchValue());
+  EXPECT_TRUE(callback->value());
+
+  callback->Destroy();
 
   ASSERT_TRUE(callback->FetchValue());
   EXPECT_TRUE(callback->value());

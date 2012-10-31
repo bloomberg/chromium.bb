@@ -158,7 +158,10 @@ class PrefMember : public subtle::PrefMemberBase {
   }
 
   // Unsubscribes the PrefMember from the PrefService. After calling this
-  // function, the PrefMember may not be used any more.
+  // function, the PrefMember may not be used any more on the UI thread.
+  // Assuming |MoveToThread| was previously called, |GetValue|, |IsManaged|,
+  // and |IsUserModifiable| can still be called from the other thread but
+  // the results will no longer update from the PrefService.
   // This method should only be called on the UI thread.
   void Destroy() {
     subtle::PrefMemberBase::Destroy();
