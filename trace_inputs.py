@@ -201,8 +201,19 @@ if sys.platform == 'win32':
     """
     if not isabs(p):
       raise ValueError(
-          'Can\'t get native path case for a non-absolute path: %s' % p,
-          p)
+          'get_native_path_case(%r): Require an absolute path' % p, p)
+
+    suffix = ''
+    count = p.count(':')
+    if count > 1:
+      # This means it has an alternate-data stream. There could be 3 ':', since
+      # it could be the $DATA datastream of an ADS. Split the whole ADS suffix
+      # off and add it back afterward. There is no way to know the native path
+      # case of an alternate data stream.
+      items = p.split(':')
+      p = ':'.join(items[0:2])
+      suffix = ''.join(':' + i for i in items[2:])
+
     # Windows used to have an option to turn on case sensitivity on non Win32
     # subsystem but that's out of scope here and isn't supported anymore.
     # Go figure why GetShortPathName() is needed.
@@ -219,7 +230,7 @@ if sys.platform == 'win32':
       out = out[4:]
     # Always upper case the first letter since GetLongPathName() will return the
     # drive letter in the case it was given.
-    return out[0].upper() + out[1:]
+    return out[0].upper() + out[1:] + suffix
 
 
   def CommandLineToArgvW(command_line):
@@ -2855,7 +2866,12 @@ class LogmanTrace(ApiBase):
       super(LogmanTrace.Tracer, self).post_process_log()
       logformat = 'csv'
       self._convert_log(logformat)
+      self._trim_log(logformat)
 
+    def _trim_log(self, logformat):
+      """Reduces the amount of data in original log by generating a 'reduced'
+      log.
+      """
       if logformat == 'csv_utf16':
         def load_file():
           def utf_8_encoder(unicode_csv_data):
@@ -2902,6 +2918,11 @@ class LogmanTrace(ApiBase):
       supported_events = LogmanTrace.Context.supported_events()
 
       def trim(generator):
+        """Loads items from the generator and returns the interesting data.
+
+        It filters out any uninteresting line and reduce the amount of data in
+        the trace.
+        """
         for index, line in enumerate(generator):
           if not index:
             if line != self.EXPECTED_HEADER:
@@ -2927,9 +2948,6 @@ class LogmanTrace(ApiBase):
           if (line[self.EVENT_NAME], line[self.TYPE]) not in supported_events:
             continue
 
-          # Convert the PID in-place from hex.
-          line[self.PID] = int(line[self.PID], 16)
-
           yield [
               line[self.EVENT_NAME],
               line[self.TYPE],
@@ -2939,7 +2957,16 @@ class LogmanTrace(ApiBase):
               line[self.TIMESTAMP],
           ] + line[self.USER_DATA:]
 
-      write_json('%s.json' % self._logname, list(trim(load_file())), True)
+      # must not convert the trim() call into a list, since it will use too much
+      # memory for large trace. use a csv file as a workaround since the json
+      # parser requires a complete in-memory file.
+      with open('%s.preprocessed' % self._logname, 'wb') as f:
+        # $ and * can't be used in file name on windows, reducing the likelihood
+        # of having to escape a string.
+        out = csv.writer(
+            f, delimiter='$', quotechar='*', quoting=csv.QUOTE_MINIMAL)
+        for line in trim(load_file()):
+          out.writerow([s.encode('utf-8') for s in line])
 
     def _convert_log(self, logformat):
       """Converts the ETL trace to text representation.
@@ -2987,7 +3014,7 @@ class LogmanTrace(ApiBase):
 
   @staticmethod
   def clean_trace(logname):
-    for ext in ('', '.csv', '.etl', '.json', '.xml'):
+    for ext in ('', '.csv', '.etl', '.json', '.xml', '.preprocessed'):
       if os.path.isfile(logname + ext):
         os.remove(logname + ext)
 
@@ -3000,26 +3027,45 @@ class LogmanTrace(ApiBase):
       # All the NTFS metadata is in the form x:\$EXTEND or stuff like that.
       return blacklist(filepath) or re.match(r'[A-Z]\:\\\$EXTEND', filepath)
 
-    data = read_json(logname)
-    lines = read_json(logname + '.json')
-    out = []
-    for item in data['traces']:
-      if trace_name and item['trace'] != trace_name:
+    # Create a list of (Context, result_dict) tuples. This is necessary because
+    # the csv file may be larger than the amount of available memory.
+    contexes = [
+      (
+        cls.Context(
+            blacklist_more, item['pid'], item['trace'], item['thunk_cmd']),
+        {
+          'output': item['output'],
+          'trace': item['trace'],
+        },
+      )
+      for item in read_json(logname)['traces']
+      if not trace_name or item['trace'] == trace_name
+    ]
+
+    # The log may be too large to fit in memory and it is not efficient to read
+    # it multiple times, so multiplex the contexes instead, which is slightly
+    # more awkward.
+    with open('%s.preprocessed' % logname, 'rb') as f:
+      lines = csv.reader(
+          f, delimiter='$', quotechar='*', quoting=csv.QUOTE_MINIMAL)
+      for encoded in lines:
+        line = [s.decode('utf-8') for s in encoded]
+        # Convert the PID in-place from hex.
+        line[cls.Context.PID] = int(line[cls.Context.PID], 16)
+        for context in contexes:
+          if 'exception' in context[1]:
+            continue
+          try:
+            context[0].on_line(line)
+          except TracingFailure:
+            context[1]['exception'] = sys.exc_info()
+
+    for context in contexes:
+      if 'exception' in context[1]:
         continue
-      result = {
-        'output': item['output'],
-        'trace': item['trace'],
-      }
-      try:
-        context = cls.Context(
-            blacklist_more, item['pid'], item['trace'], item['thunk_cmd'])
-        for line in lines:
-          context.on_line(line)
-        result['results'] = context.to_results()
-      except TracingFailure:
-        result['exception'] = sys.exc_info()
-      out.append(result)
-    return out
+      context[1]['results'] = context[0].to_results()
+
+    return [context[1] for context in contexes]
 
 
 def get_api():

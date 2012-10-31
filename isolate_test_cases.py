@@ -49,8 +49,10 @@ def isolate_test_cases(
       assert item['valid']
       # Load the results;
       test_case = item['test_case']
-      if not test_case in logs:
-        assert False
+      if test_case not in logs:
+        # TODO(maruel): Fix test cases with a '/' in them.
+        print('Skipping test case (maybe it contains a \'/\'?): %s' % test_case)
+        continue
       log_dict = logs[test_case]
       if log_dict.get('exception'):
         exception = exception or log_dict['exception']

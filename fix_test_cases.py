@@ -46,14 +46,14 @@ def load_run_test_cases_results(run_test_cases_file):
   """
   if not os.path.isfile(run_test_cases_file):
     print >> sys.stderr, 'Failed to find %s' % run_test_cases_file
-    return None
+    return None, None
   with open(run_test_cases_file) as f:
     try:
       data = json.load(f)
     except ValueError as e:
       print >> sys.stderr, ('Unable to load json file, %s: %s' %
                             (run_test_cases_file, str(e)))
-      return None
+      return None, None
   failure = [
     test for test, runs in data['test_cases'].iteritems()
     if not any(not run['returncode'] for run in runs)
@@ -86,6 +86,14 @@ def list_test_cases(isolated):
       1)
 
 
+def add_verbosity(cmd):
+  """Adds --verbose flags to |cmd| depending on verbosity."""
+  if logging.getLogger().level < logging.ERROR:
+    cmd.append('--verbose')
+  if logging.getLogger().level < logging.INFO:
+    cmd.append('--verbose')
+
+
 # This function requires 2 temporary files.
 @with_tempfile
 @with_tempfile
@@ -104,12 +112,20 @@ def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
     # tests 3 times.
     # Do not use --run-all, iterate multiple times instead.
     '--retries', '0',
+    # Trace at most 50 test cases at a time. While this may seem particularly
+    # small, it is because the tracer doesn't scale well on Windows and tends to
+    # generate multi-gigabytes data files, that needs to be read N-times the
+    # number of test cases. On linux and OSX it's not that much a big deal but
+    # if there's 50 test cases that are broken, it's likely that there's a core
+    # file missing anyway.
+    '--max-failures', '50',
   ]
+  add_verbosity(cmd)
   logging.debug(cmd)
   retcode = subprocess.call(cmd)
   success, failures = load_run_test_cases_results(tempfilepath_result)
   # Returning non-zero must match having failures.
-  assert bool(retcode) == bool(failures)
+  assert bool(retcode) == (failures is None or bool(failures))
   return success, failures
 
 
@@ -122,8 +138,10 @@ def trace_some(tempfilepath, isolated, test_cases):
     sys.executable, os.path.join(ROOT_DIR, 'isolate_test_cases.py'),
     '--isolated', isolated,
     '--test-case-file', tempfilepath,
-    '--verbose',
+    # Do not use --run-all here, we assume the test cases will pass inside the
+    # checkout.
   ]
+  add_verbosity(cmd)
   logging.debug(cmd)
   return subprocess.call(cmd)
 
@@ -156,6 +174,9 @@ def fix_all(isolated):
     # pylint is confused about with_tempfile.
     # pylint: disable=E1120
     success, failures = run_tests(isolated, remaining_test_cases)
+    if success is None:
+      print >> sys.stderr, 'Failed to trace test cases'
+      return 1
     print(
         '\nTotal: %5d; Remaining: %5d; Succeeded: %5d; Failed: %5d' % (
           len(all_test_cases),
@@ -174,7 +195,7 @@ def fix_all(isolated):
     # Test cases that passed to not need to be retried anymore.
     remaining_test_cases = [i for i in remaining_test_cases if i not in success]
 
-    # Trace them all and update the .isolate file.
+    # Trace the test cases and update the .isolate file.
     print('\nTracing the failing tests.')
     if trace_some(isolated, failures):
       # The tracing itself failed.

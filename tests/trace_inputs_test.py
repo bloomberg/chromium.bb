@@ -5,7 +5,9 @@
 
 import logging
 import os
+import tempfile
 import unittest
+import shutil
 import sys
 
 BASE_DIR = unicode(os.path.dirname(os.path.abspath(__file__)))
@@ -159,6 +161,32 @@ class TraceInputs(unittest.TestCase):
       actual = trace_inputs.get_native_path_case(
           os.path.join(BASE_DIR, 'trace_inputs', 'Files2'))
       self.assertEquals('files2', os.path.basename(actual))
+
+  if sys.platform == 'win32':
+    def test_native_case_alternate_datastream(self):
+      # Create the file manually, since tempfile doesn't support ADS.
+      tempdir = tempfile.mkdtemp(prefix='trace_inputs')
+      try:
+        tempdir = trace_inputs.get_native_path_case(tempdir)
+        basename = 'foo.txt'
+        filename = basename + ':Zone.Identifier'
+        filepath = os.path.join(tempdir, filename)
+        open(filepath, 'w').close()
+        self.assertEqual(filepath, trace_inputs.get_native_path_case(filepath))
+        data_suffix = ':$DATA'
+        self.assertEqual(
+            filepath + data_suffix,
+            trace_inputs.get_native_path_case(filepath + data_suffix))
+
+        open(filepath + '$DATA', 'w').close()
+        self.assertEqual(
+            filepath + data_suffix,
+            trace_inputs.get_native_path_case(filepath + data_suffix))
+        # Ensure the ADS weren't created as separate file. You love NTFS, don't
+        # you?
+        self.assertEqual([basename], os.listdir(tempdir))
+      finally:
+        shutil.rmtree(tempdir)
 
 
 if sys.platform != 'win32':

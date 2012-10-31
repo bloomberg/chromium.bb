@@ -102,15 +102,17 @@ class RunTestCases(unittest.TestCase):
     old = run_test_cases.run_test_cases
     exe = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py')
     def expect(
-        executable, test_cases, jobs, timeout, retries, run_all, result_file):
-      self.assertEquals(run_test_cases.fix_python_path([exe]), executable)
+        executable, test_cases, jobs, timeout, retries, run_all, max_failures,
+        result_file):
+      self.assertEqual(run_test_cases.fix_python_path([exe]), executable)
       # They are in reverse order due to test shuffling.
-      self.assertEquals(['Foo.Bar3', 'Foo.Bar1'], test_cases)
-      self.assertEquals(run_test_cases.num_processors(), jobs)
-      self.assertEquals(120, timeout)
-      self.assertEquals(2, retries)
-      self.assertEquals(None, run_all)
-      self.assertEquals(exe + '.run_test_cases', result_file)
+      self.assertEqual(['Foo.Bar3', 'Foo.Bar1'], test_cases)
+      self.assertEqual(run_test_cases.num_processors(), jobs)
+      self.assertEqual(120, timeout)
+      self.assertEqual(2, retries)
+      self.assertEqual(None, run_all)
+      self.assertEqual(None, max_failures)
+      self.assertEqual(exe + '.run_test_cases', result_file)
       return 89
 
     try:
@@ -128,29 +130,30 @@ class RunTestCases(unittest.TestCase):
               expected_count=10,
               retries=2,
               min_failures=1,
-              max_failure_ratio=0.001),
+              max_failure_ratio=0.001,
+              max_failures=None),
           [False] * 4),
         # Same without named arguments.
-        (run_test_cases.RunSome(  10, 2, 1, 0.001), [False] * 4),
+        (run_test_cases.RunSome(  10, 2, 1, 0.001, None), [False] * 4),
 
-        (run_test_cases.RunSome(  10, 0, 1, 0.001), [False] * 2),
-        (run_test_cases.RunSome(  10, 0, 1, 0.010), [False] * 2),
+        (run_test_cases.RunSome(  10, 0, 1, 0.001, None), [False] * 2),
+        (run_test_cases.RunSome(  10, 0, 1, 0.010, None), [False] * 2),
 
         # For low expected_count value, retries * min_failures is the minimum
         # bound of accepted failures.
-        (run_test_cases.RunSome(  10, 2, 1, 0.010), [False] * 4),
-        (run_test_cases.RunSome(  10, 2, 1, 0.020), [False] * 4),
-        (run_test_cases.RunSome(  10, 2, 1, 0.050), [False] * 4),
-        (run_test_cases.RunSome(  10, 2, 1, 0.100), [False] * 4),
-        (run_test_cases.RunSome(  10, 2, 1, 0.110), [False] * 4),
+        (run_test_cases.RunSome(  10, 2, 1, 0.010, None), [False] * 4),
+        (run_test_cases.RunSome(  10, 2, 1, 0.020, None), [False] * 4),
+        (run_test_cases.RunSome(  10, 2, 1, 0.050, None), [False] * 4),
+        (run_test_cases.RunSome(  10, 2, 1, 0.100, None), [False] * 4),
+        (run_test_cases.RunSome(  10, 2, 1, 0.110, None), [False] * 4),
 
         # Allows expected_count + retries failures at maximum.
-        (run_test_cases.RunSome(  10, 2, 1, 0.200), [False] * 6),
-        (run_test_cases.RunSome(  10, 2, 1, 0.999), [False] * 30),
+        (run_test_cases.RunSome(  10, 2, 1, 0.200, None), [False] * 6),
+        (run_test_cases.RunSome(  10, 2, 1, 0.999, None), [False] * 30),
 
         # The asympthote is nearing max_failure_ratio for large expected_count
         # values.
-        (run_test_cases.RunSome(1000, 2, 1, 0.050), [False] * 150),
+        (run_test_cases.RunSome(1000, 2, 1, 0.050, None), [False] * 150),
     ]
     for index, (decider, rounds) in enumerate(tests):
       for index2, r in enumerate(rounds):

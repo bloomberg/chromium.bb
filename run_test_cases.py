@@ -499,7 +499,9 @@ def list_test_cases(cmd, cwd, index, shards, disabled, fails, flaky, seed):
 
 class RunSome(object):
   """Thread-safe object deciding if testing should continue."""
-  def __init__(self, expected_count, retries, min_failures, max_failure_ratio):
+  def __init__(
+      self, expected_count, retries, min_failures, max_failure_ratio,
+      max_failures):
     """Determines if it is better to give up testing after an amount of failures
     and successes.
 
@@ -511,8 +513,9 @@ class RunSome(object):
     - min_failures is the minimal number of failures to tolerate, to put a lower
       limit when expected_count is small. This value is multiplied by the number
       of retries.
-    - max_failure_ratio is the the ratio of permitted failures, e.g. 0.1 to stop
+    - max_failure_ratio is the ratio of permitted failures, e.g. 0.1 to stop
       after 10% of failed test cases.
+    - max_failures is the absolute maximum number of tolerated failures or None.
 
     For large values of expected_count, the number of tolerated failures will be
     at maximum "(expected_count * retries) * max_failure_ratio".
@@ -535,6 +538,12 @@ class RunSome(object):
     # _max_failures can be lower than _min_failures.
     self._max_failures_tolerated = round(
         (expected_count * (retries + 1)) * max_failure_ratio)
+    if max_failures is not None:
+      # Override the ratio if necessary.
+      self._max_failures_tolerated = min(
+          self._max_failures_tolerated, max_failures)
+      self._min_failures_tolerated = min(
+          self._min_failures_tolerated, max_failures)
 
     # Variables.
     self._lock = threading.Lock()
@@ -678,7 +687,8 @@ def LogResults(result_file, results):
 
 
 def run_test_cases(
-    cmd, test_cases, jobs, timeout, retries, run_all, result_file):
+    cmd, test_cases, jobs, timeout, retries, run_all, max_failures,
+    result_file):
   """Traces test cases one by one."""
   if not test_cases:
     return 0
@@ -687,7 +697,7 @@ def run_test_cases(
     decider = RunAll()
   else:
     # If 10% of test cases fail, just too bad.
-    decider = RunSome(len(test_cases), retries, 2, 0.1)
+    decider = RunSome(len(test_cases), retries, 2, 0.1, max_failures)
   with ThreadPool(jobs) as pool:
     function = Runner(cmd, os.getcwd(), timeout, progress, retries, decider).map
     logging.debug('Adding tests to ThreadPool')
@@ -911,6 +921,9 @@ def main(argv):
       action='store_true',
       help='Do not fail early when a large number of test cases fail')
   parser.add_option(
+      '--max-failures', type='int',
+      help='Limit the number of failures before aborting')
+  parser.add_option(
       '--retries', type='int', default=2,
       help='Number of times each test case should be retried in case of '
            'failure.')
@@ -933,6 +946,9 @@ def main(argv):
         'Please provide the executable line to run, if you need fancy things '
         'like xvfb, start this script from *inside* xvfb, it\'ll be much faster'
         '.')
+
+  if options.run_all and options.max_failures is not None:
+    parser.error('Use only one of --run-all or --max-failures')
 
   cmd = fix_python_path(args)
 
@@ -958,6 +974,7 @@ def main(argv):
       options.timeout,
       options.retries,
       options.run_all,
+      options.max_failures,
       result_file)
 
 
