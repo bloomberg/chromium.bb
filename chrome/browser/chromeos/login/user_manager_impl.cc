@@ -208,6 +208,9 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
   }
 
+  // Make sure we persist new user data to Local State.
+  prefs->CommitPendingWrite();
+
   NotifyOnLogin();
 }
 
@@ -247,6 +250,10 @@ void UserManagerImpl::SessionStarted() {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
+  if (is_current_user_new_) {
+    // Make sure we persist new user data to Local State.
+    g_browser_process->local_state()->CommitPendingWrite();
+  }
 }
 
 void UserManagerImpl::RemoveUser(const std::string& email,
