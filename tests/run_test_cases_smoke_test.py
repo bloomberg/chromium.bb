@@ -91,10 +91,10 @@ class RunTestCases(unittest.TestCase):
       r'\[\d/\d\]   \d\.\d\ds .+',
       r'\[\d/\d\]   \d\.\d\ds .+',
       re.escape('Summary:'),
-      re.escape('Success:    3 100.00% ') + r' +\d+\.\d\ds',
-      re.escape('  Flaky:    0   0.00% ') + r' +\d+\.\d\ds',
-      re.escape('   Fail:    0   0.00% ') + r' +\d+\.\d\ds',
-      r'\d+\.\d\ds Done running 3 tests with 3 executions. \d+\.\d\d test/s',
+      re.escape('  Success:    3 100.00% ') + r' +\d+\.\d\ds',
+      re.escape('    Flaky:    0   0.00% ') + r' +\d+\.\d\ds',
+      re.escape('     Fail:    0   0.00% ') + r' +\d+\.\d\ds',
+      r'  \d+\.\d\ds Done running 3 tests with 3 executions. \d+\.\d\d test/s',
     ]
     self._check_results(expected_out_re, out, err)
 
@@ -133,12 +133,13 @@ class RunTestCases(unittest.TestCase):
       re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines()
     ] + [
       '',
+      re.escape('Failed tests:'),
+      re.escape('  Baz.Fail'),
       re.escape('Summary:'),
-      re.escape('Baz.Fail failed'),
-      re.escape('Success:    3  75.00%') + r' +\d+\.\d\ds',
-      re.escape('  Flaky:    0   0.00%') + r' +\d+\.\d\ds',
-      re.escape('   Fail:    1  25.00%') + r' +\d+\.\d\ds',
-      r'\d+\.\d\ds Done running 4 tests with 6 executions. \d+\.\d\d test/s',
+      re.escape('  Success:    3  75.00%') + r' +\d+\.\d\ds',
+      re.escape('    Flaky:    0   0.00%') + r' +\d+\.\d\ds',
+      re.escape('     Fail:    1  25.00%') + r' +\d+\.\d\ds',
+      r'  \d+\.\d\ds Done running 4 tests with 6 executions. \d+\.\d\d test/s',
     ]
     self._check_results(expected_out_re, out, err)
 

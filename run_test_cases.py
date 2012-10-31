@@ -742,16 +742,20 @@ def run_test_cases(
   if not results:
     return 1
 
+  if flaky:
+    print('Flaky tests:')
+    for test_case in sorted(flaky):
+      items = results[test_case]
+      print('  %s (tried %d times)' % (test_case, len(items)))
+
+  if fail:
+    print('Failed tests:')
+    for test_case in sorted(fail):
+      print('  %s' % test_case)
+
   print('Summary:')
-  for test_case in sorted(flaky):
-    items = results[test_case]
-    print('%s is flaky (tried %d times)' % (test_case, len(items)))
-
-  for test_case in sorted(fail):
-    print('%s failed' % (test_case))
-
   if decider.should_stop():
-    print('** STOPPED EARLY due to high failure rate **')
+    print('  ** STOPPED EARLY due to high failure rate **')
   output = [
     ('Success', success),
     ('Flaky', flaky),
@@ -764,12 +768,12 @@ def run_test_cases(
   for name, items in output:
     number = len(items)
     print(
-        '%7s: %4d %6.2f%% %7.2fs' % (
+        '  %7s: %4d %6.2f%% %7.2fs' % (
           name,
           number,
           number * 100. / total_expected,
           sum(test_case_duration.get(item, 0) for item in items)))
-  print('%.2fs Done running %d tests with %d executions. %.2f test/s' % (
+  print('  %.2fs Done running %d tests with %d executions. %.2f test/s' % (
       duration,
       len(results),
       nb_runs,
