@@ -185,6 +185,8 @@
         'system/keyboard_brightness/keyboard_brightness_control_delegate.h',
         'system/locale/tray_locale.cc',
         'system/locale/tray_locale.h',
+        'system/monitor/tray_monitor.cc',
+        'system/monitor/tray_monitor.h',
         'system/power/power_status_observer.h',
         'system/power/power_status_view.cc',
         'system/power/power_status_view.h',
