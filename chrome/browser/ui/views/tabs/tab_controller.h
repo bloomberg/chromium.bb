@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
-#include "ui/gfx/image/image_skia_rep.h"
 
 class BaseTab;
 class TabStripSelectionModel;
@@ -83,14 +82,6 @@ class TabController {
   // not painted. If true is returned the tab should be painted and |clip| is
   // set to the clip (if |clip| is empty means no clip).
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) = 0;
-
-  // Returns true if Instant Extended API is enabled.
-  virtual bool IsInstantExtendedAPIEnabled() = 0;
-
-  // Returns the NTP background theme to use for the active tab when Instant
-  // Extended API is enabled and theme is used.
-  virtual const gfx::ImageSkiaRep& GetNTPBackgroundTheme(
-      ui::ScaleFactor scale_factor) = 0;
 
  protected:
   virtual ~TabController() {}

@@ -288,9 +288,6 @@ void BrowserViewLayout::Layout(views::View* host) {
     browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
         gfx::Rect(), true);
   }
-  // Set NTP background size now that we have the contents bounds.
-  tabstrip_->SetNTPBackgroundFillSize(
-      browser_view_->GetNTPBackgroundFillSize());
 }
 
 // Return the preferred size which is the size required to give each

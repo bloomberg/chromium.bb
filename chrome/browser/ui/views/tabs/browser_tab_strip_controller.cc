@@ -15,9 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_delegate.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -178,8 +175,6 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
       browser_(browser),
       hover_tab_selector_(model) {
   model_->AddObserver(this);
-  browser_->search_model()->AddObserver(this);
-  browser_->search_delegate()->toolbar_search_animator().AddObserver(this);
 
   local_pref_registrar_.Init(g_browser_process->local_state());
   local_pref_registrar_.Add(prefs::kTabStripLayoutType, this);
@@ -193,8 +188,6 @@ BrowserTabStripController::~BrowserTabStripController() {
     context_menu_contents_->Cancel();
 
   model_->RemoveObserver(this);
-  browser_->search_delegate()->toolbar_search_animator().RemoveObserver(this);
-  browser_->search_model()->RemoveObserver(this);
 }
 
 void BrowserTabStripController::InitFromModel(TabStrip* tabstrip) {
@@ -373,10 +366,6 @@ void BrowserTabStripController::LayoutTypeMaybeChanged() {
       static_cast<int>(tabstrip_->layout_type()));
 }
 
-bool BrowserTabStripController::IsInstantExtendedAPIEnabled() {
-  return chrome::search::IsInstantExtendedAPIEnabled(browser_->profile());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
@@ -451,50 +440,6 @@ void BrowserTabStripController::TabBlockedStateChanged(TabContents* contents,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserTabStripController, chrome::search::SearchModelObserver:
-
-void BrowserTabStripController::ModeChanged(
-    const chrome::search::Mode& old_mode,
-    const chrome::search::Mode& new_mode) {
-  // Mode has changed, set tab data based on new mode, which will trigger
-  // repainting of tab's background.
-  int active_index = GetActiveIndex();
-  DCHECK_NE(active_index, -1);
-  SetTabDataAt(chrome::GetWebContentsAt(browser_, active_index), active_index);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserTabStripController, chrome::search::ToolbarSearchAnimator::Observer:
-
-void BrowserTabStripController::OnToolbarBackgroundAnimatorProgressed() {
-  // We're fading in the tab background, set tab data based on new background
-  // state and possibly opacity value, which will trigger repainting of tab's
-  // background.
-  int active_index = GetActiveIndex();
-  DCHECK_NE(active_index, -1);
-  SetTabDataAt(chrome::GetWebContentsAt(browser_, active_index), active_index);
-}
-
-void BrowserTabStripController::OnToolbarBackgroundAnimatorCanceled(
-    content::WebContents* web_contents) {
-  // Fade in of tab background has been canceled, which can happen in 2
-  // scenarios:
-  // 1) a deactivated or detached or closing tab, whose |tab_contents| is the
-  //    the formal parameter: make sure |tab_contents| still exist in tab model.
-  // 2) mode change of active tab, as indicated by a NULL |tab_contents|: make
-  //    sure active tab exists, and retrieve its |tab_contents|.
-  // If we proceed, set tab data so that
-  // |TabRendererData::gradient_background_opacity| will be reset.
-  // Repainting of tab's background will be triggered in the process.
-  int index = web_contents ? model_->GetIndexOfWebContents(web_contents) :
-                             GetActiveIndex();
-  if (index == -1)
-    return;
-  SetTabDataAt(web_contents ? web_contents :
-      chrome::GetWebContentsAt(browser_, index), index);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, content::NotificationObserver implementation:
 
 void BrowserTabStripController::Observe(int type,
@@ -539,10 +484,6 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
       MediaInternals::GetInstance()->GetMediaStreamCaptureIndicator();
   data->recording =
       capture_indicator->IsProcessCapturing(render_process_id, render_view_id);
-  data->mode = browser_->search_model()->mode().mode;
-  // Get current gradient background animation to paint.
-  data->gradient_background_opacity = browser_->search_delegate()->
-      toolbar_search_animator().GetGradientOpacity();
 }
 
 void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,

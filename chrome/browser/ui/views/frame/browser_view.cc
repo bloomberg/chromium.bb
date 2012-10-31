@@ -268,17 +268,9 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     if (!toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   } else {
-    Profile* profile = browser_view_->browser()->profile();
-    bool is_instant_extended_api_enabled =
-        chrome::search::IsInstantExtendedAPIEnabled(profile);
-    bool use_ntp_background_theme = false;
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
         browser_view_->OffsetPointForToolbarBackgroundImage(
-            gfx::Point(host_view_->GetMirroredX(), host_view_->y())),
-        chrome::search::GetToolbarBackgroundColor(profile, search_mode.mode),
-        chrome::search::GetTopChromeBackgroundImage(tp,
-            is_instant_extended_api_enabled, search_mode.mode,
-            true, &use_ntp_background_theme));
+            gfx::Point(host_view_->GetMirroredX(), host_view_->y())));
     // For instant extended API, only draw bookmark separator for |MODE_DFEAULT|
     // mode.
     if (host_view_->height() >= toolbar_overlap && search_mode.is_default())
@@ -1861,10 +1853,7 @@ void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!
   return (IsTabStripVisible() || !frame_->ShouldUseNativeFrame()) ?
-      ThemeService::GetDefaultColor(
-          chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()) ?
-              ThemeService::COLOR_SEARCH_SEPARATOR_LINE :
-                  ThemeService::COLOR_TOOLBAR_SEPARATOR) :
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR) :
       SK_ColorBLACK;
 }
 
@@ -1939,7 +1928,7 @@ void BrowserView::Init() {
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_.get(),
                                     browser_->tab_strip_model());
-  tabstrip_ = new TabStrip(tabstrip_controller, browser_->profile());
+  tabstrip_ = new TabStrip(tabstrip_controller);
   AddChildView(tabstrip_);
   tabstrip_controller->InitFromModel(tabstrip_);
 
@@ -1953,7 +1942,6 @@ void BrowserView::Init() {
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
-
   toolbar_->Init();
 
   preview_controller_.reset(

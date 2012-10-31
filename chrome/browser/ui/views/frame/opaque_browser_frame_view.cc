@@ -12,10 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_model.h"
-#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -716,27 +712,13 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       255, gfx::Rect(x - kClientEdgeThickness, y, w + kClientEdgeThickness * 3,
                      h));
 
-  // TODO(kuan): migrate background animation from cros to win by calling
-  // GetToolbarBackgoundColor and GetTopChromeBackgroundImage with the correct
-  // mode, refer to BrowserNonClientFrameViewAsh.
-  Profile* profile = browser_view()->browser()->profile();
-  chrome::search::Mode::Type search_mode =
-      browser_view()->browser()->search_model()->mode().mode;
-  SkColor background_color = chrome::search::GetToolbarBackgroundColor(
-      profile, search_mode);
-  bool is_instant_extended_api_enabled =
-      chrome::search::IsInstantExtendedAPIEnabled(profile);
-  bool use_ntp_background_theme = false;
-  gfx::ImageSkia* theme_toolbar = chrome::search::GetTopChromeBackgroundImage(
-      tp, is_instant_extended_api_enabled, search_mode,
-      true, &use_ntp_background_theme);
-
   // Paint the bottom rect.
   canvas->FillRect(gfx::Rect(x, bottom_y, w, bottom_edge_height),
-                   background_color);
+                   tp->GetColor(ThemeService::COLOR_TOOLBAR));
 
   // Tile the toolbar image starting at the frame edge on the left and where the
   // horizontal tabstrip is (or would be) on the top.
+  gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   canvas->TileImageInt(*theme_toolbar,
                        x + GetThemeBackgroundXInset(),
                        bottom_y - GetTabStripInsets(false).top,
@@ -798,19 +780,13 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       bottom_edge_height, right_x, bottom_y, toolbar_right->width(),
       bottom_edge_height, false);
 
-  // Only draw the content/toolbar separator if Instant Extended API is disabled
-  // or mode is DEFAULT.
-  if (!is_instant_extended_api_enabled ||
-      search_mode == chrome::search::Mode::MODE_DEFAULT) {
-    canvas->FillRect(
-        gfx::Rect(x + kClientEdgeThickness,
-                  toolbar_bounds.bottom() - kClientEdgeThickness,
-                  w - (2 * kClientEdgeThickness),
-                  kClientEdgeThickness),
-        ThemeService::GetDefaultColor(is_instant_extended_api_enabled ?
-            ThemeService::COLOR_SEARCH_SEPARATOR_LINE :
-                ThemeService::COLOR_TOOLBAR_SEPARATOR));
-  }
+  // Draw the content/toolbar separator.
+  canvas->FillRect(
+      gfx::Rect(x + kClientEdgeThickness,
+                toolbar_bounds.bottom() - kClientEdgeThickness,
+                w - (2 * kClientEdgeThickness),
+                kClientEdgeThickness),
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
 void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -819,9 +795,7 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   int image_top = client_area_top;
 
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
-  SkColor toolbar_color = chrome::search::GetToolbarBackgroundColor(
-      browser_view()->browser()->profile(),
-      browser_view()->browser()->search_model()->mode().mode);
+  SkColor toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
 
   if (browser_view()->IsToolbarVisible()) {
     // The client edge images always start below the toolbar corner images.  The

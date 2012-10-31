@@ -19,10 +19,6 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/ntp_background_util.h"
-#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -30,8 +26,6 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -590,9 +584,8 @@ const char TabStrip::kViewClassName[] = "TabStrip";
 // static
 const int TabStrip::kMiniToNonMiniGap = 3;
 
-TabStrip::TabStrip(TabStripController* controller, Profile* profile)
+TabStrip::TabStrip(TabStripController* controller)
     : controller_(controller),
-      profile_(profile),
       newtab_button_(NULL),
       current_unselected_width_(Tab::GetStandardSize().width()),
       current_selected_width_(Tab::GetStandardSize().width()),
@@ -917,21 +910,6 @@ void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
   newtab_button_->set_background_offset(offset);
 }
 
-void TabStrip::SetNTPBackgroundFillSize(const gfx::Size& new_size) {
-  if (new_size == ntp_background_fill_size_)
-    return;
-  ntp_background_fill_size_ = new_size;
-  // Background fill size has changed, force re-extraction of image.
-  ntp_background_theme_ = gfx::ImageSkia();
-}
-
-void TabStrip::ExtractNTPBackgroundTheme(ui::ScaleFactor scale_factor) {
-  gfx::Canvas canvas(size(), scale_factor, false);
-  NtpBackgroundUtil::PaintBackgroundForBrowserClientArea(profile_, &canvas,
-      GetLocalBounds(), ntp_background_fill_size_, bounds());
-  ntp_background_theme_.AddRepresentation(canvas.ExtractImageRep());
-}
-
 views::View* TabStrip::newtab_button() {
   return newtab_button_;
 }
@@ -1180,20 +1158,6 @@ bool TabStrip::ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) {
     }
   }
   return true;
-}
-
-bool TabStrip::IsInstantExtendedAPIEnabled() {
-  return controller_->IsInstantExtendedAPIEnabled();
-}
-
-const gfx::ImageSkiaRep& TabStrip::GetNTPBackgroundTheme(
-    ui::ScaleFactor scale_factor) {
-  // If there's no image at all or for requested scale factor, extract it.
-  if (ntp_background_theme_.isNull() ||
-      !ntp_background_theme_.HasRepresentation(scale_factor)) {
-    ExtractNTPBackgroundTheme(scale_factor);
-  }
-  return ntp_background_theme_.GetRepresentation(scale_factor);
 }
 
 void TabStrip::MouseMovedOutOfHost() {
@@ -1521,18 +1485,6 @@ void TabStrip::GetCurrentTabWidths(double* unselected_width,
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, private:
 
-void TabStrip::Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-#if defined(ENABLE_THEMES)
-  if (IsInstantExtendedAPIEnabled()) {
-    DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
-    // Theme has changed, force re-extraction of new image.
-    ntp_background_theme_ = gfx::ImageSkia();
-  }
-#endif // defined(ENABLE_THEMES)
-}
-
 void TabStrip::Init() {
   set_id(VIEW_ID_TAB_STRIP);
   // So we get enter/exit on children to switch layout type.
@@ -1553,15 +1505,6 @@ void TabStrip::Init() {
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
   }
-
-#if defined(ENABLE_THEMES)
-  if (IsInstantExtendedAPIEnabled()) {
-    // Listen for theme installation.
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                   content::Source<ThemeService>(
-                       ThemeServiceFactory::GetForProfile(profile_)));
-  }
-#endif  // defined(ENABLE_THEMES)
 }
 
 BaseTab* TabStrip::CreateTab() {

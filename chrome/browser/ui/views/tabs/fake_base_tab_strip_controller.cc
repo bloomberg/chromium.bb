@@ -106,7 +106,3 @@ bool FakeBaseTabStripController::IsIncognito() {
 
 void FakeBaseTabStripController::LayoutTypeMaybeChanged() {
 }
-
-bool FakeBaseTabStripController::IsInstantExtendedAPIEnabled() {
-  return false;
-}

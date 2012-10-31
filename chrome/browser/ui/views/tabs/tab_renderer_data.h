@@ -7,8 +7,6 @@
 
 #include "base/process_util.h"
 #include "base/string16.h"
-#include "chrome/browser/ui/search/search_types.h"
-#include "chrome/browser/ui/search/toolbar_search_animator.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -50,8 +48,6 @@ struct TabRendererData {
   bool blocked;
   bool app;
   bool recording;
-  chrome::search::Mode::Type mode;
-  double gradient_background_opacity;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_

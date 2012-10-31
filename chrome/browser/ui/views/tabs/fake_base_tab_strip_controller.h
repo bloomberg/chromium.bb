@@ -48,7 +48,6 @@ class FakeBaseTabStripController : public TabStripController {
   virtual void ClickActiveTab(int index) OVERRIDE;
   virtual bool IsIncognito() OVERRIDE;
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
-  virtual bool IsInstantExtendedAPIEnabled() OVERRIDE;
 
  private:
   TabStrip* tab_strip_;

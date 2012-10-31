@@ -14,9 +14,7 @@ using views::Widget;
 
 class FakeTabController : public TabController {
  public:
-  FakeTabController()
-      : ntp_background_theme_(
-            gfx::ImageSkiaRep(gfx::Size(100, 30), ui::SCALE_FACTOR_NONE)) {
+  FakeTabController() {
   }
   virtual ~FakeTabController() {}
 
@@ -53,17 +51,9 @@ class FakeTabController : public TabController {
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE {
     return true;
   }
-  virtual bool IsInstantExtendedAPIEnabled() OVERRIDE {
-    return false;
-  }
-  virtual const gfx::ImageSkiaRep& GetNTPBackgroundTheme(
-      ui::ScaleFactor scale_factor) OVERRIDE {
-    return ntp_background_theme_.GetRepresentation(ui::SCALE_FACTOR_NONE);
-  }
 
  private:
   TabStripSelectionModel selection_model_;
-  gfx::ImageSkia ntp_background_theme_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTabController);
 };

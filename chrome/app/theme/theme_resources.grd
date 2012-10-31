@@ -815,7 +815,6 @@
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_INACTIVE" file="theme_toolbar_default_inactive2.png" />
       </if>
       <!-- Instant Extended API toolbar background is common for all platforms. -->
-      <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_SEARCH" file="theme_toolbar_search.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_WINDOW_CONTROL_BACKGROUND" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER_LIGHT" file="throbber_light.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="throbber_waiting.png" />
@@ -826,7 +825,6 @@
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_LEFT" file="common/toolbar_shade_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_RIGHT" file="common/toolbar_shade_right.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="common/toolbar_shade_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP_SEARCH" file="cros/toolbar_shade_top_search.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TOOLS" file="tools.png" />

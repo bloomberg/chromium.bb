@@ -102,8 +102,7 @@ class Tab : public BaseTab {
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
                                                  int tab_id);
-  void PaintActiveTabBackground(gfx::Canvas* canvas,
-                                chrome::search::Mode::Type mode);
+  void PaintActiveTabBackground(gfx::Canvas* canvas);
 
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.
