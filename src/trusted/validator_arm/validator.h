@@ -11,7 +11,6 @@
  * The SFI validator, and some utility classes it uses.
  */
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <vector>
 

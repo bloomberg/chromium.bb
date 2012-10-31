@@ -8,7 +8,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_ADDRESS_SET_H
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_ADDRESS_SET_H
 
-#include <stdint.h>
+#include "native_client/src/include/portability.h"
 
 namespace nacl_arm_val {
 

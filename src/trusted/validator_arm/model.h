@@ -32,10 +32,10 @@
  *    gcc 4.3.3.
  */
 
-#include <stdint.h>
 #include <cstddef>
 #include <string>
 #include "native_client/src/include/arm_sandbox.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_bits.h"
 
 namespace nacl_arm_dec {
@@ -450,13 +450,13 @@ class Instruction {
   // A convenience method that extracts the register specified by
   // the corresponding bits of the first word of a THUMB instruction.
   const Register Word1Reg(int hi, int lo) const {
-    return Register(Word1Bits(hi, lo));
+    return Register(static_cast<Register::Number>(Word1Bits(hi, lo)));
   }
 
   // A convenience method that extracts the register specified by
   // the corresponding bits of the second word of a THUMB instruction.
   const Register Word2Reg(int hi, int lo) const {
-    return Register(Word2Bits(hi, lo));
+    return Register(static_cast<Register::Number>(Word2Bits(hi, lo)));
   }
 
   // Extracts a single bit (0 - 15) from the first word of a

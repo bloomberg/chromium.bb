@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator/ncfileutil.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator_arm/problem_reporter.h"
