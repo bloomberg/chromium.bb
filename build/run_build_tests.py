@@ -12,6 +12,7 @@ MODULES = [
     'directory_storage_test',
     'gsd_storage_test',
     'hashing_tools_test',
+    'local_storage_cache_test',
 ]
 
 suite = unittest.TestLoader().loadTestsFromNames(MODULES)
