@@ -10,6 +10,14 @@ When the event page is not actively doing something,
 it is unloaded, freeing memory and other system resources.
 </p>
 
+<p>
+Event pages are available in the stable channel as of Chrome 22, and the
+performance advantages are significant, especially on low-power devices. Please
+prefer them to persistent background pages whenever possible for new development
+and begin <a href="#transition">migrating existing background pages</a> to this
+new model.
+</p>
+
 <h2 id="manifest">Manifest</h2>
 
 <p>
