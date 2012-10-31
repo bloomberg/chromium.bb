@@ -212,7 +212,7 @@ bool Hyphenator::Initialize() {
   return !!dictionary_;
 }
 
-bool Hyphenator::Attach(content::RenderThread* thread, const string16& locale) {
+bool Hyphenator::Attach(RenderThread* thread, const string16& locale) {
   if (!thread)
     return false;
   locale_.assign(locale);

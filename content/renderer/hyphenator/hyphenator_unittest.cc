@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/hyphen/hyphen.h"
 
+namespace content {
 namespace {
 
 // A mock message listener that listens for HyphenatorHost messages. This class
@@ -20,7 +21,7 @@ namespace {
 // IPC::TestSink object and emulates the HyphenatorMessageFilter class.
 class MockListener : public IPC::Listener {
  public:
-  MockListener(content::Hyphenator* hyphenator, const string16& locale)
+  MockListener(Hyphenator* hyphenator, const string16& locale)
       : hyphenator_(hyphenator),
         locale_(locale) {
   }
@@ -69,7 +70,7 @@ class MockListener : public IPC::Listener {
     return base::Process::Current().handle();
   }
 
-  content::Hyphenator* hyphenator_;
+  Hyphenator* hyphenator_;
   string16 locale_;
 };
 
@@ -92,7 +93,7 @@ class HyphenatorTest : public testing::Test {
     base::PlatformFile file = base::CreatePlatformFile(
         dictionary_path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
         NULL, NULL);
-    hyphenator_.reset(new content::Hyphenator(file));
+    hyphenator_.reset(new Hyphenator(file));
     return hyphenator_->Initialize();
   }
 
@@ -114,8 +115,8 @@ class HyphenatorTest : public testing::Test {
   }
 
   bool OpenDictionary(const string16& locale) {
-    hyphenator_.reset(new content::Hyphenator(base::kInvalidPlatformFileValue));
-    thread_.reset(new content::MockRenderThread());
+    hyphenator_.reset(new Hyphenator(base::kInvalidPlatformFileValue));
+    thread_.reset(new MockRenderThread());
     listener_.reset(new MockListener(hyphenator_.get(), locale));
     thread_->sink().AddFilter(listener_.get());
     return hyphenator_->Attach(thread_.get(), locale);
@@ -126,8 +127,8 @@ class HyphenatorTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<content::Hyphenator> hyphenator_;
-  scoped_ptr<content::MockRenderThread> thread_;
+  scoped_ptr<Hyphenator> hyphenator_;
+  scoped_ptr<MockRenderThread> thread_;
   scoped_ptr<MockListener> listener_;
 };
 
@@ -186,3 +187,5 @@ TEST_F(HyphenatorTest, openDictionary) {
   string16 expected = ASCIIToUTF16("hy-phen-ation");
   EXPECT_EQ(expected, Hyphenate(input));
 }
+
+}  // namespace content

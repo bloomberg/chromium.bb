@@ -37,7 +37,7 @@ class CONTENT_EXPORT Hyphenator : public RenderProcessObserver {
   // hyphenation.
   bool Initialize();
 
-  bool Attach(content::RenderThread* thread, const string16& locale);
+  bool Attach(RenderThread* thread, const string16& locale);
 
   // Returns whether this object can hyphenate words. When this object does not
   // have a dictionary file attached, this function sends an IPC request to open
