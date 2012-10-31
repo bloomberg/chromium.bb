@@ -208,17 +208,22 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
   // profile. Note that the profile may already be incognito, in which case
   // we will search the incognito version only, regardless of the value of
   // |include_incognito|.
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host_->GetProcess()->GetBrowserContext());
-  Browser* browser = browser::FindAnyBrowser(profile, include_incognito_);
+  if (render_view_host_) {
+    Profile* profile = Profile::FromBrowserContext(
+        render_view_host_->GetProcess()->GetBrowserContext());
+    Browser* browser = browser::FindAnyBrowser(profile, include_incognito_);
+    if (browser)
+      return browser;
+  }
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
   // a background_page onload chrome.tabs api call can make it into here
-  // before the browser is sufficiently initialized to return here.
+  // before the browser is sufficiently initialized to return here, or
+  // all of this profile's browser windows may have been closed.
   // A similar situation may arise during shutdown.
   // TODO(rafaelw): Delay creation of background_page until the browser
   // is available. http://code.google.com/p/chromium/issues/detail?id=13284
-  return browser;
+  return NULL;
 }
 
 content::WebContents* UIThreadExtensionFunction::GetAssociatedWebContents() {

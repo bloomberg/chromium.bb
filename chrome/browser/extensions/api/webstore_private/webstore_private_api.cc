@@ -322,7 +322,10 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     return;
   }
 
-  install_prompt_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  if (!web_contents)  // The browser window has gone away.
+    return;
+  install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
   install_prompt_->ConfirmWebstoreInstall(
       this,
       dummy_extension_,
