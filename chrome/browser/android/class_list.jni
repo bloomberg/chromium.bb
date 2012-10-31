@@ -1,0 +1,23 @@
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file contains a list of JNI parameters used to generate the
+# bindings.
+Lorg/chromium/chrome/browser/autofill/AutofillExternalDelegate
+Lorg/chromium/chrome/browser/autofill/AutofillSuggestion
+Lorg/chromium/chrome/browser/ChromeBrowserProvider$BookmarkNode
+Lorg/chromium/chrome/browser/ChromeHttpAuthHandler
+Lorg/chromium/chrome/browser/ChromeWebContentsDelegateAndroid
+Lorg/chromium/chrome/browser/FindMatchRectsDetails
+Lorg/chromium/chrome/browser/FindNotificationDetails
+Lorg/chromium/chrome/browser/JavascriptAppModalDialog
+Lorg/chromium/chrome/browser/ProcessUtils
+Lorg/chromium/chrome/browser/component/navigation_interception/InterceptNavigationDelegate
+Lorg/chromium/chrome/browser/component/web_contents_delegate_android/WebContentsDelegateAndroid
+Lorg/chromium/chrome/browser/database/SQLiteCursor
+Lorg/chromium/chrome/browser/GoogleLocationSettingsHelper
+Lorg/chromium/chrome/browser/GoogleLocationSettingsHelperStub
+# TODO(bulach): For now all Java code in content is public until we decide to try and separate them.
+Lorg/chromium/content/browser/ContainerViewDelegate
+Lorg/chromium/ui/gfx/NativeWindow

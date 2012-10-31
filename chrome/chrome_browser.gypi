@@ -2948,6 +2948,7 @@
           ],
           'variables': {
             'jni_gen_dir': 'chrome',
+            'jni_external_param_list': 'browser/android/class_list.jni',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
