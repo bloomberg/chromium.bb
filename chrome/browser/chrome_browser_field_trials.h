@@ -54,6 +54,10 @@ class ChromeBrowserFieldTrials {
   // Sets up field trials for doing Cache Sensitivity Analysis.
   void SetUpCacheSensitivityAnalysisFieldTrial();
 
+  // A field trial to determine the impact of using non-blocking reads for
+  // TCP sockets on Windows instead of overlapped I/O.
+  void WindowsOverlappedTCPReadsFieldTrial();
+
   const CommandLine& parsed_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserFieldTrials);

@@ -28,6 +28,7 @@
 #include "ui/base/layout.h"
 
 #if defined(OS_WIN)
+#include "net/socket/tcp_client_socket_win.h"
 #include "ui/base/win/dpi.h"  // For DisableNewTabFieldTrialIfNecesssary.
 #endif  // defined(OS_WIN)
 
@@ -59,7 +60,7 @@ void SetupSingleUniformityFieldTrial(
       base::FieldTrialList::FactoryGetFieldTrial(
           trial_name, divisor, kDefaultGroupName, 2015, 1, 1, NULL));
   if (one_time_randomized)
-      trial->UseOneTimeRandomization();
+    trial->UseOneTimeRandomization();
   chrome_variations::AssociateGoogleVariationID(trial_name, kDefaultGroupName,
       trial_base_id);
   // Loop starts with group 1 because the field trial automatically creates a
@@ -112,6 +113,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   SetUpSafeBrowsingInterstitialFieldTrial();
   SetUpInfiniteCacheFieldTrial();
   SetUpCacheSensitivityAnalysisFieldTrial();
+  WindowsOverlappedTCPReadsFieldTrial();
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   OneClickSigninHelper::InitializeFieldTrial();
 #endif
@@ -307,3 +309,27 @@ void ChromeBrowserFieldTrials::SetUpCacheSensitivityAnalysisFieldTrial() {
   trial->AppendGroup("400A", sensitivity_analysis_probability);
   trial->AppendGroup("400B", sensitivity_analysis_probability);
 }
+
+void ChromeBrowserFieldTrials::WindowsOverlappedTCPReadsFieldTrial() {
+#if defined(OS_WIN)
+  if (parsed_command_line_.HasSwitch(switches::kOverlappedRead)) {
+    std::string option =
+        parsed_command_line_.GetSwitchValueASCII(switches::kOverlappedRead);
+    if (LowerCaseEqualsASCII(option, "off"))
+      net::TCPClientSocketWin::DisableOverlappedReads();
+  } else {
+    const base::FieldTrial::Probability kDivisor = 2;  // 1 in 2 chance
+    const base::FieldTrial::Probability kOverlappedReadProbability = 1;
+    scoped_refptr<base::FieldTrial> overlapped_reads_trial(
+        base::FieldTrialList::FactoryGetFieldTrial("OverlappedReadImpact",
+            kDivisor, "OverlappedReadEnabled", 2013, 6, 1, NULL));
+    int overlapped_reads_disabled_group =
+        overlapped_reads_trial->AppendGroup("OverlappedReadDisabled",
+                                            kOverlappedReadProbability);
+    int assigned_group = overlapped_reads_trial->group();
+    if (assigned_group == overlapped_reads_disabled_group)
+      net::TCPClientSocketWin::DisableOverlappedReads();
+  }
+#endif
+}
+
