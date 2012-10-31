@@ -426,6 +426,7 @@
       'test/data/extensions/permissions/permissions_file_scheme.json',
       'test/data/extensions/permissions/permissions_http_scheme.json',
       'test/data/extensions/permissions/plugins.json',
+      'test/data/extensions/permissions/socket_two_domains_one_hostname.json',
       'test/data/extensions/permissions/unknown.pem',
       'test/data/extensions/permissions/whitelist.pem',
       'test/data/extensions/theme.crx',
@@ -676,7 +677,6 @@
           'test/data/extensions/good/Extensions/hpiknbiabeeppbpihjehijgoemciehgk/2/content_plugin.dll',
           'test/data/extensions/good/Extensions/hpiknbiabeeppbpihjehijgoemciehgk/2/extension_plugin.dll',
           'test/data/extensions/unpacked/symlinks_allowed/icon.png',
-          'test/data/native_messaging/Native Hosts/echo.py',
           'test/data/native_messaging/Native Hosts/empty_app.py',
           'test/data/printing/cloud_print_emptytest.pdf',
         ],
@@ -696,7 +696,6 @@
           'test/data/extensions/permissions/serial.json',
           'test/data/extensions/permissions/socket_any_host.json',
           'test/data/extensions/permissions/socket_one_domain_two_hostnames.json',
-          'test/data/extensions/permissions/socket_two_domains_one_hostname.json',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/data/',
@@ -736,7 +735,6 @@
           'test/data/extensions/requirements/v2_bad_requirements_and_permissions/',
           'test/data/extensions/requirements/v3_bad_permissions/',
           'test/data/extensions/requirements/v3_good/',
-          'test/data/native_messaging/Native Hosts/echo.py',
           'test/data/safari_import/Safari/',
         ],
         'isolate_dependency_touched': [
@@ -956,6 +954,7 @@
         ],
         'isolate_dependency_untracked': [
           'test/data/extensions/manifest_tests/_locales/',
+          'test/data/native_messaging/Native Hosts/echo.py',
         ],
       },
     }],
