@@ -327,9 +327,11 @@ class Builder(object):
     fh = open(outd, 'r')
     deps = fh.read()
     fh.close()
+    # Remove line continuations
     deps = deps.replace('\\\n', ' ')
     deps = deps.replace('\n', '')
-    deps = deps.split(':')[1]
+    # The dependancies are whitespace delimited following the first ':'
+    deps = deps.split(':', 1)[1]
     deps = deps.split()
     if sys.platform in ['win32', 'cygwin']:
       deps = [self.FixWindowsPath(d) for d in deps]
