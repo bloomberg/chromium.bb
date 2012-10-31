@@ -1,4 +1,6 @@
-# TSan seems to timeout after AudioBusTest.CopyTo
-# crbug.com/157793
+# TSan seems to timeout at random point on media_unittests,
+# see http://crbug.com/157793
 AudioBusTest.*
 AudioRendererAlgorithmTest.*
+VectorMathTest.*
+VideoFrame.*
