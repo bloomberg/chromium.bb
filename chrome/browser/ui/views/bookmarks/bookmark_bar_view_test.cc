@@ -821,10 +821,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-// TODO(ananta)
-// This test has been disabled for AURA. Please look here for more information.
-// http://code.google.com/p/chromium/issues/detail?id=158564&thanks=158564
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(OS_WIN)
 #define MAYBE_DNDBackToOriginatingMenu DISABLED_DNDBackToOriginatingMenu
 #else
 #define MAYBE_DNDBackToOriginatingMenu DNDBackToOriginatingMenu

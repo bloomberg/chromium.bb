@@ -18,7 +18,9 @@
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
+#include "ash/test/test_shell_delegate.h"
 #endif
+
 #if defined(USE_AURA)
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
@@ -86,11 +88,7 @@ void ViewEventTestBase::SetUp() {
   ui::TextInputTestSupport::Initialize();
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_ASH)
-  ash::Shell::CreateInstance(NULL);
-  // The shell runs with a locked screen in tests, so we must clear the event
-  // client so it doesn't interfere with event propagation.
-  aura::client::SetEventClient(ash::Shell::GetPrimaryRootWindow(),
-                               NULL);
+  ash::Shell::CreateInstance(new ash::test::TestShellDelegate());
 #endif
   window_ = views::Widget::CreateWindow(this);
 }
