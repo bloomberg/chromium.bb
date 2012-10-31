@@ -3119,6 +3119,46 @@ TEST_F(LayerTreeHostTestContinuousInvalidate, runMultiThread)
     runTest(true);
 }
 
+class LayerTreeHostTestAdjustPointForZoom : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestAdjustPointForZoom()
+    {
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        WebTransformationMatrix m;
+        m.translate(250, 360);
+        m.scale(2);
+
+        IntPoint point(400, 550);
+        IntPoint transformedPoint;
+
+        // Unit transform, no change expected.
+        m_layerTreeHost->setImplTransform(WebTransformationMatrix());
+        transformedPoint = roundedIntPoint(m_layerTreeHost->adjustEventPointForPinchZoom(point));
+        EXPECT_EQ(point.x(), transformedPoint.x());
+        EXPECT_EQ(point.y(), transformedPoint.y());
+
+        m_layerTreeHost->setImplTransform(m);
+
+        // Apply m^(-1): 138 = 400/2 - 250/4; 185 = 550/2 - 360/4.
+        transformedPoint = roundedIntPoint(m_layerTreeHost->adjustEventPointForPinchZoom(point));
+        EXPECT_EQ(138, transformedPoint.x());
+        EXPECT_EQ(185, transformedPoint.y());
+        endTest();
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+    }
+};
+
+TEST_F(LayerTreeHostTestAdjustPointForZoom, runMultiThread)
+{
+    runTest(true);
+}
+
 class LayerTreeHostTestContinuousAnimate : public LayerTreeHostTest {
 public:
     LayerTreeHostTestContinuousAnimate()

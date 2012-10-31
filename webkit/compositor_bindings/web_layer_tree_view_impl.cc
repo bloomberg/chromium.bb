@@ -92,6 +92,11 @@ WebSize WebLayerTreeViewImpl::deviceViewportSize() const
     return convert(m_layerTreeHost->deviceViewportSize());
 }
 
+WebFloatPoint WebLayerTreeViewImpl::adjustEventPointForPinchZoom(const WebFloatPoint& point) const
+{
+    return convert(m_layerTreeHost->adjustEventPointForPinchZoom(convert(point)));
+}
+
 void WebLayerTreeViewImpl::setDeviceScaleFactor(const float deviceScaleFactor)
 {
     m_layerTreeHost->setDeviceScaleFactor(deviceScaleFactor);

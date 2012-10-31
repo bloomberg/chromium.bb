@@ -19,6 +19,7 @@
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/layer_tree_host_impl.h"
+#include "cc/math_util.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/settings.h"
@@ -27,7 +28,6 @@
 #include "cc/tree_synchronizer.h"
 
 using namespace std;
-using WebKit::WebTransformationMatrix;
 
 namespace {
 static int numLayerTreeInstances;
@@ -707,6 +707,27 @@ void LayerTreeHost::applyScrollAndScale(const ScrollAndScaleSet& info)
     }
     if (!rootScrollDelta.isZero() || info.pageScaleDelta != 1)
         m_client->applyScrollAndScale(rootScrollDelta, info.pageScaleDelta);
+}
+
+FloatPoint LayerTreeHost::adjustEventPointForPinchZoom(const FloatPoint& point)
+    const
+{
+    WebKit::WebTransformationMatrix inverseImplTransform = m_implTransform;
+    // TODO(wjmaclean) Need to determine why the next two lines are
+    // necessary for this to work ... it seems like just inverting
+    // m_implTransform should be sufficient.
+    DCHECK(inverseImplTransform.m11());
+    DCHECK(inverseImplTransform.m22());
+    inverseImplTransform.setM41(inverseImplTransform.m41()
+        / inverseImplTransform.m11());
+    inverseImplTransform.setM42(inverseImplTransform.m42()
+        / inverseImplTransform.m22());
+    inverseImplTransform = inverseImplTransform.inverse();
+    bool wasClipped = false;
+    FloatPoint adjustedPoint = MathUtil::projectPoint(inverseImplTransform, point, wasClipped);
+    DCHECK(!wasClipped);
+
+    return adjustedPoint;
 }
 
 void LayerTreeHost::setImplTransform(const WebKit::WebTransformationMatrix& transform)

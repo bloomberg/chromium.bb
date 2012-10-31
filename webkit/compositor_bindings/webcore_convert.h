@@ -25,6 +25,7 @@ WebCore::IntPoint convert(const WebPoint& point);
 WebCore::IntSize convert(const WebSize& size);
 WebRect convert(const WebCore::IntRect& rect);
 WebSize convert(const WebCore::IntSize& size);
+WebFloatPoint convert(const WebCore::FloatPoint& point);
 
 }
 

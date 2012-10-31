@@ -192,6 +192,7 @@ public:
     void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration);
 
     void applyScrollAndScale(const ScrollAndScaleSet&);
+    FloatPoint adjustEventPointForPinchZoom(const FloatPoint&) const;
     void setImplTransform(const WebKit::WebTransformationMatrix&);
 
     void startRateLimiter(WebKit::WebGraphicsContext3D*);

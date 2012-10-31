@@ -43,6 +43,11 @@ WebSize convert(const WebCore::IntSize& size)
     return WebSize(size.width(), size.height());
 }
 
+WebFloatPoint convert(const WebCore::FloatPoint& point)
+{
+    return WebFloatPoint(point.x(), point.y());
+}
+
 }
 
 
