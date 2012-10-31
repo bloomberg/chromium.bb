@@ -479,11 +479,14 @@ void PerformanceMonitor::Observe(int type,
     case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
       const extensions::CrxInstaller* installer =
           content::Source<extensions::CrxInstaller>(source).ptr();
+      const extensions::Extension* extension =
+          content::Details<Extension>(details).ptr();
 
-      // Check if the reason for the install was due to an extension update.
-      if (installer->install_cause() == extension_misc::INSTALL_CAUSE_UPDATE) {
-        AddExtensionEvent(EVENT_EXTENSION_UPDATE,
-                          content::Details<Extension>(details).ptr());
+      // Check if the reason for the install was due to a successful
+      // extension update. |extension| is NULL in case of install failure.
+      if (extension &&
+          installer->install_cause() == extension_misc::INSTALL_CAUSE_UPDATE) {
+        AddExtensionEvent(EVENT_EXTENSION_UPDATE, extension);
       }
       break;
     }
