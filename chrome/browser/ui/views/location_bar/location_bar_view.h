@@ -205,6 +205,9 @@ class LocationBarView : public LocationBar,
   // Returns the star view. It may not be visible.
   StarView* star_view() { return star_view_; }
 
+  // Shows the bookmark prompt.
+  void ShowBookmarkPrompt();
+
   // Shows the Chrome To Mobile bubble.
   void ShowChromeToMobileBubble();
 

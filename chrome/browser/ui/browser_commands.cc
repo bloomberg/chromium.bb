@@ -32,6 +32,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -107,6 +108,36 @@ class BrowserCommandsTabContentsCreator {
 
 namespace chrome {
 namespace {
+
+void BookmarkCurrentPageInternal(Browser* browser, bool from_star) {
+  content::RecordAction(UserMetricsAction("Star"));
+
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  if (!model || !model->IsLoaded())
+    return;  // Ignore requests until bookmarks are loaded.
+
+  GURL url;
+  string16 title;
+  WebContents* web_contents = GetActiveWebContents(browser);
+  GetURLAndTitleToBookmark(web_contents, &url, &title);
+  bool was_bookmarked = model->IsBookmarked(url);
+  if (!was_bookmarked && web_contents->GetBrowserContext()->IsOffTheRecord()) {
+    // If we're incognito the favicon may not have been saved. Save it now
+    // so that bookmarks have an icon for the page.
+    FaviconTabHelper::FromWebContents(web_contents)->SaveFavicon();
+  }
+  bookmark_utils::AddIfNotBookmarked(model, url, title);
+  if (from_star && !was_bookmarked)
+    BookmarkPromptController::AddedBookmark(browser, url);
+  // Make sure the model actually added a bookmark before showing the star. A
+  // bookmark isn't created if the url is invalid.
+  if (browser->window()->IsActive() && model->IsBookmarked(url)) {
+    // Only show the bubble if the window is active, otherwise we may get into
+    // weird situations where the bubble is deleted as soon as it is shown.
+    browser->window()->ShowBookmarkBubble(url, was_bookmarked);
+  }
+}
 
 WebContents* GetOrCloneTabForDisposition(Browser* browser,
                                          WindowOpenDisposition disposition) {
@@ -606,31 +637,11 @@ void Exit() {
 }
 
 void BookmarkCurrentPage(Browser* browser) {
-  content::RecordAction(UserMetricsAction("Star"));
+  BookmarkCurrentPageInternal(browser, false);
+}
 
-  BookmarkModel* model =
-      BookmarkModelFactory::GetForProfile(browser->profile());
-  if (!model || !model->IsLoaded())
-    return;  // Ignore requests until bookmarks are loaded.
-
-  GURL url;
-  string16 title;
-  WebContents* web_contents = GetActiveWebContents(browser);
-  GetURLAndTitleToBookmark(web_contents, &url, &title);
-  bool was_bookmarked = model->IsBookmarked(url);
-  if (!was_bookmarked && web_contents->GetBrowserContext()->IsOffTheRecord()) {
-    // If we're incognito the favicon may not have been saved. Save it now
-    // so that bookmarks have an icon for the page.
-    FaviconTabHelper::FromWebContents(web_contents)->SaveFavicon();
-  }
-  bookmark_utils::AddIfNotBookmarked(model, url, title);
-  // Make sure the model actually added a bookmark before showing the star. A
-  // bookmark isn't created if the url is invalid.
-  if (browser->window()->IsActive() && model->IsBookmarked(url)) {
-    // Only show the bubble if the window is active, otherwise we may get into
-    // weird situations where the bubble is deleted as soon as it is shown.
-    browser->window()->ShowBookmarkBubble(url, was_bookmarked);
-  }
+void BookmarkCurrentPageFromStar(Browser* browser) {
+  BookmarkCurrentPageInternal(browser, true);
 }
 
 bool CanBookmarkCurrentPage(const Browser* browser) {

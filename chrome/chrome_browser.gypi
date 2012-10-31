@@ -373,6 +373,8 @@
         'browser/bookmarks/bookmark_node_data.h',
         'browser/bookmarks/bookmark_pasteboard_helper_mac.h',
         'browser/bookmarks/bookmark_pasteboard_helper_mac.mm',
+        'browser/bookmarks/bookmark_prompt_prefs.cc',
+        'browser/bookmarks/bookmark_prompt_prefs.h',
         'browser/bookmarks/bookmark_storage.cc',
         'browser/bookmarks/bookmark_storage.h',
         'browser/bookmarks/bookmark_utils.cc',

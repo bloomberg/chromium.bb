@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
+#include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -244,6 +245,15 @@ ComponentUpdateService* TestingBrowserProcess::component_updater() {
 
 CRLSetFetcher* TestingBrowserProcess::crl_set_fetcher() {
   return NULL;
+}
+
+BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
+  return bookmark_prompt_controller_.get();
+}
+
+void TestingBrowserProcess::SetBookmarkPromptController(
+    BookmarkPromptController* controller) {
+  bookmark_prompt_controller_.reset(controller);
 }
 
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {

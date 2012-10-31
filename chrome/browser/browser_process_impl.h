@@ -120,6 +120,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
+  virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -183,6 +184,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
 #if !defined(OS_ANDROID)
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
+
+  // Bookmark prompt controller displays the prompt for frequently visited URL.
+  scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
 #endif
 
   scoped_refptr<printing::PrintPreviewTabController>

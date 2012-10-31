@@ -27,6 +27,7 @@
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/debugger/remote_debugging_server.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
@@ -57,6 +58,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
+#include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
@@ -558,6 +560,14 @@ DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {
   return download_status_updater_.get();
 }
 
+BookmarkPromptController* BrowserProcessImpl::bookmark_prompt_controller() {
+#if defined(OS_ANDROID)
+  return NULL;
+#else
+  return bookmark_prompt_controller_.get();
+#endif
+}
+
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
   DCHECK(CalledOnValidThread());
   if (!download_request_limiter_)
@@ -813,6 +823,11 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
     plugins_resource_service_ = new PluginsResourceService(local_state());
     plugins_resource_service_->StartAfterDelay();
   }
+#endif
+
+#if !defined(OS_ANDROID)
+  if (browser_defaults::bookmarks_enabled)
+    bookmark_prompt_controller_.reset(new BookmarkPromptController());
 #endif
 }
 

@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/action_box_button_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
@@ -569,6 +570,15 @@ void LocationBarView::SetStarToggled(bool on) {
       star_view_->SetVisible(on);
       Layout();
     }
+  }
+}
+
+void LocationBarView::ShowBookmarkPrompt() {
+  if (action_box_button_view_) {
+    BookmarkPromptView::ShowPrompt(action_box_button_view_,
+                                   profile_->GetPrefs());
+  } else if (star_view_ && star_view_->visible()) {
+    BookmarkPromptView::ShowPrompt(star_view_, profile_->GetPrefs());
   }
 }
 

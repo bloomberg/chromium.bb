@@ -8667,6 +8667,14 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
       </if>
 
+      <!-- bookmark prompt messages -->
+      <message name="IDS_BOOKMARK_PROMPT_MESSAGE" desc="Message of bookmark prompt">
+        Like this site? Click here to bookmark it!
+      </message>
+      <message name="IDS_BOOKMARK_PROMPT_DISMISS" desc="Link for dismissing bookmark prompt">
+        Dismiss
+      </message>
+
       <!-- Chrome To Mobile bubble messages -->
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE" desc="Title of the bubble when a single mobile device is available.">
         Send this page to <ph name="DEVICE_NAME">$1<ex>Galaxy Nexus</ex></ph>.

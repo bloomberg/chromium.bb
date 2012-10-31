@@ -178,6 +178,8 @@
         'browser/ui/bookmarks/bookmark_bar_instructions_delegate.h',
         'browser/ui/bookmarks/bookmark_context_menu_controller.cc',
         'browser/ui/bookmarks/bookmark_context_menu_controller.h',
+        'browser/ui/bookmarks/bookmark_prompt_controller.cc',
+        'browser/ui/bookmarks/bookmark_prompt_controller.h',
         'browser/ui/bookmarks/bookmark_tab_helper.cc',
         'browser/ui/bookmarks/bookmark_tab_helper.h',
         'browser/ui/bookmarks/bookmark_tab_helper_delegate.cc',
@@ -1335,6 +1337,8 @@
         'browser/ui/views/bookmarks/bookmark_menu_controller_views.h',
         'browser/ui/views/bookmarks/bookmark_menu_delegate.cc',
         'browser/ui/views/bookmarks/bookmark_menu_delegate.h',
+        'browser/ui/views/bookmarks/bookmark_prompt_view.cc',
+        'browser/ui/views/bookmarks/bookmark_prompt_view.h',
         'browser/ui/views/browser_action_test_util_views.cc',
         'browser/ui/views/browser_action_view.cc',
         'browser/ui/views/browser_action_view.h',
@@ -2439,6 +2443,7 @@
 
             # There's no Browser/BrowserList on Android.
             'browser/ui/bookmarks/bookmark_context_menu_controller.cc',
+            'browser/ui/bookmarks/bookmark_prompt_controller.cc',
             'browser/ui/browser.cc',
             'browser/ui/browser_command_controller.cc',
             'browser/ui/browser_finder.cc',

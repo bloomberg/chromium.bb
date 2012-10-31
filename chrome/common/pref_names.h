@@ -412,6 +412,9 @@ extern const char kMetricsInitialLogsProto[];
 extern const char kMetricsOngoingLogsXml[];
 extern const char kMetricsOngoingLogsProto[];
 
+extern const char kBookmarkPromptEnabled[];
+extern const char kBookmarkPromptImpressionCount[];
+
 extern const char kVariationsSeed[];
 extern const char kVariationsSeedDate[];
 

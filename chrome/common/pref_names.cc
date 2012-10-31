@@ -1185,6 +1185,13 @@ const char kMetricsOngoingLogsXml[] =
 const char kMetricsOngoingLogsProto[] =
     "user_experience_metrics.ongoing_logs_as_protobufs";
 
+// Boolean that is true when bookmark prompt is enabled.
+const char kBookmarkPromptEnabled[] = "bookmark_prompt_enabled";
+
+// Number of times bookmark prompt displayed.
+const char kBookmarkPromptImpressionCount[] =
+    "bookmark_prompt_impression_count";
+
 // String serialized form of variations seed protobuf.
 const char kVariationsSeed[] = "variations_seed";
 

@@ -16,6 +16,7 @@
 
 class AutomationProviderList;
 class BackgroundModeManager;
+class BookmarkPromptController;
 class ChromeNetLog;
 class CRLSetFetcher;
 class ComponentUpdateService;
@@ -195,6 +196,8 @@ class BrowserProcess {
   virtual ComponentUpdateService* component_updater() = 0;
 
   virtual CRLSetFetcher* crl_set_fetcher() = 0;
+
+  virtual BookmarkPromptController* bookmark_prompt_controller() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

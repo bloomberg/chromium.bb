@@ -211,6 +211,10 @@ class BrowserWindow : public BaseWindow {
   // |already_bookmarked| is true if the url is already bookmarked.
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) = 0;
 
+  // Shows the bookmark prompt.
+  // TODO(yosin): Make ShowBookmarkPrompt pure virtual.
+  virtual void ShowBookmarkPrompt() {}
+
   // Shows the Chrome To Mobile bubble.
   virtual void ShowChromeToMobileBubble() = 0;
 
