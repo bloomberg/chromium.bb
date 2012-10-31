@@ -707,6 +707,10 @@ chrome_perf = chrome_info.derive(
   hw_tests_pool=constants.HWTEST_CHROME_PERF_POOL,
   hw_tests_num=1,
   hw_tests_timeout=90 * 60,
+  nowithdebug=True,
+  # TODO(sosa): Really shouldn't be necessary in addition with
+  # nowithdebug. One should imply the other.
+  useflags=official['useflags'] + ['-chrome_debug'],
 )
 
 chrome_perf.add_config('lumpy-chrome-perf',
