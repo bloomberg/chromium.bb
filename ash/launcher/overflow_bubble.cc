@@ -8,6 +8,7 @@
 
 #include "ash/launcher/launcher_types.h"
 #include "ash/launcher/launcher_view.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/shell.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
@@ -267,6 +268,8 @@ void OverflowBubble::Show(LauncherDelegate* delegate,
                                   overflow_start_index);
 
   bubble_ = bubble_view;
+  ash::Shell::GetInstance()->system_tray()->InitializeBubbleAnimations(
+      bubble_->GetWidget());
   bubble_->GetWidget()->AddObserver(this);
   bubble_->GetWidget()->Show();
 }

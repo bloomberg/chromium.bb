@@ -205,7 +205,8 @@ void AppListController::ScheduleAnimation() {
 
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+      base::TimeDelta::FromMilliseconds(
+          is_visible_ ? 0 : kAnimationDurationMs));
   animation.AddObserver(this);
 
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);

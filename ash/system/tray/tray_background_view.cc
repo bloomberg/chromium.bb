@@ -292,7 +292,7 @@ void TrayBackgroundView::InitializeBubbleAnimations(
       ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   ash::SetWindowVisibilityAnimationTransition(
       bubble_widget->GetNativeWindow(),
-      ash::ANIMATE_BOTH);
+      ash::ANIMATE_HIDE);
   ash::SetWindowVisibilityAnimationDuration(
       bubble_widget->GetNativeWindow(),
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));

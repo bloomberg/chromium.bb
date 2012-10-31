@@ -22,9 +22,9 @@ TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
   bubble_widget_->GetNativeView()->
       SetProperty(internal::kStayInSameRootWindowKey, true);
 
-  bubble_view_->InitializeAndShowBubble();
   tray_->InitializeBubbleAnimations(bubble_widget_);
   tray_->UpdateBubbleViewArrow(bubble_view_);
+  bubble_view_->InitializeAndShowBubble();
 
   tray_event_filter_.reset(new TrayEventFilter(this));
 }
