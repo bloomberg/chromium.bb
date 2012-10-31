@@ -1,4 +1,3 @@
 include_rules = [
-  "+base",
   "+third_party/protobuf",
 ]
