@@ -112,13 +112,13 @@ def run_tests(tempfilepath_cases, tempfilepath_result, isolated, test_cases):
     # tests 3 times.
     # Do not use --run-all, iterate multiple times instead.
     '--retries', '0',
-    # Trace at most 50 test cases at a time. While this may seem particularly
+    # Trace at most 25 test cases at a time. While this may seem particularly
     # small, it is because the tracer doesn't scale well on Windows and tends to
     # generate multi-gigabytes data files, that needs to be read N-times the
     # number of test cases. On linux and OSX it's not that much a big deal but
-    # if there's 50 test cases that are broken, it's likely that there's a core
+    # if there's 25 test cases that are broken, it's likely that there's a core
     # file missing anyway.
-    '--max-failures', '50',
+    '--max-failures', '25',
   ]
   add_verbosity(cmd)
   logging.debug(cmd)
