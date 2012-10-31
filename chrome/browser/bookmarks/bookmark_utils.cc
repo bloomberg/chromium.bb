@@ -25,24 +25,9 @@
 #include "grit/ui_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/tree_node_iterator.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-#include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/events/event.h"
-#include "ui/views/drag_utils.h"
-#include "ui/views/widget/native_widget.h"
-#include "ui/views/widget/widget.h"
-#endif
-
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/custom_drag.h"
-#endif
 
 using base::Time;
 
@@ -243,46 +228,6 @@ void CloneBookmarkNode(BookmarkModel* model,
     CloneBookmarkNodeImpl(model, elements[i], parent, index_to_add_at + i);
 }
 
-
-// Bookmark dragging
-void DragBookmarks(Profile* profile,
-                   const std::vector<const BookmarkNode*>& nodes,
-                   gfx::NativeView view) {
-  DCHECK(!nodes.empty());
-
-#if defined(TOOLKIT_VIEWS)
-  // Set up our OLE machinery
-  ui::OSExchangeData data;
-  BookmarkNodeData drag_data(nodes);
-  drag_data.Write(profile, &data);
-
-  // Allow nested message loop so we get DnD events as we drag this around.
-  bool was_nested = MessageLoop::current()->IsNested();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-
-  int operation =
-      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE |
-      ui::DragDropTypes::DRAG_LINK;
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
-  if (widget) {
-    widget->RunShellDrag(NULL, data, gfx::Point(), operation);
-  } else {
-    // We hit this case when we're using WebContentsViewWin or
-    // WebContentsViewAura, instead of TabContentsViewViews.
-    views::RunShellDrag(view, data, gfx::Point(), operation);
-  }
-
-  MessageLoop::current()->SetNestableTasksAllowed(was_nested);
-#elif defined(OS_MACOSX)
-  // Allow nested message loop so we get DnD events as we drag this around.
-  bool was_nested = MessageLoop::current()->IsNested();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-  bookmark_pasteboard_helper_mac::StartDrag(profile, nodes, view);
-  MessageLoop::current()->SetNestableTasksAllowed(was_nested);
-#elif defined(TOOLKIT_GTK)
-  BookmarkDrag::BeginDrag(profile, nodes);
-#endif
-}
 
 void CopyToClipboard(BookmarkModel* model,
                      const std::vector<const BookmarkNode*>& nodes,
