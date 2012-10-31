@@ -162,7 +162,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
 }
 
 #if defined(OS_WIN)
-#define MAYBE_FocusRestoreOnTabSwitch FLAKY_FocusRestoreOnTabSwitch
+// crbug.com/128724
+#define MAYBE_FocusRestoreOnTabSwitch DISABLED_FocusRestoreOnTabSwitch
 #else
 #define MAYBE_FocusRestoreOnTabSwitch FocusRestoreOnTabSwitch
 #endif
