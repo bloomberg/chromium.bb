@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/metrics/metrics.h"
+#include "chrome/browser/extensions/api/module/module.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
@@ -43,7 +44,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
-#include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chrome/browser/history/history_extension_api.h"
@@ -321,9 +321,9 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<UninstallFunction>();
 
   // Extension module.
-  RegisterFunction<SetUpdateUrlDataFunction>();
-  RegisterFunction<IsAllowedIncognitoAccessFunction>();
-  RegisterFunction<IsAllowedFileSchemeAccessFunction>();
+  RegisterFunction<extensions::SetUpdateUrlDataFunction>();
+  RegisterFunction<extensions::IsAllowedIncognitoAccessFunction>();
+  RegisterFunction<extensions::IsAllowedFileSchemeAccessFunction>();
 
   // WebstorePrivate.
   RegisterFunction<extensions::GetBrowserLoginFunction>();

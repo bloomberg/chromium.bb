@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_module.h"
+#include "chrome/browser/extensions/api/module/module.h"
 
 #include <string>
 
@@ -10,7 +10,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 
-extensions::ExtensionPrefs* SetUpdateUrlDataFunction::extension_prefs() {
+namespace extensions {
+
+ExtensionPrefs* SetUpdateUrlDataFunction::extension_prefs() {
   return profile()->GetExtensionService()->extension_prefs();
 }
 
@@ -24,7 +26,7 @@ bool SetUpdateUrlDataFunction::RunImpl() {
 
 bool IsAllowedIncognitoAccessFunction::RunImpl() {
   ExtensionService* ext_service = profile()->GetExtensionService();
-  const extensions::Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
 
   SetResult(Value::CreateBooleanValue(
       ext_service->IsIncognitoEnabled(extension->id())));
@@ -33,9 +35,11 @@ bool IsAllowedIncognitoAccessFunction::RunImpl() {
 
 bool IsAllowedFileSchemeAccessFunction::RunImpl() {
   ExtensionService* ext_service = profile()->GetExtensionService();
-  const extensions::Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
 
   SetResult(Value::CreateBooleanValue(
       ext_service->AllowFileAccess(extension)));
   return true;
 }
+
+}  // namespace extensions
