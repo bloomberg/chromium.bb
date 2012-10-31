@@ -228,7 +228,7 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(gfx::Rect, scroll_rect)
 
   // The scroll offset of the render view.
-  IPC_STRUCT_MEMBER(gfx::Point, scroll_offset)
+  IPC_STRUCT_MEMBER(gfx::Vector2d, scroll_offset)
 
   // The regions of the bitmap (in view coords) that contain updated pixels.
   // In the case of scrolling, this includes the scroll damage rect.

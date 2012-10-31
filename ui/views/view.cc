@@ -624,7 +624,7 @@ void View::ConvertPointToTarget(const View* source,
   // API defines NULL |source| as returning the point in screen coordinates.
   if (!source) {
     *point = point->Subtract(
-        root->GetWidget()->GetClientAreaBoundsInScreen().origin());
+        root->GetWidget()->GetClientAreaBoundsInScreen().OffsetFromOrigin());
   }
 }
 
@@ -653,8 +653,7 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
   const Widget* widget = src->GetWidget();
   if (widget) {
     ConvertPointToWidget(src, p);
-    gfx::Rect r = widget->GetClientAreaBoundsInScreen();
-    p->SetPoint(p->x() + r.x(), p->y() + r.y());
+    *p = p->Add(widget->GetClientAreaBoundsInScreen().OffsetFromOrigin());
   }
 }
 
@@ -666,15 +665,14 @@ void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
   const views::Widget* widget = dst->GetWidget();
   if (!widget)
     return;
-  const gfx::Rect r = widget->GetClientAreaBoundsInScreen();
-  p->Offset(-r.x(), -r.y());
+  *p = p->Add(-widget->GetClientAreaBoundsInScreen().OffsetFromOrigin());
   views::View::ConvertPointFromWidget(dst, p);
 }
 
 gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
   gfx::Rect x_rect = rect;
   GetTransform().TransformRect(&x_rect);
-  x_rect.Offset(GetMirroredPosition());
+  x_rect.Offset(GetMirroredPosition().OffsetFromOrigin());
   return x_rect;
 }
 
@@ -725,7 +723,7 @@ void View::Paint(gfx::Canvas* canvas) {
 
   // Non-empty clip, translate the graphics such that 0,0 corresponds to
   // where this view is located (related to its parent).
-  canvas->Translate(GetMirroredPosition());
+  canvas->Translate(GetMirroredPosition().OffsetFromOrigin());
   canvas->Transform(GetTransform());
 
   PaintCommon(canvas);
@@ -1041,9 +1039,9 @@ void View::OnDragDone() {
 }
 
 // static
-bool View::ExceededDragThreshold(int delta_x, int delta_y) {
-  return (abs(delta_x) > GetHorizontalDragThreshold() ||
-          abs(delta_y) > GetVerticalDragThreshold());
+bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
+  return (abs(delta.x()) > GetHorizontalDragThreshold() ||
+          abs(delta.y()) > GetVerticalDragThreshold());
 }
 
 // Scrolling -------------------------------------------------------------------
@@ -1527,7 +1525,7 @@ void View::PaintCommon(gfx::Canvas* canvas) {
     // request the canvas to be flipped.
     ScopedCanvas scoped(canvas);
     if (FlipCanvasOnPaintForRTLUI()) {
-      canvas->Translate(gfx::Point(width(), 0));
+      canvas->Translate(gfx::Vector2d(width(), 0));
       canvas->Scale(-1, 1);
     }
 
@@ -1939,9 +1937,8 @@ bool View::ProcessMouseDragged(const ui::MouseEvent& event,
   // done.
   ContextMenuController* context_menu_controller = context_menu_controller_;
   const bool possible_drag = drag_info->possible_drag;
-  if (possible_drag && ExceededDragThreshold(
-      drag_info->start_pt.x() - event.x(),
-      drag_info->start_pt.y() - event.y())) {
+  if (possible_drag &&
+      ExceededDragThreshold(drag_info->start_pt - event.location())) {
     if (!drag_controller_ ||
         drag_controller_->CanStartDragForView(
             this, drag_info->start_pt, event.location()))

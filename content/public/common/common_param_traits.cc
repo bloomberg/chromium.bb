@@ -151,6 +151,27 @@ void ParamTraits<gfx::Size>::Log(const gfx::Size& p, std::string* l) {
   l->append(base::StringPrintf("(%d, %d)", p.width(), p.height()));
 }
 
+void ParamTraits<gfx::Vector2d>::Write(Message* m, const gfx::Vector2d& v) {
+  m->WriteInt(v.x());
+  m->WriteInt(v.y());
+}
+
+bool ParamTraits<gfx::Vector2d>::Read(const Message* m,
+                                      PickleIterator* iter,
+                                      gfx::Vector2d* r) {
+  int x, y;
+  if (!m->ReadInt(iter, &x) ||
+      !m->ReadInt(iter, &y))
+    return false;
+  r->set_x(x);
+  r->set_y(y);
+  return true;
+}
+
+void ParamTraits<gfx::Vector2d>::Log(const gfx::Vector2d& v, std::string* l) {
+  l->append(base::StringPrintf("(%d, %d)", v.x(), v.y()));
+}
+
 void ParamTraits<gfx::Rect>::Write(Message* m, const gfx::Rect& p) {
   m->WriteInt(p.x());
   m->WriteInt(p.y());

@@ -484,8 +484,7 @@ void ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p) {
   DCHECK(widget);
   DCHECK(p);
 
-  gfx::Point position = ui::GetWidgetScreenPosition(widget);
-  p->SetPoint(p->x() + position.x(), p->y() + position.y());
+  *p = p->Add(ui::GetWidgetScreenOffset(widget));
 }
 
 GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,

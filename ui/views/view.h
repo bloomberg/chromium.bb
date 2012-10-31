@@ -23,6 +23,7 @@
 #include "ui/compositor/layer_owner.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/focus_border.h"
@@ -859,7 +860,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Returns true if the mouse was dragged enough to start a drag operation.
   // delta_x and y are the distance the mouse was dragged.
-  static bool ExceededDragThreshold(int delta_x, int delta_y);
+  static bool ExceededDragThreshold(const gfx::Vector2d& delta);
 
   // Accessibility -------------------------------------------------------------
 

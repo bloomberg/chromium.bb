@@ -73,7 +73,7 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
                                      WebDragOperationsMask allowed_ops,
                                      GdkEventButton* last_mouse_down,
                                      const SkBitmap& image,
-                                     const gfx::Point& image_offset) {
+                                     const gfx::Vector2d& image_offset) {
   // Guard against re-starting before previous drag completed.
   if (drag_context_) {
     NOTREACHED();

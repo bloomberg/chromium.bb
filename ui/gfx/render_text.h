@@ -24,6 +24,7 @@
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/gfx/vector2d.h"
 
 class SkCanvas;
 class SkDrawLooper;
@@ -294,7 +295,7 @@ class UI_EXPORT RenderText {
  protected:
   RenderText();
 
-  const Point& GetUpdatedDisplayOffset();
+  const Vector2d& GetUpdatedDisplayOffset();
 
   void set_cached_bounds_and_offset_valid(bool valid) {
     cached_bounds_and_offset_valid_ = valid;
@@ -367,8 +368,9 @@ class UI_EXPORT RenderText {
   // style (foreground) to selection range.
   void ApplyCompositionAndSelectionStyles(StyleRanges* style_ranges);
 
-  // Returns the text origin after applying text alignment and display offset.
-  Point GetTextOrigin();
+  // Returns the text offset from the origin after applying text alignment and
+  // display offset.
+  Vector2d GetTextOffset();
 
   // Convert points from the text space to the view space and back.
   // Handles the display area, display offset, and the application LTR/RTL mode.
@@ -380,7 +382,7 @@ class UI_EXPORT RenderText {
   int GetContentWidth();
 
   // Returns display offset based on current text alignment.
-  Point GetAlignmentOffset();
+  Vector2d GetAlignmentOffset();
 
   // Returns the origin point for drawing text. Does not account for font
   // baseline, as needed by Skia.
@@ -504,7 +506,7 @@ class UI_EXPORT RenderText {
 
   // The offset for the text to be drawn, relative to the display area.
   // Get this point with GetUpdatedDisplayOffset (or risk using a stale value).
-  Point display_offset_;
+  Vector2d display_offset_;
 
   // The cached bounds and offset are invalidated by changes to the cursor,
   // selection, font, and other operations that adjust the visible text bounds.

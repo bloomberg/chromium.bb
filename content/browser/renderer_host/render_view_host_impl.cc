@@ -1458,7 +1458,7 @@ void RenderViewHostImpl::OnMsgStartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask drag_operations_mask,
     const SkBitmap& bitmap,
-    const gfx::Point& bitmap_offset_in_dip) {
+    const gfx::Vector2d& bitmap_offset_in_dip) {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (!view)
     return;

@@ -22,6 +22,7 @@ template<typename Class,
          typename PointClass,
          typename SizeClass,
          typename InsetsClass,
+         typename VectorClass,
          typename Type>
 class UI_EXPORT RectBase {
  public:
@@ -46,6 +47,10 @@ class UI_EXPORT RectBase {
   Type right() const { return x() + width(); }
   Type bottom() const { return y() + height(); }
 
+  VectorClass OffsetFromOrigin() const {
+    return VectorClass(x(), y());
+  }
+
   void SetRect(Type x, Type y, Type width, Type height);
 
   // Shrink the rectangle by a horizontal and vertical distance on all sides.
@@ -61,8 +66,8 @@ class UI_EXPORT RectBase {
 
   // Move the rectangle by a horizontal and vertical distance.
   void Offset(Type horizontal, Type vertical);
-  void Offset(const PointClass& point) {
-    Offset(point.x(), point.y());
+  void Offset(const VectorClass& distance) {
+    Offset(distance.x(), distance.y());
   }
 
   InsetsClass InsetsFrom(const Class& inner) const {

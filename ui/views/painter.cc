@@ -171,7 +171,7 @@ void Painter::PaintPainterAt(gfx::Canvas* canvas,
                              const gfx::Rect& rect) {
   DCHECK(canvas && painter);
   canvas->Save();
-  canvas->Translate(rect.origin());
+  canvas->Translate(rect.OffsetFromOrigin());
   painter->Paint(canvas, rect.size());
   canvas->Restore();
 }

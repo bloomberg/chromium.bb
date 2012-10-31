@@ -21,7 +21,7 @@ namespace drag_utils {
 
 static void SetDragImageOnDataObject(HBITMAP hbitmap,
                                      const gfx::Size& size,
-                                     const gfx::Point& cursor_offset,
+                                     const gfx::Vector2d& cursor_offset,
                                      IDataObject* data_object) {
   base::win::ScopedComPtr<IDragSourceHelper> helper;
   HRESULT rv = CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
@@ -31,7 +31,7 @@ static void SetDragImageOnDataObject(HBITMAP hbitmap,
     sdi.sizeDragImage = size.ToSIZE();
     sdi.crColorKey = 0xFFFFFFFF;
     sdi.hbmpDragImage = hbitmap;
-    sdi.ptOffset = cursor_offset.ToPOINT();
+    sdi.ptOffset = gfx::PointAtOffsetFromOrigin(cursor_offset).ToPOINT();
     helper->InitializeFromBitmap(&sdi, data_object);
   }
 }
@@ -56,7 +56,7 @@ static HBITMAP CreateHBITMAPFromSkBitmap(const SkBitmap& sk_bitmap) {
 
 void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
                               const gfx::Size& size,
-                              const gfx::Point& cursor_offset,
+                              const gfx::Vector2d& cursor_offset,
                               ui::OSExchangeData* data_object) {
   DCHECK(data_object && !size.IsEmpty());
   // InitializeFromBitmap() doesn't expect an alpha channel and is confused

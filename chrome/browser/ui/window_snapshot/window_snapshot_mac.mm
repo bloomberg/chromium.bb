@@ -27,9 +27,8 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
 
   // Convert snapshot bounds relative to window into bounds relative to
   // screen.
-  gfx::Rect screen_snapshot_bounds = gfx::Rect(
-      window_bounds.origin().Add(snapshot_bounds.origin()),
-      snapshot_bounds.size());
+  gfx::Rect screen_snapshot_bounds = snapshot_bounds;
+  screen_snapshot_bounds.Offset(window_bounds.OffsetFromOrigin());
 
   DCHECK_LE(screen_snapshot_bounds.right(), window_bounds.right());
   DCHECK_LE(screen_snapshot_bounds.bottom(), window_bounds.bottom());

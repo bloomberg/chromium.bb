@@ -18,8 +18,8 @@ struct WebMenuItem;
 
 namespace gfx {
 class ImageSkia;
-class Point;
 class Rect;
+class Vector2d;
 }
 
 namespace content {
@@ -53,7 +53,7 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_ops,
                              const gfx::ImageSkia& image,
-                             const gfx::Point& image_offset) {}
+                             const gfx::Vector2d& image_offset) {}
 
   // The page wants to update the mouse cursor during a drag & drop operation.
   // |operation| describes the current operation (none, move, copy, link.)

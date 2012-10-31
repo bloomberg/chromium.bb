@@ -537,7 +537,7 @@ RenderWidgetHostViewWin::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewWin::MovePluginWindows(
-    const gfx::Point& scroll_offset,
+    const gfx::Vector2d& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& plugin_window_moves) {
   MovePluginWindowsHelper(m_hWnd, plugin_window_moves);
 }
@@ -713,9 +713,8 @@ void RenderWidgetHostViewWin::Redraw() {
   RedrawWindow(NULL, damage_region, RDW_UPDATENOW | RDW_NOCHILDREN);
 
   // Send the invalid rect in screen coordinates.
-  gfx::Rect screen_rect = GetViewBounds();
   gfx::Rect invalid_screen_rect(damage_bounds);
-  invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
+  invalid_screen_rect.Offset(GetViewBounds().OffsetFromOrigin());
 
   PaintPluginWindowsHelper(m_hWnd, invalid_screen_rect);
 }
@@ -1327,7 +1326,7 @@ void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
   if (!background_.empty()) {
     gfx::Rect dirty_area(dirty_rect);
     gfx::Canvas canvas(dirty_area.size(), ui::SCALE_FACTOR_100P, true);
-    canvas.Translate(gfx::Point().Subtract(dirty_area.origin()));
+    canvas.Translate(-dirty_area.OffsetFromOrigin());
 
     gfx::Rect dc_rect(dc->m_ps.rcPaint);
     // TODO(pkotwicz): Fix |background_| such that it is an ImageSkia.

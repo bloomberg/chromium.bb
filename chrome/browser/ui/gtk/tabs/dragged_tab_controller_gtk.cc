@@ -506,9 +506,7 @@ void DraggedTabControllerGtk::Detach() {
 
 gfx::Point DraggedTabControllerGtk::ConvertScreenPointToTabStripPoint(
     TabStripGtk* tabstrip, const gfx::Point& screen_point) {
-  gfx::Point tabstrip_screen_point =
-      ui::GetWidgetScreenPosition(tabstrip->tabstrip_.get());
-  return screen_point.Subtract(tabstrip_screen_point);
+  return screen_point - ui::GetWidgetScreenOffset(tabstrip->tabstrip_.get());
 }
 
 gfx::Rect DraggedTabControllerGtk::GetDraggedViewTabStripBounds(
@@ -818,8 +816,7 @@ gfx::Rect DraggedTabControllerGtk::GetAnimateBounds() {
   gfx::Rect bounds = tab->GetRequisition();
   GtkWidget* widget = tab->widget();
   GtkWidget* parent = gtk_widget_get_parent(widget);
-  gfx::Point point = ui::GetWidgetScreenPosition(parent);
-  bounds.Offset(point);
+  bounds.Offset(ui::GetWidgetScreenOffset(parent));
 
   return gfx::Rect(bounds.x(), bounds.y(),
                    dragged_view_->GetTotalWidthInTabStrip(), bounds.height());

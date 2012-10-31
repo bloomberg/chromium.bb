@@ -426,9 +426,7 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
                                     widget ? widget->GetNativeView() : NULL);
       }
     }
-  } else if (ExceededDragThreshold(
-                 event.location().x() - drag_start_point_.x(),
-                 event.location().y() - drag_start_point_.y())) {
+  } else if (ExceededDragThreshold(event.location() - drag_start_point_)) {
     dragging_ = true;
   }
   return true;
@@ -676,7 +674,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     // (hot_)body_image_set->bottom_left, and drop_down_image_set,
     // for RTL UI, we flip the canvas to draw those images mirrored.
     // Consequently, we do not need to mirror the x-axis of those images.
-    canvas->Translate(gfx::Point(width(), 0));
+    canvas->Translate(gfx::Vector2d(width(), 0));
     canvas->Scale(-1, 1);
   }
   PaintImages(canvas,

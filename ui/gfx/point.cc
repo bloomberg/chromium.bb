@@ -12,22 +12,23 @@
 
 namespace gfx {
 
-template class PointBase<Point, int>;
+template class PointBase<Point, int, Vector2d>;
 
-Point::Point() : PointBase<Point, int>(0, 0) {
+Point::Point() : PointBase<Point, int, Vector2d>(0, 0) {
 }
 
-Point::Point(int x, int y) : PointBase<Point, int>(x, y) {
+Point::Point(int x, int y) : PointBase<Point, int, Vector2d>(x, y) {
 }
 
 #if defined(OS_WIN)
-Point::Point(DWORD point) : PointBase<Point, int>(0, 0){
+Point::Point(DWORD point) : PointBase<Point, int, Vector2d>(0, 0){
   POINTS points = MAKEPOINTS(point);
   set_x(points.x);
   set_y(points.y);
 }
 
-Point::Point(const POINT& point) : PointBase<Point, int>(point.x, point.y) {
+Point::Point(const POINT& point)
+    : PointBase<Point, int, Vector2d>(point.x, point.y) {
 }
 
 Point& Point::operator=(const POINT& point) {
@@ -43,7 +44,8 @@ POINT Point::ToPOINT() const {
   return p;
 }
 #elif defined(OS_MACOSX)
-Point::Point(const CGPoint& point) : PointBase<Point, int>(point.x, point.y) {
+Point::Point(const CGPoint& point)
+    : PointBase<Point, int, Vector2d>(point.x, point.y) {
 }
 
 CGPoint Point::ToCGPoint() const {

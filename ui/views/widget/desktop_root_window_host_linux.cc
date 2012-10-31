@@ -525,7 +525,7 @@ void DesktopRootWindowHostLinux::ClearNativeFocus() {
 }
 
 Widget::MoveLoopResult DesktopRootWindowHostLinux::RunMoveLoop(
-    const gfx::Point& drag_offset) {
+    const gfx::Vector2d& drag_offset) {
   SetCapture();
 
   if (x11_window_move_client_->RunMoveLoop(content_window_, drag_offset) ==

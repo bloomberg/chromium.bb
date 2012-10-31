@@ -790,22 +790,18 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
   if (!instance_active_)
     return E_FAIL;
 
+  gfx::Point scroll_to(x, y);
+
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    gfx::Point top_left = manager_->GetViewBounds().origin();
-    x -= top_left.x();
-    y -= top_left.y();
+    scroll_to -= manager_->GetViewBounds().OffsetFromOrigin();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    if (parent_) {
-      gfx::Rect parent_bounds = parent_->location();
-      x += parent_bounds.x();
-      y += parent_bounds.y();
-    }
+    if (parent_)
+      scroll_to += parent_->location().OffsetFromOrigin();
   } else {
     return E_INVALIDARG;
   }
 
-  gfx::Rect r = location_;
-  manager_->ScrollToPoint(*this, gfx::Point(x, y));
+  manager_->ScrollToPoint(*this, scroll_to);
 
   static_cast<BrowserAccessibilityManagerWin*>(manager_)
       ->TrackScrollingObject(this);

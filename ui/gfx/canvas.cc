@@ -190,8 +190,8 @@ bool Canvas::GetClipBounds(gfx::Rect* bounds) {
   return has_non_empty_clip;
 }
 
-void Canvas::Translate(const gfx::Point& point) {
-  canvas_->translate(SkIntToScalar(point.x()), SkIntToScalar(point.y()));
+void Canvas::Translate(const gfx::Vector2d& offset) {
+  canvas_->translate(SkIntToScalar(offset.x()), SkIntToScalar(offset.y()));
 }
 
 void Canvas::Scale(int x_scale, int y_scale) {

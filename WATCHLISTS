@@ -199,7 +199,8 @@
       'filepath': 'ui/gfx/rect|'\
                   'ui/gfx/point|'\
                   'ui/gfx/size|'\
-                  'ui/gfx/transform',
+                  'ui/gfx/transform|'\
+                  'ui/gfx/vector2d',
     },
     'gpu': {
       'filepath': 'gpu/',

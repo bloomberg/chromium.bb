@@ -198,7 +198,7 @@ RenderWidgetHostViewAndroid::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewAndroid::MovePluginWindows(
-    const gfx::Point& scroll_offset,
+    const gfx::Vector2d& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
   // We don't have plugin windows on Android. Do nothing. Note: this is called
   // from RenderWidgetHost::OnMsgUpdateRect which is itself invoked while
@@ -518,7 +518,7 @@ void RenderWidgetHostViewAndroid::SetCachedPageScaleFactorLimits(
 }
 
 void RenderWidgetHostViewAndroid::UpdateFrameInfo(
-    const gfx::Point& scroll_offset,
+    const gfx::Vector2d& scroll_offset,
     float page_scale_factor,
     const gfx::Size& content_size) {
   if (content_view_core_) {

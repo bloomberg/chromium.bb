@@ -196,7 +196,7 @@ class UI_EXPORT Canvas {
   // |bounds| parameter, and returns true if it is non empty.
   bool GetClipBounds(gfx::Rect* bounds);
 
-  void Translate(const gfx::Point& point);
+  void Translate(const gfx::Vector2d& offset);
 
   void Scale(int x_scale, int y_scale);
 

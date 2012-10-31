@@ -9,6 +9,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d.h"
 
 #if defined(OS_OPENBSD)
 #include <cairo.h>
@@ -128,7 +129,7 @@ void BlitCanvasToCanvas(SkCanvas *dst_canvas,
 
 void ScrollCanvas(SkCanvas* canvas,
                   const gfx::Rect& in_clip,
-                  const gfx::Point& amount) {
+                  const gfx::Vector2d& amount) {
   DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.
 #if defined(OS_WIN)
   // If we have a PlatformCanvas, we should use ScrollDC. Otherwise, fall

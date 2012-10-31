@@ -541,7 +541,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,
                           const SkBitmap& bitmap,
-                          const gfx::Point& bitmap_offset_in_dip);
+                          const gfx::Vector2d& bitmap_offset_in_dip);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);

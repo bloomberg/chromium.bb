@@ -751,5 +751,5 @@ void ConstrainedWindowViews::PositionChromeStyleWindow(const gfx::Size& size) {
     return;
   }
 
-  SetBounds(gfx::Rect(point - gfx::Point(size.width() / 2, 0), size));
+  SetBounds(gfx::Rect(point - gfx::Vector2d(size.width() / 2, 0), size));
 }

@@ -8,6 +8,7 @@
 #include "ui/base/ui_export.h"
 #include "ui/gfx/point_base.h"
 #include "ui/gfx/point_f.h"
+#include "ui/gfx/vector2d.h"
 
 #if defined(OS_WIN)
 typedef unsigned long DWORD;
@@ -21,7 +22,7 @@ typedef struct tagPOINT POINT;
 namespace gfx {
 
 // A point has an x and y coordinate.
-class UI_EXPORT Point : public PointBase<Point, int> {
+class UI_EXPORT Point : public PointBase<Point, int, Vector2d> {
  public:
   Point();
   Point(int x, int y);
@@ -68,16 +69,24 @@ inline bool operator!=(const Point& lhs, const Point& rhs) {
   return !(lhs == rhs);
 }
 
-inline Point operator+(Point lhs, Point rhs) {
+inline Point operator+(const Point& lhs, const Vector2d& rhs) {
   return lhs.Add(rhs);
 }
 
-inline Point operator-(Point lhs, Point rhs) {
+inline Point operator-(const Point& lhs, const Vector2d& rhs) {
   return lhs.Subtract(rhs);
 }
 
+inline Vector2d operator-(const Point& lhs, const Point& rhs) {
+  return lhs.OffsetFrom(rhs);
+}
+
+inline Point PointAtOffsetFromOrigin(const Vector2d& offset_from_origin) {
+  return Point(offset_from_origin.x(), offset_from_origin.y());
+}
+
 #if !defined(COMPILER_MSVC)
-extern template class PointBase<Point, int>;
+extern template class PointBase<Point, int, Vector2d>;
 #endif
 
 }  // namespace gfx

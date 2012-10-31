@@ -88,6 +88,7 @@
         'gfx/size_unittest.cc',
         'gfx/skbitmap_operations_unittest.cc',
         'gfx/skia_util_unittest.cc',
+        'gfx/vector2d_unittest.cc',
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',

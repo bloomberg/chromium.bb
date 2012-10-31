@@ -93,14 +93,13 @@ void CreateDragImageForFile(const FilePath& file_name,
   // ImageSkia takes ownership of |source|.
   gfx::ImageSkia image = gfx::ImageSkia(source, size);
 
-  SetDragImageOnDataObject(image, size,
-                           gfx::Point(size.width() / 2, kLinkDragImageVPadding),
-                           data_object);
+  gfx::Vector2d cursor_offset(size.width() / 2, kLinkDragImageVPadding);
+  SetDragImageOnDataObject(image, size, cursor_offset, data_object);
 }
 
 void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                               const gfx::Size& size,
-                              const gfx::Point& cursor_offset,
+                              const gfx::Vector2d& cursor_offset,
                               ui::OSExchangeData* data_object) {
   gfx::ImageSkia image = gfx::ImageSkia(canvas.ExtractImageRep());
   SetDragImageOnDataObject(image, size, cursor_offset, data_object);

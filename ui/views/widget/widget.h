@@ -331,7 +331,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // the move completes. |drag_offset| is the offset from the top left corner
   // of the window to the point where the cursor is dragging, and is used to
   // offset the bounds of the window from the cursor.
-  MoveLoopResult RunMoveLoop(const gfx::Point& drag_offset);
+  MoveLoopResult RunMoveLoop(const gfx::Vector2d& drag_offset);
 
   // Stops a previously started move loop. This is not immediate.
   void EndMoveLoop();

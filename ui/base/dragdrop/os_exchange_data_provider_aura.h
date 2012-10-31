@@ -12,7 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/vector2d.h"
 
 namespace ui {
 
@@ -63,10 +63,10 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   }
 
   const gfx::ImageSkia& drag_image() const { return drag_image_; }
-  void set_drag_image_offset(const gfx::Point& drag_image_offset) {
+  void set_drag_image_offset(const gfx::Vector2d& drag_image_offset) {
     drag_image_offset_ = drag_image_offset;
   }
-  const gfx::Point& drag_image_offset() const { return drag_image_offset_; }
+  const gfx::Vector2d& drag_image_offset() const { return drag_image_offset_; }
 
  private:
   typedef std::map<OSExchangeData::CustomFormat, Pickle>  PickleData;
@@ -94,7 +94,7 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
 
   // Drag image and offset data.
   gfx::ImageSkia drag_image_;
-  gfx::Point drag_image_offset_;
+  gfx::Vector2d drag_image_offset_;
 
   // For HTML format
   string16 html_;

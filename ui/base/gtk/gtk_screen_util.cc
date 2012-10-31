@@ -26,12 +26,12 @@ gfx::Point ClientPoint(GtkWidget* widget) {
   return gfx::Point(x, y);
 }
 
-gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
+gfx::Vector2d GetWidgetScreenOffset(GtkWidget* widget) {
   GdkWindow* window = gtk_widget_get_window(widget);
 
   if (!window) {
     NOTREACHED() << "Must only be called on realized widgets.";
-    return gfx::Point(0, 0);
+    return gfx::Vector2d(0, 0);
   }
 
   gint x, y;
@@ -44,17 +44,15 @@ gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
     y += allocation.y;
   }
 
-  return gfx::Point(x, y);
+  return gfx::Vector2d(x, y);
 }
 
 gfx::Rect GetWidgetScreenBounds(GtkWidget* widget) {
-  gfx::Point position = GetWidgetScreenPosition(widget);
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
-  return gfx::Rect(position.x(), position.y(),
-                   allocation.width, allocation.height);
+  return gfx::Rect(PointAtOffsetFromOrigin(GetWidgetScreenOffset(widget)),
+                   gfx::Size(allocation.width, allocation.height));
 }
 
 }  // namespace ui

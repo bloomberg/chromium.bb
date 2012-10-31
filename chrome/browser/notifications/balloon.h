@@ -63,9 +63,9 @@ class Balloon {
   }
   void SetPosition(const gfx::Point& upper_left, bool reposition);
 
-  const gfx::Point& offset() { return offset_;}
-  void set_offset(const gfx::Point& offset) { offset_ = offset; }
-  void add_offset(const gfx::Point& offset) { offset_ = offset_.Add(offset); }
+  const gfx::Vector2d& offset() const { return offset_; }
+  void set_offset(const gfx::Vector2d& offset) { offset_ = offset; }
+  void add_offset(const gfx::Vector2d& offset) { offset_.Add(offset); }
 
   const gfx::Size& content_size() const { return content_size_; }
   void set_content_size(const gfx::Size& size) { content_size_ = size; }
@@ -126,7 +126,7 @@ class Balloon {
 
   // Temporary offset for balloons that need to be positioned in a non-standard
   // position for keeping the close buttons under the mouse cursor.
-  gfx::Point offset_;
+  gfx::Vector2d offset_;
 
   // Smallest size for this balloon where scrollbars will be shown.
   gfx::Size min_scrollbar_size_;

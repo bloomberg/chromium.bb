@@ -169,15 +169,14 @@ void AppsGridView::InitiateDrag(views::View* view,
     return;
 
   drag_view_ = view;
-  drag_offset_ = event.location();
+  drag_start_ = event.location();
 }
 
 void AppsGridView::UpdateDrag(views::View* view,
                               Pointer pointer,
                               const ui::LocatedEvent& event) {
   if (!dragging() && drag_view_ &&
-      ExceededDragThreshold(event.x() - drag_offset_.x(),
-                            event.y() - drag_offset_.y())) {
+      ExceededDragThreshold(event.location() - drag_start_)) {
     drag_pointer_ = pointer;
     // Move the view to the front so that it appears on top of other views.
     ReorderChildView(drag_view_, -1);
@@ -198,7 +197,8 @@ void AppsGridView::UpdateDrag(views::View* view,
 
     if (last_drop_target != drop_target_)
       AnimateToIdealBounds();
-    drag_view_->SetPosition(last_drag_point_.Subtract(drag_offset_));
+    drag_view_->SetPosition(
+        gfx::PointAtOffsetFromOrigin(last_drag_point_ - drag_start_));
   }
 }
 

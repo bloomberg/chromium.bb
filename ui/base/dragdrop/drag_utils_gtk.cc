@@ -19,7 +19,7 @@ namespace drag_utils {
 
 void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
                               const gfx::Size& size,
-                              const gfx::Point& cursor_offset,
+                              const gfx::Vector2d& cursor_offset,
                               ui::OSExchangeData* data_object) {
   ui::OSExchangeDataProviderGtk& provider(
       static_cast<ui::OSExchangeDataProviderGtk&>(data_object->provider()));

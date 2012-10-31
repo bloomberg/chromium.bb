@@ -92,8 +92,10 @@ void BrowserPluginEmbedderHelper::OnHandleInputEvent(
 
   // Convert the window coordinates into screen coordinates.
   gfx::Rect guest_screen_rect(*guest_rect);
-  if (rvh->GetView())
-    guest_screen_rect.Offset(rvh->GetView()->GetViewBounds().origin());
+  if (rvh->GetView()) {
+    guest_screen_rect.Offset(
+        rvh->GetView()->GetViewBounds().OffsetFromOrigin());
+  }
 
   IPC::Message* reply_message =
       IPC::SyncMessage::GenerateReply(&message);

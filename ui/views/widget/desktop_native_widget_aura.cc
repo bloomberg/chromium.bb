@@ -400,7 +400,7 @@ void DesktopNativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
 }
 
 Widget::MoveLoopResult DesktopNativeWidgetAura::RunMoveLoop(
-      const gfx::Point& drag_offset) {
+      const gfx::Vector2d& drag_offset) {
   return desktop_root_window_host_->RunMoveLoop(drag_offset);
 }
 

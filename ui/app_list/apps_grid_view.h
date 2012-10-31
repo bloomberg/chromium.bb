@@ -183,7 +183,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   views::View* selected_view_;
 
   views::View* drag_view_;
-  gfx::Point drag_offset_;
+  gfx::Point drag_start_;
   Pointer drag_pointer_;
   Index drop_target_;
 

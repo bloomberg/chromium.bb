@@ -29,7 +29,7 @@ void TestWebContentsView::StartDragging(
     const WebDropData& drop_data,
     WebKit::WebDragOperationsMask allowed_ops,
     const gfx::ImageSkia& image,
-    const gfx::Point& image_offset) {
+    const gfx::Vector2d& image_offset) {
 }
 
 void TestWebContentsView::UpdateDragCursor(WebKit::WebDragOperation operation) {

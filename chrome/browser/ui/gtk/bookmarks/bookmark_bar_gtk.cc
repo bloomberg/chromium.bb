@@ -1176,8 +1176,8 @@ void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
   gtk_widget_size_request(drag_icon_, &req);
   gfx::Rect button_rect = gtk_util::WidgetBounds(button);
   gfx::Point drag_icon_relative =
-      gfx::Rect(req.width, req.height).CenterPoint().Add(
-          (last_pressed_coordinates_.Subtract(button_rect.CenterPoint())));
+      gfx::Rect(req.width, req.height).CenterPoint() +
+      (last_pressed_coordinates_ - button_rect.CenterPoint());
   gtk_drag_set_icon_widget(drag_context, drag_icon_,
                            drag_icon_relative.x(),
                            drag_icon_relative.y());

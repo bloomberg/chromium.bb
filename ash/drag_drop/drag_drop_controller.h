@@ -88,7 +88,7 @@ class ASH_EXPORT DragDropController
   void Cleanup();
 
   scoped_ptr<DragImageView> drag_image_;
-  gfx::Point drag_image_offset_;
+  gfx::Vector2d drag_image_offset_;
   const ui::OSExchangeData* drag_data_;
   int drag_operation_;
 

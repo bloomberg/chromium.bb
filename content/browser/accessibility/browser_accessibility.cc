@@ -151,8 +151,7 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() {
 
   // Adjust the bounds by the top left corner of the containing view's bounds
   // in screen coordinates.
-  gfx::Point top_left = manager_->GetViewBounds().origin();
-  bounds.Offset(top_left);
+  bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
 
   return bounds;
 }

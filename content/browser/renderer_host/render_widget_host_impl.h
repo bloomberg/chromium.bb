@@ -115,7 +115,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       const WebKit::WebMouseWheelEvent& wheel_event) OVERRIDE;
   virtual void ForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) OVERRIDE;
-  virtual const gfx::Point& GetLastScrollOffset() const OVERRIDE;
+  virtual const gfx::Vector2d& GetLastScrollOffset() const OVERRIDE;
   virtual RenderProcessHost* GetProcess() const OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual RenderWidgetHostView* GetView() const OVERRIDE;
@@ -819,7 +819,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   std::vector<gfx::PluginWindowHandle> deferred_plugin_handles_;
 
   // The last scroll offset of the render widget.
-  gfx::Point last_scroll_offset_;
+  gfx::Vector2d last_scroll_offset_;
 
   bool pending_mouse_lock_request_;
   bool allow_privileged_mouse_lock_;

@@ -450,10 +450,8 @@ void MenuController::OnMouseDragged(SubmenuView* source,
     return;
 
   if (possible_drag_) {
-    if (View::ExceededDragThreshold(event.x() - press_pt_.x(),
-                                    event.y() - press_pt_.y())) {
+    if (View::ExceededDragThreshold(event.location() - press_pt_))
       StartDrag(source, press_pt_);
-    }
     return;
   }
   MenuItemView* mouse_menu = NULL;
@@ -859,7 +857,8 @@ void MenuController::StartDrag(SubmenuView* source,
 
   OSExchangeData data;
   item->GetDelegate()->WriteDragData(item, &data);
-  drag_utils::SetDragImageOnDataObject(*canvas, item->size(), press_loc,
+  drag_utils::SetDragImageOnDataObject(*canvas, item->size(),
+                                       press_loc.OffsetFromOrigin(),
                                        &data);
   StopScrolling();
   int drag_ops = item->GetDelegate()->GetDragOperations(item);

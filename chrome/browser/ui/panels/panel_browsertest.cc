@@ -513,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AnimateBounds) {
   // dragged.
   gfx::Point mouse_location(panel->GetBounds().origin());
   panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
-  panel_testing->DragTitlebar(mouse_location.Add(gfx::Point(-100, 5)));
+  panel_testing->DragTitlebar(mouse_location.Add(gfx::Vector2d(-100, 5)));
   EXPECT_FALSE(panel_testing->IsAnimatingBounds());
   panel_testing->FinishDragTitlebar();
 

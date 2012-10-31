@@ -47,7 +47,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Overridden form aura::client::WindowMoveClient:
   virtual aura::client::WindowMoveResult RunMoveLoop(
       aura::Window* source,
-      const gfx::Point& drag_offset) OVERRIDE;
+      const gfx::Vector2d& drag_offset) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
 
   // Overridden form ash::DisplayController::Observer:

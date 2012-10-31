@@ -767,10 +767,8 @@ bool PanelView::OnTitlebarMouseDragged(const gfx::Point& mouse_location) {
   if (!mouse_pressed_)
     return false;
 
-  int delta_x = mouse_location.x() - last_mouse_location_.x();
-  int delta_y = mouse_location.y() - last_mouse_location_.y();
   if (mouse_dragging_state_ == NO_DRAGGING &&
-      ExceededDragThreshold(delta_x, delta_y)) {
+      ExceededDragThreshold(mouse_location - last_mouse_location_)) {
     // When a drag begins, we do not want to the client area to still receive
     // the focus. We do not need to do this for the unfocused minimized panel.
     if (!panel_->IsMinimized()) {

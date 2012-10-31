@@ -25,8 +25,7 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
 
   // When not in compact mode we must take into account the window's position on
   // the desktop.
-  read_pixels_bounds.set_origin(
-      snapshot_bounds.origin().Add(window->bounds().origin()));
+  read_pixels_bounds.Offset(window->bounds().OffsetFromOrigin());
   gfx::Rect read_pixels_bounds_in_pixel =
       ui::ConvertRectToPixel(window->layer(), read_pixels_bounds);
 

@@ -35,16 +35,16 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
     *bounds = gfx::Rect(allocation.width, allocation.height);
-    gint x, y;
+    gfx::Point origin;
     if (screen_coordinates) {
-      gfx::Point point = ui::GetWidgetScreenPosition(widget);
-      x = point.x();
-      y = point.y();
+      origin = gfx::PointAtOffsetFromOrigin(ui::GetWidgetScreenOffset(widget));
     } else {
+      gint x, y;
       gtk_widget_translate_coordinates(widget, GTK_WIDGET(window),
                                        0, 0, &x, &y);
+      origin = gfx::Point(x, y);
     }
-    bounds->set_origin(gfx::Point(x, y));
+    bounds->set_origin(origin);
   }
 }
 

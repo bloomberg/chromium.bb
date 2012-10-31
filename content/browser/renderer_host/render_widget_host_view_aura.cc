@@ -446,7 +446,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewAura::MovePluginWindows(
-    const gfx::Point& scroll_offset,
+    const gfx::Vector2d& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& plugin_window_moves) {
 #if defined(OS_WIN)
   // We need to clip the rectangle to the tab's viewport, otherwise we will draw
@@ -463,15 +463,15 @@ void RenderWidgetHostViewAura::MovePluginWindows(
                       view_bounds.height());
 
   for (size_t i = 0; i < moves.size(); ++i) {
-    gfx::Rect clip = moves[i].clip_rect;
-    clip.Offset(moves[i].window_rect.origin());
-    clip.Offset(scroll_offset);
+    gfx::Rect clip(moves[i].clip_rect);
+    gfx::Vector2d view_port_offset(
+        moves[i].window_rect.OffsetFromOrigin() + scroll_offset);
+    clip.Offset(view_port_offset);
     clip.Intersect(view_port);
-    clip.Offset(-moves[i].window_rect.x(), -moves[i].window_rect.y());
-    clip.Offset(-scroll_offset.x(), -scroll_offset.y());
+    clip.Offset(-view_port_offset);
     moves[i].clip_rect = clip;
 
-    moves[i].window_rect.Offset(view_bounds.origin());
+    moves[i].window_rect.Offset(view_bounds.OffsetFromOrigin());
   }
   MovePluginWindowsHelper(parent, moves);
 

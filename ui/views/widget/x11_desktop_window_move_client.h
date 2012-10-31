@@ -36,7 +36,7 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient
   // Overridden from aura::client::WindowMoveClient:
   virtual aura::client::WindowMoveResult RunMoveLoop(
       aura::Window* window,
-      const gfx::Point& drag_offset) OVERRIDE;
+      const gfx::Vector2d& drag_offset) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
 
  private:
@@ -46,7 +46,7 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient
   // Our cursor offset from the top left window origin when the drag
   // started. Used to calculate the window's new bounds relative to the current
   // location of the cursor.
-  gfx::Point window_offset_;
+  gfx::Vector2d window_offset_;
 
   base::Closure quit_closure_;
 };

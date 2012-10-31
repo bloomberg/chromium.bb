@@ -201,7 +201,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void ForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) = 0;
 
-  virtual const gfx::Point& GetLastScrollOffset() const = 0;
+  virtual const gfx::Vector2d& GetLastScrollOffset() const = 0;
 
   virtual RenderProcessHost* GetProcess() const = 0;
 

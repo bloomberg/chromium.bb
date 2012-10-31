@@ -203,9 +203,9 @@ class LongPressAffordanceHandler::LongPressAffordanceView
     gfx::Transform scale;
     scale.SetScale(current_scale_, current_scale_);
     // We want to scale from the center.
-    canvas->Translate(gfx::Point(center.x(), center.y()));
+    canvas->Translate(center.OffsetFromOrigin());
     canvas->Transform(scale);
-    canvas->Translate(gfx::Point(-center.x(), -center.y()));
+    canvas->Translate(-center.OffsetFromOrigin());
 
     // Paint affordance glow
     int start_radius = kAffordanceInnerRadius - kAffordanceGlowWidth;

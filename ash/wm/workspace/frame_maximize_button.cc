@@ -337,11 +337,9 @@ void FrameMaximizeButton::ProcessStartEvent(const ui::LocatedEvent& event) {
 
 void FrameMaximizeButton::ProcessUpdateEvent(const ui::LocatedEvent& event) {
   DCHECK(is_snap_enabled_);
-  int delta_x = event.x() - press_location_.x();
-  int delta_y = event.y() - press_location_.y();
   if (!exceeded_drag_threshold_) {
-    exceeded_drag_threshold_ =
-        views::View::ExceededDragThreshold(delta_x, delta_y);
+    exceeded_drag_threshold_ = views::View::ExceededDragThreshold(
+        event.location() - press_location_);
   }
   if (exceeded_drag_threshold_)
     UpdateSnap(event.location(), false);
@@ -449,15 +447,14 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
 SnapType FrameMaximizeButton::SnapTypeForLocation(
     const gfx::Point& location) const {
   MaximizeBubbleFrameState maximize_type = GetMaximizeBubbleFrameState();
-  int delta_x = location.x() - press_location_.x();
-  int delta_y = location.y() - press_location_.y();
-  if (!views::View::ExceededDragThreshold(delta_x, delta_y))
+  gfx::Vector2d delta(location - press_location_);
+  if (!views::View::ExceededDragThreshold(delta))
     return maximize_type != FRAME_STATE_FULL ? SNAP_MAXIMIZE : SNAP_RESTORE;
-  else if (delta_x < 0 && delta_y > delta_x && delta_y < -delta_x)
+  if (delta.x() < 0 && delta.y() > delta.x() && delta.y() < -delta.x())
     return maximize_type == FRAME_STATE_SNAP_LEFT ? SNAP_RESTORE : SNAP_LEFT;
-  else if (delta_x > 0 && delta_y > -delta_x && delta_y < delta_x)
+  if (delta.x() > 0 && delta.y() > -delta.x() && delta.y() < delta.x())
     return maximize_type == FRAME_STATE_SNAP_RIGHT ? SNAP_RESTORE : SNAP_RIGHT;
-  else if (delta_y > 0)
+  if (delta.y() > 0)
     return SNAP_MINIMIZE;
   return maximize_type != FRAME_STATE_FULL ? SNAP_MAXIMIZE : SNAP_RESTORE;
 }

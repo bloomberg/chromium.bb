@@ -112,8 +112,7 @@ bool NativeTextfieldViews::OnMousePressed(const ui::MouseEvent& event) {
 
 bool NativeTextfieldViews::ExceededDragThresholdFromLastClickLocation(
     const ui::MouseEvent& event) {
-  gfx::Point location_delta = event.location().Subtract(last_click_location_);
-  return ExceededDragThreshold(location_delta.x(), location_delta.y());
+  return ExceededDragThreshold(event.location() - last_click_location_);
 }
 
 bool NativeTextfieldViews::OnMouseDragged(const ui::MouseEvent& event) {

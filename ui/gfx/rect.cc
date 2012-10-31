@@ -17,9 +17,9 @@
 
 namespace gfx {
 
-template class RectBase<Rect, Point, Size, Insets, int>;
+template class RectBase<Rect, Point, Size, Insets, Vector2d, int>;
 
-typedef class RectBase<Rect, Point, Size, Insets, int> RectBaseT;
+typedef class RectBase<Rect, Point, Size, Insets, Vector2d, int> RectBaseT;
 
 Rect::Rect() : RectBaseT(gfx::Point()) {
 }

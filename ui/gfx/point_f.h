@@ -9,11 +9,12 @@
 
 #include "ui/base/ui_export.h"
 #include "ui/gfx/point_base.h"
+#include "ui/gfx/vector2d_f.h"
 
 namespace gfx {
 
 // A floating version of gfx::Point.
-class UI_EXPORT PointF : public PointBase<PointF, float> {
+class UI_EXPORT PointF : public PointBase<PointF, float, Vector2dF> {
  public:
   PointF();
   PointF(float x, float y);
@@ -39,16 +40,24 @@ inline bool operator!=(const PointF& lhs, const PointF& rhs) {
   return !(lhs == rhs);
 }
 
-inline PointF operator+(PointF lhs, PointF rhs) {
+inline PointF operator+(const PointF& lhs, const Vector2dF& rhs) {
   return lhs.Add(rhs);
 }
 
-inline PointF operator-(PointF lhs, PointF rhs) {
+inline PointF operator-(const PointF& lhs, const Vector2dF& rhs) {
   return lhs.Subtract(rhs);
 }
 
+inline Vector2dF operator-(const PointF& lhs, const PointF& rhs) {
+  return lhs.OffsetFrom(rhs);
+}
+
+inline PointF PointAtOffsetFromOrigin(const Vector2dF& offset_from_origin) {
+  return PointF(offset_from_origin.x(), offset_from_origin.y());
+}
+
 #if !defined(COMPILER_MSVC)
-extern template class PointBase<PointF, float>;
+extern template class PointBase<PointF, float, Vector2dF>;
 #endif
 
 }  // namespace gfx

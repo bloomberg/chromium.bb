@@ -99,15 +99,9 @@ const int kCloseButtonHorzFuzz = 4;
 // Gets the bounds of |widget| relative to |parent|.
 gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
                                           GtkWidget* widget) {
-  gfx::Point parent_pos = ui::GetWidgetScreenPosition(parent);
-  gfx::Point widget_pos = ui::GetWidgetScreenPosition(widget);
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-
-  return gfx::Rect(widget_pos.x() - parent_pos.x(),
-                   widget_pos.y() - parent_pos.y(),
-                   allocation.width, allocation.height);
+  gfx::Rect bounds = ui::GetWidgetScreenBounds(widget);
+  bounds.Offset(-ui::GetWidgetScreenOffset(parent));
+  return bounds;
 }
 
 // Returns a GdkPixbuf after resizing the SkBitmap as necessary. Caller must

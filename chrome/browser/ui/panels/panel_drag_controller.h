@@ -76,7 +76,7 @@ class PanelDragController {
 
   // The offset from mouse location to the panel position when the drag
   // starts.
-  gfx::Point offset_from_mouse_location_on_drag_start_;
+  gfx::Vector2d offset_from_mouse_location_on_drag_start_;
 
   // The minimum distance that the docked panel gets dragged up in order to
   // make it free-floating.

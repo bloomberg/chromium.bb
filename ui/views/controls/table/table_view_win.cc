@@ -517,7 +517,7 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
   static bool select_on_mouse_up = false;
 
   // If the mouse is down, this is the location of the mouse down message.
-  static int mouse_down_x, mouse_down_y;
+  CR_DEFINE_STATIC_LOCAL(gfx::Point, mouse_down_pos, ());
 
   switch (message) {
     case WM_CONTEXTMENU: {
@@ -647,8 +647,8 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
           table_view->ignore_listview_change_ = true;
           in_mouse_down = true;
           select_on_mouse_up = false;
-          mouse_down_x = GET_X_LPARAM(l_param);
-          mouse_down_y = GET_Y_LPARAM(l_param);
+          mouse_down_pos.set_x(GET_X_LPARAM(l_param));
+          mouse_down_pos.set_y(GET_Y_LPARAM(l_param));
           int model_index = table_view->ViewToModel(view_index);
           bool select = true;
           if (w_param & MK_CONTROL) {
@@ -709,9 +709,8 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
 
     case WM_MOUSEMOVE: {
       if (in_mouse_down) {
-        int x = GET_X_LPARAM(l_param);
-        int y = GET_Y_LPARAM(l_param);
-        if (View::ExceededDragThreshold(x - mouse_down_x, y - mouse_down_y)) {
+        gfx::Point mouse_pos(GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
+        if (View::ExceededDragThreshold(mouse_pos - mouse_down_pos)) {
           // We're about to start drag and drop, which results in no mouse up.
           // Release capture and reset state.
           ReleaseCapture();

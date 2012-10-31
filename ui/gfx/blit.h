@@ -14,6 +14,7 @@ namespace gfx {
 
 class Point;
 class Rect;
+class Vector2d;
 
 // Blits a rectangle from the source context into the destination context.
 UI_EXPORT void BlitContextToContext(NativeDrawingContext dst_context,
@@ -44,7 +45,7 @@ UI_EXPORT void BlitCanvasToCanvas(SkCanvas *dst_canvas,
 // may implement those operations differently.
 UI_EXPORT void ScrollCanvas(SkCanvas* canvas,
                             const Rect& clip,
-                            const Point& amount);
+                            const Vector2d& amount);
 
 }  // namespace gfx
 

@@ -8,12 +8,12 @@
 
 namespace gfx {
 
-template class PointBase<PointF, float>;
+template class PointBase<PointF, float, Vector2dF>;
 
-PointF::PointF() : PointBase<PointF, float>(0, 0) {
+PointF::PointF() : PointBase<PointF, float, Vector2dF>(0, 0) {
 }
 
-PointF::PointF(float x, float y) : PointBase<PointF, float>(x, y) {
+PointF::PointF(float x, float y) : PointBase<PointF, float, Vector2dF>(x, y) {
 }
 
 PointF::~PointF() {}

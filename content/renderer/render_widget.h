@@ -330,7 +330,7 @@ class CONTENT_EXPORT RenderWidget
 
   // Gets the scroll offset of this widget, if this widget has a notion of
   // scroll offset.
-  virtual gfx::Point GetScrollOffset();
+  virtual gfx::Vector2d GetScrollOffset();
 
   // Sets the "hidden" state of this widget.  All accesses to is_hidden_ should
   // use this method so that we can properly inform the RenderThread of our

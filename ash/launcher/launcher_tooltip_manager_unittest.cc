@@ -195,7 +195,7 @@ TEST_F(LauncherTooltipManagerTest, HideForMouseEvent) {
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide if the mouse is out of the tooltip.
-  test_api.set_location(tooltip_rect.origin().Add(gfx::Point(-1, -1)));
+  test_api.set_location(tooltip_rect.origin().Add(gfx::Vector2d(-1, -1)));
   EXPECT_FALSE(event_filter->PreHandleMouseEvent(root_window, &mouse_event));
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(TooltipIsVisible());

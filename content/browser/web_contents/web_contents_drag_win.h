@@ -48,7 +48,7 @@ class CONTENT_EXPORT WebContentsDragWin
   void StartDragging(const WebDropData& drop_data,
                      WebKit::WebDragOperationsMask ops,
                      const gfx::ImageSkia& image,
-                     const gfx::Point& image_offset);
+                     const gfx::Vector2d& image_offset);
   void CancelDrag();
 
   // DataObjectImpl::Observer implementation.
@@ -75,7 +75,7 @@ class CONTENT_EXPORT WebContentsDragWin
                   const GURL& page_url,
                   const std::string& page_encoding,
                   const gfx::ImageSkia& image,
-                  const gfx::Point& image_offset);
+                  const gfx::Vector2d& image_offset);
 
   // Called on drag-and-drop thread.
   void StartBackgroundDragging(const WebDropData& drop_data,
@@ -83,7 +83,7 @@ class CONTENT_EXPORT WebContentsDragWin
                                const GURL& page_url,
                                const std::string& page_encoding,
                                const gfx::ImageSkia& image,
-                               const gfx::Point& image_offset);
+                               const gfx::Vector2d& image_offset);
   // Called on UI thread.
   void EndDragging();
   void CloseThread();

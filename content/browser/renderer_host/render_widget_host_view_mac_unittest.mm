@@ -115,7 +115,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     geom.visible = true;
     geom.rects_valid = true;
     rwhv_mac_->MovePluginWindows(
-        gfx::Point(),
+        gfx::Vector2d(),
         std::vector<webkit::npapi::WebPluginGeometry>(1, geom));
 
     return accelerated_handle;

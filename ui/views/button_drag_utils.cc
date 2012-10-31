@@ -47,7 +47,7 @@ void SetURLAndDragImage(const GURL& url,
       views::GetCanvasForDragImage(widget, prefsize));
   button.PaintButton(canvas.get(), views::TextButton::PB_FOR_DRAG);
   drag_utils::SetDragImageOnDataObject(*canvas, prefsize,
-      gfx::Point(prefsize.width() / 2, prefsize.height() / 2), data);
+      gfx::Vector2d(prefsize.width() / 2, prefsize.height() / 2), data);
 }
 
 }  // namespace button_drag_utils

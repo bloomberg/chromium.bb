@@ -104,7 +104,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   bool IsMinimized() const;
   bool IsMaximized() const;
 
-  bool RunMoveLoop(const gfx::Point& drag_offset);
+  bool RunMoveLoop(const gfx::Vector2d& drag_offset);
   void EndMoveLoop();
 
   // Tells the HWND its client area has changed.

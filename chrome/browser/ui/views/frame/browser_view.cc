@@ -458,7 +458,8 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
   // The background image starts tiling horizontally at the window left edge and
   // vertically at the top edge of the horizontal tab strip (or where it would
   // be).  We expect our parent's origin to be the window origin.
-  gfx::Point window_point(point.Add(GetMirroredPosition()));
+  gfx::Point window_point(
+      point.Add(GetMirroredPosition().OffsetFromOrigin()));
   window_point.Offset(frame_->GetThemeBackgroundXInset(),
                       -frame_->GetTabStripInsets(false).top);
   return window_point;

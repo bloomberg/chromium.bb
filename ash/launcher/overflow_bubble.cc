@@ -84,7 +84,7 @@ class OverflowBubbleView : public views::BubbleDelegateView {
 
   ShelfAlignment shelf_alignment_;
   LauncherView* launcher_view_;  // Owned by views hierarchy.
-  gfx::Point scroll_offset_;
+  gfx::Vector2d scroll_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubbleView);
 };
@@ -166,8 +166,8 @@ gfx::Size OverflowBubbleView::GetPreferredSize() {
 }
 
 void OverflowBubbleView::Layout() {
-  const gfx::Point origin(-scroll_offset_.x(), -scroll_offset_.y());
-  launcher_view_->SetBoundsRect(gfx::Rect(origin, GetContentsSize()));
+  launcher_view_->SetBoundsRect(gfx::Rect(
+      gfx::PointAtOffsetFromOrigin(-scroll_offset_), GetContentsSize()));
 }
 
 void OverflowBubbleView::ChildPreferredSizeChanged(views::View* child) {

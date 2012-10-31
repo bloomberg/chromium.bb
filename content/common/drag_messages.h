@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/vector2d.h"
 #include "webkit/glue/webdropdata.h"
 
 #define IPC_MESSAGE_START DragMsgStart
@@ -57,7 +58,7 @@ IPC_MESSAGE_ROUTED4(DragHostMsg_StartDragging,
                     WebDropData /* drop_data */,
                     WebKit::WebDragOperationsMask /* ops_allowed */,
                     SkBitmap /* image */,
-                    gfx::Point /* image_offset */)
+                    gfx::Vector2d /* image_offset */)
 
 // The page wants to update the mouse cursor during a drag & drop operation.
 // |is_drop_target| is true if the mouse is over a valid drop target.

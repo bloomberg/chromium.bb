@@ -232,13 +232,12 @@ void RenderTextMac::ComputeRuns() {
   CFArrayRef ct_runs = CTLineGetGlyphRuns(line_);
   const CFIndex ct_runs_count = CFArrayGetCount(ct_runs);
 
-  Point offset(GetTextOrigin());
-  // Skia will draw glyphs with respect to the baseline.
-  offset.Offset(0, common_baseline_);
+  gfx::Vector2d text_offset = GetTextOffset();
 
-  const SkScalar x = SkIntToScalar(offset.x());
-  const SkScalar y = SkIntToScalar(offset.y());
-  SkPoint run_origin = SkPoint::Make(offset.x(), offset.y());
+  // Skia will draw glyphs with respect to the baseline.
+  const SkScalar x = SkIntToScalar(text_offset.x());
+  const SkScalar y = SkIntToScalar(text_offset.y() + common_baseline_);
+  SkPoint run_origin = SkPoint::Make(x, y);
 
   const CFRange empty_cf_range = CFRangeMake(0, 0);
   for (CFIndex i = 0; i < ct_runs_count; ++i) {

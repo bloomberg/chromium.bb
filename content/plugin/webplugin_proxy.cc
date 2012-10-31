@@ -349,7 +349,7 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   // Clear the damaged area so that if the plugin doesn't paint there we won't
   // end up with the old values.
   gfx::Rect offset_rect = rect;
-  offset_rect.Offset(delegate_->GetRect().origin());
+  offset_rect.Offset(delegate_->GetRect().OffsetFromOrigin());
 #if defined(OS_MACOSX)
   CGContextSaveGState(windowless_context());
   // It is possible for windowless_contexts_ to change during plugin painting

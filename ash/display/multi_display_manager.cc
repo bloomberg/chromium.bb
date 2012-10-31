@@ -511,7 +511,7 @@ void MultiDisplayManager::EnsurePointerInDisplays() {
     return;
   gfx::Point location_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
   gfx::Point target_location;
-  int64 closest_distance = -1;
+  int64 closest_distance_squared = -1;
 
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
@@ -522,14 +522,16 @@ void MultiDisplayManager::EnsurePointerInDisplays() {
       break;
     }
     gfx::Point center = display_bounds.CenterPoint();
-    gfx::Point diff = center.Subtract(location_in_screen);
-    // Use the distance from the center of the dislay. This is not
+    // Use the distance squared from the center of the dislay. This is not
     // exactly "closest" display, but good enough to pick one
     // appropriate (and there are at most two displays).
-    int64 distance = diff.x() * diff.x() + diff.y() * diff.y();
-    if (closest_distance < 0 || closest_distance > distance) {
+    // We don't care about actual distance, only relative to other displays, so
+    // using the LengthSquared() is cheaper than Length().
+    int64 distance_squared = (center - location_in_screen).LengthSquared();
+    if (closest_distance_squared < 0 ||
+        closest_distance_squared > distance_squared) {
       target_location = center;
-      closest_distance = distance;
+      closest_distance_squared = distance_squared;
     }
   }
 

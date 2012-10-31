@@ -36,7 +36,7 @@ void PanelDragController::StartDragging(Panel* panel,
 
   last_mouse_location_ = mouse_location;
   offset_from_mouse_location_on_drag_start_ =
-      mouse_location.Subtract(panel->GetBounds().origin());
+      mouse_location - panel->GetBounds().origin();
 
   dragging_panel_ = panel;
   dragging_panel_->SetPreviewMode(true);

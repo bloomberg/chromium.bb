@@ -16,7 +16,7 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/vector2d.h"
 
 namespace ui {
 
@@ -85,9 +85,9 @@ class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
 
   // Set the image and cursor offset data for this drag.  Will
   // increment the ref count of pixbuf.
-  void SetDragImage(GdkPixbuf* pixbuf, const gfx::Point& cursor_offset);
+  void SetDragImage(GdkPixbuf* pixbuf, const gfx::Vector2d& cursor_offset);
   GdkPixbuf* drag_image() const { return drag_image_; }
-  gfx::Point cursor_offset() const { return cursor_offset_; }
+  gfx::Vector2d cursor_offset() const { return cursor_offset_; }
 
  private:
   typedef std::map<OSExchangeData::CustomFormat, Pickle>  PickleData;
@@ -121,7 +121,7 @@ class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
 
   // Drag image and offset data.
   GdkPixbuf* drag_image_;
-  gfx::Point cursor_offset_;
+  gfx::Vector2d cursor_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderGtk);
 };

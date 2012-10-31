@@ -1167,9 +1167,10 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
     return false;
 
   gfx::Point plugin_origin = PP_ToGfxPoint(view_data_.rect.point);
+  gfx::Vector2d plugin_offset = plugin_origin.OffsetFromOrigin();
   // Convert |paint_bounds| to be relative to the left-top corner of the plugin.
   gfx::Rect relative_paint_bounds(paint_bounds);
-  relative_paint_bounds.Offset(-plugin_origin.x(), -plugin_origin.y());
+  relative_paint_bounds.Offset(-plugin_offset);
 
   gfx::Rect pixel_plugin_backing_store_rect(
       0, 0, image_data->width(), image_data->height());
@@ -1192,9 +1193,9 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   }
 
   *dib = image_data->PlatformImage()->GetTransportDIB();
-  plugin_backing_store_rect.Offset(plugin_origin);
+  plugin_backing_store_rect.Offset(plugin_offset);
   *location = plugin_backing_store_rect;
-  clip_page.Offset(plugin_origin);
+  clip_page.Offset(plugin_offset);
   *clip = clip_page;
   // The plugin scale factor is inverted, e.g. for a device scale factor of 2x
   // the plugin scale factor is 0.5.

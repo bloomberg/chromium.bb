@@ -244,7 +244,7 @@ ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
 
 aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
     aura::Window* source,
-    const gfx::Point& drag_offset) {
+    const gfx::Vector2d& drag_offset) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
   move_cancelled_ = false;

@@ -29,7 +29,7 @@ class WebContentsViewMac;
 }
 
 namespace gfx {
-class Point;
+class Vector2d;
 }
 
 @interface WebContentsViewCocoa : BaseView {
@@ -97,7 +97,7 @@ class WebContentsViewMac : public WebContentsView,
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_operations,
                              const gfx::ImageSkia& image,
-                             const gfx::Point& image_offset) OVERRIDE;
+                             const gfx::Vector2d& image_offset) OVERRIDE;
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;

@@ -406,7 +406,7 @@ void RenderText::SetText(const string16& text) {
 void RenderText::SetHorizontalAlignment(HorizontalAlignment alignment) {
   if (horizontal_alignment_ != alignment) {
     horizontal_alignment_ = alignment;
-    display_offset_ = Point();
+    display_offset_ = Vector2d();
     cached_bounds_and_offset_valid_ = false;
   }
 }
@@ -765,7 +765,7 @@ RenderText::RenderText()
       cached_bounds_and_offset_valid_(false) {
 }
 
-const Point& RenderText::GetUpdatedDisplayOffset() {
+const Vector2d& RenderText::GetUpdatedDisplayOffset() {
   UpdateCachedBoundsAndOffset();
   return display_offset_;
 }
@@ -839,41 +839,39 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   }
 }
 
-Point RenderText::GetTextOrigin() {
-  Point origin = display_rect().origin();
-  origin = origin.Add(GetUpdatedDisplayOffset());
-  origin = origin.Add(GetAlignmentOffset());
-  return origin;
+Vector2d RenderText::GetTextOffset() {
+  Vector2d offset = display_rect().OffsetFromOrigin();
+  offset.Add(GetUpdatedDisplayOffset());
+  offset.Add(GetAlignmentOffset());
+  return offset;
 }
 
 Point RenderText::ToTextPoint(const Point& point) {
-  return point.Subtract(GetTextOrigin());
+  return point.Subtract(GetTextOffset());
 }
 
 Point RenderText::ToViewPoint(const Point& point) {
-  return point.Add(GetTextOrigin());
+  return point.Add(GetTextOffset());
 }
 
 int RenderText::GetContentWidth() {
   return GetStringSize().width() + (cursor_enabled_ ? 1 : 0);
 }
 
-Point RenderText::GetAlignmentOffset() {
-  if (horizontal_alignment() != ALIGN_LEFT) {
-    int x_offset = display_rect().width() - GetContentWidth();
-    if (horizontal_alignment() == ALIGN_CENTER)
-      x_offset /= 2;
-    return Point(x_offset, 0);
-  }
-  return Point();
+Vector2d RenderText::GetAlignmentOffset() {
+  if (horizontal_alignment() == ALIGN_LEFT)
+    return Vector2d();
+
+  int x_offset = display_rect().width() - GetContentWidth();
+  if (horizontal_alignment() == ALIGN_CENTER)
+    x_offset /= 2;
+  return Vector2d(x_offset, 0);
 }
 
 Point RenderText::GetOriginForDrawing() {
-  Point origin(GetTextOrigin());
-  const int height = GetStringSize().height();
   // Center the text vertically in the display area.
-  origin.Offset(0, (display_rect().height() - height) / 2);
-  return origin;
+  return gfx::PointAtOffsetFromOrigin(GetTextOffset()) +
+      Vector2d(0, (display_rect().height() - GetStringSize().height()) / 2);
 }
 
 void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
@@ -974,35 +972,37 @@ void RenderText::UpdateCachedBoundsAndOffset() {
   const int display_width = display_rect_.width();
   const int content_width = GetContentWidth();
 
-  int delta_offset = 0;
+  int delta_x = 0;
   if (content_width <= display_width || !cursor_enabled()) {
     // Don't pan if the text fits in the display width or when the cursor is
     // disabled.
-    delta_offset = -display_offset_.x();
+    delta_x = -display_offset_.x();
   } else if (cursor_bounds_.right() >= display_rect_.right()) {
     // TODO(xji): when the character overflow is a RTL character, currently, if
     // we pan cursor at the rightmost position, the entered RTL character is not
     // displayed. Should pan cursor to show the last logical characters.
     //
     // Pan to show the cursor when it overflows to the right,
-    delta_offset = display_rect_.right() - cursor_bounds_.right() - 1;
+    delta_x = display_rect_.right() - cursor_bounds_.right() - 1;
   } else if (cursor_bounds_.x() < display_rect_.x()) {
     // TODO(xji): have similar problem as above when overflow character is a
     // LTR character.
     //
     // Pan to show the cursor when it overflows to the left.
-    delta_offset = display_rect_.x() - cursor_bounds_.x();
+    delta_x = display_rect_.x() - cursor_bounds_.x();
   } else if (display_offset_.x() != 0) {
     // Reduce the pan offset to show additional overflow text when the display
     // width increases.
     const int negate_rtl = horizontal_alignment_ == ALIGN_RIGHT ? -1 : 1;
     const int offset = negate_rtl * display_offset_.x();
-    if (display_width > (content_width + offset))
-      delta_offset = negate_rtl * (display_width - (content_width + offset));
+    if (display_width > (content_width + offset)) {
+      delta_x = negate_rtl * (display_width - (content_width + offset));
+    }
   }
 
-  display_offset_.Offset(delta_offset, 0);
-  cursor_bounds_.Offset(delta_offset, 0);
+  gfx::Vector2d delta_offset(delta_x, 0);
+  display_offset_ += delta_offset;
+  cursor_bounds_.Offset(delta_offset);
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {

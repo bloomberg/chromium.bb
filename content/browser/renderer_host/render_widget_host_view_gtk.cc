@@ -758,7 +758,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewGtk::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewGtk::MovePluginWindows(
-    const gfx::Point& scroll_offset,
+    const gfx::Vector2d& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
   for (size_t i = 0; i < moves.size(); ++i) {
     plugin_container_manager_.MovePluginContainer(moves[i]);
@@ -1041,12 +1041,14 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
     skia::PlatformBitmap* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
 
-  const gfx::Rect bounds = GetViewBounds();
+  gfx::Rect src_subrect_in_view = src_subrect;
+  src_subrect_in_view.Offset(GetViewBounds().OffsetFromOrigin());
+
   ui::XScopedImage image(XGetImage(ui::GetXDisplay(), ui::GetX11RootWindow(),
-                                   bounds.x() + src_subrect.x(),
-                                   bounds.y() + src_subrect.y(),
-                                   src_subrect.width(),
-                                   src_subrect.height(),
+                                   src_subrect_in_view.x(),
+                                   src_subrect_in_view.y(),
+                                   src_subrect_in_view.width(),
+                                   src_subrect_in_view.height(),
                                    AllPlanes, ZPixmap));
   if (!image.get())
     return;

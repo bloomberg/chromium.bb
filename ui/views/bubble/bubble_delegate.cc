@@ -351,7 +351,8 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
 #if defined(OS_WIN) && !defined(USE_AURA)
 gfx::Rect BubbleDelegateView::GetBubbleClientBounds() const {
   gfx::Rect client_bounds(GetBubbleFrameView()->GetBoundsForClientView());
-  client_bounds.Offset(border_widget_->GetWindowBoundsInScreen().origin());
+  client_bounds.Offset(
+      border_widget_->GetWindowBoundsInScreen().OffsetFromOrigin());
   return client_bounds;
 }
 #endif

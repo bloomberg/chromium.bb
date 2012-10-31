@@ -17,7 +17,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/vector2d.h"
 
 class SkBitmap;
 struct WebDropData;
@@ -39,7 +39,7 @@ class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
                      WebKit::WebDragOperationsMask allowed_ops,
                      GdkEventButton* last_mouse_down,
                      const SkBitmap& image,
-                     const gfx::Point& image_offset);
+                     const gfx::Vector2d& image_offset);
 
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
@@ -70,7 +70,7 @@ class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
   // The image used for depicting the drag, and the offset between the cursor
   // and the top left pixel.
   GdkPixbuf* drag_pixbuf_;
-  gfx::Point image_offset_;
+  gfx::Vector2d image_offset_;
 
   // The mime type for the file contents of the current drag (if any).
   GdkAtom drag_file_mime_type_;

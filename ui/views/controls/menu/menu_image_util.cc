@@ -43,7 +43,7 @@ class RadioButtonImageSource : public gfx::CanvasImageSource {
   virtual ~RadioButtonImageSource() {}
 
   virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
-    canvas->Translate(gfx::Point(1, 1));
+    canvas->Translate(gfx::Vector2d(1, 1));
 
     SkPoint gradient_points[3];
     gradient_points[0].iset(0, 0);

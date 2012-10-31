@@ -15,8 +15,8 @@ class GURL;
 namespace gfx {
 class Canvas;
 class ImageSkia;
-class Point;
 class Size;
+class Vector2d;
 }
 
 namespace ui {
@@ -39,7 +39,7 @@ UI_EXPORT void CreateDragImageForFile(const FilePath& file_name,
 // the hotspot for the drag image.
 UI_EXPORT void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                                         const gfx::Size& size,
-                                        const gfx::Point& cursor_offset,
+                                        const gfx::Vector2d& cursor_offset,
                                         ui::OSExchangeData* data_object);
 
 // Sets the drag image on data_object from the supplied ImageSkia. width/height
@@ -47,7 +47,7 @@ UI_EXPORT void SetDragImageOnDataObject(const gfx::Canvas& canvas,
 // the hotspot for the drag image.
 UI_EXPORT void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
                                         const gfx::Size& size,
-                                        const gfx::Point& cursor_offset,
+                                        const gfx::Vector2d& cursor_offset,
                                         ui::OSExchangeData* data_object);
 
 }  // namespace drag_utils

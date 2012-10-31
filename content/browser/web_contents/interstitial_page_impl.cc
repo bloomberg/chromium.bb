@@ -82,7 +82,7 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
   virtual void StartDragging(const WebDropData& drop_data,
                              WebDragOperationsMask operations_allowed,
                              const gfx::ImageSkia& image,
-                             const gfx::Point& image_offset) OVERRIDE;
+                             const gfx::Vector2d& image_offset) OVERRIDE;
   virtual void UpdateDragCursor(WebDragOperation operation) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
@@ -709,7 +709,7 @@ void InterstitialPageImpl::InterstitialPageRVHDelegateView::StartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask allowed_operations,
     const gfx::ImageSkia& image,
-    const gfx::Point& image_offset) {
+    const gfx::Vector2d& image_offset) {
   NOTREACHED() << "InterstitialPage does not support dragging yet.";
 }
 

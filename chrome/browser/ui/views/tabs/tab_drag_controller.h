@@ -335,7 +335,7 @@ class TabDragController : public content::WebContentsDelegate,
   // Browser. |drag_offset| is the offset from the window origin and is used in
   // calculating the location of the window offset from the cursor while
   // dragging.
-  void RunMoveLoop(const gfx::Point& drag_offset);
+  void RunMoveLoop(const gfx::Vector2d& drag_offset);
 
   // Determines the index to insert tabs at. |dragged_bounds| is the bounds of
   // the tabs being dragged, |start| the index of the tab to start looking from
@@ -442,7 +442,7 @@ class TabDragController : public content::WebContentsDelegate,
   // Creates and returns a new Browser to handle the drag.
   Browser* CreateBrowserForDrag(TabStrip* source,
                                 const gfx::Point& point_in_screen,
-                                gfx::Point* drag_offset,
+                                gfx::Vector2d* drag_offset,
                                 std::vector<gfx::Rect>* drag_bounds);
 
   // Returns the TabStripModel for the specified tabstrip.
@@ -454,7 +454,7 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Returns the offset from the top left corner of the window to
   // |point_in_screen|.
-  gfx::Point GetWindowOffset(const gfx::Point& point_in_screen);
+  gfx::Vector2d GetWindowOffset(const gfx::Point& point_in_screen);
 
   // Returns true if moving the mouse only changes the visible tabs.
   bool move_only() const {

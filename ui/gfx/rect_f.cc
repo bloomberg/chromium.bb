@@ -11,9 +11,10 @@
 
 namespace gfx {
 
-template class RectBase<RectF, PointF, SizeF, InsetsF, float>;
+template class RectBase<RectF, PointF, SizeF, InsetsF, Vector2dF, float>;
 
-typedef class RectBase<RectF, PointF, SizeF, InsetsF, float> RectBaseT;
+typedef class RectBase<RectF, PointF, SizeF, InsetsF, Vector2dF,
+                       float> RectBaseT;
 
 RectF::RectF() : RectBaseT(gfx::SizeF()) {
 }

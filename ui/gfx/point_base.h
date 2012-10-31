@@ -14,7 +14,7 @@
 namespace gfx {
 
 // A point has an x and y coordinate.
-template<typename Class, typename Type>
+template<typename Class, typename Type, typename VectorClass>
 class UI_EXPORT PointBase {
  public:
   Type x() const { return x_; }
@@ -33,17 +33,25 @@ class UI_EXPORT PointBase {
     y_ += delta_y;
   }
 
-  Class Add(const Class& other) const WARN_UNUSED_RESULT {
+  void operator+=(const VectorClass& other) {
+    Offset(other.x(), other.y());
+  }
+
+  void operator-=(const VectorClass& other) {
+    Offset(-other.x(), -other.y());
+  }
+
+  Class Add(const VectorClass& other) const WARN_UNUSED_RESULT {
     const Class* orig = static_cast<const Class*>(this);
     Class copy = *orig;
-    copy.Offset(other.x_, other.y_);
+    copy.Offset(other.x(), other.y());
     return copy;
   }
 
-  Class Subtract(const Class& other) const WARN_UNUSED_RESULT {
+  Class Subtract(const VectorClass& other) const WARN_UNUSED_RESULT {
     const Class* orig = static_cast<const Class*>(this);
     Class copy = *orig;
-    copy.Offset(-other.x_, -other.y_);
+    copy.Offset(-other.x(), -other.y());
     return copy;
   }
 
@@ -53,6 +61,14 @@ class UI_EXPORT PointBase {
 
   bool IsOrigin() const {
     return x_ == 0 && y_ == 0;
+  }
+
+  VectorClass OffsetFromOrigin() const {
+    return VectorClass(x_, y_);
+  }
+
+  VectorClass OffsetFrom(const Class& other) const {
+    return VectorClass(x_ - other.x_, y_ - other.y_);
   }
 
   // A point is less than another point if its y-value is closer

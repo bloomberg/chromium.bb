@@ -698,10 +698,8 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     float clampX = min(0.5, clampRect.width() / 2.0 - epsilon);
     float clampY = min(0.5, clampRect.height() / 2.0 - epsilon);
     clampRect.Inset(clampX, clampY, clampX, clampY);
-    gfx::PointF clampOffset = clampRect.origin() - tileRect.origin();
 
-    gfx::PointF textureOffset = quad->textureOffset() + clampOffset +
-                                (tileRect.origin() - quad->quadRect().origin());
+    gfx::PointF textureOffset = quad->textureOffset() + clampRect.OffsetFromOrigin() - quad->quadRect().OffsetFromOrigin();
 
     // Map clamping rectangle to unit square.
     float vertexTexTranslateX = -clampRect.x() / clampRect.width();

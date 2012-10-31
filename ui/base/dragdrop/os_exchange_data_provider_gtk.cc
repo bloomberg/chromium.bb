@@ -221,8 +221,9 @@ bool OSExchangeDataProviderGtk::GetPlainTextURL(GURL* url) const {
   return true;
 }
 
-void OSExchangeDataProviderGtk::SetDragImage(GdkPixbuf* drag_image,
-                                             const gfx::Point& cursor_offset) {
+void OSExchangeDataProviderGtk::SetDragImage(
+    GdkPixbuf* drag_image,
+    const gfx::Vector2d& cursor_offset) {
   if (drag_image_)
     g_object_unref(drag_image_);
   g_object_ref(drag_image);

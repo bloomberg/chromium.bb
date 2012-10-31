@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
+#include "ui/gfx/vector2d_conversions.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -126,10 +127,11 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point, int count) {
   DCHECK_GT(count, 0);
   const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?
       ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED;
-  const gfx::Point diff = point.Subtract(current_location_);
-  for (int i = 1; i <= count; i++) {
-    const gfx::Point move_point = current_location_.Add(
-        gfx::Point(diff.x() / count * i, diff.y() / count * i));
+  gfx::Vector2dF diff(point - current_location_);
+  for (float i = 1; i <= count; i++) {
+    gfx::Vector2dF step(diff);
+    step.Scale(i / count);
+    gfx::Point move_point = current_location_ + gfx::ToRoundedVector2d(step);
     ui::MouseEvent mouseev(event_type, move_point, move_point, flags_);
     Dispatch(mouseev);
   }

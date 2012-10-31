@@ -2162,12 +2162,10 @@ void RenderViewImpl::showContextMenu(
   gfx::Rect start_rect;
   gfx::Rect end_rect;
   GetSelectionBounds(&start_rect, &end_rect);
-  gfx::Point start_point(start_rect.x(),
-                         start_rect.bottom());
-  gfx::Point end_point(end_rect.right(),
-                       end_rect.bottom());
-  params.selection_start = GetScrollOffset().Add(start_point);
-  params.selection_end = GetScrollOffset().Add(end_point);
+  params.selection_start =
+      gfx::Point(start_rect.x(), start_rect.bottom()) + GetScrollOffset();
+  params.selection_end =
+      gfx::Point(end_rect.right(), end_rect.bottom()) + GetScrollOffset();
 #endif
 
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
@@ -2237,9 +2235,10 @@ void RenderViewImpl::startDragging(WebFrame* frame,
                                    const WebDragData& data,
                                    WebDragOperationsMask mask,
                                    const WebImage& image,
-                                   const WebPoint& imageOffset) {
+                                   const WebPoint& webImageOffset) {
   WebDropData drop_data(data);
   drop_data.referrer_policy = frame->document().referrerPolicy();
+  gfx::Vector2d imageOffset(webImageOffset.x, webImageOffset.y);
   Send(new DragHostMsg_StartDragging(routing_id_,
                                      drop_data,
                                      mask,
@@ -5518,9 +5517,9 @@ webkit::ppapi::PluginInstance* RenderViewImpl::GetBitmapForOptimizedPluginPaint(
       paint_bounds, dib, location, clip, scale_factor);
 }
 
-gfx::Point RenderViewImpl::GetScrollOffset() {
+gfx::Vector2d RenderViewImpl::GetScrollOffset() {
   WebSize scroll_offset = webview()->mainFrame()->scrollOffset();
-  return gfx::Point(scroll_offset.width, scroll_offset.height);
+  return gfx::Vector2d(scroll_offset.width, scroll_offset.height);
 }
 
 void RenderViewImpl::OnClearFocusedNode() {

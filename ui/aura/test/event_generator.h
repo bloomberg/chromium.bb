@@ -85,7 +85,7 @@ class EventGenerator {
   }
 
   void MoveMouseBy(int x, int y) {
-    MoveMouseTo(current_location_.Add(gfx::Point(x, y)));
+    MoveMouseTo(current_location_.Add(gfx::Vector2d(x, y)));
   }
 
   // Generates events to drag mouse to given |point|.
@@ -96,7 +96,7 @@ class EventGenerator {
   }
 
   void DragMouseBy(int dx, int dy) {
-    DragMouseTo(current_location_.Add(gfx::Point(dx, dy)));
+    DragMouseTo(current_location_.Add(gfx::Vector2d(dx, dy)));
   }
 
   // Generates events to move the mouse to the center of the window.
@@ -120,7 +120,7 @@ class EventGenerator {
   }
 
   void PressMoveAndReleaseTouchBy(int x, int y) {
-    PressMoveAndReleaseTouchTo(current_location_.Add(gfx::Point(x, y)));
+    PressMoveAndReleaseTouchTo(current_location_.Add(gfx::Vector2d(x, y)));
   }
 
   // Generates press, move and release events to move touch

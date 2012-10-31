@@ -137,7 +137,7 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
 
   Balloons::const_iterator it = balloons.begin();
   if (layout_.RequiresOffsets()) {
-    gfx::Point offset;
+    gfx::Vector2d offset;
     bool apply_offset = false;
     while (it != balloons.end()) {
       if (*it == source) {
@@ -249,7 +249,7 @@ void BalloonCollectionImpl::CancelOffsets() {
   for (Balloons::const_iterator it = balloons.begin();
        it != balloons.end();
        ++it)
-    (*it)->set_offset(gfx::Point(0, 0));
+    (*it)->set_offset(gfx::Vector2d());
 
   PositionBalloons(true);
 }

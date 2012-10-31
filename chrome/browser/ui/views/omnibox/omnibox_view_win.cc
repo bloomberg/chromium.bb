@@ -121,8 +121,8 @@ struct AutocompleteEditState : public base::SupportsUserData::Data {
 // Returns true if the current point is far enough from the origin that it
 // would be considered a drag.
 bool IsDrag(const POINT& origin, const POINT& current) {
-  return views::View::ExceededDragThreshold(current.x - origin.x,
-                                            current.y - origin.y);
+  return views::View::ExceededDragThreshold(
+      gfx::Point(current) - gfx::Point(origin));
 }
 
 // Write |text| and an optional |url| to the clipboard.

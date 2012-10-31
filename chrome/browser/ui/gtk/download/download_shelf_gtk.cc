@@ -383,11 +383,7 @@ bool DownloadShelfGtk::IsCursorInShelfZone(
   if (!realized)
     return false;
 
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(shelf_.get(), &allocation);
-
-  gfx::Rect bounds(ui::GetWidgetScreenPosition(shelf_.get()),
-                   gfx::Size(allocation.width, allocation.height));
+  gfx::Rect bounds = ui::GetWidgetScreenBounds(shelf_.get());
 
   // Negative insets expand the rectangle. We only expand the top.
   bounds.Inset(gfx::Insets(-kShelfAuraSize, 0, 0, 0));

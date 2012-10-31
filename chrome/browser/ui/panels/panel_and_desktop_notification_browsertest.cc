@@ -101,7 +101,7 @@ class PanelAndDesktopNotificationTest : public BasePanelBrowserTest {
 
   static void ResizePanelByMouseWithDelta(Panel* panel,
                                           panel::ResizingSides side,
-                                          const gfx::Point& delta) {
+                                          const gfx::Vector2d& delta) {
     PanelManager* panel_manager = PanelManager::GetInstance();
     gfx::Point mouse_location = panel->GetBounds().origin();
     panel_manager->StartResizingByMouse(panel, mouse_location, side);
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, ResizePanelByMouse) {
 
   // Resize the panel to make it taller. Expect that the notification balloon
   // moves further up by the amount of enlarge offset.
-  gfx::Point drag_delta(-50, -100);
+  gfx::Vector2d drag_delta(-50, -100);
   ResizePanelByMouseWithDelta(panel, panel::RESIZE_TOP_LEFT, drag_delta);
   MessageLoopForUI::current()->RunAllPending();
   int balloon_bottom2 = GetBalloonBottomPosition(balloon);
@@ -316,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, ResizePanelByMouse) {
 
   // Resize the panel to make it shorter. Expect that the notification balloon
   // moves down by the amount of shrink offset.
-  drag_delta = gfx::Point(0, 60);
+  drag_delta = gfx::Vector2d(0, 60);
   ResizePanelByMouseWithDelta(panel, panel::RESIZE_TOP, drag_delta);
   MessageLoopForUI::current()->RunAllPending();
   int balloon_bottom3 = GetBalloonBottomPosition(balloon);

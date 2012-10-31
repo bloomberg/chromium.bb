@@ -437,7 +437,7 @@ void WebContentsViewAura::StartDragging(
     const WebDropData& drop_data,
     WebKit::WebDragOperationsMask operations,
     const gfx::ImageSkia& image,
-    const gfx::Point& image_offset) {
+    const gfx::Vector2d& image_offset) {
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
   if (!aura::client::GetDragDropClient(root_window))
     return;

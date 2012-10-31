@@ -76,12 +76,12 @@ TEST(Blit, ScrollCanvas) {
   // Scroll none and make sure it's a NOP.
   gfx::ScrollCanvas(&canvas,
                     gfx::Rect(0, 0, kCanvasWidth, kCanvasHeight),
-                    gfx::Point(0, 0));
+                    gfx::Vector2d(0, 0));
   VerifyCanvasValues<5, 5>(&canvas, initial_values);
 
   // Scroll the center 3 pixels up one.
   gfx::Rect center_three(1, 1, 3, 3);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Point(0, -1));
+  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(0, -1));
   uint8 scroll_up_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x21, 0x22, 0x23, 0x14 },
@@ -92,7 +92,7 @@ TEST(Blit, ScrollCanvas) {
 
   // Reset and scroll the center 3 pixels down one.
   SetToCanvas<5, 5>(&canvas, initial_values);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Point(0, 1));
+  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(0, 1));
   uint8 scroll_down_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x11, 0x12, 0x13, 0x14 },
@@ -103,7 +103,7 @@ TEST(Blit, ScrollCanvas) {
 
   // Reset and scroll the center 3 pixels right one.
   SetToCanvas<5, 5>(&canvas, initial_values);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Point(1, 0));
+  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(1, 0));
   uint8 scroll_right_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x11, 0x11, 0x12, 0x14 },
@@ -114,7 +114,7 @@ TEST(Blit, ScrollCanvas) {
 
   // Reset and scroll the center 3 pixels left one.
   SetToCanvas<5, 5>(&canvas, initial_values);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Point(-1, 0));
+  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(-1, 0));
   uint8 scroll_left_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x12, 0x13, 0x13, 0x14 },
@@ -125,7 +125,7 @@ TEST(Blit, ScrollCanvas) {
 
   // Diagonal scroll.
   SetToCanvas<5, 5>(&canvas, initial_values);
-  gfx::ScrollCanvas(&canvas, center_three, gfx::Point(2, 2));
+  gfx::ScrollCanvas(&canvas, center_three, gfx::Vector2d(2, 2));
   uint8 scroll_diagonal_expected[kCanvasHeight][kCanvasWidth] = {
       { 0x00, 0x01, 0x02, 0x03, 0x04 },
       { 0x10, 0x11, 0x12, 0x13, 0x14 },

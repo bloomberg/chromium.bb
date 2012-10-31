@@ -705,8 +705,7 @@ void PPB_Graphics2D_Impl::ExecutePaintImageData(PPB_ImageData_Impl* image,
 void PPB_Graphics2D_Impl::ExecuteScroll(const gfx::Rect& clip,
                                         int dx, int dy,
                                         gfx::Rect* invalidated_rect) {
-  gfx::ScrollCanvas(image_data_->GetCanvas(),
-                    clip, gfx::Point(dx, dy));
+  gfx::ScrollCanvas(image_data_->GetCanvas(), clip, gfx::Vector2d(dx, dy));
   *invalidated_rect = clip;
 }
 

@@ -1005,7 +1005,8 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
       scoped_ptr<gfx::Canvas> canvas(
           views::GetCanvasForDragImage(button->GetWidget(), button->size()));
       button->PaintButton(canvas.get(), views::TextButton::PB_FOR_DRAG);
-      drag_utils::SetDragImageOnDataObject(*canvas, button->size(), press_pt,
+      drag_utils::SetDragImageOnDataObject(*canvas, button->size(),
+                                           press_pt.OffsetFromOrigin(),
                                            data);
       WriteBookmarkDragData(model_->bookmark_bar_node()->GetChild(i), data);
       return;
@@ -1041,8 +1042,9 @@ bool BookmarkBarView::CanStartDragForView(views::View* sender,
                                           const gfx::Point& p) {
   // Check if we have not moved enough horizontally but we have moved downward
   // vertically - downward drag.
-  if (!View::ExceededDragThreshold(press_pt.x() - p.x(), 0) &&
-      press_pt.y() < p.y()) {
+  gfx::Vector2d move_offset = p - press_pt;
+  gfx::Vector2d horizontal_offset(move_offset.x(), 0);
+  if (!View::ExceededDragThreshold(horizontal_offset) && move_offset.y() > 0) {
     for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
       if (sender == GetBookmarkButton(i)) {
         const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(i);
