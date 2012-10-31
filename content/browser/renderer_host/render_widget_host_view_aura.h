@@ -200,6 +200,7 @@ class RenderWidgetHostViewAura
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventState);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventSyncAsync);
 
   class WindowObserver;
   friend class WindowObserver;

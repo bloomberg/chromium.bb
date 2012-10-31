@@ -222,4 +222,45 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_EQ(0U, view_->touch_event_.touchesLength);
 }
 
+// Checks that touch-events are queued properly when there is a touch-event
+// handler on the page.
+TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
+  view_->InitAsChild(NULL);
+  view_->Show();
+
+  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
+      base::Time::NowFromSystemTime() - base::Time());
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
+      base::Time::NowFromSystemTime() - base::Time());
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
+      base::Time::NowFromSystemTime() - base::Time());
+
+  EXPECT_EQ(ui::ER_CONSUMED, view_->OnTouchEvent(&press));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StatePressed,
+            view_->touch_event_.touches[0].state);
+
+  EXPECT_EQ(ui::ER_CONSUMED, view_->OnTouchEvent(&move));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StateMoved,
+            view_->touch_event_.touches[0].state);
+
+  // Send the same move event. Since the point hasn't moved, it won't affect the
+  // queue. However, the view should consume the event.
+  EXPECT_EQ(ui::ER_CONSUMED, view_->OnTouchEvent(&move));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StateMoved,
+            view_->touch_event_.touches[0].state);
+
+  EXPECT_EQ(ui::ER_CONSUMED, view_->OnTouchEvent(&release));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchEnd, view_->touch_event_.type);
+  EXPECT_EQ(0U, view_->touch_event_.touchesLength);
+}
+
 }  // namespace content

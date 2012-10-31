@@ -1583,12 +1583,15 @@ ui::EventResult RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
 
   // Forward the touch event only if a touch point was updated, and there's a
   // touch-event handler in the page, and no other touch-event is in the queue.
-  ui::EventResult result = ui::ER_UNHANDLED;
+  // It is important to always consume the event if there is a touch-event
+  // handler in the page, or some touch-event is already in the queue, even if
+  // no point has been updated, to make sure that this event does not get
+  // processed by the gesture recognizer before the events in the queue.
+  ui::EventResult result = host_->ShouldForwardTouchEvent() ? ui::ER_CONSUMED :
+                                                              ui::ER_UNHANDLED;
   if (point) {
-    if (host_->ShouldForwardTouchEvent()) {
+    if (host_->ShouldForwardTouchEvent())
       host_->ForwardTouchEvent(touch_event_);
-      result = ui::ER_CONSUMED;
-    }
     UpdateWebTouchEventAfterDispatch(&touch_event_, point);
   }
 
