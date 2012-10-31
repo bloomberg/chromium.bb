@@ -278,6 +278,9 @@ FileCopyManager.prototype.getStatus = function() {
  * @param {Object} eventArgs An object with arbitrary event parameters.
  */
 FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
+  if (this.cancelRequested_)
+    return;  // Swallow events until cancellation complete.
+
   var windows = chrome.extension.getViews();
   for (var i = 0; i < windows.length; i++) {
     var w = windows[i];
@@ -344,7 +347,6 @@ FileCopyManager.prototype.resetQueue_ = function() {
 
   this.copyTasks_ = [];
   this.cancelObservers_ = [];
-  this.cancelRequested_ = false;
 };
 
 /**
@@ -357,6 +359,11 @@ FileCopyManager.prototype.requestCancel = function(opt_callback) {
     this.cancelCallback_();
   if (opt_callback)
     this.cancelObservers_.push(opt_callback);
+
+  // If there is any active task it will eventually call maybeCancel_.
+  // Otherwise call it right now.
+  if (this.copyTasks_.length == 0)
+    this.doCancel_();
 };
 
 /**
@@ -364,8 +371,9 @@ FileCopyManager.prototype.requestCancel = function(opt_callback) {
  * @private
  */
 FileCopyManager.prototype.doCancel_ = function() {
-  this.sendProgressEvent_('CANCELLED');
   this.resetQueue_();
+  this.cancelRequested_ = false;
+  this.sendProgressEvent_('CANCELLED');
 };
 
 /**
@@ -511,6 +519,7 @@ FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
   copyTask.setEntries(entries, function() {
     self.copyTasks_.push(copyTask);
     if (self.copyTasks_.length == 1) {
+      // Assume self.cancelRequested_ == false.
       // This moved us from 0 to 1 active tasks, let the servicing begin!
       self.serviceAllTasks_();
     } else {
@@ -532,11 +541,15 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
   var self = this;
 
   function onTaskError(err) {
+    if (self.maybeCancel_())
+      return;
     self.sendProgressEvent_('ERROR', err);
     self.resetQueue_();
   }
 
   function onTaskSuccess(task) {
+    if (self.maybeCancel_())
+      return;
     if (!self.copyTasks_.length) {
       // All tasks have been serviced, clean up and exit.
       self.sendProgressEvent_('SUCCESS');
@@ -568,9 +581,6 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
  */
 FileCopyManager.prototype.serviceNextTask_ = function(
     successCallback, errorCallback) {
-  if (this.maybeCancel_())
-    return;
-
   var self = this;
   var task = this.copyTasks_[0];
 
@@ -871,8 +881,6 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
           chrome.fileBrowserPrivate.cancelFileTransfers([targetFileUrl],
                                                         function() {});
         }
-
-        self.doCancel_();
       };
 
       chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
