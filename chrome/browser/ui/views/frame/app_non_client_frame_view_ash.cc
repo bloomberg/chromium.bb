@@ -6,6 +6,7 @@
 
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "base/debug/stack_trace.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/ash_resources.h"
@@ -55,7 +56,9 @@ class AppNonClientFrameViewAsh::ControlView
         IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
         IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
     control_base_ = rb.GetImageNamed(control_base_resource_id).ToImageSkia();
-    shadow_ = rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SHADOW).ToImageSkia();
+    shadow_ = rb.GetImageNamed(
+        base::i18n::IsRTL() ? IDR_AURA_WINDOW_FULLSCREEN_SHADOW_RTL :
+                              IDR_AURA_WINDOW_FULLSCREEN_SHADOW).ToImageSkia();
 
     AddChildView(close_button_);
     AddChildView(restore_button_);
@@ -93,7 +96,7 @@ class AppNonClientFrameViewAsh::ControlView
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->TileImageInt(*control_base_,
-        restore_button_->x(),
+        base::i18n::IsRTL() ? 0 : restore_button_->x(),
         restore_button_->y(),
         restore_button_->width() - kButtonOverlap + close_button_->width(),
         restore_button_->height());
@@ -115,11 +118,12 @@ class AppNonClientFrameViewAsh::ControlView
 
   // Returns the insets of the control which are only covered by the shadow.
   gfx::Insets GetShadowInsets() {
+    bool rtl = base::i18n::IsRTL();
     return gfx::Insets(
         0,
-        shadow_->width() - close_button_->width() - restore_button_->width(),
+        rtl ? 0 : restore_button_->x(),
         shadow_->height() - close_button_->height(),
-        0);
+        rtl ? restore_button_->x() : 0);
   }
 
  private:
@@ -265,7 +269,7 @@ gfx::Rect AppNonClientFrameViewAsh::GetControlBounds() const {
     return gfx::Rect();
   gfx::Size preferred = control_view_->GetPreferredSize();
   return gfx::Rect(
-      width() - preferred.width(), 0,
+      base::i18n::IsRTL() ? 0 : (width() - preferred.width()), 0,
       preferred.width(), preferred.height());
 }
 
