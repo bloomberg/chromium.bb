@@ -825,8 +825,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
   size_t log_size;
   uint8_t* log_data;
   // Load the AddressSanitizer log into log_data.
-  LoadDataFromFile(allocator, info, info.log_filename,
-                   &logfd, &log_data, &log_size);
+  LoadDataFromFile(allocator, info.log_filename, &logfd, &log_data, &log_size);
 #endif
 
   // We need to build a MIME block for uploading to the server. Since we are
