@@ -226,9 +226,14 @@ def main(argv):
     _AddProjectsToManifestGroups(options, main_element.attrib['name'])
 
   elif main_element is not None:
-    # Conflict will occur; complain.
-    parser.error("Requested project name=%r path=%r will conflict with "
-                 "your current manifest %s" % (name, path, active_manifest))
+    if options.remote is not None:
+      # Likely this project wasn't meant to be remote, so workon main element
+      print "Project already exists in manifest. Using that as workon project."
+      _AddProjectsToManifestGroups(options, main_element.attrib['name'])
+    else:
+      # Conflict will occur; complain.
+      parser.error("Requested project name=%r path=%r will conflict with "
+                   "your current manifest %s" % (name, path, active_manifest))
 
   elif local_manifest.GetProject(name, path=path) is not None:
     parser.error("Requested project name=%r path=%r conflicts with "
