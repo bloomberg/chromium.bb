@@ -99,14 +99,17 @@ public class ShellManager extends FrameLayout {
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);
-        shellView.setSurfaceView(mSurfaceView);
         shellView.setWindow(mWindow);
 
         removeAllViews();
-        if (mActiveShell != null && mActiveShell.getContentView() != null) {
-            mActiveShell.getContentView().onHide();
+        if (mActiveShell != null) {
+            if (mActiveShell.getContentView() != null) {
+                mActiveShell.getContentView().onHide();
+            }
+            mActiveShell.setSurfaceView(null);
         }
 
+        shellView.setSurfaceView(mSurfaceView);
         addView(shellView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         mActiveShell = shellView;

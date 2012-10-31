@@ -64,11 +64,16 @@ public class Shell extends LinearLayout {
      * Set the SurfaceView being renderered to as soon as it is available.
      */
     public void setSurfaceView(View surfaceView) {
+        FrameLayout contentViewHolder = (FrameLayout) findViewById(R.id.contentview_holder);
+        if (surfaceView == null) {
+            if (mSurfaceView != null) contentViewHolder.removeView(mSurfaceView);
+        } else {
+            contentViewHolder.addView(surfaceView,
+                    new FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.MATCH_PARENT));
+        }
         mSurfaceView = surfaceView;
-        ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mSurfaceView,
-                new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT));
     }
 
     /**
