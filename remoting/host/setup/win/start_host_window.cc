@@ -72,6 +72,9 @@ void StartHostWindow::OnOk(UINT code, int id, HWND control) {
 }
 
 void StartHostWindow::OnAuthCode(const std::string& auth_code) {
+  if (auth_code.empty())
+    return;
+
   host_starter_->StartHost(
       host_name_, pin_, consent_to_collect_data_, auth_code,
       GetDefaultOauthRedirectUrl(),
