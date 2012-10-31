@@ -23,8 +23,7 @@ class DesktopResizer;
 // the original desktop size.
 class ResizingHostObserver : public HostStatusObserver {
  public:
-  explicit ResizingHostObserver(DesktopResizer* desktop_resizer,
-                                ChromotingHost* host);
+  ResizingHostObserver(DesktopResizer* desktop_resizer, ChromotingHost* host);
   virtual ~ResizingHostObserver();
 
   // HostStatusObserver interface
@@ -34,7 +33,7 @@ class ResizingHostObserver : public HostStatusObserver {
                                          const SkISize& size) OVERRIDE;
 
  private:
-  DesktopResizer* desktop_resizer_;
+  DesktopResizer* const desktop_resizer_;
   scoped_refptr<ChromotingHost> host_;
   SkISize original_size_;
   SkISize previous_size_;

@@ -17,13 +17,13 @@ ResizingHostObserver::ResizingHostObserver(
       host_(host),
       original_size_(SkISize::Make(0, 0)),
       previous_size_(SkISize::Make(0, 0)) {
-  if (host_) {
+  if (host_ != NULL) {
     host_->AddStatusObserver(this);
   }
 }
 
 ResizingHostObserver::~ResizingHostObserver() {
-  if (host_) {
+  if (host_ != NULL) {
     host_->RemoveStatusObserver(this);
   }
 }
@@ -48,15 +48,19 @@ class CandidateSize {
  public:
   CandidateSize(const SkISize& candidate, const SkISize& preferred)
       : size_(candidate) {
+    // Protect against division by zero.
+    CHECK(!candidate.isEmpty());
+    DCHECK(!preferred.isEmpty());
+
     // The client scale factor is the smaller of the candidate:preferred ratios
     // for width and height.
     if ((candidate.width() > preferred.width()) ||
         (candidate.height() > preferred.height())) {
-      float ratio_width =
+      const float width_ratio =
           static_cast<float>(preferred.width()) / candidate.width();
-      float ratio_height =
+      const float height_ratio =
           static_cast<float>(preferred.height()) / candidate.height();
-      client_scale_factor_ = std::min(ratio_width, ratio_height);
+      client_scale_factor_ = std::min(width_ratio, height_ratio);
     } else {
       // Since clients do not scale up, 1.0 is the maximum.
       client_scale_factor_ = 1.0;
@@ -66,7 +70,7 @@ class CandidateSize {
     // of the two aspect ratios (candidate and preferred) to the larger. The
     // best aspect ratio is the one that most closely matches the preferred
     // aspect ratio (in other words, the ideal aspect ratio "goodness" is 1.0).
-    // By keeping the values < 1.0, it allows ratios the differ in opposite
+    // By keeping the values < 1.0, it allows ratios that differ in opposite
     // directions to be compared numerically.
     float candidate_aspect_ratio =
         static_cast<float>(candidate.width()) / candidate.height();
@@ -112,7 +116,7 @@ class CandidateSize {
 
     // If the aspect ratios are equally good (for example, comparing 640x480
     // to 480x640 w.r.t. 640x640), just pick the widest, since desktop UIs
-    // are typically design for landscape aspect ratios.
+    // are typically designed for landscape aspect ratios.
     return size().width() > other.size().width();
   }
 
@@ -124,7 +128,7 @@ class CandidateSize {
 
 void ResizingHostObserver::OnClientDimensionsChanged(
     const std::string& jid, const SkISize& preferred_size) {
-  if (previous_size_.isZero()) {
+  if (previous_size_.isZero() || preferred_size.isEmpty()) {
     return;
   }
 
@@ -145,8 +149,8 @@ void ResizingHostObserver::OnClientDimensionsChanged(
     return;
   }
   CandidateSize best_size(sizes.front(), preferred_size);
-  std::list<SkISize>::iterator i = sizes.begin();
-  for (++i; i != sizes.end(); ++i) {
+  for (std::list<SkISize>::const_iterator i = ++sizes.begin();
+       i != sizes.end(); ++i) {
     CandidateSize candidate_size(*i, preferred_size);
     if (candidate_size.IsBetterThan(best_size)) {
       best_size = candidate_size;
