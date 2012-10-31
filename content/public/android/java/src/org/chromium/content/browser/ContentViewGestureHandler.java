@@ -386,28 +386,29 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         // want to trigger the tap event at UP. So we override
                         // onSingleTapUp() in this case. This assumes singleTapUp
                         // gets always called before singleTapConfirmed.
-                        if (!mIgnoreSingleTap && !mLongPressDetector.isInLongPress() &&
-                                (e.getEventTime() - e.getDownTime() > DOUBLE_TAP_TIMEOUT)) {
-                            float x = e.getX();
-                            float y = e.getY();
-                            if (mMotionEventDelegate.sendGesture(GESTURE_SINGLE_TAP_UP,
-                                    e.getEventTime(), (int) x, (int) y, null)) {
-                                mIgnoreSingleTap = true;
+                        if (!mIgnoreSingleTap && !mLongPressDetector.isInLongPress()) {
+                            if (e.getEventTime() - e.getDownTime() > DOUBLE_TAP_TIMEOUT) {
+                                float x = e.getX();
+                                float y = e.getY();
+                                if (mMotionEventDelegate.sendGesture(GESTURE_SINGLE_TAP_UP,
+                                        e.getEventTime(), (int) x, (int) y, null)) {
+                                    mIgnoreSingleTap = true;
+                                }
+                                setClickXAndY((int) x, (int) y);
+                                return true;
+                            } else if (mMotionEventDelegate.hasFixedPageScale()) {
+                                // If page is not user scalable, we don't need to wait
+                                // for double tap timeout.
+                                float x = e.getX();
+                                float y = e.getY();
+                                mExtraParamBundle.clear();
+                                mExtraParamBundle.putBoolean(SHOW_PRESS, mShowPressIsCalled);
+                                if (mMotionEventDelegate.sendGesture(GESTURE_SINGLE_TAP_CONFIRMED,
+                                        e.getEventTime(), (int) x, (int) y, mExtraParamBundle)) {
+                                    mIgnoreSingleTap = true;
+                                }
+                                setClickXAndY((int) x, (int) y);
                             }
-                            setClickXAndY((int) x, (int) y);
-                            return true;
-                        } else if (mMotionEventDelegate.hasFixedPageScale()) {
-                            // If page is not user scalable, we don't need to wait
-                            // for double tap timeout.
-                            float x = e.getX();
-                            float y = e.getY();
-                            mExtraParamBundle.clear();
-                            mExtraParamBundle.putBoolean(SHOW_PRESS, mShowPressIsCalled);
-                            if (mMotionEventDelegate.sendGesture(GESTURE_SINGLE_TAP_CONFIRMED,
-                                    e.getEventTime(), (int) x, (int) y, mExtraParamBundle)) {
-                                mIgnoreSingleTap = true;
-                            }
-                            setClickXAndY((int) x, (int) y);
                         }
                         return false;
                     }
