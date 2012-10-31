@@ -157,9 +157,6 @@
           ],
         }, {  # OS != "ios"
           'dependencies': [
-            'content_ppapi_plugin',
-            'content_utility',
-            'content_worker',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_proxy',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',

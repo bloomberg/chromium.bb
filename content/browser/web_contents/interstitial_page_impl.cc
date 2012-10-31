@@ -149,8 +149,7 @@ InterstitialPageImpl::InterstitialPageImpl(WebContents* web_contents,
       ALLOW_THIS_IN_INITIALIZER_LIST(rvh_delegate_view_(
           new InterstitialPageRVHDelegateView(this))),
       create_view_(true),
-      delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      delegate_(delegate) {
   InitInterstitialPageMap();
   // It would be inconsistent to create an interstitial with no new navigation
   // (which is the case when the interstitial was triggered by a sub-resource on
@@ -172,6 +171,7 @@ void InterstitialPageImpl::Show() {
     InterstitialPageImpl* interstitial = iter->second;
     if (interstitial->action_taken_ != NO_ACTION) {
       interstitial->Hide();
+      delete interstitial;
     } else {
       // If we are currently showing an interstitial page for which we created
       // a transient entry and a new interstitial is shown as the result of a
@@ -233,12 +233,6 @@ void InterstitialPageImpl::Show() {
 }
 
 void InterstitialPageImpl::Hide() {
-  // We may have already been hidden, and are just waiting to be deleted.
-  if (!render_view_host_)
-    return;
-
-  Disable();
-
   RenderWidgetHostView* old_view =
       web_contents_->GetRenderViewHost()->GetView();
   if (web_contents_->GetInterstitialPage() == this &&
@@ -260,12 +254,7 @@ void InterstitialPageImpl::Hide() {
         web_contents_->GetRenderViewHost()->GetView())->Focus();
   }
 
-  // Shutdown the RVH asynchronously, as we may have been called from a RVH
-  // delegate method, and we can't delete the RVH out from under itself.
-  MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-      base::Bind(&InterstitialPageImpl::Shutdown,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 render_view_host_));
+  render_view_host_->Shutdown();
   render_view_host_ = NULL;
   if (web_contents_->GetInterstitialPage())
     web_contents_->remove_interstitial_page();
@@ -331,6 +320,7 @@ void InterstitialPageImpl::Observe(
         // User decided to proceed and either the navigation was committed or
         // the tab was closed before that.
         Hide();
+        delete this;
       }
       break;
     case NOTIFICATION_DOM_OPERATION_RESPONSE:
@@ -416,9 +406,6 @@ void InterstitialPageImpl::UpdateTitle(
     int32 page_id,
     const string16& title,
     base::i18n::TextDirection title_direction) {
-  if (!enabled())
-    return;
-
   DCHECK(render_view_host == render_view_host_);
   NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
   if (!entry) {
@@ -453,15 +440,7 @@ RendererPreferences InterstitialPageImpl::GetRendererPrefs(
 }
 
 webkit_glue::WebPreferences InterstitialPageImpl::GetWebkitPrefs() {
-  if (!enabled())
-    return webkit_glue::WebPreferences();
-
   return WebContentsImpl::GetWebkitPrefs(render_view_host_, url_);
-}
-
-void InterstitialPageImpl::RenderWidgetDeleted(
-    RenderWidgetHostImpl* render_widget_host) {
-  delete this;
 }
 
 bool InterstitialPageImpl::PreHandleKeyboardEvent(
@@ -500,7 +479,7 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
 }
 
 WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
-  if (!enabled() || !create_view_)
+  if (!create_view_)
     return NULL;
   WebContentsView* web_contents_view = web_contents()->GetView();
   RenderWidgetHostView* view =
@@ -545,6 +524,7 @@ void InterstitialPageImpl::Proceed() {
   if (!new_navigation_) {
     Hide();
     delegate_->OnProceed();
+    delete this;
     return;
   }
 
@@ -580,6 +560,7 @@ void InterstitialPageImpl::DontProceed() {
 
   Hide();
   delegate_->OnDontProceed();
+  delete this;
 }
 
 void InterstitialPageImpl::CancelForNavigation() {
@@ -597,8 +578,6 @@ void InterstitialPageImpl::CancelForNavigation() {
 }
 
 void InterstitialPageImpl::SetSize(const gfx::Size& size) {
-  if (!enabled())
-    return;
 #if !defined(OS_MACOSX)
   // When a tab is closed, we might be resized after our view was NULLed
   // (typically if there was an info-bar).
@@ -612,14 +591,10 @@ void InterstitialPageImpl::SetSize(const gfx::Size& size) {
 
 void InterstitialPageImpl::Focus() {
   // Focus the native window.
-  if (!enabled())
-    return;
   RenderWidgetHostViewPort::FromRWHV(render_view_host_->GetView())->Focus();
 }
 
 void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {
-  if (!enabled())
-    return;
   render_view_host_->SetInitialFocus(reverse);
 }
 
@@ -680,12 +655,6 @@ void InterstitialPageImpl::ShowContextMenu(
 
 void InterstitialPageImpl::Disable() {
   enabled_ = false;
-}
-
-void InterstitialPageImpl::Shutdown(
-    content::RenderViewHostImpl* render_view_host) {
-  render_view_host->Shutdown();
-  // We are deleted now.
 }
 
 void InterstitialPageImpl::TakeActionOnResourceDispatcher(
