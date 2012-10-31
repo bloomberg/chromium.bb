@@ -156,8 +156,8 @@ class PolicyWatcherLinux : public PolicyWatcher {
     return last_modification;
   }
 
-  // Caller owns the value.
-  DictionaryValue* Load() {
+  // Returns NULL if the policy dictionary couldn't be read.
+  scoped_ptr<DictionaryValue> Load() {
     DCHECK(OnPolicyWatcherThread());
     // Enumerate the files and sort them lexicographically.
     std::set<FilePath> files;
@@ -168,7 +168,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
       files.insert(config_file_path);
 
     // Start with an empty dictionary and merge the files' contents.
-    DictionaryValue* policy = new DictionaryValue();
+    scoped_ptr<DictionaryValue> policy(new DictionaryValue());
     for (std::set<FilePath>::iterator config_file_iter = files.begin();
          config_file_iter != files.end(); ++config_file_iter) {
       JSONFileValueSerializer deserializer(*config_file_iter);
@@ -180,17 +180,17 @@ class PolicyWatcherLinux : public PolicyWatcher {
       if (!value.get()) {
         LOG(WARNING) << "Failed to read configuration file "
                      << config_file_iter->value() << ": " << error_msg;
-        continue;
+        return scoped_ptr<DictionaryValue>();
       }
       if (!value->IsType(Value::TYPE_DICTIONARY)) {
         LOG(WARNING) << "Expected JSON dictionary in configuration file "
                      << config_file_iter->value();
-        continue;
+        return scoped_ptr<DictionaryValue>();
       }
       policy->MergeDictionary(static_cast<DictionaryValue*>(value.get()));
     }
 
-    return policy;
+    return policy.Pass();
   }
 
   void Reload() {
@@ -210,10 +210,15 @@ class PolicyWatcherLinux : public PolicyWatcher {
     }
 
     // Load the policy definitions.
-    scoped_ptr<DictionaryValue> new_policy(Load());
-    UpdatePolicies(new_policy.get());
-
-    ScheduleFallbackReloadTask();
+    scoped_ptr<DictionaryValue> new_policy = Load();
+    if (new_policy.get()) {
+      UpdatePolicies(new_policy.get());
+      ScheduleFallbackReloadTask();
+    } else {
+      // A failure to load policy definitions is probably temporary, so try
+      // again soon.
+      ScheduleReloadTask(base::TimeDelta::FromSeconds(kSettleIntervalSeconds));
+    }
   }
 
   bool IsSafeToReloadPolicy(const base::Time& now, base::TimeDelta* delay) {
