@@ -458,14 +458,19 @@ bool MagnificationControllerImpl::PreHandleKeyEvent(aura::Window* target,
 
 bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
                                                       ui::MouseEvent* event) {
-  if (event->type() == ui::ET_SCROLL &&
-      event->IsAltDown() &
-      event->IsControlDown()) {
-    ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
-    float scale = GetScale();
-    scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
-    SetScale(scale, true);
-    return true;
+  if (event->IsAltDown() && event->IsControlDown()) {
+    if (event->type() == ui::ET_SCROLL_FLING_START ||
+        event->type() == ui::ET_SCROLL_FLING_CANCEL) {
+      return true;
+    }
+
+    if (event->type() == ui::ET_SCROLL) {
+      ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
+      float scale = GetScale();
+      scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
+      SetScale(scale, true);
+      return true;
+    }
   }
 
   if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
