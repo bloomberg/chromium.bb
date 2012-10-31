@@ -1986,6 +1986,8 @@
         'browser/system_monitor/media_storage_util.h',
         'browser/system_monitor/media_transfer_protocol_device_observer_linux.cc',
         'browser/system_monitor/media_transfer_protocol_device_observer_linux.h',
+        'browser/system_monitor/portable_device_watcher_win.cc',
+        'browser/system_monitor/portable_device_watcher_win.h',
         'browser/system_monitor/removable_device_constants.cc',
         'browser/system_monitor/removable_device_constants.h',
         'browser/system_monitor/removable_device_notifications_chromeos.cc',

@@ -5,15 +5,17 @@
 #ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
 #define CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
 
-#include <windows.h>
-
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/system_monitor/system_monitor.h"
-#include "chrome/browser/system_monitor/volume_mount_watcher_win.h"
 
 class FilePath;
 
 namespace chrome {
+
+class PortableDeviceWatcherWin;
+class VolumeMountWatcherWin;
 
 class RemovableDeviceNotificationsWindowWin;
 typedef RemovableDeviceNotificationsWindowWin RemovableDeviceNotifications;
@@ -40,10 +42,15 @@ class RemovableDeviceNotificationsWindowWin {
       base::SystemMonitor::RemovableStorageInfo* device_info);
 
  private:
+  class PortableDeviceNotifications;
   friend class TestRemovableDeviceNotificationsWindowWin;
 
-  explicit RemovableDeviceNotificationsWindowWin(
-      VolumeMountWatcherWin* volume_mount_watcher);
+  // To support unit tests, this constructor takes |volume_mount_watcher| and
+  // |portable_device_watcher| objects. These params are either constructed in
+  // unit tests or in RemovableDeviceNotificationsWindowWin::Create() function.
+  RemovableDeviceNotificationsWindowWin(
+      VolumeMountWatcherWin* volume_mount_watcher,
+      PortableDeviceWatcherWin* portable_device_watcher);
 
   // Gets the removable storage information given a |device_path|. On success,
   // returns true and fills in |device_location|, |unique_id|, |name| and
@@ -69,8 +76,12 @@ class RemovableDeviceNotificationsWindowWin {
   HMODULE instance_;
   HWND window_;
 
-  // Store the volume mount point watcher to manage the mounted devices.
+  // The volume mount point watcher, used to manage the mounted devices.
   scoped_refptr<VolumeMountWatcherWin> volume_mount_watcher_;
+
+  // The portable device watcher, used to manage media transfer protocol
+  // devices.
+  scoped_ptr<PortableDeviceWatcherWin> portable_device_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsWindowWin);
 };
