@@ -635,16 +635,24 @@ TEST(WebTransformationMatrixTest, verifyRotateAxisAngle3dForArbitraryAxis)
 }
 
 // Test failing as of webkit 132872:132896. http://crbug.com/158553
-TEST(WebTransformationMatrixTest, DISABLED_verifyRotateAxisAngle3dForDegenerateAxis)
+TEST(WebTransformationMatrixTest, verifyRotateAxisAngle3dForDegenerateAxis)
 {
     // Check rotation about a degenerate zero vector.
-    // It is expected to default to rotation about the z-axis.
+    // It is expected to skip applying the rotation.
     WebTransformationMatrix A;
-    A.rotate3d(0, 0, 0, 90);
-    EXPECT_ROW1_NEAR(0, -1, 0, 0, A, ERROR_THRESHOLD);
-    EXPECT_ROW2_NEAR(1, 0, 0, 0, A, ERROR_THRESHOLD);
-    EXPECT_ROW3_EQ(0, 0, 1, 0, A);
-    EXPECT_ROW4_EQ(0, 0, 0, 1, A);
+
+    A.rotate3d(0, 0, 0, 45);
+    // Verify that A remains unchanged.
+    EXPECT_TRUE(A.isIdentity());
+
+    initializeTestMatrix(A);
+    A.rotate3d(0, 0, 0, 35);
+
+    // Verify that A remains unchanged.
+    EXPECT_ROW1_EQ(10, 14, 18, 22, A);
+    EXPECT_ROW2_EQ(11, 15, 19, 23, A);
+    EXPECT_ROW3_EQ(12, 16, 20, 24, A);
+    EXPECT_ROW4_EQ(13, 17, 21, 25, A);
 }
 
 TEST(WebTransformationMatrixTest, verifySkewX)
