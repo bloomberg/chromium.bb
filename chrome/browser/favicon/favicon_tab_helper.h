@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/favicon/favicon_download_helper_delegate.h"
 #include "chrome/browser/favicon/favicon_handler_delegate.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/favicon_url.h"
@@ -20,6 +21,7 @@ class Image;
 }
 
 class GURL;
+class FaviconDownloadHelper;
 class FaviconHandler;
 class Profile;
 class SkBitmap;
@@ -35,6 +37,7 @@ class SkBitmap;
 //
 class FaviconTabHelper : public content::WebContentsObserver,
                          public FaviconHandlerDelegate,
+                         public FaviconDownloadHelperDelegate,
                          public content::WebContentsUserData<FaviconTabHelper> {
  public:
   virtual ~FaviconTabHelper();
@@ -55,6 +58,12 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // space is provided for the favicon, and the favicon is never displayed.
   virtual bool ShouldDisplayFavicon();
 
+  // Message Handler.  Must be public, because also called from
+  // PrerenderContents.
+  virtual void OnUpdateFaviconURL(
+      int32 page_id,
+      const std::vector<FaviconURL>& candidates) OVERRIDE;
+
   // Saves the favicon for the current page.
   void SaveFavicon();
 
@@ -72,11 +81,6 @@ class FaviconTabHelper : public content::WebContentsObserver,
                     history::IconType icon_type,
                     const ImageDownloadCallback& callback);
 
-  // Message Handler.  Must be public, because also called from
-  // PrerenderContents.
-  void OnUpdateFaviconURL(int32 page_id,
-                          const std::vector<FaviconURL>& candidates);
-
   // FaviconHandlerDelegate methods.
   virtual content::NavigationEntry* GetActiveEntry() OVERRIDE;
   virtual int StartDownload(const GURL& url, int image_size) OVERRIDE;
@@ -93,16 +97,18 @@ class FaviconTabHelper : public content::WebContentsObserver,
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Message handler for IconHostMsg_DidDownloadFavicon.
-  void OnDidDownloadFavicon(int id,
-                            const GURL& image_url,
-                            bool errored,
-                            int requested_size,
-                            const std::vector<SkBitmap>& bitmaps);
+  // FaviconDownloadHelperDelegate overrides.
+  virtual void OnDidDownloadFavicon(
+      int id,
+      const GURL& image_url,
+      bool errored,
+      int requested_size,
+      const std::vector<SkBitmap>& bitmaps) OVERRIDE;
 
   Profile* profile_;
+
+  scoped_ptr<FaviconDownloadHelper> favicon_download_helper_;
 
   scoped_ptr<FaviconHandler> favicon_handler_;
 
