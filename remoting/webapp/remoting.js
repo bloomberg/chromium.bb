@@ -161,19 +161,23 @@ remoting.logExtensionInfoAsync_ = function() {
 };
 
 /**
- * If the client is connected, or the host is shared, prompt before closing.
+ * If an It2Me client or host is active then prompt the user before closing.
+ * If a Me2Me client is active then don't bother, since closing the window is
+ * the more intuitive way to end a Me2Me session, and re-connecting is easy.
  *
  * @return {?string} The prompt string if a connection is active.
  */
 remoting.promptClose = function() {
+  if (remoting.currentConnectionType == remoting.ConnectionType.Me2Me) {
+    return null;
+  }
   switch (remoting.currentMode) {
     case remoting.AppMode.CLIENT_CONNECTING:
     case remoting.AppMode.HOST_WAITING_FOR_CODE:
     case remoting.AppMode.HOST_WAITING_FOR_CONNECTION:
     case remoting.AppMode.HOST_SHARED:
     case remoting.AppMode.IN_SESSION:
-      var result = chrome.i18n.getMessage(/*i18n-content*/'CLOSE_PROMPT');
-      return result;
+      return chrome.i18n.getMessage(/*i18n-content*/'CLOSE_PROMPT');
     default:
       return null;
   }
