@@ -175,6 +175,9 @@ FastShutdown.*
 IPBTP/InProcessBrowserTestP.*
 FormStructureBrowserTest.*
 AutomationMiscBrowserTest.*
+# DrM-i#1052-c#31
+ExtensionApiNewTabTest.*
+RestoreOnStartupPolicyTestInstance*
 
 # Failed tests from debug build
 # DrM-i#1052-c#21
