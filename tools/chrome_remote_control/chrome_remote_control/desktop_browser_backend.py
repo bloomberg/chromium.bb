@@ -94,8 +94,8 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
       self._devnull.close()
       self._devnull = None
 
-  def CreateForwarder(self, host_port):
-    return DoNothingForwarder(host_port)
+  def CreateForwarder(self, *ports):
+    return DoNothingForwarder(ports[0])
 
 class DoNothingForwarder(object):
   def __init__(self, host_port):

@@ -127,25 +127,24 @@ def HasForwarder(adb, buildtype=None):
           os.path.exists(os.path.join('out', buildtype, 'host_forwarder')))
 
 class Forwarder(object):
-  def __init__(self, adb, host_port):
+  def __init__(self, adb, *ports):
     assert HasForwarder(adb)
 
-    port_pairs = [(host_port, host_port), ]
+    port_pairs = [(port, port) for port in ports]
     tool = valgrind_tools.BaseTool()
 
-    self._host_port = host_port
+    self._host_port = ports[0]
     buildtype = 'Debug'
     if HasForwarder(adb, 'Release'):
       buildtype = 'Release'
     self._forwarder = forwarder.Forwarder(
         adb.Adb(), port_pairs,
         tool, '127.0.0.1', buildtype)
-    self._device_port = self._forwarder.DevicePortForHostPort(self._host_port)
 
   @property
   def url(self):
     assert self._forwarder
-    return 'http://localhost:%i' % self._device_port
+    return 'http://localhost:%i' % self._host_port
 
   def Close(self):
     if self._forwarder:

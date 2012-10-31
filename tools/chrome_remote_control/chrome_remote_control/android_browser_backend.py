@@ -121,7 +121,5 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
     pids = self._adb.ExtractPid(self._package)
     return len(pids) != 0
 
-  def CreateForwarder(self, host_port):
-    return adb_commands.Forwarder(self._adb, host_port)
-
-
+  def CreateForwarder(self, *ports):
+    return adb_commands.Forwarder(self._adb, *ports)

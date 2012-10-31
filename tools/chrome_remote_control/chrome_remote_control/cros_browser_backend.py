@@ -146,20 +146,20 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
       return False
     return self._proc.IsAlive()
 
-  def CreateForwarder(self, host_port):
+  def CreateForwarder(self, *ports):
     assert self._cri
-    return SSHReverseForwarder(self._cri,
-                               host_port)
+    return SSHReverseForwarder(self._cri, *ports)
+
 
 class SSHReverseForwarder(object):
-  def __init__(self, cri, host_port):
+  def __init__(self, cri, *ports):
     self._proc = None
-    self._host_port = host_port
+    self._host_port = ports[0]
 
     self._proc = subprocess.Popen(
       cri.FormSSHCommandLine(['sleep', '99999999999'],
                              ['-R%i:localhost:%i' %
-                              (host_port, host_port)]),
+                              (port, port) for port in ports]),
       stdout=subprocess.PIPE,
       stderr=subprocess.PIPE,
       stdin=subprocess.PIPE,
