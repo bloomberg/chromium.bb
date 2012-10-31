@@ -115,7 +115,6 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 {
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
-	xcb_generic_error_t *error;
 	struct xkb_rule_names names;
 	struct xkb_keymap *ret;
 	const char *value_all, *value_part;
@@ -125,7 +124,7 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 
 	cookie = xcb_get_property(c->conn, 0, c->screen->root,
 				  c->atom.xkb_names, c->atom.string, 0, 1024);
-	reply = xcb_get_property_reply(c->conn, cookie, &error);
+	reply = xcb_get_property_reply(c->conn, cookie, NULL);
 	if (reply == NULL)
 		return NULL;
 
@@ -217,6 +216,7 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 	error = xcb_request_check(c->conn, select);
 	if (error) {
 		weston_log("error: failed to select for XKB state events\n");
+		free(error);
 		return;
 	}
 
@@ -227,19 +227,18 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 				       0,
 				       0,
 				       0);
-	pcf_reply = xcb_xkb_per_client_flags_reply(c->conn, pcf, &error);
-	free(pcf_reply);
-	if (error) {
+	pcf_reply = xcb_xkb_per_client_flags_reply(c->conn, pcf, NULL);
+	if (!pcf_reply) {
 		weston_log("failed to set XKB per-client flags, not using "
 			   "detectable repeat\n");
 		return;
 	}
+	free(pcf_reply);
 
 	state = xcb_xkb_get_state(c->conn, XCB_XKB_ID_USE_CORE_KBD);
-	state_reply = xcb_xkb_get_state_reply(c->conn, state, &error);
-	if (error) {
+	state_reply = xcb_xkb_get_state_reply(c->conn, state, NULL);
+	if (!state_reply) {
 		weston_log("failed to get initial XKB state\n");
-		free(state_reply);
 		return;
 	}
 
