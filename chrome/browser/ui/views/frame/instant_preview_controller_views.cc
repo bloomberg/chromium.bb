@@ -46,7 +46,6 @@ void InstantPreviewControllerViews::ShowInstant(TabContents* preview,
                         preview->web_contents(),
                         height, units);
   preview_container_->SetWebContents(preview->web_contents());
-  browser_view_->RestackLocationBarContainer();
 }
 
 void InstantPreviewControllerViews::HideInstant() {

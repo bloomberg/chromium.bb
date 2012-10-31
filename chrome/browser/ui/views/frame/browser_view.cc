@@ -66,7 +66,6 @@
 #include "chrome/browser/ui/views/frame/instant_preview_controller_views.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
@@ -1463,11 +1462,6 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
   // Update all the UI bits.
   UpdateTitleBar();
 
-  // Restacking needs to happen after other UI updates. This restores special
-  // "widget" stacking that governs the SearchViewController's NTP "content"
-  // area.
-  RestackLocationBarContainer();
-
   // No need to update Toolbar because it's already updated in
   // browser.cc.
 }
@@ -1956,7 +1950,7 @@ void BrowserView::Init() {
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
 
-  toolbar_->Init(this);
+  toolbar_->Init();
 
   preview_controller_.reset(
       new InstantPreviewControllerViews(browser(), this, contents_));
@@ -1993,8 +1987,6 @@ void BrowserView::Init() {
     jumplist_->AddObserver(browser_->profile());
   }
 #endif
-
-  ReorderChildView(toolbar_->location_bar_container(), child_count() - 1);
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
@@ -2545,25 +2537,6 @@ void BrowserView::ShowPasswordGenerationBubble(
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);
   bubble->Show();
-}
-
-void BrowserView::RestackLocationBarContainer() {
-  if (preview_controller_ && preview_controller_->preview_container() &&
-      preview_controller_->preview_container()->web_contents()) {
-#if defined(USE_AURA)
-    // Keep the preview on top so that a doodle can be shown on the NTP in
-    // InstantExtended mode.
-    ui::Layer* native_view_layer =
-        preview_controller_->preview_container()->web_contents()->
-            GetNativeView()->layer();
-    native_view_layer->parent()->StackAtTop(native_view_layer);
-#else
-  // TODO(mad): http://crbug.com/156866 Properly stack views.
-#endif
-  }
-
-  toolbar_->location_bar_container()->StackAtTop();
-  infobar_container_->StackAtTop();
 }
 
 bool BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)()) {

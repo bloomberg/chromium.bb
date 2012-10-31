@@ -215,8 +215,7 @@ LocationBarView::LocationBarView(Browser* browser,
       instant_extended_api_enabled_(
           chrome::search::IsInstantExtendedAPIEnabled(profile_)),
       template_url_service_(NULL),
-      animation_offset_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(view_to_focus_(this)) {
+      animation_offset_(0) {
   set_id(VIEW_ID_LOCATION_BAR);
 
   if (mode_ == NORMAL) {
@@ -647,14 +646,14 @@ void LocationBarView::SetLocationEntryFocusable(bool focusable) {
   if (omnibox_views)
     omnibox_views->SetLocationEntryFocusable(focusable);
   else
-    view_to_focus_->set_focusable(focusable);
+    set_focusable(focusable);
 }
 
 bool LocationBarView::IsLocationEntryFocusableInRootView() const {
   OmniboxViewViews* omnibox_views = GetOmniboxViewViews(location_entry_.get());
   if (omnibox_views)
     return omnibox_views->IsLocationEntryFocusableInRootView();
-  return view_to_focus_->IsFocusable();
+  return views::View::IsFocusable();
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
@@ -1166,7 +1165,7 @@ void LocationBarView::OnSetFocus() {
     NOTREACHED();
     return;
   }
-  focus_manager->SetFocusedView(view_to_focus_);
+  focus_manager->SetFocusedView(this);
 }
 
 gfx::Image LocationBarView::GetFavicon() const {

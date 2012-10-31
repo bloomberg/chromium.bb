@@ -416,12 +416,6 @@ class BrowserView : public BrowserWindow,
   // which layout is being shown and whether we are full-screen.
   int GetOTRIconResourceID() const;
 
-  // Forces the LocationBarContainer to the top of the native window stacking
-  // order. This is needed for the Instant extended API when the location bar
-  // can be placed over web contents.
-  // Used by |InstantPreviewControllerViews| which manages the instant preview.
-  void RestackLocationBarContainer();
-
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
   // can be traversed using F6, in the order they should be traversed.

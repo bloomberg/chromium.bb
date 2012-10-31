@@ -246,10 +246,6 @@ class LocationBarView : public LocationBar,
 
   const gfx::Font& font() const { return font_; }
 
-  // See description above field.
-  void set_view_to_focus(views::View* view) { view_to_focus_ = view; }
-  views::View* view_to_focus() { return view_to_focus_; }
-
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Event Handlers
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
@@ -567,10 +563,6 @@ class LocationBarView : public LocationBar,
 
   // Used to register for notifications received by NotificationObserver.
   content::NotificationRegistrar registrar_;
-
-  // The view to give focus to. This is either |this| or the
-  // LocationBarContainer.
-  views::View* view_to_focus_;
 
 #if defined(USE_AURA)
   // Observer for a fade-in animation.
