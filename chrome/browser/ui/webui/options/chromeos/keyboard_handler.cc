@@ -30,6 +30,7 @@ const char* kDataValuesNames[] = {
   "remapSearchKeyToValue",
   "remapControlKeyToValue",
   "remapAltKeyToValue",
+  "remapCapsLockKeyToValue",
 };
 }  // namespace
 
@@ -56,6 +57,9 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   localized_strings->SetString("remapAltKeyToContent",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_ALT_LABEL));
+  localized_strings->SetString("remapCapsLockKeyToContent",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK_LABEL));
 
   for (size_t i = 0; i < arraysize(kDataValuesNames); ++i) {
     ListValue* list_value = new ListValue();
@@ -65,6 +69,7 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       const int message_id = kModifierKeysSelectItems[j].message_id;
       // Only the seach key can be remapped to the caps lock key.
       if (kDataValuesNames[i] != std::string("remapSearchKeyToValue") &&
+          kDataValuesNames[i] != std::string("remapCapsLockKeyToValue") &&
           value == input_method::kCapsLockKey) {
         continue;
       }

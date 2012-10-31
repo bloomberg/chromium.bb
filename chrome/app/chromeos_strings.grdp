@@ -2042,6 +2042,10 @@ Press any key to continue exploring.
            desc="The label for 'Customize modifier keys' overlay">
     Alt
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK_LABEL"
+           desc="The label for 'Customize modifier keys' overlay">
+    Caps Lock
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH"
            desc="The dropdown list item for 'Customize modifier keys' overlay">
     Search

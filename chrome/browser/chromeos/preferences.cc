@@ -231,6 +231,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kLanguageRemapAltKeyTo,
                              input_method::kAltKey,
                              PrefService::SYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kLanguageRemapCapsLockKeyTo,
+                             input_method::kCapsLockKey,
+                             PrefService::SYNCABLE_PREF);
   // We don't sync the following keyboard prefs since they are not user-
   // configurable.
   prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled,

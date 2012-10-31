@@ -710,6 +710,8 @@ const char kLanguageRemapControlKeyTo[] =
     "settings.language.xkb_remap_control_key_to";
 const char kLanguageRemapAltKeyTo[] =
     "settings.language.xkb_remap_alt_key_to";
+const char kLanguageRemapCapsLockKeyTo[] =
+    "settings.language.remap_caps_lock_key_to";
 
 // A boolean pref which determines whether key repeat is enabled.
 const char kLanguageXkbAutoRepeatEnabled[] =

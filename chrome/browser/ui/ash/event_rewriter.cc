@@ -18,6 +18,7 @@
 #if defined(OS_CHROMEOS)
 #include <X11/extensions/XInput2.h>
 #include <X11/keysym.h>
+#include <X11/XF86keysym.h>
 #include <X11/Xlib.h>
 
 // Get rid of a macro from Xlib.h that conflicts with OwnershipService class.
@@ -73,6 +74,9 @@ const struct ModifierFlagToPrefName {
   int flag;
   const char* pref_name;
 } kModifierFlagToPrefName[] = {
+  // TODO(yusukes): When the device has a Chrome keyboard (i.e. the one without
+  // Caps Lock), we should not check kLanguageRemapCapsLockKeyTo.
+  { Mod3Mask, 0, prefs::kLanguageRemapCapsLockKeyTo },
   { Mod4Mask, 0, prefs::kLanguageRemapSearchKeyTo },
   { ControlMask, ui::EF_CONTROL_DOWN, prefs::kLanguageRemapControlKeyTo },
   { Mod1Mask, ui::EF_ALT_DOWN, prefs::kLanguageRemapAltKeyTo },
@@ -106,6 +110,15 @@ bool IsRight(KeySym native_keysym) {
       break;
   }
   return false;
+}
+
+bool ShouldRemapCapsLock() {
+  // Since both German Neo2 XKB layout and Caps Lock depend on Mod3Mask, it's
+  // not possible to make both features work. For now, we don't remap Mod3Mask
+  // when Neo2 is in use.
+  // TODO(yusukes): Remove the restriction.
+  return InputMethodManager::GetInstance()->GetCurrentInputMethod().id() !=
+      kNeo2LayoutId;
 }
 #endif
 
@@ -342,9 +355,6 @@ void EventRewriter::Rewrite(ui::KeyEvent* event) {
     return;
 #endif
   RewriteModifiers(event);
-  // This should be called after RewriteModifiers(). Otherwise, remapped
-  // Mod3Mask might be re-remapped.
-  RewriteFnKey(event);
   RewriteNumPadKeys(event);
   RewriteBackspaceAndArrowKeys(event);
   // TODO(yusukes): Implement crosbug.com/27167 (allow sending function keys).
@@ -384,7 +394,12 @@ void EventRewriter::GetRemappedModifierMasks(
   if (!pref_service)
     return;
 
+  const bool skip_mod3 = !ShouldRemapCapsLock();
   for (size_t i = 0; i < arraysize(kModifierFlagToPrefName); ++i) {
+    if (skip_mod3 &&
+        (kModifierFlagToPrefName[i].native_modifier == Mod3Mask)) {
+      continue;
+    }
     if (original_native_modifiers &
         kModifierFlagToPrefName[i].native_modifier) {
       const ModifierRemapping* remapped_key =
@@ -408,8 +423,12 @@ void EventRewriter::GetRemappedModifierMasks(
   *remapped_flags =
       (original_flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)) |
       *remapped_flags;
+
+  unsigned int native_mask = Mod4Mask | ControlMask | Mod1Mask;
+  if (!skip_mod3)
+    native_mask |= Mod3Mask;
   *remapped_native_modifiers =
-      (original_native_modifiers & ~(Mod4Mask | ControlMask | Mod1Mask)) |
+      (original_native_modifiers & ~native_mask) |
       *remapped_native_modifiers;
 #endif
 }
@@ -443,9 +462,15 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   ui::KeyboardCode remapped_keycode = event->key_code();
   KeyCode remapped_native_keycode = xkey->keycode;
 
+  const bool skip_mod3 = !ShouldRemapCapsLock();
+
   // First, remap |keysym|.
   const char* pref_name = NULL;
   switch (keysym) {
+    // XF86XK_Launch7 (F16) with Mod3Mask is sent when Caps Lock is pressed.
+    case XF86XK_Launch7:
+      pref_name = skip_mod3 ? NULL : prefs::kLanguageRemapCapsLockKeyTo;
+      break;
     case XK_Super_L:
     case XK_Super_R:
       pref_name = prefs::kLanguageRemapSearchKeyTo;
@@ -498,41 +523,6 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   OverwriteEvent(event,
                  remapped_native_keycode, remapped_native_modifiers,
                  remapped_keycode, remapped_flags);
-  return true;
-#else
-  // TODO(yusukes): Support Ash on other platforms if needed.
-  return false;
-#endif
-}
-
-bool EventRewriter::RewriteFnKey(ui::KeyEvent* event) {
-#if defined(OS_CHROMEOS)
-  // Since both German Neo2 XKB layout and F15 depend on Mod3Mask, it's not
-  // possible to make both features work. For now, we don't remap Mod3Mask to
-  // ControlMask when Neo2 is in use.
-  // TODO(yusukes): Remove the restriction.
-  if (InputMethodManager::GetInstance()->GetCurrentInputMethod().id() ==
-      kNeo2LayoutId) {
-    return false;
-  }
-
-  XEvent* xev = event->native_event();
-  XKeyEvent* xkey = &(xev->xkey);
-
-  int remapped_flags = event->flags();
-  unsigned int remapped_native_modifiers = xkey->state;
-
-  // TODO(yusukes): Add a pref entry for specifying how to remap Fn key, and
-  // check it here if not in guest mode.
-  if (xkey->state & Mod3Mask) {
-    remapped_flags |= ui::EF_CONTROL_DOWN;
-    remapped_native_modifiers =
-        (remapped_native_modifiers & ~Mod3Mask) | ControlMask;
-  }
-
-  OverwriteEvent(event,
-                 xkey->keycode, remapped_native_modifiers,
-                 event->key_code(), remapped_flags);
   return true;
 #else
   // TODO(yusukes): Support Ash on other platforms if needed.

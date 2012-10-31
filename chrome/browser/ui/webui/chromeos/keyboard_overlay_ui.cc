@@ -313,6 +313,8 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
       pref_service->GetInteger(prefs::kLanguageRemapControlKeyTo));
   modifier_map[chromeos::input_method::kAltKey] = static_cast<ModifierKey>(
       pref_service->GetInteger(prefs::kLanguageRemapAltKeyTo));
+  // TODO(mazda): Support prefs::kLanguageRemapCapsLockKeyTo once Caps Lock is
+  // added to the overlay UI.
 
   DictionaryValue dict;
   for (ModifierMap::const_iterator i = modifier_map.begin();
