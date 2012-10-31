@@ -18,6 +18,7 @@ bool Verifier::VerifyBPF(const std::vector<struct sock_filter>& program,
     return false;
   }
   Sandbox::EvaluateSyscall evaluate_syscall = evaluators.begin()->first;
+  void *aux                                 = evaluators.begin()->second;
   for (SyscallIterator iter(false); !iter.Done(); ) {
     uint32_t sysnum = iter.Next();
     // We ideally want to iterate over the full system call range and values
@@ -40,7 +41,7 @@ bool Verifier::VerifyBPF(const std::vector<struct sock_filter>& program,
     }
 #endif
 #endif
-    ErrorCode code = evaluate_syscall(sysnum);
+    ErrorCode code = evaluate_syscall(sysnum, aux);
     uint32_t computed_ret = EvaluateBPF(program, data, err);
     if (*err) {
       return false;

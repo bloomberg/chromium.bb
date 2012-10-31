@@ -223,10 +223,13 @@ class Sandbox {
     ErrorCode failed;
   };
 
-  typedef ErrorCode (*EvaluateSyscall)(int sysno);
-  typedef int       (*EvaluateArguments)(int sysno, int arg,
-                                         Constraint *constraint);
-  typedef std::vector<std::pair<EvaluateSyscall,EvaluateArguments> >Evaluators;
+  // When calling setSandboxPolicy(), the caller can provide an arbitrary
+  // pointer. This pointer will then be forwarded to the sandbox policy
+  // each time a call is made through an EvaluateSyscall function pointer.
+  // One common use case would be to pass the "aux" pointer as an argument
+  // to Trap() functions.
+  typedef ErrorCode (*EvaluateSyscall)(int sysnum, void *aux);
+  typedef std::vector<std::pair<EvaluateSyscall, void *> >Evaluators;
 
   // Checks whether a particular system call number is valid on the current
   // architecture. E.g. on ARM there's a non-contiguous range of private
@@ -249,21 +252,23 @@ class Sandbox {
 
   // The system call evaluator function is called with the system
   // call number. It can decide to allow the system call unconditionally
-  // by returning "0"; it can deny the system call unconditionally by
+  // by returning ERR_ALLOWED; it can deny the system call unconditionally by
   // returning an appropriate "errno" value; or it can request inspection
-  // of system call argument(s) by returning a suitable combination of
-  // SB_INSPECT_ARG_x bits.
-  // The system argument evaluator is called (if needed) to query additional
-  // constraints for the system call arguments. In the vast majority of
-  // cases, it will set a "Constraint" that forces a new "errno" value.
-  // But for more complex filters, it is possible to return another mask
-  // of SB_INSPECT_ARG_x bits.
-  static void setSandboxPolicy(EvaluateSyscall syscallEvaluator,
-                               EvaluateArguments argumentEvaluator);
+  // of system call argument(s) by returning a suitable ErrorCode.
+  // The "aux" parameter can be used to pass optional data to the system call
+  // evaluator. There are different possible uses for this data, but one of the
+  // use cases would be for the policy to then forward this pointer to a Trap()
+  // handler. In this case, of course, the data that is pointed to must remain
+  // valid for the entire time that Trap() handlers can be called; typically,
+  // this would be the lifetime of the program.
+  static void setSandboxPolicy(EvaluateSyscall syscallEvaluator, void *aux);
 
   // We can use ErrorCode to request calling of a trap handler. This method
   // performs the required wrapping of the callback function into an
   // ErrorCode object.
+  // The "aux" field can carry a pointer to arbitrary data. See EvaluateSyscall
+  // for a description of how to pass data from setSandboxPolicy() to a Trap()
+  // handler.
   static ErrorCode Trap(ErrorCode::TrapFnc fnc, const void *aux);
 
   // Kill the program and print an error message.
@@ -300,20 +305,21 @@ class Sandbox {
   // Get a file descriptor pointing to "/proc", if currently available.
   static int proc_fd() { return proc_fd_; }
 
-  static ErrorCode probeEvaluator(int signo) __attribute__((const));
+  static ErrorCode probeEvaluator(int sysnum, void *) __attribute__((const));
   static void      probeProcess(void);
-  static ErrorCode allowAllEvaluator(int sysnum);
+  static ErrorCode allowAllEvaluator(int sysnum, void *aux);
   static void      tryVsyscallProcess(void);
   static bool      kernelSupportSeccompBPF(int proc_fd);
   static bool      RunFunctionInPolicy(void (*function)(),
                                        EvaluateSyscall syscallEvaluator,
+                                       void *aux,
                                        int proc_fd);
   static void      startSandboxInternal(bool quiet);
   static bool      isSingleThreaded(int proc_fd);
   static bool      isDenied(const ErrorCode& code);
   static bool      disableFilesystem();
   static void      policySanityChecks(EvaluateSyscall syscallEvaluator,
-                                      EvaluateArguments argumentEvaluator);
+                                      void *aux);
   static void      installFilter(bool quiet);
   static void      findRanges(Ranges *ranges);
   static Instruction *assembleJumpTable(CodeGen *gen,

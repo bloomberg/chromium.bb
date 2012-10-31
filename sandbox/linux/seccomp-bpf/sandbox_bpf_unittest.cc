@@ -35,9 +35,51 @@ SANDBOX_TEST(SandboxBpf, CallSupportsTwice) {
   Sandbox::supportsSeccompSandbox(-1);
 }
 
+// BPF_TEST does a lot of the boiler-plate code around setting up a
+// policy and optional passing data between the caller, the policy and
+// any Trap() handlers. This is great for writing short and concise tests,
+// and it helps us accidentally forgetting any of the crucial steps in
+// setting up the sandbox. But it wouldn't hurt to have at least one test
+// that explicitly walks through all these steps.
+
+intptr_t FakeGetPid(const struct arch_seccomp_data& args, void *aux) {
+  BPF_ASSERT(aux);
+  pid_t *pid_ptr = static_cast<pid_t *>(aux);
+  return (*pid_ptr)++;
+}
+
+ErrorCode VerboseAPITestingPolicy(int sysno, void *aux) {
+  if (!Sandbox::isValidSyscallNumber(sysno)) {
+    return ErrorCode(ENOSYS);
+  } else if (sysno == __NR_getpid) {
+    return Sandbox::Trap(FakeGetPid, aux);
+  } else {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+}
+
+SANDBOX_TEST(SandboxBpf, VerboseAPITesting) {
+  if (Sandbox::supportsSeccompSandbox(-1) ==
+      playground2::Sandbox::STATUS_AVAILABLE) {
+    pid_t test_var = 0;
+    playground2::Sandbox::setSandboxPolicy(VerboseAPITestingPolicy, &test_var);
+    playground2::Sandbox::startSandbox();
+
+    BPF_ASSERT(test_var == 0);
+    BPF_ASSERT(syscall(__NR_getpid) == 0);
+    BPF_ASSERT(test_var == 1);
+    BPF_ASSERT(syscall(__NR_getpid) == 1);
+    BPF_ASSERT(test_var == 2);
+
+    // N.B.: Any future call to getpid() would corrupt the stack.
+    //       This is OK. The SANDBOX_TEST() macro is guaranteed to
+    //       only ever call _exit() after the test completes.
+  }
+}
+
 // A simple blacklist test
 
-ErrorCode BlacklistNanosleepPolicy(int sysno) {
+ErrorCode BlacklistNanosleepPolicy(int sysno, void *) {
   if (!Sandbox::isValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
@@ -61,7 +103,7 @@ BPF_TEST(SandboxBpf, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
 
 // Now do a simple whitelist test
 
-ErrorCode WhitelistGetpidPolicy(int sysno) {
+ErrorCode WhitelistGetpidPolicy(int sysno, void *) {
   switch (sysno) {
     case __NR_getpid:
     case __NR_exit_group:
@@ -84,11 +126,6 @@ BPF_TEST(SandboxBpf, ApplyBasicWhitelistPolicy, WhitelistGetpidPolicy) {
 
 // A simple blacklist policy, with a SIGSYS handler
 
-// TODO: provide an API to provide the auxiliary data pointer
-// to the evaluator
-
-static int BlacklistNanosleepPolicySigsysAuxData;
-
 intptr_t EnomemHandler(const struct arch_seccomp_data& args, void *aux) {
   // We also check that the auxiliary data is correct
   SANDBOX_ASSERT(aux);
@@ -96,7 +133,7 @@ intptr_t EnomemHandler(const struct arch_seccomp_data& args, void *aux) {
   return -ENOMEM;
 }
 
-ErrorCode BlacklistNanosleepPolicySigsys(int sysno) {
+ErrorCode BlacklistNanosleepPolicySigsys(int sysno, void *aux) {
   if (!Sandbox::isValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
@@ -104,29 +141,27 @@ ErrorCode BlacklistNanosleepPolicySigsys(int sysno) {
 
   switch (sysno) {
     case __NR_nanosleep:
-      return Sandbox::Trap(EnomemHandler,
-                 static_cast<void *>(&BlacklistNanosleepPolicySigsysAuxData));
+      return Sandbox::Trap(EnomemHandler, aux);
     default:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 }
 
 BPF_TEST(SandboxBpf, BasicBlacklistWithSigsys,
-         BlacklistNanosleepPolicySigsys) {
+         BlacklistNanosleepPolicySigsys, int /* BPF_AUX */) {
   // getpid() should work properly
   errno = 0;
   BPF_ASSERT(syscall(__NR_getpid) > 0);
   BPF_ASSERT(errno == 0);
 
   // Our Auxiliary Data, should be reset by the signal handler
-  BlacklistNanosleepPolicySigsysAuxData = -1;
+  BPF_AUX = -1;
   const struct timespec ts = {0, 0};
   BPF_ASSERT(syscall(__NR_nanosleep, &ts, NULL) == -1);
   BPF_ASSERT(errno == ENOMEM);
 
   // We expect the signal handler to modify AuxData
-  BPF_ASSERT(
-      BlacklistNanosleepPolicySigsysAuxData == kExpectedReturnValue);
+  BPF_ASSERT(BPF_AUX == kExpectedReturnValue);
 }
 
 // A more complex, but synthetic policy. This tests the correctness of the BPF
@@ -144,7 +179,7 @@ int SysnoToRandomErrno(int sysno) {
   return ((sysno & ~3) >> 2) % 29 + 1;
 }
 
-ErrorCode SyntheticPolicy(int sysno) {
+ErrorCode SyntheticPolicy(int sysno, void *) {
   if (!Sandbox::isValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
@@ -202,7 +237,7 @@ int ArmPrivateSysnoToErrno(int sysno) {
   }
 }
 
-ErrorCode ArmPrivatePolicy(int sysno) {
+ErrorCode ArmPrivatePolicy(int sysno, void *) {
   if (!Sandbox::isValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);

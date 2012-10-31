@@ -53,7 +53,6 @@
         [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64" '
                            'or target_arch=="arm")', {
           'sources': [
-            'seccomp-bpf/bpf_tests.cc',
             'seccomp-bpf/bpf_tests.h',
             'seccomp-bpf/codegen_unittest.cc',
             'seccomp-bpf/errorcode_unittest.cc',

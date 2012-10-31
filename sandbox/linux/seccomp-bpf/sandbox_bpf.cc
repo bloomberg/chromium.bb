@@ -29,8 +29,8 @@ const int kExpectedExitCode = 100;
 
 // We define a really simple sandbox policy. It is just good enough for us
 // to tell that the sandbox has actually been activated.
-ErrorCode Sandbox::probeEvaluator(int signo) {
-  switch (signo) {
+ErrorCode Sandbox::probeEvaluator(int sysnum, void *) {
+  switch (sysnum) {
   case __NR_getpid:
     // Return EPERM so that we can check that the filter actually ran.
     return ErrorCode(EPERM);
@@ -53,7 +53,7 @@ bool Sandbox::isValidSyscallNumber(int sysnum) {
   return SyscallIterator::IsValid(sysnum);
 }
 
-ErrorCode Sandbox::allowAllEvaluator(int sysnum) {
+ErrorCode Sandbox::allowAllEvaluator(int sysnum, void *) {
   if (!isValidSyscallNumber(sysnum)) {
     return ErrorCode(ENOSYS);
   }
@@ -72,6 +72,7 @@ void Sandbox::tryVsyscallProcess(void) {
 
 bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
                                   EvaluateSyscall syscallEvaluator,
+                                  void *aux,
                                   int proc_fd) {
   // Block all signals before forking a child process. This prevents an
   // attacker from manipulating our test by sending us an unexpected signal.
@@ -126,7 +127,7 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
     }
 
     evaluators_.clear();
-    setSandboxPolicy(syscallEvaluator, NULL);
+    setSandboxPolicy(syscallEvaluator, aux);
     setProcFd(proc_fd);
 
     // By passing "quiet=true" to "startSandboxInternal()" we suppress
@@ -187,9 +188,10 @@ bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
   }
 #endif
 
-  return RunFunctionInPolicy(probeProcess, Sandbox::probeEvaluator, proc_fd) &&
-         RunFunctionInPolicy(tryVsyscallProcess, Sandbox::allowAllEvaluator,
-                             proc_fd);
+  return
+    RunFunctionInPolicy(probeProcess, Sandbox::probeEvaluator, 0, proc_fd) &&
+    RunFunctionInPolicy(tryVsyscallProcess, Sandbox::allowAllEvaluator, 0,
+                        proc_fd);
 }
 
 Sandbox::SandboxStatus Sandbox::supportsSeccompSandbox(int proc_fd) {
@@ -306,10 +308,10 @@ bool Sandbox::isDenied(const ErrorCode& code) {
 }
 
 void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
-                                 EvaluateArguments) {
+                                 void *aux) {
   for (SyscallIterator iter(true); !iter.Done(); ) {
     uint32_t sysnum = iter.Next();
-    if (!isDenied(syscallEvaluator(sysnum))) {
+    if (!isDenied(syscallEvaluator(sysnum, aux))) {
       SANDBOX_DIE("Policies should deny system calls that are outside the "
                   "expected range (typically MIN_SYSCALL..MAX_SYSCALL)");
     }
@@ -317,13 +319,12 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
   return;
 }
 
-void Sandbox::setSandboxPolicy(EvaluateSyscall syscallEvaluator,
-                               EvaluateArguments argumentEvaluator) {
+void Sandbox::setSandboxPolicy(EvaluateSyscall syscallEvaluator, void *aux) {
   if (status_ == STATUS_ENABLED) {
     SANDBOX_DIE("Cannot change policy after sandbox has started");
   }
-  policySanityChecks(syscallEvaluator, argumentEvaluator);
-  evaluators_.push_back(std::make_pair(syscallEvaluator, argumentEvaluator));
+  policySanityChecks(syscallEvaluator, aux);
+  evaluators_.push_back(std::make_pair(syscallEvaluator, aux));
 }
 
 void Sandbox::installFilter(bool quiet) {
@@ -472,12 +473,13 @@ void Sandbox::findRanges(Ranges *ranges) {
   // and then verifying that the rest of the number range (both positive and
   // negative) all return the same ErrorCode.
   EvaluateSyscall evaluateSyscall = evaluators_.begin()->first;
+  void *aux                       = evaluators_.begin()->second;
   uint32_t oldSysnum              = 0;
-  ErrorCode oldErr                = evaluateSyscall(oldSysnum);
-  ErrorCode invalidErr            = evaluateSyscall(MIN_SYSCALL - 1);
+  ErrorCode oldErr                = evaluateSyscall(oldSysnum, aux);
+  ErrorCode invalidErr            = evaluateSyscall(MIN_SYSCALL - 1, aux);
   for (SyscallIterator iter(false); !iter.Done(); ) {
     uint32_t sysnum = iter.Next();
-    ErrorCode err = evaluateSyscall(static_cast<int>(sysnum));
+    ErrorCode err = evaluateSyscall(static_cast<int>(sysnum), aux);
     if (!iter.IsValid(sysnum) && !invalidErr.Equals(err)) {
       // A proper sandbox policy should always treat system calls outside of
       // the range MIN_SYSCALL..MAX_SYSCALL (i.e. anything that returns
