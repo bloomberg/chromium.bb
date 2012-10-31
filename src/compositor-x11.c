@@ -190,6 +190,8 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 	const xcb_query_extension_reply_t *ext;
 	xcb_generic_error_t *error;
 	xcb_void_cookie_t select;
+	xcb_xkb_use_extension_cookie_t use_ext;
+	xcb_xkb_use_extension_reply_t *use_ext_reply;
 	xcb_xkb_per_client_flags_cookie_t pcf;
 	xcb_xkb_per_client_flags_reply_t *pcf_reply;
 	xcb_xkb_get_state_cookie_t state;
@@ -219,6 +221,25 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 		free(error);
 		return;
 	}
+
+	use_ext = xcb_xkb_use_extension(c->conn,
+					XCB_XKB_MAJOR_VERSION,
+					XCB_XKB_MINOR_VERSION);
+	use_ext_reply = xcb_xkb_use_extension_reply(c->conn, use_ext, NULL);
+	if (!use_ext_reply) {
+		weston_log("couldn't start using XKB extension\n");
+		return;
+	}
+
+	if (!use_ext_reply->supported) {
+		weston_log("XKB extension version on the server is too old "
+			   "(want %d.%d, has %d.%d)\n",
+			   XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION,
+			   use_ext_reply->serverMajor, use_ext_reply->serverMinor);
+		free(use_ext_reply);
+		return;
+	}
+	free(use_ext_reply);
 
 	pcf = xcb_xkb_per_client_flags(c->conn,
 				       XCB_XKB_ID_USE_CORE_KBD,
