@@ -249,9 +249,11 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 				       0,
 				       0);
 	pcf_reply = xcb_xkb_per_client_flags_reply(c->conn, pcf, NULL);
-	if (!pcf_reply) {
+	if (!pcf_reply ||
+	    !(pcf_reply->value & XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT)) {
 		weston_log("failed to set XKB per-client flags, not using "
 			   "detectable repeat\n");
+		free(pcf_reply);
 		return;
 	}
 	free(pcf_reply);
