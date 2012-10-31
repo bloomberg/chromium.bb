@@ -10,6 +10,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -19,7 +20,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
 
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(VIEWS_EXPORT,
+                                      views::DesktopNativeWidgetAura*);
+
 namespace views {
+
+DEFINE_WINDOW_PROPERTY_KEY(DesktopNativeWidgetAura*,
+                           kDesktopNativeWidgetAuraKey, NULL);
 
 namespace {
 
@@ -59,6 +66,7 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       desktop_root_window_host_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       native_widget_delegate_(delegate) {
+  window_->SetProperty(kDesktopNativeWidgetAuraKey, this);
 }
 
 DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
@@ -66,6 +74,12 @@ DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
     delete native_widget_delegate_;
   else
     CloseNow();
+}
+
+// static
+DesktopNativeWidgetAura* DesktopNativeWidgetAura::ForWindow(
+    aura::Window* window) {
+  return window->GetProperty(kDesktopNativeWidgetAuraKey);
 }
 
 void DesktopNativeWidgetAura::OnHostClosed() {

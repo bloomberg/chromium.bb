@@ -31,6 +31,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~DesktopNativeWidgetAura();
 
+  // Maps from window to DesktopNativeWidgetAura.
+  static DesktopNativeWidgetAura* ForWindow(aura::Window* window);
+
   // Called by our DesktopRootWindowHost after it has deleted native resources;
   // this is the signal that we should start our shutdown.
   void OnHostClosed();

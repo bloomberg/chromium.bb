@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_screen_position_client.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/views/widget/desktop_native_widget_aura.h"
 
 namespace views {
 
@@ -56,8 +57,14 @@ void DesktopScreenPositionClient::SetBounds(
     window->SetBounds(gfx::Rect(origin, bounds.size()));
     return;
   }
-  root->SetHostBounds(bounds);
-  window->SetBounds(gfx::Rect(bounds.size()));
+  DesktopNativeWidgetAura* desktop_native_widget =
+      DesktopNativeWidgetAura::ForWindow(window);
+  if (desktop_native_widget) {
+    root->SetHostBounds(bounds);
+    // Setting bounds of root resizes |window|.
+  } else {
+    window->SetBounds(bounds);
+  }
 }
 
 }  // namespace views
