@@ -173,14 +173,19 @@ def fix_all(isolated):
   while remaining_test_cases:
     # pylint is confused about with_tempfile.
     # pylint: disable=E1120
+    print(
+        '\nTotal: %5d; Remaining: %5d' % (
+          len(all_test_cases), len(remaining_test_cases)))
     success, failures = run_tests(isolated, remaining_test_cases)
     if success is None:
       print >> sys.stderr, 'Failed to trace test cases'
       return 1
     print(
-        '\nTotal: %5d; Remaining: %5d; Succeeded: %5d; Failed: %5d' % (
+        '\nTotal: %5d; Tried to run: %5d; Ran: %5d; Succeeded: %5d; Failed: %5d'
+        % (
           len(all_test_cases),
           len(remaining_test_cases),
+          len(success) + len(failures),
           len(success),
           len(failures)))
 
@@ -193,10 +198,16 @@ def fix_all(isolated):
       return False
 
     # Test cases that passed to not need to be retried anymore.
-    remaining_test_cases = [i for i in remaining_test_cases if i not in success]
+    remaining_test_cases = [
+      i for i in remaining_test_cases if i not in success and i not in failures
+    ]
+    # Make sure the failures at put at the end. This way if some tests fails
+    # simply because they are broken, and not because of test isolation, the
+    # other tests will still be traced.
+    remaining_test_cases.extend(failures)
 
     # Trace the test cases and update the .isolate file.
-    print('\nTracing the failing tests.')
+    print('\nTracing the %d failing tests.' % len(failures))
     if trace_some(isolated, failures):
       # The tracing itself failed.
       return False
