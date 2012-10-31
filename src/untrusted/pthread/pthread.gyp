@@ -25,6 +25,7 @@
         'nlib_target': 'libpthread.a',
         'build_glibc': 0,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
       },
       'sources': ['<@(common_sources)'],
       'dependencies': [
@@ -38,6 +39,7 @@
         'nlib_target': 'libpthread_private.a',
         'build_glibc': 0,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
       },
       'sources': [
         '<@(common_sources)',

@@ -47,6 +47,8 @@ def RemoveQuotes(opt):
 
 def ArgToList(opt):
   outlist = []
+  if opt is None:
+    return outlist
   optlist = RemoveQuotes(opt).split(' ')
   for optitem in optlist:
     optitem = RemoveQuotes(optitem).replace('\\"', '"')
@@ -100,8 +102,12 @@ class Builder(object):
     if arch in ['x86-32', 'x86-64']:
       self.mainarch = 'x86'
       self.subarch = arch.split('-')[1]
-      tool_subdir = 'x86_64-nacl'
-      self.is_pnacl_toolchain = False
+      if self.outtype == 'translate':
+        self.is_pnacl_toolchain = True
+        tool_subdir = toolname
+      else:
+        self.is_pnacl_toolchain = False
+        tool_subdir = 'x86_64-nacl'
     elif arch == 'arm':
       # For now assume that arm implies pnacl toolchain. But don't assume that
       # elsewhere in this script.
@@ -417,6 +423,20 @@ class Builder(object):
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
 
+  # For now, only support translating a pexe, and not .o file(s)
+  def Translate(self, src):
+    """Translate a pexe to a nexe."""
+    out = self.name
+    if self.verbose:
+      print '\nTranslate %s' % out
+    bin_name = self.GetBinName('pnacl-translate')
+    cmd_line = [bin_name, '-arch', self.arch, src, '-o', out]
+
+    err = self.Run(cmd_line, out)
+    if err:
+      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+    return out
+
   def Archive(self, srcs):
     """Archive these objects with predetermined options and output name."""
     out = self.name
@@ -511,7 +531,9 @@ def Main(argv):
   parser.add_option('-r', '--root', dest='root',
                     help='Set the root directory of the sources')
   parser.add_option('-b', '--build', dest='build',
-                    help='Set build type (newlib, glibc).')
+                    help='Set build type (<toolchain>_<outtype>, ' +
+                    'where toolchain is newlib or glibc and outtype is ' +
+                    'one of nexe, nlib, nso, pexe, or translate)')
   parser.add_option('--compile_flags', dest='compile_flags',
                     help='Set compile flags.')
   parser.add_option('--defines', dest='defines',
@@ -539,6 +561,14 @@ def Main(argv):
 
   build = Builder(options)
   objs = []
+
+  if build.outtype == 'translate':
+    # Just translate a pexe to a nexe
+    if len(files) != 1:
+      ErrOut('Pexe translation requires exactly one input file.')
+    build.Translate(files[0])
+    return 0
+
   for filename in files:
     out = build.Compile(filename)
     if out:

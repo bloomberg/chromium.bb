@@ -70,6 +70,7 @@
           'extra_args': [],
           'enable_x86_32': 1,
           'enable_x86_64': 1,
+          'enable_arm': 0,
           'extra_deps_newlib64': [],
           'extra_deps_newlib32': [],
           'extra_deps_glibc64': [],
@@ -113,6 +114,8 @@
           'build_glibc': 0,
           'disable_glibc%': 1,
           'extra_args': [],
+          'enable_x86_32': 0,
+          'enable_x86_64': 0,
           'enable_arm': 1,
           'extra_deps_newlib_arm': [],
           'lib_dirs_newlib_arm': [],
@@ -677,6 +680,9 @@
     'target_conditions': [
       ['nexe_target!="" and build_pnacl_newlib!=0', {
         'variables': {
+            'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
+            'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
+            'out_pnacl_newlib_arm_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm.nexe',
           'tool_name': 'pnacl_newlib',
           'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
           'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
@@ -685,6 +691,7 @@
           'link_flags': [
             '-O3',
           ],
+          'translate_flags': [],
         },
         'actions': [
           {
@@ -716,8 +723,78 @@
               '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
               '--source-list=^|(<(source_list_pnacl_newlib) ^(_sources) ^(sources))',
             ],
-          },
-        ],
+          }],
+          'target_conditions': [
+            [ 'enable_x86_32!=0', {
+              'actions': [{
+                'action_name': 'translate newlib pexe to x86-32 nexe',
+                'msvs_cygwin_shell': 0,
+                'description': 'translating >(out_pnacl_newlib_x86_32_nexe)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>(out_pnacl_newlib)',
+                ],
+                'outputs': [ '>(out_pnacl_newlib_x86_32_nexe)' ],
+                'action' : [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '--arch', 'x86-32',
+                  '--build', 'newlib_translate',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_pnacl_newlib_x86_32_nexe)',
+                  '--link_flags=>(translate_flags)',
+                  '>(out_pnacl_newlib)',
+                ],
+              }],
+            }],
+            [ 'enable_x86_64!=0', {
+              'actions': [{
+                'action_name': 'translate newlib pexe to x86-64 nexe',
+                'msvs_cygwin_shell': 0,
+                'description': 'translating >(out_pnacl_newlib_x86_64_nexe)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>(out_pnacl_newlib)',
+                ],
+                'outputs': [ '>(out_pnacl_newlib_x86_64_nexe)' ],
+                'action' : [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '--arch', 'x86-64',
+                  '--build', 'newlib_translate',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_pnacl_newlib_x86_64_nexe)',
+                  '--link_flags=>(translate_flags)',
+                  '>(out_pnacl_newlib)',
+                ],
+              }],
+            }],
+            [ 'enable_arm!=0', {
+              'actions': [{
+                'action_name': 'translate newlib pexe to ARM nexe',
+                'msvs_cygwin_shell': 0,
+                'description': 'translating >(out_pnacl_newlib_arm_nexe)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>(out_pnacl_newlib)',
+                ],
+                'outputs': [ '>(out_pnacl_newlib_arm_nexe)' ],
+                'action' : [
+                  '>(python_exe)',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '--arch', 'arm',
+                  '--build', 'newlib_translate',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_pnacl_newlib_arm_nexe)',
+                  '--link_flags=>(translate_flags)',
+                  '>(out_pnacl_newlib)',
+                ],
+              }],
+            }],
+          ],
       }],
       ['nlib_target!="" and build_pnacl_newlib!=0', {
         'variables': {

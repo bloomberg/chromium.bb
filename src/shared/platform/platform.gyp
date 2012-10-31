@@ -160,6 +160,7 @@
         'nso_target': 'libplatform.so',
         'build_glibc': 1,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
         'sources': [
           'nacl_check.c',
           'nacl_log.c',

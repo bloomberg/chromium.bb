@@ -146,7 +146,7 @@ def GetLdrIrtNexe(path, nexe, arch, tool):
 
 def BuildCmdLine(path, nexe, arch, tool):
   (sel_ldr, irt_core, nexe) = GetLdrIrtNexe(path, nexe, arch, tool)
-  if tool == 'newlib':
+  if tool in ('newlib', 'pnacl_newlib'):
     return [sel_ldr, '-B', irt_core, '--', nexe]
 
   # For GLIBC we need to add 'runnable-ld.so' and allow sel_ldr access to
@@ -248,7 +248,7 @@ def Main(argv):
   tools = tools.split(',')
   fail = 0
   for tool in tools:
-    if tool not in ['newlib', 'glibc']:
+    if tool not in ['newlib', 'glibc', 'pnacl_newlib']:
       parser.error('Unknown tool: %s\n' % tool)
 
   path = options.path

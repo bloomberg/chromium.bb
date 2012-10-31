@@ -94,6 +94,55 @@
             },
           ],
         },
+        { # Test the hello world translated from pexe to nexe
+          'target_name': 'test_hello_world_pnacl_x86_64_nexe',
+          'type': 'none',
+          'dependencies': [
+            'hello_world_nexe',
+            'src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
+          ],
+          'variables': {
+            'arch': '--arch=<(target_arch)',
+            'name': '--name=hello_world',
+            'path': '--path=<(PRODUCT_DIR)',
+            'tools': '--tools=pnacl_newlib',
+            'script': '<(DEPTH)/native_client/build/test_build.py',
+          },
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                'src/trusted/service_runtime/service_runtime.gyp:sel_ldr64',
+              ],
+            }],
+          ],
+          'actions': [
+            {
+              'action_name': 'test pnacl nexe build',
+              'msvs_cygwin_shell': 0,
+              'description': 'Testing PNaCl translated Nexe build',
+              'inputs': [
+                '<!@(<(python_exe) <(script) -i <(arch) <(name) <(tools))',
+              ],
+              # Add a bogus output file, to cause this step to always fire.
+              'outputs': [
+                '<(PRODUCT_DIR)/test-output/dont_create_hello_world_pnacl.out'
+              ],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/test_build.py',
+                '-r',
+                '<(arch)',
+                '<(name)',
+                # TODO(bradnelson): Hack here to prevent gyp path ending with \"
+                #               being passed to python which incorrectly
+                #               interprets this as escaped quote.
+                # http://code.google.com/p/chromium/issues/detail?id=141463
+                '<(path)/hack',
+                '<(tools)'
+              ],
+            },
+          ],
+        },
       ],
     }],
   ],
