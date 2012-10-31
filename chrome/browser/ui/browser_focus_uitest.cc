@@ -44,10 +44,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/view_id_util.h"
-#endif
-
 #if defined(OS_WIN)
 #include <Psapi.h>
 #include <windows.h>
