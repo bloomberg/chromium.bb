@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "google/cacheinvalidation/types.pb.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
@@ -59,11 +60,6 @@ bool IsDriveEnabledForProfile(Profile* profile) {
 
   return true;
 }
-
-// The sync invalidation object source ID for Google Drive.
-// TODO(kochi): Remove this constant once this is upstreamed in
-// google-invalidation-api.
-const int kCosmoChangelog = 1014;
 
 // The sync invalidation object ID for Google Drive.
 const char kDriveInvalidationObjectId[] = "CHANGELOG";
@@ -176,8 +172,10 @@ void DriveSystemService::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map,
     syncer::IncomingInvalidationSource source) {
   DCHECK_EQ(1U, invalidation_map.size());
-  const invalidation::ObjectId oid(kCosmoChangelog, kDriveInvalidationObjectId);
-  DCHECK_EQ(1U, invalidation_map.count(oid));
+  const invalidation::ObjectId object_id(
+      ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
+      kDriveInvalidationObjectId);
+  DCHECK_EQ(1U, invalidation_map.count(object_id));
 
   file_system_->CheckForUpdates();
 }
@@ -273,8 +271,9 @@ void DriveSystemService::OnCacheInitialized(bool success) {
     DCHECK(!push_notification_registered_);
     profile_sync_service->RegisterInvalidationHandler(this);
     syncer::ObjectIdSet ids;
-    ids.insert(invalidation::ObjectId(kCosmoChangelog,
-                                      kDriveInvalidationObjectId));
+    ids.insert(invalidation::ObjectId(
+        ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
+        kDriveInvalidationObjectId));
     profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
     push_notification_registered_ = true;
     file_system_->SetPushNotificationEnabled(

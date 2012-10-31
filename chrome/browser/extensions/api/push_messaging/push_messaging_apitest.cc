@@ -16,15 +16,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "google/cacheinvalidation/types.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
-
-// TODO(dcheng): This is hardcoded for now since the svn export is not done yet.
-// Once it's done, use ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING.
-const int kSourceId = 1030;
 
 namespace extensions {
 
@@ -92,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, ReceivesPush) {
   id += extension->id();
   id += "/1";
 
-  invalidation::ObjectId object_id(kSourceId, id);
+  invalidation::ObjectId object_id(
+      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING, id);
 
   pss->EmitInvalidationForTest(object_id, "payload");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
