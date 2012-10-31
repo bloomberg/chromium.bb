@@ -41,6 +41,12 @@ struct ExpectedBooleans {
 
 }  // namespace
 
+TEST_F(MasterPreferencesTest, NoFileToParse) {
+  EXPECT_TRUE(file_util::Delete(prefs_file(), false));
+  installer::MasterPreferences prefs(prefs_file());
+  EXPECT_FALSE(prefs.read_from_file());
+}
+
 TEST_F(MasterPreferencesTest, ParseDistroParams) {
   const char text[] =
     "{ \n"
@@ -71,6 +77,7 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, strlen(text)));
   installer::MasterPreferences prefs(prefs_file());
+  EXPECT_TRUE(prefs.read_from_file());
 
   const char* expected_true[] = {
     installer::master_preferences::kDistroSkipFirstRunPref,
@@ -130,6 +137,7 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, strlen(text)));
   installer::MasterPreferences prefs(prefs_file());
+  EXPECT_TRUE(prefs.read_from_file());
 
   ExpectedBooleans expected_bool[] = {
     { installer::master_preferences::kDistroSkipFirstRunPref, true },

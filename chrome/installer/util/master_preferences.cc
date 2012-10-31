@@ -105,7 +105,8 @@ MasterPreferences::MasterPreferences(const FilePath& prefs_path)
                << prefs_path.value()
                << ". Falling back to default preferences.";
   }
-  InitializeFromString(json_data);
+  if (InitializeFromString(json_data))
+    preferences_read_from_file_ = true;
 }
 
 MasterPreferences::MasterPreferences(const std::string& prefs)
@@ -205,11 +206,13 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
 #endif
 }
 
-void MasterPreferences::InitializeFromString(const std::string& json_data) {
+bool MasterPreferences::InitializeFromString(const std::string& json_data) {
+  bool data_is_valid = true;
   master_dictionary_.reset(ParseDistributionPreferences(json_data));
 
   if (!master_dictionary_.get()) {
     master_dictionary_.reset(new DictionaryValue());
+    data_is_valid = false;
   } else {
     // Cache a pointer to the distribution dictionary.
     master_dictionary_->GetDictionary(
@@ -218,6 +221,7 @@ void MasterPreferences::InitializeFromString(const std::string& json_data) {
 
   InitializeProductFlags();
   EnforceLegacyPreferences();
+  return data_is_valid;
 }
 
 void MasterPreferences::InitializeProductFlags() {

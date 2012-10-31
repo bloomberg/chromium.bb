@@ -189,7 +189,9 @@ class MasterPreferences {
  protected:
   void InitializeFromCommandLine(const CommandLine& cmd_line);
 
-  void InitializeFromString(const std::string& json_data);
+  // Initializes the instance from a given JSON string, returning true if the
+  // string was successfully parsed.
+  bool InitializeFromString(const std::string& json_data);
 
   void InitializeProductFlags();
 
