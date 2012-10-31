@@ -249,12 +249,16 @@ def DoExpandCommandFile(argv, i):
   more_args = []
 
   # Use shlex here to process the response file contents.
-  # this ensures that single and double quoted args are
+  # This ensures that single and double quoted args are
   # handled correctly.  Since this file is very likely
-  # to contain paths with windows path seperators we disable
-  # escape charaters by passing posix=False.
+  # to contain paths with windows path seperators we can't
+  # use the normal shlex.parse() since we need to disable
+  # disable '\' (the default escape char).
   for line in fd:
-    more_args += shlex.split(line, posix=False)
+    lex = shlex.shlex(line, posix=True)
+    lex.escape = ''
+    lex.whitespace_split = True
+    more_args += list(lex)
 
   fd.close()
   if more_args:
