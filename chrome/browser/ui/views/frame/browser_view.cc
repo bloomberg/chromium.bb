@@ -76,7 +76,6 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -279,7 +278,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
         chrome::search::GetToolbarBackgroundColor(profile, search_mode.mode),
         chrome::search::GetTopChromeBackgroundImage(tp,
             is_instant_extended_api_enabled, search_mode.mode,
-            InstantUI::ShouldShowWhiteNTP(profile), &use_ntp_background_theme));
+            true, &use_ntp_background_theme));
     // For instant extended API, only draw bookmark separator for |MODE_DFEAULT|
     // mode.
     if (host_view_->height() >= toolbar_overlap && search_mode.is_default())

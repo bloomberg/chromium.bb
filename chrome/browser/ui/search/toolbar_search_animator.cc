@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/search/toolbar_search_animator_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "ui/base/animation/multi_animation.h"
 
 namespace {
@@ -131,10 +130,10 @@ void ToolbarSearchAnimator::AnimationEnded(const ui::Animation* animation) {
 void ToolbarSearchAnimator::InitBackgroundAnimation() {
   ui::MultiAnimation::Parts parts;
   parts.push_back(ui::MultiAnimation::Part(
-      background_change_delay_ms_ * InstantUI::GetSlowAnimationScaleFactor(),
+      background_change_delay_ms_,
       ui::Tween::ZERO));
   parts.push_back(ui::MultiAnimation::Part(
-      background_change_duration_ms_ * InstantUI::GetSlowAnimationScaleFactor(),
+      background_change_duration_ms_,
       ui::Tween::LINEAR));
   background_animation_.reset(new ui::MultiAnimation(
       parts,

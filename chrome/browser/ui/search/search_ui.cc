@@ -8,7 +8,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "grit/theme_resources.h"
 #include "ui/gfx/font.h"
 
@@ -45,10 +44,7 @@ SkColor GetNTPBackgroundColor(content::BrowserContext* browser_context) {
       !chrome::search::IsInstantExtendedAPIEnabled(profile)) {
     return tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
   }
-  if (InstantUI::ShouldShowWhiteNTP(browser_context))
-    return SK_ColorWHITE;
-  const SkColor kNTPBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
-  return kNTPBackgroundColor;
+  return SK_ColorWHITE;
 }
 
 SkColor GetToolbarBackgroundColor(Profile* profile,

@@ -487,17 +487,6 @@ const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 // Boolean pref indicating if instant is enabled.
 const char kInstantEnabled[] = "instant.enabled";
 
-// Double pref for a scaling factor used to slow down animations.
-const char kInstantUIAnimationScaleFactor[] =
-    "instant_ui.animation_scale_factor";
-
-// Boolean pref indicating if Instant search provider logo should be shown.
-const char kInstantUIShowSearchProviderLogo[] =
-    "instant_ui.show_search_provider_logo";
-
-// Boolean pref indicating a white NTP background is desired.
-const char kInstantUIShowWhiteNTP[] = "instant_ui.show_white_ntp";
-
 // Prefix URL for the experimental Instant ZeroSuggest provider.
 const char kInstantUIZeroSuggestUrlPrefix[] =
     "instant_ui.zero_suggest_url_prefix";

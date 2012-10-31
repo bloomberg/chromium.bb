@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ash_resources.h"
 #include "grit/generated_resources.h"  // Accessibility names
@@ -472,7 +471,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
   gfx::ImageSkia* theme_toolbar =
       chrome::search::GetTopChromeBackgroundImage(tp,
           is_instant_extended_api_enabled, mode,
-          InstantUI::ShouldShowWhiteNTP(profile), &use_ntp_background_theme);
+          true, &use_ntp_background_theme);
 
   // If |use_ntp_background_theme| is true, paint NTP background theme in
   // toolbar, else paint IDR_THEME_TOOLBAR.

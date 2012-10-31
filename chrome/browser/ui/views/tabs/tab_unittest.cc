@@ -56,9 +56,6 @@ class FakeTabController : public TabController {
   virtual bool IsInstantExtendedAPIEnabled() OVERRIDE {
     return false;
   }
-  virtual bool ShouldShowWhiteNTP() OVERRIDE {
-    return false;
-  }
   virtual const gfx::ImageSkiaRep& GetNTPBackgroundTheme(
       ui::ScaleFactor scale_factor) OVERRIDE {
     return ntp_background_theme_.GetRepresentation(ui::SCALE_FACTOR_NONE);

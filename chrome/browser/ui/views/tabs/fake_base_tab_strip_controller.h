@@ -49,7 +49,6 @@ class FakeBaseTabStripController : public TabStripController {
   virtual bool IsIncognito() OVERRIDE;
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
   virtual bool IsInstantExtendedAPIEnabled() OVERRIDE;
-  virtual bool ShouldShowWhiteNTP() OVERRIDE;
 
  private:
   TabStrip* tab_strip_;

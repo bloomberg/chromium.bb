@@ -195,7 +195,6 @@ class TabStrip : public views::View,
                                  const ui::MouseEvent& event) OVERRIDE;
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE;
   virtual bool IsInstantExtendedAPIEnabled() OVERRIDE;
-  virtual bool ShouldShowWhiteNTP() OVERRIDE;
   virtual const gfx::ImageSkiaRep& GetNTPBackgroundTheme(
       ui::ScaleFactor scale_factor) OVERRIDE;
 

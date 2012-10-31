@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -730,7 +729,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   bool use_ntp_background_theme = false;
   gfx::ImageSkia* theme_toolbar = chrome::search::GetTopChromeBackgroundImage(
       tp, is_instant_extended_api_enabled, search_mode,
-      InstantUI::ShouldShowWhiteNTP(profile), &use_ntp_background_theme);
+      true, &use_ntp_background_theme);
 
   // Paint the bottom rect.
   canvas->FillRect(gfx::Rect(x, bottom_y, w, bottom_edge_height),

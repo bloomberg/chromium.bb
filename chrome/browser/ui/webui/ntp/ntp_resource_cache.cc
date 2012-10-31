@@ -163,7 +163,6 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kNtpShownPage, this);
   pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, this);
-  pref_change_registrar_.Add(prefs::kInstantUIShowWhiteNTP, this);
 }
 
 NTPResourceCache::~NTPResourceCache() {}

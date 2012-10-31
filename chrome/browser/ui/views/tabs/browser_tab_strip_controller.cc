@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -376,10 +375,6 @@ void BrowserTabStripController::LayoutTypeMaybeChanged() {
 
 bool BrowserTabStripController::IsInstantExtendedAPIEnabled() {
   return chrome::search::IsInstantExtendedAPIEnabled(browser_->profile());
-}
-
-bool BrowserTabStripController::ShouldShowWhiteNTP() {
-  return InstantUI::ShouldShowWhiteNTP(browser_->profile());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

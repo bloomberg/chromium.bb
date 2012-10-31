@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -311,7 +310,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   bool use_ntp_background_theme = false;
   gfx::ImageSkia* theme_toolbar = chrome::search::GetTopChromeBackgroundImage(
       tp, is_instant_extended_api_enabled, browser->search_model()->mode().mode,
-      InstantUI::ShouldShowWhiteNTP(browser->profile()),
+      true,
       &use_ntp_background_theme);
   gfx::ImageSkia* toolbar_left = tp->GetImageSkiaNamed(
       IDR_CONTENT_TOP_LEFT_CORNER);

@@ -40,22 +40,12 @@ class InstantUIMessageHandler
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  static int slow_animation_scale_factor() {
-    return slow_animation_scale_factor_;
-  }
-
  private:
   void GetPreferenceValue(const base::ListValue* args);
   void SetPreferenceValue(const base::ListValue* args);
 
-  // Slows down Instant animations by a time factor.
-  static int slow_animation_scale_factor_;
-
   DISALLOW_COPY_AND_ASSIGN(InstantUIMessageHandler);
 };
-
-// static
-int InstantUIMessageHandler::slow_animation_scale_factor_ = 1;
 
 InstantUIMessageHandler::InstantUIMessageHandler() {}
 
@@ -77,25 +67,7 @@ void InstantUIMessageHandler::GetPreferenceValue(const base::ListValue* args) {
   if (!args->GetString(0, &pref_name)) return;
 
   base::StringValue pref_name_value(pref_name);
-  if (pref_name == prefs::kInstantUIAnimationScaleFactor) {
-    double value = 0.0;
-#if defined(TOOLKIT_VIEWS)
-    value = slow_animation_scale_factor_;
-#endif
-    base::FundamentalValue arg(value);
-    web_ui()->CallJavascriptFunction(
-        "instantConfig.getPreferenceValueResult", pref_name_value, arg);
-  } else if (pref_name == prefs::kInstantUIShowSearchProviderLogo) {
-    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    base::FundamentalValue arg(prefs->GetBoolean(pref_name.c_str()));
-    web_ui()->CallJavascriptFunction(
-        "instantConfig.getPreferenceValueResult", pref_name_value, arg);
-  } else if (pref_name == prefs::kInstantUIShowWhiteNTP) {
-    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    base::FundamentalValue arg(prefs->GetBoolean(pref_name.c_str()));
-    web_ui()->CallJavascriptFunction(
-        "instantConfig.getPreferenceValueResult", pref_name_value, arg);
-  } else if (pref_name == prefs::kInstantUIZeroSuggestUrlPrefix) {
+  if (pref_name == prefs::kInstantUIZeroSuggestUrlPrefix) {
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     base::StringValue arg(prefs->GetString(pref_name.c_str()));
     web_ui()->CallJavascriptFunction(
@@ -107,30 +79,7 @@ void InstantUIMessageHandler::SetPreferenceValue(const base::ListValue* args) {
   std::string pref_name;
   if (!args->GetString(0, &pref_name)) return;
 
-  if (pref_name == prefs::kInstantUIAnimationScaleFactor) {
-    double value;
-    if (!args->GetDouble(1, &value))
-      return;
-#if defined(TOOLKIT_VIEWS)
-    // Clamp to something reasonable.
-    value = std::max(0.1, std::min(value, 20.0));
-    slow_animation_scale_factor_ = static_cast<int>(value);
-#else
-    NOTIMPLEMENTED();
-#endif  // defined(TOOLKIT_VIEWS)
-  } else if (pref_name == prefs::kInstantUIShowSearchProviderLogo) {
-    bool value;
-    if (!args->GetBoolean(1, &value))
-      return;
-    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    prefs->SetBoolean(pref_name.c_str(), value);
-  } else if (pref_name == prefs::kInstantUIShowWhiteNTP) {
-    bool value;
-    if (!args->GetBoolean(1, &value))
-      return;
-    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    prefs->SetBoolean(pref_name.c_str(), value);
-  } else if (pref_name == prefs::kInstantUIZeroSuggestUrlPrefix) {
+  if (pref_name == prefs::kInstantUIZeroSuggestUrlPrefix) {
     std::string value;
     if (!args->GetString(1, &value))
       return;
@@ -153,32 +102,7 @@ InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-int InstantUI::GetSlowAnimationScaleFactor() {
-  return InstantUIMessageHandler::slow_animation_scale_factor();
-}
-
-// static
-bool InstantUI::ShouldShowSearchProviderLogo(
-    content::BrowserContext* browser_context) {
-  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
-  return prefs->GetBoolean(prefs::kInstantUIShowSearchProviderLogo);
-}
-
-// static
-bool InstantUI::ShouldShowWhiteNTP(
-    content::BrowserContext* browser_context) {
-  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
-  return prefs->GetBoolean(prefs::kInstantUIShowWhiteNTP);
-}
-
-// static
 void InstantUI::RegisterUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterDoublePref(prefs::kInstantUIAnimationScaleFactor, 1.0,
-                                 PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kInstantUIShowSearchProviderLogo, true,
-                                  PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kInstantUIShowWhiteNTP, true,
-                                  PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kInstantUIZeroSuggestUrlPrefix, "",
                                  PrefService::UNSYNCABLE_PREF);
 }

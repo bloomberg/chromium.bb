@@ -20,16 +20,6 @@ class InstantUI : public content::WebUIController {
   // handlers.
   explicit InstantUI(content::WebUI* web_ui);
 
-  // Returns a scale factor to slow down Instant animations.
-  static int GetSlowAnimationScaleFactor();
-
-  // Returns true if search provider logo should be shown.
-  static bool ShouldShowSearchProviderLogo(
-      content::BrowserContext* browser_context);
-
-  // Returns true if the user has enabled the white NTP checkbox.
-  static bool ShouldShowWhiteNTP(content::BrowserContext* browser_context);
-
   static void RegisterUserPrefs(PrefService* user_prefs);
 
  private:

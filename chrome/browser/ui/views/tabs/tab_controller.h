@@ -87,9 +87,6 @@ class TabController {
   // Returns true if Instant Extended API is enabled.
   virtual bool IsInstantExtendedAPIEnabled() = 0;
 
-  // Returns true if Instant Extended is showing white NTP.
-  virtual bool ShouldShowWhiteNTP() = 0;
-
   // Returns the NTP background theme to use for the active tab when Instant
   // Extended API is enabled and theme is used.
   virtual const gfx::ImageSkiaRep& GetNTPBackgroundTheme(

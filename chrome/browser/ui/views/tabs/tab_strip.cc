@@ -1186,10 +1186,6 @@ bool TabStrip::IsInstantExtendedAPIEnabled() {
   return controller_->IsInstantExtendedAPIEnabled();
 }
 
-bool TabStrip::ShouldShowWhiteNTP() {
-  return controller_->ShouldShowWhiteNTP();
-}
-
 const gfx::ImageSkiaRep& TabStrip::GetNTPBackgroundTheme(
     ui::ScaleFactor scale_factor) {
   // If there's no image at all or for requested scale factor, extract it.

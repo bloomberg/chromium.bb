@@ -99,9 +99,6 @@ class TabStripController {
 
   // Returns true if Instant Extended API is enabled.
   virtual bool IsInstantExtendedAPIEnabled() = 0;
-
-  // Returns true if Instant Extended is showing white NTP.
-  virtual bool ShouldShowWhiteNTP() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

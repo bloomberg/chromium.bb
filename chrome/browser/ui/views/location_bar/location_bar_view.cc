@@ -53,7 +53,6 @@
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
-#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/feature_switch.h"
@@ -1025,16 +1024,6 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     // TODO(jamescook): Make the corners of the dropdown match the corners of
     // the omnibox.
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
-    // For instant extended API, we had previously painted the background a gray
-    // color (chrome::search::kNTPBackgroundColor) and/or OS's highligh color
-    // (via |PaintSearchNTPFocusBorder()|).  This colored background will show
-    // through when we next paint the translucent background
-    // (chrome::search::kOmniboxBackgroundColor via LocationBarView::GetColor).
-    //  To prevent this, paint a white background first.
-    if (instant_extended_api_enabled_) {
-      paint.setColor(SK_ColorWHITE);
-      canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
-    }
     // Paint the actual background color.
     paint.setColor(color);
     canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
@@ -1670,8 +1659,7 @@ void LocationBarView::StartFadeAnimation() {
   fade_animation_observer_.reset(new FadeAnimationObserver(this));
   settings.AddObserver(fade_animation_observer_.get());
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(
-          200 * InstantUI::GetSlowAnimationScaleFactor()));
+      base::TimeDelta::FromMilliseconds(200));
   settings.SetTweenType(ui::Tween::LINEAR);
   layer()->SetOpacity(1.f);
 }

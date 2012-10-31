@@ -743,7 +743,7 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas,
   gfx::ImageSkia* tab_background_source =
       chrome::search::GetTopChromeBackgroundImage(GetThemeProvider(),
           is_instant_extended_api_enabled, mode,
-          controller() && controller()->ShouldShowWhiteNTP(),
+          true,
           &use_ntp_background_theme);
 
   gfx::ImageSkia tab_background;
