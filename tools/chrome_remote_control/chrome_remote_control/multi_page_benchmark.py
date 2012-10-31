@@ -13,6 +13,8 @@ sys.path.append(
     os.path.abspath(
         os.path.join(os.path.dirname(__file__),
                      '../../../build/android/pylib')))
+# pylint: disable=F0401
+from perf_tests_helper import GeomMeanAndStdDevFromHistogram
 from perf_tests_helper import PrintPerfResult  # pylint: disable=F0401
 
 class MeasurementFailure(page_test.Failure):
@@ -28,6 +30,7 @@ class BenchmarkResults(page_test.PageTestResults):
     self.page_results = []
     self.field_names = None
     self.field_units = {}
+    self.field_types = {}
 
     self._page = None
     self._page_values = {}
@@ -36,7 +39,7 @@ class BenchmarkResults(page_test.PageTestResults):
     self._page = page
     self._page_values = {}
 
-  def Add(self, name, units, value):
+  def Add(self, name, units, value, data_type='default'):
     assert name not in self._page_values, 'Result names must be unique'
     assert name != 'url', 'The name url cannot be used'
     if self.field_names:
@@ -44,6 +47,7 @@ class BenchmarkResults(page_test.PageTestResults):
 results! You must return the same dict keys every time."""
     else:
       self.field_units[name] = units
+      self.field_types[name] = data_type
     self._page_values[name] = value
 
   def DidMeasurePage(self):
@@ -56,8 +60,15 @@ results! You must return the same dict keys every time."""
     self.page_results.append(self._page_values)
     for name in self.field_names:
       units = self.field_units[name]
+      data_type = self.field_types[name]
       value = self._page_values[name]
-      self.results_summary[(name, units)].append(value)
+      self.results_summary[(name, units, data_type)].append(value)
+
+  def PrintSummary(self, trace_tag):
+    for measurement_units_type, values in self.results_summary.iteritems():
+      measurement, units, data_type = measurement_units_type
+      trace = measurement + (trace_tag or '')
+      PrintPerfResult(measurement, trace, values, units, data_type)
 
 
 class CsvBenchmarkResults(BenchmarkResults):
@@ -79,14 +90,12 @@ class CsvBenchmarkResults(BenchmarkResults):
     row = [self._page.url]
     for name in self.field_names:
       value = self._page_values[name]
-      row.append(value)
+      if self.field_types[name] == 'histogram':
+        avg, _ = GeomMeanAndStdDevFromHistogram(value)
+        row.append(avg)
+      else:
+        row.append(value)
     self._results_writer.writerow(row)
-
-  def PrintSummary(self, trace_tag):
-    for measurement_units, values in self.results_summary.iteritems():
-      measurement, units = measurement_units
-      trace = measurement + (trace_tag or '')
-      PrintPerfResult(measurement, trace, values, units)
 
 
 # TODO(nduca): Rename to page_benchmark
