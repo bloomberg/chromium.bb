@@ -155,8 +155,12 @@ void SpeechRecognitionDispatcher::OnErrorOccurred(
 }
 
 void SpeechRecognitionDispatcher::OnRecognitionEnded(int request_id) {
-  recognizer_client_->didEnd(GetHandleFromID(request_id));
+  WebSpeechRecognitionHandle handle = GetHandleFromID(request_id);
+  // Note: we need to erase the handle from the map *before* calling didEnd.
+  // didEnd may call back synchronously to start a new recognition session,
+  // and we don't want to delete the handle from the map after that happens.
   handle_map_.erase(request_id);
+  recognizer_client_->didEnd(handle);
 }
 
 void SpeechRecognitionDispatcher::OnResultRetrieved(
