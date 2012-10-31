@@ -4,7 +4,6 @@
 
 #include "ash/system/tray/system_tray.h"
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell/panel_window.h"
 #include "ash/shell_window_ids.h"
@@ -16,7 +15,6 @@
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
 #include "ash/system/locale/tray_locale.h"
-#include "ash/system/monitor/tray_monitor.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/power/tray_power.h"
@@ -32,7 +30,6 @@
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -199,12 +196,6 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_caps_lock);
   AddTrayItem(tray_settings);
   AddTrayItem(tray_date);
-
-  // Add memory monitor if enabled.
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(ash::switches::kAshEnableMemoryMonitor))
-    AddTrayItem(new internal::TrayMonitor);
-
   SetVisible(ash::Shell::GetInstance()->tray_delegate()->
       GetTrayVisibilityOnStartup());
 }

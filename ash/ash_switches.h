@@ -24,7 +24,6 @@ ASH_EXPORT extern const char kAshDisableAutoWindowPlacement[];
 ASH_EXPORT extern const char kAshDisablePanelFitting[];
 ASH_EXPORT extern const char kAshDisableBootAnimation2[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
-ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];
 ASH_EXPORT extern const char kAshLauncherPerDisplay[];
