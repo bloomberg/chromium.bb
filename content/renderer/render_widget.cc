@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -112,7 +111,8 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       screen_info_(screen_info),
       device_scale_factor_(1),
       throttle_input_events_(true),
-      next_smooth_scroll_gesture_id_(0) {
+      next_smooth_scroll_gesture_id_(0),
+      is_threaded_compositing_enabled_(false) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
@@ -127,6 +127,9 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
     device_scale_factor_ = static_cast<int>(device_scale_factor_);
   device_scale_factor_ = std::max(1.0f, device_scale_factor_);
 #endif
+  is_threaded_compositing_enabled_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableThreadedCompositing);
 }
 
 RenderWidget::~RenderWidget() {
@@ -209,7 +212,7 @@ void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd) {
 
   if (webwidget_) {
     webwidget_->setCompositorSurfaceReady();
-    if (IsThreadedCompositingEnabled())
+    if (is_threaded_compositing_enabled_)
       webwidget_->enterForceCompositingMode(true);
   }
   DoDeferredUpdate();
@@ -908,7 +911,7 @@ void RenderWidget::DoDeferredUpdate() {
   }
 
   if (!is_accelerated_compositing_active_ &&
-      !IsThreadedCompositingEnabled() &&
+      !is_threaded_compositing_enabled_ &&
       ForceCompositingModeEnabled()) {
     webwidget_->enterForceCompositingMode(true);
   }
@@ -1190,7 +1193,7 @@ void RenderWidget::didDeactivateCompositor() {
   // DoDeferredUpdate() if appropriate. In threaded compositing mode,
   // DoDeferredUpdate() is bypassed and WebKit is responsible for exiting and
   // entering force compositing mode at the appropriate times.
-  if (!IsThreadedCompositingEnabled())
+  if (!is_threaded_compositing_enabled_)
     webwidget_->enterForceCompositingMode(false);
 }
 

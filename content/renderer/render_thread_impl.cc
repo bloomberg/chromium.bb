@@ -39,7 +39,6 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
-#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -562,7 +561,10 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   // The new design can be tracked at: http://crbug.com/134492.
   bool is_guest = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kGuestRenderer);
-  bool enable = IsThreadedCompositingEnabled() && !is_guest;
+  bool threaded = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableThreadedCompositing);
+
+  bool enable = threaded && !is_guest;
   if (enable) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());

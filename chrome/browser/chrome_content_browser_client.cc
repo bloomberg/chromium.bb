@@ -89,6 +89,7 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/compositor_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -96,7 +97,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_descriptors.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -899,6 +899,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       if (!prefs->GetBoolean(prefs::kPrintPreviewDisabled))
         command_line->AppendSwitch(switches::kRendererPrintPreview);
     }
+
+    if (content::IsThreadedCompositingEnabled())
+      command_line->AppendSwitch(switches::kEnableThreadedCompositing);
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {

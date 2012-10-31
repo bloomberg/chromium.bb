@@ -26,7 +26,6 @@
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -152,7 +151,9 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       use_echo_for_swap_ack_(true) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
-  use_echo_for_swap_ack_ = IsThreadedCompositingEnabled();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  use_echo_for_swap_ack_ =
+      command_line.HasSwitch(switches::kEnableThreadedCompositing);
 #endif
 }
 

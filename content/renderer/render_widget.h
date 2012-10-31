@@ -608,6 +608,9 @@ class CONTENT_EXPORT RenderWidget
       PendingSmoothScrollGestureMap;
   PendingSmoothScrollGestureMap pending_smooth_scroll_gestures_;
 
+  // Specified whether the compositor will run in its own thread.
+  bool is_threaded_compositing_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
 

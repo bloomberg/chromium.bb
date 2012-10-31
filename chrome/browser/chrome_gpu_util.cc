@@ -110,21 +110,6 @@ bool ShouldRunCompositingFieldTrial() {
     return false;
 #endif
 
-  const GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
-  content::GpuFeatureType blacklisted_features =
-      gpu_data_manager->GetBlacklistedFeatures();
-
-  // Don't run the field trial if gpu access has been blocked or
-  // accelerated compositing is blacklisted.
-  if (!gpu_data_manager->GpuAccessAllowed() ||
-      blacklisted_features & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
-    return false;
-
-  // The performance of accelerated compositing is too low with software
-  // rendering.
-  if (gpu_data_manager->ShouldUseSoftwareRendering())
-    return false;
-
   // Don't activate the field trial if force-compositing-mode has been
   // explicitly disabled from the command line.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -136,10 +121,15 @@ bool ShouldRunCompositingFieldTrial() {
   return true;
 }
 
-// Note: The compositing field trial may be created at startup time via the
+// Note 1: The compositing field trial may be created at startup time via the
 // Finch framework. In that case, all the Groups and probability values are
 // set before this function is called and any Field Trial setup calls
 // made here are simply ignored.
+// Note 2: Compositing field trials will be overwritten if accelerated
+// compositing is blacklisted. That check takes place in
+// IsThreadedCompositingEnabled() and IsForceCompositingModeEnabled() as
+// the blacklist information isn't available at the time the field trials
+// are initialized.
 // Early outs from this function intended to bypass activation of the field
 // trial must call DisableCompositingFieldTrial() before returning.
 void InitializeCompositingFieldTrial() {

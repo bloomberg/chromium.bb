@@ -2,12 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/compositor_util.h"
+#include "content/public/browser/compositor_util.h"
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+
+namespace {
+
+using content::GpuDataManager;
+
+bool CanDoAcceleratedCompositing() {
+  const GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+  content::GpuFeatureType blacklisted_features =
+      gpu_data_manager->GetBlacklistedFeatures();
+
+  // Don't run the field trial if gpu access has been blocked or
+  // accelerated compositing is blacklisted.
+  if (!gpu_data_manager->GpuAccessAllowed() ||
+      blacklisted_features & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
+    return false;
+
+  // Check for the software rasterizer (SwiftShader).
+  if (gpu_data_manager->ShouldUseSoftwareRendering())
+    return false;
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisableAcceleratedCompositing))
+    return false;
+
+  return true;
+}
+
+}  // namespace
 
 namespace content {
 
@@ -17,11 +46,13 @@ bool IsThreadedCompositingEnabled() {
   return true;
 #endif
 
+  if (!CanDoAcceleratedCompositing())
+    return false;
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over field trials.
-  if (command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
-      command_line.HasSwitch(switches::kDisableForceCompositingMode) ||
+  if (command_line.HasSwitch(switches::kDisableForceCompositingMode) ||
       command_line.HasSwitch(switches::kDisableThreadedCompositing))
     return false;
 
@@ -41,11 +72,13 @@ bool IsForceCompositingModeEnabled() {
   return true;
 #endif
 
+  if (!CanDoAcceleratedCompositing())
+    return false;
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over field trials.
-  if (command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
-      command_line.HasSwitch(switches::kDisableForceCompositingMode))
+  if (command_line.HasSwitch(switches::kDisableForceCompositingMode))
     return false;
 
   if (command_line.HasSwitch(switches::kForceCompositingMode))
@@ -63,4 +96,4 @@ bool IsForceCompositingModeEnabled() {
             content::kGpuCompositingFieldTrialThreadEnabledName);
 }
 
-}  // compositor_util
+}  // namespace content
