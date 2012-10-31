@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/mac/crash_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
@@ -1006,6 +1007,29 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
                                                     const gfx::Size& size) {
   if (is_hidden_)
     return true;
+
+  // TODO(shess) If the view does not have a window, or the window
+  // does not have backing, the IOSurface will log "invalid drawable"
+  // in -setView:.  It is not clear how this code is reached with such
+  // a case, so record some info into breakpad (some subset of
+  // browsers are likely to crash later for unrelated reasons).
+  // http://crbug.com/148882
+  NSWindow* window = [cocoa_view_ window];
+  if ([window windowNumber] <= 0) {
+    NSString* const kCrashKey = @"rwhvm_window";
+    if (!window) {
+      base::mac::SetCrashKeyValue(kCrashKey, @"Missing window");
+    } else {
+      NSString* value =
+          [NSString stringWithFormat:@"window %s delegate %s controller %s",
+                    object_getClassName(window),
+                    object_getClassName([window delegate]),
+                    object_getClassName([window windowController])];
+      base::mac::SetCrashKeyValue(kCrashKey, value);
+    }
+
+    return true;
+  }
 
   if (!compositing_iosurface_.get())
     compositing_iosurface_.reset(CompositingIOSurfaceMac::Create());
