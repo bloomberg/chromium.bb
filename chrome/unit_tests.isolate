@@ -266,6 +266,10 @@
       'test/data/extensions/manifest_tests/init_invalid_script_matches_missing.json',
       'test/data/extensions/manifest_tests/init_invalid_version_invalid.json',
       'test/data/extensions/manifest_tests/init_invalid_version_missing.json',
+      'test/data/extensions/manifest_tests/init_platform_app_csp.json',
+      'test/data/extensions/manifest_tests/init_platform_app_csp_insecure.json',
+      'test/data/extensions/manifest_tests/init_platform_app_csp_warning_1.json',
+      'test/data/extensions/manifest_tests/init_platform_app_csp_warning_2.json',
       'test/data/extensions/manifest_tests/init_valid_app_minimum_chrome.json',
       'test/data/extensions/manifest_tests/init_valid_app_requirements.json',
       'test/data/extensions/manifest_tests/init_valid_empty_page_actions.json',
@@ -746,10 +750,6 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
-          'test/data/extensions/manifest_tests/init_platform_app_csp.json',
-          'test/data/extensions/manifest_tests/init_platform_app_csp_insecure.json',
-          'test/data/extensions/manifest_tests/init_platform_app_csp_warning_1.json',
-          'test/data/extensions/manifest_tests/init_platform_app_csp_warning_2.json',
         ],
         'isolate_dependency_untracked': [
           'test/data/firefox2_nss/',
