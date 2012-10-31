@@ -15,6 +15,7 @@
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/rect.h"
 #include <public/WebCompositorOutputSurfaceClient.h>
 
 namespace cc {
@@ -121,7 +122,7 @@ public:
         FrameData();
         ~FrameData();
 
-        std::vector<IntRect> occludingScreenSpaceRects;
+        std::vector<gfx::Rect> occludingScreenSpaceRects;
         RenderPassList renderPasses;
         RenderPassIdHashMap renderPassesById;
         LayerList* renderSurfaceLayerList;

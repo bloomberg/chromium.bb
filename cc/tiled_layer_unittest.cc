@@ -29,8 +29,8 @@ namespace {
 class TestOcclusionTracker : public OcclusionTracker {
 public:
     TestOcclusionTracker()
-        : OcclusionTracker(IntRect(0, 0, 1000, 1000), true)
-        , m_layerClipRectInTarget(IntRect(0, 0, 1000, 1000))
+        : OcclusionTracker(gfx::Rect(0, 0, 1000, 1000), true)
+        , m_layerClipRectInTarget(gfx::Rect(0, 0, 1000, 1000))
     {
         // Pretend we have visited a render surface.
         m_stack.append(StackObject());
@@ -39,10 +39,10 @@ public:
     void setOcclusion(const Region& occlusion) { m_stack.last().occlusionInTarget = occlusion; }
 
 protected:
-    virtual IntRect layerClipRectInTarget(const Layer* layer) const OVERRIDE { return m_layerClipRectInTarget; }
+    virtual gfx::Rect layerClipRectInTarget(const Layer* layer) const OVERRIDE { return m_layerClipRectInTarget; }
 
 private:
-    IntRect m_layerClipRectInTarget;
+    gfx::Rect m_layerClipRectInTarget;
 };
 
 class TiledLayerTest : public testing::Test {

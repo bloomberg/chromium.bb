@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/rect.h"
 #include "FloatRect.h"
-#include "IntRect.h"
 #include <vector>
 
 namespace cc {
@@ -56,7 +56,7 @@ public:
     ~DebugRectHistory();
 
     // Note: Saving debug rects must happen before layers' change tracking is reset.
-    void saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<IntRect>& occludingScreenSpaceRects, const LayerTreeSettings&);
+    void saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<gfx::Rect>& occludingScreenSpaceRects, const LayerTreeSettings&);
 
     const std::vector<DebugRect>& debugRects() { return m_debugRects; }
 
@@ -67,7 +67,7 @@ private:
     void savePropertyChangedRects(const std::vector<LayerImpl*>& renderSurfaceLayerList);
     void saveSurfaceDamageRects(const std::vector<LayerImpl* >& renderSurfaceLayerList);
     void saveScreenSpaceRects(const std::vector<LayerImpl* >& renderSurfaceLayerList);
-    void saveOccludingRects(const std::vector<IntRect>& occludingScreenSpaceRects);
+    void saveOccludingRects(const std::vector<gfx::Rect>& occludingScreenSpaceRects);
 
     std::vector<DebugRect> m_debugRects;
 

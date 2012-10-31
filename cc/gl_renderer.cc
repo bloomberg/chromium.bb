@@ -457,7 +457,7 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame,
     DCHECK(!frame.currentTexture);
 
     // FIXME: Do a single readback for both the surface and replica and cache the filtered results (once filter textures are not reused).
-    gfx::Rect deviceRect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().boundingBox()));
+    gfx::Rect deviceRect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(contentsDeviceTransform, cc::FloatRect(sharedGeometryQuad().boundingBox())));
 
     int top, right, bottom, left;
     filters.getOutsets(top, right, bottom, left);
@@ -552,7 +552,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     LayerQuad deviceLayerEdges = LayerQuad(deviceQuad);
 
     // Use anti-aliasing programs only when necessary.
-    bool useAA = (!deviceQuad.isRectilinear() || !deviceQuad.boundingBox().isExpressibleAsIntRect());
+    bool useAA = (!deviceQuad.isRectilinear() || !cc::FloatRect(deviceQuad.boundingBox()).isExpressibleAsIntRect());
     if (useAA) {
         deviceLayerBounds.inflateAntiAliasingDistance();
         deviceLayerEdges.inflateAntiAliasingDistance();

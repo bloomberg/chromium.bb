@@ -5,7 +5,6 @@
 #ifndef CCOcclusionTrackerTestCommon_h
 #define CCOcclusionTrackerTestCommon_h
 
-#include "IntRect.h"
 #include "Region.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/render_surface.h"
@@ -17,7 +16,7 @@ namespace WebKitTests {
 template<typename LayerType, typename RenderSurfaceType>
 class TestOcclusionTrackerBase : public cc::OcclusionTrackerBase<LayerType, RenderSurfaceType> {
 public:
-    TestOcclusionTrackerBase(cc::IntRect screenScissorRect, bool recordMetricsForFrame = false)
+    TestOcclusionTrackerBase(gfx::Rect screenScissorRect, bool recordMetricsForFrame = false)
         : cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>(screenScissorRect, recordMetricsForFrame)
     {
     }

@@ -43,7 +43,11 @@ public:
     FloatPoint(WebCore::FloatPoint point)
         : WebCore::FloatPoint(point.x(), point.y())
     {
+    }
 
+    explicit FloatPoint(gfx::PointF point)
+        : WebCore::FloatPoint(point.x(), point.y())
+    {
     }
 
     operator gfx::PointF() const { return gfx::PointF(x(), y()); }

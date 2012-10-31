@@ -47,14 +47,14 @@ SharedQuadState* QuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> shar
     return m_currentSharedQuadState;
 }
 
-static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const IntRect& culledRect, QuadList& quadList, const OcclusionTrackerImpl& occlusionTracker, bool createDebugBorderQuads)
+static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::Rect& culledRect, QuadList& quadList, const OcclusionTrackerImpl& occlusionTracker, bool createDebugBorderQuads)
 {
-    bool keepQuad = !culledRect.isEmpty();
+    bool keepQuad = !culledRect.IsEmpty();
     if (keepQuad)
         drawQuad->setQuadVisibleRect(culledRect);
 
-    occlusionTracker.overdrawMetrics().didCullForDrawing(drawQuad->quadTransform(), cc::IntRect(drawQuad->quadRect()), culledRect);
-    occlusionTracker.overdrawMetrics().didDraw(drawQuad->quadTransform(), culledRect, cc::IntRect(drawQuad->opaqueRect()));
+    occlusionTracker.overdrawMetrics().didCullForDrawing(drawQuad->quadTransform(), cc::IntRect(drawQuad->quadRect()), cc::IntRect(culledRect));
+    occlusionTracker.overdrawMetrics().didDraw(drawQuad->quadTransform(), cc::IntRect(culledRect), cc::IntRect(drawQuad->opaqueRect()));
 
     if (keepQuad) {
         if (createDebugBorderQuads && !drawQuad->isDebugQuad() && drawQuad->quadVisibleRect() != drawQuad->quadRect()) {
@@ -75,7 +75,7 @@ bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQu
     DCHECK(!m_sharedQuadStateList.isEmpty());
     DCHECK(m_sharedQuadStateList.last() == m_currentSharedQuadState);
 
-    IntRect culledRect;
+    gfx::Rect culledRect;
     bool hasOcclusionFromOutsideTargetSurface;
     bool implDrawTransformIsUnknown = false;
 

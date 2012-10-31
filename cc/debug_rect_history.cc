@@ -26,7 +26,7 @@ DebugRectHistory::~DebugRectHistory()
 {
 }
 
-void DebugRectHistory::saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<IntRect>& occludingScreenSpaceRects, const LayerTreeSettings& settings)
+void DebugRectHistory::saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const std::vector<gfx::Rect>& occludingScreenSpaceRects, const LayerTreeSettings& settings)
 {
     // For now, clear all rects from previous frames. In the future we may want to store
     // all debug rects for a history of many frames.
@@ -113,10 +113,10 @@ void DebugRectHistory::saveScreenSpaceRects(const std::vector<LayerImpl* >& rend
     }
 }
 
-void DebugRectHistory::saveOccludingRects(const std::vector<IntRect>& occludingRects)
+void DebugRectHistory::saveOccludingRects(const std::vector<gfx::Rect>& occludingRects)
 {
     for (size_t i = 0; i < occludingRects.size(); ++i)
-        m_debugRects.push_back(DebugRect(OccludingRectType, occludingRects[i]));
+        m_debugRects.push_back(DebugRect(OccludingRectType, cc::IntRect(occludingRects[i])));
 }
 
 }  // namespace cc

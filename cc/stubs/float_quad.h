@@ -61,6 +61,25 @@ public:
         : WebCore::FloatQuad(WebCore::FloatRect(rect.x(), rect.y(), rect.width(), rect.height()))
     {
     }
+
+    FloatQuad(const gfx::PointF& p1, const gfx::PointF& p2, const gfx::PointF& p3, const gfx::PointF& p4)
+        : WebCore::FloatQuad(cc::FloatPoint(p1), cc::FloatPoint(p2), cc::FloatPoint(p3), cc::FloatPoint(p4))
+    {
+    }
+
+    cc::FloatPoint p1() const { return cc::FloatPoint(WebCore::FloatQuad::p1()); }
+    cc::FloatPoint p2() const { return cc::FloatPoint(WebCore::FloatQuad::p2()); }
+    cc::FloatPoint p3() const { return cc::FloatPoint(WebCore::FloatQuad::p3()); }
+    cc::FloatPoint p4() const { return cc::FloatPoint(WebCore::FloatQuad::p4()); }
+
+    void setP1(gfx::PointF p) { WebCore::FloatQuad::setP1(cc::FloatPoint(p)); }
+    void setP2(gfx::PointF p) { WebCore::FloatQuad::setP2(cc::FloatPoint(p)); }
+    void setP3(gfx::PointF p) { WebCore::FloatQuad::setP3(cc::FloatPoint(p)); }
+    void setP4(gfx::PointF p) { WebCore::FloatQuad::setP4(cc::FloatPoint(p)); }
+
+    gfx::RectF boundingBox() const { return cc::FloatRect(WebCore::FloatQuad::boundingBox()); }
+
+    bool containsPoint(gfx::PointF p) { return WebCore::FloatQuad::containsPoint(cc::FloatPoint(p)); }
 };
 
 }
