@@ -1,11 +1,7 @@
 {
   "name": "push_messaging",
   "version": "1.0",
-  "app": {
-    "background": {
-      "scripts": ["background.js"]
-    }
-  },
+  "manifest_version": 2,
   "description": "Tests push messaging API.",
   "permissions": ["pushMessaging"]
 }
