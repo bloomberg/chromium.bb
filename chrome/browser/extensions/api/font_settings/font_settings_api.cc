@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/api/font_settings.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/pref_names_util.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -55,7 +56,6 @@ const char kOnMinimumFontSizeChanged[] =
 
 // Format for font name preference paths.
 const char kWebKitFontPrefFormat[] = "webkit.webprefs.fonts.%s.%s";
-const char kWebKitFontPrefPrefix[] = "webkit.webprefs.fonts.";
 
 // Gets the font name preference path for |generic_family| and |script|. If
 // |script| is NULL, uses prefs::kWebKitCommonScript.
@@ -68,22 +68,6 @@ std::string GetFontNamePrefPath(fonts::GenericFamily generic_family_enum,
   return StringPrintf(kWebKitFontPrefFormat,
                       generic_family.c_str(),
                       script.c_str());
-}
-
-// Extracts the generic family and script from font name pref path |pref_path|.
-bool ParseFontNamePrefPath(std::string pref_path,
-                           std::string* generic_family,
-                           std::string* script) {
-  if (!StartsWithASCII(pref_path, kWebKitFontPrefPrefix, true))
-    return false;
-
-  size_t start = strlen(kWebKitFontPrefPrefix);
-  size_t pos = pref_path.find('.', start);
-  if (pos == std::string::npos || pos + 1 == pref_path.length())
-    return false;
-  *generic_family = pref_path.substr(start, pos - start);
-  *script = pref_path.substr(pos + 1);
-  return true;
 }
 
 // Returns the localized name of a font so that it can be matched within the
@@ -177,7 +161,8 @@ void FontSettingsEventRouter::Observe(
 
   std::string generic_family;
   std::string script;
-  if (ParseFontNamePrefPath(pref_name, &generic_family, &script)) {
+  if (pref_names_util::ParseFontNamePrefPath(pref_name, &generic_family,
+                                             &script)) {
     OnFontNamePrefChanged(pref_service, pref_name, generic_family, script,
                           incognito);
     return;

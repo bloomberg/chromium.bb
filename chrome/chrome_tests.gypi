@@ -2136,6 +2136,7 @@
         'common/multi_process_lock_unittest.cc',
         'common/net/url_util_unittest.cc',
         'common/net/x509_certificate_model_unittest.cc',
+        'common/pref_names_util_unittest.cc',
         'common/service_process_util_unittest.cc',
         'common/switch_utils_unittest.cc',
         'common/thumbnail_score_unittest.cc',

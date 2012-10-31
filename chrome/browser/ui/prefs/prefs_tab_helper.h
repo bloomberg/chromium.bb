@@ -45,6 +45,7 @@ class PrefsTabHelper : public content::NotificationObserver,
   void UpdateRendererPreferences();
 
   Profile* GetProfile();
+  void OnWebPrefChanged(const std::string& pref_name);
 
   content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;

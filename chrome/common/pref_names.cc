@@ -165,20 +165,6 @@ const char kWebKitOldCursiveFontFamily[] =
     "webkit.webprefs.cursive_font_family";
 const char kWebKitOldFantasyFontFamily[] =
     "webkit.webprefs.fantasy_font_family";
-const char kWebKitStandardFontFamilyMap[] =
-    "webkit.webprefs.fonts.standard";
-const char kWebKitFixedFontFamilyMap[] =
-    "webkit.webprefs.fonts.fixed";
-const char kWebKitSerifFontFamilyMap[] =
-    "webkit.webprefs.fonts.serif";
-const char kWebKitSansSerifFontFamilyMap[] =
-    "webkit.webprefs.fonts.sansserif";
-const char kWebKitCursiveFontFamilyMap[] =
-    "webkit.webprefs.fonts.cursive";
-const char kWebKitFantasyFontFamilyMap[] =
-    "webkit.webprefs.fonts.fantasy";
-const char kWebKitPictographFontFamilyMap[] =
-    "webkit.webprefs.fonts.pictograph";
 
 // If these change, the corresponding enums in the extension API
 // experimental.fontSettings.json must also change.
@@ -205,7 +191,23 @@ const char* const kWebKitScriptsForFontFamilyMaps[] = {
 const size_t kWebKitScriptsForFontFamilyMapsLength =
     arraysize(kWebKitScriptsForFontFamilyMaps);
 
-// WebKit preferences.
+// Strings for WebKit font family preferences. If these change, the pref prefix
+// in pref_names_util.cc and the pref format in font_settings_api.cc must also
+// change.
+const char kWebKitStandardFontFamilyMap[] =
+    "webkit.webprefs.fonts.standard";
+const char kWebKitFixedFontFamilyMap[] =
+    "webkit.webprefs.fonts.fixed";
+const char kWebKitSerifFontFamilyMap[] =
+    "webkit.webprefs.fonts.serif";
+const char kWebKitSansSerifFontFamilyMap[] =
+    "webkit.webprefs.fonts.sansserif";
+const char kWebKitCursiveFontFamilyMap[] =
+    "webkit.webprefs.fonts.cursive";
+const char kWebKitFantasyFontFamilyMap[] =
+    "webkit.webprefs.fonts.fantasy";
+const char kWebKitPictographFontFamilyMap[] =
+    "webkit.webprefs.fonts.pictograph";
 const char kWebKitStandardFontFamilyArabic[] =
     "webkit.webprefs.fonts.standard.Arab";
 const char kWebKitFixedFontFamilyArabic[] =
@@ -265,6 +267,7 @@ const char kWebKitSerifFontFamilyTraditionalHan[] =
 const char kWebKitSansSerifFontFamilyTraditionalHan[] =
     "webkit.webprefs.fonts.sansserif.Hant";
 
+// WebKit preferences.
 const char kWebKitWebSecurityEnabled[] = "webkit.webprefs.web_security_enabled";
 const char kWebKitDomPasteEnabled[] = "webkit.webprefs.dom_paste_enabled";
 const char kWebKitShrinksStandaloneImagesToFit[] =

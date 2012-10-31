@@ -268,6 +268,8 @@
         'common/password_generation_util.h',
         'common/pepper_flash.cc',
         'common/pepper_flash.h',
+        'common/pref_names_util.cc',
+        'common/pref_names_util.h',
         'common/print_messages.cc',
         'common/print_messages.h',
         'common/profiling.cc',
