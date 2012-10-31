@@ -62,7 +62,6 @@ scoped_ptr<SharedQuadState> createSharedQuadState()
 
 void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copySharedState)
 {
-    EXPECT_EQ(quad->size(), copy->size());
     EXPECT_EQ(quad->material(), copy->material());
     EXPECT_EQ(quad->isDebugQuad(), copy->isDebugQuad());
     EXPECT_RECT_EQ(quad->quadRect(), copy->quadRect());

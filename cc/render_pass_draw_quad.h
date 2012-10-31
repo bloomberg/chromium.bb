@@ -41,8 +41,6 @@ private:
     float m_maskTexCoordScaleY;
     float m_maskTexCoordOffsetX;
     float m_maskTexCoordOffsetY;
-
-    DISALLOW_COPY_AND_ASSIGN(RenderPassDrawQuad);
 };
 
 }

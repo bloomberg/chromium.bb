@@ -27,8 +27,6 @@ private:
     VideoLayerImpl::FramePlane m_yPlane;
     VideoLayerImpl::FramePlane m_uPlane;
     VideoLayerImpl::FramePlane m_vPlane;
-
-    DISALLOW_COPY_AND_ASSIGN(YUVVideoDrawQuad);
 };
 
 }

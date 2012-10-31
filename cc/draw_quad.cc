@@ -17,6 +17,14 @@
 #include "cc/tile_draw_quad.h"
 #include "cc/yuv_video_draw_quad.h"
 
+namespace {
+
+template<typename T> T* TypedCopy(const cc::DrawQuad* other) {
+    return new T(*T::materialCast(other));
+}
+
+}
+
 namespace cc {
 
 DrawQuad::DrawQuad(const SharedQuadState* sharedQuadState, Material material, const gfx::Rect& quadRect)
@@ -46,47 +54,40 @@ void DrawQuad::setQuadVisibleRect(gfx::Rect quadVisibleRect)
     m_quadVisibleRect = gfx::IntersectRects(quadVisibleRect, m_quadRect);
 }
 
-unsigned DrawQuad::size() const
-{
-    switch (material()) {
-    case Checkerboard:
-        return sizeof(CheckerboardDrawQuad);
-    case DebugBorder:
-        return sizeof(DebugBorderDrawQuad);
-    case IOSurfaceContent:
-        return sizeof(IOSurfaceDrawQuad);
-    case TextureContent:
-        return sizeof(TextureDrawQuad);
-    case SolidColor:
-        return sizeof(SolidColorDrawQuad);
-    case TiledContent:
-        return sizeof(TileDrawQuad);
-    case StreamVideoContent:
-        return sizeof(StreamVideoDrawQuad);
-    case RenderPass:
-        return sizeof(RenderPassDrawQuad);
-    case YUVVideoContent:
-        return sizeof(YUVVideoDrawQuad);
-    case Invalid:
-        break;
-    }
-
-    CRASH();
-    return sizeof(DrawQuad);
-}
-
 scoped_ptr<DrawQuad> DrawQuad::copy(const SharedQuadState* copiedSharedQuadState) const
 {
-    // RenderPass quads have their own copy() method.
-    DCHECK(material() != RenderPass);
-
-    unsigned bytes = size();
-    DCHECK(bytes > 0);
-
-    scoped_ptr<DrawQuad> copyQuad(reinterpret_cast<DrawQuad*>(new char[bytes]));
-    memcpy(copyQuad.get(), this, bytes);
+    scoped_ptr<DrawQuad> copyQuad;
+    switch (material()) {
+    case Checkerboard:
+        copyQuad.reset(TypedCopy<CheckerboardDrawQuad>(this));
+        break;
+    case DebugBorder:
+        copyQuad.reset(TypedCopy<DebugBorderDrawQuad>(this));
+        break;
+    case IOSurfaceContent:
+        copyQuad.reset(TypedCopy<IOSurfaceDrawQuad>(this));
+        break;
+    case TextureContent:
+        copyQuad.reset(TypedCopy<TextureDrawQuad>(this));
+        break;
+    case SolidColor:
+        copyQuad.reset(TypedCopy<SolidColorDrawQuad>(this));
+        break;
+    case TiledContent:
+        copyQuad.reset(TypedCopy<TileDrawQuad>(this));
+        break;
+    case StreamVideoContent:
+        copyQuad.reset(TypedCopy<StreamVideoDrawQuad>(this));
+        break;
+    case YUVVideoContent:
+        copyQuad.reset(TypedCopy<YUVVideoDrawQuad>(this));
+        break;
+    case RenderPass:  // RenderPass quads have their own copy() method.
+    case Invalid:
+        CRASH();
+        break;
+    }
     copyQuad->setSharedQuadState(copiedSharedQuadState);
-
     return copyQuad.Pass();
 }
 

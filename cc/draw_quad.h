@@ -55,10 +55,6 @@ public:
 
     Material material() const { return m_material; }
 
-    // Returns transfer size of this object based on the derived class (by
-    // looking at the material type).
-    unsigned size() const;
-
     scoped_ptr<DrawQuad> copy(const SharedQuadState* copiedSharedQuadState) const;
 
     const SharedQuadState* sharedQuadState() const { return m_sharedQuadState; }
