@@ -82,12 +82,9 @@ void ExternalPolicyLoader::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
       if (content::Source<PrefService>(source).ptr() == profile_->GetPrefs()) {
-        std::string* pref_name = content::Details<std::string>(details).ptr();
-        if (*pref_name == prefs::kExtensionInstallForceList) {
-          StartLoading();
-        } else {
-          NOTREACHED() << "Unexpected preference name.";
-        }
+        DCHECK_EQ(std::string(prefs::kExtensionInstallForceList),
+                  *content::Details<std::string>(details).ptr());
+        StartLoading();
       }
       break;
     }

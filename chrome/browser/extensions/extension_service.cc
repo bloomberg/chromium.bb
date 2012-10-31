@@ -2582,14 +2582,13 @@ void ExtensionService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name = content::Details<std::string>(details).ptr();
-      if (*pref_name == prefs::kExtensionInstallAllowList ||
-          *pref_name == prefs::kExtensionInstallDenyList) {
-        IdentifyAlertableExtensions();
-        CheckManagementPolicy();
-      } else {
-        NOTREACHED() << "Unexpected preference name.";
-      }
+      const std::string& pref_name =
+          *content::Details<std::string>(details).ptr();
+      DCHECK(pref_name == prefs::kExtensionInstallAllowList ||
+             pref_name == prefs::kExtensionInstallDenyList)
+          << "Unexpected preference name " << pref_name;
+      IdentifyAlertableExtensions();
+      CheckManagementPolicy();
       break;
     }
     case chrome::NOTIFICATION_IMPORT_FINISHED: {

@@ -280,33 +280,30 @@ void DefaultProvider::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+  DCHECK_EQ(content::Source<PrefService>(source).ptr(), prefs_);
 
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(prefs_, content::Source<PrefService>(source).ptr());
-    if (updating_preferences_)
-      return;
+  if (updating_preferences_)
+    return;
 
-    std::string* name = content::Details<std::string>(details).ptr();
-    if (*name == prefs::kDefaultContentSettings) {
-      ReadDefaultSettings(true);
-    } else if (*name == prefs::kGeolocationDefaultContentSetting) {
-      MigrateObsoleteGeolocationPref();
-      // Return and don't send a notifications. Migrating the obsolete
-      // geolocation pref will change the prefs::kDefaultContentSettings and
-      // cause the notification to be fired.
-      return;
-    } else {
-      NOTREACHED() << "Unexpected preference observed";
-      return;
-    }
-
-    NotifyObservers(ContentSettingsPattern(),
-                    ContentSettingsPattern(),
-                    CONTENT_SETTINGS_TYPE_DEFAULT,
-                    std::string());
+  const std::string& name = *content::Details<std::string>(details).ptr();
+  if (name == prefs::kDefaultContentSettings) {
+    ReadDefaultSettings(true);
+  } else if (name == prefs::kGeolocationDefaultContentSetting) {
+    MigrateObsoleteGeolocationPref();
+    // Return and don't send a notifications. Migrating the obsolete
+    // geolocation pref will change the prefs::kDefaultContentSettings and
+    // cause the notification to be fired.
+    return;
   } else {
-    NOTREACHED() << "Unexpected notification";
+    NOTREACHED() << "Unexpected preference observed";
+    return;
   }
+
+  NotifyObservers(ContentSettingsPattern(),
+                  ContentSettingsPattern(),
+                  CONTENT_SETTINGS_TYPE_DEFAULT,
+                  std::string());
 }
 
 void DefaultProvider::ReadDefaultSettings(bool overwrite) {

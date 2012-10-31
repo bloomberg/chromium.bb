@@ -222,26 +222,20 @@ void PrefProvider::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+  DCHECK_EQ(content::Source<PrefService>(source).ptr(), prefs_);
+  DCHECK_EQ(std::string(prefs::kContentSettingsPatternPairs),
+            *content::Details<std::string>(details).ptr());
 
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(prefs_, content::Source<PrefService>(source).ptr());
-    if (updating_preferences_)
-      return;
+  if (updating_preferences_)
+    return;
 
-    std::string* name = content::Details<std::string>(details).ptr();
-    if (*name != prefs::kContentSettingsPatternPairs) {
-      NOTREACHED() << "Unexpected preference observed";
-      return;
-    }
-    ReadContentSettingsFromPref(true);
+  ReadContentSettingsFromPref(true);
 
-    NotifyObservers(ContentSettingsPattern(),
-                    ContentSettingsPattern(),
-                    CONTENT_SETTINGS_TYPE_DEFAULT,
-                    std::string());
-  } else {
-    NOTREACHED() << "Unexpected notification";
-  }
+  NotifyObservers(ContentSettingsPattern(),
+                  ContentSettingsPattern(),
+                  CONTENT_SETTINGS_TYPE_DEFAULT,
+                  std::string());
 }
 
 PrefProvider::~PrefProvider() {

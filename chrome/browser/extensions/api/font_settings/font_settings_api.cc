@@ -158,30 +158,27 @@ void FontSettingsEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_PREF_CHANGED) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
 
   PrefService* pref_service = content::Source<PrefService>(source).ptr();
   bool incognito = (pref_service != profile_->GetPrefs());
   // We're only observing pref changes on the regular profile.
   DCHECK(!incognito);
-  const std::string* pref_name =
-      content::Details<const std::string>(details).ptr();
+  const std::string& pref_name =
+      *content::Details<const std::string>(details).ptr();
 
-  PrefEventMap::iterator iter = pref_event_map_.find(*pref_name);
+  PrefEventMap::iterator iter = pref_event_map_.find(pref_name);
   if (iter != pref_event_map_.end()) {
     const std::string& event_name = iter->second.first;
     const std::string& key = iter->second.second;
-    OnFontPrefChanged(pref_service, *pref_name, event_name, key, incognito);
+    OnFontPrefChanged(pref_service, pref_name, event_name, key, incognito);
     return;
   }
 
   std::string generic_family;
   std::string script;
-  if (ParseFontNamePrefPath(*pref_name, &generic_family, &script)) {
-    OnFontNamePrefChanged(pref_service, *pref_name, generic_family, script,
+  if (ParseFontNamePrefPath(pref_name, &generic_family, &script)) {
+    OnFontNamePrefChanged(pref_service, pref_name, generic_family, script,
                           incognito);
     return;
   }

@@ -257,13 +257,9 @@ void PreferenceEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    const std::string* pref_key =
-        content::Details<const std::string>(details).ptr();
-    OnPrefChanged(content::Source<PrefService>(source).ptr(), *pref_key);
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+  OnPrefChanged(content::Source<PrefService>(source).ptr(),
+                *content::Details<const std::string>(details).ptr());
 }
 
 void PreferenceEventRouter::OnPrefChanged(PrefService* pref_service,

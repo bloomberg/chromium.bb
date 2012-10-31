@@ -411,16 +411,10 @@ void ComponentLoader::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    const std::string* name =
-        content::Details<const std::string>(details).ptr();
-    if (*name == prefs::kEnterpriseWebStoreURL)
-      AddOrReloadEnterpriseWebStore();
-    else
-      NOTREACHED();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+  DCHECK_EQ(std::string(prefs::kEnterpriseWebStoreURL),
+            *content::Details<const std::string>(details).ptr());
+  AddOrReloadEnterpriseWebStore();
 }
 
 // static
