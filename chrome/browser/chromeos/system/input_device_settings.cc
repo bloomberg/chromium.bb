@@ -134,6 +134,11 @@ void SetThreeFingerSwipe(bool enabled) {
   SetTPControl("three_finger_swipe", enabled);
 }
 
+void SetTapDragging(bool enabled) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  SetTPControl("tap_dragging", enabled);
+}
+
 }  // namespace touchpad_settings
 
 namespace mouse_settings {

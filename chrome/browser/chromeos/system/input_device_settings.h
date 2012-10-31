@@ -20,7 +20,7 @@ void TouchpadExists(const DeviceExistsCallback& callback);
 // Sets the touchpad sensitivity in the range [1, 5].
 void SetSensitivity(int value);
 
-// Turns tap to click on / off.
+// Turns tap to click on/off.
 void SetTapToClick(bool enabled);
 
 // Switch for three-finger click.
@@ -28,6 +28,9 @@ void SetThreeFingerClick(bool enabled);
 
 // Switch for three-finger swipe.
 void SetThreeFingerSwipe(bool enabled);
+
+// Turns tap-dragging on/off.
+void SetTapDragging(bool enabled);
 
 }  // namespace touchpad_settings
 
