@@ -54,10 +54,10 @@ GLfloat polygon_offset_factor;
 GLfloat polygon_offset_units;
 GLclampf sample_coverage_value;
 GLboolean sample_coverage_invert;
-GLfloat scissor_x;
-GLfloat scissor_y;
-GLfloat scissor_width;
-GLfloat scissor_height;
+GLint scissor_x;
+GLint scissor_y;
+GLsizei scissor_width;
+GLsizei scissor_height;
 GLenum stencil_front_func;
 GLint stencil_front_ref;
 GLuint stencil_front_mask;
@@ -72,10 +72,10 @@ GLenum stencil_front_z_pass_op;
 GLenum stencil_back_fail_op;
 GLenum stencil_back_z_fail_op;
 GLenum stencil_back_z_pass_op;
-GLfloat viewport_x;
-GLfloat viewport_y;
-GLfloat viewport_width;
-GLfloat viewport_height;
+GLint viewport_x;
+GLint viewport_y;
+GLsizei viewport_width;
+GLsizei viewport_height;
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_CONTEXT_STATE_AUTOGEN_H_
 

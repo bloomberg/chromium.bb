@@ -370,26 +370,26 @@ _STATES = {
       # NOTE: These defaults reset at GLES2DecoderImpl::Initialization.
       {
         'name': 'scissor_x',
-        'type': 'GLfloat',
-        'default': '0.0f',
+        'type': 'GLint',
+        'default': '0',
         'expected': 'kViewportX',
       },
       {
         'name': 'scissor_y',
-        'type': 'GLfloat',
-        'default': '0.0f',
+        'type': 'GLint',
+        'default': '0',
         'expected': 'kViewportY',
       },
       {
         'name': 'scissor_width',
-        'type': 'GLfloat',
-        'default': '1.0f',
+        'type': 'GLsizei',
+        'default': '1',
         'expected': 'kViewportWidth',
       },
       {
         'name': 'scissor_height',
-        'type': 'GLfloat',
-        'default': '1.0f',
+        'type': 'GLsizei',
+        'default': '1',
         'expected': 'kViewportHeight',
       },
     ],
@@ -402,26 +402,26 @@ _STATES = {
       # NOTE: These defaults reset at GLES2DecoderImpl::Initialization.
       {
         'name': 'viewport_x',
-        'type': 'GLfloat',
-        'default': '0.0f',
+        'type': 'GLint',
+        'default': '0',
         'expected': 'kViewportX',
       },
       {
         'name': 'viewport_y',
-        'type': 'GLfloat',
-        'default': '0.0f',
+        'type': 'GLint',
+        'default': '0',
         'expected': 'kViewportY',
       },
       {
         'name': 'viewport_width',
-        'type': 'GLfloat',
-        'default': '1.0f',
+        'type': 'GLsizei',
+        'default': '1',
         'expected': 'kViewportWidth',
       },
       {
         'name': 'viewport_height',
-        'type': 'GLfloat',
-        'default': '1.0f',
+        'type': 'GLsizei',
+        'default': '1',
         'expected': 'kViewportHeight',
       },
     ],
@@ -1972,6 +1972,10 @@ _FUNCTION_INFO = {
                   'GLenumVertexAttribType type, GLboolean normalized, '
                   'GLsizei stride, GLuint offset',
       'client_test': False,
+  },
+  'Scissor': {
+    'type': 'StateSet',
+    'state': 'Scissor',
   },
   'Viewport': {
     'decoder_func': 'DoViewport',
@@ -6603,38 +6607,43 @@ bool GLES2DecoderImpl::DoIsEnabled(GLenum cap) {
       return false;
   }
 }
-
-bool GLES2DecoderImpl::GetState(
-    GLenum pname, GLint* params, GLsizei* num_written) {
-  switch (pname) {
 """)
-    for state_name in _STATES.keys():
-      state = _STATES[state_name]
-      if 'enum' in state:
-        file.Write("    case %s:\n" % state['enum'])
-        file.Write("      *num_written = %d;\n" % len(state['states']))
-        file.Write("      if (params) {\n")
-        for ndx,item in enumerate(state['states']):
-          file.Write("        params[%d] = state_.%s;\n" % (ndx, item['name']))
-        file.Write("      }\n")
-        file.Write("      return true;\n")
-      else:
-        for item in state['states']:
-          file.Write("    case %s:\n" % item['enum'])
-          file.Write("      *num_written = 1;\n")
+    for gl_type in ["GLint", "GLfloat"]:
+      file.Write("""
+bool GLES2DecoderImpl::GetStateAs%s(
+    GLenum pname, %s* params, GLsizei* num_written) {
+  switch (pname) {
+""" % (gl_type, gl_type))
+      for state_name in _STATES.keys():
+        state = _STATES[state_name]
+        if 'enum' in state:
+          file.Write("    case %s:\n" % state['enum'])
+          file.Write("      *num_written = %d;\n" % len(state['states']))
           file.Write("      if (params) {\n")
-          file.Write("        params[0] = state_.%s;\n" % item['name'])
+          for ndx,item in enumerate(state['states']):
+            file.Write("        params[%d] = static_cast<%s>(state_.%s);\n" %
+                       (ndx, gl_type, item['name']))
           file.Write("      }\n")
           file.Write("      return true;\n")
-    for capability in _CAPABILITY_FLAGS:
-          file.Write("    case GL_%s:\n" % capability['name'].upper())
-          file.Write("      *num_written = 1;\n")
-          file.Write("      if (params) {\n")
-          file.Write("        params[0] = state_.enable_flags.%s;\n" %
-                     capability['name'])
-          file.Write("      }\n")
-          file.Write("      return true;\n")
-    file.Write("""    default:
+        else:
+          for item in state['states']:
+            file.Write("    case %s:\n" % item['enum'])
+            file.Write("      *num_written = 1;\n")
+            file.Write("      if (params) {\n")
+            file.Write("        params[0] = static_cast<%s>(state_.%s);\n" %
+                       (gl_type, item['name']))
+            file.Write("      }\n")
+            file.Write("      return true;\n")
+      for capability in _CAPABILITY_FLAGS:
+            file.Write("    case GL_%s:\n" % capability['name'].upper())
+            file.Write("      *num_written = 1;\n")
+            file.Write("      if (params) {\n")
+            file.Write("        params[0] = static_cast<%s>("
+                       "state_.enable_flags.%s);\n" %
+                       (gl_type, capability['name']))
+            file.Write("      }\n")
+            file.Write("      return true;\n")
+      file.Write("""    default:
       return false;
   }
 }

@@ -972,7 +972,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Helper for glGetBooleanv, glGetFloatv and glGetIntegerv
   bool GetHelper(GLenum pname, GLint* params, GLsizei* num_written);
   // Same as GetHelper except for auto-generated state.
-  bool GetState(GLenum pname, GLint* params, GLsizei* num_written);
+  bool GetStateAsGLint(GLenum pname, GLint* params, GLsizei* num_written);
+  bool GetStateAsGLfloat(GLenum pname, GLfloat* params, GLsizei* num_written);
 
   // Wrapper for glCreateProgram
   bool CreateProgramHelper(GLuint client_id);
@@ -3587,9 +3588,6 @@ bool GLES2DecoderImpl::GetHelper(
         return true;
       }
   }
-  if (GetState(pname, params, num_written)) {
-    return true;
-  }
   switch (pname) {
     case GL_MAX_VIEWPORT_DIMS:
       if (offscreen_target_frame_buffer_.get()) {
@@ -3851,15 +3849,20 @@ bool GLES2DecoderImpl::GetHelper(
 
 bool GLES2DecoderImpl::GetNumValuesReturnedForGLGet(
     GLenum pname, GLsizei* num_values) {
+  if (GetStateAsGLint(pname, NULL, num_values)) {
+    return true;
+  }
   return GetHelper(pname, NULL, num_values);
 }
 
 void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
   DCHECK(params);
   GLsizei num_written = 0;
-  if (GetHelper(pname, NULL, &num_written)) {
+  if (GetNumValuesReturnedForGLGet(pname, &num_written)) {
     scoped_array<GLint> values(new GLint[num_written]);
-    GetHelper(pname, values.get(), &num_written);
+    if (!GetStateAsGLint(pname, values.get(), &num_written)) {
+      GetHelper(pname, values.get(), &num_written);
+    }
     for (GLsizei ii = 0; ii < num_written; ++ii) {
       params[ii] = static_cast<GLboolean>(values[ii]);
     }
@@ -3871,21 +3874,24 @@ void GLES2DecoderImpl::DoGetBooleanv(GLenum pname, GLboolean* params) {
 void GLES2DecoderImpl::DoGetFloatv(GLenum pname, GLfloat* params) {
   DCHECK(params);
   GLsizei num_written = 0;
-  if (GetHelper(pname, NULL, &num_written)) {
-    scoped_array<GLint> values(new GLint[num_written]);
-    GetHelper(pname, values.get(), &num_written);
-    for (GLsizei ii = 0; ii < num_written; ++ii) {
-      params[ii] = static_cast<GLfloat>(values[ii]);
+  if (!GetStateAsGLfloat(pname, params, &num_written)) {
+    if (GetHelper(pname, NULL, &num_written)) {
+      scoped_array<GLint> values(new GLint[num_written]);
+      GetHelper(pname, values.get(), &num_written);
+      for (GLsizei ii = 0; ii < num_written; ++ii) {
+        params[ii] = static_cast<GLfloat>(values[ii]);
+      }
+    } else {
+      glGetFloatv(pname, params);
     }
-  } else {
-    glGetFloatv(pname, params);
   }
 }
 
 void GLES2DecoderImpl::DoGetIntegerv(GLenum pname, GLint* params) {
   DCHECK(params);
   GLsizei num_written;
-  if (!GetHelper(pname, params, &num_written)) {
+  if (!GetStateAsGLint(pname, params, &num_written) &&
+      !GetHelper(pname, params, &num_written)) {
     glGetIntegerv(pname, params);
   }
 }
@@ -8385,7 +8391,8 @@ error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
   GLint* start = results;
   for (GLuint ii = 0; ii < count; ++ii) {
     GLsizei num_written = 0;
-    if (!GetHelper(enums[ii], results, &num_written)) {
+    if (!GetStateAsGLint(enums[ii], results, &num_written) &&
+        !GetHelper(enums[ii], results, &num_written)) {
       glGetIntegerv(enums[ii], results);
     }
     results += num_written;

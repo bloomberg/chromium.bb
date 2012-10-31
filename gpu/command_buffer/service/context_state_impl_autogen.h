@@ -54,10 +54,10 @@ void ContextState::Initialize() {
   polygon_offset_units = 0.0f;
   sample_coverage_value = 1.0f;
   sample_coverage_invert = false;
-  scissor_x = 0.0f;
-  scissor_y = 0.0f;
-  scissor_width = 1.0f;
-  scissor_height = 1.0f;
+  scissor_x = 0;
+  scissor_y = 0;
+  scissor_width = 1;
+  scissor_height = 1;
   stencil_front_func = GL_ALWAYS;
   stencil_front_ref = 0;
   stencil_front_mask = 0xFFFFFFFFU;
@@ -72,10 +72,10 @@ void ContextState::Initialize() {
   stencil_back_fail_op = GL_KEEP;
   stencil_back_z_fail_op = GL_KEEP;
   stencil_back_z_pass_op = GL_KEEP;
-  viewport_x = 0.0f;
-  viewport_y = 0.0f;
-  viewport_width = 1.0f;
-  viewport_height = 1.0f;
+  viewport_x = 0;
+  viewport_y = 0;
+  viewport_width = 1;
+  viewport_height = 1;
 }
 
 void ContextState::InitCapabilities() {

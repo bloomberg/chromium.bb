@@ -1507,6 +1507,10 @@ error::Error GLES2DecoderImpl::HandleScissor(
     SetGLError(GL_INVALID_VALUE, "glScissor", "height < 0");
     return error::kNoError;
   }
+  state_.scissor_x = x;
+  state_.scissor_y = y;
+  state_.scissor_width = width;
+  state_.scissor_height = height;
   glScissor(x, y, width, height);
   return error::kNoError;
 }
@@ -3036,299 +3040,603 @@ bool GLES2DecoderImpl::DoIsEnabled(GLenum cap) {
   }
 }
 
-bool GLES2DecoderImpl::GetState(
+bool GLES2DecoderImpl::GetStateAsGLint(
     GLenum pname, GLint* params, GLsizei* num_written) {
   switch (pname) {
     case GL_VIEWPORT:
       *num_written = 4;
       if (params) {
-        params[0] = state_.viewport_x;
-        params[1] = state_.viewport_y;
-        params[2] = state_.viewport_width;
-        params[3] = state_.viewport_height;
+        params[0] = static_cast<GLint>(state_.viewport_x);
+        params[1] = static_cast<GLint>(state_.viewport_y);
+        params[2] = static_cast<GLint>(state_.viewport_width);
+        params[3] = static_cast<GLint>(state_.viewport_height);
       }
       return true;
     case GL_BLEND_SRC_RGB:
       *num_written = 1;
       if (params) {
-        params[0] = state_.blend_source_rgb;
+        params[0] = static_cast<GLint>(state_.blend_source_rgb);
       }
       return true;
     case GL_BLEND_DST_RGB:
       *num_written = 1;
       if (params) {
-        params[0] = state_.blend_dest_rgb;
+        params[0] = static_cast<GLint>(state_.blend_dest_rgb);
       }
       return true;
     case GL_BLEND_SRC_ALPHA:
       *num_written = 1;
       if (params) {
-        params[0] = state_.blend_source_alpha;
+        params[0] = static_cast<GLint>(state_.blend_source_alpha);
       }
       return true;
     case GL_BLEND_DST_ALPHA:
       *num_written = 1;
       if (params) {
-        params[0] = state_.blend_dest_alpha;
+        params[0] = static_cast<GLint>(state_.blend_dest_alpha);
       }
       return true;
     case GL_LINE_WIDTH:
       *num_written = 1;
       if (params) {
-        params[0] = state_.line_width;
+        params[0] = static_cast<GLint>(state_.line_width);
       }
       return true;
     case GL_BLEND_COLOR:
       *num_written = 4;
       if (params) {
-        params[0] = state_.blend_color_red;
-        params[1] = state_.blend_color_green;
-        params[2] = state_.blend_color_blue;
-        params[3] = state_.blend_color_alpha;
+        params[0] = static_cast<GLint>(state_.blend_color_red);
+        params[1] = static_cast<GLint>(state_.blend_color_green);
+        params[2] = static_cast<GLint>(state_.blend_color_blue);
+        params[3] = static_cast<GLint>(state_.blend_color_alpha);
       }
       return true;
     case GL_STENCIL_CLEAR_VALUE:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_clear;
+        params[0] = static_cast<GLint>(state_.stencil_clear);
       }
       return true;
     case GL_COLOR_WRITEMASK:
       *num_written = 4;
       if (params) {
-        params[0] = state_.color_mask_red;
-        params[1] = state_.color_mask_green;
-        params[2] = state_.color_mask_blue;
-        params[3] = state_.color_mask_alpha;
+        params[0] = static_cast<GLint>(state_.color_mask_red);
+        params[1] = static_cast<GLint>(state_.color_mask_green);
+        params[2] = static_cast<GLint>(state_.color_mask_blue);
+        params[3] = static_cast<GLint>(state_.color_mask_alpha);
       }
       return true;
     case GL_COLOR_CLEAR_VALUE:
       *num_written = 4;
       if (params) {
-        params[0] = state_.color_clear_red;
-        params[1] = state_.color_clear_green;
-        params[2] = state_.color_clear_blue;
-        params[3] = state_.color_clear_alpha;
+        params[0] = static_cast<GLint>(state_.color_clear_red);
+        params[1] = static_cast<GLint>(state_.color_clear_green);
+        params[2] = static_cast<GLint>(state_.color_clear_blue);
+        params[3] = static_cast<GLint>(state_.color_clear_alpha);
       }
       return true;
     case GL_DEPTH_RANGE:
       *num_written = 2;
       if (params) {
-        params[0] = state_.z_near;
-        params[1] = state_.z_far;
+        params[0] = static_cast<GLint>(state_.z_near);
+        params[1] = static_cast<GLint>(state_.z_far);
       }
       return true;
     case GL_DEPTH_CLEAR_VALUE:
       *num_written = 1;
       if (params) {
-        params[0] = state_.depth_clear;
+        params[0] = static_cast<GLint>(state_.depth_clear);
       }
       return true;
     case GL_STENCIL_FAIL:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_front_fail_op;
+        params[0] = static_cast<GLint>(state_.stencil_front_fail_op);
       }
       return true;
     case GL_STENCIL_PASS_DEPTH_FAIL:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_front_z_fail_op;
+        params[0] = static_cast<GLint>(state_.stencil_front_z_fail_op);
       }
       return true;
     case GL_STENCIL_PASS_DEPTH_PASS:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_front_z_pass_op;
+        params[0] = static_cast<GLint>(state_.stencil_front_z_pass_op);
       }
       return true;
     case GL_STENCIL_BACK_FAIL:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_back_fail_op;
+        params[0] = static_cast<GLint>(state_.stencil_back_fail_op);
       }
       return true;
     case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_back_z_fail_op;
+        params[0] = static_cast<GLint>(state_.stencil_back_z_fail_op);
       }
       return true;
     case GL_STENCIL_BACK_PASS_DEPTH_PASS:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_back_z_pass_op;
+        params[0] = static_cast<GLint>(state_.stencil_back_z_pass_op);
       }
       return true;
     case GL_SCISSOR_BOX:
       *num_written = 4;
       if (params) {
-        params[0] = state_.scissor_x;
-        params[1] = state_.scissor_y;
-        params[2] = state_.scissor_width;
-        params[3] = state_.scissor_height;
+        params[0] = static_cast<GLint>(state_.scissor_x);
+        params[1] = static_cast<GLint>(state_.scissor_y);
+        params[2] = static_cast<GLint>(state_.scissor_width);
+        params[3] = static_cast<GLint>(state_.scissor_height);
       }
       return true;
     case GL_FRONT_FACE:
       *num_written = 1;
       if (params) {
-        params[0] = state_.front_face;
+        params[0] = static_cast<GLint>(state_.front_face);
       }
       return true;
     case GL_SAMPLE_COVERAGE_VALUE:
       *num_written = 1;
       if (params) {
-        params[0] = state_.sample_coverage_value;
+        params[0] = static_cast<GLint>(state_.sample_coverage_value);
       }
       return true;
     case GL_SAMPLE_COVERAGE_INVERT:
       *num_written = 1;
       if (params) {
-        params[0] = state_.sample_coverage_invert;
+        params[0] = static_cast<GLint>(state_.sample_coverage_invert);
       }
       return true;
     case GL_POLYGON_OFFSET_FACTOR:
       *num_written = 1;
       if (params) {
-        params[0] = state_.polygon_offset_factor;
+        params[0] = static_cast<GLint>(state_.polygon_offset_factor);
       }
       return true;
     case GL_POLYGON_OFFSET_UNITS:
       *num_written = 1;
       if (params) {
-        params[0] = state_.polygon_offset_units;
+        params[0] = static_cast<GLint>(state_.polygon_offset_units);
       }
       return true;
     case GL_CULL_FACE_MODE:
       *num_written = 1;
       if (params) {
-        params[0] = state_.cull_mode;
+        params[0] = static_cast<GLint>(state_.cull_mode);
       }
       return true;
     case GL_DEPTH_FUNC:
       *num_written = 1;
       if (params) {
-        params[0] = state_.depth_func;
+        params[0] = static_cast<GLint>(state_.depth_func);
       }
       return true;
     case GL_STENCIL_FUNC:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_front_func;
+        params[0] = static_cast<GLint>(state_.stencil_front_func);
       }
       return true;
     case GL_STENCIL_REF:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_front_ref;
+        params[0] = static_cast<GLint>(state_.stencil_front_ref);
       }
       return true;
     case GL_STENCIL_VALUE_MASK:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_front_mask;
+        params[0] = static_cast<GLint>(state_.stencil_front_mask);
       }
       return true;
     case GL_STENCIL_BACK_FUNC:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_back_func;
+        params[0] = static_cast<GLint>(state_.stencil_back_func);
       }
       return true;
     case GL_STENCIL_BACK_REF:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_back_ref;
+        params[0] = static_cast<GLint>(state_.stencil_back_ref);
       }
       return true;
     case GL_STENCIL_BACK_VALUE_MASK:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_back_mask;
+        params[0] = static_cast<GLint>(state_.stencil_back_mask);
       }
       return true;
     case GL_DEPTH_WRITEMASK:
       *num_written = 1;
       if (params) {
-        params[0] = state_.depth_mask;
+        params[0] = static_cast<GLint>(state_.depth_mask);
       }
       return true;
     case GL_BLEND_EQUATION_RGB:
       *num_written = 1;
       if (params) {
-        params[0] = state_.blend_equation_rgb;
+        params[0] = static_cast<GLint>(state_.blend_equation_rgb);
       }
       return true;
     case GL_BLEND_EQUATION_ALPHA:
       *num_written = 1;
       if (params) {
-        params[0] = state_.blend_equation_alpha;
+        params[0] = static_cast<GLint>(state_.blend_equation_alpha);
       }
       return true;
     case GL_STENCIL_WRITEMASK:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_front_writemask;
+        params[0] = static_cast<GLint>(state_.stencil_front_writemask);
       }
       return true;
     case GL_STENCIL_BACK_WRITEMASK:
       *num_written = 1;
       if (params) {
-        params[0] = state_.stencil_back_writemask;
+        params[0] = static_cast<GLint>(state_.stencil_back_writemask);
       }
       return true;
     case GL_BLEND:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.blend;
+        params[0] = static_cast<GLint>(state_.enable_flags.blend);
       }
       return true;
     case GL_CULL_FACE:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.cull_face;
+        params[0] = static_cast<GLint>(state_.enable_flags.cull_face);
       }
       return true;
     case GL_DEPTH_TEST:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.depth_test;
+        params[0] = static_cast<GLint>(state_.enable_flags.depth_test);
       }
       return true;
     case GL_DITHER:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.dither;
+        params[0] = static_cast<GLint>(state_.enable_flags.dither);
       }
       return true;
     case GL_POLYGON_OFFSET_FILL:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.polygon_offset_fill;
+        params[0] =
+            static_cast<GLint>(state_.enable_flags.polygon_offset_fill);
       }
       return true;
     case GL_SAMPLE_ALPHA_TO_COVERAGE:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.sample_alpha_to_coverage;
+        params[0] =
+            static_cast<GLint>(state_.enable_flags.sample_alpha_to_coverage);
       }
       return true;
     case GL_SAMPLE_COVERAGE:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.sample_coverage;
+        params[0] = static_cast<GLint>(state_.enable_flags.sample_coverage);
       }
       return true;
     case GL_SCISSOR_TEST:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.scissor_test;
+        params[0] = static_cast<GLint>(state_.enable_flags.scissor_test);
       }
       return true;
     case GL_STENCIL_TEST:
       *num_written = 1;
       if (params) {
-        params[0] = state_.enable_flags.stencil_test;
+        params[0] = static_cast<GLint>(state_.enable_flags.stencil_test);
+      }
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool GLES2DecoderImpl::GetStateAsGLfloat(
+    GLenum pname, GLfloat* params, GLsizei* num_written) {
+  switch (pname) {
+    case GL_VIEWPORT:
+      *num_written = 4;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.viewport_x);
+        params[1] = static_cast<GLfloat>(state_.viewport_y);
+        params[2] = static_cast<GLfloat>(state_.viewport_width);
+        params[3] = static_cast<GLfloat>(state_.viewport_height);
+      }
+      return true;
+    case GL_BLEND_SRC_RGB:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.blend_source_rgb);
+      }
+      return true;
+    case GL_BLEND_DST_RGB:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.blend_dest_rgb);
+      }
+      return true;
+    case GL_BLEND_SRC_ALPHA:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.blend_source_alpha);
+      }
+      return true;
+    case GL_BLEND_DST_ALPHA:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.blend_dest_alpha);
+      }
+      return true;
+    case GL_LINE_WIDTH:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.line_width);
+      }
+      return true;
+    case GL_BLEND_COLOR:
+      *num_written = 4;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.blend_color_red);
+        params[1] = static_cast<GLfloat>(state_.blend_color_green);
+        params[2] = static_cast<GLfloat>(state_.blend_color_blue);
+        params[3] = static_cast<GLfloat>(state_.blend_color_alpha);
+      }
+      return true;
+    case GL_STENCIL_CLEAR_VALUE:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_clear);
+      }
+      return true;
+    case GL_COLOR_WRITEMASK:
+      *num_written = 4;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.color_mask_red);
+        params[1] = static_cast<GLfloat>(state_.color_mask_green);
+        params[2] = static_cast<GLfloat>(state_.color_mask_blue);
+        params[3] = static_cast<GLfloat>(state_.color_mask_alpha);
+      }
+      return true;
+    case GL_COLOR_CLEAR_VALUE:
+      *num_written = 4;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.color_clear_red);
+        params[1] = static_cast<GLfloat>(state_.color_clear_green);
+        params[2] = static_cast<GLfloat>(state_.color_clear_blue);
+        params[3] = static_cast<GLfloat>(state_.color_clear_alpha);
+      }
+      return true;
+    case GL_DEPTH_RANGE:
+      *num_written = 2;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.z_near);
+        params[1] = static_cast<GLfloat>(state_.z_far);
+      }
+      return true;
+    case GL_DEPTH_CLEAR_VALUE:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.depth_clear);
+      }
+      return true;
+    case GL_STENCIL_FAIL:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_front_fail_op);
+      }
+      return true;
+    case GL_STENCIL_PASS_DEPTH_FAIL:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_front_z_fail_op);
+      }
+      return true;
+    case GL_STENCIL_PASS_DEPTH_PASS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_front_z_pass_op);
+      }
+      return true;
+    case GL_STENCIL_BACK_FAIL:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_back_fail_op);
+      }
+      return true;
+    case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_back_z_fail_op);
+      }
+      return true;
+    case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_back_z_pass_op);
+      }
+      return true;
+    case GL_SCISSOR_BOX:
+      *num_written = 4;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.scissor_x);
+        params[1] = static_cast<GLfloat>(state_.scissor_y);
+        params[2] = static_cast<GLfloat>(state_.scissor_width);
+        params[3] = static_cast<GLfloat>(state_.scissor_height);
+      }
+      return true;
+    case GL_FRONT_FACE:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.front_face);
+      }
+      return true;
+    case GL_SAMPLE_COVERAGE_VALUE:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.sample_coverage_value);
+      }
+      return true;
+    case GL_SAMPLE_COVERAGE_INVERT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.sample_coverage_invert);
+      }
+      return true;
+    case GL_POLYGON_OFFSET_FACTOR:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.polygon_offset_factor);
+      }
+      return true;
+    case GL_POLYGON_OFFSET_UNITS:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.polygon_offset_units);
+      }
+      return true;
+    case GL_CULL_FACE_MODE:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.cull_mode);
+      }
+      return true;
+    case GL_DEPTH_FUNC:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.depth_func);
+      }
+      return true;
+    case GL_STENCIL_FUNC:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_front_func);
+      }
+      return true;
+    case GL_STENCIL_REF:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_front_ref);
+      }
+      return true;
+    case GL_STENCIL_VALUE_MASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_front_mask);
+      }
+      return true;
+    case GL_STENCIL_BACK_FUNC:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_back_func);
+      }
+      return true;
+    case GL_STENCIL_BACK_REF:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_back_ref);
+      }
+      return true;
+    case GL_STENCIL_BACK_VALUE_MASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_back_mask);
+      }
+      return true;
+    case GL_DEPTH_WRITEMASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.depth_mask);
+      }
+      return true;
+    case GL_BLEND_EQUATION_RGB:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.blend_equation_rgb);
+      }
+      return true;
+    case GL_BLEND_EQUATION_ALPHA:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.blend_equation_alpha);
+      }
+      return true;
+    case GL_STENCIL_WRITEMASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_front_writemask);
+      }
+      return true;
+    case GL_STENCIL_BACK_WRITEMASK:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.stencil_back_writemask);
+      }
+      return true;
+    case GL_BLEND:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.enable_flags.blend);
+      }
+      return true;
+    case GL_CULL_FACE:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.enable_flags.cull_face);
+      }
+      return true;
+    case GL_DEPTH_TEST:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.enable_flags.depth_test);
+      }
+      return true;
+    case GL_DITHER:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.enable_flags.dither);
+      }
+      return true;
+    case GL_POLYGON_OFFSET_FILL:
+      *num_written = 1;
+      if (params) {
+        params[0] =
+            static_cast<GLfloat>(state_.enable_flags.polygon_offset_fill);
+      }
+      return true;
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+      *num_written = 1;
+      if (params) {
+        params[0] =
+            static_cast<GLfloat>(state_.enable_flags.sample_alpha_to_coverage);
+      }
+      return true;
+    case GL_SAMPLE_COVERAGE:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.enable_flags.sample_coverage);
+      }
+      return true;
+    case GL_SCISSOR_TEST:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.enable_flags.scissor_test);
+      }
+      return true;
+    case GL_STENCIL_TEST:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(state_.enable_flags.stencil_test);
       }
       return true;
     default:
