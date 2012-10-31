@@ -11,3 +11,4 @@ SSLClientSocketTest.ConnectClientAuthSendNullCert
 
 # These tests are broken http://crbug.com/118883
 *SpdyNetworkTransactionSpdy*Test.*
+SpdyHttpStreamSpdy2Test.*
