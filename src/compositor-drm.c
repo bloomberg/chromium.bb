@@ -793,9 +793,25 @@ drm_assign_planes(struct weston_output *output)
 {
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->compositor;
+	struct drm_output *drm_output = (struct drm_output *) output;
+	struct drm_sprite *s;
 	struct weston_surface *es, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
+
+	/* Reset the opaque region of the planes */
+	pixman_region32_fini(&drm_output->cursor_plane.opaque);
+	pixman_region32_init(&drm_output->cursor_plane.opaque);
+	pixman_region32_fini(&drm_output->fb_plane.opaque);
+	pixman_region32_init(&drm_output->fb_plane.opaque);
+
+	wl_list_for_each (s, &c->sprite_list, link) {
+		if (!drm_sprite_crtc_supported(output, s->possible_crtcs))
+			continue;
+
+		pixman_region32_fini(&s->plane.opaque);
+		pixman_region32_init(&s->plane.opaque);
+	}
 
 	/*
 	 * Find a surface for each sprite in the output using some heuristics:
