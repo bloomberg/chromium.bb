@@ -1223,38 +1223,6 @@ def ProgramNameForNmf(env, basename):
 pre_base_env.AddMethod(ProgramNameForNmf)
 
 
-def DemoSelLdrNacl(env,
-                   target,
-                   nexe,
-                   log_verbosity=2,
-                   sel_ldr_flags=['-d'],
-                   args=[]):
-
-  sel_ldr = env.GetSelLdr()
-  if not sel_ldr:
-    print 'WARNING: no sel_ldr found. Skipping test %s' % target
-    return []
-
-  deps = [sel_ldr, nexe]
-  command = (['${SOURCES[0].abspath}'] + sel_ldr_flags +
-             ['-f', '${SOURCES[1].abspath}', '--'] + args)
-
-  # NOTE: since most of the demos use X11 we need to make sure
-  #      some env vars are set for tag, val in extra_env:
-  for tag in EXTRA_ENV:
-    if os.getenv(tag) is not None:
-      env['ENV'][tag] = os.getenv(tag)
-    else:
-      env['ENV'][tag] =  env.subst(None)
-
-  node = env.Command(target, deps, ' '.join(command))
-  return node
-
-# NOTE: This will not really work for ARM with user mode qemu.
-#       Support would likely require some emulation magic.
-pre_base_env.AddMethod(DemoSelLdrNacl)
-
-
 def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
   # The dynamic linker's ability to receive arguments over IPC at
   # startup currently requires it to reject the plugin's first
