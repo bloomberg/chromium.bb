@@ -809,7 +809,7 @@
         },
         {
           'target_name': 'breakpad_client',
-          'type': '<(library)',
+          'type': 'static_library',
           'sources': [
             'src/client/ios/Breakpad.h',
             'src/client/ios/Breakpad.mm',
