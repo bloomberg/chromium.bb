@@ -25,6 +25,7 @@ class BrowserBackend(object):
     args = []
     args.extend(self.options.extra_browser_args)
     args.append('--disable-background-networking')
+    args.append('--metrics-recording-only')
     args.append('--no-first-run')
     if self.options.wpr_mode != wpr_modes.WPR_OFF:
       args.extend(wpr_server.CHROME_FLAGS)
