@@ -23,6 +23,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
 
+def sanitize_test_case_name(test_case):
+  """Removes characters that are valid as test case names but invalid as file
+  names.
+  """
+  return test_case.replace('/', '-')
+
+
 class Tracer(object):
   def __init__(self, tracer, cmd, cwd_dir, progress):
     # Constants
@@ -35,7 +42,7 @@ class Tracer(object):
     """Traces a single test case and returns its output."""
     cmd = self.cmd[:]
     cmd.append('--gtest_filter=%s' % test_case)
-    tracename = test_case.replace('/', '-')
+    tracename = sanitize_test_case_name(test_case)
 
     out = []
     for retry in range(5):
@@ -47,6 +54,7 @@ class Tracer(object):
       out.append(
           {
             'test_case': test_case,
+            'tracename': tracename,
             'returncode': returncode,
             'duration': duration,
             'valid': valid,
@@ -103,17 +111,14 @@ def write_details(logname, outfile, root_dir, blacklist, results):
     item = items[-1]
     assert item['valid']
     # Load the results;
-    test_case = item['test_case']
-    if not test_case in logs:
-      assert False
-    log_dict = logs[test_case]
+    log_dict = logs[item['tracename']]
     if log_dict.get('exception'):
       exception = exception or log_dict['exception']
       continue
     trace_result = log_dict['results']
     if root_dir:
       trace_result = trace_result.strip_root(root_dir)
-    results_processed[test_case] = {
+    results_processed[item['test_case']] = {
       'trace': trace_result.flatten(),
       'duration': item['duration'],
       'output': item['output'],

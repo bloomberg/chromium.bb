@@ -101,12 +101,12 @@ class RunTestCases(unittest.TestCase):
     test_cases = [
         ('Foo.Bar1', 1),
         ('Foo.Bar2', 1),
-        ('Foo.Bar3', 1)
+        ('Foo.Bar/3', 1)
     ]
     self._check_results_file(
         fail=[],
         flaky=[],
-        success=[u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar3'],
+        success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
         test_cases=test_cases)
 
   def test_simple_fail(self):

@@ -15,7 +15,12 @@ import gtest_fake_base
 
 
 TESTS = {
-  'Foo': ['Bar1', 'Bar2', 'Bar3'],
+  'Foo': sorted(
+    [
+      'Bar1',
+      'Bar2',
+      'Bar/3',
+    ]),
 }
 TOTAL = sum(len(v) for v in TESTS.itervalues())
 

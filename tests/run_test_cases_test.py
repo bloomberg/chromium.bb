@@ -106,7 +106,7 @@ class RunTestCases(unittest.TestCase):
         result_file):
       self.assertEqual(run_test_cases.fix_python_path([exe]), executable)
       # They are in reverse order due to test shuffling.
-      self.assertEqual(['Foo.Bar3', 'Foo.Bar1'], test_cases)
+      self.assertEqual(['Foo.Bar1', 'Foo.Bar/3'], test_cases)
       self.assertEqual(run_test_cases.num_processors(), jobs)
       self.assertEqual(120, timeout)
       self.assertEqual(2, retries)

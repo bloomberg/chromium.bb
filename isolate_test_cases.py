@@ -48,12 +48,7 @@ def isolate_test_cases(
       item = items[-1]
       assert item['valid']
       # Load the results;
-      test_case = item['test_case']
-      if test_case not in logs:
-        # TODO(maruel): Fix test cases with a '/' in them.
-        print('Skipping test case (maybe it contains a \'/\'?): %s' % test_case)
-        continue
-      log_dict = logs[test_case]
+      log_dict = logs[item['tracename']]
       if log_dict.get('exception'):
         exception = exception or log_dict['exception']
         logging.error('Got exception')
@@ -67,7 +62,8 @@ def isolate_test_cases(
           root_dir,
           variables,
           reldir)
-      out = basename + '.' + test_case + '.isolate'
+      # item['test_case'] could be an invalid file name.
+      out = basename + '.' + item['tracename'] + '.isolate'
       with open(out, 'w') as f:
         isolate.pretty_print(value, f)
       inputs.append(out)

@@ -19,6 +19,7 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.insert(0, ROOT_DIR)
 
 import isolate
+import trace_test_cases
 
 
 class IsolateTestCases(unittest.TestCase):
@@ -151,7 +152,7 @@ class IsolateTestCases(unittest.TestCase):
     test_cases = (
       'Foo.Bar1',
       'Foo.Bar2',
-      'Foo.Bar3',
+      'Foo.Bar/3',
     )
     expected = {
       'conditions': [
@@ -165,7 +166,8 @@ class IsolateTestCases(unittest.TestCase):
       ],
     }
     for test_case in test_cases:
-      with open(basename + '.' + test_case + '.isolate', 'r') as f:
+      tracename = trace_test_cases.sanitize_test_case_name(test_case)
+      with open(basename + '.' + tracename + '.isolate', 'r') as f:
         result = eval(f.read(), {'__builtins__': None}, None)
         self.assertEqual(expected, result)
 
