@@ -2166,6 +2166,15 @@ public class ContentViewCore implements MotionEventDelegate {
         return history;
     }
 
+    /**
+     * Update of the latest vsync parameters.
+     * @param tickTimeMicros The latest vsync tick time in microseconds.
+     * @param intervalMicros The vsync interval in microseconds.
+     */
+    public void UpdateVSync(long tickTimeMicros, long intervalMicros) {
+        nativeUpdateVSyncParameters(mNativeContentViewCore, tickTimeMicros, intervalMicros);
+    }
+
     private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
             int windowAndroidPtr);
 
