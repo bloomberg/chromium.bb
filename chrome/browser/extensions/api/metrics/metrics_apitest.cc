@@ -28,20 +28,20 @@ struct RecordedUserAction {
 // updated.
 struct RecordedHistogram {
   const char* name;
-  base::Histogram::ClassType type;
+  base::HistogramType type;
   int min;
   int max;
   size_t buckets;
 } g_histograms[] = {
-  {"test.h.1", base::Histogram::HISTOGRAM, 1, 100, 50},  // custom
-  {"test.h.2", base::Histogram::LINEAR_HISTOGRAM, 1, 200, 50},  // custom
-  {"test.h.3", base::Histogram::LINEAR_HISTOGRAM, 1, 101, 102},  // percentage
-  {"test.time", base::Histogram::HISTOGRAM, 1, 10000, 50},
-  {"test.medium.time", base::Histogram::HISTOGRAM, 1, 180000, 50},
-  {"test.long.time", base::Histogram::HISTOGRAM, 1, 3600000, 50},
-  {"test.count", base::Histogram::HISTOGRAM, 1, 1000000, 50},
-  {"test.medium.count", base::Histogram::HISTOGRAM, 1, 10000, 50},
-  {"test.small.count", base::Histogram::HISTOGRAM, 1, 100, 50},
+  {"test.h.1", base::HISTOGRAM, 1, 100, 50},  // custom
+  {"test.h.2", base::LINEAR_HISTOGRAM, 1, 200, 50},  // custom
+  {"test.h.3", base::LINEAR_HISTOGRAM, 1, 101, 102},  // percentage
+  {"test.time", base::HISTOGRAM, 1, 10000, 50},
+  {"test.medium.time", base::HISTOGRAM, 1, 180000, 50},
+  {"test.long.time", base::HISTOGRAM, 1, 3600000, 50},
+  {"test.count", base::HISTOGRAM, 1, 1000000, 50},
+  {"test.medium.count", base::HISTOGRAM, 1, 10000, 50},
+  {"test.small.count", base::HISTOGRAM, 1, 100, 50},
 };
 
 // This class observes and collects user action notifications that are sent
@@ -110,7 +110,7 @@ void ValidateHistograms(const RecordedHistogram* recorded,
       base::Histogram* histogram(histograms[j]);
 
       if (r.name == histogram->histogram_name()) {
-        EXPECT_EQ(r.type, histogram->histogram_type());
+        EXPECT_EQ(r.type, histogram->GetHistogramType());
         EXPECT_EQ(r.min, histogram->declared_min());
         EXPECT_EQ(r.max, histogram->declared_max());
         EXPECT_EQ(r.buckets, histogram->bucket_count());

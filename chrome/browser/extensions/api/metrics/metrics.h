@@ -28,7 +28,7 @@ class MetricsHistogramHelperFunction : public SyncExtensionFunction {
   virtual ~MetricsHistogramHelperFunction() {}
   bool GetNameAndSample(std::string* name, int* sample);
   virtual bool RecordValue(const std::string& name,
-                           base::Histogram::ClassType type,
+                           base::HistogramType type,
                            int min, int max, size_t buckets,
                            int sample);
 };

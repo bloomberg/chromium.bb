@@ -12,9 +12,6 @@
 
 namespace extensions {
 
-using base::Histogram;
-using base::LinearHistogram;
-
 namespace {
 
 const size_t kMaxBuckets = 10000; // We don't ever want more than these many
@@ -39,7 +36,7 @@ bool MetricsHistogramHelperFunction::GetNameAndSample(std::string* name,
 
 bool MetricsHistogramHelperFunction::RecordValue(
     const std::string& name,
-    Histogram::ClassType type,
+    base::HistogramType type,
     int min, int max, size_t buckets,
     int sample) {
   // Make sure toxic values don't get to internal code.
@@ -55,15 +52,15 @@ bool MetricsHistogramHelperFunction::RecordValue(
   if (buckets > static_cast<size_t>(max - min + 2))
     buckets = max - min + 2;
 
-  Histogram* counter;
-  if (type == Histogram::LINEAR_HISTOGRAM) {
-    counter = LinearHistogram::FactoryGet(name,
-                                          min, max, buckets,
-                                          Histogram::kUmaTargetedHistogramFlag);
+  base::Histogram* counter;
+  if (type == base::LINEAR_HISTOGRAM) {
+    counter = base::LinearHistogram::FactoryGet(
+        name, min, max, buckets,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
   } else {
-    counter = Histogram::FactoryGet(name,
-                                    min, max, buckets,
-                                    Histogram::kUmaTargetedHistogramFlag);
+    counter = base::Histogram::FactoryGet(
+        name, min, max, buckets,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
   }
 
   counter->Add(sample);
@@ -89,8 +86,8 @@ bool MetricsRecordValueFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(metric_type->GetInteger("max", &max));
   EXTENSION_FUNCTION_VALIDATE(metric_type->GetInteger("buckets", &buckets));
 
-  Histogram::ClassType histogram_type(type == "histogram-linear" ?
-      Histogram::LINEAR_HISTOGRAM : Histogram::HISTOGRAM);
+  base::HistogramType histogram_type(type == "histogram-linear" ?
+      base::LINEAR_HISTOGRAM : base::HISTOGRAM);
   return RecordValue(name, histogram_type, min, max, buckets, sample);
 }
 
@@ -98,31 +95,28 @@ bool MetricsRecordPercentageFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name,
-                     Histogram::LINEAR_HISTOGRAM,
-                     1, 101, 102,
-                     sample);
+  return RecordValue(name, base::LINEAR_HISTOGRAM, 1, 101, 102, sample);
 }
 
 bool MetricsRecordCountFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name, Histogram::HISTOGRAM, 1, 1000000, 50, sample);
+  return RecordValue(name, base::HISTOGRAM, 1, 1000000, 50, sample);
 }
 
 bool MetricsRecordSmallCountFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name, Histogram::HISTOGRAM, 1, 100, 50, sample);
+  return RecordValue(name, base::HISTOGRAM, 1, 100, 50, sample);
 }
 
 bool MetricsRecordMediumCountFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
-  return RecordValue(name, Histogram::HISTOGRAM, 1, 10000, 50, sample);
+  return RecordValue(name, base::HISTOGRAM, 1, 10000, 50, sample);
 }
 
 bool MetricsRecordTimeFunction::RunImpl() {
@@ -130,7 +124,7 @@ bool MetricsRecordTimeFunction::RunImpl() {
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
   static const int kTenSecMs = 10 * 1000;
-  return RecordValue(name, Histogram::HISTOGRAM, 1, kTenSecMs, 50, sample);
+  return RecordValue(name, base::HISTOGRAM, 1, kTenSecMs, 50, sample);
 }
 
 bool MetricsRecordMediumTimeFunction::RunImpl() {
@@ -138,7 +132,7 @@ bool MetricsRecordMediumTimeFunction::RunImpl() {
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
   static const int kThreeMinMs = 3 * 60 * 1000;
-  return RecordValue(name, Histogram::HISTOGRAM, 1, kThreeMinMs, 50, sample);
+  return RecordValue(name, base::HISTOGRAM, 1, kThreeMinMs, 50, sample);
 }
 
 bool MetricsRecordLongTimeFunction::RunImpl() {
@@ -146,7 +140,7 @@ bool MetricsRecordLongTimeFunction::RunImpl() {
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
   static const int kOneHourMs = 60 * 60 * 1000;
-  return RecordValue(name, Histogram::HISTOGRAM, 1, kOneHourMs, 50, sample);
+  return RecordValue(name, base::HISTOGRAM, 1, kOneHourMs, 50, sample);
 }
 
 } // namespace extensions
