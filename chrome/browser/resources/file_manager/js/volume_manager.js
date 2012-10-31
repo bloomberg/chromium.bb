@@ -207,6 +207,8 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       } else if (event.eventType == 'unmount') {
         this.setGDataStatus_(VolumeManager.GDataStatus.UNMOUNTED);
       }
+    } else {
+      this.setGDataStatus_(VolumeManager.GDataStatus.ERROR);
     }
   }
 };
