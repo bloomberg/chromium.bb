@@ -398,7 +398,7 @@ void WebContentsViewAura::RestoreFocus() {
 }
 
 WebDropData* WebContentsViewAura::GetDropData() const {
-  return NULL;
+  return current_drop_data_.get();
 }
 
 bool WebContentsViewAura::IsEventTracking() const {
@@ -629,15 +629,16 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   if (drag_dest_delegate_)
     drag_dest_delegate_->DragInitialize(web_contents_);
 
-  WebDropData drop_data;
-  PrepareWebDropData(&drop_data, event.data());
+  current_drop_data_.reset(new WebDropData());
+
+  PrepareWebDropData(current_drop_data_.get(), event.data());
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
 
   gfx::Point screen_pt =
       gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
   current_rvh_for_drag_ = web_contents_->GetRenderViewHost();
   web_contents_->GetRenderViewHost()->DragTargetDragEnter(
-      drop_data, event.location(), screen_pt, op,
+      *current_drop_data_.get(), event.location(), screen_pt, op,
       ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
 
   if (drag_dest_delegate_) {
@@ -672,6 +673,8 @@ void WebContentsViewAura::OnDragExited() {
   web_contents_->GetRenderViewHost()->DragTargetDragLeave();
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDragLeave();
+
+  current_drop_data_.reset();
 }
 
 int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
@@ -685,6 +688,7 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
       ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDrop();
+  current_drop_data_.reset();
   return current_drag_op_;
 }
 

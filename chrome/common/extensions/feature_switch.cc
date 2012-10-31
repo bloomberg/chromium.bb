@@ -42,12 +42,6 @@ class CommonSwitches {
             switches::kTabCapture,
             FeatureSwitch::DEFAULT_DISABLED)
   {
-// Disabling easy off-store installation is not yet implemented for Aura. Not
-// sure what the Aura equivalent for this UI is.
-#if defined(USE_AURA)
-    easy_off_store_install.SetOverrideValue(FeatureSwitch::OVERRIDE_ENABLED);
-#endif
-
     if (!action_box.IsEnabled()){
       extensions_in_action_box.SetOverrideValue(
           FeatureSwitch::OVERRIDE_DISABLED);

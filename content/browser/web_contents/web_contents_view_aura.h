@@ -130,6 +130,8 @@ class CONTENT_EXPORT WebContentsViewAura
 
   WebKit::WebDragOperationsMask current_drag_op_;
 
+  scoped_ptr<WebDropData> current_drop_data_;
+
   WebDragDestDelegate* drag_dest_delegate_;
 
   // We keep track of the render view host we're dragging over.  If it changes
