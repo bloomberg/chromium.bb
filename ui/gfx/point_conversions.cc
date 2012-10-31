@@ -20,5 +20,11 @@ Point ToCeiledPoint(const PointF& point) {
   return Point(x, y);
 }
 
+Point ToRoundedPoint(const PointF& point) {
+  int x = ToRoundedInt(point.x());
+  int y = ToRoundedInt(point.y());
+  return Point(x, y);
+}
+
 }  // namespace gfx
 

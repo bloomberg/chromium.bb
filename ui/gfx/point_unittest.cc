@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/point_f.h"
 
 namespace ui {
@@ -78,6 +79,41 @@ TEST(PointTest, OffsetFromPoint) {
             b.OffsetFrom(a).ToString());
   EXPECT_EQ(gfx::Vector2d(-20 - 1, 8 - 5).ToString(),
             (b - a).ToString());
+}
+
+TEST(PointTest, ToRoundedPoint) {
+  EXPECT_EQ(gfx::Point(0, 0),
+            gfx::ToRoundedPoint(gfx::PointF(0, 0)));
+  EXPECT_EQ(gfx::Point(0, 0),
+            gfx::ToRoundedPoint(gfx::PointF(0.0001f, 0.0001f)));
+  EXPECT_EQ(gfx::Point(0, 0),
+            gfx::ToRoundedPoint(gfx::PointF(0.4999f, 0.4999f)));
+  EXPECT_EQ(gfx::Point(1, 1),
+            gfx::ToRoundedPoint(gfx::PointF(0.5f, 0.5f)));
+  EXPECT_EQ(gfx::Point(1, 1),
+            gfx::ToRoundedPoint(gfx::PointF(0.9999f, 0.9999f)));
+
+  EXPECT_EQ(gfx::Point(10, 10),
+            gfx::ToRoundedPoint(gfx::PointF(10, 10)));
+  EXPECT_EQ(gfx::Point(10, 10),
+            gfx::ToRoundedPoint(gfx::PointF(10.0001f, 10.0001f)));
+  EXPECT_EQ(gfx::Point(10, 10),
+            gfx::ToRoundedPoint(gfx::PointF(10.4999f, 10.4999f)));
+  EXPECT_EQ(gfx::Point(11, 11),
+            gfx::ToRoundedPoint(gfx::PointF(10.5f, 10.5f)));
+  EXPECT_EQ(gfx::Point(11, 11),
+            gfx::ToRoundedPoint(gfx::PointF(10.9999f, 10.9999f)));
+
+  EXPECT_EQ(gfx::Point(-10, -10),
+            gfx::ToRoundedPoint(gfx::PointF(-10, -10)));
+  EXPECT_EQ(gfx::Point(-10, -10),
+            gfx::ToRoundedPoint(gfx::PointF(-10.0001f, -10.0001f)));
+  EXPECT_EQ(gfx::Point(-10, -10),
+            gfx::ToRoundedPoint(gfx::PointF(-10.4999f, -10.4999f)));
+  EXPECT_EQ(gfx::Point(-11, -11),
+            gfx::ToRoundedPoint(gfx::PointF(-10.5f, -10.5f)));
+  EXPECT_EQ(gfx::Point(-11, -11),
+            gfx::ToRoundedPoint(gfx::PointF(-10.9999f, -10.9999f)));
 }
 
 }  // namespace ui

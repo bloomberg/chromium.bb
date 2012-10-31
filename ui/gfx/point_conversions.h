@@ -16,6 +16,9 @@ UI_EXPORT Point ToFlooredPoint(const PointF& point);
 // Returns a Point with each component from the input PointF ceiled.
 UI_EXPORT Point ToCeiledPoint(const PointF& point);
 
+// Returns a Point with each component from the input PointF rounded.
+UI_EXPORT Point ToRoundedPoint(const PointF& point);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_POINT_CONVERSIONS_H_
