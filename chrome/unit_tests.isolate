@@ -729,6 +729,7 @@
           'test/data/value_store_db/000005.log',
           'test/data/value_store_db/CURRENT',
           'test/data/value_store_db/MANIFEST-000004',
+          'test/data/web_database/version_22.sql',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
