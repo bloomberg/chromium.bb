@@ -16,7 +16,6 @@ CHROME_FLAGS = webpagereplay.CHROME_FLAGS
 
 class ReplayServer(object):
   def __init__(self, browser_backend, path, is_record_mode):
-    self._browser_backend = browser_backend
     self._http_forwarder = None
     self._https_forwarder = None
     self._web_page_replay = None
@@ -30,6 +29,8 @@ class ReplayServer(object):
     options = []
     if self._is_record_mode:
       options.append('--record')
+    if not browser_backend.options.wpr_make_javascript_deterministic:
+      options.append('--inject_scripts=/dev/null')
     self._web_page_replay = webpagereplay.ReplayServer(path, options)
     self._web_page_replay.StartServer()
 
