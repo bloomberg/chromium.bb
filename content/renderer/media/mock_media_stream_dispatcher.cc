@@ -6,6 +6,7 @@
 
 #include "base/stringprintf.h"
 #include "content/public/common/media_stream_request.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
@@ -46,6 +47,10 @@ void MockMediaStreamDispatcher::GenerateStream(
     video_array_.push_back(video);
   }
   ++request_stream_counter_;
+}
+
+void MockMediaStreamDispatcher::CancelGenerateStream(int request_id) {
+  EXPECT_EQ(request_id, request_id_);
 }
 
 void MockMediaStreamDispatcher::StopStream(const std::string& label) {
