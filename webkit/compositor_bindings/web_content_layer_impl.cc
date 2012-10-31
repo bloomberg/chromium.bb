@@ -73,18 +73,18 @@ void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable)
 }
 
 
-void WebContentLayerImpl::paintContents(SkCanvas* canvas, const IntRect& clip, FloatRect& opaque)
+void WebContentLayerImpl::paintContents(SkCanvas* canvas, const gfx::Rect& clip, gfx::RectF& opaque)
 {
     if (!m_client)
         return;
     WebFloatRect webOpaque;
     m_client->paintContents(canvas,
-                            convert(clip),
+                            clip,
 #if WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
                             m_layer->layer()->useLCDText(),
 #endif  // WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
                             webOpaque);
-    opaque = convert(webOpaque);
+    opaque = webOpaque;
 }
 
 } // namespace WebKit

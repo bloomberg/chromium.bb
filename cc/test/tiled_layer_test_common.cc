@@ -22,11 +22,11 @@ FakeLayerUpdater::Resource::~Resource()
 {
 }
 
-void FakeLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, RenderingStats&)
+void FakeLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect&, const gfx::Vector2d&, bool partialUpdate, RenderingStats&)
 {
-    const IntRect rect(0, 0, 10, 10);
+    const gfx::Rect rect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(
-        texture(), &m_bitmap, rect, rect, IntSize());
+        texture(), &m_bitmap, rect, rect, gfx::Vector2d());
     if (partialUpdate)
         queue.appendPartialUpload(upload);
     else
@@ -45,7 +45,7 @@ FakeLayerUpdater::~FakeLayerUpdater()
 {
 }
 
-void FakeLayerUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize&, float, float, IntRect& resultingOpaqueRect, RenderingStats&)
+void FakeLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float, float, gfx::Rect& resultingOpaqueRect, RenderingStats&)
 {
     m_prepareCount++;
     m_lastUpdateRect = contentRect;

@@ -9,10 +9,13 @@
 #include "cc/prioritized_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
+namespace gfx {
+class Rect;
+class Vector2d;
+}
+
 namespace cc {
 
-class IntRect;
-class IntSize;
 class TextureManager;
 struct RenderingStats;
 class ResourceUpdateQueue;
@@ -28,7 +31,7 @@ public:
         void swapTextureWith(scoped_ptr<PrioritizedTexture>& texture) { m_texture.swap(texture); }
         // TODO(reveman): partialUpdate should be a property of this class
         // instead of an argument passed to update().
-        virtual void update(ResourceUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) = 0;
+        virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) = 0;
     protected:
         explicit Resource(scoped_ptr<PrioritizedTexture> texture);
 
@@ -41,7 +44,7 @@ public:
     virtual scoped_ptr<Resource> createResource(PrioritizedTextureManager*) = 0;
     // The |resultingOpaqueRect| gives back a region of the layer that was painted opaque. If the layer is marked opaque in the updater,
     // then this region should be ignored in preference for the entire layer's area.
-    virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) { }
+    virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats&) { }
 
     // Set true by the layer when it is known that the entire output is going to be opaque.
     virtual void setOpaque(bool) { }

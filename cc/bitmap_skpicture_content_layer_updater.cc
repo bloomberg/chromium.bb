@@ -21,7 +21,7 @@ BitmapSkPictureContentLayerUpdater::Resource::Resource(BitmapSkPictureContentLay
 {
 }
 
-void BitmapSkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats& stats)
+void BitmapSkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats& stats)
 {
     m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, sourceRect.width(), sourceRect.height());
     m_bitmap.allocPixels();
@@ -59,7 +59,7 @@ scoped_ptr<LayerUpdater::Resource> BitmapSkPictureContentLayerUpdater::createRes
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
 }
 
-void BitmapSkPictureContentLayerUpdater::paintContentsRect(SkCanvas* canvas, const IntRect& sourceRect, RenderingStats& stats)
+void BitmapSkPictureContentLayerUpdater::paintContentsRect(SkCanvas* canvas, const gfx::Rect& sourceRect, RenderingStats& stats)
 {
     // Translate the origin of contentRect to that of sourceRect.
     canvas->translate(contentRect().x() - sourceRect.x(),

@@ -12,6 +12,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect_conversions.h"
 #include <public/WebFloatRect.h>
 #include <public/WebRect.h>
 
@@ -22,35 +23,34 @@ namespace {
 
 class MockContentLayerClient : public ContentLayerClient {
 public:
-    explicit MockContentLayerClient(IntRect opaqueLayerRect)
+    explicit MockContentLayerClient(gfx::Rect opaqueLayerRect)
         : m_opaqueLayerRect(opaqueLayerRect)
     {
     }
 
-    virtual void paintContents(SkCanvas*, const IntRect&, FloatRect& opaque) OVERRIDE
+    virtual void paintContents(SkCanvas*, const gfx::Rect&, gfx::RectF& opaque) OVERRIDE
     {
-        opaque = FloatRect(m_opaqueLayerRect);
+        opaque = gfx::RectF(m_opaqueLayerRect);
     }
 
 private:
-    IntRect m_opaqueLayerRect;
+    gfx::Rect m_opaqueLayerRect;
 };
 
 TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale)
 {
     float contentsScale = 2;
-    IntRect contentRect(10, 10, 100, 100);
-    IntRect opaqueRectInLayerSpace(5, 5, 20, 20);
-    IntRect opaqueRectInContentSpace = opaqueRectInLayerSpace;
-    opaqueRectInContentSpace.scale(contentsScale);
+    gfx::Rect contentRect(10, 10, 100, 100);
+    gfx::Rect opaqueRectInLayerSpace(5, 5, 20, 20);
+    gfx::RectF opaqueRectInContentSpace = gfx::ScaleRect(opaqueRectInLayerSpace, contentsScale, contentsScale);
     MockContentLayerClient client(opaqueRectInLayerSpace);
     scoped_refptr<BitmapContentLayerUpdater> updater = BitmapContentLayerUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainter>());
 
-    IntRect resultingOpaqueRect;
+    gfx::Rect resultingOpaqueRect;
     RenderingStats stats;
-    updater->prepareToUpdate(contentRect, IntSize(256, 256), contentsScale, contentsScale, resultingOpaqueRect, stats);
+    updater->prepareToUpdate(contentRect, gfx::Size(256, 256), contentsScale, contentsScale, resultingOpaqueRect, stats);
 
-    EXPECT_RECT_EQ(opaqueRectInContentSpace, resultingOpaqueRect);
+    EXPECT_RECT_EQ(gfx::ToEnclosingRect(opaqueRectInContentSpace), resultingOpaqueRect);
 }
 
 } // namespace

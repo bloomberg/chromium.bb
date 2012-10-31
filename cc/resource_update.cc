@@ -12,10 +12,10 @@ namespace cc {
 
 ResourceUpdate ResourceUpdate::Create(PrioritizedTexture* texture,
                                       const SkBitmap* bitmap,
-                                      IntRect content_rect,
-                                      IntRect source_rect,
-                                      IntSize dest_offset) {
-    CHECK(content_rect.contains(source_rect));
+                                      gfx::Rect content_rect,
+                                      gfx::Rect source_rect,
+                                      gfx::Vector2d dest_offset) {
+    CHECK(content_rect.Contains(source_rect));
     ResourceUpdate update;
     update.texture = texture;
     update.bitmap = bitmap;
@@ -27,10 +27,10 @@ ResourceUpdate ResourceUpdate::Create(PrioritizedTexture* texture,
 
 ResourceUpdate ResourceUpdate::CreateFromPicture(PrioritizedTexture* texture,
                                                  SkPicture* picture,
-                                                 IntRect content_rect,
-                                                 IntRect source_rect,
-                                                 IntSize dest_offset) {
-    CHECK(content_rect.contains(source_rect));
+                                                 gfx::Rect content_rect,
+                                                 gfx::Rect source_rect,
+                                                 gfx::Vector2d dest_offset) {
+    CHECK(content_rect.Contains(source_rect));
     ResourceUpdate update;
     update.texture = texture;
     update.picture = picture;

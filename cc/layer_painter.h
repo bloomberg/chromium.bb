@@ -8,15 +8,17 @@
 
 class SkCanvas;
 
-namespace cc {
+namespace gfx {
+class Rect;
+class RectF;
+}
 
-class FloatRect;
-class IntRect;
+namespace cc {
 
 class LayerPainter {
 public:
     virtual ~LayerPainter() { }
-    virtual void paint(SkCanvas*, const IntRect& contentRect, FloatRect& opaque) = 0;
+    virtual void paint(SkCanvas*, const gfx::Rect& contentRect, gfx::RectF& opaque) = 0;
 };
 
 } // namespace cc

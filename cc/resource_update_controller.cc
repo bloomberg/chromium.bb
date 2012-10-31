@@ -39,7 +39,7 @@ const int textureUploadFlushPeriod = 4;
 const size_t maxBlockingUpdateIntervals = 4;
 
 scoped_ptr<SkCanvas> createAcceleratedCanvas(
-    GrContext* grContext, cc::IntSize canvasSize, unsigned textureId)
+    GrContext* grContext, gfx::Size canvasSize, unsigned textureId)
 {
     GrPlatformTextureDesc textureDesc;
     textureDesc.fFlags = kRenderTarget_GrPlatformTextureFlag;
@@ -121,9 +121,9 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
 {
     if (update.picture) {
         PrioritizedTexture* texture = update.texture;
-        IntRect pictureRect = update.content_rect;
-        IntRect sourceRect = update.source_rect;
-        IntSize destOffset = update.dest_offset;
+        gfx::Rect pictureRect = update.content_rect;
+        gfx::Rect sourceRect = update.source_rect;
+        gfx::Vector2d destOffset = update.dest_offset;
 
         texture->acquireBackingTexture(m_resourceProvider);
         DCHECK(texture->haveBackingTexture());
@@ -159,15 +159,15 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
         canvas->translate(0.0, texture->size().height());
         canvas->scale(1.0, -1.0);
         // Clip to the destination on the texture that must be updated.
-        canvas->clipRect(SkRect::MakeXYWH(destOffset.width(),
-                                          destOffset.height(),
+        canvas->clipRect(SkRect::MakeXYWH(destOffset.x(),
+                                          destOffset.y(),
                                           sourceRect.width(),
                                           sourceRect.height()));
         // Translate the origin of pictureRect to destOffset.
         // Note that destOffset is defined relative to sourceRect.
         canvas->translate(
-            pictureRect.x() - sourceRect.x() + destOffset.width(),
-            pictureRect.y() - sourceRect.y() + destOffset.height());
+            pictureRect.x() - sourceRect.x() + destOffset.x(),
+            pictureRect.y() - sourceRect.y() + destOffset.y());
         canvas->drawPicture(*update.picture);
 
         // Flush ganesh context so that all the rendered stuff appears on the

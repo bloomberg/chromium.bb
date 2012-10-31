@@ -8,8 +8,6 @@
 #include <list>
 #include <vector>
 
-#include "IntRect.h"
-#include "IntSize.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,6 +15,7 @@
 #include "cc/priority_calculator.h"
 #include "cc/texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/size.h"
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
@@ -39,7 +38,7 @@ public:
     {
         return make_scoped_ptr(new PrioritizedTextureManager(maxMemoryLimitBytes, maxTextureSize, pool));
     }
-    scoped_ptr<PrioritizedTexture> createTexture(IntSize size, GLenum format)
+    scoped_ptr<PrioritizedTexture> createTexture(gfx::Size size, GLenum format)
     {
         return make_scoped_ptr(new PrioritizedTexture(this, size, format));
     }
@@ -145,7 +144,7 @@ private:
     PrioritizedTextureManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool);
 
     bool evictBackingsToReduceMemory(size_t limitBytes, int priorityCutoff, EvictionPolicy, ResourceProvider*);
-    PrioritizedTexture::Backing* createBacking(IntSize, GLenum format, ResourceProvider*);
+    PrioritizedTexture::Backing* createBacking(gfx::Size, GLenum format, ResourceProvider*);
     void evictFirstBackingResource(ResourceProvider*);
     void deleteUnlinkedEvictedBackings();
     void sortBackings();

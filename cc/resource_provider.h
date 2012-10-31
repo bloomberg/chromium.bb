@@ -5,7 +5,6 @@
 #ifndef CCResourceProvider_h
 #define CCResourceProvider_h
 
-#include "IntSize.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,6 +13,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/size.h"
 #include <deque>
 #include <vector>
 
@@ -21,9 +21,13 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
+namespace gfx {
+class Rect;
+class Vector2d;
+}
+
 namespace cc {
 
-class IntRect;
 class LayerTextureSubImage;
 class TextureCopier;
 class TextureUploader;
@@ -46,7 +50,7 @@ public:
     struct TransferableResource {
         unsigned id;
         GLenum format;
-        IntSize size;
+        gfx::Size size;
         Mailbox mailbox;
     };
     typedef std::vector<TransferableResource> TransferableResourceArray;
@@ -78,11 +82,11 @@ public:
     ResourceType resourceType(ResourceId);
 
     // Creates a resource of the default resource type.
-    ResourceId createResource(int pool, const IntSize&, GLenum format, TextureUsageHint);
+    ResourceId createResource(int pool, const gfx::Size&, GLenum format, TextureUsageHint);
 
     // You can also explicitly create a specific resource type.
-    ResourceId createGLTexture(int pool, const IntSize&, GLenum format, TextureUsageHint);
-    ResourceId createBitmap(int pool, const IntSize&);
+    ResourceId createGLTexture(int pool, const gfx::Size&, GLenum format, TextureUsageHint);
+    ResourceId createBitmap(int pool, const gfx::Size&);
     // Wraps an external texture into a GL resource.
     ResourceId createResourceFromExternalTexture(unsigned textureId);
 
@@ -92,7 +96,7 @@ public:
     void deleteOwnedResources(int pool);
 
     // Upload data from image, copying sourceRect (in image) into destRect (in the resource).
-    void upload(ResourceId, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset);
+    void upload(ResourceId, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset);
 
     // Check upload status.
     size_t numBlockingUploads();
@@ -219,8 +223,8 @@ public:
 private:
     struct Resource {
         Resource();
-        Resource(unsigned textureId, int pool, const IntSize& size, GLenum format);
-        Resource(uint8_t* pixels, int pool, const IntSize& size, GLenum format);
+        Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format);
+        Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format);
 
         unsigned glId;
         uint8_t* pixels;
@@ -230,7 +234,7 @@ private:
         bool external;
         bool exported;
         bool markedForDeletion;
-        IntSize size;
+        gfx::Size size;
         GLenum format;
         ResourceType type;
     };

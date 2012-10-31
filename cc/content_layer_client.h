@@ -7,13 +7,16 @@
 
 class SkCanvas;
 
+namespace gfx {
+class Rect;
+class RectF;
+}
+
 namespace cc {
-class FloatRect;
-class IntRect;
 
 class ContentLayerClient {
 public:
-    virtual void paintContents(SkCanvas*, const IntRect& clip, FloatRect& opaque) = 0;
+    virtual void paintContents(SkCanvas*, const gfx::Rect& clip, gfx::RectF& opaque) = 0;
 
 protected:
     virtual ~ContentLayerClient() { }

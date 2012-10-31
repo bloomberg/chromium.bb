@@ -373,7 +373,7 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     renderer->context()->flush();
 
     ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTexture->id());
-    SkBitmap source = RenderSurfaceFilters::apply(filters, lock.textureId(), sourceTexture->size(), filterContext, filterGrContext);
+    SkBitmap source = RenderSurfaceFilters::apply(filters, lock.textureId(), cc::IntSize(sourceTexture->size()), filterContext, filterGrContext);
     return source;
 }
 

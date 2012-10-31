@@ -1130,7 +1130,7 @@ public:
         m_testLayer = testLayer;
     }
 
-    virtual void paintContents(SkCanvas*, const IntRect&, FloatRect&) OVERRIDE
+    virtual void paintContents(SkCanvas*, const gfx::Rect&, gfx::RectF&) OVERRIDE
     {
         // Set layer opacity to 0.
         if (m_testLayer)
@@ -1216,7 +1216,7 @@ class MockContentLayerClient : public ContentLayerClient {
 public:
     bool drawsContent() const { return true; }
     MOCK_CONST_METHOD0(preserves3D, bool());
-    void paintContents(SkCanvas*, const IntRect&, FloatRect&) OVERRIDE { }
+    void paintContents(SkCanvas*, const gfx::Rect&, gfx::RectF&) OVERRIDE { }
     void notifySyncRequired() { }
 };
 
@@ -1272,6 +1272,7 @@ TEST_F(LayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity, runMultiThread)
 {
     runTest(true);
 }
+
 
 class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers : public LayerTreeHostTest {
 public:
@@ -2679,10 +2680,10 @@ void EvictionTestLayer::update(ResourceUpdateQueue& queue, const OcclusionTracke
     createTextureIfNeeded();
     if (!m_texture.get())
         return;
-    IntRect fullRect(0, 0, 10, 10);
 
+    gfx::Rect fullRect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(
-        m_texture.get(), &m_bitmap, fullRect, fullRect, IntSize());
+        m_texture.get(), &m_bitmap, fullRect, fullRect, gfx::Vector2d());
     queue.appendFullUpload(upload);
 }
 

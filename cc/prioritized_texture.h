@@ -5,14 +5,15 @@
 #ifndef CCPrioritizedTexture_h
 #define CCPrioritizedTexture_h
 
-#include "IntRect.h"
-#include "IntSize.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/priority_calculator.h"
 #include "cc/resource_provider.h"
 #include "cc/texture.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
+#include "ui/gfx/vector2d.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
@@ -21,13 +22,13 @@ class PrioritizedTextureManager;
 
 class PrioritizedTexture {
 public:
-    static scoped_ptr<PrioritizedTexture> create(PrioritizedTextureManager* manager, IntSize size, GLenum format)
+    static scoped_ptr<PrioritizedTexture> create(PrioritizedTextureManager* manager, gfx::Size size, GLenum format)
     {
         return make_scoped_ptr(new PrioritizedTexture(manager, size, format));
     }
     static scoped_ptr<PrioritizedTexture> create(PrioritizedTextureManager* manager)
     {
-        return make_scoped_ptr(new PrioritizedTexture(manager, IntSize(), 0));
+        return make_scoped_ptr(new PrioritizedTexture(manager, gfx::Size(), 0));
     }
     ~PrioritizedTexture();
 
@@ -35,9 +36,9 @@ public:
     // Setting these to the same value is a no-op.
     void setTextureManager(PrioritizedTextureManager*);
     PrioritizedTextureManager* textureManager() { return m_manager; }
-    void setDimensions(IntSize, GLenum format);
+    void setDimensions(gfx::Size, GLenum format);
     GLenum format() const { return m_format; }
-    IntSize size() const { return m_size; }
+    gfx::Size size() const { return m_size; }
     size_t bytes() const { return m_bytes; }
     bool contentsSwizzled() const { return m_contentsSwizzled; }
 
@@ -71,7 +72,7 @@ public:
     bool requestLate();
 
     // Uploads pixels into the backing resource. This functions will aquire the backing if needed.
-    void upload(ResourceProvider*, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset);
+    void upload(ResourceProvider*, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset);
 
     ResourceProvider::ResourceId resourceId() const;
 
@@ -91,7 +92,7 @@ private:
 
     class Backing : public Texture {
     public:
-        Backing(unsigned id, ResourceProvider*, IntSize, GLenum format);
+        Backing(unsigned id, ResourceProvider*, gfx::Size, GLenum format);
         ~Backing();
         void updatePriority();
         void updateInDrawingImplTree();
@@ -122,7 +123,7 @@ private:
         DISALLOW_COPY_AND_ASSIGN(Backing);
     };
 
-    PrioritizedTexture(PrioritizedTextureManager*, IntSize, GLenum format);
+    PrioritizedTexture(PrioritizedTextureManager*, gfx::Size, GLenum format);
 
     bool isAbovePriorityCutoff() { return m_isAbovePriorityCutoff; }
     void setAbovePriorityCutoff(bool isAbovePriorityCutoff) { m_isAbovePriorityCutoff = isAbovePriorityCutoff; }
@@ -132,7 +133,7 @@ private:
     void link(Backing*);
     void unlink();
 
-    IntSize m_size;
+    gfx::Size m_size;
     GLenum m_format;
     size_t m_bytes;
     bool m_contentsSwizzled;

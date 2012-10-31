@@ -27,7 +27,7 @@ scoped_ptr<ContentLayerPainter> ContentLayerPainter::create(ContentLayerClient* 
     return make_scoped_ptr(new ContentLayerPainter(client));
 }
 
-void ContentLayerPainter::paint(SkCanvas* canvas, const IntRect& contentRect, FloatRect& opaque)
+void ContentLayerPainter::paint(SkCanvas* canvas, const gfx::Rect& contentRect, gfx::RectF& opaque)
 {
     base::TimeTicks paintStart = base::TimeTicks::HighResNow();
     m_client->paintContents(canvas, contentRect, opaque);

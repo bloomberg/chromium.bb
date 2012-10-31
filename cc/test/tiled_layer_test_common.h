@@ -28,7 +28,7 @@ public:
         Resource(FakeLayerUpdater*, scoped_ptr<cc::PrioritizedTexture>);
         virtual ~Resource();
 
-        virtual void update(cc::ResourceUpdateQueue&, const cc::IntRect&, const cc::IntSize&, bool, cc::RenderingStats&) OVERRIDE;
+        virtual void update(cc::ResourceUpdateQueue&, const gfx::Rect&, const gfx::Vector2d&, bool, cc::RenderingStats&) OVERRIDE;
 
     private:
         FakeLayerUpdater* m_layer;
@@ -39,12 +39,12 @@ public:
 
     virtual scoped_ptr<cc::LayerUpdater::Resource> createResource(cc::PrioritizedTextureManager*) OVERRIDE;
 
-    virtual void prepareToUpdate(const cc::IntRect& contentRect, const cc::IntSize&, float, float, cc::IntRect& resultingOpaqueRect, cc::RenderingStats&) OVERRIDE;
+    virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float, float, gfx::Rect& resultingOpaqueRect, cc::RenderingStats&) OVERRIDE;
     // Sets the rect to invalidate during the next call to prepareToUpdate(). After the next
     // call to prepareToUpdate() the rect is reset.
     void setRectToInvalidate(const cc::IntRect&, FakeTiledLayer*);
     // Last rect passed to prepareToUpdate().
-    const cc::IntRect& lastUpdateRect()  const { return m_lastUpdateRect; }
+    const gfx::Rect& lastUpdateRect()  const { return m_lastUpdateRect; }
 
     // Number of times prepareToUpdate has been invoked.
     int prepareCount() const { return m_prepareCount; }
@@ -55,7 +55,7 @@ public:
     void clearUpdateCount() { m_updateCount = 0; }
     void update() { m_updateCount++; }
 
-    void setOpaquePaintRect(const cc::IntRect& opaquePaintRect) { m_opaquePaintRect = opaquePaintRect; }
+    void setOpaquePaintRect(const gfx::Rect& opaquePaintRect) { m_opaquePaintRect = opaquePaintRect; }
 
 protected:
     virtual ~FakeLayerUpdater();
@@ -64,8 +64,8 @@ private:
     int m_prepareCount;
     int m_updateCount;
     cc::IntRect m_rectToInvalidate;
-    cc::IntRect m_lastUpdateRect;
-    cc::IntRect m_opaquePaintRect;
+    gfx::Rect m_lastUpdateRect;
+    gfx::Rect m_opaquePaintRect;
     scoped_refptr<FakeTiledLayer> m_layer;
 };
 

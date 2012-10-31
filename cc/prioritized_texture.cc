@@ -16,7 +16,7 @@ using namespace std;
 
 namespace cc {
 
-PrioritizedTexture::PrioritizedTexture(PrioritizedTextureManager* manager, IntSize size, GLenum format)
+PrioritizedTexture::PrioritizedTexture(PrioritizedTextureManager* manager, gfx::Size size, GLenum format)
     : m_size(size)
     , m_format(format)
     , m_bytes(0)
@@ -28,7 +28,7 @@ PrioritizedTexture::PrioritizedTexture(PrioritizedTextureManager* manager, IntSi
     , m_manager(0)
 {
     // m_manager is set in registerTexture() so validity can be checked.
-    DCHECK(format || size.isEmpty());
+    DCHECK(format || size.IsEmpty());
     if (format)
         m_bytes = Texture::memorySizeBytes(size, format);
     if (manager)
@@ -51,7 +51,7 @@ void PrioritizedTexture::setTextureManager(PrioritizedTextureManager* manager)
         manager->registerTexture(this);
 }
 
-void PrioritizedTexture::setDimensions(IntSize size, GLenum format)
+void PrioritizedTexture::setDimensions(gfx::Size size, GLenum format)
 {
     if (m_format != format || m_size != size) {
         m_isAbovePriorityCutoff = false;
@@ -91,8 +91,8 @@ ResourceProvider::ResourceId PrioritizedTexture::resourceId() const
 }
 
 void PrioritizedTexture::upload(ResourceProvider* resourceProvider,
-                                  const uint8_t* image, const IntRect& imageRect,
-                                  const IntRect& sourceRect, const IntSize& destOffset)
+                                const uint8_t* image, const gfx::Rect& imageRect,
+                                const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
 {
     DCHECK(m_isAbovePriorityCutoff);
     if (m_isAbovePriorityCutoff)
@@ -127,12 +127,12 @@ void PrioritizedTexture::unlink()
 
 void PrioritizedTexture::setToSelfManagedMemoryPlaceholder(size_t bytes)
 {
-    setDimensions(IntSize(), GL_RGBA);
+    setDimensions(gfx::Size(), GL_RGBA);
     setIsSelfManaged(true);
     m_bytes = bytes;
 }
 
-PrioritizedTexture::Backing::Backing(unsigned id, ResourceProvider* resourceProvider, IntSize size, GLenum format)
+PrioritizedTexture::Backing::Backing(unsigned id, ResourceProvider* resourceProvider, gfx::Size size, GLenum format)
     : Texture(id, size, format)
     , m_owner(0)
     , m_priorityAtLastPriorityUpdate(PriorityCalculator::lowestPriority())

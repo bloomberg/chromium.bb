@@ -41,7 +41,7 @@ protected:
     virtual ~WebContentLayerImpl();
 
     // ContentLayerClient implementation.
-    virtual void paintContents(SkCanvas*, const cc::IntRect& clip, cc::FloatRect& opaque) OVERRIDE;
+    virtual void paintContents(SkCanvas*, const gfx::Rect& clip, gfx::RectF& opaque) OVERRIDE;
 
     scoped_ptr<WebLayerImpl> m_layer;
     WebContentLayerClient* m_client;

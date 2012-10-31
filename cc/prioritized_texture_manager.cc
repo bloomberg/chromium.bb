@@ -394,7 +394,7 @@ void PrioritizedTextureManager::returnBackingTexture(PrioritizedTexture* texture
         texture->unlink();
 }
 
-PrioritizedTexture::Backing* PrioritizedTextureManager::createBacking(IntSize size, GLenum format, ResourceProvider* resourceProvider)
+PrioritizedTexture::Backing* PrioritizedTextureManager::createBacking(gfx::Size size, GLenum format, ResourceProvider* resourceProvider)
 {
     DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
     DCHECK(resourceProvider);

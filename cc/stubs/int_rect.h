@@ -47,6 +47,9 @@ public:
 
     operator gfx::Rect() const { return gfx::Rect(x(), y(), width(), height()); }
 
+    IntPoint location() const { return WebCore::IntRect::location(); }
+    IntSize size() const { return WebCore::IntRect::size(); }
+
 private:
 #if defined(OS_MACOSX)
     operator CGRect() const;

@@ -116,7 +116,7 @@ protected:
 
         for (int i = 0; i < 4; i++) {
             m_textures[i] = PrioritizedTexture::create(
-                m_textureManager.get(), IntSize(300, 150), GL_RGBA);
+                m_textureManager.get(), gfx::Size(300, 150), GL_RGBA);
             m_textures[i]->setRequestPriority(
                 PriorityCalculator::visiblePriority(true));
         }
@@ -132,9 +132,9 @@ protected:
         m_fullUploadCountExpected += count;
         m_totalUploadCountExpected += count;
 
-        const IntRect rect(0, 0, 300, 150);
+        const gfx::Rect rect(0, 0, 300, 150);
         const ResourceUpdate upload = ResourceUpdate::Create(
-            m_textures[textureIndex].get(), &m_bitmap, rect, rect, IntSize());
+            m_textures[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
         for (int i = 0; i < count; i++)
             m_queue->appendFullUpload(upload);
     }
@@ -149,9 +149,9 @@ protected:
         m_partialCountExpected += count;
         m_totalUploadCountExpected += count;
 
-        const IntRect rect(0, 0, 100, 100);
+        const gfx::Rect rect(0, 0, 100, 100);
         const ResourceUpdate upload = ResourceUpdate::Create(
-            m_textures[textureIndex].get(), &m_bitmap, rect, rect, IntSize());
+            m_textures[textureIndex].get(), &m_bitmap, rect, rect, gfx::Vector2d());
         for (int i = 0; i < count; i++)
             m_queue->appendPartialUpload(upload);
     }

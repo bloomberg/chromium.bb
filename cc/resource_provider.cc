@@ -8,7 +8,6 @@
 
 #include <limits.h>
 
-#include "IntRect.h"
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
 #include "base/stl_util.h"
@@ -19,6 +18,8 @@
 #include "cc/texture_uploader.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d.h"
 
 #include <public/WebGraphicsContext3D.h>
 
@@ -80,7 +81,7 @@ ResourceProvider::Resource::Resource()
 {
 }
 
-ResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSize& size, GLenum format)
+ResourceProvider::Resource::Resource(unsigned textureId, int pool, const gfx::Size& size, GLenum format)
     : glId(textureId)
     , pixels(0)
     , pool(pool)
@@ -95,7 +96,7 @@ ResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSize
 {
 }
 
-ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const IntSize& size, GLenum format)
+ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const gfx::Size& size, GLenum format)
     : glId(0)
     , pixels(pixels)
     , pool(pool)
@@ -150,7 +151,7 @@ bool ResourceProvider::inUseByConsumer(ResourceId id)
     return !!resource->lockForReadCount || resource->exported;
 }
 
-ResourceProvider::ResourceId ResourceProvider::createResource(int pool, const IntSize& size, GLenum format, TextureUsageHint hint)
+ResourceProvider::ResourceId ResourceProvider::createResource(int pool, const gfx::Size& size, GLenum format, TextureUsageHint hint)
 {
     switch (m_defaultResourceType) {
     case GLTexture:
@@ -164,7 +165,7 @@ ResourceProvider::ResourceId ResourceProvider::createResource(int pool, const In
     return 0;
 }
 
-ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const IntSize& size, GLenum format, TextureUsageHint hint)
+ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const gfx::Size& size, GLenum format, TextureUsageHint hint)
 {
     DCHECK(Proxy::isImplThread());
     unsigned textureId = 0;
@@ -190,7 +191,7 @@ ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const I
     return id;
 }
 
-ResourceProvider::ResourceId ResourceProvider::createBitmap(int pool, const IntSize& size)
+ResourceProvider::ResourceId ResourceProvider::createBitmap(int pool, const gfx::Size& size)
 {
     DCHECK(Proxy::isImplThread());
 
@@ -207,7 +208,7 @@ ResourceProvider::ResourceId ResourceProvider::createResourceFromExternalTexture
     DCHECK(Proxy::isImplThread());
     DCHECK(m_context->context3D());
     ResourceId id = m_nextId++;
-    Resource resource(textureId, 0, IntSize(), 0);
+    Resource resource(textureId, 0, gfx::Size(), 0);
     resource.external = true;
     m_resources[id] = resource;
     return id;
@@ -265,7 +266,7 @@ ResourceProvider::ResourceType ResourceProvider::resourceType(ResourceId id)
     return resource->type;
 }
 
-void ResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset)
+void ResourceProvider::upload(ResourceId id, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
 {
     DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
@@ -300,7 +301,7 @@ void ResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRect
 
         ScopedWriteLockSoftware lock(this, id);
         SkCanvas* dest = lock.skCanvas();
-        dest->writePixels(srcSubset, destOffset.width(), destOffset.height());
+        dest->writePixels(srcSubset, destOffset.x(), destOffset.y());
     }
 }
 

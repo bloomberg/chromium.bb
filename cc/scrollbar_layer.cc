@@ -80,12 +80,11 @@ public:
         return make_scoped_ptr(new ScrollbarBackgroundPainter(scrollbar, painter, geometry, trackPart));
     }
 
-    virtual void paint(SkCanvas* skCanvas, const IntRect& contentRect, FloatRect&) OVERRIDE
+    virtual void paint(SkCanvas* skCanvas, const gfx::Rect& contentRect, gfx::RectF&) OVERRIDE
     {
         WebKit::WebCanvas* canvas = skCanvas;
         // The following is a simplification of ScrollbarThemeComposite::paint.
-        WebKit::WebRect contentWebRect(contentRect.x(), contentRect.y(), contentRect.width(), contentRect.height());
-        m_painter.paintScrollbarBackground(canvas, contentWebRect);
+        m_painter.paintScrollbarBackground(canvas, contentRect);
 
         if (m_geometry->hasButtons(m_scrollbar)) {
             WebRect backButtonStartPaintRect = m_geometry->backButtonStartRect(m_scrollbar);
@@ -148,7 +147,7 @@ public:
         return make_scoped_ptr(new ScrollbarThumbPainter(scrollbar, painter, geometry));
     }
 
-    virtual void paint(SkCanvas* skCanvas, const IntRect& contentRect, FloatRect& opaque) OVERRIDE
+    virtual void paint(SkCanvas* skCanvas, const gfx::Rect& contentRect, gfx::RectF& opaque) OVERRIDE
     {
         WebKit::WebCanvas* canvas = skCanvas;
 
@@ -226,14 +225,14 @@ void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, Layer
     // Paint and upload the entire part.
     float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
     float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
-    IntRect paintedOpaqueRect;
+    gfx::Rect paintedOpaqueRect;
     painter->prepareToUpdate(rect, rect.size(), widthScale, heightScale, paintedOpaqueRect, stats);
     if (!painter->pixelsDidChange() && texture->texture()->haveBackingTexture()) {
         TRACE_EVENT_INSTANT0("cc","ScrollbarLayer::updatePart no texture upload needed");
         return;
     }
 
-    IntSize destOffset(0, 0);
+    gfx::Vector2d destOffset(0, 0);
     texture->update(queue, rect, destOffset, false, stats);
 }
 

@@ -459,7 +459,7 @@ void TiledLayer::updateTileTextures(const IntRect& paintRect, int left, int top,
     // However, we can't free the memory backing the SkCanvas until the paint finishes,
     // so we grab a local reference here to hold the updater alive until the paint completes.
     scoped_refptr<LayerUpdater> protector(updater());
-    IntRect paintedOpaqueRect;
+    gfx::Rect paintedOpaqueRect;
     updater()->prepareToUpdate(paintRect, m_tiler->tileSize(), 1 / widthScale, 1 / heightScale, paintedOpaqueRect, stats);
 
     for (int j = top; j <= bottom; ++j) {
@@ -480,7 +480,7 @@ void TiledLayer::updateTileTextures(const IntRect& paintRect, int left, int top,
             // Save what was painted opaque in the tile. Keep the old area if the paint didn't touch it, and didn't paint some
             // other part of the tile opaque.
             IntRect tilePaintedRect = intersection(tileRect, paintRect);
-            IntRect tilePaintedOpaqueRect = intersection(tileRect, paintedOpaqueRect);
+            IntRect tilePaintedOpaqueRect = intersection(tileRect, cc::IntRect(paintedOpaqueRect));
             if (!tilePaintedRect.isEmpty()) {
                 IntRect paintInsideTileOpaqueRect = intersection(tile->opaqueRect(), tilePaintedRect);
                 bool paintInsideTileOpaqueRectIsNonOpaque = !tilePaintedOpaqueRect.contains(paintInsideTileOpaqueRect);
@@ -505,14 +505,14 @@ void TiledLayer::updateTileTextures(const IntRect& paintRect, int left, int top,
             const IntPoint anchor = m_tiler->tileRect(tile).location();
 
             // Calculate tile-space rectangle to upload into.
-            IntSize destOffset(sourceRect.x() - anchor.x(), sourceRect.y() - anchor.y());
-            if (destOffset.width() < 0)
+            gfx::Vector2d destOffset(sourceRect.x() - anchor.x(), sourceRect.y() - anchor.y());
+            if (destOffset.x() < 0)
                 CRASH();
-            if (destOffset.height() < 0)
+            if (destOffset.y() < 0)
                 CRASH();
 
             // Offset from paint rectangle to this tile's dirty rectangle.
-            IntPoint paintOffset(sourceRect.x() - paintRect.x(), sourceRect.y() - paintRect.y());
+            gfx::Vector2d paintOffset(sourceRect.x() - paintRect.x(), sourceRect.y() - paintRect.y());
             if (paintOffset.x() < 0)
                 CRASH();
             if (paintOffset.y() < 0)

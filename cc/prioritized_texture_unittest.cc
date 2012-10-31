@@ -617,7 +617,7 @@ TEST_F(PrioritizedTextureTest, clearUploadsToEvictedResources)
     DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
     for (size_t i = 0; i < maxTextures; ++i) {
         const ResourceUpdate upload = ResourceUpdate::Create(
-            textures[i].get(), NULL, IntRect(), IntRect(), IntSize());
+            textures[i].get(), NULL, gfx::Rect(), gfx::Rect(), gfx::Vector2d());
         queue.appendFullUpload(upload);
     }
 

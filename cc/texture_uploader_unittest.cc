@@ -44,11 +44,11 @@ private:
 
 void uploadTexture(TextureUploader* uploader)
 {
-    IntSize size(256, 256);
+    gfx::Size size(256, 256);
     uploader->upload(NULL,
-                     IntRect(IntPoint(0, 0), size),
-                     IntRect(IntPoint(0, 0), size),
-                     IntSize(),
+                     gfx::Rect(gfx::Point(0, 0), size),
+                     gfx::Rect(gfx::Point(0, 0), size),
+                     gfx::Vector2d(),
                      GL_RGBA,
                      size);
 }

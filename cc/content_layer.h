@@ -14,15 +14,13 @@ class SkCanvas;
 namespace cc {
 
 class ContentLayerClient;
-class FloatRect;
-class IntRect;
 class LayerUpdater;
 
 class ContentLayerPainter : public LayerPainter {
 public:
     static scoped_ptr<ContentLayerPainter> create(ContentLayerClient*);
 
-    virtual void paint(SkCanvas*, const IntRect& contentRect, FloatRect& opaque) OVERRIDE;
+    virtual void paint(SkCanvas*, const gfx::Rect& contentRect, gfx::RectF& opaque) OVERRIDE;
 
 private:
     explicit ContentLayerPainter(ContentLayerClient*);

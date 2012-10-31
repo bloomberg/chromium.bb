@@ -23,7 +23,7 @@ public:
         {
         }
 
-        virtual void update(ResourceUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE
+        virtual void update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE
         {
             updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
         }
@@ -45,15 +45,15 @@ public:
         return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
     }
 
-    void updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+    void updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
     {
         // Source rect should never go outside the image pixels, even if this
         // is requested because the texture extends outside the image.
-        IntRect clippedSourceRect = sourceRect;
-        IntRect imageRect = IntRect(0, 0, m_bitmap.width(), m_bitmap.height());
-        clippedSourceRect.intersect(imageRect);
+        gfx::Rect clippedSourceRect = sourceRect;
+        gfx::Rect imageRect = gfx::Rect(0, 0, m_bitmap.width(), m_bitmap.height());
+        clippedSourceRect.Intersect(imageRect);
 
-        IntSize clippedDestOffset = destOffset + IntSize(clippedSourceRect.location() - sourceRect.location());
+        gfx::Vector2d clippedDestOffset = destOffset + (clippedSourceRect.origin() - sourceRect.origin());
 
         ResourceUpdate upload = ResourceUpdate::Create(texture,
                                                        &m_bitmap,

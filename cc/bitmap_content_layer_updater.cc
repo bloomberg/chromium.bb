@@ -23,7 +23,7 @@ BitmapContentLayerUpdater::Resource::~Resource()
 {
 }
 
-void BitmapContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
+void BitmapContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&)
 {
     updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
@@ -48,7 +48,7 @@ scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::createResource(Pri
     return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
 }
 
-void BitmapContentLayerUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)
+void BitmapContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats& stats)
 {
     if (m_canvasSize != contentRect.size()) {
         m_canvasSize = contentRect.size();
@@ -58,7 +58,7 @@ void BitmapContentLayerUpdater::prepareToUpdate(const IntRect& contentRect, cons
     paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
 }
 
-void BitmapContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+void BitmapContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
 {
     ResourceUpdate upload = ResourceUpdate::Create(
         texture,
@@ -76,7 +76,7 @@ void BitmapContentLayerUpdater::setOpaque(bool opaque)
 {
     if (opaque != m_opaque) {
         m_canvas.reset();
-        m_canvasSize = IntSize();
+        m_canvasSize = gfx::Size();
     }
     m_opaque = opaque;
 }

@@ -21,11 +21,11 @@ protected:
     explicit ContentLayerUpdater(scoped_ptr<LayerPainter>);
     virtual ~ContentLayerUpdater();
 
-    void paintContents(SkCanvas*, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&);
-    const IntRect& contentRect() const { return m_contentRect; }
+    void paintContents(SkCanvas*, const gfx::Rect& contentRect, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats&);
+    const gfx::Rect& contentRect() const { return m_contentRect; }
 
 private:
-    IntRect m_contentRect;
+    gfx::Rect m_contentRect;
     scoped_ptr<LayerPainter> m_painter;
 };
 

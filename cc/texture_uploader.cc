@@ -16,6 +16,8 @@
 #include "cc/prioritized_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace {
@@ -147,16 +149,16 @@ void TextureUploader::endQuery()
     m_numBlockingTextureUploads++;
 }
 
-void TextureUploader::upload(const uint8_t* image,
-                             const IntRect& image_rect,
-                             const IntRect& source_rect,
-                             const IntSize& dest_offset,
+void TextureUploader::upload(const uint8* image,
+                             const gfx::Rect& image_rect,
+                             const gfx::Rect& source_rect,
+                             const gfx::Vector2d& dest_offset,
                              GLenum format,
-                             IntSize size)
+                             const gfx::Size& size)
 {
-    CHECK(image_rect.contains(source_rect));
+    CHECK(image_rect.Contains(source_rect));
 
-    bool isFullUpload = dest_offset.isZero() && source_rect.size() == size;
+    bool isFullUpload = dest_offset.IsZero() && source_rect.size() == size;
 
     if (isFullUpload)
         beginQuery();
@@ -173,10 +175,10 @@ void TextureUploader::upload(const uint8_t* image,
         endQuery();
 }
 
-void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
-                                            const IntRect& image_rect,
-                                            const IntRect& source_rect,
-                                            const IntSize& dest_offset,
+void TextureUploader::uploadWithTexSubImage(const uint8* image,
+                                            const gfx::Rect& image_rect,
+                                            const gfx::Rect& source_rect,
+                                            const gfx::Vector2d& dest_offset,
                                             GLenum format)
 {
     // Instrumentation to debug issue 156107
@@ -188,8 +190,8 @@ void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
     int image_rect_y = image_rect.y();
     int image_rect_width = image_rect.width();
     int image_rect_height = image_rect.height();
-    int dest_offset_width = dest_offset.width();
-    int dest_offset_height = dest_offset.height();
+    int dest_offset_x = dest_offset.x();
+    int dest_offset_y = dest_offset.y();
     base::debug::Alias(&image);
     base::debug::Alias(&source_rect_x);
     base::debug::Alias(&source_rect_y);
@@ -199,15 +201,14 @@ void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
     base::debug::Alias(&image_rect_y);
     base::debug::Alias(&image_rect_width);
     base::debug::Alias(&image_rect_height);
-    base::debug::Alias(&dest_offset_width);
-    base::debug::Alias(&dest_offset_height);
+    base::debug::Alias(&dest_offset_x);
+    base::debug::Alias(&dest_offset_y);
     TRACE_EVENT0("cc", "TextureUploader::uploadWithTexSubImage");
 
     // Offset from image-rect to source-rect.
-    IntPoint offset(source_rect.x() - image_rect.x(),
-                    source_rect.y() - image_rect.y());
+    gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
-    const uint8_t* pixel_source;
+    const uint8* pixel_source;
     unsigned int bytes_per_pixel = Texture::bytesPerPixel(format);
 
     if (image_rect.width() == source_rect.width() && !offset.x()) {
@@ -215,7 +216,7 @@ void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
     } else {
         size_t needed_size = source_rect.width() * source_rect.height() * bytes_per_pixel;
         if (m_subImageSize < needed_size) {
-            m_subImage.reset(new uint8_t[needed_size]);
+            m_subImage.reset(new uint8[needed_size]);
             m_subImageSize = needed_size;
         }
         // Strides not equal, so do a row-by-row memcpy from the
@@ -231,8 +232,8 @@ void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
 
     m_context->texSubImage2D(GL_TEXTURE_2D,
                              0,
-                             dest_offset.width(),
-                             dest_offset.height(),
+                             dest_offset.x(),
+                             dest_offset.y(),
                              source_rect.width(),
                              source_rect.height(),
                              format,
@@ -240,10 +241,10 @@ void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
                              pixel_source);
 }
 
-void TextureUploader::uploadWithMapTexSubImage(const uint8_t* image,
-                                               const IntRect& image_rect,
-                                               const IntRect& source_rect,
-                                               const IntSize& dest_offset,
+void TextureUploader::uploadWithMapTexSubImage(const uint8* image,
+                                               const gfx::Rect& image_rect,
+                                               const gfx::Rect& source_rect,
+                                               const gfx::Vector2d& dest_offset,
                                                GLenum format)
 {
     // Instrumentation to debug issue 156107
@@ -255,8 +256,8 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8_t* image,
     int image_rect_y = image_rect.y();
     int image_rect_width = image_rect.width();
     int image_rect_height = image_rect.height();
-    int dest_offset_width = dest_offset.width();
-    int dest_offset_height = dest_offset.height();
+    int dest_offset_x = dest_offset.x();
+    int dest_offset_y = dest_offset.y();
     base::debug::Alias(&image);
     base::debug::Alias(&source_rect_x);
     base::debug::Alias(&source_rect_y);
@@ -266,21 +267,20 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8_t* image,
     base::debug::Alias(&image_rect_y);
     base::debug::Alias(&image_rect_width);
     base::debug::Alias(&image_rect_height);
-    base::debug::Alias(&dest_offset_width);
-    base::debug::Alias(&dest_offset_height);
+    base::debug::Alias(&dest_offset_x);
+    base::debug::Alias(&dest_offset_y);
 
     TRACE_EVENT0("cc", "TextureUploader::uploadWithMapTexSubImage");
 
     // Offset from image-rect to source-rect.
-    IntPoint offset(source_rect.x() - image_rect.x(),
-                    source_rect.y() - image_rect.y());
+    gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
     // Upload tile data via a mapped transfer buffer
-    uint8_t* pixel_dest = static_cast<uint8_t*>(
+    uint8* pixel_dest = static_cast<uint8*>(
         m_context->mapTexSubImage2DCHROMIUM(GL_TEXTURE_2D,
                                             0,
-                                            dest_offset.width(),
-                                            dest_offset.height(),
+                                            dest_offset.x(),
+                                            dest_offset.y(),
                                             source_rect.width(),
                                             source_rect.height(),
                                             format,

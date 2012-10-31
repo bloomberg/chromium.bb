@@ -132,7 +132,7 @@ class MockContentLayerClient : public ContentLayerClient {
 public:
     MockContentLayerClient() { }
     virtual ~MockContentLayerClient() { }
-    virtual void paintContents(SkCanvas*, const IntRect& clip, FloatRect& opaque) OVERRIDE { }
+    virtual void paintContents(SkCanvas*, const gfx::Rect& clip, gfx::RectF& opaque) OVERRIDE { }
 };
 
 scoped_refptr<ContentLayer> createDrawableContentLayer(ContentLayerClient* delegate)

@@ -9,7 +9,7 @@
 
 namespace cc {
 
-void Texture::setDimensions(const IntSize& size, GLenum format)
+void Texture::setDimensions(const gfx::Size& size, GLenum format)
 {
     m_size = size;
     m_format = format;
@@ -17,7 +17,7 @@ void Texture::setDimensions(const IntSize& size, GLenum format)
 
 size_t Texture::bytes() const
 {
-    if (m_size.isEmpty())
+    if (m_size.IsEmpty())
         return 0u;
 
     return memorySizeBytes(m_size, m_format);
@@ -41,7 +41,7 @@ size_t Texture::bytesPerPixel(GLenum format)
     return componentsPerPixel * bytesPerComponent;
 }
 
-size_t Texture::memorySizeBytes(const IntSize& size, GLenum format)
+size_t Texture::memorySizeBytes(const gfx::Size& size, GLenum format)
 {
     return bytesPerPixel(format) * size.width() * size.height();
 }

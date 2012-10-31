@@ -1529,18 +1529,18 @@ class TrackingLayerPainter : public LayerPainter {
 public:
     static scoped_ptr<TrackingLayerPainter> create() { return make_scoped_ptr(new TrackingLayerPainter()); }
 
-    virtual void paint(SkCanvas*, const IntRect& contentRect, FloatRect&) OVERRIDE
+    virtual void paint(SkCanvas*, const gfx::Rect& contentRect, gfx::RectF&) OVERRIDE
     {
         m_paintedRect = contentRect;
     }
 
-    const IntRect& paintedRect() const { return m_paintedRect; }
-    void resetPaintedRect() { m_paintedRect = IntRect(); }
+    const gfx::Rect& paintedRect() const { return m_paintedRect; }
+    void resetPaintedRect() { m_paintedRect = gfx::Rect(); }
 
 private:
     TrackingLayerPainter() { }
 
-    IntRect m_paintedRect;
+    gfx::Rect m_paintedRect;
 };
 
 class UpdateTrackingTiledLayer : public FakeTiledLayer {
