@@ -22,12 +22,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-#if defined(OS_WIN)
-#define MAYBE_TabCapture DISABLED_TabCapture
-#else
-#define MAYBE_TabCapture TabCapture
-#endif // defined (OS_WIN)
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabCapture) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, TabCapture) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
   ASSERT_TRUE(RunExtensionTest("tab_capture/experimental")) << message_;

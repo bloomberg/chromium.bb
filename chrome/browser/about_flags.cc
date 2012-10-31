@@ -764,7 +764,7 @@ const Experiment kExperiments[] = {
     "enable-tab-capture",
     IDS_ENABLE_TAB_CAPTURE_NAME,
     IDS_ENABLE_TAB_CAPTURE_DESCRIPTION,
-    kOsMac | kOsLinux,
+    kOsWin | kOsMac | kOsLinux | kOsCrOS,
     MULTI_VALUE_TYPE(kTabCaptureChoices)
   },
 #if defined(OS_CHROMEOS)
