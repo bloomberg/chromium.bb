@@ -97,6 +97,7 @@ struct drm_compositor {
 
 	struct wl_list sprite_list;
 	int sprites_are_broken;
+	int sprites_hidden;
 
 	int cursors_are_broken;
 
@@ -396,7 +397,10 @@ drm_output_repaint(struct weston_output *output_base,
 			continue;
 
 		ret = drmModeSetPlane(compositor->drm.fd, s->plane_id,
-				      output->crtc_id, s->pending_fb_id, flags,
+				      output->crtc_id,
+				      compositor->sprites_hidden ?
+				      0 : s->pending_fb_id,
+				      flags,
 				      s->dest_x, s->dest_y,
 				      s->dest_w, s->dest_h,
 				      s->src_x, s->src_y,
@@ -2220,6 +2224,15 @@ find_primary_gpu(struct drm_compositor *ec, const char *seat)
 	return drm_device;
 }
 
+static void
+hide_sprites_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		     void *data)
+{
+	struct drm_compositor *c = data;
+
+	c->sprites_hidden ^= 1;
+}
+
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      int connector, const char *seat, int tty,
@@ -2320,6 +2333,10 @@ drm_compositor_create(struct wl_display *display,
 	}
 
 	udev_device_unref(drm_device);
+
+	weston_compositor_add_key_binding(&ec->base, KEY_O,
+					  MODIFIER_CTRL | MODIFIER_ALT,
+					  hide_sprites_binding, ec);
 
 	return &ec->base;
 
