@@ -334,6 +334,9 @@ void ScreenLocker::InitClass() {
 ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+
+  if (authenticator_)
+    authenticator_->SetConsumer(NULL);
   ClearErrors();
 
   VLOG(1) << "Moving desktop background to unlocked container";

@@ -893,12 +893,16 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
   // Screen locker needs new Authenticator instance each time.
   if (ScreenLocker::default_screen_locker()) {
     if (authenticator_)
-      authenticator_->ResetConsumer();
+      authenticator_->SetConsumer(NULL);
     authenticator_ = NULL;
   }
 
-  if (authenticator_ == NULL)
+  if (authenticator_ == NULL) {
     authenticator_ = new ParallelAuthenticator(consumer);
+  } else {
+    // TODO(nkostylev): Fix this hack by improving Authenticator dependencies.
+    authenticator_->SetConsumer(consumer);
+  }
   return authenticator_;
 }
 

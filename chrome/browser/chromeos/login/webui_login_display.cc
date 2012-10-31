@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
@@ -81,8 +82,16 @@ void WebUILoginDisplay::OnLoginSuccess(const std::string& username) {
 }
 
 void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
-  if (webui_handler_ && is_enabled && !UserManager::Get()->IsUserLoggedIn())
+  // TODO(nkostylev): Cleanup this condition,
+  // see http://crbug.com/157885 and http://crbug.com/158255.
+  // Allow this call only before user sign in or at lock screen.
+  // If this call is made after new user signs in but login screen is still
+  // around that would trigger a sign in extension refresh.
+  if (webui_handler_ && is_enabled &&
+      (!UserManager::Get()->IsUserLoggedIn() ||
+       ScreenLocker::default_screen_locker())) {
     webui_handler_->ClearAndEnablePassword();
+  }
 
   if (chromeos::WebUILoginDisplayHost::default_host()) {
     chromeos::WebUILoginDisplayHost* webui_host =

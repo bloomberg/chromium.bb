@@ -15,8 +15,8 @@ Authenticator::Authenticator(LoginStatusConsumer* consumer)
 
 Authenticator::~Authenticator() {}
 
-void Authenticator::ResetConsumer() {
-  consumer_ = NULL;
+void Authenticator::SetConsumer(LoginStatusConsumer* consumer) {
+  consumer_ = consumer;
 }
 
 }  // namespace chromeos
