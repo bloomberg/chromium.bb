@@ -425,6 +425,8 @@ class NinjaWriter:
     if sources:
       pch = None
       if self.flavor == 'win':
+        gyp.msvs_emulation.VerifyMissingSources(
+            sources, self.abs_build_dir, generator_flags, self.GypPathToNinja)
         pch = gyp.msvs_emulation.PrecompiledHeader(
             self.msvs_settings, config_name, self.GypPathToNinja)
       else:
