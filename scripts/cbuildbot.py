@@ -975,7 +975,10 @@ def _FinishParsing(options, args):
       cros_build_lib.Die('Cannot specify both --remote and --local')
 
     if not options.buildbot and not patches:
-      cros_build_lib.Die('Must provide patches when running with --remote.')
+      if not cros_build_lib.BooleanPrompt(
+          prompt="No patches were provided; are you sure you want to just "
+          "run a remote build of ToT?", default=False):
+        cros_build_lib.Die('Must provide patches when running with --remote.')
 
     # --debug needs to be explicitly passed through for remote invocations.
     release_mode_with_patches = (options.buildbot and patches and
