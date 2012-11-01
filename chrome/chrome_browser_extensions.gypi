@@ -368,8 +368,6 @@
         'browser/extensions/bluetooth_event_router.cc',
         'browser/extensions/bluetooth_event_router.h',
         'browser/extensions/browser_action_test_util.h',
-        'browser/extensions/browser_action_test_util_gtk.cc',
-        'browser/extensions/browser_action_test_util_mac.mm',
         'browser/extensions/browser_event_router.cc',
         'browser/extensions/browser_event_router.h',
         'browser/extensions/browser_extension_window_controller.cc',
@@ -781,7 +779,6 @@
                 ['include', '^browser/extensions/'],
 
                 # Other excluded stuff.
-                ['exclude', '^browser/extensions/browser_action_test_util_gtk.cc'],
                 ['exclude', '^browser/extensions/extension_host_mac.h'],
                 ['exclude', '^browser/extensions/extension_host_mac.mm'],
                 ['exclude', '^browser/extensions/external_registry_loader_win.cc'],
