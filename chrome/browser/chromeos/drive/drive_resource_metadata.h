@@ -44,16 +44,6 @@ enum DriveFileType {
   HOSTED_DOCUMENT,
 };
 
-// The root directory content origin.
-enum ContentOrigin {
-  UNINITIALIZED,
-  // Content is initialized.
-  INITIALIZED,
-};
-
-// Converts a ContentOrigin constant to a string of its name.
-std::string ContentOriginToString(ContentOrigin origin);
-
 // The root directory name used for the Google Drive file system tree. The
 // name is used in URLs for the file manager, hence user-visible.
 const FilePath::CharType kDriveRootDirectory[] = FILE_PATH_LITERAL("drive");
@@ -146,9 +136,8 @@ class DriveResourceMetadata {
   int64 largest_changestamp() const { return largest_changestamp_; }
   void set_largest_changestamp(int64 value) { largest_changestamp_ = value; }
 
-  // The root directory content origin.
-  ContentOrigin origin() const { return origin_; }
-  void set_origin(ContentOrigin value) { origin_ = value; }
+  bool initialized() const { return initialized_; }
+  void set_initialized(bool initialized) { initialized_ = initialized; }
 
   // Creates a DriveFile instance.
   scoped_ptr<DriveFile> CreateDriveFile();
@@ -310,7 +299,7 @@ class DriveResourceMetadata {
   base::Time last_serialized_;
   size_t serialized_size_;
   int64 largest_changestamp_;  // Stored in the serialized proto.
-  ContentOrigin origin_;
+  bool initialized_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.

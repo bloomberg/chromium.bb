@@ -402,8 +402,7 @@ void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
-  if (resource_metadata_->origin() == INITIALIZED &&
-      !feed_loader_->refreshing()) {
+  if (resource_metadata_->initialized() && !feed_loader_->refreshing()) {
     feed_loader_->ReloadFromServerIfNeeded(
         base::Bind(&DriveFileSystem::OnUpdateChecked, ui_weak_ptr_));
   }
@@ -529,7 +528,7 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (resource_metadata_->origin() == INITIALIZED) {
+  if (resource_metadata_->initialized()) {
     // The feed has already been loaded, so we have nothing to do, but post a
     // task to the same thread, rather than calling it here, as
     // LoadFeedIfNeeded() is asynchronous.
@@ -1861,7 +1860,7 @@ void DriveFileSystem::OnFeedCacheLoaded(const FileOperationCallback& callback,
 
   // If successfully loaded from the server, notify the success, and check for
   // the latest feed from the server.
-  DCHECK(resource_metadata_->origin() == INITIALIZED);
+  DCHECK(resource_metadata_->initialized());
   NotifyInitialLoadFinishedAndRun(callback, DRIVE_FILE_OK);
   CheckForUpdates();
 }
@@ -2128,7 +2127,8 @@ void DriveFileSystem::UpdateCacheEntryOnUIThread(
 DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
   DriveFileSystemMetadata metadata;
   metadata.largest_changestamp = resource_metadata_->largest_changestamp();
-  metadata.origin = ContentOriginToString(resource_metadata_->origin());
+  metadata.origin = resource_metadata_->initialized() ?
+      "INITIALIZED" : "UNINITIALIZED";
   if (feed_loader_->refreshing())
     metadata.origin += " (refreshing)";
   return metadata;

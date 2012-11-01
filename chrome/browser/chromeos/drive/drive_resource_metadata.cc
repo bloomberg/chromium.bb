@@ -49,15 +49,6 @@ void PostGetEntryInfoWithFilePathCallbackError(
 
 }  // namespace
 
-std::string ContentOriginToString(ContentOrigin origin) {
-  switch (origin) {
-    case UNINITIALIZED: return "UNINITIALIZED";
-    case INITIALIZED: return "INITIALIZED";
-  };
-  NOTREACHED();
-  return "(unknown content origin)";
-}
-
 EntryInfoResult::EntryInfoResult() : error(DRIVE_FILE_ERROR_FAILED) {
 }
 
@@ -193,7 +184,7 @@ DriveResourceMetadata::DriveResourceMetadata()
     : blocking_task_runner_(NULL),
       serialized_size_(0),
       largest_changestamp_(0),
-      origin_(UNINITIALIZED),
+      initialized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   root_ = CreateDriveDirectory().Pass();
   if (!google_apis::util::IsDriveV2ApiEnabled())
@@ -726,7 +717,7 @@ void DriveResourceMetadata::InitResourceMap(
   DCHECK_EQ(resource_map.size(), resource_map_.size());
   DCHECK_EQ(resource_map.size(), serialized_resources->size());
 
-  origin_ = INITIALIZED;
+  initialized_ = true;
 
   callback.Run(DRIVE_FILE_OK);
 }
@@ -795,7 +786,7 @@ bool DriveResourceMetadata::ParseFromString(
 
   root_->FromProto(proto.drive_directory());
 
-  origin_ = INITIALIZED;
+  initialized_ = true;
   largest_changestamp_ = proto.largest_changestamp();
 
   return true;

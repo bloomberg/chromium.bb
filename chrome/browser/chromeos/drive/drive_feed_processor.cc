@@ -56,8 +56,6 @@ void DriveFeedProcessor::ApplyFeeds(
     std::set<FilePath>* changed_dirs) {
   bool is_delta_feed = start_changestamp != 0;
 
-  resource_metadata_->set_origin(INITIALIZED);
-
   int64 delta_feed_changestamp = 0;
   FeedToEntryProtoMapUMAStats uma_stats;
   DriveEntryProtoMap entry_proto_map;
@@ -87,6 +85,7 @@ void DriveFeedProcessor::ApplyEntryProtoMap(
   if (!is_delta_feed) {  // Full update.
     resource_metadata_->root()->RemoveChildren();
     changed_dirs->insert(resource_metadata_->root()->GetFilePath());
+    resource_metadata_->set_initialized(true);
   }
   resource_metadata_->set_largest_changestamp(feed_changestamp);
 
