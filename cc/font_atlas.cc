@@ -12,10 +12,9 @@
 #include "cc/proxy.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 namespace cc {
-
-using namespace std;
 
 FontAtlas::FontAtlas(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
     : m_atlas(bitmap)
@@ -29,7 +28,7 @@ FontAtlas::~FontAtlas()
 {
 }
 
-void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const IntSize& clip) const
+void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const
 {
     DCHECK(Proxy::isImplThread());
 
@@ -68,4 +67,4 @@ void FontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPosition)
     canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(destPosition.x(), destPosition.y(), m_atlas.width(), m_atlas.height()));
 }
 
-} // namespace cc
+}  // namespace cc

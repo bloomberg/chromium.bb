@@ -16,11 +16,10 @@ class SkCanvas;
 
 namespace gfx {
 class Point;
+class Size;
 }
 
 namespace cc {
-
-class IntSize;
 
 // This class provides basic ability to draw text onto the heads-up display.
 class FontAtlas {
@@ -34,10 +33,10 @@ public:
     // Draws multiple lines of text where each line of text is separated by '\n'.
     // - Correct glyphs will be drawn for ASCII codes in the range 32-127; any characters
     //   outside that range will be displayed as a default rectangle glyph.
-    // - IntSize clip is used to avoid wasting time drawing things that are outside the
+    // - gfx::Size clip is used to avoid wasting time drawing things that are outside the
     //   target canvas bounds.
     // - Should only be called only on the impl thread.
-    void drawText(SkCanvas*, const SkPaint&, const std::string& text, const gfx::Point& destPosition, const IntSize& clip) const;
+    void drawText(SkCanvas*, const SkPaint&, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const;
 
     // Draws the entire atlas at the specified position, just for debugging purposes.
     void drawDebugAtlas(SkCanvas*, const gfx::Point& destPosition) const;
