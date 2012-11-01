@@ -79,6 +79,8 @@ void TranslateInfoBarDelegate::Translate() {
   TranslateManager::GetInstance()->TranslatePage(owner()->GetWebContents(),
                                                  original_language_code(),
                                                  target_language_code());
+
+  UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
 }
 
 void TranslateInfoBarDelegate::RevertTranslation() {
@@ -105,6 +107,8 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(owner()->GetWebContents());
   translate_tab_helper->language_state().set_translation_declined(true);
+
+  UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {

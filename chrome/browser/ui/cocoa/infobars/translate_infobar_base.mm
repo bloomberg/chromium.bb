@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -395,7 +394,6 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   DCHECK(state == TranslateInfoBarDelegate::BEFORE_TRANSLATE ||
          state == TranslateInfoBarDelegate::TRANSLATION_ERROR);
   delegate->Translate();
-  UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
 }
 
 // Called when someone clicks on the "Nope" button.
@@ -405,7 +403,6 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   TranslateInfoBarDelegate* delegate = [self delegate];
   DCHECK(delegate->type() == TranslateInfoBarDelegate::BEFORE_TRANSLATE);
   delegate->TranslationDeclined();
-  UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
   [super removeSelf];
 }
 
