@@ -122,8 +122,6 @@ TEST_F(VariationsUtilTest, DisableAfterInitialization) {
   trial->AppendGroup(non_default_name, 100);
   AssociateGoogleVariationID(trial->name(), default_name, kTestValueA);
   AssociateGoogleVariationID(trial->name(), non_default_name, kTestValueB);
-  ASSERT_EQ(non_default_name, trial->group_name());
-  ASSERT_EQ(kTestValueB, GetIDForTrial(trial.get()));
   trial->Disable();
   ASSERT_EQ(default_name, trial->group_name());
   ASSERT_EQ(kTestValueA, GetIDForTrial(trial.get()));
