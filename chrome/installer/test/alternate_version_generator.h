@@ -10,6 +10,7 @@
 #include <string>
 
 class FilePath;
+class Version;
 
 namespace upgrade_test {
 
@@ -33,9 +34,18 @@ bool GenerateAlternateVersion(const FilePath& original_installer_path,
 // Given a path to a PEImage in |original_file|, copy that file to
 // |target_file|, modifying the version of the copy according to |direction|.
 // Any previous file at |target_file| is clobbered. Returns true on success.
+// Note that |target_file| may still be mutated on failure.
 bool GenerateAlternatePEFileVersion(const FilePath& original_file,
                                     const FilePath& target_file,
                                     Direction direction);
+
+// Given a path to a PEImage in |original_file|, copy that file to
+// |target_file|, modifying the version of the copy according to |version|.
+// Any previous file at |target_file| is clobbered. Returns true on success.
+// Note that |target_file| may still be mutated on failure.
+bool GenerateSpecificPEFileVersion(const FilePath& original_file,
+                                   const FilePath& target_file,
+                                   const Version& version);
 
 }  // namespace upgrade_test
 

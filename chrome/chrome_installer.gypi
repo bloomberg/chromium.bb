@@ -74,10 +74,12 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
+            'installer/upgrade_test.gyp:alternate_version_generator_lib',
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:test_support_base',
             '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../chrome/chrome.gyp:chrome_version_resources',
             '../content/content.gyp:content_common',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
@@ -127,6 +129,7 @@
             'installer/util/shell_util_unittest.cc',
             'installer/util/wmi_unittest.cc',
             'installer/util/work_item_list_unittest.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
           ],
           'msvs_settings': {
             'VCManifestTool': {

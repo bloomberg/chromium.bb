@@ -8,6 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -19,6 +20,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/installer/test/alternate_version_generator.h"
 #include "chrome/installer/util/fake_installation_state.h"
 #include "chrome/installer/util/fake_product_state.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -27,6 +29,7 @@
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/product_unittest.h"
+#include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,6 +57,9 @@ class MockInstallerState : public InstallerState {
   }
   const Version& critical_update_version() const {
     return critical_update_version_;
+  }
+  void GetExistingExeVersions(std::set<std::string>* existing_version_strings) {
+    return InstallerState::GetExistingExeVersions(existing_version_strings);
   }
 };
 
@@ -488,6 +494,114 @@ TEST_F(InstallerStateTest, IsFileInUse) {
   // And once the handle is gone, it should no longer be in use.
   EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
 }
+
+
+TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
+  MockInstallerState installer_state;
+  installer_state.set_target_path(test_dir_.path());
+  EXPECT_EQ(test_dir_.path().value(), installer_state.target_path().value());
+
+  const char kOldVersion[] = "2.0.0.0";
+  const char kNewVersion[] = "3.0.0.0";
+  const char kOldChromeExeVersion[] = "2.1.0.0";
+  const char kChromeExeVersion[] = "2.1.1.1";
+  const char kNewChromeExeVersion[] = "3.0.0.0";
+
+  Version new_version(kNewVersion);
+  Version old_version(kOldVersion);
+  Version old_chrome_exe_version(kOldChromeExeVersion);
+  Version chrome_exe_version(kChromeExeVersion);
+  Version new_chrome_exe_version(kNewChromeExeVersion);
+
+  ASSERT_TRUE(new_version.IsValid());
+  ASSERT_TRUE(old_version.IsValid());
+  ASSERT_TRUE(old_chrome_exe_version.IsValid());
+  ASSERT_TRUE(chrome_exe_version.IsValid());
+  ASSERT_TRUE(new_chrome_exe_version.IsValid());
+
+  // Set up a bunch of version dir paths.
+  FilePath version_dirs[] = {
+    installer_state.target_path().Append(L"1.2.3.4"),
+    installer_state.target_path().Append(L"1.2.3.5"),
+    installer_state.target_path().Append(L"1.2.3.6"),
+    installer_state.target_path().Append(ASCIIToWide(kOldVersion)),
+    installer_state.target_path().Append(ASCIIToWide(kOldChromeExeVersion)),
+    installer_state.target_path().Append(L"2.1.1.0"),
+    installer_state.target_path().Append(ASCIIToWide(kChromeExeVersion)),
+    installer_state.target_path().Append(ASCIIToWide(kNewVersion)),
+    installer_state.target_path().Append(L"3.9.1.1"),
+  };
+
+  // Create the version directories.
+  for (int i = 0; i < arraysize(version_dirs); i++) {
+    file_util::CreateDirectory(version_dirs[i]);
+    EXPECT_TRUE(file_util::PathExists(version_dirs[i]));
+  }
+
+  // Create exes with the appropriate version resource.
+  // Use the current test exe as a baseline.
+  FilePath exe_path;
+  ASSERT_TRUE(PathService::Get(base::FILE_EXE, &exe_path));
+
+  struct target_info {
+    FilePath target_file;
+    const Version& target_version;
+  } targets[] = {
+    { installer_state.target_path().Append(installer::kChromeOldExe),
+      old_chrome_exe_version },
+    { installer_state.target_path().Append(installer::kChromeExe),
+      chrome_exe_version },
+    { installer_state.target_path().Append(installer::kChromeNewExe),
+      new_chrome_exe_version },
+  };
+  for (int i = 0; i < arraysize(targets); ++i) {
+    ASSERT_TRUE(upgrade_test::GenerateSpecificPEFileVersion(
+        exe_path, targets[i].target_file, targets[i].target_version));
+  }
+
+  // Call GetExistingExeVersions, validate that picks up the
+  // exe resources.
+  std::set<std::string> expected_exe_versions;
+  expected_exe_versions.insert(kOldChromeExeVersion);
+  expected_exe_versions.insert(kChromeExeVersion);
+  expected_exe_versions.insert(kNewChromeExeVersion);
+
+  std::set<std::string> actual_exe_versions;
+  installer_state.GetExistingExeVersions(&actual_exe_versions);
+  EXPECT_EQ(expected_exe_versions, actual_exe_versions);
+
+  // Call RemoveOldVersionDirectories
+  installer_state.RemoveOldVersionDirectories(new_version,
+                                              &old_version,
+                                              installer_state.target_path());
+
+  // What we expect to have left.
+  std::set<std::string> expected_remaining_dirs;
+  expected_remaining_dirs.insert(kOldVersion);
+  expected_remaining_dirs.insert(kNewVersion);
+  expected_remaining_dirs.insert(kOldChromeExeVersion);
+  expected_remaining_dirs.insert(kChromeExeVersion);
+  expected_remaining_dirs.insert(kNewChromeExeVersion);
+
+  // Enumerate dirs in target_path(), ensure only desired remain.
+  file_util::FileEnumerator version_enum(installer_state.target_path(), false,
+      file_util::FileEnumerator::DIRECTORIES);
+  for (FilePath next_version = version_enum.Next(); !next_version.empty();
+       next_version = version_enum.Next()) {
+    FilePath dir_name(next_version.BaseName());
+    Version version(WideToASCII(dir_name.value()));
+    if (version.IsValid()) {
+      EXPECT_TRUE(expected_remaining_dirs.erase(version.GetString()))
+          << "Unexpected version dir found: " << version.GetString();
+    }
+  }
+
+  std::set<std::string>::const_iterator iter(
+      expected_remaining_dirs.begin());
+  for (; iter != expected_remaining_dirs.end(); ++iter)
+    ADD_FAILURE() << "Expected to find version dir for " << *iter;
+}
+
 
 // A fixture for testing InstallerState::DetermineCriticalVersion.  Individual
 // tests must invoke Initialize() with a critical version.

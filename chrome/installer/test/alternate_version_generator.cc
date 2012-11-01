@@ -39,6 +39,8 @@
 #include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
+#include "base/version.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/test/pe_image_resources.h"
@@ -103,6 +105,16 @@ class ChromeVersion {
     return ChromeVersion(static_cast<ULONGLONG>(high) << 32 |
                          static_cast<ULONGLONG>(low));
   }
+  static ChromeVersion FromString(const std::string& version_string) {
+    Version version(version_string);
+    DCHECK(version.IsValid());
+    const std::vector<uint16>& c(version.components());
+    return ChromeVersion(static_cast<ULONGLONG>(c[0]) << 48 |
+                         static_cast<ULONGLONG>(c[1]) << 32 |
+                         static_cast<ULONGLONG>(c[2]) << 16 |
+                         static_cast<ULONGLONG>(c[3]));
+  }
+
   ChromeVersion() { }
   explicit ChromeVersion(ULONGLONG value) : version_(value) { }
   WORD major() const { return static_cast<WORD>(version_ >> 48); }
@@ -127,6 +139,7 @@ std::wstring ChromeVersion::ToString() const {
   DCHECK_GT(static_cast<int>(arraysize(buffer)), string_len);
   return std::wstring(&buffer[0], string_len);
 }
+
 
 // A read/write mapping of a file.
 // Note: base::MemoryMappedFile is not used because it doesn't support
@@ -331,6 +344,11 @@ void VisitResource(const upgrade_test::EntryPath& path,
 // Updates the version strings and numbers in all of |image_file|'s resources.
 bool UpdateVersionIfMatch(const FilePath& image_file,
                           VisitResourceContext* context) {
+  if (!context ||
+      context->current_version_str.size() < context->new_version_str.size()) {
+    return false;
+  }
+
   bool result = false;
   base::win::ScopedHandle image_handle(base::CreatePlatformFile(
       image_file,
@@ -633,6 +651,29 @@ bool GenerateAlternateVersion(const FilePath& original_installer_path,
 bool GenerateAlternatePEFileVersion(const FilePath& original_file,
                                     const FilePath& target_file,
                                     Direction direction) {
+  VisitResourceContext ctx;
+  if (!GetFileVersion(original_file, &ctx.current_version)) {
+    LOG(DFATAL) << "Failed reading version from \"" << original_file.value()
+                << "\"";
+    return false;
+  }
+  ctx.current_version_str = ctx.current_version.ToString();
+
+  if (!IncrementNewVersion(direction, &ctx)) {
+    LOG(DFATAL) << "Failed to increment version from \""
+                << original_file.value() << "\"";
+    return false;
+  }
+
+  Version new_version(WideToASCII(ctx.new_version_str));
+  GenerateSpecificPEFileVersion(original_file, target_file, new_version);
+
+  return true;
+}
+
+bool GenerateSpecificPEFileVersion(const FilePath& original_file,
+                                   const FilePath& target_file,
+                                   const Version& version) {
   // First copy original_file to target_file.
   if (!file_util::CopyFile(original_file, target_file)) {
     LOG(DFATAL) << "Failed copying \"" << original_file.value()
@@ -647,15 +688,10 @@ bool GenerateAlternatePEFileVersion(const FilePath& original_file,
     return false;
   }
   ctx.current_version_str = ctx.current_version.ToString();
+  ctx.new_version = ChromeVersion::FromString(version.GetString());
+  ctx.new_version_str = ctx.new_version.ToString();
 
-  if (!IncrementNewVersion(direction, &ctx) ||
-      !UpdateVersionIfMatch(target_file, &ctx)) {
-    LOG(DFATAL) << "Failed to update version in \"" << target_file.value()
-                << "\"";
-    return false;
-  }
-
-  return true;
+  return UpdateVersionIfMatch(target_file, &ctx);
 }
 
 }  // namespace upgrade_test

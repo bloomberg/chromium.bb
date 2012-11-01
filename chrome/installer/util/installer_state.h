@@ -5,6 +5,7 @@
 #ifndef CHROME_INSTALLER_UTIL_INSTALLER_STATE_H_
 #define CHROME_INSTALLER_UTIL_INSTALLER_STATE_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -217,6 +218,11 @@ class InstallerState {
       const InstallationState& machine_state);
   bool IsMultiInstallUpdate(const MasterPreferences& prefs,
                             const InstallationState& machine_state);
+
+  // Enumerates all files named one of
+  // [chrome.exe, old_chrome.exe, new_chrome.exe] in target_path_ and
+  // returns their version numbers in a set.
+  void GetExistingExeVersions(std::set<std::string>* existing_versions) const;
 
   // Sets this object's level and updates the root_key_ accordingly.
   void set_level(Level level);
