@@ -6,41 +6,52 @@ cr.define('performance_monitor', function() {
   'use strict';
 
   /**
-   * Array of available time resolutions.
-   * @type {Array.<PerformanceMonitor.TimeResolution>}
+   * Map of available time resolutions.
+   * @type {Object.<string, PerformanceMonitor.TimeResolution>}
    * @private
    */
   var TimeResolutions_ = {
-    // Prior 15 min, resolution of 5s, at most 180 points.
-    // Labels at 12 point (1 min) intervals.
+    // Prior 15 min, resolution of 15 seconds.
     minutes: {id: 0, i18nKey: 'timeLastFifteenMinutes', timeSpan: 900 * 1000,
-              pointResolution: 1000 * 5, labelEvery: 12},
+              pointResolution: 1000 * 15},
 
-    // Prior hour, resolution of 20s, at most 180 points.
-    // Labels at 15 point (5 min) intervals.
+    // Prior hour, resolution of 1 minute.
+    // Labels at 5 point (5 min) intervals.
     hour: {id: 1, i18nKey: 'timeLastHour', timeSpan: 3600 * 1000,
-           pointResolution: 1000 * 20, labelEvery: 15},
+           pointResolution: 1000 * 60},
 
-    // Prior day, resolution of 5 min, at most 288 points.
-    // Labels at 36 point (3 hour) intervals.
+    // Prior day, resolution of 24 min.
+    // Labels at 5 point (2 hour) intervals.
     day: {id: 2, i18nKey: 'timeLastDay', timeSpan: 24 * 3600 * 1000,
-          pointResolution: 1000 * 60 * 5, labelEvery: 36},
+          pointResolution: 1000 * 60 * 24},
 
-    // Prior week, resolution of 1 hr -- at most 168 data points.
-    // Labels at 24 point (daily) intervals.
+    // Prior week, resolution of 2.8 hours (168 min).
+    // Labels at ~8.5 point (daily) intervals.
     week: {id: 3, i18nKey: 'timeLastWeek', timeSpan: 7 * 24 * 3600 * 1000,
-           pointResolution: 1000 * 3600, labelEvery: 24},
+           pointResolution: 1000 * 60 * 168},
 
-    // Prior month (30 days), resolution of 4 hr -- at most 180 data points.
-    // Labels at 42 point (weekly) intervals.
+    // Prior month (30 days), resolution of 12 hours.
+    // Labels at 14 point (weekly) intervals.
     month: {id: 4, i18nKey: 'timeLastMonth', timeSpan: 30 * 24 * 3600 * 1000,
-            pointResolution: 1000 * 3600 * 4, labelEvery: 42},
+            pointResolution: 1000 * 3600 * 12},
 
-    // Prior quarter (90 days), resolution of 12 hr -- at most 180 data points.
-    // Labels at 28 point (fortnightly) intervals.
+    // Prior quarter (90 days), resolution of 36 hours.
+    // Labels at ~9.3 point (fortnightly) intervals.
     quarter: {id: 5, i18nKey: 'timeLastQuarter',
               timeSpan: 90 * 24 * 3600 * 1000,
-              pointResolution: 1000 * 3600 * 12, labelEvery: 28},
+              pointResolution: 1000 * 3600 * 36},
+  };
+
+  /**
+   * Map of available date formats in flot-style format strings.
+   * @type {Object.<string, string>}
+   * @private
+   */
+  var TimeFormats_ = {
+    time: '%h:%M %p',
+    monthDayTime: '%b %d<br/>%h:%M %p',
+    monthDay: '%b %d',
+    yearMonthDay: '%y %b %d',
   };
 
   /*
@@ -193,11 +204,14 @@ cr.define('performance_monitor', function() {
 
     /**
      * The time range which we are currently viewing, with the start and end of
-     * the range, as well as the resolution.
+     * the range, the TimeResolution, and an appropriate for display (this
+     * format is the string structure which flot expects for its setting).
+     * @typedef {{
      * @type {{
      *   start: number,
      *   end: number,
      *   resolution: PerformanceMonitor.TimeResolution
+     *   format: string
      * }}
      * @private
      */
@@ -782,24 +796,35 @@ cr.define('performance_monitor', function() {
      */
     addCategoryChart_: function(category) {
       var chartParent = $('#charts')[0];
-      var chart = document.createElement('div');
+      var chart = $('#chart-template')[0].cloneNode(true);
+      chart.id = '';
+      var yaxisLabel = chart.querySelector('h4');
 
-      chart.className = 'chart';
+      yaxisLabel.innerText = category.unit;
+      // Rotation is weird in html. The length of the text affects the x-axis
+      // placement of the label. We shift it back appropriately.
+      var width = -1 * (yaxisLabel.offsetWidth / 2) + 20;
+      var widthString = width.toString() + 'px';
+      yaxisLabel.style.webkitMarginStart = widthString;
+
+      var grid = chart.querySelector('.grid');
+      chart.grid = grid;
+
       chart.hidden = true;
       chartParent.appendChild(chart);
       this.charts_.push(chart);
       category.homeChart = chart;
       chart.refs = 0;
-      chart.hovers = [];
+      grid.hovers = [];
 
       // Receive hover events from Flot.
       // Attached to chart will be properties 'hovers', a list of {x, div}
       // pairs. As pos events arrive, check each hover to see if it should
       // be hidden or made visible.
-      $(chart).bind('plothover', function(event, pos, item) {
+      $(grid).bind('plothover', function(event, pos, item) {
         var tolerance = this.range_.resolution.pointResolution;
 
-        chart.hovers.forEach(function(hover) {
+        grid.hovers.forEach(function(hover) {
           hover.div.hidden = hover.x < pos.x - tolerance ||
               hover.x > pos.x + tolerance;
         });
@@ -829,7 +854,9 @@ cr.define('performance_monitor', function() {
     /**
      * Set the time range for which to display metrics and events. For
      * now, the time range always ends at 'now', but future implementations
-     * may allow time ranges not so anchored.
+     * may allow time ranges not so anchored. Also set the format string for
+     * flot.
+     *
      * @param {TimeResolution} resolution
      *     The time resolution at which to display the data.
      * @param {number} end Ending time, in ms since epoch, to which to
@@ -856,8 +883,41 @@ cr.define('performance_monitor', function() {
       this.range_.end = Math.floor(end / resolution.pointResolution) *
           resolution.pointResolution;
       this.range_.start = this.range_.end - resolution.timeSpan;
+      this.setTimeFormat_();
 
       this.requestIntervals();
+    },
+
+    /**
+     * Set the format string for flot. For time formats, we display the time
+     * if we are showing data only for the current day; we display the month,
+     * day, and time if we are showing data for multiple days at a fine
+     * resolution; we display the month and day if we are showing data for
+     * multiple days within the same year at course resolution; and we display
+     * the year, month, and day if we are showing data for multiple years.
+     * @private
+     */
+    setTimeFormat_: function() {
+      // If the range is set to a week or less, then we will need to show times.
+      if (this.range_.resolution.id <= TimeResolutions_['week'].id) {
+        var dayStart = new Date();
+        dayStart.setHours(0);
+        dayStart.setMinutes(0);
+
+        if (this.range_.start >= dayStart.getTime())
+          this.range_.format = TimeFormats_['time'];
+        else
+          this.range_.format = TimeFormats_['monthDayTime'];
+      } else {
+        var yearStart = new Date();
+        yearStart.setMonth(0);
+        yearStart.setDate(0);
+
+        if (this.range_.start >= yearStart.getTime())
+          this.range_.format = TimeFormats_['monthDay'];
+        else
+          this.range_.format = TimeFormats_['yearMonthDay'];
+      }
     },
 
     /**
@@ -1156,17 +1216,15 @@ cr.define('performance_monitor', function() {
             date = new Date(point.time + timezoneOffset_);
             hours = date.getHours();
             minutes = date.getMinutes();
-            explanation = eventValue.popupTitle + '\nAt: ' +
-                (date.getMonth() + 1) + '/' + date.getDate() + ' ' +
-                (hours < 10 ? '0' : '') + hours + ':' +
-                (minutes < 10 ? '0' : '') + minutes + '\n';
+            explanation = '<b>' + eventValue.popupTitle + '<br/>' +
+                date.toLocaleString() + '</b><br/>';
 
             for (var key in point) {
               if (key != 'time') {
                 var datum = point[key];
                 if ('label' in datum && 'value' in datum)
-                  explanation = explanation + datum.label + ': ' +
-                      datum.value + '\n';
+                  explanation = explanation + '<b>' + datum.label + ': </b>' +
+                      datum.value + '<br/>';
               }
             }
             markings.push({
@@ -1220,24 +1278,29 @@ cr.define('performance_monitor', function() {
           seriesSeq.push({
             color: metricDetails.color,
             data: metricDetails.data[i],
-            label: i == 0 ? metricDetails.name +
-                ' (' + metricCategory.unit + ')' : null,
-            yaxis: yAxisNumber
+            label: i == 0 ? metricDetails.name : null,
+            yaxis: yAxisNumber,
           });
         }
       });
 
       var markings = this.getEventMarks_(chartData.events);
-      var plot = $.plot(chart, seriesSeq, {
+      var plot = $.plot(chart.grid, seriesSeq, {
         yaxes: yAxes,
         xaxis: {
           mode: 'time',
+          timeformat: this.range_.format,
           min: this.range_.start - timezoneOffset_,
           max: this.range_.end - timezoneOffset_
         },
         points: {show: true, radius: 1},
         lines: {show: true},
-        grid: {markings: markings, hoverable: true, autoHighlight: true}
+        grid: {
+          markings: markings,
+          hoverable: true,
+          autoHighlight: true,
+          backgroundColor: { colors: ['#fff', '#f0f6fc'] },
+        },
       });
 
       // For each event in |markings|, create also a label div, with left
@@ -1250,13 +1313,13 @@ cr.define('performance_monitor', function() {
         var point =
             plot.pointOffset({x: mark.xaxis.to, y: yAxes[0].max, yaxis: 1});
         var labelDiv = labelTemplate.cloneNode(true);
-        labelDiv.innerText = mark.popupContent;
+        labelDiv.innerHTML = mark.popupContent;
         labelDiv.style.left = point.left + 'px';
         labelDiv.style.top = (point.top + 100 * (i % 3)) + 'px';
 
-        chart.appendChild(labelDiv);
+        chart.grid.appendChild(labelDiv);
         labelDiv.hidden = true;
-        chart.hovers.push({x: mark.xaxis.to, div: labelDiv});
+        chart.grid.hovers.push({x: mark.xaxis.to, div: labelDiv});
       }
     }
   };

@@ -1,6 +1,8 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
+
+/* "Performance" title */
 h1 {
   -webkit-margin-after: 1em;
   -webkit-margin-before: 21px;
@@ -13,6 +15,7 @@ h1 {
   line-height: 1;
 }
 
+/* Settings panel category headings */
 h2 {
   -webkit-user-select: none;
   border: 0;
@@ -25,6 +28,7 @@ h2 {
   margin: 0;
 }
 
+/* Settings panel subcategory headings */
 h3 {
   -webkit-margin-after: 3px;
   -webkit-user-select: none;
@@ -32,6 +36,16 @@ h3 {
   font-size: 1em;
   font-weight: normal;
   line-height: 1;
+}
+
+/* Axis labels */
+h4 {
+  -webkit-margin-after: 0;
+  -webkit-margin-before: 0;
+  color: rgb(92, 97, 102);
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 12px;
 }
 
 .accordion {
@@ -128,13 +142,29 @@ input[type='checkbox']:checked+span {
 
 #charts {
   -webkit-margin-start: 200px;
+  min-width: 800px;
+  width: 80%;
 }
 
 .chart {
-  -webkit-margin-before: 21px;
+  position: relative;
+}
+
+.grid {
+  -webkit-margin-after: 15px;
   height: 500px;
-  min-width: 800px;
-  width: 80%;
+  position: relative;
+}
+
+/* This is necessary since rotation does not work well with text elements, which
+ * have an adjustable size. Calculations for each section are listed. */
+.yaxis-label-container {
+  -webkit-transform: rotate(-90deg);
+  left: -238px;  /* .grid height / 2 - h4 line-height */
+  position: absolute;
+  text-align: center;
+  top: 244px;    /* .grid height / 2 - .yaxis-label line-height / 2 */
+  width: 500px;  /* .grid height */
 }
 
 .event-label {
