@@ -1581,13 +1581,6 @@
    fun:GeolocationInfoBarQueueControllerTests::SetUp
 }
 {
-   bug_122183
-   Heapcheck:Leak
-   ...
-   fun:BrowserWithTestWindowTest::AddTab
-   fun:::ChromeToMobileServiceTest_RequirementsToEnable_Test::TestBody
-}
-{
    bug_157885
    Heapcheck:Leak
    ...
