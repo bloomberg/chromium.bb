@@ -7,19 +7,19 @@
 #include "cc/rate_limiter.h"
 
 #include "base/debug/trace_event.h"
-#include "cc/proxy.h"
 #include "cc/thread.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace cc {
 
-scoped_refptr<RateLimiter> RateLimiter::create(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client)
+scoped_refptr<RateLimiter> RateLimiter::create(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client, Thread* thread)
 {
-    return make_scoped_refptr(new RateLimiter(context, client));
+    return make_scoped_refptr(new RateLimiter(context, client, thread));
 }
 
-RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client)
-    : m_context(context)
+RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client, Thread* thread)
+    : m_thread(thread)
+    , m_context(context)
     , m_active(false)
     , m_client(client)
 {
@@ -37,7 +37,7 @@ void RateLimiter::start()
 
     TRACE_EVENT0("cc", "RateLimiter::start");
     m_active = true;
-    Proxy::mainThread()->postTask(base::Bind(&RateLimiter::rateLimitContext, this));
+    m_thread->postTask(base::Bind(&RateLimiter::rateLimitContext, this));
 }
 
 void RateLimiter::stop()

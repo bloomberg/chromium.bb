@@ -7,7 +7,6 @@
 #include "cc/scoped_texture.h"
 
 #include "cc/renderer.h"
-#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +21,6 @@ namespace {
 TEST(ScopedTextureTest, NewScopedTexture)
 {
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
-    DebugScopedSetImplThread implThread;
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
     scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
 
@@ -37,7 +35,6 @@ TEST(ScopedTextureTest, NewScopedTexture)
 TEST(ScopedTextureTest, CreateScopedTexture)
 {
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
-    DebugScopedSetImplThread implThread;
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
     scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
     texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
@@ -54,7 +51,6 @@ TEST(ScopedTextureTest, CreateScopedTexture)
 TEST(ScopedTextureTest, ScopedTextureIsDeleted)
 {
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
-    DebugScopedSetImplThread implThread;
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
 
     {
@@ -82,7 +78,6 @@ TEST(ScopedTextureTest, ScopedTextureIsDeleted)
 TEST(ScopedTextureTest, LeakScopedTexture)
 {
     scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
-    DebugScopedSetImplThread implThread;
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
 
     {

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/time.h"
+#include "base/memory/scoped_ptr.h"
 #include <public/WebCompositorOutputSurface.h>
 
 namespace gfx {
@@ -25,15 +26,21 @@ struct RendererCapabilities;
 // the compositor over to the compositor implementation.
 class Proxy {
 public:
-    static void setMainThread(Thread*);
-    static Thread* mainThread();
-
-    static bool hasImplThread();
-    static void setImplThread(Thread*);
-    static Thread* implThread();
+    Thread* mainThread() const;
+    bool hasImplThread() const;
+    Thread* implThread() const;
 
     // Returns 0 if the current thread is neither the main thread nor the impl thread.
-    static Thread* currentThread();
+    Thread* currentThread() const;
+
+    // Debug hooks
+    bool isMainThread() const;
+    bool isImplThread() const;
+    bool isMainThreadBlocked() const;
+#ifndef NDEBUG
+    void setMainThreadBlocked(bool);
+    void setCurrentThreadIsImplThread(bool);
+#endif
 
     virtual ~Proxy();
 
@@ -89,46 +96,45 @@ public:
 
     virtual void acquireLayerTextures() = 0;
 
-    // Debug hooks
-    static bool isMainThread();
-    static bool isImplThread();
-    static bool isMainThreadBlocked();
-#ifndef NDEBUG
-    static void setMainThreadBlocked(bool);
-#endif
-
     // Testing hooks
     virtual void loseContext() = 0;
 
-#ifndef NDEBUG
-    static void setCurrentThreadIsImplThread(bool);
-#endif
-
 protected:
-    Proxy();
+    explicit Proxy(scoped_ptr<Thread> implThread);
     friend class DebugScopedSetImplThread;
+    friend class DebugScopedSetMainThread;
     friend class DebugScopedSetMainThreadBlocked;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Proxy);
+
+    scoped_ptr<Thread> m_mainThread;
+    scoped_ptr<Thread> m_implThread;
+#ifndef NDEBUG
+    bool m_implThreadIsOverridden;
+    bool m_isMainThreadBlocked;
+#endif
 };
 
 class DebugScopedSetMainThreadBlocked {
 public:
-    DebugScopedSetMainThreadBlocked()
+    explicit DebugScopedSetMainThreadBlocked(Proxy* proxy)
+        : m_proxy(proxy)
     {
 #ifndef NDEBUG
-        DCHECK(!Proxy::isMainThreadBlocked());
-        Proxy::setMainThreadBlocked(true);
+        DCHECK(!m_proxy->isMainThreadBlocked());
+        m_proxy->setMainThreadBlocked(true);
 #endif
     }
     ~DebugScopedSetMainThreadBlocked()
     {
 #ifndef NDEBUG
-        DCHECK(Proxy::isMainThreadBlocked());
-        Proxy::setMainThreadBlocked(false);
+        DCHECK(m_proxy->isMainThreadBlocked());
+        m_proxy->setMainThreadBlocked(false);
 #endif
     }
+private:
+    Proxy* m_proxy;
 };
 
 }

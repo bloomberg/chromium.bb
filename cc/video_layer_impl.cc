@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_host_impl.h"
-#include "cc/proxy.h"
 #include "cc/quad_sink.h"
 #include "cc/resource_provider.h"
 #include "cc/stream_video_draw_quad.h"
@@ -43,14 +42,12 @@ VideoLayerImpl::VideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider,
     // thread is blocked. That makes this a thread-safe call to set the video
     // frame provider client that does not require a lock. The same is true of
     // the call in the destructor.
-    DCHECK(Proxy::isMainThreadBlocked());
     m_provider->setVideoFrameProviderClient(this);
 }
 
 VideoLayerImpl::~VideoLayerImpl()
 {
     // See comment in constructor for why this doesn't need a lock.
-    DCHECK(Proxy::isMainThreadBlocked());
     if (m_provider) {
         m_provider->setVideoFrameProviderClient(0);
         m_provider = 0;
@@ -119,7 +116,6 @@ size_t VideoLayerImpl::numPlanes() const
 
 void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
 {
-    DCHECK(Proxy::isImplThread());
     LayerImpl::willDraw(resourceProvider);
 
     // Explicitly acquire and release the provider mutex so it can be held from
@@ -140,7 +136,6 @@ void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
 
 void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
 {
-    DCHECK(Proxy::isImplThread());
     DCHECK(!m_externalTextureResource);
 
     if (!m_provider) {
@@ -191,8 +186,6 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
 
 void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
-    DCHECK(Proxy::isImplThread());
-
     if (!m_frame)
         return;
 
@@ -253,7 +246,6 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
 
 void VideoLayerImpl::didDraw(ResourceProvider* resourceProvider)
 {
-    DCHECK(Proxy::isImplThread());
     LayerImpl::didDraw(resourceProvider);
 
     if (!m_frame)

@@ -30,8 +30,6 @@ protected:
         m_scrollbarController->setHorizontalScrollbarLayer(m_scrollbarLayer.get());
     }
 
-    DebugScopedSetImplThread implThread;
-
     scoped_ptr<ScrollbarAnimationControllerLinearFade> m_scrollbarController;
     scoped_ptr<LayerImpl> m_scrollLayer;
     LayerImpl* m_contentLayer;

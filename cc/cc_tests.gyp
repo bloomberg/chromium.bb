@@ -59,6 +59,8 @@
       'test/fake_graphics_context_3d_unittest.cc',
       'test/fake_layer_tree_host_client.cc',
       'test/fake_layer_tree_host_client.h',
+      'test/fake_proxy.cc',
+      'test/fake_proxy.h',
       'test/fake_web_compositor_output_surface.h',
       'test/fake_web_compositor_software_output_device.h',
       'test/fake_web_graphics_context_3d.h',

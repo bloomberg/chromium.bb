@@ -21,8 +21,6 @@ namespace {
 
 TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
 {
-    DebugScopedSetImplThread scopedImplThread;
-
     MockQuadCuller quadCuller;
     IntSize layerSize = IntSize(800, 600);
     IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
@@ -42,8 +40,6 @@ TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
 
 TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
 {
-    DebugScopedSetImplThread scopedImplThread;
-
     SkColor testColor = 0xFFA55AFF;
 
     MockQuadCuller quadCuller;
@@ -67,8 +63,6 @@ TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
 
 TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
 {
-    DebugScopedSetImplThread scopedImplThread;
-
     const float opacity = 0.5f;
 
     MockQuadCuller quadCuller;
