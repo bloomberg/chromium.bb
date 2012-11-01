@@ -117,11 +117,11 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
 void PepperMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
-  if (message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
-      message.type() == PpapiHostMsg_PPBTCPSocket_Connect::ID ||
+  if (message.type() == PpapiHostMsg_PPBTCPSocket_Connect::ID ||
       message.type() == PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress::ID ||
       message.type() == PpapiHostMsg_PPBUDPSocket_Bind::ID ||
-      message.type() == PpapiHostMsg_PPBUDPSocket_SendTo::ID) {
+      message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
+      message.type() == PpapiHostMsg_PPBHostResolver_Resolve::ID) {
     *thread = BrowserThread::UI;
   } else if (message.type() == PepperMsg_GetDeviceID::ID) {
     *thread = BrowserThread::FILE;
@@ -285,12 +285,9 @@ void PepperMessageFilter::OnTCPConnect(int32 routing_id,
                                        const std::string& host,
                                        uint16_t port) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::SocketPermissionRequest params(
-      content::SocketPermissionRequest::TCP_CONNECT, host, port);
-  bool allowed = CanUseSocketAPIs(routing_id, params);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&PepperMessageFilter::DoTCPConnect, this,
-          allowed, routing_id, socket_id, host, port));
+          CanUseSocketAPIs(routing_id), routing_id, socket_id, host, port));
 }
 
 void PepperMessageFilter::DoTCPConnect(bool allowed,
@@ -316,11 +313,9 @@ void PepperMessageFilter::OnTCPConnectWithNetAddress(
     uint32 socket_id,
     const PP_NetAddress_Private& net_addr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(routing_id, CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::TCP_CONNECT, net_addr));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&PepperMessageFilter::DoTCPConnectWithNetAddress, this,
-          allowed, routing_id, socket_id, net_addr));
+          CanUseSocketAPIs(routing_id), routing_id, socket_id, net_addr));
 }
 
 void PepperMessageFilter::DoTCPConnectWithNetAddress(
@@ -436,11 +431,9 @@ void PepperMessageFilter::OnUDPBind(int32 routing_id,
                                     uint32 socket_id,
                                     const PP_NetAddress_Private& addr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(routing_id, CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::UDP_BIND, addr));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&PepperMessageFilter::DoUDPBind, this,
-          allowed, routing_id, socket_id, addr));
+          CanUseSocketAPIs(routing_id), routing_id, socket_id, addr));
 }
 
 void PepperMessageFilter::DoUDPBind(bool allowed,
@@ -470,35 +463,16 @@ void PepperMessageFilter::OnUDPRecvFrom(uint32 socket_id, int32_t num_bytes) {
   iter->second->RecvFrom(num_bytes);
 }
 
-void PepperMessageFilter::OnUDPSendTo(int32 routing_id,
-                                      uint32 socket_id,
+void PepperMessageFilter::OnUDPSendTo(uint32 socket_id,
                                       const std::string& data,
                                       const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(routing_id, CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::UDP_SEND_TO, addr));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&PepperMessageFilter::DoUDPSendTo, this,
-          allowed, routing_id, socket_id, data, addr));
-
-}
-
-void PepperMessageFilter::DoUDPSendTo(bool allowed,
-                                      int32 routing_id,
-                                      uint32 socket_id,
-                                      const std::string& data,
-                                      const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UDPSocketMap::iterator iter = udp_sockets_.find(socket_id);
   if (iter == udp_sockets_.end()) {
     NOTREACHED();
     return;
   }
 
-  if (routing_id == iter->second->routing_id() && allowed)
-    iter->second->SendTo(data, addr);
-  else
-    iter->second->SendSendToACKError();
+  iter->second->SendTo(data, addr);
 }
 
 void PepperMessageFilter::OnUDPClose(uint32 socket_id) {
@@ -520,12 +494,10 @@ void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
                                             const PP_NetAddress_Private& addr,
                                             int32_t backlog) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(routing_id, CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::TCP_LISTEN, addr));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&PepperMessageFilter::DoTCPServerListen,
                                      this,
-                                     allowed,
+                                     CanUseSocketAPIs(routing_id),
                                      routing_id,
                                      plugin_dispatcher_id,
                                      socket_resource,
@@ -580,7 +552,33 @@ void PepperMessageFilter::OnHostResolverResolve(
     uint32 host_resolver_id,
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PepperMessageFilter::DoHostResolverResolve, this,
+                 CanUseSocketAPIs(routing_id),
+                 routing_id,
+                 plugin_dispatcher_id,
+                 host_resolver_id,
+                 host_port,
+                 hint));
+}
+
+void PepperMessageFilter::DoHostResolverResolve(
+    bool allowed,
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    uint32 host_resolver_id,
+    const ppapi::HostPortPair& host_port,
+    const PP_HostResolver_Private_Hint& hint) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!allowed) {
+    SendHostResolverResolveACKError(routing_id,
+                                    plugin_dispatcher_id,
+                                    host_resolver_id);
+    return;
+  }
+
   net::HostResolver::RequestInfo request_info(
       net::HostPortPair(host_port.host, host_port.port));
 
@@ -811,8 +809,7 @@ uint32 PepperMessageFilter::GenerateSocketID() {
   return socket_id;
 }
 
-bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id,
-    const content::SocketPermissionRequest& params) {
+bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (process_type_ == PLUGIN) {
     // Always allow socket APIs for out-process plugins.
@@ -830,25 +827,13 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id,
 
   if (!GetContentClient()->browser()->AllowPepperSocketAPI(
           site_instance->GetBrowserContext(),
-          site_instance->GetSiteURL(),
-          params)) {
+          site_instance->GetSiteURL())) {
     LOG(ERROR) << "Host " << site_instance->GetSiteURL().host()
-               << " cannot use socket API or destination is not allowed";
+               << " cannot use socket API";
     return false;
   }
 
   return true;
-}
-
-content::SocketPermissionRequest
-PepperMessageFilter::CreateSocketPermissionRequest(
-    content::SocketPermissionRequest::OperationType type,
-    const PP_NetAddress_Private& net_addr) {
-  std::string host = NetAddressPrivateImpl::DescribeNetAddress(net_addr, false);
-  int port = 0;
-  std::vector<unsigned char> address;
-  NetAddressPrivateImpl::NetAddressToIPEndPoint(net_addr, &address, &port);
-  return content::SocketPermissionRequest(type, host, port);
 }
 
 void PepperMessageFilter::GetAndSendNetworkList() {

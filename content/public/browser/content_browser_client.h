@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "content/public/browser/file_descriptor_info.h"
-#include "content/public/common/socket_permission_request.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/window_container_type.h"
 #include "net/cookies/canonical_cookie.h"
@@ -442,10 +441,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void DidCreatePpapiPlugin(BrowserPpapiHost* browser_host) {}
 
   // Returns true if renderer processes can use Pepper TCP/UDP sockets from
-  // the given origin and connection type.
+  // the given origin.
   virtual bool AllowPepperSocketAPI(BrowserContext* browser_context,
-                                    const GURL& url,
-                                    const SocketPermissionRequest& params);
+                                    const GURL& url);
 
   // Returns true if renderer processes can use private Pepper File APIs.
   virtual bool AllowPepperPrivateFileAPI();

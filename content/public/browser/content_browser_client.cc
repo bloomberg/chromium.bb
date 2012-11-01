@@ -233,9 +233,7 @@ std::string ContentBrowserClient::GetDefaultDownloadName() {
 }
 
 bool ContentBrowserClient::AllowPepperSocketAPI(
-    BrowserContext* browser_context,
-    const GURL& url,
-    const SocketPermissionRequest& params) {
+    BrowserContext* browser_context, const GURL& url) {
   return false;
 }
 

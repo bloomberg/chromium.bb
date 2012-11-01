@@ -80,7 +80,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -1714,9 +1713,7 @@ void ChromeContentBrowserClient::DidCreatePpapiPlugin(
 }
 
 bool ChromeContentBrowserClient::AllowPepperSocketAPI(
-    content::BrowserContext* browser_context,
-    const GURL& url,
-    const content::SocketPermissionRequest& params) {
+    content::BrowserContext* browser_context, const GURL& url) {
   if (!url.is_valid())
     return false;
 
@@ -1752,10 +1749,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   if (!extension)
     return false;
 
-  extensions::SocketPermission::CheckParam extension_params(
-      params.type, params.host, params.port);
-  if (extension->CheckAPIPermissionWithParam(APIPermission::kSocket,
-                                             &extension_params))
+  if (extension->HasAPIPermission(APIPermission::kSocket))
     return true;
 
   return false;

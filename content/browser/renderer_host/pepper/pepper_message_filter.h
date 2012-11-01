@@ -16,7 +16,6 @@
 #include "base/process.h"
 #include "base/time.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/browser/content_browser_client.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/ssl_config_service.h"
@@ -161,8 +160,7 @@ class PepperMessageFilter
                  uint32 socket_id,
                  const PP_NetAddress_Private& addr);
   void OnUDPRecvFrom(uint32 socket_id, int32_t num_bytes);
-  void OnUDPSendTo(int32 routing_id,
-                   uint32 socket_id,
+  void OnUDPSendTo(uint32 socket_id,
                    const std::string& data,
                    const PP_NetAddress_Private& addr);
   void OnUDPClose(uint32 socket_id);
@@ -205,17 +203,18 @@ class PepperMessageFilter
                  int32 routing_id,
                  uint32 socket_id,
                  const PP_NetAddress_Private& addr);
-  void DoUDPSendTo(bool allowed,
-                   int32 routing_id,
-                   uint32 socket_id,
-                   const std::string& data,
-                   const PP_NetAddress_Private& addr);
   void DoTCPServerListen(bool allowed,
                          int32 routing_id,
                          uint32 plugin_dispatcher_id,
                          PP_Resource socket_resource,
                          const PP_NetAddress_Private& addr,
                          int32_t backlog);
+  void DoHostResolverResolve(bool allowed,
+                             int32 routing_id,
+                             uint32 plugin_dispatcher_id,
+                             uint32 host_resolver_id,
+                             const ppapi::HostPortPair& host_port,
+                             const PP_HostResolver_Private_Hint& hint);
 
   void OnX509CertificateParseDER(const std::vector<char>& der,
                                  bool* succeeded,
@@ -233,12 +232,7 @@ class PepperMessageFilter
   uint32 GenerateSocketID();
 
   // Return true if render with given ID can use socket APIs.
-  bool CanUseSocketAPIs(int32 render_id,
-      const content::SocketPermissionRequest& params);
-
-  content::SocketPermissionRequest CreateSocketPermissionRequest(
-      content::SocketPermissionRequest::OperationType type,
-      const PP_NetAddress_Private& net_addr);
+  bool CanUseSocketAPIs(int32 render_id);
 
   void GetAndSendNetworkList();
   void DoGetNetworkList();

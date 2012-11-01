@@ -102,7 +102,7 @@ bool SocketPermission::Check(
   const CheckParam* socket_param = static_cast<const CheckParam*>(param);
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-    if (i->Match(socket_param->request))
+    if (i->Match(socket_param->type, socket_param->host, socket_param->port))
       return true;
   }
   return false;

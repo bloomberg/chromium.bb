@@ -12,7 +12,6 @@
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::SocketPermissionRequest;
 using extensions::SocketPermissionData;
 
 namespace {
@@ -140,59 +139,59 @@ TEST(SocketPermissionTest, Match) {
   SocketPermissionData data;
 
   CHECK(data.Parse("tcp-connect"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 80)));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "www.example.com", 80));
 
   CHECK(data.Parse("udp-send-to::8800"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "www.example.com", 8800));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "smtp.example.com", 8800));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
 
   CHECK(data.Parse("udp-send-to:*.example.com:8800"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "SMTP.example.com", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "wwwexample.com", 8800)));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "www.example.com", 8800));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "smtp.example.com", 8800));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "SMTP.example.com", 8800));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "www.google.com", 8800));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "wwwexample.com", 8800));
 
   CHECK(data.Parse("udp-send-to:*.ExAmPlE.cOm:8800"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "smtp.example.com", 8800)));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "SMTP.example.com", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800)));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "www.example.com", 8800));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "smtp.example.com", 8800));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "SMTP.example.com", 8800));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "www.google.com", 8800));
 
   CHECK(data.Parse("udp-bind::8800"));
-  EXPECT_TRUE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_BIND, "127.0.0.1", 8800)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_BIND, "127.0.0.1", 8888)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80)));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::UDP_SEND_TO, "www.google.com", 8800)));
+  EXPECT_TRUE(data.Match(
+        SocketPermissionData::UDP_BIND, "127.0.0.1", 8800));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::UDP_BIND, "127.0.0.1", 8888));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::UDP_SEND_TO, "www.google.com", 8800));
 
   // Do not wildcard part of ip address.
   CHECK(data.Parse("tcp-connect:*.168.0.1:8800"));
-  EXPECT_FALSE(data.Match(SocketPermissionRequest(
-        SocketPermissionRequest::TCP_CONNECT, "192.168.0.1", 8800)));
+  EXPECT_FALSE(data.Match(
+        SocketPermissionData::TCP_CONNECT, "192.168.0.1", 8800));
 }
 
 TEST(SocketPermissionTest, IPC) {

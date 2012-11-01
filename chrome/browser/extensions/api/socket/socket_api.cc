@@ -23,8 +23,6 @@
 
 namespace extensions {
 
-using content::SocketPermissionRequest;
-
 const char kAddressKey[] = "address";
 const char kPortKey[] = "port";
 const char kBytesWrittenKey[] = "bytesWritten";
@@ -184,17 +182,17 @@ void SocketConnectFunction::AsyncWorkStart() {
     return;
   }
 
-  SocketPermissionRequest::OperationType operation_type;
+  SocketPermissionData::OperationType operation_type;
   switch (socket_->GetSocketType()) {
     case Socket::TYPE_TCP:
-      operation_type = SocketPermissionRequest::TCP_CONNECT;
+      operation_type = SocketPermissionData::TCP_CONNECT;
       break;
     case Socket::TYPE_UDP:
-      operation_type = SocketPermissionRequest::UDP_SEND_TO;
+      operation_type = SocketPermissionData::UDP_SEND_TO;
       break;
     default:
       NOTREACHED() << "Unknown socket type.";
-      operation_type = SocketPermissionRequest::NONE;
+      operation_type = SocketPermissionData::NONE;
       break;
   }
 
@@ -262,7 +260,7 @@ void SocketBindFunction::Work() {
 
   if (socket->GetSocketType() == Socket::TYPE_UDP) {
     SocketPermission::CheckParam param(
-        SocketPermissionRequest::UDP_BIND, address_, port_);
+        SocketPermissionData::UDP_BIND, address_, port_);
     if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
           &param)) {
       error_ = kPermissionError;
@@ -302,7 +300,7 @@ void SocketListenFunction::Work() {
   Socket* socket = GetSocket(params_->socket_id);
   if (socket) {
     SocketPermission::CheckParam param(
-        SocketPermissionRequest::TCP_LISTEN, params_->address, params_->port);
+        SocketPermissionData::TCP_LISTEN, params_->address, params_->port);
     if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
           &param)) {
       error_ = kPermissionError;
@@ -520,7 +518,7 @@ void SocketSendToFunction::AsyncWorkStart() {
   }
 
   if (socket_->GetSocketType() == Socket::TYPE_UDP) {
-    SocketPermission::CheckParam param(SocketPermissionRequest::UDP_SEND_TO,
+    SocketPermission::CheckParam param(SocketPermissionData::UDP_SEND_TO,
         hostname_, port_);
     if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
           &param)) {

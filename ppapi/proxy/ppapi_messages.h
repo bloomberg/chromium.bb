@@ -1528,8 +1528,7 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBUDPSocket_Bind,
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBUDPSocket_RecvFrom,
                      uint32 /* socket_id */,
                      int32_t /* num_bytes */)
-IPC_MESSAGE_CONTROL4(PpapiHostMsg_PPBUDPSocket_SendTo,
-                     int32 /* routing_id */,
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBUDPSocket_SendTo,
                      uint32 /* socket_id */,
                      std::string /* data */,
                      PP_NetAddress_Private /* net_addr */)

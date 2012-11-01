@@ -71,8 +71,7 @@ void UDPSocket::SendRecvFrom(int32_t num_bytes) {
 
 void UDPSocket::SendSendTo(const std::string& data,
                            const PP_NetAddress_Private& addr) {
-  SendToBrowser(new PpapiHostMsg_PPBUDPSocket_SendTo(
-      API_ID_PPB_UDPSOCKET_PRIVATE, socket_id_, data, addr));
+  SendToBrowser(new PpapiHostMsg_PPBUDPSocket_SendTo(socket_id_, data, addr));
 }
 
 void UDPSocket::SendClose() {

@@ -5,7 +5,6 @@
 #ifndef PPAPI_SHARED_IMPL_PRIVATE_NET_ADDRESS_PRIVATE_IMPL_H_
 #define PPAPI_SHARED_IMPL_PRIVATE_NET_ADDRESS_PRIVATE_IMPL_H_
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -32,9 +31,6 @@ class PPAPI_SHARED_EXPORT NetAddressPrivateImpl {
   static bool NetAddressToIPEndPoint(const PP_NetAddress_Private& net_addr,
                                      std::vector<unsigned char>* address,
                                      int* port);
-
-  static std::string DescribeNetAddress(const PP_NetAddress_Private& addr,
-                                        bool include_port);
 
   static const PP_NetAddress_Private kInvalidNetAddress;
 
