@@ -108,5 +108,5 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 base::RefCountedMemory* DownloadsUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_DOWNLOADS_FAVICON, scale_factor);
+      LoadDataResourceBytesForScale(IDR_DOWNLOADS_FAVICON, scale_factor);
 }

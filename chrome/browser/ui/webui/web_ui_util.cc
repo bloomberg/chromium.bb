@@ -51,8 +51,8 @@ std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
 std::string GetBitmapDataUrlFromResource(int res) {
   // Load resource icon and covert to base64 encoded data url
   base::RefCountedStaticMemory* icon_data =
-      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res,
-          ui::SCALE_FACTOR_100P);
+      ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+          res, ui::SCALE_FACTOR_100P);
   if (!icon_data)
     return std::string();
   scoped_refptr<base::RefCountedMemory> raw_icon(icon_data);

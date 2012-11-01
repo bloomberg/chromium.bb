@@ -135,7 +135,8 @@ void ThemeSource::SendThemeBitmap(int request_id,
   } else {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SendResponse(request_id,
-                 rb.LoadDataResourceBytes(resource_id, scale_factor));
+    SendResponse(
+        request_id,
+        rb.LoadDataResourceBytesForScale(resource_id, scale_factor));
   }
 }

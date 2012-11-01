@@ -17,7 +17,6 @@
 #include "grit/locale_settings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // Define the values of standard URLs.
@@ -68,8 +67,7 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "sharingexplain", IDS_CLOUD_PRINT_SETUP_SHARING_EXPLAIN);
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_LOGIN_HTML,
-                            ui::SCALE_FACTOR_NONE));
+        .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_LOGIN_HTML));
     SetFontAndTextDirection(dict);
     response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintGaiaLoginPath) {
@@ -105,8 +103,7 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "getaccesscodeurl", IDS_SYNC_GET_ACCESS_CODE_URL);
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_GAIA_LOGIN_HTML,
-                            ui::SCALE_FACTOR_NONE));
+        .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
     SetFontAndTextDirection(dict);
     response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintSetupDonePath) {
@@ -114,15 +111,13 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "success", IDS_SYNC_SUCCESS);
     AddString(dict, "okay", IDS_SYNC_SETUP_OK_BUTTON_LABEL);
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_DONE_HTML,
-                            ui::SCALE_FACTOR_NONE));
+        .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_DONE_HTML));
     SetFontAndTextDirection(dict);
     response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintSetupFlowPath) {
     static const base::StringPiece html(
         ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_FLOW_HTML,
-                            ui::SCALE_FACTOR_NONE));
+        .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_FLOW_HTML));
     response = html.as_string();
   }
 

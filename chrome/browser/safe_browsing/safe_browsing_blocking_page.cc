@@ -42,7 +42,6 @@
 #include "grit/locale_settings.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -795,22 +794,19 @@ std::string SafeBrowsingBlockingPageV1::GetHTMLContents() {
   if (unsafe_resources_.size() > 1) {
     PopulateMultipleThreatStringDictionary(&strings);
     html = rb.GetRawDataResource(
-        IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK,
-        ui::SCALE_FACTOR_NONE).as_string();
+        IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK).as_string();
   } else {
     SBThreatType threat_type = unsafe_resources_[0].threat_type;
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
       PopulateMalwareStringDictionary(&strings);
       html = rb.GetRawDataResource(
-          IDR_SAFE_BROWSING_MALWARE_BLOCK,
-          ui::SCALE_FACTOR_NONE).as_string();
+          IDR_SAFE_BROWSING_MALWARE_BLOCK).as_string();
     } else {  // Phishing.
       DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
              threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
       PopulatePhishingStringDictionary(&strings);
       html = rb.GetRawDataResource(
-          IDR_SAFE_BROWSING_PHISHING_BLOCK,
-          ui::SCALE_FACTOR_NONE).as_string();
+          IDR_SAFE_BROWSING_PHISHING_BLOCK).as_string();
     }
   }
   interstitial_show_time_ = base::TimeTicks::Now();
@@ -1042,8 +1038,8 @@ std::string SafeBrowsingBlockingPageV2::GetHTMLContents() {
              threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
       PopulatePhishingStringDictionary(&strings);
     }
-    html = rb.GetRawDataResource(IDR_SAFE_BROWSING_MALWARE_BLOCK_V2,
-                                 ui::SCALE_FACTOR_NONE).as_string();
+    html = rb.GetRawDataResource(IDR_SAFE_BROWSING_MALWARE_BLOCK_V2).
+        as_string();
   }
   interstitial_show_time_ = base::TimeTicks::Now();
   return jstemplate_builder::GetTemplatesHtml(html, &strings, "template-root");

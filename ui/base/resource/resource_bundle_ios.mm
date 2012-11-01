@@ -113,7 +113,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
     ui::ScaleFactor scale_factor = supported_scale_factors[0];
 
     scoped_refptr<base::RefCountedStaticMemory> data(
-        LoadDataResourceBytes(resource_id, scale_factor));
+        LoadDataResourceBytesForScale(resource_id, scale_factor));
 
     // Create a data object from the raw bytes.
     scoped_nsobject<NSData> ns_data(

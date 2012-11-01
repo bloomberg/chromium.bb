@@ -147,11 +147,11 @@ void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
   } else if (path == kOptionsBundleJsFile) {
     // Return (and cache) the options javascript code.
     response_bytes = ui::ResourceBundle::GetSharedInstance().
-        LoadDataResourceBytes(IDR_OPTIONS_BUNDLE_JS, ui::SCALE_FACTOR_NONE);
+        LoadDataResourceBytes(IDR_OPTIONS_BUNDLE_JS);
   } else {
     // Return (and cache) the main options html page as the default.
     response_bytes = ui::ResourceBundle::GetSharedInstance().
-        LoadDataResourceBytes(IDR_OPTIONS_HTML, ui::SCALE_FACTOR_NONE);
+        LoadDataResourceBytes(IDR_OPTIONS_HTML);
   }
 
   SendResponse(request_id, response_bytes);
@@ -351,7 +351,7 @@ void OptionsUI::ProcessAutocompleteSuggestions(
 base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_SETTINGS_FAVICON, scale_factor);
+      LoadDataResourceBytesForScale(IDR_SETTINGS_FAVICON, scale_factor);
 }
 
 void OptionsUI::InitializeHandlers() {

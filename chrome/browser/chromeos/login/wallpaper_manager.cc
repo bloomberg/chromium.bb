@@ -37,7 +37,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
@@ -1086,8 +1085,7 @@ void WallpaperManager::MigrateBuiltInWallpaper(const std::string& email) {
       if (type != User::CUSTOMIZED) {
         base::RefCountedStaticMemory* wallpaper =
             ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-                GetWallpaperViewInfo(index, ash::LARGE).id,
-                ui::SCALE_FACTOR_NONE);
+                GetWallpaperViewInfo(index, ash::LARGE).id);
 
         // Saves large wallpaper to user custom wallpaper path.
         wallpaper_path = GetWallpaperPathForUser(email, false);
@@ -1101,8 +1099,7 @@ void WallpaperManager::MigrateBuiltInWallpaper(const std::string& email) {
 
         wallpaper =
             ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-                GetWallpaperViewInfo(index, ash::SMALL).id,
-                ui::SCALE_FACTOR_NONE);
+                GetWallpaperViewInfo(index, ash::SMALL).id);
 
         // Saves small wallpaper to user custom wallpaper thumbnail path.
         wallpaper_path = GetWallpaperPathForUser(email, true);

@@ -726,7 +726,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
 
     const base::StringPiece template_html(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
-            resource_id, ui::SCALE_FACTOR_NONE));
+            resource_id));
     if (template_html.empty()) {
       NOTREACHED() << "unable to load template. ID: " << resource_id;
     } else {

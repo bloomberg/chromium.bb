@@ -303,9 +303,10 @@ bool TopSites::GetPageThumbnail(const GURL& url,
   // Resource bundle is thread safe.
   for (size_t i = 0; i < arraysize(kPrepopulatedPages); i++) {
     if (url == prepopulated_page_urls_[i]) {
-      *bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          kPrepopulatedPages[i].thumbnail_id,
-          ui::SCALE_FACTOR_100P);
+      *bytes = ResourceBundle::GetSharedInstance().
+          LoadDataResourceBytesForScale(
+              kPrepopulatedPages[i].thumbnail_id,
+              ui::SCALE_FACTOR_100P);
       return true;
     }
   }

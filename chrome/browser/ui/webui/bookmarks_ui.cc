@@ -70,5 +70,5 @@ BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 base::RefCountedMemory* BookmarksUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_BOOKMARKS_FAVICON, scale_factor);
+      LoadDataResourceBytesForScale(IDR_BOOKMARKS_FAVICON, scale_factor);
 }

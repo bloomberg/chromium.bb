@@ -18,7 +18,6 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/mime_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -56,7 +55,7 @@ void SharedResourcesDataSource::StartDataRequest(const std::string& path,
   DCHECK_NE(-1, idr) << " path: " << path;
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedStaticMemory> bytes(
-      rb.LoadDataResourceBytes(idr, ui::SCALE_FACTOR_NONE));
+      rb.LoadDataResourceBytes(idr));
 
   SendResponse(request_id, bytes);
 }

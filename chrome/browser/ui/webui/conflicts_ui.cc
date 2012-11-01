@@ -174,7 +174,7 @@ ConflictsUI::ConflictsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 base::RefCountedMemory* ConflictsUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return static_cast<base::RefCountedMemory*>(
-      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
           IDR_CONFLICT_FAVICON, scale_factor));
 }
 

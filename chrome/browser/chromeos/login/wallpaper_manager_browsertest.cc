@@ -102,7 +102,7 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
                              const FilePath& wallpaper_path,
                              int resource_id) {
     scoped_refptr<base::RefCountedStaticMemory> image_data(
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+        ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
             resource_id, ui::SCALE_FACTOR_100P));
     int written = file_util::WriteFile(
         wallpaper_path,
