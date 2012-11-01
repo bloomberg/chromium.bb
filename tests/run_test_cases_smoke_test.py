@@ -54,6 +54,8 @@ class RunTestCases(unittest.TestCase):
     lines = out.splitlines()
 
     for index in range(len(expected_out_re)):
+      if not lines:
+        self.fail((expected_out_re[index:], err))
       line = lines.pop(0)
       self.assertTrue(
           re.match('^%s$' % expected_out_re[index], line),

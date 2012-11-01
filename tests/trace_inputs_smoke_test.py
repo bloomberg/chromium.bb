@@ -35,6 +35,12 @@ class CalledProcessError(subprocess.CalledProcessError):
         'cwd=%s\n%s') % (self.cwd, self.output)
 
 
+class FakeProgress(object):
+  @staticmethod
+  def print_update():
+    pass
+
+
 class TraceInputsBase(unittest.TestCase):
   def setUp(self):
     self.tempdir = tempfile.mkdtemp(prefix='trace_smoke_test')
@@ -436,8 +442,7 @@ class TraceInputsImport(TraceInputsBase):
     parallel = 8
 
     def trace(tracer, cmd, cwd, tracename):
-      resultcode, output = tracer.trace(
-          cmd, cwd, tracename, True)
+      resultcode, output = tracer.trace(cmd, cwd, tracename, True)
       return (tracename, resultcode, output)
 
     with run_test_cases.ThreadPool(parallel) as pool:
@@ -460,7 +465,7 @@ class TraceInputsImport(TraceInputsBase):
             trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace7')
         pool.add_task(
             trace, tracer, self.get_child_command(True), self.cwd, 'trace8')
-        trace_results = pool.join()
+        trace_results = pool.join(FakeProgress())
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
     actual_results = api.parse_log(self.log, blacklist, None)

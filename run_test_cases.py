@@ -203,24 +203,34 @@ def call_with_timeout(cmd, timeout, **kwargs):
   return output, proc.returncode
 
 
-class QueueWithTimeout(Queue.Queue):
-  """Implements timeout support in join()."""
+class QueueWithProgress(Queue.Queue):
+  """Implements progress support in join()."""
+  def task_done(self):
+    """Contrary to Queue.task_done(), it wakes self.all_tasks_done at each task
+    done.
+    """
+    self.all_tasks_done.acquire()
+    try:
+      unfinished = self.unfinished_tasks - 1
+      if unfinished < 0:
+        raise ValueError('task_done() called too many times')
+      self.unfinished_tasks = unfinished
+      # This is less efficient, because we want the Progress to be updated.
+      self.all_tasks_done.notify_all()
+    finally:
+      self.all_tasks_done.release()
 
-  # QueueWithTimeout.join: Arguments number differs from overridden method
+  # QueueWithProgress.join: Arguments number differs from overridden method
   # pylint: disable=W0221
-  def join(self, timeout=None):
-    """Returns True if all tasks are finished."""
-    if not timeout:
-      return Queue.Queue.join(self)
-    start = time.time()
+  def join(self, progress):
+    """Calls print_update() whenever possible."""
+    progress.print_update()
     self.all_tasks_done.acquire()
     try:
       while self.unfinished_tasks:
-        remaining = time.time() - start - timeout
-        if remaining <= 0:
-          break
-        self.all_tasks_done.wait(remaining)
-      return not self.unfinished_tasks
+        progress.print_update()
+        self.all_tasks_done.wait()
+      progress.print_update()
     finally:
       self.all_tasks_done.release()
 
@@ -263,7 +273,7 @@ class ThreadPool(object):
   """
   def __init__(self, num_threads):
     logging.debug('Creating ThreadPool')
-    self._tasks = QueueWithTimeout()
+    self._tasks = QueueWithProgress()
     self._workers = [
       WorkerThread(self._tasks, name='worker-%d' % i)
       for i in range(num_threads)
@@ -277,14 +287,9 @@ class ThreadPool(object):
     """
     self._tasks.put((func, args, kwargs))
 
-  def join(self, progress=None, timeout=None):
+  def join(self, progress):
     """Extracts all the results from each threads unordered."""
-    if progress and timeout:
-      while not self._tasks.join(timeout):
-        progress.print_update()
-      progress.print_update()
-    else:
-      self._tasks.join()
+    self._tasks.join(progress)
     out = []
     # Look for exceptions.
     for w in self._workers:
@@ -704,7 +709,7 @@ def run_test_cases(
     for test_case in test_cases:
       pool.add_task(function, test_case)
     logging.debug('All tests added to the ThreadPool')
-    results = pool.join(progress, 0.1)
+    results = pool.join(progress)
     duration = time.time() - progress.start
 
   results = dict((item[0]['test_case'], item) for item in results if item)

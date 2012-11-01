@@ -93,7 +93,7 @@ def trace_test_cases(cmd, cwd_dir, test_cases, jobs, logname):
       for test_case in test_cases:
         pool.add_task(function, test_case)
 
-      results = pool.join(progress, 0.1)
+      results = pool.join(progress)
   print('')
   return results
 
