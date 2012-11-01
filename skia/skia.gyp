@@ -222,7 +222,7 @@
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
         'SK_DEFERRED_CANVAS_USES_GPIPE=1',
-        
+
         # this flag can be removed entirely once this has baked for a while
         'SK_ALLOW_OVER_32K_BITMAPS',
 
@@ -287,7 +287,7 @@
             'SK_GAMMA_CONTRAST=0.0',
           ],
         }],
-        
+
         # For POSIX platforms, prefer the Mutex implementation provided by Skia
         # since it does not generate static initializers.
         [ 'OS == "android" or OS == "linux" or OS == "mac" or OS == "ios"', {
@@ -716,9 +716,6 @@
           ],
           'sources': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
-            '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
-            '../third_party/skia/src/opts/SkBlitRow_opts_arm.h',
-            '../third_party/skia/src/opts/opts_check_arm.cpp',
           ],
         }],
         [ 'armv7 == 1 and arm_neon == 0', {
@@ -735,14 +732,19 @@
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h',
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp',
-        ],
+          ],
         }],
-        [ 'target_arch == "arm" and armv7 != 1', {
+        [ 'target_arch == "arm" and armv7 == 0', {
           'sources': [
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+            '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
           ],
-          'sources!': [
+        }],
+        [ 'target_arch == "arm" and armv7 == 1', {
+          'sources': [
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkBlitRow_opts_arm.h',
+            '../third_party/skia/src/opts/opts_check_arm.cpp',
           ],
         }],
       ],
