@@ -963,6 +963,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
   the images we want per the build spec."""
 
   option_name = 'build'
+  PGO_DISK_LAYOUT = '2gb-rootfs'
 
   def __init__(self, options, build_config, board, archive_stage, version):
     super(BuildTargetStage, self).__init__(options, build_config, board)
@@ -1009,7 +1010,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     disk_layout = None
     if (self._build_config['useflags'] and
         'pgo_generate' in self._build_config['useflags']):
-      disk_layout = 'pgo'
+      disk_layout = self.PGO_DISK_LAYOUT
 
     rootfs_verification = self._build_config['rootfs_verification']
     commands.BuildImage(self._build_root,

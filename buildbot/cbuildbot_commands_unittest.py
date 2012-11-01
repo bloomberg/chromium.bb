@@ -449,6 +449,52 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     commands.PushImages(buildroot, board, branch_name, archive_url, False, None)
     self.mox.VerifyAll()
 
+  def testBuildImage(self):
+    """Test Basic BuildImage Command."""
+    buildroot = '/bob'
+    board = 'board_name'
+
+    cros_build_lib.RunCommand(
+        ['./build_image',
+         '--board=%s' % board,
+         '--replace',
+         '--version=',
+         'base'],
+      cwd=buildroot,
+      enter_chroot=True,
+      extra_env=None)
+
+    self.mox.ReplayAll()
+    commands.BuildImage(buildroot, board, None)
+    self.mox.VerifyAll()
+
+  def testCompleteBuildImage(self):
+    """Test Complete BuildImage Command."""
+    buildroot = '/paul'
+    board = 'columbia'
+    images_to_build = ['bob', 'carol', 'ted', 'alice',]
+    version = '1969'
+    disk_layout = '2+2'
+    extra_env = {'LOVE': 'free'}
+
+    cros_build_lib.RunCommand([
+      './build_image',
+      '--board=%s' % board,
+      '--replace',
+      '--version=%s' % version,
+      '--noenable_rootfs_verification',
+      '--disk_layout=%s' % disk_layout, ]
+      + images_to_build,
+      cwd=buildroot,
+      enter_chroot=True,
+      extra_env=extra_env)
+
+    self.mox.ReplayAll()
+    commands.BuildImage(buildroot, board, images_to_build,
+      rootfs_verification=False, extra_env=extra_env, disk_layout=disk_layout,
+      version=version)
+    self.mox.VerifyAll()
+
   def testPushImages2(self):
     """Test PushImages Command with profile."""
     buildroot = '/bob'

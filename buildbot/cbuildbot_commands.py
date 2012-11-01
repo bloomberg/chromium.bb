@@ -329,10 +329,10 @@ def BuildImage(buildroot, board, images_to_build, version='',
   if not rootfs_verification:
     cmd += ['--noenable_rootfs_verification']
 
-  cmd += images_to_build
+  if disk_layout:
+    cmd += ['--disk_layout=%s' % disk_layout]
 
-  if disk_layout is not None:
-    cmd += '--disk_layout=%s' % disk_layout
+  cmd += images_to_build
 
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 

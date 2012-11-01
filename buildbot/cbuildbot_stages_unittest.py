@@ -938,7 +938,8 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['usepkg_build_packages'] = True
     self.build_config['images'] = ['base', 'dev', 'test', 'factory_test',
                                    'factory_install']
-    self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
+    self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE',
+                                     'pgo_generate']
     self.build_config['skip_toolchain_update'] = False
     self.build_config['nowithdebug'] = False
     self.build_config['hw_tests'] = ['bvt']
@@ -972,7 +973,7 @@ class BuildTargetStageTest(AbstractStageTest):
     commands.BuildImage(self.build_root, self._current_board,
                         ['test', 'base', 'dev'], version=self.version,
                         rootfs_verification=True,
-                        disk_layout=None, extra_env=proper_env)
+                        disk_layout='2gb-rootfs', extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     extra_env=proper_env)
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
