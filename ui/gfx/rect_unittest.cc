@@ -606,4 +606,69 @@ TEST(RectTest, ToRectF) {
   EXPECT_EQ(b, a);
 }
 
+TEST(RectTest, BoundingRect) {
+  struct {
+    gfx::Point a;
+    gfx::Point b;
+    gfx::Rect expected;
+  } int_tests[] = {
+    // If point B dominates A, then A should be the origin.
+    { gfx::Point(4, 6), gfx::Point(4, 6), gfx::Rect(4, 6, 0, 0) },
+    { gfx::Point(4, 6), gfx::Point(8, 6), gfx::Rect(4, 6, 4, 0) },
+    { gfx::Point(4, 6), gfx::Point(4, 9), gfx::Rect(4, 6, 0, 3) },
+    { gfx::Point(4, 6), gfx::Point(8, 9), gfx::Rect(4, 6, 4, 3) },
+    // If point A dominates B, then B should be the origin.
+    { gfx::Point(4, 6), gfx::Point(4, 6), gfx::Rect(4, 6, 0, 0) },
+    { gfx::Point(8, 6), gfx::Point(4, 6), gfx::Rect(4, 6, 4, 0) },
+    { gfx::Point(4, 9), gfx::Point(4, 6), gfx::Rect(4, 6, 0, 3) },
+    { gfx::Point(8, 9), gfx::Point(4, 6), gfx::Rect(4, 6, 4, 3) },
+    // If neither point dominates, then the origin is a combination of the two.
+    { gfx::Point(4, 6), gfx::Point(6, 4), gfx::Rect(4, 4, 2, 2) },
+    { gfx::Point(-4, -6), gfx::Point(-6, -4), gfx::Rect(-6, -6, 2, 2) },
+    { gfx::Point(-4, 6), gfx::Point(6, -4), gfx::Rect(-4, -4, 10, 10) },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_tests); ++i) {
+    gfx::Rect actual = BoundingRect(int_tests[i].a, int_tests[i].b);
+    EXPECT_EQ(int_tests[i].expected.ToString(), actual.ToString());
+  }
+
+  struct {
+    gfx::PointF a;
+    gfx::PointF b;
+    gfx::RectF expected;
+  } float_tests[] = {
+    // If point B dominates A, then A should be the origin.
+    { gfx::PointF(4.2f, 6.8f), gfx::PointF(4.2f, 6.8f),
+      gfx::RectF(4.2f, 6.8f, 0, 0) },
+    { gfx::PointF(4.2f, 6.8f), gfx::PointF(8.5f, 6.8f),
+      gfx::RectF(4.2f, 6.8f, 4.3f, 0) },
+    { gfx::PointF(4.2f, 6.8f), gfx::PointF(4.2f, 9.3f),
+      gfx::RectF(4.2f, 6.8f, 0, 2.5f) },
+    { gfx::PointF(4.2f, 6.8f), gfx::PointF(8.5f, 9.3f),
+      gfx::RectF(4.2f, 6.8f, 4.3f, 2.5f) },
+    // If point A dominates B, then B should be the origin.
+    { gfx::PointF(4.2f, 6.8f), gfx::PointF(4.2f, 6.8f),
+      gfx::RectF(4.2f, 6.8f, 0, 0) },
+    { gfx::PointF(8.5f, 6.8f), gfx::PointF(4.2f, 6.8f),
+      gfx::RectF(4.2f, 6.8f, 4.3f, 0) },
+    { gfx::PointF(4.2f, 9.3f), gfx::PointF(4.2f, 6.8f),
+      gfx::RectF(4.2f, 6.8f, 0, 2.5f) },
+    { gfx::PointF(8.5f, 9.3f), gfx::PointF(4.2f, 6.8f),
+      gfx::RectF(4.2f, 6.8f, 4.3f, 2.5f) },
+    // If neither point dominates, then the origin is a combination of the two.
+    { gfx::PointF(4.2f, 6.8f), gfx::PointF(6.8f, 4.2f),
+      gfx::RectF(4.2f, 4.2f, 2.6f, 2.6f) },
+    { gfx::PointF(-4.2f, -6.8f), gfx::PointF(-6.8f, -4.2f),
+      gfx::RectF(-6.8f, -6.8f, 2.6f, 2.6f) },
+    { gfx::PointF(-4.2f, 6.8f), gfx::PointF(6.8f, -4.2f),
+      gfx::RectF(-4.2f, -4.2f, 11.0f, 11.0f) }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_tests); ++i) {
+    gfx::RectF actual = BoundingRect(float_tests[i].a, float_tests[i].b);
+    EXPECT_EQ(float_tests[i].expected.ToString(), actual.ToString());
+  }
+}
+
 }  // namespace ui

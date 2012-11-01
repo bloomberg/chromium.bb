@@ -4,6 +4,8 @@
 
 #include "ui/gfx/rect.h"
 
+#include <cmath>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(TOOLKIT_GTK)
@@ -104,6 +106,14 @@ Rect SubtractRects(const Rect& a, const Rect& b) {
   Rect result = a;
   result.Subtract(b);
   return result;
+}
+
+Rect BoundingRect(const Point& p1, const Point& p2) {
+  int rx = std::min(p1.x(), p2.x());
+  int ry = std::min(p1.y(), p2.y());
+  int rr = std::max(p1.x(), p2.x());
+  int rb = std::max(p1.y(), p2.y());
+  return Rect(rx, ry, rr - rx, rb - ry);
 }
 
 }  // namespace gfx
