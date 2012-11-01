@@ -96,7 +96,7 @@ private:
     void beginFrame();
     void didCommitAndDrawFrame();
     void didCompleteSwapBuffers();
-    void setAnimationEvents(AnimationEventsVector*, base::Time wallClockTime);
+    void setAnimationEvents(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime);
     void beginContextRecreation();
     void tryToRecreateContext();
 
@@ -116,12 +116,12 @@ private:
     void initializeImplOnImplThread(CompletionEvent*, InputHandler*);
     void setSurfaceReadyOnImplThread();
     void setVisibleOnImplThread(CompletionEvent*, bool);
-    void initializeContextOnImplThread(GraphicsContext*);
+    void initializeContextOnImplThread(scoped_ptr<GraphicsContext>);
     void initializeRendererOnImplThread(CompletionEvent*, bool* initializeSucceeded, RendererCapabilities*);
     void layerTreeHostClosedOnImplThread(CompletionEvent*);
     void setFullRootLayerDamageOnImplThread();
     void acquireLayerTexturesForMainThreadOnImplThread(CompletionEvent*);
-    void recreateContextOnImplThread(CompletionEvent*, GraphicsContext*, bool* recreateSucceeded, RendererCapabilities*);
+    void recreateContextOnImplThread(CompletionEvent*, scoped_ptr<GraphicsContext>, bool* recreateSucceeded, RendererCapabilities*);
     void renderingStatsOnImplThread(CompletionEvent*, RenderingStats*);
     ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapInternal(bool forcedDraw);
     void forceSerializeOnSwapBuffersOnImplThread(CompletionEvent*);

@@ -155,7 +155,7 @@ bool ThreadProxy::initializeContext()
     if (!context.get())
         return false;
 
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeContextOnImplThread, base::Unretained(this), context.release()));
+    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeContextOnImplThread, base::Unretained(this), base::Passed(context.Pass())));
     return true;
 }
 
@@ -234,7 +234,7 @@ bool ThreadProxy::recreateContext()
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::recreateContextOnImplThread,
                                              base::Unretained(this),
                                              &completion,
-                                             context.release(),
+                                             base::Passed(context.Pass()),
                                              &recreateSucceeded,
                                              &capabilities));
     completion.wait();
@@ -346,7 +346,7 @@ void ThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<Animati
 {
     DCHECK(isImplThread());
     TRACE_EVENT0("cc", "ThreadProxy::postAnimationEventsToMainThreadOnImplThread");
-    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::setAnimationEvents, base::Unretained(this), events.release(), wallClockTime));
+    m_mainThreadProxy->postTask(FROM_HERE, base::Bind(&ThreadProxy::setAnimationEvents, base::Unretained(this), base::Passed(events.Pass()), wallClockTime));
 }
 
 bool ThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff)
@@ -861,10 +861,8 @@ void ThreadProxy::didCompleteSwapBuffers()
     m_layerTreeHost->didCompleteSwapBuffers();
 }
 
-void ThreadProxy::setAnimationEvents(AnimationEventsVector* passed_events, base::Time wallClockTime)
+void ThreadProxy::setAnimationEvents(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
 {
-    scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(passed_events));
-
     TRACE_EVENT0("cc", "ThreadProxy::setAnimationEvents");
     DCHECK(isMainThread());
     if (!m_layerTreeHost)
@@ -913,11 +911,11 @@ void ThreadProxy::initializeImplOnImplThread(CompletionEvent* completion, InputH
     completion->signal();
 }
 
-void ThreadProxy::initializeContextOnImplThread(GraphicsContext* context)
+void ThreadProxy::initializeContextOnImplThread(scoped_ptr<GraphicsContext> context)
 {
     TRACE_EVENT0("cc", "ThreadProxy::initializeContextOnImplThread");
     DCHECK(isImplThread());
-    m_contextBeforeInitializationOnImplThread = scoped_ptr<GraphicsContext>(context).Pass();
+    m_contextBeforeInitializationOnImplThread = context.Pass();
 }
 
 void ThreadProxy::initializeRendererOnImplThread(CompletionEvent* completion, bool* initializeSucceeded, RendererCapabilities* capabilities)
@@ -959,14 +957,14 @@ size_t ThreadProxy::maxPartialTextureUpdates() const
     return ResourceUpdateController::maxPartialTextureUpdates();
 }
 
-void ThreadProxy::recreateContextOnImplThread(CompletionEvent* completion, GraphicsContext* contextPtr, bool* recreateSucceeded, RendererCapabilities* capabilities)
+void ThreadProxy::recreateContextOnImplThread(CompletionEvent* completion, scoped_ptr<GraphicsContext> context, bool* recreateSucceeded, RendererCapabilities* capabilities)
 {
     TRACE_EVENT0("cc", "ThreadProxy::recreateContextOnImplThread");
     DCHECK(isImplThread());
     ResourceProvider::debugNotifyEnterZone(0x7000000);
     m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     ResourceProvider::debugNotifyLeaveZone();
-    *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(scoped_ptr<GraphicsContext>(contextPtr).Pass());
+    *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(context.Pass());
     if (*recreateSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();
         m_schedulerOnImplThread->didRecreateContext();
