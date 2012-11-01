@@ -227,7 +227,6 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
 
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
-  root_window_event_filter_->AddFilter(x11_window_move_client_.get());
   aura::client::SetWindowMoveClient(root_window_,
                                     x11_window_move_client_.get());
 
@@ -308,7 +307,6 @@ void DesktopRootWindowHostLinux::Close() {
 void DesktopRootWindowHostLinux::CloseNow() {
   // Remove the event listeners we've installed. We need to remove these
   // because otherwise we get assert during ~RootWindow().
-  root_window_event_filter_->RemoveFilter(x11_window_move_client_.get());
   root_window_event_filter_->RemoveFilter(x11_window_event_filter_.get());
   root_window_event_filter_->RemoveFilter(input_method_filter_.get());
 
@@ -665,16 +663,36 @@ gfx::Rect DesktopRootWindowHostLinux::GetBounds() const {
 }
 
 void DesktopRootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
-  bool size_changed = bounds.size() != bounds_.size();
+  bool origin_changed = bounds_.origin() != bounds.origin();
+  bool size_changed = bounds_.size() != bounds.size();
+  XWindowChanges changes = {0};
+  unsigned value_mask = 0;
 
-  if (bounds != bounds_) {
-    XMoveResizeWindow(xdisplay_, xwindow_, bounds.x(), bounds.y(),
-                      bounds.width(), bounds.height());
-    bounds_ = bounds;
+  if (size_changed) {
+    changes.width = bounds.width();
+    changes.height = bounds.height();
+    value_mask |= CWHeight | CWWidth;
   }
 
+  if (origin_changed) {
+    changes.x = bounds.x();
+    changes.y = bounds.y();
+    value_mask |= CWX | CWY;
+  }
+  if (value_mask)
+    XConfigureWindow(xdisplay_, xwindow_, value_mask, &changes);
+
+  // Assume that the resize will go through as requested, which should be the
+  // case if we're running without a window manager.  If there's a window
+  // manager, it can modify or ignore the request, but (per ICCCM) we'll get a
+  // (possibly synthetic) ConfigureNotify about the actual size and correct
+  // |bounds_| later.
+  bounds_ = bounds;
+
+  if (origin_changed)
+    native_widget_delegate_->AsWidget()->OnNativeWidgetMove();
   if (size_changed)
-    root_window_host_delegate_->OnHostResized(bounds_.size());
+    root_window_host_delegate_->OnHostResized(bounds.size());
   else
     root_window_host_delegate_->OnHostPaint();
 }

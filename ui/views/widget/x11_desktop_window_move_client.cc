@@ -8,6 +8,7 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
+#include "base/debug/stack_trace.h"
 #include "base/message_loop.h"
 #include "base/message_pump_aurax11.h"
 #include "base/run_loop.h"
@@ -20,54 +21,41 @@
 namespace views {
 
 X11DesktopWindowMoveClient::X11DesktopWindowMoveClient()
-    : in_move_loop_(false) {
+    : in_move_loop_(false),
+      grab_input_window_(None),
+      root_window_(NULL) {
 }
 
 X11DesktopWindowMoveClient::~X11DesktopWindowMoveClient() {}
 
-bool X11DesktopWindowMoveClient::PreHandleKeyEvent(aura::Window* target,
-                                                   ui::KeyEvent* event) {
-  return false;
-}
+////////////////////////////////////////////////////////////////////////////////
+// DesktopRootWindowHostLinux, MessageLoop::Dispatcher implementation:
 
-bool X11DesktopWindowMoveClient::PreHandleMouseEvent(aura::Window* target,
-                                                     ui::MouseEvent* event) {
-  if (in_move_loop_) {
-    switch (event->type()) {
-      case ui::ET_MOUSE_DRAGGED:
-      case ui::ET_MOUSE_MOVED: {
-        DCHECK(event->valid_system_location());
-        gfx::Point system_loc =
-            event->system_location().Subtract(window_offset_);
-        aura::RootWindow* root_window = target->GetRootWindow();
-        root_window->SetHostBounds(gfx::Rect(
-            system_loc, root_window->GetHostSize()));
-        return true;
-      }
-      case ui::ET_MOUSE_CAPTURE_CHANGED:
-      case ui::ET_MOUSE_RELEASED: {
-        EndMoveLoop();
-        return true;
-      }
-      default:
-        break;
+bool X11DesktopWindowMoveClient::Dispatch(const base::NativeEvent& event) {
+  XEvent* xev = event;
+
+  // Note: the escape key is handled in the tab drag controller, which has
+  // keyboard focus even though we took pointer grab.
+  switch (xev->type) {
+    case MotionNotify: {
+      gfx::Point cursor_point(xev->xmotion.x_root, xev->xmotion.y_root);
+      gfx::Point system_loc = cursor_point.Subtract(window_offset_);
+      root_window_->SetHostBounds(gfx::Rect(
+          system_loc, root_window_->GetHostSize()));
+      break;
+    }
+    case ButtonPress:
+    case ButtonRelease: {
+      EndMoveLoop();
+      break;
     }
   }
 
-  return false;
+  return true;
 }
 
-ui::TouchStatus X11DesktopWindowMoveClient::PreHandleTouchEvent(
-    aura::Window* target,
-    ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
-}
-
-ui::EventResult X11DesktopWindowMoveClient::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
-}
+////////////////////////////////////////////////////////////////////////////////
+// DesktopRootWindowHostLinux, aura::client::WindowMoveClient implementation:
 
 aura::client::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
     aura::Window* source,
@@ -76,25 +64,51 @@ aura::client::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
   in_move_loop_ = true;
   window_offset_ = drag_offset;
 
-  source->GetRootWindow()->ShowRootWindow();
+  root_window_ = source->GetRootWindow();
 
   Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+
+  // Creates an invisible, InputOnly toplevel window. This window will receive
+  // all mouse movement for drags. It turns out that normal windows doing a
+  // grab doesn't redirect pointer motion events if the pointer isn't over the
+  // grabbing window. But InputOnly windows are able to grab everything. This
+  // is what GTK+ does, and I found a patch to KDE that did something similar.
+  unsigned long attribute_mask = CWEventMask | CWOverrideRedirect;
+  XSetWindowAttributes swa;
+  memset(&swa, 0, sizeof(swa));
+  swa.event_mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
+                   StructureNotifyMask;
+  swa.override_redirect = True;
+  grab_input_window_ = XCreateWindow(
+      display,
+      DefaultRootWindow(display),
+      -100, -100, 10, 10,
+      0, 0, InputOnly, CopyFromParent,
+      attribute_mask, &swa);
+  base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(
+      this, grab_input_window_);
+
+  // Wait for the window to be mapped. If we don't, XGrabPointer fails.
+  XMapRaised(display, grab_input_window_);
+  base::MessagePumpAuraX11::Current()->BlockUntilWindowMapped(
+      grab_input_window_);
+
   XGrabServer(display);
   XUngrabPointer(display, CurrentTime);
-
-  aura::RootWindow* root_window = source->GetRootWindow();
-  int ret = XGrabPointer(display,
-                         root_window->GetAcceleratedWidget(),
-                         False,
-                         ButtonReleaseMask | PointerMotionMask,
-                         GrabModeAsync,
-                         GrabModeAsync,
-                         None,
-                         None,
-                         CurrentTime);
+  int ret = XGrabPointer(
+      display,
+      grab_input_window_,
+      False,
+      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+      GrabModeAsync,
+      GrabModeAsync,
+      None,
+      None,
+      CurrentTime);
   XUngrabServer(display);
   if (ret != GrabSuccess) {
-    DLOG(ERROR) << "Grabbing new tab for dragging failed: " << ret;
+    DLOG(ERROR) << "Grabbing new tab for dragging failed: "
+                << ui::GetX11ErrorString(display, ret);
     return aura::client::MOVE_CANCELED;
   }
 
@@ -117,6 +131,11 @@ void X11DesktopWindowMoveClient::EndMoveLoop() {
   // Ungrab before we let go of the window.
   Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
   XUngrabPointer(display, CurrentTime);
+
+  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(
+      grab_input_window_);
+  root_window_ = NULL;
+  XDestroyWindow(display, grab_input_window_);
 
   in_move_loop_ = false;
   quit_closure_.Run();

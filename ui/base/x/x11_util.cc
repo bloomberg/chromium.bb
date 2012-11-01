@@ -927,6 +927,12 @@ bool GetWindowDesktop(XID window, int* desktop) {
   return GetIntProperty(window, "_NET_WM_DESKTOP", desktop);
 }
 
+std::string GetX11ErrorString(Display* display, int err) {
+  char buffer[256];
+  XGetErrorText(display, err, buffer, arraysize(buffer));
+  return buffer;
+}
+
 // Returns true if |window| is a named window.
 bool IsWindowNamed(XID window) {
   XTextProperty prop;

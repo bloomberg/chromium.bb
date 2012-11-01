@@ -192,6 +192,9 @@ static const int kAllDesktops = -1;
 // property not found.
 bool GetWindowDesktop(XID window, int* desktop);
 
+// Translates an X11 error code into a printable string.
+UI_EXPORT std::string GetX11ErrorString(Display* display, int err);
+
 // Implementers of this interface receive a notification for every X window of
 // the main display.
 class EnumerateWindowsDelegate {

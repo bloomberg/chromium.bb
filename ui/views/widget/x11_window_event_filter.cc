@@ -98,6 +98,9 @@ bool X11WindowEventFilter::PreHandleMouseEvent(aura::Window* target,
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return false;
 
+  if (!event->IsLeftMouseButton())
+    return false;
+
   int component =
       target->delegate()->GetNonClientComponent(event->location());
   if (component == HTCLIENT)
