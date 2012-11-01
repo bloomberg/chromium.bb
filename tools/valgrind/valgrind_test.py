@@ -876,8 +876,10 @@ class DrMemory(BaseTool):
     # Un-comment to dump Dr.Memory events on error
     #proc += ["-dr_ops", "-dumpcore_mask 0x8bff"]
 
-    # Un-comment to debug Dr.Memory
-    #proc += ["-dr_ops", "-no_hide -msgbox_mask 15"]
+    # Un-comment and comment next line to debug Dr.Memory
+    #proc += ["-dr_ops", "-no_hide -msgbox_mask 15 -stderr_mask 15"]
+    # Ensure we see messages about Dr. Memory crashing!
+    proc += ["-dr_ops", "-stderr_mask 12"]
 
     if self._options.use_debug:
       proc += ["-debug"]
