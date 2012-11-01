@@ -136,12 +136,11 @@
                   'AdditionalLibraryDirectories': ['$(DXSDK_DIR)/lib/x86'],
                   'BaseAddress': '0x01c30000',
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
-                  'ProgramDatabaseFile': '$(OutDir)\\chrome.dll.pdb',
+                  'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
                   # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
                   'SubSystem': '2',
                   'conditions': [
                     ['incremental_chrome_dll==1', {
-                      'ProgramDatabaseFile': '$(OutDir)\\initial\\chrome.dll.pdb',
                       'OutputFile': '$(OutDir)\\initial\\chrome.dll',
                       'UseLibraryDependencyInputs': "true",
                     }],
