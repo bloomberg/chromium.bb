@@ -214,9 +214,9 @@ bool MediaStreamImpl::CheckMediaStream(const GURL& url) {
     return false;  // This is not a valid stream.
 
   webrtc::MediaStreamInterface* stream = GetNativeMediaStream(descriptor);
-  if (stream && stream->video_tracks() && stream->video_tracks()->count() > 0)
-    return true;
-  return false;
+  return stream &&
+         ((stream->video_tracks() && stream->video_tracks()->count() > 0) ||
+          (stream->audio_tracks() && stream->audio_tracks()->count() > 0));
 }
 
 scoped_refptr<webkit_media::VideoFrameProvider>
