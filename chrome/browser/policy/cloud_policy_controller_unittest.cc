@@ -278,7 +278,7 @@ TEST_F(CloudPolicyControllerTest, MissingLicenses) {
                                "who@what.com", "auth", true);
   EXPECT_CALL(service_,
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
-      .WillOnce(service_.FailJob(DM_STATUS_MISSING_LICENSES));
+      .WillOnce(service_.FailJob(DM_STATUS_SERVICE_MISSING_LICENSES));
   EXPECT_CALL(*token_fetcher_.get(), SetMissingLicensesState()).Times(1);
   CreateNewController();
   loop_.RunAllPending();

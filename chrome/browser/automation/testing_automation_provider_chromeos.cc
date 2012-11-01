@@ -34,8 +34,8 @@
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
-#include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -1220,8 +1220,7 @@ void TestingAutomationProvider::EnrollEnterpriseDevice(
     return;
   }
   // Set up an observer (it will delete itself).
-  new EnrollmentObserver(this, reply_message, enroll_screen->GetActor(),
-                         enroll_screen);
+  new EnrollmentObserver(this, reply_message, enroll_screen);
   enroll_screen->GetActor()->SubmitTestCredentials(user, password);
 }
 

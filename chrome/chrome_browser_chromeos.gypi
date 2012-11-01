@@ -361,7 +361,6 @@
         'browser/chromeos/login/default_user_images.h',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen.cc',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen.h',
-        'browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.cc',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h',
         'browser/chromeos/login/eula_screen.cc',
         'browser/chromeos/login/eula_screen.h',

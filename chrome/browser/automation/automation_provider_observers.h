@@ -26,7 +26,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -940,19 +939,16 @@ class VirtualConnectObserver
 // Waits for enterprise device enrollment to complete and returns the status to
 // the automation provider.
 class EnrollmentObserver
-    : public chromeos::EnterpriseEnrollmentScreenActor::Observer {
+    : public chromeos::EnterpriseEnrollmentScreen::TestingObserver {
  public:
   EnrollmentObserver(AutomationProvider* automation,
-      IPC::Message* reply_message,
-      chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
-      chromeos::EnterpriseEnrollmentScreen* enrollment_screen);
+                     IPC::Message* reply_message,
+                     chromeos::EnterpriseEnrollmentScreen* enrollment_screen);
 
   virtual ~EnrollmentObserver();
 
-  // chromeos::EnterpriseEnrollmentScreenActor::Observer implementation.
-  virtual void OnEnrollmentComplete(
-      chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
-      bool succeeded);
+  // chromeos::EnterpriseEnrollmentScreen::Observer implementation.
+  virtual void OnEnrollmentComplete(bool succeeded);
 
  private:
   base::WeakPtr<AutomationProvider> automation_;

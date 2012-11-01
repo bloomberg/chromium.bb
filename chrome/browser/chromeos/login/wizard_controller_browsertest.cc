@@ -262,8 +262,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EnterpriseEnrollmentScreen* screen =
       WizardController::default_controller()->GetEnterpriseEnrollmentScreen();
   EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
-  std::string user;
-  EXPECT_FALSE(screen->IsAutoEnrollment(&user));
   OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
 
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
@@ -295,8 +293,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EnterpriseEnrollmentScreen* screen =
       WizardController::default_controller()->GetEnterpriseEnrollmentScreen();
   EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
-  std::string user;
-  EXPECT_TRUE(screen->IsAutoEnrollment(&user));
   // This is the main expectation: after auto-enrollment, login is resumed.
   EXPECT_CALL(mock_consumer, OnLoginSuccess(_, _, _, _)).Times(1);
   OnExit(ScreenObserver::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);

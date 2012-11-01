@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENTERPRISE_OAUTH_ENROLLMENT_SCREEN_HANDLER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -35,13 +36,20 @@ class EnterpriseOAuthEnrollmentScreenHandler
   virtual void RegisterMessages() OVERRIDE;
 
   // Implements EnterpriseEnrollmentScreenActor:
-  virtual void SetController(Controller* controller) OVERRIDE;
+  virtual void SetParameters(Controller* controller,
+                             bool is_auto_enrollment,
+                             const std::string& user) OVERRIDE;
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
-  virtual void ShowConfirmationScreen() OVERRIDE;
+  virtual void FetchOAuthToken() OVERRIDE;
+  virtual void ResetAuth(const base::Closure& callback) OVERRIDE;
+  virtual void ShowSigninScreen() OVERRIDE;
+  virtual void ShowEnrollmentSpinnerScreen() OVERRIDE;
+  virtual void ShowLoginSpinnerScreen() OVERRIDE;
   virtual void ShowAuthError(const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void ShowEnrollmentError(EnrollmentError error_code) OVERRIDE;
+  virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) OVERRIDE;
+  virtual void ShowUIError(UIError error_code) OVERRIDE;
   virtual void SubmitTestCredentials(const std::string& email,
                                      const std::string& password) OVERRIDE;
 
@@ -75,21 +83,17 @@ class EnterpriseOAuthEnrollmentScreenHandler
   void HandleCompleteLogin(const base::ListValue* args);
   void HandleRetry(const base::ListValue* args);
 
-  // Proceeds with the enrollment process after a successful login.
-  void EnrollAfterLogin();
-
   // Shows a given enrollment step.
   void ShowStep(const char* step);
 
-  // Display the given i18n string as error message.
+  // Display the given i18n resource as error message.
   void ShowError(int message_id, bool retry);
+
+  // Display the given string as error message.
+  void ShowErrorMessage(const std::string& message, bool retry);
 
   // Display the given i18n string as a progress message.
   void ShowWorking(int message_id);
-
-  // Resets the authentication machinery and clears cookies. Will invoke
-  // |action_on_browsing_data_removed_| once cookies are cleared.
-  void ResetAuth();
 
   // Starts asynchronous token revocation requests if there are tokens present.
   void RevokeTokens();
@@ -136,8 +140,8 @@ class EnterpriseOAuthEnrollmentScreenHandler
   // The browsing data remover instance currently active, if any.
   BrowsingDataRemover* browsing_data_remover_;
 
-  // What to do when browsing data is removed.
-  base::Closure action_on_browsing_data_removed_;
+  // The callbacks to invoke after browsing data has been cleared.
+  std::vector<base::Closure> auth_reset_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseOAuthEnrollmentScreenHandler);
 };

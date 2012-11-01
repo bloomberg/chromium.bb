@@ -340,7 +340,7 @@ void DeviceManagementRequestJobImpl::HandleResponse(
       ReportError(DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID);
       return;
     case kMissingLicenses:
-      ReportError(DM_STATUS_MISSING_LICENSES);
+      ReportError(DM_STATUS_SERVICE_MISSING_LICENSES);
       return;
     case kDeviceManagementNotAllowed:
       ReportError(DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED);

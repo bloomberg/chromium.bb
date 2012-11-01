@@ -233,7 +233,7 @@ static const ClientErrorTestParam kClientErrorTestCases[] = {
     kPolicyRefreshRate, 1 },
   { DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER,
     -1, 1 },
-  { DM_STATUS_MISSING_LICENSES,
+  { DM_STATUS_SERVICE_MISSING_LICENSES,
     -1, 1 },
   { DM_STATUS_SERVICE_DEVICE_ID_CONFLICT,
     -1, 1 },

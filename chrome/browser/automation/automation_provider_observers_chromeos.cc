@@ -425,20 +425,17 @@ chromeos::VirtualNetwork* VirtualConnectObserver::GetVirtualNetwork(
 
 EnrollmentObserver::EnrollmentObserver(AutomationProvider* automation,
     IPC::Message* reply_message,
-    chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
     chromeos::EnterpriseEnrollmentScreen* enrollment_screen)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       enrollment_screen_(enrollment_screen) {
-  enrollment_screen_actor->AddObserver(this);
+  enrollment_screen_->AddTestingObserver(this);
 }
 
 EnrollmentObserver::~EnrollmentObserver() {}
 
-void EnrollmentObserver::OnEnrollmentComplete(
-    chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,
-    bool succeeded) {
-  enrollment_screen_actor->RemoveObserver(this);
+void EnrollmentObserver::OnEnrollmentComplete(bool succeeded) {
+  enrollment_screen_->RemoveTestingObserver(this);
   if (automation_) {
     if (succeeded) {
       AutomationJSONReply(automation_,

@@ -60,7 +60,7 @@ void SampleErrorStatus(DeviceManagementStatus status) {
     case DM_STATUS_RESPONSE_DECODING_ERROR:
       sample = kMetricTokenFetchBadResponse;
       break;
-    case DM_STATUS_MISSING_LICENSES:
+    case DM_STATUS_SERVICE_MISSING_LICENSES:
       sample = kMetricMissingLicenses;
       break;
     case DM_STATUS_TEMPORARY_UNAVAILABLE:
@@ -255,7 +255,7 @@ void DeviceTokenFetcher::OnTokenFetchCompleted(
     case DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER:
       SetSerialNumberInvalidState();
       return;
-    case DM_STATUS_MISSING_LICENSES:
+    case DM_STATUS_SERVICE_MISSING_LICENSES:
       SetMissingLicensesState();
       return;
     case DM_STATUS_REQUEST_INVALID:
