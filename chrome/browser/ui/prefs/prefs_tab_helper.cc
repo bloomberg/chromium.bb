@@ -124,13 +124,18 @@ const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
 // Registers a preference under the path |map_name| for each script used for
 // per-script font prefs.  For example, if |map_name| is "fonts.serif", then
 // "fonts.serif.Arab", "fonts.serif.Hang", etc. are registered.
-void RegisterFontFamilyMap(PrefService* prefs, const char* map_name) {
+void RegisterFontFamilyMap(PrefService* prefs,
+                           const char* map_name,
+                           const std::set<std::string>& fonts_with_defaults) {
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name_str = base::StringPrintf("%s.%s", map_name, script);
     const char* pref_name = pref_name_str.c_str();
-    if (!prefs->FindPreference(pref_name))
+    if (fonts_with_defaults.find(pref_name) == fonts_with_defaults.end()) {
+      // We haven't already set a default value for this font preference, so set
+      // an empty string as the default.
       prefs->RegisterStringPref(pref_name, "", PrefService::UNSYNCABLE_PREF);
+    }
   }
 }
 
@@ -495,6 +500,7 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
                                      PrefService::SYNCABLE_PREF);
 
   // Register font prefs that have defaults.
+  std::set<std::string> fonts_with_defaults;
   UScriptCode browser_script = GetScriptOfBrowserLocale();
   for (size_t i = 0; i < kFontDefaultsLength; ++i) {
     const FontDefault& pref = kFontDefaults[i];
@@ -516,17 +522,25 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
       prefs->RegisterLocalizedStringPref(pref.pref_name,
                                          pref.resource_id,
                                          PrefService::UNSYNCABLE_PREF);
+      fonts_with_defaults.insert(pref.pref_name);
     }
   }
 
   // Register font prefs that don't have defaults.
-  RegisterFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap);
-  RegisterFontFamilyMap(prefs, prefs::kWebKitFixedFontFamilyMap);
-  RegisterFontFamilyMap(prefs, prefs::kWebKitSerifFontFamilyMap);
-  RegisterFontFamilyMap(prefs, prefs::kWebKitSansSerifFontFamilyMap);
-  RegisterFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap);
-  RegisterFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap);
-  RegisterFontFamilyMap(prefs, prefs::kWebKitPictographFontFamilyMap);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap,
+                        fonts_with_defaults);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitFixedFontFamilyMap,
+                        fonts_with_defaults);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitSerifFontFamilyMap,
+                        fonts_with_defaults);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitSansSerifFontFamilyMap,
+                        fonts_with_defaults);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap,
+                        fonts_with_defaults);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap,
+                        fonts_with_defaults);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitPictographFontFamilyMap,
+                        fonts_with_defaults);
 
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
                                       IDS_DEFAULT_FONT_SIZE,
