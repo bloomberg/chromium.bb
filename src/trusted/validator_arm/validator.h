@@ -337,8 +337,8 @@ class DecodedInstruction {
     return decoder_->sets_Z_if_bits_clear(inst_, r, mask);
   }
 
-  nacl_arm_dec::RegisterList immediate_addressing_defs() const {
-    return decoder_->immediate_addressing_defs(inst_);
+  bool base_address_register_writeback_small_immediate() const {
+    return decoder_->base_address_register_writeback_small_immediate(inst_);
   }
 
   bool is_load_thread_address_pointer() const {

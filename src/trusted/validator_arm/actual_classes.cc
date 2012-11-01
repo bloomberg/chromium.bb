@@ -372,9 +372,9 @@ RegisterList LoadBasedOffsetMemoryDouble::defs(Instruction i) const {
   return LoadBasedOffsetMemory::defs(i).Add(t2.reg(i));
 }
 
-RegisterList LoadBasedImmedMemory::
-immediate_addressing_defs(const Instruction i) const {
-  return RegisterList(HasWriteBack(i) ? n.reg(i) : Register::None());
+bool LoadBasedImmedMemory::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return HasWriteBack(i);
 }
 
 bool LoadBasedImmedMemory::is_literal_load(Instruction i) const {
@@ -485,9 +485,9 @@ SafetyLevel StoreBasedOffsetMemoryDouble::safety(const Instruction i) const {
   return StoreBasedOffsetMemory::safety(i);
 }
 
-RegisterList StoreBasedImmedMemory::
-immediate_addressing_defs(const Instruction i) const {
-  return RegisterList(HasWriteBack(i) ? n.reg(i) : Register::None());
+bool StoreBasedImmedMemory::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return HasWriteBack(i);
 }
 
 SafetyLevel StoreBasedImmedMemoryDouble::safety(const Instruction i) const {
@@ -598,7 +598,7 @@ SafetyLevel MoveToStatusRegister::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList MoveToStatusRegister::defs(const Instruction i) const {
+RegisterList MoveToStatusRegister::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList(Register::Conditions());
 }
@@ -606,20 +606,19 @@ RegisterList MoveToStatusRegister::defs(const Instruction i) const {
 
 // Stores
 
-SafetyLevel StoreImmediate::safety(const Instruction i) const {
+SafetyLevel StoreImmediate::safety(Instruction i) const {
   // Don't let addressing writeback alter PC.
   if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
   return MAY_BE_SAFE;
 }
 
-RegisterList StoreImmediate::defs(const Instruction i) const {
-  return immediate_addressing_defs(i);
+RegisterList StoreImmediate::defs(Instruction i) const {
+  return RegisterList(base_small_writeback_register(i));
 }
 
-RegisterList StoreImmediate::immediate_addressing_defs(
-    const Instruction i) const {
-  return RegisterList((!PreindexingFlag(i) || WritesFlag(i))
-                      ? base_address_register(i) : Register::None());
+bool StoreImmediate::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return !PreindexingFlag(i) || WritesFlag(i);
 }
 
 Register StoreImmediate::base_address_register(const Instruction i) const {
@@ -644,13 +643,14 @@ SafetyLevel LoadMultiple::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadMultiple::defs(const Instruction i) const {
-  return RegisterList(i.Bits(15, 0)).Union(immediate_addressing_defs(i));
+RegisterList LoadMultiple::defs(Instruction i) const {
+  return RegisterList(i.Bits(15, 0)).Union(RegisterList(
+      base_small_writeback_register(i)));
 }
 
-RegisterList LoadMultiple::immediate_addressing_defs(
-    const Instruction i) const {
-  return RegisterList(WritesFlag(i) ? Rn(i) : Register::None());
+bool LoadMultiple::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return WritesFlag(i);
 }
 
 Register LoadMultiple::base_address_register(const Instruction i) const {
@@ -669,10 +669,11 @@ RegisterList VectorLoad::defs(Instruction i) const {
   return RegisterList(!Rm(i).Equals(Register::Pc()) ? Rn(i) : Register::None());
 }
 
-RegisterList VectorLoad::immediate_addressing_defs(Instruction i) const {
+bool VectorLoad::base_address_register_writeback_small_immediate(
+    Instruction i) const {
   // Rm == SP indicates automatic update based on size of load, and
   // updated by small static displacement.
-  return RegisterList(Rm(i).Equals(Register::Sp()) ? Rn(i) : Register::None());
+  return Rm(i).Equals(Register::Sp());
 }
 
 Register VectorLoad::base_address_register(const Instruction i) const {
@@ -691,10 +692,10 @@ RegisterList VectorStore::defs(Instruction i) const {
                       ? base_address_register(i) : Register::None());
 }
 
-RegisterList VectorStore::immediate_addressing_defs(Instruction i) const {
+bool VectorStore::base_address_register_writeback_small_immediate(
+    Instruction i) const {
   // Rm == SP indicates automatic update based on size of store.
-  return RegisterList(Rm(i).Equals(Register::Sp())
-                      ? base_address_register(i) : Register::None());
+  return Rm(i).Equals(Register::Sp());
 }
 
 Register VectorStore::base_address_register(Instruction i) const {
@@ -717,20 +718,21 @@ SafetyLevel CoprocessorOp::safety(Instruction i) const {
 */
 
 RegisterList LoadCoprocessor::defs(Instruction i) const {
-  return immediate_addressing_defs(i);
+  return RegisterList(base_small_writeback_register(i));
 }
 
-RegisterList LoadCoprocessor::immediate_addressing_defs(Instruction i) const {
-  return RegisterList(writes.IsDefined(i) ? Rn(i) : Register::None());
+bool LoadCoprocessor::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return writes.IsDefined(i);
 }
 
 RegisterList StoreCoprocessor::defs(Instruction i) const {
-  return immediate_addressing_defs(i);
+  return RegisterList(base_small_writeback_register(i));
 }
 
-RegisterList StoreCoprocessor::immediate_addressing_defs(Instruction i) const {
-  return RegisterList(writes.IsDefined(i)
-                      ? base_address_register(i) : Register::None());
+bool StoreCoprocessor::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return writes.IsDefined(i);
 }
 
 Register StoreCoprocessor::base_address_register(Instruction i) const {

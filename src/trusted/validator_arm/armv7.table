@@ -112,9 +112,8 @@
 #      should be zeroed out, when generating the dynamic code
 #      replacement sentinel. Corresponds to virtual
 #      dynamic_code_replacement_sentinel.
-# imm_defs: The set of registers that are set through
-#       immediate indexed addressing writeback, where the
-#       immediate value is "small". (missing implies {}).
+# small_imm_base_wb: True if a small immediate is written back to the
+#       base register (missing implies false).
 # immediate: True if the instruction does a read/write
 #       as "base + immediate". (missing implies false).
 # pool_head: Defines instruction to start a literal pool.
@@ -2668,7 +2667,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).
-   imm_defs := { base } if not register_index else {};
+   small_imm_base_wb := not register_index;
    # uses ignores FPRs. It only models GPRs.
    uses := { m if wback else None , n };
    arch := ASIMD;
@@ -2726,7 +2725,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).
-   imm_defs := { base } if not register_index else {};
+   small_imm_base_wb := not register_index;
    # uses ignores FPRs. It only models GPRs.
    uses := { m if wback else None , n };
    arch := ASIMD;
@@ -2783,7 +2782,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).
-   imm_defs := { base } if not register_index else {};
+   small_imm_base_wb := not register_index;
    # uses ignores FPRs. It only models GPRs.
    uses := { m if wback else None , n };
    arch := ASIMD;

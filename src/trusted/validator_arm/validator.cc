@@ -385,16 +385,17 @@ static void check_data_register_update(
     return;
   }
 
-  // Exempt updates due to writeback
-  RegisterList data_addr_defs(first.defs().
-                              Intersect(sfi.data_address_registers()));
-
-  if (first.immediate_addressing_defs().
-      Intersect(sfi.data_address_registers()).Equals(data_addr_defs)) {
+  // Small immediate base register writeback to data address registers
+  // (e.g. SP) doesn't need to be an instruction pair.
+  if (first.base_address_register_writeback_small_immediate() &&
+      sfi.data_address_registers().Contains(first.base_address_register())) {
     match_data->match_ = NO_MATCH;
     return;
   }
 
+  // Data address register modification followed by bit clear.
+  RegisterList data_addr_defs(first.defs().
+                              Intersect(sfi.data_address_registers()));
   if (second.defines_all(data_addr_defs)
       && second.clears_bits(sfi.data_address_mask())
       && second.always_postdominates(first)) {

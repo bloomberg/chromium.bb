@@ -40,8 +40,8 @@ class NamedClassDecoder : public nacl_arm_dec::ClassDecoder {
   // Virtual dispatching to wrapped decoder.
   virtual nacl_arm_dec::SafetyLevel safety(nacl_arm_dec::Instruction i) const;
   virtual nacl_arm_dec::RegisterList defs(nacl_arm_dec::Instruction i) const;
-  virtual nacl_arm_dec::RegisterList
-  immediate_addressing_defs(nacl_arm_dec::Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      nacl_arm_dec::Instruction i) const;
   virtual nacl_arm_dec::Register
   base_address_register(nacl_arm_dec::Instruction i) const;
   virtual bool is_literal_load(nacl_arm_dec::Instruction i) const;

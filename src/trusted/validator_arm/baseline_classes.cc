@@ -424,9 +424,9 @@ SafetyLevel LoadStore2RegisterImm8Op::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadStore2RegisterImm8Op::immediate_addressing_defs(
-    const Instruction i) const {
-  return RegisterList(HasWriteBack(i) ? n.reg(i) : Register::None());
+bool LoadStore2RegisterImm8Op::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return HasWriteBack(i);
 }
 
 Register LoadStore2RegisterImm8Op::base_address_register(
@@ -436,7 +436,7 @@ Register LoadStore2RegisterImm8Op::base_address_register(
 
 // Load2RegisterImm8Op
 RegisterList Load2RegisterImm8Op::defs(Instruction i) const {
-  return immediate_addressing_defs(i).Add(t.reg(i));
+  return RegisterList(base_small_writeback_register(i)).Add(t.reg(i));
 }
 
 bool Load2RegisterImm8Op::is_literal_load(Instruction i) const {
@@ -446,7 +446,7 @@ bool Load2RegisterImm8Op::is_literal_load(Instruction i) const {
 
 // Store2RegisterImm8Op
 RegisterList Store2RegisterImm8Op::defs(Instruction i) const {
-  return immediate_addressing_defs(i);
+  return RegisterList(base_small_writeback_register(i));
 }
 
 // LoadStore2RegisterImm8DoubleOp
@@ -478,7 +478,8 @@ safety(const Instruction i) const {
 
 // Load2RegisterImm8DoubleOp
 RegisterList Load2RegisterImm8DoubleOp::defs(Instruction i) const {
-  return immediate_addressing_defs(i).Add(t.reg(i)).Add(t2.reg(i));
+  return RegisterList(base_small_writeback_register(i)).
+      Add(t.reg(i)).Add(t2.reg(i));
 }
 
 bool Load2RegisterImm8DoubleOp::is_literal_load(Instruction i) const {
@@ -488,7 +489,7 @@ bool Load2RegisterImm8DoubleOp::is_literal_load(Instruction i) const {
 
 // Store2RegisterImm8DoubleOp
 RegisterList Store2RegisterImm8DoubleOp::defs(Instruction i) const {
-  return immediate_addressing_defs(i);
+  return RegisterList(base_small_writeback_register(i));
 }
 
 // PreloadRegisterImm12Op
@@ -556,9 +557,9 @@ SafetyLevel LoadStore2RegisterImm12Op::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadStore2RegisterImm12Op::immediate_addressing_defs(
-    const Instruction i) const {
-  return RegisterList(HasWriteBack(i) ? n.reg(i) : Register::None());
+bool LoadStore2RegisterImm12Op::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return HasWriteBack(i);
 }
 
 Register LoadStore2RegisterImm12Op::base_address_register(
@@ -568,7 +569,7 @@ Register LoadStore2RegisterImm12Op::base_address_register(
 
 // Load2RegisterImm12Op
 RegisterList Load2RegisterImm12Op::defs(Instruction i) const {
-  return immediate_addressing_defs(i).Add(t.reg(i));
+  return RegisterList(base_small_writeback_register(i)).Add(t.reg(i));
 }
 
 bool Load2RegisterImm12Op::is_literal_load(Instruction i) const {
@@ -595,7 +596,7 @@ bool LdrImmediateOp::is_load_thread_address_pointer(Instruction i) const {
 
 // Store2RegisterImm12Op
 RegisterList Store2RegisterImm12Op::defs(Instruction i) const {
-  return immediate_addressing_defs(i);
+  return RegisterList(base_small_writeback_register(i));
 }
 
 // Store2RegisterImm12OpRnNotRtOnWriteback
@@ -612,15 +613,15 @@ safety(Instruction i) const {
 }
 
 // LoadStoreRegisterList
-SafetyLevel LoadStoreRegisterList::safety(const Instruction i) const {
+SafetyLevel LoadStoreRegisterList::safety(Instruction i) const {
   if (n.reg(i).Equals(Register::Pc()) || (register_list.value(i) == 0)) {
     return UNPREDICTABLE;
   }
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadStoreRegisterList::defs(const Instruction i) const {
-  return immediate_addressing_defs(i);
+RegisterList LoadStoreRegisterList::defs(Instruction i) const {
+  return RegisterList(base_small_writeback_register(i));
 }
 
 Register LoadStoreRegisterList::
@@ -628,9 +629,9 @@ base_address_register(const Instruction i) const {
   return n.reg(i);
 }
 
-RegisterList LoadStoreRegisterList::
-immediate_addressing_defs(const Instruction i) const {
-  return RegisterList(wback.IsDefined(i) ? n.reg(i) : Register::None());
+bool LoadStoreRegisterList::base_address_register_writeback_small_immediate(
+    Instruction i) const {
+  return wback.IsDefined(i);
 }
 
 // LoadRegisterList
@@ -730,13 +731,13 @@ SafetyLevel LoadStoreVectorRegisterList::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadStoreVectorRegisterList::defs(const Instruction i) const {
-  return immediate_addressing_defs(i);
+RegisterList LoadStoreVectorRegisterList::defs(Instruction i) const {
+  return RegisterList(base_small_writeback_register(i));
 }
 
-RegisterList LoadStoreVectorRegisterList::
-immediate_addressing_defs(const Instruction i) const {
-  return RegisterList(wback.IsDefined(i) ? n.reg(i) : Register::None());
+bool LoadStoreVectorRegisterList::
+  base_address_register_writeback_small_immediate(Instruction i) const {
+  return wback.IsDefined(i);
 }
 
 // LoadVectorRegisterList
@@ -1631,13 +1632,9 @@ RegisterList VectorLoadStoreMultiple::defs(Instruction i) const {
   return regs;
 }
 
-RegisterList VectorLoadStoreMultiple::immediate_addressing_defs(
+bool VectorLoadStoreMultiple::base_address_register_writeback_small_immediate(
     Instruction i) const {
-  RegisterList regs;
-  if (!is_register_index(i)) {
-    regs.Add(rn.reg(i));
-  }
-  return regs;
+  return is_wback(i) && !is_register_index(i);
 }
 
 Register VectorLoadStoreMultiple::base_address_register(Instruction i) const {
@@ -1744,13 +1741,9 @@ RegisterList VectorLoadStoreSingle::defs(Instruction i) const {
   return regs;
 }
 
-RegisterList VectorLoadStoreSingle::immediate_addressing_defs(
+bool VectorLoadStoreSingle::base_address_register_writeback_small_immediate(
     Instruction i) const {
-  RegisterList regs;
-  if (!is_register_index(i)) {
-    regs.Add(rn.reg(i));
-  }
-  return regs;
+  return is_wback(i) && !is_register_index(i);
 }
 
 Register VectorLoadStoreSingle::base_address_register(Instruction i) const {
@@ -1863,13 +1856,9 @@ RegisterList VectorLoadSingleAllLanes::defs(Instruction i) const {
   return regs;
 }
 
-RegisterList VectorLoadSingleAllLanes::immediate_addressing_defs(
+bool VectorLoadSingleAllLanes::base_address_register_writeback_small_immediate(
     Instruction i) const {
-  RegisterList regs;
-  if (!is_register_index(i)) {
-    regs.Add(rn.reg(i));
-  }
-  return regs;
+  return is_wback(i) && !is_register_index(i);
 }
 
 Register VectorLoadSingleAllLanes::base_address_register(Instruction i) const {

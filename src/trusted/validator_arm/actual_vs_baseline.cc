@@ -58,7 +58,7 @@ void ActualVsBaselineTester::ProcessMatch() {
   // consistent behaviour between the actual and basline class
   // decoders.
   CheckDefs();
-  CheckImmediateAddressingDefs();
+  CheckBaseAddressRegisterWritebackSmallImmediate();
   CheckBaseAddressRegister();
   CheckIsLiteralLoad();
   CheckBranchTargetRegister();
@@ -118,10 +118,10 @@ void ActualVsBaselineTester::CheckDefs() {
   EXPECT_TRUE(baseline_defs.Equals(actual_defs));
 }
 
-void ActualVsBaselineTester::CheckImmediateAddressingDefs() {
-  EXPECT_TRUE(
-      baseline_decoder_.immediate_addressing_defs(inst_).Equals(
-          actual_decoder_.immediate_addressing_defs(inst_)));
+void ActualVsBaselineTester::CheckBaseAddressRegisterWritebackSmallImmediate() {
+  EXPECT_EQ(
+      baseline_decoder_.base_address_register_writeback_small_immediate(inst_),
+      actual_decoder_.base_address_register_writeback_small_immediate(inst_));
 }
 
 void ActualVsBaselineTester::CheckBaseAddressRegister() {

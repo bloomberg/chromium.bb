@@ -18,9 +18,9 @@ defs(nacl_arm_dec::Instruction i) const {
   return wrapped_decoder_.defs(i);
 }
 
-nacl_arm_dec::RegisterList NamedClassDecoder::
-immediate_addressing_defs(nacl_arm_dec::Instruction i) const {
-  return wrapped_decoder_.immediate_addressing_defs(i);
+bool NamedClassDecoder::base_address_register_writeback_small_immediate(
+    nacl_arm_dec::Instruction i) const {
+  return wrapped_decoder_.base_address_register_writeback_small_immediate(i);
 }
 
 nacl_arm_dec::Register NamedClassDecoder::

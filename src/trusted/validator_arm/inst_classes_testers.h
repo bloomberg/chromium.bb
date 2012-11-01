@@ -2389,7 +2389,7 @@ class DuplicateToAdvSIMDRegistersTester : public CondAdvSIMDOpTester {
 // # defs ignores FPRs. It only models GPRs and conditions.
 // defs := { base } if wback else {};
 // # Note: register_index defines if Rm is used (rather than a small constant).
-// imm_defs := { base } if not register_index else {};
+// small_imm_base_wb := not register_index;
 // # uses ignores FPRs. It only models GPRs.
 // uses := { m if wback else None , n };
 // arch := ASIMD;
@@ -2431,7 +2431,7 @@ class VectorLoadStoreMultipleTester : public UncondDecoderTester {
 //   defs := { base } if wback else {};
 //   # Note: register_index defines if Rm is used (rather than a small
 //   # constant).
-//   imm_defs := { base } if not register_index else {};
+//   small_imm_base_wb := not register_index;
 //   # uses ignores FPRs. It only models GPRs.
 //   uses := { m if wback else None , n };
 //   arch := ASIMD;
@@ -2465,7 +2465,7 @@ class VectorLoadStoreSingleTester : public UncondDecoderTester {
 //   defs := { base } if wback else {};
 //   # Note: register_index defines if Rm is used (rather than a small
 //   # constant).
-//   imm_defs := { base } if not register_index else {};
+//   small_imm_base_wb := not register_index;
 //   # uses ignores FPRs. It only models GPRs.
 //   uses := { m if wback else None , n };
 //   arch := ASIMD;

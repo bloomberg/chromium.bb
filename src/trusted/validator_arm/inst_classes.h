@@ -755,17 +755,19 @@ class ClassDecoder {
   // appropriate. :-)
   virtual RegisterList defs(Instruction i) const;
 
-  // Gets the set of registers that this instruction defines through immediate
-  // indexed addressing writeback -- a subset of the defs() set.
+  // Returns true if the base register has small immediate writeback.
   //
   // This distinction is useful for operations like SP-relative loads, because
-  // the maximum displacement that immediate addressing can produce is small.
+  // the maximum displacement that immediate addressing can produce is small and
+  // will therefore never cross guard pages if the base register isn't
+  // constrained to the untrusted address space.
   //
-  // Note that this does not include defs produced by *register* indexed
+  // Note that this does not include writeback produced by *register* indexed
   // addressing writeback, since they have no useful properties in our model.
   //
-  // Stubbed to indicate that no such addressing occurs.
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  // Stubbed to indicate that no such writeback occurs.
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
 
   // For instructions that can read or write memory, gets the register used as
   // the base for generating the effective address.
@@ -851,6 +853,17 @@ class ClassDecoder {
  protected:
   ClassDecoder() {}
   virtual ~ClassDecoder() {}
+
+  // A common idiom in derived classes: def() is often implemented in terms
+  // of this function: the base register must be added to the def set when
+  // there's small immediate writeback.
+  //
+  // Note that there are other types of writeback into base than small
+  // immediate writeback.
+  Register base_small_writeback_register(Instruction i) const {
+    return base_address_register_writeback_small_immediate(i)
+        ? base_address_register(i) : Register::None();
+  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ClassDecoder);

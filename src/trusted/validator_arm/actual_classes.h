@@ -526,7 +526,8 @@ class LoadBasedOffsetMemoryDouble : public LoadBasedOffsetMemory {
 class LoadBasedImmedMemory : public LoadBasedMemoryWithWriteBack {
  public:
   LoadBasedImmedMemory() {}
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual bool is_literal_load(Instruction i) const;
 
  private:
@@ -624,7 +625,8 @@ class StoreBasedOffsetMemoryDouble : public StoreBasedOffsetMemory {
 class StoreBasedImmedMemory : public StoreBasedMemoryWithWriteBack {
  public:
   StoreBasedImmedMemory() {}
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreBasedImmedMemory);
@@ -863,7 +865,8 @@ class StoreImmediate : public OldClassDecoder {
   StoreImmediate() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   // Defines the base register.
@@ -885,7 +888,8 @@ class LoadMultiple : public OldClassDecoder {
   LoadMultiple() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   // Defines the base register.
@@ -910,7 +914,8 @@ class VectorLoad : public OldClassDecoder {
   VectorLoad() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   // Defines the base address for the access.
@@ -936,7 +941,8 @@ class VectorStore : public OldClassDecoder {
   VectorStore() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   static const WritesBit21Interface writes;
@@ -967,7 +973,8 @@ class LoadCoprocessor : public CoprocessorOp {
 
   LoadCoprocessor() {}
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
 
   // Contains the base address for the access.
   Register Rn(const Instruction& i) const {
@@ -989,7 +996,8 @@ class StoreCoprocessor : public CoprocessorOp {
  public:
   StoreCoprocessor() {}
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   static const WritesBit21Interface writes;

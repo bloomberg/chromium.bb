@@ -97,6 +97,8 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
     bool is_literal_load = inst.is_literal_load();
     bool clears_code_bits = inst.clears_bits(code_address_mask);
     bool clears_data_bits = inst.clears_bits(data_address_mask);
+    bool is_base_address_register_writeback_small_immediate =
+        inst.base_address_register_writeback_small_immediate();
     uint32_t sets_Z_if_data_bits_clear_register_bitmask = 0;
     for (int reg = 0; reg < 16; ++reg) {
       // Check the property for every register value.
@@ -203,6 +205,40 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
           data_address_mask)) ?
         (1 << ((i >> 16) & 0xF)) :  // Set bit corresponding to Rn.
         0;
+    bool expect_base_address_register_writeback_small_immediate_or_unsafe =
+        (
+            !expect_unconditional &&
+            ((  // Extra load/store instructions. P==0 || W==1.
+                // STRH:  cccc 000P U1W0 nnnn tttt iiii 1011 iiii
+                // LDRH:  cccc 000P U1W1 nnnn tttt iiii 1011 iiii
+                // LDRD:  cccc 000P U1W0 nnnn tttt iiii 1101 iiii
+                // LDRSB: cccc 000P U1W1 nnnn tttt iiii 1101 iiii
+                // STRD:  cccc 000P U1W0 nnnn tttt iiii 1111 iiii
+                // LDRSH: cccc 000P U1W1 nnnn tttt iiii 1111 iiii
+                ((i & 0x0E400090) == 0x00400090) &&
+                ((i & 0x00000060) != 0x00000000) &&
+                (((i & 0x01000000) == 0x00000000) ||
+                 ((i & 0x00200000) == 0x00200000))) ||
+             (  // Load/store word and unsigned byte. P==0 || W==1.
+                 // STR:  cccc 010P U0W0 nnnn tttt iiii iiii iiii
+                 // LDR:  cccc 010P U0W1 nnnn tttt iiii iiii iiii
+                 // STRB: cccc 010P U1W0 nnnn tttt iiii iiii iiii
+                 // STRB: cccc 010P U1W1 nnnn tttt iiii iiii iiii
+                 ((i & 0x0E000000) == 0x04000000) &&
+                 (((i & 0x01000000) == 0x00000000) ||
+                  ((i & 0x00200000) == 0x00200000))) ||
+             (  // Branch, branch with link, and block data transfer.
+                 // All variants of LDM and STM Rn!.
+                 // cccc 100x xx1x nnnn iiii iiii iiii iiii
+                 ((i & 0x0E200000) == 0x08200000)) ||
+             (  // Extension register load/store instructions
+                 // All variants of VLDM and VSTM Rn!.
+                 // cccc 110P Ud1L nnnn dddd 101x iiii iiii
+                 ((i & 0x0E200E00) == 0x0C200A00)))) ||
+        // Advanced SIMD element or structure load/store instructions.
+        // All variants of VLD{1,2,3,4} and VST{1,2,3,4} [Rn]!.
+        // 1111 0100 SdL0 nnnn dddd xxxx xxxx 1101
+        ((i & 0xFF10000F) == 0xF400000D);
 
     // Validate that every single method in DecodedInstruction returns the
     // expected value.
@@ -240,11 +276,14 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
       // SFI data and code bit clearing is detected properly.
       EXPECT_EQ(clears_code_bits, expect_clears_code_bits_or_unsafe);
       EXPECT_EQ(clears_data_bits, expect_clears_data_bits_or_unsafe);
+      EXPECT_EQ(
+          is_base_address_register_writeback_small_immediate,
+          expect_base_address_register_writeback_small_immediate_or_unsafe);
     }
+
     EXPECT_EQ(sets_Z_if_data_bits_clear_register_bitmask,
               expect_sets_Z_if_data_bits_clear_register_bitmask);
 
-    // TODO(jfb) Validate immediate_addressing_defs.
     // TODO(jfb) Validate defines.
     // TODO(jfb) Validate defines_any.
     // TODO(jfb) Validate defines_all.

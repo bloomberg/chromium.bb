@@ -721,7 +721,8 @@ class LoadStore2RegisterImm8Op : public ClassDecoder {
   static const ConditionBits28To31Interface cond;
 
   virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   bool HasWriteBack(const Instruction i) const {
@@ -943,7 +944,8 @@ class LoadStore2RegisterImm12Op : public ClassDecoder {
   static const ConditionBits28To31Interface cond;
 
   virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
   bool HasWriteBack(const Instruction i) const {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
@@ -1031,7 +1033,8 @@ class LoadStoreRegisterList : public ClassDecoder {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreRegisterList);
@@ -1126,7 +1129,8 @@ class LoadStoreVectorRegisterList : public LoadStoreVectorOp {
   LoadStoreVectorRegisterList() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
 
   // Returns the number of register in the register list, i.e. <size>.
   uint32_t NumRegisters(const Instruction& i) const;
@@ -2933,7 +2937,7 @@ class DuplicateToAdvSIMDRegisters : public CondAdvSIMDOp {
 // # defs ignores FPRs. It only models GPRs and conditions.
 // defs := { base } if wback else {};
 // # Note: register_index defines if Rm is used (rather than a small constant).
-// imm_defs := { base } if not register_index else {};
+// small_imm_base_wb := not register_index;
 // # uses ignores FPRs. It only models GPRs.
 // uses := { m if wback else None , n };
 // arch := ASIMD;
@@ -2953,7 +2957,8 @@ class VectorLoadStoreMultiple : public UncondDecoder {
   static const Imm1Bit22Interface d;
 
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   // Computes the value of D:Vd.
@@ -3071,7 +3076,7 @@ class VectorLoadStoreMultiple4 : public VectorLoadStoreMultiple {
 //   defs := { base } if wback else {};
 //   # Note: register_index defines if Rm is used (rather than a small
 //   # constant).
-//   imm_defs := { base } if not register_index else {};
+//   small_imm_base_wb := not register_index;
 //   # uses ignores FPRs. It only models GPRs.
 //   uses := { m if wback else None , n };
 //   arch := ASIMD;
@@ -3090,7 +3095,8 @@ class VectorLoadStoreSingle : public UncondDecoder {
   static const Imm1Bit22Interface d;
 
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   // computes the value of d = D:Vd;
@@ -3209,7 +3215,7 @@ class VectorLoadStoreSingle4 : public VectorLoadStoreSingle {
 //   defs := { base } if wback else {};
 //   # Note: register_index defines if Rm is used (rather than a small
 //   # constant).
-//   imm_defs := { base } if not register_index else {};
+//   small_imm_base_wb := not register_index;
 //   # uses ignores FPRs. It only models GPRs.
 //   uses := { m if wback else None , n };
 //   arch := ASIMD;
@@ -3224,7 +3230,8 @@ class VectorLoadSingleAllLanes : public UncondDecoder {
   static const Imm1Bit22Interface d;
 
   virtual RegisterList defs(Instruction i) const;
-  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
 
   // computes the value of d = D:Vd;

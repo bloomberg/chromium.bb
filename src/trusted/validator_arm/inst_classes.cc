@@ -72,9 +72,10 @@ RegisterList ClassDecoder::defs(Instruction i) const {
   return RegisterList::Everything();
 }
 
-RegisterList ClassDecoder::immediate_addressing_defs(Instruction i) const {
+bool ClassDecoder::base_address_register_writeback_small_immediate(
+    Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return RegisterList();
+  return false;
 }
 
 Register ClassDecoder::base_address_register(Instruction i) const {
