@@ -148,8 +148,6 @@ CursorLoaderX11::CursorLoaderX11()
 
 CursorLoaderX11::~CursorLoaderX11() {
   UnloadAll();
-  // Clears XCursorCache.
-  GetXCursor(kCursorClearXCursorCache);
 }
 
 void CursorLoaderX11::LoadImageCursor(int id,

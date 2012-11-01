@@ -14,6 +14,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
+#include "ui/aura/desktop/desktop_cursor_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -78,9 +79,7 @@ DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
       atom_cache_(xdisplay_, kAtomsToCache),
       window_mapped_(false),
       focus_when_shown_(false),
-      cursor_loader_(),
       current_cursor_(ui::kCursorNull),
-      cursor_shown_(true),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura) {
 }
@@ -199,13 +198,9 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   aura::client::SetDispatcherClient(root_window_,
                                     dispatcher_client_.get());
 
-  // The cursor client is a curious thing; it proxies some, but not all, calls
-  // to our SetCursor() method. We require all calls to go through a route that
-  // uses a CursorLoader, which includes all the ones in views:: internal.
-  //
-  // TODO(erg): This is a code smell. I suspect that I'm working around the
-  // CursorClient's interface being plain wrong.
-  aura::client::SetCursorClient(root_window_, this);
+  cursor_client_.reset(new aura::DesktopCursorClient(root_window_));
+  aura::client::SetCursorClient(root_window_,
+                                cursor_client_.get());
 
   position_client_.reset(new DesktopScreenPositionClient());
   aura::client::SetScreenPositionClient(root_window_,
@@ -467,10 +462,6 @@ bool DesktopRootWindowHostLinux::IsMinimized() const {
   return HasWMSpecProperty("_NET_WM_STATE_HIDDEN");
 }
 
-void DesktopRootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
-  XDefineCursor(xdisplay_, xwindow_, cursor.platform());
-}
-
 void DesktopRootWindowHostLinux::OnCaptureReleased() {
   native_widget_delegate_->OnMouseCaptureLost();
   g_current_capture = NULL;
@@ -729,14 +720,7 @@ void DesktopRootWindowHostLinux::ReleaseCapture() {
 }
 
 void DesktopRootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
-  cursor_loader_.SetPlatformCursor(&cursor);
-
-  if (cursor == current_cursor_)
-    return;
-  current_cursor_ = cursor;
-
-  if (cursor_shown_)
-    SetCursorInternal(cursor);
+  XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
 
 bool DesktopRootWindowHostLinux::QueryMouseLocation(
@@ -835,36 +819,6 @@ void DesktopRootWindowHostLinux::OnDeviceScaleFactorChanged(
 }
 
 void DesktopRootWindowHostLinux::PrepareForShutdown() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostLinux, aura::CursorClient implementation:
-
-void DesktopRootWindowHostLinux::ShowCursor(bool show) {
-  if (show == cursor_shown_)
-    return;
-  cursor_shown_ = show;
-  SetCursorInternal(show ? current_cursor_ : invisible_cursor_);
-}
-
-bool DesktopRootWindowHostLinux::IsCursorVisible() const {
-  return cursor_shown_;
-}
-
-void DesktopRootWindowHostLinux::SetDeviceScaleFactor(
-    float device_scale_factor) {
-  cursor_loader_.UnloadAll();
-  cursor_loader_.set_device_scale_factor(device_scale_factor);
-}
-
-void DesktopRootWindowHostLinux::LockCursor() {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-}
-
-void DesktopRootWindowHostLinux::UnlockCursor() {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
