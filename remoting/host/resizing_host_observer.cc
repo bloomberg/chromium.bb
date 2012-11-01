@@ -135,8 +135,8 @@ void ResizingHostObserver::OnClientDimensionsChanged(
   // If the host desktop size changes other than via the resize-to-client
   // mechanism, then set |previous_size_| to zero and give up. This is an
   // indication that the user doesn't want resize-to-client.
-  SkISize new_size = desktop_resizer_->GetCurrentSize();
-  if (new_size != previous_size_) {
+  SkISize current_size = desktop_resizer_->GetCurrentSize();
+  if (current_size != previous_size_) {
     previous_size_ = SkISize::Make(0, 0);
     return;
   }
@@ -157,7 +157,8 @@ void ResizingHostObserver::OnClientDimensionsChanged(
     }
   }
   previous_size_ = best_size.size();
-  desktop_resizer_->SetSize(previous_size_);
+  if (previous_size_ != current_size)
+    desktop_resizer_->SetSize(previous_size_);
 }
 
 }  // namespace remoting
