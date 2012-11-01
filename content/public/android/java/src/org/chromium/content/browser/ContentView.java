@@ -546,6 +546,14 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int ow, int oh) {
+        TraceEvent.begin();
+        super.onSizeChanged(w, h, ow, oh);
+        mContentViewCore.onSizeChanged(w, h, ow, oh);
+        TraceEvent.end();
+    }
+
+    @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         return mContentViewCore.onCreateInputConnection(outAttrs);
     }

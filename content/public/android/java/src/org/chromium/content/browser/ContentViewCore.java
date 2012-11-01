@@ -1146,6 +1146,9 @@ public class ContentViewCore implements MotionEventDelegate {
     @SuppressWarnings("javadoc")
     public void onSizeChanged(int w, int h, int ow, int oh) {
         mPopupZoomer.hide(false);
+
+        updateAfterSizeChanged();
+
         // Update the content size to make sure it is at least the View size
         if (mContentWidth < w) mContentWidth = w;
         if (mContentHeight < h) mContentHeight = h;
