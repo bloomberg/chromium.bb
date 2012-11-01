@@ -51,8 +51,6 @@
 # bungeman@ will rebaseline this test
 crbug.com/155867 platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html [ Failure ImageOnlyFailure ]
 
-# END OVERRIDES HERE (this line ensures that the file is newline-terminated)
-
 # To be rebaselined after skia.gyp undefines SK_DISABLE_EXTRACTSUBSET_OPAQUE_FIX
 #
 crbug.com/156097  fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ] 
@@ -62,3 +60,13 @@ crbug.com/156097  svg/custom/focus-ring.svg [ ImageOnlyFailure ]
 crbug.com/156097  svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ] 
 crbug.com/156097  fast/forms/select-style.html [ ImageOnlyFailure ] 
 
+# To be rebaselined by reed@. http://code.google.com/p/skia/source/detail?r=6220
+# removed double drawing of clipped hairlines at edges.
+
+crbug.com/148638  fast/repaint/list-marker.html [ Failure ImageOnlyFailure ]
+crbug.com/148638  svg/hixie/perf/001.xml [ Failure ImageOnlyFailure ]
+crbug.com/148638  svg/hixie/perf/002.xml [ Failure ImageOnlyFailure ]
+crbug.com/148638  svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Failure ImageOnlyFailure ]
+crbug.com/148638  svg/zoom/page/zoom-img-preserveAspectRatio-support-1.html [ Failure ImageOnlyFailure ]
+
+# END OVERRIDES HERE (this line ensures that the file is newline-terminated)
