@@ -1,8 +1,15 @@
+/*
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -13,8 +20,9 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
 
-using std::vector;
+using std::set;
 using std::string;
+using std::vector;
 
 
 // Hypothetically reading whole ELF file to memory can cause problems with huge
@@ -52,7 +60,7 @@ struct Segment {
 
 template<typename ElfEhdrType, typename ElfPhdrType>
 Segment FindTextSegment(const vector<uint8_t> &data) {
-  Segment segment = {NULL, 0, 0}; // only to suppress 'uninitialized' warning
+  Segment segment = {NULL, 0, 0};  // only to suppress 'uninitialized' warning
   bool found = false;
 
   const ElfEhdrType &header = *reinterpret_cast<const ElfEhdrType *>(&data[0]);
@@ -111,40 +119,108 @@ Segment FindTextSegment(const vector<uint8_t> &data) {
 }
 
 
+struct Jump {
+  uint32_t from;
+  uint32_t to;
+  Jump(uint32_t from, uint32_t to) : from(from), to(to) {}
+};
+
+
 struct Error {
   uint32_t offset;
   string message;
+  Error(uint32_t offset, string message) : offset(offset), message(message) {}
 };
 
 
 struct UserData {
   Segment segment;
   vector<Error> *errors;
+  vector<Jump> *jumps;
+  set<uint32_t> *bad_jump_targets;
+  UserData(Segment segment,
+           vector<Error> *errors,
+           vector<Jump> *jumps,
+           set<uint32_t> *bad_jump_targets)
+      : segment(segment),
+        errors(errors),
+        jumps(jumps),
+        bad_jump_targets(bad_jump_targets) {
+  }
 };
 
 
-Bool ProcessErrorStrict(
+Bool ProcessInstruction(
     const uint8_t *begin, const uint8_t *end,
     uint32_t validation_info, void *user_data_ptr) {
-  UNREFERENCED_PARAMETER(end);
+
   UserData &user_data = *reinterpret_cast<UserData *>(user_data_ptr);
-  Error error;
-  ptrdiff_t offset = begin - user_data.segment.data;
-  error.offset = user_data.segment.vaddr + static_cast<uint32_t>(offset);
-  if (validation_info & UNRECOGNIZED_INSTRUCTION)
-    error.message = "unrecognized instruction";
-  if (validation_info & DIRECT_JUMP_OUT_OF_RANGE)
-    error.message = "direct jump out of range";
-  if (validation_info & CPUID_UNSUPPORTED_INSTRUCTION)
-    error.message = "required CPU feature not found";
-  // TODO(shcherbina): report jump sources, not destinations
-  if (validation_info & BAD_JUMP_TARGET)
-    error.message = "jump to this offset";
+  vector<Error> &errors = *user_data.errors;
+
+  uint32_t offset = user_data.segment.vaddr +
+                    static_cast<uint32_t>(begin - user_data.segment.data);
+
+  // Presence of RELATIVE_8BIT or RELATIVE_32BIT indicates that instruction is
+  // immediate jump or call.
+  // We only record jumps that are in range, so we don't have to worry
+  // about overflows.
+  if ((validation_info & DIRECT_JUMP_OUT_OF_RANGE) == 0) {
+    uint32_t program_counter = user_data.segment.vaddr +
+                               static_cast<uint32_t>(end + 1 -
+                                                     user_data.segment.data);
+    if (validation_info & RELATIVE_8BIT) {
+      program_counter += *reinterpret_cast<const int8_t *>(end);
+      user_data.jumps->push_back(Jump(offset, program_counter));
+    } else if (validation_info & RELATIVE_32BIT) {
+      program_counter += *reinterpret_cast<const int32_t *>(end - 3);
+      user_data.jumps->push_back(Jump(offset, program_counter));
+    }
+  }
+
+  Bool result = (validation_info & VALIDATION_ERRORS_MASK) ? FALSE : TRUE;
+
+  // We clear bit for each processed error, and in the end if there are still
+  // errors we did not report, we produce generic error message.
+  // This way, if validator interface was changed (new error bits were
+  // introduced), we at least wouldn't ignore them completely.
+
+  if (validation_info & UNRECOGNIZED_INSTRUCTION) {
+    validation_info &= ~UNRECOGNIZED_INSTRUCTION;
+    errors.push_back(Error(offset, "unrecognized instruction"));
+  }
+
+  if (validation_info & DIRECT_JUMP_OUT_OF_RANGE) {
+    validation_info &= ~DIRECT_JUMP_OUT_OF_RANGE;
+    errors.push_back(Error(offset, "direct jump out of range"));
+  }
+
+  if (validation_info & CPUID_UNSUPPORTED_INSTRUCTION) {
+    validation_info &= ~CPUID_UNSUPPORTED_INSTRUCTION;
+    errors.push_back(Error(offset, "required CPU feature not found"));
+  }
+
+  if (validation_info & BAD_JUMP_TARGET) {
+    validation_info &= ~BAD_JUMP_TARGET;
+    user_data.bad_jump_targets->insert(offset);
+  }
   // ...
   // TODO(shcherbina): distinguish more kinds of errors
-  else
-    error.message = "<placeholder error message>";
-  user_data.errors->push_back(error);
+
+  if (validation_info & VALIDATION_ERRORS_MASK) {
+    errors.push_back(Error(offset, "<some other error>"));
+  }
+
+  return result;
+}
+
+
+Bool ProcessError(
+    const uint8_t *begin, const uint8_t *end,
+    uint32_t validation_info, void *user_data_ptr) {
+  UNREFERENCED_PARAMETER(begin);
+  UNREFERENCED_PARAMETER(end);
+  UNREFERENCED_PARAMETER(validation_info);
+  UNREFERENCED_PARAMETER(user_data_ptr);
   return FALSE;
 }
 
@@ -157,27 +233,45 @@ typedef Bool ValidateChunkFunc(
     void *callback_data);
 
 
-bool ValidateStrict(
+bool Validate(
     const Segment &segment,
     ValidateChunkFunc validate_chunk,
     vector<Error> *errors) {
-  CHECK(segment.size % kBundleSize == 0);
-  CHECK(segment.vaddr % kBundleSize == 0);
 
   errors->clear();
 
-  UserData user_data;
-  user_data.segment = segment;
-  user_data.errors = errors;
+  vector<Jump> jumps;
+  set<uint32_t> bad_jump_targets;
+
+  UserData user_data(segment, errors, &jumps, &bad_jump_targets);
 
   // TODO(shcherbina): customize from command line
   const NaClCPUFeaturesX86 *cpu_features = &kFullCPUIDFeatures;
-  ValidationOptions options = static_cast<ValidationOptions>(0);
 
-  return validate_chunk(
+  // We collect all errors except bad jump targets, and we separately
+  // memoize all direct jumps (or calls) and bad jump targets.
+  Bool result = validate_chunk(
       segment.data, segment.size,
-      options, cpu_features,
-      ProcessErrorStrict, &user_data);
+      CALL_USER_CALLBACK_ON_EACH_INSTRUCTION, cpu_features,
+      ProcessInstruction, &user_data);
+
+  // Report destinations of jumps that lead to bad targets.
+  for (size_t i = 0; i < jumps.size(); i++) {
+    const Jump &jump = jumps[i];
+    if (bad_jump_targets.count(jump.to) > 0)
+      errors->push_back(Error(jump.from, "bad jump target"));
+  }
+
+  // Run validator as it is run in loader, without callback on each instruction,
+  // and ensure that results match. If ncval is guaranteed to return the same
+  // result as actual validator, it can be reliably used as validator wrapper
+  // for testing.
+  CHECK(result == validate_chunk(
+      segment.data, segment.size,
+      static_cast<ValidationOptions>(0), cpu_features,
+      ProcessError, NULL));
+
+  return static_cast<bool>(result);
 }
 
 
@@ -188,20 +282,26 @@ void Usage() {
 }
 
 
-const char* ParseOptions(int argc, const char * const *argv) {
+struct Options {
+  const char *input_file;
+};
+
+
+void ParseOptions(size_t argc, const char * const *argv, Options *options) {
   if (argc != 2)
     Usage();
 
-  return argv[1];
+  options->input_file = argv[argc - 1];
 }
 
 
 int main(int argc, char **argv) {
-  const char *input_file = ParseOptions(argc, argv);
-  printf("Validating %s ...\n", input_file);
+  Options options;
+  ParseOptions(argc, argv, &options);
+  printf("Validating %s ...\n", options.input_file);
 
   vector<uint8_t> data;
-  ReadImage(input_file, &data);
+  ReadImage(options.input_file, &data);
 
   const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&data[0]);
   if (data.size() < sizeof(header) ||
@@ -223,14 +323,27 @@ int main(int argc, char **argv) {
       exit(1);
   }
 
+  if (segment.size % kBundleSize != 0) {
+    printf("Text segment size (0x%"NACL_PRIx32") is not "
+           "multiple of bundle size.\n",
+           segment.size);
+    exit(1);
+  }
+  if (segment.vaddr % kBundleSize != 0) {
+    printf("Text segment offset in memory (0x%"NACL_PRIx32") "
+           "is not bundle-aligned.\n",
+           segment.vaddr);
+    exit(1);
+  }
+
   vector<Error> errors;
   bool result = false;
-  switch(header.e_machine) {
+  switch (header.e_machine) {
     case EM_386:
-      result = ValidateStrict(segment, ValidateChunkIA32, &errors);
+      result = Validate(segment, ValidateChunkIA32, &errors);
       break;
     case EM_X86_64:
-      result = ValidateStrict(segment, ValidateChunkAMD64, &errors);
+      result = Validate(segment, ValidateChunkAMD64, &errors);
       break;
     default:
       printf("Unsupported e_machine %"NACL_PRIu16".\n", header.e_machine);
