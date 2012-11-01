@@ -532,6 +532,8 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   bool have_ext_framebuffer_object_;
   bool have_ext_framebuffer_multisample_;
   bool have_angle_framebuffer_multisample_;
+  bool have_ext_oes_standard_derivatives_;
+  bool have_ext_oes_egl_image_external_;
 
   WebGLId texture_;
   WebGLId fbo_;

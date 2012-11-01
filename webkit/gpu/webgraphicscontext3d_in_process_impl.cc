@@ -56,6 +56,8 @@ WebGraphicsContext3DInProcessImpl::WebGraphicsContext3DInProcessImpl(
       have_ext_framebuffer_object_(false),
       have_ext_framebuffer_multisample_(false),
       have_angle_framebuffer_multisample_(false),
+      have_ext_oes_standard_derivatives_(false),
+      have_ext_oes_egl_image_external_(false),
       texture_(0),
       fbo_(0),
       depth_stencil_buffer_(0),
@@ -228,6 +230,10 @@ bool WebGraphicsContext3DInProcessImpl::Initialize(
       strstr(extensions, "GL_EXT_framebuffer_multisample") != NULL;
   have_angle_framebuffer_multisample_ =
       strstr(extensions, "GL_ANGLE_framebuffer_multisample") != NULL;
+  have_ext_oes_standard_derivatives_ =
+      strstr(extensions, "GL_OES_standard_derivatives") != NULL;
+  have_ext_oes_egl_image_external_ =
+      strstr(extensions, "GL_OES_EGL_image_external") != NULL;
 
   ValidateAttributes();
 
@@ -1730,6 +1736,9 @@ bool WebGraphicsContext3DInProcessImpl::AngleCreateCompilers() {
               &resources.MaxFragmentUniformVectors);
   // Always set to 1 for OpenGL ES.
   resources.MaxDrawBuffers = 1;
+
+  resources.OES_standard_derivatives = have_ext_oes_standard_derivatives_;
+  resources.OES_EGL_image_external = have_ext_oes_egl_image_external_;
 
   fragment_compiler_ = ShConstructCompiler(
       SH_FRAGMENT_SHADER, SH_WEBGL_SPEC,
