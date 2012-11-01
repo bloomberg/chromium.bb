@@ -15,7 +15,7 @@ class ChromeBrowserFieldTrials {
   ~ChromeBrowserFieldTrials();
 
   // Add an invocation of your field trial init function to this method.
-  void SetupFieldTrials(bool proxy_policy_is_set);
+  void SetupFieldTrials();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserMainTest,
@@ -57,6 +57,10 @@ class ChromeBrowserFieldTrials {
   // A field trial to determine the impact of using non-blocking reads for
   // TCP sockets on Windows instead of overlapped I/O.
   void WindowsOverlappedTCPReadsFieldTrial();
+
+  // Instantiates dynamic trials by querying their state, to ensure they get
+  // reported as used.
+  void InstantiateDynamicTrials();
 
   const CommandLine& parsed_command_line_;
 

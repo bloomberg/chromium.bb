@@ -578,8 +578,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
       browser_process_->variations_service();
   variations_service->CreateTrialsFromSeed(browser_process_->local_state());
 
-  browser_field_trials_.SetupFieldTrials(
-      local_state_->IsManagedPreference(prefs::kMaxConnectionsPerProxy));
+  browser_field_trials_.SetupFieldTrials();
 
   SetupPlatformFieldTrials();
 
