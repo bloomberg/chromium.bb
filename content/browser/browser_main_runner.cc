@@ -14,6 +14,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/common/child_process.h"
+#include "content/public/browser/compositor_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 
@@ -100,6 +101,10 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
         parameters.command_line.HasSwitch(
             switches::kMediaPlayerInRenderProcess)));
 #endif
+
+    if (IsThreadedCompositingEnabled())
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableThreadedCompositing);
 
     main_loop_->CreateThreads();
     int result_code = main_loop_->GetResultCode();
