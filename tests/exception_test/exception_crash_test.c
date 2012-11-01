@@ -60,6 +60,7 @@ char recovery_stack[0x1000] __attribute__((aligned(16)));
 
 void bad_stack_exception_handler();
 asm(".pushsection .text, \"ax\", @progbits\n"
+    ".p2align 5\n"
     "bad_stack_exception_handler:\n"
     /* Restore a working stack, allowing for alignment. */
 # if defined(__i386__)

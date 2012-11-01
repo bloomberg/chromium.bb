@@ -171,6 +171,7 @@ extern const uint8_t kX86FlagBits[5];
     void callee_func(struct NaClSignalContext *regs); \
     __asm__( \
         ".pushsection .text, \"ax\", @progbits\n" \
+        ".p2align 5\n" \
         #def_func ":\n" \
         /* Push most of "struct NaClSignalContext" in reverse order. */ \
         "push $0\n"  /* Leave space for flags */ \
@@ -205,6 +206,7 @@ extern const uint8_t kX86FlagBits[5];
     void callee_func(struct NaClSignalContext *regs); \
     __asm__( \
         ".pushsection .text, \"ax\", @progbits\n" \
+        ".p2align 5\n" \
         #def_func ":\n" \
         /* Push most of "struct NaClSignalContext" in reverse order. */ \
         "push $0\n"  /* Leave space for flags */ \

@@ -78,6 +78,8 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
   regs->eax = (uintptr_t) test_shm;
   ASM_WITH_REGS(
       regs,
+      /* Align to ensure no NOPs are inserted in the code that follows. */
+      ".p2align 5\n"
       /* Set "test_shm->var = test_shm" to indicate that we are ready. */
       "movl %%eax, (%%eax)\n"
       "spin_instruction:\n"
@@ -86,6 +88,8 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
   regs->rax = (uintptr_t) test_shm;
   ASM_WITH_REGS(
       regs,
+      /* Align to ensure no NOPs are inserted in the code that follows. */
+      ".p2align 5\n"
       /* Set "test_shm->var = test_shm" to indicate that we are ready. */
       "movl %%eax, %%nacl:(%%r15, %%rax)\n"
       "spin_instruction:\n"
@@ -94,6 +98,8 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
   regs->r0 = (uintptr_t) test_shm;
   ASM_WITH_REGS(
       regs,
+      /* Align to ensure no NOPs are inserted in the code that follows. */
+      ".p2align 4\n"
       /* Set "test_shm->var = test_shm" to indicate that we are ready. */
       "bic r0, r0, #0xc0000000\n"
       "str r0, [r0]\n"
