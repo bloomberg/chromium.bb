@@ -10,8 +10,15 @@ race:libevent.c
 # http://crbug.com/120808
 race:base/threading/watchdog.cc
 
+# http://crbug.com/157586
+race:third_party/libvpx/source/libvpx/vp8/decoder/threading.c
+
 # http://crbug.com/158718
 race:third_party/ffmpeg/libavcodec/pthread.c
 race:third_party/ffmpeg/libavcodec/vp8.c
 race:third_party/ffmpeg/libavutil/mem.c
 race:media::VideoFrame::HashFrameForTesting
+
+# http://crbug.com/158922
+race:third_party/libvpx/source/libvpx/vp8/encoder/*
+
