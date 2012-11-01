@@ -224,14 +224,14 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnLeft) {
   EXPECT_EQ("-1,16 1x344", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("0,0 1x360", event_filter->dst_indicator_bounds_.ToString());
 
-  default_layout.offset = 300;
+  default_layout.offset = 250;
   controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,300 1x60", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("-1,300 1x60", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("0,250 1x110", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("-1,250 1x110", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("-1,300 1x60", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,300 1x60", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("-1,250 1x110", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("0,250 1x110", event_filter->dst_indicator_bounds_.ToString());
   event_filter->HideSharedEdgeIndicator();
 }
 
@@ -252,14 +252,14 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ("0,-1 360x1", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("0,0 360x1", event_filter->dst_indicator_bounds_.ToString());
 
-  default_layout.offset = 300;
+  default_layout.offset = 250;
   controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("300,0 60x1", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("300,-1 60x1", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("250,0 110x1", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("250,-1 110x1", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("300,-1 60x1", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("300,0 60x1", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("250,-1 110x1", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("250,0 110x1", event_filter->dst_indicator_bounds_.ToString());
 
   default_layout.position = DisplayLayout::BOTTOM;
   default_layout.offset = 0;
