@@ -38,6 +38,7 @@ struct ViewData;
 namespace thunk {
 
 class PPB_Flash_API;
+class PPB_Flash_Clipboard_API;
 class PPB_Flash_Functions_API;
 class PPB_Gamepad_API;
 
@@ -93,6 +94,10 @@ class PPB_Instance_API {
   virtual PPB_Flash_API* GetFlashAPI() = 0;
   // Flash_Functions
   virtual PPB_Flash_Functions_API* GetFlashFunctionsAPI(
+      PP_Instance instance) = 0;
+
+  // Flash_Clipboard.
+  virtual PPB_Flash_Clipboard_API* GetFlashClipboardAPI(
       PP_Instance instance) = 0;
 
   // Gamepad.

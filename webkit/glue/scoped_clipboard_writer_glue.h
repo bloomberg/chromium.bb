@@ -8,12 +8,16 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/glue/clipboard_client.h"
+#include "webkit/glue/webkit_glue_export.h"
 
-class ScopedClipboardWriterGlue : public ui::ScopedClipboardWriter {
+namespace webkit_glue {
+
+class WEBKIT_GLUE_EXPORT ScopedClipboardWriterGlue
+    : public ui::ScopedClipboardWriter {
  public:
   explicit ScopedClipboardWriterGlue(webkit_glue::ClipboardClient* client);
 
-  ~ScopedClipboardWriterGlue();
+  virtual ~ScopedClipboardWriterGlue();
 
   void WriteBitmapFromPixels(const void* pixels, const gfx::Size& size);
 
@@ -21,5 +25,7 @@ class ScopedClipboardWriterGlue : public ui::ScopedClipboardWriter {
   scoped_ptr<webkit_glue::ClipboardClient::WriteContext> context_;
   DISALLOW_COPY_AND_ASSIGN(ScopedClipboardWriterGlue);
 };
+
+}  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_SCOPED_CLIPBOARD_WRITER_GLUE_H_

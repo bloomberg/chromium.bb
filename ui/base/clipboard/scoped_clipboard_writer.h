@@ -61,7 +61,7 @@ class UI_EXPORT ScopedClipboardWriter {
   // Pixel format is assumed to be 32-bit BI_RGB.
   void WriteBitmapFromPixels(const void* pixels, const gfx::Size& size);
 
-  // Adds arbitrary data to clipboard.
+  // Adds arbitrary pickled data to clipboard.
   void WritePickledData(const Pickle& pickle,
                         const Clipboard::FormatType& format);
 

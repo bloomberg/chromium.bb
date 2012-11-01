@@ -31,15 +31,6 @@ PROXIED_IFACE(PPB_Flash,
               PPB_Flash_12_6)
 
 PROXIED_IFACE(PPB_Flash,
-              PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY,
-              PPB_Flash_Clipboard_3_0)
-PROXIED_IFACE(PPB_Flash,
-              PPB_FLASH_CLIPBOARD_INTERFACE_3_0,
-              PPB_Flash_Clipboard_3_0)
-PROXIED_IFACE(PPB_Flash,
-              PPB_FLASH_CLIPBOARD_INTERFACE_4_0,
-              PPB_Flash_Clipboard_4_0)
-PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_FILE_MODULELOCAL_INTERFACE_2_0,
               PPB_Flash_File_ModuleLocal_2_0)
 PROXIED_IFACE(PPB_Flash,
@@ -48,6 +39,13 @@ PROXIED_IFACE(PPB_Flash,
 PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_FILE_FILEREF_INTERFACE,
               PPB_Flash_File_FileRef)
+PROXIED_IFACE(NoAPIName,
+              PPB_FLASH_CLIPBOARD_INTERFACE_4_0,
+              PPB_Flash_Clipboard_4_0)
+PROXIED_IFACE(NoAPIName,
+              PPB_FLASH_CLIPBOARD_INTERFACE_5_0,
+              PPB_Flash_Clipboard_5_0)
+
 
 PROXIED_IFACE(NoAPIName,
               PPB_FLASH_DEVICEID_INTERFACE_1_0,

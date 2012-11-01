@@ -88,18 +88,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   virtual PP_Bool SetCrashData(PP_Instance instance,
                                PP_FlashCrashKey key,
                                PP_Var value) OVERRIDE;
-  virtual PP_Bool IsClipboardFormatAvailable(
-      PP_Instance instance,
-      PP_Flash_Clipboard_Type clipboard_type,
-      PP_Flash_Clipboard_Format format) OVERRIDE;
-  virtual PP_Var ReadClipboardData(PP_Instance instance,
-                                   PP_Flash_Clipboard_Type clipboard_type,
-                                   PP_Flash_Clipboard_Format format) OVERRIDE;
-  virtual int32_t WriteClipboardData(PP_Instance instance,
-                                     PP_Flash_Clipboard_Type clipboard_type,
-                                     uint32_t data_item_count,
-                                     const PP_Flash_Clipboard_Format formats[],
-                                     const PP_Var data_items[]) OVERRIDE;
   virtual bool CreateThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
   virtual void ClearThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
   virtual int32_t OpenFile(PP_Instance instance,
@@ -164,18 +152,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   void OnHostMsgFlashGetScreenSize(PP_Instance instance,
                                    PP_Bool* result,
                                    PP_Size* size);
-  void OnHostMsgIsClipboardFormatAvailable(PP_Instance instance,
-                                           int clipboard_type,
-                                           int format,
-                                           bool* result);
-  void OnHostMsgReadClipboardData(PP_Instance instance,
-                                  int clipboard_type,
-                                  int format,
-                                  SerializedVarReturnValue result);
-  void OnHostMsgWriteClipboardData(PP_Instance instance,
-                                   int clipboard_type,
-                                   const std::vector<int>& formats,
-                                   SerializedVarVectorReceiveInput data_items);
   void OnHostMsgOpenFileRef(PP_Instance instance,
                             const ppapi::HostResource& host_resource,
                             int32_t mode,

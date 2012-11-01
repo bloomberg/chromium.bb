@@ -34,6 +34,7 @@ class ResourceCreationAPI;
 
 namespace proxy {
 
+class FlashClipboardResource;
 class FlashResource;
 class GamepadResource;
 class ResourceMessageReplyParams;
@@ -54,6 +55,7 @@ struct InstanceData {
   // (These are singleton-style resources).
   scoped_refptr<GamepadResource> gamepad_resource;
   scoped_refptr<FlashResource> flash_resource;
+  scoped_refptr<FlashClipboardResource> flash_clipboard_resource;
 
   // Calls to |RequestSurroundingText()| are done by posted tasks. Track whether
   // a) a task is pending, to avoid redundant calls, and b) whether we should

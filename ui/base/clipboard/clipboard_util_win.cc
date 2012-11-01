@@ -218,6 +218,12 @@ FORMATETC* ClipboardUtil::GetWebCustomDataFormat() {
   return &format;
 }
 
+FORMATETC* ClipboardUtil::GetPepperCustomDataFormat() {
+  static UINT cf =
+      RegisterClipboardFormat(L"Chromium Pepper MIME Data Format");
+  static FORMATETC format = {cf, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+  return &format;
+}
 
 bool ClipboardUtil::HasUrl(IDataObject* data_object) {
   DCHECK(data_object);

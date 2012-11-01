@@ -38,6 +38,7 @@ const char kRTFFormat[] = "rtf";
 const char kBitmapFormat[] = "bitmap";
 const char kWebKitSmartPasteFormat[] = "webkit_smart";
 const char kBookmarkFormat[] = "bookmark";
+const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
 const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
 
 class ClipboardMap {
@@ -354,6 +355,12 @@ const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
   return type;
 }
 

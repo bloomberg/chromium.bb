@@ -122,12 +122,6 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgFlashSetFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
                         OnHostMsgFlashGetScreenSize)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsClipboardFormatAvailable,
-                        OnHostMsgIsClipboardFormatAvailable)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_ReadClipboardData,
-                        OnHostMsgReadClipboardData)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_WriteClipboardData,
-                        OnHostMsgWriteClipboardData)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_OpenFileRef,
                         OnHostMsgOpenFileRef)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QueryFileRef,
@@ -361,68 +355,6 @@ PP_Bool PPB_Flash_Proxy::SetCrashData(PP_Instance instance,
       return PP_TRUE;
   }
   return PP_FALSE;
-}
-
-PP_Bool PPB_Flash_Proxy::IsClipboardFormatAvailable(
-    PP_Instance instance,
-    PP_Flash_Clipboard_Type clipboard_type,
-    PP_Flash_Clipboard_Format format) {
-  if (!IsValidClipboardType(clipboard_type) || !IsValidClipboardFormat(format))
-    return PP_FALSE;
-
-  bool result = false;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_IsClipboardFormatAvailable(
-      API_ID_PPB_FLASH,
-      instance,
-      static_cast<int>(clipboard_type),
-      static_cast<int>(format),
-      &result));
-  return PP_FromBool(result);
-}
-
-PP_Var PPB_Flash_Proxy::ReadClipboardData(
-    PP_Instance instance,
-    PP_Flash_Clipboard_Type clipboard_type,
-    PP_Flash_Clipboard_Format format) {
-  if (!IsValidClipboardType(clipboard_type) || !IsValidClipboardFormat(format))
-    return PP_MakeUndefined();
-
-  ReceiveSerializedVarReturnValue result;
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_ReadClipboardData(
-      API_ID_PPB_FLASH, instance,
-      static_cast<int>(clipboard_type), static_cast<int>(format), &result));
-  return result.Return(dispatcher());
-}
-
-int32_t PPB_Flash_Proxy::WriteClipboardData(
-    PP_Instance instance,
-    PP_Flash_Clipboard_Type clipboard_type,
-    uint32_t data_item_count,
-    const PP_Flash_Clipboard_Format formats[],
-    const PP_Var data_items[]) {
-  if (!IsValidClipboardType(clipboard_type))
-    return PP_ERROR_BADARGUMENT;
-
-  std::vector<SerializedVar> data_items_vector;
-  SerializedVarSendInput::ConvertVector(
-      dispatcher(),
-      data_items,
-      data_item_count,
-      &data_items_vector);
-  for (size_t i = 0; i < data_item_count; ++i) {
-    if (!IsValidClipboardFormat(formats[i]))
-      return PP_ERROR_BADARGUMENT;
-  }
-
-  std::vector<int> formats_vector(formats, formats + data_item_count);
-  dispatcher()->Send(new PpapiHostMsg_PPBFlash_WriteClipboardData(
-      API_ID_PPB_FLASH,
-      instance,
-      static_cast<int>(clipboard_type),
-      formats_vector,
-      data_items_vector));
-  // Assume success, since it allows us to avoid a sync IPC.
-  return PP_OK;
 }
 
 bool PPB_Flash_Proxy::CreateThreadAdapterForInstance(PP_Instance instance) {
@@ -767,66 +699,6 @@ void PPB_Flash_Proxy::OnHostMsgFlashGetScreenSize(PP_Instance instance,
   } else {
     size->width = 0;
     size->height = 0;
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgIsClipboardFormatAvailable(
-    PP_Instance instance,
-    int clipboard_type,
-    int format,
-    bool* result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    *result = PP_ToBool(
-        enter.functions()->GetFlashAPI()->IsClipboardFormatAvailable(
-            instance,
-            static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
-            static_cast<PP_Flash_Clipboard_Format>(format)));
-  } else {
-    *result = false;
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgReadClipboardData(
-    PP_Instance instance,
-    int clipboard_type,
-    int format,
-    SerializedVarReturnValue result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    result.Return(dispatcher(),
-                  enter.functions()->GetFlashAPI()->ReadClipboardData(
-                      instance,
-                      static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
-                      static_cast<PP_Flash_Clipboard_Format>(format)));
-  }
-}
-
-void PPB_Flash_Proxy::OnHostMsgWriteClipboardData(
-    PP_Instance instance,
-    int clipboard_type,
-    const std::vector<int>& formats,
-    SerializedVarVectorReceiveInput data_items) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    uint32_t data_item_count;
-    PP_Var* data_items_array = data_items.Get(dispatcher(), &data_item_count);
-    CHECK(data_item_count == formats.size());
-
-    scoped_array<PP_Flash_Clipboard_Format> formats_array(
-        new PP_Flash_Clipboard_Format[formats.size()]);
-    for (uint32_t i = 0; i < formats.size(); ++i)
-      formats_array[i] = static_cast<PP_Flash_Clipboard_Format>(formats[i]);
-
-    int32_t result = enter.functions()->GetFlashAPI()->WriteClipboardData(
-        instance,
-        static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
-        data_item_count,
-        formats_array.get(),
-        data_items_array);
-    DLOG_IF(WARNING, result != PP_OK)
-        << "Write to clipboard failed unexpectedly.";
-    (void)result;  // Prevent warning in release mode.
   }
 }
 

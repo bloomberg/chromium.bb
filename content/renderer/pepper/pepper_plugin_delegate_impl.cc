@@ -54,7 +54,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
-#include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
@@ -1862,11 +1861,6 @@ MouseLockDispatcher* PepperPluginDelegateImpl::GetMouseLockDispatcher(
   } else {
     return render_view_->mouse_lock_dispatcher();
   }
-}
-
-webkit_glue::ClipboardClient*
-    PepperPluginDelegateImpl::CreateClipboardClient() const {
-  return new RendererClipboardClient;
 }
 
 }  // namespace content

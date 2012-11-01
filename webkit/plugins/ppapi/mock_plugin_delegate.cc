@@ -468,11 +468,6 @@ int MockPluginDelegate::EnumerateDevices(
 void MockPluginDelegate::StopEnumerateDevices(int request_id) {
 }
 
-webkit_glue::ClipboardClient*
-MockPluginDelegate::CreateClipboardClient() const {
-  return NULL;
-}
-
 std::string MockPluginDelegate::GetDeviceID() {
   return std::string();
 }

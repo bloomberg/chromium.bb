@@ -20,20 +20,4 @@ void PPB_Flash_Shared::FreeDirContents(PP_Instance instance,
   delete contents;
 }
 
-// static
-bool PPB_Flash_Shared::IsValidClipboardType(
-    PP_Flash_Clipboard_Type clipboard_type) {
-  return clipboard_type == PP_FLASH_CLIPBOARD_TYPE_STANDARD ||
-         clipboard_type == PP_FLASH_CLIPBOARD_TYPE_SELECTION;
-}
-
-// static
-bool PPB_Flash_Shared::IsValidClipboardFormat(
-    PP_Flash_Clipboard_Format format) {
-  // Purposely excludes |PP_FLASH_CLIPBOARD_FORMAT_INVALID|.
-  return format == PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT ||
-         format == PP_FLASH_CLIPBOARD_FORMAT_HTML ||
-         format == PP_FLASH_CLIPBOARD_FORMAT_RTF;
-}
-
 }  // namespace ppapi

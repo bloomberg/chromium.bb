@@ -70,6 +70,10 @@ class ClipboardClient {
                               const string16& type,
                               string16* data) = 0;
 
+  // Reads raw data from the clipboard for a given format.
+  virtual void ReadData(const ui::Clipboard::FormatType& format,
+                        std::string* data) = 0;
+
   // Creates a context to write clipboard data. May return NULL.
   virtual WriteContext* CreateWriteContext() = 0;
 };

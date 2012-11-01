@@ -33,6 +33,10 @@ NSString* const kUTTypeURLName = @"public.url-name";
 // actual data associated with this type.
 NSString* const kWebSmartPastePboardType = @"NeXT smart paste pasteboard type";
 
+// Pepper custom data format type.
+NSString* const kPepperCustomDataPboardType =
+    @"org.chromium.pepper-custom-data";
+
 NSPasteboard* GetPasteboard() {
   // The pasteboard should not be nil in a UI session, but this handy DCHECK
   // can help track down problems if someone tries using clipboard code outside
@@ -472,6 +476,12 @@ const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebCustomDataPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPepperCustomDataPboardType));
   return type;
 }
 

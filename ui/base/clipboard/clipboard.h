@@ -286,7 +286,10 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static const FormatType& GetHtmlFormatType();
   static const FormatType& GetRtfFormatType();
   static const FormatType& GetBitmapFormatType();
+  // TODO(raymes): Unify web custom data and pepper custom data:
+  // crbug.com/158399.
   static const FormatType& GetWebCustomDataFormatType();
+  static const FormatType& GetPepperCustomDataFormatType();
 
   // Embeds a pointer to a SharedMemory object pointed to by |bitmap_handle|
   // belonging to |process| into a shared bitmap [CBF_SMBITMAP] slot in

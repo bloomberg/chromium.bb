@@ -5,6 +5,8 @@
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "base/logging.h"
 
+namespace webkit_glue {
+
 ScopedClipboardWriterGlue::ScopedClipboardWriterGlue(
     webkit_glue::ClipboardClient* client)
     : ui::ScopedClipboardWriter(client->GetClipboard(),
@@ -29,3 +31,5 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
     ScopedClipboardWriter::WriteBitmapFromPixels(pixels, size);
   }
 }
+
+}  // namespace webkit_glue

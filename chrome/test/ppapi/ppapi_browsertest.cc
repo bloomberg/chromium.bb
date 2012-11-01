@@ -598,9 +598,6 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_Fullscreen)
 
-TEST_PPAPI_IN_PROCESS(FlashClipboard)
-TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
-
 TEST_PPAPI_IN_PROCESS(X509CertificatePrivate)
 TEST_PPAPI_OUT_OF_PROCESS(X509CertificatePrivate)
 
@@ -936,7 +933,8 @@ TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Basics)
 TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Post)
 #endif
 
-// Only enabled in out-of-process mode.
+// Going forward, Flash APIs will only work out-of-process.
+TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashFile_CreateTemporaryFile)
 
 #endif // ADDRESS_SANITIZER

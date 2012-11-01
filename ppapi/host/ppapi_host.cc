@@ -139,6 +139,11 @@ void PpapiHost::HandleResourceCall(
       // When no response is required, the message handler should not have
       // written a message to be returned.
       DCHECK(context->reply_msg.type() == 0);
+
+      // If there is no callback and the result of running the message handler
+      // was not PP_OK the client won't find out.
+      DLOG_IF(WARNING, reply_context.params.result() != PP_OK)
+          << "'Post' message handler failed to complete successfully.";
     }
   } else {
     reply_context.params.set_result(PP_ERROR_BADRESOURCE);

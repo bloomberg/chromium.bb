@@ -668,9 +668,6 @@ class PluginDelegate {
   // Stop enumerating devices of the specified |request_id|. The |request_id|
   // is the return value of EnumerateDevicesCallback.
   virtual void StopEnumerateDevices(int request_id) = 0;
-  // Create a ClipboardClient for writing to the clipboard. The caller will own
-  // the pointer to this.
-  virtual webkit_glue::ClipboardClient* CreateClipboardClient() const = 0;
 
   // Returns a Device ID
   virtual std::string GetDeviceID() = 0;

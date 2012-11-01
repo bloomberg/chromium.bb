@@ -2882,6 +2882,12 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   return &flash_impl_;
 }
 
+::ppapi::thunk::PPB_Flash_Clipboard_API*
+PluginInstance::GetFlashClipboardAPI(PP_Instance /*instance*/) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 ::ppapi::thunk::PPB_Flash_Functions_API*
 PluginInstance::GetFlashFunctionsAPI(PP_Instance /*instance*/) {
   NOTIMPLEMENTED();

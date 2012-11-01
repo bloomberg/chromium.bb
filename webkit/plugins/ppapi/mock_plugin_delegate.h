@@ -9,7 +9,6 @@
 
 struct PP_NetAddress_Private;
 namespace ppapi { class PPB_X509Certificate_Fields; }
-namespace webkit_glue { class ClipboardClient; }
 
 namespace webkit {
 namespace ppapi {
@@ -210,7 +209,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual int EnumerateDevices(PP_DeviceType_Dev type,
                                const EnumerateDevicesCallback& callback);
   virtual void StopEnumerateDevices(int request_id);
-  virtual webkit_glue::ClipboardClient* CreateClipboardClient() const;
   virtual std::string GetDeviceID();
   virtual PP_FlashLSORestrictions GetLocalDataRestrictions(
       const GURL& document_url,

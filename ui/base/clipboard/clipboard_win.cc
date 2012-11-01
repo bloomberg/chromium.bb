@@ -827,6 +827,15 @@ const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
 }
 
 // static
+const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(
+      FormatType,
+      type,
+      (ClipboardUtil::GetPepperCustomDataFormat()->cfFormat));
+  return type;
+}
+
+// static
 void Clipboard::FreeData(unsigned int format, HANDLE data) {
   if (format == CF_BITMAP)
     ::DeleteObject(static_cast<HBITMAP>(data));

@@ -21,10 +21,6 @@ class PPAPI_SHARED_EXPORT PPB_Flash_Shared : public thunk::PPB_Flash_API {
   virtual void FreeDirContents(PP_Instance instance,
                                PP_DirContents_Dev* contents) OVERRIDE;
 
- protected:
-  static bool IsValidClipboardType(PP_Flash_Clipboard_Type clipboard_type);
-  static bool IsValidClipboardFormat(PP_Flash_Clipboard_Format format);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Shared);
 };

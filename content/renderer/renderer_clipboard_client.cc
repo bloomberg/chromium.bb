@@ -178,6 +178,12 @@ void RendererClipboardClient::ReadCustomData(ui::Clipboard::Buffer buffer,
       new ClipboardHostMsg_ReadCustomData(buffer, type, data));
 }
 
+void RendererClipboardClient::ReadData(const ui::Clipboard::FormatType& format,
+                                       std::string* data) {
+  RenderThreadImpl::current()->Send(
+      new ClipboardHostMsg_ReadData(format, data));
+}
+
 webkit_glue::ClipboardClient::WriteContext*
 RendererClipboardClient::CreateWriteContext() {
   return new RendererClipboardWriteContext;

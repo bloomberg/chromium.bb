@@ -21,6 +21,7 @@ namespace ui {
 namespace {
 const char kMimeTypeFilename[] = "chromium/filename";
 const char kMimeTypeBitmap[] = "image/bmp";
+const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 const size_t kMaxClipboardSize = 1;
 
@@ -667,6 +668,12 @@ const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
   return type;
 }
 

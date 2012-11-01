@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
+#include "content/renderer/pepper/pepper_flash_clipboard_host.h"
 #include "content/renderer/pepper/pepper_flash_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -62,6 +63,9 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_Flash_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFlashHost(
+            host_, instance, params.pp_resource()));
+      case PpapiHostMsg_FlashClipboard_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperFlashClipboardHost(
             host_, instance, params.pp_resource()));
     }
   }

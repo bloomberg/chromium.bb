@@ -1420,21 +1420,6 @@ IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBFlash_UpdateActivity)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlash_GetDeviceID,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* id */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_IsClipboardFormatAvailable,
-                           PP_Instance /* instance */,
-                           int /* clipboard_type */,
-                           int /* format */,
-                           bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_ReadClipboardData,
-                           PP_Instance /* instance */,
-                           int /* clipboard_type */,
-                           int /* format */,
-                           ppapi::proxy::SerializedVar /* result */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFlash_WriteClipboardData,
-                    PP_Instance /* instance */,
-                    int /* clipboard_type */,
-                    std::vector<int> /* formats */,
-                    std::vector<ppapi::proxy::SerializedVar> /* data */)
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenFileRef,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* file_ref */,
@@ -1720,6 +1705,25 @@ IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_ClosedReply,
                      std::string /* reason */)
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
+
+// Flash clipboard.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashClipboard_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashClipboard_RegisterCustomFormat,
+                     std::string /* format_name */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashClipboard_RegisterCustomFormatReply,
+                     uint32_t /* format */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashClipboard_IsFormatAvailable,
+                     uint32_t /* clipboard_type */,
+                     uint32_t /* format */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashClipboard_ReadData,
+                     uint32_t /* clipboard_type */,
+                     uint32_t /* format */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashClipboard_ReadDataReply,
+                     std::string /* result */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_FlashClipboard_WriteData,
+                     uint32_t /* clipboard_type */,
+                     std::vector<uint32_t> /* formats */,
+                     std::vector<std::string> /* data */)
 // Flash font file.
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFontFile_Create,
                      ppapi::proxy::SerializedFontDescription /* description */,

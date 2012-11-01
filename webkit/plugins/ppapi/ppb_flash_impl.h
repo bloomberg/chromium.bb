@@ -11,12 +11,6 @@
 #include "build/build_config.h"
 #include "ppapi/shared_impl/ppb_flash_shared.h"
 
-class ScopedClipboardWriterGlue;
-
-namespace webkit_glue {
-class ClipboardClient;
-}
-
 namespace webkit {
 namespace ppapi {
 
@@ -65,18 +59,6 @@ class PPB_Flash_Impl : public ::ppapi::PPB_Flash_Shared {
   virtual PP_Bool SetCrashData(PP_Instance instance,
                                PP_FlashCrashKey key,
                                PP_Var value) OVERRIDE;
-  virtual PP_Bool IsClipboardFormatAvailable(
-      PP_Instance instance,
-      PP_Flash_Clipboard_Type clipboard_type,
-      PP_Flash_Clipboard_Format format) OVERRIDE;
-  virtual PP_Var ReadClipboardData(PP_Instance instance,
-                                   PP_Flash_Clipboard_Type clipboard_type,
-                                   PP_Flash_Clipboard_Format format) OVERRIDE;
-  virtual int32_t WriteClipboardData(PP_Instance instance,
-                                     PP_Flash_Clipboard_Type clipboard_type,
-                                     uint32_t data_item_count,
-                                     const PP_Flash_Clipboard_Format formats[],
-                                     const PP_Var data_items[]) OVERRIDE;
   virtual bool CreateThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
   virtual void ClearThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
   virtual int32_t OpenFile(PP_Instance instance,
@@ -112,18 +94,7 @@ class PPB_Flash_Impl : public ::ppapi::PPB_Flash_Shared {
                                      PP_Size* size) OVERRIDE;
 
  private:
-  // Call to ensure that the clipboard_client is properly initialized. Returns
-  // true on success. On failure, you should not use the client.
-  bool InitClipboard();
-
-  int32_t WriteClipboardDataItem(const PP_Flash_Clipboard_Format format,
-                                 const PP_Var& data,
-                                 ScopedClipboardWriterGlue* scw);
-
   PluginInstance* instance_;
-
-  // This object is lazily created by InitClipboard.
-  scoped_ptr<webkit_glue::ClipboardClient> clipboard_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Impl);
 };

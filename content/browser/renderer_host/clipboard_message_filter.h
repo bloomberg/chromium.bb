@@ -51,6 +51,9 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   void OnReadCustomData(ui::Clipboard::Buffer buffer,
                         const string16& type,
                         string16* result);
+  void OnReadData(const ui::Clipboard::FormatType& format,
+                  std::string* data);
+
 #if defined(OS_MACOSX)
   void OnFindPboardWriteString(const string16& text);
 #endif

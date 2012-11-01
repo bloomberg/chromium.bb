@@ -81,6 +81,9 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_ReadCustomData,
                             ui::Clipboard::Buffer /* buffer */,
                             string16 /* type */,
                             string16 /* result */)
+IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadData,
+                            ui::Clipboard::FormatType /* format */,
+                            std::string /* result */)
 
 #if defined(OS_MACOSX)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_FindPboardWriteStringAsync,

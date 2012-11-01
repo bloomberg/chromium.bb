@@ -31,14 +31,14 @@ void TestFlashClipboard::RunTests(const std::string& filter) {
   RUN_TEST(ReadWritePlainText, filter);
   RUN_TEST(ReadWriteHTML, filter);
   RUN_TEST(ReadWriteRTF, filter);
+  RUN_TEST(ReadWriteCustomData, filter);
   RUN_TEST(ReadWriteMultipleFormats, filter);
   RUN_TEST(Clear, filter);
   RUN_TEST(InvalidFormat, filter);
+  RUN_TEST(RegisterCustomFormat, filter);
 }
 
-bool TestFlashClipboard::ReadStringVar(
-    PP_Flash_Clipboard_Format format,
-    std::string* result) {
+bool TestFlashClipboard::ReadStringVar(uint32_t format, std::string* result) {
   pp::Var text;
   bool success = pp::flash::Clipboard::ReadData(
       instance_,
@@ -52,9 +52,9 @@ bool TestFlashClipboard::ReadStringVar(
   return false;
 }
 
-bool TestFlashClipboard::WriteStringVar(PP_Flash_Clipboard_Format format,
+bool TestFlashClipboard::WriteStringVar(uint32_t format,
                                         const std::string& text) {
-  std::vector<PP_Flash_Clipboard_Format> formats_vector(1, format);
+  std::vector<uint32_t> formats_vector(1, format);
   std::vector<pp::Var> data_vector(1, pp::Var(text));
   bool success = pp::flash::Clipboard::WriteData(
       instance_,
@@ -64,9 +64,8 @@ bool TestFlashClipboard::WriteStringVar(PP_Flash_Clipboard_Format format,
   return success;
 }
 
-bool TestFlashClipboard::IsFormatAvailableMatches(
-    PP_Flash_Clipboard_Format format,
-    bool expected) {
+bool TestFlashClipboard::IsFormatAvailableMatches(uint32_t format,
+                                                  bool expected) {
   for (int i = 0; i < kMaxIntervals; ++i) {
     bool is_available = pp::flash::Clipboard::IsFormatAvailable(
         instance_,
@@ -136,10 +135,9 @@ std::string TestFlashClipboard::TestReadWriteRTF() {
         "This is some {\\b bold} text.\\par\n"
         "}";
   pp::VarArrayBuffer array_buffer(rtf_string.size());
-  char *bytes = static_cast<char*>(array_buffer.Map());
+  char* bytes = static_cast<char*>(array_buffer.Map());
   std::copy(rtf_string.data(), rtf_string.data() + rtf_string.size(), bytes);
-  std::vector<PP_Flash_Clipboard_Format> formats_vector(1,
-      PP_FLASH_CLIPBOARD_FORMAT_RTF);
+  std::vector<uint32_t> formats_vector(1, PP_FLASH_CLIPBOARD_FORMAT_RTF);
   std::vector<pp::Var> data_vector(1, array_buffer);
   ASSERT_TRUE(pp::flash::Clipboard::WriteData(
       instance_,
@@ -158,7 +156,42 @@ std::string TestFlashClipboard::TestReadWriteRTF() {
   ASSERT_TRUE(rtf_result.is_array_buffer());
   pp::VarArrayBuffer array_buffer_result(rtf_result);
   ASSERT_TRUE(array_buffer_result.ByteLength() == array_buffer.ByteLength());
-  char *bytes_result = static_cast<char*>(array_buffer_result.Map());
+  char* bytes_result = static_cast<char*>(array_buffer_result.Map());
+  ASSERT_TRUE(std::equal(bytes, bytes + array_buffer.ByteLength(),
+      bytes_result));
+
+  PASS();
+}
+
+std::string TestFlashClipboard::TestReadWriteCustomData() {
+  std::string custom_data = "custom_data";
+  pp::VarArrayBuffer array_buffer(custom_data.size());
+  char* bytes = static_cast<char*>(array_buffer.Map());
+  std::copy(custom_data.begin(), custom_data.end(), bytes);
+  uint32_t format_id =
+      pp::flash::Clipboard::RegisterCustomFormat(instance_, "my-format");
+  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_INVALID);
+
+  std::vector<uint32_t> formats_vector(1, format_id);
+  std::vector<pp::Var> data_vector(1, array_buffer);
+  ASSERT_TRUE(pp::flash::Clipboard::WriteData(
+      instance_,
+      PP_FLASH_CLIPBOARD_TYPE_STANDARD,
+      formats_vector,
+      data_vector));
+
+  ASSERT_TRUE(IsFormatAvailableMatches(format_id, true));
+
+  pp::Var custom_data_result;
+  ASSERT_TRUE(pp::flash::Clipboard::ReadData(
+      instance_,
+      PP_FLASH_CLIPBOARD_TYPE_STANDARD,
+      format_id,
+      &custom_data_result));
+  ASSERT_TRUE(custom_data_result.is_array_buffer());
+  pp::VarArrayBuffer array_buffer_result(custom_data_result);
+  ASSERT_EQ(array_buffer_result.ByteLength(), array_buffer.ByteLength());
+  char* bytes_result = static_cast<char*>(array_buffer_result.Map());
   ASSERT_TRUE(std::equal(bytes, bytes + array_buffer.ByteLength(),
       bytes_result));
 
@@ -166,7 +199,7 @@ std::string TestFlashClipboard::TestReadWriteRTF() {
 }
 
 std::string TestFlashClipboard::TestReadWriteMultipleFormats() {
-  std::vector<PP_Flash_Clipboard_Format> formats;
+  std::vector<uint32_t> formats;
   std::vector<pp::Var> data;
   formats.push_back(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT);
   data.push_back(pp::Var("plain text"));
@@ -195,7 +228,7 @@ std::string TestFlashClipboard::TestClear() {
   bool success = pp::flash::Clipboard::WriteData(
       instance_,
       PP_FLASH_CLIPBOARD_TYPE_STANDARD,
-      std::vector<PP_Flash_Clipboard_Format>(),
+      std::vector<uint32_t>(),
       std::vector<pp::Var>());
   ASSERT_TRUE(success);
   ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
@@ -205,12 +238,38 @@ std::string TestFlashClipboard::TestClear() {
 }
 
 std::string TestFlashClipboard::TestInvalidFormat() {
-  PP_Flash_Clipboard_Format invalid_format =
-      static_cast<PP_Flash_Clipboard_Format>(-1);
+  uint32_t invalid_format = 999;
   ASSERT_FALSE(WriteStringVar(invalid_format, "text"));
   ASSERT_TRUE(IsFormatAvailableMatches(invalid_format, false));
   std::string unused;
   ASSERT_FALSE(ReadStringVar(invalid_format, &unused));
+
+  PASS();
+}
+
+std::string TestFlashClipboard::TestRegisterCustomFormat() {
+  // Test an empty name is rejected.
+  uint32_t format_id =
+      pp::flash::Clipboard::RegisterCustomFormat(instance_, "");
+  ASSERT_EQ(format_id, PP_FLASH_CLIPBOARD_FORMAT_INVALID);
+
+  // Test a valid format name.
+  format_id = pp::flash::Clipboard::RegisterCustomFormat(instance_, "a-b");
+  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_INVALID);
+  // Make sure the format doesn't collide with predefined formats.
+  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT);
+  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_HTML);
+  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_RTF);
+
+  // Check that if the same name is registered, the same id comes out.
+  uint32_t format_id2 =
+      pp::flash::Clipboard::RegisterCustomFormat(instance_, "a-b");
+  ASSERT_EQ(format_id, format_id2);
+
+  // Check that the second format registered has a different id.
+  uint32_t format_id3 =
+      pp::flash::Clipboard::RegisterCustomFormat(instance_, "a-b-c");
+  ASSERT_NE(format_id, format_id3);
 
   PASS();
 }

@@ -9,17 +9,9 @@
  */
 
 label Chrome {
-  M17 = 3.0,
-  M19 = 4.0
+  M19 = 4.0,
+  M24 = 5.0
 };
-
-#inline c
-/**
- * The old version string for this interface, equivalent to version 3.0.
- * TODO(viettrungluu): Remove this when enough time has passed. crbug.com/104184
- */
-#define PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY "PPB_Flash_Clipboard;3"
-#endinl
 
 /**
  * This enumeration contains the types of clipboards that can be accessed.
@@ -34,7 +26,7 @@ enum PP_Flash_Clipboard_Type {
 };
 
 /**
- * This enumeration contains the supported clipboard data formats.
+ * This enumeration contains the predfined clipboard data formats.
  */
 [assert_size(4)]
 enum PP_Flash_Clipboard_Format {
@@ -64,30 +56,60 @@ enum PP_Flash_Clipboard_Format {
  */
 interface PPB_Flash_Clipboard {
   /**
-   * Checks whether a given data format is available from the given clipboard.
-   * Returns true if the given format is available from the given clipboard.
+   * Deprecated in 5.0.
    */
+  [version=4.0, deprecate=5.0]
   PP_Bool IsFormatAvailable(
       [in] PP_Instance instance_id,
       [in] PP_Flash_Clipboard_Type clipboard_type,
       [in] PP_Flash_Clipboard_Format format);
 
   /**
-   * Deprecated in 4.0.
+   * Deprecated in 5.0.
    */
-  [version=3.0, deprecate=4.0]
-  PP_Var ReadPlainText(
-      [in] PP_Instance instance_id,
-      [in] PP_Flash_Clipboard_Type clipboard_type);
+  [version=4.0, deprecate=5.0]
+  PP_Var ReadData([in] PP_Instance instance_id,
+      [in] PP_Flash_Clipboard_Type clipboard_type,
+      [in] PP_Flash_Clipboard_Format format);
 
   /**
-   * Deprecated in 4.0.
+   * Deprecated in 5.0.
    */
-  [version=3.0, deprecate=4.0]
-  int32_t WritePlainText(
+  [version=4.0, deprecate=5.0]
+  int32_t WriteData([in] PP_Instance instance_id,
+      [in] PP_Flash_Clipboard_Type clipboard_type,
+      [in] uint32_t data_item_count,
+      [in, size_is(data_item_count)] PP_Flash_Clipboard_Format[] formats,
+      [in, size_is(data_item_count)] PP_Var[] data_items);
+
+  /**
+   * Registers a custom clipboard format. The format is identified by a
+   * string. An id identifying the format will be returned if the format is
+   * successfully registered, which can be used to read/write data of that
+   * format. If the format has already been registered, the id associated with
+   * that format will be returned. If the format fails to be registered
+   * <code>PP_FLASH_CLIPBOARD_FORMAT_INVALID</code> will be returned.
+   *
+   * All custom data should be read/written as <code>PP_Var</code> array
+   * buffers. The clipboard format is pepper-specific meaning that although the
+   * data will be stored on the system clipboard, it can only be accessed in a
+   * sensible way by using the pepper API. Data stored in custom formats can
+   * be safely shared between different applications that use pepper.
+   */
+  [version=5.0]
+  uint32_t RegisterCustomFormat(
+      [in] PP_Instance instance_id,
+      [in] str_t format_name);
+
+  /**
+   * Checks whether a given data format is available from the given clipboard.
+   * Returns true if the given format is available from the given clipboard.
+   */
+  [version=5.0]
+  PP_Bool IsFormatAvailable(
       [in] PP_Instance instance_id,
       [in] PP_Flash_Clipboard_Type clipboard_type,
-      [in] PP_Var text);
+      [in] uint32_t format);
 
   /**
    * Reads data in the given <code>format</code> from the clipboard. An
@@ -95,10 +117,10 @@ interface PPB_Flash_Clipboard {
    * the clipboard data and a null <code>PP_Var</code> is returned if there is
    * no data of the specified <code>format</code> to read.
    */
-  [version=4.0]
+  [version=5.0]
   PP_Var ReadData([in] PP_Instance instance_id,
       [in] PP_Flash_Clipboard_Type clipboard_type,
-      [in] PP_Flash_Clipboard_Format format);
+      [in] uint32_t format);
 
   /**
    * Writes the given array of data items to the clipboard. All existing
@@ -114,10 +136,10 @@ interface PPB_Flash_Clipboard {
    * cannot be converted into the format supplied or <code>PP_FAILED</code>
    * if the format is not supported.
    */
-  [version=4.0]
+  [version=5.0]
   int32_t WriteData([in] PP_Instance instance_id,
       [in] PP_Flash_Clipboard_Type clipboard_type,
       [in] uint32_t data_item_count,
-      [in, size_is(data_item_count)] PP_Flash_Clipboard_Format[] formats,
+      [in, size_is(data_item_count)] uint32_t[] formats,
       [in, size_is(data_item_count)] PP_Var[] data_items);
 };

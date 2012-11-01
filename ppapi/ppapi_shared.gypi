@@ -28,6 +28,8 @@
           'shared_impl/file_path.h',
           'shared_impl/file_type_conversion.cc',
           'shared_impl/file_type_conversion.h',
+          'shared_impl/flash_clipboard_format_registry.cc',
+          'shared_impl/flash_clipboard_format_registry.h',
           'shared_impl/host_resource.cc',
           'shared_impl/host_resource.h',
           'shared_impl/id_assignment.cc',
@@ -251,6 +253,7 @@
         'target_conditions': [
           ['>(nacl_untrusted_build)==1 or >(nacl_win64_target)==1', {
             'sources!': [
+              'shared_impl/flash_clipboard_format_registry.cc',
               'shared_impl/ppb_audio_input_shared.cc',
               'shared_impl/ppb_url_util_shared.cc',
               'shared_impl/ppb_video_decoder_shared.cc',
