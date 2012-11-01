@@ -2058,6 +2058,9 @@ bool RenderViewImpl::runFileChooser(
   ipc_params.accept_types.reserve(params.acceptTypes.size());
   for (size_t i = 0; i < params.acceptTypes.size(); ++i)
     ipc_params.accept_types.push_back(params.acceptTypes[i]);
+#if defined(OS_ANDROID)
+  ipc_params.capture = params.capture;
+#endif
 
   return ScheduleFileChooser(ipc_params, chooser_completion);
 }
