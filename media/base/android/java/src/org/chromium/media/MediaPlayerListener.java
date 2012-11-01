@@ -5,6 +5,8 @@
 package org.chromium.media;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.Manifest.permission;
 import android.media.MediaPlayer;
 
 import org.chromium.base.CalledByNative;
@@ -93,7 +95,10 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
         mediaPlayer.setOnPreparedListener(listener);
         mediaPlayer.setOnSeekCompleteListener(listener);
         mediaPlayer.setOnVideoSizeChangedListener(listener);
-        mediaPlayer.setWakeMode(context, android.os.PowerManager.FULL_WAKE_LOCK);
+        if (PackageManager.PERMISSION_GRANTED ==
+                context.checkCallingPermission(permission.WAKE_LOCK)) {
+            mediaPlayer.setWakeMode(context, android.os.PowerManager.FULL_WAKE_LOCK);
+        }
     }
 
     /**
