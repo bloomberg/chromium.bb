@@ -549,12 +549,10 @@ official = _config(
   prebuilts=False,
 )
 
-SDK_TEST_BOARDS = ['amd64-generic', 'daisy', 'x86-generic']
-
 _cros_sdk = full.add_config('chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
-  boards=['x86-generic', 'arm-generic', 'amd64-generic', 'amd64-host'],
+  boards=('x86-generic', 'arm-generic', 'amd64-generic'),
   build_type=constants.CHROOT_BUILDER_TYPE,
   use_sdk=False,
   trybot_list=True,
@@ -919,6 +917,7 @@ internal_incremental.add_config('mario-incremental',
 )
 
 _toolchain_major.add_config('internal-toolchain-major', internal, official,
+  boards=('x86-alex', 'stumpy', 'daisy'),
   use_lkgm=True,
   useflags=['chrome_internal'],
   build_tests=True,
@@ -926,6 +925,7 @@ _toolchain_major.add_config('internal-toolchain-major', internal, official,
 )
 
 _toolchain_minor.add_config('internal-toolchain-minor', internal, official,
+  boards=('x86-alex', 'stumpy', 'daisy'),
   use_lkgm=True,
   useflags=['chrome_internal'],
   build_tests=True,

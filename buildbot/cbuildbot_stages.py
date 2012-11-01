@@ -880,6 +880,11 @@ class BuildBoardStage(bs.BuilderStage):
 
   option_name = 'build'
 
+  def __init__(self, options, build_config, boards=None):
+    super(BuildBoardStage, self).__init__(options, build_config)
+    if boards is not None:
+      self._boards = boards
+
   def _PerformStage(self):
     chroot_upgrade = True
 
@@ -1390,7 +1395,7 @@ class SDKTestStage(bs.BuilderStage):
         '--url', 'file://' + tarball_location]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)
 
-    for board in cbuildbot_config.SDK_TEST_BOARDS:
+    for board in self._boards:
       cmd = new_chroot_cmd + ['--', './setup_board',
           '--board', board, '--skip_chroot_upgrade']
       cros_build_lib.RunCommand(cmd, cwd=self._build_root)

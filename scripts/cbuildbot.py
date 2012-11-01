@@ -378,17 +378,18 @@ class SimpleBuilder(Builder):
 
   def RunStages(self):
     """Runs through build process."""
-    self._RunStage(stages.BuildBoardStage)
-
     # TODO(sosa): Split these out into classes.
     if self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
+      self._RunStage(stages.BuildBoardStage, [constants.CHROOT_BUILDER_BOARD])
       self._RunStage(stages.SDKPackageStage)
       self._RunStage(stages.SDKTestStage)
       self._RunStage(stages.UploadPrebuiltsStage,
                      constants.CHROOT_BUILDER_BOARD, None)
     elif self.build_config['build_type'] == constants.REFRESH_PACKAGES_TYPE:
+      self._RunStage(stages.BuildBoardStage)
       self._RunStage(stages.RefreshPackageStatusStage)
     else:
+      self._RunStage(stages.BuildBoardStage)
       self._RunStage(stages.UprevStage)
 
       configs = self.build_config['board_specific_configs']
