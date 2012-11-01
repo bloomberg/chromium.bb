@@ -119,6 +119,9 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
     return WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
   }
 
+  virtual void UpdateWallpaper() OVERRIDE {
+  }
+
   virtual void InitializeWallpaper() OVERRIDE {
     ash::Shell::GetInstance()->desktop_background_controller()->
         CreateEmptyWallpaper();

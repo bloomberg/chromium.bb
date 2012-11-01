@@ -4,6 +4,7 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 
+#include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/root_window_controller.h"
@@ -15,6 +16,7 @@
 #include "base/logging.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -26,6 +28,7 @@
 using ash::internal::DesktopBackgroundWidgetController;
 using ash::internal::kAnimatingDesktopController;
 using ash::internal::kDesktopController;
+using content::BrowserThread;
 
 namespace ash {
 namespace {
@@ -47,16 +50,19 @@ const int kLargeWallpaperMaxHeight = 1700;
 // Stores the current wallpaper data.
 struct DesktopBackgroundController::WallpaperData {
   WallpaperData(int index, WallpaperResolution resolution)
-      : wallpaper_index(index),
+      : is_default_wallpaper(true),
+        wallpaper_index(index),
         wallpaper_layout(GetWallpaperViewInfo(index, resolution).layout),
         wallpaper_image(*(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
             GetWallpaperViewInfo(index, resolution).id).ToImageSkia())) {
   }
   WallpaperData(WallpaperLayout layout, const gfx::ImageSkia& image)
-      : wallpaper_index(-1),
+      : is_default_wallpaper(false),
+        wallpaper_index(-1),
         wallpaper_layout(layout),
         wallpaper_image(image) {
   }
+  const bool is_default_wallpaper;
   const int wallpaper_index;
   const WallpaperLayout wallpaper_layout;
   const gfx::ImageSkia wallpaper_image;
@@ -125,6 +131,16 @@ gfx::ImageSkia DesktopBackgroundController::GetWallpaper() const {
   return gfx::ImageSkia();
 }
 
+void DesktopBackgroundController::AddObserver(
+    DesktopBackgroundControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DesktopBackgroundController::RemoveObserver(
+    DesktopBackgroundControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 WallpaperLayout DesktopBackgroundController::GetWallpaperLayout() const {
   if (current_wallpaper_.get())
     return current_wallpaper_->wallpaper_layout;
@@ -140,17 +156,19 @@ gfx::ImageSkia DesktopBackgroundController::GetCurrentWallpaperImage() {
 void DesktopBackgroundController::OnRootWindowAdded(
     aura::RootWindow* root_window) {
   // Handle resolution change for "built-in" images."
-  if (BACKGROUND_IMAGE == desktop_background_mode_) {
-    if (current_wallpaper_.get()) {
-      gfx::Size root_window_size = root_window->GetHostSize();
-      int wallpaper_width = current_wallpaper_->wallpaper_image.width();
-      int wallpaper_height = current_wallpaper_->wallpaper_image.height();
-      // Loads a higher resolution wallpaper if needed.
-      if ((wallpaper_width < root_window_size.width() ||
-           wallpaper_height < root_window_size.height()) &&
-          current_wallpaper_->wallpaper_index != -1 &&
-          current_wallpaper_->wallpaper_layout != TILE)
-        SetDefaultWallpaper(current_wallpaper_->wallpaper_index, true);
+  if (BACKGROUND_IMAGE == desktop_background_mode_ &&
+      current_wallpaper_.get()) {
+    gfx::Size root_window_size = root_window->GetHostSize();
+    // Loads a higher resolution wallpaper if new root window is larger than
+    // small screen.
+    if (kSmallWallpaperMaxWidth < root_window_size.width() ||
+        kSmallWallpaperMaxHeight < root_window_size.height()) {
+      if (current_wallpaper_->is_default_wallpaper) {
+        ReloadDefaultWallpaper();
+      } else {
+        ash::Shell::GetInstance()->user_wallpaper_delegate()->
+            UpdateWallpaper();
+      }
     }
   }
 
@@ -169,8 +187,7 @@ void DesktopBackgroundController::CacheDefaultWallpaper(int index) {
       true);
 }
 
-void DesktopBackgroundController::SetDefaultWallpaper(int index,
-                                                      bool force_reload) {
+void DesktopBackgroundController::SetDefaultWallpaper(int index) {
   // We should not change background when index is invalid. For instance, at
   // login screen or stub_user login.
   if (index == GetInvalidWallpaperIndex()) {
@@ -181,8 +198,7 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index,
     return;
   }
 
-  if (!force_reload && current_wallpaper_.get() &&
-      current_wallpaper_->wallpaper_index == index)
+  if (current_wallpaper_.get() && current_wallpaper_->wallpaper_index == index)
     return;
 
   CancelPendingWallpaperOperation();
@@ -199,11 +215,19 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index,
       true /* task_is_slow */);
 }
 
+void DesktopBackgroundController::ReloadDefaultWallpaper() {
+  int index = current_wallpaper_->wallpaper_index;
+  current_wallpaper_.reset(NULL);
+  SetDefaultWallpaper(index);
+}
+
 void DesktopBackgroundController::SetCustomWallpaper(
     const gfx::ImageSkia& wallpaper,
     WallpaperLayout layout) {
   CancelPendingWallpaperOperation();
   current_wallpaper_.reset(new WallpaperData(layout, wallpaper));
+  FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver, observers_,
+                    OnWallpaperDataChanged());
   SetDesktopBackgroundImageMode();
 }
 
@@ -230,14 +254,16 @@ void DesktopBackgroundController::CreateEmptyWallpaper() {
 }
 
 WallpaperResolution DesktopBackgroundController::GetAppropriateResolution() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   WallpaperResolution resolution = SMALL;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     gfx::Size root_window_size = (*iter)->GetHostSize();
     if (root_window_size.width() > kSmallWallpaperMaxWidth ||
-        root_window_size.height() > kSmallWallpaperMaxHeight)
+        root_window_size.height() > kSmallWallpaperMaxHeight) {
       resolution = LARGE;
+    }
   }
   return resolution;
 }
@@ -273,6 +299,8 @@ void DesktopBackgroundController::SetDesktopBackgroundImageMode() {
 void DesktopBackgroundController::OnWallpaperLoadCompleted(
     scoped_refptr<WallpaperOperation> wo) {
   current_wallpaper_.reset(wo->ReleaseWallpaperData());
+  FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver, observers_,
+                    OnWallpaperDataChanged());
 
   SetDesktopBackgroundImageMode();
 

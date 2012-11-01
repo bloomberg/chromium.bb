@@ -611,6 +611,7 @@
             'browser/chromeos/login/screen_locker_browsertest.cc',
             'browser/chromeos/login/screen_locker_tester.cc',
             'browser/chromeos/login/screen_locker_tester.h',
+            'browser/chromeos/login/wallpaper_manager_browsertest.cc',
           ],
           'sources!': [
             'browser/ui/panels/detached_panel_browsertest.cc',
@@ -2313,6 +2314,8 @@
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
           ],
           'sources': [
+            '../ash/test/multi_display_manager_test_api.cc',
+            '../ash/test/multi_display_manager_test_api.h',
             '../ash/test/ash_test_base.cc',
             '../ash/test/ash_test_base.h',
           ],

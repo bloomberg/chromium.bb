@@ -14,6 +14,10 @@
 #include "ui/views/test/test_views_delegate.h"
 
 namespace ash {
+namespace internal {
+class MultiDisplayManager;
+}  // internal
+
 namespace test {
 
 class AshTestViewsDelegate : public views::TestViewsDelegate {
@@ -39,11 +43,8 @@ class AshTestBase : public testing::Test {
   // and |scale|.
   void ChangeDisplayConfig(float scale, const gfx::Rect& bounds);
 
-  // Update the display configuration as given in |display_specs|.  The
-  // format of |display_spec| is a list of comma separated spec for
-  // each displays. Please refer to the comment in
-  // | aura::DisplayManager::CreateDisplayFromSpec| for the format of
-  // the display spec.
+  // Update the display configuration as given in |display_specs|.
+  // See ash::test::MultiDisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs);
 
  protected:

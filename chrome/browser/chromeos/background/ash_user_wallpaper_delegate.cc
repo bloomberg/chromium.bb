@@ -66,6 +66,10 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE;
   }
 
+  virtual void UpdateWallpaper() OVERRIDE {
+    chromeos::WallpaperManager::Get()->UpdateWallpaper();
+  }
+
   virtual void InitializeWallpaper() OVERRIDE {
     chromeos::WallpaperManager::Get()->InitializeWallpaper();
   }

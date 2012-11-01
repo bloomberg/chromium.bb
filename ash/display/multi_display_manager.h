@@ -24,7 +24,7 @@ class Rect;
 namespace ash {
 class AcceleratorControllerTest;
 namespace test {
-class AshTestBase;
+class MultiDisplayManagerTestApi;
 class SystemGestureEventFilterTest;
 }
 namespace internal {
@@ -109,7 +109,7 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   FRIEND_TEST_ALL_PREFIXES(MultiDisplayManagerTest,
                            NativeDisplaysChangedAfterPrimaryChange);
   friend class ash::AcceleratorControllerTest;
-  friend class test::AshTestBase;
+  friend class test::MultiDisplayManagerTestApi;
   friend class MultiDisplayManagerTest;
   friend class test::SystemGestureEventFilterTest;
 

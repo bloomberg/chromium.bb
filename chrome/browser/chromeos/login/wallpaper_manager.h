@@ -77,6 +77,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // sets wallpaper to the loaded wallpaper
   void GetCustomWallpaper(const std::string& email, bool update_wallpaper);
 
+  // Clears ONLINE and CUSTOM wallpaper cache.
+  void ClearWallpaperCache();
+
   // Gets encoded wallpaper from cache. Returns true if success.
   bool GetWallpaperFromCache(const std::string& email,
                              gfx::ImageSkia* wallpaper);
@@ -172,6 +175,10 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void SetWallpaperFromImageSkia(const gfx::ImageSkia& wallpaper,
                                  ash::WallpaperLayout layout);
 
+  // Updates current wallpaper. It may switch the size of wallpaper based on the
+  // current display's resolution.
+  void UpdateWallpaper();
+
  private:
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
 
@@ -219,11 +226,12 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                       base::WeakPtr<WallpaperDelegate> delegate,
                                       const gfx::ImageSkia& wallpaper);
 
-  // Gets |email|'s custom wallpaper in appropriate resolution. Falls back on
+  // Gets |email|'s custom wallpaper in specified |resolution|. Falls back on
   // original custom wallpaper. When |update_wallpaper| is true, sets wallpaper
   // to the loaded wallpaper. Must run on FILE thread.
   void GetCustomWallpaperInternal(const std::string& email,
                                   const WallpaperInfo& info,
+                                  ash::WallpaperResolution resolution,
                                   bool update_wallpaper);
 
   // Gets wallpaper information of |email| from Local State or memory. Returns

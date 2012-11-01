@@ -10,9 +10,9 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
+#include "ash/test/multi_display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/run_loop.h"
-#include "base/string_split.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/env.h"
 #include "ui/aura/display_manager.h"
@@ -24,21 +24,6 @@
 
 namespace ash {
 namespace test {
-namespace {
-
-std::vector<gfx::Display> CreateDisplaysFromString(
-    const std::string specs) {
-  std::vector<gfx::Display> displays;
-  std::vector<std::string> parts;
-  base::SplitString(specs, ',', &parts);
-  for (std::vector<std::string>::const_iterator iter = parts.begin();
-       iter != parts.end(); ++iter) {
-    displays.push_back(aura::DisplayManager::CreateDisplayFromSpec(*iter));
-  }
-  return displays;
-}
-
-}  // namespace
 
 content::WebContents* AshTestViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
@@ -90,34 +75,12 @@ void AshTestBase::ChangeDisplayConfig(float scale,
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  std::vector<gfx::Display> displays = CreateDisplaysFromString(display_specs);
-  internal::MultiDisplayManager* display_manager =
+  internal::MultiDisplayManager* multi_display_manager =
       static_cast<internal::MultiDisplayManager*>(
           aura::Env::GetInstance()->display_manager());
-  display_manager->SetDisplayIdsForTest(&displays);
-  display_manager->OnNativeDisplaysChanged(displays);
-
-  bool is_host_origin_set = false;
-  for (size_t i = 0; i < displays.size(); ++i) {
-    if (displays[i].bounds_in_pixel().origin() != gfx::Point(0, 0)) {
-      is_host_origin_set = true;
-      break;
-    }
-  }
-
-  // On non-testing environment, when a secondary display is connected, a new
-  // native (i.e. X) window for the display is always created below the previous
-  // one for GPU performance reasons. Try to emulate the behavior unless host
-  // origins are explicitly set.
-  if (!is_host_origin_set) {
-    Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-    int next_y = 0;
-    for (size_t i = 0; i < root_windows.size(); ++i) {
-      const gfx::Size size = root_windows[i]->GetHostSize();
-      root_windows[i]->SetHostBounds(gfx::Rect(gfx::Point(0, next_y), size));
-      next_y += size.height();
-    }
-  }
+  MultiDisplayManagerTestApi multi_display_manager_test_api(
+      multi_display_manager);
+  multi_display_manager_test_api.UpdateDisplay(display_specs);
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

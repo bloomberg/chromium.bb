@@ -102,8 +102,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::shell::InitWindowTypeLauncher();
 
-  Shell::GetInstance()->desktop_background_controller()->
-      SetDefaultWallpaper(0, false);
+  Shell::GetInstance()->desktop_background_controller()->SetDefaultWallpaper(0);
 
   ash::Shell::GetPrimaryRootWindow()->ShowRootWindow();
 }

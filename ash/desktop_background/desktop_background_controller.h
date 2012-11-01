@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
@@ -33,12 +34,18 @@ ASH_EXPORT extern const int kSmallWallpaperMaxHeight;
 ASH_EXPORT extern const int kLargeWallpaperMaxWidth;
 ASH_EXPORT extern const int kLargeWallpaperMaxHeight;
 
+class DesktopBackgroundControllerObserver;
+
 class UserWallpaperDelegate {
  public:
   virtual ~UserWallpaperDelegate() {}
 
   // Returns type of window animation that should be used when showin wallpaper.
   virtual ash::WindowVisibilityAnimationType GetAnimationType() = 0;
+
+  // Updates current wallpaper. It may switch the size of wallpaper based on the
+  // current display's resolution.
+  virtual void UpdateWallpaper() = 0;
 
   // Initialize wallpaper.
   virtual void InitializeWallpaper() = 0;
@@ -74,6 +81,10 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
     return desktop_background_mode_;
   }
 
+  // Add/Remove observers.
+  void AddObserver(DesktopBackgroundControllerObserver* observer);
+  void RemoveObserver(DesktopBackgroundControllerObserver* observer);
+
   gfx::ImageSkia GetWallpaper() const;
 
   WallpaperLayout GetWallpaperLayout() const;
@@ -91,10 +102,12 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   void CacheDefaultWallpaper(int index);
 
   // Loads default wallpaper at |index| asynchronously and sets to current
-  // wallpaper after loaded. When |force_reload| is true, reload wallpaper
-  // for all root windows even if |index| is the same as current wallpaper. It
-  // must be true when a different resolution of current wallpaper is needed.
-  void SetDefaultWallpaper(int index, bool force_reload);
+  // wallpaper after loaded.
+  void SetDefaultWallpaper(int index);
+
+  // Forces to reload the current default wallpaper. A different resolution
+  // wallpaper maybe loaded.
+  void ReloadDefaultWallpaper();
 
   // Sets the user selected custom wallpaper. Called when user selected a file
   // from file system or changed the layout of wallpaper.
@@ -173,6 +186,8 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   BackgroundMode desktop_background_mode_;
 
   SkColor background_color_;
+
+  ObserverList<DesktopBackgroundControllerObserver> observers_;
 
   // The current wallpaper.
   scoped_ptr<WallpaperData> current_wallpaper_;
