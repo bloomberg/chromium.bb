@@ -19,7 +19,7 @@ class BackoffDelayProviderTest : public testing::Test {};
 
 TEST_F(BackoffDelayProviderTest, GetRecommendedDelay) {
   scoped_ptr<BackoffDelayProvider> delay(BackoffDelayProvider::FromDefaults());
-  EXPECT_LE(TimeDelta::FromSeconds(0),
+  EXPECT_EQ(TimeDelta::FromSeconds(1),
             delay->GetDelay(TimeDelta::FromSeconds(0)));
   EXPECT_LE(TimeDelta::FromSeconds(1),
             delay->GetDelay(TimeDelta::FromSeconds(1)));
@@ -42,11 +42,11 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
 
   state.last_get_key_result = UNSET;
   state.last_download_updates_result = SERVER_RETURN_MIGRATION_DONE;
-  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
   state.last_download_updates_result = NETWORK_CONNECTION_UNAVAILABLE;
-  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
   state.last_download_updates_result = SERVER_RETURN_TRANSIENT_ERROR;
@@ -66,11 +66,11 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
             delay->GetInitialDelay(state).InSeconds());
 
   state.commit_result = SERVER_RETURN_MIGRATION_DONE;
-  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
   state.commit_result = NETWORK_CONNECTION_UNAVAILABLE;
-  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 }
 
@@ -84,7 +84,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelayWithOverride) {
 
   state.last_get_key_result = UNSET;
   state.last_download_updates_result = SERVER_RETURN_MIGRATION_DONE;
-  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
   state.last_download_updates_result = SERVER_RETURN_TRANSIENT_ERROR;
@@ -104,7 +104,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelayWithOverride) {
             delay->GetInitialDelay(state).InSeconds());
 
   state.commit_result = SERVER_RETURN_MIGRATION_DONE;
-  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+  EXPECT_EQ(kInitialBackoffImmediateRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 }
 

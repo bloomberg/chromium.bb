@@ -27,8 +27,14 @@ const int kBackoffRandomizationFactor = 2;
 // occur.
 const int kInitialBackoffRetrySeconds = 60 * 5;  // 5 minutes.
 
+// A dangerously short retry value that would not actually protect servers from
+// DDoS if it were used as a seed for exponential backoff, although the client
+// would still follow exponential backoff.  Useful for debugging and tests (when
+// you don't want to wait 5 minutes).
+const int kInitialBackoffShortRetrySeconds = 1;
+
 // Similar to kInitialBackoffRetrySeconds above, but only to be used in
 // certain exceptional error cases, such as MIGRATION_DONE.
-const int kInitialBackoffShortRetrySeconds = 1;
+const int kInitialBackoffImmediateRetrySeconds = 0;
 
 }  // namespace syncer

@@ -17,14 +17,14 @@ namespace syncer {
 BackoffDelayProvider* BackoffDelayProvider::FromDefaults() {
   return new BackoffDelayProvider(
       TimeDelta::FromSeconds(kInitialBackoffRetrySeconds),
-      TimeDelta::FromSeconds(kInitialBackoffShortRetrySeconds));
+      TimeDelta::FromSeconds(kInitialBackoffImmediateRetrySeconds));
 }
 
 // static
 BackoffDelayProvider* BackoffDelayProvider::WithShortInitialRetryOverride() {
   return new BackoffDelayProvider(
       TimeDelta::FromSeconds(kInitialBackoffShortRetrySeconds),
-      TimeDelta::FromSeconds(kInitialBackoffShortRetrySeconds));
+      TimeDelta::FromSeconds(kInitialBackoffImmediateRetrySeconds));
 }
 
 BackoffDelayProvider::BackoffDelayProvider(

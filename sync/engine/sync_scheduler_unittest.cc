@@ -94,7 +94,7 @@ class SyncSchedulerTest : public testing::Test {
    public:
     MockDelayProvider() : BackoffDelayProvider(
         TimeDelta::FromSeconds(kInitialBackoffRetrySeconds),
-        TimeDelta::FromSeconds(kInitialBackoffShortRetrySeconds)) {
+        TimeDelta::FromSeconds(kInitialBackoffImmediateRetrySeconds)) {
     }
 
     MOCK_METHOD1(GetDelay, TimeDelta(const TimeDelta&));
