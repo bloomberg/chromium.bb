@@ -10,7 +10,6 @@
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
-        'app/policy/cloud_policy_codegen.gyp:policy',
         'autofill_regexes',
         'browser/component/components.gyp:navigation_interception',
         'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
@@ -1370,6 +1369,8 @@
         'browser/policy/policy_loader_mac.h',
         'browser/policy/policy_loader_win.cc',
         'browser/policy/policy_loader_win.h',
+        'browser/policy/policy_map.cc',
+        'browser/policy/policy_map.h',
         'browser/policy/policy_notifier.cc',
         'browser/policy/policy_notifier.h',
         'browser/policy/policy_path_parser.h',
@@ -2263,11 +2264,16 @@
             'browser/policy/policy_service_stub.cc',
             'browser/policy/policy_service_stub.h',
           ],
+          'dependencies': [
+            'app/policy/cloud_policy_codegen.gyp:policy',
+          ],
         }, {  # configuration_policy==0
           'sources/': [
             ['exclude', '^browser/policy/'],
             ['exclude', 'browser/value_store/policy_value_store.cc'],
             ['exclude', 'browser/value_store/policy_value_store.h'],
+            ['include', 'browser/policy/policy_map.cc'],
+            ['include', 'browser/policy/policy_map.h'],
             ['include', 'browser/policy/policy_service.cc'],
             ['include', 'browser/policy/policy_service.h'],
             ['include', 'browser/policy/policy_service_stub.cc'],

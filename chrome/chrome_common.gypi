@@ -360,6 +360,9 @@
           'sources/': [
             ['exclude', '^common/service_'],
           ],
+          'dependencies!': [
+            '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
+          ],
         }],
         ['OS=="win"', {
           'include_dirs': [

@@ -17,7 +17,6 @@
       'dependencies': [
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
-        'app/policy/cloud_policy_codegen.gyp:policy',
         'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
@@ -2176,7 +2175,11 @@
             'DEBUG_DEVTOOLS=1',
           ],
         }],
-        ['configuration_policy!=1', {
+        ['configuration_policy==1', {
+          'dependencies': [
+            'app/policy/cloud_policy_codegen.gyp:policy',
+          ],
+        }, {  # configuration_policy==0
           'sources/': [
             ['exclude', 'browser/ui/webui/policy_ui.cc'],
             ['exclude', 'browser/ui/webui/policy_ui.h'],

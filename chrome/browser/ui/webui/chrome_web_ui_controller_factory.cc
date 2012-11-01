@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
-#include "chrome/browser/ui/webui/policy_ui.h"
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
@@ -63,6 +62,10 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/ui/webui/policy_ui.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/welcome_ui_android.h"

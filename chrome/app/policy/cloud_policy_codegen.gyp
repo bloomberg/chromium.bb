@@ -104,8 +104,6 @@
         '<(policy_constant_header_path)',
         '<(policy_constant_source_path)',
         '<(protobuf_decoder_path)',
-        '<(DEPTH)/chrome/browser/policy/policy_map.h',
-        '<(DEPTH)/chrome/browser/policy/policy_map.cc',
       ],
       'include_dirs': [
         '<(DEPTH)',

@@ -14,7 +14,6 @@
       # have the same dependencies. Once browser_extensions is untangled from
       # browser, then we can clean up these dependencies.
       'dependencies': [
-        'app/policy/cloud_policy_codegen.gyp:policy',
         '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
@@ -750,7 +749,11 @@
             '../third_party/undoview/undoview.gyp:undoview',
           ],
         }],
-        ['configuration_policy==0', {
+        ['configuration_policy==1', {
+          'dependencies': [
+            'app/policy/cloud_policy_codegen.gyp:policy',
+          ],
+        }, {  # configuration_policy==0
           'sources!': [
             'browser/extensions/settings/managed_value_store_cache.cc',
             'browser/extensions/settings/managed_value_store_cache.h',
