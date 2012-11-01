@@ -47,9 +47,12 @@ void GoogleURLTrackerMapEntry::SetInfoBar(
 }
 
 void GoogleURLTrackerMapEntry::Close(bool redo_search) {
-  if (infobar_)
+  if (infobar_) {
     infobar_->Close(redo_search);
-  else
+  } else {
+    // WARNING: |infobar_helper_| may point to a deleted object.  Do not
+    // dereference it!  See GoogleURLTracker::OnTabClosed().
     google_url_tracker_->DeleteMapEntryForHelper(infobar_helper_);
+  }
   // WARNING: At this point |this| has been deleted!
 }

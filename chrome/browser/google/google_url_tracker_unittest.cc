@@ -92,8 +92,8 @@ void TestNotificationObserver::Observe(
 // are carefully written so that many of the functions which take WebContents*,
 // NavigationController*, InfoBarTabHelper*, or objects containing such pointers
 // (e.g. NotificationSource) do not actually dereference the objects, merely use
-// them for comparisons and lookups, e.g. in an InfoBarMap.  This then allows
-// the test code here to not create any of these objects, and instead supply
+// them for comparisons and lookups, e.g. in |entry_map_|.  This then allows the
+// test code here to not create any of these objects, and instead supply
 // "pointers" that are actually reinterpret_cast<>()ed magic numbers.  Then we
 // write the necessary stubs/hooks, here and in TestInfoBarDelegate above, to
 // make everything continue to work.
@@ -175,9 +175,9 @@ void GoogleURLTrackerTest::OnInfoBarClosed(
     InfoBarTabHelper* infobar_helper) {
   // First, simulate the InfoBarTabHelper firing INFOBAR_REMOVED.
   InfoBarRemovedDetails removed_details(infobar, false);
-  GoogleURLTracker::InfoBarMap::const_iterator i =
-      google_url_tracker_->infobar_map_.find(infobar_helper);
-  ASSERT_FALSE(i == google_url_tracker_->infobar_map_.end());
+  GoogleURLTracker::EntryMap::const_iterator i =
+      google_url_tracker_->entry_map_.find(infobar_helper);
+  ASSERT_FALSE(i == google_url_tracker_->entry_map_.end());
   GoogleURLTrackerMapEntry* map_entry = i->second;
   ASSERT_EQ(infobar, map_entry->infobar());
   map_entry->Observe(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -303,11 +303,12 @@ void GoogleURLTrackerTest::CommitNonSearch(intptr_t unique_id) {
 
 void GoogleURLTrackerTest::CommitSearch(intptr_t unique_id,
                                         const GURL& search_url) {
+  DCHECK(search_url.is_valid());
   if (google_url_tracker_->registrar_.IsRegistered(google_url_tracker_.get(),
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           reinterpret_cast<content::NavigationController*>(unique_id)))) {
-    google_url_tracker_->OnNavigationCommittedOrTabClosed(
+    google_url_tracker_->OnNavigationCommitted(
         reinterpret_cast<InfoBarTabHelper*>(unique_id),
         search_url);
   }
@@ -336,14 +337,12 @@ void GoogleURLTrackerTest::DoInstantNavigation(intptr_t unique_id,
 
 void GoogleURLTrackerTest::CloseTab(intptr_t unique_id) {
   unique_ids_seen_.erase(unique_id);
-  InfoBarTabHelper* infobar_helper =
-      reinterpret_cast<InfoBarTabHelper*>(unique_id);
+  content::Source<content::WebContents> source(
+      reinterpret_cast<content::WebContents*>(unique_id));
   if (google_url_tracker_->registrar_.IsRegistered(
       google_url_tracker_.get(), content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(
-          reinterpret_cast<content::WebContents*>(unique_id)))) {
-    google_url_tracker_->OnNavigationCommittedOrTabClosed(infobar_helper,
-                                                          GURL());
+      source)) {
+    google_url_tracker_->OnTabClosed(source);
   } else {
     // Closing a tab with an infobar showing would close the infobar.
     GoogleURLTrackerInfoBarDelegate* infobar = GetInfoBar(unique_id);
@@ -354,10 +353,10 @@ void GoogleURLTrackerTest::CloseTab(intptr_t unique_id) {
 
 GoogleURLTrackerMapEntry* GoogleURLTrackerTest::GetMapEntry(
     intptr_t unique_id) {
-  GoogleURLTracker::InfoBarMap::const_iterator i =
-      google_url_tracker_->infobar_map_.find(
+  GoogleURLTracker::EntryMap::const_iterator i =
+      google_url_tracker_->entry_map_.find(
           reinterpret_cast<InfoBarTabHelper*>(unique_id));
-  return (i == google_url_tracker_->infobar_map_.end()) ? NULL : i->second;
+  return (i == google_url_tracker_->entry_map_.end()) ? NULL : i->second;
 }
 
 GoogleURLTrackerInfoBarDelegate* GoogleURLTrackerTest::GetInfoBar(

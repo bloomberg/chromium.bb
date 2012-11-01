@@ -102,7 +102,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   friend class GoogleURLTrackerTest;
 
   typedef std::map<const InfoBarTabHelper*,
-                   GoogleURLTrackerMapEntry*> InfoBarMap;
+                   GoogleURLTrackerMapEntry*> EntryMap;
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -152,26 +152,30 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
       InfoBarTabHelper* infobar_helper,
       int pending_id);
 
-  // Called by Observe() once a load we're watching commits, or the associated
-  // tab is closed.  |infobar_helper| is the same as for OnNavigationPending();
-  // |search_url| is valid when this call is due to a successful navigation
-  // (indicating that we should show or update the relevant infobar) as opposed
-  // to tab closure (which means we should delete the infobar).
-  void OnNavigationCommittedOrTabClosed(InfoBarTabHelper* infobar_helper,
-                                        const GURL& search_url);
+  // Called by Observe() once a load we're watching commits.  |infobar_helper|
+  // is the same as for OnNavigationPending(); |search_url| is guaranteed to be
+  // valid.
+  void OnNavigationCommitted(InfoBarTabHelper* infobar_helper,
+                             const GURL& search_url);
+
+  // Called by Observe() when a tab closes.  Because the InfoBarTabHelper may
+  // have already been torn down in this case, we look up the appropriate map
+  // entry by |web_contents_source| instead.
+  void OnTabClosed(const content::NotificationSource& web_contents_source);
 
   // Called by Observe() when an instant navigation occurs.  This will call
   // OnNavigationPending(), and, depending on whether this is a search we were
-  // listening for, may then also call OnNavigationCommittedOrTabClosed().
+  // listening for, may then also call OnNavigationCommitted().
   void OnInstantCommitted(
     const content::NotificationSource& navigation_controller_source,
     const content::NotificationSource& web_contents_source,
     InfoBarTabHelper* infobar_helper,
     const GURL& search_url);
 
-  // Closes all open infobars.  If |redo_searches| is true, this also triggers
-  // each tab to re-perform the user's search, but on the new Google TLD.
-  void CloseAllInfoBars(bool redo_searches);
+  // Closes all map entries.  If |redo_searches| is true, this also triggers
+  // each tab with an infobar to re-perform the user's search, but on the new
+  // Google TLD.
+  void CloseAllEntries(bool redo_searches);
 
   // Unregisters any listeners for the notification sources in |map_entry|.
   // This sanity-DCHECKs that these are registered (or not) in the specific
@@ -214,7 +218,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
                            // nor the last prompted Google URL.
   bool search_committed_;  // True when we're expecting a notification of a new
                            // pending search navigation.
-  InfoBarMap infobar_map_;
+  EntryMap entry_map_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTracker);
 };
