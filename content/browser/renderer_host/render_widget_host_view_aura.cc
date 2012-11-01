@@ -1894,7 +1894,7 @@ void RenderWidgetHostViewAura::AddingToRootWindow() {
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
-  host_->ParentChanged(NULL);
+  host_->ParentChanged(0);
   // We are about to disconnect ourselves from the compositor, we need to issue
   // the callbacks now, because we won't get notified when the frame is done.
   // TODO(piman): this might in theory cause a race where the GPU process starts
