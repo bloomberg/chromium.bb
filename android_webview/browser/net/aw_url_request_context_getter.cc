@@ -8,7 +8,7 @@
 #include "android_webview/browser/aw_request_interceptor.h"
 #include "android_webview/browser/net/aw_network_delegate.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
-#include "android_webview/browser/net/register_android_protocols.h"
+#include "android_webview/browser/net/init_native_callback.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
@@ -110,9 +110,11 @@ void AwURLRequestContextGetter::Init() {
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
-  RegisterAndroidProtocolsOnIOThread(job_factory_.get());
   job_factory_->AddInterceptor(new AwRequestInterceptor());
   url_request_context_->set_job_factory(job_factory_.get());
+
+  OnNetworkStackInitialized(url_request_context_.get(),
+                            job_factory_.get());
 }
 
 content::ResourceContext* AwURLRequestContextGetter::GetResourceContext() {

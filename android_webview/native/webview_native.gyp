@@ -46,6 +46,7 @@
         'intercepted_request_data_impl.h',
         'js_result_handler.cc',
         'js_result_handler.h',
+        'net_init_native_callback.cc',
       ],
     },
     {

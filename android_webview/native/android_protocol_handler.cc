@@ -4,7 +4,6 @@
 
 // URL request job for reading from resources and assets.
 
-#include "android_webview/browser/net/register_android_protocols.h"
 #include "android_webview/native/android_protocol_handler.h"
 
 #include "android_webview/common/url_constants.h"
@@ -22,8 +21,6 @@
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
 using base::android::AttachCurrentThread;
@@ -239,6 +236,7 @@ bool RegisterAndroidProtocolHandler(JNIEnv* env) {
 
 // static
 void RegisterAndroidProtocolsOnIOThread(
+    net::URLRequestContext* context,
     net::URLRequestJobFactory* job_factory) {
   // Register content://. Note that even though a scheme is
   // registered here, it cannot be used by child processes until access to it is

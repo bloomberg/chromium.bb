@@ -7,7 +7,15 @@
 
 #include <jni.h>
 
+namespace net {
+class URLRequestContext;
+class URLRequestJobFactory;
+}  // namespace net
+
 namespace android_webview {
+
+void SetCookieMonsterOnNetworkStackInit(net::URLRequestContext* context,
+                                        net::URLRequestJobFactory* job_factory);
 
 bool RegisterCookieManager(JNIEnv* env);
 
