@@ -181,6 +181,7 @@ def ConfigureGccCommand(target, extra_args=[]):
           '--with-mpfr=%(abs_mpfr)s',
           '--with-mpc=%(abs_mpc)s',
           '--disable-dlopen',
+          '--disable-shared',
           '--with-newlib',
           '--with-linker-hash-style=gnu',
           '--enable-languages=c,c++,lto',
@@ -188,7 +189,7 @@ def ConfigureGccCommand(target, extra_args=[]):
 
 
 def HostTools(target):
-  return {
+  tools = {
       'binutils_' + target: {
           'git_url': GIT_BASE_URL + '/nacl-binutils.git',
           'git_revision': GIT_REVISIONS['binutils'],
@@ -197,10 +198,14 @@ def HostTools(target):
                   CONFIGURE_CMD +
                   CONFIGURE_HOST_TOOL +
                   ConfigureTargetArgs(target) + [
+                      '--disable-shared',
                       '--enable-deterministic-archives',
-                      '--enable-gold',
-                      '--enable-plugins',
-                      ]),
+                      ] + ([] if sys.platform == 'win32' else [
+                          # TODO(mcgrathr): gold will build again on mingw32
+                          # after some simple fixes get merged in.
+                          '--enable-gold',
+                          '--enable-plugins',
+                          ])),
               command.Command(MAKE_PARALLEL_CMD),
               # TODO(mcgrathr): Run MAKE_CHECK_CMD here, but
               # check-ld has known failures for ARM targets.
@@ -243,6 +248,7 @@ def HostTools(target):
               ],
           },
       }
+  return tools
 
 
 def NewlibTargetCflags(target):

@@ -223,11 +223,8 @@ BOT_ASSIGNMENT = {
     'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
     'lucid64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
     # Toolchain newlib arm.
-    # TODO(bradnelson): This is currently limited to building mpc and its
-    # dependents on windows. Get other targets Add other targets working and
-    # enable them..
     'win7-toolchain_arm':
-        python + ' buildbot/buildbot_toolchain_build.py --buildbot mpc',
+        python + ' buildbot/buildbot_toolchain_build.py --buildbot',
     'mac-toolchain_arm':
         python + ' buildbot/buildbot_toolchain_build.py --buildbot',
     'lucid64-toolchain_arm':
@@ -268,11 +265,8 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_toolchain_build.py --trybot',
     'nacl-toolchain-mac-newlib-arm':
         python + ' buildbot/buildbot_toolchain_build.py --trybot',
-    # TODO(bradnelson): This is currently limited to building mpc and its
-    # dependents on windows. Get other targets Add other targets working and
-    # enable them..
     'nacl-toolchain-win7-newlib-arm':
-        python + ' buildbot/buildbot_toolchain_build.py --trybot mpc',
+        python + ' buildbot/buildbot_toolchain_build.py --trybot',
     'nacl-toolchain-lucid64-glibc':
         'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
