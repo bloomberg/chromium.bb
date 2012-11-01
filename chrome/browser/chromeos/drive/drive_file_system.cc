@@ -78,16 +78,6 @@ void OnCacheUpdatedForAddUploadedFile(
     callback.Run();
 }
 
-// Helper function called upon completion of AddUploadFile invoked by
-// OnTransferCompleted.
-void OnAddUploadFileCompleted(
-    const FileOperationCallback& callback,
-    DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback.is_null())
-    callback.Run(error);
-}
-
 // The class to wait for the initial load of root feed and runs the callback
 // after the initialization.
 class InitialLoadObserver : public DriveFileSystemObserver {
@@ -1442,10 +1432,11 @@ void DriveFileSystem::OnUpdatedFileUploaded(
     const FilePath& file_path,
     scoped_ptr<google_apis::DocumentEntry> document_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  if (error != google_apis::DRIVE_UPLOAD_OK) {
-    if (!callback.is_null())
-      callback.Run(DriveUploadErrorToDriveFileError(error));
+  DriveFileError drive_error = DriveUploadErrorToDriveFileError(error);
+  if (drive_error != DRIVE_FILE_OK) {
+    callback.Run(drive_error);
     return;
   }
 
@@ -1454,8 +1445,7 @@ void DriveFileSystem::OnUpdatedFileUploaded(
                   document_entry.Pass(),
                   file_path,
                   DriveCache::FILE_OPERATION_MOVE,
-                  base::Bind(&OnAddUploadFileCompleted, callback,
-                             DriveUploadErrorToDriveFileError(error)));
+                  base::Bind(callback, drive_error));
 }
 
 void DriveFileSystem::GetAvailableSpace(
