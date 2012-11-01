@@ -17,6 +17,7 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "base/win/windows_version.h"
+#include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -480,10 +481,12 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   //                  keeping a cache of the resulting bitmaps.
 
   // Create an offscreen canvas that is backed by an HDC.
-  scoped_ptr<SkCanvas> offscreen_canvas(
-      skia::CreateBitmapCanvas(rect.width(), rect.height(), false));
-  DCHECK(offscreen_canvas.get());
-  DCHECK(skia::SupportsPlatformPaint(offscreen_canvas.get()));
+  skia::BitmapPlatformDevice* device = skia::BitmapPlatformDevice::Create(
+      rect.width(), rect.height(), false, NULL);
+  DCHECK(device);
+  SkCanvas offscreen_canvas(device);
+  device->unref();
+  DCHECK(skia::SupportsPlatformPaint(&offscreen_canvas));
 
   // Some of the Windows theme drawing operations do not write correct alpha
   // values for fully-opaque pixels; instead the pixels get alpha 0. This is
@@ -493,7 +496,7 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   // which pixels get touched by the paint operation. After paint, set any
   // pixels that have alpha 0 to opaque and placeholders to fully-transparent.
   const SkColor placeholder = SkColorSetARGB(1, 0, 0, 0);
-  offscreen_canvas->clear(placeholder);
+  offscreen_canvas.clear(placeholder);
 
   // Offset destination rects to have origin (0,0).
   gfx::Rect adjusted_rect(rect.size());
@@ -511,7 +514,7 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
     default: break;
   }
   // Draw the theme controls using existing HDC-drawing code.
-  PaintDirect(offscreen_canvas.get(),
+  PaintDirect(&offscreen_canvas,
               part,
               state,
               adjusted_rect,
@@ -520,7 +523,7 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   // Copy the pixels to a bitmap that has ref-counted pixel storage, which is
   // necessary to have when drawing to a SkPicture.
   const SkBitmap& hdc_bitmap =
-      offscreen_canvas->getDevice()->accessBitmap(false);
+      offscreen_canvas.getDevice()->accessBitmap(false);
   SkBitmap bitmap;
   hdc_bitmap.copyTo(&bitmap, SkBitmap::kARGB_8888_Config);
 
