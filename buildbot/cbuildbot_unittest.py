@@ -293,7 +293,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(cros_build_lib, 'GetInput')
 
     os.path.exists(self._BUILD_ROOT).AndReturn(True)
-    cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('y')
+    cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('asdf')
     cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn('No')
 
     self.mox.ReplayAll()

@@ -1672,8 +1672,8 @@ class Upgrader(object):
                      ' builds for architectures not covered by your\n'
                      'boards.  Continue only if you have a reason to limit'
                      ' this upgrade to these specific architectures.\n')
-        prompt = 'Do you want to continue anyway'
-        if not 'yes' == cros_build_lib.YesNoPrompt('no', prompt=prompt):
+        if not cros_build_lib.BooleanPrompt(
+            prompt="Do you want to continue anyway?", default=False)
           raise RuntimeError('Missing one or more of the standard archs')
 
   def RunBoard(self, board):

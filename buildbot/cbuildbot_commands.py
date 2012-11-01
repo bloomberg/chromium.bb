@@ -121,9 +121,7 @@ def ValidateClobber(buildroot):
 
   if os.path.exists(buildroot):
     warning = 'This will delete %s' % buildroot
-    response = cros_build_lib.YesNoPrompt(default=cros_build_lib.NO,
-                                          warning=warning, full=True)
-    return response == cros_build_lib.YES
+    return cros_build_lib.BooleanPrompt(default=False)
 
 
 # =========================== Main Commands ===================================

@@ -474,8 +474,8 @@ def _CheckOptions(options):
   if not options.team and not options.owner:
     oper.Notice('Without --owner or --team filters this will run for all'
                 ' packages in the spreadsheet (same as --team=all).')
-    prompt = 'Are you sure you want to run for all packages?'
-    if 'no' == cros_build_lib.YesNoPrompt(default='no', prompt=prompt):
+    if not cros_build_lib.BooleanPrompt(
+        'Are you sure you want to run for all packages?', False):
       sys.exit(0)
 
   if options.team and options.team == 'all':
@@ -534,7 +534,7 @@ def main(argv):
   if options.email and options.cred_file:
     prompt = ('Do you want to save credentials for next time to %r?' %
               options.cred_file)
-    if 'yes' == cros_build_lib.YesNoPrompt(default='no', prompt=prompt):
+    if cros_build_lib.BooleanPrompt(prompt, False):
       creds.StoreCreds(options.cred_file)
       oper.Notice('Be sure to save the creds file to the same location'
                   ' outside your chroot so it will also be used with'

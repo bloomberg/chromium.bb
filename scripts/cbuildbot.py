@@ -484,11 +484,9 @@ class DistributedBuilder(SimpleBuilder):
 
 def _ConfirmBuildRoot(buildroot):
   """Confirm with user the inferred buildroot, and mark it as confirmed."""
-  warning = 'Using default directory %s as buildroot' % buildroot
-  response = cros_build_lib.YesNoPrompt(
-      default=cros_build_lib.NO, warning=warning, full=True)
-  if response == cros_build_lib.NO:
-    print('Please specify a buildroot with the --buildroot option.')
+  cros_build_lib.Warning('Using default directory %s as buildroot', buildroot)
+  if not cros_build_lib.BooleanPrompt(default=False):
+    print('Please specify a different buildroot via the --buildroot option.')
     sys.exit(0)
 
   if not os.path.exists(buildroot):
@@ -499,12 +497,10 @@ def _ConfirmBuildRoot(buildroot):
 
 def _ConfirmRemoteBuildbotRun():
   """Confirm user wants to run with --buildbot --remote."""
-  warning = ('You are about to launch a PRODUCTION job!  This is *NOT* a '
-             'trybot run! Are you sure?')
-  response = cros_build_lib.YesNoPrompt(
-      default=cros_build_lib.NO, warning=warning, full=True)
-
-  if response == cros_build_lib.NO:
+  cros_build_lib.Warning(
+       'You are about to launch a PRODUCTION job!  This is *NOT* a '
+       'trybot run! Are you sure?')
+  if not cros_build_lib.BooleanPrompt(default=False):
     print('Please specify --pass-through="--debug".')
     sys.exit(0)
 

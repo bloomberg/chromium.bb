@@ -37,8 +37,6 @@ del _path
 STRICT_SUDO = False
 
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
-YES = 'yes'
-NO = 'no'
 EXTERNAL_GERRIT_SSH_REMOTE = 'gerrit'
 
 
@@ -1706,51 +1704,40 @@ def GetInput(prompt):
   return raw_input(prompt)
 
 
-def YesNoPrompt(default, prompt="Do you want to continue", warning="",
-                full=False):
-  """Helper function for processing yes/no inputs from user.
+def BooleanPrompt(prompt="Do you want to continue?", default=True,
+                  true_value='yes', false_value='no'):
+  """Helper function for processing boolean choice prompts.
 
   Args:
-    default: Answer selected if the user hits "enter" without typing anything.
     prompt: The question to present to the user.
-    warning: An optional warning to issue before the prompt.
-    full: If True, user has to type "yes" or "no", otherwise "y" or "n" is OK.
-
+    default: Boolean to return if the user just presses enter.
+    true_value: The text to display that represents a True returned.
+    false_value: The text to display that represents a False returned.
   Returns:
-    What the user entered, normalized to "yes" or "no".
+    True or False.
   """
-  if warning:
-    Warning(warning)
+  true_value, false_value = true_value.lower(), false_value.lower()
+  true_text, false_text = true_value, false_value
+  if true_value == false_value:
+    raise ValueError("true_value and false_value must differ: got %r"
+                     % true_value)
 
-  if full:
-    if default == NO:
-      # ('yes', 'No')
-      yes, no = YES, NO[0].upper() + NO[1:]
-    else:
-      # ('Yes', 'no')
-      yes, no = YES[0].upper() + YES[1:], NO
-    expy = [YES]
-    expn = [NO]
+  if default:
+    true_text = true_text[0].upper() + true_text[1:]
   else:
-    if default == NO:
-      # ('y', 'N')
-      yes, no = YES[0].lower(), NO[0].upper()
-    else:
-      # ('Y', 'n')
-      yes, no = YES[0].upper(), NO[0].lower()
-    # expy = ['y', 'ye', 'yes'], expn = ['n', 'no']
-    expy = [YES[0:i + 1] for i in xrange(len(YES))]
-    expn = [NO[0:i + 1] for i in xrange(len(NO))]
+    false_text = false_text[0].upper() + false_text[1:]
 
-  prompt = ('\n%s (%s/%s)? ' % (prompt, yes, no))
+  prompt = ('\n%s (%s/%s)? ' % (prompt, true_text, false_text))
   while True:
     response = GetInput(prompt).lower()
     if not response:
-      response = default
-    if response in expy:
-      return YES
-    elif response in expn:
-      return NO
+      return default
+    if true_value.startswith(response):
+      if not false_value.startswith(response):
+        return True
+      # common prefix between the two...
+    elif false_value.startswith(response):
+      return False
 
 
 # Suppress whacked complaints about abstract class being unused.
