@@ -260,7 +260,7 @@ TEST_F(ChannelMultiplexerTest, WriteFailSync) {
   EXPECT_EQ(net::ERR_FAILED, host_socket2_->Write(buf, buf->size(), base::Bind(
         &MockSocketCallback::OnDone, base::Unretained(&cb2))));
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
@@ -291,7 +291,7 @@ TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
             host_socket2_->Write(buf, buf->size(), base::Bind(
                 &MockSocketCallback::OnDone, base::Unretained(&cb2))));
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
@@ -326,7 +326,7 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
             host_socket2_->Write(buf, buf->size(), base::Bind(
                 &MockSocketCallback::OnDone, base::Unretained(&cb2))));
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Check that the sockets were destroyed.
   EXPECT_FALSE(host_mux_.get());
@@ -351,7 +351,7 @@ TEST_F(ChannelMultiplexerTest, SessionFail) {
   EXPECT_CALL(cb2, OnConnectedPtr(_))
       .Times(0);
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace protocol

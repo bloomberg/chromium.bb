@@ -117,7 +117,7 @@ class JingleSessionTest : public testing::Test {
   virtual void TearDown() {
     CloseSessions();
     CloseSessionManager();
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 
   void CloseSessions() {
@@ -224,7 +224,7 @@ class JingleSessionTest : public testing::Test {
         CandidateSessionConfig::CreateDefault());
     client_session_->SetEventHandler(&client_session_event_handler_);
 
-    message_loop_->RunAllPending();
+    message_loop_->RunUntilIdle();
   }
 
   void CreateChannel() {
@@ -307,7 +307,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
       kHostJid, authenticator.Pass(), CandidateSessionConfig::CreateDefault());
   client_session_->SetEventHandler(&client_session_event_handler_);
 
-  message_loop_->RunAllPending();
+  message_loop_->RunUntilIdle();
 }
 
 // Verify that we can connect two endpoints with single-step authentication.

@@ -90,7 +90,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   request->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 
   // Verify format of the query.
   scoped_ptr<XmlElement> stanza(sent_iq);
@@ -155,7 +155,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   }
   EXPECT_EQ(1, consumed);
 
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace remoting

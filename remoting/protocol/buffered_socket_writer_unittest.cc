@@ -160,7 +160,7 @@ TEST_F(BufferedSocketWriterTest, TestWriteErrorSync) {
                             base::Unretained(this)));
   socket_->set_next_write_error(net::ERR_FAILED);
   socket_->set_async_write(false);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(net::ERR_FAILED, write_error_);
   EXPECT_EQ(static_cast<size_t>(test_buffer_->size()),
             socket_->written_data().size());
@@ -175,7 +175,7 @@ TEST_F(BufferedSocketWriterTest, TestWriteErrorAsync) {
                  base::Bind(&BufferedSocketWriterTest::Unexpected,
                             base::Unretained(this)));
   socket_->set_next_write_error(net::ERR_FAILED);
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
   EXPECT_EQ(net::ERR_FAILED, write_error_);
   EXPECT_EQ(static_cast<size_t>(test_buffer_->size()),
             socket_->written_data().size());

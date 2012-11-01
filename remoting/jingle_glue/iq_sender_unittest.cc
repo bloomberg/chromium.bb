@@ -102,7 +102,7 @@ TEST_F(IqSenderTest, SendIq) {
   EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
 
   EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IqSenderTest, Timeout) {
@@ -134,7 +134,7 @@ TEST_F(IqSenderTest, InvalidFrom) {
   EXPECT_CALL(callback_, OnReply(_, _))
       .Times(0);
   EXPECT_FALSE(sender_->OnSignalStrategyIncomingStanza(response.get()));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(IqSenderTest, IdMatchingHack) {
@@ -154,7 +154,7 @@ TEST_F(IqSenderTest, IdMatchingHack) {
   EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
 
   EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 }  // namespace remoting
