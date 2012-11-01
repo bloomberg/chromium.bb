@@ -868,9 +868,9 @@ Vector2d RenderText::GetAlignmentOffset() {
   return Vector2d(x_offset, 0);
 }
 
-Point RenderText::GetOriginForDrawing() {
+Vector2d RenderText::GetOffsetForDrawing() {
   // Center the text vertically in the display area.
-  return gfx::PointAtOffsetFromOrigin(GetTextOffset()) +
+  return GetTextOffset() +
       Vector2d(0, (display_rect().height() - GetStringSize().height()) / 2);
 }
 

@@ -448,9 +448,8 @@ void RenderTextWin::EnsureLayout() {
 void RenderTextWin::DrawVisualText(Canvas* canvas) {
   DCHECK(!needs_layout_);
 
-  Point offset(GetOriginForDrawing());
   // Skia will draw glyphs with respect to the baseline.
-  offset.Offset(0, common_baseline_);
+  Vector2d offset(GetOffsetForDrawing() + Vector2d(0, common_baseline_));
 
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());

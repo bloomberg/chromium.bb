@@ -384,9 +384,9 @@ class UI_EXPORT RenderText {
   // Returns display offset based on current text alignment.
   Vector2d GetAlignmentOffset();
 
-  // Returns the origin point for drawing text. Does not account for font
+  // Returns the offset for drawing text. Does not account for font
   // baseline, as needed by Skia.
-  Point GetOriginForDrawing();
+  Vector2d GetOffsetForDrawing();
 
   // Applies fade effects to |renderer|.
   void ApplyFadeEffects(internal::SkiaTextRenderer* renderer);

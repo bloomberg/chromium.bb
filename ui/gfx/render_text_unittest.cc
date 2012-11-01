@@ -1130,17 +1130,18 @@ TEST_F(RenderTextTest, OriginForDrawing) {
   Rect display_rect(0, 0, 100, font_height);
   render_text->SetDisplayRect(display_rect);
 
-  Point origin = render_text->GetOriginForDrawing();
-  EXPECT_EQ(origin.x(), 0);
-  EXPECT_EQ(origin.y(), 0);
+  Vector2d offset = render_text->GetOffsetForDrawing();
+  EXPECT_TRUE(offset.IsZero());
 
   // Set display area's height greater than font height.
-  display_rect = Rect(0, 0, 100, font_height + 2);
+  const int kEnlargement = 2;
+  display_rect = Rect(0, 0, 100, font_height + kEnlargement);
   render_text->SetDisplayRect(display_rect);
 
-  origin = render_text->GetOriginForDrawing();
-  EXPECT_EQ(origin.x(), 0);
-  EXPECT_EQ(origin.y(), 1);
+  // Text should be vertically centered.
+  offset = render_text->GetOffsetForDrawing();
+  EXPECT_EQ(offset.x(), 0);
+  EXPECT_EQ(offset.y(), kEnlargement / 2);
 }
 
 TEST_F(RenderTextTest, SameFontForParentheses) {

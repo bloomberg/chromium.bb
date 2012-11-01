@@ -353,9 +353,9 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
 void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   DCHECK(layout_);
 
-  Point offset(GetOriginForDrawing());
+  Vector2d offset(GetOffsetForDrawing());
   // Skia will draw glyphs with respect to the baseline.
-  offset.Offset(0, PANGO_PIXELS(pango_layout_get_baseline(layout_)));
+  offset += Vector2d(0, PANGO_PIXELS(pango_layout_get_baseline(layout_)));
 
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());
