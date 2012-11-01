@@ -242,9 +242,11 @@ RegisterList Unary2RegisterOp::defs(const Instruction i) const {
 
 // Unary2RegsiterOpNotRmIsPc
 SafetyLevel Unary2RegisterOpNotRmIsPc::safety(const Instruction i) const {
+  SafetyLevel level = Unary2RegisterOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (m.reg(i).Equals(Register::Pc()))
     return UNPREDICTABLE;
-  return Unary2RegisterOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Unary2RegisterOpNotRmIsPcNoCondUpdates
@@ -370,6 +372,9 @@ Register LoadExclusive2RegisterOp::base_address_register(
 
 // LoadExclusive2RegisterDoubleOp
 SafetyLevel LoadExclusive2RegisterDoubleOp::safety(const Instruction i) const {
+  SafetyLevel level = LoadExclusive2RegisterOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   // Arm restrictions for this instruction, based on double width.
   if (!t.IsEven(i)) {
     return UNDEFINED;
@@ -379,7 +384,7 @@ SafetyLevel LoadExclusive2RegisterDoubleOp::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  return LoadExclusive2RegisterOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 RegisterList LoadExclusive2RegisterDoubleOp::defs(const Instruction i) const {
@@ -447,6 +452,9 @@ RegisterList Store2RegisterImm8Op::defs(Instruction i) const {
 // LoadStore2RegisterImm8DoubleOp
 SafetyLevel LoadStore2RegisterImm8DoubleOp::
 safety(const Instruction i) const {
+  SafetyLevel level = LoadStore2RegisterImm8Op::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   // Arm restrictions for this instruction, based on double width.
   if (!t.IsEven(i)) {
     return UNDEFINED;
@@ -465,8 +473,7 @@ safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // Now apply non-double width restrictions for this instruction.
-  return LoadStore2RegisterImm8Op::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Load2RegisterImm8DoubleOp
@@ -509,11 +516,15 @@ RegisterList PreloadRegisterPairOp::defs(const Instruction i) const {
 
 // PreloadRegisterPairOpWAndRnNotPc
 SafetyLevel PreloadRegisterPairOpWAndRnNotPc::safety(Instruction i) const {
+  SafetyLevel level = PreloadRegisterPairOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   // Defined in version C of ARM ARM v7 manual.
   // if m==15 || (n==15 && is_pldw) then UNPREDICTABLE;
   if (!read.IsDefined(i) && n.reg(i).Equals(Register::Pc()))
     return FORBIDDEN_OPERANDS;
-  return PreloadRegisterPairOp::safety(i);
+
+  return MAY_BE_SAFE;
 }
 
 // LoadStore2RegisterImm12Op
@@ -590,10 +601,14 @@ RegisterList Store2RegisterImm12Op::defs(Instruction i) const {
 // Store2RegisterImm12OpRnNotRtOnWriteback
 SafetyLevel Store2RegisterImm12OpRnNotRtOnWriteback::
 safety(Instruction i) const {
+  SafetyLevel level = Store2RegisterImm12Op::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   // TODO(jfb) Redundant with LoadStore2RegisterImm12Op, once it is fixed.
   if (HasWriteBack(i) && (n.reg(i).Equals(t.reg(i))))
     return UNPREDICTABLE;
-  return Store2RegisterImm12Op::safety(i);
+
+  return MAY_BE_SAFE;
 }
 
 // LoadStoreRegisterList
@@ -620,13 +635,15 @@ immediate_addressing_defs(const Instruction i) const {
 
 // LoadRegisterList
 SafetyLevel LoadRegisterList::safety(const Instruction i) const {
+  SafetyLevel level = LoadStoreRegisterList::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (wback.IsDefined(i) && register_list.registers(i).Contains(n.reg(i))) {
     return UNPREDICTABLE;
   }
   if (register_list.registers(i).Contains(Register::Pc())) {
     return FORBIDDEN_OPERANDS;
   }
-  return LoadStoreRegisterList::safety(i);
+  return MAY_BE_SAFE;
 }
 
 RegisterList LoadRegisterList::defs(const Instruction i) const {
@@ -635,6 +652,8 @@ RegisterList LoadRegisterList::defs(const Instruction i) const {
 
 // StoreRegisterList
 SafetyLevel StoreRegisterList::safety(const Instruction i) const {
+  SafetyLevel level = LoadStoreRegisterList::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (wback.IsDefined(i) && register_list.registers(i).Contains(n.reg(i)) &&
       ((register_list.value(i) & (0xFFFFFFFFu << n.reg(i).number())) !=
        register_list.value(i))) {
@@ -642,7 +661,7 @@ SafetyLevel StoreRegisterList::safety(const Instruction i) const {
     // at least the first register that is stored.
     return UNPREDICTABLE;
   }
-  return LoadStoreRegisterList::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // LoadStoreVectorOp
@@ -675,6 +694,9 @@ uint32_t LoadStoreVectorRegisterList::NumRegisters(const Instruction& i) const {
 }
 
 SafetyLevel LoadStoreVectorRegisterList::safety(const Instruction i) const {
+  SafetyLevel level = LoadStoreVectorOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   // ARM constraints.
   if (wback.IsDefined(i) && (indexing.IsDefined(i) == direction.IsAdd(i)))
     return UNDEFINED;
@@ -704,7 +726,8 @@ SafetyLevel LoadStoreVectorRegisterList::safety(const Instruction i) const {
     default:  // Bad coprocessor (this check should be redundant).
       return UNPREDICTABLE;
   }
-  return LoadStoreVectorOp::safety(i);
+
+  return MAY_BE_SAFE;
 }
 
 RegisterList LoadStoreVectorRegisterList::defs(const Instruction i) const {
@@ -724,9 +747,11 @@ bool LoadVectorRegisterList::is_literal_load(Instruction i) const {
 
 // StoreVectorRegisterList
 SafetyLevel StoreVectorRegisterList::safety(const Instruction i) const {
+  SafetyLevel level = LoadStoreVectorRegisterList::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (n.reg(i).Equals(Register::Pc()))
     return FORBIDDEN_OPERANDS;
-  return LoadStoreVectorRegisterList::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // LoadStoreVectorRegister
@@ -739,6 +764,8 @@ bool LoadVectorRegister::is_literal_load(Instruction i) const {
 
 // StoreVectorRegister
 SafetyLevel StoreVectorRegister::safety(const Instruction i) const {
+  SafetyLevel level = LoadStoreVectorRegister::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (n.reg(i).Equals(Register::Pc())) {
     // Note: covers ARM and NaCl constraints:
     //   Rn!=PC
@@ -746,8 +773,7 @@ SafetyLevel StoreVectorRegister::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // Make sure coprocessor value is safe.
-  return LoadStoreVectorRegister::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // LoadStore3RegisterOp
@@ -810,6 +836,9 @@ RegisterList Store3RegisterOp::defs(Instruction i) const {
 
 // LoadStore3RegisterDoubleOp
 SafetyLevel LoadStore3RegisterDoubleOp::safety(const Instruction i) const {
+  SafetyLevel level = LoadStore3RegisterOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   // Arm restrictions for this instruction, based on double width.
   if (!t.IsEven(i)) {
     return UNDEFINED;
@@ -833,8 +862,7 @@ SafetyLevel LoadStore3RegisterDoubleOp::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // Now apply non-double width restrictions for this instruction.
-  return LoadStore3RegisterOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // StoreExclusive3RegisterOp
@@ -865,6 +893,9 @@ Register StoreExclusive3RegisterOp::base_address_register(
 
 // StoreExclusive3RegisterDoubleOp
 SafetyLevel StoreExclusive3RegisterDoubleOp::safety(const Instruction i) const {
+  SafetyLevel level = StoreExclusive3RegisterOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   // Arm restrictions for this instruction, based on double width.
   if (!t.IsEven(i)) {
     return UNDEFINED;
@@ -878,8 +909,7 @@ SafetyLevel StoreExclusive3RegisterDoubleOp::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  // Now apply non-double width restrictions for this instruction.
-  return StoreExclusive3RegisterOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Load3RegisterDoubleOp
@@ -1077,106 +1107,133 @@ RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
 
 // Vector2RegisterMiscellaneous_RG
 SafetyLevel Vector2RegisterMiscellaneous_RG::safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (op.value(i) + size.value(i) >= 3) return UNDEFINED;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_V8_16_32
 SafetyLevel Vector2RegisterMiscellaneous_V8_16_32::safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) == 3) return UNDEFINED;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_V8
 SafetyLevel Vector2RegisterMiscellaneous_V8::safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) != 0) return UNDEFINED;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_F32
 SafetyLevel Vector2RegisterMiscellaneous_F32::safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
   if (size.value(i) != 2) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_V8S
 SafetyLevel Vector2RegisterMiscellaneous_V8S::safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if ((m.value(i) == d.value(i)) && (vm.reg(i).Equals(vd.reg(i))))
     return UNKNOWN;
   if (size.value(i) != 0) return UNDEFINED;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_V8_16_32T
 SafetyLevel Vector2RegisterMiscellaneous_V8_16_32T::
 safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if ((m.value(i) == d.value(i)) && (vm.reg(i).Equals(vd.reg(i))))
     return UNKNOWN;
   if (size.value(i) == 3) return UNDEFINED;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_V8_16_32I
 SafetyLevel Vector2RegisterMiscellaneous_V8_16_32I::
 safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if ((m.value(i) == d.value(i)) && (vm.reg(i).Equals(vd.reg(i))))
     return UNKNOWN;
   if (size.value(i) == 3) return UNDEFINED;
   if (!q.IsDefined(i) && (size.value(i) == 2)) return UNDEFINED;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_V16_32_64N
 SafetyLevel Vector2RegisterMiscellaneous_V16_32_64N::
 safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) == 3) return UNDEFINED;
   if (!vm.IsEven(i)) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_I8_16_32L
 SafetyLevel Vector2RegisterMiscellaneous_I8_16_32L::
 safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) == 3) return UNDEFINED;
   if (!vd.IsEven(i)) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_CVT_F2I
 SafetyLevel Vector2RegisterMiscellaneous_CVT_F2I::
 safety(Instruction i) const {
+  SafetyLevel level = Vector2RegisterMiscellaneous::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
   if (size.value(i) != 2) return UNDEFINED;
-  return Vector2RegisterMiscellaneous::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_I16_32_64N
 SafetyLevel Vector2RegisterMiscellaneous_I16_32_64N::
 safety(Instruction i) const {
   if (op.value(i) == 0) return DECODER_ERROR;
+  SafetyLevel level = VectorUnary2RegisterOpBase::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) == 3) return UNDEFINED;
   if (!vm.IsEven(i)) return UNDEFINED;
-  return VectorUnary2RegisterOpBase::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector2RegisterMiscellaneous_CVT_H2S
 SafetyLevel Vector2RegisterMiscellaneous_CVT_H2S::
 safety(Instruction i) const {
+  SafetyLevel level = VectorUnary2RegisterOpBase::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) != 1) return UNDEFINED;
   if (op.IsDefined(i) && !vd.IsEven(i)) return UNDEFINED;
   if (!op.IsDefined(i) && !vm.IsEven(i)) return UNDEFINED;
-  return VectorUnary2RegisterOpBase::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorUnary2RegisterDup
 SafetyLevel VectorUnary2RegisterDup::safety(Instruction i) const {
+  SafetyLevel level = VectorUnary2RegisterOpBase::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   if (q.IsDefined(i) && !vd.IsEven(i))
     return UNDEFINED;
 
@@ -1190,23 +1247,27 @@ SafetyLevel VectorUnary2RegisterDup::safety(Instruction i) const {
         ((imm & 0x7) == 0x4)))
     return FORBIDDEN_OPERANDS;
 
-  return VectorUnary2RegisterOpBase::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary2RegisterShiftAmount_I
 SafetyLevel VectorBinary2RegisterShiftAmount_I::safety(Instruction i) const {
   // L:imm6=0000xxx => DECODER_ERROR
   if ((l.value(i) == 0) && ((imm6.value(i) & 0x38) == 0)) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary2RegisterShiftAmount::safety(i);
+  if (level != MAY_BE_SAFE) return level;
   // Q=1 & (Vd(0)=1 | Vm(1)=1) => UNDEFINED
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
-  return VectorBinary2RegisterShiftAmount::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary2RegisterShiftAmount_ILS
 SafetyLevel VectorBinary2RegisterShiftAmount_ILS::safety(Instruction i) const {
+  SafetyLevel level = VectorBinary2RegisterShiftAmount_I::safety(i);
+  if (level != MAY_BE_SAFE) return level;
   // U=0 & op=0 => UNDEFINED
   if (!u.IsDefined(i) && !op.IsDefined(i)) return UNDEFINED;
-  return VectorBinary2RegisterShiftAmount_I::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary2RegisterShiftAmount_N16_32_64R
@@ -1214,9 +1275,11 @@ SafetyLevel VectorBinary2RegisterShiftAmount_N16_32_64R::
 safety(Instruction i) const {
   // L:imm6=0000xxx => DECODER_ERROR
   if ((l.value(i) == 0) && ((imm6.value(i) & 0x38) == 0)) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary2RegisterShiftAmount::safety(i);
+  if (level != MAY_BE_SAFE) return level;
   // Vm(0)=1 => UNDEFINED;
   if (!vm.IsEven(i)) return UNDEFINED;
-  return VectorBinary2RegisterShiftAmount::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary2RegisterShiftAmount_N16_32_64RS
@@ -1232,20 +1295,24 @@ SafetyLevel VectorBinary2RegisterShiftAmount_E8_16_32L::
 safety(Instruction i) const {
   // imm6=000xxx => DECODER_ERROR
   if ((imm6.value(i) & 0x38) == 0) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary2RegisterShiftAmount::safety(i);
+  if (level != MAY_BE_SAFE) return level;
   // Vd(0)=1 => UNDEFINED;
   if (!vd.IsEven(i)) return UNDEFINED;
-  return VectorBinary2RegisterShiftAmount::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary2RegisterShiftAmount_CVT
 SafetyLevel VectorBinary2RegisterShiftAmount_CVT::safety(Instruction i) const {
   // imm6=000xxx => DECODER_ERROR
   if ((imm6.value(i) & 0x38) == 0) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary2RegisterShiftAmount::safety(i);
+  if (level != MAY_BE_SAFE) return level;
   // imm6=0xxxxx => UNDEFINED
   if ((imm6.value(i) & 0x20) == 0) return UNDEFINED;
   // Q=1 & (Vd(0)=1 | Vm(1)=1) => UNDEFINED
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
-  return VectorBinary2RegisterShiftAmount::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterSameLengthDQ
@@ -1259,24 +1326,30 @@ SafetyLevel VectorBinary3RegisterSameLengthDQ::safety(Instruction i) const {
 // VectorBinary3RegisterSameLengthDQI8_16_32
 SafetyLevel VectorBinary3RegisterSameLengthDQI8_16_32::
 safety(Instruction i) const {
+  SafetyLevel level = VectorBinary3RegisterSameLengthDQ::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) == 3) return UNDEFINED;
-  return VectorBinary3RegisterSameLengthDQ::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterSameLengthDQI8P
 SafetyLevel VectorBinary3RegisterSameLengthDQI8P::
 safety(Instruction i) const {
+  SafetyLevel level = VectorBinary3RegisterSameLengthDQ::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) != 0) return UNDEFINED;
-  return VectorBinary3RegisterSameLengthDQ::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterSameLengthDQI16_32
 SafetyLevel VectorBinary3RegisterSameLengthDQI16_32::
 safety(Instruction i) const {
+  SafetyLevel level = VectorBinary3RegisterSameLengthDQ::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   switch (size.value(i)) {
     case 1:
     case 2:
-      return VectorBinary3RegisterSameLengthDQ::safety(i);
+      return MAY_BE_SAFE;
     default:
       return UNDEFINED;
   }
@@ -1284,11 +1357,13 @@ safety(Instruction i) const {
 
 // VectorBinary3RegisterSameLength32P
 SafetyLevel VectorBinary3RegisterSameLength32P::safety(Instruction i) const {
+  SafetyLevel level = VectorBinary3RegisterSameLength::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (q.IsDefined(i)) return UNDEFINED;
   switch (size.value(i)) {
     case 0:
     case 2:
-      return VectorBinary3RegisterSameLength::safety(i);
+      return MAY_BE_SAFE;
     default:
       return UNDEFINED;
   }
@@ -1296,13 +1371,15 @@ SafetyLevel VectorBinary3RegisterSameLength32P::safety(Instruction i) const {
 
 // VectorBinary3RegisterSameLength32_DQ
 SafetyLevel VectorBinary3RegisterSameLength32_DQ::safety(Instruction i) const {
+  SafetyLevel level = VectorBinary3RegisterSameLength::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i) || vm.IsEven(i))) {
     return UNDEFINED;
   }
   switch (size.value(i)) {
     case 0:
     case 2:
-      return VectorBinary3RegisterSameLength::safety(i);
+      return MAY_BE_SAFE;
     default:
       return UNDEFINED;
   }
@@ -1318,80 +1395,98 @@ SafetyLevel VectorBinary3RegisterSameLengthDI::safety(Instruction i) const {
 SafetyLevel VectorBinary3RegisterDifferentLength_I8_16_32::
 safety(Instruction i) const {
   if (size.value(i) == 3) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary3RegisterDifferentLength::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (!vd.IsEven(i)) return UNDEFINED;
   if ((op.IsDefined(i)) && !vn.IsEven(i)) return UNDEFINED;
-  return VectorBinary3RegisterDifferentLength::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterDifferentLength_I16_32_64
 SafetyLevel VectorBinary3RegisterDifferentLength_I16_32_64::
 safety(Instruction i) const {
   if (size.value(i) == 3) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary3RegisterDifferentLength::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (!vn.IsEven(i)) return UNDEFINED;
   if (!vm.IsEven(i)) return UNDEFINED;
-  return VectorBinary3RegisterDifferentLength::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterDifferentLength_I8_16_32L
 SafetyLevel VectorBinary3RegisterDifferentLength_I8_16_32L::
 safety(Instruction i) const {
   if (size.value(i) == 3) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary3RegisterDifferentLength::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (!vd.IsEven(i)) return UNDEFINED;
-  return VectorBinary3RegisterDifferentLength::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterDifferentLength_I16_32L
 SafetyLevel VectorBinary3RegisterDifferentLength_I16_32L::
 safety(Instruction i) const {
   if (size.value(i) == 3) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary3RegisterDifferentLength::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) == 0) return UNDEFINED;
   if (!vd.IsEven(i)) return UNDEFINED;
-  return VectorBinary3RegisterDifferentLength::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterDifferentLength_P8
 SafetyLevel VectorBinary3RegisterDifferentLength_P8::
 safety(Instruction i) const {
   if (size.value(i) == 3) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary3RegisterDifferentLength::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (u.IsDefined(i)) return UNDEFINED;
   if (size.value(i) != 0) return UNDEFINED;
   if (!vd.IsEven(i)) return UNDEFINED;
-  return VectorBinary3RegisterDifferentLength::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary2RegisterScalar_I16_32
 SafetyLevel VectorBinary2RegisterScalar_I16_32::safety(Instruction i) const {
   if (size.value(i) == 3) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary2RegisterScalar::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) == 0) return UNDEFINED;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i))) return UNDEFINED;
-  return VectorBinary2RegisterScalar::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary2RegisterScalar_I16_32L
 SafetyLevel VectorBinary2RegisterScalar_I16_32L::safety(Instruction i) const {
   if (size.value(i) == 3) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary2RegisterScalar::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (size.value(i) == 0 || !vd.IsEven(i)) return UNDEFINED;
-  return VectorBinary2RegisterScalar::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary2RegisterScalar_F32
 SafetyLevel VectorBinary2RegisterScalar_F32::safety(Instruction i) const {
   uint32_t size_i = size.value(i);
   if (size_i == 3) return DECODER_ERROR;
+  SafetyLevel level = VectorBinary2RegisterScalar::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if ((size_i == 0) || (size_i == 1)) return UNDEFINED;
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i))) return UNDEFINED;
-  return VectorBinary2RegisterScalar::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterImmOp
 SafetyLevel VectorBinary3RegisterImmOp::safety(Instruction i) const {
+  SafetyLevel level = VectorBinary3RegisterOpBase::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (q.IsDefined(i)) {
     if (!vd.IsEven(i) || !vn.IsEven(i) || !vm.IsEven(i))
       return UNDEFINED;
   } else if (imm.value(i) > 0x7) {
     return UNDEFINED;
   }
-  return VectorBinary3RegisterOpBase::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector1RegisterImmediate_MOV
@@ -1401,16 +1496,20 @@ SafetyLevel Vector1RegisterImmediate_MOV::safety(Instruction i) const {
       ((cmode.value(i) & 0x6) != 6))
     return DECODER_ERROR;
   if (op.IsDefined(i) && (cmode.value(i) !=  14)) return DECODER_ERROR;
+  SafetyLevel level = Vector1RegisterImmediate::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (q.IsDefined(i) && !vd.IsEven(i)) return UNDEFINED;
-  return Vector1RegisterImmediate::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector1RegisterImmediate_BIT
 SafetyLevel Vector1RegisterImmediate_BIT::safety(Instruction i) const {
   if (((cmode.value(i) & 0x1) == 0) || ((cmode.value(i) & 0x6) == 6))
     return DECODER_ERROR;
+  SafetyLevel level = Vector1RegisterImmediate::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (q.IsDefined(i) && !vd.IsEven(i)) return UNDEFINED;
-  return Vector1RegisterImmediate::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // Vector1RegisterImmediate_MVN
@@ -1418,22 +1517,28 @@ SafetyLevel Vector1RegisterImmediate_MVN::safety(Instruction i) const {
   if ((((cmode.value(i) & 0x1) ==1) && (cmode.value(i) & 0x6) != 6) ||
       ((cmode.value(i) & 0xE) == 0xE))
     return DECODER_ERROR;
+  SafetyLevel level = Vector1RegisterImmediate::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (q.IsDefined(i) && !vd.IsEven(i)) return UNDEFINED;
-  return Vector1RegisterImmediate::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorBinary3RegisterLookupOp
 SafetyLevel VectorBinary3RegisterLookupOp::safety(Instruction i) const {
+  SafetyLevel level = VectorBinary3RegisterOpBase::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (n_reg_index(i) + length(i) > 32)
     return UNPREDICTABLE;
-  return VectorBinary3RegisterOpBase::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VfpUsesRegOp
 SafetyLevel VfpUsesRegOp::safety(Instruction i) const {
+  SafetyLevel level = CondVfpOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (t.reg(i).Equals(Register::Pc()))
     return UNPREDICTABLE;
-  return CondVfpOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 RegisterList VfpUsesRegOp::defs(const Instruction i) const {
@@ -1453,9 +1558,11 @@ RegisterList VfpMrsOp::defs(const Instruction i) const {
 
 // MoveVfpRegisterOp
 SafetyLevel MoveVfpRegisterOp::safety(Instruction i) const {
+  SafetyLevel level = CondVfpOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if (t.reg(i).Equals(Register::Pc()))
     return UNPREDICTABLE;
-  return CondVfpOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 RegisterList MoveVfpRegisterOp::defs(const Instruction i) const {
@@ -1466,6 +1573,9 @@ RegisterList MoveVfpRegisterOp::defs(const Instruction i) const {
 
 // MoveVfpRegisterOpWithTypeSel
 SafetyLevel MoveVfpRegisterOpWithTypeSel::safety(Instruction i) const {
+  SafetyLevel level = MoveVfpRegisterOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   // Compute type_sel = opc1(23:21):opc2(6:5).
   uint32_t type_sel = (opc1.value(i) << 2) | opc2.value(i);
 
@@ -1474,17 +1584,19 @@ SafetyLevel MoveVfpRegisterOpWithTypeSel::safety(Instruction i) const {
       ((type_sel & 0xb) == 0x2))      /* type_sel == 'x0x10 */
     return UNDEFINED;
 
-  return MoveVfpRegisterOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // MoveDoubleVfpRegisterOp
 SafetyLevel MoveDoubleVfpRegisterOp::safety(Instruction i) const {
+  SafetyLevel level = MoveVfpRegisterOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
   if ((t2.reg(i).Equals(Register::Pc())) ||
       (IsSinglePrecision(i) &&
        (((vm.reg(i).number() << 1) | m.value(i)) == 31)) ||
       (to_arm_reg.IsDefined(i) && t.reg(i).Equals(t2.reg(i))))
     return UNPREDICTABLE;
-  return MoveVfpRegisterOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 RegisterList MoveDoubleVfpRegisterOp::defs(const Instruction i) const {
@@ -1495,6 +1607,9 @@ RegisterList MoveDoubleVfpRegisterOp::defs(const Instruction i) const {
 
 // DuplicateToAdvSIMDRegisters
 SafetyLevel DuplicateToAdvSIMDRegisters::safety(Instruction i) const {
+  SafetyLevel level = CondAdvSIMDOp::safety(i);
+  if (MAY_BE_SAFE != level) return level;
+
   if (is_two_regs.IsDefined(i) && !vd.IsEven(i))
     return UNDEFINED;
 
@@ -1504,7 +1619,7 @@ SafetyLevel DuplicateToAdvSIMDRegisters::safety(Instruction i) const {
   if (t.reg(i).Equals(Register::Pc()))
     return UNPREDICTABLE;
 
-  return CondAdvSIMDOp::safety(i);
+  return MAY_BE_SAFE;
 }
 
 // VectorLoadStoreMultiple

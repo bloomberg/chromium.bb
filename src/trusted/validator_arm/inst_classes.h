@@ -727,6 +727,12 @@ class ClassDecoder {
   // cannot touch global state, this will not check things that may vary with
   // ABI version.
   //
+  // Note: To best take advantage of the testing system, define this function
+  // to return DECODER_ERROR immediately, if DECODER_ERROR is to be returned by
+  // this virtual. This allows testing to (quietly) detect when it is
+  // ok that the expected decoder wasn't the actual decoder selected by the
+  // instruction decoder.
+  //
   // The most positive result this can return is called MAY_BE_SAFE because it
   // is necessary, but not sufficient: the validator has the final say.
   virtual SafetyLevel safety(Instruction i) const = 0;

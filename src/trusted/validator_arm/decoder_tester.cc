@@ -37,13 +37,19 @@ bool DecoderTester::PassesParsePreconditions(
 
 bool DecoderTester::ApplySanityChecks(Instruction inst,
                                       const NamedClassDecoder& decoder) {
-  UNREFERENCED_PARAMETER(inst);
+  // Only allow different decoders if the expected decoder is expected to be
+  // able to apply safety.
   bool test = (&decoder == &ExpectedDecoder());
-  EXPECT_TRUE(test)
-      << "Expected " << ExpectedDecoder().name() << " but found "
-      << decoder.name() << " for " << InstContents();
-  NC_PRECOND(test);
-  return true;
+  if (!test) {
+    if (nacl_arm_dec::DECODER_ERROR != ExpectedDecoder().safety(inst)) {
+      EXPECT_EQ(nacl_arm_dec::DECODER_ERROR, ExpectedDecoder().safety(inst))
+          << "Expected " << ExpectedDecoder().name() << " but found "
+          << decoder.name() << " for " << InstContents();
+    }
+  }
+  // Only allow additional sanity checks if the found decoder is the
+  // expected decoder.
+  return test;
 }
 
 void DecoderTester::TestAtIndex(int index) {
