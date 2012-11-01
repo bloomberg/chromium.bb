@@ -35,12 +35,20 @@ def GetCC():
   # See if the user has a chromium.gyp_env setting for GOMA.
   gyp_env = os.path.abspath(os.path.join(
       FFMPEG_ROOT, '..', '..', '..', 'chromium.gyp_env'))
-  if not os.path.isfile(gyp_env):
-    return DEFAULT_CC
+  if os.path.isfile(gyp_env):
+    gyp_config = eval(open(gyp_env, 'r').read())
+    if 'CC' in gyp_config:
+      return gyp_config['CC'].split()
 
-  gyp_config = eval(open(gyp_env, 'r').read())
-  if 'CC' in gyp_config:
-    return gyp_config['CC'].split()
+  # See if the user's build.ninja uses GOMA.
+  for config_name in ('Release', 'Debug'):
+    build_ninja = os.path.abspath(os.path.join(
+        FFMPEG_ROOT, '..', '..', 'out', config_name, 'build.ninja'))
+    if os.path.isfile(build_ninja):
+      with open(build_ninja) as f:
+        for line in f:
+          if line.startswith('cc ='):
+            return line.rstrip().replace('cc =', '').split()
 
   return DEFAULT_CC
 
