@@ -779,6 +779,7 @@ void HostProcess::StartHost() {
       desktop_environment_factory_.get(),
       CreateHostSessionManager(network_settings,
                                context_->url_request_context_getter()),
+      context_->audio_task_runner(),
       context_->capture_task_runner(),
       context_->encode_task_runner(),
       context_->network_task_runner());

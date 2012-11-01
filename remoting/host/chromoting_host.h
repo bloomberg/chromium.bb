@@ -72,6 +72,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       SignalStrategy* signal_strategy,
       DesktopEnvironmentFactory* desktop_environment_factory,
       scoped_ptr<protocol::SessionManager> session_manager,
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
@@ -183,6 +184,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Parameters specified when the host was created.
   DesktopEnvironmentFactory* desktop_environment_factory_;
   scoped_ptr<protocol::SessionManager> session_manager_;
+  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;

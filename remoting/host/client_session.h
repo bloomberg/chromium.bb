@@ -89,6 +89,7 @@ class ClientSession
   // |event_handler| must outlive |this|. |desktop_environment_factory| is only
   // used by the constructor to create an instance of DesktopEnvironment.
   ClientSession(EventHandler* event_handler,
+                scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
@@ -216,6 +217,7 @@ class ClientSession
   // is reached.
   base::OneShotTimer<ClientSession> max_duration_timer_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;

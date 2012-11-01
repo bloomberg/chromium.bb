@@ -29,6 +29,7 @@ namespace remoting {
 
 ClientSession::ClientSession(
     EventHandler* event_handler,
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
@@ -52,6 +53,7 @@ ClientSession::ClientSession(
       auth_clipboard_filter_(&disable_clipboard_filter_),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
+      audio_task_runner_(audio_task_runner),
       capture_task_runner_(capture_task_runner),
       encode_task_runner_(encode_task_runner),
       network_task_runner_(network_task_runner),
@@ -146,7 +148,7 @@ void ClientSession::OnConnectionChannelsConnected(
     scoped_ptr<AudioEncoder> audio_encoder =
         CreateAudioEncoder(connection_->session()->config());
     audio_scheduler_ = new AudioScheduler(
-        capture_task_runner_,
+        audio_task_runner_,
         network_task_runner_,
         desktop_environment_->audio_capturer(),
         audio_encoder.Pass(),

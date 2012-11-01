@@ -145,6 +145,7 @@ class ChromotingHostTest : public testing::Test {
         &signal_strategy_,
         desktop_environment_factory_.get(),
         scoped_ptr<protocol::SessionManager>(session_manager_),
+        context_.audio_task_runner(),
         context_.capture_task_runner(),
         context_.encode_task_runner(),
         context_.network_task_runner());
@@ -251,6 +252,7 @@ class ChromotingHostTest : public testing::Test {
     protocol::ConnectionToClient* connection_ptr = connection.get();
     scoped_refptr<ClientSession> client = new ClientSession(
         host_.get(),
+        context_.audio_task_runner(),
         context_.capture_task_runner(),
         context_.encode_task_runner(),
         context_.network_task_runner(),

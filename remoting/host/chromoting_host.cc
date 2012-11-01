@@ -59,11 +59,13 @@ ChromotingHost::ChromotingHost(
     SignalStrategy* signal_strategy,
     DesktopEnvironmentFactory* desktop_environment_factory,
     scoped_ptr<protocol::SessionManager> session_manager,
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : desktop_environment_factory_(desktop_environment_factory),
       session_manager_(session_manager.Pass()),
+      audio_task_runner_(audio_task_runner),
       capture_task_runner_(capture_task_runner),
       encode_task_runner_(encode_task_runner),
       network_task_runner_(network_task_runner),
@@ -311,6 +313,7 @@ void ChromotingHost::OnIncomingSession(
       new protocol::ConnectionToClient(session));
   scoped_refptr<ClientSession> client = new ClientSession(
       this,
+      audio_task_runner_,
       capture_task_runner_,
       encode_task_runner_,
       network_task_runner_,

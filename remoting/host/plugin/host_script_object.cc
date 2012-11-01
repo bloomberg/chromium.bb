@@ -368,6 +368,7 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
       desktop_environment_factory_.get(),
       CreateHostSessionManager(network_settings,
                                host_context_->url_request_context_getter()),
+      host_context_->audio_task_runner(),
       host_context_->capture_task_runner(),
       host_context_->encode_task_runner(),
       host_context_->network_task_runner());

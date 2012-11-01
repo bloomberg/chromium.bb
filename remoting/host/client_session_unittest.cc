@@ -72,6 +72,7 @@ class ClientSessionTest : public testing::Test {
 
     client_session_ = new ClientSession(
         &session_event_handler_,
+        ui_task_runner_, // Audio thread.
         ui_task_runner_, // Capture thread.
         ui_task_runner_, // Encode thread.
         ui_task_runner_, // Network thread.
