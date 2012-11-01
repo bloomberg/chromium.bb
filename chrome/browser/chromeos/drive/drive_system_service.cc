@@ -80,7 +80,7 @@ DriveSystemService::DriveSystemService(Profile* profile)
 
 DriveSystemService::~DriveSystemService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  cache_->DestroyOnUIThread();
+  cache_->Destroy();
 }
 
 void DriveSystemService::Initialize(
@@ -89,9 +89,7 @@ void DriveSystemService::Initialize(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive_service_.reset(drive_service);
-  cache_ = DriveCache::CreateDriveCacheOnUIThread(
-      cache_root,
-      blocking_task_runner_);
+  cache_ = DriveCache::CreateDriveCache(cache_root, blocking_task_runner_);
   uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
   file_system_.reset(new DriveFileSystem(profile_,
@@ -112,9 +110,8 @@ void DriveSystemService::Initialize(
 
   sync_client_->Initialize();
   file_system_->Initialize();
-  cache_->RequestInitializeOnUIThread(
-      base::Bind(&DriveSystemService::OnCacheInitialized,
-                 weak_ptr_factory_.GetWeakPtr()));
+  cache_->RequestInitialize(base::Bind(&DriveSystemService::OnCacheInitialized,
+                                       weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveSystemService::Shutdown() {
@@ -186,10 +183,9 @@ void DriveSystemService::ClearCacheAndRemountFileSystem(
 
   RemoveDriveMountPoint();
   drive_service()->CancelAll();
-  cache_->ClearAllOnUIThread(
-      base::Bind(&DriveSystemService::AddBackDriveMountPoint,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  cache_->ClearAll(base::Bind(&DriveSystemService::AddBackDriveMountPoint,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              callback));
 }
 
 void DriveSystemService::AddBackDriveMountPoint(

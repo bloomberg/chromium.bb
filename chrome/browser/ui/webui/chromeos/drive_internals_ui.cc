@@ -211,11 +211,11 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                              bool hide_hosted_documents,
                              scoped_ptr<drive::DriveEntryProtoVector> entries);
 
-  // Called when GetResourceIdsOfAllFilesOnUIThread() is complete.
+  // Called when GetResourceIdsOfAllFiles() is complete.
   void OnGetResourceIdsOfAllFiles(
       const std::vector<std::string>& resource_ids);
 
-  // Called when GetCacheEntryOnUIThread() is complete.
+  // Called when GetCacheEntry() is complete.
   void OnGetCacheEntry(const std::string& resource_id,
                        bool success,
                        const drive::DriveCacheEntry& cache_entry);
@@ -514,7 +514,7 @@ void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
 
 void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
     drive::DriveCache* cache) {
-  cache->GetResourceIdsOfAllFilesOnUIThread(
+  cache->GetResourceIdsOfAllFiles(
       base::Bind(&DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -568,7 +568,7 @@ void DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles(
     const std::vector<std::string>& resource_ids) {
   for (size_t i = 0; i < resource_ids.size(); ++i) {
     const std::string& resource_id = resource_ids[i];
-    GetSystemService()->cache()->GetCacheEntryOnUIThread(
+    GetSystemService()->cache()->GetCacheEntry(
         resource_id,
         "",  // Don't check MD5.
         base::Bind(&DriveInternalsWebUIHandler::OnGetCacheEntry,

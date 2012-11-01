@@ -95,7 +95,7 @@ void RemoveOperation::RemoveResourceLocally(
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 
-  cache_->RemoveOnUIThread(resource_id, CacheOperationCallback());
+  cache_->Remove(resource_id, CacheOperationCallback());
 }
 
 void RemoveOperation::NotifyDirectoryChanged(

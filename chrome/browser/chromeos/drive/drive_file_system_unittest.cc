@@ -196,7 +196,7 @@ class DriveFileSystemTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_ = DriveCache::CreateDriveCacheOnUIThread(
+    cache_ = DriveCache::CreateDriveCache(
         DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
     mock_uploader_.reset(new StrictMock<google_apis::MockDriveUploader>);
@@ -217,7 +217,7 @@ class DriveFileSystemTest : public testing::Test {
     file_system_->AddObserver(mock_directory_observer_.get());
 
     file_system_->Initialize();
-    cache_->RequestInitializeOnUIThreadForTesting();
+    cache_->RequestInitializeForTesting();
     google_apis::test_util::RunBlockingPoolTask();
   }
 
@@ -229,7 +229,7 @@ class DriveFileSystemTest : public testing::Test {
     delete mock_drive_service_;
     mock_drive_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
-    cache_->DestroyOnUIThread();
+    cache_->Destroy();
     // The cache destruction requires to post a task to the blocking pool.
     google_apis::test_util::RunBlockingPoolTask();
 
@@ -364,7 +364,8 @@ class DriveFileSystemTest : public testing::Test {
       const std::string& md5,
       DriveCacheEntry* cache_entry,
       bool* result) {
-    *result = cache_->GetCacheEntry(resource_id, md5, cache_entry);
+    *result =
+        cache_->GetCacheEntryOnBlockingPool(resource_id, md5, cache_entry);
   }
 
   // Returns true if the cache entry exists for the given resource ID and MD5.
@@ -396,11 +397,10 @@ class DriveFileSystemTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
-    cache_->StoreOnUIThread(
-        resource_id, md5, source_path,
-        DriveCache::FILE_OPERATION_COPY,
-        base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
-                   base::Unretained(this)));
+    cache_->Store(resource_id, md5, source_path,
+                  DriveCache::FILE_OPERATION_COPY,
+                  base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
+                             base::Unretained(this)));
 
     google_apis::test_util::RunBlockingPoolTask();
   }
@@ -415,10 +415,9 @@ class DriveFileSystemTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
-    cache_->PinOnUIThread(
-        resource_id, md5,
-        base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
-                   base::Unretained(this)));
+    cache_->Pin(resource_id, md5,
+                base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
+                           base::Unretained(this)));
 
     google_apis::test_util::RunBlockingPoolTask();
   }
@@ -434,13 +433,10 @@ class DriveFileSystemTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = false;
 
-    cache_->MarkDirtyOnUIThread(
-        resource_id,
-        md5,
-        base::Bind(&DriveFileSystemTest::VerifyMarkDirty,
-                   base::Unretained(this),
-                   resource_id,
-                   md5));
+    cache_->MarkDirty(resource_id, md5,
+                      base::Bind(&DriveFileSystemTest::VerifyMarkDirty,
+                                 base::Unretained(this),
+                                 resource_id, md5));
 
     google_apis::test_util::RunBlockingPoolTask();
   }
@@ -474,10 +470,9 @@ class DriveFileSystemTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = true;
 
-    cache_->CommitDirtyOnUIThread(
-        resource_id, md5,
-        base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
-                   base::Unretained(this)));
+    cache_->CommitDirty(resource_id, md5,
+                        base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
+                                   base::Unretained(this)));
 
     google_apis::test_util::RunBlockingPoolTask();
   }

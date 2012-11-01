@@ -894,21 +894,20 @@ void DriveFileSystem::GetResolvedFileByPath(
       entry_proto->file_specific_info().file_md5(),
       DriveCache::CACHE_TYPE_TMP,
       DriveCache::CACHED_FILE_FROM_SERVER);
-  cache_->GetFileOnUIThread(
-      entry_proto->resource_id(),
-      entry_proto->file_specific_info().file_md5(),
-      base::Bind(
-          &DriveFileSystem::OnGetFileFromCache,
-          ui_weak_ptr_,
-          GetFileFromCacheParams(
-              file_path,
-              local_tmp_path,
-              GURL(entry_proto->content_url()),
-              entry_proto->resource_id(),
-              entry_proto->file_specific_info().file_md5(),
-              entry_proto->file_specific_info().content_mime_type(),
-              get_file_callback,
-              get_content_callback)));
+  cache_->GetFile(entry_proto->resource_id(),
+                  entry_proto->file_specific_info().file_md5(),
+                  base::Bind(
+                      &DriveFileSystem::OnGetFileFromCache,
+                      ui_weak_ptr_,
+                      GetFileFromCacheParams(
+                          file_path,
+                          local_tmp_path,
+                          GURL(entry_proto->content_url()),
+                          entry_proto->resource_id(),
+                          entry_proto->file_specific_info().file_md5(),
+                          entry_proto->file_specific_info().content_mime_type(),
+                          get_file_callback,
+                          get_content_callback)));
 }
 
 void DriveFileSystem::GetFileByResourceId(
@@ -1068,7 +1067,7 @@ void DriveFileSystem::CheckForSpaceBeforeDownload(
   google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
       FROM_HERE,
       blocking_task_runner_,
-      base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
+      base::Bind(&DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor,
                  base::Unretained(cache_),
                  file_size),
       base::Bind(&DriveFileSystem::StartDownloadFileIfEnoughSpace,
@@ -1353,14 +1352,13 @@ void DriveFileSystem::UpdateFileByEntryInfo(
 
   // Extract a pointer before we call Pass() so we can use it below.
   DriveEntryProto* entry_proto_ptr = entry_proto.get();
-  cache_->GetFileOnUIThread(
-      entry_proto_ptr->resource_id(),
-      entry_proto_ptr->file_specific_info().file_md5(),
-      base::Bind(&DriveFileSystem::OnGetFileCompleteForUpdateFile,
-                 ui_weak_ptr_,
-                 callback,
-                 drive_file_path,
-                 base::Passed(&entry_proto)));
+  cache_->GetFile(entry_proto_ptr->resource_id(),
+                  entry_proto_ptr->file_specific_info().file_md5(),
+                  base::Bind(&DriveFileSystem::OnGetFileCompleteForUpdateFile,
+                             ui_weak_ptr_,
+                             callback,
+                             drive_file_path,
+                             base::Passed(&entry_proto)));
 }
 
 void DriveFileSystem::OnGetFileCompleteForUpdateFile(
@@ -1726,13 +1724,12 @@ void DriveFileSystem::OnFileDownloaded(
   // If user cancels download of a pinned-but-not-fetched file, mark file as
   // unpinned so that we do not sync the file again.
   if (status == google_apis::GDATA_CANCELLED) {
-    cache_->GetCacheEntryOnUIThread(
-        params.resource_id,
-        params.md5,
-        base::Bind(&DriveFileSystem::UnpinIfPinned,
-                   ui_weak_ptr_,
-                   params.resource_id,
-                   params.md5));
+    cache_->GetCacheEntry(params.resource_id,
+                          params.md5,
+                          base::Bind(&DriveFileSystem::UnpinIfPinned,
+                                     ui_weak_ptr_,
+                                     params.resource_id,
+                                     params.md5));
   }
 
   // At this point, the disk can be full or nearly full for several reasons:
@@ -1746,7 +1743,7 @@ void DriveFileSystem::OnFileDownloaded(
   google_apis::util::PostBlockingPoolSequencedTaskAndReplyWithResult(
       FROM_HERE,
       blocking_task_runner_,
-      base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
+      base::Bind(&DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor,
                  base::Unretained(cache_),
                  0),
       base::Bind(&DriveFileSystem::OnFileDownloadedAndSpaceChecked,
@@ -1766,7 +1763,7 @@ void DriveFileSystem::UnpinIfPinned(
   // TODO(hshi): http://crbug.com/127138 notify when file properties change.
   // This allows file manager to clear the "Available offline" checkbox.
   if (success && cache_entry.is_pinned())
-    cache_->UnpinOnUIThread(resource_id, md5, CacheOperationCallback());
+    cache_->Unpin(resource_id, md5, CacheOperationCallback());
 }
 
 void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
@@ -1785,13 +1782,12 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
   // downloaded file.
   if (error == DRIVE_FILE_OK) {
     if (has_enough_space) {
-      cache_->StoreOnUIThread(
-          params.resource_id,
-          params.md5,
-          downloaded_file_path,
-          DriveCache::FILE_OPERATION_MOVE,
-          base::Bind(&DriveFileSystem::OnDownloadStoredToCache,
-                     ui_weak_ptr_));
+      cache_->Store(params.resource_id,
+                    params.md5,
+                    downloaded_file_path,
+                    DriveCache::FILE_OPERATION_MOVE,
+                    base::Bind(&DriveFileSystem::OnDownloadStoredToCache,
+                               ui_weak_ptr_));
     } else {
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
@@ -2053,18 +2049,18 @@ void DriveFileSystem::AddUploadedFileToCache(
 
   if (params->upload_mode == google_apis::UPLOAD_NEW_FILE) {
     // Add the file to the cache if we have uploaded a new file.
-    cache_->StoreOnUIThread(params->resource_id,
-                            params->md5,
-                            params->file_content_path,
-                            params->cache_operation,
-                            base::Bind(&OnCacheUpdatedForAddUploadedFile,
-                                       params->callback));
+    cache_->Store(params->resource_id,
+                  params->md5,
+                  params->file_content_path,
+                  params->cache_operation,
+                  base::Bind(&OnCacheUpdatedForAddUploadedFile,
+                             params->callback));
   } else if (params->upload_mode == google_apis::UPLOAD_EXISTING_FILE) {
     // Clear the dirty bit if we have updated an existing file.
-    cache_->ClearDirtyOnUIThread(params->resource_id,
-                                 params->md5,
-                                 base::Bind(&OnCacheUpdatedForAddUploadedFile,
-                                            params->callback));
+    cache_->ClearDirty(params->resource_id,
+                       params->md5,
+                       base::Bind(&OnCacheUpdatedForAddUploadedFile,
+                                  params->callback));
   } else {
     NOTREACHED() << "Unexpected upload mode: " << params->upload_mode;
     // Shouldn't reach here, so the line below should not make much sense, but
@@ -2119,12 +2115,12 @@ void DriveFileSystem::UpdateCacheEntryOnUIThread(
   }
 
   // Add the file to the cache if we have uploaded a new file.
-  cache_->StoreOnUIThread(params.resource_id,
-                          params.md5,
-                          params.file_content_path,
-                          DriveCache::FILE_OPERATION_MOVE,
-                          base::Bind(&OnCacheUpdatedForAddUploadedFile,
-                                     params.callback));
+  cache_->Store(params.resource_id,
+                params.md5,
+                params.file_content_path,
+                DriveCache::FILE_OPERATION_MOVE,
+                base::Bind(&OnCacheUpdatedForAddUploadedFile,
+                           params.callback));
 }
 
 DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
@@ -2282,7 +2278,7 @@ void DriveFileSystem::OnGetFileCompleteForOpenFile(
   // OpenFileOnUIThread ensures that the file is a regular file.
   DCHECK_EQ(REGULAR_FILE, file_type);
 
-  cache_->MarkDirtyOnUIThread(
+  cache_->MarkDirty(
       entry_proto.resource_id,
       entry_proto.md5,
       base::Bind(&DriveFileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
@@ -2377,7 +2373,7 @@ void DriveFileSystem::CloseFileOnUIThreadAfterGetEntryInfo(
   // if the file has not been modified. Come up with a way to detect the
   // intactness effectively, or provide a method for user to declare it when
   // calling CloseFile().
-  cache_->CommitDirtyOnUIThread(
+  cache_->CommitDirty(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5(),
       base::Bind(&DriveFileSystem::CloseFileOnUIThreadAfterCommitDirtyInCache,
@@ -2430,7 +2426,7 @@ void DriveFileSystem::CheckLocalModificationAndRun(
   // Checks if the file is cached and modified locally.
   const std::string resource_id = entry_proto->resource_id();
   const std::string md5 = entry_proto->file_specific_info().file_md5();
-  cache_->GetCacheEntryOnUIThread(
+  cache_->GetCacheEntry(
       resource_id,
       md5,
       base::Bind(
@@ -2455,7 +2451,7 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
   // Gets the cache file path.
   const std::string& resource_id = entry_proto->resource_id();
   const std::string& md5 = entry_proto->file_specific_info().file_md5();
-  cache_->GetFileOnUIThread(
+  cache_->GetFile(
       resource_id,
       md5,
       base::Bind(

@@ -107,7 +107,7 @@ void DriveSyncClient::Initialize() {
 void DriveSyncClient::StartProcessingBacklog() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  cache_->GetResourceIdsOfBacklogOnUIThread(
+  cache_->GetResourceIdsOfBacklog(
       base::Bind(&DriveSyncClient::OnGetResourceIdsOfBacklog,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -115,7 +115,7 @@ void DriveSyncClient::StartProcessingBacklog() {
 void DriveSyncClient::StartCheckingExistingPinnedFiles() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  cache_->GetResourceIdsOfExistingPinnedFilesOnUIThread(
+  cache_->GetResourceIdsOfExistingPinnedFiles(
       base::Bind(&DriveSyncClient::OnGetResourceIdsOfExistingPinnedFiles,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -325,7 +325,7 @@ void DriveSyncClient::OnGetEntryInfoByResourceId(
     return;
   }
 
-  cache_->GetCacheEntryOnUIThread(
+  cache_->GetCacheEntry(
       resource_id,
       "" /* don't check MD5 */,
       base::Bind(&DriveSyncClient::OnGetCacheEntry,
@@ -350,10 +350,9 @@ void DriveSyncClient::OnGetCacheEntry(
   // the file is dirty (the MD5 is "local"). We should never re-fetch the
   // file when we have a locally modified version.
   if (latest_md5 != cache_entry.md5() && !cache_entry.is_dirty()) {
-    cache_->RemoveOnUIThread(
-        resource_id,
-        base::Bind(&DriveSyncClient::OnRemove,
-                   weak_ptr_factory_.GetWeakPtr()));
+    cache_->Remove(resource_id,
+                   base::Bind(&DriveSyncClient::OnRemove,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -369,10 +368,10 @@ void DriveSyncClient::OnRemove(DriveFileError error,
 
   // Before fetching, we should pin this file again, so that the fetched file
   // is downloaded properly to the persistent directory and marked pinned.
-  cache_->PinOnUIThread(resource_id,
-                        md5,
-                        base::Bind(&DriveSyncClient::OnPinned,
-                                   weak_ptr_factory_.GetWeakPtr()));
+  cache_->Pin(resource_id,
+              md5,
+              base::Bind(&DriveSyncClient::OnPinned,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveSyncClient::OnPinned(DriveFileError error,

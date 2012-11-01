@@ -1401,7 +1401,7 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
   drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
   if (cache && cache->IsUnderDriveCacheDirectory(source_path)) {
-    cache->SetMountedStateOnUIThread(
+    cache->SetMountedState(
         source_path,
         true,
         base::Bind(&AddMountFunction::OnMountedStateSet, this, mount_type_str,
@@ -2308,7 +2308,7 @@ void GetDriveFilePropertiesFunction::OnOperationComplete(
     VLOG(2) << "Drive File Properties:\n" << result_json;
   }
 
-  system_service->cache()->GetCacheEntryOnUIThread(
+  system_service->cache()->GetCacheEntry(
       entry_proto->resource_id(),
       file_specific_info.file_md5(),
       base::Bind(
@@ -2375,9 +2375,9 @@ void PinDriveFileFunction::DoOperation(
                  base::Passed(&entry_proto));
 
   if (set_pin_)
-    system_service->cache()->PinOnUIThread(resource_id, md5, callback);
+    system_service->cache()->Pin(resource_id, md5, callback);
   else
-    system_service->cache()->UnpinOnUIThread(resource_id, md5, callback);
+    system_service->cache()->Unpin(resource_id, md5, callback);
 }
 
 void PinDriveFileFunction::OnPinStateSet(

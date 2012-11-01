@@ -106,7 +106,7 @@ class DriveSyncClientTest : public testing::Test {
     // Initialize the sync client.
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
-    cache_ = DriveCache::CreateDriveCacheOnUIThread(
+    cache_ = DriveCache::CreateDriveCache(
         temp_dir_.path(),
         pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
     sync_client_.reset(new DriveSyncClient(profile_.get(),
@@ -128,7 +128,7 @@ class DriveSyncClientTest : public testing::Test {
     // client registers itself as observer of NetworkLibrary.
     sync_client_->RemoveObserver(&observer_);
     sync_client_.reset();
-    cache_->DestroyOnUIThread();
+    cache_->Destroy();
     google_apis::test_util::RunBlockingPoolTask();
     mock_network_change_notifier_.reset();
   }
@@ -330,9 +330,8 @@ TEST_F(DriveSyncClientTest, StartInitialScan) {
   // Kick off the cache initialization. This will scan the contents in the
   // test cache directory.
   bool success = false;
-  cache_->RequestInitializeOnUIThread(
-      base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
-                 &success));
+  cache_->RequestInitialize(
+      base::Bind(&test_util::CopyResultFromInitializeCacheCallback, &success));
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
@@ -570,7 +569,7 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   // Kick off the cache initialization. This will scan the contents in the
   // test cache directory.
   bool initialization_success = false;
-  cache_->RequestInitializeOnUIThread(
+  cache_->RequestInitialize(
       base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
                  &initialization_success));
 

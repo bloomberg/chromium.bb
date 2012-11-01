@@ -46,7 +46,7 @@ void StaleCacheFilesRemover::OnInitialLoadFinished(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const FilePath root_path = FilePath(kDriveRootDirectory);
-  cache_->GetResourceIdsOfAllFilesOnUIThread(
+  cache_->GetResourceIdsOfAllFiles(
       base::Bind(&StaleCacheFilesRemover::OnGetResourceIdsOfAllFiles,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -57,7 +57,7 @@ void StaleCacheFilesRemover::OnGetResourceIdsOfAllFiles(
 
   for (size_t i = 0; i < resource_ids.size(); ++i) {
     const std::string& resource_id = resource_ids[i];
-    cache_->GetCacheEntryOnUIThread(
+    cache_->GetCacheEntry(
         resource_id,
         "",  // Don't check MD5.
         base::Bind(
@@ -73,9 +73,9 @@ void StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary(
     const DriveCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Removes the cache if GetCacheEntryOnUIThread() failed.
+  // Removes the cache if GetCacheEntry() failed.
   if (!success) {
-    LOG(WARNING) << "GetCacheEntryOnUIThread() failed";
+    LOG(WARNING) << "GetCacheEntry() failed";
     return;
   }
 
@@ -97,7 +97,7 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
 
   // The entry is not found in the file system.
   if (error != DRIVE_FILE_OK) {
-    cache_->RemoveOnUIThread(resource_id, base::Bind(&EmitErrorLog));
+    cache_->Remove(resource_id, base::Bind(&EmitErrorLog));
     return;
   }
 
@@ -105,7 +105,7 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
   DCHECK(entry_proto.get());
   if (!entry_proto->has_file_specific_info() ||
       cache_md5 != entry_proto->file_specific_info().file_md5()) {
-    cache_->RemoveOnUIThread(resource_id, base::Bind(&EmitErrorLog));
+    cache_->Remove(resource_id, base::Bind(&EmitErrorLog));
     return;
   }
 }

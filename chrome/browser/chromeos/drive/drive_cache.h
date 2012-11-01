@@ -29,7 +29,7 @@ class DriveCacheEntry;
 class DriveCacheMetadata;
 class DriveCacheObserver;
 
-// Callback for SetMountedStateOnUIThread and ClearAllOnUIThread.
+// Callback for SetMountedState and ClearAll.
 typedef base::Callback<void(DriveFileError error,
                             const FilePath& file_path)>
     ChangeCacheStateCallback;
@@ -44,25 +44,25 @@ typedef base::Callback<void(DriveFileError error,
                             const FilePath& cache_file_path)>
     GetFileFromCacheCallback;
 
-// Callback for GetResourceIdsOfBacklogOnUIThread.
+// Callback for GetResourceIdsOfBacklog.
 // |to_fetch| is for resource IDs of pinned-but-not-fetched files.
 // |to_upload| is for resource IDs of dirty-but-not-uploaded files.
 typedef base::Callback<void(const std::vector<std::string>& to_fetch,
                             const std::vector<std::string>& to_upload)>
     GetResourceIdsOfBacklogCallback;
 
-// Callback for GetResourceIdsOfExistingPinnedFilesOnUIThread.
+// Callback for GetResourceIdsOfExistingPinnedFiles.
 typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
     GetResourceIdsCallback;
 
-// Callback for GetCacheEntryOnUIThread.
+// Callback for GetCacheEntry.
 // |success| indicates if the operation was successful.
 // |cache_entry| is the obtained cache entry. On failure, |cache_state| is
 // set to TEST_CACHE_STATE_NONE.
 typedef base::Callback<void(bool success, const DriveCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
-// Callback for RequestInitializeOnUIThread.
+// Callback for RequestInitialize.
 // |success| indicates if the operation was successful.
 // TODO(satorux): Change this to DriveFileError when it becomes necessary.
 typedef base::Callback<void(bool success)>
@@ -71,12 +71,7 @@ typedef base::Callback<void(bool success)>
 // DriveCache is used to maintain cache states of DriveFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
-// GetCacheFilePath() for example), should be called from the sequenced
-// worker pool with the sequence token set by CreateDriveCacheOnUIThread(). This
-// threading model is enforced by AssertOnSequencedWorkerPool().
-//
-// TODO(hashimoto): Change threading model of this class to make public methods
-// being called on UI thread unless mentioned otherwise. crbug.com/132926
+// GetCacheFilePath() for example), should be called from the UI thread.
 class DriveCache {
  public:
   // Enum defining GCache subdirectory location.
@@ -131,51 +126,42 @@ class DriveCache {
   bool IsUnderDriveCacheDirectory(const FilePath& path) const;
 
   // Adds observer.
-  // Must be called on UI thread.
   void AddObserver(DriveCacheObserver* observer);
 
   // Removes observer.
-  // Must be called on UI thread.
   void RemoveObserver(DriveCacheObserver* observer);
 
-  // Gets the cache entry by the given resource ID and MD5.
-  // See also GetCacheEntry().
-  //
-  // Must be called on UI thread. |callback| is run on UI thread.
-  void GetCacheEntryOnUIThread(
-    const std::string& resource_id,
-    const std::string& md5,
-    const GetCacheEntryCallback& callback);
+  // Gets the cache entry for file corresponding to |resource_id| and |md5|
+  // and runs |callabck| with true and the entry found if entry exists in cache
+  // map.  Otherwise, runs |callback| with false.
+  // |md5| can be empty if only matching |resource_id| is desired, which may
+  // happen when looking for pinned entries where symlinks' filenames have no
+  // extension and hence no md5.
+  void GetCacheEntry(const std::string& resource_id,
+                     const std::string& md5,
+                     const GetCacheEntryCallback& callback);
 
   // Gets the resource IDs of pinned-but-not-fetched files and
   // dirty-but-not-uploaded files.
-  //
-  // Must be called on UI thread. |callback| is run on UI thread.
-  void GetResourceIdsOfBacklogOnUIThread(
-      const GetResourceIdsOfBacklogCallback& callback);
+  void GetResourceIdsOfBacklog(const GetResourceIdsOfBacklogCallback& callback);
 
   // Gets the resource IDs of all existing (i.e. cached locally) pinned
   // files, including pinned dirty files.
-  //
-  // Must be called on UI thread. |callback| is run on UI thread.
-  void GetResourceIdsOfExistingPinnedFilesOnUIThread(
+  void GetResourceIdsOfExistingPinnedFiles(
       const GetResourceIdsCallback& callback);
 
   // Gets the resource IDs of all files in the cache.
-  //
-  // Must be called on UI thread. |callback| is run on UI thread.
-  void GetResourceIdsOfAllFilesOnUIThread(
-      const GetResourceIdsCallback& callback);
+  void GetResourceIdsOfAllFiles(const GetResourceIdsCallback& callback);
 
   // Frees up disk space to store the given number of bytes, while keeping
   // kMinFreeSpace bytes on the disk, if needed.
   // Returns true when we successfully manage to have enough space.
-  bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
+  bool FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes);
 
   // Checks if file corresponding to |resource_id| and |md5| exists in cache.
-  void GetFileOnUIThread(const std::string& resource_id,
-                         const std::string& md5,
-                         const GetFileFromCacheCallback& callback);
+  void GetFile(const std::string& resource_id,
+               const std::string& md5,
+               const GetFileFromCacheCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves or copies (per |file_operation_type|) |source_path|
@@ -183,27 +169,27 @@ class DriveCache {
   // - if necessary, creates symlink
   // - deletes stale cached versions of |resource_id| in
   // |dest_path|'s directory.
-  void StoreOnUIThread(const std::string& resource_id,
-                       const std::string& md5,
-                       const FilePath& source_path,
-                       FileOperationType file_operation_type,
-                       const CacheOperationCallback& callback);
+  void Store(const std::string& resource_id,
+             const std::string& md5,
+             const FilePath& source_path,
+             FileOperationType file_operation_type,
+             const CacheOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir if
   //   file is not dirty
   // - creates symlink in pinned dir that references downloaded or locally
   //   modified file
-  void PinOnUIThread(const std::string& resource_id,
-                     const std::string& md5,
-                     const CacheOperationCallback& callback);
+  void Pin(const std::string& resource_id,
+           const std::string& md5,
+           const CacheOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in tmp dir if file is not dirty
   // - deletes symlink from pinned dir
-  void UnpinOnUIThread(const std::string& resource_id,
-                       const std::string& md5,
-                       const CacheOperationCallback& callback);
+  void Unpin(const std::string& resource_id,
+             const std::string& md5,
+             const CacheOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path|, where
@@ -212,23 +198,23 @@ class DriveCache {
   //       and has .<md5>.mounted extension;
   //   if we're unmounting: the opposite is true for the two paths, i.e.
   //       |dest_path| is the mounted path and |source_path| the unmounted path.
-  void SetMountedStateOnUIThread(const FilePath& file_path,
-                                 bool to_mount,
-                                 const ChangeCacheStateCallback& callback);
+  void SetMountedState(const FilePath& file_path,
+                       bool to_mount,
+                       const ChangeCacheStateCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir, where
   //   |source_path| has .<md5> extension and |dest_path| has .local extension
   // - if file is pinned, updates symlink in pinned dir to reference dirty file
-  void MarkDirtyOnUIThread(const std::string& resource_id,
-                           const std::string& md5,
-                           const GetFileFromCacheCallback& callback);
+  void MarkDirty(const std::string& resource_id,
+                 const std::string& md5,
+                 const GetFileFromCacheCallback& callback);
 
   // Modifies cache state, i.e. creates symlink in outgoing
   // dir to reference dirty file in persistent dir.
-  void CommitDirtyOnUIThread(const std::string& resource_id,
-                             const std::string& md5,
-                             const CacheOperationCallback& callback);
+  void CommitDirty(const std::string& resource_id,
+                   const std::string& md5,
+                   const CacheOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir if
@@ -237,42 +223,38 @@ class DriveCache {
   // - deletes symlink in outgoing dir
   // - if file is pinned, updates symlink in pinned dir to reference
   //   |dest_path|
-  void ClearDirtyOnUIThread(const std::string& resource_id,
-                            const std::string& md5,
-                            const CacheOperationCallback& callback);
+  void ClearDirty(const std::string& resource_id,
+                  const std::string& md5,
+                  const CacheOperationCallback& callback);
 
   // Does the following:
   // - remove all delete stale cache versions corresponding to |resource_id| in
   //   persistent, tmp and pinned directories
   // - remove entry corresponding to |resource_id| from cache map.
-  void RemoveOnUIThread(const std::string& resource_id,
-                        const CacheOperationCallback& callback);
+  void Remove(const std::string& resource_id,
+              const CacheOperationCallback& callback);
 
   // Does the following:
   // - remove all the files in the cache directory.
   // - re-create the |metadata_| instance.
-  void ClearAllOnUIThread(const ChangeCacheStateCallback& callback);
+  void ClearAll(const ChangeCacheStateCallback& callback);
 
   // Utility method to call Initialize on UI thread. |callback| is called on
   // UI thread when the initialization is complete.
   // |callback| must not be null.
-  void RequestInitializeOnUIThread(
-      const InitializeCacheCallback& callback);
+  void RequestInitialize(const InitializeCacheCallback& callback);
 
   // Utility method to call InitializeForTesting on UI thread.
-  void RequestInitializeOnUIThreadForTesting();
+  void RequestInitializeForTesting();
 
   // Force a rescan of cache files, for testing.
-  void ForceRescanOnUIThreadForTesting();
+  void ForceRescanForTesting();
 
-  // Gets the cache entry for file corresponding to |resource_id| and |md5|
-  // and returns true if entry exists in cache map.  Otherwise, returns false.
-  // |md5| can be empty if only matching |resource_id| is desired, which may
-  // happen when looking for pinned entries where symlinks' filenames have no
-  // extension and hence no md5.
-  bool GetCacheEntry(const std::string& resource_id,
-                     const std::string& md5,
-                     DriveCacheEntry* entry);
+  // Gets the cache entry by the given resource ID and MD5.
+  // See also GetCacheEntry().
+  bool GetCacheEntryOnBlockingPool(const std::string& resource_id,
+                                   const std::string& md5,
+                                   DriveCacheEntry* entry);
 
   // Factory methods for DriveCache.
   // |pool| and |sequence_token| are used to assert that the functions are
@@ -280,12 +262,12 @@ class DriveCache {
   //
   // For testing, the thread assertion can be disabled by passing NULL and
   // the default value of SequenceToken.
-  static DriveCache* CreateDriveCacheOnUIThread(
+  static DriveCache* CreateDriveCache(
       const FilePath& cache_root_path,
       base::SequencedTaskRunner* blocking_task_runner);
 
   // Deletes the cache.
-  void DestroyOnUIThread();
+  void Destroy();
 
   // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
   // profile.
@@ -317,87 +299,87 @@ class DriveCache {
   void AssertOnSequencedWorkerPool();
 
   // Initializes the cache. The result will be stored in |success|.
-  void Initialize(bool* success);
+  void InitializeOnBlockingPool(bool* success);
 
   // Initializes the cache with in-memory cache for testing.
   // The in-memory cache is used since it's faster than the db.
-  void InitializeForTesting();
+  void InitializeOnBlockingPoolForTesting();
 
   // Deletes the cache.
-  void Destroy();
+  void DestroyOnBlockingPool();
 
   // Force a rescan of cache directories.
-  void ForceRescanForTesting();
+  void ForceRescanOnBlockingPoolForTesting();
 
-  // Used to implement GetResourceIdsOfBacklogOnUIThread.
-  void GetResourceIdsOfBacklog(
+  // Used to implement GetResourceIdsOfBacklog.
+  void GetResourceIdsOfBacklogOnBlockingPool(
       std::vector<std::string>* to_fetch,
       std::vector<std::string>* to_upload);
 
-  // Used to implement GetResourceIdsOfExistingPinnedFilesOnUIThread.
-  void GetResourceIdsOfExistingPinnedFiles(
+  // Used to implement GetResourceIdsOfExistingPinnedFiles.
+  void GetResourceIdsOfExistingPinnedFilesOnBlockingPool(
       std::vector<std::string>* resource_ids);
 
-  // Used to implement GetResourceIdsOfAllFilesOnUIThread.
-  void GetResourceIdsOfAllFiles(
+  // Used to implement GetResourceIdsOfAllFiles.
+  void GetResourceIdsOfAllFilesOnBlockingPool(
       std::vector<std::string>* resource_ids);
 
-  // Used to implement GetFileOnUIThread.
-  void GetFile(const std::string& resource_id,
-               const std::string& md5,
-               DriveFileError* error,
-               FilePath* cache_file_path);
+  // Used to implement GetFile.
+  void GetFileOnBlockingPool(const std::string& resource_id,
+                             const std::string& md5,
+                             DriveFileError* error,
+                             FilePath* cache_file_path);
 
-  // Used to implement StoreOnUIThread.
-  void Store(const std::string& resource_id,
-             const std::string& md5,
-             const FilePath& source_path,
-             FileOperationType file_operation_type,
-             DriveFileError* error);
+  // Used to implement Store.
+  void StoreOnBlockingPool(const std::string& resource_id,
+                           const std::string& md5,
+                           const FilePath& source_path,
+                           FileOperationType file_operation_type,
+                           DriveFileError* error);
 
-  // Used to implement PinOnUIThread.
-  void Pin(const std::string& resource_id,
-           const std::string& md5,
-           FileOperationType file_operation_type,
-           DriveFileError* error);
+  // Used to implement Pin.
+  void PinOnBlockingPool(const std::string& resource_id,
+                         const std::string& md5,
+                         FileOperationType file_operation_type,
+                         DriveFileError* error);
 
-  // Used to implement UnpinOnUIThread.
-  void Unpin(const std::string& resource_id,
-             const std::string& md5,
-             FileOperationType file_operation_type,
-             DriveFileError* error);
+  // Used to implement Unpin.
+  void UnpinOnBlockingPool(const std::string& resource_id,
+                           const std::string& md5,
+                           FileOperationType file_operation_type,
+                           DriveFileError* error);
 
-  // Used to implement SetMountedStateOnUIThread.
-  void SetMountedState(const FilePath& file_path,
-                       bool to_mount,
-                       DriveFileError* error,
-                       FilePath* cache_file_path);
+  // Used to implement SetMountedState.
+  void SetMountedStateOnBlockingPool(const FilePath& file_path,
+                                     bool to_mount,
+                                     DriveFileError* error,
+                                     FilePath* cache_file_path);
 
-  // Used to implement MarkDirtyOnUIThread.
-  void MarkDirty(const std::string& resource_id,
-                 const std::string& md5,
-                 FileOperationType file_operation_type,
-                 DriveFileError* error,
-                 FilePath* cache_file_path);
+  // Used to implement MarkDirty.
+  void MarkDirtyOnBlockingPool(const std::string& resource_id,
+                               const std::string& md5,
+                               FileOperationType file_operation_type,
+                               DriveFileError* error,
+                               FilePath* cache_file_path);
 
-  // Used to implement CommitDirtyOnUIThread.
-  void CommitDirty(const std::string& resource_id,
-                   const std::string& md5,
-                   FileOperationType file_operation_type,
-                   DriveFileError* error);
+  // Used to implement CommitDirty.
+  void CommitDirtyOnBlockingPool(const std::string& resource_id,
+                                 const std::string& md5,
+                                 FileOperationType file_operation_type,
+                                 DriveFileError* error);
 
-  // Used to implement ClearDirtyOnUIThread.
-  void ClearDirty(const std::string& resource_id,
-                  const std::string& md5,
-                  FileOperationType file_operation_type,
-                  DriveFileError* error);
+  // Used to implement ClearDirty.
+  void ClearDirtyOnBlockingPool(const std::string& resource_id,
+                                const std::string& md5,
+                                FileOperationType file_operation_type,
+                                DriveFileError* error);
 
-  // Used to implement RemoveOnUIThread.
-  void Remove(const std::string& resource_id,
-              DriveFileError* error);
+  // Used to implement Remove.
+  void RemoveOnBlockingPool(const std::string& resource_id,
+                            DriveFileError* error);
 
-  // Used to implement ClearAllUIThread.
-  void ClearAll(DriveFileError* error);
+  // Used to implement ClearAll.
+  void ClearAllOnBlockingPool(DriveFileError* error);
 
   // Runs callback and notifies the observers when file is pinned.
   void OnPinned(DriveFileError* error,
@@ -417,7 +399,7 @@ class DriveCache {
                      const std::string& md5,
                      const CacheOperationCallback& callback);
 
-  // Helper function to implement GetCacheEntryOnUIThread().
+  // Helper function to implement GetCacheEntry().
   void GetCacheEntryHelper(const std::string& resource_id,
                            const std::string& md5,
                            bool* success,
@@ -460,8 +442,7 @@ class FreeDiskSpaceGetterInterface {
 
 // Sets the free disk space getter for testing.
 // The existing getter is deleted.
-void SetFreeDiskSpaceGetterForTesting(
-    FreeDiskSpaceGetterInterface* getter);
+void SetFreeDiskSpaceGetterForTesting(FreeDiskSpaceGetterInterface* getter);
 
 }  // namespace drive
 

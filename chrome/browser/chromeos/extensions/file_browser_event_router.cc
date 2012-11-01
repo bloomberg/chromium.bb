@@ -365,7 +365,7 @@ void FileBrowserEventRouter::MountCompleted(
       drive::DriveCache* cache =
           system_service ? system_service->cache() : NULL;
       if (cache) {
-        cache->SetMountedStateOnUIThread(
+        cache->SetMountedState(
             source_path, false, drive::ChangeCacheStateCallback());
       }
     }

@@ -45,7 +45,7 @@ namespace {
 
 const int64 kLotsOfSpace = kMinFreeSpace * 10;
 
-// Callback for DriveCache::StoreOnUIThread used in RemoveStaleCacheFiles test.
+// Callback for DriveCache::Store used in RemoveStaleCacheFiles test.
 // Verifies that the result is not an error.
 void VerifyCacheFileState(DriveFileError error,
                           const std::string& resource_id,
@@ -87,7 +87,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_ = DriveCache::CreateDriveCacheOnUIThread(
+    cache_ = DriveCache::CreateDriveCache(
         DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
     mock_uploader_.reset(new StrictMock<google_apis::MockDriveUploader>);
@@ -108,7 +108,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     file_system_->AddObserver(mock_directory_observer_.get());
 
     file_system_->Initialize();
-    cache_->RequestInitializeOnUIThreadForTesting();
+    cache_->RequestInitializeForTesting();
 
     stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system_,
                                                                 cache_));
@@ -125,7 +125,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     delete mock_drive_service_;
     mock_drive_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
-    cache_->DestroyOnUIThread();
+    cache_->Destroy();
     // The cache destruction requires to post a task to the blocking pool.
     google_apis::test_util::RunBlockingPoolTask();
 
@@ -162,9 +162,8 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
   // Create a stale cache file.
-  cache_->StoreOnUIThread(resource_id, md5, dummy_file,
-                          DriveCache::FILE_OPERATION_COPY,
-                          base::Bind(&VerifyCacheFileState));
+  cache_->Store(resource_id, md5, dummy_file, DriveCache::FILE_OPERATION_COPY,
+                base::Bind(&VerifyCacheFileState));
   google_apis::test_util::RunBlockingPoolTask();
 
   // Verify that the cache file exists.
