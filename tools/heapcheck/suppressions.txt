@@ -1605,3 +1605,11 @@
   fun:ProfileKeyedServiceFactory::SetTestingFactoryAndUse
   fun:VisitedLinkEventsTest::SetUp
 }
+{
+  bug_132431
+  Heapcheck:Leak
+  ...
+  fun:gfx::::LoadDefaults
+  ...
+  fun:::ChromeToMobileServiceTest_RequirementsToEnable_Test::TestBody
+}
