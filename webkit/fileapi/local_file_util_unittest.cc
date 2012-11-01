@@ -133,6 +133,60 @@ TEST_F(LocalFileUtilTest, EnsureFileExists) {
   EXPECT_FALSE(created);
 }
 
+TEST_F(LocalFileUtilTest, TouchFile) {
+  const char *file_name = "test_file";
+  base::PlatformFile file_handle;
+  bool created;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            CreateFile(file_name, &file_handle, &created));
+  ASSERT_TRUE(created);
+
+  scoped_ptr<FileSystemOperationContext> context(NewContext());
+
+  base::PlatformFileInfo info;
+  ASSERT_TRUE(file_util::GetFileInfo(LocalPath(file_name), &info));
+  const base::Time new_accessed =
+      info.last_accessed + base::TimeDelta::FromHours(10);
+  const base::Time new_modified =
+      info.last_modified + base::TimeDelta::FromHours(5);
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            FileUtil()->Touch(context.get(), Path(file_name),
+                              new_accessed, new_modified));
+
+  ASSERT_TRUE(file_util::GetFileInfo(LocalPath(file_name), &info));
+  EXPECT_EQ(new_accessed, info.last_accessed);
+  EXPECT_EQ(new_modified, info.last_modified);
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            FileUtil()->Close(context.get(), file_handle));
+}
+
+TEST_F(LocalFileUtilTest, TouchDirectory) {
+  const char *dir_name = "test_dir";
+  scoped_ptr<FileSystemOperationContext> context(NewContext());
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            FileUtil()->CreateDirectory(context.get(),
+                                        Path(dir_name),
+                                        false /* exclusive */,
+                                        false /* recursive */));
+
+  base::PlatformFileInfo info;
+  ASSERT_TRUE(file_util::GetFileInfo(LocalPath(dir_name), &info));
+  const base::Time new_accessed =
+      info.last_accessed + base::TimeDelta::FromHours(10);
+  const base::Time new_modified =
+      info.last_modified + base::TimeDelta::FromHours(5);
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            FileUtil()->Touch(context.get(), Path(dir_name),
+                              new_accessed, new_modified));
+
+  ASSERT_TRUE(file_util::GetFileInfo(LocalPath(dir_name), &info));
+  EXPECT_EQ(new_accessed, info.last_accessed);
+  EXPECT_EQ(new_modified, info.last_modified);
+}
+
 TEST_F(LocalFileUtilTest, Truncate) {
   const char *file_name = "truncated";
   bool created;

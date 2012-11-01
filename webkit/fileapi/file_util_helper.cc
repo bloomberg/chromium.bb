@@ -231,8 +231,6 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
   }
 
   if (operation_ == OPERATION_MOVE) {
-#ifndef OS_WIN
-    // TODO(nhiroki): Support Windows (http://crbug.com/137807).
     // Restore modified timestamp of destination directories.
     for (MovedDirectories::const_iterator it(directories.begin());
          it != directories.end(); ++it) {
@@ -240,7 +238,6 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
       if (error != base::PLATFORM_FILE_OK)
         return error;
     }
-#endif
 
     error = FileUtilHelper::Delete(
         context_, src_util_, src_url, true /* recursive */);
