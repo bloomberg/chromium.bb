@@ -48,6 +48,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(IsCurrentUserEphemeral, bool(void));
   MOCK_CONST_METHOD0(IsUserLoggedIn, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsDemoUser, bool(void));
+  MOCK_CONST_METHOD0(IsLoggedInAsPublicAccount, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_CONST_METHOD0(IsSessionStarted, bool(void));

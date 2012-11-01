@@ -167,6 +167,9 @@ class UserManager {
   // Returns true if we're logged in as a demo user.
   virtual bool IsLoggedInAsDemoUser() const = 0;
 
+  // Returns true if we're logged in as a public account.
+  virtual bool IsLoggedInAsPublicAccount() const = 0;
+
   // Returns true if we're logged in as a Guest.
   virtual bool IsLoggedInAsGuest() const = 0;
 

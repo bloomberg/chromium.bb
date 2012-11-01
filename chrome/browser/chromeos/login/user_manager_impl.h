@@ -72,6 +72,7 @@ class UserManagerImpl : public UserManager,
   virtual bool IsCurrentUserEphemeral() const OVERRIDE;
   virtual bool IsUserLoggedIn() const OVERRIDE;
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
+  virtual bool IsLoggedInAsPublicAccount() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;

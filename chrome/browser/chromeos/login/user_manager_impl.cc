@@ -501,6 +501,13 @@ bool UserManagerImpl::IsLoggedInAsDemoUser() const {
   return IsUserLoggedIn() && logged_in_user_->email() == kDemoUser;
 }
 
+bool UserManagerImpl::IsLoggedInAsPublicAccount() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // TODO(bartfab): Wire this up once it is actually possible to log into a
+  // public account (crbug.com/158509).
+  return IsUserLoggedIn() && false;
+}
+
 bool UserManagerImpl::IsLoggedInAsGuest() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return IsUserLoggedIn() && logged_in_user_->email() == kGuestUser;
