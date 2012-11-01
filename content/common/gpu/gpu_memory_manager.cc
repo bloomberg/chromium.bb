@@ -36,17 +36,13 @@ bool IsInSameContextShareGroupAsAnyOf(
 }
 
 void AssignMemoryAllocations(
-    GpuMemoryManager::StubMemoryStatMap* stub_memory_stats,
     const std::vector<GpuCommandBufferStubBase*>& stubs,
-    GpuMemoryAllocation allocation,
-    bool visible) {
+    const GpuMemoryAllocation& allocation) {
   for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
           stubs.begin();
       it != stubs.end();
       ++it) {
     (*it)->SetMemoryAllocation(allocation);
-    (*stub_memory_stats)[*it].allocation = allocation;
-    (*stub_memory_stats)[*it].visible = visible;
   }
 }
 
@@ -365,46 +361,34 @@ void GpuMemoryManager::Manage() {
     stubs_with_surface_foreground_allocation = GetMaximumTabAllocation();
 
   // Now give out allocations to everyone.
-  stub_memory_stats_for_last_manage_.clear();
   AssignMemoryAllocations(
-      &stub_memory_stats_for_last_manage_,
       stubs_with_surface_foreground,
       GpuMemoryAllocation(stubs_with_surface_foreground_allocation,
-          GpuMemoryAllocation::kHasFrontbuffer |
-          GpuMemoryAllocation::kHasBackbuffer),
-      true);
+                          GpuMemoryAllocation::kHasFrontbuffer));
 
   AssignMemoryAllocations(
-      &stub_memory_stats_for_last_manage_,
       stubs_with_surface_background,
-      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasFrontbuffer),
-      false);
+      GpuMemoryAllocation(stubs_with_surface_foreground_allocation,
+                          GpuMemoryAllocation::kHasFrontbuffer));
 
   AssignMemoryAllocations(
-      &stub_memory_stats_for_last_manage_,
       stubs_with_surface_hibernated,
-      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers),
-      false);
+      GpuMemoryAllocation(stubs_with_surface_foreground_allocation,
+                          GpuMemoryAllocation::kHasNoFrontbuffer));
 
   AssignMemoryAllocations(
-      &stub_memory_stats_for_last_manage_,
       stubs_without_surface_foreground,
       GpuMemoryAllocation(GetMinimumTabAllocation(),
-          GpuMemoryAllocation::kHasNoBuffers),
-      true);
+                          GpuMemoryAllocation::kHasNoFrontbuffer));
 
   AssignMemoryAllocations(
-      &stub_memory_stats_for_last_manage_,
       stubs_without_surface_background,
       GpuMemoryAllocation(GetMinimumTabAllocation(),
-          GpuMemoryAllocation::kHasNoBuffers),
-      false);
+                          GpuMemoryAllocation::kHasNoFrontbuffer));
 
   AssignMemoryAllocations(
-      &stub_memory_stats_for_last_manage_,
       stubs_without_surface_hibernated,
-      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers),
-      false);
+      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoFrontbuffer));
 }
 
 }  // namespace content

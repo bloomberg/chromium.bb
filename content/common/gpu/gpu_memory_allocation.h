@@ -47,18 +47,17 @@ struct GpuMemoryAllocationForRenderer {
         priority_cutoff_when_visible(kPriorityCutoffAllowNothing),
         bytes_limit_when_not_visible(0),
         priority_cutoff_when_not_visible(kPriorityCutoffAllowNothing),
-        have_backbuffer_when_not_visible(0),
-        enforce_but_do_not_keep_as_policy(0) {
+        have_backbuffer_when_not_visible(false),
+        enforce_but_do_not_keep_as_policy(false) {
   }
 
-  GpuMemoryAllocationForRenderer(size_t bytes_limit_when_visible,
-                                 bool have_backbuffer_when_not_visible)
+  GpuMemoryAllocationForRenderer(size_t bytes_limit_when_visible)
       : bytes_limit_when_visible(bytes_limit_when_visible),
         priority_cutoff_when_visible(kPriorityCutoffAllowEverything),
         bytes_limit_when_not_visible(0),
         priority_cutoff_when_not_visible(kPriorityCutoffAllowNothing),
-        have_backbuffer_when_not_visible(have_backbuffer_when_not_visible),
-        enforce_but_do_not_keep_as_policy(0) {
+        have_backbuffer_when_not_visible(false),
+        enforce_but_do_not_keep_as_policy(false) {
   }
 
   bool Equals(const GpuMemoryAllocationForRenderer& other) const {
@@ -98,22 +97,18 @@ struct GpuMemoryAllocation {
   GpuMemoryAllocationForRenderer renderer_allocation;
   GpuMemoryAllocationForBrowser browser_allocation;
 
-  // Bitmap
   enum BufferAllocation {
-    kHasNoBuffers = 0,
+    kHasNoFrontbuffer = 0,
     kHasFrontbuffer = 1,
-    kHasBackbuffer = 2
   };
 
   GpuMemoryAllocation() {
   }
 
   GpuMemoryAllocation(size_t gpu_resource_size_in_bytes,
-                      int allocationBitmap)
-      : renderer_allocation(gpu_resource_size_in_bytes,
-            (allocationBitmap & kHasBackbuffer) == kHasBackbuffer),
-        browser_allocation(
-            (allocationBitmap & kHasFrontbuffer) == kHasFrontbuffer) {
+                      BufferAllocation buffer_allocation)
+      : renderer_allocation(gpu_resource_size_in_bytes),
+        browser_allocation(buffer_allocation == kHasFrontbuffer) {
   }
 
   bool Equals(const GpuMemoryAllocation& other) const {

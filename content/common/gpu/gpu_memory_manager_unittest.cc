@@ -11,6 +11,35 @@
 
 namespace content {
 
+// This class is used to collect all stub assignments during a
+// Manage() call.
+class StubAssignmentCollector {
+ public:
+  struct StubMemoryStat {
+    GpuMemoryAllocation allocation;
+  };
+  typedef base::hash_map<GpuCommandBufferStubBase*, StubMemoryStat>
+      StubMemoryStatMap;
+
+  static const StubMemoryStatMap& GetStubStatsForLastManage() {
+    return stub_memory_stats_for_last_manage_;
+  }
+  static void ClearAllStats() {
+    stub_memory_stats_for_last_manage_.clear();
+  }
+  static void AddStubStat(GpuCommandBufferStubBase* stub,
+                   const GpuMemoryAllocation& allocation) {
+    DCHECK(!stub_memory_stats_for_last_manage_.count(stub));
+    stub_memory_stats_for_last_manage_[stub].allocation = allocation;
+  }
+
+ private:
+  static StubMemoryStatMap stub_memory_stats_for_last_manage_;
+};
+
+StubAssignmentCollector::StubMemoryStatMap
+    StubAssignmentCollector::stub_memory_stats_for_last_manage_;
+
 class FakeCommandBufferStub : public GpuCommandBufferStubBase {
  public:
   MemoryManagerState memory_manager_state_;
@@ -42,6 +71,7 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
   }
   virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
     allocation_ = alloc;
+    StubAssignmentCollector::AddStubStat(this, alloc);
   }
   virtual bool GetTotalGpuMemory(size_t* bytes) {
     return false;
@@ -74,6 +104,7 @@ class FakeCommandBufferStubWithoutSurface : public GpuCommandBufferStubBase {
   }
   virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
     allocation_ = alloc;
+    StubAssignmentCollector::AddStubStat(this, alloc);
   }
   virtual bool GetTotalGpuMemory(size_t* bytes) {
     return false;
@@ -117,7 +148,7 @@ class GpuMemoryManagerTest : public testing::Test {
   bool IsAllocationForegroundForSurfaceYes(
       const GpuMemoryAllocation& alloc) {
     return alloc.browser_allocation.suggest_have_frontbuffer &&
-           alloc.renderer_allocation.have_backbuffer_when_not_visible &&
+           !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
            alloc.renderer_allocation.bytes_limit_when_visible >=
                GetMinimumTabAllocation();
   }
@@ -125,13 +156,13 @@ class GpuMemoryManagerTest : public testing::Test {
       const GpuMemoryAllocation& alloc) {
     return alloc.browser_allocation.suggest_have_frontbuffer &&
            !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
-           alloc.renderer_allocation.bytes_limit_when_visible == 0;
+           alloc.renderer_allocation.bytes_limit_when_not_visible == 0;
   }
   bool IsAllocationHibernatedForSurfaceYes(
       const GpuMemoryAllocation& alloc) {
     return !alloc.browser_allocation.suggest_have_frontbuffer &&
            !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
-           alloc.renderer_allocation.bytes_limit_when_visible == 0;
+           alloc.renderer_allocation.bytes_limit_when_not_visible == 0;
   }
   bool IsAllocationForegroundForSurfaceNo(
       const GpuMemoryAllocation& alloc) {
@@ -155,6 +186,7 @@ class GpuMemoryManagerTest : public testing::Test {
   }
 
   void Manage() {
+    StubAssignmentCollector::ClearAllStats();
     memory_manager_.Manage();
   }
 
@@ -581,21 +613,22 @@ TEST_F(GpuMemoryManagerTest, GpuMemoryAllocationCompareTests) {
   gpu_resource_size_in_bytes_values.push_back(1);
   gpu_resource_size_in_bytes_values.push_back(12345678);
 
-  std::vector<int> suggested_buffer_allocation_values;
-  suggested_buffer_allocation_values.push_back(
-      GpuMemoryAllocation::kHasFrontbuffer |
-      GpuMemoryAllocation::kHasBackbuffer);
+  std::vector<GpuMemoryAllocation::BufferAllocation>
+      suggested_buffer_allocation_values;
   suggested_buffer_allocation_values.push_back(
       GpuMemoryAllocation::kHasFrontbuffer);
   suggested_buffer_allocation_values.push_back(
-      GpuMemoryAllocation::kHasBackbuffer);
+      GpuMemoryAllocation::kHasFrontbuffer);
   suggested_buffer_allocation_values.push_back(
-      GpuMemoryAllocation::kHasNoBuffers);
+      GpuMemoryAllocation::kHasNoFrontbuffer);
+  suggested_buffer_allocation_values.push_back(
+      GpuMemoryAllocation::kHasNoFrontbuffer);
 
   for(size_t i = 0; i != gpu_resource_size_in_bytes_values.size(); ++i) {
     for(size_t j = 0; j != suggested_buffer_allocation_values.size(); ++j) {
       int sz = gpu_resource_size_in_bytes_values[i];
-      int buffer_allocation = suggested_buffer_allocation_values[j];
+      GpuMemoryAllocation::BufferAllocation buffer_allocation =
+          suggested_buffer_allocation_values[j];
       GpuMemoryAllocation allocation(sz, buffer_allocation);
 
       EXPECT_TRUE(allocation.Equals(
@@ -604,7 +637,8 @@ TEST_F(GpuMemoryManagerTest, GpuMemoryAllocationCompareTests) {
           GpuMemoryAllocation(sz+1, buffer_allocation)));
 
       for(size_t k = 0; k != suggested_buffer_allocation_values.size(); ++k) {
-        int buffer_allocation_other = suggested_buffer_allocation_values[k];
+        GpuMemoryAllocation::BufferAllocation buffer_allocation_other =
+            suggested_buffer_allocation_values[k];
         if (buffer_allocation == buffer_allocation_other) continue;
         EXPECT_FALSE(allocation.Equals(
             GpuMemoryAllocation(sz, buffer_allocation_other)));
@@ -623,36 +657,35 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   const bool compositors_get_bonus_allocation = false;
 #endif
 
-  GpuMemoryManager::StubMemoryStatMap stats;
+  StubAssignmentCollector::StubMemoryStatMap stats;
 
   Manage();
-  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  stats = StubAssignmentCollector::GetStubStatsForLastManage();
   EXPECT_EQ(stats.size(), 0ul);
 
   FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_);
   client_.stubs_.push_back(&stub1);
   Manage();
-  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  stats = StubAssignmentCollector::GetStubStatsForLastManage();
   size_t stub1allocation1 =
       stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 1ul);
-  EXPECT_TRUE(stats[&stub1].visible);
   EXPECT_GT(stub1allocation1, 0ul);
 
   FakeCommandBufferStubWithoutSurface stub2;
   client_.stubs_.push_back(&stub2);
   stub2.share_group_.push_back(&stub1);
   Manage();
-  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  stats = StubAssignmentCollector::GetStubStatsForLastManage();
+  EXPECT_EQ(stats.count(&stub1), 1ul);
   size_t stub1allocation2 =
       stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
+  EXPECT_EQ(stats.count(&stub2), 1ul);
   size_t stub2allocation2 =
       stats[&stub2].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 2ul);
-  EXPECT_TRUE(stats[&stub1].visible);
-  EXPECT_TRUE(stats[&stub2].visible);
   EXPECT_GT(stub1allocation2, 0ul);
   EXPECT_GT(stub2allocation2, 0ul);
   if (compositors_get_bonus_allocation &&
@@ -662,7 +695,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   FakeCommandBufferStub stub3(GenerateUniqueSurfaceId(), true, older_);
   client_.stubs_.push_back(&stub3);
   Manage();
-  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  stats = StubAssignmentCollector::GetStubStatsForLastManage();
   size_t stub1allocation3 =
       stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
   size_t stub2allocation3 =
@@ -671,9 +704,6 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
       stats[&stub3].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 3ul);
-  EXPECT_TRUE(stats[&stub1].visible);
-  EXPECT_TRUE(stats[&stub2].visible);
-  EXPECT_TRUE(stats[&stub3].visible);
   EXPECT_GT(stub1allocation3, 0ul);
   EXPECT_GT(stub2allocation3, 0ul);
   EXPECT_GT(stub3allocation3, 0ul);
@@ -683,7 +713,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
 
   stub1.memory_manager_state_.visible = false;
   Manage();
-  stats = memory_manager_.stub_memory_stats_for_last_manage();
+  stats = StubAssignmentCollector::GetStubStatsForLastManage();
   size_t stub1allocation4 =
       stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
   size_t stub2allocation4 =
@@ -692,10 +722,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
       stats[&stub3].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 3ul);
-  EXPECT_FALSE(stats[&stub1].visible);
-  EXPECT_FALSE(stats[&stub2].visible);
-  EXPECT_TRUE(stats[&stub3].visible);
-  EXPECT_EQ(stub1allocation4, 0ul);
+  EXPECT_GT(stub1allocation4, 0ul);
   EXPECT_GE(stub2allocation4, 0ul);
   EXPECT_GT(stub3allocation4, 0ul);
   if (compositors_get_bonus_allocation &&

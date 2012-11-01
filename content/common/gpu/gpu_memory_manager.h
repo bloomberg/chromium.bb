@@ -50,14 +50,6 @@ class CONTENT_EXPORT GpuMemoryManager :
  public:
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
 
-
-  // StubMemoryStat is used to store memory-allocation-related information about
-  // a GpuCommandBufferStubBase for some time point.
-  struct StubMemoryStat {
-    bool visible;
-    GpuMemoryAllocation allocation;
-  };
-
   GpuMemoryManager(GpuMemoryManagerClient* client,
                    size_t max_surfaces_with_frontbuffer_soft_limit);
   ~GpuMemoryManager();
@@ -77,16 +69,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   // Add and remove structures to track context groups' memory consumption
   void AddTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
   void RemoveTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
-
-  // Returns StubMemoryStat's for each GpuCommandBufferStubBase, which were
-  // assigned during the most recent call to Manage().
-  // Useful for tracking the memory-allocation-related presumed state of the
-  // system, as seen by GpuMemoryManager.
-  typedef base::hash_map<GpuCommandBufferStubBase*, StubMemoryStat>
-      StubMemoryStatMap;
-  const StubMemoryStatMap& stub_memory_stats_for_last_manage() const {
-    return stub_memory_stats_for_last_manage_;
-  }
 
   // Track a change in memory allocated by any context
   void TrackMemoryAllocatedChange(size_t old_size, size_t new_size);
@@ -159,8 +141,6 @@ size_t GetMaximumTabAllocation() const {
   bool manage_immediate_scheduled_;
 
   size_t max_surfaces_with_frontbuffer_soft_limit_;
-
-  StubMemoryStatMap stub_memory_stats_for_last_manage_;
 
   // The maximum amount of memory that may be allocated for GPU resources
   size_t bytes_available_gpu_memory_;
