@@ -152,7 +152,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     private int mNativeChromeBrowserProvider;
     private BookmarkNode mMobileBookmarksFolder;
 
-    synchronized private void ensureUriMatcherInitialized() {
+    private void ensureUriMatcherInitialized() {
         synchronized (mInitializeUriMatcherLock) {
             if (mUriMatcher != null) return;
 
