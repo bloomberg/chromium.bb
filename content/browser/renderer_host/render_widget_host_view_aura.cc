@@ -700,7 +700,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
       &RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished,
       AsWeakPtr(),
       callback);
-  pending_thumbnail_tasks_.push_back(callback);
+  ++pending_thumbnail_tasks_;
 
   // Convert |src_subrect| from the views coordinate (upper-left origin) into
   // the OpenGL coordinate (lower-left origin).
@@ -987,7 +987,7 @@ void RenderWidgetHostViewAura::AdjustSurfaceProtection() {
       current_surface_ ||
       !host_->is_hidden() ||
       (current_surface_is_protected_ &&
-          (!pending_thumbnail_tasks_.empty() ||
+          (pending_thumbnail_tasks_ > 0 ||
               current_surface_in_use_by_compositor_));
   if (current_surface_is_protected_ == surface_is_protected)
     return;
@@ -1005,15 +1005,15 @@ void RenderWidgetHostViewAura::AdjustSurfaceProtection() {
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished(
-    base::Callback<void(bool)> callback, bool result) {
-  for (size_t i = 0; i != pending_thumbnail_tasks_.size(); ++i) {
-    if (pending_thumbnail_tasks_[i].Equals(callback)) {
-      pending_thumbnail_tasks_.erase(pending_thumbnail_tasks_.begin()+i);
-      break;
-    }
-  }
-  AdjustSurfaceProtection();
+    base::WeakPtr<RenderWidgetHostViewAura> render_widget_host_view,
+    const base::Callback<void(bool)>& callback,
+    bool result) {
   callback.Run(result);
+
+  if (!render_widget_host_view.get())
+    return;
+  --render_widget_host_view->pending_thumbnail_tasks_;
+  render_widget_host_view->AdjustSurfaceProtection();
 }
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
@@ -1753,9 +1753,6 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     popup_parent_host_view_->popup_child_host_view_ = NULL;
   }
   aura::client::SetTooltipText(window_, NULL);
-
-  for (size_t i = 0; i != pending_thumbnail_tasks_.size(); ++i)
-    pending_thumbnail_tasks_[i].Run(false);
 
   // This call is usually no-op since |this| object is already removed from the
   // Aura root window and we don't have a way to get an input method object

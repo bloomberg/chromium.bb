@@ -270,8 +270,10 @@ class RenderWidgetHostViewAura
 
   // Called after async thumbnailer task completes.  Used to call
   // AdjustSurfaceProtection.
-  void CopyFromCompositingSurfaceFinished(base::Callback<void(bool)> callback,
-                                          bool result);
+  static void CopyFromCompositingSurfaceFinished(
+      base::WeakPtr<RenderWidgetHostViewAura> render_widget_host_view,
+      const base::Callback<void(bool)>& callback,
+      bool result);
 
   ui::Compositor* GetCompositor();
 
@@ -347,7 +349,7 @@ class RenderWidgetHostViewAura
   bool current_surface_is_protected_;
   bool current_surface_in_use_by_compositor_;
 
-  std::vector<base::Callback<void(bool)> > pending_thumbnail_tasks_;
+  int pending_thumbnail_tasks_;
 
   // This id increments every time surface_is_protected changes. We tag IPC
   // messages which rely on protection state with this id to stay in sync.

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_TAB_HELPER_H_
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
+#include "chrome/common/thumbnail_score.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -45,6 +45,21 @@ class ThumbnailTabHelper
     kTallerThanWide,
     // The source and destination aspect ratios are identical.
     kNotClipped,
+  };
+
+  // Holds the information needed for processing a thumbnail.
+  struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {
+    ThumbnailingContext(content::WebContents* web_contents,
+                        bool load_interrupted);
+
+    content::BrowserContext* browser_context;
+    GURL url;
+    ClipResult clip_result;
+    ThumbnailScore score;
+
+   private:
+    ~ThumbnailingContext();
+    friend class base::RefCountedThreadSafe<ThumbnailingContext>;
   };
 
   virtual ~ThumbnailTabHelper();
@@ -90,9 +105,8 @@ class ThumbnailTabHelper
   void UpdateThumbnailIfNecessary(content::WebContents* web_contents);
 
   // Update the thumbnail of the given tab.
-  void UpdateThumbnail(content::WebContents* web_contents,
-                       const SkBitmap& bitmap,
-                       const ClipResult& clip_result);
+  static void UpdateThumbnail(ThumbnailingContext* context,
+                              const SkBitmap& bitmap);
 
   // Asynchronously updates the thumbnail of the given tab. This must be called
   // on the UI thread.
@@ -100,16 +114,13 @@ class ThumbnailTabHelper
 
   // Called when the bitmap for generating a thumbnail is ready after the
   // AsyncUpdateThumbnail invocation. This runs on the UI thread.
-  void UpdateThumbnailWithBitmap(
-      content::WebContents* web_contents,
-      ClipResult clip_result,
-      const SkBitmap& bitmap);
+  static void UpdateThumbnailWithBitmap(ThumbnailingContext* context,
+                                        const SkBitmap& bitmap);
 
   // Called when the canvas for generating a thumbnail is ready after the
   // AsyncUpdateThumbnail invocation. This runs on the UI thread.
-  void UpdateThumbnailWithCanvas(
-      content::WebContents* web_contents,
-      ClipResult clip_result,
+  static void UpdateThumbnailWithCanvas(
+      ThumbnailingContext* context,
       skia::PlatformBitmap* temp_bitmap,
       bool result);
 
@@ -127,8 +138,6 @@ class ThumbnailTabHelper
   content::NotificationRegistrar registrar_;
 
   bool load_interrupted_;
-
-  base::WeakPtrFactory<ThumbnailTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailTabHelper);
 };
