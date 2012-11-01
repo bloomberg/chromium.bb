@@ -40,8 +40,9 @@ class DisabledExtensionsView : public views::BubbleDelegateView,
  private:
   virtual ~DisabledExtensionsView();
 
-  // Makes sure the bubble is not shown again.
-  void DontShowBubbleAgain();
+  // Dismiss and make sure the bubble is not shown again. This bubble is a
+  // single-appearance bubble.
+  void DismissBubble();
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
