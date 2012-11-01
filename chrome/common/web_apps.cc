@@ -25,7 +25,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/dom_operations.h"
@@ -218,8 +217,7 @@ bool ParseWebAppFromDefinitionFile(Value* definition_value,
   scoped_ptr<Value> schema(
       base::JSONReader::ReadAndReturnError(
           ResourceBundle::GetSharedInstance().GetRawDataResource(
-              IDR_WEB_APP_SCHEMA,
-              ui::SCALE_FACTOR_NONE),
+              IDR_WEB_APP_SCHEMA),
           base::JSON_PARSE_RFC,  // options
           &error_code,
           &error_message));

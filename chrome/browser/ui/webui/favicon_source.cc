@@ -116,7 +116,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
       if (url.spec() ==
           l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
         SendResponse(request_id,
-            ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+            ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
                 history::kPrepopulatedPages[i].favicon_id,
                 scale_factor));
         return;
@@ -194,7 +194,7 @@ void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
   if (!default_favicon) {
     ui::ScaleFactor scale_factor = icon_request.scale_factor;
     default_favicon = ResourceBundle::GetSharedInstance()
-        .LoadDataResourceBytes(resource_id, scale_factor);
+        .LoadDataResourceBytesForScale(resource_id, scale_factor);
     default_favicons_[favicon_index] = default_favicon;
   }
 

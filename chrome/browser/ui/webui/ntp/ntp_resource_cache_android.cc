@@ -20,7 +20,6 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -105,8 +104,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_NEW_TAB_ANDROID_HTML,
-                         ui::SCALE_FACTOR_NONE));
+                                 GetRawDataResource(IDR_NEW_TAB_ANDROID_HTML));
   localized_strings.SetString(
       "device",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI) ?

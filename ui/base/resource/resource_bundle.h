@@ -201,19 +201,28 @@ class UI_EXPORT ResourceBundle {
   // Same as GetNativeImageNamed() except that RTL is not enabled.
   gfx::Image& GetNativeImageNamed(int resource_id);
 
+  // Loads the raw bytes of a scale independent data resource.
+  base::RefCountedStaticMemory* LoadDataResourceBytes(int resource_id) const;
+
   // Loads the raw bytes of a data resource nearest the scale factor
-  // |scale_factor| into |bytes|, without doing any processing or interpretation
-  // of the resource. Use ResourceHandle::SCALE_FACTOR_NONE for non-image
-  // resources. Returns NULL if we fail to read the resource.
-  base::RefCountedStaticMemory* LoadDataResourceBytes(
+  // |scale_factor| into |bytes|, without doing any processing or
+  // interpretation of the resource. Use ResourceHandle::SCALE_FACTOR_NONE
+  // for scale independent image resources (such as wallpaper).
+  // Returns NULL if we fail to read the resource.
+  base::RefCountedStaticMemory* LoadDataResourceBytesForScale(
       int resource_id,
       ScaleFactor scale_factor) const;
 
+  // Return the contents of a scale independent resource in a
+  // StringPiece given the resource id
+  base::StringPiece GetRawDataResource(int resource_id) const;
+
   // Return the contents of a resource in a StringPiece given the resource id
   // nearest the scale factor |scale_factor|.
-  // Use ResourceHanlde::SCALE_FACTOR_NONE for non-image resources.
-  base::StringPiece GetRawDataResource(int resource_id,
-                                       ScaleFactor scale_factor) const;
+  // Use ResourceHanlde::SCALE_FACTOR_NONE for scale independent image resources
+  // (such as wallpaper).
+  base::StringPiece GetRawDataResourceForScale(int resource_id,
+                                               ScaleFactor scale_factor) const;
 
   // Get a localized string given a message id.  Returns an empty
   // string if the message_id is not found.

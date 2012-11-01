@@ -860,8 +860,7 @@ void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
     // loaded in each app.
     frame->document().insertUserStyleSheet(
         WebString::fromUTF8(ResourceBundle::GetSharedInstance().
-            GetRawDataResource(IDR_PLATFORM_APP_CSS,
-                               ui::SCALE_FACTOR_NONE)),
+            GetRawDataResource(IDR_PLATFORM_APP_CSS)),
         WebDocument::UserStyleUserLevel);
   }
 }

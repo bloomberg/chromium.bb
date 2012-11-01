@@ -39,7 +39,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -107,7 +106,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
     const WebPluginParams& params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BLOCKED_PLUGIN_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_BLOCKED_PLUGIN_HTML));
 
   DictionaryValue values;
   values.SetString("message", l10n_util::GetStringUTF8(IDS_PLUGIN_SEARCHING));
@@ -138,7 +137,7 @@ PluginPlaceholder* PluginPlaceholder::CreateErrorPlugin(
 
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BLOCKED_PLUGIN_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_BLOCKED_PLUGIN_HTML));
   std::string html_data =
       jstemplate_builder::GetI18nTemplateHtml(template_html, &values);
 
@@ -170,7 +169,7 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
 
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          template_id, ui::SCALE_FACTOR_NONE));
+          template_id));
 
   DCHECK(!template_html.empty()) << "unable to load template. ID: "
                                  << template_id;
@@ -193,7 +192,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMobileYoutubePlugin(
     const WebPluginParams& params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_MOBILE_YOUTUBE_PLUGIN_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_MOBILE_YOUTUBE_PLUGIN_HTML));
 
   DictionaryValue values;
   values.SetString("video_id", GetYoutubeVideoId(params));

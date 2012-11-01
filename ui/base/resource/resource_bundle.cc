@@ -391,6 +391,11 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
 }
 
 base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
+    int resource_id) const {
+  return LoadDataResourceBytesForScale(resource_id, ui::SCALE_FACTOR_NONE);
+}
+
+base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytesForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
   base::RefCountedStaticMemory* bytes = NULL;
@@ -398,7 +403,8 @@ base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
     bytes = delegate_->LoadDataResourceBytes(resource_id, scale_factor);
 
   if (!bytes) {
-    base::StringPiece data = GetRawDataResource(resource_id, scale_factor);
+    base::StringPiece data =
+        GetRawDataResourceForScale(resource_id, scale_factor);
     if (!data.empty()) {
       bytes = new base::RefCountedStaticMemory(
           reinterpret_cast<const unsigned char*>(data.data()), data.length());
@@ -408,7 +414,11 @@ base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
   return bytes;
 }
 
-base::StringPiece ResourceBundle::GetRawDataResource(
+base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
+  return GetRawDataResourceForScale(resource_id, ui::SCALE_FACTOR_NONE);
+}
+
+base::StringPiece ResourceBundle::GetRawDataResourceForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
   base::StringPiece data;
@@ -452,7 +462,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   if (!locale_resources_data_->GetStringPiece(message_id, &data)) {
     // Fall back on the main data pack (shouldn't be any strings here except in
     // unittests).
-    data = GetRawDataResource(message_id, ui::SCALE_FACTOR_NONE);
+    data = GetRawDataResource(message_id);
     if (data.empty()) {
       NOTREACHED() << "unable to find resource: " << message_id;
       return string16();

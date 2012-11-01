@@ -730,7 +730,7 @@ bool SearchBoxExtension::PageSupportsInstant(WebKit::WebFrame* frame) {
 v8::Extension* SearchBoxExtension::Get() {
   const base::StringPiece code =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SEARCHBOX_API, ui::SCALE_FACTOR_NONE);
+          IDR_SEARCHBOX_API);
   return new SearchBoxExtensionWrapper(code);
 }
 
