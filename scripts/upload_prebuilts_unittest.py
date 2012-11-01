@@ -237,13 +237,12 @@ class TestWritePackageIndex(cros_test_lib.MoxTestCase):
     self.assertEqual(f.read(), '')
 
 
-class TestUploadPrebuilt(cros_test_lib.TestCase):
+class TestUploadPrebuilt(cros_test_lib.MoxTestCase):
 
   def setUp(self):
     class MockTemporaryFile(object):
       def __init__(self, name):
         self.name = name
-    self.mox = mox.Mox()
     self.pkgindex = SimplePackageIndex()
     self.mox.StubOutWithMock(binpkg, 'GrabLocalPackageIndex')
     binpkg.GrabLocalPackageIndex('/packages').AndReturn(self.pkgindex)

@@ -406,7 +406,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
 
 
-class TestRunCommandWithRetries(cros_test_lib.TestCase):
+class TestRunCommandWithRetries(cros_test_lib.MoxTestCase):
 
   @osutils.TempDirDecorator
   def testBasicRetry(self):
@@ -435,7 +435,6 @@ class TestRunCommandWithRetries(cros_test_lib.TestCase):
       osutils.WriteFile(paths['store'], str(start))
       osutils.WriteFile(paths['stop'], str(stop))
 
-    self.mox = mox.Mox()
     self.mox.StubOutWithMock(time, 'sleep')
     self.mox.ReplayAll()
 

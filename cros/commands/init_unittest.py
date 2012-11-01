@@ -19,7 +19,7 @@ from chromite.cros import commands
 
 
 # pylint: disable=W0212
-class CommandTest(mox.MoxTestBase):
+class CommandTest(cros_test_lib.MoxTestCase):
   """This test class tests that we can load modules correctly."""
 
   def testFindModules(self):
