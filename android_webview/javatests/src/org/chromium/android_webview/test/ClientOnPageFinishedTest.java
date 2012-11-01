@@ -30,7 +30,7 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
     }
 
     @MediumTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOnPageFinishedPassesCorrectUrl() throws Throwable {
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
@@ -44,7 +44,7 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
     }
 
     //@MediumTest
-    //@Feature({"Android-WebView"})
+    //@Feature({"AndroidWebView"})
     // See crbug.com/148917
     @FlakyTest
     public void testOnPageFinishedCalledAfterError() throws Throwable {
@@ -66,7 +66,7 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
     }
 
     @MediumTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOnPageFinishedNotCalledForValidSubresources() throws Throwable {
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();

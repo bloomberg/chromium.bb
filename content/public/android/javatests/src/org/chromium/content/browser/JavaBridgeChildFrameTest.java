@@ -38,7 +38,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testInjectedObjectPresentInChildFrame() throws Throwable {
         // In the case that the test fails (i.e. the child frame doesn't get the injected object,
         // the call to testController.setStringValue in the child frame's onload handler will

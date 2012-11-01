@@ -28,7 +28,7 @@ public class HttpAuthDatabaseTest extends AndroidTestCase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testAccessHttpAuthUsernamePassword() throws Exception {
         HttpAuthDatabase instance = new HttpAuthDatabase(getContext(), TEST_DATABASE);
 

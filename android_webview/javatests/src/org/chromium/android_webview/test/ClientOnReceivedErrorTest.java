@@ -31,7 +31,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
     }
 
     @MediumTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOnReceivedErrorOnInvalidUrl() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
@@ -48,7 +48,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
     }
 
     @MediumTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOnReceivedErrorOnInvalidScheme() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
@@ -65,7 +65,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
     }
 
     @MediumTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testNoErrorOnFailedSubresourceLoad() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
@@ -83,7 +83,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
     }
 
     @MediumTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testNonExistentAssetUrl() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
@@ -104,7 +104,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
     }
 
     @MediumTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testNonExistentResourceUrl() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();

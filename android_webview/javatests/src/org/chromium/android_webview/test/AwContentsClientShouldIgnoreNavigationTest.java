@@ -189,7 +189,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationNotCalledOnLoadUrl() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -205,7 +205,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCantBlockLoads() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -224,7 +224,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView", "Navigation"})
+     * @Feature({"AndroidWebView", "Navigation"})
      * BUG=154292
      */
     @DisabledTest
@@ -252,7 +252,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView", "Navigation"})
+     * @Feature({"AndroidWebView", "Navigation"})
      * BUG=154292
      */
     @DisabledTest
@@ -287,7 +287,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationNotCalledForAnchorNavigations() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -317,7 +317,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledWhenLinkClicked() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -339,7 +339,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
 
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledWhenSelfLinkClicked() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -366,7 +366,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledWhenNavigatingFromJavaScriptUsingAssign()
             throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
@@ -389,7 +389,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledWhenNavigatingFromJavaScriptUsingReplace()
             throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
@@ -410,7 +410,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationPassesCorrectUrl() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -431,7 +431,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCanIgnoreLoading() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -475,7 +475,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledForDataUrl() throws Throwable {
         final String dataUrl =
                 "data:text/html;base64," +
@@ -501,7 +501,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledForUnsupportedSchemes() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -522,7 +522,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationNotCalledForPostNavigations() throws Throwable {
         // The reason POST requests are excluded is BUG 155250.
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
@@ -559,7 +559,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationNotCalledForIframeNavigations() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -640,7 +640,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOn302Redirect() throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String redirectUrl = mWebServer.setRedirect("/302.html", redirectTargetUrl);
@@ -650,7 +650,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnMetaRefreshRedirect() throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String redirectUrl = addPageToTestServer(mWebServer, "/meta_refresh.html",
@@ -661,7 +661,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
 
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnJavaScriptLocationImmediateAssignRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
@@ -672,7 +672,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnJavaScriptLocationImmediateReplaceRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
@@ -683,7 +683,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnJavaScriptLocationDelayedAssignRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
@@ -694,7 +694,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnJavaScriptLocationDelayedReplaceRedirect()
             throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);

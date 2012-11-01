@@ -18,7 +18,7 @@ public class WebViewMixedFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -35,7 +35,7 @@ public class WebViewMixedFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest

@@ -47,7 +47,7 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView"})
+     * @Feature({"AndroidWebView"})
      * crbug.com/147721
      */
     @DisabledTest
@@ -82,7 +82,7 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testFindAddress() {
         assertNull(ContentViewStatics.findAddress("This is some random text"));
 
@@ -91,7 +91,7 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testEnableDisablePlatformNotifications() {
 
         // Set up mock contexts to use with the listener
@@ -150,7 +150,7 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView"})
+     * @Feature({"AndroidWebView"})
      * Bug 6931901
      */
     @DisabledTest

@@ -29,7 +29,7 @@ public class UserAgentTest extends AndroidWebViewTestBase {
      * two spaces before the Android build name.
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testNoExtraSpaceBeforeBuildName() throws Throwable {
         getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
         loadDataSync(

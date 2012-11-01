@@ -159,7 +159,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
      * @throws Exception
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testGestureSingleClick() throws Exception {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
@@ -183,7 +183,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
      * @throws Exception
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testGestureFlingAndCancelLongClick() throws Exception {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
@@ -290,7 +290,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
      * and relative position information.
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testScrollUpdateCoordinates() {
         final int deltaX = 16;
         final int deltaY = 84;

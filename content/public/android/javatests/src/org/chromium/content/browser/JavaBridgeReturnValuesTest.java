@@ -122,7 +122,7 @@ public class JavaBridgeReturnValuesTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testMethodReturnTypes() throws Throwable {
         assertEquals("boolean",
                 executeJavaScriptAndGetStringResult("typeof testObject.getBooleanValue()"));
@@ -163,7 +163,7 @@ public class JavaBridgeReturnValuesTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testMethodReturnValues() throws Throwable {
         // We do the string comparison in JavaScript, to avoid relying on the
         // coercion algorithm from JavaScript to Java.

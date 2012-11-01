@@ -81,7 +81,7 @@ public class GetTitleTest extends AndroidWebViewTestBase {
      */
     @Smoke
     @SmallTest
-    @Feature({"Android-WebView", "Main"})
+    @Feature({"AndroidWebView", "Main"})
     public void testLoadDataGetTitle() throws Throwable {
         final String title = loadFromDataAndGetTitle(getHtml(TITLE));
         assertEquals("Title should be " + TITLE, TITLE, title);
@@ -92,7 +92,7 @@ public class GetTitleTest extends AndroidWebViewTestBase {
      * @throws Throwable
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testGetTitleOnDataContainingEmptyTitle() throws Throwable {
         final String content = getHtml("");
         final String expectedTitle = "data:text/html," + content;
@@ -106,7 +106,7 @@ public class GetTitleTest extends AndroidWebViewTestBase {
      * @throws Throwable
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testGetTitleOnDataContainingNoTitle() throws Throwable {
         final String content = getHtml(null);
         final String expectedTitle = "data:text/html," + content;
@@ -120,7 +120,7 @@ public class GetTitleTest extends AndroidWebViewTestBase {
      */
     /**
      * @SmallTest
-     * @Feature({"Android-WebView"})
+     * @Feature({"AndroidWebView"})
      * BUG 7228619
      */
     @DisabledTest
@@ -135,7 +135,7 @@ public class GetTitleTest extends AndroidWebViewTestBase {
      * @throws Throwable
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testGetTitleOnLoadUrlFileContainingEmptyTitle() throws Throwable {
         final PageInfo info = loadFromUrlAndGetTitle(getHtml(""), GET_TITLE_TEST_EMPTY_PATH);
         assertEquals("Incorrect title :: " , info.mUrl, info.mTitle);
@@ -147,7 +147,7 @@ public class GetTitleTest extends AndroidWebViewTestBase {
      * @throws Throwable
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testGetTitleOnLoadUrlFileContainingNoTitle() throws Throwable {
         final PageInfo info = loadFromUrlAndGetTitle(getHtml(null), GET_TITLE_TEST_NO_TITLE_PATH);
         assertEquals("Incorrect title :: " , info.mUrl, info.mTitle);
@@ -158,7 +158,7 @@ public class GetTitleTest extends AndroidWebViewTestBase {
      * used in the page's script then the page's title is reported incorrectly.
      * Bug: crbug.com/151012
      * @SmallTest
-     * @Feature({"Android-WebView"})
+     * @Feature({"AndroidWebView"})
      */
     @DisabledTest
     public void testGetTitleWithWriteln() throws Throwable {

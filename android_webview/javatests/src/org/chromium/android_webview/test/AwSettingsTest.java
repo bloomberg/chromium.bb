@@ -948,7 +948,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     // enabled by default in Chrome, but must be disabled by default
     // in WebView.
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptDisabledByDefault() throws Throwable {
         final String JS_ENABLED_STRING = "JS has run";
         final String JS_DISABLED_STRING = "JS has not run";
@@ -970,7 +970,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptEnabledNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -979,7 +979,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptEnabledIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -988,7 +988,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptEnabledBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -997,7 +997,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptEnabledDynamicNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1006,7 +1006,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptEnabledDynamicIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1015,7 +1015,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptEnabledDynamicBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1024,7 +1024,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testPluginsEnabledNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1033,7 +1033,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testPluginsEnabledIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1042,7 +1042,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testPluginsEnabledBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1051,7 +1051,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testStandardFontFamilyNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1060,7 +1060,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testStandardFontFamilyIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1069,7 +1069,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testStandardFontFamilyBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1078,7 +1078,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDefaultFontSizeNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1087,7 +1087,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDefaultFontSizeIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1096,7 +1096,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDefaultFontSizeBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1108,7 +1108,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     // setLoadsImagesAutomatically to false doesn't prevent images already
     // contained in the memory cache to be displayed.  The cache is shared among
     // all views, so the image can be put there by another view.
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     @SmallTest
     public void testLoadsImagesAutomaticallyWithCachedImage() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
@@ -1179,7 +1179,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     // setting value from false to true previously skipped images are
     // automatically loaded.
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLoadsImagesAutomaticallyNoPageReload() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1214,7 +1214,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLoadsImagesAutomaticallyNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1225,7 +1225,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLoadsImagesAutomaticallyIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1236,7 +1236,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLoadsImagesAutomaticallyBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1247,7 +1247,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDefaultTextEncodingNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1256,7 +1256,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDefaultTextEncodingIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1265,7 +1265,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDefaultTextEncodingBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1280,7 +1280,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     // [<devicemodel>;] Build/<buildID>) AppleWebKit/<major>.<minor> (KHTML, like Gecko)
     // Version/<major>.<minor>[ Mobile] Safari/<major>.<minor>
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUserAgentStringDefault() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1309,7 +1309,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUserAgentStringOverride() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1339,7 +1339,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     // Verify that the current UA override setting has a priority over UA
     // overrides in navigation history entries.
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUserAgentStringOverrideForHistory() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1379,7 +1379,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUserAgentStringNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1388,7 +1388,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUserAgentStringIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1397,7 +1397,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUserAgentStringBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1406,7 +1406,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUserAgentWithTestServer() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1441,7 +1441,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDomStorageEnabledNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1450,7 +1450,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDomStorageEnabledIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1459,7 +1459,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDomStorageEnabledBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1468,7 +1468,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUniversalAccessFromFilesNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1479,7 +1479,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUniversalAccessFromFilesIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1490,7 +1490,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUniversalAccessFromFilesBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1503,7 +1503,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     // This test verifies that local image resources can be loaded from file:
     // URLs regardless of file access state.
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileAccessFromFilesImage() throws Throwable {
         final String imageContainerUrl = UrlUtils.getTestFileUrl("webview/image_access.html");
         final String imageHeight = "16";
@@ -1520,7 +1520,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileAccessFromFilesIframeNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1531,7 +1531,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileAccessFromFilesIframeIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1542,7 +1542,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileAccessFromFilesIframeBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1553,7 +1553,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileAccessFromFilesXhrNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1564,7 +1564,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileAccessFromFilesXhrIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1575,7 +1575,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileAccessFromFilesXhrBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1586,7 +1586,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileUrlAccessNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1595,7 +1595,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileUrlAccessIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1604,7 +1604,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileUrlAccessBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1613,7 +1613,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testContentUrlAccessNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1622,7 +1622,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testContentUrlAccessIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1631,7 +1631,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testContentUrlAccessBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1640,7 +1640,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    @Feature({"AndroidWebView", "Preferences", "Navigation"})
     public void testBlockingContentUrlsFromDataUrls() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1662,7 +1662,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    @Feature({"AndroidWebView", "Preferences", "Navigation"})
     public void testContentUrlFromFileNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1673,7 +1673,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    @Feature({"AndroidWebView", "Preferences", "Navigation"})
     public void testContentUrlFromFileIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1684,7 +1684,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    @Feature({"AndroidWebView", "Preferences", "Navigation"})
     public void testContentUrlFromFileBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1695,7 +1695,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testBlockNetworkImagesDoesNotBlockDataUrlImage() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1715,7 +1715,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testBlockNetworkImagesBlocksNetworkImageAndReloadInPlace() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1762,7 +1762,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     // Test an assert URL (file:///android_asset/)
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testAssetUrl() throws Throwable {
         // Note: this text needs to be kept in sync with the contents of the html file referenced
         // below.
@@ -1784,7 +1784,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     // Test a resource URL (file:///android_res/).
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testResourceUrl() throws Throwable {
         // Note: this text needs to be kept in sync with the contents of the html file referenced
         // below.
@@ -1806,7 +1806,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     // Test that the file URL access toggle does not affect asset URLs.
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testFileUrlAccessToggleDoesNotBlockAssetUrls() throws Throwable {
         // Note: this text needs to be kept in sync with the contents of the html file referenced
         // below.
@@ -1830,7 +1830,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     // Test that the file URL access toggle does not affect resource URLs.
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testFileUrlAccessToggleDoesNotBlockResourceUrls() throws Throwable {
         // Note: this text needs to be kept in sync with the contents of the html file referenced
         // below.
@@ -1854,7 +1854,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
+     * @Feature({"AndroidWebView", "Preferences"})
      * Blocked on crbug/157563
      */
     @DisabledTest
@@ -1867,7 +1867,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
+     * @Feature({"AndroidWebView", "Preferences"})
      * Blocked on crbug/157563
      */
     @DisabledTest
@@ -1880,7 +1880,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
+     * @Feature({"AndroidWebView", "Preferences"})
      * Blocked on crbug/157563
      */
     @DisabledTest
@@ -2042,7 +2042,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    @Feature({"AndroidWebView", "Preferences"})
     public void testBlockNetworkLoadsWithHttpResources() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainer =

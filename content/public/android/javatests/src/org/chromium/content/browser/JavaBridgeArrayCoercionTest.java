@@ -159,7 +159,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Test passing an array of JavaScript numbers in the int32 range to a
     // method which takes a Java array.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNumberInt32() throws Throwable {
         executeJavaScript("testObject.setBooleanArray([0]);");
         assertFalse(mTestObject.waitForBooleanArray()[0]);
@@ -205,7 +205,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Test passing an array of JavaScript numbers in the double range to a
     // method which takes a Java array.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNumberDouble() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should convert to boolean.
         executeJavaScript("testObject.setBooleanArray([42.1]);");
@@ -250,7 +250,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Java array.
     /*
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
       Bug: http://code.google.com/p/chromium/issues/detail?id=145881
     */
     @DisabledTest
@@ -296,7 +296,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // takes a Java array.
     /*
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
       Bug: http://code.google.com/p/chromium/issues/detail?id=145881
     */
     @DisabledTest
@@ -343,7 +343,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Test passing an array of JavaScript boolean values to a method which
     // takes a Java array.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassBoolean() throws Throwable {
         executeJavaScript("testObject.setBooleanArray([true]);");
         assertTrue(mTestObject.waitForBooleanArray()[0]);
@@ -408,7 +408,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Test passing an array of JavaScript strings to a method which takes a
     // Java array.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassString() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Non-empty string should convert to true.
         executeJavaScript("testObject.setBooleanArray([\"+042.10\"]);");
@@ -457,7 +457,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Test passing an array of JavaScript objects to a method which takes a
     // Java array.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassJavaScriptObject() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
         executeJavaScript("testObject.setBooleanArray([{foo: 42}]);");
@@ -507,7 +507,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Test passing an array of Java objects to a method which takes a Java
     // array.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassJavaObject() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
         executeJavaScript("testObject.setBooleanArray([testObject.getObjectInstance()]);");
@@ -559,7 +559,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Test passing an array of JavaScript null values to a method which takes
     // a Java array.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNull() throws Throwable {
         executeJavaScript("testObject.setByteArray([null]);");
         assertEquals(0, mTestObject.waitForByteArray()[0]);
@@ -600,7 +600,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     // Test passing an array of JavaScript undefined values to a method which
     // takes a Java array.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassUndefined() throws Throwable {
         executeJavaScript("testObject.setByteArray([undefined]);");
         assertEquals(0, mTestObject.waitForByteArray()[0]);

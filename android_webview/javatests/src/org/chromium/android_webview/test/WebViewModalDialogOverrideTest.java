@@ -33,7 +33,7 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
      * Verify that when the AwContentsClient calls handleJsAlert.
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOverrideAlertHandling() throws Throwable {
         final String ALERT_TEXT = "Hello World!";
 
@@ -62,7 +62,7 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
      * Verify that when the AwContentsClient calls handleJsPrompt.
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOverridePromptHandling() throws Throwable {
         final String PROMPT_TEXT = "How do you like your eggs in the morning?";
         final String PROMPT_DEFAULT = "Scrambled";
@@ -96,7 +96,7 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
      * Verify that when the AwContentsClient calls handleJsConfirm and the client confirms.
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOverrideConfirmHandlingConfirmed() throws Throwable {
         final String CONFIRM_TEXT = "Would you like a cookie?";
 
@@ -126,7 +126,7 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
      * Verify that when the AwContentsClient calls handleJsConfirm and the client cancels.
      */
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOverrideConfirmHandlingCancelled() throws Throwable {
         final String CONFIRM_TEXT = "Would you like a cookie?";
 
@@ -156,7 +156,7 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
      * Verify that when the AwContentsClient calls handleJsBeforeUnload
      */
     @MediumTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testOverrideBeforeUnloadHandling() throws Throwable {
         final CallbackHelper jsBeforeUnloadHelper = new CallbackHelper();
         TestAwContentsClient client = new TestAwContentsClient() {

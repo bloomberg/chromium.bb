@@ -164,7 +164,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     // Test passing a JavaScript number in the int32 range to a method of an
     // injected object.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNumberInt32() throws Throwable {
         executeJavaScript("testObject.setByteValue(42);");
         assertEquals(42, mTestObject.waitForByteValue());
@@ -216,7 +216,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     // injected object.
     /*
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
       Bug: http://code.google.com/p/chromium/issues/detail?id=145881
     */
     @DisabledTest
@@ -277,7 +277,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     // Test passing JavaScript NaN to a method of an injected object.
     /*
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
       Bug: http://code.google.com/p/chromium/issues/detail?id=145881
     */
     @DisabledTest
@@ -321,7 +321,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     // Test passing JavaScript infinity to a method of an injected object.
     /*
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
       Bug: http://code.google.com/p/chromium/issues/detail?id=145881
     */
     @DisabledTest
@@ -366,7 +366,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
 
     // Test passing a JavaScript boolean to a method of an injected object.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassBoolean() throws Throwable {
         executeJavaScript("testObject.setBooleanValue(true);");
         assertTrue(mTestObject.waitForBooleanValue());
@@ -431,7 +431,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
 
     // Test passing a JavaScript string to a method of an injected object.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassString() throws Throwable {
         executeJavaScript("testObject.setStringValue(\"+042.10\");");
         assertEquals("+042.10", mTestObject.waitForStringValue());
@@ -483,7 +483,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
 
     // Test passing a JavaScript object to a method of an injected object.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassJavaScriptObject() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should raise a JavaScript exception.
         executeJavaScript("testObject.setObjectValue({foo: 42});");
@@ -534,7 +534,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     // this test requires being able to return objects from the methods of
     // injected objects. This is tested elsewhere.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassJavaObject() throws Throwable {
         executeJavaScript("testObject.setObjectValue(testObject.getObjectInstance());");
         assertTrue(mTestObject.getObjectInstance() == mTestObject.waitForObjectValue());
@@ -589,7 +589,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
 
     // Test passing JavaScript null to a method of an injected object.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNull() throws Throwable {
         executeJavaScript("testObject.setObjectValue(null);");
         assertNull(mTestObject.waitForObjectValue());
@@ -627,7 +627,7 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
 
     // Test passing JavaScript undefined to a method of an injected object.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassUndefined() throws Throwable {
         executeJavaScript("testObject.setObjectValue(undefined);");
         assertNull(mTestObject.waitForObjectValue());

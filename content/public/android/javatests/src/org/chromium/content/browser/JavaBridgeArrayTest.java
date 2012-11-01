@@ -93,7 +93,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testArrayLength() throws Throwable {
         executeJavaScript("testObject.setIntArray([42, 43, 44]);");
         int[] result = mTestObject.waitForIntArray();
@@ -104,21 +104,21 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNull() throws Throwable {
         executeJavaScript("testObject.setIntArray(null);");
         assertNull(mTestObject.waitForIntArray());
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassUndefined() throws Throwable {
         executeJavaScript("testObject.setIntArray(undefined);");
         assertNull(mTestObject.waitForIntArray());
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassEmptyArray() throws Throwable {
         executeJavaScript("testObject.setIntArray([]);");
         assertEquals(0, mTestObject.waitForIntArray().length);
@@ -127,7 +127,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     // Note that this requires being able to pass a string from JavaScript to
     // Java.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassArrayToStringMethod() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should call toString() on array.
         executeJavaScript("testObject.setStringValue([42, 42, 42]);");
@@ -137,7 +137,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     // Note that this requires being able to pass an integer from JavaScript to
     // Java.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassArrayToNonStringNonArrayMethod() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should raise JavaScript exception.
         executeJavaScript("testObject.setIntValue([42, 42, 42]);");
@@ -145,7 +145,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassNonArrayToArrayMethod() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should raise JavaScript exception.
         executeJavaScript("testObject.setIntArray(42);");
@@ -153,7 +153,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testObjectWithLengthProperty() throws Throwable {
         executeJavaScript("testObject.setIntArray({length: 3, 1: 42});");
         int[] result = mTestObject.waitForIntArray();
@@ -164,7 +164,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testNonNumericLengthProperty() throws Throwable {
         // LIVECONNECT_COMPLIANCE: This should not count as an array, so we
         // should raise a JavaScript exception.
@@ -173,7 +173,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testLengthOutOfBounds() throws Throwable {
         // LIVECONNECT_COMPLIANCE: This should not count as an array, so we
         // should raise a JavaScript exception.
@@ -194,7 +194,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testSparseArray() throws Throwable {
         executeJavaScript("var x = [42, 43]; x[3] = 45; testObject.setIntArray(x);");
         int[] result = mTestObject.waitForIntArray();
@@ -208,7 +208,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     // Note that this requires being able to pass a boolean from JavaScript to
     // Java.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testMethodReturningArrayNotCalled() throws Throwable {
         // We don't invoke methods which return arrays, but note that no
         // exception is raised.
@@ -220,7 +220,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testMultiDimensionalArrayMethod() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should handle multi-dimensional arrays.
         executeJavaScript("testObject.setIntIntArray([ [42, 43], [44, 45] ]);");
@@ -228,7 +228,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPassMultiDimensionalArray() throws Throwable {
         // LIVECONNECT_COMPLIANCE: Should handle multi-dimensional arrays.
         executeJavaScript("testObject.setIntArray([ [42, 43], [44, 45] ]);");

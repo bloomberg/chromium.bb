@@ -81,7 +81,7 @@ public class AwContentsClientOnFormResubmissionTest extends AndroidWebViewTestBa
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testResend() throws Throwable {
         mContentsClient.setResubmit(true);
         doReload();
@@ -90,7 +90,7 @@ public class AwContentsClientOnFormResubmissionTest extends AndroidWebViewTestBa
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Navigation"})
+    @Feature({"AndroidWebView", "Navigation"})
     public void testDontResend() throws Throwable {
         mContentsClient.setResubmit(false);
         doReload();

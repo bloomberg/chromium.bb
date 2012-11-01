@@ -214,7 +214,7 @@ public class ContentViewZoomTest extends AndroidWebViewTestBase {
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView"})
+     * @Feature({"AndroidWebView"})
      * BUG 153522
      */
     @FlakyTest
@@ -226,7 +226,7 @@ public class ContentViewZoomTest extends AndroidWebViewTestBase {
     // even if supportZoom is turned off.
     /**
      * @SmallTest
-     * @Feature({"Android-WebView"})
+     * @Feature({"AndroidWebView"})
      * BUG 153522
      */
     @FlakyTest
@@ -235,7 +235,7 @@ public class ContentViewZoomTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testZoomUsingMultiTouch() throws Throwable {
         ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
@@ -254,7 +254,7 @@ public class ContentViewZoomTest extends AndroidWebViewTestBase {
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView"})
+     * @Feature({"AndroidWebView"})
      * BUG 153522
      */
     @FlakyTest
@@ -281,7 +281,7 @@ public class ContentViewZoomTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testZoomControlsOnNonZoomableContent() throws Throwable {
         ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
@@ -301,7 +301,7 @@ public class ContentViewZoomTest extends AndroidWebViewTestBase {
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView"})
+     * @Feature({"AndroidWebView"})
      * BUG 153523
      */
     @DisabledTest

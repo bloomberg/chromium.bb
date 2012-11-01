@@ -58,7 +58,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testAddMessageToConsoleCalledWithCorrectLevel() throws Throwable {
         TestAwContentsClient.AddMessageToConsoleHelper addMessageToConsoleHelper =
                 mContentsClient.getAddMessageToConsoleHelper();
@@ -92,7 +92,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testAddMessageToConsoleCalledWithCorrectMessage() throws Throwable {
         TestAwContentsClient.AddMessageToConsoleHelper addMessageToConsoleHelper =
                 mContentsClient.getAddMessageToConsoleHelper();
@@ -114,7 +114,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testAddMessageToConsoleCalledWithCorrectLineAndSource() throws Throwable {
         TestAwContentsClient.AddMessageToConsoleHelper addMessageToConsoleHelper =
                 mContentsClient.getAddMessageToConsoleHelper();

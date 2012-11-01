@@ -73,7 +73,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testExplicitGoodPath() throws Throwable {
         final String path = new File(getActivity().getFilesDir(), "test.mht").getAbsolutePath();
         File file = new File(path);
@@ -87,7 +87,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testAutoGoodPath() throws Throwable {
         final String path = getActivity().getFilesDir().getAbsolutePath() + "/";
 
@@ -108,7 +108,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testExplicitBadPath() throws Throwable {
         final String path = new File("/foo/bar/baz.mht").getAbsolutePath();
         File file = new File(path);
@@ -122,7 +122,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView"})
+    @Feature({"AndroidWebView"})
     public void testAutoBadPath() throws Throwable {
         final String path = new File("/foo/bar/").getAbsolutePath();
         File file = new File(path);

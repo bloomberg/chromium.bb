@@ -61,7 +61,7 @@ public class JavaBridgeFieldsTest extends JavaBridgeTestBase {
     // The Java bridge does not provide access to fields.
     // FIXME: Consider providing support for this. See See b/4408210.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testFieldTypes() throws Throwable {
         assertEquals("undefined",
                 executeJavaScriptAndGetStringResult("typeof testObject.booleanField"));

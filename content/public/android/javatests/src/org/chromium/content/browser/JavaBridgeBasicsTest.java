@@ -117,13 +117,13 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testTypeOfInjectedObject() throws Throwable {
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testController"));
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testAdditionNotReflectedUntilReload() throws Throwable {
         assertEquals("undefined", executeJavaScriptAndGetStringResult("typeof testObject"));
         runTestOnUiThread(new Runnable() {
@@ -148,7 +148,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testRemovalNotReflectedUntilReload() throws Throwable {
         injectObjectAndReload(new Object(), "testObject");
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
@@ -173,7 +173,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testRemoveObjectNotAdded() throws Throwable {
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mTestCallbackHelperContainer.getOnPageFinishedHelper();
@@ -190,26 +190,26 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testTypeOfMethod() throws Throwable {
         assertEquals("function",
                 executeJavaScriptAndGetStringResult("typeof testController.setStringValue"));
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testTypeOfInvalidMethod() throws Throwable {
         assertEquals("undefined", executeJavaScriptAndGetStringResult("typeof testController.foo"));
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testCallingInvalidMethodRaisesException() throws Throwable {
         assertRaisesException("testController.foo()");
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testUncaughtJavaExceptionRaisesJavaScriptException() throws Throwable {
         injectObjectAndReload(new Object() {
             public void method() { throw new RuntimeException("foo"); }
@@ -219,7 +219,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
 
     // Note that this requires that we can pass a JavaScript string to Java.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testTypeOfStaticMethod() throws Throwable {
         injectObjectAndReload(new ObjectWithStaticMethod(), "testObject");
         executeJavaScript("testController.setStringValue(typeof testObject.staticMethod)");
@@ -228,7 +228,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
 
     // Note that this requires that we can pass a JavaScript string to Java.
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testCallStaticMethod() throws Throwable {
         injectObjectAndReload(new ObjectWithStaticMethod(), "testObject");
         executeJavaScript("testController.setStringValue(testObject.staticMethod())");
@@ -236,7 +236,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPrivateMethodNotExposed() throws Throwable {
         injectObjectAndReload(new Object() {
             private void method() {}
@@ -249,7 +249,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReplaceInjectedObject() throws Throwable {
         injectObjectAndReload(new Object() {
             public void method() { mTestController.setStringValue("object 1"); }
@@ -265,14 +265,14 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testInjectNullObjectIsIgnored() throws Throwable {
         injectObjectAndReload(null, "testObject");
         assertEquals("undefined", executeJavaScriptAndGetStringResult("typeof testObject"));
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReplaceInjectedObjectWithNullObjectIsIgnored() throws Throwable {
         injectObjectAndReload(new Object(), "testObject");
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
@@ -281,7 +281,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testCallOverloadedMethodWithDifferentNumberOfArguments() throws Throwable {
         injectObjectAndReload(new Object() {
             public void method() { mTestController.setStringValue("0 args"); }
@@ -301,14 +301,14 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testCallMethodWithWrongNumberOfArgumentsRaisesException() throws Throwable {
         assertRaisesException("testController.setIntValue()");
         assertRaisesException("testController.setIntValue(42, 42)");
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testObjectPersistsAcrossPageLoads() throws Throwable {
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testController"));
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
@@ -325,7 +325,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testSameObjectInjectedMultipleTimes() throws Throwable {
         class TestObject {
             private int mNumMethodInvocations;
@@ -353,7 +353,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testCallMethodOnReturnedObject() throws Throwable {
         injectObjectAndReload(new Object() {
             public Object getInnerObject() {
@@ -367,7 +367,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReturnedObjectInjectedElsewhere() throws Throwable {
         class InnerObject {
             private int mNumMethodInvocations;
@@ -400,7 +400,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testMethodInvokedOnBackgroundThread() throws Throwable {
         injectObjectAndReload(new Object() {
             public void captureThreadId() {
@@ -419,7 +419,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPublicInheritedMethod() throws Throwable {
         class Base {
             public void method(int x) { mTestController.setIntValue(x); }
@@ -433,7 +433,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testPrivateInheritedMethod() throws Throwable {
         class Base {
             private void method() {}
@@ -445,7 +445,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testOverriddenMethod() throws Throwable {
         class Base {
             public void method() { mTestController.setStringValue("base"); }
@@ -459,7 +459,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testEnumerateMembers() throws Throwable {
         injectObjectAndReload(new Object() {
             public void method() {}
@@ -476,7 +476,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReflectPublicMethod() throws Throwable {
         injectObjectAndReload(new Object() {
             public String method() { return "foo"; }
@@ -487,7 +487,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReflectPublicField() throws Throwable {
         injectObjectAndReload(new Object() {
             public String field = "foo";
@@ -497,7 +497,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReflectPrivateMethodRaisesException() throws Throwable {
         injectObjectAndReload(new Object() {
             private void method() {};
@@ -510,7 +510,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testReflectPrivateFieldRaisesException() throws Throwable {
         injectObjectAndReload(new Object() {
             private int field;
@@ -523,7 +523,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testAllowNonAnnotatedMethods() throws Throwable {
         injectObjectAndReload(new Object() {
             public String allowed() { return "foo"; }
@@ -537,7 +537,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testAllowOnlyAnnotatedMethods() throws Throwable {
         class Test {
             public String allowed() { return "foo"; }
@@ -568,7 +568,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testAnnotationRequirementRetainsPropertyAcrossObjects() throws Throwable {
         class Test {
             @JavascriptInterface
@@ -610,7 +610,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "Android-JavaBridge"})
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testAnnotationDoesNotGetInherited() throws Throwable {
         class Base {
             @JavascriptInterface

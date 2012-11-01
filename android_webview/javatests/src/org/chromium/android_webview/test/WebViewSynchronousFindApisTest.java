@@ -17,7 +17,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -27,7 +27,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -38,7 +38,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -49,26 +49,26 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllDoesNotFind() throws Throwable {
         assertEquals(0, findAllSyncOnUiThread("foo"));
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllEmptyPage() throws Throwable {
         assertEquals(0, findAllSyncOnUiThread("foo"));
     }
 
     @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllEmptyString() throws Throwable {
         assertEquals(0, findAllSyncOnUiThread(""));
     }
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -83,7 +83,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * http://crbug.com/154809
      */
     @FlakyTest
@@ -98,7 +98,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -116,7 +116,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /**
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * http://crbug.com/154760
      */
     @FlakyTest
@@ -132,7 +132,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -143,7 +143,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -156,7 +156,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
@@ -168,7 +168,7 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
 
     /*
      * @SmallTest
-     * @Feature({"Android-WebView", "FindInPage"})
+     * @Feature({"AndroidWebView", "FindInPage"})
      * BUG=158284
      */
     @DisabledTest
