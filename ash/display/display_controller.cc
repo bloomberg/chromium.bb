@@ -43,7 +43,7 @@ const int kMaxValidOffset = 10000;
 
 // The number of pixels to overlap between the primary and secondary displays,
 // in case that the offset value is too large.
-const int kMinimumOverlapForInvalidOffset = 100;
+const int kMinimumOverlapForInvalidOffset = 50;
 
 bool GetPositionFromString(const base::StringPiece& position,
                            DisplayLayout::Position* field) {

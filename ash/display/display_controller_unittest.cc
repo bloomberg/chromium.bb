@@ -57,18 +57,12 @@ gfx::Display GetSecondaryDisplay() {
       Shell::GetAllRootWindows()[1]);
 }
 
-void SetSecondaryDisplayLayoutAndOffset(DisplayLayout::Position position,
-                                        int offset) {
+void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
   DisplayLayout layout = display_controller->default_display_layout();
   layout.position = position;
-  layout.offset = offset;
   display_controller->SetDefaultDisplayLayout(layout);
-}
-
-void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
-  SetSecondaryDisplayLayoutAndOffset(position, 0);
 }
 
 }  // namespace
@@ -96,7 +90,7 @@ TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
   gfx::Insets insets(5, 5, 5, 5);
   secondary_display->UpdateWorkAreaFromInsets(insets);
 
-  // Default layout is RIGHT.
+  // Default layout is LEFT.
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("500,0 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("505,5 390x390", GetSecondaryDisplay().work_area().ToString());
@@ -121,41 +115,6 @@ TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,-400 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("5,-395 390x390", GetSecondaryDisplay().work_area().ToString());
-
-  // Layout to the right with an offset.
-  SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, 300);
-  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("500,300 400x400", GetSecondaryDisplay().bounds().ToString());
-
-  // Keep the minimum 100.
-  SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, 490);
-  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("500,400 400x400", GetSecondaryDisplay().bounds().ToString());
-
-  SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, -400);
-  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("500,-300 400x400", GetSecondaryDisplay().bounds().ToString());
-
-  //  Layout to the bottom with an offset.
-  SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -200);
-  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("-200,500 400x400", GetSecondaryDisplay().bounds().ToString());
-
-  // Keep the minimum 100.
-  SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, 490);
-  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("400,500 400x400", GetSecondaryDisplay().bounds().ToString());
-
-  SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -400);
-  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("-300,500 400x400", GetSecondaryDisplay().bounds().ToString());
-
 }
 
 TEST_F(DisplayControllerTest, MAYBE_BoundsUpdated) {
