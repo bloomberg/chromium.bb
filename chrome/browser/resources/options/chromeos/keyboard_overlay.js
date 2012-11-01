@@ -19,7 +19,25 @@ cr.define('options', function() {
 
   KeyboardOverlay.prototype = {
     __proto__: options.SettingsDialog.prototype,
+
+    /**
+     * Show/hide the caps lock remapping section.
+     * @private
+     */
+    showCapsLockOptions_: function(show) {
+      $('caps-lock-remapping-section').hidden = !show;
+    },
   };
+
+  // Forward public APIs to private implementations.
+  [
+    'showCapsLockOptions',
+  ].forEach(function(name) {
+    KeyboardOverlay[name] = function() {
+      var instance = KeyboardOverlay.getInstance();
+      return instance[name + '_'].apply(instance, arguments);
+    };
+  });
 
   // Export
   return {

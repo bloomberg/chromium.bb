@@ -20,6 +20,7 @@ class KeyboardHandler : public ::options::OptionsPageUIHandler {
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void InitializePage() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardHandler);

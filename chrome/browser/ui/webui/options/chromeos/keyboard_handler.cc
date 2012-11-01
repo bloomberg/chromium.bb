@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
 
+#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/common/chrome_switches.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -81,6 +84,15 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     }
     localized_strings->Set(kDataValuesNames[i], list_value);
   }
+}
+
+void KeyboardHandler::InitializePage() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kHasChromeOSKeyboard))
+    return;
+  const base::FundamentalValue show_options(true);
+  web_ui()->CallJavascriptFunction(
+      "options.KeyboardOverlay.showCapsLockOptions", show_options);
 }
 
 }  // namespace options

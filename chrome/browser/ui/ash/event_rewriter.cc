@@ -25,11 +25,13 @@
 #undef Status
 
 #include "base/chromeos/chromeos_version.h"
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/x/x11_util.h"
@@ -66,6 +68,7 @@ const struct ModifierRemapping {
 };
 
 const ModifierRemapping* kModifierRemappingCtrl = &kModifierRemappings[1];
+const ModifierRemapping* kModifierRemappingCapsLock = &kModifierRemappings[4];
 
 // A structure for converting |native_modifier| to a pair of |flag| and
 // |pref_name|.
@@ -112,12 +115,17 @@ bool IsRight(KeySym native_keysym) {
   return false;
 }
 
-bool ShouldRemapCapsLock() {
-  // Since both German Neo2 XKB layout and Caps Lock depend on Mod3Mask, it's
-  // not possible to make both features work. For now, we don't remap Mod3Mask
-  // when Neo2 is in use.
+bool HasChromeOSKeyboard() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHasChromeOSKeyboard);
+}
+
+bool IsMod3UsedByCurrentInputMethod() {
+  // Since both German Neo2 XKB layout and Caps Lock depend on Mod3Mask,
+  // it's not possible to make both features work. For now, we don't remap
+  // Mod3Mask when Neo2 is in use.
   // TODO(yusukes): Remove the restriction.
-  return InputMethodManager::GetInstance()->GetCurrentInputMethod().id() !=
+  return InputMethodManager::GetInstance()->GetCurrentInputMethod().id() ==
       kNeo2LayoutId;
 }
 #endif
@@ -394,7 +402,12 @@ void EventRewriter::GetRemappedModifierMasks(
   if (!pref_service)
     return;
 
-  const bool skip_mod3 = !ShouldRemapCapsLock();
+  // When a Chrome OS keyboard is available, the configuration UI for Caps Lock
+  // is not shown. Therefore, ignore the kLanguageRemapCapsLockKeyTo syncable
+  // pref. If Mod3 is in use, don't check the pref either.
+  const bool skip_mod3 =
+    HasChromeOSKeyboard() || IsMod3UsedByCurrentInputMethod();
+
   for (size_t i = 0; i < arraysize(kModifierFlagToPrefName); ++i) {
     if (skip_mod3 &&
         (kModifierFlagToPrefName[i].native_modifier == Mod3Mask)) {
@@ -462,45 +475,54 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   ui::KeyboardCode remapped_keycode = event->key_code();
   KeyCode remapped_native_keycode = xkey->keycode;
 
-  const bool skip_mod3 = !ShouldRemapCapsLock();
-
   // First, remap |keysym|.
-  const char* pref_name = NULL;
+  const ModifierRemapping* remapped_key = NULL;
   switch (keysym) {
-    // XF86XK_Launch7 (F16) with Mod3Mask is sent when Caps Lock is pressed.
+    // On Chrome OS, XF86XK_Launch7 (F16) with Mod3Mask is sent when Caps Lock
+    // is pressed (with one exception: when IsMod3UsedByCurrentInputMethod() is
+    // true, the key generates XK_ISO_Level3_Shift with Mod3Mask, not
+    // XF86XK_Launch7).
     case XF86XK_Launch7:
-      pref_name = skip_mod3 ? NULL : prefs::kLanguageRemapCapsLockKeyTo;
+      // When a Chrome OS keyboard is available, the configuration UI for Caps
+      // Lock is not shown. Therefore, ignore the kLanguageRemapCapsLockKeyTo
+      // syncable pref.
+      if (HasChromeOSKeyboard())
+        remapped_key = kModifierRemappingCapsLock;
+      else
+        remapped_key =
+            GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, *pref_service);
       break;
     case XK_Super_L:
     case XK_Super_R:
-      pref_name = prefs::kLanguageRemapSearchKeyTo;
+      // Rewrite Command-L/R key presses on an Apple keyboard to Control-L/R.
+      if (IsAppleKeyboard())
+        remapped_key = kModifierRemappingCtrl;
+      else
+        remapped_key =
+            GetRemappedKey(prefs::kLanguageRemapSearchKeyTo, *pref_service);
       break;
     case XK_Control_L:
     case XK_Control_R:
-      pref_name = prefs::kLanguageRemapControlKeyTo;
+      remapped_key =
+          GetRemappedKey(prefs::kLanguageRemapControlKeyTo, *pref_service);
       break;
     case XK_Alt_L:
     case XK_Alt_R:
     case XK_Meta_L:
     case XK_Meta_R:
-      pref_name = prefs::kLanguageRemapAltKeyTo;
+      remapped_key =
+          GetRemappedKey(prefs::kLanguageRemapAltKeyTo, *pref_service);
       break;
     default:
       break;
   }
-  if (pref_name) {
-    const ModifierRemapping* remapped_key =
-        GetRemappedKey(pref_name, *pref_service);
-    // Rewrite Command-L/R key presses on an Apple keyboard to Control-L/R.
-    if (IsAppleKeyboard() && (keysym == XK_Super_L || keysym == XK_Super_R))
-      remapped_key = kModifierRemappingCtrl;
-    if (remapped_key) {
-      remapped_keycode = remapped_key->keycode;
-      const size_t level = (event->IsShiftDown() ? (1 << 1) : 0) +
-          (IsRight(keysym) ? (1 << 0) : 0);
-      const KeySym native_keysym = remapped_key->native_keysyms[level];
-      remapped_native_keycode = NativeKeySymToNativeKeycode(native_keysym);
-    }
+
+  if (remapped_key) {
+    remapped_keycode = remapped_key->keycode;
+    const size_t level = (event->IsShiftDown() ? (1 << 1) : 0) +
+        (IsRight(keysym) ? (1 << 0) : 0);
+    const KeySym native_keysym = remapped_key->native_keysyms[level];
+    remapped_native_keycode = NativeKeySymToNativeKeycode(native_keysym);
   }
 
   // Next, remap modifier bits.

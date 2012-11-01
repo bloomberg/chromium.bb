@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/ash/event_rewriter.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/events/event.h"
@@ -1508,8 +1510,40 @@ TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLock) {
                                       ui::ET_KEY_PRESSED,
                                       keycode_launch7_,
                                       0U));
-
   EXPECT_TRUE(xkeyboard.caps_lock_is_enabled_);
+}
+
+TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLockWithFlag) {
+  // TODO(yusukes): Reenable the test once build servers are upgraded.
+  TestingPrefService prefs;
+  chromeos::Preferences::RegisterUserPrefs(&prefs);
+
+  chromeos::input_method::MockXKeyboard xkeyboard;
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+  rewriter.set_xkeyboard_for_testing(&xkeyboard);
+  EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+
+  // F16 should work as CapsLock even when --has-chromeos-keyboard is specified.
+  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kHasChromeOSKeyboard, "");
+
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
+                                      ui::EF_CAPS_LOCK_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_caps_lock_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_F16,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_launch7_,
+                                      0U));
+  EXPECT_TRUE(xkeyboard.caps_lock_is_enabled_);
+
+  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
@@ -1564,6 +1598,52 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
                                       ui::ET_KEY_PRESSED,
                                       keycode_a_,
                                       Mod1Mask | Mod3Mask));
+}
+
+TEST_F(EventRewriterTest, DISABLED_TestRewriteCapsLockToControlWithFlag) {
+  // TODO(yusukes): Reenable the test once build servers are upgraded.
+  TestingPrefService prefs;
+  chromeos::Preferences::RegisterUserPrefs(&prefs);
+  IntegerPrefMember control;
+  control.Init(prefs::kLanguageRemapCapsLockKeyTo, &prefs, NULL);
+  control.SetValue(chromeos::input_method::kControlKey);
+
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+
+  // The prefs::kLanguageRemapCapsLockKeyTo pref should be ignored when
+  // --has-chromeos-keyboard is set.
+  const CommandLine original_cl(*CommandLine::ForCurrentProcess());
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kHasChromeOSKeyboard, "");
+
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
+                                      ui::EF_CAPS_LOCK_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_caps_lock_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_F16,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_launch7_,
+                                      0U));
+
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod3Mask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_A,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_a_,
+                                      Mod3Mask));
+
+  *CommandLine::ForCurrentProcess() = original_cl;
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {

@@ -41,9 +41,9 @@
                i18n-options="remapAltKeyToValue" dialog-pref></select>
          </td>
        </tr>
-<!-- TODO(yusukes): Show this UI when --has-chromeos-keyboard flag is not
-                    passed to Chrome.
-       <tr>
+       <!-- The caps lock section is hidden by default. This is only visible
+            when --has-chromeos-keyboard flag is not passed. -->
+       <tr id="caps-lock-remapping-section" hidden>
          <td>
            <label class="option-name" for="remap-caps-lock-key-to"
                i18n-content="remapCapsLockKeyToContent">
@@ -56,7 +56,6 @@
                i18n-options="remapCapsLockKeyToValue" dialog-pref></select>
          </td>
        </tr>
--->
     </table>
   </div>
   <div class="action-area">
