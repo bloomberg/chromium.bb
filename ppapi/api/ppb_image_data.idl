@@ -89,7 +89,10 @@ interface PPB_ImageData {
 
   /**
    * IsImageDataFormatSupported() determines if the given image data format is
-   * supported by the browser.
+   * supported by the browser. Note: <code>PP_IMAGEDATAFORMAT_BGRA_PREMUL</code>
+   * and <code>PP_IMAGEDATAFORMAT_RGBA_PREMUL</code> formats are always
+   * supported. Other image formats do not make this guarantee, and should be
+   * checked first with IsImageDataFormatSupported() before using.
    *
    * @param[in] format The image data format.
    *

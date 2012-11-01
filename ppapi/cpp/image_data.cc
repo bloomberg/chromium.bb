@@ -75,6 +75,14 @@ uint32_t* ImageData::GetAddr32(const Point& coord) {
 }
 
 // static
+bool ImageData::IsImageDataFormatSupported(PP_ImageDataFormat format) {
+  if (!has_interface<PPB_ImageData_1_0>())
+    return false;
+  return PP_ToBool(get_interface<PPB_ImageData_1_0>()->
+      IsImageDataFormatSupported(format));
+}
+
+// static
 PP_ImageDataFormat ImageData::GetNativeImageDataFormat() {
   if (!has_interface<PPB_ImageData_1_0>())
     return PP_IMAGEDATAFORMAT_BGRA_PREMUL;  // Default to something on failure.

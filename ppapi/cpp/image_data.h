@@ -72,6 +72,18 @@ class ImageData : public Resource {
   /// @return A new image data context.
   ImageData& operator=(const ImageData& other);
 
+  /// IsImageDataFormatSupported() returns <code>true</code> if the supplied
+  /// format is supported by the browser. Note:
+  /// <code>PP_IMAGEDATAFORMAT_BGRA_PREMUL</code> and
+  /// <code>PP_IMAGEDATAFORMAT_RGBA_PREMUL</code> formats are always supported.
+  /// Other image formats do not make this guarantee, and should be checked
+  /// first with IsImageDataFormatSupported() before using.
+  ///
+  /// @param[in] format Image data format.
+  ///
+  /// @return <code>true</code> if the format is supported by the browser.
+  static bool IsImageDataFormatSupported(PP_ImageDataFormat format);
+
   /// GetNativeImageDataFormat() determines the browser's preferred format for
   /// images. Using this format guarantees no extra conversions will occur when
   /// painting.
