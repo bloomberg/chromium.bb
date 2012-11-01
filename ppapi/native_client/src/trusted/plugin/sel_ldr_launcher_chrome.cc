@@ -11,16 +11,19 @@ LaunchNaClProcessFunc launch_nacl_process = NULL;
 namespace plugin {
 
 bool SelLdrLauncherChrome::Start(const char* url) {
-  return Start(0, url);
+  return Start(0, url, false);
 }
 
-bool SelLdrLauncherChrome::Start(PP_Instance instance, const char* url) {
+bool SelLdrLauncherChrome::Start(PP_Instance instance,
+                                 const char* url,
+                                 bool enable_ppapi_dev) {
   // send a synchronous message to the browser process
   // TODO(sehr): This is asserted to be one.  Remove this parameter.
   static const int kNumberOfChannelsToBeCreated = 1;
   if (!launch_nacl_process ||
       !launch_nacl_process(instance,
                            url,
+                           enable_ppapi_dev,
                            kNumberOfChannelsToBeCreated,
                            &channel_)) {
     return false;

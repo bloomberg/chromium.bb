@@ -698,7 +698,9 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
 }
 
 bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
-                           ErrorInfo* error_info, const nacl::string& url,
+                           ErrorInfo* error_info,
+                           const nacl::string& url,
+                           bool enable_ppapi_dev,
                            pp::CompletionCallback crash_cb) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
@@ -711,7 +713,9 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                           "ServiceRuntime: failed to create sel_ldr launcher");
     return false;
   }
-  bool started = tmp_subprocess->Start(plugin_->pp_instance(), url.c_str());
+  bool started = tmp_subprocess->Start(plugin_->pp_instance(),
+                                       url.c_str(),
+                                       enable_ppapi_dev);
   if (!started) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (start failed)\n"));
     error_info->SetReport(ERROR_SEL_LDR_LAUNCH,

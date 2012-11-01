@@ -18,6 +18,7 @@
 
 typedef bool (*LaunchNaClProcessFunc)(PP_Instance instance,
                                       const char* url,
+                                      bool enable_ppapi_dev,
                                       int socket_count,
                                       nacl::Handle* result_sockets);
 

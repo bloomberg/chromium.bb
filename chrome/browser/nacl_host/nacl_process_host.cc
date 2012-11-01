@@ -132,10 +132,11 @@ bool NaClProcessHost::PluginListener::OnMessageReceived(
   return host_->OnUntrustedMessageForwarded(msg);
 }
 
-// TODO(brettw) bug 153036 set the pepper permissions up for dev interfaces.
-NaClProcessHost::NaClProcessHost(const GURL& manifest_url, bool off_the_record)
+NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
+                                 uint32 permission_bits,
+                                 bool off_the_record)
     : manifest_url_(manifest_url),
-      permissions_(ppapi::PpapiPermissions::GetForCommandLine(0)),
+      permissions_(ppapi::PpapiPermissions::GetForCommandLine(permission_bits)),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
 #elif defined(OS_LINUX)

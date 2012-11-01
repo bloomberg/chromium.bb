@@ -42,8 +42,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
  public:
   // manifest_url: the URL of the manifest of the Native Client plugin being
   // executed.
+  // permission_bits: controls which interfaces the NaCl plugin can use.
   // off_the_record: was the process launched from an incognito renderer?
-  NaClProcessHost(const GURL& manifest_url, bool off_the_record);
+  NaClProcessHost(const GURL& manifest_url,
+                  uint32 permission_bits,
+                  bool off_the_record);
   virtual ~NaClProcessHost();
 
   // Do any minimal work that must be done at browser startup.

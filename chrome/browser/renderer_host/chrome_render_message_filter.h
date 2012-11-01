@@ -79,6 +79,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
 #if !defined(DISABLE_NACL)
   void OnLaunchNaCl(const GURL& manifest_url,
+                    uint32 permission_bits,
                     int socket_count,
                     IPC::Message* reply_msg);
   void OnGetReadonlyPnaclFd(const std::string& filename,

@@ -563,6 +563,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
       new_service_runtime->Start(wrapper,
                                  error_info,
                                  manifest_base_url(),
+                                 enable_dev_interfaces_,
                                  crash_cb);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
                  service_runtime_started));
@@ -599,8 +600,7 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
   }
   // Try to start the Chrome IPC-based proxy first. If that fails, we
   // must be using the SRPC proxy.
-  if (!nacl_interface_->StartPpapiProxy(pp_instance(),
-                                        enable_dev_interfaces_) &&
+  if (!nacl_interface_->StartPpapiProxy(pp_instance()) &&
       !main_subprocess_.StartJSObjectProxy(this, error_info)) {
     return false;
   }

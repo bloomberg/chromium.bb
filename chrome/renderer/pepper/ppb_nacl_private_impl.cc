@@ -39,6 +39,7 @@ base::LazyInstance<scoped_refptr<IPC::SyncMessageFilter> >
 struct InstanceInfo {
   InstanceInfo() : plugin_child_id(0) {}
   GURL url;
+  ppapi::PpapiPermissions permissions;
   int plugin_child_id;
   IPC::ChannelHandle channel_handle;
 };
@@ -51,6 +52,7 @@ base::LazyInstance<InstanceInfoMap> g_instance_info =
 // Launch NaCl's sel_ldr process.
 PP_Bool LaunchSelLdr(PP_Instance instance,
                      const char* alleged_url,
+                     bool enable_ppapi_dev,
                      int socket_count,
                      void* imc_handles) {
   std::vector<nacl::FileDescriptor> sockets;
@@ -60,8 +62,20 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
 
   InstanceInfo instance_info;
   instance_info.url = GURL(alleged_url);
+
+  uint32_t perm_bits = ppapi::PERMISSION_NONE;
+  // Conditionally block 'Dev' interfaces. We do this for the NaCl process, so
+  // it's clearer to developers when they are using 'Dev' inappropriately. We
+  // must also check on the trusted side of the proxy.
+  // TODO(bbudge) verify we're blocking 'Dev' interfaces on the trusted side.
+  if (enable_ppapi_dev)
+    perm_bits |= ppapi::PERMISSION_DEV;
+  instance_info.permissions = ppapi::PpapiPermissions(perm_bits);
+
   if (!sender->Send(new ChromeViewHostMsg_LaunchNaCl(
-          instance_info.url, socket_count, &sockets,
+          instance_info.url,
+          perm_bits,
+          socket_count, &sockets,
           &instance_info.channel_handle,
           &instance_info.plugin_child_id))) {
     return PP_FALSE;
@@ -85,8 +99,7 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
   return PP_TRUE;
 }
 
-PP_Bool StartPpapiProxy(PP_Instance instance,
-                        bool allow_dev_interfaces) {
+PP_Bool StartPpapiProxy(PP_Instance instance) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNaClIPCProxy)) {
     InstanceInfoMap& map = g_instance_info.Get();
@@ -101,22 +114,20 @@ PP_Bool StartPpapiProxy(PP_Instance instance,
     if (!plugin_instance)
       return PP_FALSE;
 
-  // Create a new module for each instance of the NaCl plugin that is using
-  // the IPC based out-of-process proxy. We can't use the existing module,
-  // because it is configured for the in-process NaCl plugin, and we must
-  // keep it that way to allow the page to create other instances.
-  webkit::ppapi::PluginModule* plugin_module = plugin_instance->module();
-  scoped_refptr<webkit::ppapi::PluginModule> nacl_plugin_module(
-      plugin_module->CreateModuleForNaClInstance());
+    // Create a new module for each instance of the NaCl plugin that is using
+    // the IPC based out-of-process proxy. We can't use the existing module,
+    // because it is configured for the in-process NaCl plugin, and we must
+    // keep it that way to allow the page to create other instances.
+    webkit::ppapi::PluginModule* plugin_module = plugin_instance->module();
+    scoped_refptr<webkit::ppapi::PluginModule> nacl_plugin_module(
+        plugin_module->CreateModuleForNaClInstance());
 
-    ppapi::PpapiPermissions permissions(
-        allow_dev_interfaces ? ppapi::PERMISSION_DEV : 0);
     content::RendererPpapiHost* renderer_ppapi_host =
         content::RendererPpapiHost::CreateExternalPluginModule(
             nacl_plugin_module,
             plugin_instance,
             FilePath().AppendASCII(instance_info.url.spec()),
-            permissions,
+            instance_info.permissions,
             instance_info.channel_handle,
             instance_info.plugin_child_id);
     if (renderer_ppapi_host) {
