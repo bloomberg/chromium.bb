@@ -65,7 +65,7 @@ static bool HandleDebugUrl(GURL* url, BrowserContext* browser_context) {
   return *url == GURL(chrome::kChromeUICrashURL) ||
          *url == GURL(chrome::kChromeUIHangURL) ||
          *url == GURL(chrome::kChromeUIKillURL) ||
-         *url == GURL(chrome::kChromeUIShorthangURL);
+         *url == GURL(kChromeUIShorthangURL);
 }
 
 // static

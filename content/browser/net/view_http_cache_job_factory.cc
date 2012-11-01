@@ -136,12 +136,12 @@ int ViewHttpCacheJob::Core::Start(const net::URLRequest& request,
 
   AddRef();  // Released on OnIOComplete().
   std::string cache_key =
-      request.url().spec().substr(strlen(chrome::kChromeUINetworkViewCacheURL));
+      request.url().spec().substr(strlen(kChromeUINetworkViewCacheURL));
 
   int rv;
   if (cache_key.empty()) {
     rv = cache_helper_.GetContentsHTML(request.context(),
-                                       chrome::kChromeUINetworkViewCacheURL,
+                                       kChromeUINetworkViewCacheURL,
                                        &data_, callback_);
   } else {
     rv = cache_helper_.GetEntryInfoHTML(cache_key, request.context(),

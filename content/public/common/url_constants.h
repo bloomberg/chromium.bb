@@ -50,8 +50,6 @@ CONTENT_EXPORT extern const char kChromeUIGpuCrashURL[];
 CONTENT_EXPORT extern const char kChromeUIGpuHangURL[];
 CONTENT_EXPORT extern const char kChromeUIHangURL[];
 CONTENT_EXPORT extern const char kChromeUIKillURL[];
-CONTENT_EXPORT extern const char kChromeUINetworkViewCacheURL[];
-CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
 }  // namespace chrome
 
@@ -62,6 +60,10 @@ CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
 
 // Special URL used to start a navigation to an error page.
 CONTENT_EXPORT extern const char kUnreachableWebDataURL[];
+
+// Full about URLs (including schemes).
+CONTENT_EXPORT extern const char kChromeUINetworkViewCacheURL[];
+CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
 // Special URL used to swap out a view being rendered by another process.
 extern const char kSwappedOutURL[];

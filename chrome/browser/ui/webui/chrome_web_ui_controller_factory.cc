@@ -459,7 +459,7 @@ bool ChromeWebUIControllerFactory::IsURLAcceptableForWebUI(
       url == GURL(chrome::kChromeUICrashURL) ||
       url == GURL(chrome::kChromeUIKillURL) ||
       url == GURL(chrome::kChromeUIHangURL) ||
-      url == GURL(chrome::kChromeUIShorthangURL) ||
+      url == GURL(content::kChromeUIShorthangURL) ||
       // Data URLs are usually not allowed in WebUI for security reasons.
       // BalloonHosts are one exception needed by ChromeOS, and are safe because
       // they cannot be scripted by other pages.

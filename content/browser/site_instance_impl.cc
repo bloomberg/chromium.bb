@@ -32,7 +32,7 @@ static bool IsURLSameAsAnySiteInstance(const GURL& url) {
   return url == GURL(chrome::kChromeUICrashURL) ||
          url == GURL(chrome::kChromeUIKillURL) ||
          url == GURL(chrome::kChromeUIHangURL) ||
-         url == GURL(chrome::kChromeUIShorthangURL);
+         url == GURL(kChromeUIShorthangURL);
 }
 
 int32 SiteInstanceImpl::next_site_instance_id_ = 1;

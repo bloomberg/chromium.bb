@@ -434,7 +434,7 @@ static void MaybeHandleDebugURL(const GURL& url) {
     for (;;) {
       base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
     }
-  } else if (url == GURL(chrome::kChromeUIShorthangURL)) {
+  } else if (url == GURL(kChromeUIShorthangURL)) {
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
   }
 }

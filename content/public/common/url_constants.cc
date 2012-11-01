@@ -42,8 +42,6 @@ const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";
 const char kChromeUIGpuHangURL[] = "chrome://gpuhang";
 const char kChromeUIHangURL[] = "chrome://hang";
 const char kChromeUIKillURL[] = "chrome://kill";
-const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
-const char kChromeUIShorthangURL[] = "chrome://shorthang";
 
 }  // namespace chrome
 
@@ -54,6 +52,9 @@ const char kStandardSchemeSeparator[] = "://";
 // This error URL is loaded in normal web renderer processes, so it should not
 // have a chrome:// scheme that might let it be confused with a WebUI page.
 const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
+
+const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
+const char kChromeUIShorthangURL[] = "chrome://shorthang";
 
 // This URL is loaded when a page is swapped out and replaced by a page in a
 // different renderer process.  It must have a unique origin that cannot be

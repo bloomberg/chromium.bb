@@ -490,7 +490,7 @@ const char* const kChromeDebugURLs[] = {
   kChromeUICrashURL,
   kChromeUIKillURL,
   kChromeUIHangURL,
-  kChromeUIShorthangURL,
+  content::kChromeUIShorthangURL,
   kChromeUIGpuCleanURL,
   kChromeUIGpuCrashURL,
   kChromeUIGpuHangURL,
