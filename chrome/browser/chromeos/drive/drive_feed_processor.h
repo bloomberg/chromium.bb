@@ -65,18 +65,17 @@ class DriveFeedProcessor {
                           int64 feed_changestamp,
                           std::set<FilePath>* changed_dirs);
 
-  // Helper function for adding a new |entry| from the feed into |directory|. It
-  // checks the type of the entry and updates |changed_dirs| if this file adding
-  // operation needs to raise a directory notification update.
-  void AddEntryToDirectoryAndCollectChangedDirectories(
+  // Helper function for adding a |entry| from the feed to its new parent.
+  // |changed_dirs| are updated if this operation needs to raise a directory
+  // change notification.
+  void AddEntryToParentAndCollectChangedDirectories(
       DriveEntry* entry,
-      DriveDirectory* directory,
+      const ResourceMap& resource_map,
       std::set<FilePath>* changed_dirs);
 
-  // Helper function for removing |entry| from its parent. It checks the type
-  // of the entry and updates |changed_dirs| if this entry removing operation
-  // needs to raise a directory notification update, including children
-  // directories.
+  // Helper function for removing |entry| from its parent.
+  // |changed_dirs| are updated if this operation needs to raise a directory
+  // change notification, including child directories.
   void RemoveEntryFromParentAndCollectChangedDirectories(
       DriveEntry* entry,
       std::set<FilePath>* changed_dirs);

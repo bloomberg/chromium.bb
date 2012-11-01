@@ -137,46 +137,41 @@ void DriveFeedProcessor::ApplyEntryProtoMap(
       RemoveEntryFromParentAndCollectChangedDirectories(
           old_entry, changed_dirs);
 
-      DriveDirectory* parent = ResolveParentDirectoryForNewEntry(entry.get(),
-                                                                 resource_map);
-      AddEntryToDirectoryAndCollectChangedDirectories(
-          entry.release(),
-          parent,
-          changed_dirs);
+      // Add to parent.
+      AddEntryToParentAndCollectChangedDirectories(
+          entry.release(), resource_map, changed_dirs);
     } else {
       // Adding a new file.
-      DriveDirectory* parent = ResolveParentDirectoryForNewEntry(entry.get(),
-                                                                 resource_map);
-      AddEntryToDirectoryAndCollectChangedDirectories(
-          entry.release(),
-          parent,
-          changed_dirs);
+      AddEntryToParentAndCollectChangedDirectories(
+          entry.release(), resource_map, changed_dirs);
     }
   }
   // All entries must be erased from the map.
   DCHECK(resource_map.empty());
 }
 
-void DriveFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
+void DriveFeedProcessor::AddEntryToParentAndCollectChangedDirectories(
     DriveEntry* entry,
-    DriveDirectory* directory,
+    const ResourceMap& resource_map,
     std::set<FilePath>* changed_dirs) {
-  if (!directory) {  // Orphan.
+  DriveDirectory* parent =
+      ResolveParentDirectoryForNewEntry(entry, resource_map);
+
+  if (!parent) {  // Orphan.
     delete entry;
     return;
   }
-  directory->AddEntry(entry);
+  parent->AddEntry(entry);
 
   // Notify this directory that has been created.
   if (entry->AsDriveDirectory())
     changed_dirs->insert(entry->GetFilePath());
 
-  // Notify the parent directory |directory| only if it already exists by
-  // checking if it is attached to the tree (has parent) or if it is root.
-  // The parent directory may not exist here if it is about to be created later
-  // in the same feed.
-  if (directory->parent() || directory == resource_metadata_->root())
-    changed_dirs->insert(directory->GetFilePath());
+  // Notify |parent| only if it already exists by checking if it is attached to
+  // the tree (has parent) or if it is root. The parent of |parent| may not
+  // exist here if it is about to be created later in the same feed.
+  if (parent->parent() || parent == resource_metadata_->root())
+    changed_dirs->insert(parent->GetFilePath());
 }
 
 void DriveFeedProcessor::RemoveEntryFromParentAndCollectChangedDirectories(
