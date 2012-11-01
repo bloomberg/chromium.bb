@@ -39,6 +39,7 @@
         '../webkit/support/webkit_support.gyp:webkit_support',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit_test_support',
+        '<(webkit_src_dir)/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
       ],
       'include_dirs': [
         '..',
@@ -286,7 +287,6 @@
         'content_shell_lib',
         'content_shell_pak',
         '../third_party/mesa/mesa.gyp:osmesa',
-        '<(webkit_src_dir)/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner_resources',
       ],
       'include_dirs': [
         '..',

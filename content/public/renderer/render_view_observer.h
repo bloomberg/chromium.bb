@@ -27,6 +27,7 @@ class WebMouseEvent;
 class WebNode;
 class WebTouchEvent;
 class WebURL;
+struct WebContextMenuData;
 struct WebURLError;
 }
 
@@ -82,6 +83,9 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void ZoomLevelChanged() {};
   virtual void DidChangeScrollOffset(WebKit::WebFrame* frame) {}
   virtual void DraggableRegionsChanged(WebKit::WebFrame* frame) {}
+  virtual void DidRequestShowContextMenu(
+      WebKit::WebFrame* frame,
+      const WebKit::WebContextMenuData& data) {}
 
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}

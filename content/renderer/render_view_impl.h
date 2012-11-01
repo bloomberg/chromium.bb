@@ -692,6 +692,9 @@ class RenderViewImpl : public RenderWidget,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationPolicy policy) OVERRIDE;
   virtual void Repaint(const gfx::Size& size) OVERRIDE;
+  virtual void SetEditCommandForNextKeyEvent(const std::string& name,
+                                             const std::string& value) OVERRIDE;
+  virtual void ClearEditCommands() OVERRIDE;
 
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 

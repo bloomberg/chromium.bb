@@ -146,6 +146,11 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // passed in.
   virtual void Repaint(const gfx::Size& size) = 0;
 
+  // Inject edit commands to be used for the next keyboard event.
+  virtual void SetEditCommandForNextKeyEvent(const std::string& name,
+                                             const std::string& value) = 0;
+  virtual void ClearEditCommands() = 0;
+
  protected:
   virtual ~RenderView() {}
 };

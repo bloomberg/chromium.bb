@@ -6,31 +6,47 @@
 
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "content/public/renderer/render_view.h"
 #include "content/shell/shell_messages.h"
+#include "content/shell/shell_render_process_observer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebFrame;
+using WebKit::WebContextMenuData;
 using WebKit::WebElement;
+using WebKit::WebFrame;
+using WebKit::WebGamepads;
 using WebKit::WebRect;
 using WebKit::WebSize;
-using WebKit::WebTestingSupport;
+using WebKit::WebString;
+using WebKit::WebVector;
 using WebKit::WebView;
+using WebTestRunner::WebTask;
 
 namespace content {
 
 namespace {
+
+void InvokeTaskHelper(void* context) {
+  WebTask* task = reinterpret_cast<WebTask*>(context);
+  task->run();
+  delete task;
+}
 
 std::string DumpDocumentText(WebFrame* frame) {
   // We use the document element's text instead of the body text here because
@@ -138,14 +154,88 @@ void CaptureSnapshot(WebView* view, SkBitmap* snapshot) {
 }  // namespace
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : RenderViewObserver(render_view),
+      is_main_window_(false) {
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
+  if (is_main_window_)
+    ShellRenderProcessObserver::GetInstance()->SetMainWindow(NULL, this);
 }
 
+// WebTestDelegate  -----------------------------------------------------------
+
+void WebKitTestRunner::clearContextMenuData() {
+  last_context_menu_data_.reset();
+}
+
+WebContextMenuData* WebKitTestRunner::lastContextMenuData() const {
+  return last_context_menu_data_.get();
+}
+
+void WebKitTestRunner::clearEditCommand() {
+  render_view()->ClearEditCommands();
+}
+
+void WebKitTestRunner::setEditCommand(const std::string& name,
+                                      const std::string& value) {
+  render_view()->SetEditCommandForNextKeyEvent(name, value);
+}
+
+void WebKitTestRunner::fillSpellingSuggestionList(
+    const WebString& word, WebVector<WebString>* suggestions) {
+  if (word == WebString::fromUTF8("wellcome")) {
+      WebVector<WebString> result(suggestions->size() + 1);
+      for (size_t i = 0; i < suggestions->size(); ++i)
+        result[i] = (*suggestions)[i];
+      result[suggestions->size()] = WebString::fromUTF8("welcome");
+      suggestions->swap(result);
+  }
+}
+
+void WebKitTestRunner::setGamepadData(const WebGamepads& gamepads) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebTestDelegate", "setGamepadData"));
+}
+
+void WebKitTestRunner::printMessage(const std::string& message) {
+  Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
+}
+
+void WebKitTestRunner::postTask(WebTask* task) {
+  WebKit::webKitPlatformSupport()->callOnMainThread(InvokeTaskHelper, task);
+}
+
+void WebKitTestRunner::postDelayedTask(WebTask* task, long long ms) {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WebTask::run, base::Owned(task)),
+      base::TimeDelta::FromMilliseconds(ms));
+}
+
+WebString WebKitTestRunner::registerIsolatedFileSystem(
+    const WebKit::WebVector<WebKit::WebString>& absolute_filenames) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebTestDelegate", "registerIsolatedFileSystem"));
+  return WebString();
+}
+
+long long WebKitTestRunner::getCurrentTimeInMillisecond() {
+    return base::TimeTicks::Now().ToInternalValue() /
+        base::Time::kMicrosecondsPerMillisecond;
+}
+
+WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
+    const std::string& utf8_path) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebTestDelegate", "getAbsoluteWebStringFromUTF8Path"));
+  return WebString();
+}
+
+// RenderViewObserver  --------------------------------------------------------
+
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
-  WebTestingSupport::injectInternalsObject(frame);
+  ShellRenderProcessObserver::GetInstance()->BindTestRunnersToWindow(frame);
 }
 
 void WebKitTestRunner::DidFinishLoad(WebFrame* frame) {
@@ -153,16 +243,25 @@ void WebKitTestRunner::DidFinishLoad(WebFrame* frame) {
     Send(new ShellViewHostMsg_DidFinishLoad(routing_id()));
 }
 
+void WebKitTestRunner::DidRequestShowContextMenu(
+    WebFrame* frame,
+    const WebContextMenuData& data) {
+  last_context_menu_data_.reset(new WebContextMenuData(data));
+}
+
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebKitTestRunner, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureTextDump, OnCaptureTextDump)
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureImageDump, OnCaptureImageDump)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_SetIsMainWindow, OnSetIsMainWindow)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
+
+// Private methods  -----------------------------------------------------------
 
 void WebKitTestRunner::OnCaptureTextDump(bool as_text,
                                          bool printing,
@@ -215,6 +314,11 @@ void WebKitTestRunner::OnCaptureImageDump(
   }
   Send(new ShellViewHostMsg_ImageDump(
       routing_id(), actual_pixel_hash, snapshot));
+}
+
+void WebKitTestRunner::OnSetIsMainWindow() {
+  is_main_window_ = true;
+  ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view(), this);
 }
 
 }  // namespace content

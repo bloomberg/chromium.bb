@@ -3,10 +3,6 @@
 // found in the LICENSE file.
 
 var testRunner = testRunner || {};
-var accessibilityController = accessibilityController || {};
-var gamepadController = gamepadController || {};
-var eventSender = eventSender || {};
-var textInputController = textInputController || {};
 
 (function() {
   native function GetWorkerThreadCount();
@@ -55,20 +51,4 @@ var textInputController = textInputController || {};
   }
   TestRunner.prototype = DefaultHandler("testRunner");
   testRunner = new TestRunner();
-
-  var AccessibilityController = function() {}
-  AccessibilityController.prototype = DefaultHandler("accessibilityController");
-  accessibilityController = new AccessibilityController();
-
-  var GamepadController = function() {}
-  GamepadController.prototype = DefaultHandler("gamepadController");
-  gamepadController = new GamepadController();
-
-  var EventSender = function() {}
-  EventSender.prototype = DefaultHandler("eventSender");
-  eventSender = new EventSender();
-
-  var TextInputController = function() {}
-  TextInputController.prototype = DefaultHandler("textInputController");
-  textInputController = new TextInputController();
 })();

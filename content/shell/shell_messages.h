@@ -23,6 +23,13 @@ IPC_MESSAGE_ROUTED3(ShellViewMsg_CaptureTextDump,
 IPC_MESSAGE_ROUTED1(ShellViewMsg_CaptureImageDump,
                     std::string /* expected pixel hash */)
 
+// Tells the render view that it should register itself as main window for the
+// layout test.
+IPC_MESSAGE_ROUTED0(ShellViewMsg_SetIsMainWindow)
+
+// Tells the renderer to reset all test runners.
+IPC_MESSAGE_CONTROL0(ShellViewMsg_ResetAll)
+
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
                     std::string /* dump */)
@@ -34,6 +41,10 @@ IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ImageDump,
 
 // The main frame of the render view finished loading.
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DidFinishLoad)
+
+// Print a message from a layout test runner.
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessage,
+                    std::string /* message */)
 
 // The following messages correspond to methods of the testRunner.
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_NotifyDone)

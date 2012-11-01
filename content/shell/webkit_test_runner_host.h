@@ -42,6 +42,7 @@ class WebKitTestResultPrinter {
   void PrintImageFooter();
 
   void AddMessage(const std::string& message);
+  void AddMessageRaw(const std::string& message);
   void AddErrorMessage(const std::string& message);
 
  private:
@@ -108,6 +109,7 @@ class WebKitTestController : public base::NonThreadSafe,
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void PluginCrashed(const FilePath& plugin_path) OVERRIDE;
+  virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
@@ -121,6 +123,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnDidFinishLoad();
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
+  void OnPrintMessage(const std::string& message);
 
   scoped_ptr<WebKitTestResultPrinter> printer_;
 
@@ -136,6 +139,8 @@ class WebKitTestController : public base::NonThreadSafe,
   bool is_printing_;
   bool should_stay_on_page_after_handling_before_unload_;
   bool wait_until_done_;
+
+  bool did_set_as_main_window_;
 
   base::CancelableClosure watchdog_;
 

@@ -2169,6 +2169,9 @@ void RenderViewImpl::showContextMenu(
 #endif
 
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
+
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidRequestShowContextMenu(frame, data));
 }
 
 void RenderViewImpl::setStatusText(const WebString& text) {
@@ -2637,6 +2640,17 @@ void RenderViewImpl::loadURLExternally(
 
 void RenderViewImpl::Repaint(const gfx::Size& size) {
   OnMsgRepaint(size);
+}
+
+void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
+                                                   const std::string& value) {
+  EditCommands edit_commands;
+  edit_commands.push_back(EditCommand(name, value));
+  OnSetEditCommandsForNextKeyEvent(edit_commands);
+}
+
+void RenderViewImpl::ClearEditCommands() {
+  edit_commands_.clear();
 }
 
 void RenderViewImpl::loadURLExternally(
@@ -5625,7 +5639,7 @@ void RenderViewImpl::Close() {
 }
 
 void RenderViewImpl::DidHandleKeyEvent() {
-  edit_commands_.clear();
+  ClearEditCommands();
 }
 
 bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
