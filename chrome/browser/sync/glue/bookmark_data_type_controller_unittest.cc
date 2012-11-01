@@ -63,8 +63,7 @@ ProfileKeyedService* BuildBookmarkModel(
   return new BookmarkModelMock;
 }
 
-scoped_refptr<RefcountedProfileKeyedService> BuildHistoryService(
-      Profile* profile) {
+ProfileKeyedService* BuildHistoryService(Profile* profile) {
   return new HistoryMock(profile);
 }
 
@@ -80,7 +79,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
     change_processor_ = new ChangeProcessorMock();
     history_service_ = static_cast<HistoryMock*>(
         HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, BuildHistoryService).get());
+            &profile_, BuildHistoryService));
     bookmark_model_ = static_cast<BookmarkModelMock*>(
         BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, BuildBookmarkModel));

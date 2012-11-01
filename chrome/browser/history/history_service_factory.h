@@ -7,22 +7,21 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class HistoryService;
 
 // Singleton that owns all HistoryService and associates them with
 // Profiles.
-class HistoryServiceFactory
-    : public RefcountedProfileKeyedServiceFactory {
+class HistoryServiceFactory : public ProfileKeyedServiceFactory {
  public:
-  static scoped_refptr<HistoryService> GetForProfile(
+  static HistoryService* GetForProfile(
       Profile* profile, Profile::ServiceAccessType sat);
 
-  static scoped_refptr<HistoryService> GetForProfileIfExists(
+  static HistoryService* GetForProfileIfExists(
       Profile* profile, Profile::ServiceAccessType sat);
 
-  static scoped_refptr<HistoryService> GetForProfileWithoutCreating(
+  static HistoryService* GetForProfileWithoutCreating(
       Profile* profile);
 
   static HistoryServiceFactory* GetInstance();
@@ -40,7 +39,7 @@ class HistoryServiceFactory
   virtual ~HistoryServiceFactory();
 
   // ProfileKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

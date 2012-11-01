@@ -37,6 +37,8 @@ include_rules = [
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_manager.h",
+  "!chrome/browser/profiles/profile_keyed_service.h",
+  "!chrome/browser/profiles/profile_keyed_service_factory.h",
   "!chrome/browser/profiles/refcounted_profile_keyed_service.h",
   "!chrome/browser/profiles/refcounted_profile_keyed_service_factory.h",
   "!chrome/browser/ui/browser.h",

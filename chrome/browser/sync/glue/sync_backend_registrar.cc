@@ -72,7 +72,8 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (history_service) {
-    workers_[syncer::GROUP_HISTORY] = new HistoryModelWorker(history_service);
+    workers_[syncer::GROUP_HISTORY] =
+        new HistoryModelWorker(history_service->AsWeakPtr());
   }
 
   scoped_refptr<PasswordStore> password_store =

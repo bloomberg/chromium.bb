@@ -186,8 +186,9 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
 }
 
 PrerenderLocalPredictor::~PrerenderLocalPredictor() {
-  if (observing_history_service_.get())
-    observing_history_service_->RemoveVisitDatabaseObserver(this);
+  HistoryService* history = GetHistoryIfExists();
+  if (history)
+    history->RemoveVisitDatabaseObserver(this);
 }
 
 void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
@@ -352,15 +353,14 @@ void PrerenderLocalPredictor::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RecordEvent(EVENT_INIT_STARTED);
   HistoryService* history = GetHistoryIfExists();
-  if (!history) {
+  if (history) {
+    history->ScheduleDBTask(
+        new GetVisitHistoryTask(this, kMaxVisitHistory),
+        &history_db_consumer_);
+    history->AddVisitDatabaseObserver(this);
+  } else {
     RecordEvent(EVENT_INIT_FAILED_NO_HISTORY);
-    return;
   }
-  history->ScheduleDBTask(
-      new GetVisitHistoryTask(this, kMaxVisitHistory),
-      &history_db_consumer_);
-  observing_history_service_ = history;
-  observing_history_service_->AddVisitDatabaseObserver(this);
 }
 
 void PrerenderLocalPredictor::OnPLTEventForURL(const GURL& url,

@@ -93,7 +93,7 @@ class VisitedLinkTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &message_loop_) {}
   // Initialize the history system. This should be called before InitVisited().
   bool InitHistory() {
-    history_service_ = new HistoryService;
+    history_service_.reset(new HistoryService);
     return history_service_->Init(history_dir_, NULL);
   }
 
@@ -104,7 +104,7 @@ class VisitedLinkTest : public testing::Test {
   // the VisitedLinkMaster constructor.
   bool InitVisited(int initial_size, bool suppress_rebuild) {
     // Initialize the visited link system.
-    master_.reset(new VisitedLinkMaster(&listener_, history_service_,
+    master_.reset(new VisitedLinkMaster(&listener_, history_service_.get(),
                                         suppress_rebuild, visited_file_,
                                         initial_size));
     return master_->Init();
@@ -119,7 +119,7 @@ class VisitedLinkTest : public testing::Test {
     if (history_service_.get()) {
       history_service_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
       history_service_->Cleanup();
-      history_service_ = NULL;
+      history_service_.reset();
 
       // Wait for the backend class to terminate before deleting the files and
       // moving to the next test. Note: if this never terminates, somebody is
@@ -202,7 +202,7 @@ class VisitedLinkTest : public testing::Test {
   FilePath visited_file_;
 
   scoped_ptr<VisitedLinkMaster> master_;
-  scoped_refptr<HistoryService> history_service_;
+  scoped_ptr<HistoryService> history_service_;
   TrackingVisitedLinkEventListener listener_;
 };
 

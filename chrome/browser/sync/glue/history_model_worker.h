@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 
@@ -22,7 +23,8 @@ namespace browser_sync {
 // from the syncapi that need to be fulfilled on the history thread.
 class HistoryModelWorker : public syncer::ModelSafeWorker {
  public:
-  explicit HistoryModelWorker(HistoryService* history_service);
+  explicit HistoryModelWorker(
+      const base::WeakPtr<HistoryService>& history_service);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
   virtual syncer::SyncerError DoWorkAndWaitUntilDone(
@@ -32,7 +34,7 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
  private:
   virtual ~HistoryModelWorker();
 
-  scoped_refptr<HistoryService> history_service_;
+  const base::WeakPtr<HistoryService> history_service_;
   // Helper object to make sure we don't leave tasks running on the history
   // thread.
   CancelableRequestConsumerT<int, 0> cancelable_consumer_;

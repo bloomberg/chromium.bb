@@ -12,7 +12,7 @@
 #include "chrome/common/pref_names.h"
 
 // static
-scoped_refptr<HistoryService> HistoryServiceFactory::GetForProfile(
+HistoryService* HistoryServiceFactory::GetForProfile(
     Profile* profile, Profile::ServiceAccessType sat) {
   // If saving history is disabled, only allow explicit access.
   if (profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
@@ -20,11 +20,11 @@ scoped_refptr<HistoryService> HistoryServiceFactory::GetForProfile(
     return NULL;
 
   return static_cast<HistoryService*>(
-      GetInstance()->GetServiceForProfile(profile, true).get());
+      GetInstance()->GetServiceForProfile(profile, true));
 }
 
 // static
-scoped_refptr<HistoryService>
+HistoryService*
 HistoryServiceFactory::GetForProfileIfExists(
     Profile* profile, Profile::ServiceAccessType sat) {
   // If saving history is disabled, only allow explicit access.
@@ -33,14 +33,14 @@ HistoryServiceFactory::GetForProfileIfExists(
     return NULL;
 
   return static_cast<HistoryService*>(
-      GetInstance()->GetServiceForProfile(profile, false).get());
+      GetInstance()->GetServiceForProfile(profile, false));
 }
 
 // static
-scoped_refptr<HistoryService>
+HistoryService*
 HistoryServiceFactory::GetForProfileWithoutCreating(Profile* profile) {
   return static_cast<HistoryService*>(
-      GetInstance()->GetServiceForProfile(profile, false).get());
+      GetInstance()->GetServiceForProfile(profile, false));
 }
 
 // static
@@ -55,7 +55,7 @@ void HistoryServiceFactory::ShutdownForProfile(Profile* profile) {
 }
 
 HistoryServiceFactory::HistoryServiceFactory()
-    : RefcountedProfileKeyedServiceFactory(
+    : ProfileKeyedServiceFactory(
           "HistoryService", ProfileDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
 }
@@ -63,10 +63,9 @@ HistoryServiceFactory::HistoryServiceFactory()
 HistoryServiceFactory::~HistoryServiceFactory() {
 }
 
-scoped_refptr<RefcountedProfileKeyedService>
+ProfileKeyedService*
 HistoryServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
-  scoped_refptr<HistoryService> history_service(
-      new HistoryService(profile));
+  HistoryService* history_service = new HistoryService(profile);
   if (!history_service->Init(profile->GetPath(),
                              BookmarkModelFactory::GetForProfile(profile))) {
     return NULL;

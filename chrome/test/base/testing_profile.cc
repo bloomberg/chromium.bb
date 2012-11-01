@@ -323,8 +323,7 @@ void TestingProfile::CreateFaviconService() {
       this, BuildFaviconService);
 }
 
-static scoped_refptr<RefcountedProfileKeyedService> BuildHistoryService(
-    Profile* profile) {
+static ProfileKeyedService* BuildHistoryService(Profile* profile) {
   return new HistoryService(profile);
 }
 
@@ -338,7 +337,7 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   // This will create and init the history service.
   HistoryService* history_service = static_cast<HistoryService*>(
       HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          this, BuildHistoryService).get());
+          this, BuildHistoryService));
   if (!history_service->Init(this->GetPath(),
                              BookmarkModelFactory::GetForProfile(this),
                              no_db)) {
@@ -347,9 +346,9 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
 }
 
 void TestingProfile::DestroyHistoryService() {
-  scoped_refptr<HistoryService> history_service =
+  HistoryService* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(this);
-  if (!history_service.get())
+  if (!history_service)
     return;
 
   history_service->NotifyRenderProcessHostDestruction(0);
@@ -409,7 +408,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
               this, BuildBookmarkModel));
 
   HistoryService* history_service =
-      HistoryServiceFactory::GetForProfileWithoutCreating(this).get();
+      HistoryServiceFactory::GetForProfileWithoutCreating(this);
   if (history_service) {
     history_service->history_backend_->bookmark_service_ =
         bookmark_service;
@@ -749,9 +748,9 @@ PrefProxyConfigTracker* TestingProfile::GetProxyConfigTracker() {
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
-  scoped_refptr<HistoryService> history_service =
+  HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(this, Profile::EXPLICIT_ACCESS);
-  DCHECK(history_service.get());
+  DCHECK(history_service);
   DCHECK(MessageLoop::current());
 
   CancelableRequestConsumer consumer;

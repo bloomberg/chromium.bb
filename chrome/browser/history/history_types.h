@@ -802,7 +802,7 @@ struct BriefVisitInfo {
 // An observer of VisitDatabase.
 class VisitDatabaseObserver {
  public:
-  virtual ~VisitDatabaseObserver() {}
+  virtual ~VisitDatabaseObserver();
   virtual void OnAddVisit(const BriefVisitInfo& info) = 0;
 };
 

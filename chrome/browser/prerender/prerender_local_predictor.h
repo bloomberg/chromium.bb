@@ -22,7 +22,7 @@ class PrerenderManager;
 // predictions.
 // At this point, the class is not actually creating prerenders, but just
 // recording timing stats about the effect prerendering would have.
-class PrerenderLocalPredictor : history::VisitDatabaseObserver {
+class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
  public:
   enum Event {
     EVENT_CONSTRUCTED = 0,
@@ -91,14 +91,6 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
   CancelableRequestConsumer history_db_consumer_;
 
   scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history_;
-
-  // We keep a reference to the HistoryService which we registered to
-  // observe.  On destruction, we have to remove ourselves from that history
-  // service.  We can't just grab the HistoryService from the profile, because
-  // the profile may have already given up its reference to it.  Doing nothing
-  // in this case may cause crashes, because the HistoryService may outlive the
-  // the PrerenderLocalPredictor.
-  scoped_refptr<HistoryService> observing_history_service_;
 
   scoped_ptr<PrerenderData> current_prerender_;
   scoped_ptr<PrerenderData> last_swapped_in_prerender_;

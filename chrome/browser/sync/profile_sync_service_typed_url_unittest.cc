@@ -99,8 +99,7 @@ class HistoryServiceMock : public HistoryService {
   virtual ~HistoryServiceMock() {}
 };
 
-scoped_refptr<RefcountedProfileKeyedService> BuildHistoryService(
-    Profile* profile) {
+ProfileKeyedService* BuildHistoryService(Profile* profile) {
   return new HistoryServiceMock(profile);
 }
 
@@ -175,7 +174,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     history_backend_ = new HistoryBackendMock();
     history_service_ = static_cast<HistoryServiceMock*>(
         HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, BuildHistoryService).get());
+            &profile_, BuildHistoryService));
     EXPECT_CALL((*history_service_), ScheduleDBTask(_, _))
         .WillRepeatedly(RunTaskOnDBThread(&history_thread_,
                                           history_backend_.get()));

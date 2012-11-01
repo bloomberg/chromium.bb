@@ -447,4 +447,8 @@ ImportedFaviconUsage::ImportedFaviconUsage() {
 ImportedFaviconUsage::~ImportedFaviconUsage() {
 }
 
+// VisitDatabaseObserver -------------------------------------------------------
+
+VisitDatabaseObserver::~VisitDatabaseObserver() {}
+
 }  // namespace history

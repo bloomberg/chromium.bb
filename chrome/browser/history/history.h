@@ -13,13 +13,15 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/public/browser/notification_observer.h"
@@ -97,7 +99,7 @@ class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
 // thread that made the request.
 class HistoryService : public CancelableRequestProvider,
                        public content::NotificationObserver,
-                       public RefcountedProfileKeyedService {
+                       public ProfileKeyedService {
  public:
   // Miscellaneous commonly-used types.
   typedef std::vector<PageUsageData*> PageUsageDataList;
@@ -106,6 +108,8 @@ class HistoryService : public CancelableRequestProvider,
   explicit HistoryService(Profile* profile);
   // The empty constructor is provided only for testing.
   HistoryService();
+
+  virtual ~HistoryService();
 
   // Initializes the history service, returning true on success. On false, do
   // not call any other functions. The given directory will be used for storing
@@ -173,8 +177,8 @@ class HistoryService : public CancelableRequestProvider,
     return in_memory_url_index_.get();
   }
 
-  // RefcountedProfileKeyedService:
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  // ProfileKeyedService:
+  virtual void Shutdown() OVERRIDE;
 
   // Navigation ----------------------------------------------------------------
 
@@ -567,12 +571,10 @@ class HistoryService : public CancelableRequestProvider,
   // db.
   bool needs_top_sites_migration() const { return needs_top_sites_migration_; }
 
-  // Adds or removes observers for the VisitDatabase.  Should be run in the
-  // thread in which the observer would like to be notified.
+  // Adds or removes observers for the VisitDatabase.
   void AddVisitDatabaseObserver(history::VisitDatabaseObserver* observer);
   void RemoveVisitDatabaseObserver(history::VisitDatabaseObserver* observer);
 
-  // This notification method may be called on any thread.
   void NotifyVisitDBObserversOnAddVisit(const history::BriefVisitInfo& info);
 
   // Testing -------------------------------------------------------------------
@@ -623,9 +625,9 @@ class HistoryService : public CancelableRequestProvider,
   // history. We filter out some URLs such as JavaScript.
   static bool CanAddURL(const GURL& url);
 
- protected:
-  virtual ~HistoryService();
+  base::WeakPtr<HistoryService> AsWeakPtr();
 
+ protected:
   // These are not currently used, hopefully we can do something in the future
   // to ensure that the most important things happen first.
   enum SchedulePriority {
@@ -837,6 +839,7 @@ class HistoryService : public CancelableRequestProvider,
                   CancelableRequestConsumerBase* consumer,
                   RequestType* request) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     if (consumer)
       AddRequest(request, consumer);
@@ -853,6 +856,7 @@ class HistoryService : public CancelableRequestProvider,
                   RequestType* request,
                   const ArgA& a) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     if (consumer)
       AddRequest(request, consumer);
@@ -873,6 +877,7 @@ class HistoryService : public CancelableRequestProvider,
                   const ArgA& a,
                   const ArgB& b) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     if (consumer)
       AddRequest(request, consumer);
@@ -895,6 +900,7 @@ class HistoryService : public CancelableRequestProvider,
                   const ArgB& b,
                   const ArgC& c) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     if (consumer)
       AddRequest(request, consumer);
@@ -919,6 +925,7 @@ class HistoryService : public CancelableRequestProvider,
                   const ArgC& c,
                   const ArgD& d) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     if (consumer)
       AddRequest(request, consumer);
@@ -945,6 +952,7 @@ class HistoryService : public CancelableRequestProvider,
                   const ArgD& d,
                   const ArgE& e) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     if (consumer)
       AddRequest(request, consumer);
@@ -964,6 +972,7 @@ class HistoryService : public CancelableRequestProvider,
   void ScheduleAndForget(SchedulePriority priority,
                          BackendFunc func) {  // Function to call on backend.
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     ScheduleTask(priority, base::Bind(func, history_backend_.get()));
   }
@@ -973,6 +982,7 @@ class HistoryService : public CancelableRequestProvider,
                          BackendFunc func,  // Function to call on backend.
                          const ArgA& a) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     ScheduleTask(priority, base::Bind(func, history_backend_.get(), a));
   }
@@ -983,6 +993,7 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgA& a,
                          const ArgB& b) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     ScheduleTask(priority, base::Bind(func, history_backend_.get(), a, b));
   }
@@ -994,6 +1005,7 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgB& b,
                          const ArgC& c) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     ScheduleTask(priority, base::Bind(func, history_backend_.get(), a, b, c));
   }
@@ -1010,6 +1022,7 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgC& c,
                          const ArgD& d) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     ScheduleTask(priority, base::Bind(func, history_backend_.get(),
                                       a, b, c, d));
@@ -1029,10 +1042,16 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgD& d,
                          const ArgE& e) {
     DCHECK(thread_) << "History service being called after cleanup";
+    DCHECK(thread_checker_.CalledOnValidThread());
     LoadBackendIfNecessary();
     ScheduleTask(priority, base::Bind(func, history_backend_.get(),
                                       a, b, c, d, e));
   }
+
+  // All vended weak pointers are invalidated in Cleanup().
+  base::WeakPtrFactory<HistoryService> weak_ptr_factory_;
+
+  base::ThreadChecker thread_checker_;
 
   content::NotificationRegistrar registrar_;
 
@@ -1082,8 +1101,7 @@ class HistoryService : public CancelableRequestProvider,
   // See http://crbug.com/138321
   scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
-  scoped_refptr<ObserverListThreadSafe<history::VisitDatabaseObserver> >
-      visit_database_observers_;
+  ObserverList<history::VisitDatabaseObserver> visit_database_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };

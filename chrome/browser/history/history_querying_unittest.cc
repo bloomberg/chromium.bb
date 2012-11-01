@@ -86,7 +86,7 @@ class HistoryQueryTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<HistoryService> history_;
+  scoped_ptr<HistoryService> history_;
 
  private:
   virtual void SetUp() {
@@ -94,9 +94,9 @@ class HistoryQueryTest : public testing::Test {
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
     ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
 
-    history_ = new HistoryService;
+    history_.reset(new HistoryService);
     if (!history_->Init(history_dir_, NULL)) {
-      history_ = NULL;  // Tests should notice this NULL ptr & fail.
+      history_.reset();  // Tests should notice this NULL ptr & fail.
       return;
     }
 
@@ -123,7 +123,7 @@ class HistoryQueryTest : public testing::Test {
     if (history_.get()) {
       history_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
       history_->Cleanup();
-      history_ = NULL;
+      history_.reset();
       MessageLoop::current()->Run();  // Wait for the other thread.
     }
   }

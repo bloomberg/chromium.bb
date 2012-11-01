@@ -91,11 +91,8 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     scoped_refptr<HistoryDBTask> task(new WaitForHistoryTask());
     HistoryService* history =
         HistoryServiceFactory::GetForProfile(GetProfile(),
-                                                Profile::EXPLICIT_ACCESS);
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&HistoryService::ScheduleDBTask,
-                                       history, task, &request_consumer));
+                                             Profile::EXPLICIT_ACCESS);
+    history->HistoryService::ScheduleDBTask(task, &request_consumer);
     content::RunMessageLoop();
   }
 
