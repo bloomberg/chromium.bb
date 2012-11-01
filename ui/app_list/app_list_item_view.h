@@ -84,8 +84,9 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
+
+  // ui::EventHandler overrides:
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   AppListItemModel* model_;  // Owned by AppListModel::Apps.
 

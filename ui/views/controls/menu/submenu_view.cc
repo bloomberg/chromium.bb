@@ -260,20 +260,20 @@ bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   return true;
 }
 
-ui::EventResult SubmenuView::OnGestureEvent(const ui::GestureEvent& e) {
+ui::EventResult SubmenuView::OnGestureEvent(ui::GestureEvent* event) {
   ui::EventResult to_return = ui::ER_CONSUMED;
-  switch (e.type()) {
+  switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       scroll_animator_->Stop();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      OnScroll(0, e.details().scroll_y());
+      OnScroll(0, event->details().scroll_y());
       break;
     case ui::ET_GESTURE_SCROLL_END:
       break;
     case ui::ET_SCROLL_FLING_START:
-      if (e.details().velocity_y() != 0.0f)
-        scroll_animator_->Start(0, e.details().velocity_y());
+      if (event->details().velocity_y() != 0.0f)
+        scroll_animator_->Start(0, event->details().velocity_y());
       break;
     case ui::ET_GESTURE_TAP_DOWN:
     case ui::ET_SCROLL_FLING_CANCEL:

@@ -111,7 +111,7 @@ void RootView::NotifyNativeViewHierarchyChanged(bool attached,
 
 // Input -----------------------------------------------------------------------
 
-bool RootView::OnKeyEvent(const ui::KeyEvent& event) {
+ui::EventResult RootView::DispatchKeyEvent(const ui::KeyEvent& event) {
   bool consumed = false;
 
   View* v = NULL;
@@ -122,13 +122,169 @@ bool RootView::OnKeyEvent(const ui::KeyEvent& event) {
   if (v && v->enabled() && ((event.key_code() == ui::VKEY_APPS) ||
      (event.key_code() == ui::VKEY_F10 && event.IsShiftDown()))) {
     v->ShowContextMenu(v->GetKeyboardContextMenuLocation(), false);
-    return true;
+    return ui::ER_CONSUMED;
   }
   for (; v && v != this && !consumed; v = v->parent()) {
     consumed = (event.type() == ui::ET_KEY_PRESSED) ?
         v->OnKeyPressed(event) : v->OnKeyReleased(event);
   }
-  return consumed;
+
+  return consumed ? ui::ER_CONSUMED : ui::ER_HANDLED;
+}
+
+ui::EventResult RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
+  int result = ui::ER_UNHANDLED;
+  for (View* v = GetEventHandlerForPoint(event->location());
+       v && v != this && !(result & ui::ER_CONSUMED); v = v->parent())
+    result |= v->OnScrollEvent(event);
+  return static_cast<ui::EventResult>(result);
+}
+
+ui::EventResult RootView::DispatchTouchEvent(ui::TouchEvent* event) {
+  // TODO: this looks all wrong. On a TOUCH_PRESSED we should figure out the
+  // view and target that view with all touches with the same id until the
+  // release (or keep it if captured).
+
+  // If touch_pressed_handler_ is non null, we are currently processing
+  // a touch down on the screen situation. In that case we send the
+  // event to touch_pressed_handler_
+  ui::EventResult status = ui::ER_UNHANDLED;
+
+  if (touch_pressed_handler_) {
+    ui::TouchEvent touch_event(*event, static_cast<View*>(this),
+                               touch_pressed_handler_);
+    status = touch_pressed_handler_->ProcessTouchEvent(&touch_event);
+    return status;
+  }
+
+  // Walk up the tree until we find a view that wants the touch event.
+  for (touch_pressed_handler_ = GetEventHandlerForPoint(event->location());
+       touch_pressed_handler_ && (touch_pressed_handler_ != this);
+       touch_pressed_handler_ = touch_pressed_handler_->parent()) {
+    if (!touch_pressed_handler_->enabled()) {
+      // Disabled views eat events but are treated as not handled.
+      break;
+    }
+
+    // See if this view wants to handle the touch
+    ui::TouchEvent touch_event(*event, static_cast<View*>(this),
+                               touch_pressed_handler_);
+    status = touch_pressed_handler_->ProcessTouchEvent(&touch_event);
+
+    // The view could have removed itself from the tree when handling
+    // OnTouchEvent(). So handle as per OnMousePressed. NB: we
+    // assume that the RootView itself cannot be so removed.
+    if (!touch_pressed_handler_)
+      break;
+
+    // The touch event wasn't processed. Go up the view hierarchy and dispatch
+    // the touch event.
+    if (status == ui::ER_UNHANDLED)
+      continue;
+
+    // If a View consumed the event, that means future touch-events should go to
+    // that View. If the event wasn't consumed, then reset the handler.
+    if (!(status & ui::ER_CONSUMED))
+      touch_pressed_handler_ = NULL;
+
+    return status;
+  }
+
+  // Reset touch_pressed_handler_ to indicate that no processing is occurring.
+  touch_pressed_handler_ = NULL;
+
+  return status;
+}
+
+ui::EventResult RootView::DispatchGestureEvent(ui::GestureEvent* event) {
+  ui::EventResult status = ui::ER_UNHANDLED;
+
+  if (gesture_handler_) {
+    // |gesture_handler_| (or |scroll_gesture_handler_|) can be deleted during
+    // processing.
+    View* handler = scroll_gesture_handler_ &&
+        (event->IsScrollGestureEvent() || event->IsFlingScrollEvent())  ?
+            scroll_gesture_handler_ : gesture_handler_;
+    ui::GestureEvent handler_event(*event, static_cast<View*>(this), handler);
+
+    ui::EventResult status = handler->ProcessGestureEvent(&handler_event);
+
+    if (event->type() == ui::ET_GESTURE_END &&
+        event->details().touch_points() <= 1) {
+      // In case a drag was in progress, reset all the handlers. Otherwise, just
+      // reset the gesture handler.
+      if (gesture_handler_ == mouse_pressed_handler_)
+        SetMouseHandler(NULL);
+      else
+        gesture_handler_ = NULL;
+    }
+
+    if (scroll_gesture_handler_ &&
+        (event->type() == ui::ET_GESTURE_SCROLL_END ||
+         event->type() == ui::ET_SCROLL_FLING_START)) {
+      scroll_gesture_handler_ = NULL;
+    }
+
+    if (status == ui::ER_CONSUMED)
+      return status;
+
+    DCHECK_EQ(ui::ER_UNHANDLED, status);
+
+    if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
+        !scroll_gesture_handler_) {
+      // Some view started processing gesture events, however it does not
+      // process scroll-gesture events. In such case, we allow the event to
+      // bubble up, and install a different scroll-gesture handler different
+      // from the default gesture handler.
+      for (scroll_gesture_handler_ = gesture_handler_->parent();
+          scroll_gesture_handler_ && scroll_gesture_handler_ != this;
+          scroll_gesture_handler_ = scroll_gesture_handler_->parent()) {
+        ui::GestureEvent gesture_event(*event, static_cast<View*>(this),
+                                       scroll_gesture_handler_);
+        status = scroll_gesture_handler_->ProcessGestureEvent(&gesture_event);
+        if (status == ui::ER_CONSUMED)
+          return status;
+      }
+      scroll_gesture_handler_ = NULL;
+    }
+
+    return ui::ER_UNHANDLED;
+  }
+
+  // Walk up the tree until we find a view that wants the gesture event.
+  for (gesture_handler_ = GetEventHandlerForPoint(event->location());
+      gesture_handler_ && (gesture_handler_ != this);
+      gesture_handler_ = gesture_handler_->parent()) {
+    if (!gesture_handler_->enabled()) {
+      // Disabled views eat events but are treated as not handled.
+      return ui::ER_UNHANDLED;
+    }
+
+    // See if this view wants to handle the Gesture.
+    ui::GestureEvent gesture_event(*event, static_cast<View*>(this),
+                                   gesture_handler_);
+    status = gesture_handler_->ProcessGestureEvent(&gesture_event);
+
+    // The view could have removed itself from the tree when handling
+    // OnGestureEvent(). So handle as per OnMousePressed. NB: we
+    // assume that the RootView itself cannot be so removed.
+    if (!gesture_handler_)
+      return ui::ER_UNHANDLED;
+
+    if (status == ui::ER_CONSUMED) {
+      if (gesture_event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+        scroll_gesture_handler_ = gesture_handler_;
+      return status;
+    }
+
+    // The gesture event wasn't processed. Go up the view hierarchy and
+    // dispatch the gesture event.
+    DCHECK_EQ(ui::ER_UNHANDLED, status);
+  }
+
+  gesture_handler_ = NULL;
+
+  return status;
 }
 
 // Focus -----------------------------------------------------------------------
@@ -385,163 +541,6 @@ bool RootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
        v && v != this && !consumed; v = v->parent())
     consumed = v->OnMouseWheel(event);
   return consumed;
-}
-
-bool RootView::OnScrollEvent(const ui::ScrollEvent& event) {
-  bool consumed = false;
-  for (View* v = GetEventHandlerForPoint(event.location());
-       v && v != this && !consumed; v = v->parent())
-    consumed = v->OnScrollEvent(event);
-  return consumed;
-}
-
-ui::TouchStatus RootView::OnTouchEvent(const ui::TouchEvent& event) {
-  // TODO: this looks all wrong. On a TOUCH_PRESSED we should figure out the
-  // view and target that view with all touches with the same id until the
-  // release (or keep it if captured).
-
-  // If touch_pressed_handler_ is non null, we are currently processing
-  // a touch down on the screen situation. In that case we send the
-  // event to touch_pressed_handler_
-  ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
-
-  if (touch_pressed_handler_) {
-    ui::TouchEvent touch_event(event, static_cast<View*>(this),
-                               touch_pressed_handler_);
-    status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
-    if (status == ui::TOUCH_STATUS_END)
-      touch_pressed_handler_ = NULL;
-    return status;
-  }
-
-  // Walk up the tree until we find a view that wants the touch event.
-  for (touch_pressed_handler_ = GetEventHandlerForPoint(event.location());
-       touch_pressed_handler_ && (touch_pressed_handler_ != this);
-       touch_pressed_handler_ = touch_pressed_handler_->parent()) {
-    if (!touch_pressed_handler_->enabled()) {
-      // Disabled views eat events but are treated as not handled.
-      status = ui::TOUCH_STATUS_UNKNOWN;
-      break;
-    }
-
-    // See if this view wants to handle the touch
-    ui::TouchEvent touch_event(event, static_cast<View*>(this),
-                               touch_pressed_handler_);
-    status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
-
-    // The view could have removed itself from the tree when handling
-    // OnTouchEvent(). So handle as per OnMousePressed. NB: we
-    // assume that the RootView itself cannot be so removed.
-    if (!touch_pressed_handler_)
-      break;
-
-    // The touch event wasn't processed. Go up the view hierarchy and dispatch
-    // the touch event.
-    if (status == ui::TOUCH_STATUS_UNKNOWN)
-      continue;
-
-    // If the touch didn't initiate a touch-sequence, then reset the touch event
-    // handler. Otherwise, leave it set so that subsequent touch events are
-    // dispatched to the same handler.
-    if (status != ui::TOUCH_STATUS_START)
-      touch_pressed_handler_ = NULL;
-
-    return status;
-  }
-
-  // Reset touch_pressed_handler_ to indicate that no processing is occurring.
-  touch_pressed_handler_ = NULL;
-
-  return status;
-}
-
-ui::EventResult RootView::OnGestureEvent(const ui::GestureEvent& event) {
-  ui::EventResult status = ui::ER_UNHANDLED;
-
-  if (gesture_handler_) {
-    // |gesture_handler_| (or |scroll_gesture_handler_|) can be deleted during
-    // processing.
-    View* handler = scroll_gesture_handler_ &&
-        (event.IsScrollGestureEvent() || event.IsFlingScrollEvent())  ?
-            scroll_gesture_handler_ : gesture_handler_;
-    ui::GestureEvent handler_event(event, static_cast<View*>(this), handler);
-
-    ui::EventResult status = handler->ProcessGestureEvent(handler_event);
-
-    if (event.type() == ui::ET_GESTURE_END &&
-        event.details().touch_points() <= 1) {
-      // In case a drag was in progress, reset all the handlers. Otherwise, just
-      // reset the gesture handler.
-      if (gesture_handler_ == mouse_pressed_handler_)
-        SetMouseHandler(NULL);
-      else
-        gesture_handler_ = NULL;
-    }
-
-    if (scroll_gesture_handler_ && (event.type() == ui::ET_GESTURE_SCROLL_END ||
-                                    event.type() == ui::ET_SCROLL_FLING_START))
-      scroll_gesture_handler_ = NULL;
-
-    if (status == ui::ER_CONSUMED)
-      return status;
-
-    DCHECK_EQ(ui::ER_UNHANDLED, status);
-
-    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN &&
-        !scroll_gesture_handler_) {
-      // Some view started processing gesture events, however it does not
-      // process scroll-gesture events. In such case, we allow the event to
-      // bubble up, and install a different scroll-gesture handler different
-      // from the default gesture handler.
-      for (scroll_gesture_handler_ = gesture_handler_->parent();
-          scroll_gesture_handler_ && scroll_gesture_handler_ != this;
-          scroll_gesture_handler_ = scroll_gesture_handler_->parent()) {
-        ui::GestureEvent gesture_event(event, static_cast<View*>(this),
-                                       scroll_gesture_handler_);
-        status = scroll_gesture_handler_->ProcessGestureEvent(gesture_event);
-        if (status == ui::ER_CONSUMED)
-          return status;
-      }
-      scroll_gesture_handler_ = NULL;
-    }
-
-    return ui::ER_UNHANDLED;
-  }
-
-  // Walk up the tree until we find a view that wants the gesture event.
-  for (gesture_handler_ = GetEventHandlerForPoint(event.location());
-      gesture_handler_ && (gesture_handler_ != this);
-      gesture_handler_ = gesture_handler_->parent()) {
-    if (!gesture_handler_->enabled()) {
-      // Disabled views eat events but are treated as not handled.
-      return ui::ER_UNHANDLED;
-    }
-
-    // See if this view wants to handle the Gesture.
-    ui::GestureEvent gesture_event(event, static_cast<View*>(this),
-                                   gesture_handler_);
-    status = gesture_handler_->ProcessGestureEvent(gesture_event);
-
-    // The view could have removed itself from the tree when handling
-    // OnGestureEvent(). So handle as per OnMousePressed. NB: we
-    // assume that the RootView itself cannot be so removed.
-    if (!gesture_handler_)
-      return ui::ER_UNHANDLED;
-
-    if (status == ui::ER_CONSUMED) {
-      if (gesture_event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-        scroll_gesture_handler_ = gesture_handler_;
-      return status;
-    }
-
-    // The gesture event wasn't processed. Go up the view hierarchy and
-    // dispatch the gesture event.
-    DCHECK_EQ(ui::ER_UNHANDLED, status);
-  }
-
-  gesture_handler_ = NULL;
-
-  return status;
 }
 
 void RootView::SetMouseHandler(View* new_mh) {

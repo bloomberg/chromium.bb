@@ -231,8 +231,9 @@ class TabStrip : public views::View,
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
+
+  // ui::EventHandler overrides.
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   typedef std::map<int, std::vector<BaseTab*> > TabsClosingMap;

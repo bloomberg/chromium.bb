@@ -361,16 +361,16 @@ void OmniboxPopupContentsView::OnMouseExited(
 }
 
 ui::EventResult OmniboxPopupContentsView::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  switch (event.type()) {
+    ui::GestureEvent* event) {
+  switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
     case ui::ET_GESTURE_SCROLL_BEGIN:
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      UpdateLineEvent(event, true);
+      UpdateLineEvent(*event, true);
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:
-      OpenSelectedLine(event, CURRENT_TAB);
+      OpenSelectedLine(*event, CURRENT_TAB);
       break;
     default:
       return ui::ER_UNHANDLED;

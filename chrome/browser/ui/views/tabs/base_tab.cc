@@ -94,8 +94,7 @@ class BaseTab::TabCloseButton : public views::ImageButton {
     CustomButton::OnMouseReleased(event);
   }
 
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE {
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     // Consume all gesture events here so that the parent (BaseTab) does not
     // start consuming gestures.
     ImageButton::OnGestureEvent(event);
@@ -416,39 +415,6 @@ void BaseTab::OnMouseExited(const ui::MouseEvent& event) {
   hover_controller_.Hide();
 }
 
-ui::EventResult BaseTab::OnGestureEvent(const ui::GestureEvent& event) {
-  if (!controller())
-    return ui::ER_CONSUMED;
-
-  switch (event.type()) {
-    case ui::ET_GESTURE_BEGIN: {
-      if (event.details().touch_points() != 1)
-        return ui::ER_UNHANDLED;
-
-      TabStripSelectionModel original_selection;
-      original_selection.Copy(controller()->GetSelectionModel());
-      if (!IsSelected())
-        controller()->SelectTab(this);
-      gfx::Point loc(event.location());
-      views::View::ConvertPointToScreen(this, &loc);
-      controller()->MaybeStartDrag(this, event, original_selection);
-      break;
-    }
-
-    case ui::ET_GESTURE_END:
-      controller()->EndDrag(END_DRAG_COMPLETE);
-      break;
-
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      controller()->ContinueDrag(this, event.location());
-      break;
-
-    default:
-      break;
-  }
-  return ui::ER_CONSUMED;
-}
-
 bool BaseTab::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   if (data_.title.empty())
     return false;
@@ -464,6 +430,39 @@ bool BaseTab::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
 void BaseTab::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PAGETAB;
   state->name = data_.title;
+}
+
+ui::EventResult BaseTab::OnGestureEvent(ui::GestureEvent* event) {
+  if (!controller())
+    return ui::ER_CONSUMED;
+
+  switch (event->type()) {
+    case ui::ET_GESTURE_BEGIN: {
+      if (event->details().touch_points() != 1)
+        return ui::ER_UNHANDLED;
+
+      TabStripSelectionModel original_selection;
+      original_selection.Copy(controller()->GetSelectionModel());
+      if (!IsSelected())
+        controller()->SelectTab(this);
+      gfx::Point loc(event->location());
+      views::View::ConvertPointToScreen(this, &loc);
+      controller()->MaybeStartDrag(this, *event, original_selection);
+      break;
+    }
+
+    case ui::ET_GESTURE_END:
+      controller()->EndDrag(END_DRAG_COMPLETE);
+      break;
+
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      controller()->ContinueDrag(this, event->location());
+      break;
+
+    default:
+      break;
+  }
+  return ui::ER_CONSUMED;
 }
 
 void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,

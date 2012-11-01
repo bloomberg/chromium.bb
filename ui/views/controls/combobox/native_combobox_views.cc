@@ -92,16 +92,6 @@ bool NativeComboboxViews::OnMouseDragged(const ui::MouseEvent& mouse_event) {
   return true;
 }
 
-ui::EventResult NativeComboboxViews::OnGestureEvent(
-    const ui::GestureEvent& gesture_event) {
-  if (gesture_event.type() == ui::ET_GESTURE_TAP) {
-    UpdateFromModel();
-    ShowDropDownMenu();
-    return ui::ER_CONSUMED;
-  }
-  return View::OnGestureEvent(gesture_event);
-}
-
 bool NativeComboboxViews::OnKeyPressed(const ui::KeyEvent& key_event) {
   // TODO(oshima): handle IME.
   DCHECK_EQ(key_event.type(), ui::ET_KEY_PRESSED);
@@ -166,6 +156,18 @@ void NativeComboboxViews::OnFocus() {
 
 void NativeComboboxViews::OnBlur() {
   NOTREACHED();
+}
+
+/////////////////////////////////////////////////////////////////
+// NativeComboboxViews, ui::EventHandler overrides:
+
+ui::EventResult NativeComboboxViews::OnGestureEvent(ui::GestureEvent* gesture) {
+  if (gesture->type() == ui::ET_GESTURE_TAP) {
+    UpdateFromModel();
+    ShowDropDownMenu();
+    return ui::ER_CONSUMED;
+  }
+  return View::OnGestureEvent(gesture);
 }
 
 /////////////////////////////////////////////////////////////////

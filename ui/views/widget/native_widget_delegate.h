@@ -23,6 +23,7 @@ class KeyEvent;
 class Layer;
 class MouseEvent;
 class TouchEvent;
+class ScrollEvent;
 }
 
 namespace views {
@@ -108,8 +109,10 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual bool OnKeyEvent(const ui::KeyEvent& event) = 0;
   virtual bool OnMouseEvent(const ui::MouseEvent& event) = 0;
   virtual void OnMouseCaptureLost() = 0;
-  virtual ui::TouchStatus OnTouchEvent(const ui::TouchEvent& event) = 0;
-  virtual ui::EventResult OnGestureEvent(const ui::GestureEvent& event) = 0;
+
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) = 0;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) = 0;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) = 0;
 
   // Runs the specified native command. Returns true if the command is handled.
   virtual bool ExecuteCommand(int command_id) = 0;

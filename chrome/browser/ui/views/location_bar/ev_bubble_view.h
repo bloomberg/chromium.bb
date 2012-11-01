@@ -23,11 +23,12 @@ class EVBubbleView : public IconLabelBubbleView {
                LocationBarView* location_bar);
   virtual ~EVBubbleView();
 
-  // Overridden from view.
+  // Overridden from View.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
+
+  // Overridden from ui::EventHandler.
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   PageInfoHelper page_info_helper_;

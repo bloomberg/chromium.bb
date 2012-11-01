@@ -47,7 +47,6 @@ class Compositor;
 class Layer;
 class OSExchangeData;
 class ThemeProvider;
-enum TouchStatus;
 }
 
 namespace views {
@@ -646,9 +645,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual bool OnKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(const ui::TouchEvent& event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual InputMethod* GetInputMethodDirect() OVERRIDE;
   virtual const std::vector<ui::Layer*>& GetRootLayers() OVERRIDE;

@@ -36,11 +36,12 @@ class ZoomView : public views::ImageView,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+
+  // ui::EventHandler:
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // TouchableLocationBarView.
   virtual int GetBuiltInHorizontalPadding() const OVERRIDE;

@@ -111,23 +111,6 @@ bool Link::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
-ui::EventResult Link::OnGestureEvent(const ui::GestureEvent& event) {
-  if (!enabled())
-    return ui::ER_UNHANDLED;
-
-  if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
-    SetPressed(true);
-  } else if (event.type() == ui::ET_GESTURE_TAP) {
-    RequestFocus();
-    if (listener_)
-      listener_->LinkClicked(this, event.flags());
-  } else {
-    SetPressed(false);
-    return ui::ER_UNHANDLED;
-  }
-  return ui::ER_CONSUMED;
-}
-
 bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // Make sure we don't process space or enter as accelerators.
   return (event.key_code() == ui::VKEY_SPACE) ||
@@ -137,6 +120,23 @@ bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 void Link::GetAccessibleState(ui::AccessibleViewState* state) {
   Label::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_LINK;
+}
+
+ui::EventResult Link::OnGestureEvent(ui::GestureEvent* event) {
+  if (!enabled())
+    return ui::ER_UNHANDLED;
+
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    SetPressed(true);
+  } else if (event->type() == ui::ET_GESTURE_TAP) {
+    RequestFocus();
+    if (listener_)
+      listener_->LinkClicked(this, event->flags());
+  } else {
+    SetPressed(false);
+    return ui::ER_UNHANDLED;
+  }
+  return ui::ER_CONSUMED;
 }
 
 void Link::SetFont(const gfx::Font& font) {

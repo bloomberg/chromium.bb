@@ -122,7 +122,7 @@ class VIEWS_EXPORT MenuController
   bool OnMouseWheel(SubmenuView* source, const ui::MouseWheelEvent& event);
 #endif
   ui::EventResult OnGestureEvent(SubmenuView* source,
-                                   const ui::GestureEvent& event);
+                                 ui::GestureEvent* event);
 
   bool GetDropFormats(
       SubmenuView* source,

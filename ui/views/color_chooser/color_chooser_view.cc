@@ -73,12 +73,11 @@ class LocatedEventHandlerView : public views::View {
     return true;
   }
 
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE {
-    if (event.type() == ui::ET_GESTURE_TAP ||
-        event.type() == ui::ET_GESTURE_TAP_DOWN ||
-        event.IsScrollGestureEvent()) {
-      ProcessEventAtLocation(event.location());
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_GESTURE_TAP ||
+        event->type() == ui::ET_GESTURE_TAP_DOWN ||
+        event->IsScrollGestureEvent()) {
+      ProcessEventAtLocation(event->location());
       return ui::ER_CONSUMED;
     }
     return ui::ER_UNHANDLED;

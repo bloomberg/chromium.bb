@@ -125,9 +125,8 @@ class GestureCaptureView : public View {
 
  private:
   // Overridden from View:
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE {
-    if (event.type() == ui::ET_GESTURE_BEGIN) {
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_GESTURE_BEGIN) {
       GetWidget()->SetCapture(this);
       return ui::ER_CONSUMED;
     }
@@ -951,7 +950,7 @@ TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
   ui::GestureEvent end(ui::ET_GESTURE_END,
       15, 15, 0, base::TimeDelta(),
       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 1);
-  toplevel->OnGestureEvent(begin);
+  toplevel->OnGestureEvent(&begin);
 
   // Now try to click on |mouse|. Since |gesture| will have capture, |mouse|
   // will not receive the event.
@@ -967,7 +966,7 @@ TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
 
   // The end of the gesture should release the capture, and pressing on |mouse|
   // should now reach |mouse|.
-  toplevel->OnGestureEvent(end);
+  toplevel->OnGestureEvent(&end);
   toplevel->OnMouseEvent(press);
   toplevel->OnMouseEvent(release);
   EXPECT_EQ(1, mouse->pressed());

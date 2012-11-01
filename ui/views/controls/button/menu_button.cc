@@ -219,8 +219,8 @@ void MenuButton::OnMouseExited(const ui::MouseEvent& event) {
   }
 }
 
-ui::EventResult MenuButton::OnGestureEvent(const ui::GestureEvent& event) {
-  if (state() != BS_DISABLED && event.type() == ui::ET_GESTURE_TAP) {
+ui::EventResult MenuButton::OnGestureEvent(ui::GestureEvent* event) {
+  if (state() != BS_DISABLED && event->type() == ui::ET_GESTURE_TAP) {
     if (Activate())
       return ui::ER_CONSUMED;
     return ui::ER_UNHANDLED;

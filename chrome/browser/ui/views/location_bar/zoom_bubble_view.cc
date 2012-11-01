@@ -113,9 +113,17 @@ void ZoomBubbleView::StopTimer() {
   timer_.Stop();
 }
 
-ui::EventResult ZoomBubbleView::OnGestureEvent(const ui::GestureEvent& event) {
+void ZoomBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
+  StopTimer();
+}
+
+void ZoomBubbleView::OnMouseExited(const ui::MouseEvent& event) {
+  StartTimerIfNecessary();
+}
+
+ui::EventResult ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
   if (!zoom_bubble_ || !zoom_bubble_->auto_close_ ||
-      event.type() != ui::ET_GESTURE_TAP) {
+      event->type() != ui::ET_GESTURE_TAP) {
     return ui::ER_UNHANDLED;
   }
 
@@ -123,15 +131,6 @@ ui::EventResult ZoomBubbleView::OnGestureEvent(const ui::GestureEvent& event) {
   // its place.
   ShowBubble(zoom_bubble_->anchor_view(), zoom_bubble_->tab_contents_, false);
   return ui::ER_CONSUMED;
-}
-
-
-void ZoomBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
-  StopTimer();
-}
-
-void ZoomBubbleView::OnMouseExited(const ui::MouseEvent& event) {
-  StartTimerIfNecessary();
 }
 
 void ZoomBubbleView::ButtonPressed(views::Button* sender,

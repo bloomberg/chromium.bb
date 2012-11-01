@@ -57,8 +57,9 @@ class LocationBarDecorationView : public views::View,
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
+
+  // ui::EventHandler overrides:
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // ui::AnimationDelegate overrides:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;

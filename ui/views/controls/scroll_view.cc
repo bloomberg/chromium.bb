@@ -400,23 +400,23 @@ bool ScrollView::OnKeyPressed(const ui::KeyEvent& event) {
   return processed;
 }
 
-ui::EventResult ScrollView::OnGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult ScrollView::OnGestureEvent(ui::GestureEvent* event) {
   ui::EventResult status = ui::ER_UNHANDLED;
 
   // If the event happened on one of the scrollbars, then those events are
   // sent directly to the scrollbars. Otherwise, only scroll events are sent to
   // the scrollbars.
-  bool scroll_event = event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-                      event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-                      event.type() == ui::ET_GESTURE_SCROLL_END ||
-                      event.type() == ui::ET_SCROLL_FLING_START;
+  bool scroll_event = event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+                      event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+                      event->type() == ui::ET_GESTURE_SCROLL_END ||
+                      event->type() == ui::ET_SCROLL_FLING_START;
 
   if (vert_sb_->visible()) {
-    if (vert_sb_->bounds().Contains(event.location()) || scroll_event)
+    if (vert_sb_->bounds().Contains(event->location()) || scroll_event)
       status = vert_sb_->OnGestureEvent(event);
   }
   if (status == ui::ER_UNHANDLED && horiz_sb_->visible()) {
-    if (horiz_sb_->bounds().Contains(event.location()) || scroll_event)
+    if (horiz_sb_->bounds().Contains(event->location()) || scroll_event)
       status = horiz_sb_->OnGestureEvent(event);
   }
   return status;

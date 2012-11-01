@@ -209,24 +209,23 @@ bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-ui::EventResult MessageView::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP) {
+ui::EventResult MessageView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
     list_delegate_->OnNotificationClicked(notification_.id);
     return ui::ER_CONSUMED;
   }
 
-  if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
-    ShowMenu(event.location());
+  if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
+    ShowMenu(event->location());
     return ui::ER_CONSUMED;
   }
 
-  if (event.type() == ui::ET_SCROLL_FLING_START) {
+  if (event->type() == ui::ET_SCROLL_FLING_START) {
     // The threshold for the fling velocity is computed empirically.
     // The unit is in pixels/second.
     const float kFlingThresholdForClose = 800.f;
-    if (fabsf(event.details().velocity_x()) > kFlingThresholdForClose) {
-      SlideOutAndClose(event.details().velocity_x() < 0 ? SLIDE_LEFT :
+    if (fabsf(event->details().velocity_x()) > kFlingThresholdForClose) {
+      SlideOutAndClose(event->details().velocity_x() < 0 ? SLIDE_LEFT :
                        SLIDE_RIGHT);
     } else if (scroller_) {
       RestoreVisualState();
@@ -235,14 +234,14 @@ ui::EventResult MessageView::OnGestureEvent(
     return ui::ER_CONSUMED;
   }
 
-  if (!event.IsScrollGestureEvent())
+  if (!event->IsScrollGestureEvent())
     return ui::ER_UNHANDLED;
 
-  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     gesture_scroll_amount_ = 0.f;
-  } else if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+  } else if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
     // The scroll-update events include the incremental scroll amount.
-    gesture_scroll_amount_ += event.details().scroll_x();
+    gesture_scroll_amount_ += event->details().scroll_x();
 
     gfx::Transform transform;
     transform.SetTranslateX(gesture_scroll_amount_);
@@ -250,7 +249,7 @@ ui::EventResult MessageView::OnGestureEvent(
     layer()->SetOpacity(
         1.f - std::min(fabsf(gesture_scroll_amount_) / width(), 1.f));
 
-  } else if (event.type() == ui::ET_GESTURE_SCROLL_END) {
+  } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
     const float kScrollRatioForClosingNotification = 0.5f;
     float scrolled_ratio = fabsf(gesture_scroll_amount_) / width();
     if (scrolled_ratio >= kScrollRatioForClosingNotification)

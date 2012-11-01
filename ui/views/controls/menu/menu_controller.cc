@@ -525,21 +525,21 @@ bool MenuController::OnMouseWheel(SubmenuView* source,
 
 ui::EventResult MenuController::OnGestureEvent(
     SubmenuView* source,
-    const ui::GestureEvent& event) {
-  MenuPart part = GetMenuPart(source, event.location());
-  if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
-    SetSelectionOnPointerDown(source, event);
+    ui::GestureEvent* event) {
+  MenuPart part = GetMenuPart(source, event->location());
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    SetSelectionOnPointerDown(source, *event);
     return ui::ER_CONSUMED;
-  } else if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
+  } else if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
     if (part.type == MenuPart::MENU_ITEM && part.menu) {
-      if (ShowContextMenu(part.menu, source, event))
+      if (ShowContextMenu(part.menu, source, *event))
         return ui::ER_CONSUMED;
     }
-  } else if (event.type() == ui::ET_GESTURE_TAP) {
+  } else if (event->type() == ui::ET_GESTURE_TAP) {
     if (!part.is_scroll() && part.menu &&
         !(part.menu->HasSubmenu())) {
       if (part.menu->GetDelegate()->IsTriggerableEvent(
-          part.menu, event)) {
+          part.menu, *event)) {
         Accept(part.menu, 0);
       }
       return ui::ER_CONSUMED;

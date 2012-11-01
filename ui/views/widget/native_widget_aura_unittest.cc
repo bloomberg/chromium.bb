@@ -216,11 +216,9 @@ class GestureTrackingView : public views::View {
   }
 
   // View overrides:
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE {
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     got_gesture_event_ = true;
-    return consume_gesture_event_ ? ui::ER_CONSUMED :
-        ui::ER_UNHANDLED;
+    return consume_gesture_event_ ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
   }
 
  private:

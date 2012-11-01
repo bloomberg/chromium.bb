@@ -53,11 +53,12 @@ class ContentsView : public views::View {
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
-  virtual bool OnScrollEvent(const ui::ScrollEvent& event) OVERRIDE;
+
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   ShowState show_state_;
   PaginationModel* pagination_model_;  // Owned by AppListController.

@@ -68,17 +68,6 @@ void StarView::OnMouseReleased(const ui::MouseEvent& event) {
   }
 }
 
-ui::EventResult StarView::OnGestureEvent(const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP) {
-    UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
-                              bookmark_utils::ENTRY_POINT_STAR_GESTURE,
-                              bookmark_utils::ENTRY_POINT_LIMIT);
-    command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
-    return ui::ER_CONSUMED;
-  }
-  return ui::ER_UNHANDLED;
-}
-
 bool StarView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
@@ -89,4 +78,15 @@ bool StarView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
   return false;
+}
+
+ui::EventResult StarView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
+                              bookmark_utils::ENTRY_POINT_STAR_GESTURE,
+                              bookmark_utils::ENTRY_POINT_LIMIT);
+    command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+    return ui::ER_CONSUMED;
+  }
+  return ui::ER_UNHANDLED;
 }

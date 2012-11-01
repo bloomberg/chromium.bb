@@ -832,14 +832,6 @@ void View::OnMouseEntered(const ui::MouseEvent& event) {
 void View::OnMouseExited(const ui::MouseEvent& event) {
 }
 
-ui::TouchStatus View::OnTouchEvent(const ui::TouchEvent& event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
-}
-
-ui::EventResult View::OnGestureEvent(const ui::GestureEvent& event) {
-  return ui::ER_UNHANDLED;
-}
-
 void View::SetMouseHandler(View* new_mouse_handler) {
   // |new_mouse_handler| may be NULL.
   if (parent_)
@@ -858,8 +850,24 @@ bool View::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return false;
 }
 
-bool View::OnScrollEvent(const ui::ScrollEvent& event) {
-  return false;
+ui::EventResult View::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult View::OnMouseEvent(ui::MouseEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult View::OnScrollEvent(ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult View::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult View::OnGestureEvent(ui::GestureEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
 ui::TextInputClient* View::GetTextInputClient() {
@@ -869,6 +877,14 @@ ui::TextInputClient* View::GetTextInputClient() {
 InputMethod* View::GetInputMethod() {
   Widget* widget = GetWidget();
   return widget ? widget->GetInputMethod() : NULL;
+}
+
+bool View::CanAcceptEvents() {
+  return IsDrawn();
+}
+
+ui::EventTarget* View::GetParentTarget() {
+  return parent_;
 }
 
 // Accelerators ----------------------------------------------------------------
@@ -1968,21 +1984,19 @@ void View::ProcessMouseReleased(const ui::MouseEvent& event) {
   // WARNING: we may have been deleted.
 }
 
-ui::TouchStatus View::ProcessTouchEvent(const ui::TouchEvent& event) {
-  // TODO(rjkroege): Implement a grab scheme similar to as as is found in
-  //                 MousePressed.
+ui::EventResult View::ProcessTouchEvent(ui::TouchEvent* event) {
   return OnTouchEvent(event);
 }
 
-ui::EventResult View::ProcessGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult View::ProcessGestureEvent(ui::GestureEvent* event) {
   ui::EventResult status = OnGestureEvent(event);
   if (status != ui::ER_UNHANDLED)
     return status;
 
   if (context_menu_controller_ &&
-      (event.type() == ui::ET_GESTURE_LONG_PRESS ||
-       event.type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
-    gfx::Point location(event.location());
+      (event->type() == ui::ET_GESTURE_LONG_PRESS ||
+       event->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
+    gfx::Point location(event->location());
     ConvertPointToScreen(this, &location);
     ShowContextMenu(location, true);
     return ui::ER_CONSUMED;

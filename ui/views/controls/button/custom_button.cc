@@ -207,20 +207,20 @@ bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
   return true;
 }
 
-ui::EventResult CustomButton::OnGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult CustomButton::OnGestureEvent(ui::GestureEvent* event) {
   if (state_ == BS_DISABLED)
     return Button::OnGestureEvent(event);
 
-  if (event.type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(event)) {
+  if (event->type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(*event)) {
     // Set the button state to hot and start the animation fully faded in. The
     // TAP_UP event issued immediately after will set the state to BS_NORMAL
     // beginning the fade out animation. See http://crbug.com/131184.
     SetState(BS_HOT);
     hover_animation_->Reset(1.0);
-    NotifyClick(event);
+    NotifyClick(*event);
     return ui::ER_CONSUMED;
-  } else if (event.type() == ui::ET_GESTURE_TAP_DOWN &&
-             ShouldEnterPushedState(event)) {
+  } else if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
+             ShouldEnterPushedState(*event)) {
     SetState(BS_PUSHED);
     if (request_focus_on_press_)
       RequestFocus();

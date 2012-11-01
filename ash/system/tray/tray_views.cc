@@ -152,10 +152,9 @@ void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
     DrawBorder(canvas, GetLocalBounds());
 }
 
-ui::EventResult ActionableView::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP) {
-    return PerformAction(event) ? ui::ER_CONSUMED :
+ui::EventResult ActionableView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    return PerformAction(*event) ? ui::ER_CONSUMED :
                                   ui::ER_UNHANDLED;
   }
   return ui::ER_UNHANDLED;

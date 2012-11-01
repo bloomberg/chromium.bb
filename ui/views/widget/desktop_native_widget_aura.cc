@@ -542,13 +542,12 @@ ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
-  ui::TouchStatus status = native_widget_delegate_->OnTouchEvent(*event);
-  return ui::EventResultFromTouchStatus(status);
+  return native_widget_delegate_->OnTouchEvent(event);
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnGestureEvent(
     ui::GestureEvent* event) {
-  return native_widget_delegate_->OnGestureEvent(*event);
+  return native_widget_delegate_->OnGestureEvent(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

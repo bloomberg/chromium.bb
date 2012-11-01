@@ -167,22 +167,27 @@ bool BaseScrollBar::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-ui::EventResult BaseScrollBar::OnGestureEvent(const ui::GestureEvent& event) {
+bool BaseScrollBar::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  ScrollByContentsOffset(event.offset());
+  return true;
+}
+
+ui::EventResult BaseScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   // If a fling is in progress, then stop the fling for any incoming gesture
   // event (except for the GESTURE_END event that is generated at the end of the
   // fling).
   if (scroll_animator_.get() && scroll_animator_->is_scrolling() &&
-      (event.type() != ui::ET_GESTURE_END ||
-       event.details().touch_points() > 1)) {
+      (event->type() != ui::ET_GESTURE_END ||
+       event->details().touch_points() > 1)) {
     scroll_animator_->Stop();
   }
 
-  if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
-    ProcessPressEvent(event);
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    ProcessPressEvent(*event);
     return ui::ER_CONSUMED;
   }
 
-  if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
+  if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
     // For a long-press, the repeater started in tap-down should continue. So
     // return early.
     return ui::ER_UNHANDLED;
@@ -190,36 +195,32 @@ ui::EventResult BaseScrollBar::OnGestureEvent(const ui::GestureEvent& event) {
 
   ResetState();
 
-  if (event.type() == ui::ET_GESTURE_TAP) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
     // TAP_DOWN would have already scrolled some amount. So scrolling again on
     // TAP is not necessary.
     return ui::ER_CONSUMED;
   }
 
-  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-      event.type() == ui::ET_GESTURE_SCROLL_END)
+  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+      event->type() == ui::ET_GESTURE_SCROLL_END)
     return ui::ER_CONSUMED;
 
-  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    ScrollByContentsOffset(IsHorizontal() ? event.details().scroll_x() :
-                                            event.details().scroll_y());
+  if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+    ScrollByContentsOffset(IsHorizontal() ? event->details().scroll_x() :
+                                            event->details().scroll_y());
     return ui::ER_CONSUMED;
   }
 
-  if (event.type() == ui::ET_SCROLL_FLING_START) {
+  if (event->type() == ui::ET_SCROLL_FLING_START) {
     if (!scroll_animator_.get())
       scroll_animator_.reset(new ScrollAnimator(this));
-    scroll_animator_->Start(IsHorizontal() ? event.details().velocity_x() : 0.f,
-        IsHorizontal() ? 0.f : event.details().velocity_y());
+    scroll_animator_->Start(
+        IsHorizontal() ?  event->details().velocity_x() : 0.f,
+        IsHorizontal() ? 0.f : event->details().velocity_y());
     return ui::ER_CONSUMED;
   }
 
   return ui::ER_UNHANDLED;
-}
-
-bool BaseScrollBar::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  ScrollByContentsOffset(event.offset());
-  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

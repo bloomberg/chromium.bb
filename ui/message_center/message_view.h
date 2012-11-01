@@ -39,8 +39,8 @@ class MessageView : public views::View,
   // views::View overrides.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
+  // ui::EventHandler overrides.
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,

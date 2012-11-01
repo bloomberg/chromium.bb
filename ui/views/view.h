@@ -19,6 +19,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_target.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/gfx/native_widget_types.h"
@@ -100,7 +101,8 @@ class RootView;
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::LayerOwner,
-                          public ui::AcceleratorTarget {
+                          public ui::AcceleratorTarget,
+                          public ui::EventTarget {
  public:
   typedef std::vector<View*> Views;
 
@@ -581,25 +583,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Default implementation does nothing. Override as needed.
   virtual void OnMouseExited(const ui::MouseEvent& event);
 
-  // This method is invoked for each touch event. Default implementation
-  // does nothing. Override as needed.
-  virtual ui::TouchStatus OnTouchEvent(const ui::TouchEvent& event);
-
-  // This method is invoked for each GestureEvent created by GestureRecognizer.
-  // Default implementation does nothing. Override as needed.
-  // If a View returns ui::ER_CONSUMED from OnGestureEvent, then
-  // subsequent gestures will be dispatched to the same View, until the gesture
-  // ends (i.e. all touch-points are released).
-  // Scroll gesture events are handled slightly differently: if a View starts
-  // processing gesture events, but does not process an ET_GESTURE_SCROLL_BEGIN
-  // gesture, then the scroll-gesture event will bubble up (i.e. will be sent to
-  // the parent view for processing). If a View then returns
-  // GESTURE_STATUS_CONSUMED from OnGestureEvent, then the subsequent
-  // scroll-gesture events will be sent to this View. However all the other
-  // gesture-events (e.g. ET_GESTURE_END, ET_GESTURE_PINCH_BEGIN etc.) will
-  // continue to be dispatched to the first View.
-  virtual ui::EventResult OnGestureEvent(const ui::GestureEvent& event);
-
   // Set the MouseHandler for a drag session.
   //
   // A drag session is a stream of mouse events starting
@@ -634,11 +617,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // will be given a chance.
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event);
 
-  // Invoked when user scrolls (e.g. using two-finger scroll on touch pad).
-  // Returns true if the event has been processed and false otherwise. The event
-  // is sent to the view where the event happens first. If it has not been
-  // processed, the parent will be given a chance.
-  virtual bool OnScrollEvent(const ui::ScrollEvent& event);
 
   // See field for description.
   void set_notify_enter_exit_on_child(bool notify) {
@@ -656,6 +634,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Widget that contains this view. Returns NULL if this view is not part of a
   // view hierarchy with a Widget.
   virtual InputMethod* GetInputMethod();
+
+  // Overridden from ui::EventTarget:
+  virtual bool CanAcceptEvents() OVERRIDE;
+  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
+
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Accelerators --------------------------------------------------------------
 
@@ -1290,11 +1279,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // RootView will invoke this with incoming TouchEvents. Returns the result
   // of OnTouchEvent.
-  ui::TouchStatus ProcessTouchEvent(const ui::TouchEvent& event);
+  ui::EventResult ProcessTouchEvent(ui::TouchEvent* event);
 
   // RootView will invoke this with incoming GestureEvents. This will invoke
   // OnGestureEvent and return the result.
-  ui::EventResult ProcessGestureEvent(const ui::GestureEvent& event);
+  ui::EventResult ProcessGestureEvent(ui::GestureEvent* event);
 
   // Accelerators --------------------------------------------------------------
 

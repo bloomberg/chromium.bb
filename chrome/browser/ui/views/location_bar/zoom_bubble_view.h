@@ -49,10 +49,11 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   void StopTimer();
 
   // views::View method.
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+
+  // ui::EventHandler method.
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // views::ButtonListener method.
   virtual void ButtonPressed(views::Button* sender,

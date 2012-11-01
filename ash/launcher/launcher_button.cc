@@ -259,30 +259,6 @@ void LauncherButton::OnMouseExited(const ui::MouseEvent& event) {
   host_->MouseExitedButton(this);
 }
 
-ui::EventResult LauncherButton::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  switch (event.type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      AddState(STATE_HOVERED);
-      return CustomButton::OnGestureEvent(event);
-    case ui::ET_GESTURE_END:
-      ClearState(STATE_HOVERED);
-      return CustomButton::OnGestureEvent(event);
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, event);
-      return ui::ER_CONSUMED;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, event);
-      return ui::ER_CONSUMED;
-    case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_SCROLL_FLING_START:
-      host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
-      return ui::ER_CONSUMED;
-    default:
-      return CustomButton::OnGestureEvent(event);
-  }
-}
-
 void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = host_->GetAccessibleName(this);
@@ -326,6 +302,29 @@ void LauncherButton::OnFocus() {
 void LauncherButton::OnBlur() {
   ClearState(STATE_FOCUSED);
   CustomButton::OnBlur();
+}
+
+ui::EventResult LauncherButton::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      AddState(STATE_HOVERED);
+      return CustomButton::OnGestureEvent(event);
+    case ui::ET_GESTURE_END:
+      ClearState(STATE_HOVERED);
+      return CustomButton::OnGestureEvent(event);
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, *event);
+      return ui::ER_CONSUMED;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, *event);
+      return ui::ER_CONSUMED;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
+      return ui::ER_CONSUMED;
+    default:
+      return CustomButton::OnGestureEvent(event);
+  }
 }
 
 void LauncherButton::Init() {

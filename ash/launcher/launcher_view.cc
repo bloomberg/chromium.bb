@@ -775,11 +775,6 @@ gfx::Size LauncherView::GetPreferredSize() {
                    last_button_bounds.bottom() + leading_inset());
 }
 
-ui::EventResult LauncherView::OnGestureEvent(const ui::GestureEvent& event) {
-  return gesture_handler_.ProcessGestureEvent(event) ?
-      ui::ER_CONSUMED : ui::ER_UNHANDLED;
-}
-
 void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   LayoutToIdealBounds();
   FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
@@ -791,6 +786,11 @@ void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
   return this;
+}
+
+ui::EventResult LauncherView::OnGestureEvent(ui::GestureEvent* event) {
+  return gesture_handler_.ProcessGestureEvent(*event) ?
+      ui::ER_CONSUMED : ui::ER_UNHANDLED;
 }
 
 void LauncherView::LauncherItemAdded(int model_index) {

@@ -53,14 +53,6 @@ bool ZoomView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   return !ZoomBubbleView::IsShowing() && ImageView::GetTooltipText(p, tooltip);
 }
 
-ui::EventResult ZoomView::OnGestureEvent(const ui::GestureEvent& event) {
-  if (event.type() != ui::ET_GESTURE_TAP)
-    return ui::ER_UNHANDLED;
-
-  ActivateBubble();
-  return ui::ER_CONSUMED;
-}
-
 bool ZoomView::OnMousePressed(const ui::MouseEvent& event) {
   // Do nothing until mouse is released.
   return true;
@@ -79,6 +71,14 @@ bool ZoomView::OnKeyPressed(const ui::KeyEvent& event) {
 
   ActivateBubble();
   return true;
+}
+
+ui::EventResult ZoomView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() != ui::ET_GESTURE_TAP)
+    return ui::ER_UNHANDLED;
+
+  ActivateBubble();
+  return ui::ER_CONSUMED;
 }
 
 int ZoomView::GetBuiltInHorizontalPadding() const {

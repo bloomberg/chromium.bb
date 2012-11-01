@@ -479,22 +479,6 @@ bool DownloadItemView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-ui::EventResult DownloadItemView::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
-    HandlePressEvent(event, true);
-    return ui::ER_CONSUMED;
-  }
-
-  if (event.type() == ui::ET_GESTURE_TAP) {
-    HandleClickEvent(event, true);
-    return ui::ER_CONSUMED;
-  }
-
-  SetState(NORMAL, NORMAL);
-  return views::View::OnGestureEvent(event);
-}
-
 bool DownloadItemView::GetTooltipText(const gfx::Point& p,
                                       string16* tooltip) const {
   if (IsShowingWarningDialog()) {
@@ -519,6 +503,21 @@ void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void DownloadItemView::OnThemeChanged() {
   UpdateColorsFromTheme();
+}
+
+ui::EventResult DownloadItemView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    HandlePressEvent(*event, true);
+    return ui::ER_CONSUMED;
+  }
+
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    HandleClickEvent(*event, true);
+    return ui::ER_CONSUMED;
+  }
+
+  SetState(NORMAL, NORMAL);
+  return views::View::OnGestureEvent(event);
 }
 
 void DownloadItemView::ShowContextMenuForView(View* source,

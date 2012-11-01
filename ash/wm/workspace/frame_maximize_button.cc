@@ -270,40 +270,39 @@ void FrameMaximizeButton::OnMouseCaptureLost() {
   ImageButton::OnMouseCaptureLost();
 }
 
-ui::EventResult FrameMaximizeButton::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
+ui::EventResult FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     is_snap_enabled_ = true;
-    ProcessStartEvent(event);
+    ProcessStartEvent(*event);
     return ui::ER_CONSUMED;
   }
 
-  if (event.type() == ui::ET_GESTURE_TAP ||
-      event.type() == ui::ET_GESTURE_SCROLL_END) {
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_SCROLL_END) {
     // The position of the event may have changed from the previous event (both
     // for TAP and SCROLL_END). So it is necessary to update the snap-state for
     // the current event.
-    ProcessUpdateEvent(event);
-    if (event.type() == ui::ET_GESTURE_TAP)
-      snap_type_ = SnapTypeForLocation(event.location());
-    ProcessEndEvent(event);
+    ProcessUpdateEvent(*event);
+    if (event->type() == ui::ET_GESTURE_TAP)
+      snap_type_ = SnapTypeForLocation(event->location());
+    ProcessEndEvent(*event);
     return ui::ER_CONSUMED;
   }
 
   if (is_snap_enabled_) {
-    if (event.type() == ui::ET_GESTURE_END &&
-        event.details().touch_points() == 1) {
+    if (event->type() == ui::ET_GESTURE_END &&
+        event->details().touch_points() == 1) {
       // The position of the event may have changed from the previous event. So
       // it is necessary to update the snap-state for the current event.
-      ProcessUpdateEvent(event);
-      snap_type_ = SnapTypeForLocation(event.location());
-      ProcessEndEvent(event);
+      ProcessUpdateEvent(*event);
+      snap_type_ = SnapTypeForLocation(event->location());
+      ProcessEndEvent(*event);
       return ui::ER_CONSUMED;
     }
 
-    if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-        event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-      ProcessUpdateEvent(event);
+    if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+        event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+      ProcessUpdateEvent(*event);
       return ui::ER_CONSUMED;
     }
   }

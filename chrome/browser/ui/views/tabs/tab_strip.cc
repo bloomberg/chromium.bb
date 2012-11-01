@@ -302,11 +302,12 @@ class NewTabButton : public views::ImageButton {
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* path) const OVERRIDE;
 #if defined(OS_WIN) && !defined(USE_AURA)
-  void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 #endif
-  virtual ui::EventResult OnGestureEvent(
-      const ui::GestureEvent& event) OVERRIDE;
-  void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   bool ShouldUseNativeFrame() const;
@@ -373,17 +374,16 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
 }
 #endif
 
-ui::EventResult NewTabButton::OnGestureEvent(
-    const ui::GestureEvent& event) {
+void NewTabButton::OnPaint(gfx::Canvas* canvas) {
+  gfx::ImageSkia image = GetImage(canvas->scale_factor());
+  canvas->DrawImageInt(image, 0, height() - image.height());
+}
+
+ui::EventResult NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
   // Consume all gesture events here so that the parent (BaseTab) does not
   // start consuming gestures.
   views::ImageButton::OnGestureEvent(event);
   return ui::ER_CONSUMED;
-}
-
-void NewTabButton::OnPaint(gfx::Canvas* canvas) {
-  gfx::ImageSkia image = GetImage(canvas->scale_factor());
-  canvas->DrawImageInt(image, 0, height() - image.height());
 }
 
 bool NewTabButton::ShouldUseNativeFrame() const {
@@ -1445,10 +1445,9 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
   SetResetToShrinkOnExit(true);
 }
 
-ui::EventResult TabStrip::OnGestureEvent(
-    const ui::GestureEvent& event) {
+ui::EventResult TabStrip::OnGestureEvent(ui::GestureEvent* event) {
   SetResetToShrinkOnExit(false);
-  switch (event.type()) {
+  switch (event->type()) {
     case ui::ET_GESTURE_END:
       EndDrag(END_DRAG_COMPLETE);
       if (adjust_layout_) {
@@ -1463,7 +1462,7 @@ ui::EventResult TabStrip::OnGestureEvent(
       break;
 
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      ContinueDrag(this, event.location());
+      ContinueDrag(this, event->location());
       break;
 
     case ui::ET_GESTURE_BEGIN:

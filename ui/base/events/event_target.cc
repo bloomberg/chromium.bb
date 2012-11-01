@@ -44,31 +44,6 @@ void EventTarget::RemovePostTargetHandler(EventHandler* handler) {
     post_target_list_.erase(find);
 }
 
-void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {
-  EventTarget* target = this;
-  while (target) {
-    EventHandlerList::reverse_iterator it, rend;
-    for (it = target->pre_target_list_.rbegin(),
-            rend = target->pre_target_list_.rend();
-        it != rend;
-        ++it) {
-      list->insert(list->begin(), *it);
-    }
-    target = target->GetParentTarget();
-  }
-}
-
-void EventTarget::GetPostTargetHandlers(EventHandlerList* list) {
-  EventTarget* target = this;
-  while (target) {
-    for (EventHandlerList::iterator it = target->post_target_list_.begin(),
-        end = target->post_target_list_.end(); it != end; ++it) {
-      list->push_back(*it);
-    }
-    target = target->GetParentTarget();
-  }
-}
-
 EventResult EventTarget::OnKeyEvent(KeyEvent* event) {
   CHECK_EQ(this, event->target());
   return target_handler_ ? target_handler_->OnKeyEvent(event) : ER_UNHANDLED;
@@ -94,6 +69,31 @@ EventResult EventTarget::OnGestureEvent(GestureEvent* event) {
   CHECK_EQ(this, event->target());
   return target_handler_ ? target_handler_->OnGestureEvent(event) :
                            ER_UNHANDLED;
+}
+
+void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {
+  EventTarget* target = this;
+  while (target) {
+    EventHandlerList::reverse_iterator it, rend;
+    for (it = target->pre_target_list_.rbegin(),
+            rend = target->pre_target_list_.rend();
+        it != rend;
+        ++it) {
+      list->insert(list->begin(), *it);
+    }
+    target = target->GetParentTarget();
+  }
+}
+
+void EventTarget::GetPostTargetHandlers(EventHandlerList* list) {
+  EventTarget* target = this;
+  while (target) {
+    for (EventHandlerList::iterator it = target->post_target_list_.begin(),
+        end = target->post_target_list_.end(); it != end; ++it) {
+      list->push_back(*it);
+    }
+    target = target->GetParentTarget();
+  }
 }
 
 }  // namespace ui

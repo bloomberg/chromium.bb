@@ -144,20 +144,19 @@ void NativeTextfieldViews::OnMouseReleased(const ui::MouseEvent& event) {
   OnAfterUserAction();
 }
 
-ui::EventResult NativeTextfieldViews::OnGestureEvent(
-    const ui::GestureEvent& event) {
+ui::EventResult NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
   ui::EventResult status = textfield_->OnGestureEvent(event);
   if (status != ui::ER_UNHANDLED)
     return status;
 
-  switch (event.type()) {
+  switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       OnBeforeUserAction();
       textfield_->RequestFocus();
       // We don't deselect if the point is in the selection
       // because TAP_DOWN may turn into a LONG_PRESS.
-      if (!GetRenderText()->IsPointInSelection(event.location()) &&
-          MoveCursorTo(event.location(), false))
+      if (!GetRenderText()->IsPointInSelection(event->location()) &&
+          MoveCursorTo(event->location(), false))
         SchedulePaint();
       OnAfterUserAction();
       return ui::ER_CONSUMED;
@@ -166,7 +165,7 @@ ui::EventResult NativeTextfieldViews::OnGestureEvent(
       return ui::ER_CONSUMED;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       OnBeforeUserAction();
-      if (MoveCursorTo(event.location(), true))
+      if (MoveCursorTo(event->location(), true))
         SchedulePaint();
       OnAfterUserAction();
       return ui::ER_CONSUMED;

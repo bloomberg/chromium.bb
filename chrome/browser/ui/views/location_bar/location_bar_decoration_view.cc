@@ -73,12 +73,12 @@ gfx::Size LocationBarDecorationView::GetPreferredSize() {
 }
 
 ui::EventResult LocationBarDecorationView::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP) {
+    ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
     AnimationOnClick();
     OnClick(parent_);
     return ui::ER_CONSUMED;
-  } else if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
+  } else if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     return ui::ER_CONSUMED;
   }
 

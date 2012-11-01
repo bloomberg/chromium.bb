@@ -307,18 +307,17 @@ bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
-ui::EventResult AppListItemView::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  switch (event.type()) {
+ui::EventResult AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (touch_dragging_) {
-        apps_grid_view_->InitiateDrag(this, AppsGridView::TOUCH, event);
+        apps_grid_view_->InitiateDrag(this, AppsGridView::TOUCH, *event);
         return ui::ER_CONSUMED;
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (touch_dragging_) {
-        apps_grid_view_->UpdateDrag(this, AppsGridView::TOUCH, event);
+        apps_grid_view_->UpdateDrag(this, AppsGridView::TOUCH, *event);
         return ui::ER_CONSUMED;
       }
       break;
@@ -338,7 +337,7 @@ ui::EventResult AppListItemView::OnGestureEvent(
       if (touch_dragging_) {
         SetTouchDragging(false);
 
-        gfx::Point location(event.location());
+        gfx::Point location(event->location());
         ConvertPointToScreen(this, &location);
         ShowContextMenu(location, true);
       }

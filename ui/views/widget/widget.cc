@@ -1086,7 +1086,8 @@ int Widget::GetNonClientComponent(const gfx::Point& point) {
 
 bool Widget::OnKeyEvent(const ui::KeyEvent& event) {
   ScopedEvent scoped(this, event);
-  return static_cast<internal::RootView*>(GetRootView())->OnKeyEvent(event);
+  return static_cast<internal::RootView*>(GetRootView())->
+      DispatchKeyEvent(event) == ui::ER_UNHANDLED;
 }
 
 bool Widget::OnMouseEvent(const ui::MouseEvent& event) {
@@ -1132,9 +1133,6 @@ bool Widget::OnMouseEvent(const ui::MouseEvent& event) {
     case ui::ET_MOUSEWHEEL:
       return GetRootView()->OnMouseWheel(
           reinterpret_cast<const ui::MouseWheelEvent&>(event));
-    case ui::ET_SCROLL:
-      return GetRootView()->OnScrollEvent(
-          reinterpret_cast<const ui::ScrollEvent&>(event));
     default:
       return false;
   }
@@ -1148,14 +1146,21 @@ void Widget::OnMouseCaptureLost() {
   is_mouse_button_pressed_ = false;
 }
 
-ui::TouchStatus Widget::OnTouchEvent(const ui::TouchEvent& event) {
-  ScopedEvent scoped(this, event);
-  return GetRootView()->OnTouchEvent(event);
+ui::EventResult Widget::OnTouchEvent(ui::TouchEvent* event) {
+  ScopedEvent scoped(this, *event);
+  return static_cast<internal::RootView*>(GetRootView())->
+      DispatchTouchEvent(event);
 }
 
-ui::EventResult Widget::OnGestureEvent(const ui::GestureEvent& event) {
-  ScopedEvent scoped(this, event);
-  switch (event.type()) {
+ui::EventResult Widget::OnScrollEvent(ui::ScrollEvent* event) {
+  ScopedEvent scoped(this, *event);
+  return static_cast<internal::RootView*>(GetRootView())->
+      DispatchScrollEvent(event);
+}
+
+ui::EventResult Widget::OnGestureEvent(ui::GestureEvent* event) {
+  ScopedEvent scoped(this, *event);
+  switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       is_touch_down_ = true;
       // We explicitly don't capture here. Not capturing enables multiple
@@ -1164,7 +1169,7 @@ ui::EventResult Widget::OnGestureEvent(const ui::GestureEvent& event) {
       break;
 
     case ui::ET_GESTURE_END:
-      if (event.details().touch_points() == 1) {
+      if (event->details().touch_points() == 1) {
         is_touch_down_ = false;
         if (ShouldReleaseCaptureOnMouseReleased())
           ReleaseCapture();
@@ -1174,7 +1179,8 @@ ui::EventResult Widget::OnGestureEvent(const ui::GestureEvent& event) {
     default:
       break;
   }
-  return GetRootView()->OnGestureEvent(event);
+  return static_cast<internal::RootView*>(GetRootView())->
+      DispatchGestureEvent(event);
 }
 
 bool Widget::ExecuteCommand(int command_id) {
