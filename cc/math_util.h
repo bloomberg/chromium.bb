@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "ui/gfx/point_f.h"
-#include "FloatPoint3D.h"
+#include "ui/gfx/point3_f.h"
 
 namespace WebKit {
 class WebTransformationMatrix;
@@ -48,15 +48,15 @@ struct HomogeneousCoordinate {
         return gfx::PointF(x * invW, y * invW);
     }
 
-    FloatPoint3D cartesianPoint3d() const
+    gfx::Point3F cartesianPoint3d() const
     {
         if (w == 1)
-            return FloatPoint3D(x, y, z);
+            return gfx::Point3F(x, y, z);
 
         // For now, because this code is used privately only by MathUtil, it should never be called when w == 0, and we do not yet need to handle that case.
         DCHECK(w);
         double invW = 1.0 / w;
-        return FloatPoint3D(x * invW, y * invW, z * invW);
+        return gfx::Point3F(x * invW, y * invW, z * invW);
     }
 
     double x;
@@ -93,7 +93,7 @@ public:
     // correctly detect the clipped condition via the boolean clipped.
     static FloatQuad mapQuad(const WebKit::WebTransformationMatrix&, const FloatQuad&, bool& clipped);
     static gfx::PointF mapPoint(const WebKit::WebTransformationMatrix&, const gfx::PointF&, bool& clipped);
-    static FloatPoint3D mapPoint(const WebKit::WebTransformationMatrix&, const FloatPoint3D&, bool& clipped);
+    static gfx::Point3F mapPoint(const WebKit::WebTransformationMatrix&, const gfx::Point3F&, bool& clipped);
     static FloatQuad projectQuad(const WebKit::WebTransformationMatrix&, const FloatQuad&, bool& clipped);
     static gfx::PointF projectPoint(const WebKit::WebTransformationMatrix&, const gfx::PointF&, bool& clipped);
 

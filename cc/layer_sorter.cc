@@ -179,13 +179,13 @@ LayerShape::LayerShape(float width, float height, const WebTransformationMatrix&
 
     // Compute the normal of the layer's plane.
     bool clipped = false;
-    FloatPoint3D c1 = MathUtil::mapPoint(drawTransform, FloatPoint3D(0, 0, 0), clipped);
-    FloatPoint3D c2 = MathUtil::mapPoint(drawTransform, FloatPoint3D(0, 1, 0), clipped);
-    FloatPoint3D c3 = MathUtil::mapPoint(drawTransform, FloatPoint3D(1, 0, 0), clipped);
+    gfx::Point3F c1 = MathUtil::mapPoint(drawTransform, gfx::Point3F(0, 0, 0), clipped);
+    gfx::Point3F c2 = MathUtil::mapPoint(drawTransform, gfx::Point3F(0, 1, 0), clipped);
+    gfx::Point3F c3 = MathUtil::mapPoint(drawTransform, gfx::Point3F(1, 0, 0), clipped);
     // FIXME: Deal with clipping.
-    FloatPoint3D c12 = c2 - c1;
-    FloatPoint3D c13 = c3 - c1;
-    layerNormal = c13.cross(c12);
+    gfx::Vector3dF c12 = c2 - c1;
+    gfx::Vector3dF c13 = c3 - c1;
+    layerNormal = gfx::CrossProduct(c13, c12);
 
     transformOrigin = c1;
 }
@@ -200,11 +200,11 @@ LayerShape::~LayerShape()
 // of the layer.
 float LayerShape::layerZFromProjectedPoint(const gfx::PointF& p) const
 {
-    const FloatPoint3D zAxis(0, 0, 1);
-    FloatPoint3D w = FloatPoint3D(cc::FloatPoint(p)) - transformOrigin;
+    gfx::Vector3dF zAxis(0, 0, 1);
+    gfx::Vector3dF w = gfx::Point3F(p) - transformOrigin;
 
-    float d = layerNormal.dot(zAxis);
-    float n = -layerNormal.dot(w);
+    float d = gfx::DotProduct(layerNormal, zAxis);
+    float n = -gfx::DotProduct(layerNormal, w);
 
     // Check if layer is parallel to the z = 0 axis which will make it
     // invisible and hence returning zero is fine.

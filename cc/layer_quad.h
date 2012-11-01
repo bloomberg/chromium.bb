@@ -6,7 +6,6 @@
 #ifndef CCLayerQuad_h
 #define CCLayerQuad_h
 
-#include "FloatPoint3D.h"
 #include "FloatQuad.h"
 
 static const float kAntiAliasingInflateDistance = 0.5f;

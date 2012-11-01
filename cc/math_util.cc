@@ -40,7 +40,7 @@ static HomogeneousCoordinate projectHomogeneousPoint(const WebTransformationMatr
     return HomogeneousCoordinate(outX, outY, outZ, outW);
 }
 
-static HomogeneousCoordinate mapHomogeneousPoint(const WebTransformationMatrix& transform, const FloatPoint3D& p)
+static HomogeneousCoordinate mapHomogeneousPoint(const WebTransformationMatrix& transform, const gfx::Point3F& p)
 {
     double x = p.x();
     double y = p.y();
@@ -113,10 +113,10 @@ gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, co
 
     // Apply the transform, but retain the result in homogeneous coordinates.
     FloatQuad q = FloatQuad(gfx::RectF(srcRect));
-    HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, q.p1());
-    HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, q.p2());
-    HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, q.p3());
-    HomogeneousCoordinate h4 = mapHomogeneousPoint(transform, q.p4());
+    HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, gfx::Point3F(q.p1()));
+    HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, gfx::Point3F(q.p2()));
+    HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, gfx::Point3F(q.p3()));
+    HomogeneousCoordinate h4 = mapHomogeneousPoint(transform, gfx::Point3F(q.p4()));
 
     return computeEnclosingClippedRect(h1, h2, h3, h4);
 }
@@ -135,10 +135,10 @@ gfx::RectF MathUtil::projectClippedRect(const WebTransformationMatrix& transform
 
 void MathUtil::mapClippedQuad(const WebTransformationMatrix& transform, const FloatQuad& srcQuad, gfx::PointF clippedQuad[8], int& numVerticesInClippedQuad)
 {
-    HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, srcQuad.p1());
-    HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, srcQuad.p2());
-    HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, srcQuad.p3());
-    HomogeneousCoordinate h4 = mapHomogeneousPoint(transform, srcQuad.p4());
+    HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, gfx::Point3F(srcQuad.p1()));
+    HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, gfx::Point3F(srcQuad.p2()));
+    HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, gfx::Point3F(srcQuad.p3()));
+    HomogeneousCoordinate h4 = mapHomogeneousPoint(transform, gfx::Point3F(srcQuad.p4()));
 
     // The order of adding the vertices to the array is chosen so that clockwise / counter-clockwise orientation is retained.
 
@@ -246,10 +246,10 @@ FloatQuad MathUtil::mapQuad(const WebTransformationMatrix& transform, const Floa
         return mappedQuad;
     }
 
-    HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, q.p1());
-    HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, q.p2());
-    HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, q.p3());
-    HomogeneousCoordinate h4 = mapHomogeneousPoint(transform, q.p4());
+    HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, gfx::Point3F(q.p1()));
+    HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, gfx::Point3F(q.p2()));
+    HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, gfx::Point3F(q.p3()));
+    HomogeneousCoordinate h4 = mapHomogeneousPoint(transform, gfx::Point3F(q.p4()));
 
     clipped = h1.shouldBeClipped() || h2.shouldBeClipped() || h3.shouldBeClipped() || h4.shouldBeClipped();
 
@@ -259,7 +259,7 @@ FloatQuad MathUtil::mapQuad(const WebTransformationMatrix& transform, const Floa
 
 gfx::PointF MathUtil::mapPoint(const WebTransformationMatrix& transform, const gfx::PointF& p, bool& clipped)
 {
-    HomogeneousCoordinate h = mapHomogeneousPoint(transform, cc::FloatPoint(p));
+    HomogeneousCoordinate h = mapHomogeneousPoint(transform, gfx::Point3F(p));
 
     if (h.w > 0) {
         clipped = false;
@@ -280,7 +280,7 @@ gfx::PointF MathUtil::mapPoint(const WebTransformationMatrix& transform, const g
     return h.cartesianPoint2d();
 }
 
-FloatPoint3D MathUtil::mapPoint(const WebTransformationMatrix& transform, const FloatPoint3D& p, bool& clipped)
+gfx::Point3F MathUtil::mapPoint(const WebTransformationMatrix& transform, const gfx::Point3F& p, bool& clipped)
 {
     HomogeneousCoordinate h = mapHomogeneousPoint(transform, p);
 
@@ -294,7 +294,7 @@ FloatPoint3D MathUtil::mapPoint(const WebTransformationMatrix& transform, const 
 
     // Avoid dividing by w if w == 0.
     if (!h.w)
-        return FloatPoint3D();
+        return gfx::Point3F();
 
     // This return value will be invalid because clipped == true, but (1) users of this
     // code should be ignoring the return value when clipped == true anyway, and (2) this

@@ -6,6 +6,7 @@
 
 #include "cc/math_util.h"
 
+#include "FloatSize.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
