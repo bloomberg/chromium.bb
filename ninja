@@ -5,11 +5,12 @@
 # found in the LICENSE file.
 
 OS="$(uname -s)"
+THIS_DIR="$(dirname "${0}")"
 
 if [ "${OS}" = "Linux" ]; then
-  exec ninja-linux64 "$@"
+  exec "${THIS_DIR}/ninja-linux64" "$@"
 elif [ "${OS}" = "Darwin" ]; then
-  exec ninja-mac "$@"
+  exec "${THIS_DIR}/ninja-mac" "$@"
 elif [[ ${OS} == CYGWIN* ]]; then
   exec cmd.exe /c `cygpath -t windows $0`.exe "$@"
 elif [[ ${OS} == MINGW32* ]]; then
