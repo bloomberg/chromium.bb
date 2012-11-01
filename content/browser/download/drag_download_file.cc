@@ -22,7 +22,7 @@ namespace {
 
 typedef base::Callback<void(bool)> OnCompleted;
 
-}  // anonymous namespace
+}  // namespace
 
 // On windows, DragDownloadFile runs on a thread other than the UI thread.
 // DownloadItem and DownloadManager may not be accessed on any thread other than
@@ -31,13 +31,12 @@ typedef base::Callback<void(bool)> OnCompleted;
 // on the UI thread. On platforms where DragDownloadFile runs on the UI thread,
 // none of the PostTasks are necessary, but it simplifies the code to do them
 // anyway.
-class DragDownloadFile::DragDownloadFileUI
-    : public content::DownloadItem::Observer {
+class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
  public:
   DragDownloadFileUI(const GURL& url,
-                     const content::Referrer& referrer,
+                     const Referrer& referrer,
                      const std::string& referrer_encoding,
-                     content::WebContents* web_contents,
+                     WebContents* web_contents,
                      MessageLoop* on_completed_loop,
                      const OnCompleted& on_completed)
       : on_completed_loop_(on_completed_loop),
@@ -58,17 +57,16 @@ class DragDownloadFile::DragDownloadFileUI
   void InitiateDownload(scoped_ptr<net::FileStream> file_stream,
                         const FilePath& file_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    content::DownloadManager* download_manager =
+    DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext());
 
-    scoped_ptr<content::DownloadSaveInfo> save_info(
-        new content::DownloadSaveInfo());
+    scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
     save_info->file_path = file_path;
     save_info->file_stream.reset(file_stream.release());
 
     RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
-    scoped_ptr<content::DownloadUrlParameters> params(
-        content::DownloadUrlParameters::FromWebContents(
+    scoped_ptr<DownloadUrlParameters> params(
+        DownloadUrlParameters::FromWebContents(
             web_contents_, url_, save_info.Pass()));
     params->set_referrer(referrer_);
     params->set_referrer_encoding(referrer_encoding_);
@@ -95,7 +93,7 @@ class DragDownloadFile::DragDownloadFileUI
       download_item_->RemoveObserver(this);
   }
 
-  void OnDownloadStarted(content::DownloadItem* item, net::Error error) {
+  void OnDownloadStarted(DownloadItem* item, net::Error error) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!item) {
       DCHECK_NE(net::OK, error);
@@ -107,8 +105,8 @@ class DragDownloadFile::DragDownloadFileUI
     download_item_->AddObserver(this);
   }
 
-  // content::DownloadItem::Observer
-  virtual void OnDownloadUpdated(content::DownloadItem* item) OVERRIDE {
+  // DownloadItem::Observer:
+  virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(download_item_, item);
     if (download_item_->IsComplete() ||
@@ -125,7 +123,7 @@ class DragDownloadFile::DragDownloadFileUI
     // Ignore other states.
   }
 
-  virtual void OnDownloadDestroyed(content::DownloadItem* item) OVERRIDE {
+  virtual void OnDownloadDestroyed(DownloadItem* item) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(download_item_, item);
     if (!on_completed_.is_null()) {
@@ -140,10 +138,10 @@ class DragDownloadFile::DragDownloadFileUI
   MessageLoop* on_completed_loop_;
   OnCompleted on_completed_;
   GURL url_;
-  content::Referrer referrer_;
+  Referrer referrer_;
   std::string referrer_encoding_;
-  content::WebContents* web_contents_;
-  content::DownloadItem* download_item_;
+  WebContents* web_contents_;
+  DownloadItem* download_item_;
 
   // Only used in the callback from DownloadManager::DownloadUrl().
   base::WeakPtrFactory<DragDownloadFileUI> weak_ptr_factory_;
@@ -151,13 +149,12 @@ class DragDownloadFile::DragDownloadFileUI
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFileUI);
 };
 
-DragDownloadFile::DragDownloadFile(
-    const FilePath& file_path,
-    scoped_ptr<net::FileStream> file_stream,
-    const GURL& url,
-    const content::Referrer& referrer,
-    const std::string& referrer_encoding,
-    WebContents* web_contents)
+DragDownloadFile::DragDownloadFile(const FilePath& file_path,
+                                   scoped_ptr<net::FileStream> file_stream,
+                                   const GURL& url,
+                                   const Referrer& referrer,
+                                   const std::string& referrer_encoding,
+                                   WebContents* web_contents)
     : file_path_(file_path),
       file_stream_(file_stream.Pass()),
       drag_message_loop_(MessageLoop::current()),

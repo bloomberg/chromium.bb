@@ -73,8 +73,7 @@ GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
   memset(mappers_, 0, sizeof(mappers_));
 
   std::vector<UdevLinux::UdevMonitorFilter> filters;
-  filters.push_back(
-      content::UdevLinux::UdevMonitorFilter(kInputSubsystem, NULL));
+  filters.push_back(UdevLinux::UdevMonitorFilter(kInputSubsystem, NULL));
   udev_.reset(
       new UdevLinux(filters,
                     base::Bind(&GamepadPlatformDataFetcherLinux::RefreshDevice,

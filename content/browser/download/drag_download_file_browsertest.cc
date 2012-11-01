@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_NetError) {
       "DragDownloadFileTest_NetError.txt"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(FilePath(FILE_PATH_LITERAL(
       "download-test.lib"))));
-  content::Referrer referrer;
+  Referrer referrer;
   std::string referrer_encoding;
   DragDownloadFile* file = new DragDownloadFile(
       name, scoped_ptr<net::FileStream>(NULL), url, referrer,
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(DragDownloadFileTest, DragDownloadFileTest_Complete) {
         "DragDownloadFileTest_Complete.txt"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(FilePath(FILE_PATH_LITERAL(
       "download-test.lib"))));
-  content::Referrer referrer;
+  Referrer referrer;
   std::string referrer_encoding;
   net::FileStream* stream = NULL;
 #if defined(OS_POSIX)
