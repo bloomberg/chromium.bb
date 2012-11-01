@@ -36,10 +36,10 @@ IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
 }
 
 DnsProbeService::DnsProbeService()
-    : system_result_(DnsProbeJob::DNS_UNKNOWN),
-      public_result_(DnsProbeJob::DNS_UNKNOWN),
+    : system_result_(DnsProbeJob::SERVERS_UNKNOWN),
+      public_result_(DnsProbeJob::SERVERS_UNKNOWN),
       state_(STATE_NO_RESULTS),
-      result_(DNS_PROBE_UNKNOWN) {
+      result_(PROBE_UNKNOWN) {
 }
 
 DnsProbeService::~DnsProbeService() {
@@ -81,7 +81,7 @@ void DnsProbeService::ExpireResults() {
   DCHECK_EQ(STATE_RESULTS_CACHED, state_);
 
   state_ = STATE_NO_RESULTS;
-  result_ = DNS_PROBE_UNKNOWN;
+  result_ = PROBE_UNKNOWN;
 }
 
 void DnsProbeService::StartProbes() {
@@ -95,8 +95,8 @@ void DnsProbeService::StartProbes() {
 
   // TODO(ttuttle): Do we want to keep explicit flags for "job done"?
   //                Or maybe DnsProbeJob should have a "finished" flag?
-  system_result_ = DnsProbeJob::DNS_UNKNOWN;
-  public_result_ = DnsProbeJob::DNS_UNKNOWN;
+  system_result_ = DnsProbeJob::SERVERS_UNKNOWN;
+  public_result_ = DnsProbeJob::SERVERS_UNKNOWN;
 
   system_job_ = CreateSystemProbeJob(job_callback);
   public_job_ = CreatePublicProbeJob(job_callback);
@@ -109,7 +109,7 @@ void DnsProbeService::OnProbesComplete() {
 
   state_ = STATE_RESULTS_CACHED;
   // TODO(ttuttle): Calculate result.
-  result_ = DNS_PROBE_NXDOMAIN;
+  result_ = PROBE_NXDOMAIN;
 
   CallCallbacks();
 }
@@ -150,8 +150,8 @@ void DnsProbeService::OnProbeJobComplete(DnsProbeJob* job,
     return;
   }
 
-  if (system_result_ != DnsProbeJob::DNS_UNKNOWN &&
-      public_result_ != DnsProbeJob::DNS_UNKNOWN) {
+  if (system_result_ != DnsProbeJob::SERVERS_UNKNOWN &&
+      public_result_ != DnsProbeJob::SERVERS_UNKNOWN) {
     OnProbesComplete();
   }
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/dns_probe_job.h"
 
+#include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "net/base/net_log.h"
@@ -66,7 +67,7 @@ void DnsProbeJobTest::RunProbe(MockDnsClientRule::Result good_result,
   // Need to set these before creating job, because it can call the callback
   // synchronously in the constructor if both transactions fail to start.
   callback_called_ = false;
-  callback_result_ = DnsProbeJob::DNS_UNKNOWN;
+  callback_result_ = DnsProbeJob::SERVERS_UNKNOWN;
 
   // DnsProbeJob needs somewhere to post the callback.
   scoped_ptr<MessageLoop> message_loop_(new MessageLoopForIO());
@@ -87,22 +88,35 @@ void DnsProbeJobTest::OnProbeFinished(DnsProbeJob* job,
   callback_result_ = result;
 }
 
-TEST_F(DnsProbeJobTest, Reliable) {
-  RunProbe(MockDnsClientRule::OK, MockDnsClientRule::EMPTY);
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeJob::DNS_WORKING, callback_result_);
-}
+struct TestCase {
+  MockDnsClientRule::Result good_result;
+  MockDnsClientRule::Result bad_result;
+  DnsProbeJob::Result expected_probe_result;
+};
 
-TEST_F(DnsProbeJobTest, BothFailAsync) {
-  RunProbe(MockDnsClientRule::FAIL_ASYNC, MockDnsClientRule::FAIL_ASYNC);
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeJob::DNS_BROKEN, callback_result_);
-}
-
-TEST_F(DnsProbeJobTest, BothFailSync) {
-  RunProbe(MockDnsClientRule::FAIL_SYNC, MockDnsClientRule::FAIL_SYNC);
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeJob::DNS_BROKEN, callback_result_);
+TEST_F(DnsProbeJobTest, Test) {
+  static const TestCase kTestCases[] = {
+    { MockDnsClientRule::OK,
+      MockDnsClientRule::EMPTY,
+      DnsProbeJob::SERVERS_CORRECT },
+    { MockDnsClientRule::EMPTY,
+      MockDnsClientRule::EMPTY,
+      DnsProbeJob::SERVERS_INCORRECT },
+    // TODO(ttuttle): Test that triggers QUERY_DNS_ERROR.
+    //                (Need to add another mock behavior to MockDnsClient.)
+    { MockDnsClientRule::FAIL_ASYNC,
+      MockDnsClientRule::FAIL_ASYNC,
+      DnsProbeJob::SERVERS_UNREACHABLE },
+    { MockDnsClientRule::FAIL_SYNC,
+      MockDnsClientRule::FAIL_SYNC,
+      DnsProbeJob::SERVERS_UNREACHABLE },
+  };
+  for (size_t i = 0; i < arraysize(kTestCases); i++) {
+    const TestCase* test_case = &kTestCases[i];
+    RunProbe(test_case->good_result, test_case->bad_result);
+    EXPECT_TRUE(callback_called_);
+    EXPECT_EQ(test_case->expected_probe_result, callback_result_);
+  }
 }
 
 }  // namespace

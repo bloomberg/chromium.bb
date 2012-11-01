@@ -32,8 +32,8 @@ class TestDnsProbeService : public DnsProbeService {
       : DnsProbeService(),
         system_job_created_(false),
         public_job_created_(false),
-        mock_system_result_(DnsProbeJob::DNS_UNKNOWN),
-        mock_public_result_(DnsProbeJob::DNS_UNKNOWN) {
+        mock_system_result_(DnsProbeJob::SERVERS_UNKNOWN),
+        mock_public_result_(DnsProbeJob::SERVERS_UNKNOWN) {
   }
 
   virtual ~TestDnsProbeService() { }
@@ -79,7 +79,7 @@ class DnsProbeServiceTest : public testing::Test {
  public:
   DnsProbeServiceTest()
       : callback_called_(false),
-        callback_result_(DnsProbeService::DNS_PROBE_UNKNOWN) {
+        callback_result_(DnsProbeService::PROBE_UNKNOWN) {
   }
 
   void SetMockJobResults(DnsProbeJob::Result mock_system_result,
@@ -117,7 +117,7 @@ TEST_F(DnsProbeServiceTest, Null) {
 }
 
 TEST_F(DnsProbeServiceTest, Probe) {
-  SetMockJobResults(DnsProbeJob::DNS_WORKING, DnsProbeJob::DNS_WORKING);
+  SetMockJobResults(DnsProbeJob::SERVERS_CORRECT, DnsProbeJob::SERVERS_CORRECT);
 
   Probe();
   EXPECT_TRUE(service_.system_job_created_);
@@ -126,11 +126,11 @@ TEST_F(DnsProbeServiceTest, Probe) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::DNS_PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
 }
 
 TEST_F(DnsProbeServiceTest, Cache) {
-  SetMockJobResults(DnsProbeJob::DNS_WORKING, DnsProbeJob::DNS_WORKING);
+  SetMockJobResults(DnsProbeJob::SERVERS_CORRECT, DnsProbeJob::SERVERS_CORRECT);
 
   Probe();
   EXPECT_TRUE(service_.system_job_created_);
@@ -138,7 +138,7 @@ TEST_F(DnsProbeServiceTest, Cache) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::DNS_PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
 
   callback_called_ = false;
   service_.system_job_created_ = false;
@@ -150,11 +150,11 @@ TEST_F(DnsProbeServiceTest, Cache) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::DNS_PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
 }
 
 TEST_F(DnsProbeServiceTest, Expired) {
-  SetMockJobResults(DnsProbeJob::DNS_WORKING, DnsProbeJob::DNS_WORKING);
+  SetMockJobResults(DnsProbeJob::SERVERS_CORRECT, DnsProbeJob::SERVERS_CORRECT);
 
   Probe();
   EXPECT_TRUE(service_.system_job_created_);
@@ -162,7 +162,7 @@ TEST_F(DnsProbeServiceTest, Expired) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::DNS_PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
 
   callback_called_ = false;
   service_.system_job_created_ = false;
@@ -176,7 +176,7 @@ TEST_F(DnsProbeServiceTest, Expired) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::DNS_PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
 }
 
 }  // namespace

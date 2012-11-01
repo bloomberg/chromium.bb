@@ -20,12 +20,13 @@ namespace chrome_browser_net {
 class DnsProbeJob {
  public:
   enum Result {
-    DNS_UNKNOWN,
-    DNS_WORKING,  // Server responds with correct answers.
+    SERVERS_UNKNOWN,
+    SERVERS_CORRECT,  // Server responds with correct answers.
+    SERVERS_INCORRECT,  // Server responds with success but incorrect answer.
     // TODO(ttuttle): Do we want an "unreliable" result, for e.g. servers that
     // lie about NXDOMAIN?
-    DNS_BROKEN,  // Server responds with errors.
-    DNS_UNREACHABLE,  // Server doesn't respond (or never got our packets)
+    SERVERS_FAILING,  // Server responds with errors.
+    SERVERS_UNREACHABLE,  // Server doesn't respond (or never got our packets)
   };
   typedef base::Callback<void(DnsProbeJob* job, Result result)> CallbackType;
 

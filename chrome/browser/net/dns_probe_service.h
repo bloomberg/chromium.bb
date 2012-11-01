@@ -20,10 +20,10 @@ namespace chrome_browser_net {
 class DnsProbeService {
  public:
   enum Result {
-    DNS_PROBE_UNKNOWN,
-    DNS_PROBE_NO_INTERNET,
-    DNS_PROBE_BAD_CONFIG,
-    DNS_PROBE_NXDOMAIN
+    PROBE_UNKNOWN,
+    PROBE_NO_INTERNET,
+    PROBE_BAD_CONFIG,
+    PROBE_NXDOMAIN
   };
   typedef base::Callback<void(Result result)> CallbackType;
 
