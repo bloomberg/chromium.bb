@@ -465,8 +465,8 @@ class CdmWrapper : public pp::Instance,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
   // CdmHost implementation.
-  virtual void SetTimer(int64 delay_ms) OVERRIDE;
-  virtual double GetCurrentWallTimeMs() OVERRIDE;
+  virtual void SetTimer(int64_t delay_ms) OVERRIDE;
+  virtual double GetCurrentWallTimeInSeconds() OVERRIDE;
 
  private:
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
@@ -507,7 +507,7 @@ class CdmWrapper : public pp::Instance,
   void FireKeyError(const std::string& session_id);
 
   // Helper for SetTimer().
-  void TimerExpired(int32 result);
+  void TimerExpired(int32_t result);
 
   PpbBufferAllocator allocator_;
   pp::CompletionCallbackFactory<CdmWrapper> callback_factory_;
@@ -777,7 +777,7 @@ void CdmWrapper::FireKeyError(const std::string& session_id) {
   CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError, session_id));
 }
 
-void CdmWrapper::SetTimer(int64 delay_ms) {
+void CdmWrapper::SetTimer(int64_t delay_ms) {
   // NOTE: doesn't really need to run on the main thread; could just as well run
   // on a helper thread if |cdm_| were thread-friendly and care was taken.  We
   // only use CallOnMainThread() here to get delayed-execution behavior.
@@ -787,7 +787,7 @@ void CdmWrapper::SetTimer(int64 delay_ms) {
       PP_OK);
 }
 
-void CdmWrapper::TimerExpired(int32 result) {
+void CdmWrapper::TimerExpired(int32_t result) {
   PP_DCHECK(result == PP_OK);
   bool populated;
   LinkedKeyMessage key_message(new KeyMessageImpl());
@@ -798,7 +798,7 @@ void CdmWrapper::TimerExpired(int32 result) {
                                            key_message));
 }
 
-double CdmWrapper::GetCurrentWallTimeMs() {
+double CdmWrapper::GetCurrentWallTimeInSeconds() {
   // TODO(fischman): figure out whether this requires an IPC round-trip per
   // call, and if that's a problem for the frequency of calls.  If it is,
   // optimize by proactively sending wall-time across the IPC boundary on some

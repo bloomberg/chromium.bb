@@ -19,7 +19,7 @@ typedef __int64 int64_t;
 // The version number must be rolled when this file is updated!
 // If the CDM and the plugin use different versions of this file, the plugin
 // will fail to load or crash!
-#define INITIALIZE_CDM_MODULE InitializeCdmModule_1
+#define INITIALIZE_CDM_MODULE InitializeCdmModule_2
 
 namespace cdm {
 class Allocator;
@@ -374,10 +374,10 @@ class CdmHost {
 
   // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
   // from now.
-  virtual void SetTimer(int64 delay_ms) = 0;
+  virtual void SetTimer(int64_t delay_ms) = 0;
 
-  // Returns the current epoch wall time in milliseconds.
-  virtual double GetCurrentWallTimeMs() = 0;
+  // Returns the current epoch wall time in seconds.
+  virtual double GetCurrentWallTimeInSeconds() = 0;
 };
 
 // Represents a key message sent by the CDM.
