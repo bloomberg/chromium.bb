@@ -1102,12 +1102,8 @@ static FloatSize scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewport, 
         return FloatSize();
 
     // localStartPoint and localEndPoint are in content space but we want to move them to layer space for scrolling.
-    float widthScale = 1;
-    float heightScale = 1;
-    if (!layerImpl.contentBounds().isEmpty() && !layerImpl.bounds().isEmpty()) {
-        widthScale = layerImpl.bounds().width() / static_cast<float>(layerImpl.contentBounds().width());
-        heightScale = layerImpl.bounds().height() / static_cast<float>(layerImpl.contentBounds().height());
-    }
+    float widthScale = 1.0 / layerImpl.contentsScaleX();
+    float heightScale = 1.0 / layerImpl.contentsScaleY();
     localStartPoint.scale(widthScale, heightScale);
     localEndPoint.scale(widthScale, heightScale);
 

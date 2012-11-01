@@ -77,6 +77,8 @@ private:
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
+    IntRect scrollbarLayerRectToContentRect(const WebKit::WebRect& layerRect) const;
+
     Scrollbar m_scrollbar;
 
     ResourceProvider::ResourceId m_backTrackResourceId;

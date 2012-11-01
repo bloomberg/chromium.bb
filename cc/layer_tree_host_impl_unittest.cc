@@ -1045,6 +1045,7 @@ TEST_P(LayerTreeHostImplTest, scrollNonCompositedRoot)
     contentLayer->setAnchorPoint(FloatPoint(0, 0));
     contentLayer->setBounds(surfaceSize);
     contentLayer->setContentBounds(IntSize(surfaceSize.width() * 2, surfaceSize.height() * 2));
+    contentLayer->setContentsScale(2, 2);
 
     scoped_ptr<LayerImpl> scrollLayer = LayerImpl::create(2);
     scrollLayer->setScrollable(true);

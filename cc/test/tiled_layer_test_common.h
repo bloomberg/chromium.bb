@@ -116,6 +116,9 @@ public:
 
     void setContentBounds(const cc::IntSize& contentBounds) { m_forcedContentBounds = contentBounds; }
     virtual cc::IntSize contentBounds() const OVERRIDE;
+    virtual float contentsScaleX() const OVERRIDE;
+    virtual float contentsScaleY() const OVERRIDE;
+    virtual void setContentsScale(float) OVERRIDE;
 
 protected:
     virtual ~FakeTiledLayerWithScaledBounds();

@@ -189,7 +189,6 @@ public:
     virtual bool needMoreUpdates();
     virtual void setIsMask(bool) { }
     virtual void bindContentsTexture() { }
-    virtual bool needsContentsScale() const;
 
     void setDebugBorderColor(SkColor);
     void setDebugBorderWidth(float);
@@ -229,8 +228,10 @@ public:
 
     // The contentsScale converts from logical, non-page-scaled pixels to target pixels.
     // The contentsScale is 1 for the root layer as it is already in physical pixels.
-    float contentsScale() const { return m_contentsScale; }
-    void setContentsScale(float);
+    // By default contentsScale is forced to be 1 except for subclasses of ContentsScalingLayer.
+    virtual float contentsScaleX() const;
+    virtual float contentsScaleY() const;
+    virtual void setContentsScale(float contentsScale) { }
 
     // The scale at which contents should be rastered, to match the scale at
     // which they will drawn to the screen. This scale is a component of the
@@ -280,6 +281,8 @@ public:
 
     virtual ScrollbarLayer* toScrollbarLayer();
 
+    IntRect layerRectToContentRect(const FloatRect& layerRect) const;
+
 protected:
     friend class LayerImpl;
     friend class TreeSynchronizer;
@@ -288,8 +291,6 @@ protected:
     Layer();
 
     void setNeedsCommit();
-
-    IntRect layerRectToContentRect(const WebKit::WebRect& layerRect);
 
     // This flag is set when layer need repainting/updating.
     bool m_needsDisplay;
@@ -390,7 +391,6 @@ private:
 
     // Uses target surface space.
     IntRect m_drawableContentRect;
-    float m_contentsScale;
     float m_rasterScale;
     bool m_automaticallyComputeRasterScale;
     bool m_boundsContainPageScale;

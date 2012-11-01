@@ -265,13 +265,9 @@ void DamageTracker::extendDamageForLayer(LayerImpl* layer, FloatRect& targetDama
         // Note oldRectInTargetSpace is already in target space.
         targetDamageRect.uniteIfNonZero(oldRectInTargetSpace);
     } else if (!layer->updateRect().isEmpty()) {
-        // If the layer properties havent changed, then the the target surface is only
+        // If the layer properties haven't changed, then the the target surface is only
         // affected by the layer's update area, which could be empty.
-        FloatRect updateContentRect = layer->updateRect();
-        float widthScale = layer->contentBounds().width() / static_cast<float>(layer->bounds().width());
-        float heightScale = layer->contentBounds().height() / static_cast<float>(layer->bounds().height());
-        updateContentRect.scale(widthScale, heightScale);
-
+        FloatRect updateContentRect = layer->layerRectToContentRect(layer->updateRect());
         FloatRect updateRectInTargetSpace = MathUtil::mapClippedRect(layer->drawTransform(), updateContentRect);
         targetDamageRect.uniteIfNonZero(updateRectInTargetSpace);
     }

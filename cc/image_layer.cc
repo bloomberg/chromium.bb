@@ -150,10 +150,18 @@ bool ImageLayer::drawsContent() const
     return !m_bitmap.isNull() && TiledLayer::drawsContent();
 }
 
-bool ImageLayer::needsContentsScale() const
+float ImageLayer::contentsScaleX() const
 {
-    // Contents scale is not need for image layer because this can be done in compositor more efficiently.
-    return false;
+    if (bounds().isEmpty() || contentBounds().isEmpty())
+        return 1;
+    return static_cast<float>(m_bitmap.width()) / bounds().width();
+}
+
+float ImageLayer::contentsScaleY() const
+{
+    if (bounds().isEmpty() || contentBounds().isEmpty())
+        return 1;
+    return static_cast<float>(m_bitmap.height()) / bounds().height();
 }
 
 }

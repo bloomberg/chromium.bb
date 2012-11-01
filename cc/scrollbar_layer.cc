@@ -43,7 +43,7 @@ ScrollbarLayer::~ScrollbarLayer()
 
 void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer)
 {
-    Layer::pushPropertiesTo(layer);
+    ContentsScalingLayer::pushPropertiesTo(layer);
 
     ScrollbarLayerImpl* scrollbarLayer = static_cast<ScrollbarLayerImpl*>(layer);
 
@@ -130,16 +130,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ScrollbarBackgroundPainter);
 };
 
-bool ScrollbarLayer::needsContentsScale() const
-{
-    return true;
-}
-
-IntSize ScrollbarLayer::contentBounds() const
-{
-    return IntSize(lroundf(bounds().width() * contentsScale()), lroundf(bounds().height() * contentsScale()));
-}
-
 class ScrollbarThumbPainter : public LayerPainter {
 public:
     static scoped_ptr<ScrollbarThumbPainter> create(WebKit::WebScrollbar* scrollbar, WebKit::WebScrollbarThemePainter painter, WebKit::WebScrollbarThemeGeometry* geometry)
@@ -182,7 +172,7 @@ void ScrollbarLayer::setLayerTreeHost(LayerTreeHost* host)
         m_thumb.reset();
     }
 
-    Layer::setLayerTreeHost(host);
+    ContentsScalingLayer::setLayerTreeHost(host);
 }
 
 void ScrollbarLayer::createUpdaterIfNeeded()
@@ -223,10 +213,8 @@ void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, Layer
         return;
 
     // Paint and upload the entire part.
-    float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
-    float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
     gfx::Rect paintedOpaqueRect;
-    painter->prepareToUpdate(rect, rect.size(), widthScale, heightScale, paintedOpaqueRect, stats);
+    painter->prepareToUpdate(rect, rect.size(), contentsScaleX(), contentsScaleY(), paintedOpaqueRect, stats);
     if (!painter->pixelsDidChange() && texture->texture()->haveBackingTexture()) {
         TRACE_EVENT_INSTANT0("cc","ScrollbarLayer::updatePart no texture upload needed");
         return;
@@ -236,6 +224,14 @@ void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, Layer
     texture->update(queue, rect, destOffset, false, stats);
 }
 
+IntRect ScrollbarLayer::scrollbarLayerRectToContentRect(const WebRect& layerRect) const
+{
+    // Don't intersect with the bounds as in layerRectToContentRect() because
+    // layerRect here might be in coordinates of the containing layer.
+    FloatRect contentRect(layerRect.x, layerRect.y, layerRect.width, layerRect.height);
+    contentRect.scale(contentsScaleX(), contentsScaleY());
+    return enclosingIntRect(contentRect);
+}
 
 void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
 {
@@ -254,7 +250,7 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
         m_foreTrack->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
     }
     if (m_thumb) {
-        IntSize thumbSize = layerRectToContentRect(m_geometry->thumbRect(m_scrollbar.get())).size();
+        IntSize thumbSize = scrollbarLayerRectToContentRect(m_geometry->thumbRect(m_scrollbar.get())).size();
         m_thumb->texture()->setDimensions(thumbSize, m_textureFormat);
         m_thumb->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
     }
@@ -267,15 +263,14 @@ void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*,
 
     createUpdaterIfNeeded();
 
-    IntPoint scrollbarOrigin(m_scrollbar->location().x, m_scrollbar->location().y);
-    IntRect contentRect = layerRectToContentRect(WebKit::WebRect(scrollbarOrigin.x(), scrollbarOrigin.y(), bounds().width(), bounds().height()));
+    IntRect contentRect = scrollbarLayerRectToContentRect(WebRect(m_scrollbar->location().x, m_scrollbar->location().y, bounds().width(), bounds().height()));
     updatePart(m_backTrackUpdater.get(), m_backTrack.get(), contentRect, queue, stats);
     if (m_foreTrack && m_foreTrackUpdater)
         updatePart(m_foreTrackUpdater.get(), m_foreTrack.get(), contentRect, queue, stats);
 
     // Consider the thumb to be at the origin when painting.
     WebKit::WebRect thumbRect = m_geometry->thumbRect(m_scrollbar.get());
-    IntRect originThumbRect = layerRectToContentRect(WebKit::WebRect(0, 0, thumbRect.width, thumbRect.height));
+    IntRect originThumbRect = scrollbarLayerRectToContentRect(WebRect(0, 0, thumbRect.width, thumbRect.height));
     if (!originThumbRect.isEmpty())
         updatePart(m_thumbUpdater.get(), m_thumb.get(), originThumbRect, queue, stats);
 }

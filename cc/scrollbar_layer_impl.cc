@@ -72,6 +72,15 @@ static FloatRect toUVRect(const WebRect& r, const IntRect& bounds)
                      static_cast<float>(r.width) / bounds.width(), static_cast<float>(r.height) / bounds.height());
 }
 
+IntRect ScrollbarLayerImpl::scrollbarLayerRectToContentRect(const WebRect& layerRect) const
+{
+    // Don't intersect with the bounds as in layerRectToContentRect() because
+    // layerRect here might be in coordinates of the containing layer.
+    FloatRect contentRect(layerRect.x, layerRect.y, layerRect.width, layerRect.height);
+    contentRect.scale(contentsScaleX(), contentsScaleY());
+    return enclosingIntRect(contentRect);
+}
+
 void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
     bool premultipledAlpha = false;
@@ -89,7 +98,7 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
         thumbRect = WebRect();
 
     if (m_thumbResourceId && !thumbRect.isEmpty()) {
-        scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::create(sharedQuadState, layerRectToContentRect(thumbRect), m_thumbResourceId, premultipledAlpha, uvRect, flipped);
+        scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::create(sharedQuadState, scrollbarLayerRectToContentRect(thumbRect), m_thumbResourceId, premultipledAlpha, uvRect, flipped);
         quad->setNeedsBlending();
         quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
     }
@@ -99,7 +108,7 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
 
     // We only paint the track in two parts if we were given a texture for the forward track part.
     if (m_foreTrackResourceId && !foreTrackRect.isEmpty())
-        quadSink.append(TextureDrawQuad::create(sharedQuadState, layerRectToContentRect(foreTrackRect), m_foreTrackResourceId, premultipledAlpha, toUVRect(foreTrackRect, boundsRect), flipped).PassAs<DrawQuad>(), appendQuadsData);
+        quadSink.append(TextureDrawQuad::create(sharedQuadState, scrollbarLayerRectToContentRect(foreTrackRect), m_foreTrackResourceId, premultipledAlpha, toUVRect(foreTrackRect, boundsRect), flipped).PassAs<DrawQuad>(), appendQuadsData);
 
     // Order matters here: since the back track texture is being drawn to the entire contents rect, we must append it after the thumb and
     // fore track quads. The back track texture contains (and displays) the buttons.

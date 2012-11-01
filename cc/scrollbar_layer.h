@@ -6,8 +6,8 @@
 #ifndef ScrollbarLayerChromium_h
 #define ScrollbarLayerChromium_h
 
-#include "caching_bitmap_content_layer_updater.h"
-#include "cc/layer.h"
+#include "cc/caching_bitmap_content_layer_updater.h"
+#include "cc/contents_scaling_layer.h"
 #include <public/WebScrollbar.h>
 #include <public/WebScrollbarThemeGeometry.h>
 #include <public/WebScrollbarThemePainter.h>
@@ -18,15 +18,13 @@ class ResourceUpdateQueue;
 class Scrollbar;
 class ScrollbarThemeComposite;
 
-class ScrollbarLayer : public Layer {
+class ScrollbarLayer : public ContentsScalingLayer {
 public:
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
 
     static scoped_refptr<ScrollbarLayer> create(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 
     // Layer interface
-    virtual bool needsContentsScale() const OVERRIDE;
-    virtual IntSize contentBounds() const OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
@@ -44,6 +42,7 @@ protected:
 private:
     void updatePart(CachingBitmapContentLayerUpdater*, LayerUpdater::Resource*, const IntRect&, ResourceUpdateQueue&, RenderingStats&);
     void createUpdaterIfNeeded();
+    IntRect scrollbarLayerRectToContentRect(const WebKit::WebRect& layerRect) const;
 
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
     WebKit::WebScrollbarThemePainter m_painter;

@@ -167,11 +167,21 @@ public:
     LayerImpl* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
     void setRenderTarget(LayerImpl* target) { m_renderTarget = target; }
 
+    // The client should be responsible for setting bounds, contentBounds and
+    // contentsScale to appropriate values. LayerImpl doesn't calculate any of
+    // them from the other values.
+
     void setBounds(const IntSize&);
     const IntSize& bounds() const { return m_bounds; }
 
-    const IntSize& contentBounds() const { return m_contentBounds; }
+    // ContentBounds may be [0, 1) pixels larger than bounds * contentsScale.
+    // Don't calculate scale from it. Use contentsScale instead for accuracy.
     void setContentBounds(const IntSize&);
+    IntSize contentBounds() const { return m_contentBounds; }
+
+    float contentsScaleX() const { return m_contentsScaleX; }
+    float contentsScaleY() const { return m_contentsScaleY; }
+    void setContentsScale(float contentsScaleX, float contentsScaleY);
 
     const IntPoint& scrollPosition() const { return m_scrollPosition; }
     void setScrollPosition(const IntPoint&);
@@ -260,12 +270,12 @@ public:
     ScrollbarLayerImpl* verticalScrollbarLayer() const;
     void setVerticalScrollbarLayer(ScrollbarLayerImpl*);
 
+    IntRect layerRectToContentRect(const FloatRect& layerRect) const;
+
 protected:
     explicit LayerImpl(int);
 
     void appendDebugBorderQuad(QuadSink&, const SharedQuadState*, AppendQuadsData&) const;
-
-    IntRect layerRectToContentRect(const WebKit::WebRect& layerRect);
 
     virtual void dumpLayerProperties(std::string*, int indent) const;
     static std::string indentString(int indent);
@@ -300,6 +310,8 @@ private:
     float m_anchorPointZ;
     IntSize m_bounds;
     IntSize m_contentBounds;
+    float m_contentsScaleX;
+    float m_contentsScaleY;
     IntPoint m_scrollPosition;
     bool m_scrollable;
     bool m_shouldScrollOnMainThread;

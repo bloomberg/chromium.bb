@@ -1164,9 +1164,10 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     // a different layer space. In this case tiles are scaled to be 200x200
     // pixels, which means none should be occluded.
     layer->setContentsScale(0.5);
+    EXPECT_FLOAT_EQ(layer->contentsScaleX(), layer->contentsScaleY());
     layer->setBounds(IntSize(600, 600));
     WebTransformationMatrix drawTransform;
-    drawTransform.scale(1 / layer->contentsScale());
+    drawTransform.scale(1 / layer->contentsScaleX());
     layer->setDrawTransform(drawTransform);
     layer->setScreenSpaceTransform(drawTransform);
 

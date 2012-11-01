@@ -1224,7 +1224,9 @@ class NoScaleContentLayer : public ContentLayer {
 public:
     static scoped_refptr<NoScaleContentLayer> create(ContentLayerClient* client) { return make_scoped_refptr(new NoScaleContentLayer(client)); }
 
-    virtual bool needsContentsScale() const OVERRIDE { return false; }
+    virtual IntSize contentBounds() const OVERRIDE { return bounds(); }
+    virtual float contentsScaleX() const OVERRIDE { return 1.0; }
+    virtual float contentsScaleY() const OVERRIDE { return 1.0; }
 
 private:
     explicit NoScaleContentLayer(ContentLayerClient* client)

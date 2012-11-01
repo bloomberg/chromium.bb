@@ -20,7 +20,8 @@ public:
     virtual bool drawsContent() const OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
-    virtual bool needsContentsScale() const OVERRIDE;
+    virtual float contentsScaleX() const OVERRIDE;
+    virtual float contentsScaleY() const OVERRIDE;
 
     void setBitmap(const SkBitmap& image);
 

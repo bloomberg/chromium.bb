@@ -84,7 +84,7 @@ private:
 };
 
 TiledLayer::TiledLayer()
-    : Layer()
+    : ContentsScalingLayer()
     , m_textureFormat(GL_INVALID_ENUM)
     , m_skipsDraw(false)
     , m_failedUpdate(false)
@@ -166,7 +166,7 @@ void TiledLayer::setBorderTexelOption(LayerTilingData::BorderTexelOption borderT
 
 bool TiledLayer::drawsContent() const
 {
-    if (!Layer::drawsContent())
+    if (!ContentsScalingLayer::drawsContent())
         return false;
 
     bool hasMoreThanOneTile = m_tiler->numTilesX() > 1 || m_tiler->numTilesY() > 1;
@@ -174,16 +174,6 @@ bool TiledLayer::drawsContent() const
         return false;
 
     return true;
-}
-
-bool TiledLayer::needsContentsScale() const
-{
-    return true;
-}
-
-IntSize TiledLayer::contentBounds() const
-{
-    return IntSize(lroundf(bounds().width() * contentsScale()), lroundf(bounds().height() * contentsScale()));
 }
 
 void TiledLayer::setTilingOption(TilingOption tilingOption)
@@ -198,7 +188,7 @@ void TiledLayer::setIsMask(bool isMask)
 
 void TiledLayer::pushPropertiesTo(LayerImpl* layer)
 {
-    Layer::pushPropertiesTo(layer);
+    ContentsScalingLayer::pushPropertiesTo(layer);
 
     TiledLayerImpl* tiledLayer = static_cast<TiledLayerImpl*>(layer);
 
@@ -250,7 +240,7 @@ void TiledLayer::setLayerTreeHost(LayerTreeHost* host)
             tile->managedTexture()->setTextureManager(host->contentsTextureManager());
         }
     }
-    Layer::setLayerTreeHost(host);
+    ContentsScalingLayer::setLayerTreeHost(host);
 }
 
 UpdatableTile* TiledLayer::tileAt(int i, int j) const
@@ -281,18 +271,13 @@ UpdatableTile* TiledLayer::createTile(int i, int j)
 
 void TiledLayer::setNeedsDisplayRect(const FloatRect& dirtyRect)
 {
-    float contentsWidthScale = static_cast<float>(contentBounds().width()) / bounds().width();
-    float contentsHeightScale = static_cast<float>(contentBounds().height()) / bounds().height();
-    FloatRect scaledDirtyRect(dirtyRect);
-    scaledDirtyRect.scale(contentsWidthScale, contentsHeightScale);
-    IntRect dirty = enclosingIntRect(scaledDirtyRect);
-    invalidateContentRect(dirty);
-    Layer::setNeedsDisplayRect(dirtyRect);
+    invalidateContentRect(layerRectToContentRect(dirtyRect));
+    ContentsScalingLayer::setNeedsDisplayRect(dirtyRect);
 }
 
 void TiledLayer::setUseLCDText(bool useLCDText)
 {
-    Layer::setUseLCDText(useLCDText);
+    ContentsScalingLayer::setUseLCDText(useLCDText);
 
     LayerTilingData::BorderTexelOption borderTexelOption;
 #if OS(ANDROID)

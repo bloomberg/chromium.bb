@@ -24,6 +24,8 @@
       'checkerboard_draw_quad.cc',
       'checkerboard_draw_quad.h',
       'completion_event.h',
+      'contents_scaling_layer.cc',
+      'contents_scaling_layer.h',
       'damage_tracker.cc',
       'damage_tracker.h',
       'debug_border_draw_quad.cc',

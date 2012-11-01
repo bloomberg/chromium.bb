@@ -5,14 +5,14 @@
 #ifndef TiledLayerChromium_h
 #define TiledLayerChromium_h
 
-#include "cc/layer.h"
+#include "cc/contents_scaling_layer.h"
 #include "cc/layer_updater.h"
 #include "cc/layer_tiling_data.h"
 
 namespace cc {
 class UpdatableTile;
 
-class TiledLayer : public Layer {
+class TiledLayer : public ContentsScalingLayer {
 public:
     enum TilingOption { AlwaysTile, NeverTile, AutoTile };
 
@@ -21,9 +21,6 @@ public:
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
     virtual bool drawsContent() const OVERRIDE;
-    virtual bool needsContentsScale() const OVERRIDE;
-
-    virtual IntSize contentBounds() const OVERRIDE;
 
     virtual void setNeedsDisplayRect(const FloatRect&) OVERRIDE;
 

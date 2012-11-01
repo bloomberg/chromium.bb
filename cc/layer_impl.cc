@@ -29,6 +29,8 @@ LayerImpl::LayerImpl(int id)
     , m_layerTreeHostImpl(0)
     , m_anchorPoint(0.5, 0.5)
     , m_anchorPointZ(0)
+    , m_contentsScaleX(1.0)
+    , m_contentsScaleY(1.0)
     , m_scrollable(false)
     , m_shouldScrollOnMainThread(false)
     , m_haveWheelEventHandlers(false)
@@ -233,13 +235,15 @@ bool LayerImpl::drawCheckerboardForMissingTiles() const
     return m_drawCheckerboardForMissingTiles && !Settings::backgroundColorInsteadOfCheckerboard();
 }
 
-IntRect LayerImpl::layerRectToContentRect(const WebKit::WebRect& layerRect)
+IntRect LayerImpl::layerRectToContentRect(const FloatRect& layerRect) const
 {
-    float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
-    float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
-    FloatRect contentRect(layerRect.x, layerRect.y, layerRect.width, layerRect.height);
-    contentRect.scale(widthScale, heightScale);
-    return enclosingIntRect(contentRect);
+    FloatRect contentRect(layerRect);
+    contentRect.scale(contentsScaleX(), contentsScaleY());
+    IntRect intContentRect = enclosingIntRect(contentRect);
+    // Intersect with content rect to avoid the extra pixel because for some
+    // values x and y, ceil((x / y) * y) may be x + 1.
+    intContentRect.intersect(IntRect(IntPoint(), contentBounds()));
+    return intContentRect;
 }
 
 std::string LayerImpl::indentString(int indent)
@@ -606,6 +610,16 @@ void LayerImpl::setContentBounds(const IntSize& contentBounds)
         return;
 
     m_contentBounds = contentBounds;
+    m_layerPropertyChanged = true;
+}
+
+void LayerImpl::setContentsScale(float contentsScaleX, float contentsScaleY)
+{
+    if (m_contentsScaleX == contentsScaleX && m_contentsScaleY == contentsScaleY)
+        return;
+
+    m_contentsScaleX = contentsScaleX;
+    m_contentsScaleY = contentsScaleY;
     m_layerPropertyChanged = true;
 }
 

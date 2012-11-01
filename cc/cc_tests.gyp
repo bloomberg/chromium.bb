@@ -8,6 +8,7 @@
     'cc_tests_source_files': [
       'hash_pair_unittest.cc',
       'active_animation_unittest.cc',
+      'contents_scaling_layer_unittest.cc',
       'damage_tracker_unittest.cc',
       'delay_based_time_source_unittest.cc',
       'draw_quad_unittest.cc',

@@ -549,56 +549,6 @@ TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
     EXPECT_FLOAT_RECT_EQ(FloatRect(FloatPoint(10, 10), FloatSize(5, 5)), implLayer->updateRect());
 }
 
-class LayerWithContentScaling : public Layer {
-public:
-    explicit LayerWithContentScaling()
-        : Layer()
-    {
-    }
-
-    virtual bool needsContentsScale() const OVERRIDE
-    {
-        return true;
-    }
-
-    virtual void setNeedsDisplayRect(const FloatRect& dirtyRect) OVERRIDE
-    {
-        m_lastNeedsDisplayRect = dirtyRect;
-        Layer::setNeedsDisplayRect(dirtyRect);
-    }
-
-    void resetNeedsDisplay()
-    {
-        m_needsDisplay = false;
-    }
-
-    const FloatRect& lastNeedsDisplayRect() const { return m_lastNeedsDisplayRect; }
-
-private:
-    virtual ~LayerWithContentScaling()
-    {
-    }
-
-    FloatRect m_lastNeedsDisplayRect;
-};
-
-TEST_F(LayerTest, checkContentsScaleChangeTriggersNeedsDisplay)
-{
-    scoped_refptr<LayerWithContentScaling> testLayer = make_scoped_refptr(new LayerWithContentScaling());
-    testLayer->setIsDrawable(true);
-    testLayer->setLayerTreeHost(m_layerTreeHost.get());
-
-    IntSize testBounds = IntSize(320, 240);
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(testBounds));
-
-    testLayer->resetNeedsDisplay();
-    EXPECT_FALSE(testLayer->needsDisplay());
-
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setContentsScale(testLayer->contentsScale() + 1.f));
-    EXPECT_TRUE(testLayer->needsDisplay());
-    EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 320, 240), testLayer->lastNeedsDisplayRect());
-}
-
 class FakeLayerImplTreeHost : public LayerTreeHost {
 public:
     static scoped_ptr<FakeLayerImplTreeHost> create()

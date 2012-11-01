@@ -139,4 +139,19 @@ cc::IntSize FakeTiledLayerWithScaledBounds::contentBounds() const
     return m_forcedContentBounds;
 }
 
+float FakeTiledLayerWithScaledBounds::contentsScaleX() const
+{
+    return static_cast<float>(m_forcedContentBounds.width()) / bounds().width();
+}
+
+float FakeTiledLayerWithScaledBounds::contentsScaleY() const
+{
+    return static_cast<float>(m_forcedContentBounds.height()) / bounds().height();
+}
+
+void FakeTiledLayerWithScaledBounds::setContentsScale(float)
+{
+    NOTREACHED();
+}
+
 } // namespace

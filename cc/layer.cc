@@ -64,7 +64,6 @@ Layer::Layer()
     , m_renderTarget(0)
     , m_drawTransformIsAnimating(false)
     , m_screenSpaceTransformIsAnimating(false)
-    , m_contentsScale(1.0)
     , m_rasterScale(1.0)
     , m_automaticallyComputeRasterScale(false)
     , m_boundsContainPageScale(false)
@@ -120,13 +119,15 @@ void Layer::setNeedsCommit()
         m_layerTreeHost->setNeedsCommit();
 }
 
-IntRect Layer::layerRectToContentRect(const WebKit::WebRect& layerRect)
+IntRect Layer::layerRectToContentRect(const FloatRect& layerRect) const
 {
-    float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
-    float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
-    FloatRect contentRect(layerRect.x, layerRect.y, layerRect.width, layerRect.height);
-    contentRect.scale(widthScale, heightScale);
-    return enclosingIntRect(contentRect);
+    FloatRect contentRect(layerRect);
+    contentRect.scale(contentsScaleX(), contentsScaleY());
+    IntRect intContentRect = enclosingIntRect(contentRect);
+    // Intersect with content rect to avoid the extra pixel because for some
+    // values x and y, ceil((x / y) * y) may be x + 1.
+    intContentRect.intersect(IntRect(IntPoint(), contentBounds()));
+    return intContentRect;
 }
 
 void Layer::setParent(Layer* layer)
@@ -557,6 +558,7 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setBackgroundColor(m_backgroundColor);
     layer->setBounds(m_bounds);
     layer->setContentBounds(contentBounds());
+    layer->setContentsScale(contentsScaleX(), contentsScaleY());
     layer->setDebugBorderColor(m_debugBorderColor);
     layer->setDebugBorderWidth(m_debugBorderWidth);
     layer->setDebugName(m_debugName);
@@ -630,11 +632,6 @@ bool Layer::needMoreUpdates()
     return false;
 }
 
-bool Layer::needsContentsScale() const
-{
-    return false;
-}
-
 void Layer::setDebugBorderColor(SkColor color)
 {
     m_debugBorderColor = color;
@@ -653,13 +650,14 @@ void Layer::setDebugName(const std::string& debugName)
     setNeedsCommit();
 }
 
-void Layer::setContentsScale(float contentsScale)
+float Layer::contentsScaleX() const
 {
-    if (!needsContentsScale() || m_contentsScale == contentsScale)
-        return;
-    m_contentsScale = contentsScale;
+    return 1.0;
+}
 
-    setNeedsDisplay();
+float Layer::contentsScaleY() const
+{
+    return 1.0;
 }
 
 void Layer::setRasterScale(float scale)
