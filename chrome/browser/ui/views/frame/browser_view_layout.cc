@@ -22,6 +22,7 @@
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/single_split_view.h"
+#include "ui/views/controls/webview/webview.h"
 
 namespace {
 
@@ -288,6 +289,9 @@ void BrowserViewLayout::Layout(views::View* host) {
     browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
         gfx::Rect(), true);
   }
+
+  if (active_bookmark_bar_ && browser()->search_model()->mode().is_ntp())
+    LayoutBookmarkBarAtBottom();
 }
 
 // Return the preferred size which is the size required to give each
@@ -387,16 +391,16 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
     if (active_bookmark_bar_->IsDetached()) {
       int infobar_top = LayoutInfoBar(top);
       return browser_view_->browser()->search_model()->mode().is_ntp() ?
-          infobar_top : LayoutBookmarkBar(infobar_top);
+          infobar_top : LayoutBookmarkBarAtTop(infobar_top);
     }
     // Otherwise, Bookmark bar first, Info bar second.
-    top = std::max(toolbar_->bounds().bottom(), LayoutBookmarkBar(top));
+    top = std::max(toolbar_->bounds().bottom(), LayoutBookmarkBarAtTop(top));
   }
   find_bar_y_ = top + browser_view_->y() - 1;
   return LayoutInfoBar(top);
 }
 
-int BrowserViewLayout::LayoutBookmarkBar(int top) {
+int BrowserViewLayout::LayoutBookmarkBarAtTop(int top) {
   DCHECK(active_bookmark_bar_);
   int y = top;
   if (!browser_view_->IsBookmarkBarVisible()) {
@@ -414,6 +418,32 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
                                   vertical_layout_rect_.width(),
                                   bookmark_bar_height);
   return y + bookmark_bar_height;
+}
+
+void BrowserViewLayout::LayoutBookmarkBarAtBottom() {
+  DCHECK(active_bookmark_bar_);
+  gfx::Point content_bottom(
+      0, browser_view_->contents_container_->bounds().bottom());
+  views::View::ConvertPointToTarget(
+      browser_view_->contents_container_->parent(), browser_view_,
+      &content_bottom);
+  if (!browser_view_->IsBookmarkBarVisible()) {
+    active_bookmark_bar_->SetVisible(false);
+    active_bookmark_bar_->SetBounds(0, content_bottom.y(),
+                                    browser_view_->width(), 0);
+  }
+
+  // BookmarkBarView uses infobar visibility to determine toolbar overlap, which
+  // is 0 if bookmark bar is detached and infobar is visible.  Since the
+  // bookmark bar on the NTP is detached at bottom of content view, toolbar
+  // overlap is irrelevant.  So set infobar visible to force no toolbar overlap.
+  active_bookmark_bar_->set_infobar_visible(true);
+  int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
+  active_bookmark_bar_->SetVisible(true);
+  active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(),
+                                  content_bottom.y() - bookmark_bar_height,
+                                  vertical_layout_rect_.width(),
+                                  bookmark_bar_height);
 }
 
 int BrowserViewLayout::LayoutInfoBar(int top) {

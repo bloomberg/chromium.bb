@@ -1458,6 +1458,8 @@ void BrowserView::ActiveTabChanged(TabContents* old_contents,
   // Update all the UI bits.
   UpdateTitleBar();
 
+  MaybeStackBookmarkBarAtTop();
+
   // No need to update Toolbar because it's already updated in
   // browser.cc.
 }
@@ -1818,6 +1820,8 @@ void BrowserView::Layout() {
 
   // The status bubble position requires that all other layout finish first.
   LayoutStatusBubble();
+
+  MaybeStackBookmarkBarAtTop();
 }
 
 void BrowserView::PaintChildren(gfx::Canvas* canvas) {
@@ -2560,4 +2564,9 @@ void BrowserView::ActivateAppModalDialog() const {
   }
 
   AppModalDialogQueue::GetInstance()->ActivateModalDialog();
+}
+
+void BrowserView::MaybeStackBookmarkBarAtTop() {
+  if (bookmark_bar_view_.get())
+    bookmark_bar_view_->MaybeStackAtTop();
 }
