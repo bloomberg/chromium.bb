@@ -552,6 +552,13 @@ void WorkspaceManager::HideWorkspace(
       details.animate = true;
       break;
 
+    case SWITCH_VISIBILITY_CHANGED:
+      // The window is most likely closing. Make the workspace visible for the
+      // duration of the switch so that the close animation is visible.
+      details.animate = true;
+      details.animate_scale = true;
+      break;
+
     case SWITCH_MAXIMIZED_OR_RESTORED:
       if (active_workspace_->is_maximized()) {
         // Delay the hide until the animation is done.
