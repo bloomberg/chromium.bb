@@ -65,6 +65,7 @@ def main():
     parser.error('Require a valid server')
 
   if options.password == '-':
+    print('Reading password')
     options.password = sys.stdin.readline().strip()
 
   print('Connecting to %s' % options.server)
