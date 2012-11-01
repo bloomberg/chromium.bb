@@ -563,9 +563,8 @@ std::string NTPResourceCache::GetNewTabBackgroundCSS(
     const ui::ThemeProvider* theme_provider,
     bool bar_attached) {
   int alignment;
-  bool has_alignment = theme_provider->GetDisplayProperty(
-      ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment);
-  DCHECK(has_alignment);
+  theme_provider->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT,
+                                     &alignment);
 
   // TODO(glen): This is a quick workaround to hide the notused.png image when
   // no image is provided - we don't have time right now to figure out why
