@@ -52,7 +52,7 @@ namespace internal {
 class TraySms::SmsDefaultView : public TrayItemMore {
  public:
   explicit SmsDefaultView(TraySms* tray)
-      : TrayItemMore(tray),
+      : TrayItemMore(tray, true),
         tray_(tray) {
     SetImage(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_SMS));

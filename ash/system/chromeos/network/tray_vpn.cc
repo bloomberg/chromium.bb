@@ -19,8 +19,8 @@ namespace tray {
 
 class VpnDefaultView : public TrayItemMore {
  public:
-  explicit VpnDefaultView(SystemTrayItem* owner)
-      : TrayItemMore(owner) {
+  VpnDefaultView(SystemTrayItem* owner, bool show_more)
+      : TrayItemMore(owner, show_more) {
     Update();
   }
 
@@ -133,7 +133,7 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
   if (status == user::LOGGED_IN_NONE)
     return NULL;
 
-  default_ = new tray::VpnDefaultView(this);
+  default_ = new tray::VpnDefaultView(this, status != user::LOGGED_IN_LOCKED);
   return default_;
 }
 

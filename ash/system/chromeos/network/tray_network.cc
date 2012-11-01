@@ -114,8 +114,8 @@ class NetworkTrayView : public TrayItemView {
 
 class NetworkDefaultView : public TrayItemMore {
  public:
-  explicit NetworkDefaultView(SystemTrayItem* owner)
-      : TrayItemMore(owner) {
+  NetworkDefaultView(SystemTrayItem* owner, bool show_more)
+      : TrayItemMore(owner, show_more) {
     Update();
   }
 
@@ -525,7 +525,8 @@ views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == NULL);
-  default_ = new tray::NetworkDefaultView(this);
+  default_ =
+      new tray::NetworkDefaultView(this, status != user::LOGGED_IN_LOCKED);
   return default_;
 }
 

@@ -67,7 +67,7 @@ class DriveDefaultView : public TrayItemMore {
  public:
   DriveDefaultView(SystemTrayItem* owner,
                    const DriveOperationStatusList* list)
-      : TrayItemMore(owner) {
+      : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
     SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DRIVE).ToImageSkia());

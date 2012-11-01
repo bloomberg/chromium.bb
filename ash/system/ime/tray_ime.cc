@@ -38,7 +38,7 @@ namespace tray {
 class IMEDefaultView : public TrayItemMore {
  public:
   explicit IMEDefaultView(SystemTrayItem* owner)
-      : TrayItemMore(owner) {
+      : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
     SetImage(bundle.GetImageNamed(

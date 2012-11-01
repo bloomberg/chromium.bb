@@ -32,7 +32,7 @@ namespace tray {
 class BluetoothDefaultView : public TrayItemMore {
  public:
   explicit BluetoothDefaultView(SystemTrayItem* owner)
-      : TrayItemMore(owner) {
+      : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToImageSkia());
     UpdateLabel();
