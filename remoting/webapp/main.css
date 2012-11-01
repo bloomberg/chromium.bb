@@ -33,10 +33,6 @@ a {
   cursor: pointer;
 }
 
-a:visited {
-  color: #61c;
-}
-
 a:active {
   color: #d14836;
 }
