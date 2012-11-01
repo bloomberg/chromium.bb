@@ -488,6 +488,6 @@ if __name__ == '__main__':
   try:
     rtn = Main(sys.argv[1:])
   except Error, e:
-    print "%s: %s" % (os.path.basename(__file__), e)
+    sys.stderr.write("%s: %s\n" % (os.path.basename(__file__), e))
     rtn = 1
   sys.exit(rtn)
