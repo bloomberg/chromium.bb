@@ -1047,7 +1047,8 @@ TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
   InitializeSpellCheck("en-US");
 
   // Calls PostDelayedSpellCheckTask instead of OnInit here for simplicity.
-  spell_check()->PostDelayedSpellCheckTask();
+  spell_check()->PostDelayedSpellCheckTask(
+      spell_check()->pending_request_param_.release());
   MessageLoop::current()->RunAllPending();
   for (int i = 0; i < 3; ++i)
     EXPECT_EQ(completion[i].completion_count_, 1U);

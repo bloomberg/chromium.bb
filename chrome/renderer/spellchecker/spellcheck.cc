@@ -21,45 +21,28 @@ using WebKit::WebVector;
 using WebKit::WebTextCheckingResult;
 using WebKit::WebTextCheckingType;
 
-class SpellCheck::SpellCheckRequestParam
-    : public base::RefCountedThreadSafe<SpellCheck::SpellCheckRequestParam> {
+class SpellCheck::SpellcheckRequest {
  public:
-  SpellCheckRequestParam(const string16& text,
-                         int offset,
-                         WebKit::WebTextCheckingCompletion* completion)
-      : text_(text),
-        offset_(offset),
-        completion_(completion) {
+  SpellcheckRequest(const string16& text,
+                    int offset,
+                    WebKit::WebTextCheckingCompletion* completion)
+      : text_(text), offset_(offset), completion_(completion) {
     DCHECK(completion);
   }
+  ~SpellcheckRequest() {}
 
-  string16 text() {
-    return text_;
-  }
-
-  int offset() {
-    return offset_;
-  }
-
-  WebKit::WebTextCheckingCompletion* completion() {
-    return completion_;
-  }
+  string16 text() { return text_; }
+  int offset() { return offset_; }
+  WebKit::WebTextCheckingCompletion* completion() { return completion_; }
 
  private:
-  friend class base::RefCountedThreadSafe<SpellCheckRequestParam>;
-
-  ~SpellCheckRequestParam() {}
-
-  // Text to be checked in this task.
-  string16 text_;
-
-  // The text offset from the beginning.
-  int offset_;
+  string16 text_;  // Text to be checked in this task.
+  int offset_;   // The text offset from the beginning.
 
   // The interface to send the misspelled ranges to WebKit.
   WebKit::WebTextCheckingCompletion* completion_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpellCheckRequestParam);
+  DISALLOW_COPY_AND_ASSIGN(SpellcheckRequest);
 };
 
 SpellCheck::SpellCheck() : auto_spell_correct_turned_on_(false) {
@@ -88,8 +71,9 @@ void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
   Init(IPC::PlatformFileForTransitToPlatformFile(bdict_file),
        custom_words, language);
   auto_spell_correct_turned_on_ = auto_spell_correct;
-
-  PostDelayedSpellCheckTask();
+#if !defined(OS_MACOSX)
+  PostDelayedSpellCheckTask(pending_request_param_.release());
+#endif
 }
 
 void SpellCheck::OnWordAdded(const std::string& word) {
@@ -274,38 +258,24 @@ string16 SpellCheck::GetAutoCorrectionWord(const string16& word, int tag) {
   return autocorrect_word;
 }
 
+#if !defined(OS_MACOSX)  // OSX uses its own spell checker
 void SpellCheck::RequestTextChecking(
     const string16& text,
     int offset,
     WebKit::WebTextCheckingCompletion* completion) {
-#if defined(OS_MAXOSX)
-  // Commented out on Mac, because SpellCheckRequest::PerformSpellCheck is not
-  // implemented on Mac. Mac uses its own spellchecker, so this method
-  // will not be used.
-  NOTREACHED();
-  (void)text, offset, completion;
-  return;
-#else
   // Clean up the previous request before starting a new request.
-  if (pending_request_param_.get()) {
+  if (pending_request_param_.get())
     pending_request_param_->completion()->didCancelCheckingText();
-    pending_request_param_ = NULL;
-  }
 
-  if (InitializeIfNeeded()) {
-    // We will check this text after we finish loading the hunspell dictionary.
-    // Save parameters so that we can use them when we receive an init message
-    // from the browser process.
-    pending_request_param_ = new SpellCheckRequestParam(
-        text, offset, completion);
+  pending_request_param_.reset(new SpellcheckRequest(
+      text, offset, completion));
+  // We will check this text after we finish loading the hunspell dictionary.
+  if (InitializeIfNeeded())
     return;
-  }
 
-  requested_params_.push(new SpellCheckRequestParam(text, offset, completion));
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(&SpellCheck::PerformSpellCheck, AsWeakPtr()));
-#endif
+  PostDelayedSpellCheckTask(pending_request_param_.release());
 }
+#endif
 
 
 bool SpellCheck::InitializeIfNeeded() {
@@ -324,44 +294,32 @@ bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
   return platform_spelling_engine_->CheckSpelling(word_to_check, tag);
 }
 
-void SpellCheck::PostDelayedSpellCheckTask() {
-  if (!pending_request_param_)
+#if !defined(OS_MACOSX) // OSX doesn't have |pending_request_param_|
+void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
+  if (!request)
     return;
 
-#if defined(OS_MAXOSX)
-  NOTREACHED();  // OSX should never have a pending_request_param_
-                 // OSX doesn't do PerformSpellCheck, which posts pending reqs.
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(&SpellCheck::PerformSpellCheck,
+                 AsWeakPtr(),
+                 base::Owned(request)));
+}
 #endif
 
+#if !defined(OS_MACOSX)  // Mac uses its native engine instead.
+void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
+  DCHECK(param);
   DCHECK(platform_spelling_engine_.get());
 
   if (!platform_spelling_engine_->IsEnabled()) {
-    pending_request_param_->completion()->didCancelCheckingText();
+    param->completion()->didCancelCheckingText();
   } else {
-    requested_params_.push(pending_request_param_);
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-        base::Bind(&SpellCheck::PerformSpellCheck, AsWeakPtr()));
+    WebKit::WebVector<WebKit::WebTextCheckingResult> results;
+    SpellCheckParagraph(param->text(), &results);
+    param->completion()->didFinishCheckingText(results);
   }
-  pending_request_param_ = NULL;
 }
-
-void SpellCheck::PerformSpellCheck() {
-#if !defined(OS_MACOSX)
-  DCHECK(!requested_params_.empty());
-  scoped_refptr<SpellCheckRequestParam> param = requested_params_.front();
-  DCHECK(param);
-  requested_params_.pop();
-
-  WebKit::WebVector<WebKit::WebTextCheckingResult> results;
-  SpellCheckParagraph(param->text(), &results);
-  param->completion()->didFinishCheckingText(results);
-#else
-  // SpellCheck::SpellCheckParagraph is not implemented on Mac,
-  // so we return without spellchecking. Note that Mac uses its own
-  // spellchecker, this function won't be used.
-  NOTREACHED();
 #endif
-}
 
 void SpellCheck::FillSuggestionList(
     const string16& wrong_word,

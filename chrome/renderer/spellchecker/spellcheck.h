@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
@@ -79,9 +78,11 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // Requests to spellcheck the specified text in the background. This function
   // posts a background task and calls SpellCheckParagraph() in the task.
+#if !defined (OS_MACOSX)
   void RequestTextChecking(const string16& text,
                            int offset,
                            WebKit::WebTextCheckingCompletion* completion);
+#endif
 
   // Creates a list of WebTextCheckingResult objects (used by WebKit) from a
   // list of SpellCheckResult objects (used by Chrome). This function also
@@ -93,18 +94,12 @@ class SpellCheck : public content::RenderProcessObserver,
       const std::vector<SpellCheckResult>& spellcheck_results,
       WebKit::WebVector<WebKit::WebTextCheckingResult>* textcheck_results);
 
-  // Returns true if the spellchecker delegate checking to a system-provided
-  // checker on the browser process.
-  bool is_using_platform_spelling_engine() const {
-    return is_using_platform_spelling_engine_;
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellCheckTest, GetAutoCorrectionWord_EN_US);
   FRIEND_TEST_ALL_PREFIXES(SpellCheckTest,
       RequestSpellCheckMultipleTimesWithoutInitialization);
 
-  class SpellCheckRequestParam;
+  class SpellcheckRequest;
 
   // RenderProcessObserver implementation:
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -129,11 +124,14 @@ class SpellCheck : public content::RenderProcessObserver,
   // backend, either hunspell or a platform-specific backend.
   bool CheckSpelling(const string16& word_to_check, int tag);
 
+#if !defined (OS_MACOSX)
   // Posts delayed spellcheck task and clear it if any.
-  void PostDelayedSpellCheckTask();
+  // Takes ownership of |request|.
+  void PostDelayedSpellCheckTask(SpellcheckRequest* request);
 
   // Performs spell checking from the request queue.
-  void PerformSpellCheck();
+  void PerformSpellCheck(SpellcheckRequest* request);
+#endif
 
   // When called, relays the request to fill the list with suggestions to
   // the proper backend, either hunspell or a platform-specific backend.
@@ -159,10 +157,6 @@ class SpellCheck : public content::RenderProcessObserver,
   // Remember state for auto spell correct.
   bool auto_spell_correct_turned_on_;
 
-  // True if a platform-specific spellchecking engine is being used,
-  // and False if hunspell is being used.
-  bool is_using_platform_spelling_engine_;
-
   // Pointer to a platform-specific spelling engine, if it is in use. This
   // should only be set if hunspell is not used. (I.e. on OSX, for now)
   scoped_ptr<SpellingEngine> platform_spelling_engine_;
@@ -172,11 +166,9 @@ class SpellCheck : public content::RenderProcessObserver,
   // we save its parameters and start spellchecking after we finish initializing
   // hunspell. (When WebKit sends two or more requests, we cancel the previous
   // requests so we do not have to use vectors.)
-  scoped_refptr<SpellCheckRequestParam> pending_request_param_;
-
-  // The set of params already requested. When finishing the request, the params
-  // should be removed from the set.
-  std::queue<scoped_refptr<SpellCheckRequestParam> > requested_params_;
+#if !defined (OS_MACOSX)
+  scoped_ptr<SpellcheckRequest> pending_request_param_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheck);
 };
