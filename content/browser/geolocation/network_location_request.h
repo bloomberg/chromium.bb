@@ -71,6 +71,9 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   WifiData wifi_data_;
   base::Time timestamp_;  // Timestamp of the above data, not of the request.
 
+  // The start time for the request.
+  base::TimeTicks start_time_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkLocationRequest);
 };
 

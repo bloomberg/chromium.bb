@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -100,6 +101,7 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
       net::LOAD_DO_NOT_SEND_AUTH_DATA);
 
+  start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
   return true;
 }
@@ -125,6 +127,17 @@ void NetworkLocationRequest::OnURLFetchComplete(
   const bool server_error =
       !status.is_success() || (response_code >= 500 && response_code < 600);
   url_fetcher_.reset();
+
+  if (!server_error) {
+    const base::TimeDelta request_time = base::TimeTicks::Now() - start_time_;
+
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.Wifi.LbsLatency",
+        request_time,
+        base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromSeconds(10),
+        100);
+  }
 
   DCHECK(listener_);
   DVLOG(1) << "NetworkLocationRequest::Run() : Calling listener with position.";
