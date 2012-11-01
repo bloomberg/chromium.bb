@@ -31,9 +31,6 @@ void SetCommandLineSwitchASCII(const std::string& switch_string,
 }  // namespace
 
 void SetChromeSpecificCommandLineFlags() {
-  // Always enable SPDY.
-  SetCommandLineSwitch(switches::kEnableNpn);
-
   // Turn on autofill.
   // TODO(nileshagrawal): Remove this flag once Android stops relying on
   // tab_contents.cc.
