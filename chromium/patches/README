@@ -14,11 +14,6 @@ ugly/
   dalecurtis: Removes "#define UNCHECKED_BITSTREAM_READER 1" from all codecs
   defining it. In Chromium, all codecs should use the safe bitstream reader.
 
-06_enable_register_protocol.patch
-  dalecurtis: FFmpeg/LibAV have deprecated support for external clients which
-  want to register protocols.  Chrome requires this to work.  See patch for
-  more details.
-
 02_compile_with_disabled_features.patch
   dalecurtis: Add CONFIG_* checks to compile out code which we don't use which
   might be a security risk.  Discuss with cevans before removing.  Upstream does
