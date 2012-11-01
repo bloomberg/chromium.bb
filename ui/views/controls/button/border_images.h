@@ -8,6 +8,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/views_export.h"
 
+#define BORDER_IMAGES(x) x ## _TOP_LEFT,    x ## _TOP,    x ## _TOP_RIGHT, \
+                         x ## _LEFT,        x ## _CENTER, x ## _RIGHT, \
+                         x ## _BOTTOM_LEFT, x ## _BOTTOM, x ## _BOTTOM_RIGHT,
+
 namespace gfx {
 class Canvas;
 class Rect;

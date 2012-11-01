@@ -8,16 +8,11 @@
 #include "grit/theme_resources.h"
 #include "ui/views/controls/button/border_images.h"
 
-#define BORDER_IMAGES(x, y) \
-  x ## _TOP_LEFT_ ## y,    x ## _TOP_ ## y,    x ## _TOP_RIGHT_ ## y, \
-  x ## _LEFT_ ## y,        x ## _CENTER_ ## y, x ## _RIGHT_ ## y, \
-  x ## _BOTTOM_LEFT_ ## y, x ## _BOTTOM_ ## y, x ## _BOTTOM_RIGHT_ ## y,
-
 namespace {
 
-const int kNormalImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON, N) };
-const int kHotImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON, H) };
-const int kPushedImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON, P) };
+const int kNormalImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON_NORMAL) };
+const int kHotImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON_HOVER) };
+const int kPushedImageSet[] = { BORDER_IMAGES(IDR_INFOBARBUTTON_PRESSED) };
 
 }  // namespace
 
