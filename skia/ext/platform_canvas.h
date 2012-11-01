@@ -169,7 +169,8 @@ class SK_API PlatformBitmap {
 
  private:
   SkBitmap bitmap_;
-  PlatformSurface surface_;
+  PlatformSurface surface_; // initialized to 0
+  intptr_t platform_extra_; // initialized to 0, specific to each platform
 
   DISALLOW_COPY_AND_ASSIGN(PlatformBitmap);
 };

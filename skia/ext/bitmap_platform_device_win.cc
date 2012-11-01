@@ -273,6 +273,10 @@ SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
 PlatformBitmap::~PlatformBitmap() {
   if (surface_)
     DeleteDC(surface_);
+
+  HBITMAP hbitmap = (HBITMAP)platform_extra_;
+  if (hbitmap)
+    DeleteObject(hbitmap);
 }
 
 bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
@@ -287,6 +291,8 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   // monochrome pixel wide and one monochrome pixel high. Since we select our
   // own bitmap, we must delete the previous one.
   DeleteObject(old_bitmap);
+  // remember the hbitmap, so we can free it in our destructor
+  platform_extra_ = (intptr_t)hbitmap;
   return true;
 }
 
