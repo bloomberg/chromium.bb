@@ -8,6 +8,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/cursor_manager_test_api.h"
 #include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -373,6 +374,58 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
       primary_root,
       display_controller->GetRootWindowForDisplayId(third_display.id()));
   EXPECT_TRUE(primary_root->Contains(launcher_window));
+}
+
+TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+
+  UpdateDisplay("200x200,200x200*2");
+  gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
+
+  aura::RootWindow* primary_root =
+      display_controller->GetRootWindowForDisplayId(primary_display.id());
+  aura::RootWindow* secondary_root =
+      display_controller->GetRootWindowForDisplayId(secondary_display.id());
+  EXPECT_NE(primary_root, secondary_root);
+
+  test::CursorManagerTestApi test_api(Shell::GetInstance()->cursor_manager());
+
+  EXPECT_EQ(1.0f,
+            primary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
+  primary_root->MoveCursorTo(gfx::Point(50, 50));
+  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  EXPECT_EQ(2.0f,
+            secondary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
+  secondary_root->MoveCursorTo(gfx::Point(50, 50));
+  EXPECT_EQ(2.0f, test_api.GetDeviceScaleFactor());
+
+  // Switch primary and secondary
+  display_controller->SetPrimaryDisplay(secondary_display);
+
+  // Cursor's device scale factor should be updated accroding to the swap of
+  // primary and secondary.
+  EXPECT_EQ(1.0f,
+            secondary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
+  secondary_root->MoveCursorTo(gfx::Point(50, 50));
+  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+  primary_root->MoveCursorTo(gfx::Point(50, 50));
+  EXPECT_EQ(2.0f,
+            primary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
+  EXPECT_EQ(2.0f, test_api.GetDeviceScaleFactor());
+
+  // Deleting 2nd display.
+  UpdateDisplay("200x200");
+  RunAllPendingInMessageLoop();  // RootWindow is deleted in a posted task.
+
+  // Cursor's device scale factor should be updated even without moving cursor.
+  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
+
+  primary_root->MoveCursorTo(gfx::Point(50, 50));
+  EXPECT_EQ(1.0f,
+            primary_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
+  EXPECT_EQ(1.0f, test_api.GetDeviceScaleFactor());
 }
 
 TEST_F(DisplayControllerTest, MAYBE_UpdateDisplayWithHostOrigin) {

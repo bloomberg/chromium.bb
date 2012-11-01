@@ -234,6 +234,9 @@ void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
   layer()->transform().TransformPoint(location);
   host_->MoveCursorTo(ui::ConvertPointToPixel(layer(), location));
   SetLastMouseLocation(this, location_in_dip);
+  client::CursorClient* cursor_client = client::GetCursorClient(this);
+  if (cursor_client)
+    cursor_client->SetDeviceScaleFactor(GetDeviceScaleFactor());
 }
 
 bool RootWindow::ConfineCursorToWindow() {
