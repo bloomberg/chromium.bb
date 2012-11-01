@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/syncable/sync_callbacks.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 namespace base {
@@ -27,6 +28,7 @@ namespace sync_file_system {
 
 class DriveMetadata;
 class DriveMetadataDB;
+struct DriveMetadataDBContents;
 
 // This class holds a snapshot of the server side metadata.
 class DriveMetadataStore
@@ -39,8 +41,6 @@ class DriveMetadataStore
                    fileapi::FileSystemURL::Comparator> MetadataMap;
   typedef base::Callback<void(fileapi::SyncStatusCode status, bool created)>
       InitializationCallback;
-  typedef base::Callback<void(fileapi::SyncStatusCode status)>
-      RestoreSyncOriginsCallback;
 
   DriveMetadataStore(const FilePath& base_dir,
                      base::SequencedTaskRunner* file_task_runner);
@@ -107,23 +107,19 @@ class DriveMetadataStore
 
   void UpdateDBStatus(fileapi::SyncStatusCode status);
   void DidInitialize(const InitializationCallback& callback,
-                     const int64* largest_changestamp,
-                     MetadataMap* metadata_map,
-                     ResourceIDMap* batch_sync_origins,
-                     ResourceIDMap* incremental_sync_origins,
+                     DriveMetadataDBContents* contents,
                      fileapi::SyncStatusCode error);
 
-  void RestoreSyncOrigins(const RestoreSyncOriginsCallback& callback);
-  void DidRestoreSyncOrigins(const RestoreSyncOriginsCallback& callback,
+  // These are only for testing.
+  void RestoreSyncRootDirectory(const fileapi::SyncStatusCallback& callback);
+  void DidRestoreSyncRootDirectory(const fileapi::SyncStatusCallback& callback,
+                                   std::string* sync_root_directory_resource_id,
+                                   fileapi::SyncStatusCode status);
+  void RestoreSyncOrigins(const fileapi::SyncStatusCallback& callback);
+  void DidRestoreSyncOrigins(const fileapi::SyncStatusCallback& callback,
                              ResourceIDMap* batch_sync_origins,
                              ResourceIDMap* incremental_sync_origins,
                              fileapi::SyncStatusCode status);
-
-  void ClearSyncOrigins() {
-    DCHECK(CalledOnValidThread());
-    batch_sync_origins_.clear();
-    incremental_sync_origins_.clear();
-  }
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_ptr<DriveMetadataDB> db_;

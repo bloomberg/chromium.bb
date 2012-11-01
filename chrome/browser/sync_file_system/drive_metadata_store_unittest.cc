@@ -82,9 +82,23 @@ class DriveMetadataStoreTest : public testing::Test {
     drive_metadata_store_.reset();
   }
 
+  void DropSyncRootDirectoryInStore() {
+    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+    drive_metadata_store_->sync_root_directory_resource_id_.clear();
+  }
+
+  void RestoreSyncRootDirectoryFromDB() {
+    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+    drive_metadata_store_->RestoreSyncRootDirectory(
+        base::Bind(&DriveMetadataStoreTest::DidRestoreSyncRootDirectory,
+                   base::Unretained(this)));
+    message_loop_.Run();
+  }
+
   void DropSyncOriginsInStore() {
     EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    drive_metadata_store_->ClearSyncOrigins();
+    drive_metadata_store_->batch_sync_origins_.clear();
+    drive_metadata_store_->incremental_sync_origins_.clear();
     EXPECT_TRUE(drive_metadata_store_->batch_sync_origins().empty());
     EXPECT_TRUE(drive_metadata_store_->incremental_sync_origins().empty());
   }
@@ -110,6 +124,11 @@ class DriveMetadataStoreTest : public testing::Test {
     *done_out = true;
     *status_out = status;
     *created_out = created;
+    message_loop_.Quit();
+  }
+
+  void DidRestoreSyncRootDirectory(fileapi::SyncStatusCode status) {
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
     message_loop_.Quit();
   }
 
@@ -186,6 +205,29 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
             drive_metadata_store()->ReadEntry(url, &metadata));
   EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
             drive_metadata_store()->DeleteEntry(url));
+}
+
+TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
+  const std::string kResourceID("hoge");
+
+  bool done = false;
+  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+  bool created = false;
+  InitializeDatabase(&done, &status, &created);
+  EXPECT_TRUE(done);
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+  EXPECT_TRUE(created);
+
+  EXPECT_TRUE(drive_metadata_store()->sync_root_directory().empty());
+
+  drive_metadata_store()->SetSyncRootDirectory(kResourceID);
+  EXPECT_EQ(kResourceID, drive_metadata_store()->sync_root_directory());
+
+  DropSyncRootDirectoryInStore();
+  EXPECT_TRUE(drive_metadata_store()->sync_root_directory().empty());
+
+  RestoreSyncRootDirectoryFromDB();
+  EXPECT_EQ(kResourceID, drive_metadata_store()->sync_root_directory());
 }
 
 TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
