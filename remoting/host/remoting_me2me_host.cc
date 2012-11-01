@@ -475,6 +475,21 @@ void HostProcess::StartHostProcess() {
     return;
   }
 
+#if defined(OS_LINUX)
+  // TODO(sergeyu): Pass configuration parameters to the Linux-specific version
+  // of DesktopEnvironmentFactory when we have it.
+  remoting::VideoFrameCapturer::EnableXDamage(true);
+
+  // If an audio pipe is specific on the command-line then initialize
+  // AudioCapturerLinux to capture from it.
+  FilePath audio_pipe_name = CommandLine::ForCurrentProcess()->
+      GetSwitchValuePath(kAudioPipeSwitchName);
+  if (!audio_pipe_name.empty()) {
+    remoting::AudioCapturerLinux::InitializePipeReader(
+        context_->audio_task_runner(), audio_pipe_name);
+  }
+#endif  // defined(OS_LINUX)
+
   // Create a desktop environment factory appropriate to the build type &
   // platform.
 #if defined(OS_WIN)
@@ -946,14 +961,6 @@ int main(int argc, char** argv) {
       new remoting::ChromotingHostContext(
           new remoting::AutoThreadTaskRunner(message_loop.message_loop_proxy(),
                                              quit_message_loop)));
-
-#if defined(OS_LINUX)
-  // TODO(sergeyu): Pass configuration parameters to the Linux-specific version
-  // of DesktopEnvironmentFactory when we have it.
-  remoting::VideoFrameCapturer::EnableXDamage(true);
-  remoting::AudioCapturerLinux::SetPipeName(CommandLine::ForCurrentProcess()->
-      GetSwitchValuePath(kAudioPipeSwitchName));
-#endif  // defined(OS_LINUX)
 
   if (!context->Start())
     return remoting::kInitializationFailed;

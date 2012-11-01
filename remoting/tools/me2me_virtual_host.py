@@ -233,7 +233,7 @@ class Desktop:
       pulse_config.write("load-module module-native-protocol-unix\n")
       pulse_config.write(
           ("load-module module-pipe-sink sink_name=%s file=\"%s\" " +
-           "rate=44100 channels=2 format=s16le\n") %
+           "rate=48000 channels=2 format=s16le\n") %
           (sink_name, pipe_name))
       pulse_config.close()
     except IOError, e:
