@@ -232,12 +232,18 @@ void FillSelectControl(const FormGroup& form_group,
     return;
   }
 
-  if (type == ADDRESS_HOME_STATE || type == ADDRESS_BILLING_STATE)
+  if (type == ADDRESS_HOME_STATE || type == ADDRESS_BILLING_STATE) {
     FillStateSelectControl(field_text, field);
-  else if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY)
+  } else if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY) {
     FillCountrySelectControl(form_group, field);
-  else if (type == CREDIT_CARD_EXP_MONTH)
+  } else if (type == CREDIT_CARD_EXP_MONTH) {
     FillExpirationMonthSelectControl(field_text, field);
+  } else if (type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+    // Attempt to fill the year as a 2-digit year.  This compensates for the
+    // fact that our heuristics do not always correctly detect when a website
+    // requests a 2-digit rather than a 4-digit year.
+    FillSelectControl(form_group, CREDIT_CARD_EXP_2_DIGIT_YEAR, field);
+  }
 
   return;
 }
