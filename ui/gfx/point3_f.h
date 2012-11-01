@@ -5,12 +5,16 @@
 #ifndef UI_GFX_POINT3_F_H_
 #define UI_GFX_POINT3_F_H_
 
+#include <string>
+
+#include "ui/base/ui_export.h"
 #include "ui/gfx/point_f.h"
+#include "ui/gfx/vector3d_f.h"
 
 namespace gfx {
 
 // A point has an x, y and z coordinate.
-class Point3F {
+class UI_EXPORT Point3F {
  public:
   Point3F() : x_(0), y_(0), z_(0) {}
 
@@ -44,6 +48,9 @@ class Point3F {
 
   PointF AsPointF() const { return PointF(x_, y_); }
 
+  // Returns a string representation of 3d point.
+  std::string ToString() const;
+
  private:
   float x_;
   float y_;
@@ -51,6 +58,29 @@ class Point3F {
 
   // copy/assign are allowed.
 };
+
+inline bool operator==(const Point3F& lhs, const Point3F& rhs) {
+  return lhs.x() == rhs.x() && lhs.y() == rhs.y() && lhs.z() == rhs.z();
+}
+
+inline bool operator!=(const Point3F& lhs, const Point3F& rhs) {
+  return !(lhs == rhs);
+}
+
+// Add a vector to a point, producing a new point offset by the vector.
+UI_EXPORT Point3F operator+(const Point3F& lhs, const Vector3dF& rhs);
+
+// Subtract a vector from a point, producing a new point offset by the vector's
+// inverse.
+UI_EXPORT Point3F operator-(const Point3F& lhs, const Vector3dF& rhs);
+
+// Subtract one point from another, producing a vector that represents the
+// distances between the two points along each axis.
+UI_EXPORT Vector3dF operator-(const Point3F& lhs, const Point3F& rhs);
+
+inline Point3F PointAtOffsetFromOrigin(const Vector3dF& offset) {
+  return Point3F(offset.x(), offset.y(), offset.z());
+}
 
 }  // namespace gfx
 
