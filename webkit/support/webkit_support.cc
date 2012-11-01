@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/stack_trace.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/icu_util.h"
@@ -297,7 +298,7 @@ TestEnvironment* test_environment;
 
 void SetUpTestEnvironmentImpl(bool unit_test_mode,
                               WebKit::Platform* shadow_platform_delegate) {
-  base::EnableInProcessStackDumping();
+  base::debug::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
 
   // Initialize the singleton CommandLine with fixed values.  Some code refer to

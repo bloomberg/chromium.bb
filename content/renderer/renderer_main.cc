@@ -5,6 +5,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/stack_trace.h"
 #include "base/debug/trace_event.h"
 #include "base/hi_res_timer_manager.h"
 #include "base/i18n/rtl.h"
@@ -219,7 +220,7 @@ int RendererMain(const MainFunctionParams& parameters) {
       // For convenience, we print the stack trace for crashes. We can't get
       // symbols when the sandbox is enabled, so only try when the sandbox is
       // disabled.
-      base::EnableInProcessStackDumping();
+      base::debug::EnableInProcessStackDumping();
 #endif
     }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

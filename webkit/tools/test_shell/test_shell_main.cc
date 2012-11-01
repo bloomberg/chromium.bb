@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/event_recorder.h"
@@ -67,7 +68,7 @@ void RemoveSharedMemoryFile(std::string& filename) {
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  base::EnableInProcessStackDumping();
+  base::debug::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
 
   // Some tests may use base::Singleton<>, thus we need to instanciate
