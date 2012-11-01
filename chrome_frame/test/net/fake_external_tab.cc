@@ -279,6 +279,7 @@ void FilterDisabledTests() {
 
     // Not supported in ChromeFrame as we use IE's network stack.
     "URLRequestTest.NetworkDelegateProxyError",
+    "URLRequestTest.AcceptClockSkewCookieWithWrongDateTimezone",
 
     // URLRequestAutomationJob needs to support NeedsAuth.
     // http://crbug.com/98446

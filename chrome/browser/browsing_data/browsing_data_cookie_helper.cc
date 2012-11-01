@@ -139,6 +139,11 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
     const std::string& cookie_line,
     const net::CookieOptions& options) {
   base::Time creation_time = base::Time::Now();
+  base::Time server_time;
+  if (options.has_server_time())
+    server_time = options.server_time();
+  else
+    server_time = creation_time;
 
   net::ParsedCookie pc(cookie_line);
   if (!pc.IsValid())
@@ -161,7 +166,7 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
       pc.MACAlgorithm() : std::string();
 
   base::Time cookie_expires =
-      net::CanonicalCookie::CanonExpiration(pc, creation_time);
+      net::CanonicalCookie::CanonExpiration(pc, creation_time, server_time);
 
   scoped_ptr<net::CanonicalCookie> cookie(
       new net::CanonicalCookie(url, pc.Name(), pc.Value(), cookie_domain,
