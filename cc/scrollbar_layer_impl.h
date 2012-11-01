@@ -77,7 +77,7 @@ private:
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
-    IntRect scrollbarLayerRectToContentRect(const WebKit::WebRect& layerRect) const;
+    gfx::Rect scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const;
 
     Scrollbar m_scrollbar;
 

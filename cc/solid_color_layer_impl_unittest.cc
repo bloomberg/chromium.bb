@@ -24,8 +24,8 @@ TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
     DebugScopedSetImplThread scopedImplThread;
 
     MockQuadCuller quadCuller;
-    IntSize layerSize = IntSize(800, 600);
-    IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
+    gfx::Size layerSize = gfx::Size(800, 600);
+    gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);
@@ -47,8 +47,8 @@ TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
     SkColor testColor = 0xFFA55AFF;
 
     MockQuadCuller quadCuller;
-    IntSize layerSize = IntSize(100, 100);
-    IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
+    gfx::Size layerSize = gfx::Size(100, 100);
+    gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);
@@ -72,8 +72,8 @@ TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     const float opacity = 0.5f;
 
     MockQuadCuller quadCuller;
-    IntSize layerSize = IntSize(100, 100);
-    IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
+    gfx::Size layerSize = gfx::Size(100, 100);
+    gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);

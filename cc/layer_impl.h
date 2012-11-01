@@ -5,6 +5,7 @@
 #ifndef CCLayerImpl_h
 #define CCLayerImpl_h
 
+#include "FloatSize.h"
 #include "Region.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -216,7 +217,7 @@ public:
     void setDrawCheckerboardForMissingTiles(bool checkerboard) { m_drawCheckerboardForMissingTiles = checkerboard; }
     bool drawCheckerboardForMissingTiles() const;
 
-    InputHandlerClient::ScrollStatus tryScroll(const IntPoint& viewportPoint, InputHandlerClient::ScrollInputType) const;
+    InputHandlerClient::ScrollStatus tryScroll(const gfx::Point& viewportPoint, InputHandlerClient::ScrollInputType) const;
 
     const gfx::Rect& visibleContentRect() const { return m_visibleContentRect; }
     void setVisibleContentRect(const gfx::Rect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }

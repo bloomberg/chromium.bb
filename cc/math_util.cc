@@ -197,7 +197,7 @@ gfx::RectF MathUtil::computeEnclosingClippedRect(const HomogeneousCoordinate& h1
     bool somethingClipped = h1.shouldBeClipped() || h2.shouldBeClipped() || h3.shouldBeClipped() || h4.shouldBeClipped();
     if (!somethingClipped) {
         FloatQuad mappedQuad = FloatQuad(h1.cartesianPoint2d(), h2.cartesianPoint2d(), h3.cartesianPoint2d(), h4.cartesianPoint2d());
-        return cc::FloatRect(mappedQuad.boundingBox());
+        return mappedQuad.boundingBox();
     }
 
     bool everythingClipped = h1.shouldBeClipped() && h2.shouldBeClipped() && h3.shouldBeClipped() && h4.shouldBeClipped();

@@ -216,7 +216,7 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     // Invalidates part of the top tile...
     layer->invalidateContentRect(gfx::Rect(0, 0, 50, 50));
     // ....but the area is occluded.
-    occluded.setOcclusion(cc::IntRect(0, 0, 50, 50));
+    occluded.setOcclusion(gfx::Rect(0, 0, 50, 50));
     updateAndPush(layer.get(), layerImpl.get());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -433,7 +433,7 @@ TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
     m_occlusion = &occluded;
     
     // The tile size is 100x100, so this invalidates one occluded tile, culls it during paint, but prepaints it.
-    occluded.setOcclusion(cc::IntRect(0, 0, 100, 100));
+    occluded.setOcclusion(gfx::Rect(0, 0, 100, 100));
 
     layer->setBounds(gfx::Size(100, 100));
     layer->setVisibleContentRect(gfx::Rect(0, 0, 100, 100));
@@ -988,7 +988,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
 
     layer->setBounds(gfx::Size(600, 600));
 
-    occluded.setOcclusion(cc::IntRect(200, 200, 300, 100));
+    occluded.setOcclusion(gfx::Rect(200, 200, 300, 100));
     layer->setDrawableContentRect(gfx::Rect(gfx::Point(), layer->contentBounds()));
     layer->setVisibleContentRect(gfx::Rect(gfx::Point(), layer->contentBounds()));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1006,7 +1006,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
 
-    occluded.setOcclusion(cc::IntRect(250, 200, 300, 100));
+    occluded.setOcclusion(gfx::Rect(250, 200, 300, 100));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
     layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(36-2, layer->fakeLayerUpdater()->updateCount());
@@ -1019,7 +1019,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
 
-    occluded.setOcclusion(cc::IntRect(250, 250, 300, 100));
+    occluded.setOcclusion(gfx::Rect(250, 250, 300, 100));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
     layer->update(*m_queue.get(), &occluded, m_stats);
     EXPECT_EQ(36, layer->fakeLayerUpdater()->updateCount());
@@ -1039,7 +1039,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->setBounds(gfx::Size(600, 600));
 
     // The partially occluded tiles (by the 150 occlusion height) are visible beyond the occlusion, so not culled.
-    occluded.setOcclusion(cc::IntRect(200, 200, 300, 150));
+    occluded.setOcclusion(gfx::Rect(200, 200, 300, 150));
     layer->setDrawableContentRect(gfx::Rect(0, 0, 600, 360));
     layer->setVisibleContentRect(gfx::Rect(0, 0, 600, 360));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1056,7 +1056,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->fakeLayerUpdater()->clearUpdateCount();
 
     // Now the visible region stops at the edge of the occlusion so the partly visible tiles become fully occluded.
-    occluded.setOcclusion(cc::IntRect(200, 200, 300, 150));
+    occluded.setOcclusion(gfx::Rect(200, 200, 300, 150));
     layer->setDrawableContentRect(gfx::Rect(0, 0, 600, 350));
     layer->setVisibleContentRect(gfx::Rect(0, 0, 600, 350));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1072,7 +1072,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->fakeLayerUpdater()->clearUpdateCount();
 
     // Now the visible region is even smaller than the occlusion, it should have the same result.
-    occluded.setOcclusion(cc::IntRect(200, 200, 300, 150));
+    occluded.setOcclusion(gfx::Rect(200, 200, 300, 150));
     layer->setDrawableContentRect(gfx::Rect(0, 0, 600, 340));
     layer->setVisibleContentRect(gfx::Rect(0, 0, 600, 340));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1096,7 +1096,7 @@ TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
 
     layer->setBounds(gfx::Size(600, 600));
 
-    occluded.setOcclusion(cc::IntRect(200, 200, 300, 100));
+    occluded.setOcclusion(gfx::Rect(200, 200, 300, 100));
     layer->setDrawableContentRect(gfx::Rect(0, 0, 600, 600));
     layer->setVisibleContentRect(gfx::Rect(0, 0, 600, 600));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1140,7 +1140,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
     layer->setScreenSpaceTransform(screenTransform);
     layer->setDrawTransform(screenTransform);
 
-    occluded.setOcclusion(cc::IntRect(100, 100, 150, 50));
+    occluded.setOcclusion(gfx::Rect(100, 100, 150, 50));
     layer->setDrawableContentRect(gfx::Rect(gfx::Point(), layer->contentBounds()));
     layer->setVisibleContentRect(gfx::Rect(gfx::Point(), layer->contentBounds()));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1172,7 +1172,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     layer->setDrawTransform(drawTransform);
     layer->setScreenSpaceTransform(drawTransform);
 
-    occluded.setOcclusion(cc::IntRect(200, 200, 300, 100));
+    occluded.setOcclusion(gfx::Rect(200, 200, 300, 100));
     layer->setDrawableContentRect(gfx::Rect(gfx::Point(), layer->bounds()));
     layer->setVisibleContentRect(gfx::Rect(gfx::Point(), layer->contentBounds()));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1193,7 +1193,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     // This makes sure the painting works when the content space is scaled to
     // a different layer space. In this case the occluded region catches the
     // blown up tiles.
-    occluded.setOcclusion(cc::IntRect(200, 200, 300, 200));
+    occluded.setOcclusion(gfx::Rect(200, 200, 300, 200));
     layer->setDrawableContentRect(gfx::Rect(gfx::Point(), layer->bounds()));
     layer->setVisibleContentRect(gfx::Rect(gfx::Point(), layer->contentBounds()));
     layer->invalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1214,7 +1214,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     layer->setScreenSpaceTransform(screenTransform);
     layer->setDrawTransform(screenTransform);
 
-    occluded.setOcclusion(cc::IntRect(100, 100, 150, 100));
+    occluded.setOcclusion(gfx::Rect(100, 100, 150, 100));
 
     gfx::Rect layerBoundsRect(gfx::Point(), layer->bounds());
     layer->setDrawableContentRect(gfx::ToEnclosingRect(gfx::ScaleRect(layerBoundsRect, 0.5)));
@@ -1256,7 +1256,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     layer->invalidateContentRect(contentBounds);
     layer->update(*m_queue.get(), &occluded, m_stats);
     opaqueContents = layer->visibleContentOpaqueRegion();
-    EXPECT_TRUE(opaqueContents.isEmpty());
+    EXPECT_TRUE(opaqueContents.IsEmpty());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -1349,7 +1349,7 @@ TEST_F(TiledLayerTest, pixelsPaintedMetrics)
     layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
-    EXPECT_TRUE(opaqueContents.isEmpty());
+    EXPECT_TRUE(opaqueContents.IsEmpty());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 30000, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
@@ -1364,7 +1364,7 @@ TEST_F(TiledLayerTest, pixelsPaintedMetrics)
     layer->update(*m_queue.get(), &occluded, m_stats);
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
-    EXPECT_TRUE(opaqueContents.isEmpty());
+    EXPECT_TRUE(opaqueContents.IsEmpty());
 
     // The middle tile was painted even though not invalidated.
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 30000 + 60 * 210, 1);

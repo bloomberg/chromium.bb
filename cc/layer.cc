@@ -830,7 +830,7 @@ void Layer::notifyAnimationFinished(double wallClockTime)
 Region Layer::visibleContentOpaqueRegion() const
 {
     if (contentsOpaque())
-        return cc::IntRect(visibleContentRect());
+        return visibleContentRect();
     return Region();
 }
 

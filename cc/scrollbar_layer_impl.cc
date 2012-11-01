@@ -9,6 +9,7 @@
 #include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/texture_draw_quad.h"
+#include "ui/gfx/rect_conversions.h"
 
 using WebKit::WebRect;
 using WebKit::WebScrollbar;
@@ -71,13 +72,12 @@ static gfx::RectF toUVRect(const gfx::Rect& r, const gfx::Rect& bounds)
     return gfx::ScaleRect(r, 1.0 / bounds.width(), 1.0 / bounds.height());
 }
 
-IntRect ScrollbarLayerImpl::scrollbarLayerRectToContentRect(const WebRect& layerRect) const
+gfx::Rect ScrollbarLayerImpl::scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const
 {
     // Don't intersect with the bounds as in layerRectToContentRect() because
     // layerRect here might be in coordinates of the containing layer.
-    FloatRect contentRect(layerRect.x, layerRect.y, layerRect.width, layerRect.height);
-    contentRect.scale(contentsScaleX(), contentsScaleY());
-    return enclosingIntRect(contentRect);
+    gfx::RectF contentRect = gfx::ScaleRect(layerRect, contentsScaleX(), contentsScaleY());
+    return gfx::ToEnclosingRect(contentRect);
 }
 
 void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)

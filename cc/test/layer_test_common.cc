@@ -6,6 +6,7 @@
 
 #include "cc/test/layer_test_common.h"
 
+#include "FloatRect.h"
 #include "Region.h"
 #include "cc/draw_quad.h"
 #include "cc/math_util.h"
@@ -37,7 +38,7 @@ bool canRectFBeSafelyRoundedToRect(const gfx::RectF& r)
 
 void verifyQuadsExactlyCoverRect(const cc::QuadList& quads,
                                  const gfx::Rect& rect) {
-    cc::Region remaining = cc::IntRect(rect);
+    cc::Region remaining = rect;
 
     for (size_t i = 0; i < quads.size(); ++i) {
         cc::DrawQuad* quad = quads[i];
@@ -50,11 +51,11 @@ void verifyQuadsExactlyCoverRect(const cc::QuadList& quads,
         gfx::Rect quadRect = gfx::ToEnclosingRect(quadRectF);
 
         EXPECT_TRUE(rect.Contains(quadRect)) << quadString << i;
-        EXPECT_TRUE(remaining.contains(cc::IntRect(quadRect))) << quadString << i;
-        remaining.subtract(cc::IntRect(quadRect));
+        EXPECT_TRUE(remaining.Contains(quadRect)) << quadString << i;
+        remaining.Subtract(quadRect);
     }
 
-    EXPECT_TRUE(remaining.isEmpty());
+    EXPECT_TRUE(remaining.IsEmpty());
 }
 
 }  // namespace LayerTestCommon

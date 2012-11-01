@@ -5,7 +5,6 @@
 #ifndef MockCCQuadCuller_h
 #define MockCCQuadCuller_h
 
-#include "IntRect.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/draw_quad.h"
 #include "cc/quad_sink.h"

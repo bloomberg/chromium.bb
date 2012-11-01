@@ -66,9 +66,9 @@ DirectRenderer::DrawingFrame::~DrawingFrame()
 
 //
 // static
-FloatRect DirectRenderer::quadVertexRect()
+gfx::RectF DirectRenderer::quadVertexRect()
 {
-    return FloatRect(-0.5, -0.5, 1, 1);
+    return gfx::RectF(-0.5, -0.5, 1, 1);
 }
 
 // static
@@ -131,7 +131,7 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
         }
 
         const RenderPass* renderPassInFrame = it->second;
-        const IntSize& requiredSize = renderPassTextureSize(renderPassInFrame);
+        const gfx::Size& requiredSize = renderPassTextureSize(renderPassInFrame);
         GLenum requiredFormat = renderPassTextureFormat(renderPassInFrame);
         CachedTexture* texture = passIterator->second;
         DCHECK(texture);
@@ -177,7 +177,7 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
     frame.scissorRectInRenderPassSpace = frame.currentRenderPass->outputRect();
     if (frame.rootDamageRect != frame.rootRenderPass->outputRect()) {
         WebTransformationMatrix inverseTransformToRoot = frame.currentRenderPass->transformToRootTarget().inverse();
-        gfx::RectF damageRectInRenderPassSpace = MathUtil::projectClippedRect(inverseTransformToRoot, cc::FloatRect(frame.rootDamageRect));
+        gfx::RectF damageRectInRenderPassSpace = MathUtil::projectClippedRect(inverseTransformToRoot, frame.rootDamageRect);
         frame.scissorRectInRenderPassSpace.Intersect(damageRectInRenderPassSpace);
     }
 
@@ -225,9 +225,9 @@ bool DirectRenderer::haveCachedResourcesForRenderPassId(RenderPass::Id id) const
 }
 
 // static
-IntSize DirectRenderer::renderPassTextureSize(const RenderPass* pass)
+gfx::Size DirectRenderer::renderPassTextureSize(const RenderPass* pass)
 {
-    return cc::IntSize(pass->outputRect().size());
+    return pass->outputRect().size();
 }
 
 // static

@@ -19,7 +19,8 @@ public:
     // Construct with the starting page scale and scroll offset (which is in
     // pageScaleStart space). The window size is the user-viewable area
     // in pixels.
-    static scoped_ptr<PageScaleAnimation> create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime);
+    static scoped_ptr<PageScaleAnimation> create(const IntSize& scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime);
+    ~PageScaleAnimation();
 
     // The following methods initialize the animation. Call one of them
     // immediately after construction to set the final scroll and page scale.
@@ -48,7 +49,7 @@ public:
     float finalPageScale() const { return m_pageScaleEnd; }
 
 protected:
-    PageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime);
+    PageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime);
 
 private:
     float progressRatioForTime(double time) const;
@@ -57,8 +58,8 @@ private:
 
     IntSize m_scrollStart;
     float m_pageScaleStart;
-    IntSize m_windowSize;
-    IntSize m_contentSize;
+    gfx::Size m_windowSize;
+    gfx::Size m_contentSize;
 
     bool m_anchorMode;
     IntSize m_anchor;

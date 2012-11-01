@@ -164,7 +164,7 @@ void WebLayerTreeViewImpl::updateAnimations(double frameBeginTimeSeconds)
 
 bool WebLayerTreeViewImpl::compositeAndReadback(void *pixels, const WebRect& rect)
 {
-    return m_layerTreeHost->compositeAndReadback(pixels, convert(rect));
+    return m_layerTreeHost->compositeAndReadback(pixels, rect);
 }
 
 void WebLayerTreeViewImpl::finishAllRendering()

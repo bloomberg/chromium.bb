@@ -46,7 +46,7 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
-    IntRect testRect = IntRect(IntPoint(3, 4), IntSize(5, 6));
+    gfx::Rect testRect = gfx::Rect(gfx::Point(3, 4), gfx::Size(5, 6));
     owningLayer->resetAllChangeTrackingForSubtree();
 
     // Currently, the contentRect, clipRect, and owningLayer->layerPropertyChanged() are
@@ -89,8 +89,8 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 
     rootLayer->addChild(owningLayer.Pass());
 
-    IntRect contentRect = IntRect(IntPoint::zero(), IntSize(50, 50));
-    IntRect clipRect = IntRect(IntPoint(5, 5), IntSize(40, 40));
+    gfx::Rect contentRect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
+    gfx::Rect clipRect = gfx::Rect(gfx::Point(5, 5), gfx::Size(40, 40));
     WebTransformationMatrix origin;
 
     origin.translate(30, 40);
@@ -113,7 +113,7 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 
     EXPECT_EQ(30, sharedQuadState->quadTransform.m41());
     EXPECT_EQ(40, sharedQuadState->quadTransform.m42());
-    EXPECT_RECT_EQ(contentRect, IntRect(sharedQuadState->visibleContentRect));
+    EXPECT_RECT_EQ(contentRect, gfx::Rect(sharedQuadState->visibleContentRect));
     EXPECT_EQ(1, sharedQuadState->opacity);
     EXPECT_FALSE(sharedQuadState->opaque);
 }
@@ -143,7 +143,7 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
 
     rootLayer->addChild(owningLayer.Pass());
 
-    IntRect contentRect = IntRect(IntPoint::zero(), IntSize(50, 50));
+    gfx::Rect contentRect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
     WebTransformationMatrix origin;
     origin.translate(30, 40);
 

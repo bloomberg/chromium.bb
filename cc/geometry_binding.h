@@ -5,7 +5,9 @@
 #ifndef GeometryBinding_h
 #define GeometryBinding_h
 
-#include "FloatRect.h"
+namespace gfx {
+class RectF;
+}
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -15,7 +17,7 @@ namespace cc {
 
 class GeometryBinding {
 public:
-    GeometryBinding(WebKit::WebGraphicsContext3D*, const FloatRect& quadVertexRect);
+    GeometryBinding(WebKit::WebGraphicsContext3D*, const gfx::RectF& quadVertexRect);
     ~GeometryBinding();
 
     bool initialized() const { return m_initialized; }

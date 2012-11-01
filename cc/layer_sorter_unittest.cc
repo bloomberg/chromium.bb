@@ -178,7 +178,7 @@ TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform)
 
     // Sanity check that the test case actually covers the intended scenario, where part
     // of layer B go behind the w = 0 plane.
-    FloatQuad testQuad = FloatQuad(FloatRect(FloatPoint(-0.5, -0.5), FloatSize(1, 1)));
+    FloatQuad testQuad = FloatQuad(gfx::RectF(-0.5, -0.5, 1, 1));
     bool clipped = false;
     MathUtil::mapQuad(perspectiveMatrix * transformB, testQuad, clipped);
     ASSERT_TRUE(clipped);

@@ -7,6 +7,8 @@
 
 #include "cc/layer_tiling_data.h"
 
+#include "IntRect.h"
+#include "IntSize.h"
 #include "base/logging.h"
 
 using namespace std;
@@ -117,7 +119,7 @@ Region LayerTilingData::opaqueRegionInContentRect(const gfx::Rect& contentRect) 
                 continue;
 
             gfx::Rect tileOpaqueRect = gfx::IntersectRects(contentRect, tile->opaqueRect());
-            opaqueRegion.unite(cc::IntRect(tileOpaqueRect));
+            opaqueRegion.Union(tileOpaqueRect);
         }
     }
     return opaqueRegion;

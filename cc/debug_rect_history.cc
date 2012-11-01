@@ -117,7 +117,7 @@ void DebugRectHistory::saveScreenSpaceRects(const std::vector<LayerImpl* >& rend
 void DebugRectHistory::saveOccludingRects(const std::vector<gfx::Rect>& occludingRects)
 {
     for (size_t i = 0; i < occludingRects.size(); ++i)
-        m_debugRects.push_back(DebugRect(OccludingRectType, cc::FloatRect(occludingRects[i])));
+        m_debugRects.push_back(DebugRect(OccludingRectType, occludingRects[i]));
 }
 
 }  // namespace cc

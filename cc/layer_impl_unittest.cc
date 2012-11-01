@@ -72,12 +72,12 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXPECT_FALSE(child->layerPropertyChanged());
     EXPECT_FALSE(grandChild->layerPropertyChanged());
 
-    FloatPoint arbitraryFloatPoint = FloatPoint(0.125f, 0.25f);
+    gfx::PointF arbitraryPointF = gfx::PointF(0.125f, 0.25f);
     float arbitraryNumber = 0.352f;
-    IntSize arbitraryIntSize = IntSize(111, 222);
-    IntPoint arbitraryIntPoint = IntPoint(333, 444);
-    IntRect arbitraryIntRect = IntRect(arbitraryIntPoint, arbitraryIntSize);
-    FloatRect arbitraryFloatRect = FloatRect(arbitraryFloatPoint, FloatSize(1.234f, 5.678f));
+    gfx::Size arbitrarySize = gfx::Size(111, 222);
+    gfx::Point arbitraryPoint = gfx::Point(333, 444);
+    gfx::Rect arbitraryRect = gfx::Rect(arbitraryPoint, arbitrarySize);
+    gfx::RectF arbitraryRectF = gfx::RectF(arbitraryPointF, gfx::SizeF(1.234f, 5.678f));
     SkColor arbitraryColor = SkColorSetRGB(10, 20, 30);
     WebTransformationMatrix arbitraryTransform;
     arbitraryTransform.scale3d(0.1, 0.2, 0.3);
@@ -91,13 +91,13 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setRenderTarget(0));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDrawTransform(arbitraryTransform));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScreenSpaceTransform(arbitraryTransform));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDrawableContentRect(arbitraryIntRect));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setUpdateRect(arbitraryFloatRect));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setVisibleContentRect(arbitraryIntRect));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setMaxScrollPosition(arbitraryIntSize));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDrawableContentRect(arbitraryRect));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setUpdateRect(arbitraryRectF));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setVisibleContentRect(arbitraryRect));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setMaxScrollPosition(cc::IntSize(arbitrarySize)));
 
     // Changing these properties affects the entire subtree of layers.
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setAnchorPoint(arbitraryFloatPoint));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setAnchorPoint(arbitraryPointF));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setAnchorPointZ(arbitraryNumber));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(arbitraryFilters));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(WebFilterOperations()));
@@ -106,16 +106,16 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMasksToBounds(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setContentsOpaque(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setReplicaLayer(LayerImpl::create(5)));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPosition(arbitraryFloatPoint));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPosition(arbitraryPointF));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPreserves3D(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setDoubleSided(false)); // constructor initializes it to "true".
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->scrollBy(arbitraryIntSize));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setScrollDelta(IntSize()));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setScrollPosition(arbitraryIntPoint));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->scrollBy(cc::IntSize(arbitrarySize)));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setScrollDelta(cc::IntSize()));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setScrollPosition(cc::IntPoint(arbitraryPoint)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setImplTransform(arbitraryTransform));
 
     // Changing these properties only affects the layer itself.
-    EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->setContentBounds(arbitraryIntSize));
+    EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->setContentBounds(arbitrarySize));
     EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->setContentsScale(arbitraryNumber, arbitraryNumber));
     EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->setDebugBorderColor(arbitraryColor));
     EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->setDebugBorderWidth(arbitraryNumber));
@@ -136,23 +136,23 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
 
     // Special case: check that setBounds changes behavior depending on masksToBounds.
     root->setMasksToBounds(false);
-    EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->setBounds(IntSize(135, 246)));
+    EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->setBounds(gfx::Size(135, 246)));
     root->setMasksToBounds(true);
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setBounds(arbitraryIntSize)); // should be a different size than previous call, to ensure it marks tree changed.
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setBounds(arbitrarySize)); // should be a different size than previous call, to ensure it marks tree changed.
 
     // After setting all these properties already, setting to the exact same values again should
     // not cause any change.
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setAnchorPoint(arbitraryFloatPoint));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setAnchorPoint(arbitraryPointF));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setAnchorPointZ(arbitraryNumber));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setMasksToBounds(true));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setPosition(arbitraryFloatPoint));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setPosition(arbitraryPointF));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setPreserves3D(true));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setTransform(arbitraryTransform));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDoubleSided(false)); // constructor initializes it to "true".
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollDelta(IntSize()));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollPosition(arbitraryIntPoint));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollDelta(cc::IntSize()));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollPosition(cc::IntPoint(arbitraryPoint)));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setImplTransform(arbitraryTransform));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setContentBounds(arbitraryIntSize));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setContentBounds(arbitrarySize));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setContentsScale(arbitraryNumber, arbitraryNumber));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setContentsOpaque(true));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setOpacity(arbitraryNumber));
@@ -160,7 +160,7 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDebugBorderWidth(arbitraryNumber));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDrawsContent(true));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setSublayerTransform(arbitraryTransform));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setBounds(arbitraryIntSize));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setBounds(arbitrarySize));
 }
 
 } // namespace

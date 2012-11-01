@@ -148,9 +148,9 @@ void TiledLayer::updateBounds()
     m_tiler->setBounds(newBounds);
 
     // Invalidate any areas that the new bounds exposes.
-    Region oldRegion = IntRect(IntPoint(), cc::IntSize(oldBounds));
-    Region newRegion = IntRect(IntPoint(), cc::IntSize(newBounds));
-    newRegion.subtract(oldRegion);
+    Region oldRegion = gfx::Rect(gfx::Point(), oldBounds);
+    Region newRegion = gfx::Rect(gfx::Point(), newBounds);
+    newRegion.Subtract(oldRegion);
     Vector<WebCore::IntRect> rects = newRegion.rects();
     for (size_t i = 0; i < rects.size(); ++i)
         invalidateContentRect(cc::IntRect(rects[i]));
@@ -329,7 +329,7 @@ bool TiledLayer::updateTiles(int left, int top, int right, int bottom, ResourceU
     gfx::Rect paintRect = markTilesForUpdate(left, top, right, bottom, ignoreOcclusions);
 
     if (occlusion)
-        occlusion->overdrawMetrics().didPaint(cc::IntRect(paintRect));
+        occlusion->overdrawMetrics().didPaint(paintRect);
 
     if (paintRect.IsEmpty())
         return true;
@@ -510,7 +510,7 @@ void TiledLayer::updateTileTextures(const gfx::Rect& paintRect, int left, int to
 
             tile->updaterResource()->update(queue, sourceRect, destOffset, tile->partialUpdate, stats);
             if (occlusion)
-                occlusion->overdrawMetrics().didUpload(WebTransformationMatrix(), cc::IntRect(sourceRect), cc::IntRect(tile->opaqueRect()));
+                occlusion->overdrawMetrics().didUpload(WebTransformationMatrix(), sourceRect, tile->opaqueRect());
 
         }
     }
@@ -592,7 +592,7 @@ Region TiledLayer::visibleContentOpaqueRegion() const
     if (m_skipsDraw)
         return Region();
     if (contentsOpaque())
-        return cc::IntRect(visibleContentRect());
+        return visibleContentRect();
     return m_tiler->opaqueRegionInContentRect(visibleContentRect());
 }
 

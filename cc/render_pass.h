@@ -5,7 +5,6 @@
 #ifndef CCRenderPass_h
 #define CCRenderPass_h
 
-#include "FloatRect.h"
 #include "base/basictypes.h"
 #include "cc/draw_quad.h"
 #include "cc/hash_pair.h"

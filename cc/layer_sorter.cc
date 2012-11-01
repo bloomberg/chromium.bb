@@ -149,7 +149,7 @@ LayerShape::LayerShape()
 
 LayerShape::LayerShape(float width, float height, const WebTransformationMatrix& drawTransform)
 {
-    FloatQuad layerQuad(FloatRect(0, 0, width, height));
+    FloatQuad layerQuad(gfx::RectF(0, 0, width, height));
 
     // Compute the projection of the layer quad onto the z = 0 plane.
 
@@ -158,7 +158,7 @@ LayerShape::LayerShape(float width, float height, const WebTransformationMatrix&
     MathUtil::mapClippedQuad(drawTransform, layerQuad, clippedQuad, numVerticesInClippedQuad);
 
     if (numVerticesInClippedQuad < 3) {
-        projectedBounds = FloatRect();
+        projectedBounds = gfx::RectF();
         return;
     }
 

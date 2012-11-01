@@ -314,7 +314,7 @@ public:
             m_layerTreeHost->setViewportSize(gfx::Size(0, 0), gfx::Size(0, 0));
 
             scoped_array<char> pixels(new char[4]);
-            m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), IntRect(0, 0, 1, 1));
+            m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), gfx::Rect(0, 0, 1, 1));
         } else if (m_numCommits == 2) {
             m_layerTreeHost->setNeedsRedraw();
             m_layerTreeHost->setNeedsCommit();
@@ -439,7 +439,7 @@ public:
             m_layerTreeHost->setNeedsCommit();
             m_layerTreeHost->setNeedsCommit();
             scoped_array<char> pixels(new char[4]);
-            m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), IntRect(0, 0, 1, 1));
+            m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), gfx::Rect(0, 0, 1, 1));
         } else
             endTest();
 
@@ -1923,13 +1923,13 @@ public:
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
-        EXPECT_RECT_EQ(cc::IntRect(), child2->occludedScreenSpace().bounds());
+        EXPECT_RECT_EQ(gfx::Rect(), child2->occludedScreenSpace().bounds());
         EXPECT_EQ(0u, child2->occludedScreenSpace().rects().size());
-        EXPECT_RECT_EQ(cc::IntRect(), grandChild->occludedScreenSpace().bounds());
+        EXPECT_RECT_EQ(gfx::Rect(), grandChild->occludedScreenSpace().bounds());
         EXPECT_EQ(0u, grandChild->occludedScreenSpace().rects().size());
-        EXPECT_RECT_EQ(cc::IntRect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
+        EXPECT_RECT_EQ(gfx::Rect(30, 40, 170, 160), child->occludedScreenSpace().bounds());
         EXPECT_EQ(1u, child->occludedScreenSpace().rects().size());
-        EXPECT_RECT_EQ(cc::IntRect(10, 70, 190, 130), rootLayer->occludedScreenSpace().bounds());
+        EXPECT_RECT_EQ(gfx::Rect(10, 70, 190, 130), rootLayer->occludedScreenSpace().bounds());
         EXPECT_EQ(1u, rootLayer->occludedScreenSpace().rects().size());
 
         // Kill the layerTreeHost immediately.
@@ -1986,7 +1986,7 @@ public:
         m_layerTreeHost->commitComplete();
 
         for (int i = 0; i < numSurfaces-1; ++i) {
-            cc::IntRect expectedOcclusion(i+1, i+1, 200-i-1, 200-i-1);
+            gfx::Rect expectedOcclusion(i+1, i+1, 200-i-1, 200-i-1);
 
             EXPECT_RECT_EQ(expectedOcclusion, layers[i]->occludedScreenSpace().bounds());
             EXPECT_EQ(1u, layers[i]->occludedScreenSpace().rects().size());
@@ -2522,7 +2522,7 @@ public:
         Layer* rootLayer = m_layerTreeHost->rootLayer();
 
         scoped_array<char> pixels(new char[4]);
-        m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), IntRect(0, 0, 1, 1));
+        m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), gfx::Rect(0, 0, 1, 1));
         EXPECT_FALSE(rootLayer->renderSurface());
 
         endTest();

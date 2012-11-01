@@ -221,7 +221,7 @@ TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible)
     m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder(), m_mockClient.renderPasses());
     EXPECT_FALSE(m_renderer.isFramebufferDiscarded());
 
-    m_renderer.getFramebufferPixels(pixels, IntRect(0, 0, 1, 1));
+    m_renderer.getFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
     EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
     EXPECT_EQ(2, m_mockClient.setFullRootLayerDamageCount());
 }

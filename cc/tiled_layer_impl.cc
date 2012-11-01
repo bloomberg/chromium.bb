@@ -238,7 +238,7 @@ Region TiledLayerImpl::visibleContentOpaqueRegion() const
     if (m_skipsDraw)
         return Region();
     if (contentsOpaque())
-        return cc::IntRect(visibleContentRect());
+        return visibleContentRect();
     return m_tiler->opaqueRegionInContentRect(visibleContentRect());
 }
 

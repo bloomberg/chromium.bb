@@ -253,7 +253,7 @@ void DamageTracker::extendDamageForLayer(LayerImpl* layer, gfx::RectF& targetDam
     bool layerIsNew = false;
     gfx::RectF oldRectInTargetSpace = removeRectFromCurrentFrame(layer->id(), layerIsNew);
 
-    gfx::RectF rectInTargetSpace = MathUtil::mapClippedRect(layer->drawTransform(), gfx::RectF(FloatPoint(), layer->contentBounds()));
+    gfx::RectF rectInTargetSpace = MathUtil::mapClippedRect(layer->drawTransform(), gfx::RectF(gfx::PointF(), layer->contentBounds()));
     saveRectForNextFrame(layer->id(), rectInTargetSpace);
 
     if (layerIsNew || layerNeedsToRedrawOntoItsTargetSurface(layer)) {
@@ -326,7 +326,7 @@ void DamageTracker::extendDamageForRenderSurface(LayerImpl* layer, gfx::RectF& t
         removeRectFromCurrentFrame(replicaMaskLayer->id(), replicaIsNew);
 
         const WebTransformationMatrix& replicaDrawTransform = renderSurface->replicaDrawTransform();
-        gfx::RectF replicaMaskLayerRect = MathUtil::mapClippedRect(replicaDrawTransform, gfx::RectF(FloatPoint(), FloatSize(replicaMaskLayer->bounds().width(), replicaMaskLayer->bounds().height())));
+        gfx::RectF replicaMaskLayerRect = MathUtil::mapClippedRect(replicaDrawTransform, gfx::RectF(gfx::PointF(), replicaMaskLayer->bounds()));
         saveRectForNextFrame(replicaMaskLayer->id(), replicaMaskLayerRect);
 
         // In the current implementation, a change in the replica mask damages the entire replica region.

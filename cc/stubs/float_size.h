@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebCore/platform/graphics/FloatSize.h"
 #endif
 #include "ui/gfx/size_f.h"
+#include "ui/gfx/vector2d_f.h"
 
 namespace cc {
 class FloatSize : public WebCore::FloatSize {
@@ -43,7 +44,14 @@ public:
     {
     }
 
+    explicit FloatSize(gfx::Vector2dF vector)
+        : WebCore::FloatSize(vector.x(), vector.y())
+    {
+    }
+
     operator gfx::SizeF() const { return gfx::SizeF(width(), height()); }
+
+    operator gfx::Vector2dF() const { return gfx::Vector2dF(width(), height()); }
 };
 
 }

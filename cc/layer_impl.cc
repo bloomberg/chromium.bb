@@ -198,7 +198,7 @@ FloatSize LayerImpl::scrollBy(const FloatSize& scroll)
     return unscrolled;
 }
 
-InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const IntPoint& screenSpacePoint, InputHandlerClient::ScrollInputType type) const
+InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::Point& screenSpacePoint, InputHandlerClient::ScrollInputType type) const
 {
     if (shouldScrollOnMainThread()) {
         TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed shouldScrollOnMainThread");
@@ -210,10 +210,10 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const IntPoint& screenSpac
         return InputHandlerClient::ScrollIgnored;
     }
 
-    if (!nonFastScrollableRegion().isEmpty()) {
+    if (!nonFastScrollableRegion().IsEmpty()) {
         bool clipped = false;
-        gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), FloatPoint(screenSpacePoint), clipped);
-        if (!clipped && nonFastScrollableRegion().contains(cc::IntPoint(gfx::ToFlooredPoint(hitTestPointInLocalSpace)))) {
+        gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), gfx::PointF(screenSpacePoint), clipped);
+        if (!clipped && nonFastScrollableRegion().Contains(gfx::ToFlooredPoint(hitTestPointInLocalSpace))) {
             TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed nonFastScrollableRegion");
             return InputHandlerClient::ScrollOnMainThread;
         }
@@ -662,7 +662,7 @@ void LayerImpl::setDoubleSided(bool doubleSided)
 Region LayerImpl::visibleContentOpaqueRegion() const
 {
     if (contentsOpaque())
-        return cc::IntRect(visibleContentRect());
+        return visibleContentRect();
     return Region();
 }
 

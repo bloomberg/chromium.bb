@@ -7,12 +7,15 @@
 
 #include "base/memory/scoped_ptr.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace WebKit {
 class WebTransformationMatrix;
 }
 
 namespace cc {
-class IntRect;
 class LayerTreeHost;
 class LayerTreeHostImpl;
 
@@ -24,11 +27,11 @@ public:
     // These methods are used for saving metrics during update/commit.
 
     // Record pixels painted by WebKit into the texture updater, but does not mean the pixels were rasterized in main memory.
-    void didPaint(const IntRect& paintedRect);
+    void didPaint(const gfx::Rect& paintedRect);
     // Records that an invalid tile was culled and did not need to be painted/uploaded, and did not contribute to other tiles needing to be painted.
     void didCullTilesForUpload(int count);
     // Records pixels that were uploaded to texture memory.
-    void didUpload(const WebKit::WebTransformationMatrix& transformToTarget, const IntRect& uploadRect, const IntRect& opaqueRect);
+    void didUpload(const WebKit::WebTransformationMatrix& transformToTarget, const gfx::Rect& uploadRect, const gfx::Rect& opaqueRect);
     // Record contents texture(s) behind present using the given number of bytes.
     void didUseContentsTextureMemoryBytes(size_t contentsTextureUseBytes);
     // Record RenderSurfaceImpl texture(s) being present using the given number of bytes.
@@ -37,9 +40,9 @@ public:
     // These methods are used for saving metrics during draw.
 
     // Record pixels that were not drawn to screen.
-    void didCullForDrawing(const WebKit::WebTransformationMatrix& transformToTarget, const IntRect& beforeCullRect, const IntRect& afterCullRect);
+    void didCullForDrawing(const WebKit::WebTransformationMatrix& transformToTarget, const gfx::Rect& beforeCullRect, const gfx::Rect& afterCullRect);
     // Record pixels that were drawn to screen.
-    void didDraw(const WebKit::WebTransformationMatrix& transformToTarget, const IntRect& afterCullRect, const IntRect& opaqueRect);
+    void didDraw(const WebKit::WebTransformationMatrix& transformToTarget, const gfx::Rect& afterCullRect, const gfx::Rect& opaqueRect);
 
     void recordMetrics(const LayerTreeHost*) const;
     void recordMetrics(const LayerTreeHostImpl*) const;

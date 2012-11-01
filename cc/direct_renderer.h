@@ -70,13 +70,13 @@ protected:
         DISALLOW_COPY_AND_ASSIGN(CachedTexture);
     };
 
-    static FloatRect quadVertexRect();
+    static gfx::RectF quadVertexRect();
     static void quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const gfx::RectF& quadRect);
     static void initializeMatrices(DrawingFrame&, const gfx::Rect& drawRect, bool flipY);
     static gfx::Rect moveScissorToWindowSpace(const DrawingFrame&, gfx::RectF scissorRect);
 
     bool haveCachedResources(RenderPass::Id) const;
-    static IntSize renderPassTextureSize(const RenderPass*);
+    static gfx::Size renderPassTextureSize(const RenderPass*);
     static GLenum renderPassTextureFormat(const RenderPass*);
 
     void drawRenderPass(DrawingFrame&, const RenderPass*);

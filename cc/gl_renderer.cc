@@ -76,7 +76,7 @@ GLRenderer::GLRenderer(RendererClient* client,
                            ResourceProvider* resourceProvider)
     : DirectRenderer(client, resourceProvider)
     , m_offscreenFramebufferId(0)
-    , m_sharedGeometryQuad(FloatRect(-0.5f, -0.5f, 1.0f, 1.0f))
+    , m_sharedGeometryQuad(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f))
     , m_context(resourceProvider->graphicsContext3D())
     , m_isViewportChanged(false)
     , m_isFramebufferDiscarded(false)
@@ -457,7 +457,7 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame,
     DCHECK(!frame.currentTexture);
 
     // FIXME: Do a single readback for both the surface and replica and cache the filtered results (once filter textures are not reused).
-    gfx::Rect deviceRect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(contentsDeviceTransform, cc::FloatRect(sharedGeometryQuad().boundingBox())));
+    gfx::Rect deviceRect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().boundingBox()));
 
     int top, right, bottom, left;
     filters.getOutsets(top, right, bottom, left);
@@ -829,7 +829,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
         GLC(context(), context()->uniform4f(uniforms.vertexTexTransformLocation, vertexTexTranslateX, vertexTexTranslateY, vertexTexScaleX, vertexTexScaleY));
 
-        localQuad = FloatRect(tileRect);
+        localQuad = gfx::RectF(tileRect);
     }
 
     // Normalize to tileRect.

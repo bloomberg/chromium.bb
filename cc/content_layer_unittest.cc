@@ -13,8 +13,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
-#include <public/WebFloatRect.h>
-#include <public/WebRect.h>
 
 using namespace cc;
 using namespace WebKit;

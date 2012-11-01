@@ -6,19 +6,22 @@
 
 #include "cc/page_scale_animation.h"
 
-#include "FloatRect.h"
+#include "FloatPoint.h"
 #include "FloatSize.h"
+#include "IntPoint.h"
+#include "IntSize.h"
+#include "ui/gfx/rect_f.h"
 
 #include <math.h>
 
 namespace cc {
 
-scoped_ptr<PageScaleAnimation> PageScaleAnimation::create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
+scoped_ptr<PageScaleAnimation> PageScaleAnimation::create(const IntSize& scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime)
 {
     return make_scoped_ptr(new PageScaleAnimation(scrollStart, pageScaleStart, windowSize, contentSize, startTime));
 }
 
-PageScaleAnimation::PageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
+PageScaleAnimation::PageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime)
     : m_scrollStart(scrollStart)
     , m_pageScaleStart(pageScaleStart)
     , m_windowSize(windowSize)
@@ -31,14 +34,18 @@ PageScaleAnimation::PageScaleAnimation(const IntSize& scrollStart, float pageSca
 {
 }
 
+PageScaleAnimation::~PageScaleAnimation()
+{
+}
+
 void PageScaleAnimation::zoomTo(const IntSize& finalScroll, float finalPageScale, double duration)
 {
     if (m_pageScaleStart != finalPageScale) {
         // For uniform-looking zooming, infer the anchor (point that remains in
         // place throughout the zoom) from the start and end rects.
-        FloatRect startRect(IntPoint(m_scrollStart), m_windowSize);
-        FloatRect endRect(IntPoint(finalScroll), m_windowSize);
-        endRect.scale(m_pageScaleStart / finalPageScale);
+        gfx::RectF startRect(cc::FloatPoint(cc::IntPoint(m_scrollStart)), m_windowSize);
+        gfx::RectF endRect(cc::FloatPoint(cc::IntPoint(finalScroll)), m_windowSize);
+        endRect.Scale(m_pageScaleStart / finalPageScale);
 
         // The anchor is the point which is at the same ratio of the sides of
         // both startRect and endRect. For example, a zoom-in double-tap to a
@@ -73,9 +80,8 @@ void PageScaleAnimation::zoomWithAnchor(const IntSize& anchor, float finalPageSc
     m_scrollEnd -= anchor;
 
     m_scrollEnd.clampNegativeToZero();
-    FloatSize scaledContentSize(m_contentSize);
-    scaledContentSize.scale(finalPageScale / m_pageScaleStart);
-    IntSize maxScrollPosition = roundedIntSize(scaledContentSize - m_windowSize);
+    gfx::SizeF scaledContentSize = m_contentSize.Scale(finalPageScale / m_pageScaleStart);
+    IntSize maxScrollPosition = roundedIntSize(cc::FloatSize(scaledContentSize) - cc::IntSize(m_windowSize));
     m_scrollEnd = m_scrollEnd.shrunkTo(maxScrollPosition);
 
     m_anchor = anchor;

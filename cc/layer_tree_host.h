@@ -40,7 +40,6 @@ struct hash<WebKit::WebGraphicsContext3D*> {
 namespace cc {
 
 class FontAtlas;
-class IntRect;
 class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
@@ -141,7 +140,7 @@ public:
     // Composites and attempts to read back the result into the provided
     // buffer. If it wasn't possible, e.g. due to context lost, will return
     // false.
-    bool compositeAndReadback(void *pixels, const IntRect&);
+    bool compositeAndReadback(void *pixels, const gfx::Rect&);
 
     void finishAllRendering();
 

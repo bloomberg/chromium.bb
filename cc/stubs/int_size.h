@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebCore/platform/graphics/IntSize.h"
 #endif
 #include "ui/gfx/size.h"
+#include "ui/gfx/vector2d.h"
 
 namespace cc {
 
@@ -34,7 +35,14 @@ public:
     {
     }
 
+    explicit IntSize(gfx::Vector2d vector)
+        : WebCore::IntSize(vector.x(), vector.y())
+    {
+    }
+
     operator gfx::Size() const { return gfx::Size(width(), height()); }
+
+    operator gfx::Vector2d() const { return gfx::Vector2d(width(), height()); }
 };
 
 }

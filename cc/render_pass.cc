@@ -83,7 +83,7 @@ void RenderPass::appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBac
         return;
 
     Region fillRegion = occlusionTracker.computeVisibleRegionInScreen();
-    if (fillRegion.isEmpty())
+    if (fillRegion.IsEmpty())
         return;
 
     bool forSurface = false;

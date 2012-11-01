@@ -46,7 +46,7 @@ public:
     OverdrawMetrics& overdrawMetrics() const { return *m_overdrawMetrics.get(); }
 
     // Gives the region of the screen that is not occluded by something opaque.
-    Region computeVisibleRegionInScreen() const { return subtract(Region(cc::IntRect(m_rootTargetRect)), m_stack.last().occlusionInScreen); }
+    Region computeVisibleRegionInScreen() const { return subtract(Region(m_rootTargetRect), m_stack.last().occlusionInScreen); }
 
     void setMinimumTrackingSize(const gfx::Size& size) { m_minimumTrackingSize = size; }
 

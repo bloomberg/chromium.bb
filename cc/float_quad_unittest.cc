@@ -7,6 +7,7 @@
 #include "FloatQuad.h"
 #include "cc/math_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect_f.h"
 #include <public/WebTransformationMatrix.h>
 
 using namespace cc;
@@ -30,7 +31,7 @@ TEST(FloatQuadTest, IsRectilinearTest)
 
     for (int i = 0; i < numRectilinear; ++i) {
         bool clipped = false;
-        FloatQuad quad = MathUtil::mapQuad(rectilinearTrans[i], FloatRect(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f), clipped);
+        FloatQuad quad = MathUtil::mapQuad(rectilinearTrans[i], gfx::RectF(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f), clipped);
         ASSERT_TRUE(!clipped);
         EXPECT_TRUE(quad.isRectilinear());
     }
@@ -50,7 +51,7 @@ TEST(FloatQuadTest, IsRectilinearTest)
 
     for (int i = 0; i < numNonRectilinear; ++i) {
         bool clipped = false;
-        FloatQuad quad = MathUtil::mapQuad(nonRectilinearTrans[i], FloatRect(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f), clipped);
+        FloatQuad quad = MathUtil::mapQuad(nonRectilinearTrans[i], gfx::RectF(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f), clipped);
         ASSERT_TRUE(!clipped);
         EXPECT_FALSE(quad.isRectilinear());
     }

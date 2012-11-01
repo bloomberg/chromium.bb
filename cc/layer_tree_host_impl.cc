@@ -105,38 +105,34 @@ gfx::RectF PinchZoomViewport::bounds() const
     return bounds;
 }
 
-FloatSize PinchZoomViewport::applyScroll(FloatSize& delta)
+FloatSize PinchZoomViewport::applyScroll(const gfx::Vector2dF& delta)
 {
-    FloatSize overflow;
-    FloatRect pinchedBounds = cc::FloatRect(bounds());
+    gfx::Vector2dF overflow;
+    gfx::RectF pinchedBounds = bounds();
 
-    pinchedBounds.move(delta);
+    pinchedBounds.Offset(delta);
     if (pinchedBounds.x() < 0) {
-        overflow.setWidth(pinchedBounds.x());
-        pinchedBounds.setX(0);
+        overflow.set_x(pinchedBounds.x());
+        pinchedBounds.set_x(0);
     }
 
     if (pinchedBounds.y() < 0) {
-        overflow.setHeight(pinchedBounds.y());
-        pinchedBounds.setY(0);
+        overflow.set_y(pinchedBounds.y());
+        pinchedBounds.set_y(0);
     }
 
-    if (pinchedBounds.maxX() > m_layoutViewportSize.width()) {
-        overflow.setWidth(
-            pinchedBounds.maxX() - m_layoutViewportSize.width());
-        pinchedBounds.move(
-            m_layoutViewportSize.width() - pinchedBounds.maxX(), 0);
+    if (pinchedBounds.right() > m_layoutViewportSize.width()) {
+        overflow.set_x(pinchedBounds.right() - m_layoutViewportSize.width());
+        pinchedBounds.Offset(m_layoutViewportSize.width() - pinchedBounds.right(), 0);
     }
 
-    if (pinchedBounds.maxY() > m_layoutViewportSize.height()) {
-        overflow.setHeight(
-            pinchedBounds.maxY() - m_layoutViewportSize.height());
-        pinchedBounds.move(
-            0, m_layoutViewportSize.height() - pinchedBounds.maxY());
+    if (pinchedBounds.bottom() > m_layoutViewportSize.height()) {
+        overflow.set_y(pinchedBounds.bottom() - m_layoutViewportSize.height());
+        pinchedBounds.Offset(0, m_layoutViewportSize.height() - pinchedBounds.bottom());
     }
-    m_pinchViewportScrollDelta = pinchedBounds.location();
+    m_pinchViewportScrollDelta = cc::FloatPoint(pinchedBounds.origin());
 
-    return overflow;
+    return cc::FloatSize(overflow);
 }
 
 WebTransformationMatrix PinchZoomViewport::implTransform() const
@@ -691,7 +687,7 @@ void LayerTreeHostImpl::drawLayers(const FrameData& frame)
     // Once a RenderPass has been drawn, its damage should be cleared in
     // case the RenderPass will be reused next frame.
     for (unsigned int i = 0; i < frame.renderPasses.size(); i++)
-        frame.renderPasses[i]->setDamageRect(FloatRect());
+        frame.renderPasses[i]->setDamageRect(gfx::RectF());
 
     // The next frame should start by assuming nothing has changed, and changes are noted as they occur.
     for (unsigned int i = 0; i < frame.renderSurfaceLayerList->size(); i++)

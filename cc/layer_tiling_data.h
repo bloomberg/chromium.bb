@@ -11,11 +11,11 @@
 #include "cc/hash_pair.h"
 #include "cc/scoped_ptr_hash_map.h"
 #include "ui/gfx/rect.h"
-#include "IntRect.h"
 #include "Region.h"
 #include "TilingData.h"
 
 namespace cc {
+class IntRect;
 
 class LayerTilingData {
 public:

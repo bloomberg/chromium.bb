@@ -83,7 +83,7 @@ public:
     // Apply the scroll offset in layout space to the offset of the pinch-zoom viewport. The viewport cannot be
     // scrolled outside of the layout viewport bounds. Returns the component of the scroll that is un-applied due to
     // this constraint.
-    FloatSize applyScroll(FloatSize&);
+    FloatSize applyScroll(const gfx::Vector2dF&);
 
     WebKit::WebTransformationMatrix implTransform() const;
 

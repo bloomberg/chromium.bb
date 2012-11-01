@@ -330,7 +330,7 @@ void LayerTreeHost::didLoseContext()
     setNeedsCommit();
 }
 
-bool LayerTreeHost::compositeAndReadback(void *pixels, const IntRect& rect)
+bool LayerTreeHost::compositeAndReadback(void *pixels, const gfx::Rect& rect)
 {
     m_triggerIdleUpdates = false;
     bool ret = m_proxy->compositeAndReadback(pixels, rect);

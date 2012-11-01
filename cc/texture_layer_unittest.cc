@@ -92,7 +92,7 @@ TEST_F(TextureLayerTest, syncImplWhenChangingTextureId)
 
 TEST_F(TextureLayerTest, syncImplWhenDrawing)
 {
-    FloatRect dirtyRect(0, 0, 1, 1);
+    gfx::RectF dirtyRect(0, 0, 1, 1);
 
     scoped_refptr<TextureLayer> testLayer = TextureLayer::create(0);
     ASSERT_TRUE(testLayer);
