@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'linux_link_libpci%': 0,
+  },
   'dependencies': [
     '../base/base.gyp:base',
     '../skia/skia.gyp:skia',
@@ -109,6 +112,23 @@
       'include_dirs': [
         '<(DEPTH)/third_party/libva',
       ],
+    }],
+    ['linux_link_libpci==0', {
+      'defines': [
+        'DLOPEN_LIBPCI',
+      ],
+    }, { # linux_link_libpci==1
+      'cflags': [
+        '<!@(pkg-config --cflags libpci)',
+      ],
+      'link_settings': {
+        'ldflags': [
+          '<!@(pkg-config --libs-only-L --libs-only-other libpci)',
+        ],
+        'libraries': [
+          '<!@(pkg-config --libs-only-l libpci)',
+        ],
+      }
     }],
   ],
 }

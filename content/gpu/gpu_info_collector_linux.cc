@@ -8,6 +8,11 @@
 #include <X11/Xlib.h>
 #include <vector>
 
+// TODO(phajdan.jr): Report problem upstream and make pci.h handle this.
+extern "C" {
+#include <pci/pci.h>
+}
+
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
@@ -28,51 +33,14 @@
 
 namespace {
 
-// PciDevice and PciAccess are defined to access libpci functions.  Their
-// members match the corresponding structures defined by libpci in size up to
-// fields we may access.  For those members we don't use, their names are
-// defined as "fieldX", etc., or, left out if they are declared after the
-// members we care about in libpci.
-
-struct PciDevice {
-  PciDevice* next;
-
-  uint16 field0;
-  uint8 field1;
-  uint8 field2;
-  uint8 field3;
-  int field4;
-
-  uint16 vendor_id;
-  uint16 device_id;
-  uint16 device_class;
-};
-
-struct PciAccess {
-  unsigned int field0;
-  int field1;
-  int field2;
-  char* field3;
-  int field4;
-  int field5;
-  unsigned int field6;
-  int field7;
-
-  void (*function0)();
-  void (*function1)();
-  void (*function2)();
-
-  PciDevice* device_list;
-};
-
 // Define function types.
-typedef PciAccess* (*FT_pci_alloc)();
-typedef void (*FT_pci_init)(PciAccess*);
-typedef void (*FT_pci_cleanup)(PciAccess*);
-typedef void (*FT_pci_scan_bus)(PciAccess*);
-typedef void (*FT_pci_scan_bus)(PciAccess*);
-typedef int (*FT_pci_fill_info)(PciDevice*, int);
-typedef char* (*FT_pci_lookup_name)(PciAccess*, char*, int, int, ...);
+typedef pci_access* (*FT_pci_alloc)();
+typedef void (*FT_pci_init)(pci_access*);
+typedef void (*FT_pci_cleanup)(pci_access*);
+typedef void (*FT_pci_scan_bus)(pci_access*);
+typedef void (*FT_pci_scan_bus)(pci_access*);
+typedef int (*FT_pci_fill_info)(pci_dev*, int);
+typedef char* (*FT_pci_lookup_name)(pci_access*, char*, int, int, ...);
 
 // This includes dynamically linked library handle and functions pointers from
 // libpci.
@@ -100,12 +68,13 @@ bool IsPciSupported() {
 // NULL if library fails to open or any functions can not be located.
 // Returned interface (if not NULL) should be deleted in FinalizeLibPci.
 PciInterface* InitializeLibPci(const char* lib_name) {
+  scoped_ptr<PciInterface> interface(new PciInterface);
+#if defined(DLOPEN_LIBPCI)
   void* handle = dlopen(lib_name, RTLD_LAZY);
   if (handle == NULL) {
     VLOG(1) << "Failed to dlopen " << lib_name;
     return NULL;
   }
-  PciInterface* interface = new struct PciInterface;
   interface->lib_handle = handle;
   interface->pci_alloc = reinterpret_cast<FT_pci_alloc>(
       dlsym(handle, "pci_alloc"));
@@ -127,16 +96,32 @@ PciInterface* InitializeLibPci(const char* lib_name) {
       interface->pci_lookup_name == NULL) {
     VLOG(1) << "Missing required function(s) from " << lib_name;
     dlclose(handle);
-    delete interface;
     return NULL;
   }
-  return interface;
+#else  // !defined(DLOPEN_LIBPCI)
+  interface->lib_handle = NULL;
+  interface->pci_alloc = reinterpret_cast<FT_pci_alloc>(
+      &pci_alloc);
+  interface->pci_init = reinterpret_cast<FT_pci_init>(
+      &pci_init);
+  interface->pci_cleanup = reinterpret_cast<FT_pci_cleanup>(
+      &pci_cleanup);
+  interface->pci_scan_bus = reinterpret_cast<FT_pci_scan_bus>(
+      &pci_scan_bus);
+  interface->pci_fill_info = reinterpret_cast<FT_pci_fill_info>(
+      &pci_fill_info);
+  interface->pci_lookup_name = reinterpret_cast<FT_pci_lookup_name>(
+      &pci_lookup_name);
+#endif  // !defined(DLOPEN_LIBPCI)
+  return interface.release();
 }
 
 // This close the dynamically opened libpci and delete the interface.
 void FinalizeLibPci(PciInterface** interface) {
+#if defined(DLOPEN_LIBPCI)
   DCHECK(interface && *interface && (*interface)->lib_handle);
   dlclose((*interface)->lib_handle);
+#endif  // defined(DLOPEN_LIBPCI)
   delete (*interface);
   *interface = NULL;
 }
@@ -285,12 +270,12 @@ bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
     return false;
   }
 
-  PciAccess* access = (interface->pci_alloc)();
+  pci_access* access = (interface->pci_alloc)();
   DCHECK(access != NULL);
   (interface->pci_init)(access);
   (interface->pci_scan_bus)(access);
   bool primary_gpu_identified = false;
-  for (PciDevice* device = access->device_list;
+  for (pci_dev* device = access->devices;
        device != NULL; device = device->next) {
     (interface->pci_fill_info)(device, 33);  // Fill the IDs and class fields.
     // TODO(zmo): there might be other classes that qualify as display devices.
