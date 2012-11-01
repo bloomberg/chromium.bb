@@ -187,11 +187,15 @@ bool WtsSessionProcessDelegate::Core::Send(IPC::Message* message) {
 
 DWORD WtsSessionProcessDelegate::Core::GetProcessId() const {
   DWORD pid = 0;
-  if (pipe_.IsValid() && get_named_pipe_client_pid_(pipe_, &pid)) {
+  if (launch_elevated_ && pipe_.IsValid() &&
+      get_named_pipe_client_pid_(pipe_, &pid)) {
     return pid;
-  } else {
-    return 0;
   }
+
+  if (worker_process_.IsValid())
+    return ::GetProcessId(worker_process_);
+
+  return 0;
 }
 
 bool WtsSessionProcessDelegate::Core::IsPermanentError(
