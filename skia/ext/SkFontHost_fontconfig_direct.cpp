@@ -36,12 +36,14 @@ enum FontEquivClass
     SANS,
     SERIF,
     MONO,
-    PMINCHO,
-    MINCHO,
+    SYMBOL,
     PGOTHIC,
     GOTHIC,
+    PMINCHO,
+    MINCHO,
     SIMSUN,
     NSIMSUN,
+    SIMHEI,
 };
 
 // Match the font name against a whilelist of fonts, returning the equivalence
@@ -83,24 +85,15 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         { MONO, "Cousine" },
         { MONO, "Liberation Mono" },
 
+        { SYMBOL, "Symbol" },
+        { SYMBOL, "Symbol Neu" },
+
         // ＭＳ Ｐゴシック
         { PGOTHIC, "MS PGothic" },
         { PGOTHIC, "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0"
                    "\xe3\x82\xb4\xe3\x82\xb7\xe3\x83\x83\xe3\x82\xaf" },
         { PGOTHIC, "IPAPGothic" },
         { PGOTHIC, "MotoyaG04Gothic" },
-
-        // 宋体
-        { SIMSUN, "Simsun" },
-        { SIMSUN, "\xe5\xae\x8b\xe4\xbd\x93" },
-        { SIMSUN, "Song ASC" },
-
-        // ＭＳ Ｐ明朝
-        { PMINCHO, "MS PMincho" },
-        { PMINCHO, "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0"
-                   "\xe6\x98\x8e\xe6\x9c\x9d"},
-        { PMINCHO, "IPAPMincho" },
-        { PMINCHO, "MotoyaG04Mincho" },
 
         // ＭＳ ゴシック
         { GOTHIC, "MS Gothic" },
@@ -109,16 +102,34 @@ FontEquivClass GetFontEquivClass(const char* fontname)
         { GOTHIC, "IPAGothic" },
         { GOTHIC, "MotoyaG04GothicMono" },
 
+        // ＭＳ Ｐ明朝
+        { PMINCHO, "MS PMincho" },
+        { PMINCHO, "\xef\xbc\xad\xef\xbc\xb3 \xef\xbc\xb0"
+                   "\xe6\x98\x8e\xe6\x9c\x9d"},
+        { PMINCHO, "IPAPMincho" },
+        { PMINCHO, "MotoyaG04Mincho" },
+
         // ＭＳ 明朝
         { MINCHO, "MS Mincho" },
         { MINCHO, "\xef\xbc\xad\xef\xbc\xb3 \xe6\x98\x8e\xe6\x9c\x9d" },
         { MINCHO, "IPAMincho" },
         { MINCHO, "MotoyaG04MinchoMono" },
 
+        // 宋体
+        { SIMSUN, "Simsun" },
+        { SIMSUN, "\xe5\xae\x8b\xe4\xbd\x93" },
+        { SIMSUN, "Song ASC" },
+
         // 新宋体
         { NSIMSUN, "NSimsun" },
         { NSIMSUN, "\xe6\x96\xb0\xe5\xae\x8b\xe4\xbd\x93" },
         { NSIMSUN, "N Song ASC" },
+
+        // 黑体
+        { SIMHEI, "Simhei" },
+        { SIMHEI, "\xe9\xbb\x91\xe4\xbd\x93" },
+        { SIMHEI, "MYingHeiGB18030" },
+        { SIMHEI, "MYingHeiB5HK" },
     };
 
     static const size_t kFontCount =
