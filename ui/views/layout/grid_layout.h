@@ -118,6 +118,9 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // the GridLayout is deleted.
   ColumnSet* AddColumnSet(int id);
 
+  // Returns the column set for the specified id, or NULL if one doesn't exist.
+  ColumnSet* GetColumnSet(int id);
+
   // Adds a padding row. Padding rows typically don't have any views, and
   // but are used to provide vertical white space between views.
   // Size specifies the height of the row.
@@ -198,9 +201,6 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // This is called internally from AddView. It adds the ViewState to the
   // appropriate structures, and updates internal fields such as next_column_.
   void AddViewState(ViewState* view_state);
-
-  // Returns the column set for the specified id, or NULL if one doesn't exist.
-  ColumnSet* GetColumnSet(int id);
 
   // Adds the Row to rows_, as well as updating next_column_,
   // current_row_col_set ...

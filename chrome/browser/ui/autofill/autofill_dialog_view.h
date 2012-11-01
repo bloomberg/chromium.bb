@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_
 
+namespace autofill {
+
 class AutofillDialogController;
 
 // An interface for the dialog that appears when a site initiates an Autofill
@@ -20,5 +22,7 @@ class AutofillDialogView {
   // implementation). |controller| will own the created dialog.
   static AutofillDialogView* Create(AutofillDialogController* controller);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_

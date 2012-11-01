@@ -12,7 +12,10 @@ namespace content {
 class WebContents;
 }
 
+namespace autofill {
+
 class AutofillDialogView;
+struct DetailInput;
 
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
@@ -30,6 +33,11 @@ class AutofillDialogController {
 
   // Called by the view.
   string16 DialogTitle() const;
+  string16 IntroText() const;
+  string16 EmailSectionLabel() const;
+  string16 BillingSectionLabel() const;
+  string16 WalletOptionText() const;
+  bool ShouldShowInput(const DetailInput& input) const;
   string16 CancelButtonText() const;
   string16 ConfirmButtonText() const;
   bool ConfirmButtonEnabled() const;
@@ -48,5 +56,7 @@ class AutofillDialogController {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogController);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_H_

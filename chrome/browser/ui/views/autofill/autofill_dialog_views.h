@@ -8,8 +8,11 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class AutofillDialogController;
 class ConstrainedWindowViews;
+
+namespace autofill {
+
+class AutofillDialogController;
 
 // Views toolkit implementation of the Autofill dialog that handles the
 // imperative autocomplete API call.
@@ -37,6 +40,9 @@ class AutofillDialogViews : public AutofillDialogView,
  private:
   void InitChildViews();
 
+  views::View* CreateEmailSection();
+  views::View* CreateBillingSection();
+
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
 
@@ -49,5 +55,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogViews);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_DIALOG_VIEWS_H_

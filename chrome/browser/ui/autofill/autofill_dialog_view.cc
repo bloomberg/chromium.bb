@@ -6,6 +6,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 
+namespace autofill {
+
 AutofillDialogView::~AutofillDialogView() {}
 
 #if !defined(TOOLKIT_VIEWS)
@@ -16,3 +18,5 @@ AutofillDialogView* AutofillDialogView::Create(
   return NULL;
 }
 #endif
+
+}  // namespace autofill

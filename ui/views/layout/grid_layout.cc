@@ -702,6 +702,16 @@ ColumnSet* GridLayout::AddColumnSet(int id) {
   return column_set;
 }
 
+ColumnSet* GridLayout::GetColumnSet(int id) {
+  for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
+       i != column_sets_.end(); ++i) {
+    if ((*i)->id_ == id) {
+      return *i;
+    }
+  }
+  return NULL;
+}
+
 void GridLayout::StartRowWithPadding(float vertical_resize, int column_set_id,
                                      float padding_resize, int padding) {
   AddPaddingRow(padding_resize, padding);
@@ -979,16 +989,6 @@ void GridLayout::AddViewState(ViewState* view_state) {
                                                     CompareByRowSpan);
   view_states_.insert(i, view_state);
   SkipPaddingColumns();
-}
-
-ColumnSet* GridLayout::GetColumnSet(int id) {
-  for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
-       i != column_sets_.end(); ++i) {
-    if ((*i)->id_ == id) {
-      return *i;
-    }
-  }
-  return NULL;
 }
 
 void GridLayout::AddRow(Row* row) {
