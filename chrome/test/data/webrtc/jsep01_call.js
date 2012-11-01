@@ -58,7 +58,11 @@ function setupCall(peerConnection) {
   peerConnection.createOffer(
       setLocalAndSendMessage_,
       function () { success_('createOffer'); },
-      getCurrentMediaHints());
+      { 'mandatory': {
+          'OfferToReceiveVideo': 'true',
+          'OfferToReceiveAudio': 'true',
+        }
+      });
 }
 
 function answerCall(peerConnection, message) {
