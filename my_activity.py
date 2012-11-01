@@ -111,11 +111,11 @@ google_code_projects = [
 
 # Uses ClientLogin to authenticate the user for Google Code issue trackers.
 def get_auth_token(email):
-  error = Exception()
+  # KeyringCreds will use the system keyring on the first try, and prompt for
+  # a password on the next ones.
+  creds = upload.KeyringCreds('code.google.com', 'code.google.com', email)
   for _ in xrange(3):
-    email, password = (
-        upload.KeyringCreds('code.google.com', 'google.com', email)
-        .GetUserCredentials())
+    email, password = creds.GetUserCredentials()
     url = 'https://www.google.com/accounts/ClientLogin'
     data = urllib.urlencode({
         'Email': email,
@@ -132,9 +132,11 @@ def get_auth_token(email):
                            for x in response_body.split('\n') if x)
       return response_dict['Auth']
     except urllib2.HTTPError, e:
-      error = e
+      print e
 
-  raise error
+  print 'Unable to authenticate to code.google.com.'
+  print 'Some issues may be missing.'
+  return None
 
 
 def username(email):
@@ -378,13 +380,18 @@ class MyActivity(object):
     })
 
     opener = urllib2.build_opener()
-    opener.addheaders = [('Authorization', 'GoogleLogin auth=%s' %
-                          self.google_code_auth_token)]
-    gcode_get = opener.open(gcode_url + '?' + gcode_data)
-    gcode_json = json.load(gcode_get)
-    gcode_get.close()
+    if self.google_code_auth_token:
+      opener.addheaders = [('Authorization', 'GoogleLogin auth=%s' %
+                            self.google_code_auth_token)]
+    gcode_json = None
+    try:
+      gcode_get = opener.open(gcode_url + '?' + gcode_data)
+      gcode_json = json.load(gcode_get)
+      gcode_get.close()
+    except urllib2.HTTPError, _:
+      print 'Unable to access ' + instance['name'] + ' issue tracker.'
 
-    if 'entry' not in gcode_json['feed']:
+    if not gcode_json or 'entry' not in gcode_json['feed']:
       return []
 
     issues = gcode_json['feed']['entry']
