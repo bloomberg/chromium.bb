@@ -24,14 +24,22 @@ public class SQLiteCursor extends AbstractCursor {
 
     private int[] mColumnTypes;
 
+    private final Object mColumnTypeLock = new Object();
+
+    // The belows are the locks for those methods that need wait for
+    // the callback result in native side.
+    private final Object mMoveLock = new Object();
+    private final Object mGetBlobLock = new Object();
+
     SQLiteCursor(int nativeSQLiteCursor) {
         mNativeSQLiteCursor = nativeSQLiteCursor;
     }
 
     @Override
-    public synchronized int getCount() {
-        if (mCount == -1) {
-            mCount = nativeGetCount(mNativeSQLiteCursor);
+    public int getCount() {
+        synchronized (mMoveLock) {
+            if (mCount == -1)
+                mCount = nativeGetCount(mNativeSQLiteCursor);
         }
         return mCount;
     }
@@ -85,13 +93,17 @@ public class SQLiteCursor extends AbstractCursor {
 
     @Override
     public boolean onMove(int oldPosition, int newPosition) {
-        nativeMoveTo(mNativeSQLiteCursor, newPosition);
+        synchronized (mMoveLock) {
+            nativeMoveTo(mNativeSQLiteCursor, newPosition);
+        }
         return super.onMove(oldPosition, newPosition);
     }
 
     @Override
-    public synchronized byte[] getBlob(int column) {
-        return nativeGetBlob(mNativeSQLiteCursor, column);
+    public byte[] getBlob(int column) {
+        synchronized (mGetBlobLock) {
+            return nativeGetBlob(mNativeSQLiteCursor, column);
+        }
     }
 
     @Deprecated
@@ -195,12 +207,14 @@ public class SQLiteCursor extends AbstractCursor {
      * @param index the column index.
      * @return the column type from cache or native side.
      */
-    private synchronized int getColumnType(int index) {
-        if (mColumnTypes == null) {
-            int columnCount = getColumnCount();
-            mColumnTypes = new int[columnCount];
-            for (int i = 0; i < columnCount; i++) {
-                mColumnTypes[i] = nativeGetColumnType(mNativeSQLiteCursor, i);
+    private int getColumnType(int index) {
+        synchronized (mColumnTypeLock) {
+            if (mColumnTypes == null) {
+                int columnCount = getColumnCount();
+                mColumnTypes = new int[columnCount];
+                for (int i = 0; i < columnCount; i++) {
+                    mColumnTypes[i] = nativeGetColumnType(mNativeSQLiteCursor, i);
+                }
             }
         }
         return mColumnTypes[index];
@@ -210,11 +224,11 @@ public class SQLiteCursor extends AbstractCursor {
     private native int nativeGetCount(int nativeSQLiteCursor);
     private native String[] nativeGetColumnNames(int nativeSQLiteCursor);
     private native int nativeGetColumnType(int nativeSQLiteCursor, int column);
-    private synchronized native String nativeGetString(int nativeSQLiteCursor, int column);
+    private native String nativeGetString(int nativeSQLiteCursor, int column);
     private native byte[] nativeGetBlob(int nativeSQLiteCursor, int column);
     private native boolean nativeIsNull(int nativeSQLiteCursor, int column);
     private native long nativeGetLong(int nativeSQLiteCursor, int column);
     private native int nativeGetInt(int nativeSQLiteCursor, int column);
     private native double nativeGetDouble(int nativeSQLiteCursor, int column);
-    private synchronized native int nativeMoveTo(int nativeSQLiteCursor, int newPosition);
+    private native int nativeMoveTo(int nativeSQLiteCursor, int newPosition);
 }
