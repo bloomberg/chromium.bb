@@ -136,6 +136,11 @@ PluginMetadata* CreatePluginMetadata(
 }  // namespace
 
 // static
+void PluginFinder::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterBooleanPref(prefs::kDisablePluginFinder, false);
+}
+
+// static
 PluginFinder* PluginFinder::GetInstance() {
   // PluginFinder::GetInstance() is the only method that's allowed to call
   // Singleton<PluginFinder>::get().

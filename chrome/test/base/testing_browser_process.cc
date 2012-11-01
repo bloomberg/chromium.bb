@@ -225,10 +225,6 @@ DownloadRequestLimiter* TestingBrowserProcess::download_request_limiter() {
   return NULL;
 }
 
-bool TestingBrowserProcess::plugin_finder_disabled() const {
-  return false;
-}
-
 ChromeNetLog* TestingBrowserProcess::net_log() {
   return NULL;
 }

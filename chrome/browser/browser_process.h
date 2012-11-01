@@ -174,10 +174,6 @@ class BrowserProcess {
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() = 0;
 
-  // Returns the state of the disable plugin finder policy. Callable only on
-  // the IO thread.
-  virtual bool plugin_finder_disabled() const = 0;
-
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   // This will start a timer that, if Chrome is in persistent mode, will check
   // whether an update is available, and if that's the case, restart the

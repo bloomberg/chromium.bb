@@ -88,7 +88,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual void SetApplicationLocale(const std::string& app_locale) OVERRIDE;
   virtual DownloadStatusUpdater* download_status_updater() OVERRIDE;
   virtual DownloadRequestLimiter* download_request_limiter() OVERRIDE;
-  virtual bool plugin_finder_disabled() const OVERRIDE;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   virtual void StartAutoupdateTimer() OVERRIDE {}

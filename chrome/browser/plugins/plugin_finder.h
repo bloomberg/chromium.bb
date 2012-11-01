@@ -22,6 +22,7 @@ class DictionaryValue;
 
 class GURL;
 class PluginMetadata;
+class PrefService;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;
@@ -32,6 +33,8 @@ class PluginInstaller;
 // After that it can be safely used on any other thread.
 class PluginFinder {
  public:
+  static void RegisterPrefs(PrefService* local_state);
+
   static PluginFinder* GetInstance();
 
   // It should be called on the UI thread.
