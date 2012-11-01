@@ -1586,10 +1586,9 @@ LRESULT HWNDMessageHandler::OnNCActivate(BOOL active) {
     EnumChildWindows(hwnd(), EnumChildWindowsForRedraw, NULL);
   }
 
-  // If we're active again, we should be allowed to render as inactive, so
-  // tell the non-client view.
+  // On activation, lift any prior restriction against rendering as inactive.
   bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
-  if (IsActive())
+  if (active && inactive_rendering_disabled)
     delegate_->EnableInactiveRendering();
 
   // Avoid DefWindowProc non-client rendering over our custom frame on newer

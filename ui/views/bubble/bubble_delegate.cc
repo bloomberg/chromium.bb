@@ -88,7 +88,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
   border_params.delegate = new BubbleBorderDelegate(bubble, border_widget);
   border_params.transparent = true;
   border_params.parent_widget = bubble->GetWidget();
-  border_params.can_activate = bubble->CanActivate();
+  border_params.can_activate = false;
   border_widget->Init(border_params);
   border_widget->set_focus_on_creation(false);
   return border_widget;
@@ -213,12 +213,8 @@ void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
     return;
 
   if (visible) {
-    if (border_widget_) {
-      if (CanActivate())
-        border_widget_->Show();
-      else
-        border_widget_->ShowInactive();
-    }
+    if (border_widget_)
+      border_widget_->ShowInactive();
     if (anchor_widget() && anchor_widget()->GetTopLevelWidget())
       anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
   } else {
