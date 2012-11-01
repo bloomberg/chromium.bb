@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 
+#include "grit/theme_resources.h"
+
 TestToolbarModel::TestToolbarModel()
     : ToolbarModel(),
       should_replace_url_(false),
       security_level_(NONE),
-      icon_(0),
+      icon_(IDR_LOCATION_BAR_HTTP),
       should_display_url_(true),
       input_in_progress_(false) {}
 
