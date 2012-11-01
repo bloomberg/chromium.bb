@@ -28,6 +28,8 @@ namespace {
 const FilePath::CharType kDatabaseName[] = FILE_PATH_LITERAL("DriveMetadata");
 const char kChangeStampKey[] = "CHANGE_STAMP";
 const char kDriveMetadataKeyPrefix[] = "METADATA: ";
+const char kDriveBatchSyncOriginKeyPrefix[] = "BSYNC_ORIGIN: ";
+const char kDriveIncrementalSyncOriginKeyPrefix[] = "ISYNC_ORIGIN: ";
 const size_t kDriveMetadataKeyPrefixLength = arraysize(kDriveMetadataKeyPrefix);
 }
 
@@ -36,6 +38,7 @@ namespace sync_file_system {
 class DriveMetadataDB {
  public:
   typedef DriveMetadataStore::MetadataMap MetadataMap;
+  typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
 
   DriveMetadataDB(const FilePath& base_dir,
                   base::SequencedTaskRunner* task_runner);
@@ -43,12 +46,22 @@ class DriveMetadataDB {
 
   SyncStatusCode Initialize();
   SyncStatusCode ReadContents(int64* largest_changestamp,
-                              MetadataMap* metadata_map);
+                              MetadataMap* metadata_map,
+                              ResourceIDMap* batch_sync_origins,
+                              ResourceIDMap* incremental_sync_origins);
 
   SyncStatusCode SetLargestChangestamp(int64 largest_changestamp);
   SyncStatusCode UpdateEntry(const FileSystemURL& url,
                              const DriveMetadata& metadata);
   SyncStatusCode DeleteEntry(const FileSystemURL& url);
+
+  SyncStatusCode UpdateSyncOriginAsBatch(const GURL& origin,
+                                         const std::string& resource_id);
+  SyncStatusCode UpdateSyncOriginAsIncremental(const GURL& origin,
+                                               const std::string& resource_id);
+
+  SyncStatusCode GetSyncOrigins(ResourceIDMap* batch_sync_origins,
+                                ResourceIDMap* incremental_sync_origins);
 
  private:
   bool CalledOnValidThread() const {
@@ -68,18 +81,41 @@ namespace {
 SyncStatusCode InitializeDBOnFileThread(
     DriveMetadataDB* db,
     int64* largest_changestamp,
-    DriveMetadataStore::MetadataMap* metadata_map) {
+    DriveMetadataStore::MetadataMap* metadata_map,
+    DriveMetadataStore::ResourceIDMap* batch_sync_origins,
+    DriveMetadataStore::ResourceIDMap* incremental_sync_origins) {
   DCHECK(db);
   DCHECK(largest_changestamp);
   DCHECK(metadata_map);
+  DCHECK(batch_sync_origins);
+  DCHECK(incremental_sync_origins);
 
   *largest_changestamp = 0;
   metadata_map->clear();
+  batch_sync_origins->clear();
+  incremental_sync_origins->clear();
 
   SyncStatusCode status = db->Initialize();
   if (status != fileapi::SYNC_STATUS_OK)
     return status;
-  return db->ReadContents(largest_changestamp, metadata_map);
+  return db->ReadContents(largest_changestamp, metadata_map,
+                          batch_sync_origins, incremental_sync_origins);
+}
+
+// Returns a key string for the given batch sync origin.
+// For example, when |origin| is "http://www.example.com",
+// returns "BSYNC_ORIGIN: http://www.example.com".
+std::string CreateKeyForBatchSyncOrigin(const GURL& origin) {
+  DCHECK(origin.is_valid());
+  return kDriveBatchSyncOriginKeyPrefix + origin.spec();
+}
+
+// Returns a key string for the given incremental sync origin.
+// For example, when |origin| is "http://www.example.com",
+// returns "ISYNC_ORIGIN: http://www.example.com".
+std::string CreateKeyForIncrementalSyncOrigin(const GURL& origin) {
+  DCHECK(origin.is_valid());
+  return kDriveIncrementalSyncOriginKeyPrefix + origin.spec();
 }
 
 }  // namespace
@@ -103,34 +139,83 @@ void DriveMetadataStore::Initialize(const InitializationCallback& callback) {
   DCHECK(CalledOnValidThread());
   int64* largest_changestamp = new int64;
   MetadataMap* metadata_map = new MetadataMap;
+  ResourceIDMap* batch_sync_origins = new ResourceIDMap;
+  ResourceIDMap* incremental_sync_origins = new ResourceIDMap;
+
   base::PostTaskAndReplyWithResult(
       file_task_runner_, FROM_HERE,
       base::Bind(InitializeDBOnFileThread,
-                 db_.get(), largest_changestamp, metadata_map),
+                 db_.get(), largest_changestamp, metadata_map,
+                 batch_sync_origins, incremental_sync_origins),
       base::Bind(&DriveMetadataStore::DidInitialize, AsWeakPtr(),
                  callback,
                  base::Owned(largest_changestamp),
-                 base::Owned(metadata_map)));
+                 base::Owned(metadata_map),
+                 base::Owned(batch_sync_origins),
+                 base::Owned(incremental_sync_origins)));
 }
 
 void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
                                        const int64* largest_changestamp,
                                        MetadataMap* metadata_map,
+                                       ResourceIDMap* batch_sync_origins,
+                                       ResourceIDMap* incremental_sync_origins,
                                        SyncStatusCode status) {
   DCHECK(CalledOnValidThread());
   DCHECK(largest_changestamp);
   DCHECK(metadata_map);
+  DCHECK(batch_sync_origins);
+  DCHECK(incremental_sync_origins);
 
+  db_status_ = status;
   if (status != fileapi::SYNC_STATUS_OK) {
     callback.Run(status, false);
     return;
   }
 
-  db_status_ = status;
   largest_changestamp_ = *largest_changestamp;
   metadata_map_.swap(*metadata_map);
+  batch_sync_origins_.swap(*batch_sync_origins);
+  incremental_sync_origins_.swap(*incremental_sync_origins);
   // |largest_changestamp_| is set to 0 for a fresh empty database.
   callback.Run(status, largest_changestamp_ <= 0);
+}
+
+void DriveMetadataStore::RestoreSyncOrigins(
+    const RestoreSyncOriginsCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  ResourceIDMap* batch_sync_origins = new ResourceIDMap;
+  ResourceIDMap* incremental_sync_origins = new ResourceIDMap;
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_, FROM_HERE,
+      base::Bind(&DriveMetadataDB::GetSyncOrigins,
+                 base::Unretained(db_.get()),
+                 batch_sync_origins,
+                 incremental_sync_origins),
+      base::Bind(&DriveMetadataStore::DidRestoreSyncOrigins,
+                 AsWeakPtr(), callback,
+                 base::Owned(batch_sync_origins),
+                 base::Owned(incremental_sync_origins)));
+}
+
+void DriveMetadataStore::DidRestoreSyncOrigins(
+    const RestoreSyncOriginsCallback& callback,
+    ResourceIDMap* batch_sync_origins,
+    ResourceIDMap* incremental_sync_origins,
+    SyncStatusCode status) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(batch_sync_origins);
+  DCHECK(incremental_sync_origins);
+
+  db_status_ = status;
+  if (status != fileapi::SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  batch_sync_origins_.swap(*batch_sync_origins);
+  incremental_sync_origins_.swap(*incremental_sync_origins);
+  callback.Run(status);
 }
 
 void DriveMetadataStore::SetLargestChangeStamp(int64 largest_changestamp) {
@@ -218,29 +303,45 @@ void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin,
   DCHECK(CalledOnValidThread());
   DCHECK(!IsBatchSyncOrigin(origin));
   DCHECK(!IsIncrementalSyncOrigin(origin));
+  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
 
-  // TODO(tzik): Store |origin| to DB. crbug.com/157821
   batch_sync_origins_.insert(std::make_pair(origin, resource_id));
+
+  // Store a pair of |origin| and |resource_id| in the DB.
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_, FROM_HERE,
+      base::Bind(&DriveMetadataDB::UpdateSyncOriginAsBatch,
+                 base::Unretained(db_.get()), origin, resource_id),
+      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
 }
 
 void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsBatchSyncOrigin(origin));
   DCHECK(!IsIncrementalSyncOrigin(origin));
+  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
 
-  // TODO(tzik): Store |origin| to DB. crbug.com/157821
   std::map<GURL, std::string>::iterator found =
       batch_sync_origins_.find(origin);
   incremental_sync_origins_.insert(std::make_pair(origin, found->second));
+
+  // Store a pair of |origin| and |resource_id| in the DB.
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_, FROM_HERE,
+      base::Bind(&DriveMetadataDB::UpdateSyncOriginAsIncremental,
+                 base::Unretained(db_.get()), origin, found->second),
+      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
+
   batch_sync_origins_.erase(found);
 }
 
 void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {
   DCHECK(CalledOnValidThread());
-  if (db_status_ == fileapi::SYNC_STATUS_OK)
-    db_status_ = status;
-  else
+  db_status_ = status;
+  if (db_status_ != fileapi::SYNC_STATUS_OK) {
+    // TODO(tzik): Handle database corruption. http://crbug.com/153709
     LOG(WARNING) << "DriveMetadataStore turned to wrong state: " << status;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -270,15 +371,22 @@ SyncStatusCode DriveMetadataDB::Initialize() {
   return fileapi::SYNC_STATUS_OK;
 }
 
-SyncStatusCode DriveMetadataDB::ReadContents(int64* largest_changestamp,
-                                             MetadataMap* metadata_map) {
+SyncStatusCode DriveMetadataDB::ReadContents(
+    int64* largest_changestamp,
+    MetadataMap* metadata_map,
+    ResourceIDMap* batch_sync_origins,
+    ResourceIDMap* incremental_sync_origins) {
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
   DCHECK(largest_changestamp);
   DCHECK(metadata_map);
+  DCHECK(batch_sync_origins);
+  DCHECK(incremental_sync_origins);
 
   *largest_changestamp = 0;
   metadata_map->clear();
+  batch_sync_origins->clear();
+  incremental_sync_origins->clear();
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
@@ -304,7 +412,7 @@ SyncStatusCode DriveMetadataDB::ReadContents(int64* largest_changestamp,
     }
   }
 
-  return fileapi::SYNC_STATUS_OK;
+  return GetSyncOrigins(batch_sync_origins, incremental_sync_origins);
 }
 
 SyncStatusCode DriveMetadataDB::SetLargestChangestamp(
@@ -350,6 +458,72 @@ SyncStatusCode DriveMetadataDB::DeleteEntry(const fileapi::FileSystemURL& url) {
       leveldb::WriteOptions(),
       kDriveMetadataKeyPrefix + url_string);
   return fileapi::LevelDBStatusToSyncStatusCode(status);
+}
+
+SyncStatusCode DriveMetadataDB::UpdateSyncOriginAsBatch(
+    const GURL& origin, const std::string& resource_id) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(db_.get());
+
+  leveldb::Status status = db_->Put(
+      leveldb::WriteOptions(),
+      CreateKeyForBatchSyncOrigin(origin),
+      resource_id);
+  return fileapi::LevelDBStatusToSyncStatusCode(status);
+}
+
+SyncStatusCode DriveMetadataDB::UpdateSyncOriginAsIncremental(
+    const GURL& origin, const std::string& resource_id) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(db_.get());
+
+  leveldb::WriteBatch batch;
+  batch.Delete(CreateKeyForBatchSyncOrigin(origin));
+  batch.Put(CreateKeyForIncrementalSyncOrigin(origin), resource_id);
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
+
+  return fileapi::LevelDBStatusToSyncStatusCode(status);
+}
+
+SyncStatusCode DriveMetadataDB::GetSyncOrigins(
+    ResourceIDMap* batch_sync_origins,
+    ResourceIDMap* incremental_sync_origins) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(db_.get());
+
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+
+  // Get batch sync origins from the DB.
+  for (itr->Seek(kDriveBatchSyncOriginKeyPrefix);
+       itr->Valid(); itr->Next()) {
+    const std::string key = itr->key().ToString();
+    if (!StartsWithASCII(key, kDriveBatchSyncOriginKeyPrefix, true))
+      break;
+    const GURL origin(std::string(
+        key.begin() + arraysize(kDriveBatchSyncOriginKeyPrefix) - 1,
+        key.end()));
+    DCHECK(origin.is_valid());
+    const bool result = batch_sync_origins->insert(
+        std::make_pair(origin, itr->value().ToString())).second;
+    DCHECK(result);
+  }
+
+  // Get incremental sync origins from the DB.
+  for (itr->Seek(kDriveIncrementalSyncOriginKeyPrefix);
+       itr->Valid(); itr->Next()) {
+    const std::string key = itr->key().ToString();
+    if (!StartsWithASCII(key, kDriveIncrementalSyncOriginKeyPrefix, true))
+      break;
+    const GURL origin(std::string(
+        key.begin() + arraysize(kDriveIncrementalSyncOriginKeyPrefix) - 1,
+        key.end()));
+    DCHECK(origin.is_valid());
+    const bool result = incremental_sync_origins->insert(
+        std::make_pair(origin, itr->value().ToString())).second;
+    DCHECK(result);
+  }
+
+  return fileapi::SYNC_STATUS_OK;
 }
 
 }  // namespace sync_file_system

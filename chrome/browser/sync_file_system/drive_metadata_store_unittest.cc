@@ -22,6 +22,20 @@ using fileapi::SyncStatusCode;
 
 namespace sync_file_system {
 
+namespace {
+
+typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
+
+std::string GetResourceID(const ResourceIDMap& sync_origins,
+                          const GURL& origin) {
+  ResourceIDMap::const_iterator itr = sync_origins.find(origin);
+  if (itr == sync_origins.end())
+    return std::string();
+  return itr->second;
+}
+
+}  // namespace
+
 class DriveMetadataStoreTest : public testing::Test {
  public:
   DriveMetadataStoreTest() {
@@ -68,6 +82,21 @@ class DriveMetadataStoreTest : public testing::Test {
     drive_metadata_store_.reset();
   }
 
+  void DropSyncOriginsInStore() {
+    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+    drive_metadata_store_->ClearSyncOrigins();
+    EXPECT_TRUE(drive_metadata_store_->batch_sync_origins().empty());
+    EXPECT_TRUE(drive_metadata_store_->incremental_sync_origins().empty());
+  }
+
+  void RestoreSyncOriginsFromDB() {
+    EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+    drive_metadata_store_->RestoreSyncOrigins(
+        base::Bind(&DriveMetadataStoreTest::DidRestoreSyncOrigins,
+                   base::Unretained(this)));
+    message_loop_.Run();
+  }
+
   DriveMetadataStore* drive_metadata_store() {
     return drive_metadata_store_.get();
   }
@@ -81,6 +110,11 @@ class DriveMetadataStoreTest : public testing::Test {
     *done_out = true;
     *status_out = status;
     *created_out = created;
+    message_loop_.Quit();
+  }
+
+  void DidRestoreSyncOrigins(fileapi::SyncStatusCode status) {
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
     message_loop_.Quit();
   }
 
@@ -168,26 +202,51 @@ TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
   EXPECT_TRUE(created);
 
-  // Make sure origins have not been marked yet.
-  EXPECT_FALSE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin1));
-  EXPECT_FALSE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin2));
-  EXPECT_FALSE(drive_metadata_store()->IsIncrementalSyncOrigin(kOrigin1));
-  EXPECT_FALSE(drive_metadata_store()->IsIncrementalSyncOrigin(kOrigin2));
+  DriveMetadataStore* store = drive_metadata_store();
 
-  drive_metadata_store()->IsBatchSyncOrigin(kOrigin1);
+  // Make sure origins have not been marked yet.
+  EXPECT_FALSE(store->IsBatchSyncOrigin(kOrigin1));
+  EXPECT_FALSE(store->IsBatchSyncOrigin(kOrigin2));
+  EXPECT_FALSE(store->IsIncrementalSyncOrigin(kOrigin1));
+  EXPECT_FALSE(store->IsIncrementalSyncOrigin(kOrigin2));
+
   // Mark origins as batch sync origins.
-  drive_metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceID1);
-  EXPECT_TRUE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin1));
-  drive_metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceID2);
-  EXPECT_TRUE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin2));
+  store->AddBatchSyncOrigin(kOrigin1, kResourceID1);
+  store->AddBatchSyncOrigin(kOrigin2, kResourceID2);
+  EXPECT_TRUE(store->IsBatchSyncOrigin(kOrigin1));
+  EXPECT_TRUE(store->IsBatchSyncOrigin(kOrigin2));
+  EXPECT_EQ(kResourceID1, GetResourceID(store->batch_sync_origins(), kOrigin1));
+  EXPECT_EQ(kResourceID2, GetResourceID(store->batch_sync_origins(), kOrigin2));
 
   // Mark |kOrigin1| as an incremental sync origin. |kOrigin2| should have still
   // been marked as a batch sync origin.
-  drive_metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin1);
-  EXPECT_FALSE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin1));
-  EXPECT_TRUE(drive_metadata_store()->IsBatchSyncOrigin(kOrigin2));
-  EXPECT_TRUE(drive_metadata_store()->IsIncrementalSyncOrigin(kOrigin1));
-  EXPECT_FALSE(drive_metadata_store()->IsIncrementalSyncOrigin(kOrigin2));
+  store->MoveBatchSyncOriginToIncremental(kOrigin1);
+  EXPECT_FALSE(store->IsBatchSyncOrigin(kOrigin1));
+  EXPECT_TRUE(store->IsBatchSyncOrigin(kOrigin2));
+  EXPECT_TRUE(store->IsIncrementalSyncOrigin(kOrigin1));
+  EXPECT_FALSE(store->IsIncrementalSyncOrigin(kOrigin2));
+  EXPECT_EQ(kResourceID1,
+            GetResourceID(store->incremental_sync_origins(), kOrigin1));
+  EXPECT_EQ(kResourceID2, GetResourceID(store->batch_sync_origins(), kOrigin2));
+
+  DropSyncOriginsInStore();
+
+  // Make sure origins have been dropped.
+  EXPECT_FALSE(store->IsBatchSyncOrigin(kOrigin1));
+  EXPECT_FALSE(store->IsBatchSyncOrigin(kOrigin2));
+  EXPECT_FALSE(store->IsIncrementalSyncOrigin(kOrigin1));
+  EXPECT_FALSE(store->IsIncrementalSyncOrigin(kOrigin2));
+
+  RestoreSyncOriginsFromDB();
+
+  // Make sure origins have been restored.
+  EXPECT_FALSE(store->IsBatchSyncOrigin(kOrigin1));
+  EXPECT_TRUE(store->IsBatchSyncOrigin(kOrigin2));
+  EXPECT_TRUE(store->IsIncrementalSyncOrigin(kOrigin1));
+  EXPECT_FALSE(store->IsIncrementalSyncOrigin(kOrigin2));
+  EXPECT_EQ(kResourceID1,
+            GetResourceID(store->incremental_sync_origins(), kOrigin1));
+  EXPECT_EQ(kResourceID2, GetResourceID(store->batch_sync_origins(), kOrigin2));
 }
 
 }  // namespace sync_file_system

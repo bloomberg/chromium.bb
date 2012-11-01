@@ -39,6 +39,8 @@ class DriveMetadataStore
                    fileapi::FileSystemURL::Comparator> MetadataMap;
   typedef base::Callback<void(fileapi::SyncStatusCode status, bool created)>
       InitializationCallback;
+  typedef base::Callback<void(fileapi::SyncStatusCode status)>
+      RestoreSyncOriginsCallback;
 
   DriveMetadataStore(const FilePath& base_dir,
                      base::SequencedTaskRunner* file_task_runner);
@@ -101,11 +103,27 @@ class DriveMetadataStore
   }
 
  private:
+  friend class DriveMetadataStoreTest;
+
   void UpdateDBStatus(fileapi::SyncStatusCode status);
   void DidInitialize(const InitializationCallback& callback,
                      const int64* largest_changestamp,
                      MetadataMap* metadata_map,
+                     ResourceIDMap* batch_sync_origins,
+                     ResourceIDMap* incremental_sync_origins,
                      fileapi::SyncStatusCode error);
+
+  void RestoreSyncOrigins(const RestoreSyncOriginsCallback& callback);
+  void DidRestoreSyncOrigins(const RestoreSyncOriginsCallback& callback,
+                             ResourceIDMap* batch_sync_origins,
+                             ResourceIDMap* incremental_sync_origins,
+                             fileapi::SyncStatusCode status);
+
+  void ClearSyncOrigins() {
+    DCHECK(CalledOnValidThread());
+    batch_sync_origins_.clear();
+    incremental_sync_origins_.clear();
+  }
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_ptr<DriveMetadataDB> db_;
