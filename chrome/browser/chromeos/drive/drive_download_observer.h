@@ -20,7 +20,6 @@ class Profile;
 
 namespace google_apis {
 class DocumentEntry;
-class DriveUploader;
 }
 
 namespace drive {
@@ -42,9 +41,11 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
                   const FilePath& drive_tmp_download_path);
 
   typedef base::Callback<void(const FilePath&)>
-    SubstituteDriveDownloadPathCallback;
-  static void SubstituteDriveDownloadPath(Profile* profile,
-      const FilePath& drive_path, content::DownloadItem* download,
+      SubstituteDriveDownloadPathCallback;
+  static void SubstituteDriveDownloadPath(
+      Profile* profile,
+      const FilePath& drive_path,
+      content::DownloadItem* download,
       const SubstituteDriveDownloadPathCallback& callback);
 
   // Sets drive path, for example, '/special/drive/MyFolder/MyFile',
@@ -71,9 +72,8 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   // becomes ready to complete.  If this method is called multiple times with
   // the download not ready to complete, only the last |complete_callback|
   // passed to this method for |download| will be called.
-  static bool IsReadyToComplete(
-      content::DownloadItem* download,
-      const base::Closure& complete_callback);
+  static bool IsReadyToComplete(content::DownloadItem* download,
+                                const base::Closure& complete_callback);
 
   // Returns the count of bytes confirmed as uploaded so far for |download|.
   static int64 GetUploadedBytes(const content::DownloadItem* download);
@@ -81,12 +81,6 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   // Returns the progress of the upload of |download| as a percentage. If the
   // progress is unknown, returns -1.
   static int PercentComplete(const content::DownloadItem* download);
-
-  // Create a temporary file |drive_tmp_download_path| in
-  // |drive_tmp_download_dir|. Must be called on a thread that allows file
-  // operations.
-  static void GetDriveTempDownloadPath(const FilePath& drive_tmp_download_dir,
-                                       FilePath* drive_tmp_download_path);
 
  private:
   // Structure containing arguments required to process uploading.

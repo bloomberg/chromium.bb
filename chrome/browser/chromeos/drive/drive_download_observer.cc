@@ -91,8 +91,7 @@ class DriveUserData : public base::SupportsUserData::Data {
 
 // Extracts UploadingUserData* from |download|.
 UploadingUserData* GetUploadingUserData(DownloadItem* download) {
-  return static_cast<UploadingUserData*>(
-      download->GetUserData(&kUploadingKey));
+  return static_cast<UploadingUserData*>(download->GetUserData(&kUploadingKey));
 }
 
 const UploadingUserData* GetUploadingUserData(const DownloadItem* download) {
@@ -102,8 +101,7 @@ const UploadingUserData* GetUploadingUserData(const DownloadItem* download) {
 
 // Extracts DriveUserData* from |download|.
 DriveUserData* GetDriveUserData(DownloadItem* download) {
-  return static_cast<DriveUserData*>(
-      download->GetUserData(&kGDataPathKey));
+  return static_cast<DriveUserData*>(download->GetUserData(&kGDataPathKey));
 }
 
 const DriveUserData* GetDriveUserData(const DownloadItem* download) {
@@ -125,6 +123,19 @@ DriveSystemService* GetSystemService(Profile* profile) {
   return system_service;
 }
 
+// Creates a temporary file |drive_tmp_download_path| in
+// |drive_tmp_download_dir|. Must be called on a thread that allows file
+// operations.
+void GetDriveTempDownloadPath(const FilePath& drive_tmp_download_dir,
+                              FilePath* drive_tmp_download_path) {
+  bool created = file_util::CreateDirectory(drive_tmp_download_dir);
+  DCHECK(created) << "Can not create temp download directory at "
+                  << drive_tmp_download_dir.value();
+  created = file_util::CreateTemporaryFileInDir(drive_tmp_download_dir,
+                                                drive_tmp_download_path);
+  DCHECK(created) << "Temporary download file creation failed";
+}
+
 // Substitutes virtual drive path for local temporary path.
 void SubstituteDriveDownloadPathInternal(
     Profile* profile,
@@ -140,7 +151,7 @@ void SubstituteDriveDownloadPathInternal(
   FilePath* drive_tmp_download_path(new FilePath());
   BrowserThread::GetBlockingPool()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DriveDownloadObserver::GetDriveTempDownloadPath,
+      base::Bind(&GetDriveTempDownloadPath,
                  drive_tmp_download_dir,
                  drive_tmp_download_path),
       base::Bind(&RunSubstituteDriveDownloadCallback,
@@ -321,20 +332,6 @@ int DriveDownloadObserver::PercentComplete(const DownloadItem* download) {
   if (total > 0)
     return static_cast<int>((complete * 100.0) / total);
   return -1;
-}
-
-// |drive_tmp_download_path| is set to a temporary local download path in
-// ~/GCache/v1/tmp/downloads/
-// static
-void DriveDownloadObserver::GetDriveTempDownloadPath(
-    const FilePath& drive_tmp_download_dir,
-    FilePath* drive_tmp_download_path) {
-  bool created = file_util::CreateDirectory(drive_tmp_download_dir);
-  DCHECK(created) << "Can not create temp download directory at "
-                  << drive_tmp_download_dir.value();
-  created = file_util::CreateTemporaryFileInDir(drive_tmp_download_dir,
-                                                drive_tmp_download_path);
-  DCHECK(created) << "Temporary download file creation failed";
 }
 
 void DriveDownloadObserver::ManagerGoingDown(
