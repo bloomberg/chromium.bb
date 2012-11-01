@@ -15,10 +15,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_model.h"
-#include "chrome/browser/ui/search/search_tab_helper.h"
-#include "chrome/browser/ui/search/search_types.h"
-#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -59,8 +55,6 @@
 using content::WebContents;
 
 namespace {
-
-const int kPlaceholderLeftSpacing = 11;
 
 // Textfield for autocomplete that intercepts events that are necessary
 // for OmniboxViewViews.
@@ -119,31 +113,9 @@ class AutocompleteTextfield : public views::Textfield {
   // views::View implementation.
   virtual void PaintChildren(gfx::Canvas* canvas) {
     views::Textfield::PaintChildren(canvas);
-    MaybeDrawPlaceholderText(canvas);
   }
 
  private:
-  // If necessary draws the search placeholder text.
-  void MaybeDrawPlaceholderText(gfx::Canvas* canvas) {
-    if (!text().empty() ||
-        (location_bar_view_->search_model() &&
-         !location_bar_view_->search_model()->mode().is_ntp())) {
-      return;
-    }
-
-    gfx::Rect local_bounds(GetLocalBounds());
-    // Don't use NO_ELLIPSIS here, otherwise if there isn't enough space the
-    // text wraps to multiple lines.
-    canvas->DrawStringInt(
-        l10n_util::GetStringUTF16(IDS_NTP_OMNIBOX_PLACEHOLDER),
-        chrome::search::GetNTPOmniboxFont(font()),
-        chrome::search::kNTPPlaceholderTextColor,
-        local_bounds.x(),
-        local_bounds.y(), local_bounds.width(),
-        local_bounds.height(),
-        gfx::Canvas::TEXT_ALIGN_LEFT);
-  }
-
   OmniboxViewViews* omnibox_view_;
   LocationBarView* location_bar_view_;
 
@@ -245,11 +217,6 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       location_bar_view_(location_bar),
       ime_candidate_window_open_(false),
       select_all_on_mouse_release_(false) {
-  if (chrome::search::IsInstantExtendedAPIEnabled(
-          location_bar_view_->profile())) {
-    set_background(views::Background::CreateSolidBackground(
-        chrome::search::kOmniboxBackgroundColor));
-  }
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -274,18 +241,12 @@ void OmniboxViewViews::Init() {
   textfield_->SetController(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
   textfield_->SetBackgroundColor(LocationBarView::GetColor(
-      chrome::search::IsInstantExtendedAPIEnabled(
-          location_bar_view_->profile()),
       ToolbarModel::NONE, LocationBarView::BACKGROUND));
 
   if (popup_window_mode_)
     textfield_->SetReadOnly(true);
 
-  const int font_size =
-      !popup_window_mode_ && chrome::search::IsInstantExtendedAPIEnabled(
-          location_bar_view_->profile()) ?
-              chrome::search::kOmniboxFontSize :
-              GetEditFontPixelSize(popup_window_mode_);
+  const int font_size = GetEditFontPixelSize(popup_window_mode_);
   const int old_size = textfield_->font().GetFontSize();
   if (font_size != old_size)
     textfield_->SetFont(textfield_->font().DeriveFont(font_size - old_size));
@@ -452,12 +413,6 @@ bool OmniboxViewViews::IsLocationEntryFocusableInRootView() const {
 // OmniboxViewViews, views::View implementation:
 void OmniboxViewViews::Layout() {
   gfx::Insets insets = GetInsets();
-  insets += gfx::Insets(0,
-                        (location_bar_view_->search_model() &&
-                         location_bar_view_->search_model()->mode().is_ntp()) ?
-                            kPlaceholderLeftSpacing : 0,
-                        0,
-                        0);
   textfield_->SetBounds(insets.left(), insets.top(),
                         width() - insets.width(),
                         height() - insets.height());
@@ -904,19 +859,14 @@ void OmniboxViewViews::EmphasizeURLComponents() {
                                                  &scheme, &host);
   const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
-  bool instant_extended_api_enabled =
-      chrome::search::IsInstantExtendedAPIEnabled(
-          location_bar_view_->profile());
   SkColor base_color = LocationBarView::GetColor(
-      instant_extended_api_enabled,
       security_level_,
       emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT);
   ApplyURLStyle(textfield_, 0, text.length(), base_color, false);
 
   if (emphasize) {
     SkColor normal_color =
-        LocationBarView::GetColor(instant_extended_api_enabled, security_level_,
-                                  LocationBarView::TEXT);
+        LocationBarView::GetColor(security_level_, LocationBarView::TEXT);
     ApplyURLStyle(textfield_, host.begin, host.end(), normal_color, false);
   }
 
@@ -924,8 +874,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   if (!model()->user_input_in_progress() && scheme.is_nonempty() &&
       (security_level_ != ToolbarModel::NONE)) {
     SkColor security_color = LocationBarView::GetColor(
-        instant_extended_api_enabled, security_level_,
-        LocationBarView::SECURITY_TEXT);
+        security_level_, LocationBarView::SECURITY_TEXT);
     bool use_strikethrough = (security_level_ == ToolbarModel::SECURITY_ERROR);
     ApplyURLStyle(textfield_, scheme.begin, scheme.end(),
                   security_color, use_strikethrough);

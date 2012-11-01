@@ -172,8 +172,7 @@ class LocationBarView : public LocationBar,
 
   // Returns the appropriate color for the desired kind, based on the user's
   // system theme.
-  static SkColor GetColor(bool instant_extended_api_enabled,
-                          ToolbarModel::SecurityLevel security_level,
+  static SkColor GetColor(ToolbarModel::SecurityLevel security_level,
                           ColorKind kind);
 
   // Updates the location bar.  We also reset the bar's permanent text and
@@ -440,9 +439,6 @@ class LocationBarView : public LocationBar,
   // Draw backgrounds and borders for page actions.  Must be called
   // after layout, so the |page_action_views_| have their bounds.
   void PaintPageActionBackgrounds(gfx::Canvas* canvas);
-
-  // Draw the focus border when the search mode is |NTP|.
-  void PaintSearchNTPFocusBorder(gfx::Canvas* canvas);
 
 #if defined(USE_AURA)
   // Fade in the location bar view so the icons come in gradually.
