@@ -27,6 +27,7 @@
 #include <winioctl.h>
 #include <wlanapi.h>
 
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
@@ -297,6 +298,9 @@ int WindowsWlanApi::GetInterfaceDataWLAN(
     const GUID& interface_id,
     WifiData::AccessPointDataSet* data) {
   DCHECK(data);
+
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+
   // WlanGetNetworkBssList allocates bss_list.
   WLAN_BSS_LIST* bss_list = NULL;
   if ((*WlanGetNetworkBssList_function_)(wlan_handle,
@@ -313,6 +317,16 @@ int WindowsWlanApi::GetInterfaceDataWLAN(
   // list as NULL.
   if (!bss_list)
     return -1;
+
+  const base::TimeDelta duration = base::TimeTicks::Now() - start_time;
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Net.Wifi.ScanLatency",
+      duration,
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMinutes(1),
+      100);
+
 
   int found = 0;
   for (int i = 0; i < static_cast<int>(bss_list->dwNumberOfItems); ++i) {
