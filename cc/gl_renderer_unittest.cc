@@ -63,13 +63,13 @@ public:
     {
         m_rootLayer->createRenderSurface();
         RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
-        scoped_ptr<RenderPass> rootRenderPass = RenderPass::create(renderPassId, IntRect(), WebTransformationMatrix());
+        scoped_ptr<RenderPass> rootRenderPass = RenderPass::create(renderPassId, gfx::Rect(), WebTransformationMatrix());
         m_renderPassesInDrawOrder.push_back(rootRenderPass.get());
         m_renderPasses.set(renderPassId, rootRenderPass.Pass());
     }
 
     // RendererClient methods.
-    virtual const IntSize& deviceViewportSize() const OVERRIDE { static IntSize fakeSize(1, 1); return fakeSize; }
+    virtual const gfx::Size& deviceViewportSize() const OVERRIDE { static gfx::Size fakeSize(1, 1); return fakeSize; }
     virtual const LayerTreeSettings& settings() const OVERRIDE { static LayerTreeSettings fakeSettings; return fakeSettings; }
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }

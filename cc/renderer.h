@@ -17,7 +17,7 @@ class ScopedTexture;
 
 class RendererClient {
 public:
-    virtual const IntSize& deviceViewportSize() const = 0;
+    virtual const gfx::Size& deviceViewportSize() const = 0;
     virtual const LayerTreeSettings& settings() const = 0;
     virtual void didLoseContext() = 0;
     virtual void onSwapBuffersComplete() = 0;
@@ -61,7 +61,7 @@ public:
     // puts backbuffer onscreen
     virtual bool swapBuffers() = 0;
 
-    virtual void getFramebufferPixels(void *pixels, const IntRect&) = 0;
+    virtual void getFramebufferPixels(void *pixels, const gfx::Rect&) = 0;
 
     virtual bool isContextLost();
 

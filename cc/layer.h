@@ -5,13 +5,14 @@
 #ifndef LayerChromium_h
 #define LayerChromium_h
 
-#include "FloatPoint.h"
 #include "Region.h"
 #include "base/memory/ref_counted.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/render_surface.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <string>
@@ -66,8 +67,8 @@ public:
 
     const LayerList& children() const { return m_children; }
 
-    void setAnchorPoint(const FloatPoint&);
-    FloatPoint anchorPoint() const { return m_anchorPoint; }
+    void setAnchorPoint(const gfx::PointF&);
+    gfx::PointF anchorPoint() const { return m_anchorPoint; }
 
     void setAnchorPointZ(float);
     float anchorPointZ() const { return m_anchorPointZ; }
@@ -77,9 +78,9 @@ public:
 
     // A layer's bounds are in logical, non-page-scaled pixels (however, the
     // root layer's bounds are in physical pixels).
-    void setBounds(const IntSize&);
-    const IntSize& bounds() const { return m_bounds; }
-    virtual IntSize contentBounds() const;
+    void setBounds(const gfx::Size&);
+    const gfx::Size& bounds() const { return m_bounds; }
+    virtual gfx::Size contentBounds() const;
 
     void setMasksToBounds(bool);
     bool masksToBounds() const { return m_masksToBounds; }
@@ -87,8 +88,8 @@ public:
     void setMaskLayer(Layer*);
     Layer* maskLayer() const { return m_maskLayer.get(); }
 
-    virtual void setNeedsDisplayRect(const FloatRect& dirtyRect);
-    void setNeedsDisplay() { setNeedsDisplayRect(FloatRect(FloatPoint(), bounds())); }
+    virtual void setNeedsDisplayRect(const gfx::RectF& dirtyRect);
+    void setNeedsDisplay() { setNeedsDisplayRect(gfx::RectF(gfx::PointF(), bounds())); }
     virtual bool needsDisplay() const;
 
     void setOpacity(float);
@@ -108,8 +109,8 @@ public:
     virtual void setContentsOpaque(bool);
     bool contentsOpaque() const { return m_contentsOpaque; }
 
-    void setPosition(const FloatPoint&);
-    FloatPoint position() const { return m_position; }
+    void setPosition(const gfx::PointF&);
+    gfx::PointF position() const { return m_position; }
 
     void setIsContainerForFixedPositionLayers(bool);
     bool isContainerForFixedPositionLayers() const { return m_isContainerForFixedPositionLayers; }
@@ -123,8 +124,8 @@ public:
     void setTransform(const WebKit::WebTransformationMatrix&);
     bool transformIsAnimating() const;
 
-    const IntRect& visibleContentRect() const { return m_visibleContentRect; }
-    void setVisibleContentRect(const IntRect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }
+    const gfx::Rect& visibleContentRect() const { return m_visibleContentRect; }
+    void setVisibleContentRect(const gfx::Rect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }
 
     void setScrollPosition(const IntPoint&);
     const IntPoint& scrollPosition() const { return m_scrollPosition; }
@@ -223,8 +224,8 @@ public:
     // It converts logical, non-page-scaled pixels to physical pixels.
     const WebKit::WebTransformationMatrix& screenSpaceTransform() const { return m_screenSpaceTransform; }
     void setScreenSpaceTransform(const WebKit::WebTransformationMatrix& matrix) { m_screenSpaceTransform = matrix; }
-    const IntRect& drawableContentRect() const { return m_drawableContentRect; }
-    void setDrawableContentRect(const IntRect& rect) { m_drawableContentRect = rect; }
+    const gfx::Rect& drawableContentRect() const { return m_drawableContentRect; }
+    void setDrawableContentRect(const gfx::Rect& rect) { m_drawableContentRect = rect; }
 
     // The contentsScale converts from logical, non-page-scaled pixels to target pixels.
     // The contentsScale is 1 for the root layer as it is already in physical pixels.
@@ -281,7 +282,7 @@ public:
 
     virtual ScrollbarLayer* toScrollbarLayer();
 
-    IntRect layerRectToContentRect(const FloatRect& layerRect) const;
+    gfx::Rect layerRectToContentRect(const gfx::RectF& layerRect) const;
 
 protected:
     friend class LayerImpl;
@@ -302,7 +303,7 @@ protected:
     // For layers that may do updating outside the compositor's control (i.e. plugin layers), this information
     // is not available and the update rect will remain empty.
     // Note this rect is in layer space (not content space).
-    FloatRect m_updateRect;
+    gfx::RectF m_updateRect;
 
     scoped_refptr<Layer> m_maskLayer;
 
@@ -336,10 +337,10 @@ private:
     scoped_ptr<LayerAnimationController> m_layerAnimationController;
 
     // Layer properties.
-    IntSize m_bounds;
+    gfx::Size m_bounds;
 
     // Uses layer's content space.
-    IntRect m_visibleContentRect;
+    gfx::Rect m_visibleContentRect;
 
     IntPoint m_scrollPosition;
     IntSize m_maxScrollPosition;
@@ -348,8 +349,8 @@ private:
     bool m_haveWheelEventHandlers;
     Region m_nonFastScrollableRegion;
     bool m_nonFastScrollableRegionChanged;
-    FloatPoint m_position;
-    FloatPoint m_anchorPoint;
+    gfx::PointF m_position;
+    gfx::PointF m_anchorPoint;
     SkColor m_backgroundColor;
     SkColor m_debugBorderColor;
     float m_debugBorderWidth;
@@ -390,7 +391,7 @@ private:
     bool m_screenSpaceTransformIsAnimating;
 
     // Uses target surface space.
-    IntRect m_drawableContentRect;
+    gfx::Rect m_drawableContentRect;
     float m_rasterScale;
     bool m_automaticallyComputeRasterScale;
     bool m_boundsContainPageScale;

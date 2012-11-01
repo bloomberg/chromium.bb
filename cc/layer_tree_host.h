@@ -7,7 +7,6 @@
 
 #include <limits>
 
-#include "IntRect.h"
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/hash_tables.h"
@@ -25,6 +24,7 @@
 #include "cc/rendering_stats.h"
 #include "cc/scoped_ptr_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/rect.h"
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
@@ -40,6 +40,7 @@ struct hash<WebKit::WebGraphicsContext3D*> {
 namespace cc {
 
 class FontAtlas;
+class IntRect;
 class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
@@ -65,9 +66,9 @@ struct LayerTreeSettings {
     bool renderVSyncEnabled;
     double refreshRate;
     size_t maxPartialTextureUpdates;
-    IntSize defaultTileSize;
-    IntSize maxUntiledLayerSize;
-    IntSize minimumOcclusionTrackingSize;
+    gfx::Size defaultTileSize;
+    gfx::Size maxUntiledLayerSize;
+    gfx::Size minimumOcclusionTrackingSize;
 
     bool showDebugInfo() const { return showPlatformLayerTree || showFPSCounter || showDebugRects(); }
     bool showDebugRects() const { return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects; }
@@ -173,10 +174,10 @@ public:
 
     const LayerTreeSettings& settings() const { return m_settings; }
 
-    void setViewportSize(const IntSize& layoutViewportSize, const IntSize& deviceViewportSize);
+    void setViewportSize(const gfx::Size& layoutViewportSize, const gfx::Size& deviceViewportSize);
 
-    const IntSize& layoutViewportSize() const { return m_layoutViewportSize; }
-    const IntSize& deviceViewportSize() const { return m_deviceViewportSize; }
+    const gfx::Size& layoutViewportSize() const { return m_layoutViewportSize; }
+    const gfx::Size& deviceViewportSize() const { return m_deviceViewportSize; }
 
     void setPageScaleFactorAndLimits(float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor);
 
@@ -192,7 +193,7 @@ public:
     void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration);
 
     void applyScrollAndScale(const ScrollAndScaleSet&);
-    FloatPoint adjustEventPointForPinchZoom(const FloatPoint&) const;
+    gfx::PointF adjustEventPointForPinchZoom(const gfx::PointF&) const;
     void setImplTransform(const WebKit::WebTransformationMatrix&);
 
     void startRateLimiter(WebKit::WebGraphicsContext3D*);
@@ -261,8 +262,8 @@ private:
 
     LayerTreeSettings m_settings;
 
-    IntSize m_layoutViewportSize;
-    IntSize m_deviceViewportSize;
+    gfx::Size m_layoutViewportSize;
+    gfx::Size m_deviceViewportSize;
     float m_deviceScaleFactor;
 
     bool m_visible;

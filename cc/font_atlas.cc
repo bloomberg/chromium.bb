@@ -11,12 +11,10 @@
 #include "base/string_split.h"
 #include "cc/proxy.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/size.h"
 
 namespace cc {
 
-FontAtlas::FontAtlas(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
+FontAtlas::FontAtlas(SkBitmap bitmap, gfx::Rect asciiToRectTable[128], int fontHeight)
     : m_atlas(bitmap)
     , m_fontHeight(fontHeight)
 {
@@ -52,7 +50,7 @@ void FontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint
     for (unsigned i = 0; i < textLine.length(); ++i) {
         // If the ASCII code is out of bounds, then index 0 is used, which is just a plain rectangle glyph.
         int asciiIndex = (textLine[i] < 128) ? textLine[i] : 0;
-        IntRect glyphBounds = m_asciiToRectTable[asciiIndex];
+        gfx::Rect glyphBounds = m_asciiToRectTable[asciiIndex];
         SkIRect source = SkIRect::MakeXYWH(glyphBounds.x(), glyphBounds.y(), glyphBounds.width(), glyphBounds.height());
         canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(position.x(), position.y(), glyphBounds.width(), glyphBounds.height()), &paint);
         position.set_x(position.x() + glyphBounds.width());

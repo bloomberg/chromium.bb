@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/scoped_ptr_vector.h"
-#include "IntRect.h"
+#include "ui/gfx/rect.h"
 #include "IntSize.h"
 #include <public/WebTransformationMatrix.h>
 
@@ -19,13 +19,13 @@ class Layer;
 
 class LayerTreeHostCommon {
 public:
-    static IntRect calculateVisibleRect(const IntRect& targetSurfaceRect, const IntRect& layerBoundRect, const WebKit::WebTransformationMatrix&);
+    static gfx::Rect calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const WebKit::WebTransformationMatrix&);
 
-    static void calculateDrawTransforms(Layer* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList);
-    static void calculateDrawTransforms(LayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter*, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList);
+    static void calculateDrawTransforms(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList);
+    static void calculateDrawTransforms(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter*, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     // Performs hit testing for a given renderSurfaceLayerList.
-    static LayerImpl* findLayerThatIsHitByPoint(const IntPoint& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
+    static LayerImpl* findLayerThatIsHitByPoint(const gfx::Point& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
 

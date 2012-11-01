@@ -23,7 +23,7 @@ public:
             , m_z(0)
         {
         }
-        Edge(const FloatPoint&, const FloatPoint&);
+        Edge(const gfx::PointF&, const gfx::PointF&);
 
         float x() const { return m_x; }
         float y() const { return m_y; }
@@ -60,9 +60,9 @@ public:
         }
         void scale(float s) { scale(s, s, s); }
 
-        FloatPoint intersect(const Edge& e) const
+        gfx::PointF intersect(const Edge& e) const
         {
-            return FloatPoint(
+            return gfx::PointF(
                 (y() * e.z() - e.y() * z()) / (x() * e.y() - e.x() * y()),
                 (x() * e.z() - e.x() * z()) / (e.x() * y() - x() * e.y()));
         }

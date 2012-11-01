@@ -253,7 +253,7 @@ TEST(DrawQuadTest, copyTileDrawQuad)
 {
     gfx::Rect opaqueRect(33, 44, 22, 33);
     unsigned resourceId = 104;
-    gfx::Point textureOffset(-31, 47);
+    gfx::Vector2d textureOffset(-31, 47);
     gfx::Size textureSize(85, 32);
     GLint textureFilter = 82;
     bool swizzleContents = true;

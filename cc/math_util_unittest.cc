@@ -6,10 +6,11 @@
 
 #include "cc/math_util.h"
 
-#include "FloatRect.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include <public/WebTransformationMatrix.h>
 
 using namespace cc;
@@ -90,12 +91,12 @@ TEST(MathUtilTest, verifyProjectionOfPerpendicularPlane)
     transform.makeIdentity();
     transform.setM33(0);
 
-    FloatRect rect = FloatRect(0, 0, 1, 1);
-    FloatRect projectedRect = MathUtil::projectClippedRect(transform, rect);
+    gfx::RectF rect = gfx::RectF(0, 0, 1, 1);
+    gfx::RectF projectedRect = MathUtil::projectClippedRect(transform, rect);
 
     EXPECT_EQ(0, projectedRect.x());
     EXPECT_EQ(0, projectedRect.y());
-    EXPECT_TRUE(projectedRect.isEmpty());
+    EXPECT_TRUE(projectedRect.IsEmpty());
 }
 
 TEST(MathUtilTest, verifyEnclosingClippedRectUsesCorrectInitialBounds)
@@ -109,27 +110,27 @@ TEST(MathUtilTest, verifyEnclosingClippedRectUsesCorrectInitialBounds)
     // However, if there is a bug where the initial xmin/xmax/ymin/ymax are initialized to
     // numeric_limits<float>::min() (which is zero, not -flt_max) then the enclosing
     // clipped rect will be computed incorrectly.
-    FloatRect result = MathUtil::computeEnclosingClippedRect(h1, h2, h3, h4);
+    gfx::RectF result = MathUtil::computeEnclosingClippedRect(h1, h2, h3, h4);
 
-    EXPECT_FLOAT_RECT_EQ(FloatRect(FloatPoint(-100, -100), FloatSize(90, 90)), result);
+    EXPECT_FLOAT_RECT_EQ(gfx::RectF(gfx::PointF(-100, -100), gfx::SizeF(90, 90)), result);
 }
 
 TEST(MathUtilTest, verifyEnclosingRectOfVerticesUsesCorrectInitialBounds)
 {
-    FloatPoint vertices[3];
+    gfx::PointF vertices[3];
     int numVertices = 3;
 
-    vertices[0] = FloatPoint(-10, -100);
-    vertices[1] = FloatPoint(-100, -10);
-    vertices[2] = FloatPoint(-30, -30);
+    vertices[0] = gfx::PointF(-10, -100);
+    vertices[1] = gfx::PointF(-100, -10);
+    vertices[2] = gfx::PointF(-30, -30);
 
     // The bounds of the enclosing rect should be -100 to -10 for both x and y. However,
     // if there is a bug where the initial xmin/xmax/ymin/ymax are initialized to
     // numeric_limits<float>::min() (which is zero, not -flt_max) then the enclosing
     // clipped rect will be computed incorrectly.
-    FloatRect result = MathUtil::computeEnclosingRectOfVertices(vertices, numVertices);
+    gfx::RectF result = MathUtil::computeEnclosingRectOfVertices(vertices, numVertices);
 
-    EXPECT_FLOAT_RECT_EQ(FloatRect(FloatPoint(-100, -100), FloatSize(90, 90)), result);
+    EXPECT_FLOAT_RECT_EQ(gfx::RectF(gfx::PointF(-100, -100), gfx::SizeF(90, 90)), result);
 }
 
 TEST(MathUtilTest, smallestAngleBetweenVectors)

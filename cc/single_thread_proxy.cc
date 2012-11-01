@@ -43,7 +43,7 @@ SingleThreadProxy::~SingleThreadProxy()
     DCHECK(!m_layerTreeHostImpl.get() && !m_layerTreeHost); // make sure stop() got called.
 }
 
-bool SingleThreadProxy::compositeAndReadback(void *pixels, const IntRect& rect)
+bool SingleThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect)
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::compositeAndReadback");
     DCHECK(Proxy::isMainThread());

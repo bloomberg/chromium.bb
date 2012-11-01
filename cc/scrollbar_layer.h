@@ -40,9 +40,9 @@ protected:
     virtual ~ScrollbarLayer();
 
 private:
-    void updatePart(CachingBitmapContentLayerUpdater*, LayerUpdater::Resource*, const IntRect&, ResourceUpdateQueue&, RenderingStats&);
+    void updatePart(CachingBitmapContentLayerUpdater*, LayerUpdater::Resource*, const gfx::Rect&, ResourceUpdateQueue&, RenderingStats&);
     void createUpdaterIfNeeded();
-    IntRect scrollbarLayerRectToContentRect(const WebKit::WebRect& layerRect) const;
+    gfx::Rect scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const;
 
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
     WebKit::WebScrollbarThemePainter m_painter;

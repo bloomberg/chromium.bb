@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "IntRect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/rect.h"
 
 class SkCanvas;
 
@@ -24,7 +24,7 @@ namespace cc {
 // This class provides basic ability to draw text onto the heads-up display.
 class FontAtlas {
 public:
-    static scoped_ptr<FontAtlas> create(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
+    static scoped_ptr<FontAtlas> create(SkBitmap bitmap, gfx::Rect asciiToRectTable[128], int fontHeight)
     {
         return make_scoped_ptr(new FontAtlas(bitmap, asciiToRectTable, fontHeight));
     }
@@ -42,15 +42,15 @@ public:
     void drawDebugAtlas(SkCanvas*, const gfx::Point& destPosition) const;
 
 private:
-    FontAtlas(SkBitmap, IntRect asciiToRectTable[128], int fontHeight);
+    FontAtlas(SkBitmap, gfx::Rect asciiToRectTable[128], int fontHeight);
 
     void drawOneLineOfTextInternal(SkCanvas*, const SkPaint&, const std::string&, const gfx::Point& destPosition) const;
 
     // The actual texture atlas containing all the pre-rendered glyphs.
     SkBitmap m_atlas;
 
-    // The look-up tables mapping ascii characters to their IntRect locations on the atlas.
-    IntRect m_asciiToRectTable[128];
+    // The look-up tables mapping ascii characters to their gfx::Rect locations on the atlas.
+    gfx::Rect m_asciiToRectTable[128];
 
     int m_fontHeight;
 

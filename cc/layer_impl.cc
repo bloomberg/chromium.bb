@@ -16,6 +16,8 @@
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/settings.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/rect_conversions.h"
 
 using WebKit::WebTransformationMatrix;
 
@@ -152,7 +154,7 @@ void LayerImpl::appendDebugBorderQuad(QuadSink& quadList, const SharedQuadState*
     if (!hasDebugBorders())
         return;
 
-    IntRect contentRect(IntPoint(), contentBounds());
+    gfx::Rect contentRect(gfx::Point(), contentBounds());
     quadList.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect, debugBorderColor(), debugBorderWidth()).PassAs<DrawQuad>(), appendQuadsData);
 }
 
@@ -210,8 +212,8 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const IntPoint& screenSpac
 
     if (!nonFastScrollableRegion().isEmpty()) {
         bool clipped = false;
-        FloatPoint hitTestPointInLocalSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), FloatPoint(screenSpacePoint), clipped);
-        if (!clipped && nonFastScrollableRegion().contains(flooredIntPoint(hitTestPointInLocalSpace))) {
+        gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), FloatPoint(screenSpacePoint), clipped);
+        if (!clipped && nonFastScrollableRegion().contains(cc::IntPoint(gfx::ToFlooredPoint(hitTestPointInLocalSpace)))) {
             TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed nonFastScrollableRegion");
             return InputHandlerClient::ScrollOnMainThread;
         }
@@ -235,15 +237,13 @@ bool LayerImpl::drawCheckerboardForMissingTiles() const
     return m_drawCheckerboardForMissingTiles && !Settings::backgroundColorInsteadOfCheckerboard();
 }
 
-IntRect LayerImpl::layerRectToContentRect(const FloatRect& layerRect) const
+gfx::Rect LayerImpl::layerRectToContentRect(const gfx::RectF& layerRect) const
 {
-    FloatRect contentRect(layerRect);
-    contentRect.scale(contentsScaleX(), contentsScaleY());
-    IntRect intContentRect = enclosingIntRect(contentRect);
+    gfx::RectF contentRect = gfx::ScaleRect(layerRect, contentsScaleX(), contentsScaleY());
     // Intersect with content rect to avoid the extra pixel because for some
     // values x and y, ceil((x / y) * y) may be x + 1.
-    intContentRect.intersect(IntRect(IntPoint(), contentBounds()));
-    return intContentRect;
+    contentRect.Intersect(gfx::Rect(gfx::Point(), contentBounds()));
+    return gfx::ToEnclosingRect(contentRect);
 }
 
 std::string LayerImpl::indentString(int indent)
@@ -360,7 +360,7 @@ void LayerImpl::resetAllChangeTrackingForSubtree()
     m_layerPropertyChanged = false;
     m_layerSurfacePropertyChanged = false;
 
-    m_updateRect = FloatRect();
+    m_updateRect = gfx::RectF();
 
     if (m_renderSurface)
         m_renderSurface->resetPropertyChangedFlag();
@@ -405,7 +405,7 @@ void LayerImpl::setTransformFromAnimation(const WebTransformationMatrix& transfo
     setTransform(transform);
 }
 
-void LayerImpl::setBounds(const IntSize& bounds)
+void LayerImpl::setBounds(const gfx::Size& bounds)
 {
     if (m_bounds == bounds)
         return;
@@ -451,7 +451,7 @@ void LayerImpl::setDrawsContent(bool drawsContent)
     m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setAnchorPoint(const FloatPoint& anchorPoint)
+void LayerImpl::setAnchorPoint(const gfx::PointF& anchorPoint)
 {
     if (m_anchorPoint == anchorPoint)
         return;
@@ -539,7 +539,7 @@ bool LayerImpl::opacityIsAnimating() const
     return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Opacity);
 }
 
-void LayerImpl::setPosition(const FloatPoint& position)
+void LayerImpl::setPosition(const gfx::PointF& position)
 {
     if (m_position == position)
         return;
@@ -604,7 +604,7 @@ bool LayerImpl::hasDebugBorders() const
     return SkColorGetA(m_debugBorderColor) && debugBorderWidth() > 0;
 }
 
-void LayerImpl::setContentBounds(const IntSize& contentBounds)
+void LayerImpl::setContentBounds(const gfx::Size& contentBounds)
 {
     if (m_contentBounds == contentBounds)
         return;
@@ -662,7 +662,7 @@ void LayerImpl::setDoubleSided(bool doubleSided)
 Region LayerImpl::visibleContentOpaqueRegion() const
 {
     if (contentsOpaque())
-        return visibleContentRect();
+        return cc::IntRect(visibleContentRect());
     return Region();
 }
 

@@ -119,7 +119,7 @@ void ImageLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occl
     if (m_needsDisplay) {
         m_updater->setBitmap(m_bitmap);
         updateTileSizeAndTilingOption();
-        invalidateContentRect(IntRect(IntPoint(), contentBounds()));
+        invalidateContentRect(gfx::Rect(gfx::Point(), contentBounds()));
         m_needsDisplay = false;
     }
     TiledLayer::update(queue, occlusion, stats);
@@ -140,9 +140,9 @@ LayerUpdater* ImageLayer::updater() const
     return m_updater.get();
 }
 
-IntSize ImageLayer::contentBounds() const
+gfx::Size ImageLayer::contentBounds() const
 {
-    return IntSize(m_bitmap.width(), m_bitmap.height());
+    return gfx::Size(m_bitmap.width(), m_bitmap.height());
 }
 
 bool ImageLayer::drawsContent() const
@@ -152,14 +152,14 @@ bool ImageLayer::drawsContent() const
 
 float ImageLayer::contentsScaleX() const
 {
-    if (bounds().isEmpty() || contentBounds().isEmpty())
+    if (bounds().IsEmpty() || contentBounds().IsEmpty())
         return 1;
     return static_cast<float>(m_bitmap.width()) / bounds().width();
 }
 
 float ImageLayer::contentsScaleY() const
 {
-    if (bounds().isEmpty() || contentBounds().isEmpty())
+    if (bounds().IsEmpty() || contentBounds().IsEmpty())
         return 1;
     return static_cast<float>(m_bitmap.height()) / bounds().height();
 }

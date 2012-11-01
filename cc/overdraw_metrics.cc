@@ -33,13 +33,13 @@ OverdrawMetrics::OverdrawMetrics(bool recordMetricsForFrame)
 {
 }
 
-static inline float wedgeProduct(const FloatPoint& p1, const FloatPoint& p2)
+static inline float wedgeProduct(const gfx::PointF& p1, const gfx::PointF& p2)
 {
     return p1.x() * p2.y() - p1.y() * p2.x();
 }
 
 // Calculates area of an arbitrary convex polygon with up to 8 points.
-static inline float polygonArea(const FloatPoint points[8], int numPoints)
+static inline float polygonArea(const gfx::PointF points[8], int numPoints)
 {
     if (numPoints < 3)
         return 0;
@@ -53,7 +53,7 @@ static inline float polygonArea(const FloatPoint points[8], int numPoints)
 // Takes a given quad, maps it by the given transformation, and gives the area of the resulting polygon.
 static inline float areaOfMappedQuad(const WebTransformationMatrix& transform, const FloatQuad& quad)
 {
-    FloatPoint clippedQuad[8];
+    gfx::PointF clippedQuad[8];
     int numVerticesInClippedQuad = 0;
     MathUtil::mapClippedQuad(transform, quad, clippedQuad, numVerticesInClippedQuad);
     return polygonArea(clippedQuad, numVerticesInClippedQuad);

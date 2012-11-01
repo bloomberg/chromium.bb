@@ -50,9 +50,9 @@ LayerTreeSettings::LayerTreeSettings()
     , renderVSyncEnabled(true)
     , refreshRate(0)
     , maxPartialTextureUpdates(std::numeric_limits<size_t>::max())
-    , defaultTileSize(IntSize(256, 256))
-    , maxUntiledLayerSize(IntSize(512, 512))
-    , minimumOcclusionTrackingSize(IntSize(160, 160))
+    , defaultTileSize(gfx::Size(256, 256))
+    , maxUntiledLayerSize(gfx::Size(512, 512))
+    , minimumOcclusionTrackingSize(gfx::Size(160, 160))
 {
 }
 
@@ -165,14 +165,14 @@ void LayerTreeHost::initializeRenderer()
     m_settings.maxPartialTextureUpdates = min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
 
     m_contentsTextureManager = PrioritizedTextureManager::create(0, m_proxy->rendererCapabilities().maxTextureSize, Renderer::ContentPool);
-    m_surfaceMemoryPlaceholder = m_contentsTextureManager->createTexture(IntSize(), GL_RGBA);
+    m_surfaceMemoryPlaceholder = m_contentsTextureManager->createTexture(gfx::Size(), GL_RGBA);
 
     m_rendererInitialized = true;
 
-    m_settings.defaultTileSize = IntSize(min(m_settings.defaultTileSize.width(), m_proxy->rendererCapabilities().maxTextureSize),
-                                         min(m_settings.defaultTileSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
-    m_settings.maxUntiledLayerSize = IntSize(min(m_settings.maxUntiledLayerSize.width(), m_proxy->rendererCapabilities().maxTextureSize),
-                                             min(m_settings.maxUntiledLayerSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
+    m_settings.defaultTileSize = gfx::Size(min(m_settings.defaultTileSize.width(), m_proxy->rendererCapabilities().maxTextureSize),
+                                           min(m_settings.defaultTileSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
+    m_settings.maxUntiledLayerSize = gfx::Size(min(m_settings.maxUntiledLayerSize.width(), m_proxy->rendererCapabilities().maxTextureSize),
+                                               min(m_settings.maxUntiledLayerSize.height(), m_proxy->rendererCapabilities().maxTextureSize));
 }
 
 LayerTreeHost::RecreateResult LayerTreeHost::recreateContext()
@@ -421,7 +421,7 @@ void LayerTreeHost::setRootLayer(scoped_refptr<Layer> rootLayer)
     setNeedsCommit();
 }
 
-void LayerTreeHost::setViewportSize(const IntSize& layoutViewportSize, const IntSize& deviceViewportSize)
+void LayerTreeHost::setViewportSize(const gfx::Size& layoutViewportSize, const gfx::Size& deviceViewportSize)
 {
     if (layoutViewportSize == m_layoutViewportSize && deviceViewportSize == m_deviceViewportSize)
         return;
@@ -502,7 +502,7 @@ void LayerTreeHost::updateLayers(ResourceUpdateQueue& queue, size_t memoryAlloca
     if (!rootLayer())
         return;
 
-    if (layoutViewportSize().isEmpty())
+    if (layoutViewportSize().IsEmpty())
         return;
 
     m_contentsTextureManager->setMaxMemoryLimitBytes(memoryAllocationLimitBytes);
@@ -675,7 +675,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
             DCHECK(it->renderSurface()->drawOpacity() || it->renderSurface()->drawOpacityIsAnimating());
             needMoreUpdates |= paintMasksForRenderSurface(*it, queue);
         } else if (it.representsItself()) {
-            DCHECK(!it->bounds().isEmpty());
+            DCHECK(!it->bounds().IsEmpty());
             it->update(queue, &occlusionTracker, m_renderingStats);
             needMoreUpdates |= it->needMoreUpdates();
         }
@@ -709,7 +709,7 @@ void LayerTreeHost::applyScrollAndScale(const ScrollAndScaleSet& info)
         m_client->applyScrollAndScale(rootScrollDelta, info.pageScaleDelta);
 }
 
-FloatPoint LayerTreeHost::adjustEventPointForPinchZoom(const FloatPoint& point)
+gfx::PointF LayerTreeHost::adjustEventPointForPinchZoom(const gfx::PointF& point)
     const
 {
     WebKit::WebTransformationMatrix inverseImplTransform = m_implTransform;
@@ -724,7 +724,7 @@ FloatPoint LayerTreeHost::adjustEventPointForPinchZoom(const FloatPoint& point)
         / inverseImplTransform.m22());
     inverseImplTransform = inverseImplTransform.inverse();
     bool wasClipped = false;
-    FloatPoint adjustedPoint = MathUtil::projectPoint(inverseImplTransform, point, wasClipped);
+    gfx::PointF adjustedPoint = MathUtil::projectPoint(inverseImplTransform, point, wasClipped);
     DCHECK(!wasClipped);
 
     return adjustedPoint;

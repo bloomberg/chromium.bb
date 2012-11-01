@@ -13,7 +13,7 @@ namespace cc {
 // The content bounds are determined by bounds and scale of the contents.
 class ContentsScalingLayer : public Layer {
  public:
-  virtual IntSize contentBounds() const OVERRIDE;
+  virtual gfx::Size contentBounds() const OVERRIDE;
   virtual float contentsScaleX() const OVERRIDE;
   virtual float contentsScaleY() const OVERRIDE;
   virtual void setContentsScale(float contentsScale) OVERRIDE;

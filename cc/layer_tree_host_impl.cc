@@ -94,13 +94,13 @@ bool PinchZoomViewport::setPageScaleFactorAndLimits(float pageScaleFactor, float
     return true;
 }
 
-FloatRect PinchZoomViewport::bounds() const
+gfx::RectF PinchZoomViewport::bounds() const
 {
-    FloatSize scaledViewportSize = m_layoutViewportSize;
-    scaledViewportSize.scale(1 / totalPageScaleFactor());
+    gfx::SizeF scaledViewportSize = m_layoutViewportSize;
+    scaledViewportSize = scaledViewportSize.Scale(1 / totalPageScaleFactor());
 
-    FloatRect bounds(FloatPoint(0, 0), scaledViewportSize);
-    bounds.setLocation(m_pinchViewportScrollDelta);
+    gfx::RectF bounds(gfx::PointF(), scaledViewportSize);
+    bounds.set_origin(m_pinchViewportScrollDelta);
 
     return bounds;
 }
@@ -108,7 +108,7 @@ FloatRect PinchZoomViewport::bounds() const
 FloatSize PinchZoomViewport::applyScroll(FloatSize& delta)
 {
     FloatSize overflow;
-    FloatRect pinchedBounds = bounds();
+    FloatRect pinchedBounds = cc::FloatRect(bounds());
 
     pinchedBounds.move(delta);
     if (pinchedBounds.x() < 0) {
@@ -266,7 +266,7 @@ bool LayerTreeHostImpl::canDraw()
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw no root layer");
         return false;
     }
-    if (deviceViewportSize().isEmpty()) {
+    if (deviceViewportSize().IsEmpty()) {
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw empty viewport");
         return false;
     }
@@ -301,11 +301,11 @@ void LayerTreeHostImpl::startPageScaleAnimation(const IntSize& targetPosition, b
     IntSize scrollTotal = flooredIntSize(m_rootScrollLayerImpl->scrollPosition() + m_rootScrollLayerImpl->scrollDelta());
     scrollTotal.scale(m_pinchZoomViewport.pageScaleDelta());
     float scaleTotal = m_pinchZoomViewport.totalPageScaleFactor();
-    IntSize scaledContentSize = contentSize();
+    IntSize scaledContentSize = cc::IntSize(contentSize());
     scaledContentSize.scale(m_pinchZoomViewport.pageScaleDelta());
 
     double startTimeSeconds = (startTime - base::TimeTicks()).InSecondsF();
-    m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, scaleTotal, m_deviceViewportSize, scaledContentSize, startTimeSeconds);
+    m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, scaleTotal, cc::IntSize(m_deviceViewportSize), scaledContentSize, startTimeSeconds);
 
     if (anchorPoint) {
         IntSize windowAnchor(targetPosition);
@@ -411,7 +411,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
             RenderPass::Id contributingRenderPassId = it->renderSurface()->renderPassId();
             RenderPass* contributingRenderPass = frame.renderPassesById.get(contributingRenderPassId);
             targetRenderPass->appendQuadsForRenderSurfaceLayer(*it, contributingRenderPass, &occlusionTracker, appendQuadsData);
-        } else if (it.representsItself() && !it->visibleContentRect().isEmpty()) {
+        } else if (it.representsItself() && !it->visibleContentRect().IsEmpty()) {
             bool hasOcclusionFromOutsideTargetSurface;
             bool implDrawTransformIsUnknown = false;
             if (occlusionTracker.occluded(it->renderTarget(), it->visibleContentRect(), it->drawTransform(), implDrawTransformIsUnknown, it->drawableContentRect(), &hasOcclusionFromOutsideTargetSurface))
@@ -509,12 +509,12 @@ void LayerTreeHostImpl::setBackgroundTickingEnabled(bool enabled)
     m_timeSourceClientAdapter->setActive(enabled);
 }
 
-IntSize LayerTreeHostImpl::contentSize() const
+gfx::Size LayerTreeHostImpl::contentSize() const
 {
     // TODO(aelias): Hardcoding the first child here is weird. Think of
     // a cleaner way to get the contentBounds on the Impl side.
     if (!m_rootScrollLayerImpl || m_rootScrollLayerImpl->children().isEmpty())
-        return IntSize();
+        return gfx::Size();
     return m_rootScrollLayerImpl->children()[0]->contentBounds();
 }
 
@@ -733,7 +733,7 @@ bool LayerTreeHostImpl::swapBuffers()
     return m_renderer->swapBuffers();
 }
 
-const IntSize& LayerTreeHostImpl::deviceViewportSize() const
+const gfx::Size& LayerTreeHostImpl::deviceViewportSize() const
 {
     return m_deviceViewportSize;
 }
@@ -753,7 +753,7 @@ void LayerTreeHostImpl::onSwapBuffersComplete()
     m_client->onSwapBuffersCompleteOnImplThread();
 }
 
-void LayerTreeHostImpl::readback(void* pixels, const IntRect& rect)
+void LayerTreeHostImpl::readback(void* pixels, const gfx::Rect& rect)
 {
     DCHECK(m_renderer);
     m_renderer->getFramebufferPixels(pixels, rect);
@@ -886,7 +886,7 @@ void LayerTreeHostImpl::resetContentsTexturesPurged()
     m_client->onCanDrawStateChanged(canDraw());
 }
 
-void LayerTreeHostImpl::setViewportSize(const IntSize& layoutViewportSize, const IntSize& deviceViewportSize)
+void LayerTreeHostImpl::setViewportSize(const gfx::Size& layoutViewportSize, const gfx::Size& deviceViewportSize)
 {
     if (layoutViewportSize == m_layoutViewportSize && deviceViewportSize == m_deviceViewportSize)
         return;
@@ -964,28 +964,28 @@ void LayerTreeHostImpl::updateMaxScrollPosition()
     if (!m_rootScrollLayerImpl || !m_rootScrollLayerImpl->children().size())
         return;
 
-    FloatSize viewBounds = m_deviceViewportSize;
+    gfx::SizeF viewBounds = m_deviceViewportSize;
     if (LayerImpl* clipLayer = m_rootScrollLayerImpl->parent()) {
         // Compensate for non-overlay scrollbars.
         if (clipLayer->masksToBounds()) {
             viewBounds = clipLayer->bounds();
-            viewBounds.scale(m_deviceScaleFactor);
+            viewBounds = viewBounds.Scale(m_deviceScaleFactor);
         }
     }
 
-    IntSize contentBounds = contentSize();
+    gfx::Size contentBounds = contentSize();
     if (Settings::pageScalePinchZoomEnabled()) {
         // Pinch with pageScale scrolls entirely in layout space.  contentSize
         // returns the bounds including the page scale factor, so calculate the
         // pre page-scale layout size here.
         float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
-        contentBounds.setWidth(contentBounds.width() / pageScaleFactor);
-        contentBounds.setHeight(contentBounds.height() / pageScaleFactor);
+        contentBounds.set_width(contentBounds.width() / pageScaleFactor);
+        contentBounds.set_height(contentBounds.height() / pageScaleFactor);
     } else {
-        viewBounds.scale(1 / m_pinchZoomViewport.pageScaleDelta());
+        viewBounds = viewBounds.Scale(1 / m_pinchZoomViewport.pageScaleDelta());
     }
 
-    IntSize maxScroll = contentBounds - expandedIntSize(viewBounds);
+    IntSize maxScroll = cc::IntSize(contentBounds) - expandedIntSize(cc::FloatSize(viewBounds));
     maxScroll.scale(1 / m_deviceScaleFactor);
 
     // The viewport may be larger than the contents in some cases, such as
@@ -1092,8 +1092,8 @@ static FloatSize scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewport, 
     // in layer coordinates.
     bool startClipped, endClipped;
     FloatPoint screenSpaceEndPoint = screenSpacePoint + screenSpaceDelta;
-    FloatPoint localStartPoint = MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpacePoint, startClipped);
-    FloatPoint localEndPoint = MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpaceEndPoint, endClipped);
+    FloatPoint localStartPoint = cc::FloatPoint(MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpacePoint, startClipped));
+    FloatPoint localEndPoint = cc::FloatPoint(MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpaceEndPoint, endClipped));
 
     // In general scroll point coordinates should not get clipped.
     DCHECK(!startClipped);
@@ -1102,8 +1102,8 @@ static FloatSize scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewport, 
         return FloatSize();
 
     // localStartPoint and localEndPoint are in content space but we want to move them to layer space for scrolling.
-    float widthScale = 1.0 / layerImpl.contentsScaleX();
-    float heightScale = 1.0 / layerImpl.contentsScaleY();
+    float widthScale = 1 / layerImpl.contentsScaleX();
+    float heightScale = 1 / layerImpl.contentsScaleY();
     localStartPoint.scale(widthScale, heightScale);
     localEndPoint.scale(widthScale, heightScale);
 
@@ -1116,11 +1116,11 @@ static FloatSize scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewport, 
 
     // Get the end point in the layer's content space so we can apply its screenSpaceTransform.
     FloatPoint actualLocalEndPoint = localStartPoint + layerImpl.scrollDelta() - previousDelta;
-    FloatPoint actualLocalContentEndPoint = actualLocalEndPoint;
-    actualLocalContentEndPoint.scale(1 / widthScale, 1 / heightScale);
+    gfx::PointF actualLocalContentEndPoint = actualLocalEndPoint;
+    actualLocalContentEndPoint = actualLocalContentEndPoint.Scale(1 / widthScale, 1 / heightScale);
 
     // Calculate the applied scroll delta in viewport space coordinates.
-    FloatPoint actualScreenSpaceEndPoint = MathUtil::mapPoint(layerImpl.screenSpaceTransform(), actualLocalContentEndPoint, endClipped);
+    FloatPoint actualScreenSpaceEndPoint = cc::FloatPoint(MathUtil::mapPoint(layerImpl.screenSpaceTransform(), actualLocalContentEndPoint, endClipped));
     DCHECK(!endClipped);
     if (endClipped)
         return FloatSize();
@@ -1205,7 +1205,7 @@ void LayerTreeHostImpl::pinchGestureBegin()
 }
 
 void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta,
-                                             const IntPoint& anchor)
+                                           const IntPoint& anchor)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::pinchGestureUpdate");
 
@@ -1278,14 +1278,13 @@ void LayerTreeHostImpl::computePinchZoomDeltas(ScrollAndScaleSet* scrollInfo)
     scrollBegin.scale(m_pinchZoomViewport.pageScaleDelta());
     float scaleBegin = m_pinchZoomViewport.totalPageScaleFactor();
     float pageScaleDeltaToSend = m_pinchZoomViewport.minPageScaleFactor() / m_pinchZoomViewport.pageScaleFactor();
-    FloatSize scaledContentsSize = contentSize();
-    scaledContentsSize.scale(pageScaleDeltaToSend);
+    gfx::SizeF scaledContentsSize = contentSize().Scale(pageScaleDeltaToSend);
 
     FloatSize anchor = toSize(m_previousPinchAnchor);
     FloatSize scrollEnd = scrollBegin + anchor;
     scrollEnd.scale(m_pinchZoomViewport.minPageScaleFactor() / scaleBegin);
     scrollEnd -= anchor;
-    scrollEnd = scrollEnd.shrunkTo(roundedIntSize(scaledContentsSize - m_deviceViewportSize)).expandedTo(FloatSize(0, 0));
+    scrollEnd = scrollEnd.shrunkTo(roundedIntSize(cc::FloatSize(scaledContentsSize) - cc::IntSize(m_deviceViewportSize))).expandedTo(FloatSize(0, 0));
     scrollEnd.scale(1 / pageScaleDeltaToSend);
     scrollEnd.scale(m_deviceScaleFactor);
 

@@ -55,9 +55,10 @@ void DebugRectHistory::savePaintRects(LayerImpl* layer)
     // regardless of whether this layer is skipped for actual drawing or not. Therefore
     // we traverse recursively over all layers, not just the render surface list.
 
-    if (!layer->updateRect().isEmpty() && layer->drawsContent()) {
-        FloatRect updateContentRect = layer->updateRect();
-        updateContentRect.scale(layer->contentBounds().width() / static_cast<float>(layer->bounds().width()), layer->contentBounds().height() / static_cast<float>(layer->bounds().height()));
+    if (!layer->updateRect().IsEmpty() && layer->drawsContent()) {
+        float widthScale = layer->contentBounds().width() / static_cast<float>(layer->bounds().width());
+        float heightScale = layer->contentBounds().height() / static_cast<float>(layer->bounds().height());
+        gfx::RectF updateContentRect = gfx::ScaleRect(layer->updateRect(), widthScale, heightScale);
         m_debugRects.push_back(DebugRect(PaintRectType, MathUtil::mapClippedRect(layer->screenSpaceTransform(), updateContentRect)));
     }
 
@@ -83,7 +84,7 @@ void DebugRectHistory::savePropertyChangedRects(const std::vector<LayerImpl*>& r
                 continue;
 
             if (layer->layerPropertyChanged() || layer->layerSurfacePropertyChanged())
-                m_debugRects.push_back(DebugRect(PropertyChangedRectType, MathUtil::mapClippedRect(layer->screenSpaceTransform(), FloatRect(FloatPoint::zero(), layer->contentBounds()))));
+                m_debugRects.push_back(DebugRect(PropertyChangedRectType, MathUtil::mapClippedRect(layer->screenSpaceTransform(), gfx::RectF(gfx::PointF(), layer->contentBounds()))));
         }
     }
 }
@@ -116,7 +117,7 @@ void DebugRectHistory::saveScreenSpaceRects(const std::vector<LayerImpl* >& rend
 void DebugRectHistory::saveOccludingRects(const std::vector<gfx::Rect>& occludingRects)
 {
     for (size_t i = 0; i < occludingRects.size(); ++i)
-        m_debugRects.push_back(DebugRect(OccludingRectType, cc::IntRect(occludingRects[i])));
+        m_debugRects.push_back(DebugRect(OccludingRectType, cc::FloatRect(occludingRects[i])));
 }
 
 }  // namespace cc

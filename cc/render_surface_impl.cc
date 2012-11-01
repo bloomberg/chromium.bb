@@ -18,6 +18,7 @@
 #include "cc/render_pass_draw_quad.h"
 #include "cc/render_pass_sink.h"
 #include "cc/shared_quad_state.h"
+#include "ui/gfx/rect_conversions.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;
@@ -51,11 +52,11 @@ RenderSurfaceImpl::~RenderSurfaceImpl()
 {
 }
 
-FloatRect RenderSurfaceImpl::drawableContentRect() const
+gfx::RectF RenderSurfaceImpl::drawableContentRect() const
 {
-    FloatRect drawableContentRect = MathUtil::mapClippedRect(m_drawTransform, m_contentRect);
+    gfx::RectF drawableContentRect = MathUtil::mapClippedRect(m_drawTransform, m_contentRect);
     if (m_owningLayer->hasReplica())
-        drawableContentRect.unite(MathUtil::mapClippedRect(m_replicaDrawTransform, m_contentRect));
+        drawableContentRect.Union(MathUtil::mapClippedRect(m_replicaDrawTransform, m_contentRect));
 
     return drawableContentRect;
 }
@@ -102,7 +103,7 @@ int RenderSurfaceImpl::owningLayerId() const
 }
 
 
-void RenderSurfaceImpl::setClipRect(const IntRect& clipRect)
+void RenderSurfaceImpl::setClipRect(const gfx::Rect& clipRect)
 {
     if (m_clipRect == clipRect)
         return;
@@ -113,10 +114,10 @@ void RenderSurfaceImpl::setClipRect(const IntRect& clipRect)
 
 bool RenderSurfaceImpl::contentsChanged() const
 {
-    return !m_damageTracker->currentDamageRect().isEmpty();
+    return !m_damageTracker->currentDamageRect().IsEmpty();
 }
 
-void RenderSurfaceImpl::setContentRect(const IntRect& contentRect)
+void RenderSurfaceImpl::setContentRect(const gfx::Rect& contentRect)
 {
     if (m_contentRect == contentRect)
         return;
@@ -157,23 +158,24 @@ void RenderSurfaceImpl::clearLayerLists()
     m_contributingDelegatedRenderPassLayerList.clear();
 }
 
-static inline IntRect computeClippedRectInTarget(const LayerImpl* owningLayer)
+static inline gfx::Rect computeClippedRectInTarget(const LayerImpl* owningLayer)
 {
     DCHECK(owningLayer->parent());
 
     const LayerImpl* renderTarget = owningLayer->parent()->renderTarget();
     const RenderSurfaceImpl* self = owningLayer->renderSurface();
 
-    IntRect clippedRectInTarget = self->clipRect();
+    gfx::Rect clippedRectInTarget = self->clipRect();
     if (owningLayer->backgroundFilters().hasFilterThatMovesPixels()) {
         // If the layer has background filters that move pixels, we cannot scissor as tightly.
         // FIXME: this should be able to be a tighter scissor, perhaps expanded by the filter outsets?
         clippedRectInTarget = renderTarget->renderSurface()->contentRect();
-    } else if (clippedRectInTarget.isEmpty()) {
+    } else if (clippedRectInTarget.IsEmpty()) {
         // For surfaces, empty clipRect means that the surface does not clip anything.
-        clippedRectInTarget = enclosingIntRect(intersection(renderTarget->renderSurface()->contentRect(), self->drawableContentRect()));
+        clippedRectInTarget = renderTarget->renderSurface()->contentRect();
+        clippedRectInTarget.Intersect(gfx::ToEnclosingRect(self->drawableContentRect()));
     } else
-        clippedRectInTarget.intersect(enclosingIntRect(self->drawableContentRect()));
+        clippedRectInTarget.Intersect(gfx::ToEnclosingRect(self->drawableContentRect()));
     return clippedRectInTarget;
 }
 
@@ -202,7 +204,7 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
 {
     DCHECK(!forReplica || m_owningLayer->hasReplica());
 
-    IntRect clippedRectInTarget = computeClippedRectInTarget(m_owningLayer);
+    gfx::Rect clippedRectInTarget = computeClippedRectInTarget(m_owningLayer);
     bool isOpaque = false;
     const WebTransformationMatrix& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::create(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity, isOpaque).Pass());
@@ -222,12 +224,12 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
     // to draw the layer and its reflection in. For now we only apply a separate reflection
     // mask if the contents don't have a mask of their own.
     LayerImpl* maskLayer = m_owningLayer->maskLayer();
-    if (maskLayer && (!maskLayer->drawsContent() || maskLayer->bounds().isEmpty()))
+    if (maskLayer && (!maskLayer->drawsContent() || maskLayer->bounds().IsEmpty()))
         maskLayer = 0;
 
     if (!maskLayer && forReplica) {
         maskLayer = m_owningLayer->replicaLayer()->maskLayer();
-        if (maskLayer && (!maskLayer->drawsContent() || maskLayer->bounds().isEmpty()))
+        if (maskLayer && (!maskLayer->drawsContent() || maskLayer->bounds().IsEmpty()))
             maskLayer = 0;
     }
 
@@ -243,7 +245,7 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
     }
 
     ResourceProvider::ResourceId maskResourceId = maskLayer ? maskLayer->contentsResourceId() : 0;
-    IntRect contentsChangedSinceLastFrame = contentsChanged() ? m_contentRect : IntRect();
+    gfx::Rect contentsChangedSinceLastFrame = contentsChanged() ? m_contentRect : gfx::Rect();
 
     quadSink.append(RenderPassDrawQuad::create(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame,
                                                  maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY).PassAs<DrawQuad>(), appendQuadsData);

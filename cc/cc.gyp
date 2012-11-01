@@ -46,6 +46,7 @@
       'frame_rate_controller.h',
       'frame_rate_counter.cc',
       'frame_rate_counter.h',
+      'geometry.h',
       'graphics_context.h',
       'heads_up_display_layer_impl.cc',
       'heads_up_display_layer_impl.h',

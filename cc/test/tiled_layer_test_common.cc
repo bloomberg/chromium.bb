@@ -49,15 +49,15 @@ void FakeLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::
 {
     m_prepareCount++;
     m_lastUpdateRect = contentRect;
-    if (!m_rectToInvalidate.isEmpty()) {
+    if (!m_rectToInvalidate.IsEmpty()) {
         m_layer->invalidateContentRect(m_rectToInvalidate);
-        m_rectToInvalidate = IntRect();
+        m_rectToInvalidate = gfx::Rect();
         m_layer = NULL;
     }
     resultingOpaqueRect = m_opaquePaintRect;
 }
 
-void FakeLayerUpdater::setRectToInvalidate(const IntRect& rect, FakeTiledLayer* layer)
+void FakeLayerUpdater::setRectToInvalidate(const gfx::Rect& rect, FakeTiledLayer* layer)
 {
     m_rectToInvalidate = rect;
     m_layer = layer;
@@ -101,7 +101,7 @@ FakeTiledLayer::~FakeTiledLayer()
 {
 }
 
-void FakeTiledLayer::setNeedsDisplayRect(const FloatRect& rect)
+void FakeTiledLayer::setNeedsDisplayRect(const gfx::RectF& rect)
 {
     m_lastNeedsDisplayRect = rect;
     TiledLayer::setNeedsDisplayRect(rect);
@@ -134,7 +134,7 @@ cc::LayerUpdater* FakeTiledLayer::updater() const
     return m_fakeUpdater.get();
 }
 
-cc::IntSize FakeTiledLayerWithScaledBounds::contentBounds() const
+gfx::Size FakeTiledLayerWithScaledBounds::contentBounds() const
 {
     return m_forcedContentBounds;
 }

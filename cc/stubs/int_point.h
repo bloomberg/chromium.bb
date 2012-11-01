@@ -32,7 +32,11 @@ public:
     IntPoint(WebCore::IntPoint point)
         : WebCore::IntPoint(point.x(), point.y())
     {
+    }
 
+    explicit IntPoint(gfx::Point point)
+        : WebCore::IntPoint(point.x(), point.y())
+    {
     }
 
     operator gfx::Point() const { return gfx::Point(x(), y()); }

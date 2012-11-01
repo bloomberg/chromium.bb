@@ -35,7 +35,7 @@ public:
 
     virtual bool swapBuffers() OVERRIDE;
 
-    virtual void getFramebufferPixels(void *pixels, const IntRect&) OVERRIDE;
+    virtual void getFramebufferPixels(void *pixels, const gfx::Rect&) OVERRIDE;
 
     virtual void setVisible(bool) OVERRIDE;
 

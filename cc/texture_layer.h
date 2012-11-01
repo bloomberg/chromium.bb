@@ -31,7 +31,7 @@ public:
     void setFlipped(bool);
 
     // Sets a UV transform to be used at draw time. Defaults to (0, 0, 1, 1).
-    void setUVRect(const FloatRect&);
+    void setUVRect(const gfx::RectF&);
 
     // Sets whether the alpha channel is premultiplied or unpremultiplied. Defaults to true.
     void setPremultipliedAlpha(bool);
@@ -46,7 +46,7 @@ public:
 
     void willModifyTexture();
 
-    virtual void setNeedsDisplayRect(const FloatRect&) OVERRIDE;
+    virtual void setNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
 
     virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
@@ -61,7 +61,7 @@ private:
     TextureLayerClient* m_client;
 
     bool m_flipped;
-    FloatRect m_uvRect;
+    gfx::RectF m_uvRect;
     bool m_premultipliedAlpha;
     bool m_rateLimitContext;
     bool m_contextLost;

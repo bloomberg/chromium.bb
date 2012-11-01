@@ -79,7 +79,7 @@ void IOSurfaceLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
     appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
-    IntRect quadRect(IntPoint(), contentBounds());
+    gfx::Rect quadRect(gfx::Point(), contentBounds());
     quadSink.append(IOSurfaceDrawQuad::create(sharedQuadState, quadRect, m_ioSurfaceSize, m_ioSurfaceTextureId, IOSurfaceDrawQuad::Flipped).PassAs<DrawQuad>(), appendQuadsData);
 }
 
@@ -98,7 +98,7 @@ void IOSurfaceLayerImpl::didLoseContext()
     m_ioSurfaceChanged = true;
 }
 
-void IOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, const IntSize& size)
+void IOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, const gfx::Size& size)
 {
     if (m_ioSurfaceId != ioSurfaceId)
         m_ioSurfaceChanged = true;

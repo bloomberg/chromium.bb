@@ -9,6 +9,10 @@
 #include "FloatPoint.h"
 #include "IntSize.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace cc {
 
 class LayerImpl;
@@ -35,7 +39,7 @@ public:
     ScrollbarLayerImpl* verticalScrollbarLayer() const { return m_verticalScrollbarLayer; }
 
     FloatPoint currentPos() const { return m_currentPos; }
-    IntSize totalSize() const { return m_totalSize; }
+    gfx::Size totalSize() const { return m_totalSize; }
     IntSize maximum() const { return m_maximum; }
 
     virtual void didPinchGestureBeginAtTime(double monotonicTime) { }
@@ -47,14 +51,14 @@ protected:
     explicit ScrollbarAnimationController(LayerImpl* scrollLayer);
 
 private:
-    static IntSize getScrollLayerBounds(const LayerImpl*);
+    static gfx::Size getScrollLayerBounds(const LayerImpl*);
 
     // Beware of dangling pointer. Always update these during tree synchronization.
     ScrollbarLayerImpl* m_horizontalScrollbarLayer;
     ScrollbarLayerImpl* m_verticalScrollbarLayer;
 
     FloatPoint m_currentPos;
-    IntSize m_totalSize;
+    gfx::Size m_totalSize;
     IntSize m_maximum;
 };
 

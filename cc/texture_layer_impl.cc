@@ -43,7 +43,7 @@ void TextureLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQu
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
     appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
-    IntRect quadRect(IntPoint(), contentBounds());
+    gfx::Rect quadRect(gfx::Point(), contentBounds());
     quadSink.append(TextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_flipped).PassAs<DrawQuad>(), appendQuadsData);
 }
 

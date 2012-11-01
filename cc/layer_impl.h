@@ -5,8 +5,6 @@
 #ifndef CCLayerImpl_h
 #define CCLayerImpl_h
 
-#include "FloatRect.h"
-#include "IntRect.h"
 #include "Region.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +16,8 @@
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <string>
@@ -95,8 +95,8 @@ public:
     // Returns true if any of the layer's descendants has content to draw.
     virtual bool descendantDrawsContent();
 
-    void setAnchorPoint(const FloatPoint&);
-    const FloatPoint& anchorPoint() const { return m_anchorPoint; }
+    void setAnchorPoint(const gfx::PointF&);
+    const gfx::PointF& anchorPoint() const { return m_anchorPoint; }
 
     void setAnchorPointZ(float);
     float anchorPointZ() const { return m_anchorPointZ; }
@@ -122,8 +122,8 @@ public:
     void setOpacity(float);
     bool opacityIsAnimating() const;
 
-    void setPosition(const FloatPoint&);
-    const FloatPoint& position() const { return m_position; }
+    void setPosition(const gfx::PointF&);
+    const gfx::PointF& position() const { return m_position; }
 
     void setIsContainerForFixedPositionLayers(bool isContainerForFixedPositionLayers) { m_isContainerForFixedPositionLayers = isContainerForFixedPositionLayers; }
     bool isContainerForFixedPositionLayers() const { return m_isContainerForFixedPositionLayers; }
@@ -171,13 +171,13 @@ public:
     // contentsScale to appropriate values. LayerImpl doesn't calculate any of
     // them from the other values.
 
-    void setBounds(const IntSize&);
-    const IntSize& bounds() const { return m_bounds; }
+    void setBounds(const gfx::Size&);
+    const gfx::Size& bounds() const { return m_bounds; }
 
     // ContentBounds may be [0, 1) pixels larger than bounds * contentsScale.
     // Don't calculate scale from it. Use contentsScale instead for accuracy.
-    void setContentBounds(const IntSize&);
-    IntSize contentBounds() const { return m_contentBounds; }
+    void setContentBounds(const gfx::Size&);
+    gfx::Size contentBounds() const { return m_contentBounds; }
 
     float contentsScaleX() const { return m_contentsScaleX; }
     float contentsScaleY() const { return m_contentsScaleY; }
@@ -218,8 +218,8 @@ public:
 
     InputHandlerClient::ScrollStatus tryScroll(const IntPoint& viewportPoint, InputHandlerClient::ScrollInputType) const;
 
-    const IntRect& visibleContentRect() const { return m_visibleContentRect; }
-    void setVisibleContentRect(const IntRect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }
+    const gfx::Rect& visibleContentRect() const { return m_visibleContentRect; }
+    void setVisibleContentRect(const gfx::Rect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }
 
     bool doubleSided() const { return m_doubleSided; }
     void setDoubleSided(bool);
@@ -237,10 +237,10 @@ public:
     bool screenSpaceTransformIsAnimating() const { return m_screenSpaceTransformIsAnimating; }
     void setScreenSpaceTransformIsAnimating(bool animating) { m_screenSpaceTransformIsAnimating = animating; }
 
-    const IntRect& drawableContentRect() const { return m_drawableContentRect; }
-    void setDrawableContentRect(const IntRect& rect) { m_drawableContentRect = rect; }
-    const FloatRect& updateRect() const { return m_updateRect; }
-    void setUpdateRect(const FloatRect& updateRect) { m_updateRect = updateRect; }
+    const gfx::Rect& drawableContentRect() const { return m_drawableContentRect; }
+    void setDrawableContentRect(const gfx::Rect& rect) { m_drawableContentRect = rect; }
+    const gfx::RectF& updateRect() const { return m_updateRect; }
+    void setUpdateRect(const gfx::RectF& updateRect) { m_updateRect = updateRect; }
 
     std::string layerTreeAsText() const;
 
@@ -270,7 +270,7 @@ public:
     ScrollbarLayerImpl* verticalScrollbarLayer() const;
     void setVerticalScrollbarLayer(ScrollbarLayerImpl*);
 
-    IntRect layerRectToContentRect(const FloatRect& layerRect) const;
+    gfx::Rect layerRectToContentRect(const gfx::RectF& layerRect) const;
 
 protected:
     explicit LayerImpl(int);
@@ -306,10 +306,10 @@ private:
     LayerTreeHostImpl* m_layerTreeHostImpl;
 
     // Properties synchronized from the associated Layer.
-    FloatPoint m_anchorPoint;
+    gfx::PointF m_anchorPoint;
     float m_anchorPointZ;
-    IntSize m_bounds;
-    IntSize m_contentBounds;
+    gfx::Size m_bounds;
+    gfx::Size m_contentBounds;
     float m_contentsScaleX;
     float m_contentsScaleY;
     IntPoint m_scrollPosition;
@@ -332,11 +332,11 @@ private:
     bool m_layerSurfacePropertyChanged;
 
     // Uses layer's content space.
-    IntRect m_visibleContentRect;
+    gfx::Rect m_visibleContentRect;
     bool m_masksToBounds;
     bool m_contentsOpaque;
     float m_opacity;
-    FloatPoint m_position;
+    gfx::PointF m_position;
     bool m_preserves3D;
     bool m_useParentBackfaceVisibility;
     bool m_drawCheckerboardForMissingTiles;
@@ -394,12 +394,12 @@ private:
 
     // Hierarchical bounding rect containing the layer and its descendants.
     // Uses target surface's space.
-    IntRect m_drawableContentRect;
+    gfx::Rect m_drawableContentRect;
 
     // Rect indicating what was repainted/updated during update.
     // Note that plugin layers bypass this and leave it empty.
     // Uses layer's content space.
-    FloatRect m_updateRect;
+    gfx::RectF m_updateRect;
 
     // Manages animations for this layer.
     scoped_ptr<LayerAnimationController> m_layerAnimationController;

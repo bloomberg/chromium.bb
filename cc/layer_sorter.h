@@ -7,10 +7,10 @@
 
 #include "FloatPoint3D.h"
 #include "FloatQuad.h"
-#include "FloatRect.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "cc/layer_impl.h"
+#include "ui/gfx/rect_f.h"
 
 #if defined(COMPILER_GCC)
 namespace cc
@@ -40,13 +40,14 @@ struct GraphEdge;
 struct LayerShape {
     LayerShape();
     LayerShape(float width, float height, const WebKit::WebTransformationMatrix& drawTransform);
+    ~LayerShape();
 
-    float layerZFromProjectedPoint(const FloatPoint&) const;
+    float layerZFromProjectedPoint(const gfx::PointF&) const;
 
     FloatPoint3D layerNormal;
     FloatPoint3D transformOrigin;
     FloatQuad projectedQuad;
-    FloatRect projectedBounds;
+    gfx::RectF projectedBounds;
 };
 
 struct GraphNode {

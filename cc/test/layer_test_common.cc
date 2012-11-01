@@ -6,48 +6,52 @@
 
 #include "cc/test/layer_test_common.h"
 
+#include "Region.h"
 #include "cc/draw_quad.h"
 #include "cc/math_util.h"
+#include "cc/render_pass.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace LayerTestCommon {
 
 // Align with expected and actual output
 const char* quadString = "    Quad: ";
 
-bool floatRectCanBeSafelyRoundedToIntRect(const cc::FloatRect& r)
+bool canRectFBeSafelyRoundedToRect(const gfx::RectF& r)
 {
     // Ensure that range of float values is not beyond integer range.
-    if (!r.isExpressibleAsIntRect())
+    if (!cc::FloatRect(r).isExpressibleAsIntRect())
         return false;
 
     // Ensure that the values are actually integers.
-    if (floorf(r.x()) == r.x()
-        && floorf(r.y()) == r.y()
-        && floorf(r.width()) == r.width()
-        && floorf(r.height()) == r.height())
+    if (gfx::ToFlooredPoint(r.origin()) == r.origin()
+        && gfx::ToFlooredSize(r.size()) == r.size())
         return true;
 
     return false;
 }
 
 void verifyQuadsExactlyCoverRect(const cc::QuadList& quads,
-                                 const cc::IntRect& rect) {
-    cc::Region remaining(rect);
+                                 const gfx::Rect& rect) {
+    cc::Region remaining = cc::IntRect(rect);
 
     for (size_t i = 0; i < quads.size(); ++i) {
         cc::DrawQuad* quad = quads[i];
-        cc::FloatRect floatQuadRect = cc::MathUtil::mapClippedRect(quad->sharedQuadState()->quadTransform, cc::FloatRect(quad->quadRect()));
+        gfx::RectF quadRectF = cc::MathUtil::mapClippedRect(quad->sharedQuadState()->quadTransform, gfx::RectF(quad->quadRect()));
 
         // Before testing for exact coverage in the integer world, assert that rounding
         // will not round the rect incorrectly.
-        ASSERT_TRUE(floatRectCanBeSafelyRoundedToIntRect(floatQuadRect));
+        ASSERT_TRUE(canRectFBeSafelyRoundedToRect(quadRectF));
 
-        cc::IntRect quadRect = enclosingIntRect(floatQuadRect);
+        gfx::Rect quadRect = gfx::ToEnclosingRect(quadRectF);
 
-        EXPECT_TRUE(rect.contains(quadRect)) << quadString << i;
-        EXPECT_TRUE(remaining.contains(quadRect)) << quadString << i;
-        remaining.subtract(cc::Region(quadRect));
+        EXPECT_TRUE(rect.Contains(quadRect)) << quadString << i;
+        EXPECT_TRUE(remaining.contains(cc::IntRect(quadRect))) << quadString << i;
+        remaining.subtract(cc::IntRect(quadRect));
     }
 
     EXPECT_TRUE(remaining.isEmpty());

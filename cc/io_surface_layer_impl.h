@@ -5,8 +5,8 @@
 #ifndef CCIOSurfaceLayerImpl_h
 #define CCIOSurfaceLayerImpl_h
 
-#include "IntSize.h"
 #include "cc/layer_impl.h"
+#include "ui/gfx/size.h"
 
 namespace cc {
 
@@ -18,7 +18,7 @@ public:
     }
     virtual ~IOSurfaceLayerImpl();
 
-    void setIOSurfaceProperties(unsigned ioSurfaceId, const IntSize&);
+    void setIOSurfaceProperties(unsigned ioSurfaceId, const gfx::Size&);
 
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
@@ -33,7 +33,7 @@ private:
     virtual const char* layerTypeAsString() const OVERRIDE;
 
     unsigned m_ioSurfaceId;
-    IntSize m_ioSurfaceSize;
+    gfx::Size m_ioSurfaceSize;
     bool m_ioSurfaceChanged;
     unsigned m_ioSurfaceTextureId;
 };

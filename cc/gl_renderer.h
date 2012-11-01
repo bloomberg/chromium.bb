@@ -50,7 +50,7 @@ public:
     // puts backbuffer onscreen
     virtual bool swapBuffers() OVERRIDE;
 
-    virtual void getFramebufferPixels(void *pixels, const IntRect&) OVERRIDE;
+    virtual void getFramebufferPixels(void *pixels, const gfx::Rect&) OVERRIDE;
 
     virtual bool isContextLost() OVERRIDE;
 
@@ -69,7 +69,7 @@ protected:
     const FloatQuad& sharedGeometryQuad() const { return m_sharedGeometryQuad; }
     const GeometryBinding* sharedGeometry() const { return m_sharedGeometry.get(); }
 
-    bool getFramebufferTexture(ScopedTexture*, const IntRect& deviceRect);
+    bool getFramebufferTexture(ScopedTexture*, const gfx::Rect& deviceRect);
     void releaseRenderPassTextures();
 
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;

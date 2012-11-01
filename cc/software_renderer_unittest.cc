@@ -40,10 +40,10 @@ public:
     FakeWebCompositorOutputSurface* outputSurface() const { return m_outputSurface.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
     SoftwareRenderer* renderer() const { return m_renderer.get(); }
-    void setViewportSize(IntSize viewportSize) { m_viewportSize = viewportSize; }
+    void setViewportSize(gfx::Size viewportSize) { m_viewportSize = viewportSize; }
 
     // RendererClient implementation.
-    virtual const IntSize& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
+    virtual const gfx::Size& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
     virtual const LayerTreeSettings& settings() const OVERRIDE { return m_settings; }
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
@@ -57,17 +57,17 @@ protected:
     scoped_ptr<FakeWebCompositorOutputSurface> m_outputSurface;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<SoftwareRenderer> m_renderer;
-    IntSize m_viewportSize;
+    gfx::Size m_viewportSize;
     LayerTreeSettings m_settings;
 };
 
 TEST_F(SoftwareRendererTest, solidColorQuad)
 {
-    IntSize outerSize(100, 100);
+    gfx::Size outerSize(100, 100);
     int outerPixels = outerSize.width() * outerSize.height();
-    IntSize innerSize(98, 98);
-    IntRect outerRect(IntPoint(), outerSize);
-    IntRect innerRect(IntPoint(1, 1), innerSize);
+    gfx::Size innerSize(98, 98);
+    gfx::Rect outerRect(gfx::Point(), outerSize);
+    gfx::Rect innerRect(gfx::Point(1, 1), innerSize);
     setViewportSize(outerSize);
 
     initializeRenderer();
@@ -103,12 +103,12 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
 
 TEST_F(SoftwareRendererTest, tileQuad)
 {
-    IntSize outerSize(100, 100);
+    gfx::Size outerSize(100, 100);
     int outerPixels = outerSize.width() * outerSize.height();
-    IntSize innerSize(98, 98);
+    gfx::Size innerSize(98, 98);
     int innerPixels = innerSize.width() * innerSize.height();
-    IntRect outerRect(IntPoint(), outerSize);
-    IntRect innerRect(IntPoint(1, 1), innerSize);
+    gfx::Rect outerRect(gfx::Point(), outerSize);
+    gfx::Rect innerRect(gfx::Point(1, 1), innerSize);
     setViewportSize(outerSize);
     initializeRenderer();
 
@@ -127,13 +127,13 @@ TEST_F(SoftwareRendererTest, tileQuad)
     resourceProvider()->upload(resourceYellow, reinterpret_cast<uint8_t*>(yellowPixels.get()), gfx::Rect(gfx::Point(), outerSize), gfx::Rect(gfx::Point(), outerSize), gfx::Vector2d());
     resourceProvider()->upload(resourceCyan, reinterpret_cast<uint8_t*>(cyanPixels.get()), gfx::Rect(gfx::Point(), innerSize), gfx::Rect(gfx::Point(), innerSize), gfx::Vector2d());
 
-    IntRect rect = IntRect(IntPoint(), deviceViewportSize());
+    gfx::Rect rect = gfx::Rect(gfx::Point(), deviceViewportSize());
 
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
     RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
-    scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, IntRect(IntPoint(), deviceViewportSize()), WebTransformationMatrix());
-    scoped_ptr<DrawQuad> outerQuad = TileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, IntPoint(), outerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
-    scoped_ptr<DrawQuad> innerQuad = TileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, IntPoint(), innerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
+    scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, gfx::Rect(gfx::Point(), deviceViewportSize()), WebTransformationMatrix());
+    scoped_ptr<DrawQuad> outerQuad = TileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, gfx::Vector2d(), outerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
+    scoped_ptr<DrawQuad> innerQuad = TileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, gfx::Vector2d(), innerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
     rootRenderPass->appendQuad(innerQuad.Pass());
     rootRenderPass->appendQuad(outerQuad.Pass());
 

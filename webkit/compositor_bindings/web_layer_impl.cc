@@ -89,7 +89,7 @@ int WebLayerImpl::id() const
 
 void WebLayerImpl::invalidateRect(const WebFloatRect& rect)
 {
-    m_layer->setNeedsDisplayRect(convert(rect));
+    m_layer->setNeedsDisplayRect(rect);
 }
 
 void WebLayerImpl::invalidate()
@@ -124,12 +124,12 @@ void WebLayerImpl::removeAllChildren()
 
 void WebLayerImpl::setAnchorPoint(const WebFloatPoint& anchorPoint)
 {
-    m_layer->setAnchorPoint(convert(anchorPoint));
+    m_layer->setAnchorPoint(anchorPoint);
 }
 
 WebFloatPoint WebLayerImpl::anchorPoint() const
 {
-    return WebFloatPoint(m_layer->anchorPoint().x(), m_layer->anchorPoint().y());
+    return m_layer->anchorPoint();
 }
 
 void WebLayerImpl::setAnchorPointZ(float anchorPointZ)
@@ -144,12 +144,12 @@ float WebLayerImpl::anchorPointZ() const
 
 void WebLayerImpl::setBounds(const WebSize& size)
 {
-    m_layer->setBounds(convert(size));
+    m_layer->setBounds(size);
 }
 
 WebSize WebLayerImpl::bounds() const
 {
-    return convert(m_layer->bounds());
+    return m_layer->bounds();
 }
 
 void WebLayerImpl::setMasksToBounds(bool masksToBounds)
@@ -194,12 +194,12 @@ bool WebLayerImpl::opaque() const
 
 void WebLayerImpl::setPosition(const WebFloatPoint& position)
 {
-    m_layer->setPosition(convert(position));
+    m_layer->setPosition(position);
 }
 
 WebFloatPoint WebLayerImpl::position() const
 {
-    return WebFloatPoint(m_layer->position().x(), m_layer->position().y());
+    return m_layer->position();
 }
 
 void WebLayerImpl::setSublayerTransform(const SkMatrix44& matrix)

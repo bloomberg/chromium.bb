@@ -202,7 +202,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     // FIXME: When we pass quads out of process, we need to double-buffer, or
     // otherwise synchonize use of all textures in the quad.
 
-    gfx::Rect quadRect(contentBounds());
+    gfx::Rect quadRect(gfx::Point(), contentBounds());
 
     switch (m_format) {
     case GL_LUMINANCE: {

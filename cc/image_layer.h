@@ -33,7 +33,7 @@ private:
 
     virtual LayerUpdater* updater() const OVERRIDE;
     virtual void createUpdaterIfNeeded() OVERRIDE;
-    virtual IntSize contentBounds() const OVERRIDE;
+    virtual gfx::Size contentBounds() const OVERRIDE;
 
     SkBitmap m_bitmap;
 

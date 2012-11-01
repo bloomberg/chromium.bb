@@ -26,7 +26,7 @@ public:
     using Texture::format;
     using Texture::bytes;
 
-    bool allocate(int pool, const IntSize&, GLenum format, ResourceProvider::TextureUsageHint);
+    bool allocate(int pool, const gfx::Size&, GLenum format, ResourceProvider::TextureUsageHint);
     void free();
     void leak();
 

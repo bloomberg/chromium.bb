@@ -38,6 +38,11 @@ public:
     {
     }
 
+    explicit FloatSize(gfx::SizeF size)
+        : WebCore::FloatSize(size.width(), size.height())
+    {
+    }
+
     operator gfx::SizeF() const { return gfx::SizeF(width(), height()); }
 };
 

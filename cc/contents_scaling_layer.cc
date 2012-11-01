@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include "cc/contents_scaling_layer.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace cc {
 
@@ -15,9 +16,8 @@ ContentsScalingLayer::ContentsScalingLayer()
 ContentsScalingLayer::~ContentsScalingLayer() {
 }
 
-IntSize ContentsScalingLayer::contentBounds() const {
-  return IntSize(ceil(bounds().width() * contentsScaleX()),
-                 ceil(bounds().height() * contentsScaleY()));
+gfx::Size ContentsScalingLayer::contentBounds() const {
+  return gfx::ToCeiledSize(bounds().Scale(contentsScaleX(), contentsScaleY()));
 }
 
 float ContentsScalingLayer::contentsScaleX() const {

@@ -51,8 +51,8 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.showPaintRects = webSettings.showPaintRects;
     settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;
     settings.refreshRate = webSettings.refreshRate;
-    settings.defaultTileSize = convert(webSettings.defaultTileSize);
-    settings.maxUntiledLayerSize = convert(webSettings.maxUntiledLayerSize);
+    settings.defaultTileSize = webSettings.defaultTileSize;
+    settings.maxUntiledLayerSize = webSettings.maxUntiledLayerSize;
     m_layerTreeHost = LayerTreeHost::create(this, settings);
     if (!m_layerTreeHost.get())
         return false;
@@ -77,24 +77,24 @@ void WebLayerTreeViewImpl::clearRootLayer()
 void WebLayerTreeViewImpl::setViewportSize(const WebSize& layoutViewportSize, const WebSize& deviceViewportSize)
 {
     if (!deviceViewportSize.isEmpty())
-        m_layerTreeHost->setViewportSize(convert(layoutViewportSize), convert(deviceViewportSize));
+        m_layerTreeHost->setViewportSize(layoutViewportSize, deviceViewportSize);
     else
-        m_layerTreeHost->setViewportSize(convert(layoutViewportSize), convert(layoutViewportSize));
+        m_layerTreeHost->setViewportSize(layoutViewportSize, layoutViewportSize);
 }
 
 WebSize WebLayerTreeViewImpl::layoutViewportSize() const
 {
-    return convert(m_layerTreeHost->layoutViewportSize());
+    return m_layerTreeHost->layoutViewportSize();
 }
 
 WebSize WebLayerTreeViewImpl::deviceViewportSize() const
 {
-    return convert(m_layerTreeHost->deviceViewportSize());
+    return m_layerTreeHost->deviceViewportSize();
 }
 
 WebFloatPoint WebLayerTreeViewImpl::adjustEventPointForPinchZoom(const WebFloatPoint& point) const
 {
-    return convert(m_layerTreeHost->adjustEventPointForPinchZoom(convert(point)));
+    return m_layerTreeHost->adjustEventPointForPinchZoom(point);
 }
 
 void WebLayerTreeViewImpl::setDeviceScaleFactor(const float deviceScaleFactor)
@@ -195,9 +195,9 @@ void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
 
 void WebLayerTreeViewImpl::setFontAtlas(SkBitmap bitmap, WebRect asciiToWebRectTable[128], int fontHeight)
 {
-    IntRect asciiToRectTable[128];
+    gfx::Rect asciiToRectTable[128];
     for (int i = 0; i < 128; ++i)
-        asciiToRectTable[i] = convert(asciiToWebRectTable[i]);
+        asciiToRectTable[i] = asciiToWebRectTable[i];
     scoped_ptr<FontAtlas> fontAtlas = FontAtlas::create(bitmap, asciiToRectTable, fontHeight);
     m_layerTreeHost->setFontAtlas(fontAtlas.Pass());
 }

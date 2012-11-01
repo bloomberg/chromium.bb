@@ -5,8 +5,6 @@
 #ifndef CCTiledLayerTestCommon_h
 #define CCTiledLayerTestCommon_h
 
-#include "IntRect.h"
-#include "IntSize.h"
 #include "Region.h"
 #include "cc/layer_updater.h"
 #include "cc/prioritized_texture.h"
@@ -16,6 +14,8 @@
 #include "cc/texture_uploader.h"
 #include "cc/tiled_layer.h"
 #include "cc/tiled_layer_impl.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace WebKitTests {
 
@@ -42,7 +42,7 @@ public:
     virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float, float, gfx::Rect& resultingOpaqueRect, cc::RenderingStats&) OVERRIDE;
     // Sets the rect to invalidate during the next call to prepareToUpdate(). After the next
     // call to prepareToUpdate() the rect is reset.
-    void setRectToInvalidate(const cc::IntRect&, FakeTiledLayer*);
+    void setRectToInvalidate(const gfx::Rect&, FakeTiledLayer*);
     // Last rect passed to prepareToUpdate().
     const gfx::Rect& lastUpdateRect()  const { return m_lastUpdateRect; }
 
@@ -63,7 +63,7 @@ protected:
 private:
     int m_prepareCount;
     int m_updateCount;
-    cc::IntRect m_rectToInvalidate;
+    gfx::Rect m_rectToInvalidate;
     gfx::Rect m_lastUpdateRect;
     gfx::Rect m_opaquePaintRect;
     scoped_refptr<FakeTiledLayer> m_layer;
@@ -82,7 +82,7 @@ class FakeTiledLayer : public cc::TiledLayer {
 public:
     explicit FakeTiledLayer(cc::PrioritizedTextureManager*);
 
-    static cc::IntSize tileSize() { return cc::IntSize(100, 100); }
+    static gfx::Size tileSize() { return gfx::Size(100, 100); }
 
     using cc::TiledLayer::invalidateContentRect;
     using cc::TiledLayer::needsIdlePaint;
@@ -90,14 +90,14 @@ public:
     using cc::TiledLayer::numPaintedTiles;
     using cc::TiledLayer::idlePaintRect;
 
-    virtual void setNeedsDisplayRect(const cc::FloatRect&) OVERRIDE;
-    const cc::FloatRect& lastNeedsDisplayRect() const { return m_lastNeedsDisplayRect; }
+    virtual void setNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
+    const gfx::RectF& lastNeedsDisplayRect() const { return m_lastNeedsDisplayRect; }
 
     virtual void setTexturePriorities(const cc::PriorityCalculator&) OVERRIDE;
 
     virtual cc::PrioritizedTextureManager* textureManager() const OVERRIDE;
     FakeLayerUpdater* fakeLayerUpdater() { return m_fakeUpdater.get(); }
-    cc::FloatRect updateRect() { return m_updateRect; }
+    gfx::RectF updateRect() { return m_updateRect; }
 
 protected:
     virtual cc::LayerUpdater* updater() const OVERRIDE;
@@ -107,22 +107,22 @@ protected:
 private:
     scoped_refptr<FakeLayerUpdater> m_fakeUpdater;
     cc::PrioritizedTextureManager* m_textureManager;
-    cc::FloatRect m_lastNeedsDisplayRect;
+    gfx::RectF m_lastNeedsDisplayRect;
 };
 
 class FakeTiledLayerWithScaledBounds : public FakeTiledLayer {
 public:
     explicit FakeTiledLayerWithScaledBounds(cc::PrioritizedTextureManager*);
 
-    void setContentBounds(const cc::IntSize& contentBounds) { m_forcedContentBounds = contentBounds; }
-    virtual cc::IntSize contentBounds() const OVERRIDE;
+    void setContentBounds(const gfx::Size& contentBounds) { m_forcedContentBounds = contentBounds; }
+    virtual gfx::Size contentBounds() const OVERRIDE;
     virtual float contentsScaleX() const OVERRIDE;
     virtual float contentsScaleY() const OVERRIDE;
     virtual void setContentsScale(float) OVERRIDE;
 
 protected:
     virtual ~FakeTiledLayerWithScaledBounds();
-    cc::IntSize m_forcedContentBounds;
+    gfx::Size m_forcedContentBounds;
 };
 
 }

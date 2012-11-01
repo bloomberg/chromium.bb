@@ -10,15 +10,15 @@
 
 namespace cc {
 
-LayerQuad::Edge::Edge(const FloatPoint& p, const FloatPoint& q)
+LayerQuad::Edge::Edge(const gfx::PointF& p, const gfx::PointF& q)
 {
     DCHECK(p != q);
 
-    FloatPoint tangent(p.y() - q.y(), q.x() - p.x());
+    gfx::Vector2dF tangent(p.y() - q.y(), q.x() - p.x());
     float cross2 = p.x() * q.y() - q.x() * p.y();
 
     set(tangent.x(), tangent.y(), cross2);
-    scale(1.0f / tangent.length());
+    scale(1.0f / tangent.Length());
 }
 
 LayerQuad::LayerQuad(const FloatQuad& quad)

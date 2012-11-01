@@ -41,10 +41,10 @@ public:
     virtual Region visibleContentOpaqueRegion() const OVERRIDE
     {
         if (m_overrideOpaqueContentsRect)
-            return intersection(m_opaqueContentsRect, visibleContentRect());
+            return cc::IntRect(gfx::IntersectRects(m_opaqueContentsRect, visibleContentRect()));
         return Layer::visibleContentOpaqueRegion();
     }
-    void setOpaqueContentsRect(const IntRect& opaqueContentsRect)
+    void setOpaqueContentsRect(const gfx::Rect& opaqueContentsRect)
     {
         m_overrideOpaqueContentsRect = true;
         m_opaqueContentsRect = opaqueContentsRect;
@@ -56,7 +56,7 @@ private:
     }
 
     bool m_overrideOpaqueContentsRect;
-    IntRect m_opaqueContentsRect;
+    gfx::Rect m_opaqueContentsRect;
 };
 
 class TestContentLayerImpl : public LayerImpl {
@@ -71,10 +71,10 @@ public:
     virtual Region visibleContentOpaqueRegion() const OVERRIDE
     {
         if (m_overrideOpaqueContentsRect)
-            return intersection(m_opaqueContentsRect, visibleContentRect());
+            return cc::IntRect(gfx::IntersectRects(m_opaqueContentsRect, visibleContentRect()));
         return LayerImpl::visibleContentOpaqueRegion();
     }
-    void setOpaqueContentsRect(const IntRect& opaqueContentsRect)
+    void setOpaqueContentsRect(const gfx::Rect& opaqueContentsRect)
     {
         m_overrideOpaqueContentsRect = true;
         m_opaqueContentsRect = opaqueContentsRect;
@@ -82,7 +82,7 @@ public:
 
 private:
     bool m_overrideOpaqueContentsRect;
-    IntRect m_opaqueContentsRect;
+    gfx::Rect m_opaqueContentsRect;
 };
 
 static inline bool layerImplDrawTransformIsUnknown(const Layer* layer) { return layer->drawTransformIsAnimating(); }
@@ -200,7 +200,7 @@ protected:
         LayerTreeHost::setNeedsFilterContext(false);
     }
 
-    typename Types::ContentLayerType* createRoot(const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    typename Types::ContentLayerType* createRoot(const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds)
     {
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
@@ -211,7 +211,7 @@ protected:
         return layerPtr;
     }
 
-    typename Types::LayerType* createLayer(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    typename Types::LayerType* createLayer(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds)
     {
         typename Types::LayerPtrType layer(Types::createLayer());
         typename Types::LayerType* layerPtr = layer.get();
@@ -220,7 +220,7 @@ protected:
         return layerPtr;
     }
 
-    typename Types::LayerType* createSurface(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    typename Types::LayerType* createSurface(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds)
     {
         typename Types::LayerType* layer = createLayer(parent, transform, position, bounds);
         WebFilterOperations filters;
@@ -229,7 +229,7 @@ protected:
         return layer;
     }
 
-    typename Types::ContentLayerType* createDrawingLayer(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds, bool opaque)
+    typename Types::ContentLayerType* createDrawingLayer(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds, bool opaque)
     {
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
@@ -240,16 +240,16 @@ protected:
         else {
             layerPtr->setContentsOpaque(false);
             if (opaque)
-                layerPtr->setOpaqueContentsRect(IntRect(IntPoint(), bounds));
+                layerPtr->setOpaqueContentsRect(gfx::Rect(gfx::Point(), bounds));
             else
-                layerPtr->setOpaqueContentsRect(IntRect());
+                layerPtr->setOpaqueContentsRect(gfx::Rect());
         }
 
         parent->addChild(Types::passLayerPtr(layer));
         return layerPtr;
     }
 
-    typename Types::LayerType* createReplicaLayer(typename Types::LayerType* owningLayer, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    typename Types::LayerType* createReplicaLayer(typename Types::LayerType* owningLayer, const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds)
     {
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
@@ -258,7 +258,7 @@ protected:
         return layerPtr;
     }
 
-    typename Types::LayerType* createMaskLayer(typename Types::LayerType* owningLayer, const IntSize& bounds)
+    typename Types::LayerType* createMaskLayer(typename Types::LayerType* owningLayer, const gfx::Size& bounds)
     {
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
@@ -267,7 +267,7 @@ protected:
         return layerPtr;
     }
 
-    typename Types::ContentLayerType* createDrawingSurface(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds, bool opaque)
+    typename Types::ContentLayerType* createDrawingSurface(typename Types::LayerType* parent, const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds, bool opaque)
     {
         typename Types::ContentLayerType* layer = createDrawingLayer(parent, transform, position, bounds, opaque);
         WebFilterOperations filters;
@@ -355,7 +355,7 @@ protected:
     const WebTransformationMatrix identityMatrix;
 
 private:
-    void setBaseProperties(typename Types::LayerType* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    void setBaseProperties(typename Types::LayerType* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds)
     {
         layer->setTransform(transform);
         layer->setSublayerTransform(WebTransformationMatrix());
@@ -364,12 +364,12 @@ private:
         layer->setBounds(bounds);
     }
 
-    void setProperties(Layer* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    void setProperties(Layer* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds)
     {
         setBaseProperties(layer, transform, position, bounds);
     }
 
-    void setProperties(LayerImpl* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    void setProperties(LayerImpl* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const gfx::Size& bounds)
     {
         setBaseProperties(layer, transform, position, bounds);
 
@@ -461,8 +461,8 @@ protected:
 
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(30, 30), IntSize(500, 500), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(30, 30), gfx::Size(500, 500), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -557,8 +557,8 @@ protected:
         layerTransform.rotate(90);
         layerTransform.translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), IntSize(500, 500), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), gfx::Size(500, 500), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -609,8 +609,8 @@ protected:
         WebTransformationMatrix layerTransform;
         layerTransform.translate(20, 20);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), IntSize(500, 500), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), gfx::Size(500, 500), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -675,11 +675,11 @@ protected:
         childTransform.rotate(90);
         childTransform.translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), IntSize(500, 500));
+        typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), gfx::Size(500, 500));
         child->setMasksToBounds(true);
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 10), IntSize(500, 500), true);
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 10), gfx::Size(500, 500), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -795,14 +795,14 @@ protected:
         childTransform.rotate(90);
         childTransform.translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), IntSize(500, 500));
+        typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), gfx::Size(500, 500));
         child->setMasksToBounds(true);
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 10), IntSize(500, 500), true);
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 10), gfx::Size(500, 500), true);
         // |child2| makes |parent|'s surface get considered by OcclusionTracker first, instead of |child|'s. This exercises different code in
         // leaveToTargetRenderSurface, as the target surface has already been seen.
-        typename Types::ContentLayerType* child2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(30, 30), IntSize(60, 20), true);
+        typename Types::ContentLayerType* child2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(30, 30), gfx::Size(60, 20), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -911,10 +911,10 @@ protected:
         WebTransformationMatrix layerTransform;
         layerTransform.translate(10, 10);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
-        typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), IntSize(500, 500));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
+        typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), gfx::Size(500, 500));
         child->setMasksToBounds(true);
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(child, layerTransform, FloatPoint(0, 0), IntSize(500, 500), true);
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(child, layerTransform, FloatPoint(0, 0), gfx::Size(500, 500), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -975,12 +975,12 @@ protected:
         childTransform.rotate(90);
         childTransform.translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), IntSize(500, 500));
+        typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), gfx::Size(500, 500));
         child->setMasksToBounds(true);
-        typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 10), IntSize(500, 500), true);
-        typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 450), IntSize(500, 60), true);
+        typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 10), gfx::Size(500, 500), true);
+        typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 450), gfx::Size(500, 60), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1065,12 +1065,12 @@ protected:
         childTransform.rotate(90);
         childTransform.translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* child1 = this->createSurface(parent, childTransform, FloatPoint(30, 30), IntSize(10, 10));
-        typename Types::LayerType* child2 = this->createSurface(parent, childTransform, FloatPoint(20, 40), IntSize(10, 10));
-        typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child1, this->identityMatrix, FloatPoint(-10, -10), IntSize(510, 510), true);
-        typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child2, this->identityMatrix, FloatPoint(-10, -10), IntSize(510, 510), true);
+        typename Types::LayerType* child1 = this->createSurface(parent, childTransform, FloatPoint(30, 30), gfx::Size(10, 10));
+        typename Types::LayerType* child2 = this->createSurface(parent, childTransform, FloatPoint(20, 40), gfx::Size(10, 10));
+        typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child1, this->identityMatrix, FloatPoint(-10, -10), gfx::Size(510, 510), true);
+        typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child2, this->identityMatrix, FloatPoint(-10, -10), gfx::Size(510, 510), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1181,12 +1181,12 @@ protected:
         child2Transform.rotate(90);
         child2Transform.translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* child1 = this->createSurface(parent, child1Transform, FloatPoint(30, 20), IntSize(10, 10));
-        typename Types::LayerType* child2 = this->createDrawingSurface(parent, child2Transform, FloatPoint(20, 40), IntSize(10, 10), false);
-        typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child1, this->identityMatrix, FloatPoint(-10, -20), IntSize(510, 510), true);
-        typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child2, this->identityMatrix, FloatPoint(-10, -10), IntSize(510, 510), true);
+        typename Types::LayerType* child1 = this->createSurface(parent, child1Transform, FloatPoint(30, 20), gfx::Size(10, 10));
+        typename Types::LayerType* child2 = this->createDrawingSurface(parent, child2Transform, FloatPoint(20, 40), gfx::Size(10, 10), false);
+        typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child1, this->identityMatrix, FloatPoint(-10, -20), gfx::Size(510, 510), true);
+        typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child2, this->identityMatrix, FloatPoint(-10, -10), gfx::Size(510, 510), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1285,11 +1285,11 @@ protected:
         layerTransform.rotate(90);
         layerTransform.translate(-250, -250);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
-        typename Types::ContentLayerType* blurLayer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), IntSize(500, 500), true);
-        typename Types::ContentLayerType* opaqueLayer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), IntSize(500, 500), true);
-        typename Types::ContentLayerType* opacityLayer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), IntSize(500, 500), true);
+        typename Types::ContentLayerType* blurLayer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), gfx::Size(500, 500), true);
+        typename Types::ContentLayerType* opaqueLayer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), gfx::Size(500, 500), true);
+        typename Types::ContentLayerType* opacityLayer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), gfx::Size(500, 500), true);
 
         WebFilterOperations filters;
         filters.append(WebFilterOperation::createBlurFilter(10));
@@ -1365,9 +1365,9 @@ protected:
     OcclusionTrackerTestReplicaDoesOcclude(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(50, 50), true);
-        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(50, 50), IntSize());
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 200));
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 100), gfx::Size(50, 50), true);
+        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(50, 50), gfx::Size());
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1397,10 +1397,10 @@ protected:
     OcclusionTrackerTestReplicaWithClipping(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 170));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 170));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(50, 50), true);
-        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(50, 50), IntSize());
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 100), gfx::Size(50, 50), true);
+        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(50, 50), gfx::Size());
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1430,10 +1430,10 @@ protected:
     OcclusionTrackerTestReplicaWithMask(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(50, 50), true);
-        typename Types::LayerType* replica = this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(50, 50), IntSize());
-        this->createMaskLayer(replica, IntSize(10, 10));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 200));
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 100), gfx::Size(50, 50), true);
+        typename Types::LayerType* replica = this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(50, 50), gfx::Size());
+        this->createMaskLayer(replica, gfx::Size(10, 10));
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1463,8 +1463,8 @@ protected:
     OcclusionTrackerTestLayerClipRectOutsideChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1508,8 +1508,8 @@ protected:
     OcclusionTrackerTestViewportRectOutsideChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(200, 100, 100, 100));
@@ -1553,8 +1553,8 @@ protected:
     OcclusionTrackerTestLayerClipRectOverChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1593,8 +1593,8 @@ protected:
     OcclusionTrackerTestViewportRectOverChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(100, 100, 100, 100));
@@ -1633,8 +1633,8 @@ protected:
     OcclusionTrackerTestLayerClipRectPartlyOverChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1677,8 +1677,8 @@ protected:
     OcclusionTrackerTestViewportRectPartlyOverChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(50, 50, 200, 200));
@@ -1721,8 +1721,8 @@ protected:
     OcclusionTrackerTestLayerClipRectOverNothing(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1765,8 +1765,8 @@ protected:
     OcclusionTrackerTestViewportRectOverNothing(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(500, 500, 100, 100));
@@ -1809,8 +1809,8 @@ protected:
     OcclusionTrackerTestLayerClipRectForLayerOffOrigin(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1834,8 +1834,8 @@ protected:
     OcclusionTrackerTestOpaqueContentsRegionEmpty(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), false);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 200), false);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1871,13 +1871,13 @@ protected:
     OcclusionTrackerTestOpaqueContentsRegionNonEmpty(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 100), IntSize(200, 200), false);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 100), gfx::Size(200, 200), false);
         this->calcDrawEtc(parent);
 
         {
             TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
-            layer->setOpaqueContentsRect(IntRect(0, 0, 100, 100));
+            layer->setOpaqueContentsRect(gfx::Rect(0, 0, 100, 100));
 
             this->resetLayerIterator();
             this->visitLayer(layer, occlusion);
@@ -1893,7 +1893,7 @@ protected:
 
         {
             TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
-            layer->setOpaqueContentsRect(IntRect(20, 20, 180, 180));
+            layer->setOpaqueContentsRect(gfx::Rect(20, 20, 180, 180));
 
             this->resetLayerIterator();
             this->visitLayer(layer, occlusion);
@@ -1909,7 +1909,7 @@ protected:
 
         {
             TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
-            layer->setOpaqueContentsRect(IntRect(150, 150, 100, 100));
+            layer->setOpaqueContentsRect(gfx::Rect(150, 150, 100, 100));
 
             this->resetLayerIterator();
             this->visitLayer(layer, occlusion);
@@ -1936,9 +1936,9 @@ protected:
         WebTransformationMatrix transform;
         transform.rotate3d(0, 30, 0);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, FloatPoint(100, 100), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, FloatPoint(100, 100), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1969,9 +1969,9 @@ protected:
         WebTransformationMatrix translationToBack;
         translationToFront.translate3d(0, 0, -100);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* child1 = this->createDrawingLayer(parent, translationToBack, FloatPoint(0, 0), IntSize(100, 100), true);
-        typename Types::ContentLayerType* child2 = this->createDrawingLayer(parent, translationToFront, FloatPoint(50, 50), IntSize(100, 100), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* child1 = this->createDrawingLayer(parent, translationToBack, FloatPoint(0, 0), gfx::Size(100, 100), true);
+        typename Types::ContentLayerType* child2 = this->createDrawingLayer(parent, translationToFront, FloatPoint(50, 50), gfx::Size(100, 100), true);
         parent->setPreserves3D(true);
 
         this->calcDrawEtc(parent);
@@ -2002,9 +2002,9 @@ protected:
         transform.rotate3d(1, 0, 0, -30);
         transform.translate(-150, -150);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, FloatPoint(100, 100), IntSize(200, 200), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, FloatPoint(100, 100), gfx::Size(200, 200), true);
         container->setPreserves3D(true);
         layer->setPreserves3D(true);
         this->calcDrawEtc(parent);
@@ -2034,9 +2034,9 @@ protected:
         transform.rotate3d(1, 0, 0, -167);
         transform.translate(-250, -50);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(500, 100));
-        typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(500, 500));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, FloatPoint(0, 0), IntSize(500, 500), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(500, 100));
+        typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(500, 500));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, FloatPoint(0, 0), gfx::Size(500, 500), true);
         container->setPreserves3D(true);
         layer->setPreserves3D(true);
         this->calcDrawEtc(parent);
@@ -2065,8 +2065,8 @@ protected:
         transform.translate3d(0, 0, 110);
         transform.translate(-50, -50);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, transform, FloatPoint(0, 0), IntSize(100, 100), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, transform, FloatPoint(0, 0), gfx::Size(100, 100), true);
         parent->setPreserves3D(true);
         layer->setPreserves3D(true);
         this->calcDrawEtc(parent);
@@ -2096,9 +2096,9 @@ protected:
         transform.translate3d(0, 0, 99);
         transform.translate(-50, -50);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100));
         parent->setMasksToBounds(true);
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, transform, FloatPoint(0, 0), IntSize(100, 100), true);
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, transform, FloatPoint(0, 0), gfx::Size(100, 100), true);
         parent->setPreserves3D(true);
         layer->setPreserves3D(true);
         this->calcDrawEtc(parent);
@@ -2125,13 +2125,13 @@ protected:
     OcclusionTrackerTestAnimationOpacity1OnMainThread(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300), true);
-        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300), true);
-        typename Types::ContentLayerType* surfaceChild = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 300), true);
-        typename Types::ContentLayerType* surfaceChild2 = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 300), true);
-        typename Types::ContentLayerType* parent2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300), false);
-        typename Types::ContentLayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(250, 0), IntSize(50, 300), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300), true);
+        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300), true);
+        typename Types::ContentLayerType* surfaceChild = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 300), true);
+        typename Types::ContentLayerType* surfaceChild2 = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 300), true);
+        typename Types::ContentLayerType* parent2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300), false);
+        typename Types::ContentLayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(250, 0), gfx::Size(50, 300), true);
 
         addOpacityTransitionToController(*layer->layerAnimationController(), 10, 0, 1, false);
         addOpacityTransitionToController(*surface->layerAnimationController(), 10, 0, 1, false);
@@ -2178,13 +2178,13 @@ protected:
     OcclusionTrackerTestAnimationOpacity0OnMainThread(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300), true);
-        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300), true);
-        typename Types::ContentLayerType* surfaceChild = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 300), true);
-        typename Types::ContentLayerType* surfaceChild2 = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 300), true);
-        typename Types::ContentLayerType* parent2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300), false);
-        typename Types::ContentLayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(250, 0), IntSize(50, 300), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300), true);
+        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300), true);
+        typename Types::ContentLayerType* surfaceChild = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 300), true);
+        typename Types::ContentLayerType* surfaceChild2 = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 300), true);
+        typename Types::ContentLayerType* parent2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300), false);
+        typename Types::ContentLayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(250, 0), gfx::Size(50, 300), true);
 
         addOpacityTransitionToController(*layer->layerAnimationController(), 10, 1, 0, false);
         addOpacityTransitionToController(*surface->layerAnimationController(), 10, 1, 0, false);
@@ -2231,12 +2231,12 @@ protected:
     OcclusionTrackerTestAnimationTranslateOnMainThread(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
-        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300), true);
-        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300), true);
-        typename Types::ContentLayerType* surfaceChild = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 300), true);
-        typename Types::ContentLayerType* surfaceChild2 = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 300), true);
-        typename Types::ContentLayerType* surface2 = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(50, 300), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
+        typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300), true);
+        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300), true);
+        typename Types::ContentLayerType* surfaceChild = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), gfx::Size(200, 300), true);
+        typename Types::ContentLayerType* surfaceChild2 = this->createDrawingLayer(surface, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 300), true);
+        typename Types::ContentLayerType* surface2 = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(50, 300), true);
 
         addAnimatedTransformToController(*layer->layerAnimationController(), 10, 30, 0);
         addAnimatedTransformToController(*surface->layerAnimationController(), 10, 30, 0);
@@ -2329,11 +2329,11 @@ protected:
         surfaceTransform.scale(2);
         surfaceTransform.translate(-150, -150);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(500, 500));
-        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, surfaceTransform, FloatPoint(0, 0), IntSize(300, 300), false);
-        typename Types::ContentLayerType* surface2 = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(50, 50), IntSize(300, 300), false);
-        surface->setOpaqueContentsRect(IntRect(0, 0, 200, 200));
-        surface2->setOpaqueContentsRect(IntRect(0, 0, 200, 200));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(500, 500));
+        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, surfaceTransform, FloatPoint(0, 0), gfx::Size(300, 300), false);
+        typename Types::ContentLayerType* surface2 = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(50, 50), gfx::Size(300, 300), false);
+        surface->setOpaqueContentsRect(gfx::Rect(0, 0, 200, 200));
+        surface2->setOpaqueContentsRect(gfx::Rect(0, 0, 200, 200));
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -2368,10 +2368,10 @@ protected:
     OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 300));
         parent->setMasksToBounds(true);
-        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(500, 300), false);
-        surface->setOpaqueContentsRect(IntRect(0, 0, 400, 200));
+        typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(500, 300), false);
+        surface->setOpaqueContentsRect(gfx::Rect(0, 0, 400, 200));
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -2394,10 +2394,10 @@ protected:
     OcclusionTrackerTestReplicaOccluded(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100), true);
-        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(0, 100), IntSize(100, 100));
-        typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(100, 100), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 200));
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100), true);
+        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(0, 100), gfx::Size(100, 100));
+        typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), gfx::Size(100, 100), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -2433,10 +2433,10 @@ protected:
     OcclusionTrackerTestSurfaceWithReplicaUnoccluded(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100), true);
-        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(0, 100), IntSize(100, 100));
-        typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 110), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 200));
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100), true);
+        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(0, 100), gfx::Size(100, 100));
+        typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 110), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -2473,11 +2473,11 @@ protected:
     OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100), true);
-        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(0, 100), IntSize(100, 100));
-        typename Types::LayerType* overSurface = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(40, 100), true);
-        typename Types::LayerType* overReplica = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(50, 100), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 200));
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100), true);
+        this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(0, 100), gfx::Size(100, 100));
+        typename Types::LayerType* overSurface = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(40, 100), true);
+        typename Types::LayerType* overReplica = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), gfx::Size(50, 100), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -2517,10 +2517,10 @@ protected:
     {
         // This test verifies that the surface cliprect does not end up empty and clip away the entire unoccluded rect.
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100), true);
-        typename Types::LayerType* surfaceChild = this->createDrawingSurface(surface, this->identityMatrix, FloatPoint(0, 10), IntSize(100, 50), true);
-        typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 50), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 200));
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100), true);
+        typename Types::LayerType* surfaceChild = this->createDrawingSurface(surface, this->identityMatrix, FloatPoint(0, 10), gfx::Size(100, 50), true);
+        typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 50), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(-100, -100, 1000, 1000));
@@ -2576,8 +2576,8 @@ protected:
     {
         // This test verifies that the top-most surface is considered occluded outside of its target's clipRect and outside the viewport rect.
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 300), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 200));
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 300), true);
         this->calcDrawEtc(parent);
 
         {
@@ -2616,11 +2616,11 @@ protected:
     {
         // This test verifies that the surface cliprect does not end up empty and clip away the entire unoccluded rect.
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(80, 200));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(80, 200));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100), true);
-        typename Types::LayerType* surfaceChild = this->createDrawingSurface(surface, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 100), false);
-        typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 50), true);
+        typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100), true);
+        typename Types::LayerType* surfaceChild = this->createDrawingSurface(surface, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 100), false);
+        typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(100, 50), true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -2672,14 +2672,14 @@ protected:
         // Make a surface and its replica, each 50x50, that are completely surrounded by opaque layers which are above them in the z-order.
         // The surface is scaled to test that the pixel moving is done in the target space, where the background filter is applied, but the surface
         // appears at 50, 50 and the replica at 200, 50.
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 150));
-        typename Types::LayerType* filteredSurface = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(50, 50), IntSize(100, 100), false);
-        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(300, 0), IntSize());
-        typename Types::LayerType* occludingLayer1 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 50), true);
-        typename Types::LayerType* occludingLayer2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(300, 50), true);
-        typename Types::LayerType* occludingLayer3 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 50), IntSize(50, 50), true);
-        typename Types::LayerType* occludingLayer4 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 50), IntSize(100, 50), true);
-        typename Types::LayerType* occludingLayer5 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(250, 50), IntSize(50, 50), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 150));
+        typename Types::LayerType* filteredSurface = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(50, 50), gfx::Size(100, 100), false);
+        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(300, 0), gfx::Size());
+        typename Types::LayerType* occludingLayer1 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 50), true);
+        typename Types::LayerType* occludingLayer2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), gfx::Size(300, 50), true);
+        typename Types::LayerType* occludingLayer3 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 50), gfx::Size(50, 50), true);
+        typename Types::LayerType* occludingLayer4 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 50), gfx::Size(100, 50), true);
+        typename Types::LayerType* occludingLayer5 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(250, 50), gfx::Size(50, 50), true);
 
         // Filters make the layer own a surface.
         WebFilterOperations filters;
@@ -2792,12 +2792,12 @@ protected:
         scaleByHalf.scale(0.5);
 
         // Makes two surfaces that completely cover |parent|. The occlusion both above and below the filters will be reduced by each of them.
-        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(75, 75));
-        typename Types::LayerType* parent = this->createSurface(root, scaleByHalf, FloatPoint(0, 0), IntSize(150, 150));
+        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(75, 75));
+        typename Types::LayerType* parent = this->createSurface(root, scaleByHalf, FloatPoint(0, 0), gfx::Size(150, 150));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* filteredSurface1 = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(0, 0), IntSize(300, 300), false);
-        typename Types::LayerType* filteredSurface2 = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(0, 0), IntSize(300, 300), false);
-        typename Types::LayerType* occludingLayerAbove = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 100), IntSize(50, 50), true);
+        typename Types::LayerType* filteredSurface1 = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(0, 0), gfx::Size(300, 300), false);
+        typename Types::LayerType* filteredSurface2 = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(0, 0), gfx::Size(300, 300), false);
+        typename Types::LayerType* occludingLayerAbove = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 100), gfx::Size(50, 50), true);
 
         // Filters make the layers own surfaces.
         WebFilterOperations filters;
@@ -2846,18 +2846,18 @@ protected:
     void runMyTest()
     {
         // Make a surface and its replica, each 50x50, that are completely surrounded by opaque layers which are above them in the z-order.
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 150));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 150));
         // We stick the filtered surface inside a clipping surface so that we can make sure the clip is honored when exposing pixels for
         // the background filter.
-        typename Types::LayerType* clippingSurface = this->createSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 70));
+        typename Types::LayerType* clippingSurface = this->createSurface(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 70));
         clippingSurface->setMasksToBounds(true);
-        typename Types::LayerType* filteredSurface = this->createDrawingLayer(clippingSurface, this->identityMatrix, FloatPoint(50, 50), IntSize(50, 50), false);
-        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(150, 0), IntSize());
-        typename Types::LayerType* occludingLayer1 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(300, 50), true);
-        typename Types::LayerType* occludingLayer2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(300, 50), true);
-        typename Types::LayerType* occludingLayer3 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 50), IntSize(50, 50), true);
-        typename Types::LayerType* occludingLayer4 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 50), IntSize(100, 50), true);
-        typename Types::LayerType* occludingLayer5 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(250, 50), IntSize(50, 50), true);
+        typename Types::LayerType* filteredSurface = this->createDrawingLayer(clippingSurface, this->identityMatrix, FloatPoint(50, 50), gfx::Size(50, 50), false);
+        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(150, 0), gfx::Size());
+        typename Types::LayerType* occludingLayer1 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 50), true);
+        typename Types::LayerType* occludingLayer2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), gfx::Size(300, 50), true);
+        typename Types::LayerType* occludingLayer3 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 50), gfx::Size(50, 50), true);
+        typename Types::LayerType* occludingLayer4 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 50), gfx::Size(100, 50), true);
+        typename Types::LayerType* occludingLayer5 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(250, 50), gfx::Size(50, 50), true);
 
         // Filters make the layer own a surface. This filter is large enough that it goes outside the bottom of the clippingSurface.
         WebFilterOperations filters;
@@ -2973,11 +2973,11 @@ protected:
         // Make a surface and its replica, each 50x50, with a smaller 30x30 layer centered below each.
         // The surface is scaled to test that the pixel moving is done in the target space, where the background filter is applied, but the surface
         // appears at 50, 50 and the replica at 200, 50.
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 150));
-        typename Types::LayerType* behindSurfaceLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(60, 60), IntSize(30, 30), true);
-        typename Types::LayerType* behindReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(210, 60), IntSize(30, 30), true);
-        typename Types::LayerType* filteredSurface = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(50, 50), IntSize(100, 100), false);
-        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(300, 0), IntSize());
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 150));
+        typename Types::LayerType* behindSurfaceLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(60, 60), gfx::Size(30, 30), true);
+        typename Types::LayerType* behindReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(210, 60), gfx::Size(30, 30), true);
+        typename Types::LayerType* filteredSurface = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(50, 50), gfx::Size(100, 100), false);
+        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(300, 0), gfx::Size());
 
         // Filters make the layer own a surface.
         WebFilterOperations filters;
@@ -3023,11 +3023,11 @@ protected:
         // Make a surface and its replica, each 50x50, that are completely occluded by opaque layers which are above them in the z-order.
         // The surface is scaled to test that the pixel moving is done in the target space, where the background filter is applied, but the surface
         // appears at 50, 50 and the replica at 200, 50.
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 150));
-        typename Types::LayerType* filteredSurface = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(50, 50), IntSize(100, 100), false);
-        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(300, 0), IntSize());
-        typename Types::LayerType* aboveSurfaceLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(50, 50), IntSize(50, 50), true);
-        typename Types::LayerType* aboveReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(200, 50), IntSize(50, 50), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 150));
+        typename Types::LayerType* filteredSurface = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(50, 50), gfx::Size(100, 100), false);
+        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(300, 0), gfx::Size());
+        typename Types::LayerType* aboveSurfaceLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(50, 50), gfx::Size(50, 50), true);
+        typename Types::LayerType* aboveReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(200, 50), gfx::Size(50, 50), true);
 
         // Filters make the layer own a surface.
         WebFilterOperations filters;
@@ -3072,13 +3072,13 @@ protected:
         // Make a surface and its replica, each 50x50, that are partially occluded by opaque layers which are above them in the z-order.
         // The surface is scaled to test that the pixel moving is done in the target space, where the background filter is applied, but the surface
         // appears at 50, 50 and the replica at 200, 50.
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 150));
-        typename Types::LayerType* filteredSurface = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(50, 50), IntSize(100, 100), false);
-        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(300, 0), IntSize());
-        typename Types::LayerType* aboveSurfaceLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(70, 50), IntSize(30, 50), true);
-        typename Types::LayerType* aboveReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(200, 50), IntSize(30, 50), true);
-        typename Types::LayerType* besideSurfaceLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(90, 40), IntSize(10, 10), true);
-        typename Types::LayerType* besideReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(200, 40), IntSize(10, 10), true);
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(300, 150));
+        typename Types::LayerType* filteredSurface = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(50, 50), gfx::Size(100, 100), false);
+        this->createReplicaLayer(filteredSurface, this->identityMatrix, FloatPoint(300, 0), gfx::Size());
+        typename Types::LayerType* aboveSurfaceLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(70, 50), gfx::Size(30, 50), true);
+        typename Types::LayerType* aboveReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(200, 50), gfx::Size(30, 50), true);
+        typename Types::LayerType* besideSurfaceLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(90, 40), gfx::Size(10, 10), true);
+        typename Types::LayerType* besideReplicaLayer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(200, 40), gfx::Size(10, 10), true);
 
         // Filters make the layer own a surface.
         WebFilterOperations filters;
@@ -3139,10 +3139,10 @@ protected:
     OcclusionTrackerTestMinimumTrackingSize(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
-        IntSize trackingSize(100, 100);
-        IntSize belowTrackingSize(99, 99);
+        gfx::Size trackingSize(100, 100);
+        gfx::Size belowTrackingSize(99, 99);
 
-        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(400, 400));
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), gfx::Size(400, 400));
         typename Types::LayerType* large = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), trackingSize, true);
         typename Types::LayerType* small = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), belowTrackingSize, true);
         this->calcDrawEtc(parent);
@@ -3162,9 +3162,9 @@ protected:
         // The large layer is tracked as it is large enough.
         this->visitLayer(large, occlusion);
 
-        EXPECT_RECT_EQ(gfx::Rect(IntPoint(), trackingSize), occlusion.occlusionInScreenSpace().bounds());
+        EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), trackingSize), occlusion.occlusionInScreenSpace().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
-        EXPECT_RECT_EQ(gfx::Rect(IntPoint(), trackingSize), occlusion.occlusionInTargetSurface().bounds());
+        EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), trackingSize), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
     }
 };

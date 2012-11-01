@@ -39,8 +39,14 @@ public:
     {
     }
 
+    
     FloatPoint3D(WebCore::FloatPoint point)
         : WebCore::FloatPoint3D(point)
+    {
+    }
+
+    explicit FloatPoint3D(gfx::PointF point)
+        : WebCore::FloatPoint3D(point.x(), point.y(), 0)
     {
     }
 };

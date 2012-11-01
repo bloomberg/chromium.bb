@@ -5,15 +5,19 @@
 #ifndef CCLayerTestCommon_h
 #define CCLayerTestCommon_h
 
-#include "IntRect.h"
-#include "Region.h"
-#include "cc/render_pass.h"
+namespace cc {
+class QuadList;
+}
+
+namespace gfx {
+class Rect;
+}
 
 namespace LayerTestCommon {
 
 extern const char* quadString;
 
-void verifyQuadsExactlyCoverRect(const cc::QuadList&, const cc::IntRect&);
+void verifyQuadsExactlyCoverRect(const cc::QuadList&, const gfx::Rect&);
 
 } // namespace LayerTestCommon
 #endif // CCLayerTestCommon_h

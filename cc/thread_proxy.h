@@ -29,7 +29,7 @@ public:
     virtual ~ThreadProxy();
 
     // Proxy implementation
-    virtual bool compositeAndReadback(void *pixels, const IntRect&) OVERRIDE;
+    virtual bool compositeAndReadback(void *pixels, const gfx::Rect&) OVERRIDE;
     virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
     virtual void finishAllRendering() OVERRIDE;
     virtual bool isStarted() const OVERRIDE;
@@ -105,7 +105,7 @@ private:
         CompletionEvent completion;
         bool success;
         void* pixels;
-        IntRect rect;
+        gfx::Rect rect;
     };
     void forceBeginFrameOnImplThread(CompletionEvent*);
     void beginFrameCompleteOnImplThread(CompletionEvent*, ResourceUpdateQueue*);

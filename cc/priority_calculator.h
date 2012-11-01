@@ -5,8 +5,9 @@
 #ifndef CCPriorityCalculator_h
 #define CCPriorityCalculator_h
 
-#include "IntRect.h"
-#include "IntSize.h"
+namespace gfx {
+class Rect;
+}
 
 namespace cc {
 
@@ -16,7 +17,7 @@ public:
     static int visiblePriority(bool drawsToRootSurface);
     static int renderSurfacePriority();
     static int lingeringPriority(int previousPriority);
-    static int priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface);
+    static int priorityFromDistance(const gfx::Rect& visibleRect, const gfx::Rect& textureRect, bool drawsToRootSurface);
     static int smallAnimatedLayerMinPriority();
 
     static int highestPriority();

@@ -228,26 +228,26 @@ TEST(TreeSynchronizerTest, syncSimpleTreeAndProperties)
     layerTreeRoot->addChild(Layer::create());
 
     // Pick some random properties to set. The values are not important, we're just testing that at least some properties are making it through.
-    FloatPoint rootPosition = FloatPoint(2.3f, 7.4f);
+    gfx::PointF rootPosition = gfx::PointF(2.3f, 7.4f);
     layerTreeRoot->setPosition(rootPosition);
 
     float firstChildOpacity = 0.25f;
     layerTreeRoot->children()[0]->setOpacity(firstChildOpacity);
 
-    IntSize secondChildBounds = IntSize(25, 53);
+    gfx::Size secondChildBounds = gfx::Size(25, 53);
     layerTreeRoot->children()[1]->setBounds(secondChildBounds);
 
     scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), layerImplTreeRoot.get(), hostImpl.get());
 
     // Check that the property values we set on the Layer tree are reflected in the LayerImpl tree.
-    FloatPoint rootLayerImplPosition = layerImplTreeRoot->position();
+    gfx::PointF rootLayerImplPosition = layerImplTreeRoot->position();
     EXPECT_EQ(rootPosition.x(), rootLayerImplPosition.x());
     EXPECT_EQ(rootPosition.y(), rootLayerImplPosition.y());
 
     EXPECT_EQ(firstChildOpacity, layerImplTreeRoot->children()[0]->opacity());
 
-    IntSize secondLayerImplChildBounds = layerImplTreeRoot->children()[1]->bounds();
+    gfx::Size secondLayerImplChildBounds = layerImplTreeRoot->children()[1]->bounds();
     EXPECT_EQ(secondChildBounds.width(), secondLayerImplChildBounds.width());
     EXPECT_EQ(secondChildBounds.height(), secondLayerImplChildBounds.height());
 }

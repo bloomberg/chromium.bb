@@ -29,7 +29,7 @@ public:
     void setTextureId(unsigned id) { m_textureId = id; }
     void setPremultipliedAlpha(bool premultipliedAlpha) { m_premultipliedAlpha = premultipliedAlpha; }
     void setFlipped(bool flipped) { m_flipped = flipped; }
-    void setUVRect(const FloatRect& rect) { m_uvRect = rect; }
+    void setUVRect(const gfx::RectF& rect) { m_uvRect = rect; }
 
 private:
     explicit TextureLayerImpl(int);
@@ -40,7 +40,7 @@ private:
     ResourceProvider::ResourceId m_externalTextureResource;
     bool m_premultipliedAlpha;
     bool m_flipped;
-    FloatRect m_uvRect;
+    gfx::RectF m_uvRect;
 };
 
 }

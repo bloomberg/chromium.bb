@@ -466,7 +466,7 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame,
     deviceRect.Intersect(frame.currentRenderPass->outputRect());
 
     scoped_ptr<ScopedTexture> deviceBackgroundTexture = ScopedTexture::create(m_resourceProvider);
-    if (!getFramebufferTexture(deviceBackgroundTexture.get(), cc::IntRect(deviceRect)))
+    if (!getFramebufferTexture(deviceBackgroundTexture.get(), deviceRect))
         return scoped_ptr<ScopedTexture>();
 
     SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get());
@@ -699,7 +699,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     float clampY = min(0.5, clampRect.height() / 2.0 - epsilon);
     clampRect.Inset(clampX, clampY, clampX, clampY);
 
-    gfx::PointF textureOffset = quad->textureOffset() + clampRect.OffsetFromOrigin() - quad->quadRect().OffsetFromOrigin();
+    gfx::Vector2dF textureOffset = quad->textureOffset() + clampRect.OffsetFromOrigin() - quad->quadRect().OffsetFromOrigin();
 
     // Map clamping rectangle to unit square.
     float vertexTexTranslateX = -clampRect.x() / clampRect.width();
@@ -770,10 +770,10 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         GLC(context(), context()->uniform4f(uniforms.vertexTexTransformLocation, vertexTexTranslateX, vertexTexTranslateY, vertexTexScaleX, vertexTexScaleY));
         GLC(context(), context()->uniform4f(uniforms.fragmentTexTransformLocation, fragmentTexTranslateX, fragmentTexTranslateY, fragmentTexScaleX, fragmentTexScaleY));
 
-        FloatPoint bottomRight(tileRect.right(), tileRect.bottom());
-        FloatPoint bottomLeft(tileRect.x(), tileRect.bottom());
-        FloatPoint topLeft(tileRect.x(), tileRect.y());
-        FloatPoint topRight(tileRect.right(), tileRect.y());
+        gfx::PointF bottomRight(tileRect.right(), tileRect.bottom());
+        gfx::PointF bottomLeft(tileRect.x(), tileRect.bottom());
+        gfx::PointF topLeft(tileRect.x(), tileRect.y());
+        gfx::PointF topRight(tileRect.right(), tileRect.y());
 
         // Map points to device space.
         bottomRight = MathUtil::mapPoint(deviceTransform, bottomRight, clipped);
@@ -1237,10 +1237,10 @@ void GLRenderer::onContextLost()
 }
 
 
-void GLRenderer::getFramebufferPixels(void *pixels, const IntRect& rect)
+void GLRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
 {
-    DCHECK(rect.maxX() <= viewportWidth());
-    DCHECK(rect.maxY() <= viewportHeight());
+    DCHECK(rect.right() <= viewportWidth());
+    DCHECK(rect.bottom() <= viewportHeight());
 
     if (!pixels)
         return;
@@ -1275,8 +1275,8 @@ void GLRenderer::getFramebufferPixels(void *pixels, const IntRect& rect)
     }
 
     scoped_array<uint8_t> srcPixels(new uint8_t[rect.width() * rect.height() * 4]);
-    GLC(m_context, m_context->readPixels(rect.x(), viewportSize().height() - rect.maxY(), rect.width(), rect.height(),
-                                     GL_RGBA, GL_UNSIGNED_BYTE, srcPixels.get()));
+    GLC(m_context, m_context->readPixels(rect.x(), viewportSize().height() - rect.bottom(), rect.width(), rect.height(),
+                                         GL_RGBA, GL_UNSIGNED_BYTE, srcPixels.get()));
 
     uint8_t* destPixels = static_cast<uint8_t*>(pixels);
     size_t rowBytes = rect.width() * 4;
@@ -1305,11 +1305,11 @@ void GLRenderer::getFramebufferPixels(void *pixels, const IntRect& rect)
     enforceMemoryPolicy();
 }
 
-bool GLRenderer::getFramebufferTexture(ScopedTexture* texture, const IntRect& deviceRect)
+bool GLRenderer::getFramebufferTexture(ScopedTexture* texture, const gfx::Rect& deviceRect)
 {
     DCHECK(!texture->id() || (texture->size() == deviceRect.size() && texture->format() == GL_RGB));
 
-    if (!texture->id() && !texture->allocate(Renderer::ImplPool, cc::IntSize(deviceRect.size()), GL_RGB, ResourceProvider::TextureUsageAny))
+    if (!texture->id() && !texture->allocate(Renderer::ImplPool, deviceRect.size(), GL_RGB, ResourceProvider::TextureUsageAny))
         return false;
 
     ResourceProvider::ScopedWriteLockGL lock(m_resourceProvider, texture->id());

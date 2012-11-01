@@ -268,7 +268,7 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
     DCHECK(isSoftwareResource(quad->resourceId()));
     ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resourceId());
 
-    SkIRect uvRect = toSkIRect(gfx::Rect(quad->textureOffset(), quad->quadRect().size()));
+    SkIRect uvRect = toSkIRect(gfx::Rect(gfx::PointAtOffsetFromOrigin(quad->textureOffset()), quad->quadRect().size()));
     m_skCurrentCanvas->drawBitmapRect(*lock.skBitmap(), &uvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
 }
 
@@ -344,11 +344,11 @@ bool SoftwareRenderer::swapBuffers()
     return true;
 }
 
-void SoftwareRenderer::getFramebufferPixels(void *pixels, const IntRect& rect)
+void SoftwareRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
 {
     SkBitmap fullBitmap = m_outputDevice->lock(false)->getSkBitmap();
     SkBitmap subsetBitmap;
-    SkIRect invertRect = SkIRect::MakeXYWH(rect.x(), viewportSize().height() - rect.maxY(), rect.width(), rect.height());
+    SkIRect invertRect = SkIRect::MakeXYWH(rect.x(), viewportSize().height() - rect.bottom(), rect.width(), rect.height());
     fullBitmap.extractSubset(&subsetBitmap, invertRect);
     subsetBitmap.copyPixelsTo(pixels, rect.width() * rect.height() * 4, rect.width() * 4);
     m_outputDevice->unlock();

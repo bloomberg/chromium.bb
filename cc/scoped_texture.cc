@@ -19,10 +19,10 @@ ScopedTexture::~ScopedTexture()
     free();
 }
 
-bool ScopedTexture::allocate(int pool, const IntSize& size, GLenum format, ResourceProvider::TextureUsageHint hint)
+bool ScopedTexture::allocate(int pool, const gfx::Size& size, GLenum format, ResourceProvider::TextureUsageHint hint)
 {
     DCHECK(!id());
-    DCHECK(!size.isEmpty());
+    DCHECK(!size.IsEmpty());
 
     setDimensions(size, format);
     setId(m_resourceProvider->createResource(pool, size, format, hint));

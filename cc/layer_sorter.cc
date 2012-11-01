@@ -20,18 +20,18 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-inline static float perpProduct(const FloatSize& u, const FloatSize& v)
+inline static float perpProduct(const gfx::Vector2dF& u, const gfx::Vector2dF& v)
 {
-    return u.width() * v.height() - u.height() * v.width();
+    return u.x() * v.y() - u.y() * v.x();
 }
 
 // Tests if two edges defined by their endpoints (a,b) and (c,d) intersect. Returns true and the
 // point of intersection if they do and false otherwise.
-static bool edgeEdgeTest(const FloatPoint& a, const FloatPoint& b, const FloatPoint& c, const FloatPoint& d, FloatPoint& r)
+static bool edgeEdgeTest(const gfx::PointF& a, const gfx::PointF& b, const gfx::PointF& c, const gfx::PointF& d, gfx::PointF& r)
 {
-    FloatSize u = b - a;
-    FloatSize v = d - c;
-    FloatSize w = a - c;
+    gfx::Vector2dF u = b - a;
+    gfx::Vector2dF v = d - c;
+    gfx::Vector2dF w = a - c;
 
     float denom = perpProduct(u, v);
 
@@ -49,7 +49,7 @@ static bool edgeEdgeTest(const FloatPoint& a, const FloatPoint& b, const FloatPo
     if (t < 0 || t > 1)
         return false;
 
-    u.scale(s);
+    u.Scale(s);
     r = a + u;
     return true;
 }
@@ -81,14 +81,14 @@ LayerSorter::ABCompareResult LayerSorter::checkOverlap(LayerShape* a, LayerShape
     weight = 0;
 
     // Early out if the projected bounds don't overlap.
-    if (!a->projectedBounds.intersects(b->projectedBounds))
+    if (!a->projectedBounds.Intersects(b->projectedBounds))
         return None;
 
-    FloatPoint aPoints[4] = {a->projectedQuad.p1(), a->projectedQuad.p2(), a->projectedQuad.p3(), a->projectedQuad.p4() };
-    FloatPoint bPoints[4] = {b->projectedQuad.p1(), b->projectedQuad.p2(), b->projectedQuad.p3(), b->projectedQuad.p4() };
+    gfx::PointF aPoints[4] = {a->projectedQuad.p1(), a->projectedQuad.p2(), a->projectedQuad.p3(), a->projectedQuad.p4() };
+    gfx::PointF bPoints[4] = {b->projectedQuad.p1(), b->projectedQuad.p2(), b->projectedQuad.p3(), b->projectedQuad.p4() };
 
     // Make a list of points that inside both layer quad projections.
-    std::vector<FloatPoint> overlapPoints;
+    std::vector<gfx::PointF> overlapPoints;
 
     // Check all four corners of one layer against the other layer's quad.
     for (int i = 0; i < 4; ++i) {
@@ -99,7 +99,7 @@ LayerSorter::ABCompareResult LayerSorter::checkOverlap(LayerShape* a, LayerShape
     }
 
     // Check all the edges of one layer for intersection with the other layer's edges.
-    FloatPoint r;
+    gfx::PointF r;
     for (int ea = 0; ea < 4; ++ea)
         for (int eb = 0; eb < 4; ++eb)
             if (edgeEdgeTest(aPoints[ea], aPoints[(ea + 1) % 4],
@@ -153,7 +153,7 @@ LayerShape::LayerShape(float width, float height, const WebTransformationMatrix&
 
     // Compute the projection of the layer quad onto the z = 0 plane.
 
-    FloatPoint clippedQuad[8];
+    gfx::PointF clippedQuad[8];
     int numVerticesInClippedQuad;
     MathUtil::mapClippedQuad(drawTransform, layerQuad, clippedQuad, numVerticesInClippedQuad);
 
@@ -190,14 +190,18 @@ LayerShape::LayerShape(float width, float height, const WebTransformationMatrix&
     transformOrigin = c1;
 }
 
+LayerShape::~LayerShape()
+{
+}
+
 // Returns the Z coordinate of a point on the layer that projects
 // to point p which lies on the z = 0 plane. It does it by computing the
 // intersection of a line starting from p along the Z axis and the plane
 // of the layer.
-float LayerShape::layerZFromProjectedPoint(const FloatPoint& p) const
+float LayerShape::layerZFromProjectedPoint(const gfx::PointF& p) const
 {
     const FloatPoint3D zAxis(0, 0, 1);
-    FloatPoint3D w = FloatPoint3D(p) - transformOrigin;
+    FloatPoint3D w = FloatPoint3D(cc::FloatPoint(p)) - transformOrigin;
 
     float d = layerNormal.dot(zAxis);
     float n = -layerNormal.dot(w);

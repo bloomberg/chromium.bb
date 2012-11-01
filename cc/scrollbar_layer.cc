@@ -12,6 +12,7 @@
 #include "cc/layer_tree_host.h"
 #include "cc/resource_update_queue.h"
 #include "cc/scrollbar_layer_impl.h"
+#include "ui/gfx/rect_conversions.h"
 #include <public/WebRect.h>
 
 using WebKit::WebRect;
@@ -198,13 +199,13 @@ void ScrollbarLayer::createUpdaterIfNeeded()
         m_thumb = m_thumbUpdater->createResource(layerTreeHost()->contentsTextureManager());
 }
 
-void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, LayerUpdater::Resource* texture, const IntRect& rect, ResourceUpdateQueue& queue, RenderingStats& stats)
+void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, LayerUpdater::Resource* texture, const gfx::Rect& rect, ResourceUpdateQueue& queue, RenderingStats& stats)
 {
     // Skip painting and uploading if there are no invalidations and
     // we already have valid texture data.
     if (texture->texture()->haveBackingTexture()
             && texture->texture()->size() == rect.size()
-            && m_updateRect.isEmpty())
+            && m_updateRect.IsEmpty())
         return;
 
     // We should always have enough memory for UI.
@@ -224,18 +225,17 @@ void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, Layer
     texture->update(queue, rect, destOffset, false, stats);
 }
 
-IntRect ScrollbarLayer::scrollbarLayerRectToContentRect(const WebRect& layerRect) const
+gfx::Rect ScrollbarLayer::scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const
 {
     // Don't intersect with the bounds as in layerRectToContentRect() because
     // layerRect here might be in coordinates of the containing layer.
-    FloatRect contentRect(layerRect.x, layerRect.y, layerRect.width, layerRect.height);
-    contentRect.scale(contentsScaleX(), contentsScaleY());
-    return enclosingIntRect(contentRect);
+    gfx::RectF contentRect = gfx::ScaleRect(layerRect, contentsScaleX(), contentsScaleY());
+    return gfx::ToEnclosingRect(contentRect);
 }
 
 void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
 {
-    if (contentBounds().isEmpty())
+    if (contentBounds().IsEmpty())
         return;
 
     createUpdaterIfNeeded();
@@ -250,7 +250,7 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
         m_foreTrack->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
     }
     if (m_thumb) {
-        IntSize thumbSize = scrollbarLayerRectToContentRect(m_geometry->thumbRect(m_scrollbar.get())).size();
+        gfx::Size thumbSize = scrollbarLayerRectToContentRect(m_geometry->thumbRect(m_scrollbar.get())).size();
         m_thumb->texture()->setDimensions(thumbSize, m_textureFormat);
         m_thumb->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
     }
@@ -258,20 +258,20 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
 
 void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats& stats)
 {
-    if (contentBounds().isEmpty())
+    if (contentBounds().IsEmpty())
         return;
 
     createUpdaterIfNeeded();
 
-    IntRect contentRect = scrollbarLayerRectToContentRect(WebRect(m_scrollbar->location().x, m_scrollbar->location().y, bounds().width(), bounds().height()));
+    gfx::Rect contentRect = scrollbarLayerRectToContentRect(gfx::Rect(m_scrollbar->location(), bounds()));
     updatePart(m_backTrackUpdater.get(), m_backTrack.get(), contentRect, queue, stats);
     if (m_foreTrack && m_foreTrackUpdater)
         updatePart(m_foreTrackUpdater.get(), m_foreTrack.get(), contentRect, queue, stats);
 
     // Consider the thumb to be at the origin when painting.
     WebKit::WebRect thumbRect = m_geometry->thumbRect(m_scrollbar.get());
-    IntRect originThumbRect = scrollbarLayerRectToContentRect(WebRect(0, 0, thumbRect.width, thumbRect.height));
-    if (!originThumbRect.isEmpty())
+    gfx::Rect originThumbRect = scrollbarLayerRectToContentRect(gfx::Rect(0, 0, thumbRect.width, thumbRect.height));
+    if (!originThumbRect.IsEmpty())
         updatePart(m_thumbUpdater.get(), m_thumb.get(), originThumbRect, queue, stats);
 }
 

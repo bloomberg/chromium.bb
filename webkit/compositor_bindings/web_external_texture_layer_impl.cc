@@ -56,7 +56,7 @@ void WebExternalTextureLayerImpl::setFlipped(bool flipped)
 
 void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect)
 {
-    static_cast<TextureLayer*>(m_layer->layer())->setUVRect(convert(rect));
+    static_cast<TextureLayer*>(m_layer->layer())->setUVRect(rect);
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque)

@@ -66,7 +66,7 @@ ThreadProxy::~ThreadProxy()
     DCHECK(!m_started);
 }
 
-bool ThreadProxy::compositeAndReadback(void *pixels, const IntRect& rect)
+bool ThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect)
 {
     TRACE_EVENT0("cc", "ThreadPRoxy::compositeAndReadback");
     DCHECK(isMainThread());

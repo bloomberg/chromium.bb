@@ -52,7 +52,7 @@ void TextureLayer::setFlipped(bool flipped)
     setNeedsCommit();
 }
 
-void TextureLayer::setUVRect(const FloatRect& rect)
+void TextureLayer::setUVRect(const gfx::RectF& rect)
 {
     m_uvRect = rect;
     setNeedsCommit();
@@ -90,7 +90,7 @@ void TextureLayer::willModifyTexture()
     }
 }
 
-void TextureLayer::setNeedsDisplayRect(const FloatRect& dirtyRect)
+void TextureLayer::setNeedsDisplayRect(const gfx::RectF& dirtyRect)
 {
     Layer::setNeedsDisplayRect(dirtyRect);
 

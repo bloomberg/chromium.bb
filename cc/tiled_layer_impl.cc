@@ -118,9 +118,9 @@ DrawableTile* TiledLayerImpl::createTile(int i, int j)
 
 void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
-    const IntRect& contentRect = visibleContentRect();
+    const gfx::Rect& contentRect = visibleContentRect();
 
-    if (!m_tiler || m_tiler->hasEmptyBounds() || contentRect.isEmpty())
+    if (!m_tiler || m_tiler->hasEmptyBounds() || contentRect.IsEmpty())
         return;
 
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
@@ -133,7 +133,7 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         for (int j = top; j <= bottom; ++j) {
             for (int i = left; i <= right; ++i) {
                 DrawableTile* tile = tileAt(i, j);
-                IntRect tileRect = m_tiler->tileBounds(i, j);
+                gfx::Rect tileRect = m_tiler->tileBounds(i, j);
                 SkColor borderColor;
 
                 if (m_skipsDraw || !tile || !tile->resourceId())
@@ -151,12 +151,12 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     for (int j = top; j <= bottom; ++j) {
         for (int i = left; i <= right; ++i) {
             DrawableTile* tile = tileAt(i, j);
-            IntRect tileRect = m_tiler->tileBounds(i, j);
-            IntRect displayRect = tileRect;
-            tileRect.intersect(contentRect);
+            gfx::Rect tileRect = m_tiler->tileBounds(i, j);
+            gfx::Rect displayRect = tileRect;
+            tileRect.Intersect(contentRect);
 
             // Skip empty tiles.
-            if (tileRect.isEmpty())
+            if (tileRect.IsEmpty())
                 continue;
 
             if (!tile || !tile->resourceId()) {
@@ -177,16 +177,16 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
                 continue;
             }
 
-            IntRect tileOpaqueRect = tile->opaqueRect();
-            tileOpaqueRect.intersect(contentRect);
+            gfx::Rect tileOpaqueRect = tile->opaqueRect();
+            tileOpaqueRect.Intersect(contentRect);
 
             // Keep track of how the top left has moved, so the texture can be
             // offset the same amount.
-            IntSize displayOffset = tileRect.minXMinYCorner() - displayRect.minXMinYCorner();
-            IntPoint textureOffset = m_tiler->textureOffset(i, j) + displayOffset;
+            gfx::Vector2d displayOffset = tileRect.origin() - displayRect.origin();
+            gfx::Vector2d textureOffset = m_tiler->textureOffset(i, j) + displayOffset;
             float tileWidth = static_cast<float>(m_tiler->tileSize().width());
             float tileHeight = static_cast<float>(m_tiler->tileSize().height());
-            IntSize textureSize(tileWidth, tileHeight);
+            gfx::Size textureSize(tileWidth, tileHeight);
 
             bool clipped = false;
             FloatQuad visibleContentInTargetQuad = MathUtil::mapQuad(drawTransform(), FloatQuad(visibleContentRect()), clipped);
@@ -213,7 +213,7 @@ void TiledLayerImpl::setTilingData(const LayerTilingData& tiler)
     *m_tiler = tiler;
 }
 
-void TiledLayerImpl::pushTileProperties(int i, int j, ResourceProvider::ResourceId resourceId, const IntRect& opaqueRect, bool contentsSwizzled)
+void TiledLayerImpl::pushTileProperties(int i, int j, ResourceProvider::ResourceId resourceId, const gfx::Rect& opaqueRect, bool contentsSwizzled)
 {
     DrawableTile* tile = tileAt(i, j);
     if (!tile)
@@ -229,7 +229,7 @@ void TiledLayerImpl::pushInvalidTile(int i, int j)
     if (!tile)
         tile = createTile(i, j);
     tile->setResourceId(0);
-    tile->setOpaqueRect(IntRect());
+    tile->setOpaqueRect(gfx::Rect());
     tile->setContentsSwizzled(false);
 }
 
@@ -238,7 +238,7 @@ Region TiledLayerImpl::visibleContentOpaqueRegion() const
     if (m_skipsDraw)
         return Region();
     if (contentsOpaque())
-        return visibleContentRect();
+        return cc::IntRect(visibleContentRect());
     return m_tiler->opaqueRegionInContentRect(visibleContentRect());
 }
 

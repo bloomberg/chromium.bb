@@ -75,10 +75,10 @@ public:
                                      float maxPageScaleFactor);
 
     // Returns the bounds and offset of the scaled and translated viewport to use for pinch-zoom.
-    FloatRect bounds() const;
+    gfx::RectF bounds() const;
     const FloatPoint& scrollDelta() const { return m_pinchViewportScrollDelta; }
 
-    void setLayoutViewportSize(const FloatSize& size) { m_layoutViewportSize = size; }
+    void setLayoutViewportSize(const gfx::SizeF& size) { m_layoutViewportSize = size; }
 
     // Apply the scroll offset in layout space to the offset of the pinch-zoom viewport. The viewport cannot be
     // scrolled outside of the layout viewport bounds. Returns the component of the scroll that is un-applied due to
@@ -95,7 +95,7 @@ private:
     float m_minPageScaleFactor;
 
     FloatPoint m_pinchViewportScrollDelta;
-    FloatSize m_layoutViewportSize;
+    gfx::SizeF m_layoutViewportSize;
 };
 
 // LayerTreeHostImpl owns the LayerImpl tree as well as associated rendering state
@@ -147,7 +147,7 @@ public:
     void didDrawAllLayers(const FrameData&);
 
     // RendererClient implementation
-    virtual const IntSize& deviceViewportSize() const OVERRIDE;
+    virtual const gfx::Size& deviceViewportSize() const OVERRIDE;
     virtual const LayerTreeSettings& settings() const OVERRIDE;
     virtual void didLoseContext() OVERRIDE;
     virtual void onSwapBuffersComplete() OVERRIDE;
@@ -174,7 +174,7 @@ public:
 
     bool swapBuffers();
 
-    void readback(void* pixels, const IntRect&);
+    void readback(void* pixels, const gfx::Rect&);
 
     void setRootLayer(scoped_ptr<LayerImpl>);
     LayerImpl* rootLayer() { return m_rootLayerImpl.get(); }
@@ -199,8 +199,8 @@ public:
     void resetContentsTexturesPurged();
     size_t memoryAllocationLimitBytes() const { return m_managedMemoryPolicy.bytesLimitWhenVisible; }
 
-    void setViewportSize(const IntSize& layoutViewportSize, const IntSize& deviceViewportSize);
-    const IntSize& layoutViewportSize() const { return m_layoutViewportSize; }
+    void setViewportSize(const gfx::Size& layoutViewportSize, const gfx::Size& deviceViewportSize);
+    const gfx::Size& layoutViewportSize() const { return m_layoutViewportSize; }
 
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float);
@@ -295,7 +295,7 @@ private:
     bool calculateRenderPasses(FrameData&);
     void animateLayersRecursive(LayerImpl*, base::TimeTicks monotonicTime, base::Time wallClockTime, AnimationEventsVector*, bool& didAnimate, bool& needsAnimateLayers);
     void setBackgroundTickingEnabled(bool);
-    IntSize contentSize() const;
+    gfx::Size contentSize() const;
 
     void sendDidLoseContextRecursive(LayerImpl*);
     void clearRenderSurfaces();
@@ -316,8 +316,8 @@ private:
     int m_scrollingLayerIdFromPreviousTree;
     bool m_scrollDeltaIsInViewportSpace;
     LayerTreeSettings m_settings;
-    IntSize m_layoutViewportSize;
-    IntSize m_deviceViewportSize;
+    gfx::Size m_layoutViewportSize;
+    gfx::Size m_deviceViewportSize;
     float m_deviceScaleFactor;
     bool m_visible;
     bool m_contentsTexturesPurged;

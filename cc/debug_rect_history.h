@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
-#include "FloatRect.h"
+#include "ui/gfx/rect_f.h"
 #include <vector>
 
 namespace cc {
@@ -38,12 +38,12 @@ struct LayerTreeSettings;
 enum DebugRectType { PaintRectType, PropertyChangedRectType, SurfaceDamageRectType, ScreenSpaceRectType, ReplicaScreenSpaceRectType, OccludingRectType };
 
 struct DebugRect {
-    DebugRect(DebugRectType newType, FloatRect newRect)
+    DebugRect(DebugRectType newType, gfx::RectF newRect)
             : type(newType)
             , rect(newRect) { }
 
     DebugRectType type;
-    FloatRect rect;
+    gfx::RectF rect;
 };
 
 // This class maintains a history of rects of various types that can be used

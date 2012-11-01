@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "FloatRect.h"
-#include "IntRect.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include <public/WebTransformationMatrix.h>
 #include <vector>
 
@@ -23,10 +23,10 @@ public:
     ~RenderSurface();
 
     // Returns the rect that encloses the RenderSurfaceImpl including any reflection.
-    FloatRect drawableContentRect() const;
+    gfx::RectF drawableContentRect() const;
 
-    const IntRect& contentRect() const { return m_contentRect; }
-    void setContentRect(const IntRect& contentRect) { m_contentRect = contentRect; }
+    const gfx::Rect& contentRect() const { return m_contentRect; }
+    void setContentRect(const gfx::Rect& contentRect) { m_contentRect = contentRect; }
 
     float drawOpacity() const { return m_drawOpacity; }
     void setDrawOpacity(float drawOpacity) { m_drawOpacity = drawOpacity; }
@@ -53,8 +53,8 @@ public:
     bool screenSpaceTransformsAreAnimating() const { return m_screenSpaceTransformsAreAnimating; }
     void setScreenSpaceTransformsAreAnimating(bool animating) { m_screenSpaceTransformsAreAnimating = animating; }
 
-    const IntRect& clipRect() const { return m_clipRect; }
-    void setClipRect(const IntRect& clipRect) { m_clipRect = clipRect; }
+    const gfx::Rect& clipRect() const { return m_clipRect; }
+    void setClipRect(const gfx::Rect& clipRect) { m_clipRect = clipRect; }
 
     typedef std::vector<scoped_refptr<Layer> > LayerList;
     LayerList& layerList() { return m_layerList; }
@@ -72,7 +72,7 @@ private:
     Layer* m_owningLayer;
 
     // Uses this surface's space.
-    IntRect m_contentRect;
+    gfx::Rect m_contentRect;
 
     float m_drawOpacity;
     bool m_drawOpacityIsAnimating;
@@ -84,7 +84,7 @@ private:
     bool m_screenSpaceTransformsAreAnimating;
 
     // Uses the space of the surface's target surface.
-    IntRect m_clipRect;
+    gfx::Rect m_clipRect;
 
     LayerList m_layerList;
 

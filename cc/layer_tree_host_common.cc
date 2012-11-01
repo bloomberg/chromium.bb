@@ -6,8 +6,6 @@
 
 #include "cc/layer_tree_host_common.h"
 
-#include "FloatQuad.h"
-#include "IntRect.h"
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_iterator.h"
@@ -15,6 +13,7 @@
 #include "cc/math_util.h"
 #include "cc/render_surface.h"
 #include "cc/render_surface_impl.h"
+#include "ui/gfx/rect_conversions.h"
 #include <algorithm>
 #include <public/WebTransformationMatrix.h>
 
@@ -30,26 +29,26 @@ ScrollAndScaleSet::~ScrollAndScaleSet()
 {
 }
 
-IntRect LayerTreeHostCommon::calculateVisibleRect(const IntRect& targetSurfaceRect, const IntRect& layerBoundRect, const WebTransformationMatrix& transform)
+gfx::Rect LayerTreeHostCommon::calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const WebTransformationMatrix& transform)
 {
     // Is this layer fully contained within the target surface?
-    IntRect layerInSurfaceSpace = MathUtil::mapClippedRect(transform, layerBoundRect);
-    if (targetSurfaceRect.contains(layerInSurfaceSpace))
+    gfx::Rect layerInSurfaceSpace = MathUtil::mapClippedRect(transform, layerBoundRect);
+    if (targetSurfaceRect.Contains(layerInSurfaceSpace))
         return layerBoundRect;
 
     // If the layer doesn't fill up the entire surface, then find the part of
     // the surface rect where the layer could be visible. This avoids trying to
     // project surface rect points that are behind the projection point.
-    IntRect minimalSurfaceRect = targetSurfaceRect;
-    minimalSurfaceRect.intersect(layerInSurfaceSpace);
+    gfx::Rect minimalSurfaceRect = targetSurfaceRect;
+    minimalSurfaceRect.Intersect(layerInSurfaceSpace);
 
     // Project the corners of the target surface rect into the layer space.
     // This bounding rectangle may be larger than it needs to be (being
     // axis-aligned), but is a reasonable filter on the space to consider.
     // Non-invertible transforms will create an empty rect here.
     const WebTransformationMatrix surfaceToLayer = transform.inverse();
-    IntRect layerRect = enclosingIntRect(MathUtil::projectClippedRect(surfaceToLayer, FloatRect(minimalSurfaceRect)));
-    layerRect.intersect(layerBoundRect);
+    gfx::Rect layerRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(surfaceToLayer, gfx::RectF(minimalSurfaceRect)));
+    layerRect.Intersect(layerBoundRect);
     return layerRect;
 }
 
@@ -116,31 +115,31 @@ static inline bool layerClipsSubtree(LayerType* layer)
 }
 
 template<typename LayerType>
-static IntRect calculateVisibleContentRect(LayerType* layer)
+static gfx::Rect calculateVisibleContentRect(LayerType* layer)
 {
     DCHECK(layer->renderTarget());
 
     // Nothing is visible if the layer bounds are empty.
-    if (!layer->drawsContent() || layer->contentBounds().isEmpty() || layer->drawableContentRect().isEmpty())
-        return IntRect();
+    if (!layer->drawsContent() || layer->contentBounds().IsEmpty() || layer->drawableContentRect().IsEmpty())
+        return gfx::Rect();
 
-    IntRect targetSurfaceClipRect;
+    gfx::Rect targetSurfaceClipRect;
 
     // First, compute visible bounds in target surface space.
-    if (layer->renderTarget()->renderSurface()->clipRect().isEmpty())
+    if (layer->renderTarget()->renderSurface()->clipRect().IsEmpty())
         targetSurfaceClipRect = layer->drawableContentRect();
     else {
         // In this case the target surface does clip layers that contribute to it. So, we
         // have convert the current surface's clipRect from its ancestor surface space to
         // the current surface space.
-        targetSurfaceClipRect = enclosingIntRect(MathUtil::projectClippedRect(layer->renderTarget()->renderSurface()->drawTransform().inverse(), layer->renderTarget()->renderSurface()->clipRect()));
-        targetSurfaceClipRect.intersect(layer->drawableContentRect());
+        targetSurfaceClipRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(layer->renderTarget()->renderSurface()->drawTransform().inverse(), layer->renderTarget()->renderSurface()->clipRect()));
+        targetSurfaceClipRect.Intersect(layer->drawableContentRect());
     }
 
-    if (targetSurfaceClipRect.isEmpty())
-        return IntRect();
+    if (targetSurfaceClipRect.IsEmpty())
+        return gfx::Rect();
 
-    return LayerTreeHostCommon::calculateVisibleRect(targetSurfaceClipRect, IntRect(IntPoint(), layer->contentBounds()), layer->drawTransform());
+    return LayerTreeHostCommon::calculateVisibleRect(targetSurfaceClipRect, gfx::Rect(gfx::Point(), layer->contentBounds()), layer->drawTransform());
 }
 
 static bool isScaleOrTranslation(const WebTransformationMatrix& m)
@@ -188,7 +187,7 @@ static bool layerShouldBeSkipped(LayerType* layer)
     // we would have skipped the entire subtree and never made it into this function,
     // so it is safe to omit this check here.
 
-    if (!layer->drawsContent() || layer->bounds().isEmpty())
+    if (!layer->drawsContent() || layer->bounds().IsEmpty())
         return true;
 
     LayerType* backfaceTestLayer = layer;
@@ -359,7 +358,7 @@ static inline void updateLayerContentsScale(Layer* layer, const WebTransformatio
         rasterScale = 1;
 
         if (layer->automaticallyComputeRasterScale()) {
-            FloatPoint transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform);
+            gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform);
             float combinedScale = std::max(transformScale.x(), transformScale.y());
             rasterScale = combinedScale / deviceScaleFactor;
             if (!layer->boundsContainPageScale())
@@ -387,9 +386,9 @@ static inline void updateLayerContentsScale(Layer* layer, const WebTransformatio
 template<typename LayerType, typename LayerList, typename RenderSurfaceType, typename LayerSorter>
 static void calculateDrawTransformsInternal(LayerType* layer, const WebTransformationMatrix& parentMatrix,
     const WebTransformationMatrix& fullHierarchyMatrix, const WebTransformationMatrix& currentScrollCompensationMatrix,
-    const IntRect& clipRectFromAncestor, bool ancestorClipsSubtree,
+    const gfx::Rect& clipRectFromAncestor, bool ancestorClipsSubtree,
     RenderSurfaceType* nearestAncestorThatMovesPixels, LayerList& renderSurfaceLayerList, LayerList& layerList,
-    LayerSorter* layerSorter, int maxTextureSize, float deviceScaleFactor, float pageScaleFactor, IntRect& drawableContentRectOfSubtree)
+    LayerSorter* layerSorter, int maxTextureSize, float deviceScaleFactor, float pageScaleFactor, gfx::Rect& drawableContentRectOfSubtree)
 {
     // This function computes the new matrix transformations recursively for this
     // layer and all its descendants. It also computes the appropriate render surfaces.
@@ -402,7 +401,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     //    positive Y-axis points downwards. This interpretation is valid because the orthographic
     //    projection applied at draw time flips the Y axis appropriately.
     //
-    // 2. The anchor point, when given as a FloatPoint object, is specified in "unit layer space",
+    // 2. The anchor point, when given as a PointF object, is specified in "unit layer space",
     //    where the bounds of the layer map to [0, 1]. However, as a WebTransformationMatrix object,
     //    the transform to the anchor point is specified in "layer space", where the bounds
     //    of the layer map to [bounds.width(), bounds.height()].
@@ -474,13 +473,13 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     //
 
     // If we early-exit anywhere in this function, the drawableContentRect of this subtree should be considered empty.
-    drawableContentRectOfSubtree = IntRect();
+    drawableContentRectOfSubtree = gfx::Rect();
 
     // The root layer cannot skip calcDrawTransforms.
     if (!isRootLayer(layer) && subtreeShouldBeSkipped(layer))
         return;
 
-    IntRect clipRectForSubtree;
+    gfx::Rect clipRectForSubtree;
     bool subtreeShouldBeClipped = false;
     
     float drawOpacity = layer->opacity();
@@ -490,9 +489,9 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         drawOpacityIsAnimating |= layer->parent()->drawOpacityIsAnimating();
     }
 
-    IntSize bounds = layer->bounds();
-    FloatPoint anchorPoint = layer->anchorPoint();
-    FloatPoint position = layer->position() - layer->scrollDelta();
+    gfx::Size bounds = layer->bounds();
+    gfx::PointF anchorPoint = layer->anchorPoint();
+    gfx::PointF position = layer->position() - gfx::Vector2d(layer->scrollDelta().width(), layer->scrollDelta().height());
 
     WebTransformationMatrix layerLocalTransform;
     // LT = Tr[origin] * Tr[origin2anchor]
@@ -523,7 +522,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
     // The drawTransform that gets computed below is effectively the layer's drawTransform, unless
     // the layer itself creates a renderSurface. In that case, the renderSurface re-parents the transforms.
     WebTransformationMatrix drawTransform = combinedTransform;
-    if (!layer->contentBounds().isEmpty() && !layer->bounds().isEmpty()) {
+    if (!layer->contentBounds().IsEmpty() && !layer->bounds().IsEmpty()) {
         // M[draw] = M[parent] * LT * S[layer2content]
         drawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(),
                                       1.0 / layer->contentsScaleY());
@@ -543,14 +542,14 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         animatingTransformToScreen |= layer->parent()->screenSpaceTransformIsAnimating();
     }
 
-    FloatRect contentRect(FloatPoint(), layer->contentBounds());
+    gfx::RectF contentRect(gfx::PointF(), layer->contentBounds());
 
     // fullHierarchyMatrix is the matrix that transforms objects between screen space (except projection matrix) and the most recent RenderSurfaceImpl's space.
     // nextHierarchyMatrix will only change if this layer uses a new RenderSurfaceImpl, otherwise remains the same.
     WebTransformationMatrix nextHierarchyMatrix = fullHierarchyMatrix;
     WebTransformationMatrix sublayerMatrix;
 
-    FloatPoint renderSurfaceSublayerScale = MathUtil::computeTransform2dScaleComponents(combinedTransform);
+    gfx::Vector2dF renderSurfaceSublayerScale = MathUtil::computeTransform2dScaleComponents(combinedTransform);
 
     if (subtreeShouldRenderToSeparateSurface(layer, isScaleOrTranslation(combinedTransform))) {
         // Check back-face visibility before continuing with this surface and its subtree
@@ -565,20 +564,16 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
         // The owning layer's draw transform has a scale from content to layer space which we need to undo and
         // replace with a scale from the surface's subtree into layer space.
-        if (!layer->contentBounds().isEmpty() && !layer->bounds().isEmpty()) {
-            drawTransform.scaleNonUniform(layer->contentsScaleX(),
-                                          layer->contentsScaleY());
-        }
+        if (!layer->contentBounds().IsEmpty() && !layer->bounds().IsEmpty())
+            drawTransform.scaleNonUniform(layer->contentsScaleX(), layer->contentsScaleY());
         drawTransform.scaleNonUniform(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
         renderSurface->setDrawTransform(drawTransform);
 
         // The origin of the new surface is the upper left corner of the layer.
         WebTransformationMatrix layerDrawTransform;
         layerDrawTransform.scaleNonUniform(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
-        if (!layer->contentBounds().isEmpty() && !layer->bounds().isEmpty()) {
-            layerDrawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(),
-                                               1.0 / layer->contentsScaleY());
-        }
+        if (!layer->contentBounds().IsEmpty() && !layer->bounds().IsEmpty())
+            layerDrawTransform.scaleNonUniform(1.0 / layer->contentsScaleX(), 1.0 / layer->contentsScaleY());
         layer->setDrawTransform(layerDrawTransform);
 
         // Inside the surface's subtree, we scale everything to the owning layer's scale.
@@ -611,12 +606,12 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
         if (layer->maskLayer()) {
             layer->maskLayer()->setRenderTarget(layer);
-            layer->maskLayer()->setVisibleContentRect(IntRect(IntPoint(), layer->contentBounds()));
+            layer->maskLayer()->setVisibleContentRect(gfx::Rect(gfx::Point(), layer->contentBounds()));
         }
 
         if (layer->replicaLayer() && layer->replicaLayer()->maskLayer()) {
             layer->replicaLayer()->maskLayer()->setRenderTarget(layer);
-            layer->replicaLayer()->maskLayer()->setVisibleContentRect(IntRect(IntPoint(), layer->contentBounds()));
+            layer->replicaLayer()->maskLayer()->setVisibleContentRect(gfx::Rect(gfx::Point(), layer->contentBounds()));
         }
 
         // FIXME:  make this smarter for the SkImageFilter case (check for
@@ -628,7 +623,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         if (ancestorClipsSubtree)
             renderSurface->setClipRect(clipRectFromAncestor);
         else
-            renderSurface->setClipRect(IntRect());
+            renderSurface->setClipRect(gfx::Rect());
 
         renderSurface->setNearestAncestorThatMovesPixels(nearestAncestorThatMovesPixels);
 
@@ -655,13 +650,13 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         layer->setRenderTarget(layer->parent()->renderTarget());
     }
 
-    IntRect rectInTargetSpace = enclosingIntRect(MathUtil::mapClippedRect(layer->drawTransform(), contentRect));
+    gfx::Rect rectInTargetSpace = ToEnclosingRect(MathUtil::mapClippedRect(layer->drawTransform(), contentRect));
 
     if (layerClipsSubtree(layer)) {
         subtreeShouldBeClipped = true;
         if (ancestorClipsSubtree && !layer->renderSurface()) {
             clipRectForSubtree = clipRectFromAncestor;
-            clipRectForSubtree.intersect(rectInTargetSpace);
+            clipRectForSubtree.Intersect(rectInTargetSpace);
         } else
             clipRectForSubtree = rectInTargetSpace;
     }
@@ -685,35 +680,35 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
     WebTransformationMatrix nextScrollCompensationMatrix = computeScrollCompensationMatrixForChildren(layer, parentMatrix, currentScrollCompensationMatrix);;
 
-    IntRect accumulatedDrawableContentRectOfChildren;
+    gfx::Rect accumulatedDrawableContentRectOfChildren;
     for (size_t i = 0; i < layer->children().size(); ++i) {
         LayerType* child = LayerTreeHostCommon::getChildAsRawPtr(layer->children(), i);
-        IntRect drawableContentRectOfChildSubtree;
+        gfx::Rect drawableContentRectOfChildSubtree;
         calculateDrawTransformsInternal<LayerType, LayerList, RenderSurfaceType, LayerSorter>(child, sublayerMatrix, nextHierarchyMatrix, nextScrollCompensationMatrix,
                                                                                               clipRectForSubtree, subtreeShouldBeClipped, nearestAncestorThatMovesPixels,
                                                                                               renderSurfaceLayerList, descendants, layerSorter, maxTextureSize, deviceScaleFactor, pageScaleFactor, drawableContentRectOfChildSubtree);
-        if (!drawableContentRectOfChildSubtree.isEmpty()) {
-            accumulatedDrawableContentRectOfChildren.unite(drawableContentRectOfChildSubtree);
+        if (!drawableContentRectOfChildSubtree.IsEmpty()) {
+            accumulatedDrawableContentRectOfChildren.Union(drawableContentRectOfChildSubtree);
             if (child->renderSurface())
                 descendants.push_back(child);
         }
     }
 
     // Compute the total drawableContentRect for this subtree (the rect is in targetSurface space)
-    IntRect localDrawableContentRectOfSubtree = accumulatedDrawableContentRectOfChildren;
+    gfx::Rect localDrawableContentRectOfSubtree = accumulatedDrawableContentRectOfChildren;
     if (layer->drawsContent())
-        localDrawableContentRectOfSubtree.unite(rectInTargetSpace);
+        localDrawableContentRectOfSubtree.Union(rectInTargetSpace);
     if (subtreeShouldBeClipped)
-        localDrawableContentRectOfSubtree.intersect(clipRectForSubtree);
+        localDrawableContentRectOfSubtree.Intersect(clipRectForSubtree);
 
     // Compute the layer's drawable content rect (the rect is in targetSurface space)
-    IntRect drawableContentRectOfLayer = rectInTargetSpace;
+    gfx::Rect drawableContentRectOfLayer = rectInTargetSpace;
     if (subtreeShouldBeClipped)
-        drawableContentRectOfLayer.intersect(clipRectForSubtree);
+        drawableContentRectOfLayer.Intersect(clipRectForSubtree);
     layer->setDrawableContentRect(drawableContentRectOfLayer);
 
     // Compute the layer's visible content rect (the rect is in content space)
-    IntRect visibleContentRectOfLayer = calculateVisibleContentRect(layer);
+    gfx::Rect visibleContentRectOfLayer = calculateVisibleContentRect(layer);
     layer->setVisibleContentRect(visibleContentRectOfLayer);
 
     // Compute the remaining properties for the render surface, if the layer has one.
@@ -723,7 +718,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         layer->renderSurface()->setContentRect(clipRectFromAncestor);
     } else if (layer->renderSurface() && !isRootLayer(layer)) {
         RenderSurfaceType* renderSurface = layer->renderSurface();
-        IntRect clippedContentRect = localDrawableContentRectOfSubtree;
+        gfx::Rect clippedContentRect = localDrawableContentRectOfSubtree;
 
         // Don't clip if the layer is reflected as the reflection shouldn't be
         // clipped. If the layer is animating, then the surface's transform to
@@ -731,18 +726,18 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         // to clip.
         if (!layer->replicaLayer() && transformToParentIsKnown(layer)) {
             // Note, it is correct to use ancestorClipsSubtree here, because we are looking at this layer's renderSurface, not the layer itself.
-            if (ancestorClipsSubtree && !clippedContentRect.isEmpty()) {
-                IntRect surfaceClipRect = LayerTreeHostCommon::calculateVisibleRect(renderSurface->clipRect(), clippedContentRect, renderSurface->drawTransform());
-                clippedContentRect.intersect(surfaceClipRect);
+            if (ancestorClipsSubtree && !clippedContentRect.IsEmpty()) {
+                gfx::Rect surfaceClipRect = LayerTreeHostCommon::calculateVisibleRect(renderSurface->clipRect(), clippedContentRect, renderSurface->drawTransform());
+                clippedContentRect.Intersect(surfaceClipRect);
             }
         }
 
         // The RenderSurfaceImpl backing texture cannot exceed the maximum supported
         // texture size.
-        clippedContentRect.setWidth(std::min(clippedContentRect.width(), maxTextureSize));
-        clippedContentRect.setHeight(std::min(clippedContentRect.height(), maxTextureSize));
+        clippedContentRect.set_width(std::min(clippedContentRect.width(), maxTextureSize));
+        clippedContentRect.set_height(std::min(clippedContentRect.height(), maxTextureSize));
 
-        if (clippedContentRect.isEmpty())
+        if (clippedContentRect.IsEmpty())
             renderSurface->clearLayerLists();
 
         renderSurface->setContentRect(clippedContentRect);
@@ -750,10 +745,8 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         // The owning layer's screenSpaceTransform has a scale from content to layer space which we need to undo and
         // replace with a scale from the surface's subtree into layer space.
         WebTransformationMatrix screenSpaceTransform = layer->screenSpaceTransform();
-        if (!layer->contentBounds().isEmpty() && !layer->bounds().isEmpty()) {
-            screenSpaceTransform.scaleNonUniform(layer->contentsScaleX(),
-                                                 layer->contentsScaleY());
-        }
+        if (!layer->contentBounds().IsEmpty() && !layer->bounds().IsEmpty())
+            screenSpaceTransform.scaleNonUniform(layer->contentsScaleX(), layer->contentsScaleY());
         screenSpaceTransform.scaleNonUniform(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
         renderSurface->setScreenSpaceTransform(screenSpaceTransform);
 
@@ -804,7 +797,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         sortLayers(descendants.begin() + sortingStartIndex, descendants.end(), layerSorter);
 
     if (layer->renderSurface())
-        drawableContentRectOfSubtree = enclosingIntRect(layer->renderSurface()->drawableContentRect());
+        drawableContentRectOfSubtree = gfx::ToEnclosingRect(layer->renderSurface()->drawableContentRect());
     else
         drawableContentRectOfSubtree = localDrawableContentRectOfSubtree;
 
@@ -812,9 +805,9 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
         layer->renderTarget()->renderSurface()->addContributingDelegatedRenderPassLayer(layer);
 }
 
-void LayerTreeHostCommon::calculateDrawTransforms(Layer* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
+void LayerTreeHostCommon::calculateDrawTransforms(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
 {
-    IntRect totalDrawableContentRect;
+    gfx::Rect totalDrawableContentRect;
     WebTransformationMatrix identityMatrix;
     WebTransformationMatrix deviceScaleTransform;
     deviceScaleTransform.scale(deviceScaleFactor);
@@ -822,7 +815,7 @@ void LayerTreeHostCommon::calculateDrawTransforms(Layer* rootLayer, const IntSiz
 
     // The root layer's renderSurface should receive the deviceViewport as the initial clipRect.
     bool subtreeShouldBeClipped = true;
-    IntRect deviceViewportRect(IntPoint::zero(), deviceViewportSize);
+    gfx::Rect deviceViewportRect(gfx::Point(), deviceViewportSize);
 
     // This function should have received a root layer.
     DCHECK(isRootLayer(rootLayer));
@@ -839,9 +832,9 @@ void LayerTreeHostCommon::calculateDrawTransforms(Layer* rootLayer, const IntSiz
     DCHECK(rootLayer->renderSurface());
 }
 
-void LayerTreeHostCommon::calculateDrawTransforms(LayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter* layerSorter, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList)
+void LayerTreeHostCommon::calculateDrawTransforms(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter* layerSorter, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
-    IntRect totalDrawableContentRect;
+    gfx::Rect totalDrawableContentRect;
     WebTransformationMatrix identityMatrix;
     WebTransformationMatrix deviceScaleTransform;
     deviceScaleTransform.scale(deviceScaleFactor);
@@ -849,7 +842,7 @@ void LayerTreeHostCommon::calculateDrawTransforms(LayerImpl* rootLayer, const In
 
     // The root layer's renderSurface should receive the deviceViewport as the initial clipRect.
     bool subtreeShouldBeClipped = true;
-    IntRect deviceViewportRect(IntPoint::zero(), deviceViewportSize);
+    gfx::Rect deviceViewportRect(gfx::Point(), deviceViewportSize);
 
     // This function should have received a root layer.
     DCHECK(isRootLayer(rootLayer));
@@ -866,7 +859,7 @@ void LayerTreeHostCommon::calculateDrawTransforms(LayerImpl* rootLayer, const In
     DCHECK(rootLayer->renderSurface());
 }
 
-static bool pointHitsRect(const IntPoint& screenSpacePoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, FloatRect localSpaceRect)
+static bool pointHitsRect(const gfx::Point& screenSpacePoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, gfx::RectF localSpaceRect)
 {
     // If the transform is not invertible, then assume that this point doesn't hit this rect.
     if (!localSpaceToScreenSpaceTransform.isInvertible())
@@ -874,16 +867,16 @@ static bool pointHitsRect(const IntPoint& screenSpacePoint, const WebTransformat
 
     // Transform the hit test point from screen space to the local space of the given rect.
     bool clipped = false;
-    FloatPoint hitTestPointInLocalSpace = MathUtil::projectPoint(localSpaceToScreenSpaceTransform.inverse(), FloatPoint(screenSpacePoint), clipped);
+    gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(localSpaceToScreenSpaceTransform.inverse(), gfx::PointF(screenSpacePoint), clipped);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this rect.
     if (clipped)
         return false;
 
-    return localSpaceRect.contains(hitTestPointInLocalSpace);
+    return localSpaceRect.Contains(hitTestPointInLocalSpace);
 }
 
-static bool pointIsClippedBySurfaceOrClipRect(const IntPoint& screenSpacePoint, LayerImpl* layer)
+static bool pointIsClippedBySurfaceOrClipRect(const gfx::Point& screenSpacePoint, LayerImpl* layer)
 {
     LayerImpl* currentLayer = layer;
 
@@ -905,7 +898,7 @@ static bool pointIsClippedBySurfaceOrClipRect(const IntPoint& screenSpacePoint, 
     return false;
 }
 
-LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const IntPoint& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList)
+LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::Point& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
     LayerImpl* foundLayer = 0;
 
@@ -919,7 +912,7 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const IntPoint& screen
 
         LayerImpl* currentLayer = (*it);
 
-        FloatRect contentRect(FloatPoint::zero(), currentLayer->contentBounds());
+        gfx::RectF contentRect(gfx::PointF(), currentLayer->contentBounds());
         if (!pointHitsRect(screenSpacePoint, currentLayer->screenSpaceTransform(), contentRect))
             continue;
 

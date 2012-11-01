@@ -10,10 +10,13 @@
 #include "base/time.h"
 #include <public/WebCompositorOutputSurface.h>
 
+namespace gfx {
+class Rect;
+}
+
 namespace cc {
 
 class Thread;
-class IntRect;
 class IntSize;
 struct RenderingStats;
 struct RendererCapabilities;
@@ -34,7 +37,7 @@ public:
 
     virtual ~Proxy();
 
-    virtual bool compositeAndReadback(void *pixels, const IntRect&) = 0;
+    virtual bool compositeAndReadback(void *pixels, const gfx::Rect&) = 0;
 
     virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration) = 0;
 

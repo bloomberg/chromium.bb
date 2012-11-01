@@ -78,9 +78,9 @@ void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& a
 
     SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
 
-    IntRect quadRect(IntPoint(), bounds());
+    gfx::Rect quadRect(gfx::Point(), bounds());
     bool premultipliedAlpha = true;
-    FloatRect uvRect(0, 0, 1, 1);
+    gfx::RectF uvRect(0, 0, 1, 1);
     bool flipped = false;
     quadSink.append(TextureDrawQuad::create(sharedQuadState, quadRect, m_hudTexture->id(), premultipliedAlpha, uvRect, flipped).PassAs<DrawQuad>(), appendQuadsData);
 }
@@ -276,7 +276,7 @@ void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory*
             break;
         }
 
-        const FloatRect& rect = debugRects[i].rect;
+        const gfx::RectF& rect = debugRects[i].rect;
         SkRect skRect = SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
         SkPaint paint = createPaint();
         paint.setColor(fillColor);

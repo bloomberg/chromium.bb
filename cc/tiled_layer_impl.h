@@ -29,7 +29,7 @@ public:
 
     void setSkipsDraw(bool skipsDraw) { m_skipsDraw = skipsDraw; }
     void setTilingData(const LayerTilingData& tiler);
-    void pushTileProperties(int, int, ResourceProvider::ResourceId, const IntRect& opaqueRect, bool contentsSwizzled);
+    void pushTileProperties(int, int, ResourceProvider::ResourceId, const gfx::Rect& opaqueRect, bool contentsSwizzled);
     void pushInvalidTile(int, int);
 
     virtual Region visibleContentOpaqueRegion() const OVERRIDE;

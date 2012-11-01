@@ -17,7 +17,7 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
       : ContentsScalingLayer() {
   }
 
-  virtual void setNeedsDisplayRect(const FloatRect& dirtyRect) OVERRIDE {
+  virtual void setNeedsDisplayRect(const gfx::RectF& dirtyRect) OVERRIDE {
     m_lastNeedsDisplayRect = dirtyRect;
     ContentsScalingLayer::setNeedsDisplayRect(dirtyRect);
   }
@@ -26,7 +26,7 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
       m_needsDisplay = false;
   }
 
-  const FloatRect& lastNeedsDisplayRect() const {
+  const gfx::RectF& lastNeedsDisplayRect() const {
     return m_lastNeedsDisplayRect;
   }
 
@@ -34,14 +34,14 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
   virtual ~MockContentsScalingLayer() {
   }
 
-  FloatRect m_lastNeedsDisplayRect;
+  gfx::RectF m_lastNeedsDisplayRect;
 };
 
 TEST(ContentsScalingLayerTest, checkContentsBounds) {
   scoped_refptr<MockContentsScalingLayer> testLayer =
       make_scoped_refptr(new MockContentsScalingLayer());
 
-  testLayer->setBounds(IntSize(320, 240));
+  testLayer->setBounds(gfx::Size(320, 240));
   EXPECT_FLOAT_EQ(1.0, testLayer->contentsScaleX());
   EXPECT_FLOAT_EQ(1.0, testLayer->contentsScaleY());
   EXPECT_EQ(320, testLayer->contentBounds().width());
@@ -51,7 +51,7 @@ TEST(ContentsScalingLayerTest, checkContentsBounds) {
   EXPECT_EQ(640, testLayer->contentBounds().width());
   EXPECT_EQ(480, testLayer->contentBounds().height());
 
-  testLayer->setBounds(IntSize(10, 20));
+  testLayer->setBounds(gfx::Size(10, 20));
   EXPECT_EQ(20, testLayer->contentBounds().width());
   EXPECT_EQ(40, testLayer->contentBounds().height());
 
@@ -64,13 +64,13 @@ TEST(ContentsScalingLayerTest, checkContentsScaleChangeTriggersNeedsDisplay) {
   scoped_refptr<MockContentsScalingLayer> testLayer =
       make_scoped_refptr(new MockContentsScalingLayer());
 
-  testLayer->setBounds(IntSize(320, 240));
+  testLayer->setBounds(gfx::Size(320, 240));
 
   testLayer->resetNeedsDisplay();
   EXPECT_FALSE(testLayer->needsDisplay());
 
   testLayer->setContentsScale(testLayer->contentsScaleX() + 1.f);
   EXPECT_TRUE(testLayer->needsDisplay());
-  EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 320, 240),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 320, 240),
                        testLayer->lastNeedsDisplayRect());
 }

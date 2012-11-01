@@ -419,12 +419,12 @@ TEST_F(LayerTest, checkSetNeedsDisplayCausesCorrectBehavior)
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setIsDrawable(true));
 
-    IntSize testBounds = IntSize(501, 508);
+    gfx::Size testBounds = gfx::Size(501, 508);
 
-    FloatRect dirty1 = FloatRect(10, 15, 1, 2);
-    FloatRect dirty2 = FloatRect(20, 25, 3, 4);
-    FloatRect emptyDirtyRect = FloatRect(40, 45, 0, 0);
-    FloatRect outOfBoundsDirtyRect = FloatRect(400, 405, 500, 502);
+    gfx::RectF dirty1 = gfx::RectF(10, 15, 1, 2);
+    gfx::RectF dirty2 = gfx::RectF(20, 25, 3, 4);
+    gfx::RectF emptyDirtyRect = gfx::RectF(40, 45, 0, 0);
+    gfx::RectF outOfBoundsDirtyRect = gfx::RectF(400, 405, 500, 502);
 
     // Before anything, testLayer should not be dirty.
     EXPECT_FALSE(testLayer->needsDisplay());
@@ -486,25 +486,25 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // Test properties that should not call needsDisplay and needsCommit when changed.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setVisibleContentRect(IntRect(0, 0, 40, 50)));
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setVisibleContentRect(gfx::Rect(0, 0, 40, 50)));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setUseLCDText(true));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setDrawOpacity(0.5));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setRenderTarget(0));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setDrawTransform(WebTransformationMatrix()));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setScreenSpaceTransform(WebTransformationMatrix()));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setDrawableContentRect(IntRect(4, 5, 6, 7)));
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(0, testLayer->setDrawableContentRect(gfx::Rect(4, 5, 6, 7)));
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // Next, test properties that should call setNeedsCommit (but not setNeedsDisplay)
     // All properties need to be set to new values in order for setNeedsCommit to be called.
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setAnchorPoint(FloatPoint(1.23f, 4.56f)));
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setAnchorPoint(gfx::PointF(1.23f, 4.56f)));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setAnchorPointZ(0.7f));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBackgroundColor(SK_ColorLTGRAY));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setMasksToBounds(true));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setMaskLayer(dummyLayer.get()));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setOpacity(0.5));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setContentsOpaque(true));
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setPosition(FloatPoint(4, 9)));
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setPosition(gfx::PointF(4, 9)));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setReplicaLayer(dummyLayer.get()));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setSublayerTransform(WebTransformationMatrix(0, 0, 0, 0, 0, 0)));
     EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setScrollable(true));
@@ -522,7 +522,7 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
     EXPECT_FALSE(testLayer->needsDisplay());
 
     // Test properties that should call setNeedsDisplay and setNeedsCommit
-    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(IntSize(5, 10)));
+    EXECUTE_AND_VERIFY_SET_NEEDS_COMMIT_BEHAVIOR(1, testLayer->setBounds(gfx::Size(5, 10)));
     EXPECT_TRUE(testLayer->needsDisplay());
 }
 
@@ -533,20 +533,20 @@ TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
     scoped_refptr<Layer> testLayer = Layer::create();
     scoped_ptr<LayerImpl> implLayer = LayerImpl::create(1);
 
-    testLayer->setNeedsDisplayRect(FloatRect(FloatPoint::zero(), FloatSize(5, 5)));
+    testLayer->setNeedsDisplayRect(gfx::RectF(gfx::PointF(), gfx::SizeF(5, 5)));
     testLayer->pushPropertiesTo(implLayer.get());
-    EXPECT_FLOAT_RECT_EQ(FloatRect(FloatPoint::zero(), FloatSize(5, 5)), implLayer->updateRect());
+    EXPECT_FLOAT_RECT_EQ(gfx::RectF(gfx::PointF(), gfx::SizeF(5, 5)), implLayer->updateRect());
 
     // The LayerImpl's updateRect should be accumulated here, since we did not do anything to clear it.
-    testLayer->setNeedsDisplayRect(FloatRect(FloatPoint(10, 10), FloatSize(5, 5)));
+    testLayer->setNeedsDisplayRect(gfx::RectF(gfx::PointF(10, 10), gfx::SizeF(5, 5)));
     testLayer->pushPropertiesTo(implLayer.get());
-    EXPECT_FLOAT_RECT_EQ(FloatRect(FloatPoint::zero(), FloatSize(15, 15)), implLayer->updateRect());
+    EXPECT_FLOAT_RECT_EQ(gfx::RectF(gfx::PointF(), gfx::SizeF(15, 15)), implLayer->updateRect());
 
     // If we do clear the LayerImpl side, then the next updateRect should be fresh without accumulation.
     implLayer->resetAllChangeTrackingForSubtree();
-    testLayer->setNeedsDisplayRect(FloatRect(FloatPoint(10, 10), FloatSize(5, 5)));
+    testLayer->setNeedsDisplayRect(gfx::RectF(gfx::PointF(10, 10), gfx::SizeF(5, 5)));
     testLayer->pushPropertiesTo(implLayer.get());
-    EXPECT_FLOAT_RECT_EQ(FloatRect(FloatPoint(10, 10), FloatSize(5, 5)), implLayer->updateRect());
+    EXPECT_FLOAT_RECT_EQ(gfx::RectF(gfx::PointF(10, 10), gfx::SizeF(5, 5)), implLayer->updateRect());
 }
 
 class FakeLayerImplTreeHost : public LayerTreeHost {
@@ -792,9 +792,9 @@ TEST(LayerTestWithoutFixture, setBoundsTriggersSetNeedsRedrawAfterGettingNonEmpt
 {
     scoped_refptr<MockLayer> layer(new MockLayer);
     EXPECT_FALSE(layer->needsDisplay());
-    layer->setBounds(IntSize(0, 10));
+    layer->setBounds(gfx::Size(0, 10));
     EXPECT_FALSE(layer->needsDisplay());
-    layer->setBounds(IntSize(10, 10));
+    layer->setBounds(gfx::Size(10, 10));
     EXPECT_TRUE(layer->needsDisplay());
 }
 

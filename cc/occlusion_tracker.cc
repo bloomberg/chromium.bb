@@ -133,7 +133,7 @@ static inline Region transformSurfaceOpaqueRegion(const RenderSurfaceType* surfa
     for (size_t i = 0; i < rects.size(); ++i) {
         // We've already checked for clipping in the mapQuad call above, these calls should not clip anything further.
         gfx::Rect transformedRect = gfx::ToEnclosedRect(MathUtil::mapClippedRect(transform, cc::FloatRect(rects[i])));
-        if (!surface->clipRect().isEmpty())
+        if (!surface->clipRect().IsEmpty())
             transformedRect.Intersect(surface->clipRect());
         transformedRegion.unite(cc::IntRect(transformedRect));
     }
@@ -185,7 +185,7 @@ static void reduceOcclusionBelowSurface(LayerType* contributingLayer, const gfx:
         return;
 
     gfx::Rect boundsInTarget = gfx::ToEnclosingRect(MathUtil::mapClippedRect(surfaceTransform, cc::FloatRect(surfaceRect)));
-    if (!contributingLayer->renderSurface()->clipRect().isEmpty())
+    if (!contributingLayer->renderSurface()->clipRect().IsEmpty())
         boundsInTarget.Intersect(contributingLayer->renderSurface()->clipRect());
 
     int outsetTop, outsetRight, outsetBottom, outsetLeft;
@@ -248,7 +248,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::leaveToRenderTarget(con
 template<typename LayerType>
 static inline void addOcclusionBehindLayer(Region& region, const LayerType* layer, const WebTransformationMatrix& transform, const Region& opaqueContents, const gfx::Rect& clipRectInTarget, const gfx::Size& minimumTrackingSize, std::vector<gfx::Rect>* occludingScreenSpaceRects)
 {
-    DCHECK(layer->visibleContentRect().contains(opaqueContents.bounds()));
+    DCHECK(layer->visibleContentRect().Contains(cc::IntRect(opaqueContents.bounds())));
 
     bool clipped;
     FloatQuad visibleTransformedQuad = MathUtil::mapQuad(transform, FloatQuad(layer->visibleContentRect()), clipped);
@@ -308,7 +308,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::markOccludedBehindLayer
 
 static inline bool testContentRectOccluded(const gfx::Rect& contentRect, const WebTransformationMatrix& contentSpaceTransform, const gfx::Rect& clipRectInTarget, const Region& occlusion)
 {
-    gfx::RectF transformedRect = MathUtil::mapClippedRect(contentSpaceTransform, cc::FloatRect(contentRect));
+    gfx::RectF transformedRect = MathUtil::mapClippedRect(contentSpaceTransform, gfx::RectF(contentRect));
     // Take the gfx::ToEnclosingRect, as we want to include partial pixels in the test.
     gfx::Rect targetRect = gfx::IntersectRects(gfx::ToEnclosingRect(transformedRect), clipRectInTarget);
     return targetRect.IsEmpty() || occlusion.contains(cc::IntRect(targetRect));
@@ -358,9 +358,9 @@ static inline gfx::Rect computeUnoccludedContentRect(const gfx::Rect& contentRec
         return contentRect;
 
     // Take the ToEnclosingRect at each step, as we want to contain any unoccluded partial pixels in the resulting Rect.
-    FloatRect transformedRect = MathUtil::mapClippedRect(contentSpaceTransform, cc::FloatRect(contentRect));
+    gfx::RectF transformedRect = MathUtil::mapClippedRect(contentSpaceTransform, gfx::RectF(contentRect));
     gfx::Rect shrunkRect = rectSubtractRegion(gfx::IntersectRects(gfx::ToEnclosingRect(transformedRect), clipRectInTarget), occlusion);
-    gfx::Rect unoccludedRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(contentSpaceTransform.inverse(), cc::FloatRect(shrunkRect)));
+    gfx::Rect unoccludedRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(contentSpaceTransform.inverse(), gfx::RectF(shrunkRect)));
     // The rect back in content space is a bounding box and may extend outside of the original contentRect, so clamp it to the contentRectBounds.
     return gfx::IntersectRects(unoccludedRect, contentRect);
 }
