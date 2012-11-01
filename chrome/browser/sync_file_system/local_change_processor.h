@@ -11,7 +11,7 @@
 namespace fileapi {
 class FileChange;
 class FileChangeList;
-class FileSystemURL
+class FileSystemURL;
 }
 
 namespace sync_file_system {

@@ -65,6 +65,7 @@ class LocalFileSyncContextTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(kServiceName));
     io_thread_->Stop();
+    file_thread_->Stop();
   }
 
   void StartPrepareForSync(FileSystemContext* file_system_context,

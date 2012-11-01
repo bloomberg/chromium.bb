@@ -13,7 +13,8 @@
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/local_file_system_test_helper.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_types.h"
 
@@ -73,10 +74,10 @@ class CannedSyncableFileSystem {
     return file_system_context_.get();
   }
   quota::QuotaManager* quota_manager() { return quota_manager_.get(); }
-  GURL origin() const { return test_helper_.origin(); }
-  FileSystemType type() const { return test_helper_.type(); }
+  GURL origin() const { return origin_; }
+  FileSystemType type() const { return type_; }
   quota::StorageType storage_type() const {
-    return test_helper_.storage_type();
+    return FileSystemTypeToQuotaStorageType(type_);
   }
 
   // Helper routines to perform file system operations.
@@ -93,6 +94,8 @@ class CannedSyncableFileSystem {
   base::PlatformFileError Remove(const FileSystemURL& url, bool recursive);
   base::PlatformFileError FileExists(const FileSystemURL& url);
   base::PlatformFileError DirectoryExists(const FileSystemURL& url);
+  base::PlatformFileError VerifyFile(const FileSystemURL& url,
+                                     const std::string& expected_data);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
@@ -134,6 +137,9 @@ class CannedSyncableFileSystem {
                     const StatusCallback& callback);
   void DoDirectoryExists(const FileSystemURL& url,
                          const StatusCallback& callback);
+  void DoVerifyFile(const FileSystemURL& url,
+                    const std::string& expected_data,
+                    const StatusCallback& callback);
   void DoWrite(net::URLRequestContext* url_request_context,
                const FileSystemURL& url,
                const GURL& blob_url,
@@ -156,7 +162,8 @@ class CannedSyncableFileSystem {
 
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  LocalFileSystemTestOriginHelper test_helper_;
+  const GURL origin_;
+  const FileSystemType type_;
   GURL root_url_;
   base::PlatformFileError result_;
   SyncStatusCode sync_status_;
