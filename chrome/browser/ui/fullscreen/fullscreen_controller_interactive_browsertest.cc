@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(
 #if defined(OS_MACOSX)
 // http://crbug.com/100467
 IN_PROC_BROWSER_TEST_F(
-    FullscreenControllerTest, FAILS_TabEntersPresentationModeFromWindowed) {
+    FullscreenControllerTest, DISABLED_TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(test_server()->Start());
 
   AddTabAtIndexAndWait(

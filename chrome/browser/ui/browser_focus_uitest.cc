@@ -71,7 +71,7 @@ using content::WebContents;
 #if defined(OS_LINUX) || defined(OS_MACOSX)
 // TODO(jcampan): http://crbug.com/23683 for linux.
 // TODO(suzhe): http://crbug.com/49737 for mac.
-#define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
+#define MAYBE_TabsRememberFocusFindInPage DISABLED_TabsRememberFocusFindInPage
 #elif defined(OS_WIN)
 // Flaky, http://crbug.com/62537.
 #define MAYBE_TabsRememberFocusFindInPage DISABLED_TabsRememberFocusFindInPage

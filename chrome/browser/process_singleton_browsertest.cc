@@ -219,7 +219,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 // http://crbug.com/58219
-#define MAYBE_StartupRaceCondition FAILS_StartupRaceCondition
+#define MAYBE_StartupRaceCondition DISABLED_StartupRaceCondition
 #else
 #define MAYBE_StartupRaceCondition StartupRaceCondition
 #endif

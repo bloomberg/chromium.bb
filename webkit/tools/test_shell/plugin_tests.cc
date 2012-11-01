@@ -168,7 +168,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
 // Tests that hiding/showing the parent frame hides/shows the plugin.
 // Fails for WIN. http://crbug.com/111601
 #if defined(OS_WIN)
-#define MAYBE_PluginVisibilty FAILS_PluginVisibilty
+#define MAYBE_PluginVisibilty DISABLED_PluginVisibilty
 #else
 #define MAYBE_PluginVisibilty PluginVisibilty
 #endif

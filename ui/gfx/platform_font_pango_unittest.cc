@@ -14,7 +14,7 @@ namespace gfx {
 
 // Fails on Chrome OS: http://crbug.com/124451
 #if defined(OS_CHROMEOS)
-#define MAYBE_FamilyList FAILS_FamilyList
+#define MAYBE_FamilyList DISABLED_FamilyList
 #else
 #define MAYBE_FamilyList FamilyList
 #endif

@@ -267,7 +267,7 @@ TEST_F(ShellTest, IsScreenLocked) {
 
 // Fails on Mac, see http://crbug.com/115662
 #if defined(OS_MACOSX)
-#define MAYBE_ManagedWindowModeBasics FAILS_ManagedWindowModeBasics
+#define MAYBE_ManagedWindowModeBasics DISABLED_ManagedWindowModeBasics
 #else
 #define MAYBE_ManagedWindowModeBasics ManagedWindowModeBasics
 #endif

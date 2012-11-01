@@ -34,7 +34,7 @@
 #if defined(USE_AURA)
 // This test fails http://crbug.com/84854, and is very flaky on CrOS and
 // somewhat flaky on other Linux.
-#define MAYBE_ForceShutdown FAILS_ForceShutdown
+#define MAYBE_ForceShutdown DISABLED_ForceShutdown
 #else
 #if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_ForceShutdown DISABLED_ForceShutdown

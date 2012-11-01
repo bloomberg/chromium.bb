@@ -457,7 +457,7 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
 }
 
 #if defined(OS_MACOSX)
-#define MAYBE_TransformActivate FAILS_TransformActivate
+#define MAYBE_TransformActivate DISABLED_TransformActivate
 #else
 #define MAYBE_TransformActivate TransformActivate
 #endif

@@ -462,7 +462,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
 
 // Verifies pressing escape resets the bounds to the original bounds.
 #if defined(OS_MACOSX)
-#define MAYBE_EscapeReverts FAILS_EscapeReverts
+#define MAYBE_EscapeReverts DISABLED_EscapeReverts
 #else
 #define MAYBE_EscapeReverts EscapeReverts
 #endif

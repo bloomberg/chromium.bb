@@ -126,7 +126,7 @@ TEST_F(BaseLayoutManagerTest, FullscreenRootWindowResize) {
 // Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
 #if defined(OS_MACOSX)
 #define MAYBE_RootWindowResizeShrinksWindows \
-  FAILS_RootWindowResizeShrinksWindows
+  DISABLED_RootWindowResizeShrinksWindows
 #else
 #define MAYBE_RootWindowResizeShrinksWindows RootWindowResizeShrinksWindows
 #endif

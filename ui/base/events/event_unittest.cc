@@ -101,8 +101,8 @@ TEST(EventTest, Repeated) {
 
 // Bug 99129.
 #if defined(USE_AURA)
-#define MAYBE_KeyEvent FAILS_KeyEvent
-#define MAYBE_KeyEventDirectUnicode FAILS_KeyEventDirectUnicode
+#define MAYBE_KeyEvent DISABLED_KeyEvent
+#define MAYBE_KeyEventDirectUnicode DISABLED_KeyEventDirectUnicode
 #else
 #define MAYBE_KeyEvent KeyEvent
 #define MAYBE_KeyEventDirectUnicode KeyEventDirectUnicode

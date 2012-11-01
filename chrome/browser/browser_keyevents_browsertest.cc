@@ -295,7 +295,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 #define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
 #elif defined(OS_LINUX)
 // http://crbug.com/129235
-#define MAYBE_NormalKeyEvents FAILS_NormalKeyEvents
+#define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
 #else
 #define MAYBE_NormalKeyEvents NormalKeyEvents
 #endif
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
 
 #if defined(OS_LINUX)
 // http://crbug.com/129235
-#define MAYBE_CtrlKeyEvents FAILS_CtrlKeyEvents
+#define MAYBE_CtrlKeyEvents DISABLED_CtrlKeyEvents
 #else
 #define MAYBE_CtrlKeyEvents CtrlKeyEvents
 #endif
@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_CommandKeyEvents) {
 #define MAYBE_AccessKeys DISABLED_AccessKeys
 #elif defined(OS_LINUX)
 // http://crbug.com/129235
-#define MAYBE_AccessKeys FAILS_AccessKeys
+#define MAYBE_AccessKeys DISABLED_AccessKeys
 #else
 #define MAYBE_AccessKeys AccessKeys
 #endif

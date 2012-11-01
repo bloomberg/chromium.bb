@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
 #if defined(USE_ASH)
 // This test fails on Ash because task manager treats view type
 // Panels differently for Ash.
-#define MAYBE_NoticePanelChanges FAILS_NoticePanelChanges
+#define MAYBE_NoticePanelChanges DISABLED_NoticePanelChanges
 #else
 #define MAYBE_NoticePanelChanges NoticePanelChanges
 #endif
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
 #if defined(USE_ASH)
 // This test fails on Ash because task manager treats view type
 // Panels differently for Ash.
-#define MAYBE_KillPanelExtension FAILS_KillPanelExtension
+#define MAYBE_KillPanelExtension DISABLED_KillPanelExtension
 #else
 #define MAYBE_KillPanelExtension KillPanelExtension
 #endif

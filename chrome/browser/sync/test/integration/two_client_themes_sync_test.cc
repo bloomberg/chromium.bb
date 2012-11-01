@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, CustomTheme) {
 // TCM ID - 3599303.
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, FAILS_NativeTheme) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DISABLED_NativeTheme) {
 #else
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeTheme) {
 #endif  // OS_CHROMEOS
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DefaultTheme) {
 // TCM ID - 7292065.
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, FAILS_NativeDefaultRace) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DISABLED_NativeDefaultRace) {
 #else
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeDefaultRace) {
 #endif  // OS_CHROMEOS
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeDefaultRace) {
 // TCM ID - 7294077.
 // TODO(sync): Fails on Chrome OS. See http://crbug.com/84575.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, FAILS_CustomNativeRace) {
+IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, DISABLED_CustomNativeRace) {
 #else
 IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, CustomNativeRace) {
 #endif  // OS_CHROMEOS

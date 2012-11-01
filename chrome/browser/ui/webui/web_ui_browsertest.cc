@@ -516,7 +516,7 @@ WebUIBrowserTest* WebUIBrowserExpectFailTest::s_test_ = NULL;
 IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
   AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
-  EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("FAILS_BogusFunctionName"),
+  EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("DISABLED_BogusFunctionName"),
                        "WebUITestHandler::Observe");
 }
 
@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsAsyncFast) {
   AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   EXPECT_FATAL_FAILURE(
-      RunJavascriptAsyncTestNoReturn("FAILS_BogusFunctionName"),
+      RunJavascriptAsyncTestNoReturn("DISABLED_BogusFunctionName"),
       "WebUITestHandler::Observe");
 }
 

@@ -187,7 +187,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
 
 // Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
 #if defined(OS_MACOSX)
-#define MAYBE_SetVisible FAILS_SetVisible
+#define MAYBE_SetVisible DISABLED_SetVisible
 #else
 #define MAYBE_SetVisible SetVisible
 #endif

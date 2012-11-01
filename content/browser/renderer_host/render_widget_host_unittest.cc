@@ -825,7 +825,7 @@ TEST_F(RenderWidgetHostTest, PaintAtSize) {
 
 // Fails on Linux Aura, see http://crbug.com/100344
 #if defined(USE_AURA) && !defined(OS_WIN)
-#define MAYBE_HandleKeyEventsWeSent FAILS_HandleKeyEventsWeSent
+#define MAYBE_HandleKeyEventsWeSent DISABLED_HandleKeyEventsWeSent
 #else
 #define MAYBE_HandleKeyEventsWeSent HandleKeyEventsWeSent
 #endif

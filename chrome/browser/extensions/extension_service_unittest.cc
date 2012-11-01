@@ -2703,7 +2703,7 @@ TEST_F(ExtensionServiceTest, DISABLED_DISABLED_UpdatePendingTheme) {
 
 #if defined(OS_CHROMEOS)
 // Always fails on ChromeOS: http://crbug.com/79737
-#define MAYBE_UpdatePendingExternalCrx FAILS_UpdatePendingExternalCrx
+#define MAYBE_UpdatePendingExternalCrx DISABLED_UpdatePendingExternalCrx
 #else
 #define MAYBE_UpdatePendingExternalCrx UpdatePendingExternalCrx
 #endif

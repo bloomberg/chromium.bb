@@ -186,7 +186,7 @@ class TestTabbedPane : public TabbedPane {
 
 // Tests that NativeControls do set the focused View appropriately on the
 // FocusManager.
-TEST_F(FocusManagerTest, FAILS_FocusNativeControls) {
+TEST_F(FocusManagerTest, DISABLED_FocusNativeControls) {
   TestTextfield* textfield = new TestTextfield();
   TestTabbedPane* tabbed_pane = new TestTabbedPane();
   tabbed_pane->set_use_native_win_control(true);

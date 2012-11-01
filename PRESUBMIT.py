@@ -116,7 +116,7 @@ _BANNED_OBJC_FUNCTIONS = (
 _BANNED_CPP_FUNCTIONS = (
     # Make sure that gtest's FRIEND_TEST() macro is not used; the
     # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be
-    # used instead since that allows for FLAKY_, FAILS_ and DISABLED_ prefixes.
+    # used instead since that allows for FLAKY_ and DISABLED_ prefixes.
     (
       'FRIEND_TEST(',
       (

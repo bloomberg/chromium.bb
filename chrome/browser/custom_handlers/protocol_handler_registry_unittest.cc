@@ -717,7 +717,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
 #if defined(OS_LINUX)
 // TODO(benwells): When Linux support is more reliable and
 // http://crbut.com/88255 is fixed this test will pass.
-#define MAYBE_TestOSRegistrationFailure FAILS_TestOSRegistrationFailure
+#define MAYBE_TestOSRegistrationFailure DISABLED_TestOSRegistrationFailure
 #else
 #define MAYBE_TestOSRegistrationFailure TestOSRegistrationFailure
 #endif

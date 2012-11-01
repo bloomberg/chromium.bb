@@ -208,7 +208,7 @@ class WindowOpenPanelTest : public ExtensionApiTest {
 #if defined(USE_ASH)
 // On Ash, this currently fails because we're currently opening new panel
 // windows as popup windows instead.
-#define MAYBE_WindowOpenPanel FAILS_WindowOpenPanel
+#define MAYBE_WindowOpenPanel DISABLED_WindowOpenPanel
 #else
 #define MAYBE_WindowOpenPanel WindowOpenPanel
 #endif
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
 #if defined(USE_ASH)
 // On Ash, this currently fails because we're currently opening new panel
 // windows as popup windows instead.
-#define MAYBE_WindowOpenPanelDetached FAILS_WindowOpenPanelDetached
+#define MAYBE_WindowOpenPanelDetached DISABLED_WindowOpenPanelDetached
 #else
 #define MAYBE_WindowOpenPanelDetached WindowOpenPanelDetached
 #endif
