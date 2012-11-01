@@ -17,7 +17,6 @@
 
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
-using ui::ConstrainedWebDialogUI;
 using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
 

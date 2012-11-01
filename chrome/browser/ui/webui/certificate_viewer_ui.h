@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_UI_H_
 
-#include "ui/web_dialogs/constrained_web_dialog_ui.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 
 // The WebUI for chrome://view-cert
-class CertificateViewerUI : public ui::ConstrainedWebDialogUI {
+class CertificateViewerUI : public ConstrainedWebDialogUI {
  public:
   explicit CertificateViewerUI(content::WebUI* web_ui);
   virtual ~CertificateViewerUI();

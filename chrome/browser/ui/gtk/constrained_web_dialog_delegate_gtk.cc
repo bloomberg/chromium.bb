@@ -16,8 +16,6 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 using content::WebContents;
-using ui::ConstrainedWebDialogDelegate;
-using ui::ConstrainedWebDialogUI;
 using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
 
@@ -98,15 +96,15 @@ ConstrainedWebDialogDelegateGtk::ConstrainedWebDialogDelegateGtk(
   gtk_widget_show_all(GetWidgetRoot());
 }
 
-ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
+ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
       Profile* profile,
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate,
-      TabContents* overshadowed) {
+      content::WebContents* web_contents) {
   ConstrainedWebDialogDelegateGtk* constrained_delegate =
       new ConstrainedWebDialogDelegateGtk(profile, delegate, tab_delegate);
-  ConstrainedWindow* constrained_window = new ConstrainedWindowGtk(
-      overshadowed->web_contents(), constrained_delegate);
+  ConstrainedWindow* constrained_window =
+      new ConstrainedWindowGtk(web_contents, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }

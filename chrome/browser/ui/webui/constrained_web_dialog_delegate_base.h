@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "ui/web_dialogs/constrained_web_dialog_ui.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
@@ -17,7 +17,7 @@ class WebDialogDelegate;
 
 // Platform-agnostic base implementation of ConstrainedWebDialogDelegate.
 class ConstrainedWebDialogDelegateBase
-    : public ui::ConstrainedWebDialogDelegate,
+    : public ConstrainedWebDialogDelegate,
       public ui::WebDialogWebContentsDelegate {
  public:
   ConstrainedWebDialogDelegateBase(
@@ -29,7 +29,7 @@ class ConstrainedWebDialogDelegateBase
   void set_window(ConstrainedWindow* window);
   bool closed_via_webui() const;
 
-  // ui::ConstrainedWebDialogDelegate interface.
+  // ConstrainedWebDialogDelegate interface.
   virtual const ui::WebDialogDelegate*
       GetWebDialogDelegate() const OVERRIDE;
   virtual ui::WebDialogDelegate* GetWebDialogDelegate() OVERRIDE;

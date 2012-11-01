@@ -19,8 +19,6 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 using content::WebContents;
-using ui::ConstrainedWebDialogDelegate;
-using ui::ConstrainedWebDialogUI;
 using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
 
@@ -174,15 +172,16 @@ ConstrainedWebDialogDelegateViewViews::ConstrainedWebDialogDelegateViewViews(
 ConstrainedWebDialogDelegateViewViews::~ConstrainedWebDialogDelegateViewViews() {
 }
 
-ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
+ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
     Profile* profile,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate,
-    TabContents* container) {
+    content::WebContents* web_contents) {
   ConstrainedWebDialogDelegateViewViews* constrained_delegate =
-      new ConstrainedWebDialogDelegateViewViews(profile, delegate, tab_delegate);
+      new ConstrainedWebDialogDelegateViewViews(
+          profile, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowViews(container->web_contents(),
+      new ConstrainedWindowViews(web_contents,
                                  constrained_delegate,
                                  false,
                                  ConstrainedWindowViews::DEFAULT_INSETS);

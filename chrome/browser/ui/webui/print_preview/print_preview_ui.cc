@@ -33,8 +33,6 @@
 
 using content::WebContents;
 using printing::PageSizeMargins;
-using ui::ConstrainedWebDialogDelegate;
-using ui::ConstrainedWebDialogUI;
 
 namespace {
 

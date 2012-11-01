@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
@@ -61,7 +62,6 @@
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/web_dialogs/constrained_web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 #if defined(OS_ANDROID)
@@ -105,7 +105,6 @@
 
 using content::WebUI;
 using content::WebUIController;
-using ui::ConstrainedWebDialogUI;
 using ui::ExternalWebDialogUI;
 using ui::WebDialogUI;
 

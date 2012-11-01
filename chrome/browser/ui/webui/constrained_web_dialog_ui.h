@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WEB_DIALOGS_CONSTRAINED_WEB_DIALOG_UI_H_
-#define UI_WEB_DIALOGS_CONSTRAINED_WEB_DIALOG_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_UI_H_
+#define CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_UI_H_
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "ui/web_dialogs/web_dialogs_export.h"
 
 class ConstrainedWindow;
 class Profile;
@@ -21,19 +20,20 @@ class WebContents;
 namespace ui {
 class WebDialogDelegate;
 class WebDialogWebContentsDelegate;
+}
 
-class WEB_DIALOGS_EXPORT ConstrainedWebDialogDelegate {
+class ConstrainedWebDialogDelegate {
  public:
-  virtual const WebDialogDelegate* GetWebDialogDelegate() const = 0;
-  virtual WebDialogDelegate* GetWebDialogDelegate() = 0;
+  virtual const ui::WebDialogDelegate* GetWebDialogDelegate() const = 0;
+  virtual ui::WebDialogDelegate* GetWebDialogDelegate() = 0;
 
   // Called when the dialog is being closed in response to a "DialogClose"
   // message from WebUI.
   virtual void OnDialogCloseFromWebUI() = 0;
 
-  // If called, on dialog closure, the dialog will release its WebContents
+  // If called, on dialog closure, the dialog will release its TabContents
   // instead of destroying it. After which point, the caller will own the
-  // released WebContents.
+  // released TabContents.
   virtual void ReleaseTabContentsOnDialogClose() = 0;
 
   // Returns the ConstrainedWindow.
@@ -54,9 +54,9 @@ class WEB_DIALOGS_EXPORT ConstrainedWebDialogDelegate {
 //
 // Since ConstrainedWindow requires platform-specific delegate
 // implementations, this class is just a factory stub.
-// TODO(thestig) Refactor the platform-independent code out of the
+// TODO(thestig): Refactor the platform-independent code out of the
 // platform-specific implementations.
-class WEB_DIALOGS_EXPORT ConstrainedWebDialogUI
+class ConstrainedWebDialogUI
     : public content::WebUIController {
  public:
   explicit ConstrainedWebDialogUI(content::WebUI* web_ui);
@@ -94,10 +94,8 @@ class WEB_DIALOGS_EXPORT ConstrainedWebDialogUI
 // |overshadowed| is the tab being overshadowed by the dialog.
 ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
     Profile* profile,
-    WebDialogDelegate* delegate,
-    WebDialogWebContentsDelegate* tab_delegate,
-    TabContents* overshadowed);
+    ui::WebDialogDelegate* delegate,
+    ui::WebDialogWebContentsDelegate* tab_delegate,
+    content::WebContents* overshadowed);
 
-}  // namespace ui
-
-#endif  // UI_WEB_DIALOGS_CONSTRAINED_WEB_DIALOG_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CONSTRAINED_WEB_DIALOG_UI_H_

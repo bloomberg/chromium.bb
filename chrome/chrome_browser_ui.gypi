@@ -1773,6 +1773,8 @@
         'browser/ui/webui/chromeos/system_info_ui.h',
         'browser/ui/webui/chromeos/ui_account_tweaks.cc',
         'browser/ui/webui/chromeos/ui_account_tweaks.h',
+        'browser/ui/webui/constrained_web_dialog_ui.cc',
+        'browser/ui/webui/constrained_web_dialog_ui.h',
         'browser/ui/webui/constrained_web_dialog_delegate_base.cc',
         'browser/ui/webui/constrained_web_dialog_delegate_base.h',
         'browser/ui/webui/cookies_tree_model_util.cc',

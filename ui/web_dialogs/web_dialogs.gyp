@@ -21,8 +21,6 @@
       ],
       'sources': [
         # All .cc, .h under web_dialogs, except unittests.
-        'constrained_web_dialog_ui.cc',
-        'constrained_web_dialog_ui.h',
         'web_dialog_delegate.cc',
         'web_dialog_delegate.h',
         'web_dialog_observer.h',

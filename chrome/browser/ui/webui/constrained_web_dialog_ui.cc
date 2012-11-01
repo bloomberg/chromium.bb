@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/web_dialogs/constrained_web_dialog_ui.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 
 #include <string>
 #include <vector>
@@ -21,8 +21,6 @@
 using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
-
-namespace ui {
 
 namespace {
 
@@ -59,7 +57,7 @@ void ConstrainedWebDialogUI::RenderViewCreated(
   if (!delegate)
     return;
 
-  WebDialogDelegate* dialog_delegate = delegate->GetWebDialogDelegate();
+  ui::WebDialogDelegate* dialog_delegate = delegate->GetWebDialogDelegate();
   std::vector<WebUIMessageHandler*> handlers;
   dialog_delegate->GetWebUIMessageHandlers(&handlers);
   render_view_host->SetWebUIProperty("dialogArguments",
@@ -105,5 +103,3 @@ ConstrainedWebDialogDelegate* ConstrainedWebDialogUI::GetConstrainedDelegate() {
 
   return user_data ? user_data->delegate() : NULL;
 }
-
-}  // namespace ui

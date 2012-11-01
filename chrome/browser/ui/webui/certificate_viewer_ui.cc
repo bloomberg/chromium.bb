@@ -14,8 +14,6 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
-using ui::ConstrainedWebDialogUI;
-
 CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui) {
   // Set up the chrome://view-cert source.

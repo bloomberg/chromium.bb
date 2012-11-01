@@ -16,7 +16,6 @@
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
 using content::WebContents;
-using ui::ConstrainedWebDialogDelegate;
 using ui::WebDialogDelegate;
 using ui::WebDialogWebContentsDelegate;
 
@@ -117,19 +116,18 @@ ConstrainedWebDialogDelegateMac::ConstrainedWebDialogDelegateMac(
       @selector(sheetDidEnd:returnCode:contextInfo:));
 }
 
-ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
+ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
         Profile* profile,
         WebDialogDelegate* delegate,
         WebDialogWebContentsDelegate* tab_delegate,
-        TabContents* tab_contents) {
+        content::WebContents* web_contents) {
   // Deleted when ConstrainedWebDialogDelegateMac::DeleteDelegate() runs.
   ConstrainedWebDialogDelegateMac* constrained_delegate =
       new ConstrainedWebDialogDelegateMac(profile, delegate, tab_delegate);
   // Deleted when ConstrainedWebDialogDelegateMac::OnDialogCloseFromWebUI()
   // runs.
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowMac(tab_contents->web_contents(),
-                               constrained_delegate);
+      new ConstrainedWindowMac(web_contents, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }
