@@ -45,15 +45,16 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 void ResourceBundle::LoadCommonResources() {
   AddDataPackFromPath(GetResourcesPakFilePath(@"chrome", nil),
                       ui::SCALE_FACTOR_100P);
-  AddDataPackFromPath(GetResourcesPakFilePath(@"resources", nil),
-                      ui::SCALE_FACTOR_100P);
-  AddDataPackFromPath(
-      GetResourcesPakFilePath(@"theme_resources_100_percent", nil),
-      SCALE_FACTOR_100P);
-  AddDataPackFromPath(GetResourcesPakFilePath(@"ui_resources_100_percent", nil),
-                      SCALE_FACTOR_100P);
-  // TODO(rohitrao): This is where Mac loads 2x images on Lion; we should do the
-  // same if needed. http://crbug.com/154291.
+
+  if (IsScaleFactorSupported(SCALE_FACTOR_100P)) {
+    AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_100_percent", nil),
+                        SCALE_FACTOR_100P);
+  }
+
+  if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
+    AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent", nil),
+                        SCALE_FACTOR_200P);
+  }
 }
 
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
@@ -103,17 +104,25 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
     image = delegate_->GetNativeImageNamed(resource_id, rtl);
 
   if (image.IsEmpty()) {
-    // Load the raw data from the resource pack.
-    // TODO(rohitrao): Load 200P resources as needed.  http://crbug.com/154291.
+    // Load the raw data from the resource pack at the current supported scale
+    // factor.  This code assumes that only one of the possible scale factors is
+    // supported at runtime, based on the device resolution.
+    std::vector<ui::ScaleFactor> supported_scale_factors =
+              ui::GetSupportedScaleFactors();
+    DCHECK_EQ(1U, supported_scale_factors.size());
+    ui::ScaleFactor scale_factor = supported_scale_factors[0];
+
     scoped_refptr<base::RefCountedStaticMemory> data(
-        LoadDataResourceBytes(resource_id, ui::SCALE_FACTOR_100P));
+        LoadDataResourceBytes(resource_id, scale_factor));
 
     // Create a data object from the raw bytes.
     scoped_nsobject<NSData> ns_data(
         [[NSData alloc] initWithBytes:data->front() length:data->size()]);
 
     // Create the image from the data. The gfx::Image will take ownership.
-    scoped_nsobject<UIImage> ui_image([[UIImage alloc] initWithData:ns_data]);
+    scoped_nsobject<UIImage> ui_image(
+        [[UIImage alloc] initWithData:ns_data
+                                scale:ui::GetScaleFactorScale(scale_factor)]);
 
     if (!ui_image.get()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
