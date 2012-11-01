@@ -231,7 +231,7 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
                                  bool user_gesture) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  Browser* browser = browser::FindTabbedBrowser(profile, false);
+  Browser* browser = browser::FindTabbedBrowserDeprecated(profile, false);
   const bool browser_created = !browser;
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile));

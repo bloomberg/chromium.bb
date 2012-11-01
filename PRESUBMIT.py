@@ -146,7 +146,7 @@ _BANNED_CPP_FUNCTIONS = (
       (
        'This function is deprecated and we\'re working on removing it. Pass',
        'more context to get a Browser*, like a WebContents, window, or session',
-       'id. Talk to ben@ or jam@ for more information.',
+       'id. Talk to robertshield@ for more information.',
       ),
       True,
     ),
@@ -155,7 +155,7 @@ _BANNED_CPP_FUNCTIONS = (
       (
        'This function is deprecated and we\'re working on removing it. Pass',
        'more context to get a Browser*, like a WebContents, window, or session',
-       'id. Talk to ben@ or jam@ for more information.',
+       'id. Talk to robertshield@ for more information.',
       ),
       True,
     ),
@@ -164,16 +164,16 @@ _BANNED_CPP_FUNCTIONS = (
       (
        'This function is deprecated and we\'re working on removing it. Pass',
        'more context to get a Browser*, like a WebContents, window, or session',
-       'id. Talk to ben@ or jam@ for more information.',
+       'id. Talk to robertshield@ for more information.',
       ),
       True,
     ),
     (
-      'browser::FindTabbedBrowser',
+      'browser::FindTabbedBrowserDeprecated',
       (
        'This function is deprecated and we\'re working on removing it. Pass',
        'more context to get a Browser*, like a WebContents, window, or session',
-       'id. Talk to ben@ or jam@ for more information.',
+       'id. Talk to robertshield@ for more information.',
       ),
       True,
     ),

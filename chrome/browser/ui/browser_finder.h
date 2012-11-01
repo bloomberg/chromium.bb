@@ -18,9 +18,9 @@ class WebContents;
 
 namespace browser {
 
-// Deprecated:
-Browser* FindTabbedBrowser(Profile* profile,
-                           bool match_original_profiles);
+// Deprecated: Use FindTabbedBrowser() instead and pass in a desktop context.
+Browser* FindTabbedBrowserDeprecated(Profile* profile,
+                                     bool match_original_profiles);
 
 // Retrieve the last active tabbed browser with a profile matching |profile|.
 // If |match_original_profiles| is true, matching is done based on the

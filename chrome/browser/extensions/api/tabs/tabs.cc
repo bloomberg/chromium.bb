@@ -234,7 +234,7 @@ Browser* CreateBrowserWindow(const Browser::CreateParams& params,
   if (use_existing_browser_window)
     // The false parameter passed below is to ensure that we find a browser
     // object matching the profile passed in, instead of the original profile
-    new_window = browser::FindTabbedBrowser(profile, false);
+    new_window = browser::FindTabbedBrowserDeprecated(profile, false);
 
   if (!new_window)
     new_window = new Browser(params);
@@ -993,7 +993,8 @@ bool CreateTabFunction::RunImpl() {
 
   // Ensure the selected browser is tabbed.
   if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
-    browser = browser::FindTabbedBrowser(profile(), include_incognito());
+    browser = browser::FindTabbedBrowserDeprecated(profile(),
+                                                   include_incognito());
 
   if (!browser || !browser->window())
     return false;
@@ -1059,7 +1060,7 @@ bool CreateTabFunction::RunImpl() {
       !GetExtension()->incognito_split_mode() &&
       browser->profile()->IsOffTheRecord()) {
     Profile* profile = browser->profile()->GetOriginalProfile();
-    browser = browser::FindTabbedBrowser(profile, false);
+    browser = browser::FindTabbedBrowserDeprecated(profile, false);
     if (!browser) {
       browser = new Browser(Browser::CreateParams(profile));
       browser->window()->Show();
