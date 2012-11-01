@@ -29,6 +29,7 @@
         'metrics_proto',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/base/base.gyp:base_prefs',
         '<(DEPTH)/base/base.gyp:base_static',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
@@ -317,14 +318,6 @@
         'common/zip_internal.h',
         'common/zip_reader.cc',
         'common/zip_reader.h',
-
-        # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
-        # Prefs move is complete and dependencies have been broken.
-        '../base/prefs/json_pref_store.cc',
-        '../base/prefs/json_pref_store.h',
-        '../base/prefs/persistent_pref_store.h',
-        '../base/prefs/pref_store.cc',
-        '../base/prefs/pref_store.h',
       ],
       'conditions': [
         ['OS != "ios"', {
