@@ -218,9 +218,10 @@ void WebRtcAudioRenderer::Stop() {
   if (state_ == UNINITIALIZED)
     return;
 
-  state_ = UNINITIALIZED;
+  source_->RemoveRenderer(this);
   source_ = NULL;
   sink_->Stop();
+  state_ = UNINITIALIZED;
 }
 
 void WebRtcAudioRenderer::SetVolume(float volume) {

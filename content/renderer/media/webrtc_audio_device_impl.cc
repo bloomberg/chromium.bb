@@ -220,6 +220,16 @@ void WebRtcAudioDeviceImpl::SetRenderFormat(const AudioParameters& params) {
   output_audio_parameters_ = params;
 }
 
+void WebRtcAudioDeviceImpl::RemoveRenderer(WebRtcAudioRenderer* renderer) {
+  DCHECK(renderer);
+  base::AutoLock auto_lock(lock_);
+  if (renderer != renderer_)
+    return;
+
+  renderer_ = NULL;
+  playing_ = false;
+}
+
 void WebRtcAudioDeviceImpl::Capture(media::AudioBus* audio_bus,
                                     int audio_delay_milliseconds,
                                     double volume) {

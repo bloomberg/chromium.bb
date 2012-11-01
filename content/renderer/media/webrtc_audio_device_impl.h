@@ -205,6 +205,8 @@
 
 namespace content {
 
+class WebRtcAudioRenderer;
+
 // TODO(xians): Move this interface to webrtc so that libjingle can own a
 // reference to the renderer object.
 class WebRtcAudioRendererSource {
@@ -218,11 +220,12 @@ class WebRtcAudioRendererSource {
   // Set the format for the capture audio parameters.
   virtual void SetRenderFormat(const media::AudioParameters& params) = 0;
 
+  // Callback to notify the client that the renderer is going away.
+  virtual void RemoveRenderer(content::WebRtcAudioRenderer* renderer) = 0;
+
  protected:
   virtual ~WebRtcAudioRendererSource() {}
 };
-
-class WebRtcAudioRenderer;
 
 class CONTENT_EXPORT WebRtcAudioDeviceImpl
     : NON_EXPORTED_BASE(public webrtc::AudioDeviceModule),
@@ -245,6 +248,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
                           int number_of_frames,
                           int audio_delay_milliseconds) OVERRIDE;
   virtual void SetRenderFormat(const media::AudioParameters& params) OVERRIDE;
+  virtual void RemoveRenderer(WebRtcAudioRenderer* renderer) OVERRIDE;
 
   // AudioInputDevice::CaptureCallback implementation.
   virtual void Capture(media::AudioBus* audio_bus,
