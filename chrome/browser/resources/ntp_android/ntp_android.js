@@ -815,7 +815,9 @@ cr.define('ntp', function() {
     var listItem = createDiv('list-item');
     addActiveTouchListener(listItem, ACTIVE_LIST_ITEM_CSS_CLASS);
     listItem.setAttribute(CONTEXT_MENU_URL_KEY, item.url);
-    var iconUrl = item.icon || 'chrome://touch-icon/size/64/' + item.url;
+    var iconSize = item.iconSize || 64;
+    var iconUrl = item.icon ||
+        'chrome://touch-icon/size/' + iconSize + '/' + item.url;
     listItem.appendChild(createDiv('icon', iconUrl));
     trackImageLoad(iconUrl);
     var title = createElement('span', {
@@ -1788,6 +1790,7 @@ cr.define('ntp', function() {
             winNum: winNum,
             sessionId: tab.sessionId,
             icon: tab.icon,
+            iconSize: 32,
             divider: needSectionDivider ? 'section' : 'standard',
           });
         }
