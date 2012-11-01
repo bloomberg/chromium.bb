@@ -4,7 +4,9 @@
 
 #include "content/browser/renderer_host/media/web_contents_video_capture_device.h"
 
+#include "base/bind_helpers.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -35,6 +37,7 @@ class StubRenderWidgetHost : public RenderWidgetHostImpl {
         color_(kNothingYet) {}
 
   void SetSolidColor(SkColor color) {
+    base::AutoLock guard(lock_);
     color_ = color;
   }
 
@@ -48,6 +51,7 @@ class StubRenderWidgetHost : public RenderWidgetHostImpl {
     SkBitmap bitmap = output->GetBitmap();
     {
       SkAutoLockPixels locker(bitmap);
+      base::AutoLock guard(lock_);
       bitmap.eraseColor(color_);
     }
 
@@ -65,6 +69,7 @@ class StubRenderWidgetHost : public RenderWidgetHostImpl {
   };
 
   StubRenderWidgetHostDelegate delegate_;
+  base::Lock lock_;  // Guards changes to color_.
   SkColor color_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StubRenderWidgetHost);
@@ -160,15 +165,22 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext());
     source_.reset(new StubRenderWidgetHost(
         new MockRenderProcessHost(browser_context_.get()), MSG_ROUTING_NONE));
+    destroyed_.reset(new base::WaitableEvent(true, false));
     device_.reset(WebContentsVideoCaptureDevice::CreateForTesting(
-        source_.get()));
+        source_.get(),
+        base::Bind(&base::WaitableEvent::Signal,
+                   base::Unretained(destroyed_.get()))));
     consumer_.reset(new StubConsumer);
   }
 
   virtual void TearDown() {
     // Tear down in opposite order of set-up.
+    device_->DeAllocate();  // Guarantees no more use of consumer_.
     consumer_.reset();
-    device_.reset();
+    device_.reset();  // Release reference to internal CaptureMachine.
+    message_loop_->RunAllPending();  // Just in case.
+    destroyed_->Wait();  // Wait until CaptureMachine is fully destroyed.
+    destroyed_.reset();
     source_.reset();
     browser_context_.reset();
     ui_thread_->Stop();
@@ -187,19 +199,17 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_ptr<StubRenderWidgetHost> source_;
+  scoped_ptr<base::WaitableEvent> destroyed_;
   scoped_ptr<media::VideoCaptureDevice> device_;
   scoped_ptr<StubConsumer> consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDeviceTest);
 };
 
-// TODO(miu): Fix test crashing and race conditions, then re-enable tests, per
-// http://crbug.com/158317.
-
 // The "happy case" test.  No scaling is needed, so we should be able to change
 // the picture emitted from the source and expect to see each delivered to the
 // consumer.
-TEST_F(WebContentsVideoCaptureDeviceTest, DISABLED_GoesThroughAllTheMotions) {
+TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
   device()->Allocate(kTestWidth, kTestHeight, kTestFramesPerSecond,
                      consumer());
 
@@ -216,8 +226,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, DISABLED_GoesThroughAllTheMotions) {
   device()->DeAllocate();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest,
-       DISABLED_RejectsInvalidAllocateParams) {
+TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
   device()->Allocate(1280, 720, -2, consumer());
   EXPECT_FALSE(consumer()->WaitForNextColorOrError(kNotInterested));
 }

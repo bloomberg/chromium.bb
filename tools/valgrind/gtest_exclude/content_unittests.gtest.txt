@@ -1,3 +1,0 @@
-# These crash under TSan due to data races, might affect other tools as well.
-# See http://crbug.com/158317
-WebContentsVideoCaptureDeviceTest.*

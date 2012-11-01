@@ -1000,19 +1000,3 @@
    fun:safe_browsing::ClientSideDetectionHost::ShouldClassifyUrlRequest::CheckCsdWhitelist
    fun:base::internal::RunnableAdapter::Run
 }
-{
-   bug_158317_a
-   ThreadSanitizer:Race
-   ...
-   fun:content::::BackingStoreCopier::StartCopy
-   fun:base::internal::RunnableAdapter::Run
-}
-{
-   bug_158317_b
-   ThreadSanitizer:Race
-   ...
-   fun:content::RenderWidgetHostImpl::~RenderWidgetHostImpl
-   fun:StubRenderWidgetHost::~StubRenderWidgetHost
-   fun:scoped_ptr::reset
-   fun:WebContentsVideoCaptureDeviceTest::TearDown
-}

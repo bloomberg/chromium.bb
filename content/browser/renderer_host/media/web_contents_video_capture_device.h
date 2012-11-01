@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture_device.h"
@@ -35,9 +36,12 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   static media::VideoCaptureDevice* Create(const std::string& device_id);
 
   // Construct an instance with the following |test_source| injected for testing
-  // purposes.
+  // purposes.  |destroy_cb| is invoked once all outstanding objects are
+  // completely destroyed.
+  // TODO(miu): Passing a destroy callback suggests needing to revisit the
+  // design philosophy of an asynchronous DeAllocate().  http://crbug.com/158641
   static media::VideoCaptureDevice* CreateForTesting(
-      RenderWidgetHost* test_source);
+      RenderWidgetHost* test_source, const base::Closure& destroy_cb);
 
   virtual ~WebContentsVideoCaptureDevice();
 
@@ -60,7 +64,8 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   // Constructors.  The latter is used for testing.
   WebContentsVideoCaptureDevice(
       const Name& name, int render_process_id, int render_view_id);
-  explicit WebContentsVideoCaptureDevice(RenderWidgetHost* test_source);
+  WebContentsVideoCaptureDevice(RenderWidgetHost* test_source,
+                                const base::Closure& destroy_cb);
 
   Name device_name_;
   scoped_refptr<CaptureMachine> capturer_;

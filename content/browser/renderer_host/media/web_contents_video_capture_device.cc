@@ -606,8 +606,11 @@ class CaptureMachine
  public:
   CaptureMachine(int render_process_id, int render_view_id);
 
-  // Set capture source to the given |override| for unit testing.
-  void SetRenderWidgetHostForTesting(RenderWidgetHost* override);
+  // Sets the capture source to the given |override| for unit testing.
+  // Also, |destroy_cb| will be invoked after CaptureMachine is fully destroyed
+  // (to synchronize tear-down).
+  void InitializeForTesting(RenderWidgetHost* override,
+                            const base::Closure& destroy_cb);
 
   // Synchronously sets/unsets the consumer.  Pass |consumer| as NULL to remove
   // the reference to the consumer; then, once this method returns,
@@ -678,6 +681,8 @@ class CaptureMachine
   VideoFrameRenderer renderer_;
   VideoFrameDeliverer deliverer_;
 
+  base::Closure destroy_cb_;  // Invoked once CaptureMachine is destroyed.
+
   DISALLOW_COPY_AND_ASSIGN(CaptureMachine);
 };
 
@@ -691,9 +696,10 @@ CaptureMachine::CaptureMachine(int render_process_id, int render_view_id)
   manager_thread_.Start();
 }
 
-void CaptureMachine::SetRenderWidgetHostForTesting(
-    RenderWidgetHost* override) {
+void CaptureMachine::InitializeForTesting(RenderWidgetHost* override,
+                                          const base::Closure& destroy_cb) {
   copier_.SetRenderWidgetHostForTesting(override);
+  destroy_cb_ = destroy_cb;
 }
 
 void CaptureMachine::SetConsumer(
@@ -806,8 +812,12 @@ void CaptureMachine::Destruct(const CaptureMachine* x) {
 
 // static
 void CaptureMachine::DeleteFromOutsideThread(const CaptureMachine* x) {
+  const base::Closure run_after_delete = x->destroy_cb_;
   // Note: Thread joins are about to happen here (in ~CaptureThread()).
   delete x;
+  if (!run_after_delete.is_null()) {
+    run_after_delete.Run();
+  }
 }
 
 void CaptureMachine::TransitionStateTo(State next_state) {
@@ -947,11 +957,11 @@ WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
       capturer_(new CaptureMachine(render_process_id, render_view_id)) {}
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
-    RenderWidgetHost* test_source)
+    RenderWidgetHost* test_source, const base::Closure& destroy_cb)
     : capturer_(new CaptureMachine(-1, -1)) {
   device_name_.device_name = "WebContentsForTesting";
   device_name_.unique_id = "-1:-1";
-  capturer_->SetRenderWidgetHostForTesting(test_source);
+  capturer_->InitializeForTesting(test_source, destroy_cb);
 }
 
 WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
@@ -988,8 +998,8 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
 
 // static
 media::VideoCaptureDevice* WebContentsVideoCaptureDevice::CreateForTesting(
-    RenderWidgetHost* test_source) {
-  return new WebContentsVideoCaptureDevice(test_source);
+    RenderWidgetHost* test_source, const base::Closure& destroy_cb) {
+  return new WebContentsVideoCaptureDevice(test_source, destroy_cb);
 }
 
 void WebContentsVideoCaptureDevice::Allocate(
