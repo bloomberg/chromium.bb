@@ -824,11 +824,11 @@ class Store2RegisterImm8DoubleOp
 // Rn - The base register.
 // imm12 - The offset from the address.
 //
-// Note: Currently we don't mask addresses for preload instructions,
-// since an action load doesn't occur, and it doesn't fault the processor.
-// Hence we do not define virtual base_address_register.
-// Note: We assume that we don't care if the conditions flags are set.
-// TODO(karl): Verify that we don't want to mask preload addresses.
+// Preloads are only allowed if Rn was masked: ARM CPUs otherwise leak
+// information which an attacker could use to figure out where the TCB lives.
+//
+// There is no need to mask when Rn==PC: the immediate is small. We represent
+// these preloads as literal loads.
 class PreloadRegisterImm12Op : public ClassDecoder {
  public:
   static const Imm12Bits0To11Interface imm12;
@@ -840,6 +840,8 @@ class PreloadRegisterImm12Op : public ClassDecoder {
   PreloadRegisterImm12Op() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+  virtual bool is_literal_load(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterImm12Op);
@@ -859,13 +861,8 @@ class PreloadRegisterImm12Op : public ClassDecoder {
 // Rm - The offset that is optionally shifted and applied to the value of <Rn>
 //      to form the address.
 //
-// Note: Currently we don't maks addresses for preload instructions.
-// since an actual laod doesn't occur, and it doesn't fault the processor.
-// Hence, we do not define virtual base_address_register.
-// Note: We assume that we don't care if the condition flags are set.
-// Note: NaCl assumes that Rn can be PC, but that Rm can't (i.e. only
-// Rn can be used to define a PLI instruction.
-// TODO(karl): Verify that we don't want to mask preload addresses.
+// Register-register preloads are completely disallowed for the same reason
+// register-immediate preloads must be masked.
 class PreloadRegisterPairOp : public ClassDecoder {
  public:
   static const RegBits0To3Interface m;
@@ -879,20 +876,10 @@ class PreloadRegisterPairOp : public ClassDecoder {
   PreloadRegisterPairOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOp);
-};
-
-// Defines a PreloadRegisterPairOp where if Rn=Pc and R=1 (i.e. is for
-// write).
-class PreloadRegisterPairOpWAndRnNotPc : public PreloadRegisterPairOp {
- public:
-  PreloadRegisterPairOpWAndRnNotPc() {}
-  virtual SafetyLevel safety(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpWAndRnNotPc);
 };
 
 // Models a 2-register load/store 12-bit immediate operation of the forms:

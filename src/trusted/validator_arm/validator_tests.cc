@@ -100,10 +100,21 @@ void ValidatorTests::validation_should_pass(const arm_inst *pattern,
   ProblemSpy spy;
   bool validation_result = validate(pattern, inst_count, base_addr, &spy);
 
-  ASSERT_TRUE(validation_result) << msg << " should pass at " << base_addr;
+  std::string errors;
   vector<ProblemRecord> &problems = spy.get_problems();
-  EXPECT_EQ(0U, problems.size()) << msg <<
-      " should have no problems when located at " << base_addr;
+  for (vector<ProblemRecord>::const_iterator it = problems.begin();
+       it != problems.end();
+       ++it) {
+    ErrorMessage message;
+    spy.GetErrorMessage(message, *it);
+    if (it != problems.begin()) {
+      errors += "\n";
+    }
+    errors += std::string("\t") + message;
+  }
+
+  ASSERT_TRUE(validation_result) << msg << " should pass at " << base_addr <<
+      ":\n" << errors;
 }
 
 void ValidatorTests::validation_should_pass2(const arm_inst *pattern,

@@ -498,34 +498,36 @@ SafetyLevel PreloadRegisterImm12Op::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList PreloadRegisterImm12Op::defs(const Instruction i) const {
+RegisterList PreloadRegisterImm12Op::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return RegisterList::CondsDontCare();
+  return RegisterList();
+}
+
+Register PreloadRegisterImm12Op::base_address_register(Instruction i) const {
+  return n.reg(i);
+}
+
+bool PreloadRegisterImm12Op::is_literal_load(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return base_address_register(i).Equals(Register::Pc());
 }
 
 // PreloadRegisterPairOp
 SafetyLevel PreloadRegisterPairOp::safety(Instruction i) const {
-  if (m.reg(i).Equals(Register::Pc()))
-    return FORBIDDEN_OPERANDS;
-  return MAY_BE_SAFE;
-}
-
-RegisterList PreloadRegisterPairOp::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return RegisterList::CondsDontCare();
+  // Note: if we go back to allowing some of these preloads then there is
+  //       a special case defined in version C of ARM ARM v7 manual.
+  //       if m==15 || (n==15 && is_pldw) then UNPREDICTABLE;
+  return FORBIDDEN_OPERANDS;
 }
 
-// PreloadRegisterPairOpWAndRnNotPc
-SafetyLevel PreloadRegisterPairOpWAndRnNotPc::safety(Instruction i) const {
-  SafetyLevel level = PreloadRegisterPairOp::safety(i);
-  if (MAY_BE_SAFE != level) return level;
+RegisterList PreloadRegisterPairOp::defs(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
 
-  // Defined in version C of ARM ARM v7 manual.
-  // if m==15 || (n==15 && is_pldw) then UNPREDICTABLE;
-  if (!read.IsDefined(i) && n.reg(i).Equals(Register::Pc()))
-    return FORBIDDEN_OPERANDS;
-
-  return MAY_BE_SAFE;
+Register PreloadRegisterPairOp::base_address_register(Instruction i) const {
+  return n.reg(i);
 }
 
 // LoadStore2RegisterImm12Op

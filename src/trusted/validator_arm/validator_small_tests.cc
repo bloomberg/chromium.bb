@@ -336,14 +336,14 @@ TEST_F(ValidatorTests, SafeConditionalStores) {
   }
 }
 
-TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
-  static const AnnotatedInstruction examples_of_invalid_masks[] = {
-    { 0x01A01003, "mov r1, r3: not even a mask" },
-    { 0x03C31000, "bic r1, r3, #0: doesn't mask anything" },
-    { 0x03C31102, "bic r1, r3, #0x80000000: doesn't mask enough bits" },
-    { 0x03C311C1, "bic r1, r3, #0x70000000: masks the wrong bits" },
-  };
+static const AnnotatedInstruction examples_of_invalid_masks[] = {
+  { 0x01A01003, "mov r1, r3: not even a mask" },
+  { 0x03C31000, "bic r1, r3, #0: doesn't mask anything" },
+  { 0x03C31102, "bic r1, r3, #0x80000000: doesn't mask enough bits" },
+  { 0x03C311C1, "bic r1, r3, #0x70000000: masks the wrong bits" },
+};
 
+TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
   for (unsigned p = 0; p < 15; p++) {
     // Conditionally executed instructions have a top nibble of 0..14.
     // 15 is an escape sequence used to fit in additional encodings.
@@ -1179,6 +1179,114 @@ TEST_F(ValidatorTests, LiteralPoolBranch) {
                                code.size(),
                                kDefaultBaseAddr,
                                "branch around or at head of a literal pool");
+      }
+    }
+  }
+}
+
+TEST_F(ValidatorTests, Preloads) {
+  // Preloads leak information on some ARM CPUs and are therefore treated
+  // similar to no-destination loads. They come in three flavors:
+  // - PLD{W} [<Rn>, #+/-<imm12>] simply needs to mask Rn.
+  // - PLD <label> doesn't need masking: its immediate is limited to 12 bits.
+  // - PLD{W} [<Rn>,+/-<Rm>{, <shift>}] is disallowed.
+  // The same applies for PLI, which has analogous variants.
+
+  // PLD{W} [<Rn>, #+/-<imm12>] as well as PLI.
+  // PLD{W}: 1111 0101 UR01 nnnn 1111 iiii iiii iiii
+  // PLI:    1111 0100 U101 nnnn 1111 iiii iiii iiii
+  for (uint32_t is_pld = 0; is_pld <= 1; ++is_pld) {
+    for (uint32_t r = is_pld ? 0 : 1; r <= 1; ++r) {
+      for (uint32_t u = 0; u <= 1; ++u) {
+        uint32_t rn = 0x1;  // TODO(jfb) The BIC patterns only test Rn==R1.
+        for (uint32_t imm12 = 0; imm12 <= 0xFFF; ++imm12) {
+          arm_inst pl_inst = 0xF410F000 |
+              (is_pld << 24) | (u << 23) | (r << 22) | (rn << 16) | imm12;
+          validation_should_fail(&pl_inst, 1, kDefaultBaseAddr,
+                                 "unmasked preloads");
+          for (size_t m = 0; m < NACL_ARRAY_SIZE(examples_of_safe_masks);
+               ++m) {
+            arm_inst program[] = {
+              ChangeCond(examples_of_safe_masks[m].inst,
+                         Instruction::AL),
+              pl_inst,
+            };
+            validation_should_pass(program, NACL_ARRAY_SIZE(program),
+                                   kDefaultBaseAddr,
+                                   "masked preload with safe mask");
+          }
+          for (size_t m = 0; m < NACL_ARRAY_SIZE(examples_of_invalid_masks);
+               ++m) {
+            arm_inst program[] = {
+              ChangeCond(examples_of_invalid_masks[m].inst,
+                         Instruction::AL),
+              pl_inst,
+            };
+            validation_should_fail(program, NACL_ARRAY_SIZE(program),
+                                   kDefaultBaseAddr,
+                                   "masked preload with invalid mask");
+          }
+        }
+      }
+    }
+  }
+
+  // PLD <label> as well as PLI.
+  // PLD: 1111 0101 U101 1111 1111 iiii iiii iiii
+  // PLI: 1111 0100 U101 1111 1111 iiii iiii iiii
+  for (uint32_t is_pld = 0; is_pld <= 1; ++is_pld) {
+    for (uint32_t u = 0; u <= 1; ++u) {
+      for (uint32_t imm12 = 0; imm12 <= 0xFFF; ++imm12) {
+        arm_inst pl_inst = 0xF45FF000 |
+            (is_pld << 24) | (u << 23) | imm12;
+        validation_should_pass(&pl_inst, 1, kDefaultBaseAddr,
+                               "unmasked literal preloads");
+      }
+    }
+  }
+
+  // PLD{W} [<Rn>, +/-Rm{, shift}] as well as PLI.
+  // PLD{W}: 1111 0111 UR01 nnnn 1111 iiii itt0 mmmm
+  // PLI:    1111 0110 U101 nnnn 1111 iiii itt0 mmmm
+  for (uint32_t is_pld = 0; is_pld <= 1; ++is_pld) {
+    for (uint32_t r = is_pld ? 0 : 1; r <= 1; ++r) {
+      for (uint32_t u = 0; u <= 1; ++u) {
+        for (uint32_t t = 0; t <= 3; ++t) {
+          for (uint32_t rm = 0; rm <= 0xF; ++rm) {
+            uint32_t rn = 0x1;  // TODO(jfb) The BIC patterns only test Rn==R1.
+            for (uint32_t imm5 = 0; imm5 <= 0x1F; ++imm5) {
+              arm_inst pl_inst = 0xF610F000 |
+                  (is_pld << 24) | (u << 23) | (r << 22) | (rn << 16) |
+                  (imm5 << 7) | (t << 5) | rm;
+              validation_should_fail(&pl_inst, 1, kDefaultBaseAddr,
+                                     "unmasked register-register preloads");
+              for (size_t m = 0; m < NACL_ARRAY_SIZE(examples_of_safe_masks);
+                   ++m) {
+                arm_inst program[] = {
+                  ChangeCond(examples_of_safe_masks[m].inst,
+                             Instruction::AL),
+                  pl_inst,
+                };
+                validation_should_fail(program, NACL_ARRAY_SIZE(program),
+                                       kDefaultBaseAddr,
+                                       "masked register-register preload "
+                                       "with safe mask");
+              }
+              for (size_t m = 0; m < NACL_ARRAY_SIZE(examples_of_invalid_masks);
+                   ++m) {
+                arm_inst program[] = {
+                  ChangeCond(examples_of_invalid_masks[m].inst,
+                             Instruction::AL),
+                  pl_inst,
+                };
+                validation_should_fail(program, NACL_ARRAY_SIZE(program),
+                                       kDefaultBaseAddr,
+                                       "masked register-register preload "
+                                       "with invalid mask");
+              }
+            }
+          }
+        }
       }
     }
   }

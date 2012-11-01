@@ -1725,25 +1725,24 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                               # Manual says these are treated as NOPs, disallow
                               # until proven necessary.
                               11110100x001xxxxxxxxxxxxxxxxxxxx (MPExt)
-| 100_x101   -        -     = PreloadRegisterImm12Op => DontCareInst
+| 100_x101   -        -     = PreloadRegisterImm12Op
                               Pli_Rule_120_A1_P242
-                              # TODO(karl) Should we allow instruction preload?
                               11110100u101nnnn1111iiiiiiiiiiii (v7)
 | 100_xx11   -        -     = UnpredictableUncondDecoder => Unpredictable
                               Unpredictable
                               11110100xx11xxxxxxxxxxxxxxxxxxxx
-| 101_x001   -        ~1111 = PreloadRegisterImm12Op => DontCareInst
+| 101_x001   -        ~1111 = PreloadRegisterImm12Op
                               Pldw_Rule_117_A1_P236
                               11110101u001nnnn1111iiiiiiiiiiii
                               & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx (MP)
 | "          -        1111  = UnpredictableUncondDecoder => Unpredictable
                               Unpredictable
                               11110101x001xxxxxxxxxxxxxxxxxxxx
-| 101_x101   -        ~1111 = PreloadRegisterImm12Op => DontCareInst
+| 101_x101   -        ~1111 = PreloadRegisterImm12Op
                               Pld_Rule_117_A1_P236
                               11110101u101nnnn1111iiiiiiiiiiii
                               & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx (v5TE)
-| "          -        1111  = PreloadRegisterImm12Op => DontCareInst
+| "          -        1111  = PreloadRegisterImm12Op
                               Pld_Rule_118_A1_P238
                               11110101u10111111111iiiiiiiiiiii (v5TE)
 | 101_0011   -        -     = UnpredictableUncondDecoder => Unpredictable
@@ -1790,12 +1789,11 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                               11110110x001xxxxxxxxxxxxxxx0xxxx (MPExt)
 | 110_x101   xxx0     -     = PreloadRegisterPairOp
                               Pli_Rule_121_A1_P244
-                              # TODO(karl) Should we allow instruction preload?
                               11110110u101nnnn1111iiiiitt0mmmm (v7)
-| 111_x001   xxx0     -     = PreloadRegisterPairOpWAndRnNotPc
+| 111_x001   xxx0     -     = PreloadRegisterPairOp
                               Pldw_Rule_119_A1_P240
                               11110111u001nnnn1111iiiiitt0mmmm (MPExt)
-| 111_x101   xxx0     -     = PreloadRegisterPairOpWAndRnNotPc
+| 111_x101   xxx0     -     = PreloadRegisterPairOp
                               Pld_Rule_119_A1_P240
                               11110111u101nnnn1111iiiiitt0mmmm (v5TE)
 | 11x_xx11   xxx0     -     = UnpredictableUncondDecoder => Unpredictable

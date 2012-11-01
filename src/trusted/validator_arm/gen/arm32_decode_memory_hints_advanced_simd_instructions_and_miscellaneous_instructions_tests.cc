@@ -671,24 +671,24 @@ bool PreloadRegisterPairOpTesterCase18
 
 // Neutral case:
 // inst(26:20)=111x001 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOpWAndRnNotPc',
+//    = {baseline: 'PreloadRegisterPairOp',
 //       constraints: }
 //
 // Representaive case:
 // op1(26:20)=111x001 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOpWAndRnNotPc,
+//    = {baseline: PreloadRegisterPairOp,
 //       constraints: }
-class PreloadRegisterPairOpWAndRnNotPcTesterCase19
-    : public PreloadRegisterPairOpWAndRnNotPcTester {
+class PreloadRegisterPairOpTesterCase19
+    : public PreloadRegisterPairOpTester {
  public:
-  PreloadRegisterPairOpWAndRnNotPcTesterCase19(const NamedClassDecoder& decoder)
-    : PreloadRegisterPairOpWAndRnNotPcTester(decoder) {}
+  PreloadRegisterPairOpTesterCase19(const NamedClassDecoder& decoder)
+    : PreloadRegisterPairOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool PreloadRegisterPairOpWAndRnNotPcTesterCase19
+bool PreloadRegisterPairOpTesterCase19
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -699,30 +699,30 @@ bool PreloadRegisterPairOpWAndRnNotPcTesterCase19
   if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return PreloadRegisterPairOpWAndRnNotPcTester::
+  return PreloadRegisterPairOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
 // Neutral case:
 // inst(26:20)=111x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOpWAndRnNotPc',
+//    = {baseline: 'PreloadRegisterPairOp',
 //       constraints: }
 //
 // Representaive case:
 // op1(26:20)=111x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOpWAndRnNotPc,
+//    = {baseline: PreloadRegisterPairOp,
 //       constraints: }
-class PreloadRegisterPairOpWAndRnNotPcTesterCase20
-    : public PreloadRegisterPairOpWAndRnNotPcTester {
+class PreloadRegisterPairOpTesterCase20
+    : public PreloadRegisterPairOpTester {
  public:
-  PreloadRegisterPairOpWAndRnNotPcTesterCase20(const NamedClassDecoder& decoder)
-    : PreloadRegisterPairOpWAndRnNotPcTester(decoder) {}
+  PreloadRegisterPairOpTesterCase20(const NamedClassDecoder& decoder)
+    : PreloadRegisterPairOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool PreloadRegisterPairOpWAndRnNotPcTesterCase20
+bool PreloadRegisterPairOpTesterCase20
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -733,7 +733,7 @@ bool PreloadRegisterPairOpWAndRnNotPcTesterCase20
   if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return PreloadRegisterPairOpWAndRnNotPcTester::
+  return PreloadRegisterPairOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -1221,41 +1221,41 @@ class PreloadRegisterPairOpTester_Case18
 
 // Neutral case:
 // inst(26:20)=111x001 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOpWAndRnNotPc',
+//    = {baseline: 'PreloadRegisterPairOp',
 //       constraints: ,
 //       rule: 'Pldw_Rule_119_A1_P240'}
 //
 // Representative case:
 // op1(26:20)=111x001 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOpWAndRnNotPc,
+//    = {baseline: PreloadRegisterPairOp,
 //       constraints: ,
 //       rule: Pldw_Rule_119_A1_P240}
-class PreloadRegisterPairOpWAndRnNotPcTester_Case19
-    : public PreloadRegisterPairOpWAndRnNotPcTesterCase19 {
+class PreloadRegisterPairOpTester_Case19
+    : public PreloadRegisterPairOpTesterCase19 {
  public:
-  PreloadRegisterPairOpWAndRnNotPcTester_Case19()
-    : PreloadRegisterPairOpWAndRnNotPcTesterCase19(
-      state_.PreloadRegisterPairOpWAndRnNotPc_Pldw_Rule_119_A1_P240_instance_)
+  PreloadRegisterPairOpTester_Case19()
+    : PreloadRegisterPairOpTesterCase19(
+      state_.PreloadRegisterPairOp_Pldw_Rule_119_A1_P240_instance_)
   {}
 };
 
 // Neutral case:
 // inst(26:20)=111x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'PreloadRegisterPairOpWAndRnNotPc',
+//    = {baseline: 'PreloadRegisterPairOp',
 //       constraints: ,
 //       rule: 'Pld_Rule_119_A1_P240'}
 //
 // Representative case:
 // op1(26:20)=111x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: PreloadRegisterPairOpWAndRnNotPc,
+//    = {baseline: PreloadRegisterPairOp,
 //       constraints: ,
 //       rule: Pld_Rule_119_A1_P240}
-class PreloadRegisterPairOpWAndRnNotPcTester_Case20
-    : public PreloadRegisterPairOpWAndRnNotPcTesterCase20 {
+class PreloadRegisterPairOpTester_Case20
+    : public PreloadRegisterPairOpTesterCase20 {
  public:
-  PreloadRegisterPairOpWAndRnNotPcTester_Case20()
-    : PreloadRegisterPairOpWAndRnNotPcTesterCase20(
-      state_.PreloadRegisterPairOpWAndRnNotPc_Pld_Rule_119_A1_P240_instance_)
+  PreloadRegisterPairOpTester_Case20()
+    : PreloadRegisterPairOpTesterCase20(
+      state_.PreloadRegisterPairOp_Pld_Rule_119_A1_P240_instance_)
   {}
 };
 
@@ -1600,48 +1600,44 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(26:20)=100x101 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'PreloadRegisterImm12Op',
 //       baseline: 'PreloadRegisterImm12Op',
 //       constraints: ,
 //       pattern: '11110100u101nnnn1111iiiiiiiiiiii',
 //       rule: 'Pli_Rule_120_A1_P242'}
 //
-// Representative case:
+// Representaive case:
 // op1(26:20)=100x101 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
 //       constraints: ,
 //       pattern: 11110100u101nnnn1111iiiiiiiiiiii,
 //       rule: Pli_Rule_120_A1_P242}
 TEST_F(Arm32DecoderStateTests,
        PreloadRegisterImm12OpTester_Case12_TestCase12) {
-  PreloadRegisterImm12OpTester_Case12 baseline_tester;
-  NamedDontCareInst_Pli_Rule_120_A1_P242 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("11110100u101nnnn1111iiiiiiiiiiii");
+  PreloadRegisterImm12OpTester_Case12 tester;
+  tester.Test("11110100u101nnnn1111iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(26:20)=101x001 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'PreloadRegisterImm12Op',
 //       baseline: 'PreloadRegisterImm12Op',
 //       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //       pattern: '11110101u001nnnn1111iiiiiiiiiiii',
 //       rule: 'Pldw_Rule_117_A1_P236'}
 //
-// Representative case:
+// Representaive case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
 //       constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //       pattern: 11110101u001nnnn1111iiiiiiiiiiii,
 //       rule: Pldw_Rule_117_A1_P236}
 TEST_F(Arm32DecoderStateTests,
        PreloadRegisterImm12OpTester_Case13_TestCase13) {
-  PreloadRegisterImm12OpTester_Case13 baseline_tester;
-  NamedDontCareInst_Pldw_Rule_117_A1_P236 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("11110101u001nnnn1111iiiiiiiiiiii");
+  PreloadRegisterImm12OpTester_Case13 tester;
+  tester.Test("11110101u001nnnn1111iiiiiiiiiiii");
 }
 
 // Neutral case:
@@ -1669,48 +1665,44 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(26:20)=101x101 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'PreloadRegisterImm12Op',
 //       baseline: 'PreloadRegisterImm12Op',
 //       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //       pattern: '11110101u101nnnn1111iiiiiiiiiiii',
 //       rule: 'Pld_Rule_117_A1_P236'}
 //
-// Representative case:
+// Representaive case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
 //       constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //       pattern: 11110101u101nnnn1111iiiiiiiiiiii,
 //       rule: Pld_Rule_117_A1_P236}
 TEST_F(Arm32DecoderStateTests,
        PreloadRegisterImm12OpTester_Case15_TestCase15) {
-  PreloadRegisterImm12OpTester_Case15 baseline_tester;
-  NamedDontCareInst_Pld_Rule_117_A1_P236 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("11110101u101nnnn1111iiiiiiiiiiii");
+  PreloadRegisterImm12OpTester_Case15 tester;
+  tester.Test("11110101u101nnnn1111iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(26:20)=101x101 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'PreloadRegisterImm12Op',
 //       baseline: 'PreloadRegisterImm12Op',
 //       constraints: ,
 //       pattern: '11110101u10111111111iiiiiiiiiiii',
 //       rule: 'Pld_Rule_118_A1_P238'}
 //
-// Representative case:
+// Representaive case:
 // op1(26:20)=101x101 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
 //       constraints: ,
 //       pattern: 11110101u10111111111iiiiiiiiiiii,
 //       rule: Pld_Rule_118_A1_P238}
 TEST_F(Arm32DecoderStateTests,
        PreloadRegisterImm12OpTester_Case16_TestCase16) {
-  PreloadRegisterImm12OpTester_Case16 baseline_tester;
-  NamedDontCareInst_Pld_Rule_118_A1_P238 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("11110101u10111111111iiiiiiiiiiii");
+  PreloadRegisterImm12OpTester_Case16 tester;
+  tester.Test("11110101u10111111111iiiiiiiiiiii");
 }
 
 // Neutral case:
@@ -1759,43 +1751,43 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(26:20)=111x001 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterPairOpWAndRnNotPc',
-//       baseline: 'PreloadRegisterPairOpWAndRnNotPc',
+//    = {actual: 'PreloadRegisterPairOp',
+//       baseline: 'PreloadRegisterPairOp',
 //       constraints: ,
 //       pattern: '11110111u001nnnn1111iiiiitt0mmmm',
 //       rule: 'Pldw_Rule_119_A1_P240'}
 //
 // Representaive case:
 // op1(26:20)=111x001 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: PreloadRegisterPairOpWAndRnNotPc,
-//       baseline: PreloadRegisterPairOpWAndRnNotPc,
+//    = {actual: PreloadRegisterPairOp,
+//       baseline: PreloadRegisterPairOp,
 //       constraints: ,
 //       pattern: 11110111u001nnnn1111iiiiitt0mmmm,
 //       rule: Pldw_Rule_119_A1_P240}
 TEST_F(Arm32DecoderStateTests,
-       PreloadRegisterPairOpWAndRnNotPcTester_Case19_TestCase19) {
-  PreloadRegisterPairOpWAndRnNotPcTester_Case19 tester;
+       PreloadRegisterPairOpTester_Case19_TestCase19) {
+  PreloadRegisterPairOpTester_Case19 tester;
   tester.Test("11110111u001nnnn1111iiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(26:20)=111x101 & inst(7:4)=xxx0 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'PreloadRegisterPairOpWAndRnNotPc',
-//       baseline: 'PreloadRegisterPairOpWAndRnNotPc',
+//    = {actual: 'PreloadRegisterPairOp',
+//       baseline: 'PreloadRegisterPairOp',
 //       constraints: ,
 //       pattern: '11110111u101nnnn1111iiiiitt0mmmm',
 //       rule: 'Pld_Rule_119_A1_P240'}
 //
 // Representaive case:
 // op1(26:20)=111x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: PreloadRegisterPairOpWAndRnNotPc,
-//       baseline: PreloadRegisterPairOpWAndRnNotPc,
+//    = {actual: PreloadRegisterPairOp,
+//       baseline: PreloadRegisterPairOp,
 //       constraints: ,
 //       pattern: 11110111u101nnnn1111iiiiitt0mmmm,
 //       rule: Pld_Rule_119_A1_P240}
 TEST_F(Arm32DecoderStateTests,
-       PreloadRegisterPairOpWAndRnNotPcTester_Case20_TestCase20) {
-  PreloadRegisterPairOpWAndRnNotPcTester_Case20 tester;
+       PreloadRegisterPairOpTester_Case20_TestCase20) {
+  PreloadRegisterPairOpTester_Case20 tester;
   tester.Test("11110111u101nnnn1111iiiiitt0mmmm");
 }
 

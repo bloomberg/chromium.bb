@@ -1548,13 +1548,13 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
   if ((inst.Bits() & 0x07700000) == 0x07100000 /* op1(26:20)=111x001 */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* op2(7:4)=xxx0 */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterPairOpWAndRnNotPc_Pldw_Rule_119_A1_P240_instance_;
+    return PreloadRegisterPairOp_Pldw_Rule_119_A1_P240_instance_;
   }
 
   if ((inst.Bits() & 0x07700000) == 0x07500000 /* op1(26:20)=111x101 */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* op2(7:4)=xxx0 */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterPairOpWAndRnNotPc_Pld_Rule_119_A1_P240_instance_;
+    return PreloadRegisterPairOp_Pld_Rule_119_A1_P240_instance_;
   }
 
   if ((inst.Bits() & 0x07B00000) == 0x05B00000 /* op1(26:20)=1011x11 */) {

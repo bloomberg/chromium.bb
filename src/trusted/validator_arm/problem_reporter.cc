@@ -219,7 +219,7 @@ static const char* kValidatorInstructionPairProblem[] = {
   ", because instruction $F sets APSR condition flags",
   // kConditionsOnPairNotSafe - Conditions on instructions don't guarantee
   // that instructions will run atomically.
-  ", because the conditions on $p don't guarantee atomicity",
+  ", because the conditions $c on $p don't guarantee atomicity",
   // kEqConditionalOn - Second is dependent on eq being set by first
   // instruction.
   ", because $S is not conditional on EQ",
