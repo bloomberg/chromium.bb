@@ -1108,6 +1108,16 @@ GLX_FUNCTIONS = [
   'arguments':
       'Display* dpy, GLXFBConfig config, GLXContext share_context, int direct, '
       'const int* attrib_list', },
+{ 'return_type': 'bool',
+  'names': ['glXGetSyncValuesOML'],
+  'arguments':
+      'Display* dpy, GLXDrawable drawable, int64* ust, int64* msc, '
+      'int64* sbc' },
+{ 'return_type': 'bool',
+  'names': ['glXGetMscRateOML'],
+  'arguments':
+      'Display* dpy, GLXDrawable drawable, int32* numerator, '
+      'int32* denominator' },
 ]
 
 FUNCTION_SETS = [

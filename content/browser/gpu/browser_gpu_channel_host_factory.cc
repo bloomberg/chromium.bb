@@ -13,6 +13,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
+#include "ipc/ipc_forwarding_message_filter.h"
 
 namespace content {
 
@@ -288,6 +289,34 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
   gpu_channel_->Connect(request.channel_handle);
 
   return gpu_channel_.get();
+}
+
+// static
+void BrowserGpuChannelHostFactory::AddFilterOnIO(
+    int host_id,
+    scoped_refptr<IPC::ChannelProxy::MessageFilter> filter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  GpuProcessHost* host = GpuProcessHost::FromID(host_id);
+  if (host)
+    host->AddFilter(filter);
+}
+
+void BrowserGpuChannelHostFactory::SetHandlerForControlMessages(
+      const uint32* message_ids,
+      size_t num_messages,
+      const base::Callback<void(const IPC::Message&)>& handler,
+      base::TaskRunner* target_task_runner) {
+  scoped_refptr<IPC::ForwardingMessageFilter> filter =
+      new IPC::ForwardingMessageFilter(message_ids,
+                                       num_messages,
+                                       target_task_runner);
+  filter->AddRoute(MSG_ROUTING_CONTROL, handler);
+
+  GetIOLoopProxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&BrowserGpuChannelHostFactory::AddFilterOnIO,
+                 gpu_host_id_,
+                 filter));
 }
 
 }  // namespace content

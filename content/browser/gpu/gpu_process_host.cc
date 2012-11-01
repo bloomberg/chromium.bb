@@ -469,6 +469,11 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
   return result;
 }
 
+void GpuProcessHost::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  DCHECK(CalledOnValidThread());
+  process_->GetHost()->AddFilter(filter);
+}
+
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)

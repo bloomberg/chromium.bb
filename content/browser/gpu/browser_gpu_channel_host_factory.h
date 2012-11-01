@@ -39,6 +39,13 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
   virtual GpuChannelHost* EstablishGpuChannelSync(
       CauseForGpuLaunch cause_for_gpu_launch) OVERRIDE;
 
+  // Specify a task runner and callback to be used for a set of messages.
+  virtual void SetHandlerForControlMessages(
+      const uint32* message_ids,
+      size_t num_messages,
+      const base::Callback<void(const IPC::Message&)>& handler,
+      base::TaskRunner* target_task_runner);
+
  private:
   struct CreateRequest {
     CreateRequest();
@@ -81,6 +88,9 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
       EstablishRequest* request,
       const IPC::ChannelHandle& channel_handle,
       const GPUInfo& gpu_info);
+  static void AddFilterOnIO(
+      int gpu_host_id,
+      scoped_refptr<IPC::ChannelProxy::MessageFilter> filter);
 
   int gpu_client_id_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;

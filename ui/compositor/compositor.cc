@@ -44,6 +44,43 @@ ui::ContextFactory* g_context_factory = NULL;
 
 const int kCompositorLockTimeoutMs = 67;
 
+// Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
+class WebGraphicsContextToOutputSurfaceAdapter :
+    public WebKit::WebCompositorOutputSurface {
+public:
+  explicit WebGraphicsContextToOutputSurfaceAdapter(
+      WebKit::WebGraphicsContext3D* context)
+      : context3D_(context),
+        client_(NULL) {
+  }
+
+  virtual bool bindToClient(
+      WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE {
+    DCHECK(client);
+    if (!context3D_->makeContextCurrent())
+      return false;
+    client_ = client;
+    return true;
+  }
+
+  virtual const Capabilities& capabilities() const OVERRIDE {
+    return capabilities_;
+  }
+
+  virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE {
+    return context3D_.get();
+  }
+
+  virtual void sendFrameToParentCompositor(
+      const WebKit::WebCompositorFrame&) OVERRIDE {
+  }
+
+private:
+  scoped_ptr<WebKit::WebGraphicsContext3D> context3D_;
+  Capabilities capabilities_;
+  WebKit::WebCompositorOutputSurfaceClient* client_;
+};
+
 }  // namespace
 
 namespace ui {
@@ -86,9 +123,10 @@ bool DefaultContextFactory::Initialize() {
   return true;
 }
 
-WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContext(
+WebKit::WebCompositorOutputSurface* DefaultContextFactory::CreateOutputSurface(
     Compositor* compositor) {
-  return CreateContextCommon(compositor, false);
+  return new WebGraphicsContextToOutputSurfaceAdapter(
+      CreateContextCommon(compositor, false));
 }
 
 WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext() {
@@ -348,48 +386,6 @@ void Compositor::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
                                      float scaleFactor) {
 }
 
-// Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
-class WebGraphicsContextToOutputSurfaceAdapter :
-    public WebKit::WebCompositorOutputSurface {
-public:
-    explicit WebGraphicsContextToOutputSurfaceAdapter(
-        WebKit::WebGraphicsContext3D* context)
-        : m_context3D(context)
-        , m_client(0)
-    {
-    }
-
-    virtual bool bindToClient(
-        WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE
-    {
-        DCHECK(client);
-        if (!m_context3D->makeContextCurrent())
-            return false;
-        m_client = client;
-        return true;
-    }
-
-    virtual const Capabilities& capabilities() const OVERRIDE
-    {
-        return m_capabilities;
-    }
-
-    virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE
-    {
-        return m_context3D.get();
-    }
-
-    virtual void sendFrameToParentCompositor(
-        const WebKit::WebCompositorFrame&) OVERRIDE
-    {
-    }
-
-private:
-    scoped_ptr<WebKit::WebGraphicsContext3D> m_context3D;
-    Capabilities m_capabilities;
-    WebKit::WebCompositorOutputSurfaceClient* m_client;
-};
-
 WebKit::WebCompositorOutputSurface* Compositor::createOutputSurface() {
   if (test_compositor_enabled) {
     ui::TestWebGraphicsContext3D* test_context =
@@ -397,8 +393,7 @@ WebKit::WebCompositorOutputSurface* Compositor::createOutputSurface() {
     test_context->Initialize();
     return new WebGraphicsContextToOutputSurfaceAdapter(test_context);
   } else {
-    return new WebGraphicsContextToOutputSurfaceAdapter(
-        ContextFactory::GetInstance()->CreateContext(this));
+    return ContextFactory::GetInstance()->CreateOutputSurface(this);
   }
 }
 

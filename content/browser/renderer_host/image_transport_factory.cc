@@ -11,16 +11,21 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/command_buffer_proxy.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurfaceClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
@@ -214,6 +219,136 @@ class CompositorSwapClient
   DISALLOW_COPY_AND_ASSIGN(CompositorSwapClient);
 };
 
+class BrowserCompositorOutputSurface;
+
+// Directs vsync updates to the appropriate BrowserCompositorOutputSurface.
+class BrowserCompositorOutputSurfaceProxy :
+    public base::RefCountedThreadSafe<BrowserCompositorOutputSurfaceProxy> {
+ public:
+  BrowserCompositorOutputSurfaceProxy()
+    : message_handler_set_(false) {
+  }
+
+  void AddSurface(BrowserCompositorOutputSurface* surface, int surface_id) {
+    if (!message_handler_set_) {
+      uint32 messages_to_filter[] = {GpuHostMsg_UpdateVSyncParameters::ID};
+      BrowserGpuChannelHostFactory::instance()->SetHandlerForControlMessages(
+          messages_to_filter,
+          arraysize(messages_to_filter),
+          base::Bind(&BrowserCompositorOutputSurfaceProxy::OnMessageReceived,
+                     this),
+          MessageLoop::current()->message_loop_proxy());
+      message_handler_set_ = true;
+    }
+    surface_map_.AddWithID(surface, surface_id);
+  }
+
+  void RemoveSurface(int surface_id) {
+    surface_map_.Remove(surface_id);
+  }
+
+ private:
+  void OnMessageReceived(const IPC::Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(BrowserCompositorOutputSurfaceProxy, message)
+      IPC_MESSAGE_HANDLER(GpuHostMsg_UpdateVSyncParameters,
+                          OnUpdateVSyncParameters);
+    IPC_END_MESSAGE_MAP()
+  }
+
+  void OnUpdateVSyncParameters(int surface_id,
+                               base::TimeTicks timebase,
+                               base::TimeDelta interval);
+
+  friend class
+      base::RefCountedThreadSafe<BrowserCompositorOutputSurfaceProxy>;
+  ~BrowserCompositorOutputSurfaceProxy() {}
+  IDMap<BrowserCompositorOutputSurface> surface_map_;
+  bool message_handler_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurfaceProxy);
+};
+
+
+// Adapts a WebGraphicsContext3DCommandBufferImpl into a
+// WebCompositorOutputSurface that also handles vsync parameter updates
+// arriving from the GPU process.
+class BrowserCompositorOutputSurface :
+    public WebKit::WebCompositorOutputSurface,
+    public base::NonThreadSafe {
+ public:
+  explicit BrowserCompositorOutputSurface(
+      WebGraphicsContext3DCommandBufferImpl* context,
+      int surface_id,
+      BrowserCompositorOutputSurfaceProxy* output_surface_proxy)
+      : context3D_(context),
+        surface_id_(surface_id),
+        client_(NULL),
+        output_surface_proxy_(output_surface_proxy) {
+    DetachFromThread();
+  }
+
+  virtual ~BrowserCompositorOutputSurface() {
+    DCHECK(CalledOnValidThread());
+    if (!client_)
+      return;
+    output_surface_proxy_->RemoveSurface(surface_id_);
+  }
+
+  virtual bool bindToClient(
+      WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE {
+    DCHECK(CalledOnValidThread());
+    DCHECK(client);
+    DCHECK(!client_);
+    if (context3D_.get()) {
+      if (!context3D_->makeContextCurrent())
+        return false;
+    }
+
+    client_ = client;
+    output_surface_proxy_->AddSurface(this, surface_id_);
+    return true;
+  }
+
+  virtual const Capabilities& capabilities() const OVERRIDE {
+    DCHECK(CalledOnValidThread());
+    return capabilities_;
+  }
+
+  virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE {
+    DCHECK(CalledOnValidThread());
+    return context3D_.get();
+  }
+
+  virtual void sendFrameToParentCompositor(
+      const WebKit::WebCompositorFrame&) OVERRIDE {
+  }
+
+  void OnUpdateVSyncParameters(
+      base::TimeTicks timebase, base::TimeDelta interval) {
+    DCHECK(CalledOnValidThread());
+    DCHECK(client_);
+    double monotonicTimebase = timebase.ToInternalValue() /
+      static_cast<double>(base::Time::kMicrosecondsPerSecond);
+    double intervalInSeconds = interval.ToInternalValue() /
+      static_cast<double>(base::Time::kMicrosecondsPerSecond);
+    client_->onVSyncParametersChanged(monotonicTimebase, intervalInSeconds);
+  }
+
+ private:
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3D_;
+  int surface_id_;
+  Capabilities capabilities_;
+  WebKit::WebCompositorOutputSurfaceClient* client_;
+  scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
+};
+
+void BrowserCompositorOutputSurfaceProxy::OnUpdateVSyncParameters(
+    int surface_id, base::TimeTicks timebase, base::TimeDelta interval) {
+  BrowserCompositorOutputSurface* surface = surface_map_.Lookup(surface_id);
+  if (surface)
+    surface->OnUpdateVSyncParameters(timebase, interval);
+}
+
 class GpuProcessTransportFactory :
     public ui::ContextFactory,
     public ImageTransportFactory,
@@ -221,25 +356,31 @@ class GpuProcessTransportFactory :
  public:
   GpuProcessTransportFactory()
       : ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+    output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy();
   }
 
   virtual ~GpuProcessTransportFactory() {
     DCHECK(per_compositor_data_.empty());
   }
 
-  virtual WebKit::WebGraphicsContext3D* CreateContext(
-      ui::Compositor* compositor) OVERRIDE {
-    PerCompositorData* data = per_compositor_data_[compositor];
-    if (!data)
-      data = CreatePerCompositorData(compositor);
-    return CreateContextCommon(data->swap_client->AsWeakPtr(),
-                               data->surface_id);
-  }
-
   virtual WebGraphicsContext3DCommandBufferImpl* CreateOffscreenContext()
       OVERRIDE {
     base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
     return CreateContextCommon(swap_client, 0);
+  }
+
+  virtual WebKit::WebCompositorOutputSurface* CreateOutputSurface(
+      ui::Compositor* compositor) OVERRIDE {
+    PerCompositorData* data = per_compositor_data_[compositor];
+    if (!data)
+      data = CreatePerCompositorData(compositor);
+    WebGraphicsContext3DCommandBufferImpl* context =
+        CreateContextCommon(data->swap_client->AsWeakPtr(),
+                            data->surface_id);
+    return new BrowserCompositorOutputSurface(
+        context,
+        per_compositor_data_[compositor]->surface_id,
+        output_surface_proxy_);
   }
 
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE {
@@ -462,6 +603,7 @@ class GpuProcessTransportFactory :
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> shared_context_;
   ObserverList<ImageTransportFactoryObserver> observer_list_;
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
+  scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessTransportFactory);
 };

@@ -157,6 +157,13 @@ void ImageTransportHelper::SendResizeView(const gfx::Size& size) {
                                            size));
 }
 
+void ImageTransportHelper::SendUpdateVSyncParameters(
+      base::TimeTicks timebase, base::TimeDelta interval) {
+  manager_->Send(new GpuHostMsg_UpdateVSyncParameters(stub_->surface_id(),
+                                                      timebase,
+                                                      interval));
+}
+
 void ImageTransportHelper::SetScheduled(bool is_scheduled) {
   gpu::GpuScheduler* scheduler = Scheduler();
   if (!scheduler)
@@ -271,6 +278,7 @@ void PassThroughImageTransportSurface::Destroy() {
 
 bool PassThroughImageTransportSurface::SwapBuffers() {
   bool result = gfx::GLSurfaceAdapter::SwapBuffers();
+  SendVSyncUpdateIfAvailable();
 
   if (transport_) {
     // Round trip to the browser UI thread, for throttling, by sending a dummy
@@ -287,6 +295,7 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
 bool PassThroughImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   bool result = gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
+  SendVSyncUpdateIfAvailable();
 
   if (transport_) {
     // Round trip to the browser UI thread, for throttling, by sending a dummy
@@ -342,6 +351,14 @@ gfx::Size PassThroughImageTransportSurface::GetSize() {
 }
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}
+
+void PassThroughImageTransportSurface::SendVSyncUpdateIfAvailable() {
+  base::TimeTicks timebase;
+  base::TimeDelta interval;
+  if (GetVSyncParameters(&timebase, &interval)) {
+    helper_->SendUpdateVSyncParameters(timebase, interval);
+  }
+}
 
 }  // namespace content
 

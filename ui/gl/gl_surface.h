@@ -13,6 +13,11 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_export.h"
 
+namespace base {
+class TimeDelta;
+class TimeTicks;
+}
+
 namespace gfx {
 
 class GLContext;
@@ -102,6 +107,12 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Get the GL pixel format of the surface, if available.
   virtual unsigned GetFormat();
 
+  // Get the time of the most recent screen refresh, along with the time
+  // between consecutive refreshes. Returns false when these values are
+  // unavailable.
+  virtual bool GetVSyncParameters(base::TimeTicks* timebase,
+                                  base::TimeDelta* interval);
+
   // Create a GL surface that renders directly to a view.
   static scoped_refptr<GLSurface> CreateViewGLSurface(
       bool software,
@@ -153,6 +164,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual void* GetDisplay() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;
   virtual unsigned GetFormat() OVERRIDE;
+  virtual bool GetVSyncParameters(base::TimeTicks* timebase,
+                                  base::TimeDelta* interval) OVERRIDE;
 
   GLSurface* surface() const { return surface_.get(); }
 

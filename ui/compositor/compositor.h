@@ -48,10 +48,10 @@ class COMPOSITOR_EXPORT ContextFactory {
   // created on the first call of GetInstance.
   static void SetInstance(ContextFactory* instance);
 
-  // Creates a context for given compositor. The factory may keep per-compositor
-  // data (e.g. a shared context), that needs to be cleaned up by calling
-  // RemoveCompositor when the compositor gets destroyed.
-  virtual WebKit::WebGraphicsContext3D* CreateContext(
+  // Creates an output surface for the given compositor. The factory may keep
+  // per-compositor data (e.g. a shared context), that needs to be cleaned up
+  // by calling RemoveCompositor when the compositor gets destroyed.
+  virtual WebKit::WebCompositorOutputSurface* CreateOutputSurface(
       Compositor* compositor) = 0;
 
   // Creates a context used for offscreen rendering. This context can be shared
@@ -69,7 +69,7 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   virtual ~DefaultContextFactory();
 
   // ContextFactory implementation
-  virtual WebKit::WebGraphicsContext3D* CreateContext(
+  virtual WebKit::WebCompositorOutputSurface* CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE;
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;

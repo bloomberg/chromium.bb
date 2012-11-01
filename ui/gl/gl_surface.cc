@@ -147,6 +147,11 @@ unsigned GLSurface::GetFormat() {
   return 0;
 }
 
+bool GLSurface::GetVSyncParameters(base::TimeTicks* timebase,
+                                   base::TimeDelta* interval) {
+  return false;
+}
+
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -249,6 +254,11 @@ void* GLSurfaceAdapter::GetConfig() {
 
 unsigned GLSurfaceAdapter::GetFormat() {
   return surface_->GetFormat();
+}
+
+bool GLSurfaceAdapter::GetVSyncParameters(base::TimeTicks* timebase,
+                                          base::TimeDelta* interval) {
+  return surface_->GetVSyncParameters(timebase, interval);
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

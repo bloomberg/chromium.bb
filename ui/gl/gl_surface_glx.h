@@ -28,6 +28,7 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   static bool HasGLXExtension(const char* name);
   static bool IsCreateContextRobustnessSupported();
   static bool IsTextureFromPixmapSupported();
+  static bool IsOMLSyncControlSupported();
 
   virtual void* GetDisplay() OVERRIDE;
 
@@ -58,6 +59,8 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   virtual std::string GetExtensions() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual bool GetVSyncParameters(base::TimeTicks* timebase,
+                                  base::TimeDelta* interval) OVERRIDE;
 
  protected:
   NativeViewGLSurfaceGLX();

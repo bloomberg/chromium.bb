@@ -391,6 +391,12 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceRelease,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceSuspend,
                      int32 /* surface_id */)
 
+// Tells the browser about updated parameters for vsync alignment.
+IPC_MESSAGE_CONTROL3(GpuHostMsg_UpdateVSyncParameters,
+                     int32 /* surface_id */,
+                     base::TimeTicks /* timebase */,
+                     base::TimeDelta /* interval */)
+
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.

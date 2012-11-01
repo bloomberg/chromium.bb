@@ -114,6 +114,8 @@ class ImageTransportHelper : public IPC::Listener {
   void SendAcceleratedSurfaceRelease(
       GpuHostMsg_AcceleratedSurfaceRelease_Params params);
   void SendResizeView(const gfx::Size& size);
+  void SendUpdateVSyncParameters(
+      base::TimeTicks timebase, base::TimeDelta interval);
 
   // Whether or not we should execute more commands.
   void SetScheduled(bool is_scheduled);
@@ -185,6 +187,10 @@ class PassThroughImageTransportSurface
 
  protected:
   virtual ~PassThroughImageTransportSurface();
+
+  // If updated vsync parameters can be determined, send this information to
+  // the browser.
+  virtual void SendVSyncUpdateIfAvailable();
 
  private:
   scoped_ptr<ImageTransportHelper> helper_;

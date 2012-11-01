@@ -14,6 +14,7 @@ extern "C" {
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/time.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -37,6 +38,12 @@ Display* g_display;
 const char* g_glx_extensions = NULL;
 bool g_glx_create_context_robustness_supported = false;
 bool g_glx_texture_from_pixmap_supported = false;
+bool g_glx_oml_sync_control_supported = false;
+
+// Track support of glXGetMscRateOML separately from GLX_OML_sync_control as a
+// whole since on some platforms (e.g. crosbug.com/34585), glXGetMscRateOML
+// always fails even though GLX_OML_sync_control is reported as being supported.
+bool g_glx_get_msc_rate_oml_supported = false;
 
 }  // namespace
 
@@ -69,6 +76,10 @@ bool GLSurfaceGLX::InitializeOneOff() {
       HasGLXExtension("GLX_ARB_create_context_robustness");
   g_glx_texture_from_pixmap_supported =
       HasGLXExtension("GLX_EXT_texture_from_pixmap");
+  g_glx_oml_sync_control_supported =
+      HasGLXExtension("GLX_OML_sync_control");
+  g_glx_get_msc_rate_oml_supported = g_glx_oml_sync_control_supported;
+
 
   initialized = true;
   return true;
@@ -92,6 +103,11 @@ bool GLSurfaceGLX::IsCreateContextRobustnessSupported() {
 // static
 bool GLSurfaceGLX::IsTextureFromPixmapSupported() {
   return g_glx_texture_from_pixmap_supported;
+}
+
+// static
+bool GLSurfaceGLX::IsOMLSyncControlSupported() {
+  return g_glx_oml_sync_control_supported;
 }
 
 void* GLSurfaceGLX::GetDisplay() {
@@ -221,6 +237,79 @@ bool NativeViewGLSurfaceGLX::PostSubBuffer(
     int x, int y, int width, int height) {
   DCHECK(gfx::g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
   glXCopySubBufferMESA(g_display, window_, x, y, width, height);
+  return true;
+}
+
+bool NativeViewGLSurfaceGLX::GetVSyncParameters(base::TimeTicks* timebase,
+                                                base::TimeDelta* interval) {
+  if (!g_glx_oml_sync_control_supported)
+    return false;
+
+  // The actual clock used for the system time returned by glXGetSyncValuesOML
+  // is unspecified. In practice, the clock used is likely to be either
+  // CLOCK_REALTIME or CLOCK_MONOTONIC, so we compare the returned time to the
+  // current time according to both clocks, and assume that the returned time
+  // was produced by the clock whose current time is closest to it, subject
+  // to the restriction that the returned time must not be in the future (since
+  // it is the time of a vblank that has already occurred).
+  int64 system_time;
+  int64 media_stream_counter;
+  int64 swap_buffer_counter;
+  if (!glXGetSyncValuesOML(g_display, window_, &system_time,
+                           &media_stream_counter, &swap_buffer_counter))
+    return false;
+
+  struct timespec real_time;
+  struct timespec monotonic_time;
+  clock_gettime(CLOCK_REALTIME, &real_time);
+  clock_gettime(CLOCK_MONOTONIC, &monotonic_time);
+
+  int64 real_time_in_microseconds =
+      real_time.tv_sec * base::Time::kMicrosecondsPerSecond +
+      real_time.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
+  int64 monotonic_time_in_microseconds =
+      monotonic_time.tv_sec * base::Time::kMicrosecondsPerSecond +
+      monotonic_time.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
+
+  if ((system_time > real_time_in_microseconds) &&
+      (system_time > monotonic_time_in_microseconds))
+    return false;
+
+  // We need the time according to CLOCK_MONOTONIC, so if we've been given
+  // a time from CLOCK_REALTIME, we need to convert.
+  bool time_conversion_needed =
+    (system_time > monotonic_time_in_microseconds) ||
+    (real_time_in_microseconds - system_time <
+     monotonic_time_in_microseconds - system_time);
+
+  if (time_conversion_needed) {
+    int64 time_difference =
+        real_time_in_microseconds - monotonic_time_in_microseconds;
+    *timebase = base::TimeTicks::FromInternalValue(
+        system_time - time_difference);
+  } else {
+    *timebase = base::TimeTicks::FromInternalValue(system_time);
+  }
+
+  // On platforms where glXGetMscRateOML doesn't work, we fall back to the
+  // assumption that we're displaying 60 frames per second.
+  const int64 kDefaultIntervalTime =
+      base::Time::kMicrosecondsPerSecond / 60;
+  int64 interval_time = kDefaultIntervalTime;
+  int32 numerator;
+  int32 denominator;
+  if (g_glx_get_msc_rate_oml_supported) {
+    if (glXGetMscRateOML(g_display, window_, &numerator, &denominator)) {
+      interval_time =
+          (base::Time::kMicrosecondsPerSecond * denominator) / numerator;
+    } else {
+      // Once glXGetMscRateOML has been found to fail, don't try again,
+      // since each failing call may spew an error message.
+      g_glx_get_msc_rate_oml_supported = false;
+    }
+  }
+
+  *interval = base::TimeDelta::FromMicroseconds(interval_time);
   return true;
 }
 

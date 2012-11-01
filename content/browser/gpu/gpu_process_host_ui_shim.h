@@ -103,6 +103,9 @@ class GpuProcessHostUIShim : public IPC::Listener,
       const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
   void OnVideoMemoryUsageStatsReceived(
       const GPUVideoMemoryUsageStats& video_memory_usage_stats);
+  void OnUpdateVSyncParameters(int surface_id,
+                               base::TimeTicks timebase,
+                               base::TimeDelta interval);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
