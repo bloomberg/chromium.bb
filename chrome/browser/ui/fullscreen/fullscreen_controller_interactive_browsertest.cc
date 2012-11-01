@@ -698,9 +698,23 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsMouseLocked());
 }
 
+#if defined(OS_WIN)
+// These tests are very flaky on Vista.
+// http://crbug.com/158762
+#define MAYBE_TestTabExitsMouseLockOnNavigation \
+    DISABLED_TestTabExitsMouseLockOnNavigation
+#define MAYBE_TestTabExitsMouseLockOnGoBack \
+    DISABLED_TestTabExitsMouseLockOnGoBack
+#else
+#define MAYBE_TestTabExitsMouseLockOnNavigation \
+    TestTabExitsMouseLockOnNavigation
+#define MAYBE_TestTabExitsMouseLockOnGoBack \
+    TestTabExitsMouseLockOnGoBack
+#endif
+
 // Tests mouse lock is exited on page navigation.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       TestTabExitsMouseLockOnNavigation) {
+                       MAYBE_TestTabExitsMouseLockOnNavigation) {
   ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kFullscreenMouseLockHTML));
@@ -725,7 +739,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
 // Tests mouse lock is exited when navigating back.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       TestTabExitsMouseLockOnGoBack) {
+                       MAYBE_TestTabExitsMouseLockOnGoBack) {
   ASSERT_TRUE(test_server()->Start());
 
   // Navigate twice to provide a place to go back to.
