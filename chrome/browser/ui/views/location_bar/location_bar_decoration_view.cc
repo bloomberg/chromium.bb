@@ -91,7 +91,8 @@ void LocationBarDecorationView::AnimationEnded(const ui::Animation* animation) {
         views::BoxLayout::kHorizontal, 0, 0, 0));
     RemoveChildView(text_label_);  // will also delete the view.
     text_label_ = NULL;
-    SchedulePaint();
+    parent_->Layout();
+    parent_->SchedulePaint();
   }
   slide_animator_->Reset();
 }
