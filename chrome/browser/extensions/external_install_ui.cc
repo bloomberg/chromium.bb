@@ -136,16 +136,6 @@ class ExternalInstallGlobalError : public GlobalError,
  private:
   ExtensionService* service_;
   const Extension* extension_;
-
-  // How the user responded to the error; used for metrics.
-  enum UserResponse {
-    IGNORED,
-    REENABLE,
-    UNINSTALL,
-    USER_RESPONSE_BUCKET_BOUNDARY
-  };
-  UserResponse user_response_;
-
   content::NotificationRegistrar registrar_;
 };
 
@@ -153,8 +143,7 @@ ExternalInstallGlobalError::ExternalInstallGlobalError(
     ExtensionService* service,
     const Extension* extension)
     : service_(service),
-      extension_(extension),
-      user_response_(IGNORED) {
+      extension_(extension) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(service->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -162,8 +151,6 @@ ExternalInstallGlobalError::ExternalInstallGlobalError(
 }
 
 ExternalInstallGlobalError::~ExternalInstallGlobalError() {
-  HISTOGRAM_ENUMERATION("Extensions.ExternalInstallUIUserResponse",
-                        user_response_, USER_RESPONSE_BUCKET_BOUNDARY);
 }
 
 bool ExternalInstallGlobalError::HasBadge() {
@@ -240,8 +227,7 @@ void ExternalInstallGlobalError::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   const Extension* extension = NULL;
-  // The error is invalidated if the extension has been reloaded
-  // or unloaded.
+  // The error is invalidated if the extension has been reloaded or unloaded.
   if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
     extension = content::Details<const Extension>(details).ptr();
   } else {
@@ -254,14 +240,6 @@ void ExternalInstallGlobalError::Observe(
     GlobalErrorService* error_service =
         GlobalErrorServiceFactory::GetForProfile(service_->profile());
     error_service->RemoveGlobalError(this);
-
-    // We only check for new external installs on startup, so these
-    // notifications are guaranteed to be user-initiated.
-    if (type == chrome::NOTIFICATION_EXTENSION_LOADED)
-      user_response_ = REENABLE;
-    else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED)
-      user_response_ = UNINSTALL;
-
     service_->AcknowledgeExternalExtension(extension_->id());
     delete this;
   }

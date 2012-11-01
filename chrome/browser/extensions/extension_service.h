@@ -607,6 +607,11 @@ class ExtensionService
   // acknowledged.
   void AcknowledgeExternalExtension(const std::string& id);
 
+  // Returns true if this extension is an external one that has yet to be
+  // marked as acknowledged.
+  bool IsUnacknowledgedExternalExtension(
+      const extensions::Extension* extension);
+
   // Opens the Extensions page because the user wants to get more details
   // about the alerts.
   void HandleExtensionAlertDetails();

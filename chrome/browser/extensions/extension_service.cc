@@ -148,6 +148,16 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
+// Histogram values for logging events related to externally installed
+// extensions.
+enum ExternalExtensionEvent {
+  EXTERNAL_EXTENSION_INSTALLED = 0,
+  EXTERNAL_EXTENSION_IGNORED,
+  EXTERNAL_EXTENSION_REENABLED,
+  EXTERNAL_EXTENSION_UNINSTALLED,
+  EXTERNAL_EXTENSION_BUCKET_BOUNDARY,
+};
+
 #if defined(OS_LINUX)
 static const int kOmniboxIconPaddingLeft = 2;
 static const int kOmniboxIconPaddingRight = 2;
@@ -789,6 +799,11 @@ bool ExtensionService::UninstallExtension(
     sync_change = extension_sync_bundle_.CreateSyncChangeToDelete(extension);
   }
 
+  if (IsUnacknowledgedExternalExtension(extension)) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalExtensionEvent",
+                              EXTERNAL_EXTENSION_UNINSTALLED,
+                              EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
+  }
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
                             extension->GetType(), 100);
   RecordPermissionMessagesHistogram(
@@ -895,8 +910,12 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   if (!extension)
     return;
 
-  if (Extension::IsExternalLocation(extension->location()))
+  if (IsUnacknowledgedExternalExtension(extension)) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalExtensionEvent",
+                              EXTERNAL_EXTENSION_REENABLED,
+                              EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
     AcknowledgeExternalExtension(extension->id());
+  }
 
   // Move it over to the enabled list.
   extensions_.Insert(make_scoped_refptr(extension));
@@ -1840,6 +1859,14 @@ void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
   UpdateExternalExtensionAlert();
 }
 
+bool ExtensionService::IsUnacknowledgedExternalExtension(
+    const Extension* extension) {
+  return (Extension::IsExternalLocation(extension->location()) &&
+          !extension_prefs_->IsExternalExtensionAcknowledged(extension->id()) &&
+          !(extension_prefs_->GetDisableReasons(extension->id()) &
+                Extension::DISABLE_SIDELOAD_WIPEOUT));
+}
+
 void ExtensionService::HandleExtensionAlertDetails() {
   extension_error_ui_->ShowExtensions();
 }
@@ -1852,23 +1879,26 @@ void ExtensionService::UpdateExternalExtensionAlert() {
   for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
        iter != disabled_extensions_.end(); ++iter) {
     const Extension* e = *iter;
-    if (Extension::IsExternalLocation(e->location())) {
-      if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id()) &&
-          !(extension_prefs_->GetDisableReasons(e->id()) &
-                Extension::DISABLE_SIDELOAD_WIPEOUT)) {
-        extension = e;
-        break;
-      }
+    if (IsUnacknowledgedExternalExtension(e)) {
+      extension = e;
+      break;
     }
   }
 
   if (extension) {
-    if (extensions::AddExternalInstallError(this, extension)) {
-      if (extension_prefs_->IncrementAcknowledgePromptCount(extension->id()) >=
+    if (!extensions::HasExternalInstallError(this)) {
+      if (extension_prefs_->IncrementAcknowledgePromptCount(extension->id()) >
               kMaxExtensionAcknowledgePromptCount) {
-        // This will be the last time we prompt for this extension.
+        // Stop prompting for this extension, and check if there's another
+        // one that needs prompting.
         extension_prefs_->AcknowledgeExternalExtension(extension->id());
+        UpdateExternalExtensionAlert();
+        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalExtensionEvent",
+                                  EXTERNAL_EXTENSION_IGNORED,
+                                  EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
+        return;
       }
+      extensions::AddExternalInstallError(this, extension);
     }
   } else {
     extensions::RemoveExternalInstallError(this);
@@ -2318,15 +2348,20 @@ void ExtensionService::OnExtensionInstalled(
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 
-  Extension::Location location = extension->location();
+  bool unacknowledged_external = IsUnacknowledgedExternalExtension(extension);
 
   // Transfer ownership of |extension| to AddExtension.
   AddExtension(scoped_extension);
 
   // If this is a new external extension that was disabled, alert the user
-  // so he can reenable it.
-  if (Extension::IsExternalLocation(location) && !initial_enable)
+  // so he can reenable it. We do this last so that it has already been
+  // added to our list of extensions.
+  if (unacknowledged_external) {
     UpdateExternalExtensionAlert();
+    UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalExtensionEvent",
+                              EXTERNAL_EXTENSION_INSTALLED,
+                              EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
+  }
 }
 
 const Extension* ExtensionService::GetExtensionByIdInternal(
