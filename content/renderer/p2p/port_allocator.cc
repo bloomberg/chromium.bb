@@ -53,7 +53,7 @@ bool ParsePortNumber(
 P2PPortAllocator::Config::Config()
     : stun_server_port(0),
       relay_server_port(0),
-      legacy_relay(false),
+      legacy_relay(true),
       disable_tcp_transport(false) {
 }
 
@@ -135,28 +135,23 @@ void P2PPortAllocatorSession::didFail(WebKit::WebURLLoader* loader,
   LOG(ERROR) << "Relay session request failed.";
 
   // Retry the request.
-  AllocateRelaySession();
+  AllocateLegacyRelaySession();
 }
 
 void P2PPortAllocatorSession::GetPortConfigurations() {
-  // Add an empty configuration synchronously, so a local connection
-  // can be started immediately.
-  ConfigReady(new cricket::PortConfiguration(talk_base::SocketAddress(),
-                                             "", ""));
-
-  if (stun_server_address_.IsNil()) {
+  if (!allocator_->config_.stun_server.empty() &&
+      stun_server_address_.IsNil()) {
     ResolveStunServerAddress();
   } else {
     AddConfig();
   }
 
-  AllocateRelaySession();
+  if (allocator_->config_.legacy_relay) {
+    AllocateLegacyRelaySession();
+  }
 }
 
 void P2PPortAllocatorSession::ResolveStunServerAddress() {
-  if (allocator_->config_.stun_server.empty())
-    return;
-
   if (stun_address_request_)
     return;
 
@@ -172,6 +167,8 @@ void P2PPortAllocatorSession::OnStunServerAddress(
   if (address.empty()) {
     LOG(ERROR) << "Failed to resolve STUN server address "
                << allocator_->config_.stun_server;
+    // Allocating local ports on stun failure.
+    AddConfig();
     return;
   }
 
@@ -184,14 +181,9 @@ void P2PPortAllocatorSession::OnStunServerAddress(
   AddConfig();
 }
 
-void P2PPortAllocatorSession::AllocateRelaySession() {
+void P2PPortAllocatorSession::AllocateLegacyRelaySession() {
   if (allocator_->config_.relay_server.empty())
     return;
-
-  if (!allocator_->config_.legacy_relay) {
-    NOTIMPLEMENTED() << " TURN support is not implemented yet.";
-    return;
-  }
 
   if (relay_session_attempts_ > kRelaySessionRetries)
     return;
@@ -293,26 +285,47 @@ void P2PPortAllocatorSession::AddConfig() {
   cricket::PortConfiguration* config =
       new cricket::PortConfiguration(stun_server_address_, "", "");
 
-  if (relay_ip_.ip() != 0) {
-    cricket::PortList ports;
-    if (relay_udp_port_ > 0) {
-      talk_base::SocketAddress address(relay_ip_.ip(), relay_udp_port_);
-      ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_UDP));
+  if (allocator_->config_.legacy_relay) {
+    if (relay_ip_.ip() != 0) {
+      cricket::PortList ports;
+      if (relay_udp_port_ > 0) {
+        talk_base::SocketAddress address(relay_ip_.ip(), relay_udp_port_);
+        ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_UDP));
+      }
+      if (relay_tcp_port_ > 0 && !allocator_->config_.disable_tcp_transport) {
+        talk_base::SocketAddress address(relay_ip_.ip(), relay_tcp_port_);
+        ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_TCP));
+      }
+      if (relay_ssltcp_port_ > 0 &&
+          !allocator_->config_.disable_tcp_transport) {
+        talk_base::SocketAddress address(relay_ip_.ip(), relay_ssltcp_port_);
+        ports.push_back(cricket::ProtocolAddress(
+            address, cricket::PROTO_SSLTCP));
+      }
+      if (!ports.empty()) {
+        // Passing empty credentials, our implementation of RelayServer
+        // doesn't need credentials to allocate ports. It uses a different
+        // mechanism for authentication. After migrating to standard
+        // TURN, need to push real credentials.
+        cricket::RelayCredentials credentials;
+        config->AddRelay(ports, credentials, 0.0f);
+      }
     }
-    if (relay_tcp_port_ > 0 && !allocator_->config_.disable_tcp_transport) {
-      talk_base::SocketAddress address(relay_ip_.ip(), relay_tcp_port_);
-      ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_TCP));
-    }
-    if (relay_ssltcp_port_ > 0 && !allocator_->config_.disable_tcp_transport) {
-      talk_base::SocketAddress address(relay_ip_.ip(), relay_ssltcp_port_);
-      ports.push_back(cricket::ProtocolAddress(address, cricket::PROTO_SSLTCP));
-    }
-    if (!ports.empty()) {
-      // Passing empty credentials, our implementation of RelayServer
-      // doesn't need credentials to allocate ports. It uses a different
-      // mechanism for authentication. After migrating to standard
-      // TURN, need to push real credentials.
-      cricket::RelayCredentials credentials;
+  } else {
+    if (!(allocator_->config_.relay_username.empty() ||
+          allocator_->config_.relay_server.empty())) {
+      // Adding TURN related information to config.
+      // As per TURN RFC, same turn server should be used for stun as well.
+      // Configuration should have same address for both stun and turn.
+      DCHECK_EQ(allocator_->config_.stun_server,
+                allocator_->config_.relay_server);
+      cricket::PortList ports;
+      cricket::RelayCredentials credentials(
+          allocator_->config_.relay_username,
+          allocator_->config_.relay_password);
+      // Using the stun resolved address if available for TURN.
+      ports.push_back(cricket::ProtocolAddress(
+          stun_server_address_, cricket::PROTO_UDP));
       config->AddRelay(ports, credentials, 0.0f);
     }
   }

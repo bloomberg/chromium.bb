@@ -54,6 +54,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       config.stun_server_port = stun_servers[0].server.port();
     }
     if (turn_configurations.size() > 0) {
+      config.legacy_relay = false;
       config.relay_server = turn_configurations[0].server.hostname();
       config.relay_server_port = turn_configurations[0].server.port();
       config.relay_username = turn_configurations[0].username;

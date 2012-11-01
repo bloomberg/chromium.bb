@@ -104,7 +104,8 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
   void ResolveStunServerAddress();
   void OnStunServerAddress(const net::IPAddressNumber& address);
 
-  void AllocateRelaySession();
+  // This method allocates non-TURN relay sessions.
+  void AllocateLegacyRelaySession();
   void ParseRelayResponse();
 
   void AddConfig();
