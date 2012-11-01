@@ -10,6 +10,7 @@
 #include "cc/render_pass.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/settings.h"
+#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/solid_color_draw_quad.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
@@ -49,9 +50,10 @@ public:
     virtual void setFullRootLayerDamage() OVERRIDE { }
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
-    virtual bool hasImplThread() const OVERRIDE { return false; }
 
 protected:
+    DebugScopedSetImplThread m_alwaysImplThread;
+
     scoped_ptr<FakeWebCompositorOutputSurface> m_outputSurface;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<SoftwareRenderer> m_renderer;

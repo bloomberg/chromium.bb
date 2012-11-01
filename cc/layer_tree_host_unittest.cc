@@ -2863,7 +2863,7 @@ public:
             implThread()->postTask(base::Bind(&LayerTreeHostTestLostContextAfterEvictTextures::evictTexturesOnImplThread,
                                               base::Unretained(this)));
         } else {
-            DebugScopedSetImplThread impl(proxy());
+            DebugScopedSetImplThread impl;
             evictTexturesOnImplThread();
         }
     }

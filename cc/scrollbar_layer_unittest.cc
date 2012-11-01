@@ -45,6 +45,8 @@ public:
 
 TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 {
+    DebugScopedSetImplThread impl;
+
     WebKit::WebScrollbarThemePainter painter;
 
     {
@@ -84,6 +86,8 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 
 TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
 {
+    DebugScopedSetImplThread impl;
+
     WebKit::WebScrollbarThemePainter painter;
 
     scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());

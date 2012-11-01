@@ -15,7 +15,6 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/fake_layer_tree_host_client.h"
-#include "cc/test/fake_proxy.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,38 +49,34 @@ private:
 class TiledLayerTest : public testing::Test {
 public:
     TiledLayerTest()
-        : m_proxy(NULL)
-        , m_context(WebKit::createFakeGraphicsContext())
+        : m_context(WebKit::createFakeGraphicsContext())
         , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
+        , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool))
         , m_occlusion(0)
     {
-    }
-
-    virtual void SetUp()
-    {
-        m_layerTreeHost = LayerTreeHost::create(&m_fakeLayerImplTreeHostClient, m_settings, scoped_ptr<Thread>(NULL));
-        m_proxy = m_layerTreeHost->proxy();
-        m_textureManager = PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool, m_proxy);
-        m_layerTreeHost->initializeRendererIfNeeded();
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         m_resourceProvider = ResourceProvider::create(m_context.get());
     }
 
     virtual ~TiledLayerTest()
     {
         textureManagerClearAllMemory(m_textureManager.get(), m_resourceProvider.get());
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         m_resourceProvider.reset();
     }
 
+    // Helper classes and functions that set the current thread to be the impl thread
+    // before doing the action that they wrap.
     class ScopedFakeTiledLayerImpl {
     public:
         ScopedFakeTiledLayerImpl(int id)
         {
+            DebugScopedSetImplThread implThread;
             m_layerImpl = new FakeTiledLayerImpl(id);
         }
         ~ScopedFakeTiledLayerImpl()
         {
+            DebugScopedSetImplThread implThread;
             delete m_layerImpl;
         }
         FakeTiledLayerImpl* get()
@@ -97,32 +92,31 @@ public:
     };
     void textureManagerClearAllMemory(PrioritizedTextureManager* textureManager, ResourceProvider* resourceProvider)
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         textureManager->clearAllMemory(resourceProvider);
         textureManager->reduceMemory(resourceProvider);
     }
     void updateTextures()
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         DCHECK(m_queue);
         scoped_ptr<ResourceUpdateController> updateController =
             ResourceUpdateController::create(
                 NULL,
-                m_proxy->implThread(),
+                Proxy::implThread(),
                 m_queue.Pass(),
-                m_resourceProvider.get(),
-                m_proxy->hasImplThread());
+                m_resourceProvider.get());
         updateController->finalize();
         m_queue = make_scoped_ptr(new ResourceUpdateQueue);
     }
     void layerPushPropertiesTo(FakeTiledLayer* layer, FakeTiledLayerImpl* layerImpl)
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         layer->pushPropertiesTo(layerImpl);
     }
     void layerUpdate(FakeTiledLayer* layer, TestOcclusionTracker* occluded)
     {
-        DebugScopedSetMainThread mainThread(m_proxy);
+        DebugScopedSetMainThread mainThread;
         layer->update(*m_queue.get(), occluded, m_stats);
     }
 
@@ -162,15 +156,11 @@ public:
     }
 
 public:
-    Proxy* m_proxy;
-    LayerTreeSettings m_settings;
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
     RenderingStats m_stats;
     PriorityCalculator m_priorityCalculator;
-    FakeLayerImplTreeHostClient m_fakeLayerImplTreeHostClient;
-    scoped_ptr<LayerTreeHost> m_layerTreeHost;
     scoped_ptr<PrioritizedTextureManager> m_textureManager;
     TestOcclusionTracker* m_occlusion;
 };
@@ -522,7 +512,7 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
     // Create a LayerTreeHost that has the right viewportsize,
     // so the layer is considered small enough.
     FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
-    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, LayerTreeSettings(), scoped_ptr<Thread>(NULL));
+    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, LayerTreeSettings());
 
     bool runOutOfMemory[2] = {false, true};
     for (int i = 0; i < 2; i++) {
@@ -788,6 +778,10 @@ TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
 
 TEST_F(TiledLayerTest, skipsDrawGetsReset)
 {
+    FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
+    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, LayerTreeSettings());
+    ASSERT_TRUE(layerTreeHost->initializeRendererIfNeeded());
+
     // Create two 300 x 300 tiled layers.
     gfx::Size contentBounds(300, 300);
     gfx::Rect contentRect(gfx::Point(), contentBounds);
@@ -795,8 +789,8 @@ TEST_F(TiledLayerTest, skipsDrawGetsReset)
     // We have enough memory for only one of the two layers.
     int memoryLimit = 4 * 300 * 300; // 4 bytes per pixel.
 
-    scoped_refptr<FakeTiledLayer> rootLayer = make_scoped_refptr(new FakeTiledLayer(m_layerTreeHost->contentsTextureManager()));
-    scoped_refptr<FakeTiledLayer> childLayer = make_scoped_refptr(new FakeTiledLayer(m_layerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayer> rootLayer = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayer> childLayer = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
     rootLayer->addChild(childLayer);
 
     rootLayer->setBounds(contentBounds);
@@ -808,25 +802,25 @@ TEST_F(TiledLayerTest, skipsDrawGetsReset)
     rootLayer->invalidateContentRect(contentRect);
     childLayer->invalidateContentRect(contentRect);
 
-    m_layerTreeHost->setRootLayer(rootLayer);
-    m_layerTreeHost->setViewportSize(gfx::Size(300, 300), gfx::Size(300, 300));
+    layerTreeHost->setRootLayer(rootLayer);
+    layerTreeHost->setViewportSize(gfx::Size(300, 300), gfx::Size(300, 300));
 
-    m_layerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
+    layerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
 
     // We'll skip the root layer.
     EXPECT_TRUE(rootLayer->skipsDraw());
     EXPECT_FALSE(childLayer->skipsDraw());
 
-    m_layerTreeHost->commitComplete();
+    layerTreeHost->commitComplete();
 
     // Remove the child layer.
     rootLayer->removeAllChildren();
 
-    m_layerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
+    layerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
     EXPECT_FALSE(rootLayer->skipsDraw());
 
-    textureManagerClearAllMemory(m_layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
-    m_layerTreeHost->setRootLayer(0);
+    textureManagerClearAllMemory(layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
+    layerTreeHost->setRootLayer(0);
 }
 
 TEST_F(TiledLayerTest, resizeToSmaller)
@@ -858,6 +852,115 @@ TEST_F(TiledLayerTest, hugeLayerUpdateCrash)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), 0, m_stats);
+}
+
+TEST_F(TiledLayerTest, partialUpdates)
+{
+    LayerTreeSettings settings;
+    settings.maxPartialTextureUpdates = 4;
+
+    FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
+    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, settings);
+    ASSERT_TRUE(layerTreeHost->initializeRendererIfNeeded());
+
+    // Create one 300 x 200 tiled layer with 3 x 2 tiles.
+    gfx::Size contentBounds(300, 200);
+    gfx::Rect contentRect(gfx::Point(), contentBounds);
+
+    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
+    layer->setBounds(contentBounds);
+    layer->setPosition(gfx::PointF(0, 0));
+    layer->setVisibleContentRect(contentRect);
+    layer->invalidateContentRect(contentRect);
+
+    layerTreeHost->setRootLayer(layer);
+    layerTreeHost->setViewportSize(gfx::Size(300, 200), gfx::Size(300, 200));
+
+    // Full update of all 6 tiles.
+    layerTreeHost->updateLayers(
+        *m_queue.get(), std::numeric_limits<size_t>::max());
+    {
+        ScopedFakeTiledLayerImpl layerImpl(1);
+        EXPECT_EQ(6, m_queue->fullUploadSize());
+        EXPECT_EQ(0, m_queue->partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        layer->fakeLayerUpdater()->clearUpdateCount();
+        layerPushPropertiesTo(layer.get(), layerImpl.get());
+    }
+    layerTreeHost->commitComplete();
+
+    // Full update of 3 tiles and partial update of 3 tiles.
+    layer->invalidateContentRect(gfx::Rect(0, 0, 300, 150));
+    layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+    {
+        ScopedFakeTiledLayerImpl layerImpl(1);
+        EXPECT_EQ(3, m_queue->fullUploadSize());
+        EXPECT_EQ(3, m_queue->partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        layer->fakeLayerUpdater()->clearUpdateCount();
+        layerPushPropertiesTo(layer.get(), layerImpl.get());
+    }
+    layerTreeHost->commitComplete();
+
+    // Partial update of 6 tiles.
+    layer->invalidateContentRect(gfx::Rect(50, 50, 200, 100));
+    {
+        ScopedFakeTiledLayerImpl layerImpl(1);
+        layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        EXPECT_EQ(2, m_queue->fullUploadSize());
+        EXPECT_EQ(4, m_queue->partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        layer->fakeLayerUpdater()->clearUpdateCount();
+        layerPushPropertiesTo(layer.get(), layerImpl.get());
+    }
+    layerTreeHost->commitComplete();
+
+    // Checkerboard all tiles.
+    layer->invalidateContentRect(gfx::Rect(0, 0, 300, 200));
+    {
+        ScopedFakeTiledLayerImpl layerImpl(1);
+        layerPushPropertiesTo(layer.get(), layerImpl.get());
+    }
+    layerTreeHost->commitComplete();
+
+    // Partial update of 6 checkerboard tiles.
+    layer->invalidateContentRect(gfx::Rect(50, 50, 200, 100));
+    {
+        ScopedFakeTiledLayerImpl layerImpl(1);
+        layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        EXPECT_EQ(6, m_queue->fullUploadSize());
+        EXPECT_EQ(0, m_queue->partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        layer->fakeLayerUpdater()->clearUpdateCount();
+        layerPushPropertiesTo(layer.get(), layerImpl.get());
+    }
+    layerTreeHost->commitComplete();
+
+    // Partial update of 4 tiles.
+    layer->invalidateContentRect(gfx::Rect(50, 50, 100, 100));
+    {
+        ScopedFakeTiledLayerImpl layerImpl(1);
+        layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        EXPECT_EQ(0, m_queue->fullUploadSize());
+        EXPECT_EQ(4, m_queue->partialUploadSize());
+        updateTextures();
+        EXPECT_EQ(4, layer->fakeLayerUpdater()->updateCount());
+        EXPECT_FALSE(m_queue->hasMoreUpdates());
+        layer->fakeLayerUpdater()->clearUpdateCount();
+        layerPushPropertiesTo(layer.get(), layerImpl.get());
+    }
+    layerTreeHost->commitComplete();
+
+    textureManagerClearAllMemory(layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
+    layerTreeHost->setRootLayer(0);
 }
 
 TEST_F(TiledLayerTest, tilesPaintedWithoutOcclusion)
@@ -1278,10 +1381,15 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     gfx::Rect childRect(0, 0, 300, 100);
     gfx::Rect child2Rect(0, 100, 300, 100);
 
-    scoped_refptr<FakeTiledLayer> root = make_scoped_refptr(new FakeTiledLayer(m_layerTreeHost->contentsTextureManager()));
+    LayerTreeSettings settings;
+    FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
+    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, settings);
+    ASSERT_TRUE(layerTreeHost->initializeRendererIfNeeded());
+
+    scoped_refptr<FakeTiledLayer> root = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
     scoped_refptr<Layer> surface = Layer::create();
-    scoped_refptr<FakeTiledLayer> child = make_scoped_refptr(new FakeTiledLayer(m_layerTreeHost->contentsTextureManager()));
-    scoped_refptr<FakeTiledLayer> child2 = make_scoped_refptr(new FakeTiledLayer(m_layerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayer> child = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayer> child2 = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
 
     root->setBounds(rootRect.size());
     root->setAnchorPoint(gfx::PointF());
@@ -1307,14 +1415,14 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     child2->setVisibleContentRect(child2Rect);
     child2->setDrawableContentRect(rootRect);
 
-    m_layerTreeHost->setRootLayer(root);
-    m_layerTreeHost->setViewportSize(rootRect.size(), rootRect.size());
+    layerTreeHost->setRootLayer(root);
+    layerTreeHost->setViewportSize(rootRect.size(), rootRect.size());
 
     // With a huge memory limit, all layers should update and push their textures.
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    m_layerTreeHost->updateLayers(
+    layerTreeHost->updateLayers(
         *m_queue.get(), std::numeric_limits<size_t>::max());
     {
         updateTextures();
@@ -1341,7 +1449,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_TRUE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    m_layerTreeHost->commitComplete();
+    layerTreeHost->commitComplete();
 
     // With a memory limit that includes only the root layer (3x2 tiles) and half the surface that
     // the child layers draw into, the child layers will not be allocated. If the surface isn't
@@ -1349,7 +1457,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    m_layerTreeHost->updateLayers(
+    layerTreeHost->updateLayers(
         *m_queue.get(), (3 * 2 + 3 * 1) * (100 * 100) * 4);
     {
         updateTextures();
@@ -1376,7 +1484,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    m_layerTreeHost->commitComplete();
+    layerTreeHost->commitComplete();
 
     // With a memory limit that includes only half the root layer, no contents will be
     // allocated. If render surface memory wasn't accounted for, there is enough space
@@ -1385,7 +1493,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    m_layerTreeHost->updateLayers(
+    layerTreeHost->updateLayers(
         *m_queue.get(), (3 * 1) * (100 * 100) * 4);
     {
         updateTextures();
@@ -1412,10 +1520,10 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    m_layerTreeHost->commitComplete();
+    layerTreeHost->commitComplete();
 
-    textureManagerClearAllMemory(m_layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
-    m_layerTreeHost->setRootLayer(0);
+    textureManagerClearAllMemory(layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
+    layerTreeHost->setRootLayer(0);
 }
 
 class TrackingLayerPainter : public LayerPainter {
@@ -1517,116 +1625,6 @@ TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringInvalidation)
     layer->update(*m_queue.get(), 0, m_stats);
 
     EXPECT_RECT_EQ(layerRect, layer->trackingLayerPainter()->paintedRect());
-}
-
-class TiledLayerPartialUpdateTest : public TiledLayerTest {
-public:
-    TiledLayerPartialUpdateTest()
-    {
-        m_settings.maxPartialTextureUpdates = 4;
-    }
-};
-
-TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
-{
-    // Create one 300 x 200 tiled layer with 3 x 2 tiles.
-    gfx::Size contentBounds(300, 200);
-    gfx::Rect contentRect(gfx::Point(), contentBounds);
-
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_layerTreeHost->contentsTextureManager()));
-    layer->setBounds(contentBounds);
-    layer->setPosition(gfx::PointF(0, 0));
-    layer->setVisibleContentRect(contentRect);
-    layer->invalidateContentRect(contentRect);
-
-    m_layerTreeHost->setRootLayer(layer);
-    m_layerTreeHost->setViewportSize(gfx::Size(300, 200), gfx::Size(300, 200));
-
-    // Full update of all 6 tiles.
-    m_layerTreeHost->updateLayers(
-        *m_queue.get(), std::numeric_limits<size_t>::max());
-    {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        EXPECT_EQ(6, m_queue->fullUploadSize());
-        EXPECT_EQ(0, m_queue->partialUploadSize());
-        updateTextures();
-        EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
-        layer->fakeLayerUpdater()->clearUpdateCount();
-        layerPushPropertiesTo(layer.get(), layerImpl.get());
-    }
-    m_layerTreeHost->commitComplete();
-
-    // Full update of 3 tiles and partial update of 3 tiles.
-    layer->invalidateContentRect(gfx::Rect(0, 0, 300, 150));
-    m_layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
-    {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        EXPECT_EQ(3, m_queue->fullUploadSize());
-        EXPECT_EQ(3, m_queue->partialUploadSize());
-        updateTextures();
-        EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
-        layer->fakeLayerUpdater()->clearUpdateCount();
-        layerPushPropertiesTo(layer.get(), layerImpl.get());
-    }
-    m_layerTreeHost->commitComplete();
-
-    // Partial update of 6 tiles.
-    layer->invalidateContentRect(gfx::Rect(50, 50, 200, 100));
-    {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        m_layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
-        EXPECT_EQ(2, m_queue->fullUploadSize());
-        EXPECT_EQ(4, m_queue->partialUploadSize());
-        updateTextures();
-        EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
-        layer->fakeLayerUpdater()->clearUpdateCount();
-        layerPushPropertiesTo(layer.get(), layerImpl.get());
-    }
-    m_layerTreeHost->commitComplete();
-
-    // Checkerboard all tiles.
-    layer->invalidateContentRect(gfx::Rect(0, 0, 300, 200));
-    {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        layerPushPropertiesTo(layer.get(), layerImpl.get());
-    }
-    m_layerTreeHost->commitComplete();
-
-    // Partial update of 6 checkerboard tiles.
-    layer->invalidateContentRect(gfx::Rect(50, 50, 200, 100));
-    {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        m_layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
-        EXPECT_EQ(6, m_queue->fullUploadSize());
-        EXPECT_EQ(0, m_queue->partialUploadSize());
-        updateTextures();
-        EXPECT_EQ(6, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
-        layer->fakeLayerUpdater()->clearUpdateCount();
-        layerPushPropertiesTo(layer.get(), layerImpl.get());
-    }
-    m_layerTreeHost->commitComplete();
-
-    // Partial update of 4 tiles.
-    layer->invalidateContentRect(gfx::Rect(50, 50, 100, 100));
-    {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        m_layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
-        EXPECT_EQ(0, m_queue->fullUploadSize());
-        EXPECT_EQ(4, m_queue->partialUploadSize());
-        updateTextures();
-        EXPECT_EQ(4, layer->fakeLayerUpdater()->updateCount());
-        EXPECT_FALSE(m_queue->hasMoreUpdates());
-        layer->fakeLayerUpdater()->clearUpdateCount();
-        layerPushPropertiesTo(layer.get(), layerImpl.get());
-    }
-    m_layerTreeHost->commitComplete();
-
-    textureManagerClearAllMemory(m_layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
-    m_layerTreeHost->setRootLayer(0);
 }
 
 } // namespace

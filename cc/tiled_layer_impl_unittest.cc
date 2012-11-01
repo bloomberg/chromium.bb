@@ -46,6 +46,8 @@ static scoped_ptr<TiledLayerImpl> createLayer(const gfx::Size& tileSize, const g
 
 TEST(TiledLayerImplTest, emptyQuadList)
 {
+    DebugScopedSetImplThread scopedImplThread;
+
     const gfx::Size tileSize(90, 90);
     const int numTilesX = 8;
     const int numTilesY = 4;
@@ -99,6 +101,8 @@ TEST(TiledLayerImplTest, emptyQuadList)
 
 TEST(TiledLayerImplTest, checkerboarding)
 {
+    DebugScopedSetImplThread scopedImplThread;
+
     const gfx::Size tileSize(10, 10);
     const int numTilesX = 2;
     const int numTilesY = 2;
@@ -158,6 +162,8 @@ static void getQuads(QuadList& quads, SharedQuadStateList& sharedStates, gfx::Si
 
 static void coverageVisibleRectOnTileBoundaries(LayerTilingData::BorderTexelOption borders)
 {
+    DebugScopedSetImplThread scopedImplThread;
+
     gfx::Size layerSize(1000, 1000);
     QuadList quads;
     SharedQuadStateList sharedStates;
@@ -168,6 +174,8 @@ WITH_AND_WITHOUT_BORDER_TEST(coverageVisibleRectOnTileBoundaries);
 
 static void coverageVisibleRectIntersectsTiles(LayerTilingData::BorderTexelOption borders)
 {
+    DebugScopedSetImplThread scopedImplThread;
+
     // This rect intersects the middle 3x3 of the 5x5 tiles.
     gfx::Point topLeft(65, 73);
     gfx::Point bottomRight(182, 198);
@@ -183,6 +191,8 @@ WITH_AND_WITHOUT_BORDER_TEST(coverageVisibleRectIntersectsTiles);
 
 static void coverageVisibleRectIntersectsBounds(LayerTilingData::BorderTexelOption borders)
 {
+    DebugScopedSetImplThread scopedImplThread;
+
     gfx::Size layerSize(220, 210);
     gfx::Rect visibleContentRect(gfx::Point(), layerSize);
     QuadList quads;
@@ -194,6 +204,8 @@ WITH_AND_WITHOUT_BORDER_TEST(coverageVisibleRectIntersectsBounds);
 
 TEST(TiledLayerImplTest, textureInfoForLayerNoBorders)
 {
+    DebugScopedSetImplThread scopedImplThread;
+
     gfx::Size tileSize(50, 50);
     gfx::Size layerSize(250, 250);
     QuadList quads;
@@ -213,6 +225,8 @@ TEST(TiledLayerImplTest, textureInfoForLayerNoBorders)
 
 TEST(TiledLayerImplTest, tileOpaqueRectForLayerNoBorders)
 {
+    DebugScopedSetImplThread scopedImplThread;
+
     gfx::Size tileSize(50, 50);
     gfx::Size layerSize(250, 250);
     QuadList quads;

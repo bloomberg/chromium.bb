@@ -24,7 +24,6 @@
 #include "cc/overdraw_metrics.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
-#include "cc/thread.h"
 #include "cc/thread_proxy.h"
 #include "cc/tree_synchronizer.h"
 
@@ -84,10 +83,10 @@ bool LayerTreeHost::anyLayerTreeHostInstanceExists()
     return numLayerTreeInstances > 0;
 }
 
-scoped_ptr<LayerTreeHost> LayerTreeHost::create(LayerTreeHostClient* client, const LayerTreeSettings& settings, scoped_ptr<Thread> implThread)
+scoped_ptr<LayerTreeHost> LayerTreeHost::create(LayerTreeHostClient* client, const LayerTreeSettings& settings)
 {
     scoped_ptr<LayerTreeHost> layerTreeHost(new LayerTreeHost(client, settings));
-    if (!layerTreeHost->initialize(implThread.Pass()))
+    if (!layerTreeHost->initialize())
         return scoped_ptr<LayerTreeHost>();
     return layerTreeHost.Pass();
 }
@@ -113,15 +112,16 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSetting
     , m_hasTransparentBackground(false)
     , m_partialTextureUpdateRequests(0)
 {
+    DCHECK(Proxy::isMainThread());
     numLayerTreeInstances++;
 }
 
-bool LayerTreeHost::initialize(scoped_ptr<Thread> implThread)
+bool LayerTreeHost::initialize()
 {
     TRACE_EVENT0("cc", "LayerTreeHost::initialize");
 
-    if (implThread)
-        m_proxy = ThreadProxy::create(this, implThread.Pass());
+    if (Proxy::hasImplThread())
+        m_proxy = ThreadProxy::create(this);
     else
         m_proxy = SingleThreadProxy::create(this);
     m_proxy->start();
@@ -133,10 +133,11 @@ LayerTreeHost::~LayerTreeHost()
 {
     if (m_rootLayer)
         m_rootLayer->setLayerTreeHost(0);
-    DCHECK(m_proxy);
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(Proxy::isMainThread());
     TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
+    DCHECK(m_proxy.get());
     m_proxy->stop();
+    m_proxy.reset();
     numLayerTreeInstances--;
     RateLimiterMap::iterator it = m_rateLimiters.begin();
     if (it != m_rateLimiters.end())
@@ -163,7 +164,7 @@ void LayerTreeHost::initializeRenderer()
     // Update m_settings based on partial update capability.
     m_settings.maxPartialTextureUpdates = min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
 
-    m_contentsTextureManager = PrioritizedTextureManager::create(0, m_proxy->rendererCapabilities().maxTextureSize, Renderer::ContentPool, m_proxy.get());
+    m_contentsTextureManager = PrioritizedTextureManager::create(0, m_proxy->rendererCapabilities().maxTextureSize, Renderer::ContentPool);
     m_surfaceMemoryPlaceholder = m_contentsTextureManager->createTexture(gfx::Size(), GL_RGBA);
 
     m_rendererInitialized = true;
@@ -198,7 +199,7 @@ LayerTreeHost::RecreateResult LayerTreeHost::recreateContext()
         // FIXME: The single thread does not self-schedule context
         // recreation. So force another recreation attempt to happen by requesting
         // another commit.
-        if (!m_proxy->hasImplThread())
+        if (!Proxy::hasImplThread())
             setNeedsCommit();
         return RecreateFailedButTryAgain;
     }
@@ -211,14 +212,14 @@ LayerTreeHost::RecreateResult LayerTreeHost::recreateContext()
 
 void LayerTreeHost::deleteContentsTexturesOnImplThread(ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     if (m_rendererInitialized)
         m_contentsTextureManager->clearAllMemory(resourceProvider);
 }
 
 void LayerTreeHost::acquireLayerTextures()
 {
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(Proxy::isMainThread());
     m_proxy->acquireLayerTextures();
 }
 
@@ -239,7 +240,7 @@ void LayerTreeHost::layout()
 
 void LayerTreeHost::beginCommitOnImplThread(LayerTreeHostImpl* hostImpl)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     TRACE_EVENT0("cc", "LayerTreeHost::commitTo");
 }
 
@@ -250,7 +251,7 @@ void LayerTreeHost::beginCommitOnImplThread(LayerTreeHostImpl* hostImpl)
 // after the commit, but on the main thread.
 void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
 
     m_contentsTextureManager->updateBackingsInDrawingImplTree();
     ResourceProvider::debugNotifyEnterZone(0xA000000);
@@ -317,13 +318,13 @@ scoped_ptr<InputHandler> LayerTreeHost::createInputHandler()
 
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::createLayerTreeHostImpl(LayerTreeHostImplClient* client)
 {
-    return LayerTreeHostImpl::create(m_settings, client, m_proxy.get());
+    return LayerTreeHostImpl::create(m_settings, client);
 }
 
 void LayerTreeHost::didLoseContext()
 {
     TRACE_EVENT0("cc", "LayerTreeHost::didLoseContext");
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(Proxy::isMainThread());
     m_contextLost = true;
     m_numFailedRecreateAttempts = 0;
     setNeedsCommit();
@@ -366,7 +367,7 @@ const RendererCapabilities& LayerTreeHost::rendererCapabilities() const
 
 void LayerTreeHost::setNeedsAnimate()
 {
-    DCHECK(m_proxy->hasImplThread());
+    DCHECK(Proxy::hasImplThread());
     m_proxy->setNeedsAnimate();
 }
 
@@ -382,7 +383,7 @@ void LayerTreeHost::setNeedsCommit()
 void LayerTreeHost::setNeedsRedraw()
 {
     m_proxy->setNeedsRedraw();
-    if (!m_proxy->implThread())
+    if (!ThreadProxy::implThread())
         m_client->scheduleComposite();
 }
 
@@ -393,7 +394,7 @@ bool LayerTreeHost::commitRequested() const
 
 void LayerTreeHost::setAnimationEvents(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
 {
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(ThreadProxy::isMainThread());
     setAnimationEventsRecursive(*events.get(), m_rootLayer.get(), wallClockTime);
 }
 
@@ -469,7 +470,7 @@ PrioritizedTextureManager* LayerTreeHost::contentsTextureManager() const
 
 void LayerTreeHost::composite()
 {
-    DCHECK(!m_proxy->implThread());
+    DCHECK(!ThreadProxy::implThread());
     static_cast<SingleThreadProxy*>(m_proxy.get())->compositeImmediately();
 }
 
@@ -744,7 +745,7 @@ void LayerTreeHost::startRateLimiter(WebKit::WebGraphicsContext3D* context)
     if (it != m_rateLimiters.end())
         it->second->start();
     else {
-        scoped_refptr<RateLimiter> rateLimiter = RateLimiter::create(context, this, m_proxy->mainThread());
+        scoped_refptr<RateLimiter> rateLimiter = RateLimiter::create(context, this);
         m_rateLimiters[context] = rateLimiter;
         rateLimiter->start();
     }

@@ -17,9 +17,8 @@ using namespace std;
 
 namespace cc {
 
-PrioritizedTextureManager::PrioritizedTextureManager(size_t maxMemoryLimitBytes, int, int pool, const Proxy* proxy)
-    : m_proxy(proxy)
-    , m_maxMemoryLimitBytes(maxMemoryLimitBytes)
+PrioritizedTextureManager::PrioritizedTextureManager(size_t maxMemoryLimitBytes, int, int pool)
+    : m_maxMemoryLimitBytes(maxMemoryLimitBytes)
     , m_externalPriorityCutoff(PriorityCalculator::allowEverythingCutoff())
     , m_memoryUseBytes(0)
     , m_memoryAboveCutoffBytes(0)
@@ -47,20 +46,20 @@ PrioritizedTextureManager::~PrioritizedTextureManager()
 
 size_t PrioritizedTextureManager::memoryVisibleBytes() const
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     return m_memoryVisibleLastPushedBytes;
 }
 
 size_t PrioritizedTextureManager::memoryVisibleAndNearbyBytes() const
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     return m_memoryVisibleAndNearbyLastPushedBytes;
 }
 
 void PrioritizedTextureManager::prioritizeTextures()
 {
     TRACE_EVENT0("cc", "PrioritizedTextureManager::prioritizeTextures");
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(Proxy::isMainThread());
 
     // Sorting textures in this function could be replaced by a slightly
     // modified O(n) quick-select to partition textures rather than
@@ -136,7 +135,7 @@ void PrioritizedTextureManager::prioritizeTextures()
 void PrioritizedTextureManager::pushTexturePrioritiesToBackings()
 {
     TRACE_EVENT0("cc", "PrioritizedTextureManager::pushTexturePrioritiesToBackings");
-    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
 
     assertInvariants();
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it)
@@ -152,7 +151,7 @@ void PrioritizedTextureManager::pushTexturePrioritiesToBackings()
 void PrioritizedTextureManager::updateBackingsInDrawingImplTree()
 {
     TRACE_EVENT0("cc", "PrioritizedTextureManager::updateBackingsInDrawingImplTree");
-    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
 
     assertInvariants();
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
@@ -166,7 +165,7 @@ void PrioritizedTextureManager::updateBackingsInDrawingImplTree()
 void PrioritizedTextureManager::sortBackings()
 {
     TRACE_EVENT0("cc", "PrioritizedTextureManager::sortBackings");
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
 
     // Put backings in eviction/recycling order.
     m_backings.sort(compareBackings);
@@ -175,7 +174,7 @@ void PrioritizedTextureManager::sortBackings()
 
 void PrioritizedTextureManager::clearPriorities()
 {
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(Proxy::isMainThread());
     for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
         // FIXME: We should remove this and just set all priorities to
         //        PriorityCalculator::lowestPriority() once we have priorities
@@ -187,7 +186,7 @@ void PrioritizedTextureManager::clearPriorities()
 
 bool PrioritizedTextureManager::requestLate(PrioritizedTexture* texture)
 {
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(Proxy::isMainThread());
 
     // This is already above cutoff, so don't double count it's memory below.
     if (texture->isAbovePriorityCutoff())
@@ -212,7 +211,7 @@ bool PrioritizedTextureManager::requestLate(PrioritizedTexture* texture)
 
 void PrioritizedTextureManager::acquireBackingTextureIfNeeded(PrioritizedTexture* texture, ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
     DCHECK(!texture->isSelfManaged());
     DCHECK(texture->isAbovePriorityCutoff());
     if (texture->backing() || !texture->isAbovePriorityCutoff())
@@ -252,7 +251,7 @@ void PrioritizedTextureManager::acquireBackingTextureIfNeeded(PrioritizedTexture
 
 bool PrioritizedTextureManager::evictBackingsToReduceMemory(size_t limitBytes, int priorityCutoff, EvictionPolicy evictionPolicy, ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     if (memoryUseBytes() <= limitBytes && PriorityCalculator::allowEverythingCutoff() == priorityCutoff)
         return false;
 
@@ -272,7 +271,7 @@ bool PrioritizedTextureManager::evictBackingsToReduceMemory(size_t limitBytes, i
 
 void PrioritizedTextureManager::reduceMemory(ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
 
     // Note that it will not always be the case that memoryUseBytes() <= maxMemoryLimitBytes(),
     // because we are not at liberty to delete textures that are referenced by the impl tree to 
@@ -307,14 +306,14 @@ void PrioritizedTextureManager::reduceMemory(ResourceProvider* resourceProvider)
 
 void PrioritizedTextureManager::clearAllMemory(ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
     DCHECK(resourceProvider);
     evictBackingsToReduceMemory(0, PriorityCalculator::allowEverythingCutoff(), EvictAnything, resourceProvider);
 }
 
 bool PrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, int priorityCutoff, ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     DCHECK(resourceProvider);
     // If we are in the process of uploading a new frame then the backings at the very end of
     // the list are not sorted by priority. Sort them before doing the eviction.
@@ -325,14 +324,14 @@ bool PrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, int 
 
 void PrioritizedTextureManager::getEvictedBackings(BackingList& evictedBackings)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     evictedBackings.clear();
     evictedBackings.insert(evictedBackings.begin(), m_evictedBackings.begin(), m_evictedBackings.end());
 }
 
 void PrioritizedTextureManager::unlinkEvictedBackings(const BackingList& evictedBackings)
 {
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(Proxy::isMainThread());
     for (BackingList::const_iterator it = evictedBackings.begin(); it != evictedBackings.end(); ++it) {
         PrioritizedTexture::Backing* backing = (*it);
         if (backing->owner())
@@ -342,7 +341,7 @@ void PrioritizedTextureManager::unlinkEvictedBackings(const BackingList& evicted
 
 void PrioritizedTextureManager::deleteUnlinkedEvictedBackings()
 {
-    DCHECK(m_proxy->isMainThread() || (m_proxy->isImplThread() && m_proxy->isMainThreadBlocked()));
+    DCHECK(Proxy::isMainThread() || (Proxy::isImplThread() && Proxy::isMainThreadBlocked()));
     BackingList newEvictedBackings;
     for (BackingList::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
         PrioritizedTexture::Backing* backing = (*it);
@@ -365,7 +364,7 @@ bool PrioritizedTextureManager::linkedEvictedBackingsExist() const
 
 void PrioritizedTextureManager::registerTexture(PrioritizedTexture* texture)
 {
-    DCHECK(m_proxy->isMainThread());
+    DCHECK(Proxy::isMainThread());
     DCHECK(texture);
     DCHECK(!texture->textureManager());
     DCHECK(!texture->backing());
@@ -378,7 +377,7 @@ void PrioritizedTextureManager::registerTexture(PrioritizedTexture* texture)
 
 void PrioritizedTextureManager::unregisterTexture(PrioritizedTexture* texture)
 {
-    DCHECK(m_proxy->isMainThread() || (m_proxy->isImplThread() && m_proxy->isMainThreadBlocked()));
+    DCHECK(Proxy::isMainThread() || (Proxy::isImplThread() && Proxy::isMainThreadBlocked()));
     DCHECK(texture);
     DCHECK(ContainsKey(m_textures, texture));
 
@@ -390,14 +389,14 @@ void PrioritizedTextureManager::unregisterTexture(PrioritizedTexture* texture)
 
 void PrioritizedTextureManager::returnBackingTexture(PrioritizedTexture* texture)
 {
-    DCHECK(m_proxy->isMainThread() || (m_proxy->isImplThread() && m_proxy->isMainThreadBlocked()));
+    DCHECK(Proxy::isMainThread() || (Proxy::isImplThread() && Proxy::isMainThreadBlocked()));
     if (texture->backing())
         texture->unlink();
 }
 
 PrioritizedTexture::Backing* PrioritizedTextureManager::createBacking(gfx::Size size, GLenum format, ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
     DCHECK(resourceProvider);
     ResourceProvider::ResourceId resourceId = resourceProvider->createResource(m_pool, size, format, ResourceProvider::TextureUsageAny);
     PrioritizedTexture::Backing* backing = new PrioritizedTexture::Backing(resourceId, resourceProvider, size, format);
@@ -407,7 +406,7 @@ PrioritizedTexture::Backing* PrioritizedTextureManager::createBacking(gfx::Size 
 
 void PrioritizedTextureManager::evictFirstBackingResource(ResourceProvider* resourceProvider)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     DCHECK(resourceProvider);
     DCHECK(!m_backings.empty());
     PrioritizedTexture::Backing* backing = m_backings.front();
@@ -425,7 +424,7 @@ void PrioritizedTextureManager::evictFirstBackingResource(ResourceProvider* reso
 void PrioritizedTextureManager::assertInvariants()
 {
 #ifndef NDEBUG
-    DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
+    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
 
     // If we hit any of these asserts, there is a bug in this class. To see
     // where the bug is, call this function at the beginning and end of
@@ -471,11 +470,6 @@ void PrioritizedTextureManager::assertInvariants()
         previous_backing = backing;
     }
 #endif
-}
-
-const Proxy* PrioritizedTextureManager::proxyForDebug() const
-{
-    return m_proxy;
 }
 
 } // namespace cc

@@ -28,7 +28,7 @@ FontAtlas::~FontAtlas()
 
 void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
 
     std::vector<std::string> lines;
     base::SplitString(text, '\n', &lines);
@@ -44,7 +44,7 @@ void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::stri
 
 void FontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const std::string& textLine, const gfx::Point& destPosition) const
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
 
     gfx::Point position = destPosition;
     for (unsigned i = 0; i < textLine.length(); ++i) {
@@ -59,7 +59,7 @@ void FontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint
 
 void FontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPosition) const
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
 
     SkIRect source = SkIRect::MakeWH(m_atlas.width(), m_atlas.height());
     canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(destPosition.x(), destPosition.y(), m_atlas.width(), m_atlas.height()));

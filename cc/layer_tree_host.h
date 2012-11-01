@@ -93,7 +93,7 @@ struct RendererCapabilities {
 
 class LayerTreeHost : public RateLimiterClient {
 public:
-    static scoped_ptr<LayerTreeHost> create(LayerTreeHostClient*, const LayerTreeSettings&, scoped_ptr<Thread> implThread);
+    static scoped_ptr<LayerTreeHost> create(LayerTreeHostClient*, const LayerTreeSettings&);
     virtual ~LayerTreeHost();
 
     void setSurfaceReady();
@@ -212,11 +212,9 @@ public:
 
     HeadsUpDisplayLayer* hudLayer() const { return m_hudLayer.get(); }
 
-    Proxy* proxy() const { return m_proxy.get(); }
-
 protected:
     LayerTreeHost(LayerTreeHostClient*, const LayerTreeSettings&);
-    bool initialize(scoped_ptr<Thread> implThread);
+    bool initialize();
 
 private:
     typedef std::vector<scoped_refptr<Layer> > LayerList;
@@ -245,11 +243,11 @@ private:
     base::CancelableClosure m_prepaintCallback;
 
     LayerTreeHostClient* m_client;
-    scoped_ptr<Proxy> m_proxy;
 
     int m_commitNumber;
     RenderingStats m_renderingStats;
 
+    scoped_ptr<Proxy> m_proxy;
     bool m_rendererInitialized;
     bool m_contextLost;
     int m_numTimesRecreateShouldFail;

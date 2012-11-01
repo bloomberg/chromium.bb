@@ -15,7 +15,7 @@ namespace cc {
 // intelligently compute average frames per second (and standard deviation).
 class FrameRateCounter {
 public:
-    static scoped_ptr<FrameRateCounter> create(bool hasImplThread);
+    static scoped_ptr<FrameRateCounter> create();
 
     void markBeginningOfFrame(base::TimeTicks timestamp);
     void markEndOfFrame();
@@ -34,7 +34,7 @@ public:
     int droppedFrameCount() const { return m_droppedFrameCount; }
 
 private:
-    explicit FrameRateCounter(bool hasImplThread);
+    FrameRateCounter();
 
     base::TimeDelta frameInterval(int frameNumber) const;
     int frameIndex(int frameNumber) const;
@@ -52,8 +52,6 @@ private:
     static const double kDroppedFrameTime;
 
     static const int kTimeStampHistorySize = 120;
-
-    bool m_hasImplThread;
 
     int m_currentFrameNumber;
     base::TimeTicks m_timeStampHistory[kTimeStampHistorySize];

@@ -88,6 +88,7 @@ static void appendQuads(QuadList& quadList, SharedQuadStateList& sharedStateList
 }
 
 #define DECLARE_AND_INITIALIZE_TEST_QUADS               \
+    DebugScopedSetImplThread impl;                      \
     QuadList quadList;                                  \
     SharedQuadStateList sharedStateList;                \
     std::vector<LayerImpl*> renderSurfaceLayerList;     \

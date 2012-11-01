@@ -24,7 +24,6 @@ public:
     virtual void setFullRootLayerDamage() = 0;
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
-    virtual bool hasImplThread() const = 0;
 protected:
     virtual ~RendererClient() { }
 };

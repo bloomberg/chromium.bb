@@ -200,14 +200,13 @@ LayerTreeHostImpl::FrameData::~FrameData()
 {
 }
 
-scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::create(const LayerTreeSettings& settings, LayerTreeHostImplClient* client, Proxy* proxy)
+scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::create(const LayerTreeSettings& settings, LayerTreeHostImplClient* client)
 {
-    return make_scoped_ptr(new LayerTreeHostImpl(settings, client, proxy));
+    return make_scoped_ptr(new LayerTreeHostImpl(settings, client));
 }
 
-LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTreeHostImplClient* client, Proxy* proxy)
+LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTreeHostImplClient* client)
     : m_client(client)
-    , m_proxy(proxy)
     , m_sourceFrameNumber(-1)
     , m_rootScrollLayerImpl(0)
     , m_currentlyScrollingLayerImpl(0)
@@ -226,18 +225,18 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_hasTransparentBackground(false)
     , m_needsAnimateLayers(false)
     , m_pinchGestureActive(false)
-    , m_fpsCounter(FrameRateCounter::create(m_proxy->hasImplThread()))
+    , m_fpsCounter(FrameRateCounter::create())
     , m_debugRectHistory(DebugRectHistory::create())
     , m_numImplThreadScrolls(0)
     , m_numMainThreadScrolls(0)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     didVisibilityChange(this, m_visible);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl()
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
     TRACE_EVENT0("cc", "LayerTreeHostImpl::~LayerTreeHostImpl()");
 
     if (m_rootLayerImpl)
@@ -505,7 +504,7 @@ void LayerTreeHostImpl::setBackgroundTickingEnabled(bool enabled)
 {
     // Lazily create the timeSource adapter so that we can vary the interval for testing.
     if (!m_timeSourceClientAdapter)
-        m_timeSourceClientAdapter = LayerTreeHostImplTimeSourceAdapter::create(this, DelayBasedTimeSource::create(lowFrequencyAnimationInterval(), m_proxy->currentThread()));
+        m_timeSourceClientAdapter = LayerTreeHostImplTimeSourceAdapter::create(this, DelayBasedTimeSource::create(lowFrequencyAnimationInterval(), Proxy::currentThread()));
 
     m_timeSourceClientAdapter->setActive(enabled);
 }
@@ -650,20 +649,10 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
     m_client->sendManagedMemoryStats();
 }
 
-bool LayerTreeHostImpl::hasImplThread() const
-{
-    return m_proxy->hasImplThread();
-}
-
 void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
 {
     if (m_managedMemoryPolicy == policy)
         return;
-
-    // FIXME: In single-thread mode, this can be called on the main thread
-    // by GLRenderer::onMemoryAllocationChanged.
-    DebugScopedSetImplThread implThread(m_proxy);
-
     m_managedMemoryPolicy = policy;
     enforceManagedMemoryPolicy(m_managedMemoryPolicy);
     // We always need to commit after changing the memory policy because the new
@@ -830,7 +819,7 @@ scoped_ptr<LayerImpl> LayerTreeHostImpl::detachLayerTree()
 
 void LayerTreeHostImpl::setVisible(bool visible)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(Proxy::isImplThread());
 
     if (m_visible == visible)
         return;

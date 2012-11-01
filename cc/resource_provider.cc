@@ -14,6 +14,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/proxy.h"
 #include "cc/texture_uploader.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -137,13 +138,13 @@ ResourceProvider::~ResourceProvider()
 
 WebGraphicsContext3D* ResourceProvider::graphicsContext3D()
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     return m_context->context3D();
 }
 
 bool ResourceProvider::inUseByConsumer(ResourceId id)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -166,7 +167,7 @@ ResourceProvider::ResourceId ResourceProvider::createResource(int pool, const gf
 
 ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const gfx::Size& size, GLenum format, TextureUsageHint hint)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     unsigned textureId = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
     DCHECK(context3d);
@@ -192,7 +193,7 @@ ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const g
 
 ResourceProvider::ResourceId ResourceProvider::createBitmap(int pool, const gfx::Size& size)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
 
     uint8_t* pixels = new uint8_t[size.width() * size.height() * 4];
 
@@ -204,7 +205,7 @@ ResourceProvider::ResourceId ResourceProvider::createBitmap(int pool, const gfx:
 
 ResourceProvider::ResourceId ResourceProvider::createResourceFromExternalTexture(unsigned textureId)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     DCHECK(m_context->context3D());
     ResourceId id = m_nextId++;
     Resource resource(textureId, 0, gfx::Size(), 0);
@@ -215,7 +216,7 @@ ResourceProvider::ResourceId ResourceProvider::createResourceFromExternalTexture
 
 void ResourceProvider::deleteResource(ResourceId id)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -247,7 +248,7 @@ void ResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
 
 void ResourceProvider::deleteOwnedResources(int pool)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceIdArray toDelete;
     for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
         if (it->second.pool == pool && !it->second.external && !it->second.markedForDeletion)
@@ -267,7 +268,7 @@ ResourceProvider::ResourceType ResourceProvider::resourceType(ResourceId id)
 
 void ResourceProvider::upload(ResourceId id, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -330,7 +331,7 @@ double ResourceProvider::estimatedUploadsPerSecond()
 
 void ResourceProvider::flush()
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (context3d)
         context3d->flush();
@@ -338,7 +339,7 @@ void ResourceProvider::flush()
 
 bool ResourceProvider::shallowFlushIfSupported()
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !m_useShallowFlush)
         return false;
@@ -349,7 +350,7 @@ bool ResourceProvider::shallowFlushIfSupported()
 
 const ResourceProvider::Resource* ResourceProvider::lockForRead(ResourceId id)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
 
     if (it == m_resources.end()) {
@@ -377,7 +378,7 @@ const ResourceProvider::Resource* ResourceProvider::lockForRead(ResourceId id)
 
 void ResourceProvider::unlockForRead(ResourceId id)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -388,7 +389,7 @@ void ResourceProvider::unlockForRead(ResourceId id)
 
 const ResourceProvider::Resource* ResourceProvider::lockForWrite(ResourceId id)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -402,7 +403,7 @@ const ResourceProvider::Resource* ResourceProvider::lockForWrite(ResourceId id)
 
 void ResourceProvider::unlockForWrite(ResourceId id)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -485,7 +486,7 @@ ResourceProvider::ResourceProvider(GraphicsContext* context)
 
 bool ResourceProvider::initialize()
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d) {
         m_maxTextureSize = INT_MAX / 2;
@@ -521,7 +522,7 @@ bool ResourceProvider::initialize()
 
 int ResourceProvider::createChild(int pool)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     Child childInfo;
     childInfo.pool = pool;
     int child = m_nextChild++;
@@ -531,7 +532,7 @@ int ResourceProvider::createChild(int pool)
 
 void ResourceProvider::destroyChild(int child)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ChildMap::iterator it = m_children.find(child);
     DCHECK(it != m_children.end());
     deleteOwnedResources(it->second.pool);
@@ -541,7 +542,7 @@ void ResourceProvider::destroyChild(int child)
 
 const ResourceProvider::ResourceIdMap& ResourceProvider::getChildToParentMap(int child) const
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ChildMap::const_iterator it = m_children.find(child);
     DCHECK(it != m_children.end());
     return it->second.childToParentMap;
@@ -549,7 +550,7 @@ const ResourceProvider::ResourceIdMap& ResourceProvider::getChildToParentMap(int
 
 ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToParent(const ResourceIdArray& resources)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     TransferableResourceList list;
     list.syncPoint = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
@@ -571,7 +572,7 @@ ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToParent
 
 ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToChild(int child, const ResourceIdArray& resources)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     TransferableResourceList list;
     list.syncPoint = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
@@ -598,7 +599,7 @@ ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToChild(
 
 void ResourceProvider::receiveFromChild(int child, const TransferableResourceList& resources)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent()) {
         // FIXME: Implement this path for software compositing.
@@ -630,7 +631,7 @@ void ResourceProvider::receiveFromChild(int child, const TransferableResourceLis
 
 void ResourceProvider::receiveFromParent(const TransferableResourceList& resources)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent()) {
         // FIXME: Implement this path for software compositing.
@@ -654,7 +655,7 @@ void ResourceProvider::receiveFromParent(const TransferableResourceList& resourc
 
 bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceId id, TransferableResource* resource)
 {
-    DCHECK(m_threadChecker.CalledOnValidThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::const_iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     const Resource* source = &it->second;
