@@ -181,6 +181,10 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   bool IsExternalExtensionAcknowledged(const std::string& extension_id);
   void AcknowledgeExternalExtension(const std::string& extension_id);
 
+  // Whether the extension has been marked as excluded from the the sideload
+  // wipeout initiative.
+  bool IsExternalExtensionExcludedFromWipeout(const std::string& extension_id);
+
   // Whether the user has acknowledged a blacklisted extension.
   bool IsBlacklistedExtensionAcknowledged(const std::string& extension_id);
   void AcknowledgeBlacklistedExtension(const std::string& extension_id);

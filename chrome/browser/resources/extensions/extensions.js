@@ -243,10 +243,12 @@ cr.define('extensions', function() {
     }
 
     var pageDiv = $('extension-settings');
+    var marginTop = 0;
     if (extensionsData.managedMode) {
       pageDiv.classList.add('showing-banner');
       pageDiv.classList.add('managed-mode');
       $('toggle-dev-on').disabled = true;
+      marginTop += 45;
     } else {
       pageDiv.classList.remove('showing-banner');
       pageDiv.classList.remove('managed-mode');
@@ -256,11 +258,9 @@ cr.define('extensions', function() {
     if (extensionsData.showDisabledExtensionsWarning) {
       pageDiv.classList.add('showing-banner');
       pageDiv.classList.add('sideload-wipeout');
-
-      // If we have two banners showing, make sure to have the room for both.
-      if (pageDiv.classList.contains('managed-mode'))
-        pageDiv.style.marginTop = '105px';
+      marginTop += 60;
     }
+    pageDiv.style.marginTop = marginTop + 'px';
 
     if (extensionsData.developerMode && !extensionsData.managedMode) {
       pageDiv.classList.add('dev-mode');

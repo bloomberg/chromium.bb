@@ -590,6 +590,12 @@ bool ExtensionPrefs::IsExternalExtensionAcknowledged(
   return ReadExtensionPrefBoolean(extension_id, kPrefExternalAcknowledged);
 }
 
+bool ExtensionPrefs::IsExternalExtensionExcludedFromWipeout(
+    const std::string& extension_id) {
+  return ReadExtensionPrefBoolean(extension_id,
+                                  kPrefExcludeFromSideloadWipeout);
+}
+
 void ExtensionPrefs::AcknowledgeExternalExtension(
     const std::string& extension_id) {
   DCHECK(Extension::IdIsValid(extension_id));

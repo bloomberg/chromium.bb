@@ -2194,7 +2194,8 @@ void ExtensionService::MaybeWipeout(
   if (!FeatureSwitch::sideload_wipeout()->IsEnabled())
     return;
 
-  bool done = extension_prefs_->GetSideloadWipeoutDone();
+  bool done = extension_prefs_->GetSideloadWipeoutDone() ||
+      extension_prefs_->IsExternalExtensionExcludedFromWipeout(extension->id());
   if (done)
     return;
 
