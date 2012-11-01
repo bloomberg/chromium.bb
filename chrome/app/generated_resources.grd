@@ -5933,7 +5933,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Tab Overview
       </message>
       <message name="IDS_FLAGS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
-        Swipe down with three fingers on your trackpad to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
+        Swipe down with three fingers on your trackpad while holding the option key to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
       </message>
       <message name="IDS_FLAGS_STACKED_TAB_STRIP_NAME" desc="Name of the 'Stacked Tabs' lab.">
         Stacked Tabs
