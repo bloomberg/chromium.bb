@@ -4554,9 +4554,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_PERFORMANCE_MONITOR_EXTENSION_DISABLE_EVENT_MOUSEOVER" desc="Text displayed on mouseover of an Extension Disable event.">
         Extension Disabled
       </message>
-      <message name="IDS_PERFORMANCE_MONITOR_CHROME_EVENT_CATEGORY" desc="Text displayed for the Chrome/Chromium events category title">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-      </message>
       <message name="IDS_PERFORMANCE_MONITOR_CHROME_EVENT_CATEGORY_DESCRIPTION" desc="Text displayed on mouseover of the Chrome event category.">
         Events that are related to the <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> system.
       </message>
