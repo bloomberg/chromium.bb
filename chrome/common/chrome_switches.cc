@@ -1605,7 +1605,8 @@ bool IsFramelessConstrainedDialogEnabled() {
 #if defined(OS_MACOSX)
   return true;
 #elif defined(OS_WIN)
-  return true;
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableFramelessConstrainedDialogs);
 #else
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFramelessConstrainedDialogs);

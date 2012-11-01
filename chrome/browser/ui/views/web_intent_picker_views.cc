@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -1084,7 +1083,7 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       choose_another_service_link_(NULL),
       waiting_view_(NULL),
       can_close_(true) {
-  bool enable_chrome_style = chrome::IsFramelessConstrainedDialogEnabled();
+  bool enable_chrome_style = true;
   use_close_button_ = enable_chrome_style;
 
   model_->set_observer(this);

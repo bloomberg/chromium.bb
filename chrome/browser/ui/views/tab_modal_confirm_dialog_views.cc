@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
 
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -25,8 +24,7 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
   return new TabModalConfirmDialogViews(
       delegate,
       tab_contents,
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFramelessConstrainedDialogs));
+      chrome::IsFramelessConstrainedDialogEnabled());
 }
 
 namespace {

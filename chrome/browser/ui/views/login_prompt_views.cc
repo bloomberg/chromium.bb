@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/login/login_prompt.h"
 
-#include "base/command_line.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -37,8 +36,7 @@ class LoginHandlerViews : public LoginHandler,
  public:
   LoginHandlerViews(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
-        enable_chrome_style_(CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableFramelessConstrainedDialogs)),
+        enable_chrome_style_(chrome::IsFramelessConstrainedDialogEnabled()),
         login_view_(NULL) {
   }
 

@@ -360,7 +360,14 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
 }
 
 void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
-  if (!chrome::IsFramelessConstrainedDialogEnabled()) {
+  // TODO(wittman): Remove this function entirely once new style constrained
+  // window is enabled on the other platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  return;
+#endif
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableFramelessConstrainedDialogs)) {
     bool already_deemphasized = !!dimmed_color_overlay_.get();
     if (already_deemphasized == deemphasized)
       return;

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
@@ -55,8 +54,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       accepted_(false),
       // Enable this once chrome style constrained windows work on shell
       // windows. http://crbug.com/156694
-      enable_chrome_style_(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFramelessConstrainedDialogs)) {
+      enable_chrome_style_(IsFramelessConstrainedDialogEnabled()) {
   InitChildViews();
 
   // Ownership of |contents_| is handed off by this call. |window_| will take
