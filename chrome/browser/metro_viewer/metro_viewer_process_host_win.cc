@@ -40,6 +40,7 @@ bool MetroViewerProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseButton, OnMouseButton)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyDown, OnKeyDown)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyUp, OnKeyUp)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_Character, OnChar)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -76,14 +77,24 @@ void MetroViewerProcessHost::OnMouseButton(int32 x, int32 y, int32 modifiers) {
 
 void MetroViewerProcessHost::OnKeyDown(uint32 vkey,
                                        uint32 repeat_count,
-                                       uint32 scan_code) {
+                                       uint32 scan_code,
+                                       uint32 flags) {
   aura::RemoteRootWindowHostWin::Instance()->OnKeyDown(
-      vkey, repeat_count, scan_code);
+      vkey, repeat_count, scan_code, flags);
 }
 
 void MetroViewerProcessHost::OnKeyUp(uint32 vkey,
                                      uint32 repeat_count,
-                                     uint32 scan_code) {
+                                     uint32 scan_code,
+                                     uint32 flags) {
   aura::RemoteRootWindowHostWin::Instance()->OnKeyUp(
-      vkey, repeat_count, scan_code);
+      vkey, repeat_count, scan_code, flags);
+}
+
+void MetroViewerProcessHost::OnChar(uint32 key_code,
+                                    uint32 repeat_count,
+                                    uint32 scan_code,
+                                    uint32 flags) {
+  aura::RemoteRootWindowHostWin::Instance()->OnChar(
+      key_code, repeat_count, scan_code, flags);
 }

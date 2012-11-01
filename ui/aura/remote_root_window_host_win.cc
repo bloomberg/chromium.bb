@@ -162,19 +162,34 @@ void RemoteRootWindowHostWin::OnMouseClick(int32 x, int32 y, int32 extra) {
 
 void RemoteRootWindowHostWin::OnKeyDown(uint32 vkey,
                                         uint32 repeat_count,
-                                        uint32 scan_code) {
+                                        uint32 scan_code,
+                                        uint32 flags) {
   ui::KeyEvent event(ui::ET_KEY_PRESSED,
                      ui::KeyboardCodeForWindowsKeyCode(vkey),
-                     0);
+                     flags,
+                     false);
   delegate_->OnHostKeyEvent(&event);
 }
 
 void RemoteRootWindowHostWin::OnKeyUp(uint32 vkey,
                                       uint32 repeat_count,
-                                      uint32 scan_code) {
+                                      uint32 scan_code,
+                                      uint32 flags) {
   ui::KeyEvent event(ui::ET_KEY_RELEASED,
                      ui::KeyboardCodeForWindowsKeyCode(vkey),
-                     0);
+                     flags,
+                     false);
+  delegate_->OnHostKeyEvent(&event);
+}
+
+void RemoteRootWindowHostWin::OnChar(uint32 key_code,
+                                     uint32 repeat_count,
+                                     uint32 scan_code,
+                                     uint32 flags) {
+  ui::KeyEvent event(ui::ET_KEY_PRESSED,
+                     ui::KeyboardCodeForWindowsKeyCode(key_code),
+                     flags,
+                     true);
   delegate_->OnHostKeyEvent(&event);
 }
 

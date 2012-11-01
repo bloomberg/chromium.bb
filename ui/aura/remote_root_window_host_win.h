@@ -24,8 +24,18 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
 
   void OnMouseMoved(int32 x, int32 y, int32 extra);
   void OnMouseClick(int32 x, int32 y, int32 extra);
-  void OnKeyDown(uint32 vkey, uint32 repeat_count, uint32 scan_code);
-  void OnKeyUp(uint32 vkey, uint32 repeat_count, uint32 scan_code);
+  void OnKeyDown(uint32 vkey,
+                 uint32 repeat_count,
+                 uint32 scan_code,
+                 uint32 flags);
+  void OnKeyUp(uint32 vkey,
+               uint32 repeat_count,
+               uint32 scan_code,
+               uint32 flags);
+  void OnChar(uint32 key_code,
+              uint32 repeat_count,
+              uint32 scan_code,
+              uint32 flags);
 
  private:
   RemoteRootWindowHostWin(const gfx::Rect& bounds);

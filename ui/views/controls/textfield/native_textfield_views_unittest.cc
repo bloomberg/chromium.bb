@@ -207,7 +207,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     int flags = (shift ? ui::EF_SHIFT_DOWN : 0) |
         (control ? ui::EF_CONTROL_DOWN : 0) |
         (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags, false);
     input_method_->DispatchKeyEvent(event);
   }
 
@@ -226,7 +226,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
           static_cast<ui::KeyboardCode>(ui::VKEY_A + ch - 'a');
       SendKeyEvent(code);
     } else {
-      ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
+      ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, false);
       event.set_character(ch);
       input_method_->DispatchKeyEvent(event);
     }

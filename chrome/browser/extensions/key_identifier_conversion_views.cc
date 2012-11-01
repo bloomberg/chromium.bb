@@ -298,7 +298,10 @@ static void InitializeMaps() {
   if (identifierMaps[0])
     return;
 
-  kUnknownKeyEvent = new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
+  kUnknownKeyEvent = new ui::KeyEvent(ui::ET_KEY_PRESSED,
+                                      ui::VKEY_UNKNOWN,
+                                      0,
+                                      false);
 
   for (int i = 0; i < kNumIdentifierTypes; ++i)
     identifierMaps[i] = new IdentifierMap;
@@ -306,9 +309,10 @@ static void InitializeMaps() {
   for (int i = 0; i < kNumKeyIdentifiers; ++i) {
     const KeyIdentifier& key = kKeyIdentifiers[i];
 
-    ui::KeyEvent* event =
-        new ui::KeyEvent(ui::ET_KEY_PRESSED, key.key_code, key.event_flags);
-
+    ui::KeyEvent* event = new ui::KeyEvent(ui::ET_KEY_PRESSED,
+                                           key.key_code,
+                                           key.event_flags,
+                                           false);
     for (int j = 0; j < kNumIdentifierTypes; ++j) {
       if (key.identifiers[j][0] != '\0') {
         std::pair<IdentifierMap::iterator, bool> result =

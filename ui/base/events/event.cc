@@ -360,10 +360,11 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
 
 KeyEvent::KeyEvent(EventType type,
                    KeyboardCode key_code,
-                   int flags)
+                   int flags,
+                   bool is_char)
     : Event(type, base::Time::NowFromSystemTime() - base::Time(), flags),
       key_code_(key_code),
-      is_char_(false),
+      is_char_(is_char),
       character_(GetCharacterFromKeyCode(key_code, flags)),
       unmodified_character_(0) {
 }
@@ -469,7 +470,8 @@ TranslatedKeyEvent::TranslatedKeyEvent(bool is_press,
                                        int flags)
     : KeyEvent((is_press ? ET_TRANSLATED_KEY_PRESS : ET_TRANSLATED_KEY_RELEASE),
                key_code,
-               flags) {
+               flags,
+               false) {
 }
 
 void TranslatedKeyEvent::ConvertToKeyEvent() {

@@ -480,7 +480,7 @@ class UI_EXPORT KeyEvent : public Event {
   KeyEvent(const base::NativeEvent& native_event, bool is_char);
 
   // Used for synthetic events in testing.
-  KeyEvent(EventType type, KeyboardCode key_code, int flags);
+  KeyEvent(EventType type, KeyboardCode key_code, int flags, bool is_char);
 
   // These setters allow an I18N virtual keyboard to fabricate a keyboard event
   // which does not have a corresponding KeyboardCode (example: U+00E1 Latin

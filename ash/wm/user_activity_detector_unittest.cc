@@ -82,7 +82,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
   scoped_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(12345, NULL));
 
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
   EXPECT_FALSE(detector_->PreHandleKeyEvent(window.get(), &key_event));
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
@@ -126,7 +126,7 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
       aura::test::CreateTestWindowWithId(12345, NULL));
 
   // The observer should be notified about a key event.
-  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
   EXPECT_FALSE(detector_->PreHandleKeyEvent(window.get(), &event));
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();

@@ -1718,7 +1718,7 @@ class DefaultButtonTest : public ViewTest {
   }
 
   void SimulatePressingEnterAndCheckDefaultButton(ButtonID button_id) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false);
     focus_manager_->OnKeyEvent(event);
     switch (button_id) {
       case OK:

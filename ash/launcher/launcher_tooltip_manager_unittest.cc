@@ -146,7 +146,7 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   aura::EventFilter* event_filter = GetEventFilter();
 
   // Should not hide for key events.
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
   EXPECT_FALSE(event_filter->PreHandleKeyEvent(root_window, &key_event));
   EXPECT_TRUE(TooltipIsVisible());
 

@@ -124,7 +124,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
 
  protected:
   void SendKeyEvent(ui::KeyboardCode key_code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, 0);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, 0, false);
     input_method_->DispatchKeyEvent(event);
   }
 

@@ -13,7 +13,7 @@
 namespace ui {
 
 TEST(EventTest, NoNativeEvent) {
-  KeyEvent keyev(ET_KEY_PRESSED, VKEY_SPACE, 0);
+  KeyEvent keyev(ET_KEY_PRESSED, VKEY_SPACE, 0, false);
   EXPECT_FALSE(keyev.HasNativeEvent());
 }
 
@@ -32,11 +32,11 @@ TEST(EventTest, NativeEvent) {
 
 TEST(EventTest, GetCharacter) {
   // Check if Control+Enter returns 10.
-  KeyEvent keyev1(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN);
+  KeyEvent keyev1(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN, false);
   EXPECT_EQ(10, keyev1.GetCharacter());
   EXPECT_EQ(13, keyev1.GetUnmodifiedCharacter());
   // Check if Enter returns 13.
-  KeyEvent keyev2(ET_KEY_PRESSED, VKEY_RETURN, 0);
+  KeyEvent keyev2(ET_KEY_PRESSED, VKEY_RETURN, 0, false);
   EXPECT_EQ(13, keyev2.GetCharacter());
   EXPECT_EQ(13, keyev2.GetUnmodifiedCharacter());
 
@@ -185,7 +185,10 @@ TEST(EventTest, MAYBE_KeyEvent) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestData); ++i) {
-    KeyEvent key(ET_KEY_PRESSED, kTestData[i].key_code, kTestData[i].flags);
+    KeyEvent key(ET_KEY_PRESSED,
+                 kTestData[i].key_code,
+                 kTestData[i].flags,
+                 false);
     EXPECT_EQ(kTestData[i].character, key.GetCharacter())
         << " Index:" << i << " key_code:" << kTestData[i].key_code;
     EXPECT_EQ(kTestData[i].unmodified_character, key.GetUnmodifiedCharacter())
@@ -194,12 +197,12 @@ TEST(EventTest, MAYBE_KeyEvent) {
 }
 
 TEST(EventTest, MAYBE_KeyEventDirectUnicode) {
-  KeyEvent key(ET_KEY_PRESSED, VKEY_UNKNOWN, EF_SHIFT_DOWN);
+  KeyEvent key(ET_KEY_PRESSED, VKEY_UNKNOWN, EF_SHIFT_DOWN, false);
   key.set_character(0x1234U);
   key.set_unmodified_character(0x4321U);
   EXPECT_EQ(0x1234U, key.GetCharacter());
   EXPECT_EQ(0x4321U, key.GetUnmodifiedCharacter());
-  KeyEvent key2(ET_KEY_RELEASED, VKEY_UNKNOWN, EF_CONTROL_DOWN);
+  KeyEvent key2(ET_KEY_RELEASED, VKEY_UNKNOWN, EF_CONTROL_DOWN, false);
   key2.set_character(0x4321U);
   key2.set_unmodified_character(0x1234U);
   EXPECT_EQ(0x4321U, key2.GetCharacter());
@@ -256,31 +259,31 @@ TEST(EventTest, NormalizeKeyEventFlags) {
   // Do not normalize flags for synthesized events without
   // KeyEvent::NormalizeFlags called explicitly.
   {
-    KeyEvent keyev(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN);
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN, false);
     EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN);
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN, false);
     EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
     keyev.NormalizeFlags();
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN);
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN, false);
     EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN);
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN, false);
     EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
     keyev.NormalizeFlags();
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN);
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN, false);
     EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
   }
   {
-    KeyEvent keyev(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN);
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN, false);
     EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
     keyev.NormalizeFlags();
     EXPECT_EQ(EF_NONE, keyev.flags());

@@ -26,12 +26,19 @@ IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseButton,
                      int32,       /* y-coordinate */
                      int32        /* modifiers */)
 // Informs the browser that a key was pressed.
-IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_KeyDown,
+IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_KeyDown,
                      uint32,       /* virtual key */
                      uint32,       /* repeat count */
-                     uint32        /* scan code*/);
+                     uint32,       /* scan code */
+                     uint32        /* key state */);
 // Informs the browser that a key was released.
-IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_KeyUp,
+IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_KeyUp,
                      uint32,       /* virtual key */
                      uint32,       /* repeat count */
-                     uint32        /* scan code*/);
+                     uint32,       /* scan code */
+                     uint32        /* key state */);
+IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_Character,
+                     uint32,       /* virtual key */
+                     uint32,       /* repeat count */
+                     uint32,       /* scan code */
+                     uint32        /* key state */);

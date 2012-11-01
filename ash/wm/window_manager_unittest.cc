@@ -116,7 +116,7 @@ TEST_F(WindowManagerTest, Focus) {
   EXPECT_EQ(w121.get(), focus_manager->GetFocusedWindow());
 
   // The key press should be sent to the focused sub-window.
-  ui::KeyEvent keyev(ui::ET_KEY_PRESSED, ui::VKEY_E, 0);
+  ui::KeyEvent keyev(ui::ET_KEY_PRESSED, ui::VKEY_E, 0, false);
   root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&keyev);
   EXPECT_EQ(ui::VKEY_E, w121delegate->last_key_code());
 
@@ -531,7 +531,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   env_filter->AddFilter(f2.get());
 
   // Dispatches mouse and keyboard events.
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
   root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&key_event);
   ui::MouseEvent mouse_pressed(
       ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);

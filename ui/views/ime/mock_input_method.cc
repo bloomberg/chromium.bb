@@ -49,7 +49,10 @@ void MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& key) {
 
   ClearStates();
   if (handled) {
-    ui::KeyEvent mock_key(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, key.flags());
+    ui::KeyEvent mock_key(ui::ET_KEY_PRESSED,
+                          ui::VKEY_PROCESSKEY,
+                          key.flags(),
+                          key.is_char());
     DispatchKeyEventPostIME(mock_key);
   } else {
     DispatchKeyEventPostIME(key);

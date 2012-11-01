@@ -95,6 +95,13 @@ void MockInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
 
 void MockInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
 #if defined(OS_WIN)
+  if (event.is_char()) {
+    if (GetTextInputClient()) {
+      GetTextInputClient()->InsertChar(event.key_code(),
+                                       ui::GetModifiersFromKeyState());
+      return;
+    }
+  }
   delegate_->DispatchFabricatedKeyEventPostIME(event.type(),
                                                event.key_code(),
                                                event.flags());

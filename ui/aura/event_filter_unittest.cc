@@ -127,7 +127,7 @@ TEST_F(EventFilterTest, PreHandle) {
   // and the w1111's delegate should receive the event.
   test::EventGenerator generator(root_window(), w1111.get());
   generator.PressLeftButton();
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
   root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key_event);
 
   // TODO(sadrul): TouchEvent!

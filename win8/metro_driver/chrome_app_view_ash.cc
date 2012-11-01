@@ -9,11 +9,13 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/win/metro.h"
 #include "base/threading/thread.h"
+#include "base/win/metro.h"
+#include "base/win/win_util.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/metro_driver/metro_driver.h"
 #include "win8/metro_driver/winrt_utils.h"
@@ -29,6 +31,10 @@ typedef winfoundtn::ITypedEventHandler<
 typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreWindow*,
     winui::Core::KeyEventArgs*> KeyEventHandler;
+
+typedef winfoundtn::ITypedEventHandler<
+    winui::Core::CoreWindow*,
+    winui::Core::CharacterReceivedEventArgs*> CharEventHandler;
 
 // This function is exported by chrome.exe.
 typedef int (__cdecl *BreakpadExceptionHandler)(EXCEPTION_POINTERS* info);
@@ -125,6 +131,18 @@ void RunMessageLoop(winui::Core::ICoreDispatcher* dispatcher) {
   MessageLoop::current()->Quit();
 }
 
+// Helper to return the state of the shift/control/alt keys.
+uint32 GetKeyboardEventFlags() {
+  uint32 flags = 0;
+  if (base::win::IsShiftPressed())
+    flags |= ui::EF_SHIFT_DOWN;
+  if (base::win::IsCtrlPressed())
+    flags |= ui::EF_CONTROL_DOWN;
+  if (base::win::IsAltPressed())
+    flags |= ui::EF_ALT_DOWN;
+  return flags;
+}
+
 }  // namespace
 
 ChromeAppViewAsh::ChromeAppViewAsh()
@@ -180,6 +198,11 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   hr = window_->add_KeyUp(mswr::Callback<KeyEventHandler>(
       this, &ChromeAppViewAsh::OnKeyUp).Get(),
       &keyup_token_);
+  CheckHR(hr);
+
+  hr = window_->add_CharacterReceived(mswr::Callback<CharEventHandler>(
+      this, &ChromeAppViewAsh::OnCharacterReceived).Get(),
+      &character_received_token_);
   CheckHR(hr);
 
   // By initializing the direct 3D swap chain with the corewindow
@@ -331,7 +354,8 @@ HRESULT ChromeAppViewAsh::OnKeyDown(winui::Core::ICoreWindow* sender,
 
   ui_channel_->Send(new MetroViewerHostMsg_KeyDown(virtual_key,
                                                    status.RepeatCount,
-                                                   status.ScanCode));
+                                                   status.ScanCode,
+                                                   GetKeyboardEventFlags()));
   return S_OK;
 }
 
@@ -348,9 +372,31 @@ HRESULT ChromeAppViewAsh::OnKeyUp(winui::Core::ICoreWindow* sender,
 
   ui_channel_->Send(new MetroViewerHostMsg_KeyUp(virtual_key,
                                                  status.RepeatCount,
-                                                 status.ScanCode));
+                                                 status.ScanCode,
+                                                 GetKeyboardEventFlags()));
   return S_OK;
 }
+
+HRESULT ChromeAppViewAsh::OnCharacterReceived(
+  winui::Core::ICoreWindow* sender,
+  winui::Core::ICharacterReceivedEventArgs* args) {
+  unsigned int char_code = 0;
+  HRESULT hr = args->get_KeyCode(&char_code);
+  if (FAILED(hr))
+    return hr;
+
+  winui::Core::CorePhysicalKeyStatus status;
+  hr = args->get_KeyStatus(&status);
+  if (FAILED(hr))
+    return hr;
+
+  ui_channel_->Send(new MetroViewerHostMsg_Character(char_code,
+                                                     status.RepeatCount,
+                                                     status.ScanCode,
+                                                     GetKeyboardEventFlags()));
+  return S_OK;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

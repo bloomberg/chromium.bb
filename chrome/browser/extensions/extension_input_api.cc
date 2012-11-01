@@ -109,7 +109,10 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  ui::KeyEvent event(type, prototype_event.key_code(), flags);
+  ui::KeyEvent event(type,
+                     prototype_event.key_code(),
+                     flags,
+                     prototype_event.is_char());
   if (character) {
     event.set_character(character);
     event.set_unmodified_character(character);
