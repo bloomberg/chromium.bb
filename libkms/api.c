@@ -80,7 +80,7 @@ int kms_bo_create(struct kms_driver *kms, const unsigned *attr, struct kms_bo **
 			type = value;
 			break;
 		default:
-			return EINVAL;
+			return -EINVAL;
 		}
 	}
 
