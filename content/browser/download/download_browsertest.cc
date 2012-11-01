@@ -77,7 +77,6 @@ class DownloadFileWithDelay : public DownloadFileImpl {
       const FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
-      int64 received_bytes,
       bool calculate_hash,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
@@ -133,7 +132,6 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
       const FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
-      int64 received_bytes,
       bool calculate_hash,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
@@ -162,7 +160,6 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     const FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
-    int64 received_bytes,
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
@@ -171,7 +168,7 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
     : DownloadFileImpl(
         save_info.Pass(), default_download_directory, url, referrer_url,
-        received_bytes, calculate_hash, stream.Pass(), bound_net_log,
+        calculate_hash, stream.Pass(), bound_net_log,
         power_save_blocker.Pass(), observer),
       owner_(owner) {}
 
@@ -223,7 +220,6 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     const FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
-    int64 received_bytes,
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
@@ -234,7 +230,7 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
           "Download in progress"));
   return new DownloadFileWithDelay(
       save_info.Pass(), default_download_directory, url, referrer_url,
-      received_bytes, calculate_hash, stream.Pass(), bound_net_log,
+      calculate_hash, stream.Pass(), bound_net_log,
       psb.Pass(), observer, weak_ptr_factory_.GetWeakPtr());
 }
 
@@ -285,14 +281,13 @@ class CountingDownloadFile : public DownloadFileImpl {
     const FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
-    int64 received_bytes,
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     scoped_ptr<PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(save_info.Pass(), default_downloads_directory,
-                         url, referrer_url, received_bytes, calculate_hash,
+                         url, referrer_url, calculate_hash,
                          stream.Pass(), bound_net_log,
                          power_save_blocker.Pass(), observer) {}
 
@@ -341,7 +336,6 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
     const FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
-    int64 received_bytes,
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
@@ -352,7 +346,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
             "Download in progress"));
     return new CountingDownloadFile(
         save_info.Pass(), default_downloads_directory, url, referrer_url,
-        received_bytes, calculate_hash, stream.Pass(), bound_net_log,
+        calculate_hash, stream.Pass(), bound_net_log,
         psb.Pass(), observer);
   }
 };

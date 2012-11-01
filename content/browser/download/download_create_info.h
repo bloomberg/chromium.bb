@@ -26,9 +26,7 @@ namespace content {
 // want to pass |DownloadItem|s between threads.
 struct CONTENT_EXPORT DownloadCreateInfo {
   DownloadCreateInfo(const base::Time& start_time,
-                     int64 received_bytes,
                      int64 total_bytes,
-                     int32 state,
                      const net::BoundNetLog& bound_net_log,
                      bool has_user_gesture,
                      PageTransition transition_type);
@@ -50,14 +48,8 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The time when the download started.
   base::Time start_time;
 
-  // The number of bytes that have been received.
-  int64 received_bytes;
-
   // The total download size.
   int64 total_bytes;
-
-  // The current state of the download.
-  int32 state;
 
   // The (per-session) ID of the download.
   DownloadId download_id;
@@ -66,9 +58,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   bool has_user_gesture;
 
   PageTransition transition_type;
-
-  // The handle of the download in the history database.
-  int64 db_handle;
 
   // The content-disposition string from the response header.
   std::string content_disposition;
@@ -88,12 +77,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
 
   // For continuing a download, the ETAG of the file.
   std::string etag;
-
-  // True if we should display the 'save as...' UI and prompt the user
-  // for the download location.
-  // False if the UI should be suppressed and the download performed to the
-  // default location.
-  bool prompt_user_for_save_location;
 
   // The download file save info.
   scoped_ptr<DownloadSaveInfo> save_info;

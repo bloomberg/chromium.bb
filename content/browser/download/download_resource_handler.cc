@@ -136,7 +136,7 @@ bool DownloadResourceHandler::OnResponseStarted(
 
   // Deleted in DownloadManager.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(
-      base::Time::Now(), 0, content_length_, DownloadItem::IN_PROGRESS,
+      base::Time::Now(), content_length_,
       request_->net_log(), request_info->HasUserGesture(),
       request_info->transition_type()));
 
@@ -152,9 +152,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->url_chain = request_->url_chain();
   info->referrer_url = GURL(request_->referrer());
   info->start_time = base::Time::Now();
-  info->received_bytes = save_info_->offset;
   info->total_bytes = content_length_;
-  info->state = DownloadItem::IN_PROGRESS;
   info->has_user_gesture = request_info->HasUserGesture();
   info->content_disposition = content_disposition_;
   info->mime_type = response->head.mime_type;
@@ -188,8 +186,6 @@ bool DownloadResourceHandler::OnResponseStarted(
     accept_ranges_ = "";
   }
 
-  info->prompt_user_for_save_location =
-      save_info_->prompt_for_save_location && save_info_->file_path.empty();
   info->save_info = save_info_.Pass();
 
   BrowserThread::PostTask(

@@ -173,9 +173,9 @@ class DownloadItemTest : public testing::Test {
     info_.reset(new DownloadCreateInfo());
     static int next_id;
     info_->download_id = DownloadId(kValidDownloadItemIdDomain, ++next_id);
-    info_->prompt_user_for_save_location = false;
+    info_->save_info = scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo());
+    info_->save_info->prompt_for_save_location = false;
     info_->url_chain.push_back(GURL());
-    info_->state = state;
 
     scoped_ptr<DownloadRequestHandleInterface> request_handle(
         new testing::NiceMock<MockRequestHandle>);

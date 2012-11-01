@@ -342,10 +342,10 @@ class MockDownloadFileFactory
   virtual ~MockDownloadFileFactory() {}
 
   // Overridden method from DownloadFileFactory
-  MOCK_METHOD9(MockCreateFile, DownloadFile*(
+  MOCK_METHOD8(MockCreateFile, DownloadFile*(
     const DownloadSaveInfo&,
     const FilePath&,
-    const GURL&, const GURL&, int64, bool,
+    const GURL&, const GURL&, bool,
     ByteStreamReader*,
     const net::BoundNetLog&,
     base::WeakPtr<DownloadDestinationObserver>));
@@ -355,13 +355,12 @@ class MockDownloadFileFactory
       const FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
-      int64 received_bytes,
       bool calculate_hash,
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) {
     return MockCreateFile(*save_info.get(), default_download_directory, url,
-                          referrer_url, received_bytes, calculate_hash,
+                          referrer_url, calculate_hash,
                           stream.get(), bound_net_log, observer);
   }
 };
@@ -616,7 +615,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GenerateFileHash())
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_download_file_factory_.get(),
-              MockCreateFile(Ref(*info->save_info.get()), _, _, _, 0, true,
+              MockCreateFile(Ref(*info->save_info.get()), _, _, _, true,
                              stream.get(), _, _));
 
   download_manager_->StartDownload(info.Pass(), stream.Pass());

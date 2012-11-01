@@ -39,7 +39,6 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
     const FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
-    int64 received_bytes,
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,

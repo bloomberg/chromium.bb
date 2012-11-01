@@ -183,7 +183,7 @@ DownloadItemImpl::DownloadItemImpl(
       request_handle_(request_handle.Pass()),
       download_id_(info.download_id),
       target_disposition_(
-          (info.prompt_user_for_save_location) ?
+          (info.save_info->prompt_for_save_location) ?
               TARGET_DISPOSITION_PROMPT : TARGET_DISPOSITION_OVERWRITE),
       url_chain_(info.url_chain),
       referrer_url_(info.referrer_url),

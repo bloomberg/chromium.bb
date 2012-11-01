@@ -136,7 +136,6 @@ class DownloadFileTest : public testing::Test {
             FilePath(),
             GURL(),                     // Source
             GURL(),                     // Referrer
-            0,                          // Received bytes
             calculate_hash,
             scoped_ptr<ByteStreamReader>(input_stream_),
             net::BoundNetLog(),

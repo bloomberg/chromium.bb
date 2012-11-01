@@ -16,7 +16,6 @@ DownloadFile* DownloadFileFactory::CreateFile(
     const FilePath& default_downloads_directory,
     const GURL& url,
     const GURL& referrer_url,
-    int64 received_bytes,
     bool calculate_hash,
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
@@ -27,7 +26,7 @@ DownloadFile* DownloadFileFactory::CreateFile(
           "Download in progress"));
   return new DownloadFileImpl(
       save_info.Pass(), default_downloads_directory, url, referrer_url,
-      received_bytes, calculate_hash, stream.Pass(), bound_net_log,
+      calculate_hash, stream.Pass(), bound_net_log,
       psb.Pass(), observer);
 }
 

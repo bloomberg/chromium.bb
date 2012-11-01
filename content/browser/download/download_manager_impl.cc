@@ -331,7 +331,7 @@ DownloadItem* DownloadManagerImpl::StartDownload(
       file_factory_->CreateFile(
           info->save_info.Pass(), default_download_directory,
           info->url(), info->referrer_url,
-          info->received_bytes, delegate_->GenerateFileHash(),
+          delegate_->GenerateFileHash(),
           stream.Pass(), bound_net_log,
           download->DestinationObserverAsWeakPtr()));
   download->Start(download_file.Pass());
