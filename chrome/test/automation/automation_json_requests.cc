@@ -792,6 +792,7 @@ bool SendInstallExtensionJSONRequest(
   dict.SetBoolean("with_ui", with_ui);
   // TODO(kkania): Set correct auto_id instead of hardcoding windex.
   dict.SetInteger("windex", 0);
+  dict.SetInteger("tab_index", 0);
   DictionaryValue reply_dict;
   if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error))
     return false;
