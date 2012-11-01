@@ -281,7 +281,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     resource.url = GURL("http://www.malware.com/");
     resource.original_url = web_contents()->GetURL();
     resource.is_subresource = true;
-    resource.threat_type = SafeBrowsingService::URL_MALWARE;
+    resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
     resource.render_process_host_id = web_contents()->GetRenderProcessHost()->
         GetID();
@@ -428,8 +428,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   EXPECT_EQ(phishing_url, resource.url);
   EXPECT_EQ(phishing_url, resource.original_url);
   EXPECT_FALSE(resource.is_subresource);
-  EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
-            resource.threat_type);
+  EXPECT_EQ(SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL, resource.threat_type);
   EXPECT_EQ(web_contents()->GetRenderProcessHost()->GetID(),
             resource.render_process_host_id);
   EXPECT_EQ(web_contents()->GetRenderViewHost()->GetRoutingID(),
@@ -520,8 +519,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   EXPECT_EQ(other_phishing_url, resource.url);
   EXPECT_EQ(other_phishing_url, resource.original_url);
   EXPECT_FALSE(resource.is_subresource);
-  EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
-            resource.threat_type);
+  EXPECT_EQ(SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL, resource.threat_type);
   EXPECT_EQ(web_contents()->GetRenderProcessHost()->GetID(),
             resource.render_process_host_id);
   EXPECT_EQ(web_contents()->GetRenderViewHost()->GetRoutingID(),

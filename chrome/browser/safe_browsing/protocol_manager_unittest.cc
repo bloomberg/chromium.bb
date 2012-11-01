@@ -219,7 +219,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
             "url.com%2F&evtb=1",
             pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
-                true, SafeBrowsingService::URL_MALWARE).spec());
+                true, SB_THREAT_TYPE_URL_MALWARE).spec());
 
   pm.set_additional_query(kAdditionalQuery);
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
@@ -229,7 +229,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
             "url.com%2F&evtb=0",
             pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
-                false, SafeBrowsingService::URL_PHISHING).spec());
+                false, SB_THREAT_TYPE_URL_PHISHING).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2" + key_param_ + "&additional_query&evts=binurlhit&"
@@ -238,7 +238,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
             "url.com%2F&evtb=0",
             pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
-                false, SafeBrowsingService::BINARY_MALWARE_URL).spec());
+                false, SB_THREAT_TYPE_BINARY_MALWARE_URL).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2" + key_param_ + "&additional_query&evts=binhashhit&"
@@ -247,7 +247,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
             "url.com%2F&evtb=0",
             pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
-                false, SafeBrowsingService::BINARY_MALWARE_HASH).spec());
+                false, SB_THREAT_TYPE_BINARY_MALWARE_HASH).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2" + key_param_ + "&additional_query&evts=phishcsdhit&"
@@ -256,7 +256,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
             "url.com%2F&evtb=0",
             pm.SafeBrowsingHitUrl(
                 malicious_url, page_url, referrer_url,
-                false, SafeBrowsingService::CLIENT_SIDE_PHISHING_URL).spec());
+                false, SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL).spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareDetailsUrl) {

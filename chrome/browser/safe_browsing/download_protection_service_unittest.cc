@@ -99,12 +99,12 @@ void OnSafeBrowsingResult(SafeBrowsingService::SafeBrowsingCheck* check) {
   check->client->OnSafeBrowsingResult(*check);
 }
 
-ACTION_P(CheckDownloadUrlDone, result) {
+ACTION_P(CheckDownloadUrlDone, threat_type) {
   SafeBrowsingService::SafeBrowsingCheck* check =
       new SafeBrowsingService::SafeBrowsingCheck();
   check->urls = arg0;
   check->is_download = true;
-  check->result = result;
+  check->threat_type = threat_type;
   check->client = arg1;
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -736,7 +736,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
   EXPECT_CALL(*sb_service_,
               CheckDownloadUrl(ContainerEq(info.download_url_chain),
                                NotNull()))
-      .WillOnce(DoAll(CheckDownloadUrlDone(SafeBrowsingService::SAFE),
+      .WillOnce(DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_SAFE),
                       Return(false)));
   download_service_->CheckDownloadUrl(
       info,
@@ -750,7 +750,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
               CheckDownloadUrl(ContainerEq(info.download_url_chain),
                                NotNull()))
       .WillOnce(DoAll(
-          CheckDownloadUrlDone(SafeBrowsingService::URL_MALWARE),
+          CheckDownloadUrlDone(SB_THREAT_TYPE_URL_MALWARE),
           Return(false)));
   download_service_->CheckDownloadUrl(
       info,
@@ -764,7 +764,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
               CheckDownloadUrl(ContainerEq(info.download_url_chain),
                                NotNull()))
       .WillOnce(DoAll(
-          CheckDownloadUrlDone(SafeBrowsingService::BINARY_MALWARE_URL),
+          CheckDownloadUrlDone(SB_THREAT_TYPE_BINARY_MALWARE_URL),
           Return(false)));
   download_service_->CheckDownloadUrl(
       info,

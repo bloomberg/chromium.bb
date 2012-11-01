@@ -194,7 +194,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
                    base::Unretained(this));
     resource->url = url;
     resource->is_subresource = is_subresource;
-    resource->threat_type = SafeBrowsingService::URL_MALWARE;
+    resource->threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource->render_process_host_id =
         web_contents()->GetRenderProcessHost()->GetID();
     resource->render_view_id =

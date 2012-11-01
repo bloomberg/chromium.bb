@@ -126,7 +126,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
                              const GURL& page_url,
                              const GURL& referrer_url,
                              bool is_subresource,
-                             SafeBrowsingService::UrlCheckResult threat_type,
+                             SBThreatType threat_type,
                              const std::string& post_data);
 
   // Users can opt-in on the SafeBrowsing interstitial to send detailed
@@ -231,7 +231,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   GURL SafeBrowsingHitUrl(
       const GURL& malicious_url, const GURL& page_url, const GURL& referrer_url,
       bool is_subresource,
-      SafeBrowsingService::UrlCheckResult threat_type) const;
+      SBThreatType threat_type) const;
   // Generates URL for reporting malware details for users who opt-in.
   GURL MalwareDetailsUrl() const;
 

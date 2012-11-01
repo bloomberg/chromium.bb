@@ -57,7 +57,7 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
   // result when it is ready.
   // Overrides SafeBrowsingService::CheckBrowseUrl.
   virtual bool CheckBrowseUrl(const GURL& gurl, Client* client) {
-    if (badurls[gurl.spec()] == SAFE)
+    if (badurls[gurl.spec()] == SB_THREAT_TYPE_SAFE)
       return true;
 
     BrowserThread::PostTask(
@@ -71,12 +71,12 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
     SafeBrowsingService::SafeBrowsingCheck check;
     check.urls.push_back(gurl);
     check.client = client;
-    check.result = badurls[gurl.spec()];
+    check.threat_type = badurls[gurl.spec()];
     client->OnSafeBrowsingResult(check);
   }
 
-  void AddURLResult(const GURL& url, UrlCheckResult checkresult) {
-    badurls[url.spec()] = checkresult;
+  void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
+    badurls[url.spec()] = threat_type;
   }
 
   // Overrides SafeBrowsingService.
@@ -103,7 +103,7 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
  private:
   virtual ~FakeSafeBrowsingService() {}
 
-  base::hash_map<std::string, UrlCheckResult> badurls;
+  base::hash_map<std::string, SBThreatType> badurls;
 };
 
 // Factory that creates FakeSafeBrowsingService instances.
@@ -268,22 +268,20 @@ class SafeBrowsingBlockingPageV2Test : public InProcessBrowserTest {
     ASSERT_TRUE(test_server()->Start());
   }
 
-  void AddURLResult(const GURL& url,
-                    SafeBrowsingService::UrlCheckResult checkresult) {
+  void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
     FakeSafeBrowsingService* service =
         static_cast<FakeSafeBrowsingService*>(
             g_browser_process->safe_browsing_service());
 
     ASSERT_TRUE(service);
-    service->AddURLResult(url, checkresult);
+    service->SetURLThreatType(url, threat_type);
   }
 
-  // Adds a safebrowsing result of type |check_result| to the fake safebrowsing
+  // Adds a safebrowsing result of type |threat_type| to the fake safebrowsing
   // service, navigates to that page, and returns the url.
-  GURL SetupWarningAndNavigate(
-      SafeBrowsingService::UrlCheckResult check_result) {
+  GURL SetupWarningAndNavigate(SBThreatType threat_type) {
     GURL url = test_server()->GetURL(kEmptyPage);
-    AddURLResult(url, check_result);
+    SetURLThreatType(url, threat_type);
 
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(WaitForReady());
@@ -296,7 +294,7 @@ class SafeBrowsingBlockingPageV2Test : public InProcessBrowserTest {
   GURL SetupMalwareIframeWarningAndNavigate() {
     GURL url = test_server()->GetURL(kMalwarePage);
     GURL iframe_url = test_server()->GetURL(kMalwareIframe);
-    AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
+    SetURLThreatType(iframe_url, SB_THREAT_TYPE_URL_MALWARE);
 
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(WaitForReady());
@@ -387,7 +385,7 @@ class SafeBrowsingBlockingPageV2Test : public InProcessBrowserTest {
     GURL load_url = test_server()->GetURL(
         "files/safe_browsing/interstitial_cancel.html");
     GURL malware_url("http://localhost/files/safe_browsing/malware.html");
-    AddURLResult(malware_url, SafeBrowsingService::URL_MALWARE);
+    SetURLThreatType(malware_url, SB_THREAT_TYPE_URL_MALWARE);
 
     // Load the test page.
     ui_test_utils::NavigateToURL(browser(), load_url);
@@ -519,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, MalwareDontProceed) {
-  SetupWarningAndNavigate(SafeBrowsingService::URL_MALWARE);
+  SetupWarningAndNavigate(SB_THREAT_TYPE_URL_MALWARE);
 
   EXPECT_EQ(VISIBLE, GetVisibility("malware-icon"));
   EXPECT_EQ(HIDDEN, GetVisibility("subresource-icon"));
@@ -541,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, MalwareDontProceed) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, MalwareProceed) {
-  GURL url = SetupWarningAndNavigate(SafeBrowsingService::URL_MALWARE);
+  GURL url = SetupWarningAndNavigate(SB_THREAT_TYPE_URL_MALWARE);
 
   EXPECT_TRUE(ClickAndWaitForDetach("proceed"));
   AssertNoInterstitial(true);  // Assert the interstitial is gone.
@@ -550,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, MalwareProceed) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
                        MalwareLearnMore) {
-  SetupWarningAndNavigate(SafeBrowsingService::URL_MALWARE);
+  SetupWarningAndNavigate(SB_THREAT_TYPE_URL_MALWARE);
 
   EXPECT_TRUE(ClickAndWaitForDetach("learn-more-link"));
   AssertNoInterstitial(false);  // Assert the interstitial is gone
@@ -623,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, ProceedDisabled) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingProceedAnywayDisabled, true);
 
-  SetupWarningAndNavigate(SafeBrowsingService::URL_MALWARE);
+  SetupWarningAndNavigate(SB_THREAT_TYPE_URL_MALWARE);
 
   EXPECT_EQ(VISIBLE, GetVisibility("check-report"));
   EXPECT_EQ(HIDDEN, GetVisibility("show-diagnostic-link"));
@@ -654,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, ReportingDisabled) {
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL url = https_server.GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_MALWARE);
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_MALWARE);
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForReady());
 
@@ -673,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, ReportingDisabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, PhishingDontProceed) {
-  SetupWarningAndNavigate(SafeBrowsingService::URL_PHISHING);
+  SetupWarningAndNavigate(SB_THREAT_TYPE_URL_PHISHING);
 
   EXPECT_EQ(HIDDEN, GetVisibility("malware-icon"));
   EXPECT_EQ(HIDDEN, GetVisibility("subresource-icon"));
@@ -695,7 +693,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, PhishingDontProceed) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, PhishingProceed) {
-  GURL url = SetupWarningAndNavigate(SafeBrowsingService::URL_PHISHING);
+  GURL url = SetupWarningAndNavigate(SB_THREAT_TYPE_URL_PHISHING);
 
   EXPECT_TRUE(ClickAndWaitForDetach("proceed"));
   AssertNoInterstitial(true);  // Assert the interstitial is gone
@@ -703,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, PhishingProceed) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, PhishingReportError) {
-  SetupWarningAndNavigate(SafeBrowsingService::URL_PHISHING);
+  SetupWarningAndNavigate(SB_THREAT_TYPE_URL_PHISHING);
 
   EXPECT_TRUE(ClickAndWaitForDetach("report-error-link"));
   AssertNoInterstitial(false);  // Assert the interstitial is gone
@@ -715,7 +713,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, PhishingReportError) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, PhishingLearnMore) {
-  SetupWarningAndNavigate(SafeBrowsingService::URL_PHISHING);
+  SetupWarningAndNavigate(SB_THREAT_TYPE_URL_PHISHING);
 
   EXPECT_TRUE(ClickAndWaitForDetach("learn-more-link"));
   AssertNoInterstitial(false);  // Assert the interstitial is gone

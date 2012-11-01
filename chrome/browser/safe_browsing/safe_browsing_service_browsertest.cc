@@ -301,7 +301,7 @@ class MockObserver : public SafeBrowsingService::Observer {
 
 MATCHER_P(IsUnsafeResourceFor, url, "") {
   return (arg.url.spec() == url.spec() &&
-          arg.threat_type != SafeBrowsingService::SAFE);
+          arg.threat_type != SB_THREAT_TYPE_SAFE);
 }
 
 // Tests the safe browsing blocking page in a browser.
@@ -531,12 +531,12 @@ class TestSBClient
       public SafeBrowsingService::Client {
  public:
   TestSBClient()
-    : result_(SafeBrowsingService::SAFE),
+    : threat_type_(SB_THREAT_TYPE_SAFE),
       safe_browsing_service_(g_browser_process->safe_browsing_service()) {
   }
 
-  int GetResult() {
-    return result_;
+  SBThreatType GetThreatType() const {
+    return threat_type_;
   }
 
   void CheckDownloadUrl(const std::vector<GURL>& url_chain) {
@@ -544,7 +544,7 @@ class TestSBClient
         BrowserThread::IO, FROM_HERE,
         base::Bind(&TestSBClient::CheckDownloadUrlOnIOThread,
                    this, url_chain));
-    content::RunMessageLoop();  // Will stop in OnDownloadUrlCheckResult.
+    content::RunMessageLoop();  // Will stop in OnCheckDownloadUrlResult.
   }
 
   void CheckDownloadHash(const std::string& full_hash) {
@@ -552,7 +552,7 @@ class TestSBClient
         BrowserThread::IO, FROM_HERE,
         base::Bind(&TestSBClient::CheckDownloadHashOnIOThread,
                    this, full_hash));
-    content::RunMessageLoop();  // Will stop in OnDownloadHashCheckResult.
+    content::RunMessageLoop();  // Will stop in OnCheckDownloadHashResult.
   }
 
  private:
@@ -568,17 +568,17 @@ class TestSBClient
   }
 
   // Called when the result of checking a download URL is known.
-  void OnDownloadUrlCheckResult(const std::vector<GURL>& url_chain,
-                                SafeBrowsingService::UrlCheckResult result) {
-    result_ = result;
+  virtual void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
+                                        SBThreatType threat_type) OVERRIDE {
+    threat_type_ = threat_type;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&TestSBClient::DownloadCheckDone, this));
   }
 
   // Called when the result of checking a download hash is known.
-  void OnDownloadHashCheckResult(const std::string& hash,
-                                 SafeBrowsingService::UrlCheckResult result) {
-    result_ = result;
+  virtual void OnCheckDownloadHashResult(const std::string& hash,
+                                         SBThreatType threat_type) OVERRIDE {
+    threat_type_ = threat_type;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&TestSBClient::DownloadCheckDone, this));
   }
@@ -587,7 +587,7 @@ class TestSBClient
     MessageLoopForUI::current()->Quit();
   }
 
-  SafeBrowsingService::UrlCheckResult result_;
+  SBThreatType threat_type_;
   SafeBrowsingService* safe_browsing_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSBClient);
@@ -605,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
   client->CheckDownloadUrl(badbin_urls);
 
   // Since badbin_url is not in database, it is considered to be safe.
-  EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 
   SBFullHashResult full_hash_result;
   int chunk_id = 0;
@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
   client->CheckDownloadUrl(badbin_urls);
 
   // Now, the badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_URL, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
@@ -632,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   client->CheckDownloadUrl(badbin_urls);
 
   // Since badbin_url is not in database, it is considered to be safe.
-  EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 
   SBFullHashResult full_hash_result;
   int chunk_id = 0;
@@ -643,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   client->CheckDownloadUrl(badbin_urls);
 
   // Now, the badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_URL, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHash) {
@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHash) {
   client->CheckDownloadHash(full_hash);
 
   // Since badbin_url is not in database, it is considered to be safe.
-  EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 
   SBFullHashResult full_hash_result;
   int chunk_id = 0;
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHash) {
   client->CheckDownloadHash(full_hash);
 
   // Now, the badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_HASH, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_HASH, client->GetThreatType());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
@@ -680,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
   client->CheckDownloadUrl(badbin_urls);
 
   // badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_URL, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
 
   //
   // Now introducing delays and we should hit timeout.
@@ -694,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
   client->CheckDownloadUrl(badbin_urls);
 
   // There should be a timeout and the hash would be considered as safe.
-  EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 
   // Need to set the timeout back to the default value.
   SetDownloadHashCheckTimeout(sb_service, default_urlcheck_timeout);
@@ -712,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHashTimedOut) {
   client->CheckDownloadHash(full_hash);
 
   // The badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE_HASH, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_HASH, client->GetThreatType());
 
   //
   // Now introducing delays and we should hit timeout.
@@ -726,7 +726,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHashTimedOut) {
   client->CheckDownloadHash(full_hash);
 
   // There should be a timeout and the hash would be considered as safe.
-  EXPECT_EQ(SafeBrowsingService::SAFE, client->GetResult());
+  EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 
   // Need to set the timeout back to the default value.
   SetDownloadHashCheckTimeout(sb_service, default_hashcheck_timeout);

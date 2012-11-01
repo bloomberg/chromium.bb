@@ -572,7 +572,7 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
     const GURL& page_url,
     const GURL& referrer_url,
     bool is_subresource,
-    SafeBrowsingService::UrlCheckResult threat_type,
+    SBThreatType threat_type,
     const std::string& post_data) {
   GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
                                        referrer_url, is_subresource,
@@ -671,29 +671,24 @@ GURL SafeBrowsingProtocolManager::GetHashUrl() const {
 GURL SafeBrowsingProtocolManager::SafeBrowsingHitUrl(
     const GURL& malicious_url, const GURL& page_url,
     const GURL& referrer_url, bool is_subresource,
-    SafeBrowsingService::UrlCheckResult threat_type) const {
-  DCHECK(threat_type == SafeBrowsingService::URL_MALWARE ||
-         threat_type == SafeBrowsingService::URL_PHISHING ||
-         threat_type == SafeBrowsingService::BINARY_MALWARE_URL ||
-         threat_type == SafeBrowsingService::BINARY_MALWARE_HASH ||
-         threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
+    SBThreatType threat_type) const {
   std::string url = ComposeUrl(url_prefix_, "report", client_name_,
                                version_, additional_query_);
   std::string threat_list = "none";
   switch (threat_type) {
-    case SafeBrowsingService::URL_MALWARE:
+    case SB_THREAT_TYPE_URL_MALWARE:
       threat_list = "malblhit";
       break;
-    case SafeBrowsingService::URL_PHISHING:
+    case SB_THREAT_TYPE_URL_PHISHING:
       threat_list = "phishblhit";
       break;
-    case SafeBrowsingService::BINARY_MALWARE_URL:
+    case SB_THREAT_TYPE_BINARY_MALWARE_URL:
       threat_list = "binurlhit";
       break;
-    case SafeBrowsingService::BINARY_MALWARE_HASH:
+    case SB_THREAT_TYPE_BINARY_MALWARE_HASH:
       threat_list = "binhashhit";
       break;
-    case SafeBrowsingService::CLIENT_SIDE_PHISHING_URL:
+    case SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL:
       threat_list = "phishcsdhit";
       break;
     default:

@@ -330,8 +330,8 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
           resource.render_process_host_id &&
       web_contents()->GetRenderViewHost()->GetRoutingID() ==
           resource.render_view_id &&
-      (resource.threat_type == SafeBrowsingService::URL_PHISHING ||
-       resource.threat_type == SafeBrowsingService::URL_MALWARE) &&
+      (resource.threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+       resource.threat_type == SB_THREAT_TYPE_URL_MALWARE) &&
       web_contents()->GetController().GetActiveEntry()) {
     unsafe_unique_page_id_ =
         web_contents()->GetController().GetActiveEntry()->GetUniqueID();
@@ -403,7 +403,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.url = phishing_url;
       resource.original_url = phishing_url;
       resource.is_subresource = false;
-      resource.threat_type = SafeBrowsingService::CLIENT_SIDE_PHISHING_URL;
+      resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
       resource.render_process_host_id =
           web_contents()->GetRenderProcessHost()->GetID();
       resource.render_view_id =

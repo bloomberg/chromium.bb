@@ -370,20 +370,15 @@ class SafeBrowsingServiceTestHelper
   }
 
   // Callbacks for SafeBrowsingService::Client.
-  virtual void OnBrowseUrlCheckResult(
-      const GURL& url, SafeBrowsingService::UrlCheckResult result) {
+  virtual void OnCheckBrowseUrlResult(const GURL& url,
+                                      SBThreatType threat_type) OVERRIDE {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     EXPECT_TRUE(safe_browsing_test_->is_checked_url_in_db());
     safe_browsing_test_->set_is_checked_url_safe(
-        result == SafeBrowsingService::SAFE);
+        threat_type == SB_THREAT_TYPE_SAFE);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&SafeBrowsingServiceTestHelper::OnCheckUrlDone,
                    this));
-  }
-  virtual void OnDownloadUrlCheckResult(
-      const std::vector<GURL>& url_chain,
-      SafeBrowsingService::UrlCheckResult result) {
-    // TODO(lzheng): Add test for DownloadUrl.
   }
 
   virtual void OnBlockingPageComplete(bool proceed) {

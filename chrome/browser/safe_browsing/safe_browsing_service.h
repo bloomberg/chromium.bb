@@ -58,20 +58,6 @@ class SafeBrowsingService
       public content::NotificationObserver {
  public:
   class Client;
-  // Users of this service implement this interface to be notified
-  // asynchronously of the result.
-  enum UrlCheckResult {
-    SAFE,
-    URL_PHISHING,
-    URL_MALWARE,
-    BINARY_MALWARE_URL,  // Binary url leads to a malware.
-    BINARY_MALWARE_HASH,  // Binary hash indicates this is a malware.
-
-    // Url detected by the client-side phishing model.  Note that unlike the
-    // above values, this does not correspond to a downloaded list.
-    CLIENT_SIDE_PHISHING_URL,
-  };
-
   // Passed a boolean indicating whether or not it is OK to proceed with
   // loading an URL.
   typedef base::Callback<void(bool /*proceed*/)> UrlCheckCallback;
@@ -86,7 +72,7 @@ class SafeBrowsingService
     GURL original_url;
     std::vector<GURL> redirect_urls;
     bool is_subresource;
-    UrlCheckResult threat_type;
+    SBThreatType threat_type;
     UrlCheckCallback callback;
     int render_process_host_id;
     int render_view_id;
@@ -104,7 +90,7 @@ class SafeBrowsingService
     Client* client;
     bool need_get_hash;
     base::TimeTicks start;  // When check was sent to SB service.
-    UrlCheckResult result;
+    SBThreatType threat_type;
     bool is_download;  // If this check for download url or hash.
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
@@ -145,16 +131,16 @@ class SafeBrowsingService
     virtual ~Client() {}
 
     // Called when the result of checking a browse URL is known.
-    virtual void OnBrowseUrlCheckResult(const GURL& url,
-                                        UrlCheckResult result) {}
+    virtual void OnCheckBrowseUrlResult(const GURL& url,
+                                        SBThreatType threat_type) {}
 
     // Called when the result of checking a download URL is known.
-    virtual void OnDownloadUrlCheckResult(const std::vector<GURL>& url_chain,
-                                          UrlCheckResult result) {}
+    virtual void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
+                                          SBThreatType threat_type) {}
 
     // Called when the result of checking a download binary hash is known.
-    virtual void OnDownloadHashCheckResult(const std::string& hash,
-                                           UrlCheckResult result) {}
+    virtual void OnCheckDownloadHashResult(const std::string& hash,
+                                           SBThreatType threat_type) {}
   };
 
   // Makes the passed |factory| the factory used to instanciate
@@ -232,7 +218,7 @@ class SafeBrowsingService
                            const GURL& original_url,
                            const std::vector<GURL>& redirect_urls,
                            bool is_subresource,
-                           UrlCheckResult result,
+                           SBThreatType threat_type,
                            const UrlCheckCallback& callback,
                            int render_process_host_id,
                            int render_view_id);
@@ -306,7 +292,7 @@ class SafeBrowsingService
                                      const GURL& page_url,
                                      const GURL& referrer_url,
                                      bool is_subresource,
-                                     UrlCheckResult threat_type,
+                                     SBThreatType threat_type,
                                      const std::string& post_data);
 
   // Add and remove observers.  These methods must be invoked on the UI thread.
@@ -403,7 +389,7 @@ class SafeBrowsingService
 
   void DeleteChunks(std::vector<SBChunkDelete>* chunk_deletes);
 
-  static UrlCheckResult GetResultFromListname(const std::string& list_name);
+  static SBThreatType GetThreatTypeFromListname(const std::string& list_name);
 
   void NotifyClientBlockingComplete(Client* client, bool proceed);
 
@@ -445,7 +431,7 @@ class SafeBrowsingService
                                        const GURL& page_url,
                                        const GURL& referrer_url,
                                        bool is_subresource,
-                                       UrlCheckResult threat_type,
+                                       SBThreatType threat_type,
                                        const std::string& post_data);
 
   // Checks the download hash on safe_browsing_thread_.

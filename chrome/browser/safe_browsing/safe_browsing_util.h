@@ -127,6 +127,27 @@ struct SBChunkDelete {
   std::vector<ChunkRange> chunk_del;
 };
 
+// Different types of threats that SafeBrowsing protects against.
+enum SBThreatType {
+  // No threat at all.
+  SB_THREAT_TYPE_SAFE,
+
+  // The URL is being used for phishing.
+  SB_THREAT_TYPE_URL_PHISHING,
+
+  // The URL hosts malware.
+  SB_THREAT_TYPE_URL_MALWARE,
+
+  // The download URL is malware.
+  SB_THREAT_TYPE_BINARY_MALWARE_URL,
+
+  // The hash of the download contents is malware.
+  SB_THREAT_TYPE_BINARY_MALWARE_HASH,
+
+  // Url detected by the client-side phishing model.  Note that unlike the
+  // above values, this does not correspond to a downloaded list.
+  SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+};
 
 // SBEntry ---------------------------------------------------------------------
 

@@ -228,32 +228,32 @@ class DownloadSBClient
         dangerous_type_(dangerous_type) {}
 
   virtual void StartCheck() = 0;
-  virtual bool IsDangerous(SafeBrowsingService::UrlCheckResult res) const = 0;
+  virtual bool IsDangerous(SBThreatType threat_type) const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadSBClient>;
   virtual ~DownloadSBClient() {}
 
-  void CheckDone(SafeBrowsingService::UrlCheckResult sb_result) {
+  void CheckDone(SBThreatType threat_type) {
     DownloadProtectionService::DownloadCheckResult result =
-        IsDangerous(sb_result) ?
+        IsDangerous(threat_type) ?
         DownloadProtectionService::DANGEROUS :
         DownloadProtectionService::SAFE;
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(callback_, result));
     UpdateDownloadCheckStats(total_type_);
-    if (sb_result != SafeBrowsingService::SAFE) {
+    if (threat_type != SB_THREAT_TYPE_SAFE) {
       UpdateDownloadCheckStats(dangerous_type_);
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
           base::Bind(&DownloadSBClient::ReportMalware,
-                     this, sb_result));
+                     this, threat_type));
     }
   }
 
-  void ReportMalware(SafeBrowsingService::UrlCheckResult result) {
+  void ReportMalware(SBThreatType threat_type) {
     std::string post_data;
     if (!info_.sha256_hash.empty())
       post_data += base::HexEncode(info_.sha256_hash.data(),
@@ -266,7 +266,7 @@ class DownloadSBClient
         info_.download_url_chain.front(), // page_url
         info_.referrer_url,
         true,  // is_subresource
-        result,
+        threat_type,
         post_data);
   }
 
@@ -302,21 +302,19 @@ class DownloadUrlSBClient : public DownloadSBClient {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (!sb_service_ ||
         sb_service_->CheckDownloadUrl(info_.download_url_chain, this)) {
-      CheckDone(SafeBrowsingService::SAFE);
+      CheckDone(SB_THREAT_TYPE_SAFE);
     } else {
       AddRef();  // SafeBrowsingService takes a pointer not a scoped_refptr.
     }
   }
 
-  virtual bool IsDangerous(
-      SafeBrowsingService::UrlCheckResult result) const OVERRIDE {
-    return result == SafeBrowsingService::BINARY_MALWARE_URL;
+  virtual bool IsDangerous(SBThreatType threat_type) const OVERRIDE {
+    return threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL;
   }
 
-  virtual void OnDownloadUrlCheckResult(
-      const std::vector<GURL>& url_chain,
-      SafeBrowsingService::UrlCheckResult sb_result) OVERRIDE {
-    CheckDone(sb_result);
+  virtual void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
+                                        SBThreatType threat_type) OVERRIDE {
+    CheckDone(threat_type);
     UMA_HISTOGRAM_TIMES("SB2.DownloadUrlCheckDuration",
                         base::TimeTicks::Now() - start_time_);
     Release();

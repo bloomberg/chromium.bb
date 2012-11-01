@@ -49,7 +49,7 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
   // result when it is ready.
   // Overrides SafeBrowsingService::CheckBrowseUrl.
   virtual bool CheckBrowseUrl(const GURL& gurl, Client* client) {
-    if (badurls[gurl.spec()] == SAFE)
+    if (badurls[gurl.spec()] == SB_THREAT_TYPE_SAFE)
       return true;
 
     BrowserThread::PostTask(
@@ -63,12 +63,12 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
     SafeBrowsingService::SafeBrowsingCheck check;
     check.urls.push_back(gurl);
     check.client = client;
-    check.result = badurls[gurl.spec()];
+    check.threat_type = badurls[gurl.spec()];
     client->OnSafeBrowsingResult(check);
   }
 
-  void AddURLResult(const GURL& url, UrlCheckResult checkresult) {
-    badurls[url.spec()] = checkresult;
+  void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
+    badurls[url.spec()] = threat_type;
   }
 
   // Overrides SafeBrowsingService.
@@ -95,7 +95,7 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
  private:
   virtual ~FakeSafeBrowsingService() {}
 
-  base::hash_map<std::string, UrlCheckResult> badurls;
+  base::hash_map<std::string, SBThreatType> badurls;
 };
 
 // Factory that creates FakeSafeBrowsingService instances.
@@ -254,14 +254,13 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     ASSERT_TRUE(test_server()->Start());
   }
 
-  void AddURLResult(const GURL& url,
-                    SafeBrowsingService::UrlCheckResult checkresult) {
+  void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
     FakeSafeBrowsingService* service =
         static_cast<FakeSafeBrowsingService*>(
             g_browser_process->safe_browsing_service());
 
     ASSERT_TRUE(service);
-    service->AddURLResult(url, checkresult);
+    service->SetURLThreatType(url, threat_type);
   }
 
   void SendCommand(const std::string& command) {
@@ -348,7 +347,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     GURL load_url = test_server()->GetURL(
         "files/safe_browsing/interstitial_cancel.html");
     GURL malware_url("http://localhost/files/safe_browsing/malware.html");
-    AddURLResult(malware_url, SafeBrowsingService::URL_MALWARE);
+    SetURLThreatType(malware_url, SB_THREAT_TYPE_URL_MALWARE);
 
     // Load the test page.
     ui_test_utils::NavigateToURL(browser(), load_url);
@@ -442,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_MALWARE);
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -459,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_MALWARE);
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_MALWARE);
 
   // Note: NOTIFICATION_LOAD_STOP may come before or after the DidNavigate
   // event that clears the interstitial.  We wait for DidNavigate instead.
@@ -476,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_PHISHING);
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_PHISHING);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -489,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_PHISHING);
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_PHISHING);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -507,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_PHISHING);
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_PHISHING);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -530,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
                        PhishingLearnMore) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_PHISHING);
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_PHISHING);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -553,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeDontProceed) {
   GURL url = test_server()->GetURL(kMalwarePage);
   GURL iframe_url = test_server()->GetURL(kMalwareIframe);
-  AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
+  SetURLThreatType(iframe_url, SB_THREAT_TYPE_URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -575,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
                        DISABLED_MalwareIframeProceed) {
   GURL url = test_server()->GetURL(kMalwarePage);
   GURL iframe_url = test_server()->GetURL(kMalwareIframe);
-  AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
+  SetURLThreatType(iframe_url, SB_THREAT_TYPE_URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -589,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
                        MalwareIframeReportDetails) {
   GURL url = test_server()->GetURL(kMalwarePage);
   GURL iframe_url = test_server()->GetURL(kMalwareIframe);
-  AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
+  SetURLThreatType(iframe_url, SB_THREAT_TYPE_URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -616,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
       prefs::kSafeBrowsingProceedAnywayDisabled, true);
 
   GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_MALWARE);
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_MALWARE);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // The "proceed anyway" link should be hidden.

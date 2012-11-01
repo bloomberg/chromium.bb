@@ -185,12 +185,12 @@ struct SafeBrowsingService::WhiteListedEntry {
   int render_process_host_id;
   int render_view_id;
   std::string domain;
-  UrlCheckResult result;
+  SBThreatType threat_type;
 };
 
 SafeBrowsingService::UnsafeResource::UnsafeResource()
     : is_subresource(false),
-      threat_type(SAFE),
+      threat_type(SB_THREAT_TYPE_SAFE),
       render_process_host_id(-1),
       render_view_id(-1) {
 }
@@ -201,7 +201,7 @@ SafeBrowsingService::SafeBrowsingCheck::SafeBrowsingCheck()
     : full_hash(NULL),
       client(NULL),
       need_get_hash(false),
-      result(SAFE),
+      threat_type(SB_THREAT_TYPE_SAFE),
       is_download(false),
       timeout_factory_(NULL) {
 }
@@ -215,14 +215,14 @@ void SafeBrowsingService::Client::OnSafeBrowsingResult(
     DCHECK(!check.full_hash.get());
     if (!check.is_download) {
       DCHECK_EQ(1U, check.urls.size());
-      OnBrowseUrlCheckResult(check.urls[0], check.result);
+      OnCheckBrowseUrlResult(check.urls[0], check.threat_type);
     } else {
-      OnDownloadUrlCheckResult(check.urls, check.result);
+      OnCheckDownloadUrlResult(check.urls, check.threat_type);
     }
   } else if (check.full_hash.get()) {
-    OnDownloadHashCheckResult(
+    OnCheckDownloadHashResult(
         safe_browsing_util::SBFullHashToString(*check.full_hash),
-        check.result);
+        check.threat_type);
   } else {
     NOTREACHED();
   }
@@ -444,7 +444,7 @@ bool SafeBrowsingService::CheckBrowseUrl(const GURL& url,
   SafeBrowsingCheck* check = new SafeBrowsingCheck();
   check->urls.push_back(url);
   check->client = client;
-  check->result = SAFE;
+  check->threat_type = SB_THREAT_TYPE_SAFE;
   check->is_download = false;
   check->need_get_hash = full_hits.empty();
   check->prefix_hits.swap(prefix_hits);
@@ -486,7 +486,7 @@ void SafeBrowsingService::DisplayBlockingPage(
     const GURL& original_url,
     const std::vector<GURL>& redirect_urls,
     bool is_subresource,
-    UrlCheckResult result,
+    SBThreatType threat_type,
     const UrlCheckCallback& callback,
     int render_process_host_id,
     int render_view_id) {
@@ -496,7 +496,7 @@ void SafeBrowsingService::DisplayBlockingPage(
   resource.original_url = original_url;
   resource.redirect_urls = redirect_urls;
   resource.is_subresource = is_subresource;
-  resource.threat_type= result;
+  resource.threat_type = threat_type;
   resource.callback = callback;
   resource.render_process_host_id = render_process_host_id;
   resource.render_view_id = render_view_id;
@@ -699,7 +699,7 @@ void SafeBrowsingService::StopOnIOThread() {
   delete protocol_manager_;
   protocol_manager_ = NULL;
 
-  // Delete queued checks, calling back any clients with 'SAFE'.
+  // Delete queued checks, calling back any clients with 'SB_THREAT_TYPE_SAFE'.
   // If we don't do this here we may fail to close the database below.
   while (!queued_checks_.empty()) {
     QueuedCheck queued = queued_checks_.front();
@@ -707,7 +707,7 @@ void SafeBrowsingService::StopOnIOThread() {
       SafeBrowsingCheck sb_check;
       sb_check.urls.push_back(queued.url);
       sb_check.client = queued.client;
-      sb_check.result = SAFE;
+      sb_check.threat_type = SB_THREAT_TYPE_SAFE;
       queued.client->OnSafeBrowsingResult(sb_check);
     }
     queued_checks_.pop_front();
@@ -732,14 +732,15 @@ void SafeBrowsingService::StopOnIOThread() {
     safe_browsing_thread_.reset();
   }
 
-  // Delete pending checks, calling back any clients with 'SAFE'.  We have
-  // to do this after the db thread returns because methods on it can have
-  // copies of these pointers, so deleting them might lead to accessing garbage.
+  // Delete pending checks, calling back any clients with 'SB_THREAT_TYPE_SAFE'.
+  // We have to do this after the db thread returns because methods on it can
+  // have copies of these pointers, so deleting them might lead to accessing
+  // garbage.
   for (CurrentChecks::iterator it = checks_.begin();
        it != checks_.end(); ++it) {
     SafeBrowsingCheck* check = *it;
     if (check->client) {
-      check->result = SAFE;
+      check->threat_type = SB_THREAT_TYPE_SAFE;
       check->client->OnSafeBrowsingResult(*check);
     }
   }
@@ -929,7 +930,7 @@ void SafeBrowsingService::DatabaseLoadComplete() {
       SafeBrowsingCheck sb_check;
       sb_check.urls.push_back(check.url);
       sb_check.client = check.client;
-      sb_check.result = SAFE;
+      sb_check.threat_type = SB_THREAT_TYPE_SAFE;
       check.client->OnSafeBrowsingResult(sb_check);
     }
     queued_checks_.pop_front();
@@ -957,26 +958,26 @@ void SafeBrowsingService::DeleteChunks(
   }
 }
 
-SafeBrowsingService::UrlCheckResult SafeBrowsingService::GetResultFromListname(
+SBThreatType SafeBrowsingService::GetThreatTypeFromListname(
     const std::string& list_name) {
   if (safe_browsing_util::IsPhishingList(list_name)) {
-    return URL_PHISHING;
+    return SB_THREAT_TYPE_URL_PHISHING;
   }
 
   if (safe_browsing_util::IsMalwareList(list_name)) {
-    return URL_MALWARE;
+    return SB_THREAT_TYPE_URL_MALWARE;
   }
 
   if (safe_browsing_util::IsBadbinurlList(list_name)) {
-    return BINARY_MALWARE_URL;
+    return SB_THREAT_TYPE_BINARY_MALWARE_URL;
   }
 
   if (safe_browsing_util::IsBadbinhashList(list_name)) {
-    return BINARY_MALWARE_HASH;
+    return SB_THREAT_TYPE_BINARY_MALWARE_HASH;
   }
 
   DVLOG(1) << "Unknown safe browsing list " << list_name;
-  return SAFE;
+  return SB_THREAT_TYPE_SAFE;
 }
 
 void SafeBrowsingService::DatabaseUpdateFinished(bool update_succeeded) {
@@ -1101,9 +1102,11 @@ bool SafeBrowsingService::HandleOneCheck(
 
   // |client| is NULL if the request was cancelled.
   if (check->client) {
-    check->result = SAFE;
-    if (index != -1)
-      check->result = GetResultFromListname(full_hashes[index].list_name);
+    check->threat_type = SB_THREAT_TYPE_SAFE;
+    if (index != -1) {
+      check->threat_type = GetThreatTypeFromListname(
+          full_hashes[index].list_name);
+    }
   }
   SafeBrowsingCheckDone(check);
   return (index != -1);
@@ -1139,7 +1142,7 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     return;
   }
 
-  if (resource.threat_type != SafeBrowsingService::SAFE &&
+  if (resource.threat_type != SB_THREAT_TYPE_SAFE &&
       CanReportStats()) {
     GURL page_url = web_contents->GetURL();
     GURL referrer_url;
@@ -1163,7 +1166,7 @@ void SafeBrowsingService::DoDisplayBlockingPage(
                           resource.is_subresource, resource.threat_type,
                           std::string() /* post_data */);
   }
-  if (resource.threat_type != SafeBrowsingService::SAFE) {
+  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
     FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingHit(resource));
   }
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
@@ -1176,7 +1179,7 @@ void SafeBrowsingService::ReportSafeBrowsingHit(
     const GURL& page_url,
     const GURL& referrer_url,
     bool is_subresource,
-    SafeBrowsingService::UrlCheckResult threat_type,
+    SBThreatType threat_type,
     const std::string& post_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!CanReportStats())
@@ -1204,7 +1207,7 @@ void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(
     const GURL& page_url,
     const GURL& referrer_url,
     bool is_subresource,
-    SafeBrowsingService::UrlCheckResult threat_type,
+    SBThreatType threat_type,
     const std::string& post_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!enabled_)
@@ -1239,7 +1242,7 @@ void SafeBrowsingService::CheckDownloadHashOnSBThread(
 
   if (!database_->ContainsDownloadHashPrefix(check->full_hash->prefix)) {
     // Good, we don't have hash for this url prefix.
-    check->result = SAFE;
+    check->threat_type = SB_THREAT_TYPE_SAFE;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SafeBrowsingService::CheckDownloadHashDone, this, check));
@@ -1261,7 +1264,7 @@ void SafeBrowsingService::CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check) {
 
   if (!database_->ContainsDownloadUrl(check->urls, &prefix_hits)) {
     // Good, we don't have hash for this url prefix.
-    check->result = SAFE;
+    check->threat_type = SB_THREAT_TYPE_SAFE;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SafeBrowsingService::CheckDownloadUrlDone, this, check));
@@ -1284,7 +1287,7 @@ void SafeBrowsingService::TimeoutCallback(SafeBrowsingCheck* check) {
     return;
 
   DCHECK(checks_.find(check) != checks_.end());
-  DCHECK_EQ(check->result, SAFE);
+  DCHECK_EQ(check->threat_type, SB_THREAT_TYPE_SAFE);
   if (check->client) {
     check->client->OnSafeBrowsingResult(*check);
     check->client = NULL;
@@ -1308,7 +1311,7 @@ void SafeBrowsingService::SafeBrowsingCheckDone(SafeBrowsingCheck* check) {
   if (!enabled_)
     return;
 
-  VLOG(1) << "SafeBrowsingCheckDone: " << check->result;
+  VLOG(1) << "SafeBrowsingCheckDone: " << check->threat_type;
   DCHECK(checks_.find(check) != checks_.end());
   if (check->client)
     check->client->OnSafeBrowsingResult(*check);
@@ -1322,7 +1325,7 @@ void SafeBrowsingService::StartDownloadCheck(SafeBrowsingCheck* check,
                                              int64 timeout_ms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   check->client = client;
-  check->result = SAFE;
+  check->threat_type = SB_THREAT_TYPE_SAFE;
   check->is_download = true;
   check->timeout_factory_.reset(
       new base::WeakPtrFactory<SafeBrowsingService>(this));
@@ -1344,7 +1347,7 @@ void SafeBrowsingService::UpdateWhitelist(const UnsafeResource& resource) {
   entry.render_view_id = resource.render_view_id;
   entry.domain = net::RegistryControlledDomainService::GetDomainAndRegistry(
       resource.url);
-  entry.result = resource.threat_type;
+  entry.threat_type = resource.threat_type;
   white_listed_entries_.push_back(entry);
 }
 
@@ -1390,11 +1393,11 @@ bool SafeBrowsingService::IsWhitelisted(const UnsafeResource& resource) {
         // either be client-side phishing URL or a SafeBrowsing phishing URL.
         // If we show one type of phishing warning we don't want to show a
         // second phishing warning.
-        (entry.result == resource.threat_type ||
-         (entry.result == URL_PHISHING &&
-          resource.threat_type == CLIENT_SIDE_PHISHING_URL) ||
-         (entry.result == CLIENT_SIDE_PHISHING_URL &&
-          resource.threat_type == URL_PHISHING))  &&
+        (entry.threat_type == resource.threat_type ||
+         (entry.threat_type == SB_THREAT_TYPE_URL_PHISHING &&
+          resource.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL) ||
+         (entry.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL &&
+          resource.threat_type == SB_THREAT_TYPE_URL_PHISHING))  &&
         entry.domain ==
         net::RegistryControlledDomainService::GetDomainAndRegistry(
             resource.url)) {

@@ -59,8 +59,8 @@ class SafeBrowsingResourceThrottle
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
 
   // SafeBrowsingService::Client implementation (called on IO thread):
-  virtual void OnBrowseUrlCheckResult(
-      const GURL& url, SafeBrowsingService::UrlCheckResult result) OVERRIDE;
+  virtual void OnCheckBrowseUrlResult(
+      const GURL& url, SBThreatType result) OVERRIDE;
 
  private:
   // Describes what phase of the check a throttle is in.
@@ -90,7 +90,7 @@ class SafeBrowsingResourceThrottle
 
   // Starts running |url| through the safe browsing check. Returns true if the
   // URL is safe to visit. Otherwise returns false and will call
-  // OnUrlCheckResult() when the check has completed.
+  // OnBrowseUrlResult() when the check has completed.
   bool CheckUrl(const GURL& url);
 
   // Callback for when the safe browsing check (which was initiated by
@@ -98,8 +98,7 @@ class SafeBrowsingResourceThrottle
   void OnCheckUrlTimeout();
 
   // Starts displaying the safe browsing interstitial page.
-  void StartDisplayingBlockingPage(const GURL& url,
-                                   SafeBrowsingService::UrlCheckResult result);
+  void StartDisplayingBlockingPage(const GURL& url, SBThreatType threat_type);
 
   // Resumes the request, by continuing the deferred action (either starting the
   // request, or following a redirect).
@@ -110,7 +109,7 @@ class SafeBrowsingResourceThrottle
 
   // The result of the most recent safe browsing check. Only valid to read this
   // when state_ != STATE_CHECKING_URL.
-  SafeBrowsingService::UrlCheckResult safe_browsing_result_;
+  SBThreatType threat_type_;
 
   // The time when the outstanding safe browsing check was started.
   base::TimeTicks url_check_start_time_;

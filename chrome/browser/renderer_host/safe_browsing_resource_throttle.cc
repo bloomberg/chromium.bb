@@ -40,7 +40,7 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     SafeBrowsingService* safe_browsing)
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
-      safe_browsing_result_(SafeBrowsingService::SAFE),
+      threat_type_(SB_THREAT_TYPE_SAFE),
       render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id),
       safe_browsing_(safe_browsing),
@@ -86,18 +86,18 @@ void SafeBrowsingResourceThrottle::WillRedirectRequest(const GURL& new_url,
 
 // SafeBrowsingService::Client implementation, called on the IO thread once
 // the URL has been classified.
-void SafeBrowsingResourceThrottle::OnBrowseUrlCheckResult(
-    const GURL& url, SafeBrowsingService::UrlCheckResult result) {
+void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
+    const GURL& url, SBThreatType threat_type) {
   CHECK(state_ == STATE_CHECKING_URL);
   CHECK(defer_state_ != DEFERRED_NONE);
   CHECK(url == url_being_checked_) << "Was expecting: " << url_being_checked_
                                    << " but got: " << url;
 
   timer_.Stop();  // Cancel the timeout timer.
-  safe_browsing_result_ = result;
+  threat_type_ = threat_type;
   state_ = STATE_NONE;
 
-  if (result == SafeBrowsingService::SAFE) {
+  if (threat_type == SB_THREAT_TYPE_SAFE) {
     // Log how much time the safe browsing check cost us.
     safe_browsing_->LogPauseDelay(
         base::TimeTicks::Now() - url_check_start_time_);
@@ -127,13 +127,12 @@ void SafeBrowsingResourceThrottle::OnBrowseUrlCheckResult(
       }
     }
     if (should_show_blocking_page)
-      StartDisplayingBlockingPage(url, result);
+      StartDisplayingBlockingPage(url, threat_type);
   }
 }
 
 void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
-    const GURL& url,
-    SafeBrowsingService::UrlCheckResult result) {
+    const GURL& url, SBThreatType threat_type) {
   CHECK(state_ == STATE_NONE);
   CHECK(defer_state_ != DEFERRED_NONE);
 
@@ -144,7 +143,7 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
       request_->original_url(),
       redirect_urls_,
       is_subresource_,
-      result,
+      threat_type,
       base::Bind(
           &SafeBrowsingResourceThrottle::OnBlockingPageComplete, AsWeakPtr()),
       render_process_host_id_,
@@ -159,7 +158,7 @@ void SafeBrowsingResourceThrottle::OnBlockingPageComplete(bool proceed) {
   state_ = STATE_NONE;
 
   if (proceed) {
-    safe_browsing_result_ = SafeBrowsingService::SAFE;
+    threat_type_ = SB_THREAT_TYPE_SAFE;
     ResumeRequest();
   } else {
     controller()->Cancel();
@@ -170,7 +169,7 @@ bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
   CHECK(state_ == STATE_NONE);
   bool succeeded_synchronously = safe_browsing_->CheckBrowseUrl(url, this);
   if (succeeded_synchronously) {
-    safe_browsing_result_ = SafeBrowsingService::SAFE;
+    threat_type_ = SB_THREAT_TYPE_SAFE;
     safe_browsing_->LogPauseDelay(base::TimeDelta());  // No delay.
     return true;
   }
@@ -194,7 +193,7 @@ void SafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
   CHECK(defer_state_ != DEFERRED_NONE);
 
   safe_browsing_->CancelCheck(this);
-  OnBrowseUrlCheckResult(url_being_checked_, SafeBrowsingService::SAFE);
+  OnCheckBrowseUrlResult(url_being_checked_, SB_THREAT_TYPE_SAFE);
 }
 
 void SafeBrowsingResourceThrottle::ResumeRequest() {

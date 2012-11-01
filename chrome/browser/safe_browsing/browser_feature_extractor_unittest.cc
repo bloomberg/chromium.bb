@@ -504,7 +504,7 @@ TEST_F(BrowserFeatureExtractorTest, SafeBrowsingFeatures) {
   browse_info_->unsafe_resource->url = GURL("http://www.malware.com/");
   browse_info_->unsafe_resource->original_url = GURL("http://www.good.com/");
   browse_info_->unsafe_resource->is_subresource = true;
-  browse_info_->unsafe_resource->threat_type = SafeBrowsingService::URL_MALWARE;
+  browse_info_->unsafe_resource->threat_type = SB_THREAT_TYPE_URL_MALWARE;
 
   ExtractFeatures(&request);
   std::map<std::string, double> features;
