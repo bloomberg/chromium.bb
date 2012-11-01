@@ -10,7 +10,7 @@
  * which is a struct passed by reference.
  *
  * NB: this is not the only place where context switches from trusted
- * to untrusted code.  The NaClGetTlsFastPath code (nacl_syscall_64.S)
+ * to untrusted code.  The NaClGetTlsFastPath* code (nacl_syscall_64.S)
  * also performs a partial switch (to and fro).
  */
 

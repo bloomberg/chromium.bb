@@ -35,13 +35,12 @@ SyscallReturnIsSandboxed:
          */
         hlt
 1:      .p2align 5,0xf4
+        /* Now we're at the next bundle, where the return is rounded to. */
 
         /*
-         * Now we're at the next bundle, where the return is rounded to.
          * Test the tls_get call as well, since it may have an alternate
          * entry/return path in the trampoline implementation.
          */
-
         leaq 2f(%r15), %rcx
         pushq %rcx
 
@@ -53,10 +52,26 @@ SyscallReturnIsSandboxed:
         .p2align 5
         hlt
 2:      .p2align 5,0xf4
+        /* Now we're at the next bundle, where the return is rounded to. */
 
         /*
-         * Now we're at the next bundle, where the return is rounded to.
+         * Test the second_tls_get call as well, since it may have an
+         * alternate entry/return path in the trampoline
+         * implementation.
          */
+        leaq 3f(%r15), %rcx
+        pushq %rcx
+
+        movl $NACL_SYSCALL_ADDR(NACL_sys_second_tls_get), %ecx
+        andl $0xffffffe0, %ecx
+        addq %r15, %rcx
+        jmp *%rcx
+
+        .p2align 5
+        hlt
+3:      .p2align 5,0xf4
+        /* Now we're at the next bundle, where the return is rounded to. */
+
         movl $1, %eax
         naclret
         .p2align 5 /* -- pnacl toolchain leaves "..." without this */

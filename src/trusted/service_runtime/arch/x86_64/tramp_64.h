@@ -25,6 +25,7 @@ extern char NaClDispatchThunk;
 extern char NaClDispatchThunk_jmp_target;
 extern char NaClDispatchThunkEnd;
 
-extern char NaClGetTlsFastPath;
+extern char NaClGetTlsFastPath1;
+extern char NaClGetTlsFastPath2;
 
 #endif

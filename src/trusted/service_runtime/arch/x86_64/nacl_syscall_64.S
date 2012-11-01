@@ -11,10 +11,22 @@
 #if NACL_OSX || defined(__clang__)
 # define MACRO(name)    .macro name
 # define ENDMACRO       .endmacro
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER($0):
+# define MACROARG1      $0
+# define MACROARG2      $1
 #else
-# define MACRO(name)    .macro name
+# define MACRO(name)    .macro name arg1=0, arg2=0
 # define ENDMACRO       .endm
+# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_IDENTIFIER(\arg1):
+# define MACROARG1      \arg1
+# define MACROARG2      \arg2
 #endif
+/*
+ * We must write x86 assembly immediates as "$ 0" rather than "$0" to
+ * avoid this being treated as a macro argument by the Mac/Clang
+ * assemblers.  We use DOLLAR below to make this more explicit.
+ */
+#define DOLLAR $
 
 /*
  * This code gets executed when switching from a 64-bit nacl module to
@@ -208,16 +220,17 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
          * 0x00 -0x18 rdi
          */
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClGetTlsFastPath):
+MACRO(tls_syscall)
+MACROENTRY
         get_tls
         leaq    IDENTIFIER(nacl_user)(%rip), %rdx
         movq    (%rdx,%rax,8), %rdx
-        movl    NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1(%rdx), %eax
+        movl    MACROARG2(%rdx), %eax
         /* sandbox the return, straight off the untrusted stack */
         movq    0x8(%rsp), %rcx
-        addq    $0x10, %rsp
-        addl    $31, %ecx
-        andl    $0xffffffe0, %ecx
+        addq    DOLLAR 0x10, %rsp
+        addl    DOLLAR 31, %ecx
+        andl    DOLLAR 0xffffffe0, %ecx
         addq    %r15, %rcx
         /*
          * Set %rdx to zero so that we do not leak the address of the
@@ -228,3 +241,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClGetTlsFastPath):
          */
         xorl    %edx, %edx
         jmp     *%rcx
+ENDMACRO
+
+        tls_syscall NaClGetTlsFastPath1, NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1
+        tls_syscall NaClGetTlsFastPath2, NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE2

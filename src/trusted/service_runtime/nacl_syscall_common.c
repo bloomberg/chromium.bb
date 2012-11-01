@@ -2488,7 +2488,7 @@ cleanup:
 
 /*
  * This is not used on x86-64 and its functionality is replaced by
- * NaClGetTlsFastPath (see nacl_syscall_64.S).
+ * NaClGetTlsFastPath1 (see nacl_syscall_64.S).
  */
 int32_t NaClCommonSysTlsGet(struct NaClAppThread *natp) {
   return NaClTlsGetTlsValue1(natp);
@@ -2500,6 +2500,10 @@ int32_t NaClSysSecond_Tls_Set(struct NaClAppThread *natp,
   return 0;
 }
 
+/*
+ * This is not used on x86-64 and its functionality is replaced by
+ * NaClGetTlsFastPath2 (see nacl_syscall_64.S).
+ */
 int32_t NaClSysSecond_Tls_Get(struct NaClAppThread *natp) {
   return NaClTlsGetTlsValue2(natp);
 }

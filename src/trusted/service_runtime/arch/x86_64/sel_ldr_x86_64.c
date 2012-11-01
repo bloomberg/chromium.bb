@@ -16,15 +16,37 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_64/tramp_64.h"
 
+static uintptr_t AddDispatchThunk(uintptr_t *next_addr,
+                                  uintptr_t target_routine) {
+  struct NaClPatchInfo patch_info;
+  struct NaClPatch jmp_target;
+
+  jmp_target.target = (((uintptr_t) &NaClDispatchThunk_jmp_target)
+                       - sizeof(uintptr_t));
+  jmp_target.value = target_routine;
+
+  NaClPatchInfoCtor(&patch_info);
+  patch_info.abs64 = &jmp_target;
+  patch_info.num_abs64 = 1;
+
+  patch_info.dst = *next_addr;
+  patch_info.src = (uintptr_t) &NaClDispatchThunk;
+  patch_info.nbytes = ((uintptr_t) &NaClDispatchThunkEnd
+                       - (uintptr_t) &NaClDispatchThunk);
+  NaClApplyPatchToMemory(&patch_info);
+
+  *next_addr += patch_info.nbytes;
+  return patch_info.dst;
+}
+
 int NaClMakeDispatchThunk(struct NaClApp *nap) {
   int                   retval = 0;  /* fail */
   int                   error;
   void                  *thunk_addr = NULL;
-  struct NaClPatchInfo  patch_info;
-  struct NaClPatch      jmp_target;
-  size_t                thunk_offset;
+  uintptr_t             next_addr;
   uintptr_t             dispatch_thunk = 0;
-  uintptr_t             get_tls_fast_path = 0;
+  uintptr_t             get_tls_fast_path1 = 0;
+  uintptr_t             get_tls_fast_path2 = 0;
 
   NaClLog(2, "Entered NaClMakeDispatchThunk\n");
   if (0 != nap->dispatch_thunk) {
@@ -54,37 +76,13 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
   }
   NaClFillMemoryRegionWithHalt(thunk_addr, NACL_MAP_PAGESIZE);
 
-  jmp_target.target = (((uintptr_t) &NaClDispatchThunk_jmp_target)
-                       - sizeof(uintptr_t));
-  jmp_target.value = (uintptr_t) NaClSyscallSeg;
-
-  NaClPatchInfoCtor(&patch_info);
-  patch_info.abs64 = &jmp_target;
-  patch_info.num_abs64 = 1;
-
-  patch_info.dst = (uintptr_t) thunk_addr;
-  patch_info.src = (uintptr_t) &NaClDispatchThunk;
-  patch_info.nbytes = ((uintptr_t) &NaClDispatchThunkEnd
-                       - (uintptr_t) &NaClDispatchThunk);
-  dispatch_thunk = patch_info.dst;
-  thunk_offset = patch_info.nbytes;
-  NaClApplyPatchToMemory(&patch_info);
-
-  /* actually, global array base address, not jmp target any more */
-  jmp_target.target = (((uintptr_t) &NaClDispatchThunk_jmp_target)
-                       - sizeof(uintptr_t));
-  jmp_target.value = (uintptr_t) &NaClGetTlsFastPath;
-
-  NaClPatchInfoCtor(&patch_info);
-  patch_info.abs64 = &jmp_target;
-  patch_info.num_abs64 = 1;
-
-  patch_info.dst = (uintptr_t) thunk_addr + thunk_offset;
-  patch_info.src = (uintptr_t) &NaClDispatchThunk;
-  patch_info.nbytes = ((uintptr_t) &NaClDispatchThunkEnd
-                       - (uintptr_t) &NaClDispatchThunk);
-  get_tls_fast_path = patch_info.dst;
-  NaClApplyPatchToMemory(&patch_info);
+  next_addr = (uintptr_t) thunk_addr;
+  dispatch_thunk =
+      AddDispatchThunk(&next_addr, (uintptr_t) &NaClSyscallSeg);
+  get_tls_fast_path1 =
+      AddDispatchThunk(&next_addr, (uintptr_t) &NaClGetTlsFastPath1);
+  get_tls_fast_path2 =
+      AddDispatchThunk(&next_addr, (uintptr_t) &NaClGetTlsFastPath2);
 
   if (0 != (error = NaCl_mprotect(thunk_addr,
                                   NACL_MAP_PAGESIZE,
@@ -104,7 +102,8 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
     }
   } else {
     nap->dispatch_thunk = dispatch_thunk;
-    nap->get_tls_fast_path = get_tls_fast_path;
+    nap->get_tls_fast_path1 = get_tls_fast_path1;
+    nap->get_tls_fast_path2 = get_tls_fast_path2;
   }
   return retval;
 }

@@ -107,7 +107,8 @@ void TestSyscall(uintptr_t syscall_addr) {
      * This fast path syscall happens to preserve various registers,
      * but that is obviously not guaranteed by the ABI.
      */
-    if (syscall_addr == (uintptr_t) NACL_SYSCALL(tls_get)) {
+    if (syscall_addr == (uintptr_t) NACL_SYSCALL(tls_get) ||
+        syscall_addr == (uintptr_t) NACL_SYSCALL(second_tls_get)) {
       g_expected_regs.rsi = call_regs.rsi;
       g_expected_regs.rdi = call_regs.rdi;
       g_expected_regs.r8 = call_regs.r8;
@@ -194,11 +195,14 @@ int main() {
   TestSyscall((uintptr_t) NACL_SYSCALL(null));
 
   /*
-   * Check tls_get specifically because it is implemented via a fast
-   * path in assembly code.
+   * Check tls_get and second_tls_get specifically because they are
+   * implemented via fast paths in assembly code.
    */
   printf("Testing tls_get syscall...\n");
   TestSyscall((uintptr_t) NACL_SYSCALL(tls_get));
+
+  printf("Testing second_tls_get syscall...\n");
+  TestSyscall((uintptr_t) NACL_SYSCALL(second_tls_get));
 
   printf("Testing initial register state at thread entry...\n");
   TestInitialRegsAtThreadEntry();
