@@ -211,9 +211,6 @@ Chrome supports. -->
       <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in tabs and popup windows">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Google Chrome
       </message>
-      <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT_NO_LOGO" desc="The format for titles displayed when the window has no distributor logo displayed">
-        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
-      </message>
       <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
           Get help with using Chrome

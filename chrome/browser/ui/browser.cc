@@ -7,7 +7,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
 #include <algorithm>
 #include <string>
@@ -569,11 +569,10 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
   // the application name.
   return title;
 #else
-  int string_id = IDS_BROWSER_WINDOW_TITLE_FORMAT;
   // Don't append the app name to window titles on app frames and app popups
-  if (is_app())
-    string_id = IDS_BROWSER_WINDOW_TITLE_FORMAT_NO_LOGO;
-  return l10n_util::GetStringFUTF16(string_id, title);
+  return is_app() ?
+      title :
+      l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT, title);
 #endif
 }
 
@@ -1255,7 +1254,7 @@ void Browser::OnWindowDidShow() {
           base::Time::Now() - *process_creation_time);
     }
   }
-#endif // OS_MACOSX || OS_WIN
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
   // Nothing to do for non-tabbed windows.
   if (!is_type_tabbed())
