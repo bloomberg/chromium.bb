@@ -214,10 +214,14 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
           switches::kGpuNoContextLost)) {
     gpu_info->can_lose_context = false;
   } else {
+#if defined(OS_CHROMEOS)
+    gpu_info->can_lose_context = false;
+#else
     // TODO(zmo): need to consider the case where we are running on top
     // of desktop GL and GL_ARB_robustness extension is available.
     gpu_info->can_lose_context =
         (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+#endif
   }
 
   gpu_info->finalized = true;
