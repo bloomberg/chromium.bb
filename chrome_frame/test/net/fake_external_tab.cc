@@ -18,7 +18,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/prefs/json_pref_store.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -353,9 +352,8 @@ void FilterDisabledTests() {
 // Same as BrowserProcessImpl, but uses custom profile manager.
 class FakeBrowserProcessImpl : public BrowserProcessImpl {
  public:
-  FakeBrowserProcessImpl(base::SequencedTaskRunner* local_state_task_runner,
-                         const CommandLine& command_line)
-      : BrowserProcessImpl(local_state_task_runner, command_line) {
+  explicit FakeBrowserProcessImpl(const CommandLine& command_line)
+      : BrowserProcessImpl(command_line) {
     profiles_dir_.CreateUniqueTempDir();
   }
 
@@ -496,13 +494,7 @@ void FakeExternalTab::Initialize() {
   cmd->AppendSwitch(switches::kDisableWebResources);
   cmd->AppendSwitch(switches::kSingleProcess);
 
-  FilePath local_state_path;
-  CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
-  scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(local_state_path,
-                                          BrowserThread::GetBlockingPool());
-  browser_process_.reset(new FakeBrowserProcessImpl(local_state_task_runner,
-                                                    *cmd));
+  browser_process_.reset(new FakeBrowserProcessImpl(*cmd));
   // BrowserProcessImpl's constructor should set g_browser_process.
   DCHECK(g_browser_process);
   g_browser_process->SetApplicationLocale("en-US");

@@ -422,8 +422,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
   scoped_ptr<PrefService> prefs(
-      PrefServiceMockBuilder().WithUserFilePrefs(
-          pref_file, loop_.message_loop_proxy()).Create());
+      PrefServiceMockBuilder().WithUserFilePrefs(pref_file).Create());
   Profile::RegisterUserPrefs(prefs.get());
   chrome::RegisterUserPrefs(prefs.get());
   profile_builder.SetPrefService(prefs.Pass());

@@ -15,7 +15,7 @@ class FilePath;
 class PrefService;
 
 namespace base {
-class SequencedTaskRunner;
+class MessageLoopProxy;
 }
 
 namespace policy {
@@ -48,11 +48,10 @@ class PrefServiceMockBuilder {
   PrefServiceMockBuilder& WithCommandLine(CommandLine* command_line);
 
   // Specifies to use an actual file-backed user pref store.
-  // TODO(zelidrag): Remove the first overloaded method below.
   PrefServiceMockBuilder& WithUserFilePrefs(const FilePath& prefs_file);
   PrefServiceMockBuilder& WithUserFilePrefs(
       const FilePath& prefs_file,
-      base::SequencedTaskRunner* task_runner);
+      base::MessageLoopProxy* message_loop_proxy);
 
   // Creates the PrefService, invalidating the entire builder configuration.
   PrefService* Create();

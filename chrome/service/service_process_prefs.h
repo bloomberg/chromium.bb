@@ -12,16 +12,16 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-class SequencedTaskRunner;
 }
 
 // Manages persistent preferences for the service process. This is basically a
 // thin wrapper around JsonPrefStore for more comfortable use.
 class ServiceProcessPrefs {
  public:
-  // |sequenced_task_runner| must be a shutdown-blocking task runner.
+  // |file_message_loop_proxy| is the MessageLoopProxy for a thread on which
+  // file I/O can be done.
   ServiceProcessPrefs(const FilePath& pref_filename,
-                      base::SequencedTaskRunner* task_runner);
+                      base::MessageLoopProxy* file_message_loop_proxy);
   ~ServiceProcessPrefs();
 
   // Read preferences from the backing file.

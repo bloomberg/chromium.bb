@@ -34,10 +34,6 @@ class Preferences;
 }
 #endif
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace content {
 class SpeechRecognitionPreferences;
 }
@@ -151,8 +147,7 @@ class ProfileImpl : public Profile,
 
   ProfileImpl(const FilePath& path,
               Delegate* delegate,
-              CreateMode create_mode,
-              base::SequencedTaskRunner* sequenced_task_runner);
+              CreateMode create_mode);
 
   // Does final initialization. Should be called after prefs were loaded.
   void DoFinalInit(bool is_new_profile);

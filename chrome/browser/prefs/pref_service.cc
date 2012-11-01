@@ -123,7 +123,6 @@ PrefServiceBase* PrefServiceBase::FromBrowserContext(BrowserContext* context) {
 // static
 PrefService* PrefService::CreatePrefService(
     const FilePath& pref_filename,
-    base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     PrefStore* extension_prefs,
     bool async) {
@@ -157,7 +156,8 @@ PrefService* PrefService::CreatePrefService(
   CommandLinePrefStore* command_line =
       new CommandLinePrefStore(CommandLine::ForCurrentProcess());
   JsonPrefStore* user = new JsonPrefStore(
-      pref_filename, pref_io_task_runner);
+      pref_filename,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   DefaultPrefStore* default_pref_store = new DefaultPrefStore();
 
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
