@@ -46,8 +46,8 @@ GLSurface::CreateViewGLSurface(bool software, gfx::AcceleratedWidget window) {
 
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2: {
-      // window is unused
-      scoped_refptr<AndroidViewSurface> surface(new AndroidViewSurface());
+      scoped_refptr<GLSurface> surface = window ?
+          new NativeViewGLSurfaceEGL(false, window) : new AndroidViewSurface();
       if (!surface->Initialize())
         return NULL;
       return surface;

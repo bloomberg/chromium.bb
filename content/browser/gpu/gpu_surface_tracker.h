@@ -61,6 +61,9 @@ class GpuSurfaceTracker : public GpuSurfaceLookup {
   // Note: This is an O(log N) lookup.
   void SetSurfaceHandle(int surface_id, const gfx::GLSurfaceHandle& handle);
 
+  // Sets the native widget associated with the surface_id.
+  void SetNativeWidget(int surface_id, gfx::AcceleratedWidget widget);
+
   // Gets the native handle for the given surface.
   // Note: This is an O(log N) lookup.
   gfx::GLSurfaceHandle GetSurfaceHandle(int surface_id);
