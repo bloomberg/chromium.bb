@@ -648,6 +648,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   friend class TestProfileSyncService;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
 
+  // Detects and attempts to recover from a previous improper datatype
+  // configuration where Keep Everything Synced and the preferred types were
+  // not correctly set.
+  void TrySyncDatatypePrefRecovery();
+
   // Starts up sync if it is not suppressed and preconditions are met.
   // Called from Initialize() and UnsuppressAndStart().
   void TryStart();

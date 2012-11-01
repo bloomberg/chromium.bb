@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -52,6 +53,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
@@ -216,7 +218,43 @@ void ProfileSyncService::Initialize() {
     DisableForUser();
   }
 
+  TrySyncDatatypePrefRecovery();
+
   TryStart();
+}
+
+void ProfileSyncService::TrySyncDatatypePrefRecovery() {
+  DCHECK(!sync_initialized());
+  if (!HasSyncSetupCompleted())
+    return;
+
+  // There was a bug where OnUserChoseDatatypes was not properly called on
+  // configuration (see crbug.com/154940). We detect this by checking whether
+  // kSyncKeepEverythingSynced has a default value. If so, and sync setup has
+  // completed, it means sync was not properly configured, so we manually
+  // set kSyncKeepEverythingSynced.
+  PrefService* const pref_service = profile_->GetPrefs();
+  if (!pref_service)
+    return;
+  if (sync_prefs_.HasKeepEverythingSynced())
+    return;
+  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
+  if (sync_prefs_.GetPreferredDataTypes(registered_types).Size() > 1)
+    return;
+
+  const PrefService::Preference* keep_everything_synced =
+      pref_service->FindPreference(prefs::kSyncKeepEverythingSynced);
+  // This will be false if the preference was properly set or if it's controlled
+  // by policy.
+  if (!keep_everything_synced->IsDefaultValue())
+    return;
+
+  // kSyncKeepEverythingSynced was not properly set. Set it and the preferred
+  // types now, before we configure.
+  UMA_HISTOGRAM_COUNTS("Sync.DatatypePrefRecovery", 1);
+  sync_prefs_.SetKeepEverythingSynced(true);
+  sync_prefs_.SetPreferredDataTypes(registered_types,
+                                    registered_types);
 }
 
 void ProfileSyncService::TryStart() {
