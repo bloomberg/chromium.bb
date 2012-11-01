@@ -2125,7 +2125,7 @@ llvm-sb-setup() {
   # This is always statically linked.
   local flags=" -static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) "
   LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized \
-  --target=${CROSS_TARGET_ARM}"
+  --target=${CROSS_TARGET_ARM} llvm_cv_link_use_export_dynamic=no "
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
@@ -2245,10 +2245,12 @@ llvm-sb-make() {
   ts-touch-open "${objdir}"
 
   local tools_to_build="llc"
+  local export_dyn_env="llvm_cv_link_use_export_dynamic=no"
   local isjit=0
   if ${SB_JIT}; then
     isjit=1
     tools_to_build="llc lli"
+    export_dyn_env=""
   fi
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
@@ -2257,6 +2259,7 @@ llvm-sb-make() {
       NACL_SB_JIT=${isjit} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
+      ${export_dyn_env} \
       make ${MAKE_OPTS} tools-only
 
   ts-touch-commit "${objdir}"
