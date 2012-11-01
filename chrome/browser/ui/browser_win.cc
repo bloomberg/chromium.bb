@@ -51,7 +51,8 @@ void NewWindow(Browser* browser) {
     NewMetroWindow(browser, browser->profile()->GetOriginalProfile());
     return;
   }
-  NewEmptyWindow(browser->profile()->GetOriginalProfile());
+  NewEmptyWindow(browser->profile()->GetOriginalProfile(),
+                 browser->host_desktop_type());
 }
 
 void NewIncognitoWindow(Browser* browser) {
@@ -59,7 +60,8 @@ void NewIncognitoWindow(Browser* browser) {
     NewMetroWindow(browser, browser->profile()->GetOffTheRecordProfile());
     return;
   }
-  NewEmptyWindow(browser->profile()->GetOffTheRecordProfile());
+  NewEmptyWindow(browser->profile()->GetOffTheRecordProfile(),
+                 browser->host_desktop_type());
 }
 
 }  // namespace chrome
