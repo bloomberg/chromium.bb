@@ -1802,6 +1802,14 @@ IPC_SYNC_MESSAGE_CONTROL4_2(ViewHostMsg_OpenChannelToPlugin,
                             IPC::ChannelHandle /* channel_handle */,
                             webkit::WebPluginInfo /* info */)
 
+#if defined(OS_WIN)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_WindowlessPluginDummyWindowCreated,
+                    gfx::NativeViewId /* dummy_activation_window */)
+
+IPC_MESSAGE_ROUTED1(ViewHostMsg_WindowlessPluginDummyWindowDestroyed,
+                    gfx::NativeViewId /* dummy_activation_window */)
+#endif
+
 // Get the list of proxies to use for |url|, as a semicolon delimited list
 // of "<TYPE> <HOST>:<PORT>" | "DIRECT".
 IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,

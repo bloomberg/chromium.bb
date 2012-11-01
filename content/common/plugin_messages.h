@@ -308,8 +308,9 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PluginHostMsg_SetWindow,
 // passed in for windowless plugins and is used to indicate if messages
 // are to be pumped in sync calls to the plugin process. Currently used
 // in HandleEvent calls.
-IPC_SYNC_MESSAGE_ROUTED1_0(PluginHostMsg_SetWindowlessPumpEvent,
-                           HANDLE /* modal_loop_pump_messages_event */)
+IPC_SYNC_MESSAGE_ROUTED2_0(PluginHostMsg_SetWindowlessData,
+                           HANDLE /* modal_loop_pump_messages_event */,
+                           gfx::NativeViewId /* dummy_activation_window*/)
 
 // Send the IME status retrieved from a windowless plug-in. A windowless plug-in
 // uses the IME attached to a browser process as a renderer does. A plug-in

@@ -67,7 +67,8 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window) OVERRIDE;
 #if defined(OS_WIN)
-  void SetWindowlessPumpEvent(HANDLE pump_messages_event);
+  void SetWindowlessData(HANDLE pump_messages_event,
+                         gfx::NativeViewId dummy_activation_window);
 #endif
 
   virtual void CancelResource(unsigned long id) OVERRIDE;

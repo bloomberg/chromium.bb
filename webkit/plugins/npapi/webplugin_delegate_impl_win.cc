@@ -253,6 +253,10 @@ bool WebPluginDelegateImpl::IsDummyActivationWindow(HWND window) {
   return false;
 }
 
+HWND WebPluginDelegateImpl::GetDefaultDummyActivationWindowParent() {
+  return GetDesktopWindow();
+}
+
 LRESULT CALLBACK WebPluginDelegateImpl::HandleEventMessageFilterHook(
     int code, WPARAM wParam, LPARAM lParam) {
   if (g_current_plugin_instance) {
@@ -389,7 +393,9 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   if (windowless_ && !instance_->plugin_lib()->internal()) {
     CreateDummyWindowForActivation();
     handle_event_pump_messages_event_ = CreateEvent(NULL, TRUE, FALSE, NULL);
-    plugin_->SetWindowlessPumpEvent(handle_event_pump_messages_event_);
+    plugin_->SetWindowlessData(
+        handle_event_pump_messages_event_,
+        reinterpret_cast<gfx::NativeViewId>(dummy_window_for_activation_));
   }
 
   // We cannot patch internal plugins as they are not shared libraries.
@@ -749,7 +755,9 @@ bool WebPluginDelegateImpl::CreateDummyWindowForActivation() {
     0,
     0,
     0,
-    parent_,
+    // We don't know the parent of the dummy window yet, so just set it to the
+    // desktop and it'll get parented by the browser.
+    GetDefaultDummyActivationWindowParent(),
     0,
     GetModuleHandle(NULL),
     0);
@@ -1252,7 +1260,12 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     // windowless plugin is under the mouse and to handle this. This would
     // also require some changes in RenderWidgetHost to detect this in the
     // WM_MOUSEACTIVATE handler and inform the renderer accordingly.
-    last_focus_window = ::SetFocus(dummy_window_for_activation_);
+    bool valid = GetParent(dummy_window_for_activation_) != GetDesktopWindow();
+    if (valid) {
+      last_focus_window = ::SetFocus(dummy_window_for_activation_);
+    } else {
+      NOTREACHED() << "Dummy window not parented";
+    }
   }
 
   bool old_task_reentrancy_state =
@@ -1368,7 +1381,14 @@ BOOL WINAPI WebPluginDelegateImpl::TrackPopupMenuPatch(
     // TrackPopupMenu fails if the window passed in belongs to a different
     // thread.
     if (::GetCurrentThreadId() != window_thread_id) {
-      window = g_current_plugin_instance->dummy_window_for_activation_;
+      bool valid =
+          GetParent(g_current_plugin_instance->dummy_window_for_activation_) !=
+              GetDesktopWindow();
+      if (valid) {
+        window = g_current_plugin_instance->dummy_window_for_activation_;
+      } else {
+        NOTREACHED() << "Dummy window not parented";
+      }
     }
   }
 

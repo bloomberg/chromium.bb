@@ -96,7 +96,8 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
   virtual void SetAcceptsInputEvents(bool accepts) OVERRIDE;
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window) OVERRIDE;
 #if defined(OS_WIN)
-  void SetWindowlessPumpEvent(HANDLE pump_messages_event) { }
+  void SetWindowlessData(HANDLE pump_messages_event,
+                         gfx::NativeViewId dummy_activation_window) { }
   void ReparentPluginWindow(HWND window, HWND parent) { }
   void ReportExecutableMemory(size_t size) { }
 #endif

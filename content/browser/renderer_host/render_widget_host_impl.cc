@@ -55,6 +55,7 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #if defined(TOOLKIT_GTK)
 #include "content/browser/renderer_host/backing_store_gtk.h"
@@ -65,6 +66,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using webkit::npapi::WebPluginDelegateImpl;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -343,6 +345,12 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnMsgCreatePluginContainer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
                         OnMsgDestroyPluginContainer)
+#endif
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowCreated,
+                        OnWindowlessPluginDummyWindowCreated)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowDestroyed,
+                        OnWindowlessPluginDummyWindowDestroyed)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -1862,6 +1870,29 @@ void RenderWidgetHostImpl::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
 }
 #endif
 
+#if defined(OS_WIN)
+void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowCreated(
+    gfx::NativeViewId dummy_activation_window) {
+  HWND hwnd = reinterpret_cast<HWND>(dummy_activation_window);
+  CHECK(WebPluginDelegateImpl::IsDummyActivationWindow(hwnd));
+  SetParent(hwnd, reinterpret_cast<HWND>(GetNativeViewId()));
+  dummy_windows_for_activation_.push_back(hwnd);
+}
+
+void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowDestroyed(
+    gfx::NativeViewId dummy_activation_window) {
+  HWND hwnd = reinterpret_cast<HWND>(dummy_activation_window);
+  std::list<HWND>::iterator i = dummy_windows_for_activation_.begin();
+  for (; i != dummy_windows_for_activation_.end(); ++i) {
+    if ((*i) == hwnd) {
+      dummy_windows_for_activation_.erase(i);
+      return;
+    }
+  }
+  NOTREACHED() << "Unknown dummy window";
+}
+#endif
+
 bool RenderWidgetHostImpl::PaintBackingStoreRect(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
@@ -2144,6 +2175,19 @@ void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {
 }
 
 #if defined(USE_AURA)
+
+void RenderWidgetHostImpl::ParentChanged(gfx::NativeViewId new_parent) {
+#if defined(OS_WIN)
+  HWND hwnd = reinterpret_cast<HWND>(new_parent);
+  if (!hwnd)
+    hwnd = WebPluginDelegateImpl::GetDefaultDummyActivationWindowParent();
+  for (std::list<HWND>::iterator i = dummy_windows_for_activation_.begin();
+        i != dummy_windows_for_activation_.end(); ++i) {
+    SetParent(*i, hwnd);
+  }
+#endif
+}
+
 // static
 void RenderWidgetHostImpl::SendFrontSurfaceIsProtected(
     bool is_protected,

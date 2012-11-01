@@ -91,6 +91,10 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // Returns true if the window handle passed in is that of the dummy
   // activation window for windowless plugins.
   static bool IsDummyActivationWindow(HWND window);
+
+  // Returns the default HWND to parent the dummy window to when none is
+  // available.
+  static HWND GetDefaultDummyActivationWindowParent();
 #endif
 
   // WebPluginDelegate implementation

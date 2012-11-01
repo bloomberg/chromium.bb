@@ -150,7 +150,8 @@ class WebPluginDelegateProxy
   // we translate into calls to the real WebPlugin.
   void OnSetWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
-  void OnSetWindowlessPumpEvent(HANDLE modal_loop_pump_messages_event);
+  void OnSetWindowlessData(HANDLE modal_loop_pump_messages_event,
+                           gfx::NativeViewId dummy_activation_window);
   void OnNotifyIMEStatus(const int input_mode, const gfx::Rect& caret_rect);
 #endif
   void OnCompleteURL(const std::string& url_in, std::string* url_out,
@@ -281,6 +282,9 @@ class WebPluginDelegateProxy
   bool uses_shared_bitmaps_;
 #if defined(OS_MACOSX)
   bool uses_compositor_;
+#elif defined(OS_WIN)
+  // Used for windowless plugins so that keyboard activation works.
+  gfx::NativeViewId dummy_activation_window_;
 #endif
   gfx::PluginWindowHandle window_;
   scoped_refptr<PluginChannelHost> channel_host_;
@@ -294,8 +298,8 @@ class WebPluginDelegateProxy
   NPObject* npobject_;
   base::WeakPtr<NPObjectStub> window_script_object_;
 
-  // Event passed in by the plugin process and is used to decide if
-  // messages need to be pumped in the NPP_HandleEvent sync call.
+  // Event passed in by the plugin process and is used to decide if messages
+  // need to be pumped in the NPP_HandleEvent sync call.
   scoped_ptr<base::WaitableEvent> modal_loop_pump_messages_event_;
 
   // Bitmap for crashed plugin

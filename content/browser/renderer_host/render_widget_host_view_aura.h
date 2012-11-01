@@ -252,6 +252,9 @@ class RenderWidgetHostViewAura
                                     bool presented,
                                     ui::Compositor* compositor);
 
+  // Called when window_ gets added to a new window tree.
+  void AddingToRootWindow();
+
   // Called when window_ is removed from the window tree.
   void RemovingFromRootWindow();
 

@@ -78,12 +78,14 @@ class WebPlugin {
   // destroyed.
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window) = 0;
 #if defined(OS_WIN)
-  // The pump_messages_event is a event handle which is valid only for
-  // windowless plugins and is used in NPP_HandleEvent calls to pump messages
-  // if the plugin enters a modal loop.
-  // Cancels a pending request.
-  virtual void SetWindowlessPumpEvent(HANDLE pump_messages_event) = 0;
+  // |pump_messages_event| is a event handle which is used in NPP_HandleEvent
+  // calls to pump messages if the plugin enters a modal loop.
+  // |dummy_activation_window} is used to ensure correct keyboard activation.
+  // It needs to be a child of the parent window.
+  virtual void SetWindowlessData(HANDLE pump_messages_event,
+                                 gfx::NativeViewId dummy_activation_window) = 0;
 #endif
+  // Cancels a pending request.
   virtual void CancelResource(unsigned long id) = 0;
   virtual void Invalidate() = 0;
   virtual void InvalidateRect(const gfx::Rect& rect) = 0;

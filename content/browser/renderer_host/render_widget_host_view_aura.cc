@@ -186,6 +186,10 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
   virtual ~WindowObserver() {}
 
   // Overridden from aura::WindowObserver:
+  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
+    view_->AddingToRootWindow();
+  }
+
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
     view_->RemovingFromRootWindow();
   }
@@ -1885,7 +1889,12 @@ void RenderWidgetHostViewAura::InsertSyncPointAndACK(
       route_id, gpu_host_id, presented, sync_point);
 }
 
+void RenderWidgetHostViewAura::AddingToRootWindow() {
+  host_->ParentChanged(GetNativeViewId());
+}
+
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
+  host_->ParentChanged(NULL);
   // We are about to disconnect ourselves from the compositor, we need to issue
   // the callbacks now, because we won't get notified when the frame is done.
   // TODO(piman): this might in theory cause a race where the GPU process starts

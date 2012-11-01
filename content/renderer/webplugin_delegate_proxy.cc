@@ -202,6 +202,8 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       uses_shared_bitmaps_(false),
 #if defined(OS_MACOSX)
       uses_compositor_(false),
+#elif defined(OS_WIN)
+      dummy_activation_window_(NULL),
 #endif
       window_(gfx::kNullPluginWindow),
       mime_type_(mime_type),
@@ -228,6 +230,14 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   // Ensure that the renderer doesn't think the plugin still has focus.
   if (render_view_)
     render_view_->PluginFocusChanged(false, instance_id_);
+#endif
+
+#if defined(OS_WIN)
+  if (dummy_activation_window_ && render_view_) {
+    render_view_->Send(new ViewHostMsg_WindowlessPluginDummyWindowDestroyed(
+        render_view_->routing_id(), dummy_activation_window_));
+  }
+  dummy_activation_window_ = NULL;
 #endif
 
   if (window_)
@@ -466,17 +476,14 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateProxy, msg)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindow, OnSetWindow)
 #if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindowlessPumpEvent,
-                        OnSetWindowlessPumpEvent)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_NotifyIMEStatus,
-                        OnNotifyIMEStatus)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindowlessData, OnSetWindowlessData)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_NotifyIMEStatus, OnNotifyIMEStatus)
 #endif
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelResource, OnCancelResource)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InvalidateRect, OnInvalidateRect)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetWindowScriptNPObject,
                         OnGetWindowScriptNPObject)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_GetPluginElement,
-                        OnGetPluginElement)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_GetPluginElement, OnGetPluginElement)
     IPC_MESSAGE_HANDLER(PluginHostMsg_ResolveProxy, OnResolveProxy)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetCookies, OnGetCookies)
@@ -1145,9 +1152,15 @@ void WebPluginDelegateProxy::WillDestroyWindow() {
 }
 
 #if defined(OS_WIN)
-void WebPluginDelegateProxy::OnSetWindowlessPumpEvent(
-      HANDLE modal_loop_pump_messages_event) {
+void WebPluginDelegateProxy::OnSetWindowlessData(
+      HANDLE modal_loop_pump_messages_event,
+      gfx::NativeViewId dummy_activation_window) {
   DCHECK(modal_loop_pump_messages_event_ == NULL);
+  DCHECK(dummy_activation_window_ == NULL);
+
+  dummy_activation_window_ = dummy_activation_window;
+  render_view_->Send(new ViewHostMsg_WindowlessPluginDummyWindowCreated(
+      render_view_->routing_id(), dummy_activation_window_));
 
   // Bug 25583: this can be null because some "virus scanners" block the
   // DuplicateHandle call in the plugin process.

@@ -140,14 +140,15 @@ void WebPluginProxy::WillDestroyWindow(gfx::PluginWindowHandle window) {
 }
 
 #if defined(OS_WIN)
-void WebPluginProxy::SetWindowlessPumpEvent(HANDLE pump_messages_event) {
+void WebPluginProxy::SetWindowlessData(
+    HANDLE pump_messages_event, gfx::NativeViewId dummy_activation_window) {
   HANDLE pump_messages_event_for_renderer = NULL;
   BrokerDuplicateHandle(pump_messages_event, channel_->peer_pid(),
                                  &pump_messages_event_for_renderer,
                                  SYNCHRONIZE | EVENT_MODIFY_STATE, 0);
-  DCHECK(pump_messages_event_for_renderer != NULL);
-  Send(new PluginHostMsg_SetWindowlessPumpEvent(
-      route_id_, pump_messages_event_for_renderer));
+  DCHECK(pump_messages_event_for_renderer);
+  Send(new PluginHostMsg_SetWindowlessData(
+      route_id_, pump_messages_event_for_renderer, dummy_activation_window));
 }
 #endif
 

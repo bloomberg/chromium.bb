@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_
 
 #include <deque>
+#include <list>
 #include <map>
 #include <queue>
 #include <string>
@@ -403,6 +404,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void AcknowledgeSwapBuffersToRenderer();
 
 #if defined(USE_AURA)
+  // Called by the view when the parent changes. If a parent isn't available,
+  // NULL is used.
+  void ParentChanged(gfx::NativeViewId new_parent);
+
   // Called by the view in response to visibility changes:
   // 1. After the front surface is guarenteed to no longer be in use by the ui
   //    (protected false),
@@ -603,6 +608,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 #if defined(TOOLKIT_GTK)
   void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);
+#endif
+#if defined(OS_WIN)
+  void OnWindowlessPluginDummyWindowCreated(
+      gfx::NativeViewId dummy_activation_window);
+  void OnWindowlessPluginDummyWindowDestroyed(
+      gfx::NativeViewId dummy_activation_window);
 #endif
 
   // Called (either immediately or asynchronously) after we're done with our
@@ -839,6 +850,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
+
+#if defined(OS_WIN)
+  std::list<HWND> dummy_windows_for_activation_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };
