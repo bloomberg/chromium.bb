@@ -209,8 +209,8 @@ void MigrateChromiumShortcutsCallback() {
     const wchar_t* sub_dir;
   } kLocations[] = {
     {
-      base::DIR_APP_DATA,
-      L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar"
+      base::DIR_TASKBAR_PINS,
+      NULL
     }, {
       base::DIR_USER_DESKTOP,
       NULL

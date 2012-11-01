@@ -307,6 +307,13 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
     LOG(WARNING) << "Failed to delete Start Menu shortcuts.";
   }
 
+  // Although the shortcut removal calls above will unpin their shortcut if they
+  // result in a deletion (i.e. shortcut existed and pointed to |chrome_exe|),
+  // it is possible for shortcuts to remain pinned while their parent shortcut
+  // has been deleted or changed to point to another |chrome_exe|. Make sure all
+  // pinned-to-taskbar shortcuts that point to |chrome_exe| are unpinned.
+  ShellUtil::RemoveChromeTaskbarShortcuts(chrome_exe);
+
   ShellUtil::RemoveChromeStartScreenShortcuts(product.distribution(),
                                               chrome_exe);
 }

@@ -515,6 +515,13 @@ class ShellUtil {
                                    ShellChange level,
                                    const string16* shortcut_name);
 
+  // Enumerates all shortcuts pinned to the taskbar and deletes those pointing
+  // to |chrome_exe|.
+  // base::win::TaskbarUnpinShortcutLink() should be prefered, but this is
+  // useful on uninstall as the parent shortcut of a pin might no longer exist
+  // (thus making it impossible to unpin it via that API).
+  static void RemoveChromeTaskbarShortcuts(const string16& chrome_exe);
+
   // This will remove all secondary tiles from the start screen for |dist|.
   static void RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
                                                const string16& chrome_exe);
