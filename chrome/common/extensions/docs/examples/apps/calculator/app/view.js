@@ -5,8 +5,8 @@
  **/
 
 function View(window) {
-  this.display = window.document.querySelector('#calculator .display');
-  this.buttons = window.document.querySelectorAll('#calculator button');
+  this.display = window.document.querySelector('#calculator-display');
+  this.buttons = window.document.querySelectorAll('#calculator-buttons button');
   window.addEventListener('keydown', this.handleKey_.bind(this));
   Array.prototype.forEach.call(this.buttons, function(button) {
     button.addEventListener('click', this.handleClick_.bind(this));
