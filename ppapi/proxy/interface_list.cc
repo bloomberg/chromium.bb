@@ -181,6 +181,7 @@ InterfaceList::InterfaceList() {
 
   {
     Permission current_required_permission = PERMISSION_NONE;
+    #include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
     #include "ppapi/thunk/interfaces_ppb_public_stable.h"
   }
 
