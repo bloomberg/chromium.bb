@@ -17,6 +17,11 @@ sys.path.append(
 from perf_tests_helper import GeomMeanAndStdDevFromHistogram
 from perf_tests_helper import PrintPerfResult  # pylint: disable=F0401
 
+
+def _Mean(l):
+  return float(sum(l)) / len(l) if len(l) > 0 else 0.0
+
+
 class MeasurementFailure(page_test.Failure):
   """Exception that can be thrown from MeasurePage to indicate an undesired but
   designed-for problem."""
@@ -65,7 +70,8 @@ results! You must return the same dict keys every time."""
       self.results_summary[(name, units, data_type)].append(value)
 
   def PrintSummary(self, trace_tag):
-    for measurement_units_type, values in self.results_summary.iteritems():
+    for measurement_units_type, values in sorted(
+        self.results_summary.iteritems()):
       measurement, units, data_type = measurement_units_type
       trace = measurement + (trace_tag or '')
       PrintPerfResult(measurement, trace, values, units, data_type)
@@ -93,6 +99,8 @@ class CsvBenchmarkResults(BenchmarkResults):
       if self.field_types[name] == 'histogram':
         avg, _ = GeomMeanAndStdDevFromHistogram(value)
         row.append(avg)
+      elif isinstance(value, list):
+        row.append(_Mean(value))
       else:
         row.append(value)
     self._results_writer.writerow(row)
