@@ -845,7 +845,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {
     if (!params_in_pixel.skip_ack)
-      InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id, false, NULL);
+      InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id, true, NULL);
   } else {
     DCHECK(image_transport_clients_.find(params_in_pixel.surface_handle) !=
            image_transport_clients_.end());
@@ -893,7 +893,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
 
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {
-    InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id, false, NULL);
+    InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id, true, NULL);
   } else {
     DCHECK(image_transport_clients_.find(params_in_pixel.surface_handle) !=
            image_transport_clients_.end());
