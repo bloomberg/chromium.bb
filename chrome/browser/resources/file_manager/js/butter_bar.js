@@ -299,15 +299,26 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
 };
 
 /**
+ * Forces the delete task, if any.
+ * @return {boolean} Whether the delete task was scheduled.
+ * @private
+ */
+ButterBar.prototype.forceDelete_ = function() {
+  if (this.deleteTaskId_) {
+    this.copyManager_.forceDeleteTask(this.deleteTaskId_);
+    this.deleteTaskId_ = null;
+    return true;
+  }
+  return false;
+};
+
+/**
  * Informs user that files were deleted with an undo option.
  * In fact, files will be really deleted after timeout.
  * @param {Array.<Entry>} entries The entries to delete.
  */
 ButterBar.prototype.initiateDelete = function(entries) {
-  if (this.deleteTaskId_) {
-    this.copyManager_.forceDeleteTask(this.deleteTaskId_);
-    this.deleteTaskId_ = null;
-  }
+  this.forceDelete_();
 
   var callback = function(id) {
     if (this.deleteTaskId_)
@@ -324,13 +335,9 @@ ButterBar.prototype.initiateDelete = function(entries) {
  * @return {boolean} Whether there was a delete task.
  */
 ButterBar.prototype.forceDeleteAndHide = function() {
-  if (this.deleteTaskId_) {
-    this.copyManager_.forceDeleteTask(this.deleteTaskId_);
-    this.deleteTaskId_ = null;
-    this.hide_();
-    return true;
-  }
-  return false;
+  var result = this.forceDelete_();
+  if (result) this.hide_();
+  return result;
 };
 
 /**

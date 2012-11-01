@@ -997,7 +997,7 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
 /**
  * Timeout before files are really deleted (to allow undo).
  */
-FileCopyManager.DELETE_TIMEOUT = 15 * 1000;
+FileCopyManager.DELETE_TIMEOUT = 30 * 1000;
 
 /**
  * Schedules the files deletion.
