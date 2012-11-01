@@ -8,10 +8,12 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -56,6 +58,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     // Set up the URL request filtering.
     std::vector<std::string> test_files;
     test_files.push_back("common.js");
+    test_files.push_back("local_storage.html");
     test_files.push_back("session_cookies.html");
     test_files.push_back("session_storage.html");
     FilePath test_file_dir;
@@ -89,17 +92,28 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     EXPECT_EQ(title_storing_, final_title);
   }
 
-  void CheckReloadedPage() {
+  void CheckReloadedPageRestored() {
+    CheckTitle(title_pass_);
+  }
+
+  void CheckReloadedPageNotRestored() {
+    CheckTitle(title_storing_);
+  }
+
+  void CheckTitle(const string16& expected_title) {
     content::WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
-    content::TitleWatcher title_watcher(web_contents, title_pass_);
+    content::TitleWatcher title_watcher(web_contents, expected_title);
+    title_watcher.AlsoWaitForTitle(title_pass_);
     title_watcher.AlsoWaitForTitle(title_storing_);
     title_watcher.AlsoWaitForTitle(title_error_write_failed_);
     title_watcher.AlsoWaitForTitle(title_error_empty_);
     // It's possible that the title was already the right one before
     // title_watcher was created.
-    if (web_contents->GetTitle() != title_pass_) {
+    if (web_contents->GetTitle().empty()) {
       string16 final_title = title_watcher.WaitAndGetTitle();
-      EXPECT_EQ(title_pass_, final_title);
+      EXPECT_EQ(expected_title, final_title);
+    } else {
+      EXPECT_EQ(expected_title, web_contents->GetTitle());
     }
   }
 
@@ -125,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionCookies) {
 IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionCookies) {
   // The browsing session will be continued; just wait for the page to reload
   // and check the stored data.
-  CheckReloadedPage();
+  CheckReloadedPageRestored();
 }
 
 IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionStorage) {
@@ -137,5 +151,25 @@ IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionStorage) {
 }
 
 IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionStorage) {
-  CheckReloadedPage();
+  CheckReloadedPageRestored();
+}
+
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest,
+                       PRE_PRE_LocalStorageClearedOnExit) {
+  SessionStartupPref::SetStartupPref(
+      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
+  StoreDataWithPage("local_storage.html");
+}
+
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest,
+                       PRE_LocalStorageClearedOnExit) {
+  // Normally localStorage is restored.
+  CheckReloadedPageRestored();
+  // ... but not if it's set to clear on exit.
+  CookieSettings::Factory::GetForProfile(browser()->profile())->
+      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+}
+
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, LocalStorageClearedOnExit) {
+  CheckReloadedPageNotRestored();
 }
