@@ -19,6 +19,7 @@
 #include "remoting/host/win/desktop.h"
 #include "remoting/host/win/scoped_thread_desktop.h"
 #include "remoting/proto/control.pb.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 
 namespace remoting {
 
@@ -463,15 +464,23 @@ void VideoFrameCapturerWin::CaptureCursor() {
       return;
     }
 
-    // Cursor bitmap is stored upside-down on Windows. Flip the rows and store
-    // it in the proto.
+    // Copy across colour cursor imagery.
+    // CursorShapeInfo stores imagery top-down, and premultiplied
+    // by the alpha channel, whereas windows stores them bottom-up
+    // and not premultiplied.
     uint8* cursor_src_data = reinterpret_cast<uint8*>(bitmap.bmBits);
     uint8* src = cursor_src_data + ((height - 1) * row_bytes);
     uint8* dst = cursor_dst_data;
-    for (int row = 0; row < height; row++) {
-      memcpy(dst, src, row_bytes);
-      dst += width * kBytesPerPixel;
-      src -= row_bytes;
+    for (int row = 0; row < height; ++row) {
+      for (int column = 0; column < width; ++column) {
+        dst[0] = SkAlphaMul(src[0], src[3]);
+        dst[1] = SkAlphaMul(src[1], src[3]);
+        dst[2] = SkAlphaMul(src[2], src[3]);
+        dst[3] = src[3];
+        dst += kBytesPerPixel;
+        src += kBytesPerPixel;
+      }
+      src -= row_bytes + (width * kBytesPerPixel);
     }
   } else {
     if (bitmap.bmPlanes != 1 || bitmap.bmBitsPixel != 1) {
