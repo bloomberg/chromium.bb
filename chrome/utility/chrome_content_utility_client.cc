@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/importer/external_process_importer_bridge.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
 #include "chrome/common/child_process_logging.h"

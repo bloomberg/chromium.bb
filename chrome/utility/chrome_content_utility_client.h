@@ -11,7 +11,6 @@
 #include "content/public/utility/content_utility_client.h"
 #include "printing/pdf_render_settings.h"
 
-class ExternalProcessImporterBridge;
 class FilePath;
 class Importer;
 
