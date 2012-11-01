@@ -26,9 +26,11 @@
 using WebKit::WebFrame;
 using WebKit::WebNode;
 
-bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
+bool PrintWebViewHelper::RenderPreviewPage(
+    int page_number,
+    const PrintMsg_Print_Params& print_params) {
   PrintMsg_PrintPage_Params page_params;
-  page_params.params = print_preview_context_.print_params();
+  page_params.params = print_params;
   page_params.page_number = page_number;
   scoped_ptr<printing::Metafile> draft_metafile;
   printing::Metafile* initial_render_metafile =
@@ -209,7 +211,7 @@ void PrintWebViewHelper::PrintPageInternal(
     PrintHeaderAndFooter(canvas.get(), params.page_number + 1,
                          print_preview_context_.total_page_count(),
                          scale_factor, page_layout_in_points,
-                         *header_footer_info_);
+                         *header_footer_info_, params.params);
   }
 
   // Done printing. Close the device context to retrieve the compiled metafile.

@@ -13,7 +13,6 @@
 #include "base/time.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
@@ -29,8 +28,14 @@ struct PrintMsg_PrintPages_Params;
 namespace base {
 class DictionaryValue;
 }
+
 namespace printing {
 struct PageSizeMargins;
+}
+
+namespace WebKit {
+class WebFrame;
+class WebView;
 }
 
 // Class that calls the Begin and End print functions on the frame and changes
@@ -56,10 +61,7 @@ class PrepareFrameAndViewForPrint {
     return use_browser_overlays_;
   }
 
-  gfx::Size GetPrintCanvasSize() const {
-    return gfx::Size(web_print_params_.printContentArea.width,
-                     web_print_params_.printContentArea.height);
-  }
+  gfx::Size GetPrintCanvasSize() const;
 
   void FinishPrinting();
 
@@ -191,7 +193,8 @@ class PrintWebViewHelper
 
   // Renders a print preview page. |page_number| is 0-based.
   // Returns true if print preview should continue, false on failure.
-  bool RenderPreviewPage(int page_number);
+  bool RenderPreviewPage(int page_number,
+                         const PrintMsg_Print_Params& print_params);
 
   // Finalize the print ready preview document.
   bool FinalizePrintReadyDocument();
@@ -322,7 +325,8 @@ class PrintWebViewHelper
       int total_pages,
       float webkit_scale_factor,
       const printing::PageSizeMargins& page_layout_in_points,
-      const base::DictionaryValue& header_footer_info);
+      const base::DictionaryValue& header_footer_info,
+      const PrintMsg_Print_Params& params);
 
   bool GetPrintFrame(WebKit::WebFrame** frame);
 
@@ -403,7 +407,7 @@ class PrintWebViewHelper
     void OnPrintPreview();
 
     // Create the print preview document. |pages| is empty to print all pages.
-    bool CreatePreviewDocument(PrintMsg_Print_Params* params,
+    bool CreatePreviewDocument(const PrintMsg_Print_Params& params,
                                const std::vector<int>& pages,
                                bool ignore_css_margins);
 
@@ -440,7 +444,6 @@ class PrintWebViewHelper
     int total_page_count() const;
     bool generate_draft_pages() const;
     printing::PreviewMetafile* metafile();
-    const PrintMsg_Print_Params& print_params() const;
     gfx::Size GetPrintCanvasSize() const;
     int last_error() const;
 
@@ -461,7 +464,6 @@ class PrintWebViewHelper
 
     scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
     scoped_ptr<printing::PreviewMetafile> metafile_;
-    scoped_ptr<PrintMsg_Print_Params> print_params_;
 
     // Total page count in the renderer.
     int total_page_count_;

@@ -55,8 +55,10 @@ void PrintWebViewHelper::PrintPageInternal(
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
-bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
-  PrintMsg_Print_Params printParams = print_preview_context_.print_params();
+bool PrintWebViewHelper::RenderPreviewPage(
+    int page_number,
+    const PrintMsg_Print_Params& print_params) {
+  PrintMsg_Print_Params printParams = print_params;
   scoped_ptr<printing::Metafile> draft_metafile;
   printing::Metafile* initial_render_metafile =
       print_preview_context_.metafile();
@@ -182,7 +184,7 @@ void PrintWebViewHelper::RenderPage(
       PrintHeaderAndFooter(canvas_ptr, page_number + 1,
                            print_preview_context_.total_page_count(),
                            scale_factor, page_layout_in_points,
-                           *header_footer_info_);
+                           *header_footer_info_, params);
     }
 #endif  // !USE_SKIA
 
@@ -194,7 +196,7 @@ void PrintWebViewHelper::RenderPage(
       PrintHeaderAndFooter(canvas_ptr, page_number + 1,
                            print_preview_context_.total_page_count(),
                            scale_factor, page_layout_in_points,
-                           *header_footer_info_);
+                           *header_footer_info_, params);
     }
 #endif  // defined(USE_SKIA)
   }

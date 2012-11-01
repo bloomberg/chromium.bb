@@ -83,8 +83,9 @@ void PrintWebViewHelper::PrintPageInternal(
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
-bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
-  PrintMsg_Print_Params print_params = print_preview_context_.print_params();
+bool PrintWebViewHelper::RenderPreviewPage(
+    int page_number,
+    const PrintMsg_Print_Params& print_params) {
   // Calculate the dpi adjustment.
   double actual_shrink = static_cast<float>(print_params.desired_dpi /
                                             print_params.dpi);
@@ -181,8 +182,7 @@ void PrintWebViewHelper::RenderPage(
     PrintHeaderAndFooter(canvas.get(), page_number + 1,
                          print_preview_context_.total_page_count(),
                          css_scale_factor * webkit_page_shrink_factor,
-                         page_layout_in_points,
-                         *header_footer_info_);
+                         page_layout_in_points, *header_footer_info_, params);
   }
 
   if (*actual_shrink <= 0 || webkit_scale_factor <= 0) {
