@@ -65,8 +65,6 @@ bool CheckObjectRespondsToEditCommands(NSArray* edit_commands, id test_obj) {
   return true;
 }
 
-}  // namespace
-
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
@@ -95,6 +93,8 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
 
 class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
 };
+
+}  // namespace
 
 // Tests that editing commands make it through the pipeline all the way to
 // RenderWidgetHost.

@@ -44,6 +44,87 @@ using WebKit::WebTouchPoint;
 
 namespace content {
 
+// MockRenderWidgetHost ----------------------------------------------------
+
+class MockRenderWidgetHost : public RenderWidgetHostImpl {
+ public:
+  MockRenderWidgetHost(
+      RenderWidgetHostDelegate* delegate,
+      RenderProcessHost* process,
+      int routing_id)
+      : RenderWidgetHostImpl(delegate, process, routing_id),
+        unresponsive_timer_fired_(false) {
+  }
+
+  // Allow poking at a few private members.
+  using RenderWidgetHostImpl::OnMsgPaintAtSizeAck;
+  using RenderWidgetHostImpl::OnMsgUpdateRect;
+  using RenderWidgetHostImpl::RendererExited;
+  using RenderWidgetHostImpl::in_flight_size_;
+  using RenderWidgetHostImpl::is_hidden_;
+  using RenderWidgetHostImpl::resize_ack_pending_;
+  using RenderWidgetHostImpl::gesture_event_filter_;
+  using RenderWidgetHostImpl::touch_event_queue_;
+
+  bool unresponsive_timer_fired() const {
+    return unresponsive_timer_fired_;
+  }
+
+  void set_hung_renderer_delay_ms(int delay_ms) {
+    hung_renderer_delay_ms_ = delay_ms;
+  }
+
+  WebGestureEvent GestureEventLastQueueEvent() {
+    return gesture_event_filter_->coalesced_gesture_events_.back();
+  }
+
+  unsigned GestureEventLastQueueEventSize() {
+    return gesture_event_filter_->coalesced_gesture_events_.size();
+  }
+
+  unsigned GestureEventDebouncingQueueSize() {
+    return gesture_event_filter_->debouncing_deferral_queue_.size();
+  }
+
+  WebGestureEvent GestureEventQueueEventAt(int i) {
+    return gesture_event_filter_->coalesced_gesture_events_.at(i);
+  }
+
+  bool ScrollingInProgress() {
+    return gesture_event_filter_->scrolling_in_progress_;
+  }
+
+  bool FlingInProgress() {
+    return gesture_event_filter_->fling_in_progress_;
+  }
+
+  void set_maximum_tap_gap_time_ms(int delay_ms) {
+    gesture_event_filter_->maximum_tap_gap_time_ms_ = delay_ms;
+  }
+
+  void set_debounce_interval_time_ms(int delay_ms) {
+    gesture_event_filter_->debounce_interval_time_ms_ = delay_ms;
+  }
+
+  size_t TouchEventQueueSize() {
+    return touch_event_queue_->GetQueueSize();
+  }
+
+  const WebTouchEvent& latest_event() const {
+    return touch_event_queue_->GetLatestEvent();
+  }
+
+ protected:
+  virtual void NotifyRendererUnresponsive() OVERRIDE {
+    unresponsive_timer_fired_ = true;
+  }
+
+ private:
+  bool unresponsive_timer_fired_;
+};
+
+namespace  {
+
 #if defined(OS_WIN) || defined(USE_AURA)
 bool TouchEventsAreEquivalent(const ui::TouchEvent& first,
                               const ui::TouchEvent& second) {
@@ -258,85 +339,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   WebInputEvent::Type unhandled_keyboard_event_type_;
 };
 
-// MockRenderWidgetHost ----------------------------------------------------
-
-class MockRenderWidgetHost : public RenderWidgetHostImpl {
- public:
-  MockRenderWidgetHost(
-      RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
-      int routing_id)
-      : RenderWidgetHostImpl(delegate, process, routing_id),
-        unresponsive_timer_fired_(false) {
-  }
-
-  // Allow poking at a few private members.
-  using RenderWidgetHostImpl::OnMsgPaintAtSizeAck;
-  using RenderWidgetHostImpl::OnMsgUpdateRect;
-  using RenderWidgetHostImpl::RendererExited;
-  using RenderWidgetHostImpl::in_flight_size_;
-  using RenderWidgetHostImpl::is_hidden_;
-  using RenderWidgetHostImpl::resize_ack_pending_;
-  using RenderWidgetHostImpl::gesture_event_filter_;
-  using RenderWidgetHostImpl::touch_event_queue_;
-
-  bool unresponsive_timer_fired() const {
-    return unresponsive_timer_fired_;
-  }
-
-  void set_hung_renderer_delay_ms(int delay_ms) {
-    hung_renderer_delay_ms_ = delay_ms;
-  }
-
-  WebGestureEvent GestureEventLastQueueEvent() {
-    return gesture_event_filter_->coalesced_gesture_events_.back();
-  }
-
-  unsigned GestureEventLastQueueEventSize() {
-    return gesture_event_filter_->coalesced_gesture_events_.size();
-  }
-
-  unsigned GestureEventDebouncingQueueSize() {
-    return gesture_event_filter_->debouncing_deferral_queue_.size();
-  }
-
-  WebGestureEvent GestureEventQueueEventAt(int i) {
-    return gesture_event_filter_->coalesced_gesture_events_.at(i);
-  }
-
-  bool ScrollingInProgress() {
-    return gesture_event_filter_->scrolling_in_progress_;
-  }
-
-  bool FlingInProgress() {
-    return gesture_event_filter_->fling_in_progress_;
-  }
-
-  void set_maximum_tap_gap_time_ms(int delay_ms) {
-    gesture_event_filter_->maximum_tap_gap_time_ms_ = delay_ms;
-  }
-
-  void set_debounce_interval_time_ms(int delay_ms) {
-    gesture_event_filter_->debounce_interval_time_ms_ = delay_ms;
-  }
-
-  size_t TouchEventQueueSize() {
-    return touch_event_queue_->GetQueueSize();
-  }
-
-  const WebTouchEvent& latest_event() const {
-    return touch_event_queue_->GetLatestEvent();
-  }
-
- protected:
-  virtual void NotifyRendererUnresponsive() OVERRIDE {
-    unresponsive_timer_fired_ = true;
-  }
-
- private:
-  bool unresponsive_timer_fired_;
-};
-
 // MockPaintingObserver --------------------------------------------------------
 
 class MockPaintingObserver : public NotificationObserver {
@@ -525,6 +527,8 @@ class RenderWidgetHostTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
+
+}  // namespace
 
 // -----------------------------------------------------------------------------
 

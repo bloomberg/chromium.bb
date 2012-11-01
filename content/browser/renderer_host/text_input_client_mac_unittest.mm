@@ -20,6 +20,7 @@
 
 namespace content {
 
+namespace {
 const int64 kTaskDelayMs = 200;
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
@@ -107,6 +108,8 @@ void CallOnMessageReceived(scoped_refptr<TextInputClientMessageFilter> filter,
                            bool* message_was_ok) {
   filter->OnMessageReceived(message, message_was_ok);
 }
+
+}  // namespace
 
 // Test Cases //////////////////////////////////////////////////////////////////
 
