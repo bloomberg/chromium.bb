@@ -50,7 +50,7 @@ public class ContentShellActivity extends Activity {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
 
-        LibraryLoader.loadAndInitSync();
+        LibraryLoader.ensureInitialized();
         initializeContentViewResources();
 
         setContentView(R.layout.content_shell_activity);

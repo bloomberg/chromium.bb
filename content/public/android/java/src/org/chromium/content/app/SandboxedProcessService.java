@@ -115,7 +115,7 @@ public class SandboxedProcessService extends Service {
                         }
                     }
                     LibraryLoader.setLibraryToLoad(mNativeLibraryName);
-                    if (!LibraryLoader.loadNow()) return;
+                    LibraryLoader.loadNow();
                     synchronized (mSandboxMainThread) {
                         while (mCommandLineParams == null) {
                             mSandboxMainThread.wait();

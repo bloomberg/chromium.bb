@@ -39,6 +39,6 @@ public class AndroidWebViewTestRunnerApplication extends Application {
         // in the system image.
         ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
         LibraryLoader.setLibraryToLoad(NATIVE_LIBRARY);
-        LibraryLoader.loadAndInitSync();
+        LibraryLoader.ensureInitialized();
     }
 }

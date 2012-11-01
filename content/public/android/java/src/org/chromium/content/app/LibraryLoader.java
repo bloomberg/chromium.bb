@@ -13,19 +13,24 @@ import org.chromium.base.JNINamespace;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.TraceEvent;
 
-// This class provides functionality to:
-// - synchronously load and register the native library. This is used by callers
-// that can't do anything useful without the native side.
-// - asynchronously load and register the native library. This is used by callers
-// that can do more work in the java-side, and let a separate thread do all the
-// file IO and library loading.
+/**
+ * This class provides functionality to load and register the native library.
+ * In most cases, users will call ensureInitialized() from their main thread
+ * (only) which ensures a post condition that the library is loaded,
+ * initialized, and ready to use.
+ * Optionally, an application may optimize startup be calling loadNow early on,
+ * from a background thread, and then on completion of that method it must call
+ * ensureInitialized() on the main thread before it tries to access any native
+ * code.
+ */
 @JNINamespace("content")
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
 
     private static String sLibrary = null;
 
-    private static boolean sLoaded = false;
+    // This object's lock guards its assignment and also the library load.
+    private static Boolean sLoaded = false;
 
     private static boolean sInitialized = false;
 
@@ -36,6 +41,7 @@ public class LibraryLoader {
      *
      * <p> The callback methods will always be triggered on the UI thread.
      */
+    @Deprecated
     public static interface Callback {
         /**
          * Called when loading the native library is successful.
@@ -68,11 +74,17 @@ public class LibraryLoader {
         return sLibrary;
     }
 
+    @Deprecated
+    public static void loadAndInitSync() {
+        // TODO(joth): remove in next patch.
+        ensureInitialized();
+    }
+
     /**
      *  This method blocks until the library is fully loaded and initialized;
      *  must be called on the thread that the native will call its "main" thread.
      */
-    public static void loadAndInitSync() {
+    public static void ensureInitialized() {
         checkThreadUsage();
         if (sInitialized) {
             // Already initialized, nothing to do.
@@ -115,6 +127,7 @@ public class LibraryLoader {
      *  library when that completes.
      *  Must be called on the thread that the native will call its "main" thread.
      */
+    @Deprecated
     public static void loadAndInitAsync(final Callback onLoadedListener) {
         checkThreadUsage();
         if (sInitialized) {
@@ -139,7 +152,12 @@ public class LibraryLoader {
                 // initializers, as we chrome has banned them.
                 // (Worst case, we can go back to just warming up the file in the system
                 // cache here and do the actual loading in onPostExecute().)
-                return loadNow();
+                try {
+                  loadNow();
+                  return true;
+                } catch (UnsatisfiedLinkError e) {
+                  return false;
+                }
             }
 
             @Override
@@ -167,32 +185,26 @@ public class LibraryLoader {
 
     /**
      * Loads the library and blocks until the load completes. The caller is responsible
-     * for subsequently calling initialize().
+     * for subsequently calling ensureInitialized().
      * May be called on any thread, but should only be called once. Note the thread
      * this is called on will be the thread that runs the native code's static initializers.
      * See the comment in doInBackground() for more considerations on this.
      *
      * @return Whether the native library was successfully loaded.
      */
-    static boolean loadNow() {
+    public static void loadNow() {
         if (sLibrary == null) {
             assert false : "No library specified to load.  Call setLibraryToLoad before first.";
-            return false;
         }
-        assert !sInitialized;
-        try {
-            Log.i(TAG, "loading: " + sLibrary);
-            System.loadLibrary(sLibrary);
-            Log.i(TAG, "loaded: " + sLibrary);
-            synchronized(LibraryLoader.class) {
+        synchronized(sLoaded) {
+            if (!sLoaded) {
+                assert !sInitialized;
+                Log.i(TAG, "loading: " + sLibrary);
+                System.loadLibrary(sLibrary);
+                Log.i(TAG, "loaded: " + sLibrary);
                 sLoaded = true;
-                LibraryLoader.class.notifyAll();
             }
-        } catch (UnsatisfiedLinkError e) {
-            Log.e(TAG, "error loading: " + sLibrary, e);
-            return false;
         }
-        return true;
     }
 
     /**
@@ -229,9 +241,8 @@ public class LibraryLoader {
     private LibraryLoader() {
     }
 
-    // The public API of this class is meant to be used from a single
-    // thread. Internally, we may bounce to a separate thread to actually
-    // load the library.
+    // This asserts that calls to ensureInitialized() will happen from the
+    // same thread.
     private static Thread sMyThread;
     private static void checkThreadUsage() {
         Thread currentThread = java.lang.Thread.currentThread();
@@ -247,7 +258,7 @@ public class LibraryLoader {
     }
 
     // This is the only method that is registered during System.loadLibrary, as it
-    // happens on a different thread. We then call it on the main thread to register
+    // may happen on a different thread. We then call it on the main thread to register
     // everything else.
     private static native boolean nativeLibraryLoadedOnMainThread(String[] initCommandLine);
 }
