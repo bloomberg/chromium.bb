@@ -41,6 +41,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::WebContents;
@@ -114,7 +115,7 @@ void OobeUIHTMLSource::StartDataRequest(const std::string& path,
 std::string OobeUIHTMLSource::GetDataResource(int resource_id) const {
   const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          resource_id));
+          resource_id, ui::SCALE_FACTOR_NONE));
   return jstemplate_builder::GetI18nTemplateHtml(html,
                                                  localized_strings_.get());
 }

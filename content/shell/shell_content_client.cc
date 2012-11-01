@@ -34,7 +34,7 @@ string16 ShellContentClient::GetLocalizedString(int message_id) const {
 base::StringPiece ShellContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
       resource_id, scale_factor);
 }
 

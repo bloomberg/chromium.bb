@@ -31,6 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebFrame;
@@ -120,7 +121,7 @@ UserScriptSlave::UserScriptSlave(const ExtensionSet* extensions)
       script_deleter_(&scripts_),
       extensions_(extensions) {
   api_js_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_GREASEMONKEY_API_JS);
+                IDR_GREASEMONKEY_API_JS, ui::SCALE_FACTOR_NONE);
 }
 
 UserScriptSlave::~UserScriptSlave() {}

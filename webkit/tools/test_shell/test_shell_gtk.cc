@@ -560,7 +560,8 @@ void TestShell::ShowStartupDebuggingDialog() {
 
 // static
 base::StringPiece TestShell::ResourceProvider(int key) {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(key);
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      key, ui::SCALE_FACTOR_NONE);
 }
 
 //-----------------------------------------------------------------------------

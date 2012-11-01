@@ -71,6 +71,6 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
     }
   }
 
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
       resource_id, scale_factor);
 }

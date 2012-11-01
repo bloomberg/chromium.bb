@@ -254,7 +254,7 @@ void WallpaperThumbnailSource::SendCurrentUserDefaultThumbnail(
   }
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SendResponse(request_id,
-               rb.LoadDataResourceBytesForScale(idr, scale_factor));
+               rb.LoadDataResourceBytes(idr, scale_factor));
 }
 
 }  // namespace options

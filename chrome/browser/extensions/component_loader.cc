@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/browser_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OFFICIAL_BUILD)
@@ -126,7 +127,8 @@ std::string ComponentLoader::Add(int manifest_resource_id,
                                  const FilePath& root_directory) {
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          manifest_resource_id).as_string();
+          manifest_resource_id,
+          ui::SCALE_FACTOR_NONE).as_string();
   return Add(manifest_contents, root_directory);
 }
 
@@ -273,7 +275,8 @@ void ComponentLoader::AddOrReloadEnterpriseWebStore() {
   if (!enterprise_webstore_url.empty()) {
     std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ENTERPRISE_WEBSTORE_MANIFEST).as_string();
+          IDR_ENTERPRISE_WEBSTORE_MANIFEST,
+          ui::SCALE_FACTOR_NONE).as_string();
 
     // The manifest is missing some values that are provided by policy.
     DictionaryValue* manifest = ParseManifest(manifest_contents);
@@ -290,7 +293,8 @@ void ComponentLoader::AddChromeApp() {
 #if defined(USE_ASH)
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_CHROME_APP_MANIFEST).as_string();
+          IDR_CHROME_APP_MANIFEST,
+          ui::SCALE_FACTOR_NONE).as_string();
 
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.

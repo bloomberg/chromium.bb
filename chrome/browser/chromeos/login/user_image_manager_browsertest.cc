@@ -154,7 +154,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
                         int resource_id) {
     FilePath image_path = GetUserImagePath(username, "png");
     scoped_refptr<base::RefCountedStaticMemory> image_data(
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
             resource_id, ui::SCALE_FACTOR_100P));
     int written = file_util::WriteFile(
         image_path,

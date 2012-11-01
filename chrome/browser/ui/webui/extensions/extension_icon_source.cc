@@ -94,8 +94,8 @@ GURL ExtensionIconSource::GetIconURL(const extensions::Extension* extension,
 // static
 SkBitmap* ExtensionIconSource::LoadImageByResourceId(int resource_id) {
   std::string contents = ResourceBundle::GetSharedInstance()
-      .GetRawDataResourceForScale(resource_id,
-                                  ui::SCALE_FACTOR_100P).as_string();
+      .GetRawDataResource(resource_id,
+                          ui::SCALE_FACTOR_100P).as_string();
 
   // Convert and return it.
   const unsigned char* data =

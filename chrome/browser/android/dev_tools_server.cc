@@ -49,7 +49,8 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         FROM_HERE,
         base::Bind(&DevToolsServerDelegate::PopulatePageThumbnails));
     return ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
+        IDR_DEVTOOLS_DISCOVERY_PAGE_HTML,
+        ui::SCALE_FACTOR_NONE).as_string();
   }
 
   virtual bool BundlesFrontendResources() {

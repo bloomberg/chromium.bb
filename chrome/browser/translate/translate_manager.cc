@@ -51,6 +51,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #ifdef FILE_MANAGER_EXTENSION
@@ -436,7 +437,8 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
         translate_script_request_pending_.release());
     if (!error) {
       base::StringPiece str = ResourceBundle::GetSharedInstance().
-          GetRawDataResource(IDR_TRANSLATE_JS);
+          GetRawDataResource(IDR_TRANSLATE_JS,
+                             ui::SCALE_FACTOR_NONE);
       DCHECK(translate_script_.empty());
       str.CopyToString(&translate_script_);
       std::string data;

@@ -19,6 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -66,7 +67,7 @@ void DevToolsDataSource::StartDataRequest(const std::string& path,
       " with --debug-devtools.";
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(
-      resource_id));
+      resource_id, ui::SCALE_FACTOR_NONE));
   SendResponse(request_id, bytes);
 }
 

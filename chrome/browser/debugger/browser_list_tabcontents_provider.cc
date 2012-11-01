@@ -18,6 +18,7 @@
 #include "content/public/common/url_constants.h"
 #include "grit/devtools_discovery_page_resources.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::DevToolsHttpHandlerDelegate;
@@ -45,7 +46,8 @@ std::string BrowserListTabContentsProvider::GetDiscoveryPageHTML() {
     }
   }
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
+      IDR_DEVTOOLS_DISCOVERY_PAGE_HTML,
+      ui::SCALE_FACTOR_NONE).as_string();
 }
 
 bool BrowserListTabContentsProvider::BundlesFrontendResources() {

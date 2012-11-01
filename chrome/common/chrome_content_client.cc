@@ -432,7 +432,7 @@ string16 ChromeContentClient::GetLocalizedString(int message_id) const {
 base::StringPiece ChromeContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
       resource_id, scale_factor);
 }
 

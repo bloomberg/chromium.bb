@@ -35,6 +35,7 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_simple_job.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::ResourceRequestInfo;
@@ -88,7 +89,8 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                       std::string* data,
                       const net::CompletionCallback& callback) const OVERRIDE {
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    *data = rb.GetRawDataResource(resource_id_).as_string();
+    *data = rb.GetRawDataResource(
+        resource_id_, ui::SCALE_FACTOR_NONE).as_string();
 
     std::string* read_mime_type = new std::string;
     bool* read_result = new bool;

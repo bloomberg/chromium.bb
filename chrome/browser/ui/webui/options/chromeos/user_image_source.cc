@@ -61,19 +61,17 @@ base::RefCountedMemory* UserImageSource::GetUserImage(
       return new base::RefCountedBytes(user->raw_image());
     } else if (user->image_is_stub()) {
       return ResourceBundle::GetSharedInstance().
-          LoadDataResourceBytesForScale(IDR_PROFILE_PICTURE_LOADING,
-                                        scale_factor);
+          LoadDataResourceBytes(IDR_PROFILE_PICTURE_LOADING, scale_factor);
     } else if (user->HasDefaultImage()) {
       return ResourceBundle::GetSharedInstance().
-          LoadDataResourceBytesForScale(
-              kDefaultImageResourceIDs[user->image_index()],
-              scale_factor);
+          LoadDataResourceBytes(kDefaultImageResourceIDs[user->image_index()],
+                                scale_factor);
     } else {
       NOTREACHED() << "User with custom image missing raw data";
     }
   }
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytesForScale(IDR_LOGIN_DEFAULT_USER, scale_factor);
+      LoadDataResourceBytes(IDR_LOGIN_DEFAULT_USER, scale_factor);
 }
 
 UserImageSource::UserImageSource()

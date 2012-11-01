@@ -31,8 +31,9 @@ base::StringPiece AwContentClient::GetDataResource(
     ui::ScaleFactor scale_factor) const {
   // TODO(boliu): Used only by WebKit, so only bundle those resources for
   // Android WebView.
-  return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
       resource_id, scale_factor);
 }
 
 }  // namespace android_webview
+

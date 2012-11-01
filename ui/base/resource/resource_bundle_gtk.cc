@@ -89,7 +89,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
 
   if (image.IsEmpty()) {
     scoped_refptr<base::RefCountedStaticMemory> data(
-        LoadDataResourceBytesForScale(resource_id, SCALE_FACTOR_100P));
+        LoadDataResourceBytes(resource_id, SCALE_FACTOR_100P));
     GdkPixbuf* pixbuf = LoadPixbuf(data.get(), rtl == RTL_ENABLED);
 
     if (!pixbuf) {

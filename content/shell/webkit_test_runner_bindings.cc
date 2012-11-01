@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWorkerInfo.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebFrame;
@@ -23,7 +24,7 @@ namespace {
 
 base::StringPiece GetStringResource(int resource_id) {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      resource_id);
+      resource_id, ui::SCALE_FACTOR_NONE);
 }
 
 RenderView* GetCurrentRenderView() {

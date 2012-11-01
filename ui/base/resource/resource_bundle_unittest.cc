@@ -187,7 +187,7 @@ TEST(ResourceBundle, DelegateLoadDataResourceBytes) {
       .WillOnce(Return(static_memory));
 
   scoped_refptr<base::RefCountedStaticMemory> result =
-      resource_bundle.LoadDataResourceBytesForScale(resource_id, scale_factor);
+      resource_bundle.LoadDataResourceBytes(resource_id, scale_factor);
   EXPECT_EQ(static_memory, result);
 }
 
@@ -207,7 +207,7 @@ TEST(ResourceBundle, DelegateGetRawDataResource) {
       .WillOnce(Return(string_piece));
 
   base::StringPiece result = resource_bundle.GetRawDataResource(
-      resource_id);
+      resource_id, ui::SCALE_FACTOR_NONE);
   EXPECT_EQ(string_piece.data(), result.data());
 }
 
@@ -267,14 +267,14 @@ TEST(ResourceBundle, LoadDataResourceBytes) {
 
     const int kUnfoundResourceId = 10000;
     EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(
-        kUnfoundResourceId));
+        kUnfoundResourceId, ui::SCALE_FACTOR_NONE));
 
     // Give a .pak file that doesn't exist so we will fail to load it.
     resource_bundle.AddDataPackFromPath(
         FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
         ui::SCALE_FACTOR_NONE);
     EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(
-        kUnfoundResourceId));
+        kUnfoundResourceId, ui::SCALE_FACTOR_NONE));
   }
 }
 
@@ -304,16 +304,16 @@ TEST(ResourceBundle, GetRawDataResource) {
 
     // Resource ID 4 exists in both 1x and 2x paks, so we expect a different
     // result when requesting the 2x scale.
-    EXPECT_EQ("this is id 4", resource_bundle.GetRawDataResourceForScale(4,
+    EXPECT_EQ("this is id 4", resource_bundle.GetRawDataResource(4,
         SCALE_FACTOR_100P));
-    EXPECT_EQ("this is id 4 2x", resource_bundle.GetRawDataResourceForScale(4,
+    EXPECT_EQ("this is id 4 2x", resource_bundle.GetRawDataResource(4,
         SCALE_FACTOR_200P));
 
     // Resource ID 6 only exists in the 1x pak so we expect the same resource
     // for both scale factor requests.
-    EXPECT_EQ("this is id 6", resource_bundle.GetRawDataResourceForScale(6,
+    EXPECT_EQ("this is id 6", resource_bundle.GetRawDataResource(6,
         SCALE_FACTOR_100P));
-    EXPECT_EQ("this is id 6", resource_bundle.GetRawDataResourceForScale(6,
+    EXPECT_EQ("this is id 6", resource_bundle.GetRawDataResource(6,
         SCALE_FACTOR_200P));
   }
 }

@@ -58,6 +58,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_THEMES)
@@ -712,7 +713,8 @@ void FinishMemoryDataRequest(const std::string& path,
     source->FinishDataRequest(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             path == kMemoryJsPath ? IDR_ABOUT_MEMORY_JS :
-            IDR_ABOUT_MEMORY_HTML).as_string(), request_id);
+                IDR_ABOUT_MEMORY_HTML,
+            ui::SCALE_FACTOR_NONE).as_string(), request_id);
   }
 }
 
@@ -863,8 +865,8 @@ std::string AboutStats(const std::string& query) {
   } else {
     // Get about_stats.html/js from resource bundle.
     data = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        (query == kStatsJsPath ?
-         IDR_ABOUT_STATS_JS : IDR_ABOUT_STATS_HTML)).as_string();
+        (query == kStatsJsPath ? IDR_ABOUT_STATS_JS : IDR_ABOUT_STATS_HTML),
+        ui::SCALE_FACTOR_NONE).as_string();
 
     if (query != kStatsJsPath) {
       // Clear the timer list since we stored the data in the timers list
@@ -1113,7 +1115,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
   } else if (host == chrome::kChromeUICreditsHost) {
     int idr = (path == kCreditsJsPath) ? IDR_CREDITS_JS : IDR_CREDITS_HTML;
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        idr).as_string();
+        idr, ui::SCALE_FACTOR_NONE).as_string();
 #if defined(OS_CHROMEOS)
   } else if (host == chrome::kChromeUIDiscardsHost) {
     response = AboutDiscards(path);
@@ -1139,7 +1141,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
     response = AboutNetwork(path);
   } else if (host == chrome::kChromeUIOSCreditsHost) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_OS_CREDITS_HTML).as_string();
+        IDR_OS_CREDITS_HTML, ui::SCALE_FACTOR_NONE).as_string();
 #endif
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   } else if (host == chrome::kChromeUISandboxHost) {

@@ -457,5 +457,5 @@ const GURL HistoryUI::GetHistoryURLWithSearchText(const string16& text) {
 base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytesForScale(IDR_HISTORY_FAVICON, scale_factor);
+      LoadDataResourceBytes(IDR_HISTORY_FAVICON, scale_factor);
 }

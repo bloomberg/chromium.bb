@@ -334,7 +334,7 @@ base::RefCountedMemory* ThemeService::GetRawData(
   if (theme_pack_.get())
     data = theme_pack_->GetRawData(id, scale_factor);
   if (!data)
-    data = rb_.LoadDataResourceBytesForScale(id, ui::SCALE_FACTOR_100P);
+    data = rb_.LoadDataResourceBytes(id, ui::SCALE_FACTOR_100P);
 
   return data;
 }
