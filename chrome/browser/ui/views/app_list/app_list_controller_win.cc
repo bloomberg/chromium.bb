@@ -80,7 +80,7 @@ class AppListController {
  private:
   // Utility methods for showing the app list.
   void GetArrowLocationAndUpdateAnchor(
-      const gfx::Rect& work_area,
+      const gfx::Display& display,
       int min_space_x,
       int min_space_y,
       views::BubbleBorder::ArrowLocation* arrow,
@@ -224,11 +224,13 @@ void AppListController::AppListActivationChanged(bool active) {
 }
 
 void AppListController::GetArrowLocationAndUpdateAnchor(
-    const gfx::Rect& work_area,
+    const gfx::Display& display,
     int min_space_x,
     int min_space_y,
     views::BubbleBorder::ArrowLocation* arrow,
     gfx::Point* anchor) {
+  const gfx::Rect& work_area = display.work_area();
+
   // First ensure anchor is within the work area.
   if (!work_area.Contains(*anchor)) {
     anchor->set_x(std::max(anchor->x(), work_area.x()));
@@ -237,21 +239,26 @@ void AppListController::GetArrowLocationAndUpdateAnchor(
     anchor->set_y(std::min(anchor->y(), work_area.bottom()));
   }
 
-  // Prefer the bottom as it is the most natural position.
-  if (anchor->y() - work_area.y() >= min_space_y) {
-    *arrow = views::BubbleBorder::BOTTOM_LEFT;
-    anchor->Offset(0, -kAnchorOffset);
-    return;
+  // Only consider bottom and top arrow locations if the taskbar is not on the
+  // sides. Otherwise it is easy to end up with the app list coming up under the
+  // taskbar.
+  if (work_area.width() == display.size().width()) {
+    // Prefer the bottom as it is the most natural position.
+    if (anchor->y() - work_area.y() >= min_space_y) {
+      *arrow = views::BubbleBorder::BOTTOM_LEFT;
+      anchor->Offset(0, -kAnchorOffset);
+      return;
+    }
+
+    // The view won't fit above the cursor. Will it fit below?
+    if (work_area.bottom() - anchor->y() >= min_space_y) {
+      *arrow = views::BubbleBorder::TOP_LEFT;
+      anchor->Offset(0, kAnchorOffset);
+      return;
+    }
   }
 
-  // The view won't fit above the cursor. Will it fit below?
-  if (work_area.bottom() - anchor->y() >= min_space_y) {
-    *arrow = views::BubbleBorder::TOP_LEFT;
-    anchor->Offset(0, kAnchorOffset);
-    return;
-  }
-
-  // As the view won't fit above or below, try on the right.
+  // Now try on the right.
   if (work_area.right() - anchor->x() >= min_space_x) {
     *arrow = views::BubbleBorder::LEFT_TOP;
     anchor->Offset(kAnchorOffset, 0);
@@ -276,9 +283,8 @@ void AppListController::UpdateArrowPositionAndAnchorPoint(
   gfx::Point anchor = view->anchor_point();
   gfx::Display display = gfx::Screen::GetScreenFor(
       view->GetWidget()->GetNativeView())->GetDisplayNearestPoint(anchor);
-  const gfx::Rect& display_rect = display.work_area();
   views::BubbleBorder::ArrowLocation arrow;
-  GetArrowLocationAndUpdateAnchor(display.work_area(),
+  GetArrowLocationAndUpdateAnchor(display,
                                   min_space_x,
                                   min_space_y,
                                   &arrow,
