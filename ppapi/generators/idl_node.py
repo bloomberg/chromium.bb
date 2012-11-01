@@ -39,7 +39,6 @@ class IDLAttribute(object):
   def __str__(self):
     return '%s=%s' % (self.name, self.value)
 
-
 #
 # IDLNode
 #
@@ -245,15 +244,37 @@ class IDLNode(IDLRelease):
       self.hashes[release] = hashval
     return hashval.hexdigest()
 
-  def GetDeps(self, release):
+  def GetDeps(self, release, visited=None):
+    visited = visited or set()
+
+    # If this release is not valid for this object, then done.
+    if not self.IsRelease(release) or self.IsA('Comment', 'Copyright'):
+      return set([])
+
+    # If we have cached the info for this release, return the cached value
     deps = self.deps.get(release, None)
-    if deps is None:
-      deps = set([self])
-      for child in self.GetChildren():
-        deps |= child.GetDeps(release)
-      typeref = self.GetType(release)
-      if typeref: deps |= typeref.GetDeps(release)
-      self.deps[release] = deps
+    if deps is not None:
+      return deps
+
+    # If we are already visited, then return
+    if self in visited:
+      return set([self])
+
+    # Otherwise, build the dependency list
+    visited |= set([self])
+    deps = set([self])
+
+    # Get child deps
+    for child in self.GetChildren():
+      deps |= child.GetDeps(release, visited)
+      visited |= set(deps)
+
+    # Get type deps
+    typeref = self.GetType(release)
+    if typeref:
+      deps |= typeref.GetDeps(release, visited)
+
+    self.deps[release] = deps
     return deps
 
   def GetVersion(self, release):
@@ -263,6 +284,10 @@ class IDLNode(IDLRelease):
     return filenode.release_map.GetVersion(release)
 
   def GetUniqueReleases(self, releases):
+    """Return the unique set of first releases corresponding to input
+
+    Since we are returning the corresponding 'first' version for a
+    release, we may return a release version prior to the one in the list."""
     my_min, my_max = self.GetMinMax(releases)
     if my_min > releases[-1] or my_max < releases[0]:
       return []
@@ -271,8 +296,6 @@ class IDLNode(IDLRelease):
     for rel in releases:
       remapped = self.first_release[rel]
       if not remapped: continue
-      if remapped < releases[0]:
-        remapped = releases[0]
       out |= set([remapped])
     out = sorted(out)
     return out
@@ -299,7 +322,7 @@ class IDLNode(IDLRelease):
     return self.releases
 
 
-  def _GetReleaseList(self, releases):
+  def _GetReleaseList(self, releases, visited=set()):
     if not self.releases:
       # If we are unversionable, then return first available release
       if self.IsA('Comment', 'Copyright', 'Label'):
@@ -315,19 +338,29 @@ class IDLNode(IDLRelease):
       else:
         my_releases = set([my_min])
 
-      # Files inherit all there releases from items in the file
+      # Break cycle if we reference ourselves
+      if self in visited:
+        return [my_min]
+
+      visited |= set([self])
+
+      # Files inherit all thier releases from items in the file
       if self.IsA('AST', 'File'):
         my_releases = set()
 
+      # Visit all children
       child_releases = set()
       for child in self.children:
-        child_releases |= set(child._GetReleaseList(releases))
+        child_releases |= set(child._GetReleaseList(releases, visited))
+        visited |= set(child_releases)
 
+      # Visit my type
       type_releases = set()
       if self.typelist:
         type_list = self.typelist.GetReleases()
         for typenode in type_list:
-          type_releases |= set(typenode._GetReleaseList(releases))
+          type_releases |= set(typenode._GetReleaseList(releases, visited))
+          visited |= set(type_releases)
 
         type_release_list = sorted(type_releases)
         if my_min < type_release_list[0]:
