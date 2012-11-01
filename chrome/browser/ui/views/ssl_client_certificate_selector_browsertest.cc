@@ -16,6 +16,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/ssl_cert_request_info.h"
+#include "net/base/test_data_directory.h"
 #include "net/base/x509_certificate.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request.h"

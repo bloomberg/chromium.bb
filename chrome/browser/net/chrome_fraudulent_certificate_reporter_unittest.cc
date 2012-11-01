@@ -16,6 +16,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/ssl_info.h"
+#include "net/base/test_data_directory.h"
 #include "net/base/transport_security_state.h"
 #include "net/base/x509_certificate.h"
 #include "net/url_request/fraudulent_certificate_reporter.h"

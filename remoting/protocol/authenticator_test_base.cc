@@ -10,7 +10,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/timer.h"
 #include "crypto/rsa_private_key.h"
-#include "net/base/cert_test_util.h"
+#include "net/base/test_data_directory.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/fake_session.h"

@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/cert_test_util.h"
+#include "net/base/test_data_directory.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
