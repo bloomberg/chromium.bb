@@ -81,8 +81,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   // The context groups' tracking structures
   std::set<GpuMemoryTrackingGroup*> tracking_groups_;
 
-  size_t CalculateBonusMemoryAllocationBasedOnSize(gfx::Size size) const;
-
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
   void UpdateAvailableGpuMemory(std::vector<GpuCommandBufferStubBase*>& stubs);
@@ -96,7 +94,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   // if we can't query the driver for an exact value.
   size_t GetDefaultAvailableGpuMemory() const {
 #if defined(OS_ANDROID)
-    return 64 * 1024 * 1024;
+    return 32 * 1024 * 1024;
 #elif defined(OS_CHROMEOS)
     return 1024 * 1024 * 1024;
 #else
@@ -104,11 +102,23 @@ class CONTENT_EXPORT GpuMemoryManager :
 #endif
   }
 
-  // The maximum amount of memory that a tab may be assigned
-size_t GetMaximumTabAllocation() const {
+  // Get a reasonable memory limit from a viewport's surface area.
+  static size_t CalcAvailableFromViewportArea(int viewport_area);
+  static size_t CalcAvailableFromGpuTotal(size_t total_gpu_memory);
+
+  // Maximum cap on total GPU memory, no matter how much
+  // the GPU reports to have.
+  static size_t GetMaximumTotalGpuMemory() {
 #if defined(OS_ANDROID)
-    return 128 * 1024 * 1024;
-#elif defined(OS_CHROMEOS)
+    return 256 * 1024 * 1024;
+#else
+    return 1024 * 1024 * 1024;
+#endif
+  }
+
+  // The maximum amount of memory that a tab may be assigned
+  size_t GetMaximumTabAllocation() const {
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     return bytes_available_gpu_memory_;
 #else
     // This is to avoid allowing a single page on to use a full 256MB of memory
@@ -119,7 +129,7 @@ size_t GetMaximumTabAllocation() const {
   }
 
   // The minimum non-zero amount of memory that a tab may be assigned
-  size_t GetMinimumTabAllocation() const {
+  static size_t GetMinimumTabAllocation() {
 #if defined(OS_ANDROID)
     return 32 * 1024 * 1024;
 #elif defined(OS_CHROMEOS)

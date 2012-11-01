@@ -44,17 +44,20 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
  public:
   MemoryManagerState memory_manager_state_;
   GpuMemoryAllocation allocation_;
-  gfx::Size size_;
+  gfx::Size surface_size_;
+  size_t total_gpu_memory_;
 
   FakeCommandBufferStub()
-      : memory_manager_state_(0, false, base::TimeTicks()) {
+      : memory_manager_state_(0, false, base::TimeTicks())
+      , total_gpu_memory_(0) {
     memory_manager_state_.client_has_memory_allocation_changed_callback = true;
   }
 
   FakeCommandBufferStub(int32 surface_id,
                         bool visible,
                         base::TimeTicks last_used_time)
-      : memory_manager_state_(surface_id != 0, visible, last_used_time) {
+      : memory_manager_state_(surface_id != 0, visible, last_used_time)
+      , total_gpu_memory_(0) {
     memory_manager_state_.client_has_memory_allocation_changed_callback = true;
   }
 
@@ -63,7 +66,7 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
   }
 
   virtual gfx::Size GetSurfaceSize() const {
-    return size_;
+    return surface_size_;
   }
   virtual bool IsInSameContextShareGroup(
       const GpuCommandBufferStubBase& stub) const {
@@ -74,8 +77,15 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
     StubAssignmentCollector::AddStubStat(this, alloc);
   }
   virtual bool GetTotalGpuMemory(size_t* bytes) {
+    if (total_gpu_memory_) {
+      *bytes = total_gpu_memory_;
+      return true;
+    }
     return false;
   }
+
+  void SetTotalGpuMemory(size_t bytes) { total_gpu_memory_ = bytes; }
+  void SetSurfaceSize(gfx::Size size) { surface_size_ = size; }
 };
 
 class FakeCommandBufferStubWithoutSurface : public GpuCommandBufferStubBase {
@@ -188,6 +198,20 @@ class GpuMemoryManagerTest : public testing::Test {
   void Manage() {
     StubAssignmentCollector::ClearAllStats();
     memory_manager_.Manage();
+  }
+
+  size_t CalcAvailableFromGpuTotal(size_t bytes) {
+    return GpuMemoryManager::CalcAvailableFromGpuTotal(bytes);
+  }
+
+  size_t CalcAvailableFromViewportArea(int viewport_area) {
+    return GpuMemoryManager::CalcAvailableFromViewportArea(viewport_area);
+  }
+
+  size_t CalcAvailableClamped(size_t bytes) {
+    bytes = std::max(bytes, memory_manager_.GetDefaultAvailableGpuMemory());
+    bytes = std::min(bytes, memory_manager_.GetMaximumTotalGpuMemory());
+    return bytes;
   }
 
   size_t GetAvailableGpuMemory() {
@@ -521,7 +545,6 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceNo(stub4.allocation_));
 }
 
-#if !defined(OS_ANDROID)
 // Test GpuMemoryAllocation memory allocation bonuses:
 // When the number of visible tabs is small, each tab should get a
 // gpu_resource_size_in_bytes allocation value that is greater than
@@ -559,49 +582,38 @@ TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocation) {
         GetMinimumTabAllocation());
   }
 }
+
+// Test GpuMemoryManager::UpdateAvailableGpuMemory functionality
+TEST_F(GpuMemoryManagerTest, TestUpdateAvailableGpuMemory) {
+  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_),
+                        stub2(GenerateUniqueSurfaceId(), false, older_),
+                        stub3(GenerateUniqueSurfaceId(), true, older_),
+                        stub4(GenerateUniqueSurfaceId(), false, older_);
+  client_.stubs_.push_back(&stub1);
+  client_.stubs_.push_back(&stub2);
+  client_.stubs_.push_back(&stub3);
+  client_.stubs_.push_back(&stub4);
+#if defined(OS_ANDROID)
+  // We use the largest visible surface size to calculate the limit
+  stub1.SetSurfaceSize(gfx::Size(1024, 512)); // Surface size
+  stub2.SetSurfaceSize(gfx::Size(2048, 512)); // Larger but not visible.
+  stub3.SetSurfaceSize(gfx::Size(512, 512));  // Visible but smaller.
+  stub4.SetSurfaceSize(gfx::Size(512, 512));  // Not visible and smaller.
+  Manage();
+  size_t bytes_expected = CalcAvailableFromViewportArea(1024*512);
 #else
-// Test GpuMemoryAllocation memory allocation bonuses:
-// When the size of tab contents is small, bonus allocation should be 0.
-// As the size of tab contents increases, bonus allocation should increase
-// until finally reaching the maximum allocation limit.
-TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocationAndroid) {
-  FakeCommandBufferStub stub(GenerateUniqueSurfaceId(), true, older_);
-  client_.stubs_.push_back(&stub);
-
-  stub.size_ = gfx::Size(1,1);
+  // We take the lowest GPU's total memory as the limit
+  size_t expected = 400 * 1024 * 1024;
+  stub1.SetTotalGpuMemory(expected); // GPU Memory
+  stub2.SetTotalGpuMemory(expected - 1024 * 1024); // Smaller but not visible.
+  stub3.SetTotalGpuMemory(expected + 1024 * 1024); // Visible but larger.
+  stub4.SetTotalGpuMemory(expected + 1024 * 1024); // Not visible and larger.
   Manage();
-  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-  EXPECT_EQ(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
-            GetMinimumTabAllocation());
-
-  // Keep increasing size, making sure allocation is always increasing
-  // Until it finally reaches the maximum.
-  while (stub.allocation_.renderer_allocation.bytes_limit_when_visible <
-      GetAvailableGpuMemory()) {
-    size_t previous_allocation =
-        stub.allocation_.renderer_allocation.bytes_limit_when_visible;
-
-    stub.size_ = gfx::ToFlooredSize(stub.size_.Scale(1, 2));
-
-    Manage();
-    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-    EXPECT_GE(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
-              GetMinimumTabAllocation());
-    EXPECT_LE(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
-              GetAvailableGpuMemory());
-    EXPECT_GE(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
-              previous_allocation);
-  }
-
-  // One final size increase to confirm it stays capped at maximum.
-  stub.size_ = gfx::ToFlooredSize(stub.size_.Scale(1, 2));
-
-  Manage();
-  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-  EXPECT_EQ(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
-            GetAvailableGpuMemory());
-}
+  size_t bytes_expected = CalcAvailableFromGpuTotal(expected);
 #endif
+  EXPECT_EQ(GetAvailableGpuMemory(), CalcAvailableClamped(bytes_expected));
+}
+
 
 // Test GpuMemoryAllocation comparison operators: Iterate over all possible
 // combinations of gpu_resource_size_in_bytes, suggest_have_backbuffer, and
@@ -651,12 +663,6 @@ TEST_F(GpuMemoryManagerTest, GpuMemoryAllocationCompareTests) {
 // Creats various surface/non-surface stubs and switches stub visibility and
 // tests to see that stats data structure values are correct.
 TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
-#if !defined(OS_ANDROID)
-  const bool compositors_get_bonus_allocation = true;
-#else
-  const bool compositors_get_bonus_allocation = false;
-#endif
-
   StubAssignmentCollector::StubMemoryStatMap stats;
 
   Manage();
@@ -688,8 +694,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_EQ(stats.size(), 2ul);
   EXPECT_GT(stub1allocation2, 0ul);
   EXPECT_GT(stub2allocation2, 0ul);
-  if (compositors_get_bonus_allocation &&
-      stub1allocation2 != GetMaximumTabAllocation())
+  if (stub1allocation2 != GetMaximumTabAllocation())
     EXPECT_LT(stub1allocation2, stub1allocation1);
 
   FakeCommandBufferStub stub3(GenerateUniqueSurfaceId(), true, older_);
@@ -707,8 +712,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_GT(stub1allocation3, 0ul);
   EXPECT_GT(stub2allocation3, 0ul);
   EXPECT_GT(stub3allocation3, 0ul);
-  if (compositors_get_bonus_allocation &&
-      stub1allocation3 != GetMaximumTabAllocation())
+  if (stub1allocation3 != GetMaximumTabAllocation())
     EXPECT_LT(stub1allocation3, stub1allocation2);
 
   stub1.memory_manager_state_.visible = false;
@@ -725,8 +729,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_GT(stub1allocation4, 0ul);
   EXPECT_GE(stub2allocation4, 0ul);
   EXPECT_GT(stub3allocation4, 0ul);
-  if (compositors_get_bonus_allocation &&
-      stub3allocation3 != GetMaximumTabAllocation())
+  if (stub3allocation3 != GetMaximumTabAllocation())
     EXPECT_GT(stub3allocation4, stub3allocation3);
 }
 

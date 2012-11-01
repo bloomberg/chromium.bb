@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
@@ -48,24 +49,6 @@ void AssignMemoryAllocations(
 
 }
 
-size_t GpuMemoryManager::CalculateBonusMemoryAllocationBasedOnSize(
-    gfx::Size size) const {
-  const int kViewportMultiplier = 16;
-  const unsigned int kComponentsPerPixel = 4; // GraphicsContext3D::RGBA
-  const unsigned int kBytesPerComponent = 1; // sizeof(GC3Dubyte)
-
-  if (size.IsEmpty())
-    return 0;
-
-  size_t limit = kViewportMultiplier * size.width() * size.height() *
-                 kComponentsPerPixel * kBytesPerComponent;
-  if (limit < GetMinimumTabAllocation())
-    limit = GetMinimumTabAllocation();
-  else if (limit > GetAvailableGpuMemory())
-    limit = GetAvailableGpuMemory();
-  return limit - GetMinimumTabAllocation();
-}
-
 GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
         size_t max_surfaces_with_frontbuffer_soft_limit)
     : client_(client),
@@ -94,6 +77,32 @@ GpuMemoryManager::~GpuMemoryManager() {
   DCHECK(tracking_groups_.empty());
 }
 
+size_t GpuMemoryManager::CalcAvailableFromViewportArea(int viewport_area) {
+  // We can't query available GPU memory from the system on Android, but
+  // 18X the viewport and 50% of the dalvik heap size give us a good
+  // estimate of available GPU memory on a wide range of devices.
+  const int kViewportMultiplier = 18;
+  const unsigned int kComponentsPerPixel = 4; // GraphicsContext3D::RGBA
+  const unsigned int kBytesPerComponent = 1; // sizeof(GC3Dubyte)
+  size_t viewport_limit = viewport_area * kViewportMultiplier *
+                                          kComponentsPerPixel *
+                                          kBytesPerComponent;
+#if !defined(OS_ANDROID)
+  return viewport_limit;
+#else
+  static size_t dalvik_limit = 0;
+  if (!dalvik_limit)
+      dalvik_limit = (base::SysInfo::DalvikHeapSizeMB() / 2) * 1024 * 1024;
+  return std::min(viewport_limit, dalvik_limit);
+#endif
+}
+
+size_t GpuMemoryManager::CalcAvailableFromGpuTotal(size_t total_gpu_memory) {
+  // Allow Chrome to use 75% of total GPU memory, or all-but-64MB of GPU
+  // memory, whichever is less.
+  return std::min(3 * total_gpu_memory / 4, total_gpu_memory - 64*1024*1024);
+}
+
 void GpuMemoryManager::UpdateAvailableGpuMemory(
    std::vector<GpuCommandBufferStubBase*>& stubs) {
   // If the amount of video memory to use was specified at the command
@@ -101,6 +110,19 @@ void GpuMemoryManager::UpdateAvailableGpuMemory(
   if (bytes_available_gpu_memory_overridden_)
     return;
 
+#if defined(OS_ANDROID)
+  // On Android we use the surface size, so this finds the largest visible
+  // surface size instead of lowest gpu's limit.
+  int max_surface_area = 0;
+  for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
+      it != stubs.end(); ++it) {
+    GpuCommandBufferStubBase* stub = *it;
+    gfx::Size surface_size = stub->GetSurfaceSize();
+    max_surface_area = std::max(max_surface_area, surface_size.width() *
+                                                  surface_size.height());
+  }
+  bytes_available_gpu_memory_ = CalcAvailableFromViewportArea(max_surface_area);
+#else
   // We do not have a reliable concept of multiple GPUs existing in
   // a system, so just be safe and go with the minimum encountered.
   size_t bytes_min = 0;
@@ -116,18 +138,17 @@ void GpuMemoryManager::UpdateAvailableGpuMemory(
   if (!bytes_min)
     return;
 
-  // Allow Chrome to use 75% of total GPU memory, or all-but-64MB of GPU
-  // memory, whichever is less.
-  bytes_available_gpu_memory_ = std::min(3 * bytes_min / 4,
-                                         bytes_min - 64*1024*1024);
+  bytes_available_gpu_memory_ = CalcAvailableFromGpuTotal(bytes_min);
+
+#endif
 
   // And never go below the default allocation
   bytes_available_gpu_memory_ = std::max(bytes_available_gpu_memory_,
                                          GetDefaultAvailableGpuMemory());
 
-  // And never go above 1GB
+  // And never go above the maximum.
   bytes_available_gpu_memory_ = std::min(bytes_available_gpu_memory_,
-                                         static_cast<size_t>(1024*1024*1024));
+                                         GetMaximumTotalGpuMemory());
 }
 
 bool GpuMemoryManager::StubWithSurfaceComparator::operator()(
@@ -328,7 +349,6 @@ void GpuMemoryManager::Manage() {
   UpdateAvailableGpuMemory(stubs_with_surface_foreground);
 
   size_t bonus_allocation = 0;
-#if !defined(OS_ANDROID)
   // Calculate bonus allocation by splitting remainder of global limit equally
   // after giving out the minimum to those that need it.
   size_t num_stubs_need_mem = stubs_with_surface_foreground.size() +
@@ -339,12 +359,6 @@ void GpuMemoryManager::Manage() {
       !stubs_with_surface_foreground.empty())
     bonus_allocation = (GetAvailableGpuMemory() - base_allocation_size) /
                        stubs_with_surface_foreground.size();
-#else
-  // On android, calculate bonus allocation based on surface size.
-  if (!stubs_with_surface_foreground.empty())
-    bonus_allocation = CalculateBonusMemoryAllocationBasedOnSize(
-        stubs_with_surface_foreground[0]->GetSurfaceSize());
-#endif
   size_t stubs_with_surface_foreground_allocation = GetMinimumTabAllocation() +
                                                     bonus_allocation;
 
