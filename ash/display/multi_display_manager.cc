@@ -253,13 +253,13 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
           new_display.device_scale_factor()) {
         changed_display_indices.push_back(new_iter - new_displays.begin());
       }
-      // TODO(oshima): This is ugly. Simplify these operations.
-      // If the display is primary, then simpy use 0,0. Otherwise,
-      // use the origin currently used.
-      if ((*new_iter).id() != current_primary.id()) {
-        new_display.set_bounds(gfx::Rect(current_display.bounds().origin(),
-                                         new_display.bounds().size()));
-      }
+      // If the display is primary, then simpy set the origin to (0,0).
+      // The secondary display's bounds will be updated by
+      // |DisplayController::UpdateDisplayBoundsForLayout|, so no need
+      // to change there.
+      if ((*new_iter).id() == current_primary.id())
+        new_display.set_bounds(gfx::Rect(new_display.bounds().size()));
+
       new_display.UpdateWorkAreaFromInsets(current_display.GetWorkAreaInsets());
       ++curr_iter;
       ++new_iter;

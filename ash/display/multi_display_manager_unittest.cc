@@ -494,16 +494,16 @@ TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplaysChangedAfterPrimaryChange) {
 
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
       secondary_display);
-  EXPECT_EQ("0,0 500x500",
+  EXPECT_EQ("-500,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
-  EXPECT_EQ("500,0 100x100", FindDisplayForId(10).bounds().ToString());
+  EXPECT_EQ("0,0 100x100", FindDisplayForId(10).bounds().ToString());
 
   // OnNativeDisplaysChanged may change the display bounds.  Here makes sure
   // nothing changed if the exactly same displays are specified.
   display_manager()->OnNativeDisplaysChanged(displays);
-  EXPECT_EQ("0,0 500x500",
+  EXPECT_EQ("-500,0 500x500",
             FindDisplayForId(internal_display_id).bounds().ToString());
-  EXPECT_EQ("500,0 100x100", FindDisplayForId(10).bounds().ToString());
+  EXPECT_EQ("0,0 100x100", FindDisplayForId(10).bounds().ToString());
 }
 
 }  // namespace internal
