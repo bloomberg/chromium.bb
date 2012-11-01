@@ -641,33 +641,58 @@ remoting.ClientSession.prototype.updateDimensions = function() {
 
   var windowWidth = window.innerWidth;
   var windowHeight = window.innerHeight;
+  var desktopWidth = this.plugin.desktopWidth;
+  var desktopHeight = this.plugin.desktopHeight;
   var scale = 1.0;
 
   if (this.getScaleToFit()) {
-    var scaleFitWidth = 1.0 * windowWidth / this.plugin.desktopWidth;
-    var scaleFitHeight = 1.0 * windowHeight / this.plugin.desktopHeight;
-    scale = Math.min(1.0, scaleFitHeight, scaleFitWidth);
+    // Scale to fit the entire desktop in the client window.
+    var scaleFitWidth = Math.min(1.0, 1.0 * windowWidth / desktopWidth);
+    var scaleFitHeight = Math.min(1.0, 1.0 * windowHeight / desktopHeight);
+    scale = Math.min(scaleFitHeight, scaleFitWidth);
+
+    // If we're running full-screen then try to handle common side-by-side
+    // multi-monitor combinations more intelligently.
+    if (document.webkitIsFullScreen) {
+      // If the host has two monitors each the same size as the client then
+      // scale-to-fit will have the desktop occupy only 50% of the client area,
+      // in which case it would be preferable to down-scale less and let the
+      // user bump-scroll around ("scale-and-pan").
+      // Triggering scale-and-pan if less than 65% of the client area would be
+      // used adds enough fuzz to cope with e.g. 1280x800 client connecting to
+      // a (2x1280)x1024 host nicely.
+      // Note that we don't need to account for scrollbars while fullscreen.
+      if (scale <= scaleFitHeight * 0.65) {
+        scale = scaleFitHeight;
+      }
+      if (scale <= scaleFitWidth * 0.65) {
+        scale = scaleFitWidth;
+      }
+    }
   }
 
-  var width = this.plugin.desktopWidth * scale;
-  var height = this.plugin.desktopHeight * scale;
+  var pluginWidth = desktopWidth * scale;
+  var pluginHeight = desktopHeight * scale;
 
   // Resize the plugin if necessary.
-  this.plugin.element().width = width;
-  this.plugin.element().height = height;
+  // TODO(wez): Handle high-DPI to high-DPI properly (crbug.com/135089).
+  this.plugin.element().width = pluginWidth;
+  this.plugin.element().height = pluginHeight;
 
   // Position the container.
-  // TODO(wez): We should take into account scrollbars when positioning.
+  // Note that clientWidth/Height take into account scrollbars.
+  var clientWidth = document.documentElement.clientWidth;
+  var clientHeight = document.documentElement.clientHeight;
   var parentNode = this.plugin.element().parentNode;
 
-  if (width < windowWidth) {
-    parentNode.style.left = (windowWidth - width) / 2 + 'px';
+  if (pluginWidth < clientWidth) {
+    parentNode.style.left = (clientWidth - pluginWidth) / 2 + 'px';
   } else {
     parentNode.style.left = '0';
   }
 
-  if (height < windowHeight) {
-    parentNode.style.top = (windowHeight - height) / 2 + 'px';
+  if (pluginHeight < clientHeight) {
+    parentNode.style.top = (clientHeight - pluginHeight) / 2 + 'px';
   } else {
     parentNode.style.top = '0';
   }
@@ -675,7 +700,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   console.log('plugin dimensions: ' +
               parentNode.style.left + ',' +
               parentNode.style.top + '-' +
-              width + 'x' + height + '.');
+              pluginWidth + 'x' + pluginHeight + '.');
 };
 
 /**
