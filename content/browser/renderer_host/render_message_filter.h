@@ -40,6 +40,7 @@ struct WebScreenInfo;
 namespace base {
 class ProcessMetrics;
 class SharedMemory;
+class TaskRunner;
 }
 
 namespace gfx {
@@ -89,9 +90,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      BrowserThread::ID* thread) OVERRIDE;
+  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message) OVERRIDE;
 
   bool OffTheRecord() const;
 

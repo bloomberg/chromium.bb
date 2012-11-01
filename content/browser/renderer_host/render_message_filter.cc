@@ -84,6 +84,12 @@ const int kPluginsRefreshThresholdInSeconds = 3;
 // usage only once and send it as a response for both queries.
 static const int64 kCPUUsageSampleIntervalMs = 900;
 
+// On Windows, |g_color_profile| can run on an arbitrary background thread.
+// We avoid races by using LazyInstance's constructor lock to initialize the
+// object.
+base::LazyInstance<gfx::ColorProfile>::Leaky g_color_profile =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Common functionality for converting a sync renderer message to a callback
 // function in the browser. Derive from this, create it on the heap when
 // issuing your callback. When done, write your reply parameters into
@@ -405,13 +411,14 @@ void RenderMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
-void RenderMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message, BrowserThread::ID* thread) {
+base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
+    const IPC::Message& message) {
 #if defined(OS_WIN)
   // Windows monitor profile must be read from a file.
   if (message.type() == ViewHostMsg_GetMonitorColorProfile::ID)
-    *thread = BrowserThread::FILE;
+    return BrowserThread::GetBlockingPool();
 #endif
+  return NULL;
 }
 
 bool RenderMessageFilter::OffTheRecord() const {
@@ -743,10 +750,11 @@ void RenderMessageFilter::OnGetHardwareInputChannelLayout(
 
 void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
 #if defined(OS_WIN)
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (BackingStoreWin::ColorManagementEnabled())
     return;
 #endif
-  gfx::GetColorProfile(profile);
+  *profile = g_color_profile.Get().profile();
 }
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
