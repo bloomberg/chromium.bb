@@ -26,6 +26,10 @@ void ChromeAppHostOperations::ReadOptions(
       pref_value) {
     options->insert(kOptionMultiInstall);
   }
+  if (prefs.GetBool(master_preferences::kChromeAppLauncher, &pref_value) &&
+      pref_value) {
+    options->insert(kOptionAppHostIsLauncher);
+  }
 }
 
 void ChromeAppHostOperations::ReadOptions(
@@ -35,6 +39,8 @@ void ChromeAppHostOperations::ReadOptions(
 
   if (uninstall_command.HasSwitch(switches::kMultiInstall))
     options->insert(kOptionMultiInstall);
+  if (uninstall_command.HasSwitch(switches::kChromeAppLauncher))
+    options->insert(kOptionAppHostIsLauncher);
 }
 
 void ChromeAppHostOperations::AddKeyFiles(
@@ -60,8 +66,11 @@ void ChromeAppHostOperations::AppendProductFlags(
   if (is_multi_install && !cmd_line->HasSwitch(switches::kMultiInstall))
     cmd_line->AppendSwitch(switches::kMultiInstall);
 
-  // --app-host is always needed.
-  cmd_line->AppendSwitch(switches::kChromeAppHost);
+  // Either --app-launcher or --app-host is always needed.
+  if (options.find(kOptionAppHostIsLauncher) != options.end())
+    cmd_line->AppendSwitch(switches::kChromeAppLauncher);
+  else
+    cmd_line->AppendSwitch(switches::kChromeAppHost);
 }
 
 void ChromeAppHostOperations::AppendRenameFlags(
@@ -84,9 +93,15 @@ bool ChromeAppHostOperations::SetChannelFlags(
     ChannelInfo* channel_info) const {
 #if defined(GOOGLE_CHROME_BUILD)
   DCHECK(channel_info);
-  bool modified = channel_info->SetAppHost(set);
-
-  return modified;
+  bool modified_app_host = false;
+  bool modified_app_launcher = false;
+  bool is_app_launcher =
+      (options.find(kOptionAppHostIsLauncher) != options.end());
+  // If set, then App Host and App Launcher are mutually exclusive.
+  // If !set, then remove both.
+  modified_app_host = channel_info->SetAppHost(set && !is_app_launcher);
+  modified_app_launcher = channel_info->SetAppLauncher(set && is_app_launcher);
+  return modified_app_host || modified_app_launcher;
 #else
   return false;
 #endif
@@ -94,7 +109,7 @@ bool ChromeAppHostOperations::SetChannelFlags(
 
 bool ChromeAppHostOperations::ShouldCreateUninstallEntry(
     const std::set<std::wstring>& options) const {
-  return false;
+  return (options.find(kOptionAppHostIsLauncher) != options.end());
 }
 
 }  // namespace installer

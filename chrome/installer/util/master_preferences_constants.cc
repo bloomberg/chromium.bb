@@ -10,6 +10,7 @@ namespace master_preferences {
   const char kAutoLaunchChrome[] = "auto_launch_chrome";
   const char kChrome[] = "chrome";
   const char kChromeAppHost[] = "app_host";
+  const char kChromeAppLauncher[] = "app_launcher";
   const char kChromeFrame[] = "chrome_frame";
   const char kChromeFrameReadyMode[] = "ready_mode";
   const char kChromeShortcutIconIndex[] = "chrome_shortcut_icon_index";

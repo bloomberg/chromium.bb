@@ -18,6 +18,11 @@ const char kChrome[] = "chrome";
 // Install Chrome App Host.
 const char kChromeAppHost[] = "app-host";
 
+// Install Chrome App Launcher, which subsumes Chrome App Host, i.e.,
+// App Launcher install converts App Host to App Launcher, and all subsequent
+// App Host updates/uninstalls become App Launcher updates/uninstalls.
+const char kChromeAppLauncher[] = "app-launcher";
+
 // Install Chrome Frame.
 const char kChromeFrame[] = "chrome-frame";
 
@@ -222,6 +227,7 @@ const wchar_t kInstallerSuccessLaunchCmdLine[] =
 // command line.
 const char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
 
+const wchar_t kOptionAppHostIsLauncher[] = L"app-host-is-launcher";
 const wchar_t kOptionMultiInstall[] = L"multi-install";
 const wchar_t kOptionReadyMode[] = L"ready-mode";
 

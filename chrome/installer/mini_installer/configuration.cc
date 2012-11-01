@@ -60,7 +60,8 @@ bool Configuration::InitializeFromCommandLine(const wchar_t* command_line) {
         has_chrome_ = true;
       else if (0 == ::lstrcmpi(args_[i], L"--chrome-frame"))
         has_chrome_frame_ = true;
-      else if (0 == ::lstrcmpi(args_[i], L"--app-host"))
+      else if ((0 == ::lstrcmpi(args_[i], L"--app-host")) ||
+               (0 == ::lstrcmpi(args_[i], L"--app-launcher")))
         has_app_host_ = true;
       else if (0 == ::lstrcmpi(args_[i], L"--multi-install"))
         is_multi_install_ = true;

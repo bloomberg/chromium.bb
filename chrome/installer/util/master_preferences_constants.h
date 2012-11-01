@@ -24,6 +24,8 @@ extern const char kAutoLaunchChrome[];
 extern const char kChrome[];
 // Boolean. This is to be a Chrome App Host install.
 extern const char kChromeAppHost[];
+// Boolean. This is to be a Chrome App Launcher install.
+extern const char kChromeAppLauncher[];
 // Boolean. This is to be a Chrome Frame install.
 extern const char kChromeFrame[];
 // Boolean. Chrome Frame is to be installed in ready-mode.

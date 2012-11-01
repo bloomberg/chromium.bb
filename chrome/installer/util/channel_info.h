@@ -64,6 +64,13 @@ class ChannelInfo {
   // modified.
   bool SetAppHost(bool value);
 
+  // Returns true if the -applauncher modifier is present in the value.
+  bool IsAppLauncher() const;
+
+  // Adds or removes the -applauncher modifier, returning true if the value is
+  // modified.
+  bool SetAppLauncher(bool value);
+
   // Returns true if the -multi modifier is present in the value.
   bool IsMultiInstall() const;
 

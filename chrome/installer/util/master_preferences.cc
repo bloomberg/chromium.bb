@@ -93,8 +93,11 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
 }
 
 MasterPreferences::MasterPreferences(const FilePath& prefs_path)
-    : distribution_(NULL), preferences_read_from_file_(false),
-      chrome_(true), chrome_app_host_(false), chrome_frame_(false),
+    : distribution_(NULL),
+      preferences_read_from_file_(false),
+      chrome_(true),
+      chrome_app_host_(false),
+      chrome_frame_(false),
       multi_install_(false) {
   std::string json_data;
   // Failure to read the file is ignored as |json_data| will be the empty string
@@ -142,6 +145,8 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
       installer::master_preferences::kAutoLaunchChrome },
     { installer::switches::kChromeAppHost,
       installer::master_preferences::kChromeAppHost },
+    { installer::switches::kChromeAppLauncher,
+      installer::master_preferences::kChromeAppLauncher },
     { installer::switches::kChrome,
       installer::master_preferences::kChrome },
     { installer::switches::kChromeFrame,
@@ -225,6 +230,8 @@ bool MasterPreferences::InitializeFromString(const std::string& json_data) {
 }
 
 void MasterPreferences::InitializeProductFlags() {
+  bool pref_chrome_app_host = false;
+  bool pref_chrome_app_launcher = false;
   // Make sure we start out with the correct defaults.
   multi_install_ = false;
   chrome_frame_ = false;
@@ -233,7 +240,11 @@ void MasterPreferences::InitializeProductFlags() {
 
   GetBool(installer::master_preferences::kMultiInstall, &multi_install_);
   GetBool(installer::master_preferences::kChromeFrame, &chrome_frame_);
-  GetBool(installer::master_preferences::kChromeAppHost, &chrome_app_host_);
+
+  GetBool(installer::master_preferences::kChromeAppHost, &pref_chrome_app_host);
+  GetBool(installer::master_preferences::kChromeAppLauncher,
+          &pref_chrome_app_launcher);
+  chrome_app_host_ = pref_chrome_app_host || pref_chrome_app_launcher;
 
   // When multi-install is specified, the checks are pretty simple (in theory):
   // In order to be installed/uninstalled, each product must have its switch

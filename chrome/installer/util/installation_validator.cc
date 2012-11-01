@@ -115,13 +115,18 @@ void InstallationValidator::ChromeAppHostRules::AddUninstallSwitchExpectations(
     SwitchExpectations* expectations) const {
   DCHECK(!ctx.system_install);
 
-  // --app-host must be present.
-  expectations->push_back(std::make_pair(std::string(switches::kChromeAppHost),
-                                         true));
+  // Either --app-launcher or --app-host must be present.
+  if (ctx.state.channel().IsAppLauncher()) {
+    expectations->push_back(
+        std::make_pair(std::string(switches::kChromeAppLauncher), true));
+  } else {
+    expectations->push_back(
+        std::make_pair(std::string(switches::kChromeAppHost), true));
+  }
+
   // --chrome must not be present.
   expectations->push_back(std::make_pair(std::string(switches::kChrome),
                                          false));
-
   // --chrome-frame must not be present.
   expectations->push_back(std::make_pair(std::string(switches::kChromeFrame),
                                          false));
@@ -480,15 +485,21 @@ void InstallationValidator::ValidateBinaries(
       *is_valid = false;
       LOG(ERROR) << "Chrome App Host is installed in non-multi mode.";
     }
-    if (!channel.IsAppHost()) {
+    if (!channel.IsAppHost() && !channel.IsAppLauncher()) {
       *is_valid = false;
-      LOG(ERROR) << "Chrome Binaries are missing \"-apphost\" in channel"
-                    " name: \"" << channel.value() << "\"";
+      LOG(ERROR) << "Chrome Binaries are missing \"-apphost\" and"
+                    " \"-applauncher\" in channel name: \""
+                 << channel.value() << "\"";
     }
   } else if (channel.IsAppHost()) {
     *is_valid = false;
     LOG(ERROR) << "Chrome Binaries have \"-apphost\" in channel name, yet "
                   "Chrome App Host is not installed: \"" << channel.value()
+               << "\"";
+  } else if (channel.IsAppLauncher()) {
+    *is_valid = false;
+    LOG(ERROR) << "Chrome Binaries have \"-applauncher\" in channel name, yet "
+                  "Chrome App Launcher is not installed: \"" << channel.value()
                << "\"";
   }
 
