@@ -871,7 +871,7 @@ TEST_F(RenderViewHostManagerTest, EnableWebUIWithSwappedOutOpener) {
 TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
   TestNotificationTracker notifications;
 
-  GURL guest_url("guest://abc123");
+  GURL guest_url(std::string(chrome::kGuestScheme).append("://abc123"));
   SiteInstance* instance =
       SiteInstance::CreateForURL(browser_context(), guest_url);
   scoped_ptr<TestWebContents> web_contents(
