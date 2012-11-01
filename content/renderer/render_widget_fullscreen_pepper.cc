@@ -533,6 +533,7 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   attributes.stencil = false;
   attributes.antialias = false;
   attributes.shareResources = false;
+  attributes.preferDiscreteGPU = true;
   context_ = WebGraphicsContext3DCommandBufferImpl::CreateViewContext(
       RenderThreadImpl::current(),
       surface_id(),
