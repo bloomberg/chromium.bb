@@ -177,6 +177,14 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
     ),
+    (
+      'RunAllPending()',
+      (
+       'This function is deprecated and we\'re working on removing it. Rename',
+       'to RunUntilIdle',
+      ),
+      True,
+    ),
 )
 
 
