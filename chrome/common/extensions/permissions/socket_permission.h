@@ -26,15 +26,11 @@ namespace extensions {
 class SocketPermission : public APIPermission {
  public:
   struct CheckParam : APIPermission::CheckParam {
-    CheckParam(SocketPermissionData::OperationType type,
+    CheckParam(content::SocketPermissionRequest::OperationType type,
         const std::string& host,
         int port)
-      : type(type),
-        host(host),
-        port(port) { }
-    SocketPermissionData::OperationType type;
-    std::string host;
-    int port;
+      : request(type, host, port) { }
+    content::SocketPermissionRequest request;
   };
 
   explicit SocketPermission(const APIPermissionInfo* info);

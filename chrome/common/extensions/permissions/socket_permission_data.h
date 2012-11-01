@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "content/public/common/socket_permission_request.h"
+
 namespace extensions {
 
 // A pattern that can be used to match socket permission.
@@ -25,14 +27,6 @@ namespace extensions {
 //             <port number between 0 and 65535>)
 class SocketPermissionData {
  public:
-  enum OperationType {
-    NONE = 0,
-    TCP_CONNECT,
-    TCP_LISTEN,
-    UDP_BIND,
-    UDP_SEND_TO,
-  };
-
   enum HostType {
     ANY_HOST,
     HOSTS_IN_DOMAINS,
@@ -47,7 +41,7 @@ class SocketPermissionData {
   bool operator<(const SocketPermissionData& rhs) const;
   bool operator==(const SocketPermissionData& rhs) const;
 
-  bool Match(OperationType type, const std::string& host, int port) const;
+  bool Match(content::SocketPermissionRequest request) const;
 
   bool Parse(const std::string& permission);
 
@@ -59,10 +53,8 @@ class SocketPermissionData {
  private:
   void Reset();
 
-  OperationType type_;
-  std::string host_;
+  content::SocketPermissionRequest pattern_;
   bool match_subdomains_;
-  int port_;
   mutable std::string spec_;
 };
 

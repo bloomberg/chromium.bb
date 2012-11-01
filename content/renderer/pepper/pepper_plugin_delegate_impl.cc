@@ -1278,7 +1278,8 @@ void PepperPluginDelegateImpl::UDPSocketSendTo(
     const PP_NetAddress_Private& net_addr) {
   DCHECK(udp_sockets_.Lookup(socket_id));
   render_view_->Send(
-      new PpapiHostMsg_PPBUDPSocket_SendTo(socket_id, buffer, net_addr));
+      new PpapiHostMsg_PPBUDPSocket_SendTo(render_view_->routing_id(),
+                                           socket_id, buffer, net_addr));
 }
 
 void PepperPluginDelegateImpl::UDPSocketClose(uint32 socket_id) {
