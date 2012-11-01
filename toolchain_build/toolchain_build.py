@@ -99,6 +99,11 @@ HOST_GCC_LIBS = {
             CONFIGURE_CMD + CONFIGURE_HOST_LIB + [
                 '--with-sysroot=%(abs_output)s',
                 '--enable-cxx',
+                # Without this, the built library will assume the
+                # instruction set details available on the build machine.
+                # With this, it dynamically chooses what code to use based
+                # on the details of the actual host CPU at runtime.
+                '--enable-fat',
                 ],
             MAKE_PARALLEL_CMD,
             MAKE_CHECK_CMD,
