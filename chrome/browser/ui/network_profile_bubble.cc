@@ -88,7 +88,7 @@ bool NetworkProfileBubble::ShouldCheckNetworkProfile(Profile* profile) {
 }
 
 // static
-void NetworkProfileBubble::CheckNetworkProfile(Profile* profile) {
+void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_folder) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   // On Windows notify the users if their profiles are located on a network
   // share as we don't officially support this setup yet.
@@ -121,11 +121,11 @@ void NetworkProfileBubble::CheckNetworkProfile(Profile* profile) {
   // their profile on a network share.
   if (*type == 0) {
     bool profile_on_network = false;
-    if (!profile->GetPath().empty()) {
+    if (!profile_folder.empty()) {
       FilePath temp_file;
       // Try to create some non-empty temp file in the profile dir and use
       // it to check if there is a reparse-point free path to it.
-      if (file_util::CreateTemporaryFileInDir(profile->GetPath(), &temp_file) &&
+      if (file_util::CreateTemporaryFileInDir(profile_folder, &temp_file) &&
           file_util::WriteFile(temp_file, ".", 1)) {
         FilePath normalized_temp_file;
         if (!file_util::NormalizeFilePath(temp_file, &normalized_temp_file))

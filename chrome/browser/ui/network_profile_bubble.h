@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 
 class Browser;
+class FilePath;
 class PrefService;
 class Profile;
 
@@ -46,7 +47,7 @@ class NetworkProfileBubble {
 
   // Verifies that the profile folder is not located on a network share, and if
   // it is shows the warning bubble to the user.
-  static void CheckNetworkProfile(Profile* profile);
+  static void CheckNetworkProfile(const FilePath& profile_folder);
 
   // Shows the notification bubble using the provided |browser|.
   static void ShowNotification(Browser* browser);
