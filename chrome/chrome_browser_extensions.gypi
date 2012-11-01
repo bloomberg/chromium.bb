@@ -799,9 +799,6 @@
               ],
             }],
             ['chromeos==1',{
-              'sources/': [
-                ['exclude', '^browser/extensions/extension_tts_api_linux.cc'],
-              ],
               'dependencies': [
                 '../dbus/dbus.gyp:dbus',
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',

@@ -2356,8 +2356,6 @@
             ['exclude', 'browser/icon_loader_linux.cc'],
             ['exclude', 'browser/icon_manager_linux.cc'],
             ['exclude', 'browser/idle_linux.cc'],
-            ['exclude', 'browser/media_gallery/media_transfer_protocol_manager_linux.cc'],
-            ['exclude', 'browser/media_gallery/media_transfer_protocol_manager_linux.h'],
             ['exclude', 'browser/password_manager/native_backend_gnome_x.cc'],
             ['exclude', 'browser/password_manager/native_backend_gnome_x.h'],
             ['exclude', 'browser/password_manager/native_backend_kwallet_x.cc'],

@@ -2307,7 +2307,6 @@
           ],
           'sources/': [
             ['exclude', '^browser/automation/automation_provider_unittest.cc'],
-            ['exclude', '^browser/accessibility/browser_accessibility_win_unittest.cc'],
             ['exclude', '^browser/ui/views/extensions/browser_action_drag_data_unittest.cc'],
             ['exclude', '^browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],
@@ -2357,9 +2356,6 @@
             'ENABLE_SAFE_BROWSING',
           ],
         }, {  # safe_browsing == 0
-          'sources!': [
-            'browser/download/download_safe_browsing_client_unittest.cc',
-          ],
           'sources/': [
             ['exclude', '^browser/safe_browsing/'],
             ['exclude', '^renderer/safe_browsing/'],
@@ -2457,7 +2453,6 @@
         }, { # else: toolkit_uses_gtk != 1
           'sources!': [
             'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
-            'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
             '../ui/views/focus/accelerator_handler_gtk_unittest.cc',
           ],
         }],
@@ -2527,9 +2522,6 @@
             'chrome_resources.gyp:packed_resources',
             'convert_dict_lib',
             '../third_party/hunspell/hunspell.gyp:hunspell',
-          ],
-          'sources!': [
-            'browser/spellchecker/spellchecker_platform_engine_unittest.cc',
           ],
         }],
         ['OS!="win" and OS!="mac"', {
@@ -2601,12 +2593,10 @@
         }, { # else: OS != "win"
           'sources!': [
             'app/chrome_dll.rc',
-            'browser/accessibility/browser_accessibility_win_unittest.cc',
             'browser/bookmarks/bookmark_node_data_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
             'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
-            'browser/ui/views/first_run_search_engine_view_unittest.cc',
             'test/data/resource.rc',
             '../skia/ext/vector_canvas_unittest.cc',
           ],
@@ -2642,7 +2632,6 @@
             'browser/profiles/off_the_record_profile_impl_unittest.cc',
             'browser/sync/profile_sync_service_session_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
-            'browser/sync/sync_setup_wizard_unittest.cc',
             'browser/tab_contents/render_view_context_menu_unittest.cc',
             'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/ui/bookmarks/bookmark_prompt_controller_unittest.cc',
@@ -2659,9 +2648,6 @@
             'test/base/browser_with_test_window_test.cc',
             'test/base/browser_with_test_window_test.h',
             'test/base/test_browser_window.h',
-
-            # TODO(jcivelli): figure-out how to make this compile.
-            'browser/metrics/variations_service_unittest.cc',
 
             'browser/sessions/persistent_tab_restore_service_browsertest.cc',
             'browser/sessions/session_backend_unittest.cc',
