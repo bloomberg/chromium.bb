@@ -39,15 +39,6 @@ void InitFromDBCallback(DriveFileError expected_error,
   EXPECT_EQ(expected_error, actual_error);
 }
 
-// Callback for DriveResourceMetadata::ReadDirectoryByPath.
-void ReadDirectoryByPathCallback(
-    scoped_ptr<DriveEntryProtoVector>* result,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProtoVector> entries) {
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-  *result = entries.Pass();
-}
-
 }  // namespace
 
 class DriveResourceMetadataTest : public testing::Test {
@@ -606,6 +597,63 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_EQ(FilePath(), drive_file_path);
+}
+
+TEST_F(DriveResourceMetadataTest, TakeOverEntries) {
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath drive_file_path;
+  scoped_ptr<DriveEntryProto> entry_proto;
+
+  // Move files from dir1 to dir2.
+  resource_metadata_.TakeOverEntries(
+      "dir_resource_id:dir1",
+      "dir_resource_id:dir2",
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error, &drive_file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2"), drive_file_path);
+
+  // Check if the file move worked. file6 should now be in drive/dir2.
+  resource_metadata_.GetEntryInfoByPath(
+      FilePath::FromUTF8Unsafe("drive/dir2/file6"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("file6", entry_proto->base_name());
+
+  // file10 should now be in drive/dir2/dir3.
+  resource_metadata_.GetEntryInfoByPath(
+      FilePath::FromUTF8Unsafe("drive/dir2/dir3/file10"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("file10", entry_proto->base_name());
+
+  // dir1 should be empty.
+  scoped_ptr<DriveEntryProtoVector> entries;
+  resource_metadata_.ReadDirectoryByPath(
+      FilePath::FromUTF8Unsafe("drive/dir1"),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entries.get());
+  ASSERT_EQ(0U, entries->size());
+
+  // dir2 should have 6 entries.
+  resource_metadata_.ReadDirectoryByPath(
+      FilePath::FromUTF8Unsafe("drive/dir2"),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entries.get());
+  ASSERT_EQ(6U, entries->size());
 }
 
 }  // namespace drive

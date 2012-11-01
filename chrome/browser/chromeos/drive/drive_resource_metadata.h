@@ -238,6 +238,13 @@ class DriveResourceMetadata {
                         const DriveEntryProtoMap& entry_proto_map,
                         const FileMoveCallback& callback);
 
+  // Moves all child entries from the directory represented by
+  // |source_resource_id| to the directory respresented by
+  // |destination_resource_id|. |callback| must not be null.
+  void TakeOverEntries(const std::string& source_resource_id,
+                       const std::string& destination_resource_id,
+                       const FileMoveCallback& callback);
+
   // Serializes/Parses to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
   bool ParseFromString(const std::string& serialized_proto);
