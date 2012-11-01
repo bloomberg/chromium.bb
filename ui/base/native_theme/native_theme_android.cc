@@ -10,12 +10,12 @@
 namespace ui {
 
 // static
-const NativeTheme* NativeTheme::instance() {
+NativeTheme* NativeTheme::instance() {
   return NativeThemeAndroid::instance();
 }
 
 // static
-const NativeThemeAndroid* NativeThemeAndroid::instance() {
+NativeThemeAndroid* NativeThemeAndroid::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeAndroid, s_native_theme, ());
   return &s_native_theme;
 }

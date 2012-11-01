@@ -85,7 +85,7 @@ class UI_EXPORT NativeThemeWin : public NativeTheme {
   bool IsClassicTheme(ThemeName name) const;
 
   // Gets our singleton instance.
-  static const NativeThemeWin* instance();
+  static NativeThemeWin* instance();
 
   HRESULT PaintTextField(HDC hdc,
                          int part_id,

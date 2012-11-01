@@ -12,13 +12,15 @@ namespace ui {
 // Android implementation of native theme support.
 class NativeThemeAndroid : public NativeThemeBase {
  public:
-  static const NativeThemeAndroid* instance();
+  static NativeThemeAndroid* instance();
 
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
 
  private:
   NativeThemeAndroid();
   virtual ~NativeThemeAndroid();
+
+  DISALLOW_COPY_AND_ASSIGN(NativeThemeAndroid);
 };
 
 }  // namespace ui

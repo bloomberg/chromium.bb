@@ -14,7 +14,7 @@ namespace ui {
 // Aura implementation of native theme support.
 class NativeThemeAura : public NativeThemeBase {
  public:
-  static const NativeThemeAura* instance();
+  static NativeThemeAura* instance();
 
  private:
   NativeThemeAura();

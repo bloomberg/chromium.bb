@@ -6,13 +6,15 @@
 
 namespace ui {
 
-unsigned int NativeTheme::thumb_inactive_color_ = 0xeaeaea;
-unsigned int NativeTheme::thumb_active_color_ = 0xf4f4f4;
-unsigned int NativeTheme::track_color_ = 0xd3d3d3;
+NativeTheme::NativeTheme()
+    : thumb_inactive_color_(0xeaeaea),
+      thumb_active_color_(0xf4f4f4),
+      track_color_(0xd3d3d3) {
+}
 
 void NativeTheme::SetScrollbarColors(unsigned inactive_color,
                                      unsigned active_color,
-                                     unsigned track_color) const {
+                                     unsigned track_color) {
   thumb_inactive_color_ = inactive_color;
   thumb_active_color_ = active_color;
   track_color_ = track_color;

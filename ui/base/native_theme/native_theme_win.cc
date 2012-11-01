@@ -192,12 +192,12 @@ bool NativeThemeWin::IsClassicTheme(ThemeName name) const {
 }
 
 // static
-const NativeTheme* NativeTheme::instance() {
+NativeTheme* NativeTheme::instance() {
   return NativeThemeWin::instance();
 }
 
 // static
-const NativeThemeWin* NativeThemeWin::instance() {
+NativeThemeWin* NativeThemeWin::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeWin, s_native_theme, ());
   return &s_native_theme;
 }

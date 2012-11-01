@@ -32,12 +32,12 @@ const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
 namespace ui {
 
 // static
-const NativeTheme* NativeTheme::instance() {
+NativeTheme* NativeTheme::instance() {
   return NativeThemeGtk::instance();
 }
 
 // static
-const NativeThemeGtk* NativeThemeGtk::instance() {
+NativeThemeGtk* NativeThemeGtk::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeGtk, s_native_theme, ());
   return &s_native_theme;
 }

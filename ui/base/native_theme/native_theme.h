@@ -214,7 +214,7 @@ class UI_EXPORT NativeTheme {
   // Supports theme specific colors.
   void SetScrollbarColors(unsigned inactive_color,
                           unsigned active_color,
-                          unsigned track_color) const;
+                          unsigned track_color);
 
   // Colors for GetSystemColor().
   enum ColorId {
@@ -255,15 +255,15 @@ class UI_EXPORT NativeTheme {
   // is not thread safe and should only be called from the UI thread.
   // Each port of NativeTheme should provide its own implementation of this
   // function, returning the port's subclass.
-  static const NativeTheme* instance();
+  static NativeTheme* instance();
 
  protected:
-  NativeTheme() {}
+  NativeTheme();
   virtual ~NativeTheme() {}
 
-  static unsigned int thumb_inactive_color_;
-  static unsigned int thumb_active_color_;
-  static unsigned int track_color_;
+  unsigned int thumb_inactive_color_;
+  unsigned int thumb_active_color_;
+  unsigned int track_color_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };

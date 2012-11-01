@@ -12,13 +12,15 @@ namespace ui {
 // GTK implementation of native theme support.
 class NativeThemeGtk : public NativeThemeBase {
  public:
-  static const NativeThemeGtk* instance();
+  static NativeThemeGtk* instance();
 
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
 
  private:
   NativeThemeGtk();
   virtual ~NativeThemeGtk();
+
+  DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk);
 };
 
 }  // namespace ui
