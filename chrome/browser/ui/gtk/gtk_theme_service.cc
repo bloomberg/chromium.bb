@@ -367,15 +367,10 @@ bool GtkThemeService::UsingNativeTheme() const {
   return use_gtk_;
 }
 
-void GtkThemeService::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  if ((type == chrome::NOTIFICATION_PREF_CHANGED) &&
-      (*content::Details<std::string>(details).ptr() ==
-          prefs::kUsesSystemTheme)) {
+void GtkThemeService::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
+  if (pref_name == prefs::kUsesSystemTheme) {
     use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
-  } else {
-    ThemeService::Observe(type, source, details);
   }
 }
 

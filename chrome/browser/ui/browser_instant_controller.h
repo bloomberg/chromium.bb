@@ -9,23 +9,18 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/string16.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/instant_types.h"
-#include "content/public/browser/notification_observer.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
 class InstantController;
 class InstantTest;
 class TabContents;
-
-namespace content {
-class NotificationDetails;
-class NotificationSource;
-}
 
 namespace gfx {
 class Rect;
@@ -35,7 +30,7 @@ namespace chrome {
 
 class BrowserInstantController : public TabStripModelObserver,
                                  public search::SearchModelObserver,
-                                 public content::NotificationObserver {
+                                 public PrefObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
@@ -67,10 +62,9 @@ class BrowserInstantController : public TabStripModelObserver,
   // preview would be shown.
   TabContents* GetActiveTabContents() const;
 
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Overridden from PrefObserver:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabDeactivated(TabContents* contents) OVERRIDE;

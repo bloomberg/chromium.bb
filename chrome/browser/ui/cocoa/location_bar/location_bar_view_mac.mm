@@ -593,15 +593,16 @@ void LocationBarViewMac::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_PREF_CHANGED:
-      UpdateStarDecorationVisibility();
-      OnChanged();
-      break;
-
     default:
       NOTREACHED() << "Unexpected notification";
       break;
   }
+}
+
+void LocationBarViewMac::OnPreferenceChanged(PrefServiceBase* service,
+                                             const std::string& pref_name) {
+  UpdateStarDecorationVisibility();
+  OnChanged();
 }
 
 void LocationBarViewMac::PostNotification(NSString* notification) {

@@ -1,0 +1,11 @@
+include_rules = [
+  "-content",
+]
+
+specific_include_rules = {
+  "pref_service.*|browser_prefs.*": [
+    "+content/public/browser/browser_thread.h",
+    "+content/public/browser/render_process_host.h",
+    "+content/public/test",
+  ],
+}

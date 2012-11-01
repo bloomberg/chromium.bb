@@ -14,6 +14,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/hash_tables.h"
@@ -27,6 +28,7 @@ class PersistentPrefStore;
 class PrefModelAssociator;
 class PrefNotifier;
 class PrefNotifierImpl;
+class PrefObserver;
 class PrefServiceObserver;
 class PrefStore;
 class PrefValueStore;
@@ -277,6 +279,11 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // Do not call this after having derived an incognito or per tab pref service.
   void UpdateCommandLinePrefStore(CommandLine* command_line);
 
+  // We run the callback once, when initialization completes. The bool
+  // parameter will be set to true for successful initialization,
+  // false for unsuccessful.
+  void AddPrefInitObserver(base::Callback<void(bool)> callback);
+
  protected:
   // Construct a new pref service. This constructor is what
   // factory methods end up calling and what is used for unit tests.
@@ -306,9 +313,9 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
 
   // PrefServiceBase implementation (protected in base, private here).
   virtual void AddPrefObserver(const char* path,
-                               content::NotificationObserver* obs) OVERRIDE;
+                               PrefObserver* obs) OVERRIDE;
   virtual void RemovePrefObserver(const char* path,
-                                  content::NotificationObserver* obs) OVERRIDE;
+                                  PrefObserver* obs) OVERRIDE;
 
   // Sends notification of a changed preference. This needs to be called by
   // a ScopedUserPrefUpdate if a DictionaryValue or ListValue is changed.

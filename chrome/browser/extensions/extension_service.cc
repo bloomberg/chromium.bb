@@ -2582,16 +2582,6 @@ void ExtensionService::Observe(int type,
                      process->GetID()));
       break;
     }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name =
-          *content::Details<std::string>(details).ptr();
-      DCHECK(pref_name == prefs::kExtensionInstallAllowList ||
-             pref_name == prefs::kExtensionInstallDenyList)
-          << "Unexpected preference name " << pref_name;
-      IdentifyAlertableExtensions();
-      CheckManagementPolicy();
-      break;
-    }
     case chrome::NOTIFICATION_IMPORT_FINISHED: {
       InitAfterImport();
       break;
@@ -2600,6 +2590,15 @@ void ExtensionService::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification type.";
   }
+}
+
+void ExtensionService::OnPreferenceChanged(PrefServiceBase* service,
+                                           const std::string& pref_name) {
+  DCHECK(pref_name == prefs::kExtensionInstallAllowList ||
+         pref_name == prefs::kExtensionInstallDenyList)
+      << "Unexpected preference name " << pref_name;
+  IdentifyAlertableExtensions();
+  CheckManagementPolicy();
 }
 
 bool ExtensionService::HasApps() const {

@@ -409,16 +409,15 @@ void TranslateManager::Observe(int type,
       delete pref_change_registrar;
       break;
     }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      DCHECK(*content::Details<std::string>(details).ptr() ==
-             prefs::kAcceptLanguages);
-      PrefService* prefs = content::Source<PrefService>(source).ptr();
-      InitAcceptLanguages(prefs);
-      break;
-    }
     default:
       NOTREACHED();
   }
+}
+
+void TranslateManager::OnPreferenceChanged(PrefServiceBase* service,
+                                           const std::string& pref_name) {
+  DCHECK_EQ(std::string(prefs::kAcceptLanguages), pref_name);
+  InitAcceptLanguages(service);
 }
 
 void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -789,7 +788,7 @@ bool TranslateManager::IsAcceptLanguage(WebContents* web_contents,
   return iter->second.count(language) != 0;
 }
 
-void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
+void TranslateManager::InitAcceptLanguages(PrefServiceBase* prefs) {
   // We have been asked for this profile, build the languages.
   std::string accept_langs_str = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<std::string> accept_langs_list;

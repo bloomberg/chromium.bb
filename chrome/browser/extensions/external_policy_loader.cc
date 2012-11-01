@@ -79,25 +79,20 @@ void ExternalPolicyLoader::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (profile_ == NULL) return;
-  switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      if (content::Source<PrefService>(source).ptr() == profile_->GetPrefs()) {
-        DCHECK_EQ(std::string(prefs::kExtensionInstallForceList),
-                  *content::Details<std::string>(details).ptr());
-        StartLoading();
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      if (content::Source<Profile>(source).ptr() == profile_) {
-        notification_registrar_.RemoveAll();
-        pref_change_registrar_.RemoveAll();
-        profile_ = NULL;
-      }
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification type.";
+  DCHECK(type == chrome::NOTIFICATION_PROFILE_DESTROYED) <<
+      "Unexpected notification type.";
+  if (content::Source<Profile>(source).ptr() == profile_) {
+    notification_registrar_.RemoveAll();
+    pref_change_registrar_.RemoveAll();
+    profile_ = NULL;
+  }
+}
+
+void ExternalPolicyLoader::OnPreferenceChanged(PrefServiceBase* service,
+                                               const std::string& pref_name) {
+  if (service == profile_->GetPrefs()) {
+    DCHECK_EQ(std::string(prefs::kExtensionInstallForceList), pref_name);
+    StartLoading();
   }
 }
 

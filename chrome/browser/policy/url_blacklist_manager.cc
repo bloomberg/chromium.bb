@@ -297,16 +297,12 @@ void URLBlacklistManager::ShutdownOnUIThread() {
 URLBlacklistManager::~URLBlacklistManager() {
 }
 
-void URLBlacklistManager::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
+void URLBlacklistManager::OnPreferenceChanged(PrefServiceBase* prefs,
+                                              const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(type == chrome::NOTIFICATION_PREF_CHANGED);
-  PrefService* prefs = content::Source<PrefService>(source).ptr();
   DCHECK(prefs == pref_service_);
-  std::string* pref_name = content::Details<std::string>(details).ptr();
-  DCHECK(*pref_name == prefs::kUrlBlacklist ||
-         *pref_name == prefs::kUrlWhitelist);
+  DCHECK(pref_name == prefs::kUrlBlacklist ||
+         pref_name == prefs::kUrlWhitelist);
   ScheduleUpdate();
 }
 

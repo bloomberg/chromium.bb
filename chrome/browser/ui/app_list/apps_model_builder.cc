@@ -208,13 +208,14 @@ void AppsModelBuilder::Observe(int type,
       HighlightApp();
       break;
     }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      ResortApps();
-      break;
-    }
     default:
       NOTREACHED();
   }
+}
+
+void AppsModelBuilder::OnPreferenceChanged(PrefServiceBase* service,
+                                           const std::string& pref_name) {
+  ResortApps();
 }
 
 void AppsModelBuilder::ListItemsAdded(size_t start, size_t count) {

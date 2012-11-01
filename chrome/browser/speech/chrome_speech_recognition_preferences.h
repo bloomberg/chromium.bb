@@ -10,11 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/speech_recognition_preferences.h"
 
 class PrefService;
@@ -34,16 +34,15 @@ class ListValue;
 
 class ChromeSpeechRecognitionPreferences
     : public content::SpeechRecognitionPreferences,
-      public content::NotificationObserver {
+      public PrefObserver {
  public:
   static void InitializeFactory();
   static scoped_refptr<ChromeSpeechRecognitionPreferences> GetForProfile(
       Profile* profile);
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
 
   // content::SpeechRecognitionPreferences implementation.

@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/prefs/pref_observer_mock.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -1052,60 +1053,60 @@ class ExtensionPrefsNotifyWhenNeeded : public ExtensionPrefsPrepopulatedTest {
     using testing::Mock;
     using testing::StrEq;
 
-    content::MockNotificationObserver observer;
+    PrefObserverMock observer;
     PrefChangeRegistrar registrar;
     registrar.Init(prefs()->pref_service());
     registrar.Add(kPref1, &observer);
 
-    content::MockNotificationObserver incognito_observer;
+    PrefObserverMock incognito_observer;
     scoped_ptr<PrefService> incog_prefs(prefs_.CreateIncognitoPrefService());
     PrefChangeRegistrar incognito_registrar;
     incognito_registrar.Init(incog_prefs.get());
     incognito_registrar.Add(kPref1, &incognito_observer);
 
     // Write value and check notification.
-    EXPECT_CALL(observer, Observe(_, _, _));
-    EXPECT_CALL(incognito_observer, Observe(_, _, _));
+    EXPECT_CALL(observer, OnPreferenceChanged(_, _));
+    EXPECT_CALL(incognito_observer, OnPreferenceChanged(_, _));
     InstallExtControlledPref(ext1_, kPref1,
         Value::CreateStringValue("https://www.chromium.org"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
     // Write same value.
-    EXPECT_CALL(observer, Observe(_, _, _)).Times(0);
-    EXPECT_CALL(incognito_observer, Observe(_, _, _)).Times(0);
+    EXPECT_CALL(observer, OnPreferenceChanged(_, _)).Times(0);
+    EXPECT_CALL(incognito_observer, OnPreferenceChanged(_, _)).Times(0);
     InstallExtControlledPref(ext1_, kPref1,
         Value::CreateStringValue("https://www.chromium.org"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
     // Change value.
-    EXPECT_CALL(observer, Observe(_, _, _));
-    EXPECT_CALL(incognito_observer, Observe(_, _, _));
+    EXPECT_CALL(observer, OnPreferenceChanged(_, _));
+    EXPECT_CALL(incognito_observer, OnPreferenceChanged(_, _));
     InstallExtControlledPref(ext1_, kPref1,
         Value::CreateStringValue("chrome://newtab"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
     // Change only incognito persistent value.
-    EXPECT_CALL(observer, Observe(_, _, _)).Times(0);
-    EXPECT_CALL(incognito_observer, Observe(_, _, _));
+    EXPECT_CALL(observer, OnPreferenceChanged(_, _)).Times(0);
+    EXPECT_CALL(incognito_observer, OnPreferenceChanged(_, _));
     InstallExtControlledPrefIncognito(ext1_, kPref1,
         Value::CreateStringValue("chrome://newtab2"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
     // Change only incognito session-only value.
-    EXPECT_CALL(observer, Observe(_, _, _)).Times(0);
-    EXPECT_CALL(incognito_observer, Observe(_, _, _));
+    EXPECT_CALL(observer, OnPreferenceChanged(_, _)).Times(0);
+    EXPECT_CALL(incognito_observer, OnPreferenceChanged(_, _));
     InstallExtControlledPrefIncognito(ext1_, kPref1,
         Value::CreateStringValue("chrome://newtab3"));
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);
 
     // Uninstall.
-    EXPECT_CALL(observer, Observe(_, _, _));
-    EXPECT_CALL(incognito_observer, Observe(_, _, _));
+    EXPECT_CALL(observer, OnPreferenceChanged(_, _));
+    EXPECT_CALL(incognito_observer, OnPreferenceChanged(_, _));
     UninstallExtension(ext1_->id());
     Mock::VerifyAndClearExpectations(&observer);
     Mock::VerifyAndClearExpectations(&incognito_observer);

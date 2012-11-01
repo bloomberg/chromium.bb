@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/timer.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/prefs/pref_service_observer.h"
@@ -55,6 +56,7 @@ class ChromeLauncherController
       public ash::LauncherModelObserver,
       public ash::ShellObserver,
       public content::NotificationObserver,
+      public PrefObserver,
       public ProfileSyncServiceObserver,
       public PrefServiceObserver {
  public:
@@ -262,6 +264,10 @@ class ChromeLauncherController
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overridden from PrefObserver:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Overridden from ash::ShellObserver:
   virtual void OnShelfAlignmentChanged() OVERRIDE;

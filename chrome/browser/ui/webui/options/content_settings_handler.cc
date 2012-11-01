@@ -540,17 +540,6 @@ void ContentSettingsHandler::Observe(
       break;
     }
 
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name =
-          *content::Details<std::string>(details).ptr();
-      if (pref_name == prefs::kGeolocationContentSettings)
-        UpdateGeolocationExceptionsView();
-      else if (pref_name == prefs::kPepperFlashSettingsEnabled)
-        RefreshFlashSettingsCache(false);
-
-      break;
-    }
-
     case chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED: {
       UpdateNotificationExceptionsView();
       break;
@@ -564,6 +553,14 @@ void ContentSettingsHandler::Observe(
     default:
       OptionsPageUIHandler::Observe(type, source, details);
   }
+}
+
+void ContentSettingsHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                                 const std::string& pref_name) {
+  if (pref_name == prefs::kGeolocationContentSettings)
+    UpdateGeolocationExceptionsView();
+  else if (pref_name == prefs::kPepperFlashSettingsEnabled)
+    RefreshFlashSettingsCache(false);
 }
 
 void ContentSettingsHandler::OnGetPermissionSettingsCompleted(

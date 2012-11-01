@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
@@ -43,7 +44,8 @@ class WebContents;
 class BrowserToolbarGtk : public CommandObserver,
                           public ui::AcceleratorProvider,
                           public MenuGtk::Delegate,
-                          public content::NotificationObserver {
+                          public content::NotificationObserver,
+                          public PrefObserver {
  public:
   BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
   virtual ~BrowserToolbarGtk();
@@ -104,6 +106,10 @@ class BrowserToolbarGtk : public CommandObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
+
   // Whether the wrench/hotdogs menu is currently visible to the user.
   bool IsWrenchMenuShowing() const;
 
@@ -143,7 +149,7 @@ class BrowserToolbarGtk : public CommandObserver,
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnWrenchMenuButtonExpose,
                        GdkEventExpose*);
 
-  // Updates preference-dependent state.
+  // Updates preference-dependent state. |pref| may be NULL.
   void NotifyPrefChanged(const std::string* pref);
 
   static void SetSyncMenuLabel(GtkWidget* widget, gpointer userdata);

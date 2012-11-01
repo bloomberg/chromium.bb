@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/timer.h"
 #include "base/values.h"
-#include "content/public/browser/notification_observer.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_pipelined_host_capability.h"
 #include "net/http/http_server_properties.h"
@@ -48,7 +48,7 @@ namespace chrome_browser_net {
 // the actual update starts, and grab a WeakPtr.
 class HttpServerPropertiesManager
     : public net::HttpServerProperties,
-      public content::NotificationObserver {
+      public PrefObserver {
  public:
   // Create an instance of the HttpServerPropertiesManager. The lifetime of the
   // PrefService objects must be longer than that of the
@@ -187,9 +187,8 @@ class HttpServerPropertiesManager
 
  private:
   // Callback for preference changes.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // ---------
   // UI thread

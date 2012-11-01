@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_observer_mock.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/test/mock_notification_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +25,22 @@ namespace {
 const char kChangedPref[] = "changed_pref";
 const char kUnchangedPref[] = "unchanged_pref";
 
-// Test PrefNotifier that allows tracking of observers and notifications.
+class MockPrefInitObserver {
+ public:
+  MOCK_METHOD1(OnInitializationCompleted, void(bool));
+};
+
+// This is an unmodified PrefNotifierImpl, except we make
+// OnPreferenceChanged public for tests.
+class TestingPrefNotifierImpl : public PrefNotifierImpl {
+ public:
+  TestingPrefNotifierImpl(PrefService* service) : PrefNotifierImpl(service) {}
+
+  // Make public for tests.
+  using PrefNotifierImpl::OnPreferenceChanged;
+};
+
+// Mock PrefNotifier that allows tracking of observers and notifications.
 class MockPrefNotifier : public PrefNotifierImpl {
  public:
   explicit MockPrefNotifier(PrefService* pref_service)
@@ -35,15 +49,15 @@ class MockPrefNotifier : public PrefNotifierImpl {
 
   MOCK_METHOD1(FireObservers, void(const std::string& path));
 
-  size_t CountObserver(const char* path, content::NotificationObserver* obs) {
+  size_t CountObserver(const char* path, PrefObserver* obs) {
     PrefObserverMap::const_iterator observer_iterator =
         pref_observers()->find(path);
     if (observer_iterator == pref_observers()->end())
       return false;
 
-    NotificationObserverList* observer_list = observer_iterator->second;
-    NotificationObserverList::Iterator it(*observer_list);
-    content::NotificationObserver* existing_obs;
+    PrefObserverList* observer_list = observer_iterator->second;
+    PrefObserverList::Iterator it(*observer_list);
+    PrefObserver* existing_obs;
     size_t count = 0;
     while ((existing_obs = it.GetNext()) != NULL) {
       if (existing_obs == obs)
@@ -52,6 +66,10 @@ class MockPrefNotifier : public PrefNotifierImpl {
 
     return count;
   }
+
+  // Make public for tests below.
+  using PrefNotifierImpl::OnPreferenceChanged;
+  using PrefNotifierImpl::OnInitializationCompleted;
 };
 
 // Test fixture class.
@@ -80,14 +98,11 @@ TEST_F(PrefNotifierTest, OnPreferenceChanged) {
 
 TEST_F(PrefNotifierTest, OnInitializationCompleted) {
   MockPrefNotifier notifier(&pref_service_);
-  content::MockNotificationObserver observer;
-  content::NotificationRegistrar registrar;
-  registrar.Add(&observer, chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
-                content::Source<PrefService>(&pref_service_));
-  EXPECT_CALL(observer, Observe(
-      int(chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED),
-      content::Source<PrefService>(&pref_service_),
-      Property(&content::Details<bool>::ptr, testing::Pointee(true))));
+  MockPrefInitObserver observer;
+  notifier.AddInitObserver(
+      base::Bind(&MockPrefInitObserver::OnInitializationCompleted,
+                 base::Unretained(&observer)));
+  EXPECT_CALL(observer, OnInitializationCompleted(true));
   notifier.OnInitializationCompleted(true);
 }
 
@@ -155,13 +170,12 @@ TEST_F(PrefNotifierTest, AddAndRemovePrefObservers) {
 }
 
 TEST_F(PrefNotifierTest, FireObservers) {
-  base::FundamentalValue value_true(true);
-  PrefNotifierImpl notifier(&pref_service_);
+  TestingPrefNotifierImpl notifier(&pref_service_);
   notifier.AddPrefObserver(kChangedPref, &obs1_);
   notifier.AddPrefObserver(kUnchangedPref, &obs1_);
 
-  obs1_.Expect(&pref_service_, kChangedPref, &value_true);
-  EXPECT_CALL(obs2_, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(obs1_, OnPreferenceChanged(&pref_service_, kChangedPref));
+  EXPECT_CALL(obs2_, OnPreferenceChanged(_, _)).Times(0);
   notifier.OnPreferenceChanged(kChangedPref);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
@@ -169,8 +183,8 @@ TEST_F(PrefNotifierTest, FireObservers) {
   notifier.AddPrefObserver(kChangedPref, &obs2_);
   notifier.AddPrefObserver(kUnchangedPref, &obs2_);
 
-  obs1_.Expect(&pref_service_, kChangedPref, &value_true);
-  obs2_.Expect(&pref_service_, kChangedPref, &value_true);
+  EXPECT_CALL(obs1_, OnPreferenceChanged(&pref_service_, kChangedPref));
+  EXPECT_CALL(obs2_, OnPreferenceChanged(&pref_service_, kChangedPref));
   notifier.OnPreferenceChanged(kChangedPref);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
@@ -178,8 +192,8 @@ TEST_F(PrefNotifierTest, FireObservers) {
   // Make sure removing an observer from one pref doesn't affect anything else.
   notifier.RemovePrefObserver(kChangedPref, &obs1_);
 
-  EXPECT_CALL(obs1_, Observe(_, _, _)).Times(0);
-  obs2_.Expect(&pref_service_, kChangedPref, &value_true);
+  EXPECT_CALL(obs1_, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(obs2_, OnPreferenceChanged(&pref_service_, kChangedPref));
   notifier.OnPreferenceChanged(kChangedPref);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
@@ -187,8 +201,8 @@ TEST_F(PrefNotifierTest, FireObservers) {
   // Make sure removing an observer entirely doesn't affect anything else.
   notifier.RemovePrefObserver(kUnchangedPref, &obs1_);
 
-  EXPECT_CALL(obs1_, Observe(_, _, _)).Times(0);
-  obs2_.Expect(&pref_service_, kChangedPref, &value_true);
+  EXPECT_CALL(obs1_, OnPreferenceChanged(_, _)).Times(0);
+  EXPECT_CALL(obs2_, OnPreferenceChanged(&pref_service_, kChangedPref));
   notifier.OnPreferenceChanged(kChangedPref);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);

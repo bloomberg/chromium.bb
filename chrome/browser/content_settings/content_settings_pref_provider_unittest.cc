@@ -11,6 +11,7 @@
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/overlay_user_pref_store.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
@@ -20,13 +21,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +53,7 @@ class DeadlockCheckerThread : public base::PlatformThread::Delegate {
 
 // A helper for observing an preference changes and testing whether
 // |PrefProvider| holds a lock when the preferences change.
-class DeadlockCheckerObserver : public content::NotificationObserver {
+class DeadlockCheckerObserver : public PrefObserver {
  public:
   // |DeadlockCheckerObserver| doesn't take the ownership of |prefs| or
   // ||provider|.
@@ -66,12 +65,10 @@ class DeadlockCheckerObserver : public content::NotificationObserver {
   }
   virtual ~DeadlockCheckerObserver() {}
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-    ASSERT_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
-    // Check whether |provider_| holds its lock. For this, we need a separate
-    // thread.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) {
+    // Check whether |provider_| holds its lock. For this, we need a
+    // separate thread.
     DeadlockCheckerThread thread(provider_);
     base::PlatformThreadHandle handle = base::kNullThreadHandle;
     ASSERT_TRUE(base::PlatformThread::Create(0, &thread, &handle));

@@ -9,6 +9,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/singleton.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -87,7 +88,7 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 @property(assign, nonatomic) Browser* browser;
 - (void)addAccessibilityDescriptions;
 - (void)initCommandStatus:(CommandUpdater*)commands;
-- (void)prefChanged:(std::string*)prefName;
+- (void)prefChanged:(const std::string&)prefName;
 - (BackgroundGradientView*)backgroundGradientView;
 - (void)toolbarFrameChanged;
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate;
@@ -105,7 +106,9 @@ namespace ToolbarControllerInternal {
 // A class registered for C++ notifications. This is used to detect changes in
 // preferences and upgrade available notifications. Bridges the notification
 // back to the ToolbarController.
-class NotificationBridge : public content::NotificationObserver {
+class NotificationBridge
+    : public content::NotificationObserver,
+      public PrefObserver {
  public:
   explicit NotificationBridge(ToolbarController* controller)
       : controller_(controller) {
@@ -118,11 +121,8 @@ class NotificationBridge : public content::NotificationObserver {
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_PREF_CHANGED:
-        [controller_ prefChanged:content::Details<std::string>(details).ptr()];
-        break;
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
       case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
         [controller_ badgeWrenchMenuIfNeeded];
@@ -130,6 +130,12 @@ class NotificationBridge : public content::NotificationObserver {
       default:
         NOTREACHED();
     }
+  }
+
+  // Overridden from PrefObserver:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE {
+    [controller_ prefChanged:pref_name];
   }
 
  private:
@@ -563,9 +569,8 @@ class NotificationBridge : public content::NotificationObserver {
   [[wrenchButton_ cell] setOverlayImageID:error_badge_id];
 }
 
-- (void)prefChanged:(std::string*)prefName {
-  if (!prefName) return;
-  if (*prefName == prefs::kShowHomeButton) {
+- (void)prefChanged:(const std::string&)prefName {
+  if (prefName == prefs::kShowHomeButton) {
     [self showOptionalHomeButton];
   }
 }

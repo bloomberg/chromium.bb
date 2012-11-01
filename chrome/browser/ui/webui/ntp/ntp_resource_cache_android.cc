@@ -56,6 +56,11 @@ void NTPResourceCache::Observe(int type,
   // No notifications necessary in Android.
 }
 
+void NTPResourceCache::OnPreferenceChanged(PrefServiceBase* service,
+                                           const std::string& pref_name) {
+  // No notifications necessary in Android.
+}
+
 void NTPResourceCache::CreateNewTabHTML() {
   // TODO(estade): these strings should be defined in their relevant handlers
   // (in GetLocalizedValues) and should have more legible names.

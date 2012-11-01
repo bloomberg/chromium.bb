@@ -385,41 +385,37 @@ void FileBrowserEventRouter::OnNetworkManagerChanged(
           scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
 }
 
-void FileBrowserEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void FileBrowserEventRouter::OnPreferenceChanged(PrefServiceBase* service,
+                                                 const std::string& pref_name) {
   if (!profile_ ||
       !extensions::ExtensionSystem::Get(profile_)->event_router()) {
     NOTREACHED();
     return;
   }
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = content::Details<std::string>(details).ptr();
-    // If the policy just got disabled we have to unmount every device currently
-    // mounted. The opposite is fine - we can let the user re-plug her device to
-    // make it available.
-    if (*pref_name == prefs::kExternalStorageDisabled &&
-        profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
-      DiskMountManager* manager = DiskMountManager::GetInstance();
-      DiskMountManager::MountPointMap mounts(manager->mount_points());
-      for (DiskMountManager::MountPointMap::const_iterator it = mounts.begin();
-           it != mounts.end(); ++it) {
-        LOG(INFO) << "Unmounting " << it->second.mount_path
-                  << " because of policy.";
-        manager->UnmountPath(it->second.mount_path,
-                             chromeos::UNMOUNT_OPTIONS_NONE);
-      }
-      return;
-    } else if (*pref_name == prefs::kDisableDriveOverCellular ||
-        *pref_name == prefs::kDisableDriveHostedFiles ||
-        *pref_name == prefs::kDisableDrive ||
-        *pref_name == prefs::kUse24HourClock) {
-      extensions::ExtensionSystem::Get(profile_)->event_router()->
-          DispatchEventToRenderers(
-              extensions::event_names::kOnFileBrowserPreferencesChanged,
-              scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
+
+  // If the policy just got disabled we have to unmount every device currently
+  // mounted. The opposite is fine - we can let the user re-plug her device to
+  // make it available.
+  if (pref_name == prefs::kExternalStorageDisabled &&
+      profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
+    DiskMountManager* manager = DiskMountManager::GetInstance();
+    DiskMountManager::MountPointMap mounts(manager->mount_points());
+    for (DiskMountManager::MountPointMap::const_iterator it = mounts.begin();
+         it != mounts.end(); ++it) {
+      LOG(INFO) << "Unmounting " << it->second.mount_path
+                << " because of policy.";
+      manager->UnmountPath(it->second.mount_path,
+                           chromeos::UNMOUNT_OPTIONS_NONE);
     }
+    return;
+  } else if (pref_name == prefs::kDisableDriveOverCellular ||
+             pref_name == prefs::kDisableDriveHostedFiles ||
+             pref_name == prefs::kDisableDrive ||
+             pref_name == prefs::kUse24HourClock) {
+    extensions::ExtensionSystem::Get(profile_)->event_router()->
+        DispatchEventToRenderers(
+            extensions::event_names::kOnFileBrowserPreferencesChanged,
+            scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
   }
 }
 

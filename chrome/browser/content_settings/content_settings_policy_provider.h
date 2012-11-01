@@ -11,10 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
 #include "chrome/browser/content_settings/content_settings_origin_identifier_value_map.h"
-#include "content/public/browser/notification_observer.h"
 
 class PrefService;
 
@@ -22,7 +22,7 @@ namespace content_settings {
 
 // PolicyProvider that provides managed content-settings.
 class PolicyProvider : public ObservableProvider,
-                       public content::NotificationObserver {
+                       public PrefObserver {
  public:
   explicit PolicyProvider(PrefService* prefs);
   virtual ~PolicyProvider();
@@ -46,10 +46,10 @@ class PolicyProvider : public ObservableProvider,
 
   virtual void ShutdownOnUIThread() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
+
  private:
   // Reads the policy managed default settings.
   void ReadManagedDefaultSettings();

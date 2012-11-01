@@ -162,14 +162,10 @@ void PreferencesBrowserTest::SetUpOnMainThread() {
 }
 
 // Forwards notifications received when pref values change in the backend.
-void PreferencesBrowserTest::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  ASSERT_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  ASSERT_EQ(pref_service_, content::Source<PrefService>(source).ptr());
-  const std::string& name = *content::Details<std::string>(details).ptr();
-  OnCommit(pref_service_->FindPreference(name.c_str()));
+void PreferencesBrowserTest::OnPreferenceChanged(PrefServiceBase* service,
+                                                 const std::string& pref_name) {
+  ASSERT_EQ(pref_service_, service);
+  OnCommit(pref_service_->FindPreference(pref_name.c_str()));
 }
 
 // Sets up a mock user policy provider.

@@ -249,13 +249,6 @@ void NewTabUI::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {  // kShowBookmarkBar
-      StringValue attached(
-          GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
-              "true" : "false");
-      web_ui()->CallJavascriptFunction("ntp.setBookmarkBarAttached", attached);
-      break;
-    }
 #if defined(ENABLE_THEMES)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       InitializeCSSCaches();
@@ -286,6 +279,14 @@ void NewTabUI::Observe(int type,
     default:
       CHECK(false) << "Unexpected notification: " << type;
   }
+}
+
+void NewTabUI::OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) {
+  StringValue attached(
+      GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
+          "true" : "false");
+  web_ui()->CallJavascriptFunction("ntp.setBookmarkBarAttached", attached);
 }
 
 void NewTabUI::InitializeCSSCaches() {

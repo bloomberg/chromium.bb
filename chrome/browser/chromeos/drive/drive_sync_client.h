@@ -11,12 +11,12 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "content/public/browser/notification_observer.h"
 #include "net/base/network_change_notifier.h"
 
 class Profile;
@@ -45,7 +45,7 @@ class DriveSyncClientObserver;
 class DriveSyncClient
     : public DriveFileSystemObserver,
       public DriveCacheObserver,
-      public content::NotificationObserver,
+      public PrefObserver,
       public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Types of sync tasks.
@@ -178,10 +178,9 @@ class DriveSyncClient
   void OnUploadFileComplete(const std::string& resource_id,
                             DriveFileError error);
 
-  // content::NotificationObserver override.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver override.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
   virtual void OnConnectionTypeChanged(

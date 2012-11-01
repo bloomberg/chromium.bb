@@ -32,14 +32,14 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/values.h"
-#include "content/public/browser/notification_observer.h"
 
 class PrefServiceBase;
 
 namespace subtle {
 
-class PrefMemberBase : public content::NotificationObserver {
+class PrefMemberBase : public PrefObserver {
  protected:
   class Internal : public base::RefCountedThreadSafe<Internal> {
    public:
@@ -91,7 +91,7 @@ class PrefMemberBase : public content::NotificationObserver {
 
   // See PrefMember<> for description.
   void Init(const char* pref_name, PrefServiceBase* prefs,
-            content::NotificationObserver* observer);
+            PrefObserver* observer);
 
   virtual void CreateInternal() const = 0;
 
@@ -100,10 +100,9 @@ class PrefMemberBase : public content::NotificationObserver {
 
   void MoveToThread(const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   void VerifyValuePrefName() const {
     DCHECK(!pref_name_.empty());
@@ -127,7 +126,7 @@ class PrefMemberBase : public content::NotificationObserver {
  private:
   // Ordered the members to compact the class instance.
   std::string pref_name_;
-  content::NotificationObserver* observer_;
+  PrefObserver* observer_;
   PrefServiceBase* prefs_;
 
  protected:
@@ -153,7 +152,7 @@ class PrefMember : public subtle::PrefMemberBase {
   // don't want any notifications of changes.
   // This method should only be called on the UI thread.
   void Init(const char* pref_name, PrefServiceBase* prefs,
-            content::NotificationObserver* observer) {
+            PrefObserver* observer) {
     subtle::PrefMemberBase::Init(pref_name, prefs, observer);
   }
 

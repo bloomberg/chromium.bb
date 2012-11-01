@@ -10,11 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 
 class HistoryService;
 
@@ -28,7 +26,7 @@ class ControlTask;
 
 // A class that manages the startup and shutdown of typed_url sync.
 class TypedUrlDataTypeController : public NonFrontendDataTypeController,
-                                   public content::NotificationObserver {
+                                   public PrefObserver {
  public:
   TypedUrlDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
@@ -39,10 +37,9 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Invoked on the history thread to set our history backend - must be called
   // before CreateSyncComponents() is invoked.
@@ -60,7 +57,6 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   virtual ~TypedUrlDataTypeController();
 
   history::HistoryBackend* backend_;
-  content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_registrar_;
 
   // Helper object to make sure we don't leave tasks running on the history

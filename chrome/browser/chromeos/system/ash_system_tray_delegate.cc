@@ -26,6 +26,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
@@ -151,6 +152,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
+                           public PrefObserver,
                            public google_apis::DriveServiceObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
@@ -1088,26 +1090,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         ObserveGDataUpdates();
         break;
       }
-      case chrome::NOTIFICATION_PREF_CHANGED: {
-        std::string pref = *content::Details<std::string>(details).ptr();
-        PrefService* service = content::Source<PrefService>(source).ptr();
-        if (pref == prefs::kUse24HourClock) {
-          UpdateClockType(service);
-        } else if (pref == prefs::kLanguageRemapSearchKeyTo) {
-          search_key_mapped_to_ =
-              service->GetInteger(prefs::kLanguageRemapSearchKeyTo);
-        } else if (pref == prefs::kSpokenFeedbackEnabled) {
-          ash::AccessibilityObserver* observer =
-              tray_->accessibility_observer();
-          if (observer) {
-            observer->OnAccessibilityModeChanged(
-                service->GetBoolean(prefs::kSpokenFeedbackEnabled));
-          }
-        } else {
-          NOTREACHED();
-        }
-        break;
-      }
       case chrome::NOTIFICATION_PROFILE_CREATED: {
         SetProfile(content::Source<Profile>(source).ptr());
         registrar_.Remove(this,
@@ -1123,6 +1105,25 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       }
       default:
         NOTREACHED();
+    }
+  }
+
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref) OVERRIDE {
+    if (pref == prefs::kUse24HourClock) {
+      UpdateClockType(static_cast<PrefService*>(service));
+    } else if (pref == prefs::kLanguageRemapSearchKeyTo) {
+      search_key_mapped_to_ =
+          service->GetInteger(prefs::kLanguageRemapSearchKeyTo);
+    } else if (pref == prefs::kSpokenFeedbackEnabled) {
+      ash::AccessibilityObserver* observer =
+          tray_->accessibility_observer();
+      if (observer) {
+        observer->OnAccessibilityModeChanged(
+            service->GetBoolean(prefs::kSpokenFeedbackEnabled));
+      }
+    } else {
+      NOTREACHED();
     }
   }
 

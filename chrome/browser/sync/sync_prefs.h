@@ -9,10 +9,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "content/public/browser/notification_observer.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
@@ -45,7 +45,7 @@ class SyncPrefObserver {
 //   two_client_preferences_sync_test.cc
 class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
                   public base::SupportsWeakPtr<SyncPrefs>,
-                  public content::NotificationObserver {
+                  public PrefObserver {
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no
   // setter methods should be called.  Does not take ownership of
@@ -116,10 +116,9 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Merges the given set of types with the set of acknowledged types.
   void AcknowledgeSyncedTypes(syncer::ModelTypeSet types);
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // For testing.
 

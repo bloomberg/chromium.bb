@@ -610,20 +610,14 @@ safe_browsing::ClientSideDetectionService*
   return NULL;
 }
 
-void BrowserProcessImpl::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref = content::Details<std::string>(details).ptr();
-    if (*pref == prefs::kDefaultBrowserSettingEnabled) {
-      ApplyDefaultBrowserPolicy();
-    } else if (*pref == prefs::kDisabledSchemes) {
-      ApplyDisabledSchemesPolicy();
-    } else if (*pref == prefs::kAllowCrossOriginAuthPrompt) {
-      ApplyAllowCrossOriginAuthPromptPolicy();
-    }
-  } else {
-    NOTREACHED();
+void BrowserProcessImpl::OnPreferenceChanged(PrefServiceBase* service,
+                                             const std::string& pref) {
+  if (pref == prefs::kDefaultBrowserSettingEnabled) {
+    ApplyDefaultBrowserPolicy();
+  } else if (pref == prefs::kDisabledSchemes) {
+    ApplyDisabledSchemesPolicy();
+  } else if (pref == prefs::kAllowCrossOriginAuthPrompt) {
+    ApplyAllowCrossOriginAuthPromptPolicy();
   }
 }
 

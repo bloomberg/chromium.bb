@@ -35,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -678,17 +679,12 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
     system_monitor->RemoveDevicesChangedObserver(this);
 }
 
-void MediaFileSystemRegistry::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  const std::string& pref_name =
-      *content::Details<std::string>(details).ptr();
+void MediaFileSystemRegistry::OnPreferenceChanged(
+    PrefServiceBase* prefs,
+    const std::string& pref_name) {
   DCHECK_EQ(std::string(prefs::kMediaGalleriesRememberedGalleries), pref_name);
 
   // Find the Profile that contains the source PrefService.
-  PrefService* prefs = content::Source<PrefService>(source).ptr();
   PrefChangeRegistrarMap::iterator pref_change_it =
       pref_change_registrar_map_.begin();
   for (; pref_change_it != pref_change_registrar_map_.end(); ++pref_change_it) {

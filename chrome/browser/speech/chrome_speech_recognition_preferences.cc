@@ -141,14 +141,11 @@ void ChromeSpeechRecognitionPreferences::DetachFromProfile() {
   profile_ = NULL;
 }
 
-void ChromeSpeechRecognitionPreferences::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void ChromeSpeechRecognitionPreferences::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
-  std::string* pref_name = content::Details<std::string>(details).ptr();
-  ReloadPreference(*pref_name);
+  ReloadPreference(pref_name);
 }
 
 bool ChromeSpeechRecognitionPreferences::FilterProfanities() const {

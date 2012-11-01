@@ -87,29 +87,22 @@ void TypedUrlDataTypeController::SetBackend(history::HistoryBackend* backend) {
   backend_ = backend;
 }
 
-void TypedUrlDataTypeController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void TypedUrlDataTypeController::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED:
-      DCHECK(*content::Details<std::string>(details).ptr() ==
-             prefs::kSavingBrowserHistoryDisabled);
-      if (profile()->GetPrefs()->GetBoolean(
-              prefs::kSavingBrowserHistoryDisabled)) {
-        // We've turned off history persistence, so if we are running,
-        // generate an unrecoverable error. This can be fixed by restarting
-        // Chrome (on restart, typed urls will not be a registered type).
-        if (state() != NOT_RUNNING && state() != STOPPING) {
-          profile_sync_service()->DisableBrokenDatatype(syncer::TYPED_URLS,
-              FROM_HERE, "History saving is now disabled by policy.");
-        }
-      }
-      break;
-    default:
-      NOTREACHED();
-      break;
+  DCHECK_EQ(std::string(prefs::kSavingBrowserHistoryDisabled), pref_name);
+  if (profile()->GetPrefs()->GetBoolean(
+          prefs::kSavingBrowserHistoryDisabled)) {
+    // We've turned off history persistence, so if we are running,
+    // generate an unrecoverable error. This can be fixed by restarting
+    // Chrome (on restart, typed urls will not be a registered type).
+    if (state() != NOT_RUNNING && state() != STOPPING) {
+      profile_sync_service()->DisableBrokenDatatype(
+          syncer::TYPED_URLS,
+          FROM_HERE,
+          "History saving is now disabled by policy.");
+    }
   }
 }
 
@@ -147,7 +140,6 @@ void TypedUrlDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
   DVLOG(1) << "TypedUrlDataTypeController::StopModels(): State = " << state();
-  notification_registrar_.RemoveAll();
 }
 
 TypedUrlDataTypeController::~TypedUrlDataTypeController() {}

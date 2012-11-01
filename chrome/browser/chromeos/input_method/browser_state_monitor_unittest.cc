@@ -237,22 +237,6 @@ TEST(BrowserStateMonitorTest, TestObserveAppTerminating) {
   EXPECT_EQ(0, monitor.update_user_pref_count());
 }
 
-TEST(BrowserStateMonitorTest, TestObservePrefChanged) {
-  TestingPrefService prefs;
-  RegisterTestPrefs(&prefs);
-  MockInputMethodManager mock_manager;
-  TestableBrowserStateMonitor monitor(&mock_manager);
-  monitor.SetPrefServiceForTesting(&prefs);
-
-  EXPECT_EQ(1, mock_manager.set_state_count_);
-  monitor.Observe(chrome::NOTIFICATION_PREF_CHANGED,
-                  content::NotificationService::AllSources(),
-                  content::NotificationService::NoDetails());
-
-  // NOTIFICATION_PREF_CHANGED should be ignored.
-  EXPECT_EQ(1, mock_manager.set_state_count_);
-}
-
 TEST(BrowserStateMonitorTest, TestUpdatePrefOnLoginScreen) {
   TestingPrefService prefs;
   RegisterTestPrefs(&prefs);

@@ -8,10 +8,10 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
 
 class Browser;
@@ -32,7 +32,7 @@ class Extension;
 
 class BrowserWindowCocoa :
     public BrowserWindow,
-    public content::NotificationObserver,
+    public PrefObserver,
     public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   BrowserWindowCocoa(Browser* browser,
@@ -147,9 +147,8 @@ class BrowserWindowCocoa :
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
 
   // Overridden from NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Overridden from ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*
@@ -167,7 +166,6 @@ class BrowserWindowCocoa :
  private:
   NSWindow* window() const;  // Accessor for the (current) |NSWindow|.
 
-  content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us

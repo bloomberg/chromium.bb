@@ -769,14 +769,16 @@ const ListValue* PrefService::GetList(const char* path) const {
   return static_cast<const ListValue*>(value);
 }
 
-void PrefService::AddPrefObserver(const char* path,
-                                  content::NotificationObserver* obs) {
+void PrefService::AddPrefObserver(const char* path, PrefObserver* obs) {
   pref_notifier_->AddPrefObserver(path, obs);
 }
 
-void PrefService::RemovePrefObserver(const char* path,
-                                     content::NotificationObserver* obs) {
+void PrefService::RemovePrefObserver(const char* path, PrefObserver* obs) {
   pref_notifier_->RemovePrefObserver(path, obs);
+}
+
+void PrefService::AddPrefInitObserver(base::Callback<void(bool)> obs) {
+  pref_notifier_->AddInitObserver(obs);
 }
 
 void PrefService::RegisterPreference(const char* path,

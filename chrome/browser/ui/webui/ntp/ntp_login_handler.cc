@@ -112,13 +112,15 @@ void NTPLoginHandler::Observe(int type,
                               const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
     UpdateLogin();
-  } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* name = content::Details<std::string>(details).ptr();
-    if (prefs::kGoogleServicesUsername == *name)
-      UpdateLogin();
   } else {
     NOTREACHED();
   }
+}
+
+void NTPLoginHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
+  if (prefs::kGoogleServicesUsername == pref_name)
+    UpdateLogin();
 }
 
 void NTPLoginHandler::HandleInitializeSyncLogin(const ListValue* args) {

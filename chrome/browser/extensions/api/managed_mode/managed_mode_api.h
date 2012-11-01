@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_
 
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -16,17 +17,16 @@ class Profile;
 
 namespace extensions {
 
-class ExtensionManagedModeEventRouter : public content::NotificationObserver {
+class ExtensionManagedModeEventRouter : public PrefObserver {
  public:
   explicit ExtensionManagedModeEventRouter(Profile* profile);
   virtual ~ExtensionManagedModeEventRouter();
 
   void Init();
 
-  // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
  private:
   PrefChangeRegistrar registrar_;

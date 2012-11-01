@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/values.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -213,10 +214,9 @@ class ProxyConfigServiceImpl
 #endif  // defined(UNIT_TEST)
 
  private:
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Called from the various UISetProxyConfigTo*.
   void OnUISetProxyConfig();

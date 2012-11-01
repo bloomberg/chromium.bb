@@ -11,12 +11,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 #include "chrome/common/content_settings.h"
-#include "content/public/browser/notification_observer.h"
 
 class ContentSettingsPattern;
 class CookieSettingsWrapper;
@@ -29,7 +29,7 @@ class Profile;
 // thread and read on any thread. One instance per profile.
 
 class CookieSettings
-    : public content::NotificationObserver,
+    : public PrefObserver,
       public RefcountedProfileKeyedService {
  public:
   CookieSettings(
@@ -91,10 +91,9 @@ class CookieSettings
   void ResetCookieSetting(const ContentSettingsPattern& primary_pattern,
                           const ContentSettingsPattern& secondary_pattern);
 
-  // |NotificationObserver| implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // |PrefObserver| implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Detaches the |CookieSettings| from all |Profile|-related objects like
   // |PrefService|. This methods needs to be called before destroying the

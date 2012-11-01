@@ -444,12 +444,17 @@ void ExtensionSettingsHandler::Observe(
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
     case chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED:
     case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
-    case chrome::NOTIFICATION_PREF_CHANGED:
       MaybeUpdateAfterNotification();
       break;
     default:
       NOTREACHED();
   }
+}
+
+void ExtensionSettingsHandler::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  MaybeUpdateAfterNotification();
 }
 
 void ExtensionSettingsHandler::ExtensionUninstallAccepted() {

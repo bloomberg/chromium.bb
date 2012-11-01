@@ -866,32 +866,34 @@ void BrowserOptionsHandler::Observe(
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
     UpdateAccountPicture();
 #endif
-  } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kDefaultBrowserSettingEnabled) {
-      UpdateDefaultBrowserState();
-    } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
-      SetupAutoOpenFileTypes();
-#if !defined(OS_CHROMEOS)
-    } else if (proxy_prefs_.IsObserved(*pref_name)) {
-      SetupProxySettingsSection();
-#endif  // !defined(OS_CHROMEOS)
-    } else if ((*pref_name == prefs::kCloudPrintEmail) ||
-               (*pref_name == prefs::kCloudPrintProxyEnabled)) {
-#if !defined(OS_CHROMEOS)
-      if (cloud_print_connector_ui_enabled_)
-        SetupCloudPrintConnectorSection();
-#endif
-    } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
-      SetupFontSizeSelector();
-    } else if (*pref_name == prefs::kDefaultZoomLevel) {
-      SetupPageZoomSelector();
-    } else {
-      NOTREACHED();
-    }
   } else if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
     if (multiprofile_)
       SendProfilesInfo();
+  } else {
+    NOTREACHED();
+  }
+}
+
+void BrowserOptionsHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                                const std::string& pref_name) {
+  if (pref_name == prefs::kDefaultBrowserSettingEnabled) {
+    UpdateDefaultBrowserState();
+  } else if (pref_name == prefs::kDownloadExtensionsToOpen) {
+    SetupAutoOpenFileTypes();
+#if !defined(OS_CHROMEOS)
+  } else if (proxy_prefs_.IsObserved(pref_name)) {
+    SetupProxySettingsSection();
+#endif  // !defined(OS_CHROMEOS)
+  } else if ((pref_name == prefs::kCloudPrintEmail) ||
+             (pref_name == prefs::kCloudPrintProxyEnabled)) {
+#if !defined(OS_CHROMEOS)
+    if (cloud_print_connector_ui_enabled_)
+      SetupCloudPrintConnectorSection();
+#endif
+  } else if (pref_name == prefs::kWebKitDefaultFontSize) {
+    SetupFontSizeSelector();
+  } else if (pref_name == prefs::kDefaultZoomLevel) {
+    SetupPageZoomSelector();
   } else {
     NOTREACHED();
   }

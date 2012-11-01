@@ -407,13 +407,9 @@ void ComponentLoader::AddDefaultComponentExtensions() {
   AddScriptBubble();
 }
 
-void ComponentLoader::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  DCHECK_EQ(std::string(prefs::kEnterpriseWebStoreURL),
-            *content::Details<const std::string>(details).ptr());
+void ComponentLoader::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
+  DCHECK_EQ(std::string(prefs::kEnterpriseWebStoreURL), pref_name);
   AddOrReloadEnterpriseWebStore();
 }
 

@@ -87,7 +87,7 @@ std::string MaybeGetLocalizedFontName(const std::string& font_name) {
 // Registers |obs| to observe per-script font prefs under the path |map_name|.
 void RegisterFontFamilyMapObserver(PrefChangeRegistrar* registrar,
                                    const char* map_name,
-                                   content::NotificationObserver* obs) {
+                                   PrefObserver* obs) {
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
@@ -132,24 +132,18 @@ void FontSettingsEventRouter::Init() {
 }
 
 void FontSettingsEventRouter::AddPrefToObserve(const char* pref_name,
-                                                        const char* event_name,
-                                                        const char* key) {
+                                               const char* event_name,
+                                               const char* key) {
   registrar_.Add(pref_name, this);
   pref_event_map_[pref_name] = std::make_pair(event_name, key);
 }
 
-void FontSettingsEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-
-  PrefService* pref_service = content::Source<PrefService>(source).ptr();
+void FontSettingsEventRouter::OnPreferenceChanged(
+    PrefServiceBase* pref_service,
+    const std::string& pref_name) {
   bool incognito = (pref_service != profile_->GetPrefs());
   // We're only observing pref changes on the regular profile.
   DCHECK(!incognito);
-  const std::string& pref_name =
-      *content::Details<const std::string>(details).ptr();
 
   PrefEventMap::iterator iter = pref_event_map_.find(pref_name);
   if (iter != pref_event_map_.end()) {
@@ -172,12 +166,12 @@ void FontSettingsEventRouter::Observe(
 }
 
 void FontSettingsEventRouter::OnFontNamePrefChanged(
-    PrefService* pref_service,
+    PrefServiceBase* pref_service,
     const std::string& pref_name,
     const std::string& generic_family,
     const std::string& script,
     bool incognito) {
-  const PrefService::Preference* pref = pref_service->FindPreference(
+  const PrefServiceBase::Preference* pref = pref_service->FindPreference(
       pref_name.c_str());
   CHECK(pref);
 
@@ -205,12 +199,12 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
 }
 
 void FontSettingsEventRouter::OnFontPrefChanged(
-    PrefService* pref_service,
+    PrefServiceBase* pref_service,
     const std::string& pref_name,
     const std::string& event_name,
     const std::string& key,
     bool incognito) {
-  const PrefService::Preference* pref = pref_service->FindPreference(
+  const PrefServiceBase::Preference* pref = pref_service->FindPreference(
       pref_name.c_str());
   CHECK(pref);
 

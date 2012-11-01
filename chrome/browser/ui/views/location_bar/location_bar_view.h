@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
@@ -79,7 +80,8 @@ class LocationBarView : public LocationBar,
                         public DropdownBarHostDelegate,
                         public chrome::search::SearchModelObserver,
                         public TemplateURLServiceObserver,
-                        public content::NotificationObserver {
+                        public content::NotificationObserver,
+                        public PrefObserver {
  public:
   // The location bar view's class name.
   static const char kViewClassName[];
@@ -337,6 +339,10 @@ class LocationBarView : public LocationBar,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overridden from PrefObserver
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Returns the height of the control without the top and bottom
   // edges(i.e.  the height of the edit control inside).  If

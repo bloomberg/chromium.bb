@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "content/public/browser/notification_observer.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
 
@@ -78,7 +78,7 @@ class ChromeProxyConfigService
 // A class that tracks proxy preferences. It translates the configuration
 // to net::ProxyConfig and pushes the result over to the IO thread for
 // ChromeProxyConfigService::UpdateProxyConfig to use.
-class PrefProxyConfigTrackerImpl : public content::NotificationObserver {
+class PrefProxyConfigTrackerImpl : public PrefObserver {
  public:
   explicit PrefProxyConfigTrackerImpl(PrefService* pref_service);
   virtual ~PrefProxyConfigTrackerImpl();
@@ -132,10 +132,9 @@ class PrefProxyConfigTrackerImpl : public content::NotificationObserver {
   virtual void OnProxyConfigChanged(ProxyPrefs::ConfigState config_state,
                                     const net::ProxyConfig& config);
 
-  // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
 
   const PrefService* prefs() const { return pref_service_; }

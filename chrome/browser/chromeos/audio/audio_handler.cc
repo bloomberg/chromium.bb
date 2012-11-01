@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 
 using std::max;
 using std::min;
@@ -161,18 +160,11 @@ void AudioHandler::RemoveVolumeObserver(VolumeObserver* observer) {
   volume_observers_.RemoveObserver(observer);
 }
 
-void AudioHandler::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kAudioOutputAllowed ||
-        *pref_name == prefs::kAudioCaptureAllowed) {
-      ApplyAudioPolicy();
-    }
-  } else {
-    NOTREACHED() << "Unexpected notification type : " << type;
-  }
+void AudioHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                       const std::string& pref_name) {
+  DCHECK(pref_name == prefs::kAudioOutputAllowed ||
+         pref_name == prefs::kAudioCaptureAllowed);
+  ApplyAudioPolicy();
 }
 
 AudioHandler::AudioHandler(AudioMixer* mixer)

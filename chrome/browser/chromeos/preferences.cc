@@ -30,8 +30,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/events/event_constants.h"
 #include "unicode/timezone.h"
@@ -393,11 +391,9 @@ void Preferences::SetInputMethodListForTesting() {
   SetInputMethodList();
 }
 
-void Preferences::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED)
-    NotifyPrefChanged(content::Details<std::string>(details).ptr());
+void Preferences::OnPreferenceChanged(PrefServiceBase* service,
+                                      const std::string& pref_name) {
+  NotifyPrefChanged(&pref_name);
 }
 
 void Preferences::NotifyPrefChanged(const std::string* pref_name) {

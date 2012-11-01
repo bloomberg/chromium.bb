@@ -153,9 +153,6 @@ void BrowserStateMonitor::Observe(
                InputMethodManager::STATE_BROWSER_SCREEN);
       break;
     }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      break;  // just ignore the notification.
-    }
     default: {
       NOTREACHED();
       break;

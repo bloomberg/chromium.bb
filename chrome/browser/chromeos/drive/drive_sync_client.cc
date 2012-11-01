@@ -430,9 +430,8 @@ void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
   DoSyncLoop();
 }
 
-void DriveSyncClient::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
+void DriveSyncClient::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Resume the sync loop if gdata preferences are changed. Note that we

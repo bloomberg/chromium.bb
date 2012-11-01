@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
@@ -61,7 +62,8 @@ class AcceleratorGtk;
 class LocationBarViewGtk : public OmniboxEditController,
                            public LocationBar,
                            public LocationBarTesting,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public PrefObserver {
  public:
   explicit LocationBarViewGtk(Browser* browser);
   virtual ~LocationBarViewGtk();
@@ -164,6 +166,10 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // PrefObserver:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Edit background color.
   static const GdkColor kBackgroundColor;

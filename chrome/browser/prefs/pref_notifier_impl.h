@@ -5,18 +5,17 @@
 #ifndef CHROME_BROWSER_PREFS_PREF_NOTIFIER_IMPL_H_
 #define CHROME_BROWSER_PREFS_PREF_NOTIFIER_IMPL_H_
 
+#include <list>
 #include <string>
 
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_notifier.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/threading/non_thread_safe.h"
 
 class PrefService;
-
-namespace content {
-class NotificationObserver;
-}
 
 // The PrefNotifier implementation used by the PrefService.
 class PrefNotifierImpl : public PrefNotifier,
@@ -26,24 +25,30 @@ class PrefNotifierImpl : public PrefNotifier,
   explicit PrefNotifierImpl(PrefService* pref_service);
   virtual ~PrefNotifierImpl();
 
-  // If the pref at the given path changes, we call the observer's Observe
-  // method with PREF_CHANGED.
-  void AddPrefObserver(const char* path, content::NotificationObserver* obs);
-  void RemovePrefObserver(const char* path, content::NotificationObserver* obs);
+  // If the pref at the given path changes, we call the observer's
+  // OnPreferenceChanged method.
+  void AddPrefObserver(const char* path, PrefObserver* observer);
+  void RemovePrefObserver(const char* path, PrefObserver* observer);
 
-  // PrefNotifier overrides.
-  virtual void OnPreferenceChanged(const std::string& pref_name) OVERRIDE;
-  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+  // We run the callback once, when initialization completes. The bool
+  // parameter will be set to true for successful initialization,
+  // false for unsuccessful.
+  void AddInitObserver(base::Callback<void(bool)> observer);
 
   void SetPrefService(PrefService* pref_service);
 
  protected:
+  // PrefNotifier overrides.
+  virtual void OnPreferenceChanged(const std::string& pref_name) OVERRIDE;
+  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+
   // A map from pref names to a list of observers. Observers get fired in the
   // order they are added. These should only be accessed externally for unit
   // testing.
-  typedef ObserverList<content::NotificationObserver> NotificationObserverList;
-  typedef base::hash_map<std::string, NotificationObserverList*>
-      PrefObserverMap;
+  typedef ObserverList<PrefObserver> PrefObserverList;
+  typedef base::hash_map<std::string, PrefObserverList*> PrefObserverMap;
+
+  typedef std::list<base::Callback<void(bool)> > PrefInitObserverList;
 
   const PrefObserverMap* pref_observers() const { return &pref_observers_; }
 
@@ -56,6 +61,7 @@ class PrefNotifierImpl : public PrefNotifier,
   PrefService* pref_service_;
 
   PrefObserverMap pref_observers_;
+  PrefInitObserverList init_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefNotifierImpl);
 };

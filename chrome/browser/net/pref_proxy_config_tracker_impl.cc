@@ -287,13 +287,11 @@ bool PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(
   return false;
 }
 
-void PrefProxyConfigTrackerImpl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void PrefProxyConfigTrackerImpl::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (type == chrome::NOTIFICATION_PREF_CHANGED &&
-      content::Source<PrefService>(source).ptr() == pref_service_) {
+  if (service == pref_service_) {
     net::ProxyConfig new_config;
     ProxyPrefs::ConfigState config_state = ReadPrefConfig(&new_config);
     if (config_state_ != config_state ||
@@ -307,7 +305,7 @@ void PrefProxyConfigTrackerImpl::Observe(
     if (update_pending_)
       OnProxyConfigChanged(config_state, new_config);
   } else {
-    NOTREACHED() << "Unexpected notification of type " << type;
+    NOTREACHED() << "Unexpected PrefService.";
   }
 }
 

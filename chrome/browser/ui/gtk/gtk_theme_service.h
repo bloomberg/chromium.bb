@@ -12,8 +12,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "content/public/browser/notification_observer.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -41,7 +41,7 @@ typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
 // Specialization of ThemeService which supplies system colors.
-class GtkThemeService : public ThemeService {
+class GtkThemeService : public ThemeService, public PrefObserver {
  public:
   // A list of integer keys for a separate PerDisplaySurfaceMap that keeps
   // what would otherwise be static icons on the X11 server.
@@ -77,10 +77,9 @@ class GtkThemeService : public ThemeService {
   virtual bool UsingDefaultTheme() const OVERRIDE;
   virtual bool UsingNativeTheme() const OVERRIDE;
 
-  // Overridden from ThemeService, content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Overridden from PrefObserver:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Creates a GtkChromeButton instance, registered with this theme provider,
   // with a "destroy" signal to remove it from our internal list when it goes

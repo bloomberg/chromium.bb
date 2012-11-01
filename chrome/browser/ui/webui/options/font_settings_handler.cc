@@ -187,27 +187,23 @@ void FontSettingsHandler::FontsListHasLoaded(
                                    selected_values);
 }
 
-void FontSettingsHandler::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kWebKitStandardFontFamily) {
-      SetUpStandardFontSample();
-    } else if (*pref_name == prefs::kWebKitSerifFontFamily) {
-      SetUpSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitSansSerifFontFamily) {
-      SetUpSansSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitFixedFontFamily ||
-               *pref_name == prefs::kWebKitDefaultFixedFontSize) {
-      SetUpFixedFontSample();
-    } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
-      SetUpStandardFontSample();
-      SetUpSerifFontSample();
-      SetUpSansSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitMinimumFontSize) {
-      SetUpMinimumFontSample();
-    }
+void FontSettingsHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                              const std::string& pref_name) {
+  if (pref_name == prefs::kWebKitStandardFontFamily) {
+    SetUpStandardFontSample();
+  } else if (pref_name == prefs::kWebKitSerifFontFamily) {
+    SetUpSerifFontSample();
+  } else if (pref_name == prefs::kWebKitSansSerifFontFamily) {
+    SetUpSansSerifFontSample();
+  } else if (pref_name == prefs::kWebKitFixedFontFamily ||
+             pref_name == prefs::kWebKitDefaultFixedFontSize) {
+    SetUpFixedFontSample();
+  } else if (pref_name == prefs::kWebKitDefaultFontSize) {
+    SetUpStandardFontSample();
+    SetUpSerifFontSample();
+    SetUpSansSerifFontSample();
+  } else if (pref_name == prefs::kWebKitMinimumFontSize) {
+    SetUpMinimumFontSample();
   }
 }
 

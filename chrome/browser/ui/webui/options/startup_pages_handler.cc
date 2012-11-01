@@ -130,17 +130,10 @@ void StartupPagesHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-void StartupPagesHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref = content::Details<std::string>(details).ptr();
-    if (*pref == prefs::kURLsToRestoreOnStartup) {
-      UpdateStartupPages();
-    } else {
-      NOTREACHED();
-    }
+void StartupPagesHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                              const std::string& pref_name) {
+  if (pref_name == prefs::kURLsToRestoreOnStartup) {
+    UpdateStartupPages();
   } else {
     NOTREACHED();
   }

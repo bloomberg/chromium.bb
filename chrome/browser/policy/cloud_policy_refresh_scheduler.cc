@@ -99,13 +99,10 @@ void CloudPolicyRefreshScheduler::OnStoreError(CloudPolicyStore* store) {
   // error is required. NB: Changes to is_managed fire OnStoreLoaded().
 }
 
-void CloudPolicyRefreshScheduler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  DCHECK_EQ(refresh_delay_.GetPrefName(),
-            *content::Details<std::string>(details).ptr());
+void CloudPolicyRefreshScheduler::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  DCHECK_EQ(refresh_delay_.GetPrefName(), pref_name);
 
   ScheduleRefresh();
 }

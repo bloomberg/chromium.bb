@@ -528,14 +528,6 @@ void ToolbarView::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name = content::Details<std::string>(details).ptr();
-      if (*pref_name == prefs::kShowHomeButton) {
-        Layout();
-        SchedulePaint();
-      }
-      break;
-    }
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
     case chrome::NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE:
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
@@ -548,6 +540,14 @@ void ToolbarView::Observe(int type,
 #endif
     default:
       NOTREACHED();
+  }
+}
+
+void ToolbarView::OnPreferenceChanged(PrefServiceBase* service,
+                                      const std::string& pref_name) {
+  if (pref_name == prefs::kShowHomeButton) {
+    Layout();
+    SchedulePaint();
   }
 }
 

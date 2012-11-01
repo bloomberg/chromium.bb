@@ -389,10 +389,6 @@ void PrintViewManager::Observe(int type,
       OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
       break;
     }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      UpdateScriptedPrintingBlocked();
-      break;
-    }
     case chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED: {
       tab_content_blocked_ = *content::Details<const bool>(details).ptr();
       UpdateScriptedPrintingBlocked();
@@ -403,6 +399,11 @@ void PrintViewManager::Observe(int type,
       break;
     }
   }
+}
+
+void PrintViewManager::OnPreferenceChanged(PrefServiceBase* service,
+                                           const std::string& pref_name) {
+  UpdateScriptedPrintingBlocked();
 }
 
 void PrintViewManager::OnNotifyPrintJobEvent(

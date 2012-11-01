@@ -233,13 +233,17 @@ void NotificationUIManagerImpl::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_TERMINATING) {
     CancelAll();
-  } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* name = content::Details<std::string>(details).ptr();
-    if (*name == prefs::kDesktopNotificationPosition)
-      balloon_collection_->SetPositionPreference(
-          static_cast<BalloonCollection::PositionPreference>(
-              position_pref_.GetValue()));
   } else {
     NOTREACHED();
+  }
+}
+
+void NotificationUIManagerImpl::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  if (pref_name == prefs::kDesktopNotificationPosition) {
+    balloon_collection_->SetPositionPreference(
+        static_cast<BalloonCollection::PositionPreference>(
+            position_pref_.GetValue()));
   }
 }

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -17,8 +18,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/ssl_config_service.h"
 
@@ -145,7 +144,7 @@ void SSLConfigServicePref::SetNewSSLConfig(
 // The manager for holding and updating an SSLConfigServicePref instance.
 class SSLConfigServiceManagerPref
     : public SSLConfigServiceManager,
-      public content::NotificationObserver {
+      public PrefObserver {
  public:
   SSLConfigServiceManagerPref(PrefService* local_state,
                               PrefService* user_prefs);
@@ -159,9 +158,8 @@ class SSLConfigServiceManagerPref
  private:
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Store SSL config settings in |config|, directly from the preferences. Must
   // only be called from UI thread.
@@ -169,10 +167,10 @@ class SSLConfigServiceManagerPref
 
   // Processes changes to the disabled cipher suites preference, updating the
   // cached list of parsed SSL/TLS cipher suites that are disabled.
-  void OnDisabledCipherSuitesChange(PrefService* local_state);
+  void OnDisabledCipherSuitesChange(PrefServiceBase* local_state);
 
   // Processes changes to the default cookie settings.
-  void OnDefaultContentSettingsChange(PrefService* user_prefs);
+  void OnDefaultContentSettingsChange(PrefServiceBase* user_prefs);
 
   PrefChangeRegistrar local_state_change_registrar_;
   PrefChangeRegistrar user_prefs_change_registrar_;
@@ -255,33 +253,28 @@ net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
   return ssl_config_service_;
 }
 
-void SSLConfigServiceManagerPref::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    std::string* pref_name_in = content::Details<std::string>(details).ptr();
-    PrefService* prefs = content::Source<PrefService>(source).ptr();
-    DCHECK(pref_name_in && prefs);
-    if (*pref_name_in == prefs::kCipherSuiteBlacklist)
-      OnDisabledCipherSuitesChange(prefs);
-    else if (*pref_name_in == prefs::kDefaultContentSettings)
-      OnDefaultContentSettingsChange(prefs);
+void SSLConfigServiceManagerPref::OnPreferenceChanged(
+    PrefServiceBase* prefs,
+    const std::string& pref_name_in) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(prefs);
+  if (pref_name_in == prefs::kCipherSuiteBlacklist)
+    OnDisabledCipherSuitesChange(prefs);
+  else if (pref_name_in == prefs::kDefaultContentSettings)
+    OnDefaultContentSettingsChange(prefs);
 
-    net::SSLConfig new_config;
-    GetSSLConfigFromPrefs(&new_config);
+  net::SSLConfig new_config;
+  GetSSLConfigFromPrefs(&new_config);
 
-    // Post a task to |io_loop| with the new configuration, so it can
-    // update |cached_config_|.
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(
-            &SSLConfigServicePref::SetNewSSLConfig,
-            ssl_config_service_.get(),
-            new_config));
-  }
+  // Post a task to |io_loop| with the new configuration, so it can
+  // update |cached_config_|.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &SSLConfigServicePref::SetNewSSLConfig,
+          ssl_config_service_.get(),
+          new_config));
 }
 
 void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
@@ -318,13 +311,13 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
 }
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
-    PrefService* local_state) {
+    PrefServiceBase* local_state) {
   const ListValue* value = local_state->GetList(prefs::kCipherSuiteBlacklist);
   disabled_cipher_suites_ = ParseCipherSuites(ListValueToStringVector(value));
 }
 
 void SSLConfigServiceManagerPref::OnDefaultContentSettingsChange(
-    PrefService* user_prefs) {
+    PrefServiceBase* user_prefs) {
   const DictionaryValue* value = user_prefs->GetDictionary(
       prefs::kDefaultContentSettings);
   int default_cookie_settings = -1;

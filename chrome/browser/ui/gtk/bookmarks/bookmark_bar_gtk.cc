@@ -980,12 +980,13 @@ void BookmarkBarGtk::Observe(int type,
     }
 
     SetOverflowButtonAppearance();
-  } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    const std::string& pref_name =
-        *content::Details<std::string>(details).ptr();
-    if (pref_name == prefs::kEditBookmarksEnabled)
-      OnEditBookmarksEnabledChanged();
   }
+}
+
+void BookmarkBarGtk::OnPreferenceChanged(PrefServiceBase* service,
+                                         const std::string& pref_name) {
+  if (pref_name == prefs::kEditBookmarksEnabled)
+    OnEditBookmarksEnabledChanged();
 }
 
 GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {

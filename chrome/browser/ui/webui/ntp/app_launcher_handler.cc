@@ -312,13 +312,6 @@ void AppLauncherHandler::Observe(int type,
       // TODO(estade): Try to get rid of this inefficient operation.
       HandleGetApps(NULL);
       break;
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      DictionaryValue dictionary;
-      FillAppDictionary(&dictionary);
-      web_ui()->CallJavascriptFunction("ntp.appsPrefChangeCallback",
-                                       dictionary);
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
       CrxInstaller* crx_installer = content::Source<CrxInstaller>(source).ptr();
       if (!Profile::FromWebUI(web_ui())->IsSameProfile(
@@ -334,6 +327,14 @@ void AppLauncherHandler::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void AppLauncherHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                             const std::string& pref_name) {
+  DictionaryValue dictionary;
+  FillAppDictionary(&dictionary);
+  web_ui()->CallJavascriptFunction("ntp.appsPrefChangeCallback",
+                                   dictionary);
 }
 
 void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {

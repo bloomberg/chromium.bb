@@ -60,7 +60,7 @@ TEST(PrefServiceTest, NoObserverFire) {
 
   // Setting the pref to the same value should not set the pref value a second
   // time.
-  EXPECT_CALL(obs, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(obs, OnPreferenceChanged(_, _)).Times(0);
   prefs.SetString(pref_name, new_pref_value);
   Mock::VerifyAndClearExpectations(&obs);
 
@@ -71,7 +71,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   Mock::VerifyAndClearExpectations(&obs);
 
   // Clearing the pref again should not cause the pref to fire.
-  EXPECT_CALL(obs, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(obs, OnPreferenceChanged(_, _)).Times(0);
   prefs.ClearPref(pref_name);
   Mock::VerifyAndClearExpectations(&obs);
 }
@@ -137,7 +137,7 @@ TEST(PrefServiceTest, Observers) {
 
   // Make sure obs2 still works after removing obs.
   registrar.Remove(pref_name, &obs);
-  EXPECT_CALL(obs, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(obs, OnPreferenceChanged(_, _)).Times(0);
   obs2.Expect(&prefs, pref_name, &expected_new_pref_value);
   // This should only fire the observer in obs2.
   prefs.SetString(pref_name, new_pref_value);
@@ -379,7 +379,7 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
   prefs_.Set(kName, default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
   prefs_.Set(kName, default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -395,7 +395,7 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   registrar.Init(&prefs_);
   registrar.Add(kName, &observer_);
 
-  EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
   prefs_.RemoveUserPref(kName);
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -405,7 +405,7 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -421,7 +421,7 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   registrar.Init(&prefs_);
   registrar.Add(kName, &observer_);
 
-  EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
   prefs_.RemoveUserPref(kName);
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -431,7 +431,7 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 

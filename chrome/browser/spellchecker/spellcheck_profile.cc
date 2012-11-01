@@ -112,26 +112,19 @@ void SpellCheckProfile::Shutdown() {
   profile_ = NULL;
 }
 
-void SpellCheckProfile::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name_in = content::Details<std::string>(details).ptr();
-      PrefService* prefs = content::Source<PrefService>(source).ptr();
-      DCHECK(pref_name_in && prefs);
-      if (*pref_name_in == prefs::kSpellCheckDictionary ||
-          *pref_name_in == prefs::kEnableSpellCheck) {
-        ReinitializeSpellCheckHost(true);
-      } else if (*pref_name_in == prefs::kEnableAutoSpellCorrect) {
-        bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
-        for (content::RenderProcessHost::iterator i(
-                content::RenderProcessHost::AllHostsIterator());
-             !i.IsAtEnd(); i.Advance()) {
-          content::RenderProcessHost* process = i.GetCurrentValue();
-          process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
-        }
-      }
+void SpellCheckProfile::OnPreferenceChanged(PrefServiceBase* prefs,
+                                            const std::string& pref_name_in) {
+  DCHECK(prefs);
+  if (pref_name_in == prefs::kSpellCheckDictionary ||
+      pref_name_in == prefs::kEnableSpellCheck) {
+    ReinitializeSpellCheckHost(true);
+  } else if (pref_name_in == prefs::kEnableAutoSpellCorrect) {
+    bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
+    for (content::RenderProcessHost::iterator i(
+             content::RenderProcessHost::AllHostsIterator());
+         !i.IsAtEnd(); i.Advance()) {
+      content::RenderProcessHost* process = i.GetCurrentValue();
+      process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
     }
   }
 }

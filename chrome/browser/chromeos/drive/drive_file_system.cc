@@ -2140,21 +2140,14 @@ DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
   return metadata;
 }
 
-void DriveFileSystem::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
+void DriveFileSystem::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(pref_name == prefs::kDisableDriveHostedFiles);
 
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    PrefService* pref_service = profile_->GetPrefs();
-    std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kDisableDriveHostedFiles) {
-      SetHideHostedDocuments(
-          pref_service->GetBoolean(prefs::kDisableDriveHostedFiles));
-    }
-  } else {
-    NOTREACHED();
-  }
+  PrefService* pref_service = profile_->GetPrefs();
+  SetHideHostedDocuments(
+      pref_service->GetBoolean(prefs::kDisableDriveHostedFiles));
 }
 
 void DriveFileSystem::SetHideHostedDocuments(bool hide) {

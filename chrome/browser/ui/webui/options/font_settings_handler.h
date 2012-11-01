@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
@@ -16,7 +17,8 @@ class ListValue;
 namespace options {
 
 // Font settings overlay page UI handler.
-class FontSettingsHandler : public OptionsPageUIHandler {
+class FontSettingsHandler : public OptionsPageUIHandler,
+                            public PrefObserver {
  public:
   FontSettingsHandler();
   virtual ~FontSettingsHandler();
@@ -28,10 +30,9 @@ class FontSettingsHandler : public OptionsPageUIHandler {
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
  private:
   void HandleFetchFontsData(const ListValue* args);

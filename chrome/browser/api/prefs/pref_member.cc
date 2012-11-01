@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "base/value_conversions.h"
-#include "chrome/common/chrome_notification_types.h"
 
 using base::MessageLoopProxy;
 
@@ -26,7 +25,7 @@ PrefMemberBase::~PrefMemberBase() {
 
 void PrefMemberBase::Init(const char* pref_name,
                           PrefServiceBase* prefs,
-                          content::NotificationObserver* observer) {
+                          PrefObserver* observer) {
   DCHECK(pref_name);
   DCHECK(prefs);
   DCHECK(pref_name_.empty());  // Check that Init is only called once.
@@ -57,14 +56,12 @@ void PrefMemberBase::MoveToThread(
   internal()->MoveToThread(message_loop);
 }
 
-void PrefMemberBase::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
+void PrefMemberBase::OnPreferenceChanged(PrefServiceBase* service,
+                                         const std::string& pref_name) {
   VerifyValuePrefName();
-  DCHECK(chrome::NOTIFICATION_PREF_CHANGED == type);
   UpdateValueFromPref();
   if (!setting_value_ && observer_)
-    observer_->Observe(type, source, details);
+    observer_->OnPreferenceChanged(service, pref_name);
 }
 
 void PrefMemberBase::UpdateValueFromPref() const {

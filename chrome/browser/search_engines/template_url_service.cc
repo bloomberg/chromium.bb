@@ -921,30 +921,32 @@ void TemplateURLService::Observe(int type,
       GoogleBaseURLChanged(
           content::Details<GoogleURLTracker::UpdatedDetails>(details)->first);
     }
-  } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    // Listen for changes to the default search from Sync.
-    DCHECK_EQ(std::string(prefs::kSyncedDefaultSearchProviderGUID),
-              *content::Details<std::string>(details).ptr());
-    PrefService* prefs = GetPrefs();
-    TemplateURL* new_default_search = GetTemplateURLForGUID(
-        prefs->GetString(prefs::kSyncedDefaultSearchProviderGUID));
-    if (new_default_search && !is_default_search_managed_) {
-      if (new_default_search != GetDefaultSearchProvider()) {
-        AutoReset<DefaultSearchChangeOrigin> change_origin(
-            &dsp_change_origin_, DSP_CHANGE_SYNC_PREF);
-        SetDefaultSearchProvider(new_default_search);
-        pending_synced_default_search_ = false;
-      }
-    } else {
-      // If it's not there, or if default search is currently managed, set a
-      // flag to indicate that we waiting on the search engine entry to come
-      // in through Sync.
-      pending_synced_default_search_ = true;
-    }
-    UpdateDefaultSearch();
   } else {
     NOTREACHED();
   }
+}
+
+void TemplateURLService::OnPreferenceChanged(PrefServiceBase* service,
+                                             const std::string& pref_name) {
+  // Listen for changes to the default search from Sync.
+  DCHECK_EQ(std::string(prefs::kSyncedDefaultSearchProviderGUID), pref_name);
+  PrefService* prefs = GetPrefs();
+  TemplateURL* new_default_search = GetTemplateURLForGUID(
+      prefs->GetString(prefs::kSyncedDefaultSearchProviderGUID));
+  if (new_default_search && !is_default_search_managed_) {
+    if (new_default_search != GetDefaultSearchProvider()) {
+      AutoReset<DefaultSearchChangeOrigin> change_origin(
+          &dsp_change_origin_, DSP_CHANGE_SYNC_PREF);
+      SetDefaultSearchProvider(new_default_search);
+      pending_synced_default_search_ = false;
+    }
+  } else {
+    // If it's not there, or if default search is currently managed, set a
+    // flag to indicate that we waiting on the search engine entry to come
+    // in through Sync.
+    pending_synced_default_search_ = true;
+  }
+  UpdateDefaultSearch();
 }
 
 syncer::SyncDataList TemplateURLService::GetAllSyncData(

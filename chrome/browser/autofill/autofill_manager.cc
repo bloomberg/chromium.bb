@@ -290,14 +290,10 @@ void AutofillManager::RenderViewCreated(content::RenderViewHost* host) {
   UpdatePasswordGenerationState(host, true);
 }
 
-void AutofillManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void AutofillManager::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  std::string* pref = content::Details<std::string>(details).ptr();
-  DCHECK(prefs::kPasswordGenerationEnabled == *pref);
+  DCHECK(prefs::kPasswordGenerationEnabled == pref_name);
   UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
 }
 

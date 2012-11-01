@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -23,6 +24,7 @@ namespace options {
 // Chrome browser options page UI handler.
 class StartupPagesHandler : public OptionsPageUIHandler,
                             public AutocompleteControllerDelegate,
+                            public PrefObserver,
                             public ui::TableModelObserver {
  public:
   StartupPagesHandler();
@@ -44,10 +46,9 @@ class StartupPagesHandler : public OptionsPageUIHandler,
   virtual void OnItemsRemoved(int start, int length) OVERRIDE;
 
  private:
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Saves the changes that have been made. Called from WebUI.
   void CommitChanges(const ListValue* args);

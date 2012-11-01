@@ -274,26 +274,19 @@ bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
   return true;
 }
 
-void PluginPrefs::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  const std::string* pref_name = content::Details<std::string>(details).ptr();
-  if (!pref_name) {
-    NOTREACHED();
-    return;
-  }
-  DCHECK_EQ(prefs_, content::Source<PrefService>(source).ptr());
-  if (*pref_name == prefs::kPluginsDisabledPlugins) {
+void PluginPrefs::OnPreferenceChanged(PrefServiceBase* service,
+                                      const std::string& pref_name) {
+  DCHECK_EQ(prefs_, service);
+  if (pref_name == prefs::kPluginsDisabledPlugins) {
     base::AutoLock auto_lock(lock_);
     ListValueToStringSet(prefs_->GetList(prefs::kPluginsDisabledPlugins),
                          &policy_disabled_plugin_patterns_);
-  } else if (*pref_name == prefs::kPluginsDisabledPluginsExceptions) {
+  } else if (pref_name == prefs::kPluginsDisabledPluginsExceptions) {
     base::AutoLock auto_lock(lock_);
     ListValueToStringSet(
         prefs_->GetList(prefs::kPluginsDisabledPluginsExceptions),
         &policy_disabled_plugin_exception_patterns_);
-  } else if (*pref_name == prefs::kPluginsEnabledPlugins) {
+  } else if (pref_name == prefs::kPluginsEnabledPlugins) {
     base::AutoLock auto_lock(lock_);
     ListValueToStringSet(prefs_->GetList(prefs::kPluginsEnabledPlugins),
                          &policy_enabled_plugin_patterns_);

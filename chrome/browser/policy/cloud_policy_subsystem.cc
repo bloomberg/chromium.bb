@@ -158,19 +158,12 @@ void CloudPolicySubsystem::UpdatePolicyRefreshRate(int64 refresh_rate) {
   }
 }
 
-void CloudPolicySubsystem::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(*(content::Details<std::string>(details).ptr()),
-              std::string(refresh_pref_name_));
-    PrefService* local_state = g_browser_process->local_state();
-    DCHECK_EQ(content::Source<PrefService>(source).ptr(), local_state);
-    UpdatePolicyRefreshRate(local_state->GetInteger(refresh_pref_name_));
-  } else {
-    NOTREACHED();
-  }
+void CloudPolicySubsystem::OnPreferenceChanged(PrefServiceBase* service,
+                                               const std::string& pref_name) {
+  DCHECK_EQ(pref_name, refresh_pref_name_);
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK_EQ(service, local_state);
+  UpdatePolicyRefreshRate(local_state->GetInteger(refresh_pref_name_));
 }
 
 void CloudPolicySubsystem::ScheduleServiceInitialization(

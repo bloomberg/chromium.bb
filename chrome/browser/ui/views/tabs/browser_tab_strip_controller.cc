@@ -442,20 +442,11 @@ void BrowserTabStripController::TabBlockedStateChanged(TabContents* contents,
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, content::NotificationObserver implementation:
 
-void BrowserTabStripController::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED:
-      if (*content::Details<std::string>(details).ptr() ==
-          prefs::kTabStripLayoutType) {
-        UpdateLayoutType();
-      }
-      break;
-
-    default:
-      NOTREACHED();
-      break;
+void BrowserTabStripController::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  if (pref_name == prefs::kTabStripLayoutType) {
+    UpdateLayoutType();
   }
 }
 

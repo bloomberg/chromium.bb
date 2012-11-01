@@ -137,7 +137,7 @@ void RegisterFontFamilyMap(PrefService* prefs, const char* map_name) {
 // Registers |obs| to observe per-script font prefs under the path |map_name|.
 void RegisterFontFamilyMapObserver(PrefChangeRegistrar* registrar,
                                    const char* map_name,
-                                   content::NotificationObserver* obs) {
+                                   PrefObserver* obs) {
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
@@ -566,24 +566,23 @@ void PrefsTabHelper::Observe(int type,
       break;
     }
 #endif
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name_in = content::Details<std::string>(details).ptr();
-      DCHECK(content::Source<PrefService>(source).ptr() ==
-                 GetProfile()->GetPrefs());
-      if (*pref_name_in == prefs::kDefaultCharset ||
-          StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
-        OnWebPrefChanged(*pref_name_in);
-      } else if (*pref_name_in == prefs::kDefaultZoomLevel ||
-                 *pref_name_in == prefs::kEnableReferrers ||
-                 *pref_name_in == prefs::kEnableDoNotTrack) {
-        UpdateRendererPreferences();
-      } else {
-        NOTREACHED() << "unexpected pref change notification" << *pref_name_in;
-      }
-      break;
-    }
     default:
       NOTREACHED();
+  }
+}
+
+void PrefsTabHelper::OnPreferenceChanged(PrefServiceBase* service,
+                                         const std::string& pref_name_in) {
+  DCHECK_EQ(GetProfile()->GetPrefs(), service);
+  if (pref_name_in == prefs::kDefaultCharset ||
+      StartsWithASCII(pref_name_in, "webkit.webprefs.", true)) {
+    OnWebPrefChanged(pref_name_in);
+  } else if (pref_name_in == prefs::kDefaultZoomLevel ||
+             pref_name_in == prefs::kEnableReferrers ||
+             pref_name_in == prefs::kEnableDoNotTrack) {
+    UpdateRendererPreferences();
+  } else {
+    NOTREACHED() << "unexpected pref change notification" << pref_name_in;
   }
 }
 

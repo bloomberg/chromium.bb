@@ -42,7 +42,7 @@ TEST_F(ScopedUserPrefUpdateTest, RegularUse) {
   expected_dictionary.SetString(kKey, kValue);
 
   {
-    EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
+    EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
     DictionaryPrefUpdate update(&prefs_, kPref);
     DictionaryValue* value = update.Get();
     ASSERT_TRUE(value);
@@ -69,7 +69,7 @@ TEST_F(ScopedUserPrefUpdateTest, RegularUse) {
 
 TEST_F(ScopedUserPrefUpdateTest, NeverTouchAnything) {
   const DictionaryValue* old_value = prefs_.GetDictionary(kPref);
-  EXPECT_CALL(observer_, Observe(_, _, _)).Times(0);
+  EXPECT_CALL(observer_, OnPreferenceChanged(_, _)).Times(0);
   {
     DictionaryPrefUpdate update(&prefs_, kPref);
   }

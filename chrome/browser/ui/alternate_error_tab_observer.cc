@@ -56,13 +56,18 @@ void AlternateErrorPageTabObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    DCHECK_EQ(profile_->GetPrefs(), content::Source<PrefService>(source).ptr());
-    DCHECK_EQ(std::string(prefs::kAlternateErrorPagesEnabled),
-              *content::Details<std::string>(details).ptr());
-  } else {
-    DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_URL_UPDATED, type);
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_URL_UPDATED, type);
+  UpdateAlternateErrorPageURL(web_contents()->GetRenderViewHost());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PrefObserver overrides
+
+void AlternateErrorPageTabObserver::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  DCHECK_EQ(profile_->GetPrefs(), service);
+  DCHECK(prefs::kAlternateErrorPagesEnabled == pref_name);
   UpdateAlternateErrorPageURL(web_contents()->GetRenderViewHost());
 }
 

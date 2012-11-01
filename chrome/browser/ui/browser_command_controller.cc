@@ -664,29 +664,6 @@ void BrowserCommandController::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name =
-          *content::Details<std::string>(details).ptr();
-      if (pref_name == prefs::kPrintingEnabled) {
-        UpdatePrintingState();
-      } else if (pref_name == prefs::kIncognitoModeAvailability) {
-        UpdateCommandsForIncognitoAvailability();
-      } else if (pref_name == prefs::kDevToolsDisabled) {
-        UpdateCommandsForDevTools();
-      } else if (pref_name == prefs::kEditBookmarksEnabled) {
-        UpdateCommandsForBookmarkEditing();
-      } else if (pref_name == prefs::kShowBookmarkBar) {
-        UpdateCommandsForBookmarkBar();
-      } else if (pref_name == prefs::kAllowFileSelectionDialogs) {
-        UpdateSaveAsState();
-        UpdateOpenFileState();
-      } else if (pref_name == prefs::kInManagedMode) {
-        UpdateCommandsForMultipleProfiles();
-      } else {
-        NOTREACHED();
-      }
-      break;
-    }
     case content::NOTIFICATION_INTERSTITIAL_ATTACHED:
       UpdateCommandsForTabState();
       break;
@@ -697,6 +674,32 @@ void BrowserCommandController::Observe(
 
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PrefObserver implementation:
+
+void BrowserCommandController::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  if (pref_name == prefs::kPrintingEnabled) {
+    UpdatePrintingState();
+  } else if (pref_name == prefs::kIncognitoModeAvailability) {
+    UpdateCommandsForIncognitoAvailability();
+  } else if (pref_name == prefs::kDevToolsDisabled) {
+    UpdateCommandsForDevTools();
+  } else if (pref_name == prefs::kEditBookmarksEnabled) {
+    UpdateCommandsForBookmarkEditing();
+  } else if (pref_name == prefs::kShowBookmarkBar) {
+    UpdateCommandsForBookmarkBar();
+  } else if (pref_name == prefs::kAllowFileSelectionDialogs) {
+    UpdateSaveAsState();
+    UpdateOpenFileState();
+  } else if (pref_name == prefs::kInManagedMode) {
+    UpdateCommandsForMultipleProfiles();
+  } else {
+    NOTREACHED();
   }
 }
 

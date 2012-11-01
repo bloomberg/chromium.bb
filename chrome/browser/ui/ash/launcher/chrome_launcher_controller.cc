@@ -784,22 +784,22 @@ void ChromeLauncherController::Observe(
       app_icon_loader_->ClearImage(extension->id());
       break;
     }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name(
-          *content::Details<std::string>(details).ptr());
-      if (pref_name == prefs::kPinnedLauncherApps) {
-        UpdateAppLaunchersFromPref();
-      } else if (pref_name == prefs::kShelfAlignmentLocal) {
-        SetShelfAlignmentFromPrefs();
-      } else if (pref_name == prefs::kShelfAutoHideBehaviorLocal) {
-        SetShelfAutoHideBehaviorFromPrefs();
-      } else {
-        NOTREACHED() << "Unexpected pref change for " << pref_name;
-      }
-      break;
-    }
     default:
       NOTREACHED() << "Unexpected notification type=" << type;
+  }
+}
+
+void ChromeLauncherController::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  if (pref_name == prefs::kPinnedLauncherApps) {
+    UpdateAppLaunchersFromPref();
+  } else if (pref_name == prefs::kShelfAlignmentLocal) {
+    SetShelfAlignmentFromPrefs();
+  } else if (pref_name == prefs::kShelfAutoHideBehaviorLocal) {
+    SetShelfAutoHideBehaviorFromPrefs();
+  } else {
+    NOTREACHED() << "Unexpected pref change for " << pref_name;
   }
 }
 

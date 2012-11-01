@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/values.h"
 #include "chrome/browser/plugins/plugin_status_pref_setter.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -19,7 +20,8 @@ namespace options {
 
 // Core options UI handler.
 // Handles resource and JS calls common to all options sub-pages.
-class CoreOptionsHandler : public OptionsPageUIHandler {
+class CoreOptionsHandler : public OptionsPageUIHandler,
+                           public PrefObserver {
  public:
   CoreOptionsHandler();
   virtual ~CoreOptionsHandler();
@@ -30,10 +32,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual void InitializePage() OVERRIDE;
   virtual void Uninitialize() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;

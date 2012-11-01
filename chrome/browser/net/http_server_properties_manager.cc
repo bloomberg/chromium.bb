@@ -636,16 +636,12 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
   setting_prefs_ = false;
 }
 
-void HttpServerPropertiesManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void HttpServerPropertiesManager::OnPreferenceChanged(
+    PrefServiceBase* prefs,
+    const std::string& pref_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(type == chrome::NOTIFICATION_PREF_CHANGED);
-  PrefService* prefs = content::Source<PrefService>(source).ptr();
   DCHECK(prefs == pref_service_);
-  std::string* pref_name = content::Details<std::string>(details).ptr();
-  if (*pref_name == prefs::kHttpServerProperties) {
+  if (pref_name == prefs::kHttpServerProperties) {
     if (!setting_prefs_)
       ScheduleUpdateCacheOnUI();
   } else {

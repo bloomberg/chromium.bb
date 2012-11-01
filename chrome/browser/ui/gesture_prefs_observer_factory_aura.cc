@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -19,7 +20,7 @@ using ui::GestureConfiguration;
 namespace {
 
 // This class manages gesture configuration preferences.
-class GesturePrefsObserver : public content::NotificationObserver,
+class GesturePrefsObserver : public PrefObserver,
                              public ProfileKeyedService {
  public:
   explicit GesturePrefsObserver(PrefService* prefs);
@@ -28,10 +29,9 @@ class GesturePrefsObserver : public content::NotificationObserver,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
  private:
   void Update();
@@ -81,10 +81,8 @@ void GesturePrefsObserver::Shutdown() {
   registrar_.RemoveAll();
 }
 
-void GesturePrefsObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void GesturePrefsObserver::OnPreferenceChanged(PrefServiceBase* service,
+                                               const std::string& pref_name) {
   Update();
 }
 

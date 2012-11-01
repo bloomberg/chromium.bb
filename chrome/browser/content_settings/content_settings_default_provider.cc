@@ -276,17 +276,13 @@ void DefaultProvider::ShutdownOnUIThread() {
   prefs_ = NULL;
 }
 
-void DefaultProvider::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
+void DefaultProvider::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  DCHECK_EQ(content::Source<PrefService>(source).ptr(), prefs_);
-
+  DCHECK_EQ(prefs_, service);
   if (updating_preferences_)
     return;
 
-  const std::string& name = *content::Details<std::string>(details).ptr();
   if (name == prefs::kDefaultContentSettings) {
     ReadDefaultSettings(true);
   } else if (name == prefs::kGeolocationDefaultContentSetting) {

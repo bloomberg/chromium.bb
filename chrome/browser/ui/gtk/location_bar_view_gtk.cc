@@ -1103,17 +1103,6 @@ void LocationBarViewGtk::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name_in = content::Details<std::string>(details).ptr();
-      DCHECK(pref_name_in);
-
-      if (*pref_name_in == prefs::kEditBookmarksEnabled)
-        UpdateStarIcon();
-      else
-        NOTREACHED();
-      break;
-    }
-
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       if (theme_service_->UsingNativeTheme()) {
         gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL, NULL);
@@ -1174,6 +1163,14 @@ void LocationBarViewGtk::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void LocationBarViewGtk::OnPreferenceChanged(PrefServiceBase* service,
+                                             const std::string& pref_name) {
+  if (pref_name == prefs::kEditBookmarksEnabled)
+    UpdateStarIcon();
+  else
+    NOTREACHED();
 }
 
 gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,

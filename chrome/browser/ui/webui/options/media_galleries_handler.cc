@@ -130,17 +130,10 @@ void MediaGalleriesHandler::FileSelected(
   prefs->AddGalleryByPath(path);
 }
 
-void MediaGalleriesHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED &&
-      *content::Details<std::string>(details).ptr() ==
-          prefs::kMediaGalleriesRememberedGalleries) {
-    OnGalleriesChanged();
-  } else {
-    NOTREACHED();
-  }
+void MediaGalleriesHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                                const std::string& pref_name) {
+  DCHECK_EQ(std::string(prefs::kMediaGalleriesRememberedGalleries), pref_name);
+  OnGalleriesChanged();
 }
 
 }  // namespace options

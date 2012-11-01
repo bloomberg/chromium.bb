@@ -1574,13 +1574,6 @@ void LocationBarView::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* name = content::Details<std::string>(details).ptr();
-      if (*name == prefs::kEditBookmarksEnabled)
-        Update(NULL);
-      break;
-    }
-
     case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
       WebContents* target_tab = content::Details<WebContents>(details).ptr();
@@ -1592,6 +1585,12 @@ void LocationBarView::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification.";
   }
+}
+
+void LocationBarView::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
+  if (pref_name == prefs::kEditBookmarksEnabled)
+    Update(NULL);
 }
 
 int LocationBarView::GetInternalHeight(bool use_preferred_size) {

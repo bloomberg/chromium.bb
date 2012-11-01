@@ -104,15 +104,12 @@ TabContents* BrowserInstantController::GetActiveTabContents() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserInstantController, content::NotificationObserver implementation:
+// BrowserInstantController, PrefObserver implementation:
 
-void BrowserInstantController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  DCHECK_EQ(std::string(prefs::kInstantEnabled),
-            *content::Details<std::string>(details).ptr());
+void BrowserInstantController::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  DCHECK_EQ(std::string(prefs::kInstantEnabled), pref_name);
   ResetInstant();
 }
 

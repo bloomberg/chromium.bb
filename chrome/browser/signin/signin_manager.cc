@@ -506,17 +506,6 @@ void SigninManager::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED:
-      DCHECK(*content::Details<std::string>(details).ptr() ==
-             prefs::kGoogleServicesUsernamePattern);
-      if (!authenticated_username_.empty() &&
-          !IsAllowedUsername(authenticated_username_)) {
-        // Signed in user is invalid according to the current policy so sign
-        // the user out.
-        SignOut();
-      }
-      break;
-
 #if !defined(OS_CHROMEOS)
     case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
       TokenService::TokenAvailableDetails* tok_details =
@@ -546,3 +535,13 @@ void SigninManager::Observe(int type,
   }
 }
 
+void SigninManager::OnPreferenceChanged(PrefServiceBase* service,
+                                        const std::string& pref_name) {
+  DCHECK_EQ(std::string(prefs::kGoogleServicesUsernamePattern), pref_name);
+  if (!authenticated_username_.empty() &&
+      !IsAllowedUsername(authenticated_username_)) {
+    // Signed in user is invalid according to the current policy so sign
+    // the user out.
+    SignOut();
+  }
+}

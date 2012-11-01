@@ -1916,23 +1916,6 @@ void Browser::Observe(int type,
       break;
 #endif
 
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name =
-          *content::Details<std::string>(details).ptr();
-      if (pref_name == prefs::kDevToolsDisabled) {
-        if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
-          content::DevToolsManager::GetInstance()->CloseAllClientHosts();
-      } else if (pref_name == prefs::kShowBookmarkBar) {
-        UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
-      } else if (pref_name == prefs::kHomePage) {
-        PrefService* pref_service = content::Source<PrefService>(source).ptr();
-        MarkHomePageAsChanged(pref_service);
-      } else {
-        NOTREACHED();
-      }
-      break;
-    }
-
     case chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED: {
       WebContents* web_contents = content::Source<WebContents>(source).ptr();
       if (web_contents == chrome::GetActiveWebContents(this)) {
@@ -1953,6 +1936,20 @@ void Browser::Observe(int type,
 
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
+  }
+}
+
+void Browser::OnPreferenceChanged(PrefServiceBase* service,
+                                  const std::string& pref_name) {
+  if (pref_name == prefs::kDevToolsDisabled) {
+    if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
+      content::DevToolsManager::GetInstance()->CloseAllClientHosts();
+  } else if (pref_name == prefs::kShowBookmarkBar) {
+    UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE);
+  } else if (pref_name == prefs::kHomePage) {
+    MarkHomePageAsChanged(static_cast<PrefService*>(service));
+  } else {
+    NOTREACHED();
   }
 }
 

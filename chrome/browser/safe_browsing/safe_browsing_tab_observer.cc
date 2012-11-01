@@ -55,26 +55,16 @@ SafeBrowsingTabObserver::~SafeBrowsingTabObserver() {
 ////////////////////////////////////////////////////////////////////////////////
 // content::NotificationObserver overrides
 
-void SafeBrowsingTabObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      Profile* profile =
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-      std::string* pref_name = content::Details<std::string>(details).ptr();
-      DCHECK(content::Source<PrefService>(source).ptr() ==
-             profile->GetPrefs());
-      if (*pref_name == prefs::kSafeBrowsingEnabled) {
-        UpdateSafebrowsingDetectionHost();
-      } else {
-        NOTREACHED() << "unexpected pref change notification" << *pref_name;
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
+void SafeBrowsingTabObserver::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  DCHECK(service == profile->GetPrefs());
+  if (pref_name == prefs::kSafeBrowsingEnabled) {
+    UpdateSafebrowsingDetectionHost();
+  } else {
+    NOTREACHED() << "unexpected pref change notification" << pref_name;
   }
 }
 

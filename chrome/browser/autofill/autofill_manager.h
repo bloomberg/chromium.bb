@@ -18,6 +18,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class AutofillExternalDelegate;
@@ -64,10 +64,10 @@ class Message;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutofillManager : public content::NotificationObserver,
-                        public content::WebContentsObserver,
+class AutofillManager : public content::WebContentsObserver,
                         public AutofillDownloadManager::Observer,
                         public ProfileSyncServiceObserver,
+                        public PrefObserver,
                         public base::RefCounted<AutofillManager> {
  public:
   static void CreateForWebContentsAndDelegate(
@@ -191,10 +191,9 @@ class AutofillManager : public content::NotificationObserver,
   // Register as an observer with the sync service.
   void RegisterWithSyncService();
 
-  // content::NotificationObserver override
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Determines what the current state of password generation is, and if it has
   // changed from |password_generation_enabled_|. If it has changed or if

@@ -207,11 +207,8 @@ void CloudPrintProxyService::OnCloudPrintSetupClosed() {
       FROM_HERE, base::Bind(&browser::EndKeepAlive));
 }
 
-void CloudPrintProxyService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+void CloudPrintProxyService::OnPreferenceChanged(PrefServiceBase* service,
+                                                 const std::string& pref_name) {
   ApplyCloudPrintConnectorPolicy();
 }
 

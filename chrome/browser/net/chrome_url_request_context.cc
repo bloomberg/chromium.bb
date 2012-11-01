@@ -295,37 +295,29 @@ void ChromeURLRequestContextGetter::CleanupOnUIThread() {
   registrar_.RemoveAll();
 }
 
-// content::NotificationObserver implementation.
-void ChromeURLRequestContextGetter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void ChromeURLRequestContextGetter::OnPreferenceChanged(
+    PrefServiceBase* prefs,
+    const std::string& pref_name_in) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (chrome::NOTIFICATION_PREF_CHANGED == type) {
-    std::string* pref_name_in = content::Details<std::string>(details).ptr();
-    PrefService* prefs = content::Source<PrefService>(source).ptr();
-    DCHECK(pref_name_in && prefs);
-    if (*pref_name_in == prefs::kAcceptLanguages) {
-      std::string accept_language =
-          prefs->GetString(prefs::kAcceptLanguages);
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ChromeURLRequestContextGetter::OnAcceptLanguageChange,
-              this,
-              accept_language));
-    } else if (*pref_name_in == prefs::kDefaultCharset) {
-      std::string default_charset = prefs->GetString(prefs::kDefaultCharset);
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &ChromeURLRequestContextGetter::OnDefaultCharsetChange,
-              this,
-              default_charset));
-    }
-  } else {
-    NOTREACHED();
+  DCHECK(prefs);
+  if (pref_name_in == prefs::kAcceptLanguages) {
+    std::string accept_language =
+        prefs->GetString(prefs::kAcceptLanguages);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &ChromeURLRequestContextGetter::OnAcceptLanguageChange,
+            this,
+            accept_language));
+  } else if (pref_name_in == prefs::kDefaultCharset) {
+    std::string default_charset = prefs->GetString(prefs::kDefaultCharset);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &ChromeURLRequestContextGetter::OnDefaultCharsetChange,
+            this,
+            default_charset));
   }
 }
 

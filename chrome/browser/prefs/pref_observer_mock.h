@@ -7,11 +7,8 @@
 
 #include <string>
 
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Pointee;
@@ -22,7 +19,7 @@ using testing::Truly;
 // |pref_name| in |prefs| matches |value|. If |value| is NULL, the matcher
 // checks that the value is not set.
 MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
-  const PrefService::Preference* pref =
+  const PrefServiceBase::Preference* pref =
       prefs->FindPreference(pref_name.c_str());
   if (!pref)
     return false;
@@ -36,16 +33,14 @@ MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
 }
 
 // A mock for testing preference notifications and easy setup of expectations.
-class PrefObserverMock : public content::NotificationObserver {
+class PrefObserverMock : public PrefObserver {
  public:
   PrefObserverMock();
   virtual ~PrefObserverMock();
 
-  MOCK_METHOD3(Observe, void(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details));
+  MOCK_METHOD2(OnPreferenceChanged, void(PrefServiceBase*, const std::string&));
 
-  void Expect(const PrefService* prefs,
+  void Expect(PrefServiceBase* prefs,
               const std::string& pref_name,
               const Value* value);
 };

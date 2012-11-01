@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader_observer.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "content/public/browser/notification_observer.h"
 
 class PrefChangeRegistrar;
 
@@ -53,7 +53,7 @@ class RemoveOperation;
 class DriveFileSystem : public DriveFileSystemInterface,
                         public DriveFeedLoaderObserver,
                         public file_system::OperationObserver,
-                        public content::NotificationObserver {
+                        public PrefObserver {
  public:
   DriveFileSystem(Profile* profile,
                   DriveCache* cache,
@@ -143,10 +143,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
   virtual void Reload() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // file_system::OperationObserver overrides.
   virtual void OnDirectoryChangedByOperation(

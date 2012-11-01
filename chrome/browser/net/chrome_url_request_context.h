@@ -9,8 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -100,7 +99,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 // Most methods are expected to be called on the UI thread, except for
 // the destructor and GetURLRequestContext().
 class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
-                                      public content::NotificationObserver {
+                                      public PrefObserver {
  public:
   // Constructs a ChromeURLRequestContextGetter that will use |factory| to
   // create the ChromeURLRequestContext. If |profile| is non-NULL, then the
@@ -181,10 +180,9 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   // thread before the instance is deleted on the IO thread.
   void CleanupOnUIThread();
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
  private:
   // Must be called on the IO thread.

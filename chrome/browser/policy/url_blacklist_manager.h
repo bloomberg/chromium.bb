@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/common/extensions/matcher/url_matcher.h"
-#include "content/public/browser/notification_observer.h"
 
 class GURL;
 class PrefService;
@@ -113,7 +113,7 @@ class URLBlacklist {
 // exists in UI, then a potential destruction on IO will come after any task
 // posted to IO from that method on UI. This is used to go through IO before
 // the actual update starts, and grab a WeakPtr.
-class URLBlacklistManager : public content::NotificationObserver {
+class URLBlacklistManager : public PrefObserver {
  public:
   // Must be constructed on the UI thread.
   explicit URLBlacklistManager(PrefService* pref_service);
@@ -148,9 +148,8 @@ class URLBlacklistManager : public content::NotificationObserver {
                   scoped_ptr<base::ListValue> allow);
 
  private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // ---------
   // UI thread

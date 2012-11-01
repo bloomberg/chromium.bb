@@ -34,10 +34,8 @@ NetPrefObserver::~NetPrefObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void NetPrefObserver::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
+void NetPrefObserver::OnPreferenceChanged(PrefServiceBase* service,
+                                          const std::string& pref_name) {
   ApplySettings();
 }
 

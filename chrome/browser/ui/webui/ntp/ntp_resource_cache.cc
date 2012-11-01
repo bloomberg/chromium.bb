@@ -218,12 +218,6 @@ void NTPResourceCache::Observe(int type,
     new_tab_html_ = NULL;
     new_tab_incognito_css_ = NULL;
     new_tab_css_ = NULL;
-  } else if (chrome::NOTIFICATION_PREF_CHANGED == type) {
-    // A change occurred to one of the preferences we care about, so flush the
-    // cache.
-    new_tab_incognito_html_ = NULL;
-    new_tab_html_ = NULL;
-    new_tab_css_ = NULL;
   } else if (chrome::NOTIFICATION_NTP_BACKGROUND_THEME_Y_POS_CHANGED == type) {
     css_background_y_pos_ = *(content::Details<int>(details).ptr());
     if (new_tab_css_.get())
@@ -231,6 +225,15 @@ void NTPResourceCache::Observe(int type,
   } else {
     NOTREACHED();
   }
+}
+
+void NTPResourceCache::OnPreferenceChanged(PrefServiceBase* service,
+                                           const std::string& pref_name) {
+  // A change occurred to one of the preferences we care about, so flush the
+  // cache.
+  new_tab_incognito_html_ = NULL;
+  new_tab_html_ = NULL;
+  new_tab_css_ = NULL;
 }
 
 void NTPResourceCache::CreateNewTabIncognitoHTML() {

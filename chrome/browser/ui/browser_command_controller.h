@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_COMMAND_CONTROLLER_H_
 
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
@@ -27,6 +28,7 @@ namespace chrome {
 
 class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
                                  public content::NotificationObserver,
+                                 public PrefObserver,
                                  public TabStripModelObserver,
                                  public TabRestoreServiceObserver,
                                  public ProfileSyncServiceObserver {
@@ -85,6 +87,10 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overridden from PrefObserver:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,

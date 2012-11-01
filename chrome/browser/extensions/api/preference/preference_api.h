@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -19,18 +20,18 @@ class Value;
 
 namespace extensions {
 
-class PreferenceEventRouter : public content::NotificationObserver {
+class PreferenceEventRouter : public PrefObserver {
  public:
   explicit PreferenceEventRouter(Profile* profile);
   virtual ~PreferenceEventRouter();
 
  private:
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
-  void OnPrefChanged(PrefService* pref_service, const std::string& pref_key);
+  void OnPrefChanged(PrefServiceBase* pref_service,
+                     const std::string& pref_key);
 
   // This method dispatches events to the extension message service.
   void DispatchEvent(const std::string& extension_id,

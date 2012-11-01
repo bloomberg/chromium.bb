@@ -1369,16 +1369,16 @@ void SafeBrowsingService::Observe(int type,
         RemovePrefService(profile->GetPrefs());
       break;
     }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      std::string* pref = content::Details<std::string>(details).ptr();
-      DCHECK(*pref == prefs::kSafeBrowsingEnabled);
-      RefreshState();
-      break;
-    }
     default:
       NOTREACHED();
   }
+}
+
+void SafeBrowsingService::OnPreferenceChanged(PrefServiceBase* service,
+                                              const std::string& pref_name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(pref_name == prefs::kSafeBrowsingEnabled);
+  RefreshState();
 }
 
 bool SafeBrowsingService::IsWhitelisted(const UnsafeResource& resource) {

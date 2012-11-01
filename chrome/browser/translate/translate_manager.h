@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/time.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
@@ -25,6 +26,7 @@ template <typename T> struct DefaultSingletonTraits;
 class GURL;
 struct PageTranslatedDetails;
 class PrefService;
+class PrefServiceBase;
 class TranslateInfoBarDelegate;
 
 namespace content {
@@ -41,6 +43,7 @@ class URLFetcher;
 // It is a singleton.
 
 class TranslateManager : public content::NotificationObserver,
+                         public PrefObserver,
                          public net::URLFetcherDelegate {
  public:
   // Returns the singleton instance.
@@ -81,6 +84,10 @@ class TranslateManager : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // PrefObserver implementation:
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -167,7 +174,7 @@ class TranslateManager : public content::NotificationObserver,
 
   // Initializes the |accept_languages_| language table based on the associated
   // preference in |prefs|.
-  void InitAcceptLanguages(PrefService* prefs);
+  void InitAcceptLanguages(PrefServiceBase* prefs);
 
   // Fetches the JS translate script (the script that is injected in the page
   // to translate it).
@@ -199,7 +206,7 @@ class TranslateManager : public content::NotificationObserver,
 
   // A map that associates a profile with its parsed "accept languages".
   typedef std::set<std::string> LanguageSet;
-  typedef std::map<PrefService*, LanguageSet> PrefServiceLanguagesMap;
+  typedef std::map<PrefServiceBase*, LanguageSet> PrefServiceLanguagesMap;
   PrefServiceLanguagesMap accept_languages_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;

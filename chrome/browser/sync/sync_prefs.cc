@@ -263,24 +263,13 @@ void SyncPrefs::AcknowledgeSyncedTypes(syncer::ModelTypeSet types) {
   pref_service_->Set(prefs::kSyncAcknowledgedSyncTypes, *value);
 }
 
-void SyncPrefs::Observe(int type,
-                        const content::NotificationSource& source,
-                        const content::NotificationDetails& details) {
+void SyncPrefs::OnPreferenceChanged(PrefServiceBase* service,
+                                    const std::string& pref_name) {
   DCHECK(CalledOnValidThread());
-  DCHECK(content::Source<PrefService>(pref_service_) == source);
-  switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string* pref_name =
-          content::Details<const std::string>(details).ptr();
-      if (*pref_name == prefs::kSyncManaged) {
-        FOR_EACH_OBSERVER(SyncPrefObserver, sync_pref_observers_,
-                          OnSyncManagedPrefChange(*pref_sync_managed_));
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
+  DCHECK_EQ(pref_service_, service);
+  if (pref_name == prefs::kSyncManaged) {
+    FOR_EACH_OBSERVER(SyncPrefObserver, sync_pref_observers_,
+                      OnSyncManagedPrefChange(*pref_sync_managed_));
   }
 }
 

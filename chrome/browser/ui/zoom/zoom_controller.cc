@@ -65,19 +65,14 @@ void ZoomController::DidNavigateMainFrame(
 void ZoomController::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name = content::Details<std::string>(details).ptr();
-      DCHECK(pref_name && *pref_name == prefs::kDefaultZoomLevel);
-      UpdateState(std::string());
-      break;
-    }
-    case content::NOTIFICATION_ZOOM_LEVEL_CHANGED:
-      UpdateState(*content::Details<std::string>(details).ptr());
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK_EQ(content::NOTIFICATION_ZOOM_LEVEL_CHANGED, type);
+  UpdateState(*content::Details<std::string>(details).ptr());
+}
+
+void ZoomController::OnPreferenceChanged(PrefServiceBase* service,
+                                         const std::string& pref_name) {
+  DCHECK(pref_name == prefs::kDefaultZoomLevel);
+  UpdateState(std::string());
 }
 
 void ZoomController::UpdateState(const std::string& host) {

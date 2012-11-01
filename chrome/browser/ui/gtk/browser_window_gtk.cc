@@ -1185,26 +1185,22 @@ void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
 void BrowserWindowGtk::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name = content::Details<std::string>(details).ptr();
-      if (*pref_name == prefs::kUseCustomChromeFrame) {
-        UpdateCustomFrame();
-        ui::SetHideTitlebarWhenMaximizedProperty(
-            ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window_)),
-            UseCustomFrame() ? ui::HIDE_TITLEBAR_WHEN_MAXIMIZED
-                             : ui::SHOW_TITLEBAR_WHEN_MAXIMIZED);
-      } else {
-        NOTREACHED() << "Got pref change notification we didn't register for!";
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      // The profile avatar icon may have changed.
-      gtk_util::SetWindowIcon(window_, browser_->profile());
-      break;
-    default:
-      break;
+  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED, type);
+  // The profile avatar icon may have changed.
+  gtk_util::SetWindowIcon(window_, browser_->profile());
+}
+
+void BrowserWindowGtk::OnPreferenceChanged(PrefServiceBase* service,
+                                           const std::string& pref_name) {
+  if (pref_name == prefs::kUseCustomChromeFrame) {
+    UpdateCustomFrame();
+    ui::SetHideTitlebarWhenMaximizedProperty(
+        ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window_)),
+        UseCustomFrame() ?
+            ui::HIDE_TITLEBAR_WHEN_MAXIMIZED :
+            ui::SHOW_TITLEBAR_WHEN_MAXIMIZED);
+  } else {
+    NOTREACHED() << "Got pref change notification we didn't register for!";
   }
 }
 

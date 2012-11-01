@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/content_settings.h"
@@ -23,7 +24,8 @@ class ProtocolHandlerRegistry;
 namespace options {
 
 class ContentSettingsHandler : public OptionsPageUIHandler,
-                               public PepperFlashSettingsManager::Client {
+                               public PepperFlashSettingsManager::Client,
+                               public PrefObserver {
  public:
   ContentSettingsHandler();
   virtual ~ContentSettingsHandler();
@@ -39,6 +41,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // PepperFlashSettingsManager::Client implementation.
   virtual void OnGetPermissionSettingsCompleted(

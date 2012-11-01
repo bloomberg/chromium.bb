@@ -281,11 +281,8 @@ void GlobalMenuBar::EnabledStateChangedForCommand(int id, bool enabled) {
     gtk_widget_set_sensitive(it->second, enabled);
 }
 
-void GlobalMenuBar::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  const std::string& pref_name = *content::Details<std::string>(details).ptr();
+void GlobalMenuBar::OnPreferenceChanged(PrefServiceBase* service,
+                                        const std::string& pref_name) {
   DCHECK_EQ(prefs::kShowBookmarkBar, pref_name);
   OnBookmarkBarVisibilityChanged();
 }

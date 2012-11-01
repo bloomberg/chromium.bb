@@ -12,6 +12,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -22,9 +23,6 @@
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_source.h"
 
 class FileBrowserNotifications;
 class PrefChangeRegistrar;
@@ -41,7 +39,7 @@ class FileBrowserEventRouter
     : public RefcountedProfileKeyedService,
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public content::NotificationObserver,
+      public PrefObserver,
       public drive::DriveFileSystemObserver,
       public google_apis::DriveServiceObserver {
  public:
@@ -79,10 +77,9 @@ class FileBrowserEventRouter
   virtual void OnNetworkManagerChanged(
       chromeos::NetworkLibrary* network_library) OVERRIDE;
 
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Overridden from PrefObserver.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // drive::DriveServiceObserver overrides.
   virtual void OnProgressUpdate(

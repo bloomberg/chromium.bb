@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_store.h"
 #include "base/values.h"
-#include "content/public/browser/browser_thread.h"
 
 class PrefModelAssociator;
 class PrefNotifier;

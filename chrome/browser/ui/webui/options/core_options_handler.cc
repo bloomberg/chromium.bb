@@ -135,22 +135,18 @@ void CoreOptionsHandler::Uninitialize() {
   }
 }
 
-void CoreOptionsHandler::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kClearPluginLSODataEnabled) {
-      // This preference is stored in Local State, not in the user preferences.
-      UpdateClearPluginLSOData();
-      return;
-    }
-    if (*pref_name == prefs::kPepperFlashSettingsEnabled) {
-      UpdatePepperFlashSettingsEnabled();
-      return;
-    }
-    NotifyPrefChanged(*pref_name, std::string());
+void CoreOptionsHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                             const std::string& pref_name) {
+  if (pref_name == prefs::kClearPluginLSODataEnabled) {
+    // This preference is stored in Local State, not in the user preferences.
+    UpdateClearPluginLSOData();
+    return;
   }
+  if (pref_name == prefs::kPepperFlashSettingsEnabled) {
+    UpdatePepperFlashSettingsEnabled();
+    return;
+  }
+  NotifyPrefChanged(pref_name, std::string());
 }
 
 void CoreOptionsHandler::RegisterMessages() {

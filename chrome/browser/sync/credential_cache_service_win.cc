@@ -94,24 +94,6 @@ void CredentialCacheService::Observe(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(local_store_.get());
   switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      // One of the two sync encryption tokens has changed. Update its value in
-      // the local cache.
-      const std::string pref_name =
-          *(content::Details<const std::string>(details).ptr());
-      if (pref_name == prefs::kSyncEncryptionBootstrapToken) {
-        PackAndUpdateStringPref(pref_name,
-                                sync_prefs_.GetEncryptionBootstrapToken());
-      } else if (pref_name == prefs::kSyncKeystoreEncryptionBootstrapToken) {
-        PackAndUpdateStringPref(
-            pref_name,
-            sync_prefs_.GetKeystoreEncryptionBootstrapToken());
-      } else {
-        NOTREACHED() "Invalid pref name " << pref_name << ".";
-      }
-      break;
-    }
-
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT: {
       // The user has signed out. Write blank values to the google username,
       // encryption tokens and token service credentials in the local cache.
@@ -190,6 +172,22 @@ void CredentialCacheService::Observe(
       NOTREACHED();
       break;
     }
+  }
+}
+
+void CredentialCacheService::OnPreferenceChanged(PrefServiceBase* service,
+                                                 const std::string& pref_name) {
+  // One of the two sync encryption tokens has changed. Update its value in
+  // the local cache.
+  if (pref_name == prefs::kSyncEncryptionBootstrapToken) {
+    PackAndUpdateStringPref(pref_name,
+                            sync_prefs_.GetEncryptionBootstrapToken());
+  } else if (pref_name == prefs::kSyncKeystoreEncryptionBootstrapToken) {
+    PackAndUpdateStringPref(
+        pref_name,
+        sync_prefs_.GetKeystoreEncryptionBootstrapToken());
+  } else {
+    NOTREACHED() "Invalid pref name " << pref_name << ".";
   }
 }
 

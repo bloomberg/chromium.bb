@@ -77,21 +77,17 @@ class GetPrefValueCallback
   bool value_;
 };
 
-class PrefMemberTestClass : public content::NotificationObserver {
+class PrefMemberTestClass : public PrefObserver {
  public:
   explicit PrefMemberTestClass(PrefService* prefs)
       : observe_cnt_(0), prefs_(prefs) {
     str_.Init(kStringPref, prefs, this);
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-    DCHECK(chrome::NOTIFICATION_PREF_CHANGED == type);
-    PrefService* prefs_in = content::Source<PrefService>(source).ptr();
-    EXPECT_EQ(prefs_in, prefs_);
-    std::string* pref_name_in = content::Details<std::string>(details).ptr();
-    EXPECT_EQ(*pref_name_in, kStringPref);
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE {
+    EXPECT_EQ(service, prefs_);
+    EXPECT_EQ(pref_name, kStringPref);
     EXPECT_EQ(str_.GetValue(), prefs_->GetString(kStringPref));
     ++observe_cnt_;
   }

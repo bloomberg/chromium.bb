@@ -250,6 +250,7 @@ void BrowserToolbarGtk::Init(GtkWindow* top_level_window) {
     if (actions_toolbar_->button_count() == 0)
       gtk_widget_hide(actions_toolbar_->widget());
   }
+
   // Initialize pref-dependent UI state.
   NotifyPrefChanged(NULL);
 
@@ -368,9 +369,7 @@ bool BrowserToolbarGtk::GetAcceleratorForCommandId(
 void BrowserToolbarGtk::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    NotifyPrefChanged(content::Details<std::string>(details).ptr());
-  } else if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
+  if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     // Update the spacing around the menu buttons
     bool use_gtk = theme_service_->UsingNativeTheme();
     int border = use_gtk ? 0 : 2;
@@ -424,6 +423,11 @@ void BrowserToolbarGtk::Observe(int type,
   } else {
     NOTREACHED();
   }
+}
+
+void BrowserToolbarGtk::OnPreferenceChanged(PrefServiceBase* service,
+                                            const std::string& pref_name) {
+  NotifyPrefChanged(&pref_name);
 }
 
 // BrowserToolbarGtk, public ---------------------------------------------------

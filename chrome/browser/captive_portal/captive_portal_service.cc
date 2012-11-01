@@ -271,14 +271,10 @@ void CaptivePortalService::OnPortalDetectionCompleted(
   OnResult(result);
 }
 
-void CaptivePortalService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void CaptivePortalService::OnPreferenceChanged(PrefServiceBase* service,
+                                               const std::string& pref_name) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  DCHECK_EQ(std::string(prefs::kAlternateErrorPagesEnabled),
-            *content::Details<std::string>(details).ptr());
+  DCHECK_EQ(std::string(prefs::kAlternateErrorPagesEnabled), pref_name);
   UpdateEnabledState();
 }
 

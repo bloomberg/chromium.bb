@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
@@ -361,10 +362,12 @@ ProfileImpl::ProfileImpl(
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), false),
         true));
-    // Wait for the notification that prefs has been loaded (successfully or
-    // not).
-    registrar_.Add(this, chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
-                   content::Source<PrefService>(prefs_.get()));
+    // Wait for the notification that prefs has been loaded
+    // (successfully or not).  Note that we can use base::Unretained
+    // because the PrefService is owned by this class and lives on
+    // the same thread.
+    prefs_->AddPrefInitObserver(base::Bind(&ProfileImpl::OnPrefsLoaded,
+                                           base::Unretained(this)));
   } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
     // Load prefs synchronously.
     prefs_.reset(PrefService::CreatePrefService(
@@ -915,32 +918,6 @@ void ProfileImpl::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED: {
-      bool* succeeded = content::Details<bool>(details).ptr();
-      PrefService *prefs = content::Source<PrefService>(source).ptr();
-      DCHECK(prefs == prefs_.get());
-      registrar_.Remove(this,
-                        chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
-                        content::Source<PrefService>(prefs));
-      OnPrefsLoaded(*succeeded);
-      break;
-    }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      std::string* pref_name_in = content::Details<std::string>(details).ptr();
-      PrefService* prefs = content::Source<PrefService>(source).ptr();
-      DCHECK(pref_name_in && prefs);
-      if (*pref_name_in == prefs::kGoogleServicesUsername) {
-        UpdateProfileUserNameCache();
-      } else if (*pref_name_in == prefs::kProfileAvatarIndex) {
-        UpdateProfileAvatarCache();
-      } else if (*pref_name_in == prefs::kProfileName) {
-        UpdateProfileNameCache();
-      } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
-          HostZoomMap::GetForBrowserContext(this)->SetDefaultZoomLevel(
-              prefs->GetDouble(prefs::kDefaultZoomLevel));
-      }
-      break;
-    }
     case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
       // Causes lazy-load if sync is enabled.
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(this);
@@ -966,6 +943,21 @@ void ProfileImpl::Observe(int type,
     }
     default:
       NOTREACHED();
+  }
+}
+
+void ProfileImpl::OnPreferenceChanged(PrefServiceBase* prefs,
+                                      const std::string& pref_name_in) {
+  DCHECK(prefs);
+  if (pref_name_in == prefs::kGoogleServicesUsername) {
+    UpdateProfileUserNameCache();
+  } else if (pref_name_in == prefs::kProfileAvatarIndex) {
+    UpdateProfileAvatarCache();
+  } else if (pref_name_in == prefs::kProfileName) {
+    UpdateProfileNameCache();
+  } else if (pref_name_in == prefs::kDefaultZoomLevel) {
+    HostZoomMap::GetForBrowserContext(this)->SetDefaultZoomLevel(
+        prefs->GetDouble(prefs::kDefaultZoomLevel));
   }
 }
 

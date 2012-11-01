@@ -284,11 +284,6 @@ void BackgroundModeManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PREF_CHANGED:
-      DCHECK(*content::Details<std::string>(details).ptr() ==
-             prefs::kBackgroundModeEnabled);
-      OnBackgroundModeEnabledPrefChanged();
-      break;
     case chrome::NOTIFICATION_EXTENSIONS_READY:
       // Extensions are loaded, so we don't need to manually keep the browser
       // process alive any more when running in no-startup-window mode.
@@ -339,6 +334,12 @@ void BackgroundModeManager::Observe(
       NOTREACHED();
       break;
   }
+}
+
+void BackgroundModeManager::OnPreferenceChanged(PrefServiceBase* service,
+                                                const std::string& pref_name) {
+  DCHECK(pref_name == prefs::kBackgroundModeEnabled);
+  OnBackgroundModeEnabledPrefChanged();
 }
 
 void BackgroundModeManager::OnBackgroundModeEnabledPrefChanged() {

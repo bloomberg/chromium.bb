@@ -51,13 +51,9 @@ void ExtensionManagedModeEventRouter::Init() {
 ExtensionManagedModeEventRouter::~ExtensionManagedModeEventRouter() {
 }
 
-void ExtensionManagedModeEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  const std::string& pref_name =
-      *content::Details<std::string>(details).ptr();
+void ExtensionManagedModeEventRouter::OnPreferenceChanged(
+    PrefServiceBase* service,
+    const std::string& pref_name) {
   DCHECK_EQ(std::string(prefs::kInManagedMode), pref_name);
 
   DictionaryValue* dict = new DictionaryValue();

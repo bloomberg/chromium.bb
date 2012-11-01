@@ -22,6 +22,7 @@
 
 class NetPrefObserver;
 class PrefService;
+class PrefServiceBase;
 class PromoResourceService;
 class SSLConfigServiceManager;
 
@@ -47,7 +48,8 @@ class ExtensionSystem;
 
 // The default profile implementation.
 class ProfileImpl : public Profile,
-                    public content::NotificationObserver {
+                    public content::NotificationObserver,
+                    public PrefObserver {
  public:
   // Value written to prefs when the exit type is EXIT_NORMAL. Public for tests.
   static const char* const kPrefExitTypeNormal;
@@ -131,6 +133,10 @@ class ProfileImpl : public Profile,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
+
  private:
   friend class Profile;
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
@@ -152,6 +158,9 @@ class ProfileImpl : public Profile,
   void DoFinalInit(bool is_new_profile);
 
   void InitHostZoomMap();
+
+  void OnInitializationCompleted(PrefServiceBase* pref_service,
+                                 bool succeeded);
 
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);

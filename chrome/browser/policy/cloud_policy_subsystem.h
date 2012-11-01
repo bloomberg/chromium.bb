@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "content/public/browser/notification_observer.h"
+#include "base/prefs/public/pref_observer.h"
 #include "net/base/network_change_notifier.h"
 
 class PrefService;
@@ -25,7 +25,7 @@ class PolicyNotifier;
 // policy. It glues together the backend, the policy controller and manages the
 // life cycle of the policy providers.
 class CloudPolicySubsystem
-    : public content::NotificationObserver,
+    : public PrefObserver,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   enum PolicySubsystemState {
@@ -131,10 +131,9 @@ class CloudPolicySubsystem
   virtual void CreateDeviceTokenFetcher();
   virtual void CreateCloudPolicyController();
 
-  // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver overrides.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // net::NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;

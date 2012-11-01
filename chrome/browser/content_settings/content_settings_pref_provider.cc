@@ -217,15 +217,11 @@ void PrefProvider::ClearAllContentSettingsRules(
                   std::string());
 }
 
-void PrefProvider::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void PrefProvider::OnPreferenceChanged(PrefServiceBase* service,
+                                       const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  DCHECK_EQ(content::Source<PrefService>(source).ptr(), prefs_);
-  DCHECK_EQ(std::string(prefs::kContentSettingsPatternPairs),
-            *content::Details<std::string>(details).ptr());
+  DCHECK_EQ(prefs_, service);
+  DCHECK_EQ(std::string(prefs::kContentSettingsPatternPairs), name);
 
   if (updating_preferences_)
     return;

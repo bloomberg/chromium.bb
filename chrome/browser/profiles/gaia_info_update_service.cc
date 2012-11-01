@@ -164,17 +164,10 @@ void GAIAInfoUpdateService::OnProfileDownloadFailure(
   ScheduleNextUpdate();
 }
 
-void GAIAInfoUpdateService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* name = content::Details<std::string>(details).ptr();
-    if (prefs::kGoogleServicesUsername == *name)
-      OnUsernameChanged();
-  } else {
-    NOTREACHED();
-  }
+void GAIAInfoUpdateService::OnPreferenceChanged(PrefServiceBase* service,
+                                                const std::string& pref_name) {
+  if (prefs::kGoogleServicesUsername == pref_name)
+    OnUsernameChanged();
 }
 
 void GAIAInfoUpdateService::OnUsernameChanged() {

@@ -406,14 +406,6 @@ enum NotificationType {
   // to policy.  Source and details are unused.
   NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
 
-  // This is sent to a pref observer when a pref is changed. The source is the
-  // PrefService and the details a std::string of the changed path.
-  NOTIFICATION_PREF_CHANGED,
-
-  // This is broadcast after the preference subsystem has completed
-  // asynchronous initalization of a PrefService.
-  NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
-
   // The state of a web resource has been changed. A resource may have been
   // added, removed, or altered. Source is WebResourceService, and the
   // details are NoDetails.

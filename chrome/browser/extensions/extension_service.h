@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
@@ -140,7 +141,8 @@ class ExtensionServiceInterface : public syncer::SyncableService {
 class ExtensionService
     : public ExtensionServiceInterface,
       public extensions::ExternalProviderInterface::VisitorInterface,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public PrefObserver {
  public:
   // The name of the directory inside the profile where extensions are
   // installed to.
@@ -620,6 +622,10 @@ class ExtensionService
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // PrefObserver
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
   // Whether there are any apps installed. Component apps are not included.
   bool HasApps() const;

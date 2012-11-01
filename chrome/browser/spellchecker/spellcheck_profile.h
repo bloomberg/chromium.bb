@@ -14,11 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/prefs/public/pref_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/common/spellcheck_common.h"
-#include "content/public/browser/notification_observer.h"
 
 class Profile;
 class SpellCheckHost;
@@ -38,7 +38,7 @@ class URLRequestContextGetter;
 // can be retrieved from SpellCheckFactory::GetHostForProfile();
 class SpellCheckProfile : public SpellCheckProfileProvider,
                           public ProfileKeyedService,
-                          public content::NotificationObserver {
+                          public PrefObserver {
  public:
   explicit SpellCheckProfile(Profile* profile);
   virtual ~SpellCheckProfile();
@@ -71,10 +71,9 @@ class SpellCheckProfile : public SpellCheckProfileProvider,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // PrefObserver implementation.
+  virtual void OnPreferenceChanged(PrefServiceBase* service,
+                                   const std::string& pref_name) OVERRIDE;
 
  protected:
   // Only tests should override this.

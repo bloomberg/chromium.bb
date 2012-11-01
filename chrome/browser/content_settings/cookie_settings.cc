@@ -155,20 +155,14 @@ void CookieSettings::ResetCookieSetting(
       CONTENT_SETTING_DEFAULT);
 }
 
-void CookieSettings::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
+void CookieSettings::OnPreferenceChanged(PrefServiceBase* prefs,
+                                         const std::string& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
-  DCHECK_EQ(std::string(prefs::kBlockThirdPartyCookies),
-            *content::Details<std::string>(details).ptr());
+  DCHECK_EQ(std::string(prefs::kBlockThirdPartyCookies), name);
 
-  PrefService* prefs = content::Source<PrefService>(source).ptr();
-  {
-    base::AutoLock auto_lock(lock_);
-    block_third_party_cookies_ = prefs->GetBoolean(
-        prefs::kBlockThirdPartyCookies);
-  }
+  base::AutoLock auto_lock(lock_);
+  block_third_party_cookies_ = prefs->GetBoolean(
+      prefs::kBlockThirdPartyCookies);
 }
 
 void CookieSettings::ShutdownOnUIThread() {

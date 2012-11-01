@@ -109,18 +109,10 @@ PasswordStore* PasswordManagerHandler::GetPasswordStore() {
       Profile::EXPLICIT_ACCESS);
 }
 
-void PasswordManagerHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kPasswordManagerAllowShowPasswords) {
-      UpdatePasswordLists(NULL);
-    }
-  }
-
-  OptionsPageUIHandler::Observe(type, source, details);
+void PasswordManagerHandler::OnPreferenceChanged(PrefServiceBase* service,
+                                                 const std::string& pref_name) {
+  DCHECK_EQ(std::string(prefs::kPasswordManagerAllowShowPasswords), pref_name);
+  UpdatePasswordLists(NULL);
 }
 
 void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
