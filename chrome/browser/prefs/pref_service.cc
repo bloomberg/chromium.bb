@@ -787,10 +787,7 @@ void PrefService::RegisterPreference(const char* path,
   // The main code path takes ownership, but most don't. We'll be safe.
   scoped_ptr<Value> scoped_value(default_value);
 
-  if (FindPreference(path)) {
-    NOTREACHED() << "Tried to register duplicate pref " << path;
-    return;
-  }
+  DCHECK(!FindPreference(path)) << "Tried to register duplicate pref " << path;
 
   base::Value::Type orig_type = default_value->GetType();
   DCHECK(orig_type != Value::TYPE_NULL && orig_type != Value::TYPE_BINARY) <<
