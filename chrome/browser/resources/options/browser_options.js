@@ -458,6 +458,42 @@ cr.define('options', function() {
     },
 
     /**
+     * Shows the given section.
+     * @param {HTMLElement} section The section to be shown.
+     * @param {HTMLElement} container The container for the section. Must be
+     *     inside of |section|.
+     * @param {boolean} animate Indicate if the expansion should be animated.
+     * @private
+     */
+    showSection_: function(section, container, animate) {
+      if (animate)
+        this.addTransitionEndListener_(section);
+
+      // Unhide
+      section.hidden = false;
+
+      var expander = function() {
+        // Reveal the section using a WebKit transition if animating.
+        if (animate) {
+          section.classList.add('sliding');
+          section.style.height = container.offsetHeight + 'px';
+        } else {
+          section.style.height = 'auto';
+        }
+        // Force an update of the list of paired Bluetooth devices.
+        if (cr.isChromeOS)
+          $('bluetooth-paired-devices-list').refresh();
+      };
+
+      // Delay starting the transition if animating so that hidden change will
+      // be processed.
+      if (animate)
+        setTimeout(expander, 0);
+      else
+        expander();
+      },
+
+    /**
      * Shows the given section, with animation.
      * @param {HTMLElement} section The section to be shown.
      * @param {HTMLElement} container The container for the section. Must be
@@ -465,22 +501,7 @@ cr.define('options', function() {
      * @private
      */
     showSectionWithAnimation_: function(section, container) {
-      this.addTransitionEndListener_(section);
-
-      // Unhide
-      section.hidden = false;
-
-      // Delay starting the transition so that hidden change will be
-      // processed.
-      setTimeout(function() {
-        // Reveal the section using a WebKit transition.
-        section.classList.add('sliding');
-        section.style.height =
-            container.offsetHeight + 'px';
-        // Force an update of the list of paired Bluetooth devices.
-        if (cr.isChromeOS)
-           $('bluetooth-paired-devices-list').refresh();
-      }, 0);
+      this.showSection_(section, container, /*animate */ true);
     },
 
     /**
@@ -510,6 +531,40 @@ cr.define('options', function() {
         this.showSectionWithAnimation_(section, container);
       else
         this.hideSectionWithAnimation_(section, container);
+    },
+
+    /**
+     * Scrolls the settings page to make the section visible auto-expanding
+     * advanced settings if required.  The transition is not animated.  This
+     * method is used to ensure that a section associated with an overlay
+     * is visible when the overlay is closed.
+     * @param {!Element} section  The section to make visible.
+     * @private
+     */
+    scrollToSection_: function(section) {
+      var advancedSettings = $('advanced-settings');
+      var container = $('advanced-settings-container');
+      if (advancedSettings.hidden && section.parentNode == container) {
+        this.showSection_($('advanced-settings'),
+                          $('advanced-settings-container'),
+                          /* animate */ false);
+        this.updateAdvancedSettingsExpander_();
+      }
+      var pageContainer = $('page-container');
+      var pageTop = parseFloat(pageContainer.style.top);
+      var topSection = document.querySelector('#page-container section');
+      var pageHeight = document.body.scrollHeight - topSection.offsetTop;
+      var sectionTop = section.offsetTop;
+      var sectionHeight = section.offsetHeight;
+      var marginBottom = window.getComputedStyle(section).marginBottom;
+      if (marginBottom)
+        sectionHeight += parseFloat(marginBottom);
+      if (pageHeight - pageTop < sectionTop + sectionHeight) {
+        pageContainer.oldScrollTop = sectionTop + sectionHeight - pageHeight;
+        var verticalPosition = pageContainer.getBoundingClientRect().top -
+            pageContainer.oldScrollTop;
+        pageContainer.style.top = verticalPosition + 'px';
+      }
     },
 
     /**
@@ -1237,6 +1292,7 @@ cr.define('options', function() {
     'hideBluetoothSettings',
     'removeBluetoothDevice',
     'removeCloudPrintConnectorSection',
+    'scrollToSection',
     'setAutoOpenFileTypesDisplayed',
     'setBluetoothState',
     'setFontSize',

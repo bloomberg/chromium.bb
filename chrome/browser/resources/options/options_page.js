@@ -258,6 +258,12 @@ cr.define('options', function() {
 
     $('searchBox').setAttribute('aria-hidden', true);
 
+    if ($('search-field').value == '') {
+      var section = overlay.associatedSection;
+      if (section)
+        options.BrowserOptions.scrollToSection(section);
+    }
+
     return true;
   };
 

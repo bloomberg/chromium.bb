@@ -102,9 +102,7 @@ function filtersForPage(pageName, isRTL) {
         bidichecker.FilterFactory.atText("Google Cloud Print"),
         bidichecker.FilterFactory.atText("Hebrew"),
         bidichecker.FilterFactory.atText("English (United States"),
-        bidichecker.FilterFactory.atText("English"),
-        // Items in timezone dropdown:
-        bidichecker.FilterFactory.precededByText("(")
+        bidichecker.FilterFactory.atText("English")
       ]
     },
     "chrome://settings/contentExceptions" : {
@@ -125,6 +123,12 @@ function filtersForPage(pageName, isRTL) {
       ],
     },
   };
+  var globalFilters = {
+    "RTL" : [
+      // BUG: http://crbug/158750
+      bidichecker.FilterFactory.locationId("timezone-select")
+    ]
+  };
 
   var dir = isRTL ? "RTL" : "LTR";
   if (!filters.hasOwnProperty(pageName))
@@ -133,13 +137,13 @@ function filtersForPage(pageName, isRTL) {
     if (pageName.charAt(pageName.length - 2) == '/')
       pageName = pageName.substr(0, pageName.length - 2);
     else
-      return [];
+      return globalFilters[dir];
   }
   if (filters.hasOwnProperty(pageName) &&
       filters[pageName].hasOwnProperty(dir)) {
-    return filters[pageName][dir];
+    return filters[pageName][dir].concat(globalFilters[dir]);
   } else {
-    return [];
+    return globalFilters[dir];
   }
 }
 
