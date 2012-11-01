@@ -57,8 +57,6 @@ const char kHTTPNotAllowedText[] = "Not Allowed";
 const char kHTTPNotFoundText[] = "Not Found";
 const char kHTTPInternalErrorText[] = "Internal Error";
 
-const int64 kInvalidFileSize = -1;
-
 // Initial size of download buffer, same as kBufferSize used for URLFetcherCore.
 const int kInitialDownloadBufferSizeInBytes = 4096;
 
@@ -83,13 +81,6 @@ std::string FixupMimeType(const std::string& type) {
 void EmptyCompletionCallback(int) {
 }
 
-// Helper function that reads file size.
-void GetFileSizeOnBlockingPool(const FilePath& file_path,
-                               int64* file_size) {
-  if (!file_util::GetFileSize(file_path, file_size))
-    *file_size = kInvalidFileSize;
-}
-
 // Helper function that extracts and unescapes resource_id from drive urls
 // (drive:<resource_id>).
 bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
@@ -111,9 +102,9 @@ DriveSystemService* GetSystemService() {
 }
 
 // Helper function to get DriveFileSystem from Profile on UI thread.
-void GetFileSystemOnUIThread(DriveFileSystemInterface** file_system) {
+DriveFileSystemInterface* GetFileSystemOnUIThread() {
   DriveSystemService* system_service = GetSystemService();
-  *file_system = system_service ? system_service->file_system() : NULL;
+  return system_service ? system_service->file_system() : NULL;
 }
 
 // Helper function to cancel Drive download operation on UI thread.
@@ -146,7 +137,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
 
  private:
   // Helper for Start() to let us start asynchronously.
-  void StartAsync(DriveFileSystemInterface** file_system);
+  void StartAsync(DriveFileSystemInterface* file_system);
 
   // Helper methods for Delegate::OnUrlFetchDownloadData and ReadRawData to
   // receive download data and copy to response buffer.
@@ -167,9 +158,8 @@ class DriveURLRequestJob : public net::URLRequestJob {
                              const std::string& mime_type,
                              DriveFileType file_type);
 
-  // Helper callback for GetFileSizeOnBlockingPool that sets |remaining_bytes_|
-  // to |file_size|, and notifies result for Start().
-  void OnGetFileSize(int64 *file_size);
+  // Helper callback for handling result of file_util::GetFileSize().
+  void OnGetFileSize(int64 *file_size, bool success);
 
   // Helper callback for GetEntryInfoByResourceId invoked by StartAsync.
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
@@ -303,14 +293,12 @@ void DriveURLRequestJob::Start() {
   // UI thread; StartAsync reply task will proceed with actually starting the
   // request.
 
-  DriveFileSystemInterface** file_system = new DriveFileSystemInterface*(NULL);
-  BrowserThread::PostTaskAndReply(
+  BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GetFileSystemOnUIThread, file_system),
+      base::Bind(&GetFileSystemOnUIThread),
       base::Bind(&DriveURLRequestJob::StartAsync,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(file_system)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveURLRequestJob::Kill() {
@@ -473,10 +461,10 @@ DriveURLRequestJob::~DriveURLRequestJob() {
 
 //======================= DriveURLRequestJob private methods ===================
 
-void DriveURLRequestJob::StartAsync(DriveFileSystemInterface** file_system) {
+void DriveURLRequestJob::StartAsync(DriveFileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  file_system_ = *file_system;
+  file_system_ = file_system;
 
   if (!request_ || !file_system_) {
     LOG(WARNING) << "Failed to start request: null "
@@ -679,21 +667,22 @@ void DriveURLRequestJob::OnGetFileByResourceId(
   // Even though we're already on BrowserThread::IO thread,
   // file_util::GetFileSize can only be called on a thread with file
   // operations allowed, so post a task to blocking pool instead.
-  int64* file_size = new int64(kInvalidFileSize);
-  BrowserThread::GetBlockingPool()->PostTaskAndReply(
+  int64* file_size = new int64();
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&GetFileSizeOnBlockingPool,
+      base::Bind(&file_util::GetFileSize,
                  local_file_path_,
-                 base::Unretained(file_size)),
+                 file_size),
       base::Bind(&DriveURLRequestJob::OnGetFileSize,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(file_size)));
 }
 
-void DriveURLRequestJob::OnGetFileSize(int64 *file_size) {
+void DriveURLRequestJob::OnGetFileSize(int64 *file_size, bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (*file_size == kInvalidFileSize) {
+  if (!success) {
     LOG(WARNING) << "Failed to open " << local_file_path_.value();
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_FILE_NOT_FOUND));

@@ -155,7 +155,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void DidTruncate(
       const FilePath& virtual_path,
       const fileapi::FileSystemOperation::StatusCallback& callback,
-      base::PlatformFileError* truncate_result);
+      base::PlatformFileError truncate_result);
 
   // Invoked during OpenFile() operation when truncate or write flags are set.
   // This is called when a local modifiable cached file is ready for such
