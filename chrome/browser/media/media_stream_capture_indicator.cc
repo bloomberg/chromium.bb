@@ -340,9 +340,7 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconContextMenu() {
     audio = audio || iter->audio_ref_count > 0;
     video = video || iter->video_ref_count > 0;
 
-    string16 message = l10n_util::GetStringFUTF16(
-        IDS_MEDIA_STREAM_STATUS_TRAY_MENU_ITEM, tab_title);
-    menu->AddItem(command_id, message);
+    menu->AddItem(command_id, tab_title);
 
     // If reaching the maximum number, no more item will be added to the menu.
     if (command_id == IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_LAST)

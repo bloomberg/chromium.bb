@@ -14724,9 +14724,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
 
     <!-- MediaStream capture status tray icon -->
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_MENU_ITEM" desc="Title of the web page to display in the capture tray icon menu when it is using the capture devices">
-      <ph name="TITLE">$1<ex>html5rocks.com</ex></ph>
-    </message>
     <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO" desc="Tool tip for the capture status tray icon when microphone and camera are being used">
       <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your camera and microphone.
     </message>
