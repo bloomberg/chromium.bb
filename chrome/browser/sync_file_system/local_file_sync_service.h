@@ -42,7 +42,7 @@ class LocalFileSyncService
       const GURL& app_origin,
       const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
-      const fileapi::StatusCallback& callback);
+      const fileapi::SyncStatusCallback& callback);
 
   // Synchronize one (or a set of) local change(s) to the remote server
   // using |processor|.
@@ -58,13 +58,13 @@ class LocalFileSyncService
       const fileapi::FileChange& change,
       const FilePath& local_path,
       const fileapi::FileSystemURL& url,
-      const fileapi::StatusCallback& callback) OVERRIDE;
+      const fileapi::SyncStatusCallback& callback) OVERRIDE;
 
  private:
   void DidInitializeFileSystemContext(
       const GURL& app_origin,
       fileapi::FileSystemContext* file_system_context,
-      const fileapi::StatusCallback& callback,
+      const fileapi::SyncStatusCallback& callback,
       fileapi::SyncStatusCode status);
 
   scoped_refptr<fileapi::LocalFileSyncContext> sync_context_;

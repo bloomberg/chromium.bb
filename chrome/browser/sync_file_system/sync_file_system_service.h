@@ -42,7 +42,7 @@ class SyncFileSystemService
       fileapi::FileSystemContext* file_system_context,
       const std::string& service_name,
       const GURL& app_url,
-      const fileapi::StatusCallback& callback);
+      const fileapi::SyncStatusCallback& callback);
 
  private:
   friend class SyncFileSystemServiceFactory;

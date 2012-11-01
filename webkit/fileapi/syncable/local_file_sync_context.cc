@@ -39,7 +39,7 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
     const GURL& source_url,
     const std::string& service_name,
     FileSystemContext* file_system_context,
-    const StatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   if (ContainsKey(file_system_contexts_, file_system_context)) {
     // The context has been already initialized. Just dispatch the callback
@@ -123,7 +123,7 @@ void LocalFileSyncContext::ApplyRemoteChange(
     const FileChange& change,
     const FilePath& local_path,
     const FileSystemURL& url,
-    const StatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   if (!io_task_runner_->RunsTasksOnCurrentThread()) {
     DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
     io_task_runner_->PostTask(
@@ -349,7 +349,7 @@ void LocalFileSyncContext::DidGetWritingStatusForPrepareForSync(
 }
 
 void LocalFileSyncContext::DidApplyRemoteChange(
-    const StatusCallback& callback_on_ui,
+    const SyncStatusCallback& callback_on_ui,
     base::PlatformFileError file_error) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   ui_task_runner_->PostTask(

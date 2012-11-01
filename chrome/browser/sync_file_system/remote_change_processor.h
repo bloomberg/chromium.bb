@@ -59,7 +59,7 @@ class RemoteChangeProcessor {
       const fileapi::FileChange& change,
       const FilePath& local_path,
       const fileapi::FileSystemURL& url,
-      const fileapi::StatusCallback& callback) = 0;
+      const fileapi::SyncStatusCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteChangeProcessor);

@@ -59,7 +59,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   void MaybeInitializeFileSystemContext(const GURL& source_url,
                                         const std::string& service_name,
                                         FileSystemContext* file_system_context,
-                                        const StatusCallback& callback);
+                                        const SyncStatusCallback& callback);
 
   // Called when the corresponding LocalFileSyncService exits.
   // This method must be called on UI thread.
@@ -94,7 +94,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const FileChange& change,
       const FilePath& local_path,
       const FileSystemURL& url,
-      const StatusCallback& callback);
+      const SyncStatusCallback& callback);
 
   // OperationRunner is accessible only on IO thread.
   base::WeakPtr<SyncableFileOperationRunner> operation_runner() const;
@@ -108,7 +108,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   virtual void OnWriteEnabled(const FileSystemURL& url) OVERRIDE;
 
  private:
-  typedef std::deque<StatusCallback> StatusCallbackQueue;
+  typedef std::deque<SyncStatusCallback> StatusCallbackQueue;
   friend class base::RefCountedThreadSafe<LocalFileSyncContext>;
   friend class CannedSyncableFileSystem;
 
@@ -143,7 +143,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const ChangeListCallback& callback);
 
   void DidApplyRemoteChange(
-      const StatusCallback& callback_on_ui,
+      const SyncStatusCallback& callback_on_ui,
       base::PlatformFileError file_error);
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

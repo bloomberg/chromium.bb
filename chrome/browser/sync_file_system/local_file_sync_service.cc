@@ -13,7 +13,7 @@
 
 using content::BrowserThread;
 using fileapi::LocalFileSyncContext;
-using fileapi::StatusCallback;
+using fileapi::SyncStatusCallback;
 using fileapi::SyncCompletionCallback;
 
 namespace sync_file_system {
@@ -37,7 +37,7 @@ void LocalFileSyncService::MaybeInitializeFileSystemContext(
     const GURL& app_origin,
     const std::string& service_name,
     fileapi::FileSystemContext* file_system_context,
-    const StatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   sync_context_->MaybeInitializeFileSystemContext(
       app_origin, service_name, file_system_context,
       base::Bind(&LocalFileSyncService::DidInitializeFileSystemContext,
@@ -64,7 +64,7 @@ void LocalFileSyncService::ApplyRemoteChange(
     const fileapi::FileChange& change,
     const FilePath& local_path,
     const fileapi::FileSystemURL& url,
-    const StatusCallback& callback) {
+    const SyncStatusCallback& callback) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
   sync_context_->ApplyRemoteChange(
       origin_to_contexts_[url.origin()],
@@ -74,7 +74,7 @@ void LocalFileSyncService::ApplyRemoteChange(
 void LocalFileSyncService::DidInitializeFileSystemContext(
     const GURL& app_origin,
     fileapi::FileSystemContext* file_system_context,
-    const StatusCallback& callback,
+    const SyncStatusCallback& callback,
     fileapi::SyncStatusCode status) {
   if (status == fileapi::SYNC_STATUS_OK)
     origin_to_contexts_[app_origin] = file_system_context;

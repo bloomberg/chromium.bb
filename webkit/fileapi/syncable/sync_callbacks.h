@@ -12,7 +12,9 @@ namespace fileapi {
 
 class FileSystemURL;
 
-typedef base::Callback<void(SyncStatusCode status)> StatusCallback;
+typedef base::Callback<void(SyncStatusCode status)>
+    SyncStatusCallback;
+
 typedef base::Callback<void(SyncStatusCode status, const FileSystemURL& url)>
     SyncCompletionCallback;
 
