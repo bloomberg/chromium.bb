@@ -76,6 +76,10 @@ static jboolean TraceEnabled(JNIEnv* env, jclass clazz) {
   return base::debug::TraceLog::GetInstance()->IsEnabled();
 }
 
+static void InitATrace(JNIEnv* env, jclass clazz) {
+  base::debug::TraceLog::InitATrace();
+}
+
 static void Instant(JNIEnv* env, jclass clazz,
                     jstring jname, jstring jarg) {
   TraceEventDataConverter converter(env, jname, jarg);

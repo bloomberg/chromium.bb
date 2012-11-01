@@ -5,7 +5,12 @@
 package org.chromium.content.common;
 
 import android.os.Looper;
+import android.util.Log;
 import android.util.Printer;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 // Java mirror of Chrome trace event API.  See
 // base/debug/trace_event.h.  Unlike the native version, Java does not
@@ -36,7 +41,29 @@ public class TraceEvent {
      * The native library must be loaded before calling this method.
      */
     public static void setEnabledToMatchNative() {
-        setEnabled(nativeTraceEnabled());
+        boolean enabled = nativeTraceEnabled();
+        try {
+            Class<?> traceClass = Class.forName("android.os.Trace");
+            Method m = traceClass.getDeclaredMethod("isTagEnabled", Long.TYPE);
+            Field f = traceClass.getField("TRACE_TAG_VIEW");
+            boolean atraceEnabled = (Boolean) m.invoke(traceClass, f.getLong(null));
+            if (atraceEnabled) nativeInitATrace();
+            enabled = enabled || atraceEnabled;
+        } catch (ClassNotFoundException e) {
+            Log.e("TraceEvent", "setEnabledToMatchNative", e);
+        } catch (NoSuchMethodException e) {
+            Log.e("TraceEvent", "setEnabledToMatchNative", e);
+        } catch (NoSuchFieldException e) {
+            Log.e("TraceEvent", "setEnabledToMatchNative", e);
+        } catch (IllegalArgumentException e) {
+            Log.e("TraceEvent", "setEnabledToMatchNative", e);
+        } catch (IllegalAccessException e) {
+            Log.e("TraceEvent", "setEnabledToMatchNative", e);
+        } catch (InvocationTargetException e) {
+            Log.e("TraceEvent", "setEnabledToMatchNative", e);
+        }
+
+        setEnabled(enabled);
     }
 
     /**
@@ -169,9 +196,7 @@ public class TraceEvent {
      * for more information.
      */
     public static void end() {
-        if (sEnabled) {
-            nativeEnd(getCallerName(), null);
-        }
+        if (sEnabled) nativeEnd(getCallerName(), null);
     }
 
     /**
@@ -179,9 +204,7 @@ public class TraceEvent {
      * @param name The name of the event.
      */
     public static void end(String name) {
-        if (sEnabled) {
-            nativeEnd(name, null);
-        }
+        if (sEnabled) nativeEnd(name, null);
     }
 
     /**
@@ -190,9 +213,7 @@ public class TraceEvent {
      * @param arg  The arguments of the event.
      */
     public static void end(String name, String arg) {
-        if (sEnabled) {
-            nativeEnd(name, arg);
-        }
+        if (sEnabled) nativeEnd(name, arg);
     }
 
     private static String getCallerName() {
@@ -211,6 +232,7 @@ public class TraceEvent {
     }
 
     private static native boolean nativeTraceEnabled();
+    private static native void nativeInitATrace();
     private static native void nativeInstant(String name, String arg);
     private static native void nativeBegin(String name, String arg);
     private static native void nativeEnd(String name, String arg);
