@@ -126,7 +126,8 @@ DriveSystemService* GetSystemService(Profile* profile) {
 }
 
 // Substitutes virtual drive path for local temporary path.
-void SubstituteDriveDownloadPathInternal(Profile* profile,
+void SubstituteDriveDownloadPathInternal(
+    Profile* profile,
     const DriveDownloadObserver::SubstituteDriveDownloadPathCallback&
         callback) {
   DVLOG(1) << "SubstituteDriveDownloadPathInternal";
@@ -148,11 +149,13 @@ void SubstituteDriveDownloadPathInternal(Profile* profile,
 }
 
 // Callback for DriveFileSystem::CreateDirectory.
-void OnCreateDirectory(const base::Closure& substitute_callback,
-                       DriveFileError error) {
+void OnCreateDirectory(
+    Profile* profile,
+    const DriveDownloadObserver::SubstituteDriveDownloadPathCallback& callback,
+    DriveFileError error) {
   DVLOG(1) << "OnCreateDirectory " << error;
   if (error == DRIVE_FILE_OK) {
-    substitute_callback.Run();
+    SubstituteDriveDownloadPathInternal(profile, callback);
   } else {
     // TODO(achuith): Handle this.
     NOTREACHED();
@@ -160,9 +163,10 @@ void OnCreateDirectory(const base::Closure& substitute_callback,
 }
 
 // Callback for DriveFileSystem::GetEntryInfoByPath.
-void OnEntryFound(Profile* profile,
+void OnEntryFound(
+    Profile* profile,
     const FilePath& drive_dir_path,
-    const base::Closure& substitute_callback,
+    const DriveDownloadObserver::SubstituteDriveDownloadPathCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   if (error == DRIVE_FILE_ERROR_NOT_FOUND) {
@@ -170,32 +174,9 @@ void OnEntryFound(Profile* profile,
     const bool is_exclusive = false, is_recursive = true;
     GetSystemService(profile)->file_system()->CreateDirectory(
         drive_dir_path, is_exclusive, is_recursive,
-        base::Bind(&OnCreateDirectory, substitute_callback));
+        base::Bind(&OnCreateDirectory, profile, callback));
   } else if (error == DRIVE_FILE_OK) {
-    substitute_callback.Run();
-  } else {
-    // TODO(achuith): Handle this.
-    NOTREACHED();
-  }
-}
-
-// Callback for DriveServiceInterface::Authenticate.
-void OnAuthenticate(Profile* profile,
-                    const FilePath& drive_path,
-                    const base::Closure& substitute_callback,
-                    google_apis::GDataErrorCode error,
-                    const std::string& token) {
-  DVLOG(1) << "OnAuthenticate";
-
-  if (error == google_apis::HTTP_SUCCESS) {
-    const FilePath drive_dir_path =
-        util::ExtractDrivePath(drive_path.DirName());
-    // Ensure the directory exists. This also forces DriveFileSystem to
-    // initialize DriveRootDirectory.
-    GetSystemService(profile)->file_system()->GetEntryInfoByPath(
-        drive_dir_path,
-        base::Bind(&OnEntryFound, profile, drive_dir_path,
-                   substitute_callback));
+    SubstituteDriveDownloadPathInternal(profile, callback);
   } else {
     // TODO(achuith): Handle this.
     NOTREACHED();
@@ -242,16 +223,18 @@ void DriveDownloadObserver::SubstituteDriveDownloadPath(Profile* profile,
   SetDownloadParams(drive_path, download);
 
   if (util::IsUnderDriveMountPoint(drive_path)) {
-    // Can't access drive if we're not authenticated.
+    // Can't access drive if the directory does not exist on Drive.
     // We set off a chain of callbacks as follows:
-    // DriveServiceInterface::Authenticate
-    //   OnAuthenticate calls DriveFileSystem::GetEntryInfoByPath
-    //     OnEntryFound calls DriveFileSystem::CreateDirectory (if necessary)
-    //       OnCreateDirectory calls SubstituteDriveDownloadPathInternal
-    GetSystemService(profile)->drive_service()->Authenticate(
-        base::Bind(&OnAuthenticate, profile, drive_path,
-                   base::Bind(&SubstituteDriveDownloadPathInternal,
-                              profile, callback)));
+    // DriveFileSystem::GetEntryInfoByPath
+    //   OnEntryFound calls DriveFileSystem::CreateDirectory (if necessary)
+    //     OnCreateDirectory calls SubstituteDriveDownloadPathInternal
+    const FilePath drive_dir_path =
+        util::ExtractDrivePath(drive_path.DirName());
+    // Ensure the directory exists. This also forces DriveFileSystem to
+    // initialize DriveRootDirectory.
+    GetSystemService(profile)->file_system()->GetEntryInfoByPath(
+        drive_dir_path,
+        base::Bind(&OnEntryFound, profile, drive_dir_path, callback));
   } else {
     callback.Run(drive_path);
   }
