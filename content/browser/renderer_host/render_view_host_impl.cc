@@ -1040,7 +1040,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnShowDesktopNotification)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel,
                         OnCancelDesktopNotification)
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
