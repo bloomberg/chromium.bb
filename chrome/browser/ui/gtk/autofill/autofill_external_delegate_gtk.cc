@@ -56,7 +56,7 @@ void AutofillExternalDelegateGtk::ApplyAutofillSuggestions(
 
 void AutofillExternalDelegateGtk::SetBounds(const gfx::Rect& bounds) {
   CreateViewIfNeeded();
-  view_->set_element_bounds(bounds);
+  view_->SetElementBounds(bounds);
 }
 
 void AutofillExternalDelegateGtk::CreateViewIfNeeded() {

@@ -79,9 +79,7 @@ AutofillPopupViewGtk::~AutofillPopupViewGtk() {
 
 void AutofillPopupViewGtk::ShowInternal() {
   SetBounds();
-  gtk_window_move(GTK_WINDOW(window_), bounds_.x(), bounds_.y());
-
-  ResizePopup();
+  UpdateBoundsAndRedrawPopup();
 
   render_view_host_->AddKeyboardListener(this);
 
@@ -99,16 +97,25 @@ void AutofillPopupViewGtk::HideInternal() {
 }
 
 void AutofillPopupViewGtk::InvalidateRow(size_t row) {
-  GdkRectangle row_rect = GetRectForRow(row, bounds_.width()).ToGdkRectangle();
+  GdkRectangle row_rect = GetRectForRow(
+      row,
+      element_bounds().width()).ToGdkRectangle();
   GdkWindow* gdk_window = gtk_widget_get_window(window_);
   gdk_window_invalidate_rect(gdk_window, &row_rect, FALSE);
 }
 
-void AutofillPopupViewGtk::ResizePopup() {
-  bounds_.set_width(GetPopupRequiredWidth());
-  bounds_.set_height(GetPopupRequiredHeight());
+void AutofillPopupViewGtk::UpdateBoundsAndRedrawPopup() {
+  gtk_widget_set_size_request(window_,
+                              element_bounds().width(),
+                              element_bounds().height());
+  gtk_window_move(GTK_WINDOW(window_),
+                  element_bounds().x(),
+                  element_bounds().y());
 
-  gtk_widget_set_size_request(window_, bounds_.width(), bounds_.height());
+  GdkWindow* gdk_window = gtk_widget_get_window(window_);
+  GdkRectangle popup_rect = element_bounds().ToGdkRectangle();
+  if (gdk_window != NULL)
+    gdk_window_invalidate_rect(gdk_window, &popup_rect, FALSE);
 }
 
 gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
@@ -359,9 +366,8 @@ void AutofillPopupViewGtk::SetBounds() {
     top_of_popup = bottom_of_field;
   }
 
-  bounds_.SetRect(
-      origin_x + element_bounds().x(),
-      top_of_popup,
-      GetPopupRequiredWidth(),
-      popup_height);
+  SetElementBounds(gfx::Rect(origin_x + element_bounds().x(),
+                             top_of_popup,
+                             GetPopupRequiredWidth(),
+                             popup_height));
 }

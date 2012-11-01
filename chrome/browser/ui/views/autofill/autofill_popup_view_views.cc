@@ -103,7 +103,8 @@ void AutofillPopupViewViews::ShowInternal() {
 
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
 
-  ResizePopup();
+  UpdatePopupBounds();
+  UpdateBoundsAndRedrawPopup();
 
   web_contents_->GetRenderViewHost()->AddKeyboardListener(this);
 }
@@ -118,20 +119,15 @@ void AutofillPopupViewViews::InvalidateRow(size_t row) {
   SchedulePaintInRect(GetRectForRow(row, width()));
 }
 
-void AutofillPopupViewViews::ResizePopup() {
-  gfx::Rect popup_bounds = element_bounds();
-  popup_bounds.set_y(popup_bounds.y() + popup_bounds.height());
-
-  popup_bounds.set_width(GetPopupRequiredWidth());
-  popup_bounds.set_height(GetPopupRequiredHeight());
-
-  SetBoundsRect(popup_bounds);
+void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
+  SetBoundsRect(element_bounds());
+  SchedulePaintInRect(element_bounds());
 }
 
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
                                                int index,
                                                const gfx::Rect& entry_rect) {
-    // TODO(csharp): support RTL
+  // TODO(csharp): support RTL
 
   if (selected_line() == index)
     canvas->FillRect(entry_rect, kHoveredBackgroundColor);

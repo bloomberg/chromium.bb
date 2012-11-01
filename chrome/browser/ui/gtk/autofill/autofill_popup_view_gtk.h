@@ -46,7 +46,7 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   virtual void ShowInternal() OVERRIDE;
   virtual void HideInternal() OVERRIDE;
   virtual void InvalidateRow(size_t row) OVERRIDE;
-  virtual void ResizePopup() OVERRIDE;
+  virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleButtonRelease,
@@ -85,9 +85,6 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   GtkWidget* window_;  // Strong reference.
   PangoLayout* layout_;  // Strong reference
   GtkThemeService* theme_service_;
-
-  // The size of the popup.
-  gfx::Rect bounds_;
 
   content::RenderViewHost* render_view_host_;  // Weak reference.
 

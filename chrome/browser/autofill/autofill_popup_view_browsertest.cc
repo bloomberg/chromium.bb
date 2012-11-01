@@ -51,7 +51,7 @@ class TestAutofillPopupView : public AutofillPopupView {
 
   virtual void InvalidateRow(size_t row) OVERRIDE {}
 
-  virtual void ResizePopup() OVERRIDE {}
+  virtual void UpdateBoundsAndRedrawPopup() OVERRIDE {}
 };
 
 }  // namespace

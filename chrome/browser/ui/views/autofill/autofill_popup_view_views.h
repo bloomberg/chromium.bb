@@ -38,7 +38,7 @@ class AutofillPopupViewViews : public views::WidgetDelegateView,
   virtual void ShowInternal() OVERRIDE;
   virtual void HideInternal() OVERRIDE;
   virtual void InvalidateRow(size_t row) OVERRIDE;
-  virtual void ResizePopup() OVERRIDE;
+  virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
 
   // Draw the given autofill entry in |entry_rect|.
   void DrawAutofillEntry(gfx::Canvas* canvas,

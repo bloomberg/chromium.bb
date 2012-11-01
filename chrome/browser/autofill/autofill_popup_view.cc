@@ -112,6 +112,18 @@ void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
   ShowInternal();
 }
 
+void AutofillPopupView::SetElementBounds(const gfx::Rect& bounds) {
+  element_bounds_ = bounds;
+  UpdateBoundsAndRedrawPopup();
+}
+
+void AutofillPopupView::UpdatePopupBounds() {
+  element_bounds_.set_width(GetPopupRequiredWidth());
+  element_bounds_.set_height(GetPopupRequiredHeight());
+
+  UpdateBoundsAndRedrawPopup();
+}
+
 void AutofillPopupView::SetSelectedPosition(int x, int y) {
   int line = LineFromY(y);
 
@@ -225,14 +237,13 @@ bool AutofillPopupView::RemoveSelectedLine() {
   autofill_icons_.erase(autofill_icons_.begin() + selected_line_);
   autofill_unique_ids_.erase(autofill_unique_ids_.begin() + selected_line_);
 
-  // Resize the popup.
-  ResizePopup();
-
   SetSelectedLine(kNoSelection);
 
   external_delegate_->ClearPreviewedForm();
 
-  if (!HasAutofillEntries())
+  if (HasAutofillEntries())
+    UpdatePopupBounds();
+  else
     Hide();
 
   return true;
@@ -254,6 +265,13 @@ bool AutofillPopupView::CanDelete(int id) {
 }
 
 int AutofillPopupView::GetPopupRequiredWidth() {
+  if (value_font_.platform_font() == NULL ||
+      label_font_.platform_font() == NULL) {
+    // We can't calculate the size of the popup if the fonts
+    // aren't present.
+    return 0;
+  }
+
   int popup_width = element_bounds().width();
   DCHECK_EQ(autofill_values().size(), autofill_labels().size());
   for (size_t i = 0; i < autofill_values().size(); ++i) {

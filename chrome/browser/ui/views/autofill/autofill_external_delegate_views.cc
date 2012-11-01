@@ -57,7 +57,7 @@ void AutofillExternalDelegateViews::ApplyAutofillSuggestions(
 
 void AutofillExternalDelegateViews::SetBounds(const gfx::Rect& bounds) {
   CreateViewIfNeeded();
-  popup_view_->SetBoundsRect(bounds);
+  popup_view_->SetElementBounds(bounds);
 }
 
 void AutofillExternalDelegateViews::CreateViewIfNeeded() {

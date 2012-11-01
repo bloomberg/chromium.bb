@@ -36,9 +36,8 @@ class AutofillPopupView : public content::NotificationObserver {
             const std::vector<string16>& autofill_icons,
             const std::vector<int>& autofill_unique_ids);
 
-  void set_element_bounds(const gfx::Rect& bounds) {
-    element_bounds_ = bounds;
-  }
+  // Update the bounds of the popup element.
+  void SetElementBounds(const gfx::Rect& bounds);
 
   const gfx::Rect& element_bounds() { return element_bounds_; }
 
@@ -50,11 +49,11 @@ class AutofillPopupView : public content::NotificationObserver {
   // Hide the popup from view. Platform-dependent work.
   virtual void HideInternal() = 0;
 
-  // Invalide the given row and redraw it.
+  // Invalidate the given row and redraw it.
   virtual void InvalidateRow(size_t row) = 0;
 
-  // Adjust the size of the popup to show the elements being held.
-  virtual void ResizePopup() = 0;
+  // Ensure the popup is properly placed at |element_bounds_|.
+  virtual void UpdateBoundsAndRedrawPopup() = 0;
 
   AutofillExternalDelegate* external_delegate() { return external_delegate_; }
 
@@ -76,6 +75,9 @@ class AutofillPopupView : public content::NotificationObserver {
 
   int selected_line() const { return selected_line_; }
   bool delete_icon_selected() const { return delete_icon_selected_; }
+
+  // Recalculate the height and width of the popup.
+  void UpdatePopupBounds();
 
   // Change which line is selected by the user, based on coordinates.
   void SetSelectedPosition(int x, int y);
