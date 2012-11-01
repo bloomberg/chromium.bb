@@ -36,7 +36,6 @@ using sync_pb::ClientCommand;
 
 namespace syncer {
 
-using sessions::ScopedSessionContextConflictResolver;
 using sessions::StatusController;
 using sessions::SyncSession;
 using syncable::IS_UNAPPLIED_UPDATE;
@@ -86,8 +85,6 @@ void Syncer::RequestEarlyExit() {
 bool Syncer::SyncShare(sessions::SyncSession* session,
                        SyncerStep first_step,
                        SyncerStep last_step) {
-  ScopedSessionContextConflictResolver scoped(session->context(),
-                                              &resolver_);
   session->mutable_status_controller()->UpdateStartTime();
   SyncerStep current_step = first_step;
 

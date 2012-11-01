@@ -31,7 +31,6 @@
 
 namespace syncer {
 
-class ConflictResolver;
 class ExtensionsActivityMonitor;
 class ServerConnectionManager;
 class ThrottledDataTypeTracker;
@@ -44,7 +43,6 @@ class Directory;
 static const int kDefaultMaxCommitBatchSize = 25;
 
 namespace sessions {
-class ScopedSessionContextConflictResolver;
 class TestScopedSessionEventListener;
 
 class SyncSessionContext {
@@ -61,7 +59,6 @@ class SyncSessionContext {
 
   ~SyncSessionContext();
 
-  ConflictResolver* resolver() { return resolver_; }
   ServerConnectionManager* connection_manager() {
     return connection_manager_;
   }
@@ -136,11 +133,7 @@ class SyncSessionContext {
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
   // once they are allocated. See definitions of these below.
-  friend class ScopedSessionContextConflictResolver;
   friend class TestScopedSessionEventListener;
-
-  // This is installed by Syncer objects when needed and may be NULL.
-  ConflictResolver* resolver_;
 
   ObserverList<SyncEngineEventListener> listeners_;
 
@@ -185,29 +178,6 @@ class SyncSessionContext {
   bool keystore_encryption_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
-};
-
-// Installs a ConflictResolver to a given session context for the lifetime of
-// the ScopedSessionContextConflictResolver.  There should never be more than
-// one ConflictResolver in the system, so it is an error to use this if the
-// context already has a resolver.
-class ScopedSessionContextConflictResolver {
- public:
-  // Note: |context| and |resolver| should outlive |this|.
-  ScopedSessionContextConflictResolver(SyncSessionContext* context,
-                                       ConflictResolver* resolver)
-      : context_(context), resolver_(resolver) {
-    DCHECK(NULL == context->resolver_);
-    context->resolver_ = resolver;
-  }
-  ~ScopedSessionContextConflictResolver() {
-    context_->resolver_ = NULL;
-  }
-
- private:
-  SyncSessionContext* context_;
-  ConflictResolver* resolver_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedSessionContextConflictResolver);
 };
 
 }  // namespace sessions

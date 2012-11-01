@@ -77,8 +77,6 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
                                          ModelTypeSet(),
                                          ProgressMarkerMap(),
                                          false,
-                                         true,
-                                         8,
                                          5,
                                          2,
                                          7,
@@ -91,7 +89,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onSyncCycleCompleted",
-                           HasDetailsAsDictionary(expected_details)));
+                            HasDetailsAsDictionary(expected_details)));
 
   js_sync_manager_observer_.OnSyncCycleCompleted(snapshot);
   PumpLoop();

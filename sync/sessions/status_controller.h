@@ -3,20 +3,16 @@
 // found in the LICENSE file.
 
 // StatusController handles all counter and status related number crunching and
-// state tracking on behalf of a SyncSession.  It 'controls' the model data
-// defined in session_state.h.  The most important feature of StatusController
-// is the ScopedModelSafetyRestriction. When one of these is active, the
-// underlying data set exposed via accessors is swapped out to the appropriate
-// set for the restricted ModelSafeGroup behind the scenes.  For example, if
-// GROUP_UI is set, then accessors such as conflict_progress() and commit_ids()
-// are implicitly restricted to returning only data pertaining to GROUP_UI.
-// You can see which parts of status fall into this "restricted" category, or
-// the global "shared" category for all model types, by looking at the struct
-// declarations in session_state.h. If these accessors are invoked without a
-// restriction in place, this is a violation and will cause debug assertions
-// to surface improper use of the API in development.  Likewise for
-// invocation of "shared" accessors when a restriction is in place; for
-// safety's sake, an assertion will fire.
+// state tracking on behalf of a SyncSession.
+//
+// The most important feature of StatusController is the
+// ScopedModelSafeGroupRestriction.  Some of its functions expose per-thread
+// state, and can be called only when the restriction is in effect.  For
+// example, if GROUP_UI is set then the value returned from
+// commit_id_projection() will be useful for iterating over the commit IDs of
+// items that live on the UI thread.
+//
+// Other parts of its state are global, and do not require the restriction.
 //
 // NOTE: There is no concurrent access protection provided by this class. It
 // assumes one single thread is accessing this class for each unique
@@ -40,7 +36,6 @@
 #include "base/time.h"
 #include "sync/internal_api/public/sessions/model_neutral_state.h"
 #include "sync/sessions/ordered_commit_set.h"
-#include "sync/sessions/session_state.h"
 
 namespace syncer {
 namespace sessions {
@@ -49,14 +44,6 @@ class StatusController {
  public:
   explicit StatusController(const ModelSafeRoutingInfo& routes);
   ~StatusController();
-
-  // Progress counters.  All const methods may return NULL if the
-  // progress structure doesn't exist, but all non-const methods
-  // auto-create.
-  const std::set<syncable::Id>* simple_conflict_ids() const;
-  std::set<syncable::Id>* mutable_simple_conflict_ids();
-  const std::set<syncable::Id>* GetUnrestrictedSimpleConflictIds(
-      ModelSafeGroup group) const;
 
   // ClientToServer messages.
   const ModelTypeSet updates_request_types() const {
@@ -84,22 +71,10 @@ class StatusController {
     return commit_set.GetCommitIdProjection(group_restriction_);
   }
 
-  // Control parameters for sync cycles.
-  bool conflicts_resolved() const {
-    return model_neutral_.conflicts_resolved;
-  }
-
-  // If a GetUpdates for any data type resulted in downloading an update that
-  // is in conflict, this method returns true.
-  // Note: this includes unresolvable conflicts.
-  bool HasConflictingUpdates() const;
-
   // Various conflict counters.
   int num_encryption_conflicts() const;
   int num_hierarchy_conflicts() const;
   int num_server_conflicts() const;
-
-  int num_simple_conflicts() const;
 
   // Aggregate sum of all conflicting items over all conflict types.
   int TotalNumConflictingItems() const;
@@ -160,10 +135,6 @@ class StatusController {
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();
 
-  // TODO(rlarocque): Remove these after conflict resolution refactor.
-  void update_conflicts_resolved(bool resolved);
-  void reset_conflicts_resolved();
-
   // Commit counters.
   void increment_num_successful_commits();
   void increment_num_successful_bookmark_commits();
@@ -198,19 +169,7 @@ class StatusController {
     return group_restriction() == it->second;
   }
 
-  // Returns the state, if it exists, or NULL otherwise.
-  const PerModelSafeGroupState* GetModelSafeGroupState(
-      bool restrict, ModelSafeGroup group) const;
-
-  // Helper to lazily create objects for per-ModelSafeGroup state.
-  PerModelSafeGroupState* GetOrCreateModelSafeGroupState(
-      bool restrict, ModelSafeGroup group);
-
   ModelNeutralState model_neutral_;
-  std::map<ModelSafeGroup, PerModelSafeGroupState*> per_model_group_;
-
-  STLValueDeleter<std::map<ModelSafeGroup, PerModelSafeGroupState*> >
-      per_model_group_deleter_;
 
   // Used to fail read/write operations on state that don't obey the current
   // active ModelSafeWorker contract.

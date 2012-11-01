@@ -14,51 +14,12 @@ namespace syncer {
 namespace sessions {
 
 StatusController::StatusController(const ModelSafeRoutingInfo& routes)
-    : per_model_group_deleter_(&per_model_group_),
-      group_restriction_in_effect_(false),
+    : group_restriction_in_effect_(false),
       group_restriction_(GROUP_PASSIVE),
       routing_info_(routes) {
 }
 
 StatusController::~StatusController() {}
-
-const std::set<syncable::Id>* StatusController::simple_conflict_ids() const {
-  const PerModelSafeGroupState* state =
-      GetModelSafeGroupState(true, group_restriction_);
-  return state ? &state->simple_conflict_ids : NULL;
-}
-
-std::set<syncable::Id>* StatusController::mutable_simple_conflict_ids() {
-  return &GetOrCreateModelSafeGroupState(
-      true, group_restriction_)->simple_conflict_ids;
-}
-
-const std::set<syncable::Id>*
-    StatusController::GetUnrestrictedSimpleConflictIds(
-        ModelSafeGroup group) const {
-  const PerModelSafeGroupState* state = GetModelSafeGroupState(false, group);
-  return state ? &state->simple_conflict_ids : NULL;
-}
-
-const PerModelSafeGroupState* StatusController::GetModelSafeGroupState(
-    bool restrict, ModelSafeGroup group) const {
-  DCHECK_EQ(restrict, group_restriction_in_effect_);
-  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
-      per_model_group_.find(group);
-  return (it == per_model_group_.end()) ? NULL : it->second;
-}
-
-PerModelSafeGroupState* StatusController::GetOrCreateModelSafeGroupState(
-    bool restrict, ModelSafeGroup group) {
-  DCHECK_EQ(restrict, group_restriction_in_effect_);
-  std::map<ModelSafeGroup, PerModelSafeGroupState*>::iterator it =
-      per_model_group_.find(group);
-  if (it == per_model_group_.end()) {
-    PerModelSafeGroupState* state = new PerModelSafeGroupState();
-    it = per_model_group_.insert(std::make_pair(group, state)).first;
-  }
-  return it->second;
-}
 
 void StatusController::increment_num_updates_downloaded_by(int value) {
   model_neutral_.num_updates_downloaded_total += value;
@@ -145,13 +106,6 @@ SyncerError StatusController::last_get_key_result() const {
   return model_neutral_.last_get_key_result;
 }
 
-void StatusController::update_conflicts_resolved(bool resolved) {
-  model_neutral_.conflicts_resolved |= resolved;
-}
-void StatusController::reset_conflicts_resolved() {
-  model_neutral_.conflicts_resolved = false;
-}
-
 // Returns the number of updates received from the sync server.
 int64 StatusController::CountUpdates() const {
   const sync_pb::ClientToServerResponse& updates =
@@ -161,10 +115,6 @@ int64 StatusController::CountUpdates() const {
   } else {
     return 0;
   }
-}
-
-bool StatusController::HasConflictingUpdates() const {
-  return TotalNumConflictingItems() > 0;
 }
 
 int StatusController::num_updates_applied() const {
@@ -185,18 +135,6 @@ int StatusController::num_hierarchy_conflicts() const {
   return model_neutral_.num_hierarchy_conflicts;
 }
 
-int StatusController::num_simple_conflicts() const {
-  DCHECK(!group_restriction_in_effect_)
-   << "num_simple_conflicts applies to all ModelSafeGroups";
-  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
-      per_model_group_.begin();
-  int sum = 0;
-  for (; it != per_model_group_.end(); ++it) {
-    sum += it->second->simple_conflict_ids.size();
-  }
-  return sum;
-}
-
 int StatusController::num_server_conflicts() const {
   DCHECK(!group_restriction_in_effect_)
       << "num_server_conflicts applies to all ModelSafeGroups";
@@ -207,7 +145,6 @@ int StatusController::TotalNumConflictingItems() const {
   DCHECK(!group_restriction_in_effect_)
       << "TotalNumConflictingItems applies to all ModelSafeGroups";
   int sum = 0;
-  sum += num_simple_conflicts();
   sum += num_encryption_conflicts();
   sum += num_hierarchy_conflicts();
   sum += num_server_conflicts();

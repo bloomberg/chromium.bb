@@ -50,7 +50,7 @@ TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {
   TestEnumStringFunction(
       GetUpdatesSourceString,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MIN,
-      sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION);
+      sync_pb::GetUpdatesCallerInfo::PERIODIC);
   TestEnumStringFunction(
       GetUpdatesSourceString,
       sync_pb::GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE,

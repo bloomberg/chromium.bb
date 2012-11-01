@@ -34,11 +34,9 @@ class SyncSessionSnapshot {
       bool is_share_usable,
       ModelTypeSet initial_sync_ended,
       const ProgressMarkerMap& download_progress_markers,
-      bool more_to_sync,
       bool is_silenced,
       int num_encryption_conflicts,
       int num_hierarchy_conflicts,
-      int num_simple_conflicts,
       int num_server_conflicts,
       const SyncSourceInfo& source,
       bool notifications_enabled,
@@ -58,11 +56,9 @@ class SyncSessionSnapshot {
   bool is_share_usable() const;
   ModelTypeSet initial_sync_ended() const;
   const ProgressMarkerMap& download_progress_markers() const;
-  bool has_more_to_sync() const;
   bool is_silenced() const;
   int num_encryption_conflicts() const;
   int num_hierarchy_conflicts() const;
-  int num_simple_conflicts() const;
   int num_server_conflicts() const;
   SyncSourceInfo source() const;
   bool notifications_enabled() const;
@@ -77,11 +73,9 @@ class SyncSessionSnapshot {
   bool is_share_usable_;
   ModelTypeSet initial_sync_ended_;
   ProgressMarkerMap download_progress_markers_;
-  bool has_more_to_sync_;
   bool is_silenced_;
   int num_encryption_conflicts_;
   int num_hierarchy_conflicts_;
-  int num_simple_conflicts_;
   int num_server_conflicts_;
   SyncSourceInfo source_;
   bool notifications_enabled_;

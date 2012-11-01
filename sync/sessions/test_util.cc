@@ -8,12 +8,6 @@ namespace syncer {
 namespace sessions {
 namespace test_util {
 
-void SimulateHasMoreToSync(sessions::SyncSession* session,
-                           SyncerStep begin, SyncerStep end) {
-  session->mutable_status_controller()->update_conflicts_resolved(true);
-  ASSERT_TRUE(session->HasMoreToSync());
-}
-
 void SimulateGetEncryptionKeyFailed(sessions::SyncSession* session,
                                     SyncerStep begin, SyncerStep end) {
   session->mutable_status_controller()->set_last_get_key_result(
@@ -46,9 +40,6 @@ void SimulateConnectionFailure(sessions::SyncSession* session,
 
 void SimulateSuccess(sessions::SyncSession* session,
                      SyncerStep begin, SyncerStep end) {
-  if (session->HasMoreToSync()) {
-    ADD_FAILURE() << "Shouldn't have more to sync";
-  }
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   switch(end) {
     case SYNCER_END:

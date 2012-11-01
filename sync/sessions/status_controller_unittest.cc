@@ -26,10 +26,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   status.set_num_server_changes_remaining(13);
   EXPECT_EQ(13, status.num_server_changes_remaining());
 
-  EXPECT_FALSE(status.conflicts_resolved());
-  status.update_conflicts_resolved(true);
-  EXPECT_TRUE(status.conflicts_resolved());
-
   status.set_last_download_updates_result(SYNCER_OK);
   EXPECT_EQ(SYNCER_OK,
             status.model_neutral_state().last_download_updates_result);

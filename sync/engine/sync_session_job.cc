@@ -50,8 +50,6 @@ bool SyncSessionJob::Finish(bool early_exit) {
   if (early_exit)
     return false;
 
-  DCHECK(!session_->HasMoreToSync());
-
   // Did we hit any errors along the way?
   if (sessions::HasSyncerError(
       session_->status_controller().model_neutral_state())) {

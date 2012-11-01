@@ -40,9 +40,6 @@ struct SYNC_EXPORT SyncStatus {
   // Number of hierarchy conflicts counted during most recent sync cycle.
   int hierarchy_conflicts;
 
-  // Number of simple conflicts counted during most recent sync cycle.
-  int simple_conflicts;
-
   // Number of items the server refused to commit due to conflict during most
   // recent sync cycle.
   int server_conflicts;
@@ -85,7 +82,6 @@ struct SYNC_EXPORT SyncStatus {
   // Nudge counts for each possible source
   int nudge_source_notification;
   int nudge_source_local;
-  int nudge_source_continuation;
   int nudge_source_local_refresh;
 
   // Encryption related.

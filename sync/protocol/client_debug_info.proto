@@ -31,7 +31,7 @@ message SyncCycleCompletedEventInfo {
   // These new conflict counters replace the ones above.
   optional int32 num_encryption_conflicts = 4;
   optional int32 num_hierarchy_conflicts = 5;
-  optional int32 num_simple_conflicts = 6;
+  optional int32 num_simple_conflicts = 6; // No longer sent since M24.
   optional int32 num_server_conflicts = 7;
 
   // Counts to track the effective usefulness of our GetUpdate requests.

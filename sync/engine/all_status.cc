@@ -10,7 +10,6 @@
 #include "base/port.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/sessions/session_state.h"
 
 namespace syncer {
 
@@ -31,7 +30,6 @@ SyncStatus AllStatus::CreateBlankStatus() const {
   SyncStatus status = status_;
   status.encryption_conflicts = 0;
   status.hierarchy_conflicts = 0;
-  status.simple_conflicts = 0;
   status.server_conflicts = 0;
   status.committed_count = 0;
   status.initial_sync_ended = false;
@@ -44,7 +42,6 @@ SyncStatus AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
   const sessions::SyncSessionSnapshot& snapshot = event.snapshot;
   status.encryption_conflicts = snapshot.num_encryption_conflicts();
   status.hierarchy_conflicts = snapshot.num_hierarchy_conflicts();
-  status.simple_conflicts = snapshot.num_simple_conflicts();
   status.server_conflicts = snapshot.num_server_conflicts();
   status.committed_count =
       snapshot.model_neutral_state().num_successful_commits;
@@ -62,8 +59,6 @@ SyncStatus AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
       snapshot.model_neutral_state().sync_protocol_error;
 
   // Accumulate update count only once per session to avoid double-counting.
-  // TODO(ncarter): Make this realtime by having the syncer_status
-  // counter preserve its value across sessions.  http://crbug.com/26339
   if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
     status.updates_received +=
         snapshot.model_neutral_state().num_updates_downloaded_total;
@@ -185,9 +180,6 @@ void AllStatus::IncrementNudgeCounter(NudgeSource source) {
       return;
     case NUDGE_SOURCE_NOTIFICATION:
       status_.nudge_source_notification++;
-      return;
-    case NUDGE_SOURCE_CONTINUATION:
-      status_.nudge_source_continuation++;
       return;
     case NUDGE_SOURCE_UNKNOWN:
       break;

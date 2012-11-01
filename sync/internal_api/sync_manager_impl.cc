@@ -962,16 +962,11 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
       return;
     }
 
-    if (!event.snapshot.has_more_to_sync()) {
-      DVLOG(1) << "Sending OnSyncCycleCompleted";
-      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                        OnSyncCycleCompleted(event.snapshot));
-    }
+    DVLOG(1) << "Sending OnSyncCycleCompleted";
+    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                      OnSyncCycleCompleted(event.snapshot));
 
     // This is here for tests, which are still using p2p notifications.
-    //
-    // TODO(chron): Consider changing this back to track has_more_to_sync
-    // only notify peers if a successful commit has occurred.
     bool is_notifiable_commit =
         (event.snapshot.model_neutral_state().num_successful_commits > 0);
     if (is_notifiable_commit) {

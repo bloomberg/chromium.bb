@@ -24,8 +24,7 @@ SyncSessionContext::SyncSessionContext(
     DebugInfoGetter* debug_info_getter,
     TrafficRecorder* traffic_recorder,
     bool keystore_encryption_enabled)
-    : resolver_(NULL),
-      connection_manager_(connection_manager),
+    : connection_manager_(connection_manager),
       directory_(directory),
       workers_(workers),
       extensions_activity_monitor_(extensions_activity_monitor),

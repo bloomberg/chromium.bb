@@ -22,7 +22,6 @@ ModelNeutralState::ModelNeutralState()
       last_get_key_result(UNSET),
       last_download_updates_result(UNSET),
       commit_result(UNSET),
-      conflicts_resolved(false),
       items_committed(false),
       debug_info_sent(false),
       num_server_changes_remaining(0) {

@@ -232,7 +232,6 @@ class SyncerTest : public testing::Test,
             listeners, NULL, &traffic_recorder_,
             true  /* enable keystore encryption */));
     context_->set_routing_info(routing_info);
-    ASSERT_FALSE(context_->resolver());
     syncer_ = new Syncer();
     session_.reset(MakeSession());
 
@@ -2568,7 +2567,6 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_CommitConflict) {
 
   // We should stop looping at the first sign of trouble.
   EXPECT_EQ(1U, mock_server_->commit_messages().size());
-  EXPECT_FALSE(session_->HasMoreToSync());
   EXPECT_EQ(items_to_commit - (kDefaultMaxCommitBatchSize - 1),
             directory()->unsynced_entity_count());
 }

@@ -60,9 +60,6 @@ struct ModelNeutralState {
   SyncerError last_download_updates_result;
   SyncerError commit_result;
 
-  // Set to true by ResolveConflictsCommand if any forward progress was made.
-  bool conflicts_resolved;
-
   // Set to true by PostCommitMessageCommand if any commits were successful.
   bool items_committed;
 

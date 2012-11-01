@@ -18,7 +18,8 @@ message GetUpdatesCallerInfo {
     NOTIFICATION = 3;  // The source of the update was a p2p notification.
     PERIODIC = 4;  // The source of the update was periodic polling.
     SYNC_CYCLE_CONTINUATION = 5;  // The source of the update was a
-                                  // continuation of a previous update.
+                                  // continuation of a previous sync cycle.
+                                  // No longer sent as of M24.
 
     // This value is deprecated and was never used in production.
     // CLEAR_PRIVATE_DATA = 6;

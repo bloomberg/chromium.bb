@@ -247,7 +247,6 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
                                              "Transient Counters (this cycle)");
   IntSyncStat encryption_conflicts(section_this_cycle, "Encryption Conflicts");
   IntSyncStat hierarchy_conflicts(section_this_cycle, "Hierarchy Conflicts");
-  IntSyncStat simple_conflicts(section_this_cycle, "Simple Conflicts");
   IntSyncStat server_conflicts(section_this_cycle, "Server Conflicts");
   IntSyncStat committed_items(section_this_cycle, "Committed Items");
   IntSyncStat updates_remaining(section_this_cycle, "Updates Remaining");
@@ -263,7 +262,6 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   IntSyncStat nudge_source_notification(
       section_nudge_info, "Server Invalidations");
   IntSyncStat nudge_source_local(section_nudge_info, "Local Changes");
-  IntSyncStat nudge_source_continuation(section_nudge_info, "Continuations");
   IntSyncStat nudge_source_local_refresh(section_nudge_info, "Local Refreshes");
 
   // This list of sections belongs in the 'details' field of the returned
@@ -368,7 +366,6 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   if (is_status_valid) {
     encryption_conflicts.SetValue(full_status.encryption_conflicts);
     hierarchy_conflicts.SetValue(full_status.hierarchy_conflicts);
-    simple_conflicts.SetValue(full_status.simple_conflicts);
     server_conflicts.SetValue(full_status.server_conflicts);
     committed_items.SetValue(full_status.committed_count);
     updates_remaining.SetValue(full_status.updates_available);
@@ -377,7 +374,6 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   if (is_status_valid) {
     nudge_source_notification.SetValue(full_status.nudge_source_notification);
     nudge_source_local.SetValue(full_status.nudge_source_local);
-    nudge_source_continuation.SetValue(full_status.nudge_source_continuation);
     nudge_source_local_refresh.SetValue(full_status.nudge_source_local_refresh);
   }
 

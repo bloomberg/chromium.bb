@@ -27,7 +27,6 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/sessions/ordered_commit_set.h"
-#include "sync/sessions/session_state.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/sessions/sync_session_context.h"
 #include "sync/util/extensions_activity_monitor.h"
@@ -108,10 +107,6 @@ class SyncSession {
   // Builds and sends a snapshot to the session context's listeners.
   void SendEventNotification(SyncEngineEvent::EventCause cause);
 
-  // Returns true if this session contains data that should go through the sync
-  // engine again.
-  bool HasMoreToSync() const;
-
   // Returns true if we reached the server. Note that "reaching the server"
   // here means that from an HTTP perspective, we succeeded (HTTP 200).  The
   // server **MAY** have returned a sync protocol error.
@@ -132,10 +127,6 @@ class SyncSession {
   void RebaseRoutingInfoWithLatest(
       const ModelSafeRoutingInfo& routing_info,
       const std::vector<ModelSafeWorker*>& workers);
-
-  // Should be called any time |this| is being re-used in a new call to
-  // SyncShare (e.g., HasMoreToSync returned true).
-  void PrepareForAnotherSyncCycle();
 
   // TODO(akalin): Split this into context() and mutable_context().
   SyncSessionContext* context() const { return context_; }
@@ -161,9 +152,6 @@ class SyncSession {
 
   // Returns the set of groups which have enabled types.
   const std::set<ModelSafeGroup>& GetEnabledGroups() const;
-
-  // Returns the set of enabled groups that have conflicts.
-  std::set<ModelSafeGroup> GetEnabledGroupsWithConflicts() const;
 
  private:
   // Extend the encapsulation boundary to utilities for internal member

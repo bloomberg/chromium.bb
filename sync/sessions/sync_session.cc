@@ -145,12 +145,6 @@ void SyncSession::RebaseRoutingInfoWithLatest(
   enabled_groups_ = ComputeEnabledGroups(routing_info_, workers_);
 }
 
-void SyncSession::PrepareForAnotherSyncCycle() {
-  source_.updates_source =
-      sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION;
-  status_controller_.reset(new StatusController(routing_info_));
-}
-
 SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   syncable::Directory* dir = context_->directory();
 
@@ -173,11 +167,9 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       is_share_useable,
       initial_sync_ended,
       download_progress_markers,
-      HasMoreToSync(),
       delegate_->IsSyncingCurrentlySilenced(),
       status_controller_->num_encryption_conflicts(),
       status_controller_->num_hierarchy_conflicts(),
-      status_controller_->num_simple_conflicts(),
       status_controller_->num_server_conflicts(),
       source_,
       context_->notifications_enabled(),
@@ -193,28 +185,8 @@ void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {
   context()->NotifyListeners(event);
 }
 
-bool SyncSession::HasMoreToSync() const {
-  const StatusController* status = status_controller_.get();
-  return status->conflicts_resolved();
-}
-
 const std::set<ModelSafeGroup>& SyncSession::GetEnabledGroups() const {
   return enabled_groups_;
-}
-
-// TODO(rlarocque): Delete this function after refactoring conflict resolution.
-std::set<ModelSafeGroup> SyncSession::GetEnabledGroupsWithConflicts() const {
-  const std::set<ModelSafeGroup>& enabled_groups = GetEnabledGroups();
-  std::set<ModelSafeGroup> enabled_groups_with_conflicts;
-  for (std::set<ModelSafeGroup>::const_iterator it =
-           enabled_groups.begin(); it != enabled_groups.end(); ++it) {
-    const std::set<syncable::Id>* ids =
-        status_controller_->GetUnrestrictedSimpleConflictIds(*it);
-    if (ids && ids->size() > 0) {
-      enabled_groups_with_conflicts.insert(*it);
-    }
-  }
-  return enabled_groups_with_conflicts;
 }
 
 bool SyncSession::DidReachServer() const {

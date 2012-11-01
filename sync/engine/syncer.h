@@ -67,8 +67,6 @@ class Syncer {
   bool early_exit_requested_;
   base::Lock early_exit_requested_lock_;
 
-  ConflictResolver resolver_;
-
   friend class SyncerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerTest, NameClashWithResolver);
   FRIEND_TEST_ALL_PREFIXES(SyncerTest, IllegalAndLegalUpdates);

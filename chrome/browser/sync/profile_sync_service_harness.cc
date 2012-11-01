@@ -763,11 +763,9 @@ ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
 // while ensuring that all conditions are evaluated using on the same snapshot.
 bool ProfileSyncServiceHarness::IsDataSyncedImpl(
     const SyncSessionSnapshot& snap) {
-  return snap.num_simple_conflicts() == 0 &&
-         ServiceIsPushingChanges() &&
+  return ServiceIsPushingChanges() &&
          GetStatus().notifications_enabled &&
          !service()->HasUnsyncedItems() &&
-         !snap.has_more_to_sync() &&
          !HasPendingBackendMigration();
 }
 
@@ -999,9 +997,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
     const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
     const ProfileSyncService::Status& status = GetStatus();
     // Capture select info from the sync session snapshot and syncer status.
-    os << "has_more_to_sync: "
-       << snap.has_more_to_sync()
-       << ", has_unsynced_items: "
+    os << ", has_unsynced_items: "
        << (service()->sync_initialized() ? service()->HasUnsyncedItems() : 0)
        << ", did_commit: "
        << (snap.model_neutral_state().num_successful_commits == 0 &&
@@ -1010,8 +1006,6 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << snap.num_encryption_conflicts()
        << ", hierarchy conflicts: "
        << snap.num_hierarchy_conflicts()
-       << ", simple conflicts: "
-       << snap.num_simple_conflicts()
        << ", server conflicts: "
        << snap.num_server_conflicts()
        << ", num_updates_downloaded : "

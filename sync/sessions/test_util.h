@@ -15,8 +15,6 @@ namespace syncer {
 namespace sessions {
 namespace test_util {
 
-void SimulateHasMoreToSync(sessions::SyncSession* session,
-                           SyncerStep begin, SyncerStep end);
 void SimulateGetEncryptionKeyFailed(sessions::SyncSession* session,
                                     SyncerStep begin, SyncerStep end);
 void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,

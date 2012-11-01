@@ -112,8 +112,6 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
       return GetUpdatesCallerInfo::NOTIFICATION;
     case NUDGE_SOURCE_LOCAL:
       return GetUpdatesCallerInfo::LOCAL;
-    case NUDGE_SOURCE_CONTINUATION:
-      return GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION;
     case NUDGE_SOURCE_LOCAL_REFRESH:
       return GetUpdatesCallerInfo::DATATYPE_REFRESH;
     case NUDGE_SOURCE_UNKNOWN:
@@ -763,23 +761,12 @@ bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job) {
     return false;
   }
 
-  SDVLOG(2) << "DoSyncSessionJob with "
+  SDVLOG(2) << "Calling SyncShare with "
             << SyncSessionJob::GetPurposeString(job->purpose()) << " job";
-
-  bool has_more_to_sync = true;
-  bool premature_exit = false;
-  while (DecideOnJob(*job) == CONTINUE && has_more_to_sync) {
-    SDVLOG(2) << "Calling SyncShare.";
-    // Synchronously perform the sync session from this thread.
-    premature_exit = !syncer_->SyncShare(job->mutable_session(),
-                                         job->start_step(),
-                                         job->end_step());
-
-    has_more_to_sync = job->session()->HasMoreToSync();
-    if (has_more_to_sync)
-      job->mutable_session()->PrepareForAnotherSyncCycle();
-  }
-  SDVLOG(2) << "Done SyncShare looping.";
+  bool premature_exit = !syncer_->SyncShare(job->mutable_session(),
+                                            job->start_step(),
+                                            job->end_step());
+  SDVLOG(2) << "Done SyncShare, returned: " << premature_exit;
 
   return FinishSyncSessionJob(job.Pass(), premature_exit);
 }
@@ -838,7 +825,6 @@ bool SyncSchedulerImpl::FinishSyncSessionJob(scoped_ptr<SyncSessionJob> job,
 void SyncSchedulerImpl::ScheduleNextSync(
     scoped_ptr<SyncSessionJob> finished_job, bool succeeded) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  DCHECK(!finished_job->session()->HasMoreToSync());
 
   AdjustPolling(finished_job.get());
 

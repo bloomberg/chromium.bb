@@ -8,12 +8,10 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map_test_util.h"
-#include "sync/sessions/session_state.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/syncable/write_transaction.h"
@@ -162,16 +160,6 @@ TEST_F(SyncSessionTest, EnabledGroups) {
   EXPECT_EQ(expected_enabled_groups, session->GetEnabledGroups());
 }
 
-TEST_F(SyncSessionTest, ScopedContextHelpers) {
-  ConflictResolver resolver;
-  EXPECT_FALSE(context_->resolver());
-  {
-    ScopedSessionContextConflictResolver s_resolver(context_.get(), &resolver);
-    EXPECT_EQ(&resolver, context_->resolver());
-  }
-  EXPECT_FALSE(context_->resolver());
-}
-
 TEST_F(SyncSessionTest, SetWriteTransaction) {
   TestDirectorySetterUpper dir_maker;
   dir_maker.SetUp();
@@ -194,10 +182,6 @@ TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
   // When DownloadUpdatesCommand fails, these should be false.
   EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_FALSE(status()->download_updates_succeeded());
-
-  // Download updates has its own loop in the syncer; it shouldn't factor
-  // into HasMoreToSync.
-  EXPECT_FALSE(session_->HasMoreToSync());
 }
 
 TEST_F(SyncSessionTest, MoreToDownloadIfGotChangesRemaining) {
@@ -210,10 +194,6 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotChangesRemaining) {
      ->set_changes_remaining(1000L);
   EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
-
-  // Download updates has its own loop in the syncer; it shouldn't factor
-  // into HasMoreToSync.
-  EXPECT_FALSE(session_->HasMoreToSync());
 }
 
 TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemaining) {
@@ -224,29 +204,6 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemaining) {
       ->set_changes_remaining(0);
   EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_TRUE(status()->download_updates_succeeded());
-
-  // Download updates has its own loop in the syncer; it shouldn't factor
-  // into HasMoreToSync.
-  EXPECT_FALSE(session_->HasMoreToSync());
-}
-
-TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
-  // Conflict resolution happens after get updates and commit,
-  // so we need to loop back and get updates / commit again now
-  // that we have made forward progress.
-  status()->update_conflicts_resolved(true);
-  EXPECT_TRUE(session_->HasMoreToSync());
-}
-
-TEST_F(SyncSessionTest, ResetTransientState) {
-  status()->update_conflicts_resolved(true);
-  status()->increment_num_successful_commits();
-  EXPECT_TRUE(session_->HasMoreToSync());
-  session_->PrepareForAnotherSyncCycle();
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
-            session_->source().updates_source);
-  EXPECT_FALSE(status()->conflicts_resolved());
-  EXPECT_FALSE(session_->HasMoreToSync());
 }
 
 TEST_F(SyncSessionTest, Coalesce) {

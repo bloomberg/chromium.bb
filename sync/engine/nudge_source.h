@@ -13,8 +13,6 @@ enum NudgeSource {
   NUDGE_SOURCE_NOTIFICATION,
   // A local change occurred (e.g. bookmark moved).
   NUDGE_SOURCE_LOCAL,
-  // A previous sync cycle did not fully complete (e.g. HTTP error).
-  NUDGE_SOURCE_CONTINUATION,
   // A local event is triggering an optimistic datatype refresh.
   NUDGE_SOURCE_LOCAL_REFRESH,
 };
