@@ -49,11 +49,12 @@ body {
 }
 
 #calculator .buttons button .a-workaround-for-151985 {
-  height: 45px;        /* .a-workaround-for-151985 styles and elements hide */
-  left: 60px;          /* the column of dead pixels at the right edge of the */
-  position: relative;  /* screen on OS X where http://crbug.com/151985 makes */
-  width: 1px;          /* the calculator window one pixels too wide. They can */
-}                      /* all be removed when that issue is fixed. */
+  bottom: 2px;         /* .a-workaround-for-151985 styles and elements hide */
+  height: 45px;        /* the column of dead pixels at the right edge of the */
+  left: 54px;          /* screen on OS X where http://crbug.com/151985 makes */
+  position: relative;  /* the calculator window one pixels too wide. They can */
+  width: 1px;          /* all be removed when that issue is fixed. */
+}
 
 #calculator .buttons button.add {
   background-position: -183px -90px;
