@@ -127,3 +127,30 @@ def RemoveDirectory(path):
   """Convenience method for generating a command to remove a directory tree."""
   # TODO(mcgrathr): Windows
   return Command(['rm', '-rf', path])
+
+
+def Remove(path):
+  """Convenience method for generating a command to remove a file."""
+  # TODO(mcgrathr): Replace with something less hacky.
+  return Command([
+      sys.executable, '-c',
+      'import sys, os; os.remove(sys.argv[1])', path
+      ])
+
+
+def Rename(src, dst):
+  """Convenience method for generating a command to rename a file."""
+  # TODO(mcgrathr): Replace with something less hacky.
+  return Command([
+      sys.executable, '-c',
+      'import sys, os; os.rename(sys.argv[1], sys.argv[2])', src, dst
+      ])
+
+
+def WriteData(data, dst):
+  """Convenience method to write a file with fixed contents."""
+  # TODO(mcgrathr): Replace with something less hacky.
+  return Command([
+      sys.executable, '-c',
+      'import sys; open(sys.argv[1], "wb").write(%r)' % data, dst
+      ])

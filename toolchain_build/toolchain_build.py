@@ -62,9 +62,31 @@ CONFIGURE_HOST_TOOL = CONFIGURE_HOST_LIB + [
     '--without-zlib',
 ]
 
+
+def NewlibLibcScript(arch):
+  template = """/*
+ * This is a linker script that gets installed as libc.a for the
+ * newlib-based NaCl toolchain.  It brings in the constituent
+ * libraries that make up what -lc means semantically.
+ */
+OUTPUT_FORMAT(%s)
+GROUP ( libcrt_common.a libnacl.a )
+"""
+  if arch == 'arm':
+    # Listing three formats instead of one makes -EL/-EB switches work
+    # for the endian-switchable ARM backend.
+    format_list = ['elf32-littlearm-nacl',
+                   'elf32-bigarm-nacl',
+                   'elf32-littlearm-nacl']
+  else:
+    raise Exception('TODO(mcgrathr): OUTPUT_FORMAT for %s' % arch)
+  return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
+
+
 def ConfigureTargetArgs(arch):
   config_target = arch + '-nacl'
   return ['--target=' + config_target, '--with-sysroot=/' + config_target]
+
 
 def CommandsInBuild(command_lines):
   return [command.Mkdir('build')] + [command.Command(cmd, cwd='build')
@@ -270,6 +292,9 @@ def TargetLibs(target):
       newlib_sys_nacl,
       ]))
 
+  def NewlibFile(subdir, name):
+    return os.path.join('%(output)s', target + '-nacl', subdir, name)
+
   libs = {
       'newlib_' + target: {
           'dependencies': lib_deps,
@@ -291,11 +316,13 @@ def TargetLibs(target):
                   ],
               MAKE_PARALLEL_CMD,
               MAKE_DESTDIR_CMD + ['install-strip'],
-              # TODO(mcgrathr): Needs some additional steps:
-              # rm pthread.h
-              # mv libc.a libcrt_common.a
-              # Write libc.a with linker script text.
-              ]),
+              ]) + [
+                  command.Remove(NewlibFile('include', 'pthread.h')),
+                  command.Rename(NewlibFile('lib', 'libc.a'),
+                                 NewlibFile('lib', 'libcrt_common.a')),
+                  command.WriteData(NewlibLibcScript(target),
+                                    NewlibFile('lib', 'libc.a')),
+                  ],
           },
 
       # TODO(mcgrathr): gcc_libs
