@@ -4,7 +4,12 @@
  * found in the LICENSE file.
  **/
 
-if (chrome.app.runtime) {
+// Checking for "chrome.app.runtime" availability allows this Chrome app code to
+// be tested in a regular web page (like tests/manual.html). Checking for
+// "chrome" and "chrome.app" availability further allows this code to be tested
+// in non-Chrome browsers, which is useful for example to test touch support
+// with a non-Chrome touch device.
+if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
   chrome.app.runtime.onLaunched.addListener(function() {
     chrome.app.window.create('calculator.html', {
       defaultWidth: 243, minWidth: 243, maxWidth: 243,

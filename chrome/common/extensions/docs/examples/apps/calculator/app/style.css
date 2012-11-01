@@ -62,7 +62,8 @@ body {
   width: 60px;
 }
 
-#calculator .buttons button.add:active {
+#calculator .buttons button.add[data-active="touch"],
+#calculator .buttons button.add[data-active="mouse"]:active {
   background-position: -426px -90px;
 }
 
@@ -72,7 +73,9 @@ body {
               inset 0px 2px 0px 0px rgb(87, 87, 87);
 }
 
-#calculator .buttons button.add:active .a-workaround-for-151985 {
+#calculator .buttons button.add[data-active="touch"] .a-workaround-for-151985,
+#calculator .buttons button.add[data-active="mouse"]:active
+            .a-workaround-for-151985 {
   background: -webkit-linear-gradient(rgb(51, 51, 51), rgb(45, 45, 45));
   box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
               inset 0px 2px 0px 0px rgb(43, 43, 43);
@@ -82,7 +85,8 @@ body {
   /* The default background-position: 0 0; is fine */
 }
 
-#calculator .buttons button.clear:active {
+#calculator .buttons button.clear[data-active="touch"],
+#calculator .buttons button.clear[data-active="mouse"]:active {
   background-position: -243px 0;
 }
 
@@ -90,7 +94,8 @@ body {
   background-position: -122px 0;
 }
 
-#calculator .buttons button.divide:active {
+#calculator .buttons button.divide[data-active="touch"],
+#calculator .buttons button.divide[data-active="mouse"]:active {
   background-position: -365px 0;
 }
 
@@ -98,7 +103,8 @@ body {
   background-position: -61px -45px;
 }
 
-#calculator .buttons button.eight:active {
+#calculator .buttons button.eight[data-active="touch"],
+#calculator .buttons button.eight[data-active="mouse"]:active {
   background-position: -304px -45px;
 }
 
@@ -110,7 +116,8 @@ body {
   width: 60px;
 }
 
-#calculator .buttons button.equals:active {
+#calculator .buttons button.equals[data-active="touch"],
+#calculator .buttons button.equals[data-active="mouse"]:active {
   background-position: -426px -135px;
 }
 
@@ -121,7 +128,10 @@ body {
   height: 90px;
 }
 
-#calculator .buttons button.equals:active .a-workaround-for-151985 {
+#calculator .buttons button.equals[data-active="touch"]
+            .a-workaround-for-151985,
+#calculator .buttons button.equals[data-active="mouse"]:active
+            .a-workaround-for-151985 {
   background: -webkit-linear-gradient(rgb(66, 114, 185), rgb(49, 86, 185));
   box-shadow: inset 0px 1px 0px 0px rgb(29, 29, 29),
               inset 0px 2px 0px 0px rgb(48, 82, 136);
@@ -132,7 +142,8 @@ body {
   background-position: -61px -90px;
 }
 
-#calculator .buttons button.five:active {
+#calculator .buttons button.five[data-active="touch"],
+#calculator .buttons button.five[data-active="mouse"]:active {
   background-position: -304px -90px;
 }
 
@@ -140,7 +151,8 @@ body {
   background-position: 0 -90px;
 }
 
-#calculator .buttons button.four:active {
+#calculator .buttons button.four[data-active="touch"],
+#calculator .buttons button.four[data-active="mouse"]:active {
   background-position: -243px -90px;
 }
 
@@ -150,7 +162,8 @@ body {
   width: 60px;
 }
 
-#calculator .buttons button.multiply:active {
+#calculator .buttons button.multiply[data-active="touch"],
+#calculator .buttons button.multiply[data-active="mouse"]:active {
   background-position: -426px 0;
 }
 
@@ -160,7 +173,10 @@ body {
               inset 0px 2px 0px 0px rgb(105, 105, 105);
 }
 
-#calculator .buttons button.multiply:active .a-workaround-for-151985 {
+#calculator .buttons button.multiply[data-active="touch"]
+            .a-workaround-for-151985,
+#calculator .buttons button.multiply[data-active="mouse"]:active
+            .a-workaround-for-151985 {
   background: -webkit-linear-gradient(rgb(53, 53, 53), rgb(53, 53, 53));
   box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
               inset 0px 2px 0px 0px rgb(45, 45, 45);
@@ -170,7 +186,8 @@ body {
   background-position: -61px 0;
 }
 
-#calculator .buttons button.negate:active {
+#calculator .buttons button.negate[data-active="touch"],
+#calculator .buttons button.negate[data-active="mouse"]:active {
   background-position: -304px 0;
 }
 
@@ -178,7 +195,8 @@ body {
   background-position: -122px -45px;
 }
 
-#calculator .buttons button.nine:active {
+#calculator .buttons button.nine[data-active="touch"],
+#calculator .buttons button.nine[data-active="mouse"]:active {
   background-position: -365px -45px;
 }
 
@@ -186,7 +204,8 @@ body {
   background-position: 0 -135px;
 }
 
-#calculator .buttons button.one:active {
+#calculator .buttons button.one[data-active="touch"],
+#calculator .buttons button.one[data-active="mouse"]:active {
   background-position: -243px -135px;
 }
 
@@ -194,7 +213,8 @@ body {
   background-position: -122px -180px;
 }
 
-#calculator .buttons button.point:active {
+#calculator .buttons button.point[data-active="touch"],
+#calculator .buttons button.point[data-active="mouse"]:active {
   background-position: -365px -180px;
 }
 
@@ -202,7 +222,8 @@ body {
   background-position: 0 -45px;
 }
 
-#calculator .buttons button.seven:active {
+#calculator .buttons button.seven[data-active="touch"],
+#calculator .buttons button.seven[data-active="mouse"]:active {
   background-position: -243px -45px;
 }
 
@@ -210,7 +231,8 @@ body {
   background-position: -122px -90px;
 }
 
-#calculator .buttons button.six:active {
+#calculator .buttons button.six[data-active="touch"],
+#calculator .buttons button.six[data-active="mouse"]:active {
   background-position: -365px -90px;
 }
 
@@ -220,7 +242,8 @@ body {
   width: 60px;
 }
 
-#calculator .buttons button.subtract:active {
+#calculator .buttons button.subtract[data-active="touch"],
+#calculator .buttons button.subtract[data-active="mouse"]:active {
   background-position: -426px -45px;
 }
 
@@ -230,7 +253,10 @@ body {
               inset 0px 2px 0px 0px rgb(96, 96, 96);
 }
 
-#calculator .buttons button.subtract:active .a-workaround-for-151985 {
+#calculator .buttons button.subtract[data-active="touch"]
+            .a-workaround-for-151985,
+#calculator .buttons button.subtract[data-active="mouse"]:active
+            .a-workaround-for-151985 {
   background: -webkit-linear-gradient(rgb(53, 53, 53), rgb(50, 50, 50));
   box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
               inset 0px 2px 0px 0px rgb(48, 48, 48);
@@ -240,7 +266,8 @@ body {
   background-position: -122px -135px;
 }
 
-#calculator .buttons button.three:active {
+#calculator .buttons button.three[data-active="touch"],
+#calculator .buttons button.three[data-active="mouse"]:active {
   background-position: -365px -135px;
 }
 
@@ -248,7 +275,8 @@ body {
   background-position: -61px -135px;
 }
 
-#calculator .buttons button.two:active {
+#calculator .buttons button.two[data-active="touch"],
+#calculator .buttons button.two[data-active="mouse"]:active {
   background-position: -304px -135px;
 }
 
@@ -257,7 +285,8 @@ body {
   width: 122px;
 }
 
-#calculator .buttons button.zero:active {
+#calculator .buttons button.zero[data-active="touch"],
+#calculator .buttons button.zero[data-active="mouse"]:active {
   background-position: -243px -180px;
 }
 
