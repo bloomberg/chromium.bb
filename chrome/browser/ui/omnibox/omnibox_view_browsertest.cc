@@ -1347,9 +1347,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BackspaceInKeywordMode) {
   BackspaceInKeywordModeTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Escape) {
+// http://crbug.com/158913
+#if defined(OS_CHROMEOS)
+#define MAYBE_Escape DISABLED_Escape
+#else
+#define MAYBE_Escape Escape
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_Escape) {
   EscapeTest();
 }
+#undef MAYBE_ESCAPE
 
 // http://crbug.com/131179
 #if defined(OS_LINUX)
