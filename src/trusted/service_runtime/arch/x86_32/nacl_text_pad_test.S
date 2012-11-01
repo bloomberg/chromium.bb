@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -13,7 +13,7 @@
         .text
 start_of_text:
 
-        .p2align NACLENTRYALIGN
+        .p2align NACL_BLOCK_SHIFT
 write_num_10:
         movl 8(%esp), %eax  /* number to be printed */
         pushl %ebp
@@ -87,7 +87,7 @@ do_digit_not_upper:
         popl %ecx
         nacljmp %ecx
 
-        .p2align NACLENTRYALIGN
+        .p2align NACL_BLOCK_SHIFT
 write_char:
         movl 4(%esp), %eax
         movl 8(%esp), %edx
@@ -106,7 +106,7 @@ write_char:
         popl %ecx
         nacljmp %ecx
 
-        .p2align NACLENTRYALIGN
+        .p2align NACL_BLOCK_SHIFT
         .globl _start
 _start:
         pushl $1234567
