@@ -192,6 +192,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       google_apis::DriveServiceInterface* drive_service);
   void UpdateAccountMetadataSection(
       google_apis::DriveServiceInterface* drive_service);
+  void UpdateDeltaUpdateStatusSection();
   void UpdateInFlightOperationsSection(
       google_apis::DriveServiceInterface* drive_service);
   void UpdateGCacheContentsSection();
@@ -327,6 +328,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateDriveRelatedPreferencesSection();
   UpdateAuthStatusSection(drive_service);
   UpdateAccountMetadataSection(drive_service);
+  UpdateDeltaUpdateStatusSection();
   UpdateInFlightOperationsSection(drive_service);
   UpdateGCacheContentsSection();
   UpdateFileSystemContentsSection(drive_service);
@@ -401,6 +403,28 @@ void DriveInternalsWebUIHandler::UpdateAccountMetadataSection(
   drive_service->GetAccountMetadata(
       base::Bind(&DriveInternalsWebUIHandler::OnGetAccountMetadata,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
+  const drive::DriveFileSystemMetadata metadata =
+      GetSystemService()->file_system()->GetMetadata();
+
+  base::DictionaryValue delta_update_status;
+  delta_update_status.SetBoolean("push-notification-enabled",
+                                 metadata.push_notification_enabled);
+  delta_update_status.SetInteger("polling-interval-sec",
+                                 metadata.polling_interval_sec);
+  delta_update_status.SetString(
+      "last-update-check-time",
+      google_apis::util::FormatTimeAsStringLocaltime(
+          metadata.last_update_check_time));
+  delta_update_status.SetString(
+      "last-update-check-error",
+      drive::DriveFileErrorToString(metadata.last_update_check_error));
+
+  web_ui()->CallJavascriptFunction("updateDeltaUpdateStatus",
+                                   delta_update_status);
+
 }
 
 void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(

@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_operations.h"
 
@@ -36,15 +37,6 @@ struct SearchResultInfo {
 
   FilePath path;
   bool is_directory;
-};
-
-// Metadata of DriveFileSystem. Used by DriveFileSystem::GetMetadata().
-struct DriveFileSystemMetadata {
-  DriveFileSystemMetadata() : largest_changestamp(0), origin("?") {}
-  ~DriveFileSystemMetadata() {}
-
-  int64 largest_changestamp;
-  std::string origin;
 };
 
 // Used to get files from the file system.

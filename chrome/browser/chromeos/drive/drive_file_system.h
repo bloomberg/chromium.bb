@@ -728,6 +728,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Periodic timer for checking updates.
   base::Timer update_timer_;
 
+  // Time of the last update check.
+  base::Time last_update_check_time_;
+
+  // Error of the last update check.
+  DriveFileError last_update_check_error_;
+
   // True if hosted documents should be hidden.
   bool hide_hosted_docs_;
 
@@ -747,6 +753,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   scoped_ptr<DriveScheduler> scheduler_;
 
+  // Polling interval for checking updates in seconds.
+  int polling_interval_sec_;
+
+  // True if push notification is enabled.
+  bool push_notification_enabled_;
+
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   // Note: These should remain the last member so they'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
@@ -754,9 +766,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Unlike other classes, we need this as we need this to redirect a task
   // from IO thread to UI thread.
   base::WeakPtr<DriveFileSystem> ui_weak_ptr_;
-
-  // Polling interval for checking updates in seconds.
-  int polling_interval_sec_;
 };
 
 }  // namespace drive

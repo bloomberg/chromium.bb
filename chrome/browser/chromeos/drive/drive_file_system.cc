@@ -344,12 +344,14 @@ DriveFileSystem::DriveFileSystem(
       drive_service_(drive_service),
       webapps_registry_(webapps_registry),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
+      last_update_check_error_(DRIVE_FILE_OK),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
       scheduler_(new DriveScheduler(profile, &drive_operations_)),
+      polling_interval_sec_(kFastPollingIntervalInSec),
+      push_notification_enabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
-      ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()),
-      polling_interval_sec_(kFastPollingIntervalInSec) {
+      ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -411,6 +413,8 @@ void DriveFileSystem::CheckForUpdates() {
 void DriveFileSystem::OnUpdateChecked(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates finished: " << error;
+  last_update_check_time_ = base::Time::Now();
+  last_update_check_error_ = error;
 }
 
 DriveFileSystem::~DriveFileSystem() {
@@ -472,6 +476,7 @@ void DriveFileSystem::StopPolling() {
 }
 
 void DriveFileSystem::SetPushNotificationEnabled(bool enabled) {
+  push_notification_enabled_ = enabled;
   polling_interval_sec_ = enabled ? kSlowPollingIntervalInSec :
                           kFastPollingIntervalInSec;
 }
@@ -2139,6 +2144,13 @@ DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
       "INITIALIZED" : "UNINITIALIZED";
   if (feed_loader_->refreshing())
     metadata.origin += " (refreshing)";
+
+  // Metadata related to delta update.
+  metadata.push_notification_enabled = push_notification_enabled_;
+  metadata.polling_interval_sec = polling_interval_sec_;
+  metadata.last_update_check_time = last_update_check_time_;
+  metadata.last_update_check_error = last_update_check_error_;
+
   return metadata;
 }
 

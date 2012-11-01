@@ -214,6 +214,8 @@
         'browser/chromeos/drive/drive_file_system.cc',
         'browser/chromeos/drive/drive_file_system.h',
         'browser/chromeos/drive/drive_file_system_interface.h',
+        'browser/chromeos/drive/drive_file_system_metadata.cc',
+        'browser/chromeos/drive/drive_file_system_metadata.h',
         'browser/chromeos/drive/drive_file_system_observer.h',
         'browser/chromeos/drive/drive_file_system_proxy.cc',
         'browser/chromeos/drive/drive_file_system_proxy.h',

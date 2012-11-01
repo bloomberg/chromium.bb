@@ -165,6 +165,21 @@ function updateAccountMetadata(accountMetadata) {
 }
 
 /**
+ * Updates the summary about delta update status.
+ * @param {Object} deltaUpdateStatus Dictionary describing delta update status.
+ */
+function updateDeltaUpdateStatus(deltaUpdateStatus) {
+  $('push-notification-enabled').textContent =
+        deltaUpdateStatus['push-notification-enabled'];
+  $('polling-interval-sec').textContent =
+        deltaUpdateStatus['polling-interval-sec'];
+  $('last-update-check-time').textContent =
+        deltaUpdateStatus['last-update-check-time'];
+  $('last-update-check-error').textContent =
+        deltaUpdateStatus['last-update-check-error'];
+}
+
+/**
  * Creates an element named |elementName| containing the content |text|.
  * @param {string} elementName Name of the new element to be created.
  * @param {string} text Text to be contained in the new element.
