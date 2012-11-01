@@ -35,7 +35,8 @@ enum TestEntryType {
 struct TestEntry {
   const FilePath::CharType* path;
   TestEntryType entry_type;
-  int64 last_access;
+  int64 last_accessed;
+  int64 last_modified;
   const char* resource_id;
   int64 file_size;
 
@@ -55,7 +56,8 @@ struct TestEntry {
           entry_type == TYPE_HOSTED_FILE);
       entry.mutable_file_info()->set_size(file_size);
     }
-    entry.mutable_file_info()->set_last_accessed(last_access);
+    entry.mutable_file_info()->set_last_accessed(last_accessed);
+    entry.mutable_file_info()->set_last_modified(last_modified);
     entry.set_resource_id(resource_id);
     return entry;
   }
@@ -84,37 +86,39 @@ ACTION_P(MockReadDirectory, test_entries) {
 }
 
 const TestEntry kEmptyDrive[] = {
-  { FILE_PATH_LITERAL("drive"), TYPE_DIRECTORY, 0, "id:drive" },
+  { FILE_PATH_LITERAL("drive"), TYPE_DIRECTORY, 0, 0, "id:drive" },
 };
 
 const TestEntry kOneFileDrive[] = {
-  { FILE_PATH_LITERAL("drive"), TYPE_DIRECTORY, 0, "id:drive" },
-  { FILE_PATH_LITERAL("drive/abc.txt"), TYPE_REGULAR_FILE, 1, "id:abc" },
+  { FILE_PATH_LITERAL("drive"), TYPE_DIRECTORY, 0, 0, "id:drive" },
+  { FILE_PATH_LITERAL("drive/abc.txt"), TYPE_REGULAR_FILE, 1, 0, "id:abc" },
 };
 
 const char* kExpectedOneFile[] = { "id:abc" };
 
 const TestEntry kComplexDrive[] = {
-  { FILE_PATH_LITERAL("drive"),              TYPE_DIRECTORY,    0, "id:root" },
-  { FILE_PATH_LITERAL("drive/a"),            TYPE_DIRECTORY,    0, "id:a" },
-  { FILE_PATH_LITERAL("drive/a/foo.txt"),    TYPE_REGULAR_FILE, 3, "id:foo1" },
-  { FILE_PATH_LITERAL("drive/a/b"),          TYPE_DIRECTORY,    8, "id:b" },
-  { FILE_PATH_LITERAL("drive/a/b/bar.jpg"),  TYPE_REGULAR_FILE, 5, "id:bar1",
-                                             999 },
-  { FILE_PATH_LITERAL("drive/a/b/new.gdoc"), TYPE_HOSTED_FILE,  7, "id:new" },
-  { FILE_PATH_LITERAL("drive/a/buz.zip"),    TYPE_REGULAR_FILE, 4, "id:buz1" },
-  { FILE_PATH_LITERAL("drive/a/old.gdoc"),   TYPE_HOSTED_FILE,  1, "id:old" },
-  { FILE_PATH_LITERAL("drive/c"),            TYPE_DIRECTORY,    0, "id:c" },
-  { FILE_PATH_LITERAL("drive/c/foo.txt"),    TYPE_REGULAR_FILE, 2, "id:foo2" },
-  { FILE_PATH_LITERAL("drive/c/buz.zip"),    TYPE_REGULAR_FILE, 1, "id:buz2" },
-  { FILE_PATH_LITERAL("drive/bar.jpg"),      TYPE_REGULAR_FILE, 6, "id:bar2" },
+  // Path                                  Type           Access Modify   ID
+  { FILE_PATH_LITERAL("drive"),            TYPE_DIRECTORY,    0, 0, "id:root" },
+  { FILE_PATH_LITERAL("drive/a"),          TYPE_DIRECTORY,    0, 0, "id:a" },
+  { FILE_PATH_LITERAL("drive/a/foo.txt"),  TYPE_REGULAR_FILE, 3, 2, "id:foo1" },
+  { FILE_PATH_LITERAL("drive/a/b"),        TYPE_DIRECTORY,    8, 0, "id:b" },
+  { FILE_PATH_LITERAL("drive/a/bar.jpg"),  TYPE_REGULAR_FILE, 5, 0, "id:bar1",
+                                           999 },
+  { FILE_PATH_LITERAL("drive/a/b/x.gdoc"), TYPE_HOSTED_FILE,  7, 0, "id:new" },
+  { FILE_PATH_LITERAL("drive/a/buz.zip"),  TYPE_REGULAR_FILE, 4, 0, "id:buz1" },
+  { FILE_PATH_LITERAL("drive/a/old.gdoc"), TYPE_HOSTED_FILE,  1, 0, "id:old" },
+  { FILE_PATH_LITERAL("drive/c"),          TYPE_DIRECTORY,    0, 0, "id:c" },
+  { FILE_PATH_LITERAL("drive/c/foo.txt"),  TYPE_REGULAR_FILE, 3, 1, "id:foo2" },
+  { FILE_PATH_LITERAL("drive/c/buz.zip"),  TYPE_REGULAR_FILE, 1, 0, "id:buz2" },
+  { FILE_PATH_LITERAL("drive/bar.jpg"),    TYPE_REGULAR_FILE, 6, 0, "id:bar2" },
 };
 
 const char* kTop3Files[] = {
   "id:bar2",  // The file with the largest timestamp
               // "bar1" is the second latest, but its file size is over limit.
   "id:buz1",  // The third latest file.
-  "id:foo1"   // 4th.
+  "id:foo1"   // 4th. Has same access time with id:foo2, so the one with the
+              // newer modified time wins.
 };
 
 const char* kAllRegularFiles[] = {

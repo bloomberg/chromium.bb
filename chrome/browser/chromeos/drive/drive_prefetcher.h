@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_sync_client_observer.h"
@@ -21,7 +22,6 @@ class FilePath;
 
 namespace drive {
 
-class DriveEntryProto;
 class DriveFileSystemInterface;
 
 // The parameters for DrivePrefetcher construction.
@@ -79,7 +79,9 @@ class DrivePrefetcher : public DriveFileSystemObserver,
   void OnReadDirectoryFinished();
 
   // Keeps the kNumberOfLatestFilesToKeepInCache latest files in the filesystem.
-  typedef std::set<std::pair<int64, std::string> > LatestFileSet;
+  typedef bool (*PrefetchPriorityComparator)(const DriveEntryProto&,
+                                             const DriveEntryProto&);
+  typedef std::set<DriveEntryProto, PrefetchPriorityComparator> LatestFileSet;
   LatestFileSet latest_files_;
 
   // The queue of files to fetch. Files with higher priority comes front.

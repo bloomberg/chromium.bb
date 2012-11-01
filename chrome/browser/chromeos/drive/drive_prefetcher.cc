@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,6 +28,24 @@ bool IsPrefetchDisabled() {
       switches::kDisableDrivePrefetch);
 }
 
+// Returns true if |left| has lower priority than |right|.
+bool ComparePrefetchPriority(const DriveEntryProto& left,
+                             const DriveEntryProto& right) {
+  // First, compare last access time. The older entry has less priority.
+  if (left.file_info().last_accessed() != right.file_info().last_accessed())
+    return left.file_info().last_accessed() < right.file_info().last_accessed();
+
+  // When the entries have the same last access time (which happens quite often
+  // because Drive server doesn't set the field until an entry is viewed via
+  // drive.google.com), we use last modified time as the tie breaker.
+  if (left.file_info().last_modified() != right.file_info().last_modified())
+    return left.file_info().last_modified() < right.file_info().last_modified();
+
+  // Two entries have the same priority. To make this function a valid
+  // comparator for std::set, we need to differentiate them anyhow.
+  return left.resource_id() < right.resource_id();
+}
+
 }
 
 DrivePrefetcherOptions::DrivePrefetcherOptions()
@@ -38,7 +55,8 @@ DrivePrefetcherOptions::DrivePrefetcherOptions()
 
 DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
                                  const DrivePrefetcherOptions& options)
-    : number_of_inflight_prefetches_(0),
+    : latest_files_(&ComparePrefetchPriority),
+      number_of_inflight_prefetches_(0),
       number_of_inflight_traversals_(0),
       should_suspend_prefetch_(true),
       initial_prefetch_count_(options.initial_prefetch_count),
@@ -131,22 +149,19 @@ void DrivePrefetcher::ReconstructQueue() {
   queue_.clear();
   for (LatestFileSet::reverse_iterator it = latest_files_.rbegin();
       it != latest_files_.rend(); ++it) {
-    queue_.push_back(it->second);
+    queue_.push_back(it->resource_id());
   }
 }
 
 void DrivePrefetcher::VisitFile(const DriveEntryProto& entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  int64 last_access = entry.file_info().last_accessed();
-  const std::string& resource_id = entry.resource_id();
-
   // Excessively large files will not be fetched.
   if (entry.file_info().size() > prefetch_file_size_limit_)
     return;
 
   // Remember the file in the set ordered by the |last_accessed| field.
-  latest_files_.insert(std::make_pair(last_access, resource_id));
+  latest_files_.insert(entry);
   // If the set become too big, forget the oldest entry.
   if (latest_files_.size() > static_cast<size_t>(initial_prefetch_count_))
     latest_files_.erase(latest_files_.begin());
