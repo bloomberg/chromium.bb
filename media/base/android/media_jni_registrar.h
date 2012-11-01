@@ -7,10 +7,12 @@
 
 #include <jni.h>
 
+#include "media/base/media_export.h"
+
 namespace media {
 
 // Register all JNI bindings necessary for media.
-bool RegisterJni(JNIEnv* env);
+MEDIA_EXPORT bool RegisterJni(JNIEnv* env);
 
 }  // namespace media
 

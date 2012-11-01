@@ -37,7 +37,7 @@ CONTENT_EXPORT int ContentMain(HINSTANCE instance,
 // ContentMainRunner.
 // This should only be called once before ContentMainRunner actually running.
 // The ownership of |delegate| is transferred.
-void SetContentMainDelegate(ContentMainDelegate* delegate);
+CONTENT_EXPORT void SetContentMainDelegate(ContentMainDelegate* delegate);
 #else
 CONTENT_EXPORT int ContentMain(int argc,
                                const char** argv,

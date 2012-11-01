@@ -7,10 +7,12 @@
 
 #include <jni.h>
 
+#include "ui/base/ui_export.h"
+
 namespace gfx {
 
 // Register all JNI bindings necessary for gfx.
-bool RegisterJni(JNIEnv* env);
+UI_EXPORT bool RegisterJni(JNIEnv* env);
 
 }  // namespace gfx
 

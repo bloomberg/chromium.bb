@@ -6,13 +6,14 @@
 #define CONTENT_BROWSER_ANDROID_DRAW_DELEGATE_IMPL_H_
 
 #include "base/callback.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/android/draw_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
 namespace content {
 
-class DrawDelegateImpl : public DrawDelegate {
+class CONTENT_EXPORT DrawDelegateImpl : public DrawDelegate {
  public:
   static DrawDelegateImpl* GetInstance();
   DrawDelegateImpl();

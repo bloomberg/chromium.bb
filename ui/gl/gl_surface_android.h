@@ -6,6 +6,7 @@
 #define UI_GL_GL_SURFACE_ANDROID_H_
 
 #include "base/memory/ref_counted.h"
+#include "ui/base/ui_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gfx {
@@ -15,7 +16,7 @@ namespace gfx {
 // it is initialized, it always uses a pbuffer EGL surface until the native view
 // is set. The native view is in charge of sharing the GL texture with UI thread
 // in the browser process through SurfaceTexture.
-class AndroidViewSurface : public NativeViewGLSurfaceEGL {
+class GL_EXPORT AndroidViewSurface : public NativeViewGLSurfaceEGL {
  public:
   AndroidViewSurface();
 

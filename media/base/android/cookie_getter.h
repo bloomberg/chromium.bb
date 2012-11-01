@@ -8,11 +8,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
 // Class for asynchronously retrieving the cookies for a given URL.
-class CookieGetter {
+class MEDIA_EXPORT CookieGetter {
  public:
   typedef base::Callback<void(const std::string&)> GetCookieCB;
   virtual ~CookieGetter();

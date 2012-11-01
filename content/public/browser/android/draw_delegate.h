@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_ANDROID_DRAW_DELEGATE_H_
 
 #include "base/callback.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -15,7 +16,7 @@ class RenderWidgetHostView;
 
 // TODO(sievers): Route sizing of views through ContentViewCore
 // and remove this class.
-class DrawDelegate {
+class CONTENT_EXPORT DrawDelegate {
  public:
   static DrawDelegate* GetInstance();
   virtual ~DrawDelegate() { }

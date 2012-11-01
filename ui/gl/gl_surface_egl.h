@@ -58,7 +58,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 };
 
 // Encapsulates an EGL surface bound to a view.
-class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
+class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  public:
   NativeViewGLSurfaceEGL(bool software, gfx::AcceleratedWidget window);
 

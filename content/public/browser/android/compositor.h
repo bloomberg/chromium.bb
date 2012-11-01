@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_ANDROID_COMPOSITOR_H_
 
 #include "base/callback.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -23,7 +24,7 @@ class WebLayer;
 namespace content {
 
 // An interface to the browser-side compositor.
-class Compositor {
+class CONTENT_EXPORT Compositor {
  public:
   class Client {
    public:

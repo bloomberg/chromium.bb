@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
@@ -21,8 +22,8 @@ class GraphicsContext;
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
 // -----------------------------------------------------------------------------
-class CompositorImpl : public Compositor,
-                       public WebKit::WebLayerTreeViewClient {
+class CONTENT_EXPORT CompositorImpl : public Compositor,
+                                      public WebKit::WebLayerTreeViewClient {
  public:
   explicit CompositorImpl(Compositor::Client* client);
   virtual ~CompositorImpl();

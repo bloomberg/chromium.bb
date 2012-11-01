@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_PLAYER_BRIDGE_MANAGER_H_
 #define MEDIA_BASE_ANDROID_MEDIA_PLAYER_BRIDGE_MANAGER_H_
 
+#include "media/base/media_export.h"
+
 namespace media {
 
 class MediaPlayerBridge;
@@ -12,7 +14,7 @@ class MediaPlayerBridge;
 // This class is responsible for managing active MediaPlayerBridge objects.
 // It is implemented by webkit_media::MediaPlayerBridgeManagerImpl and
 // content::MediaPlayerManagerAndroid.
-class MediaPlayerBridgeManager {
+class MEDIA_EXPORT MediaPlayerBridgeManager {
  public:
   virtual ~MediaPlayerBridgeManager();
 
