@@ -123,7 +123,7 @@ TEST_F(VideoDecodeAccelerationSupportTest, Callback) {
 
   // Verify that the callback occured.
   EXPECT_FALSE(callback_done);
-  loop.RunAllPending();
+  loop.RunUntilIdle();
   EXPECT_TRUE(callback_done);
 }
 

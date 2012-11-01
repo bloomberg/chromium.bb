@@ -194,7 +194,7 @@ void TableViewTest::SetUp() {
 void TableViewTest::TearDown() {
   window_->Close();
   // Temporary workaround to avoid leak of RootView::pending_paint_task_.
-  message_loop_.RunAllPending();
+  message_loop_.RunUntilIdle();
 }
 
 void TableViewTest::VerifyViewOrder(int first, ...) {

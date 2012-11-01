@@ -29,7 +29,7 @@ class NativeWidgetWinTest : public testing::Test {
   NativeWidgetWin* CreateNativeWidgetWin();
 
   void RunPendingMessages() {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
  private:

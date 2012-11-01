@@ -45,7 +45,7 @@ class NativeWidgetAuraTest : public testing::Test {
     root_window()->SetHostSize(gfx::Size(640, 480));
   }
   virtual void TearDown() OVERRIDE {
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
     aura_test_helper_->TearDown();
   }
 

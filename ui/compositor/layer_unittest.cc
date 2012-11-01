@@ -194,7 +194,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
   void RunPendingMessages() {
-    MessageLoopForUI::current()->RunAllPending();
+    MessageLoopForUI::current()->RunUntilIdle();
   }
 
   // Invalidates the entire contents of the layer.
@@ -666,7 +666,7 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   }
 
   void RunPendingMessages() {
-    MessageLoopForUI::current()->RunAllPending();
+    MessageLoopForUI::current()->RunUntilIdle();
   }
 
  private:
