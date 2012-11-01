@@ -112,6 +112,10 @@ StackFrameSymbolizer::SymbolizerResult StackFrameSymbolizer::FillSourceLineInfo(
 
     case SymbolSupplier::INTERRUPT:
       return INTERRUPT;
+
+    default:
+      BPLOG(ERROR) << "Unknown SymbolResult enum: " << symbol_result;
+      return ERROR;
   }
 }
 
