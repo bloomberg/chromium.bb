@@ -75,6 +75,16 @@ class GTalkBaseTest(pyauto.PyUITest):
     return self._RunInRenderView(self.GetMoleInfo(mole_index), js,
         '//iframe[1]')
 
+  def RunInAllMoles(self, js):
+    """Execute javascript in all chat moles.
+
+    Args:
+      js: The javascript to run.
+    """
+    moles = self.GetMolesInfo()
+    for mole in moles:
+      self._RunInRenderView(mole, js, '//iframe[1]')
+
   def RunInRoster(self, js):
     """Execute javascript in the chat roster.
 
@@ -137,6 +147,16 @@ class GTalkBaseTest(pyauto.PyUITest):
     return self._GetExtensionViewInfo(
         'chrome-extension://%s/panel.html' % extension['id'],
         mole_index)
+
+  def GetMolesInfo(self):
+    """Get the data objects for all of the chat moles.
+
+    Returns:
+      Set of data objects describing moles.
+    """
+    extension = self.GetGTalkExtensionInfo()
+    return self._GetMatchingExtensionViews(
+        'chrome-extension://%s/panel.html' % extension['id'])
 
   def GetViewerInfo(self):
     """Get the data object about the GTalk viewer dialog."""
@@ -294,6 +314,21 @@ class GTalkBaseTest(pyauto.PyUITest):
     Returns:
       The data object for the tab.
     """
+
+    candidate_views = self._GetMatchingExtensionViews(url_query)
+    if len(candidate_views) > index:
+      return candidate_views[index]
+    return None
+
+  def _GetMatchingExtensionViews(self, url_query):
+    """Gets the data objects for the extension views matching the url_query.
+
+    Args:
+      url_query: The substring of the URL to search for.
+
+    Returns:
+      An array of matching data objects.
+    """
     extension_views = self.GetBrowserInfo()['extension_views']
     candidate_views = list()
     for extension_view in extension_views:
@@ -303,9 +338,7 @@ class GTalkBaseTest(pyauto.PyUITest):
     # No guarantee on view order, so sort the views to get the correct one for
     # a given index.
     candidate_views.sort()
-    if len(candidate_views) > index:
-      return candidate_views[index]
-    return None
+    return candidate_views
 
   def _GetInjectedJs(self):
     """Get the javascript to inject in the execution environment."""
