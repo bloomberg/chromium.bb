@@ -674,6 +674,34 @@ TEST_F(WorkspaceManagerTest, ShowMinimizedPersistWindow) {
   EXPECT_TRUE(w1->IsVisible());
 }
 
+// Test that a persistent window across all workspaces which was first
+// maximized, then got minimized and finally got restored does not crash the
+// system (see http://crbug.com/151698) and restores its maximized workspace
+// instead.
+TEST_F(WorkspaceManagerTest, MaximizeMinimizeRestoreDoesNotCrash) {
+  // We need to create a regular window first so there's an active workspace.
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->Show();
+
+  // Create a window that persists across all workspaces.
+  scoped_ptr<Window> w2(CreateTestWindow());
+  SetPersistsAcrossAllWorkspaces(
+      w2.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_FALSE(w2->IsVisible());
+  // This is the critical call which should switch to the maximized workspace
+  // of that window instead of reparenting it to the other workspace (and
+  // crashing while trying to do so).
+  wm::ActivateWindow(w2.get());
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
+            w2->GetProperty(aura::client::kShowStateKey));
+  EXPECT_TRUE(w2->IsVisible());
+}
+
 // Test that we report we're in the fullscreen state even if the fullscreen
 // window isn't being managed by us (http://crbug.com/123931).
 TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
