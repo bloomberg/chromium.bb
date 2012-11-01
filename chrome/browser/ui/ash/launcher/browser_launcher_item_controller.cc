@@ -201,20 +201,7 @@ void BrowserLauncherItemController::TabChangedAt(
     return;
   }
 
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(tab->web_contents());
-  if (favicon_tab_helper->FaviconIsValid() ||
-      !favicon_tab_helper->ShouldDisplayFavicon()) {
-    // We have the favicon, update immediately.
-    UpdateLauncher(tab);
-  } else {
-    int item_index = launcher_model()->ItemIndexByID(launcher_id());
-    if (item_index == -1)
-      return;
-    ash::LauncherItem item = launcher_model()->items()[item_index];
-    item.image = gfx::ImageSkia();
-    launcher_model()->Set(item_index, item);
-  }
+  UpdateLauncher(tab);
 }
 
 void BrowserLauncherItemController::TabReplacedAt(
