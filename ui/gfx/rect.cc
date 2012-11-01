@@ -4,7 +4,7 @@
 
 #include "ui/gfx/rect.h"
 
-#include <cmath>
+#include <algorithm>
 
 #if defined(OS_WIN)
 #include <windows.h>

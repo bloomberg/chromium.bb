@@ -4,7 +4,7 @@
 
 #include "ui/gfx/rect_f.h"
 
-#include <cmath>
+#include <algorithm>
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
