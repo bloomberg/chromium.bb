@@ -20,7 +20,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
-#include "webkit/dom_storage/dom_storage_area.h"
 
 namespace {
 
@@ -129,8 +128,6 @@ IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionCookies) {
 }
 
 IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionStorage) {
-  // Write the data on disk less lazily.
-  dom_storage::DomStorageArea::DisableCommitDelayForTesting();
   SessionStartupPref::SetStartupPref(
       browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
   StoreDataWithPage("session_storage.html");

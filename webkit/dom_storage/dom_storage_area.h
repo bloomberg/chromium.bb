@@ -80,8 +80,6 @@ class WEBKIT_STORAGE_EXPORT DomStorageArea
   // no longer do anything.
   void Shutdown();
 
-  static void DisableCommitDelayForTesting();
-
  private:
   friend class DomStorageAreaTest;
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, DomStorageAreaBasics);
