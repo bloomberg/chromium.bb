@@ -173,7 +173,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void GotFocus();
 
   // Tells the renderer it got/lost focus.
-  void Focus();
+  virtual void Focus();
   virtual void LostCapture();
 
   // Sets whether the renderer should show controls in an active state.  On all

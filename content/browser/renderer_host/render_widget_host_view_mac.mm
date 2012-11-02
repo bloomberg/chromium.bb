@@ -1432,8 +1432,15 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
-  if (render_widget_host_)
+  if (render_widget_host_) {
     render_widget_host_->SetActive(active);
+    if (active) {
+      if (HasFocus())
+        render_widget_host_->Focus();
+    } else {
+      render_widget_host_->Blur();
+    }
+  }
   if (HasFocus())
     SetTextInputActive(active);
   if (!active) {

@@ -14,6 +14,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -27,6 +28,18 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
   virtual ~MockRenderWidgetHostDelegate() {}
+};
+
+class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
+ public:
+  MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
+                           RenderProcessHost* process,
+                           int routing_id)
+      : RenderWidgetHostImpl(delegate, process, routing_id) {
+  }
+
+  MOCK_METHOD0(Focus, void());
+  MOCK_METHOD0(Blur, void());
 };
 
 // Generates the |length| of composition rectangle vector and save them to
@@ -622,4 +635,49 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionMultilineCase) {
       GetExpectedRect(kOrigin, kBoundsUnit, ui::Range(0, 10), 1),
       gfx::Rect(NSRectToCGRect(rect)));
 }
+
+// Verify that |SetActive()| calls |RenderWidgetHostImpl::Blur()| and
+// |RenderWidgetHostImp::Focus()|.
+TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
+  MockRenderWidgetHostDelegate delegate;
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+
+  // Owned by its |cocoa_view()|.
+  MockRenderWidgetHostImpl* rwh = new MockRenderWidgetHostImpl(
+      &delegate, process_host, MSG_ROUTING_NONE);
+  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
+      RenderWidgetHostView::CreateViewForWidget(rwh));
+
+  scoped_nsobject<CocoaTestHelperWindow>
+      window([[CocoaTestHelperWindow alloc] init]);
+  [[window contentView] addSubview:view->cocoa_view()];
+
+  EXPECT_CALL(*rwh, Focus());
+  [window makeFirstResponder:view->cocoa_view()];
+  testing::Mock::VerifyAndClearExpectations(rwh);
+
+  EXPECT_CALL(*rwh, Blur());
+  view->SetActive(false);
+  testing::Mock::VerifyAndClearExpectations(rwh);
+
+  EXPECT_CALL(*rwh, Focus());
+  view->SetActive(true);
+  testing::Mock::VerifyAndClearExpectations(rwh);
+
+  // Unsetting first responder should blur.
+  EXPECT_CALL(*rwh, Blur());
+  [window makeFirstResponder:nil];
+  testing::Mock::VerifyAndClearExpectations(rwh);
+
+  // |SetActive()| shoud not focus if view is not first responder.
+  EXPECT_CALL(*rwh, Focus()).Times(0);
+  view->SetActive(true);
+  testing::Mock::VerifyAndClearExpectations(rwh);
+
+  // Clean up.
+  rwh->Shutdown();
+}
+
 }  // namespace content
