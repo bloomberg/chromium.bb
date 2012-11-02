@@ -1006,6 +1006,11 @@
         "parameters": []
       },
       {
+        "name": "reloadDrive",
+        "description": "Reload the filesystem metadata from the server immediately.",
+        "parameters": []
+      },
+      {
         "name": "getNetworkConnectionState",
         "description": "Retrieves the state of the currently active network connection.",
         "parameters": [

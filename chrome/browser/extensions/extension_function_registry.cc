@@ -386,6 +386,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SetPreferencesFunction>();
   RegisterFunction<SearchDriveFunction>();
   RegisterFunction<ClearDriveCacheFunction>();
+  RegisterFunction<ReloadDriveFunction>();
   RegisterFunction<GetNetworkConnectionStateFunction>();
   RegisterFunction<RequestDirectoryRefreshFunction>();
   RegisterFunction<SetLastModifiedFunction>();

@@ -2690,6 +2690,13 @@ DialogType.isModal = function(type) {
         this.dialogDom_.setAttribute('ctrl-pressing', 'true');
         return;
 
+      case 'Alt-Shift-82':  // Alt-Shift-R => Reload the file system metadata.
+        var gdataPath = RootDirectory.GDATA;
+        if (this.isOnGData() && this.volumeManager_.isMounted(gdataPath))
+          chrome.fileBrowserPrivate.reloadDrive();
+        event.preventDefault();
+        return;
+
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
         var dm = this.directoryModel_;
         dm.setFilterHidden(!dm.isFilterHiddenOn());

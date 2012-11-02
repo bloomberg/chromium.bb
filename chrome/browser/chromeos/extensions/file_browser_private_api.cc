@@ -2842,6 +2842,19 @@ bool ClearDriveCacheFunction::RunImpl() {
   return true;
 }
 
+bool ReloadDriveFunction::RunImpl() {
+  // |system_service| is NULL if Drive is disabled.
+  drive::DriveSystemService* system_service =
+      drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  if (!system_service)
+    return false;
+
+  system_service->ReloadAndRemountFileSystem();
+
+  SendResponse(true);
+  return true;
+}
+
 bool GetNetworkConnectionStateFunction::RunImpl() {
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
