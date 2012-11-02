@@ -1144,7 +1144,7 @@ class OSSettings(object):
 
   def union(self, rhs):
     assert self.name == rhs.name
-    assert not (self.command and rhs.command)
+    assert not (self.command and rhs.command) or (self.command == rhs.command)
     var = {
       KEY_TOUCHED: sorted(self.touched + rhs.touched),
       KEY_TRACKED: sorted(self.tracked + rhs.tracked),
