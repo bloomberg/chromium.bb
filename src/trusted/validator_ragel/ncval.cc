@@ -184,6 +184,8 @@ Bool ProcessInstruction(
   // This way, if validator interface was changed (new error bits were
   // introduced), we at least wouldn't ignore them completely.
 
+  // TODO(shcherbina): deal with code duplication somehow.
+
   if (validation_info & UNRECOGNIZED_INSTRUCTION) {
     validation_info &= ~UNRECOGNIZED_INSTRUCTION;
     errors.push_back(Error(offset, "unrecognized instruction"));
@@ -199,12 +201,64 @@ Bool ProcessInstruction(
     errors.push_back(Error(offset, "required CPU feature not found"));
   }
 
+  if (validation_info & FORBIDDEN_BASE_REGISTER) {
+    validation_info &= ~FORBIDDEN_BASE_REGISTER;
+    errors.push_back(Error(offset, "improper memory address - bad base"));
+  }
+
+  if (validation_info & UNRESTRICTED_INDEX_REGISTER) {
+    validation_info &= ~UNRESTRICTED_INDEX_REGISTER;
+    errors.push_back(Error(offset, "improper memory address - bad index"));
+  }
+
+  if ((validation_info & BAD_RSP_RBP_PROCESSING_MASK) ==
+      RESTRICTED_RBP_UNPROCESSED) {
+    validation_info &= ~BAD_RSP_RBP_PROCESSING_MASK;
+    errors.push_back(Error(offset, "improper %rbp sandboxing"));
+  }
+
+  if ((validation_info & BAD_RSP_RBP_PROCESSING_MASK) ==
+      UNRESTRICTED_RBP_PROCESSED) {
+    validation_info &= ~BAD_RSP_RBP_PROCESSING_MASK;
+    errors.push_back(Error(offset, "improper %rbp sandboxing"));
+  }
+
+  if ((validation_info & BAD_RSP_RBP_PROCESSING_MASK) ==
+      RESTRICTED_RSP_UNPROCESSED) {
+    validation_info &= ~BAD_RSP_RBP_PROCESSING_MASK;
+    errors.push_back(Error(offset, "improper %rsp sandboxing"));
+  }
+
+  if ((validation_info & BAD_RSP_RBP_PROCESSING_MASK) ==
+      UNRESTRICTED_RSP_PROCESSED) {
+    validation_info &= ~BAD_RSP_RBP_PROCESSING_MASK;
+    errors.push_back(Error(offset, "improper %rsp sandboxing"));
+  }
+
+  if (validation_info & R15_MODIFIED) {
+    validation_info &= ~R15_MODIFIED;
+    errors.push_back(Error(offset, "error - %r15 is changed"));
+  }
+
+  if (validation_info & BPL_MODIFIED) {
+    validation_info &= ~BPL_MODIFIED;
+    errors.push_back(Error(offset, "error - %bpl or %bp is changed"));
+  }
+
+  if (validation_info & SPL_MODIFIED) {
+    validation_info &= ~SPL_MODIFIED;
+    errors.push_back(Error(offset, "error - %spl or %sp is changed"));
+  }
+
+  if (validation_info & BAD_CALL_ALIGNMENT) {
+    validation_info &= ~BAD_CALL_ALIGNMENT;
+    errors.push_back(Error(offset, "warning - bad call alignment"));
+  }
+
   if (validation_info & BAD_JUMP_TARGET) {
     validation_info &= ~BAD_JUMP_TARGET;
     user_data.bad_jump_targets->insert(offset);
   }
-  // ...
-  // TODO(shcherbina): distinguish more kinds of errors
 
   if (validation_info & VALIDATION_ERRORS_MASK) {
     errors.push_back(Error(offset, "<some other error>"));
