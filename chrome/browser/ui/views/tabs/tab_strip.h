@@ -54,7 +54,7 @@ class TabStrip : public views::View,
  public:
   static const char kViewClassName[];
 
-  TabStrip(TabStripController* controller);
+  explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
 
   // Sets the layout type. If |adjust_layout| is true the layout type changes
@@ -156,9 +156,6 @@ class TabStrip : public views::View,
 
   // Set the background offset used by inactive tabs to match the frame image.
   void SetBackgroundOffset(const gfx::Point& offset);
-
-  // Set the size to fill for NTP theme background image.
-  void SetNTPBackgroundFillSize(const gfx::Size& new_size);
 
   // Returns the new tab button. This is never NULL.
   views::View* newtab_button();

@@ -9,7 +9,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/test/base/testing_profile.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,12 +63,10 @@ class MockThemeProvider : public ui::ThemeProvider {
   int currentTabContentsHeight_;
   ui::ThemeProvider* themeProvider_;
   bookmarks::VisualState visualState_;
-  Profile* profile_;
 }
 @property (nonatomic, assign) int currentTabContentsHeight;
 @property (nonatomic, assign) ui::ThemeProvider* themeProvider;
 @property (nonatomic, assign) bookmarks::VisualState visualState;
-@property (nonatomic, assign) Profile* profile;
 
 // |BookmarkBarState| protocol:
 - (BOOL)isVisible;
@@ -88,7 +85,6 @@ class MockThemeProvider : public ui::ThemeProvider {
 @synthesize currentTabContentsHeight = currentTabContentsHeight_;
 @synthesize themeProvider = themeProvider_;
 @synthesize visualState = visualState_;
-@synthesize profile = profile_;
 
 - (id)init {
   if ((self = [super init])) {
@@ -145,8 +141,6 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithNoImage) {
   EXPECT_CALL(provider, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
       .WillRepeatedly(Return(false));
   [controller_.get() setThemeProvider:&provider];
-  TestingProfile profile;
-  [controller_.get() setProfile:&profile];
 
   [view_ display];
 }
@@ -194,8 +188,6 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
 
   [controller_.get() setThemeProvider:&provider];
   [controller_.get() setCurrentTabContentsHeight:200];
-  TestingProfile profile;
-  [controller_.get() setProfile:&profile];
 
   [view_ display];
 }

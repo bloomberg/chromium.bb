@@ -15,15 +15,5 @@ namespace search {
 
 const int kMinContentHeightForBottomBookmarkBar = 277;
 
-SkColor GetNTPBackgroundColor(content::BrowserContext* browser_context) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  const ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile);
-  if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND) ||
-      !chrome::search::IsInstantExtendedAPIEnabled(profile)) {
-    return tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
-  }
-  return SK_ColorWHITE;
-}
-
 } //  namespace search
 } //  namespace chrome

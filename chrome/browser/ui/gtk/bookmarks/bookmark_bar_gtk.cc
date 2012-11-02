@@ -1421,7 +1421,7 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
     gfx::Rect area = gtk_widget_get_has_window(widget) ?
                      gfx::Rect(0, 0, allocation.width, allocation.height) :
                      gfx::Rect(allocation);
-    NtpBackgroundUtil::PaintBackgroundDetachedMode(browser_->profile(), &canvas,
+    NtpBackgroundUtil::PaintBackgroundDetachedMode(theme_provider, &canvas,
         area, tab_contents_size.height());
   }
 

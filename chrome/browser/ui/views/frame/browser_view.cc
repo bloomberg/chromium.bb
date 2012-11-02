@@ -242,7 +242,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     if (contents && contents->GetView())
       height = contents->GetView()->GetContainerSize().height();
     NtpBackgroundUtil::PaintBackgroundDetachedMode(
-        browser_->profile(), canvas,
+        tp, canvas,
         gfx::Rect(0, toolbar_overlap, host_view_->width(),
                   host_view_->height() - toolbar_overlap),
         height);

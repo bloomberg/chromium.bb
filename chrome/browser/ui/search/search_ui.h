@@ -5,23 +5,6 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_
 
-#include "chrome/browser/ui/search/search_types.h"
-#include "third_party/skia/include/core/SkColor.h"
-
-class Profile;
-
-namespace content {
-class BrowserContext;
-}
-
-namespace gfx {
-class ImageSkia;
-}
-
-namespace ui {
-class ThemeProvider;
-}
-
 namespace chrome {
 namespace search {
 
@@ -31,10 +14,6 @@ namespace search {
 // TODO(kuan): change this when tile_page.js changes to use non-const
 // UPPER_SECTION_HEIGHT,
 extern const int kMinContentHeightForBottomBookmarkBar;
-
-// Returns the NTP content area's background color.  May return white if
-// set in chrome://instant.
-SkColor GetNTPBackgroundColor(content::BrowserContext* browser_context);
 
 }  // namespace search
 }  // namespace chrome

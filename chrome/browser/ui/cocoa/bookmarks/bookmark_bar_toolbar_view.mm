@@ -75,8 +75,8 @@ const CGFloat kBorderRadius = 3.0;
     gfx::CanvasSkiaPaint canvas(bounds, true);
     gfx::Rect area(0, 0, NSWidth(bounds), NSHeight(bounds));
 
-    NtpBackgroundUtil::PaintBackgroundDetachedMode([controller_ profile],
-        &canvas, area, [controller_ currentTabContentsHeight]);
+    NtpBackgroundUtil::PaintBackgroundDetachedMode(themeProvider, &canvas,
+        area, [controller_ currentTabContentsHeight]);
   }
 
   // Draw our bookmark bar border on top of the background.
