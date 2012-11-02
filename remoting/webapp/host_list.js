@@ -164,7 +164,9 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
     } else {
       // Some other error.
       console.error('Bad status on host list query: ', xhr);
-      if (xhr.status == 401) {
+      if (xhr.status == 0) {
+        this.lastError_ = remoting.Error.NO_RESPONSE;
+      } else if (xhr.status == 401) {
         this.lastError_ = remoting.Error.AUTHENTICATION_FAILED;
       } else if (xhr.status == 503) {
         this.lastError_ = remoting.Error.SERVICE_UNAVAILABLE;
