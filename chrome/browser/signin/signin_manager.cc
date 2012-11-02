@@ -175,6 +175,11 @@ void SigninManager::SetAuthenticatedUsername(const std::string& username) {
   // TODO(tim): We could go further in ensuring kGoogleServicesUsername and
   // authenticated_username_ are consistent once established (e.g. remove
   // authenticated_username_ altogether). Bug 107160.
+
+  // Go ahead and update the last signed in username here as well. Once a
+  // user is signed in the two preferences should match. Doing it here as
+  // opposed to on signin allows us to catch the upgrade scenario.
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername, username);
 }
 
 bool SigninManager::PrepareForSignin(SigninType type,
@@ -455,11 +460,6 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
     possibly_invalid_username_.clear();
     profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                     authenticated_username_);
-
-    // Also overwrite the last username at this point.
-    profile_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
-                                    authenticated_username_);
-
   }
   UserInfoMap::const_iterator service_iter = data.find(kGetInfoServicesKey);
   if (service_iter == data.end()) {
