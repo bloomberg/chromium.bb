@@ -53,6 +53,9 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // Stops the device referenced by the session id.
   void Stop(int session_id);
 
+  void UseFakeDevice();
+  bool ShouldUseFakeDevice() const;
+
  private:
   typedef std::map<int, AudioInputDeviceManagerEventHandler*> EventHandlerMap;
   typedef std::map<int, StreamDeviceInfo> StreamDeviceMap;
@@ -82,6 +85,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   MediaStreamProviderListener* listener_;
   int next_capture_session_id_;
   EventHandlerMap event_handlers_;
+  bool use_fake_device_;
 
   // Only accessed from media stream device thread.
   StreamDeviceMap devices_;

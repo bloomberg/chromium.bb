@@ -213,6 +213,13 @@ void AudioInputRendererHost::OnCreateStream(
 
   media::AudioParameters audio_params(params);
 
+  if (media_stream_manager_->audio_input_device_manager()->
+      ShouldUseFakeDevice()) {
+    audio_params.Reset(media::AudioParameters::AUDIO_FAKE,
+                       params.channel_layout(), params.sample_rate(),
+                       params.bits_per_sample(), params.frames_per_buffer());
+  }
+
   DCHECK_GT(audio_params.frames_per_buffer(), 0);
   uint32 buffer_size = audio_params.GetBytesPerBuffer();
 

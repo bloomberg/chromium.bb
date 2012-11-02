@@ -859,6 +859,7 @@ void MediaStreamManager::SettingsError(const std::string& label) {
 void MediaStreamManager::UseFakeDevice() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   video_capture_manager()->UseFakeDevice();
+  audio_input_device_manager()->UseFakeDevice();
   ui_controller_->UseFakeUI();
 }
 

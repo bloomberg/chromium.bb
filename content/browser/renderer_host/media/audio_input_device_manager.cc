@@ -26,6 +26,7 @@ AudioInputDeviceManager::AudioInputDeviceManager(
     media::AudioManager* audio_manager)
     : listener_(NULL),
       next_capture_session_id_(kFirstSessionId),
+      use_fake_device_(false),
       audio_manager_(audio_manager) {
 }
 
@@ -119,6 +120,16 @@ void AudioInputDeviceManager::Stop(int session_id) {
 
   // Erase the event handler referenced by the session_id.
   event_handlers_.erase(session_id);
+}
+
+void AudioInputDeviceManager::UseFakeDevice() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  use_fake_device_ = true;
+}
+
+bool AudioInputDeviceManager::ShouldUseFakeDevice() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return use_fake_device_;
 }
 
 void AudioInputDeviceManager::EnumerateOnDeviceThread() {
