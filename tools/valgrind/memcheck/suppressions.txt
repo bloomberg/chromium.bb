@@ -6080,16 +6080,6 @@
   fun:_ZN7content23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
 }
 {
-   bug_157669
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN17VisitedLinkMasterC1EP7Profile
-   fun:_ZN12_GLOBAL__N_122BuildVisitedLinkMasterEP7Profile
-   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
-   fun:_ZN26ProfileKeyedServiceFactory23SetTestingFactoryAndUseEP7ProfilePFP19ProfileKeyedServiceS1_E
-   fun:_ZN21VisitedLinkEventsTest5SetUpEv
-}
-{
    bug_158510
    Memcheck:Uninitialized
    fun:_ZN7WebCore11RenderTable6layoutEv

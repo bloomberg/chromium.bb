@@ -104,7 +104,8 @@ class VisitedLinkTest : public testing::Test {
   // the VisitedLinkMaster constructor.
   bool InitVisited(int initial_size, bool suppress_rebuild) {
     // Initialize the visited link system.
-    master_.reset(new VisitedLinkMaster(&listener_, history_service_.get(),
+    master_.reset(new VisitedLinkMaster(new TrackingVisitedLinkEventListener(),
+                                        history_service_.get(),
                                         suppress_rebuild, visited_file_,
                                         initial_size));
     return master_->Init();
@@ -184,7 +185,6 @@ class VisitedLinkTest : public testing::Test {
     ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
 
     visited_file_ = history_dir_.Append(FILE_PATH_LITERAL("VisitedLinks"));
-    listener_.SetUp();
   }
 
   virtual void TearDown() {
@@ -203,7 +203,6 @@ class VisitedLinkTest : public testing::Test {
 
   scoped_ptr<VisitedLinkMaster> master_;
   scoped_ptr<HistoryService> history_service_;
-  TrackingVisitedLinkEventListener listener_;
 };
 
 // This test creates and reads some databases to make sure the data is
@@ -463,11 +462,14 @@ TEST_F(VisitedLinkTest, Listener) {
   // ... and all of the remaining ones.
   master_->DeleteAllURLs();
 
+  TrackingVisitedLinkEventListener* listener =
+      static_cast<TrackingVisitedLinkEventListener*>(master_->GetListener());
+
   // Verify that VisitedLinkMaster::Listener::Add was called for each added URL.
-  EXPECT_EQ(g_test_count, listener_.add_count());
+  EXPECT_EQ(g_test_count, listener->add_count());
   // Verify that VisitedLinkMaster::Listener::Reset was called both when one and
   // all URLs are deleted.
-  EXPECT_EQ(2, listener_.reset_count());
+  EXPECT_EQ(2, listener->reset_count());
 }
 
 class VisitCountingProfile : public TestingProfile {

@@ -178,16 +178,22 @@ class VisitedLinkMaster::TableBuilder
 
 // VisitedLinkMaster ----------------------------------------------------------
 
-VisitedLinkMaster::VisitedLinkMaster(Profile* profile) {
-  InitMembers(new VisitedLinkEventListener(profile), profile);
+VisitedLinkMaster::VisitedLinkMaster(Profile* profile)
+    : profile_(profile) {
+  listener_.reset(new VisitedLinkEventListener(profile));
+  DCHECK(listener_.get());
+  InitMembers();
 }
 
 VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      HistoryService* history_service,
                                      bool suppress_rebuild,
                                      const FilePath& filename,
-                                     int32 default_table_size) {
-  InitMembers(listener, NULL);
+                                     int32 default_table_size)
+    : profile_(NULL) {
+  listener_.reset(listener);
+  DCHECK(listener_.get());
+  InitMembers();
 
   database_name_override_ = filename;
   table_size_override_ = default_table_size;
@@ -208,10 +214,7 @@ VisitedLinkMaster::~VisitedLinkMaster() {
   // So nothing should be done here.
 }
 
-void VisitedLinkMaster::InitMembers(Listener* listener, Profile* profile) {
-  DCHECK(listener);
-
-  listener_ = listener;
+void VisitedLinkMaster::InitMembers() {
   file_ = NULL;
   shared_memory_ = NULL;
   shared_memory_serial_ = 0;
@@ -219,7 +222,6 @@ void VisitedLinkMaster::InitMembers(Listener* listener, Profile* profile) {
   table_size_override_ = 0;
   history_service_override_ = NULL;
   suppress_rebuild_ = false;
-  profile_ = profile;
   sequence_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
 
 #ifndef NDEBUG

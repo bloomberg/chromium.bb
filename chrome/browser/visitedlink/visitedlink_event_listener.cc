@@ -119,6 +119,8 @@ VisitedLinkEventListener::VisitedLinkEventListener(Profile* profile)
 }
 
 VisitedLinkEventListener::~VisitedLinkEventListener() {
+  if (!pending_visited_links_.empty())
+    pending_visited_links_.clear();
 }
 
 void VisitedLinkEventListener::NewTable(base::SharedMemory* table_memory) {

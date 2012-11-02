@@ -1587,25 +1587,6 @@
    fun:dom_storage::DomStorageContext::CreateSessionNamespace
 }
 {
-  bug_157669a
-  Heapcheck:Leak
-  ...
-  fun:VisitedLinkEventListener::Add
-  fun:VisitedLinkMaster::AddFingerprint
-  fun:VisitedLinkMaster::TryToAddURL
-  fun:VisitedLinkMaster::AddURL
-  fun:VisitedLinkEventsTest*
-}
-{
-  bug_157669b
-  Heapcheck:Leak
-  ...
-  fun:::BuildVisitedLinkMaster
-  fun:ProfileKeyedServiceFactory::GetServiceForProfile
-  fun:ProfileKeyedServiceFactory::SetTestingFactoryAndUse
-  fun:VisitedLinkEventsTest::SetUp
-}
-{
   bug_132431
   Heapcheck:Leak
   ...

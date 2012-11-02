@@ -118,6 +118,11 @@ class VisitedLinkMaster : public VisitedLinkCommon,
     return used_items_;
   }
 
+  // Returns the listener.
+  VisitedLinkMaster::Listener* GetListener() const {
+    return listener_.get();
+  }
+
   // Call to cause the entire database file to be re-written from scratch
   // to disk. Used by the performance tester.
   void RewriteFile() {
@@ -158,7 +163,7 @@ class VisitedLinkMaster : public VisitedLinkCommon,
   static const size_t kBigDeleteThreshold;
 
   // Backend for the constructors initializing the members.
-  void InitMembers(Listener* listener, Profile* profile);
+  void InitMembers();
 
   // If a rebuild is in progress, we save the URL in the temporary list.
   // Otherwise, we add this to the table. Returns the index of the
@@ -306,8 +311,6 @@ class VisitedLinkMaster : public VisitedLinkCommon,
     return hash - 1;
   }
 
-  Listener* listener_;
-
 #ifndef NDEBUG
   // Indicates whether any asynchronous operation has ever been completed.
   // We do some synchronous reads that require that no asynchronous operations
@@ -320,6 +323,9 @@ class VisitedLinkMaster : public VisitedLinkCommon,
   // Reference to the user profile that this object belongs to
   // (it knows the path to where the data is stored)
   Profile* profile_;
+
+  // VisitedLinkEventListener to handle incoming events.
+  scoped_ptr<Listener> listener_;
 
   // Lazily initialized sequence token for posting file tasks.
   base::SequencedWorkerPool::SequenceToken sequence_token_;
