@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,9 +53,6 @@ int SpellCheckHost::GetSpellCheckLanguages(
                                 profile->GetPrefs(), NULL);
   std::string dictionary_language = dictionary_language_pref.GetValue();
 
-  // The current dictionary language should be there.
-  languages->push_back(dictionary_language);
-
   // Now scan through the list of accept languages, and find possible mappings
   // from this list to the existing list of spell check languages.
   std::vector<std::string> accept_languages;
@@ -69,6 +66,24 @@ int SpellCheckHost::GetSpellCheckLanguages(
   base::SplitString(accept_languages_pref.GetValue(), ',', &accept_languages);
 #endif  // !OS_MACOSX
 
+  GetSpellCheckLanguagesFromAcceptLanguages(
+      accept_languages, dictionary_language, languages);
+
+  for (size_t i = 0; i < languages->size(); ++i) {
+    if ((*languages)[i] == dictionary_language)
+      return i;
+  }
+  return -1;
+}
+
+// static
+void SpellCheckHost::GetSpellCheckLanguagesFromAcceptLanguages(
+    const std::vector<std::string>& accept_languages,
+    const std::string& dictionary_language,
+    std::vector<std::string>* languages) {
+  // The current dictionary language should be there.
+  languages->push_back(dictionary_language);
+
   for (std::vector<std::string>::const_iterator i = accept_languages.begin();
        i != accept_languages.end(); ++i) {
     std::string language =
@@ -79,12 +94,6 @@ int SpellCheckHost::GetSpellCheckLanguages(
       languages->push_back(language);
     }
   }
-
-  for (size_t i = 0; i < languages->size(); ++i) {
-    if ((*languages)[i] == dictionary_language)
-      return i;
-  }
-  return -1;
 }
 
 // static

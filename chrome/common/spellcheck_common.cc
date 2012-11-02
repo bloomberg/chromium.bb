@@ -148,28 +148,9 @@ std::string GetCorrespondingSpellCheckLanguage(const std::string& language) {
       return g_supported_spellchecker_languages[i].language;
   }
 
-  // Look for a match by comparing only language parts. All the 'en-RR'
-  // except for 'en-GB' exactly matched in the above loop, will match
-  // 'en-US'. This is not ideal because 'en-ZA', 'en-NZ' had
-  // better be matched with 'en-GB'. This does not handle cases like
-  // 'az-Latn-AZ' vs 'az-Arab-AZ', either, but we don't use 3-part
-  // locale ids with a script code in the middle, yet.
-  // TODO(jungshik): Add a better fallback.
-  std::string language_part(language, 0, language.find('-'));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(g_supported_spellchecker_languages);
-       ++i) {
-    std::string spellcheck_language(
-        g_supported_spellchecker_languages[i].language_region);
-    if (spellcheck_language.substr(0, spellcheck_language.find('-')) ==
-        language_part) {
-      return spellcheck_language;
-    }
-  }
-
   // No match found - return blank.
   return std::string();
 }
-
 
 void SpellCheckLanguages(std::vector<std::string>* languages) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(g_supported_spellchecker_languages);
