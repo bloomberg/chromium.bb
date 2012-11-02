@@ -608,6 +608,11 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
                    output_state_,
                    outputs,
                    connected_output_count_)) {
+      // Force the DPMS on since the driver doesn't always detect that it should
+      // turn on. This is needed when coming back from idle suspend.
+      CHECK(DPMSEnable(display));
+      CHECK(DPMSForceLevel(display, DPMSModeOn));
+
       XRRFreeScreenResources(screen);
       XUngrabServer(display);
       return true;
@@ -647,7 +652,7 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
   }
 
   // Force the DPMS on since the driver doesn't always detect that it should
-  // turn on.
+  // turn on. This is needed when coming back from idle suspend.
   if (power_on) {
     CHECK(DPMSEnable(display));
     CHECK(DPMSForceLevel(display, DPMSModeOn));
