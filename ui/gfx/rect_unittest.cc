@@ -10,7 +10,7 @@
 
 #include <limits>
 
-namespace ui {
+namespace gfx {
 
 TEST(RectTest, Contains) {
   static const struct ContainsCase {
@@ -35,8 +35,7 @@ TEST(RectTest, Contains) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(contains_cases); ++i) {
     const ContainsCase& value = contains_cases[i];
-    gfx::Rect rect(value.rect_x, value.rect_y,
-                   value.rect_width, value.rect_height);
+    Rect rect(value.rect_x, value.rect_y, value.rect_width, value.rect_height);
     EXPECT_EQ(value.contained, rect.Contains(value.point_x, value.point_y));
   }
 }
@@ -63,8 +62,8 @@ TEST(RectTest, Intersects) {
     { 10, 10, 10, 10, 21, 15, 10, 10, false }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     EXPECT_EQ(tests[i].intersects, r1.Intersects(r2));
   }
 }
@@ -104,10 +103,10 @@ TEST(RectTest, Intersect) {
       0, 0, 0, 0 }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
-    gfx::Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
-    gfx::Rect ir = gfx::IntersectRects(r1, r2);
+    Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
+    Rect ir = IntersectRects(r1, r2);
     EXPECT_EQ(r3.x(), ir.x());
     EXPECT_EQ(r3.y(), ir.y());
     EXPECT_EQ(r3.width(), ir.width());
@@ -153,10 +152,10 @@ TEST(RectTest, Union) {
       2, 2, 2, 2 }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
-    gfx::Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
-    gfx::Rect u = gfx::UnionRects(r1, r2);
+    Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
+    Rect u = UnionRects(r1, r2);
     EXPECT_EQ(r3.x(), u.x());
     EXPECT_EQ(r3.y(), u.y());
     EXPECT_EQ(r3.width(), u.width());
@@ -165,12 +164,12 @@ TEST(RectTest, Union) {
 }
 
 TEST(RectTest, Equals) {
-  ASSERT_TRUE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(0, 0, 0, 0));
-  ASSERT_TRUE(gfx::Rect(1, 2, 3, 4) == gfx::Rect(1, 2, 3, 4));
-  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(0, 0, 0, 1));
-  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(0, 0, 1, 0));
-  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(0, 1, 0, 0));
-  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(1, 0, 0, 0));
+  ASSERT_TRUE(Rect(0, 0, 0, 0) == Rect(0, 0, 0, 0));
+  ASSERT_TRUE(Rect(1, 2, 3, 4) == Rect(1, 2, 3, 4));
+  ASSERT_FALSE(Rect(0, 0, 0, 0) == Rect(0, 0, 0, 1));
+  ASSERT_FALSE(Rect(0, 0, 0, 0) == Rect(0, 0, 1, 0));
+  ASSERT_FALSE(Rect(0, 0, 0, 0) == Rect(0, 1, 0, 0));
+  ASSERT_FALSE(Rect(0, 0, 0, 0) == Rect(1, 0, 0, 0));
 }
 
 TEST(RectTest, AdjustToFit) {
@@ -205,10 +204,10 @@ TEST(RectTest, AdjustToFit) {
       2, 2, 1, 1 }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
-    gfx::Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
-    gfx::Rect u = r1;
+    Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
+    Rect u = r1;
     u.AdjustToFit(r2);
     EXPECT_EQ(r3.x(), u.x());
     EXPECT_EQ(r3.y(), u.y());
@@ -218,159 +217,159 @@ TEST(RectTest, AdjustToFit) {
 }
 
 TEST(RectTest, Subtract) {
-  gfx::Rect result;
+  Rect result;
 
   // Matching
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(10, 10, 20, 20));
-  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(10, 10, 20, 20));
+  EXPECT_EQ(Rect(0, 0, 0, 0).ToString(), result.ToString());
 
   // Contains
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(5, 5, 30, 30));
-  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(5, 5, 30, 30));
+  EXPECT_EQ(Rect(0, 0, 0, 0).ToString(), result.ToString());
 
   // No intersection
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(30, 30, 30, 30));
-  EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(30, 30, 30, 30));
+  EXPECT_EQ(Rect(10, 10, 20, 20).ToString(), result.ToString());
 
   // Not a complete intersection in either direction
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(15, 15, 20, 20));
-  EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(15, 15, 20, 20));
+  EXPECT_EQ(Rect(10, 10, 20, 20).ToString(), result.ToString());
 
   // Complete intersection in the x-direction
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(10, 15, 20, 20));
-  EXPECT_EQ(gfx::Rect(10, 10, 20, 5).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(10, 15, 20, 20));
+  EXPECT_EQ(Rect(10, 10, 20, 5).ToString(), result.ToString());
 
   // Complete intersection in the x-direction
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(5, 15, 30, 20));
-  EXPECT_EQ(gfx::Rect(10, 10, 20, 5).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(5, 15, 30, 20));
+  EXPECT_EQ(Rect(10, 10, 20, 5).ToString(), result.ToString());
 
   // Complete intersection in the x-direction
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(5, 5, 30, 20));
-  EXPECT_EQ(gfx::Rect(10, 25, 20, 5).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(5, 5, 30, 20));
+  EXPECT_EQ(Rect(10, 25, 20, 5).ToString(), result.ToString());
 
   // Complete intersection in the y-direction
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(10, 10, 10, 30));
-  EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(10, 10, 10, 30));
+  EXPECT_EQ(Rect(20, 10, 10, 20).ToString(), result.ToString());
 
   // Complete intersection in the y-direction
-  result = gfx::Rect(10, 10, 20, 20);
-  result.Subtract(gfx::Rect(5, 5, 20, 30));
-  EXPECT_EQ(gfx::Rect(25, 10, 5, 20).ToString(), result.ToString());
+  result = Rect(10, 10, 20, 20);
+  result.Subtract(Rect(5, 5, 20, 30));
+  EXPECT_EQ(Rect(25, 10, 5, 20).ToString(), result.ToString());
 }
 
 TEST(RectTest, IsEmpty) {
-  EXPECT_TRUE(gfx::Rect(0, 0, 0, 0).IsEmpty());
-  EXPECT_TRUE(gfx::Rect(0, 0, 0, 0).size().IsEmpty());
-  EXPECT_TRUE(gfx::Rect(0, 0, 10, 0).IsEmpty());
-  EXPECT_TRUE(gfx::Rect(0, 0, 10, 0).size().IsEmpty());
-  EXPECT_TRUE(gfx::Rect(0, 0, 0, 10).IsEmpty());
-  EXPECT_TRUE(gfx::Rect(0, 0, 0, 10).size().IsEmpty());
-  EXPECT_FALSE(gfx::Rect(0, 0, 10, 10).IsEmpty());
-  EXPECT_FALSE(gfx::Rect(0, 0, 10, 10).size().IsEmpty());
+  EXPECT_TRUE(Rect(0, 0, 0, 0).IsEmpty());
+  EXPECT_TRUE(Rect(0, 0, 0, 0).size().IsEmpty());
+  EXPECT_TRUE(Rect(0, 0, 10, 0).IsEmpty());
+  EXPECT_TRUE(Rect(0, 0, 10, 0).size().IsEmpty());
+  EXPECT_TRUE(Rect(0, 0, 0, 10).IsEmpty());
+  EXPECT_TRUE(Rect(0, 0, 0, 10).size().IsEmpty());
+  EXPECT_FALSE(Rect(0, 0, 10, 10).IsEmpty());
+  EXPECT_FALSE(Rect(0, 0, 10, 10).size().IsEmpty());
 }
 
 TEST(RectTest, SplitVertically) {
-  gfx::Rect left_half, right_half;
+  Rect left_half, right_half;
 
   // Splitting when origin is (0, 0).
-  gfx::Rect(0, 0, 20, 20).SplitVertically(&left_half, &right_half);
-  EXPECT_TRUE(left_half == gfx::Rect(0, 0, 10, 20));
-  EXPECT_TRUE(right_half == gfx::Rect(10, 0, 10, 20));
+  Rect(0, 0, 20, 20).SplitVertically(&left_half, &right_half);
+  EXPECT_TRUE(left_half == Rect(0, 0, 10, 20));
+  EXPECT_TRUE(right_half == Rect(10, 0, 10, 20));
 
   // Splitting when origin is arbitrary.
-  gfx::Rect(10, 10, 20, 10).SplitVertically(&left_half, &right_half);
-  EXPECT_TRUE(left_half == gfx::Rect(10, 10, 10, 10));
-  EXPECT_TRUE(right_half == gfx::Rect(20, 10, 10, 10));
+  Rect(10, 10, 20, 10).SplitVertically(&left_half, &right_half);
+  EXPECT_TRUE(left_half == Rect(10, 10, 10, 10));
+  EXPECT_TRUE(right_half == Rect(20, 10, 10, 10));
 
   // Splitting a rectangle of zero width.
-  gfx::Rect(10, 10, 0, 10).SplitVertically(&left_half, &right_half);
-  EXPECT_TRUE(left_half == gfx::Rect(10, 10, 0, 10));
-  EXPECT_TRUE(right_half == gfx::Rect(10, 10, 0, 10));
+  Rect(10, 10, 0, 10).SplitVertically(&left_half, &right_half);
+  EXPECT_TRUE(left_half == Rect(10, 10, 0, 10));
+  EXPECT_TRUE(right_half == Rect(10, 10, 0, 10));
 
   // Splitting a rectangle of odd width.
-  gfx::Rect(10, 10, 5, 10).SplitVertically(&left_half, &right_half);
-  EXPECT_TRUE(left_half == gfx::Rect(10, 10, 2, 10));
-  EXPECT_TRUE(right_half == gfx::Rect(12, 10, 3, 10));
+  Rect(10, 10, 5, 10).SplitVertically(&left_half, &right_half);
+  EXPECT_TRUE(left_half == Rect(10, 10, 2, 10));
+  EXPECT_TRUE(right_half == Rect(12, 10, 3, 10));
 }
 
 TEST(RectTest, CenterPoint) {
-  gfx::Point center;
+  Point center;
 
   // When origin is (0, 0).
-  center = gfx::Rect(0, 0, 20, 20).CenterPoint();
-  EXPECT_TRUE(center == gfx::Point(10, 10));
+  center = Rect(0, 0, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == Point(10, 10));
 
   // When origin is even.
-  center = gfx::Rect(10, 10, 20, 20).CenterPoint();
-  EXPECT_TRUE(center == gfx::Point(20, 20));
+  center = Rect(10, 10, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == Point(20, 20));
 
   // When origin is odd.
-  center = gfx::Rect(11, 11, 20, 20).CenterPoint();
-  EXPECT_TRUE(center == gfx::Point(21, 21));
+  center = Rect(11, 11, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == Point(21, 21));
 
   // When 0 width or height.
-  center = gfx::Rect(10, 10, 0, 20).CenterPoint();
-  EXPECT_TRUE(center == gfx::Point(10, 20));
-  center = gfx::Rect(10, 10, 20, 0).CenterPoint();
-  EXPECT_TRUE(center == gfx::Point(20, 10));
+  center = Rect(10, 10, 0, 20).CenterPoint();
+  EXPECT_TRUE(center == Point(10, 20));
+  center = Rect(10, 10, 20, 0).CenterPoint();
+  EXPECT_TRUE(center == Point(20, 10));
 
   // When an odd size.
-  center = gfx::Rect(10, 10, 21, 21).CenterPoint();
-  EXPECT_TRUE(center == gfx::Point(20, 20));
+  center = Rect(10, 10, 21, 21).CenterPoint();
+  EXPECT_TRUE(center == Point(20, 20));
 
   // When an odd size and position.
-  center = gfx::Rect(11, 11, 21, 21).CenterPoint();
-  EXPECT_TRUE(center == gfx::Point(21, 21));
+  center = Rect(11, 11, 21, 21).CenterPoint();
+  EXPECT_TRUE(center == Point(21, 21));
 }
 
 TEST(RectTest, CenterPointF) {
-  gfx::PointF center;
+  PointF center;
 
   // When origin is (0, 0).
-  center = gfx::RectF(0, 0, 20, 20).CenterPoint();
-  EXPECT_TRUE(center == gfx::PointF(10, 10));
+  center = RectF(0, 0, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == PointF(10, 10));
 
   // When origin is even.
-  center = gfx::RectF(10, 10, 20, 20).CenterPoint();
-  EXPECT_TRUE(center == gfx::PointF(20, 20));
+  center = RectF(10, 10, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == PointF(20, 20));
 
   // When origin is odd.
-  center = gfx::RectF(11, 11, 20, 20).CenterPoint();
-  EXPECT_TRUE(center == gfx::PointF(21, 21));
+  center = RectF(11, 11, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == PointF(21, 21));
 
   // When 0 width or height.
-  center = gfx::RectF(10, 10, 0, 20).CenterPoint();
-  EXPECT_TRUE(center == gfx::PointF(10, 20));
-  center = gfx::RectF(10, 10, 20, 0).CenterPoint();
-  EXPECT_TRUE(center == gfx::PointF(20, 10));
+  center = RectF(10, 10, 0, 20).CenterPoint();
+  EXPECT_TRUE(center == PointF(10, 20));
+  center = RectF(10, 10, 20, 0).CenterPoint();
+  EXPECT_TRUE(center == PointF(20, 10));
 
   // When an odd size.
-  center = gfx::RectF(10, 10, 21, 21).CenterPoint();
-  EXPECT_TRUE(center == gfx::PointF(20.5f, 20.5f));
+  center = RectF(10, 10, 21, 21).CenterPoint();
+  EXPECT_TRUE(center == PointF(20.5f, 20.5f));
 
   // When an odd size and position.
-  center = gfx::RectF(11, 11, 21, 21).CenterPoint();
-  EXPECT_TRUE(center == gfx::PointF(21.5f, 21.5f));
+  center = RectF(11, 11, 21, 21).CenterPoint();
+  EXPECT_TRUE(center == PointF(21.5f, 21.5f));
 }
 
 TEST(RectTest, SharesEdgeWith) {
-  gfx::Rect r(2, 3, 4, 5);
+  Rect r(2, 3, 4, 5);
 
   // Must be non-overlapping
   EXPECT_FALSE(r.SharesEdgeWith(r));
 
-  gfx::Rect just_above(2, 1, 4, 2);
-  gfx::Rect just_below(2, 8, 4, 2);
-  gfx::Rect just_left(0, 3, 2, 5);
-  gfx::Rect just_right(6, 3, 2, 5);
+  Rect just_above(2, 1, 4, 2);
+  Rect just_below(2, 8, 4, 2);
+  Rect just_left(0, 3, 2, 5);
+  Rect just_right(6, 3, 2, 5);
 
   EXPECT_TRUE(r.SharesEdgeWith(just_above));
   EXPECT_TRUE(r.SharesEdgeWith(just_below));
@@ -378,16 +377,16 @@ TEST(RectTest, SharesEdgeWith) {
   EXPECT_TRUE(r.SharesEdgeWith(just_right));
 
   // Wrong placement
-  gfx::Rect same_height_no_edge(0, 0, 1, 5);
-  gfx::Rect same_width_no_edge(0, 0, 4, 1);
+  Rect same_height_no_edge(0, 0, 1, 5);
+  Rect same_width_no_edge(0, 0, 4, 1);
 
   EXPECT_FALSE(r.SharesEdgeWith(same_height_no_edge));
   EXPECT_FALSE(r.SharesEdgeWith(same_width_no_edge));
 
-  gfx::Rect just_above_no_edge(2, 1, 5, 2);  // too wide
-  gfx::Rect just_below_no_edge(2, 8, 3, 2);  // too narrow
-  gfx::Rect just_left_no_edge(0, 3, 2, 6);   // too tall
-  gfx::Rect just_right_no_edge(6, 3, 2, 4);  // too short
+  Rect just_above_no_edge(2, 1, 5, 2);  // too wide
+  Rect just_below_no_edge(2, 8, 3, 2);  // too narrow
+  Rect just_left_no_edge(0, 3, 2, 6);   // too tall
+  Rect just_right_no_edge(6, 3, 2, 4);  // too short
 
   EXPECT_FALSE(r.SharesEdgeWith(just_above_no_edge));
   EXPECT_FALSE(r.SharesEdgeWith(just_below_no_edge));
@@ -396,9 +395,9 @@ TEST(RectTest, SharesEdgeWith) {
 }
 
 TEST(RectTest, SkRectToRect) {
-  gfx::Rect src(10, 20, 30, 40);
-  SkRect skrect = gfx::RectToSkRect(src);
-  EXPECT_EQ(src, gfx::SkRectToRect(skrect));
+  Rect src(10, 20, 30, 40);
+  SkRect skrect = RectToSkRect(src);
+  EXPECT_EQ(src, SkRectToRect(skrect));
 }
 
 // Similar to EXPECT_FLOAT_EQ, but lets NaN equal NaN
@@ -441,10 +440,10 @@ TEST(RectTest, ScaleRect) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    gfx::RectF r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    RectF r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
-    gfx::RectF scaled = gfx::ScaleRect(r1, tests[i].scale);
+    RectF scaled = ScaleRect(r1, tests[i].scale);
     EXPECT_FLOAT_AND_NAN_EQ(r2.x(), scaled.x());
     EXPECT_FLOAT_AND_NAN_EQ(r2.y(), scaled.y());
     EXPECT_FLOAT_AND_NAN_EQ(r2.width(), scaled.width());
@@ -491,10 +490,10 @@ TEST(RectTest, ToEnclosedRect) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    gfx::RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
-    gfx::Rect enclosed = ToEnclosedRect(r1);
+    Rect enclosed = ToEnclosedRect(r1);
     EXPECT_FLOAT_AND_NAN_EQ(r2.x(), enclosed.x());
     EXPECT_FLOAT_AND_NAN_EQ(r2.y(), enclosed.y());
     EXPECT_FLOAT_AND_NAN_EQ(r2.width(), enclosed.width());
@@ -541,10 +540,10 @@ TEST(RectTest, ToEnclosingRect) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    gfx::RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
-    gfx::Rect enclosed = ToEnclosingRect(r1);
+    Rect enclosed = ToEnclosingRect(r1);
     EXPECT_FLOAT_AND_NAN_EQ(r2.x(), enclosed.x());
     EXPECT_FLOAT_AND_NAN_EQ(r2.y(), enclosed.y());
     EXPECT_FLOAT_AND_NAN_EQ(r2.width(), enclosed.width());
@@ -574,10 +573,10 @@ TEST(RectTest, ToFlooredRect) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    gfx::RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
+    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
-    gfx::Rect floored = ToFlooredRectDeprecated(r1);
+    Rect floored = ToFlooredRectDeprecated(r1);
     EXPECT_FLOAT_EQ(r2.x(), floored.x());
     EXPECT_FLOAT_EQ(r2.y(), floored.y());
     EXPECT_FLOAT_EQ(r2.width(), floored.width());
@@ -589,17 +588,17 @@ TEST(RectTest, ToFlooredRect) {
 TEST(RectTest, ConstructAndAssign) {
   const RECT rect_1 = { 0, 0, 10, 10 };
   const RECT rect_2 = { 0, 0, -10, -10 };
-  gfx::Rect test1(rect_1);
-  gfx::Rect test2(rect_2);
+  Rect test1(rect_1);
+  Rect test2(rect_2);
 }
 #endif
 
 TEST(RectTest, ToRectF) {
   // Check that implicit conversion from integer to float compiles.
-  gfx::Rect a(10, 20, 30, 40);
-  gfx::RectF b(10, 20, 30, 40);
+  Rect a(10, 20, 30, 40);
+  RectF b(10, 20, 30, 40);
 
-  gfx::RectF intersect = gfx::IntersectRects(a, b);
+  RectF intersect = IntersectRects(a, b);
   EXPECT_EQ(b.ToString(), intersect.ToString());
 
   EXPECT_EQ(a, b);
@@ -608,65 +607,65 @@ TEST(RectTest, ToRectF) {
 
 TEST(RectTest, BoundingRect) {
   struct {
-    gfx::Point a;
-    gfx::Point b;
-    gfx::Rect expected;
+    Point a;
+    Point b;
+    Rect expected;
   } int_tests[] = {
     // If point B dominates A, then A should be the origin.
-    { gfx::Point(4, 6), gfx::Point(4, 6), gfx::Rect(4, 6, 0, 0) },
-    { gfx::Point(4, 6), gfx::Point(8, 6), gfx::Rect(4, 6, 4, 0) },
-    { gfx::Point(4, 6), gfx::Point(4, 9), gfx::Rect(4, 6, 0, 3) },
-    { gfx::Point(4, 6), gfx::Point(8, 9), gfx::Rect(4, 6, 4, 3) },
+    { Point(4, 6), Point(4, 6), Rect(4, 6, 0, 0) },
+    { Point(4, 6), Point(8, 6), Rect(4, 6, 4, 0) },
+    { Point(4, 6), Point(4, 9), Rect(4, 6, 0, 3) },
+    { Point(4, 6), Point(8, 9), Rect(4, 6, 4, 3) },
     // If point A dominates B, then B should be the origin.
-    { gfx::Point(4, 6), gfx::Point(4, 6), gfx::Rect(4, 6, 0, 0) },
-    { gfx::Point(8, 6), gfx::Point(4, 6), gfx::Rect(4, 6, 4, 0) },
-    { gfx::Point(4, 9), gfx::Point(4, 6), gfx::Rect(4, 6, 0, 3) },
-    { gfx::Point(8, 9), gfx::Point(4, 6), gfx::Rect(4, 6, 4, 3) },
+    { Point(4, 6), Point(4, 6), Rect(4, 6, 0, 0) },
+    { Point(8, 6), Point(4, 6), Rect(4, 6, 4, 0) },
+    { Point(4, 9), Point(4, 6), Rect(4, 6, 0, 3) },
+    { Point(8, 9), Point(4, 6), Rect(4, 6, 4, 3) },
     // If neither point dominates, then the origin is a combination of the two.
-    { gfx::Point(4, 6), gfx::Point(6, 4), gfx::Rect(4, 4, 2, 2) },
-    { gfx::Point(-4, -6), gfx::Point(-6, -4), gfx::Rect(-6, -6, 2, 2) },
-    { gfx::Point(-4, 6), gfx::Point(6, -4), gfx::Rect(-4, -4, 10, 10) },
+    { Point(4, 6), Point(6, 4), Rect(4, 4, 2, 2) },
+    { Point(-4, -6), Point(-6, -4), Rect(-6, -6, 2, 2) },
+    { Point(-4, 6), Point(6, -4), Rect(-4, -4, 10, 10) },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_tests); ++i) {
-    gfx::Rect actual = BoundingRect(int_tests[i].a, int_tests[i].b);
+    Rect actual = BoundingRect(int_tests[i].a, int_tests[i].b);
     EXPECT_EQ(int_tests[i].expected.ToString(), actual.ToString());
   }
 
   struct {
-    gfx::PointF a;
-    gfx::PointF b;
-    gfx::RectF expected;
+    PointF a;
+    PointF b;
+    RectF expected;
   } float_tests[] = {
     // If point B dominates A, then A should be the origin.
-    { gfx::PointF(4.2f, 6.8f), gfx::PointF(4.2f, 6.8f),
-      gfx::RectF(4.2f, 6.8f, 0, 0) },
-    { gfx::PointF(4.2f, 6.8f), gfx::PointF(8.5f, 6.8f),
-      gfx::RectF(4.2f, 6.8f, 4.3f, 0) },
-    { gfx::PointF(4.2f, 6.8f), gfx::PointF(4.2f, 9.3f),
-      gfx::RectF(4.2f, 6.8f, 0, 2.5f) },
-    { gfx::PointF(4.2f, 6.8f), gfx::PointF(8.5f, 9.3f),
-      gfx::RectF(4.2f, 6.8f, 4.3f, 2.5f) },
+    { PointF(4.2f, 6.8f), PointF(4.2f, 6.8f),
+      RectF(4.2f, 6.8f, 0, 0) },
+    { PointF(4.2f, 6.8f), PointF(8.5f, 6.8f),
+      RectF(4.2f, 6.8f, 4.3f, 0) },
+    { PointF(4.2f, 6.8f), PointF(4.2f, 9.3f),
+      RectF(4.2f, 6.8f, 0, 2.5f) },
+    { PointF(4.2f, 6.8f), PointF(8.5f, 9.3f),
+      RectF(4.2f, 6.8f, 4.3f, 2.5f) },
     // If point A dominates B, then B should be the origin.
-    { gfx::PointF(4.2f, 6.8f), gfx::PointF(4.2f, 6.8f),
-      gfx::RectF(4.2f, 6.8f, 0, 0) },
-    { gfx::PointF(8.5f, 6.8f), gfx::PointF(4.2f, 6.8f),
-      gfx::RectF(4.2f, 6.8f, 4.3f, 0) },
-    { gfx::PointF(4.2f, 9.3f), gfx::PointF(4.2f, 6.8f),
-      gfx::RectF(4.2f, 6.8f, 0, 2.5f) },
-    { gfx::PointF(8.5f, 9.3f), gfx::PointF(4.2f, 6.8f),
-      gfx::RectF(4.2f, 6.8f, 4.3f, 2.5f) },
+    { PointF(4.2f, 6.8f), PointF(4.2f, 6.8f),
+      RectF(4.2f, 6.8f, 0, 0) },
+    { PointF(8.5f, 6.8f), PointF(4.2f, 6.8f),
+      RectF(4.2f, 6.8f, 4.3f, 0) },
+    { PointF(4.2f, 9.3f), PointF(4.2f, 6.8f),
+      RectF(4.2f, 6.8f, 0, 2.5f) },
+    { PointF(8.5f, 9.3f), PointF(4.2f, 6.8f),
+      RectF(4.2f, 6.8f, 4.3f, 2.5f) },
     // If neither point dominates, then the origin is a combination of the two.
-    { gfx::PointF(4.2f, 6.8f), gfx::PointF(6.8f, 4.2f),
-      gfx::RectF(4.2f, 4.2f, 2.6f, 2.6f) },
-    { gfx::PointF(-4.2f, -6.8f), gfx::PointF(-6.8f, -4.2f),
-      gfx::RectF(-6.8f, -6.8f, 2.6f, 2.6f) },
-    { gfx::PointF(-4.2f, 6.8f), gfx::PointF(6.8f, -4.2f),
-      gfx::RectF(-4.2f, -4.2f, 11.0f, 11.0f) }
+    { PointF(4.2f, 6.8f), PointF(6.8f, 4.2f),
+      RectF(4.2f, 4.2f, 2.6f, 2.6f) },
+    { PointF(-4.2f, -6.8f), PointF(-6.8f, -4.2f),
+      RectF(-6.8f, -6.8f, 2.6f, 2.6f) },
+    { PointF(-4.2f, 6.8f), PointF(6.8f, -4.2f),
+      RectF(-4.2f, -4.2f, 11.0f, 11.0f) }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_tests); ++i) {
-    gfx::RectF actual = BoundingRect(float_tests[i].a, float_tests[i].b);
+    RectF actual = BoundingRect(float_tests[i].a, float_tests[i].b);
     EXPECT_EQ(float_tests[i].expected.ToString(), actual.ToString());
   }
 }
@@ -678,28 +677,28 @@ TEST(RectTest, IsExpressibleAsRect) {
   float max = std::numeric_limits<int>::max();
   float infinity = std::numeric_limits<float>::infinity();
 
-  EXPECT_TRUE(gfx::RectF(min, min, max, max).IsExpressibleAsRect());
-  EXPECT_TRUE(gfx::RectF(min + 500, min, max, max).IsExpressibleAsRect());
-  EXPECT_TRUE(gfx::RectF(min, min + 500, max, max).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(min - 500, min, max, max).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(min, min - 500, max, max).IsExpressibleAsRect());
-  EXPECT_TRUE(gfx::RectF(min, min, max - 500, max).IsExpressibleAsRect());
-  EXPECT_TRUE(gfx::RectF(min, min, max, max - 500).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(min, min, max + 500, max).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(min, min, max, max + 500).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(min, min, max, max).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(min + 500, min, max, max).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(min, min + 500, max, max).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(min - 500, min, max, max).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(min, min - 500, max, max).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(min, min, max - 500, max).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(min, min, max, max - 500).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(min, min, max + 500, max).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(min, min, max, max + 500).IsExpressibleAsRect());
 
-  EXPECT_TRUE(gfx::RectF(0, 0, max, max).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(500, 0, max, max).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 500, max, max).IsExpressibleAsRect());
-  EXPECT_TRUE(gfx::RectF(0, 0, max - 500, max).IsExpressibleAsRect());
-  EXPECT_TRUE(gfx::RectF(0, 0, max, max - 500).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 0, max + 500, max).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 0, max, max + 500).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(0, 0, max, max).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(500, 0, max, max).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 500, max, max).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(0, 0, max - 500, max).IsExpressibleAsRect());
+  EXPECT_TRUE(RectF(0, 0, max, max - 500).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 0, max + 500, max).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 0, max, max + 500).IsExpressibleAsRect());
 
-  EXPECT_FALSE(gfx::RectF(infinity, 0, 1, 1).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, infinity, 1, 1).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 0, infinity, 1).IsExpressibleAsRect());
-  EXPECT_FALSE(gfx::RectF(0, 0, 1, infinity).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(infinity, 0, 1, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, infinity, 1, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 0, infinity, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(RectF(0, 0, 1, infinity).IsExpressibleAsRect());
 }
 
-}  // namespace ui
+}  // namespace gfx

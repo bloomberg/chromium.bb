@@ -13,16 +13,16 @@
 namespace gfx {
 
 TEST(Vector2dTest, ConversionToFloat) {
-  gfx::Vector2d i(3, 4);
-  gfx::Vector2dF f = i;
+  Vector2d i(3, 4);
+  Vector2dF f = i;
   EXPECT_EQ(i, f);
 }
 
 TEST(Vector2dTest, IsZero) {
-  gfx::Vector2d int_zero(0, 0);
-  gfx::Vector2d int_nonzero(2, -2);
-  gfx::Vector2dF float_zero(0, 0);
-  gfx::Vector2dF float_nonzero(0.1f, -0.1f);
+  Vector2d int_zero(0, 0);
+  Vector2d int_nonzero(2, -2);
+  Vector2dF float_zero(0, 0);
+  Vector2dF float_nonzero(0.1f, -0.1f);
 
   EXPECT_TRUE(int_zero.IsZero());
   EXPECT_FALSE(int_nonzero.IsZero());
@@ -31,33 +31,33 @@ TEST(Vector2dTest, IsZero) {
 }
 
 TEST(Vector2dTest, Add) {
-  gfx::Vector2d i1(3, 5);
-  gfx::Vector2d i2(4, -1);
+  Vector2d i1(3, 5);
+  Vector2d i2(4, -1);
 
   const struct {
-    gfx::Vector2d expected;
-    gfx::Vector2d actual;
+    Vector2d expected;
+    Vector2d actual;
   } int_tests[] = {
-    { gfx::Vector2d(3, 5), i1 + gfx::Vector2d() },
-    { gfx::Vector2d(3 + 4, 5 - 1), i1 + i2 },
-    { gfx::Vector2d(3 - 4, 5 + 1), i1 - i2 }
+    { Vector2d(3, 5), i1 + Vector2d() },
+    { Vector2d(3 + 4, 5 - 1), i1 + i2 },
+    { Vector2d(3 - 4, 5 + 1), i1 - i2 }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_tests); ++i)
     EXPECT_EQ(int_tests[i].expected.ToString(),
               int_tests[i].actual.ToString());
 
-  gfx::Vector2dF f1(3.1f, 5.1f);
-  gfx::Vector2dF f2(4.3f, -1.3f);
+  Vector2dF f1(3.1f, 5.1f);
+  Vector2dF f2(4.3f, -1.3f);
 
   const struct {
-    gfx::Vector2dF expected;
-    gfx::Vector2dF actual;
+    Vector2dF expected;
+    Vector2dF actual;
   } float_tests[] = {
-    { gfx::Vector2dF(3.1F, 5.1F), f1 + gfx::Vector2d() },
-    { gfx::Vector2dF(3.1F, 5.1F), f1 + gfx::Vector2dF() },
-    { gfx::Vector2dF(3.1f + 4.3f, 5.1f - 1.3f), f1 + f2 },
-    { gfx::Vector2dF(3.1f - 4.3f, 5.1f + 1.3f), f1 - f2 }
+    { Vector2dF(3.1F, 5.1F), f1 + Vector2d() },
+    { Vector2dF(3.1F, 5.1F), f1 + Vector2dF() },
+    { Vector2dF(3.1f + 4.3f, 5.1f - 1.3f), f1 + f2 },
+    { Vector2dF(3.1f - 4.3f, 5.1f + 1.3f), f1 - f2 }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_tests); ++i)
@@ -67,14 +67,14 @@ TEST(Vector2dTest, Add) {
 
 TEST(Vector2dTest, Negative) {
   const struct {
-    gfx::Vector2d expected;
-    gfx::Vector2d actual;
+    Vector2d expected;
+    Vector2d actual;
   } int_tests[] = {
-    { gfx::Vector2d(0, 0), -gfx::Vector2d(0, 0) },
-    { gfx::Vector2d(-3, -3), -gfx::Vector2d(3, 3) },
-    { gfx::Vector2d(3, 3), -gfx::Vector2d(-3, -3) },
-    { gfx::Vector2d(-3, 3), -gfx::Vector2d(3, -3) },
-    { gfx::Vector2d(3, -3), -gfx::Vector2d(-3, 3) }
+    { Vector2d(0, 0), -Vector2d(0, 0) },
+    { Vector2d(-3, -3), -Vector2d(3, 3) },
+    { Vector2d(3, 3), -Vector2d(-3, -3) },
+    { Vector2d(-3, 3), -Vector2d(3, -3) },
+    { Vector2d(3, -3), -Vector2d(-3, 3) }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(int_tests); ++i)
@@ -82,14 +82,14 @@ TEST(Vector2dTest, Negative) {
               int_tests[i].actual.ToString());
 
   const struct {
-    gfx::Vector2dF expected;
-    gfx::Vector2dF actual;
+    Vector2dF expected;
+    Vector2dF actual;
   } float_tests[] = {
-    { gfx::Vector2dF(0, 0), -gfx::Vector2d(0, 0) },
-    { gfx::Vector2dF(-0.3f, -0.3f), -gfx::Vector2dF(0.3f, 0.3f) },
-    { gfx::Vector2dF(0.3f, 0.3f), -gfx::Vector2dF(-0.3f, -0.3f) },
-    { gfx::Vector2dF(-0.3f, 0.3f), -gfx::Vector2dF(0.3f, -0.3f) },
-    { gfx::Vector2dF(0.3f, -0.3f), -gfx::Vector2dF(-0.3f, 0.3f) }
+    { Vector2dF(0, 0), -Vector2d(0, 0) },
+    { Vector2dF(-0.3f, -0.3f), -Vector2dF(0.3f, 0.3f) },
+    { Vector2dF(0.3f, 0.3f), -Vector2dF(-0.3f, -0.3f) },
+    { Vector2dF(-0.3f, 0.3f), -Vector2dF(0.3f, -0.3f) },
+    { Vector2dF(0.3f, -0.3f), -Vector2dF(-0.3f, 0.3f) }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(float_tests); ++i)
@@ -111,7 +111,7 @@ TEST(Vector2dTest, Scale) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(double_values); ++i) {
-    gfx::Vector2dF v(double_values[i][0], double_values[i][1]);
+    Vector2dF v(double_values[i][0], double_values[i][1]);
     v.Scale(double_values[i][2], double_values[i][3]);
     EXPECT_EQ(v.x(), double_values[i][0] * double_values[i][2]);
     EXPECT_EQ(v.y(), double_values[i][1] * double_values[i][3]);
@@ -130,7 +130,7 @@ TEST(Vector2dTest, Scale) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(single_values); ++i) {
-    gfx::Vector2dF v(single_values[i][0], single_values[i][1]);
+    Vector2dF v(single_values[i][0], single_values[i][1]);
     v.Scale(single_values[i][2]);
     EXPECT_EQ(v.x(), single_values[i][0] * single_values[i][2]);
     EXPECT_EQ(v.y(), single_values[i][1] * single_values[i][2]);
@@ -153,7 +153,7 @@ TEST(Vector2dTest, Length) {
     double length_squared =
         static_cast<double>(v0) * v0 + static_cast<double>(v1) * v1;
     double length = std::sqrt(length_squared);
-    gfx::Vector2d vector(v0, v1);
+    Vector2d vector(v0, v1);
     EXPECT_EQ(static_cast<float>(length_squared), vector.LengthSquared());
     EXPECT_EQ(static_cast<float>(length), vector.Length());
   }
@@ -177,10 +177,10 @@ TEST(Vector2dTest, Length) {
     double length_squared =
         static_cast<double>(v0) * v0 + static_cast<double>(v1) * v1;
     double length = std::sqrt(length_squared);
-    gfx::Vector2dF vector(v0, v1);
+    Vector2dF vector(v0, v1);
     EXPECT_EQ(length_squared, vector.LengthSquared());
     EXPECT_EQ(static_cast<float>(length), vector.Length());
   }
 }
 
-}  // namespace ui
+}  // namespace gfx

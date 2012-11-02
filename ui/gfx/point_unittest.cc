@@ -10,11 +10,11 @@
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/point_f.h"
 
-namespace ui {
+namespace gfx {
 
 namespace {
 
-int TestPointF(const gfx::PointF& p) {
+int TestPointF(const PointF& p) {
   return p.x();
 }
 
@@ -22,98 +22,80 @@ int TestPointF(const gfx::PointF& p) {
 
 TEST(PointTest, ToPointF) {
   // Check that implicit conversion from integer to float compiles.
-  gfx::Point a(10, 20);
+  Point a(10, 20);
   float x = TestPointF(a);
   EXPECT_EQ(x, a.x());
 
-  gfx::PointF b(10, 20);
+  PointF b(10, 20);
   EXPECT_EQ(a, b);
   EXPECT_EQ(b, a);
 }
 
 TEST(PointTest, IsOrigin) {
-  EXPECT_FALSE(gfx::Point(1, 0).IsOrigin());
-  EXPECT_FALSE(gfx::Point(0, 1).IsOrigin());
-  EXPECT_FALSE(gfx::Point(1, 2).IsOrigin());
-  EXPECT_FALSE(gfx::Point(-1, 0).IsOrigin());
-  EXPECT_FALSE(gfx::Point(0, -1).IsOrigin());
-  EXPECT_FALSE(gfx::Point(-1, -2).IsOrigin());
-  EXPECT_TRUE(gfx::Point(0, 0).IsOrigin());
+  EXPECT_FALSE(Point(1, 0).IsOrigin());
+  EXPECT_FALSE(Point(0, 1).IsOrigin());
+  EXPECT_FALSE(Point(1, 2).IsOrigin());
+  EXPECT_FALSE(Point(-1, 0).IsOrigin());
+  EXPECT_FALSE(Point(0, -1).IsOrigin());
+  EXPECT_FALSE(Point(-1, -2).IsOrigin());
+  EXPECT_TRUE(Point(0, 0).IsOrigin());
 
-  EXPECT_FALSE(gfx::PointF(0.1f, 0).IsOrigin());
-  EXPECT_FALSE(gfx::PointF(0, 0.1f).IsOrigin());
-  EXPECT_FALSE(gfx::PointF(0.1f, 2).IsOrigin());
-  EXPECT_FALSE(gfx::PointF(-0.1f, 0).IsOrigin());
-  EXPECT_FALSE(gfx::PointF(0, -0.1f).IsOrigin());
-  EXPECT_FALSE(gfx::PointF(-0.1f, -2).IsOrigin());
-  EXPECT_TRUE(gfx::PointF(0, 0).IsOrigin());
+  EXPECT_FALSE(PointF(0.1f, 0).IsOrigin());
+  EXPECT_FALSE(PointF(0, 0.1f).IsOrigin());
+  EXPECT_FALSE(PointF(0.1f, 2).IsOrigin());
+  EXPECT_FALSE(PointF(-0.1f, 0).IsOrigin());
+  EXPECT_FALSE(PointF(0, -0.1f).IsOrigin());
+  EXPECT_FALSE(PointF(-0.1f, -2).IsOrigin());
+  EXPECT_TRUE(PointF(0, 0).IsOrigin());
 }
 
 TEST(PointTest, VectorArithmetic) {
-  gfx::Point a(1, 5);
-  gfx::Vector2d v1(3, -3);
-  gfx::Vector2d v2(-8, 1);
+  Point a(1, 5);
+  Vector2d v1(3, -3);
+  Vector2d v2(-8, 1);
 
   static const struct {
-    gfx::Point expected;
-    gfx::Point actual;
+    Point expected;
+    Point actual;
   } tests[] = {
-    { gfx::Point(4, 2), a + v1 },
-    { gfx::Point(-2, 8), a - v1 },
+    { Point(4, 2), a + v1 },
+    { Point(-2, 8), a - v1 },
     { a, a - v1 + v1 },
     { a, a + v1 - v1 },
-    { a, a + gfx::Vector2d() },
-    { gfx::Point(12, 1), a + v1 - v2 },
-    { gfx::Point(-10, 9), a - v1 + v2 }
+    { a, a + Vector2d() },
+    { Point(12, 1), a + v1 - v2 },
+    { Point(-10, 9), a - v1 + v2 }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i)
-    EXPECT_EQ(tests[i].expected.ToString(),
-              tests[i].actual.ToString());
+    EXPECT_EQ(tests[i].expected.ToString(), tests[i].actual.ToString());
 }
 
 TEST(PointTest, OffsetFromPoint) {
-  gfx::Point a(1, 5);
-  gfx::Point b(-20, 8);
-  EXPECT_EQ(gfx::Vector2d(-20 - 1, 8 - 5).ToString(),
-            b.OffsetFrom(a).ToString());
-  EXPECT_EQ(gfx::Vector2d(-20 - 1, 8 - 5).ToString(),
-            (b - a).ToString());
+  Point a(1, 5);
+  Point b(-20, 8);
+  EXPECT_EQ(Vector2d(-20 - 1, 8 - 5).ToString(), b.OffsetFrom(a).ToString());
+  EXPECT_EQ(Vector2d(-20 - 1, 8 - 5).ToString(), (b - a).ToString());
 }
 
 TEST(PointTest, ToRoundedPoint) {
-  EXPECT_EQ(gfx::Point(0, 0),
-            gfx::ToRoundedPoint(gfx::PointF(0, 0)));
-  EXPECT_EQ(gfx::Point(0, 0),
-            gfx::ToRoundedPoint(gfx::PointF(0.0001f, 0.0001f)));
-  EXPECT_EQ(gfx::Point(0, 0),
-            gfx::ToRoundedPoint(gfx::PointF(0.4999f, 0.4999f)));
-  EXPECT_EQ(gfx::Point(1, 1),
-            gfx::ToRoundedPoint(gfx::PointF(0.5f, 0.5f)));
-  EXPECT_EQ(gfx::Point(1, 1),
-            gfx::ToRoundedPoint(gfx::PointF(0.9999f, 0.9999f)));
+  EXPECT_EQ(Point(0, 0), ToRoundedPoint(PointF(0, 0)));
+  EXPECT_EQ(Point(0, 0), ToRoundedPoint(PointF(0.0001f, 0.0001f)));
+  EXPECT_EQ(Point(0, 0), ToRoundedPoint(PointF(0.4999f, 0.4999f)));
+  EXPECT_EQ(Point(1, 1), ToRoundedPoint(PointF(0.5f, 0.5f)));
+  EXPECT_EQ(Point(1, 1), ToRoundedPoint(PointF(0.9999f, 0.9999f)));
 
-  EXPECT_EQ(gfx::Point(10, 10),
-            gfx::ToRoundedPoint(gfx::PointF(10, 10)));
-  EXPECT_EQ(gfx::Point(10, 10),
-            gfx::ToRoundedPoint(gfx::PointF(10.0001f, 10.0001f)));
-  EXPECT_EQ(gfx::Point(10, 10),
-            gfx::ToRoundedPoint(gfx::PointF(10.4999f, 10.4999f)));
-  EXPECT_EQ(gfx::Point(11, 11),
-            gfx::ToRoundedPoint(gfx::PointF(10.5f, 10.5f)));
-  EXPECT_EQ(gfx::Point(11, 11),
-            gfx::ToRoundedPoint(gfx::PointF(10.9999f, 10.9999f)));
+  EXPECT_EQ(Point(10, 10), ToRoundedPoint(PointF(10, 10)));
+  EXPECT_EQ(Point(10, 10), ToRoundedPoint(PointF(10.0001f, 10.0001f)));
+  EXPECT_EQ(Point(10, 10), ToRoundedPoint(PointF(10.4999f, 10.4999f)));
+  EXPECT_EQ(Point(11, 11), ToRoundedPoint(PointF(10.5f, 10.5f)));
+  EXPECT_EQ(Point(11, 11), ToRoundedPoint(PointF(10.9999f, 10.9999f)));
 
-  EXPECT_EQ(gfx::Point(-10, -10),
-            gfx::ToRoundedPoint(gfx::PointF(-10, -10)));
-  EXPECT_EQ(gfx::Point(-10, -10),
-            gfx::ToRoundedPoint(gfx::PointF(-10.0001f, -10.0001f)));
-  EXPECT_EQ(gfx::Point(-10, -10),
-            gfx::ToRoundedPoint(gfx::PointF(-10.4999f, -10.4999f)));
-  EXPECT_EQ(gfx::Point(-11, -11),
-            gfx::ToRoundedPoint(gfx::PointF(-10.5f, -10.5f)));
-  EXPECT_EQ(gfx::Point(-11, -11),
-            gfx::ToRoundedPoint(gfx::PointF(-10.9999f, -10.9999f)));
+  EXPECT_EQ(Point(-10, -10), ToRoundedPoint(PointF(-10, -10)));
+  EXPECT_EQ(Point(-10, -10), ToRoundedPoint(PointF(-10.0001f, -10.0001f)));
+  EXPECT_EQ(Point(-10, -10), ToRoundedPoint(PointF(-10.4999f, -10.4999f)));
+  EXPECT_EQ(Point(-11, -11), ToRoundedPoint(PointF(-10.5f, -10.5f)));
+  EXPECT_EQ(Point(-11, -11), ToRoundedPoint(PointF(-10.9999f, -10.9999f)));
 }
 
-}  // namespace ui
+}  // namespace gfx
