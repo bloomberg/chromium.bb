@@ -2252,6 +2252,10 @@ drm_compositor_create(struct wl_display *display,
 		return NULL;
 	memset(ec, 0, sizeof *ec);
 
+	/* KMS support for sprites is not complete yet, so disable the
+	 * functionality for now. */
+	ec->sprites_are_broken = 1;
+
 	if (weston_compositor_init(&ec->base, display, argc, argv,
 				   config_file) < 0) {
 		weston_log("weston_compositor_init failed\n");
