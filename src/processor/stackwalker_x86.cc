@@ -386,31 +386,41 @@ StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
       }
     }
 
-    // When trying to recover the previous value of the frame pointer (%ebp),
-    // start looking at the lowest possible address in the saved-register
-    // area, and look at the entire saved register area, increased by the
-    // size of |offset| to account for additional data that may be on the
-    // stack.  The scan is performed from the highest possible address to
-    // the lowest, because we expect that the function's prolog would have
-    // saved %ebp early.
-    u_int32_t ebp = dictionary["$ebp"];
-    u_int32_t value;  // throwaway variable to check pointer validity
-    if (recover_ebp && !memory_->GetMemoryAtAddress(ebp, &value)) {
-      int fp_search_bytes = last_frame_info->saved_register_size + offset;
-      u_int32_t location_end = last_frame->context.esp +
-                               last_frame_callee_parameter_size;
+    if (recover_ebp) {
+      // When trying to recover the previous value of the frame pointer (%ebp),
+      // start looking at the lowest possible address in the saved-register
+      // area, and look at the entire saved register area, increased by the
+      // size of |offset| to account for additional data that may be on the
+      // stack.  The scan is performed from the highest possible address to
+      // the lowest, because the expectation is that the function's prolog
+      // would have saved %ebp early.
+      u_int32_t ebp = dictionary["$ebp"];
 
-      for (u_int32_t location = location_end + fp_search_bytes;
-           location >= location_end;
-           location -= 4) {
-        if (!memory_->GetMemoryAtAddress(location, &ebp))
-          break;
+      // When a scan for return address is used, it is possible to skip one or
+      // more frames (when return address is not in a known module).  One
+      // indication for skipped frames is when the value of %ebp is lower than
+      // the location of the return address on the stack
+      bool has_skipped_frames =
+        (trust != StackFrame::FRAME_TRUST_CFI && ebp <= raSearchStart + offset);
 
-        if (memory_->GetMemoryAtAddress(ebp, &value)) {
-          // The candidate value is a pointer to the same memory region
-          // (the stack).  Prefer it as a recovered %ebp result.
-          dictionary["$ebp"] = ebp;
-          break;
+      u_int32_t value;  // throwaway variable to check pointer validity
+      if (has_skipped_frames || !memory_->GetMemoryAtAddress(ebp, &value)) {
+        int fp_search_bytes = last_frame_info->saved_register_size + offset;
+        u_int32_t location_end = last_frame->context.esp +
+                                 last_frame_callee_parameter_size;
+
+        for (u_int32_t location = location_end + fp_search_bytes;
+             location >= location_end;
+             location -= 4) {
+          if (!memory_->GetMemoryAtAddress(location, &ebp))
+            break;
+
+          if (memory_->GetMemoryAtAddress(ebp, &value)) {
+            // The candidate value is a pointer to the same memory region
+            // (the stack).  Prefer it as a recovered %ebp result.
+            dictionary["$ebp"] = ebp;
+            break;
+          }
         }
       }
     }
