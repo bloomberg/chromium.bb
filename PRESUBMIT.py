@@ -636,24 +636,32 @@ def GetPreferredTrySlaves(project, change):
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return ['win_rel']
   if all(re.search('(^|[/_])android[/_.]', f) for f in files):
-    return ['android_dbg']
+    return ['android_dbg', 'android_clang_dbg']
   if all(re.search('^native_client_sdk', f) for f in files):
     return ['linux_nacl_sdk', 'win_nacl_sdk', 'mac_nacl_sdk']
   if all(re.search('[/_]ios[/_.]', f) for f in files):
     return ['ios_rel_device', 'ios_dbg_simulator']
 
-  trybots = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile',
-             'linux_chromeos', 'android_dbg', 'linux_asan', 'mac_asan',
-             'ios_rel_device', 'ios_dbg_simulator']
+  trybots = [
+      'android_clang_dbg',
+      'android_dbg',
+      'ios_dbg_simulator',
+      'ios_rel_device',
+      'linux_asan',
+      'linux_chromeos',
+      'linux_clang:compile',
+      'linux_rel',
+      'mac_asan',
+      'mac_rel',
+      'win_rel',
+  ]
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for ash and chromeos.
   if any(re.search('[/_](ash|aura)', f) for f in files):
-    trybots += ['linux_chromeos', 'linux_chromeos_clang:compile', 'win_aura',
+    trybots += ['linux_chromeos_clang:compile', 'win_aura',
                 'linux_chromeos_asan']
-  else:
-    if any(re.search('[/_]chromeos', f) for f in files):
-      trybots += ['linux_chromeos', 'linux_chromeos_clang:compile',
-                  'linux_chromeos_asan']
+  elif any(re.search('[/_]chromeos', f) for f in files):
+    trybots += ['linux_chromeos_clang:compile', 'linux_chromeos_asan']
 
   return trybots
