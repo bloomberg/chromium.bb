@@ -62,8 +62,8 @@ class ASH_EXPORT WindowResizer {
     // The window we're resizing.
     aura::Window* window;
 
-    // Initial bounds of the window in parent coordinates.
-    gfx::Rect initial_bounds_in_parent;
+    // Initial bounds of the window.
+    gfx::Rect initial_bounds;
 
     // Restore bounds (in screen coordinates) of the window before the drag
     // started. Only set if the window is normal and is being dragged.

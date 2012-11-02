@@ -47,7 +47,7 @@ void DefaultWindowResizer::RevertDrag() {
   if (!did_move_or_resize_)
     return;
 
-  details_.window->SetBounds(details_.initial_bounds_in_parent);
+  details_.window->SetBounds(details_.initial_bounds);
 
   if (!details_.restore_bounds.IsEmpty())
     SetRestoreBoundsInScreen(details_.window, details_.restore_bounds);

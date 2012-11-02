@@ -457,9 +457,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 }
 
 // Assertions around dragging to the left/right edge of the screen.
-// TODO(phoglund): Re-enable once breakage from
-// https://chromiumcodereview.appspot.com/11369017 gets fixed.
-TEST_F(WorkspaceWindowResizerTest, DISABLED_Edge) {
+TEST_F(WorkspaceWindowResizerTest, Edge) {
   int bottom =
       ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
@@ -476,43 +474,15 @@ TEST_F(WorkspaceWindowResizerTest, DISABLED_Edge) {
               GetRestoreBoundsInScreen(window_.get())->ToString());
   }
   // Try the same with the right side.
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
-    resizer->CompleteDrag(0);
-    EXPECT_EQ("80,0 720x" + base::IntToString(bottom),
-              window_->bounds().ToString());
-    ASSERT_TRUE(GetRestoreBoundsInScreen(window_.get()));
-    EXPECT_EQ("20,30 50x60",
-              GetRestoreBoundsInScreen(window_.get())->ToString());
-  }
-
-  // Test if the restore bounds is correct in multiple displays.
-  ClearRestoreBounds(window_.get());
-  UpdateDisplay("800x600,200x600");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  window_->SetBoundsInScreen(gfx::Rect(800, 10, 50, 60),
-                             ScreenAsh::GetSecondaryDisplay());
-  EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-  {
-    bottom =
-        ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
-    EXPECT_EQ("800,10 50x60", window_->GetBoundsInScreen().ToString());
-
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    ASSERT_TRUE(resizer.get());
-
-    resizer->Drag(CalculateDragPoint(*resizer, 199, 00), 0);
-    resizer->CompleteDrag(0);
-    EXPECT_EQ("20,0 180x" + base::IntToString(bottom),
-              window_->bounds().ToString());
-    EXPECT_EQ("800,10 50x60",
-              GetRestoreBoundsInScreen(window_.get())->ToString());
-  }
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
+  resizer->CompleteDrag(0);
+  EXPECT_EQ("80,0 720x" + base::IntToString(bottom),
+            window_->bounds().ToString());
+  ASSERT_TRUE(GetRestoreBoundsInScreen(window_.get()));
+  EXPECT_EQ("20,30 50x60", GetRestoreBoundsInScreen(window_.get())->ToString());
 }
 
 // Verifies a window can be moved from the primary display to another.
