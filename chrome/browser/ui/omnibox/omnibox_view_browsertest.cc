@@ -1297,16 +1297,14 @@ class OmniboxViewTest : public InProcessBrowserTest,
   // If |release_offset| differs from |press_offset|, the mouse will be moved
   // between the press and release.
   void ClickFocusViewOrigin(ui_controls::MouseButton button,
-                            const gfx::Point& press_offset,
-                            const gfx::Point& release_offset) {
+                            const gfx::Vector2d& press_offset,
+                            const gfx::Vector2d& release_offset) {
     gfx::Point focus_view_origin = GetFocusView()->GetBoundsInScreen().origin();
-    gfx::Point press_point = focus_view_origin;
-    press_point.Offset(press_offset.x(), press_offset.y());
+    gfx::Point press_point = focus_view_origin + press_offset;
     ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(press_point));
     ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(button, ui_controls::DOWN));
 
-    gfx::Point release_point = focus_view_origin;
-    release_point.Offset(release_offset.x(), release_offset.y());
+    gfx::Point release_point = focus_view_origin  + release_offset;
     if (release_point != press_point)
       ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(release_point));
     ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(button, ui_controls::UP));
@@ -1623,7 +1621,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_SelectAllOnClick) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   omnibox_view->SetUserText(ASCIIToUTF16("http://www.google.com/"));
-  const gfx::Point kClickOffset(2, 2);
+  const gfx::Vector2d kClickOffset(2, 2);
 
   // Take the focus away from the omnibox.
   ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
@@ -1657,7 +1655,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_SelectAllOnClick) {
   // Click in a different spot in the omnibox.  It should keep the focus but
   // lose the selection.
   omnibox_view->SelectAll(false);
-  const gfx::Point kSecondClickOffset(kClickOffset.x() + 10, kClickOffset.y());
+  const gfx::Vector2d kSecondClickOffset(kClickOffset.x() + 10,
+                                         kClickOffset.y());
   ASSERT_NO_FATAL_FAILURE(
       ClickFocusViewOrigin(
           ui_controls::LEFT, kSecondClickOffset, kSecondClickOffset));
@@ -1667,7 +1666,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_SelectAllOnClick) {
   // Take the focus away and click in the omnibox again, but drag a bit before
   // releasing.  We should focus the omnibox but not select all of its text.
   ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
-  const gfx::Point kReleaseOffset(kClickOffset.x() + 10, kClickOffset.y());
+  const gfx::Vector2d kReleaseOffset(kClickOffset.x() + 10, kClickOffset.y());
   ASSERT_NO_FATAL_FAILURE(
       ClickFocusViewOrigin(ui_controls::LEFT, kClickOffset, kReleaseOffset));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
