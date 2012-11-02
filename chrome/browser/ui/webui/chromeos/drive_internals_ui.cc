@@ -207,6 +207,11 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void OnGetGCacheContents(base::ListValue* gcache_contents,
                            base::DictionaryValue* cache_summary);
 
+  // Called when GetEntryInfoByPath() is complete.
+  void OnGetEntryInfoByPath(const FilePath& path,
+                            drive::DriveFileError error,
+                            scoped_ptr<drive::DriveEntryProto> entry);
+
   // Called when ReadDirectoryByPath() is complete.
   void OnReadDirectoryByPath(const FilePath& parent_path,
                              drive::DriveFileError error,
@@ -497,6 +502,13 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection(
   // Start rendering the file system tree as text.
   const FilePath root_path = FilePath(drive::kDriveRootDirectory);
   ++num_pending_reads_;
+  system_service->file_system()->GetEntryInfoByPath(
+      root_path,
+      base::Bind(&DriveInternalsWebUIHandler::OnGetEntryInfoByPath,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 root_path));
+
+  ++num_pending_reads_;
   system_service->file_system()->ReadDirectoryByPath(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
@@ -535,6 +547,18 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
   web_ui()->CallJavascriptFunction("updateGCacheContents",
                                    *gcache_contents,
                                    *gcache_summary);
+}
+
+void DriveInternalsWebUIHandler::OnGetEntryInfoByPath(
+    const FilePath& path,
+    drive::DriveFileError error,
+    scoped_ptr<drive::DriveEntryProto> entry) {
+  --num_pending_reads_;
+  if (error == drive::DRIVE_FILE_OK) {
+    DCHECK(entry.get());
+    const base::StringValue value(FormatEntry(path, *entry) + "\n");
+    web_ui()->CallJavascriptFunction("updateFileSystemContents", value);
+  }
 }
 
 void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
