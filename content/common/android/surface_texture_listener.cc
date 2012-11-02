@@ -38,11 +38,10 @@ void SurfaceTextureListener::Destroy(JNIEnv* env, jobject obj) {
 }
 
 void SurfaceTextureListener::FrameAvailable(JNIEnv* env, jobject obj) {
-  if (!browser_loop_->BelongsToCurrentThread()) {
-    browser_loop_->PostTask(FROM_HERE, callback_);
-  } else {
-    callback_.Run();
-  }
+  // These notifications should be coming in on a thread private to Java.
+  // Should this ever change, we can try to avoid reposting to the same thread.
+  DCHECK(!browser_loop_->BelongsToCurrentThread());
+  browser_loop_->PostTask(FROM_HERE, callback_);
 }
 
 // static

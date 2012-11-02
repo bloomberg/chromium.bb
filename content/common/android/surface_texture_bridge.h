@@ -11,8 +11,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
-struct ANativeWindow;
-
 namespace content {
 
 // This class serves as a bridge for native code to call java functions inside
@@ -38,19 +36,6 @@ class SurfaceTextureBridge
 
   // Set the default size of the image buffers.
   void SetDefaultBufferSize(int width, int height);
-
-  // Attach the SurfaceTexture to the given texture in the GL context that is
-  // current on the calling thread.
-  void AttachToGLContext(int texture_id);
-
-  // Detaches the SurfaceTexture from the context that owns its current GL
-  // texture. Must be called with that context current on the calling thread.
-  void DetachFromGLContext();
-
-  // Creates a native render surface for this surface texture.
-  // The caller must release the underlying reference when done with the handle
-  // by calling ANativeWindow_release().
-  ANativeWindow* CreateSurface();
 
   int texture_id() const {
     return texture_id_;
