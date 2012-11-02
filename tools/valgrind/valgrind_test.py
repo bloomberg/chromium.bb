@@ -874,12 +874,14 @@ class DrMemory(BaseTool):
       logging.warning("WARNING: NOT USING SUPPRESSIONS!")
 
     # Un-comment to dump Dr.Memory events on error
-    #proc += ["-dr_ops", "-dumpcore_mask 0x8bff"]
+    #proc += ["-dr_ops", "-dumpcore_mask", "-dr_ops", "0x8bff"]
 
     # Un-comment and comment next line to debug Dr.Memory
-    #proc += ["-dr_ops", "-no_hide -msgbox_mask 15 -stderr_mask 15"]
+    #proc += ["-dr_ops", "-no_hide"]
+    #proc += ["-dr_ops", "-msgbox_mask", "-dr_ops", "15"]
+    #Proc += ["-dr_ops", "-stderr_mask", "-dr_ops", "15"]
     # Ensure we see messages about Dr. Memory crashing!
-    proc += ["-dr_ops", "\'-stderr_mask 12\'"]
+    proc += ["-dr_ops", "-stderr_mask", "-dr_ops", "12"]
 
     if self._options.use_debug:
       proc += ["-debug"]
