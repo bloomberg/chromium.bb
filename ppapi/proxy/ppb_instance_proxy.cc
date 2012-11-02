@@ -191,15 +191,20 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
                                          PP_Resource device) {
-  Resource* object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(device);
-  if (!object || object->pp_instance() != instance)
-    return PP_FALSE;
+  // If device is 0, pass a null HostResource. This signals the host to unbind
+  // all devices.
+  HostResource host_resource;
+  if (device) {
+    Resource* resource =
+        PpapiGlobals::Get()->GetResourceTracker()->GetResource(device);
+    if (!resource || resource->pp_instance() != instance)
+      return PP_FALSE;
+    host_resource = resource->host_resource();
+  }
 
   PP_Bool result = PP_FALSE;
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
-      API_ID_PPB_INSTANCE, instance, object->host_resource(),
-      &result));
+      API_ID_PPB_INSTANCE, instance, host_resource, &result));
   return result;
 }
 
