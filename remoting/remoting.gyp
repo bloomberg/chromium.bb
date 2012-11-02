@@ -1304,118 +1304,71 @@
       'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
-        'base_strings_grd_file': 'resources/string_resources.grd',
-        'base_resource_ids_file': 'resources/resource_ids',
+        'grit_resource_ids': '',
       },
-      'conditions': [
-        [ 'branding=="Chrome"', {
-          'variables': {
-            'strings_grd_file': '<(base_strings_grd_file)',
-            'resource_ids_file': '<(base_resource_ids_file)',
-          },
-        }, {  # else branding!="Chrome"
-          # For non-official builds change branding in string resources
-          # to "Chromoting".
-          'variables': {
-            'strings_grd_file':
-                '<(grit_out_dir)/remoting/resources/string_resources.grd',
-            'resource_ids_file':
-                '<(grit_out_dir)/remoting/resources/resource_ids',
-          },
-          'copies': [
-            {
-              'destination': '<(grit_out_dir)/remoting/resources',
-              'files': [ '<(base_resource_ids_file)', ]
-            },
-          ],
-          'actions': [
-            {
-              'action_name': 'update_branding',
-              'inputs': [
-                '<(base_strings_grd_file)',
-              ],
-              'outputs': [
-                '<(strings_grd_file)',
-              ],
-              'action': ['python', 'tools/remove_official_branding.py',
-                         '<(base_strings_grd_file)', '<(strings_grd_file)' ],
-            },
-          ],
-        }],
-      ],
       'actions': [
         {
           'action_name': 'string_resources',
           'variables': {
-            'grit_grd_file': '<(strings_grd_file)',
-            'base_grit_grd_file': '<(base_strings_grd_file)',
+            'grit_grd_file': 'resources/string_resources.grd',
           },
-          'includes': [ 'grit_action.gypi' ],
+          'includes': [ '../build/grit_action.gypi' ],
         },
         {
           'action_name': 'common_resources',
           'variables': {
             'grit_grd_file': 'resources/common_resources.grd',
-            'base_grit_grd_file': 'resources/common_resources.grd',
           },
-          'includes': [ 'grit_action.gypi' ],
+          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
       'copies': [
         # Copy results to the product directory.
         {
           'destination': '<(PRODUCT_DIR)/remoting_locales',
-          'conditions': [
-            ['branding=="Chrome"', {
-              'files': [
-                '<(grit_out_dir)/remoting/resources/ar.pak',
-                '<(grit_out_dir)/remoting/resources/bg.pak',
-                '<(grit_out_dir)/remoting/resources/ca.pak',
-                '<(grit_out_dir)/remoting/resources/cs.pak',
-                '<(grit_out_dir)/remoting/resources/da.pak',
-                '<(grit_out_dir)/remoting/resources/de.pak',
-                '<(grit_out_dir)/remoting/resources/el.pak',
-                '<(grit_out_dir)/remoting/resources/en-US.pak',
-                '<(grit_out_dir)/remoting/resources/en-GB.pak',
-                '<(grit_out_dir)/remoting/resources/es.pak',
-                '<(grit_out_dir)/remoting/resources/es-419.pak',
-                '<(grit_out_dir)/remoting/resources/et.pak',
-                '<(grit_out_dir)/remoting/resources/fi.pak',
-                '<(grit_out_dir)/remoting/resources/fil.pak',
-                '<(grit_out_dir)/remoting/resources/fr.pak',
-                '<(grit_out_dir)/remoting/resources/he.pak',
-                '<(grit_out_dir)/remoting/resources/hi.pak',
-                '<(grit_out_dir)/remoting/resources/hr.pak',
-                '<(grit_out_dir)/remoting/resources/hu.pak',
-                '<(grit_out_dir)/remoting/resources/id.pak',
-                '<(grit_out_dir)/remoting/resources/it.pak',
-                '<(grit_out_dir)/remoting/resources/ja.pak',
-                '<(grit_out_dir)/remoting/resources/ko.pak',
-                '<(grit_out_dir)/remoting/resources/lt.pak',
-                '<(grit_out_dir)/remoting/resources/lv.pak',
-                '<(grit_out_dir)/remoting/resources/nb.pak',
-                '<(grit_out_dir)/remoting/resources/nl.pak',
-                '<(grit_out_dir)/remoting/resources/pl.pak',
-                '<(grit_out_dir)/remoting/resources/pt-BR.pak',
-                '<(grit_out_dir)/remoting/resources/pt-PT.pak',
-                '<(grit_out_dir)/remoting/resources/ro.pak',
-                '<(grit_out_dir)/remoting/resources/ru.pak',
-                '<(grit_out_dir)/remoting/resources/sk.pak',
-                '<(grit_out_dir)/remoting/resources/sl.pak',
-                '<(grit_out_dir)/remoting/resources/sr.pak',
-                '<(grit_out_dir)/remoting/resources/sv.pak',
-                '<(grit_out_dir)/remoting/resources/th.pak',
-                '<(grit_out_dir)/remoting/resources/tr.pak',
-                '<(grit_out_dir)/remoting/resources/uk.pak',
-                '<(grit_out_dir)/remoting/resources/vi.pak',
-                '<(grit_out_dir)/remoting/resources/zh-CN.pak',
-                '<(grit_out_dir)/remoting/resources/zh-TW.pak',
-              ],
-            }, {  # else: branding!="Chrome"
-              'files': [
-                '<(grit_out_dir)/remoting/resources/en-US.pak',
-              ]
-            }]
+          'files': [
+            '<(grit_out_dir)/remoting/resources/ar.pak',
+            '<(grit_out_dir)/remoting/resources/bg.pak',
+            '<(grit_out_dir)/remoting/resources/ca.pak',
+            '<(grit_out_dir)/remoting/resources/cs.pak',
+            '<(grit_out_dir)/remoting/resources/da.pak',
+            '<(grit_out_dir)/remoting/resources/de.pak',
+            '<(grit_out_dir)/remoting/resources/el.pak',
+            '<(grit_out_dir)/remoting/resources/en-US.pak',
+            '<(grit_out_dir)/remoting/resources/en-GB.pak',
+            '<(grit_out_dir)/remoting/resources/es.pak',
+            '<(grit_out_dir)/remoting/resources/es-419.pak',
+            '<(grit_out_dir)/remoting/resources/et.pak',
+            '<(grit_out_dir)/remoting/resources/fi.pak',
+            '<(grit_out_dir)/remoting/resources/fil.pak',
+            '<(grit_out_dir)/remoting/resources/fr.pak',
+            '<(grit_out_dir)/remoting/resources/he.pak',
+            '<(grit_out_dir)/remoting/resources/hi.pak',
+            '<(grit_out_dir)/remoting/resources/hr.pak',
+            '<(grit_out_dir)/remoting/resources/hu.pak',
+            '<(grit_out_dir)/remoting/resources/id.pak',
+            '<(grit_out_dir)/remoting/resources/it.pak',
+            '<(grit_out_dir)/remoting/resources/ja.pak',
+            '<(grit_out_dir)/remoting/resources/ko.pak',
+            '<(grit_out_dir)/remoting/resources/lt.pak',
+            '<(grit_out_dir)/remoting/resources/lv.pak',
+            '<(grit_out_dir)/remoting/resources/nb.pak',
+            '<(grit_out_dir)/remoting/resources/nl.pak',
+            '<(grit_out_dir)/remoting/resources/pl.pak',
+            '<(grit_out_dir)/remoting/resources/pt-BR.pak',
+            '<(grit_out_dir)/remoting/resources/pt-PT.pak',
+            '<(grit_out_dir)/remoting/resources/ro.pak',
+            '<(grit_out_dir)/remoting/resources/ru.pak',
+            '<(grit_out_dir)/remoting/resources/sk.pak',
+            '<(grit_out_dir)/remoting/resources/sl.pak',
+            '<(grit_out_dir)/remoting/resources/sr.pak',
+            '<(grit_out_dir)/remoting/resources/sv.pak',
+            '<(grit_out_dir)/remoting/resources/th.pak',
+            '<(grit_out_dir)/remoting/resources/tr.pak',
+            '<(grit_out_dir)/remoting/resources/uk.pak',
+            '<(grit_out_dir)/remoting/resources/vi.pak',
+            '<(grit_out_dir)/remoting/resources/zh-CN.pak',
+            '<(grit_out_dir)/remoting/resources/zh-TW.pak',
           ],
         },
         {
