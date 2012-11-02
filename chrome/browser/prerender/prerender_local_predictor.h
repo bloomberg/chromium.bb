@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/hash_tables.h"
 #include "base/timer.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/visit_database.h"
@@ -48,10 +47,6 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
     EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGIN = 19,
     EVENT_START_URL_LOOKUP = 20,
     EVENT_ADD_VISIT_NOT_ROOTPAGE = 21,
-    EVENT_URL_WHITELIST_ERROR = 22,
-    EVENT_URL_WHITELIST_OK = 23,
-    EVENT_PRERENDER_URL_LOOKUP_RESULT_ON_WHITELIST = 24,
-    EVENT_PRERENDER_URL_LOOKUP_RESULT_ON_WHITELIST_ROOT_PAGE = 25,
     EVENT_MAX_VALUE
   };
 
@@ -99,8 +94,6 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
 
   scoped_ptr<PrerenderData> current_prerender_;
   scoped_ptr<PrerenderData> last_swapped_in_prerender_;
-
-  base::hash_set<int64> url_whitelist_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLocalPredictor);
 };

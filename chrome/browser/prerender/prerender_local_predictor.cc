@@ -23,9 +23,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/page_transition_types.h"
-#include "crypto/secure_hash.h"
-#include "grit/browser_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 using content::PageTransition;
@@ -34,8 +31,6 @@ using history::URLID;
 namespace prerender {
 
 namespace {
-
-static const size_t kURLHashSize = 5;
 
 // Task to lookup the URL for a given URLID.
 class GetURLForURLIDTask : public HistoryDBTask {
@@ -149,24 +144,6 @@ bool IsRootPageURL(const GURL& url) {
     (!url.has_ref());
 }
 
-int64 URLHashToInt64(const unsigned char* data) {
-  COMPILE_ASSERT(kURLHashSize < sizeof(int64), url_hash_must_fit_in_int64);
-  int64 value = 0;
-  memcpy(&value, data, kURLHashSize);
-  return value;
-}
-
-int64 GetInt64URLHashForURL(const GURL& url) {
-  COMPILE_ASSERT(kURLHashSize < sizeof(int64), url_hash_must_fit_in_int64);
-  scoped_ptr<crypto::SecureHash> hash(
-      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
-  int64 hash_value = 0;
-  const char* url_string = url.spec().c_str();
-  hash->Update(url_string, strlen(url_string));
-  hash->Finish(&hash_value, kURLHashSize);
-  return hash_value;
-}
-
 }  // namespace
 
 struct PrerenderLocalPredictor::PrerenderData {
@@ -206,33 +183,6 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
                  &PrerenderLocalPredictor::Init);
     RecordEvent(EVENT_INIT_SCHEDULED);
   }
-
-  static const size_t kChecksumHashSize = 32;
-  base::RefCountedStaticMemory* url_whitelist_data =
-      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          IDR_PRERENDER_URL_WHITELIST, ui::SCALE_FACTOR_NONE);
-  size_t size = url_whitelist_data->size();
-  const unsigned char* front = url_whitelist_data->front();
-  if (size < kChecksumHashSize ||
-      (size - kChecksumHashSize) % kURLHashSize != 0) {
-    RecordEvent(EVENT_URL_WHITELIST_ERROR);
-    return;
-  }
-  scoped_ptr<crypto::SecureHash> hash(
-      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
-  hash->Update(front + kChecksumHashSize, size - kChecksumHashSize);
-  char hash_value[kChecksumHashSize];
-  hash->Finish(hash_value, kChecksumHashSize);
-  if (memcmp(hash_value, front, kChecksumHashSize)) {
-    RecordEvent(EVENT_URL_WHITELIST_ERROR);
-    return;
-  }
-  for (const unsigned char* p = front + kChecksumHashSize;
-       p < front + size;
-       p += kURLHashSize) {
-    url_whitelist_.insert(URLHashToInt64(p));
-  }
-  RecordEvent(EVENT_URL_WHITELIST_OK);
 }
 
 PrerenderLocalPredictor::~PrerenderLocalPredictor() {
@@ -368,11 +318,6 @@ void PrerenderLocalPredictor::OnLookupURL(history::URLID url_id,
     }
   }
 
-  if (url_whitelist_.count(GetInt64URLHashForURL(url)) > 0) {
-    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ON_WHITELIST);
-    if (IsRootPageURL(url))
-      RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ON_WHITELIST_ROOT_PAGE);
-  }
   if (IsRootPageURL(url))
     RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ROOT_PAGE);
   if (url.SchemeIs("http"))
