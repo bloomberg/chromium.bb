@@ -49,7 +49,7 @@
 #include <float.h>
 
 static int volatile entangled_thread_counter = 0;
-static int (*ff_lockmgr_cb)(void **mutex, enum AVLockOp op);
+static int (*ff_lockmgr_cb)(void **mutex, enum AVLockOp op) = NULL;
 static void *codec_mutex;
 static void *avformat_mutex;
 
