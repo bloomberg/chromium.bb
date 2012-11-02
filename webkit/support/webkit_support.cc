@@ -637,10 +637,12 @@ WebURL CreateURLForPathOrURL(const std::string& path_or_url_in_nativemb) {
   if (url.is_valid() && url.has_scheme())
     return WebURL(url);
 #if defined(OS_WIN)
-  return net::FilePathToFileURL(FilePath(wide_path_or_url));
+  FilePath path(wide_path_or_url);
 #else
-  return net::FilePathToFileURL(FilePath(path_or_url_in_nativemb));
+  FilePath path(path_or_url_in_nativemb);
 #endif
+  file_util::AbsolutePath(&path);
+  return net::FilePathToFileURL(path);
 }
 
 WebURL RewriteLayoutTestsURL(const std::string& utf8_url) {
