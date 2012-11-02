@@ -1576,6 +1576,20 @@ int NativeThemeWin::GetWindowsPart(Part part,
     case kWindowResizeGripper:
       part_id = SP_GRIPPER;
       break;
+    case kScrollbarDownArrow:
+    case kScrollbarLeftArrow:
+    case kScrollbarRightArrow:
+    case kScrollbarUpArrow:
+      part_id = SBP_ARROWBTN;
+      break;
+    case kScrollbarHorizontalThumb:
+      part_id = extra.scrollbar_track.is_upper ? SBP_UPPERTRACKHORZ :
+                                                 SBP_LOWERTRACKHORZ;
+      break;
+    case kScrollbarVerticalThumb:
+      part_id = extra.scrollbar_track.is_upper ? SBP_UPPERTRACKVERT :
+                                                 SBP_LOWERTRACKVERT;
+      break;
     default:
       NOTREACHED() << "Invalid part: " << part;
       break;
@@ -1690,6 +1704,112 @@ int NativeThemeWin::GetWindowsState(Part part,
         case kPressed:
         case kDisabled:
           state_id = 1;  // gripper has no windows state
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kScrollbarDownArrow:
+      switch (state) {
+        case kNormal:
+          state_id = ABS_DOWNNORMAL;
+          break;
+        case kHovered:
+          // Mimic ScrollbarThemeChromiumWin.cpp in WebKit.
+          state_id = base::win::GetVersion() < base::win::VERSION_VISTA ?
+              ABS_DOWNHOT : ABS_DOWNHOVER;
+          break;
+        case kPressed:
+          state_id = ABS_DOWNPRESSED;
+          break;
+        case kDisabled:
+          state_id = ABS_DOWNDISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kScrollbarLeftArrow:
+      switch (state) {
+        case kNormal:
+          state_id = ABS_LEFTNORMAL;
+          break;
+        case kHovered:
+          // Mimic ScrollbarThemeChromiumWin.cpp in WebKit.
+          state_id = base::win::GetVersion() < base::win::VERSION_VISTA ?
+              ABS_LEFTHOT : ABS_LEFTHOVER;
+          break;
+        case kPressed:
+          state_id = ABS_LEFTPRESSED;
+          break;
+        case kDisabled:
+          state_id = ABS_LEFTDISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kScrollbarRightArrow:
+      switch (state) {
+        case kNormal:
+          state_id = ABS_RIGHTNORMAL;
+          break;
+        case kHovered:
+          // Mimic ScrollbarThemeChromiumWin.cpp in WebKit.
+          state_id = base::win::GetVersion() < base::win::VERSION_VISTA ?
+              ABS_RIGHTHOT : ABS_RIGHTHOVER;
+          break;
+        case kPressed:
+          state_id = ABS_RIGHTPRESSED;
+          break;
+        case kDisabled:
+          state_id = ABS_RIGHTDISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kScrollbarUpArrow:
+      switch (state) {
+        case kNormal:
+          state_id = ABS_UPNORMAL;
+          break;
+        case kHovered:
+          // Mimic ScrollbarThemeChromiumWin.cpp in WebKit.
+          state_id = base::win::GetVersion() < base::win::VERSION_VISTA ?
+              ABS_UPHOT : ABS_UPHOVER;
+          break;
+        case kPressed:
+          state_id = ABS_UPPRESSED;
+          break;
+        case kDisabled:
+          state_id = ABS_UPDISABLED;
+          break;
+        default:
+          NOTREACHED() << "Invalid state: " << state;
+          break;
+      }
+      break;
+    case kScrollbarHorizontalThumb:
+    case kScrollbarVerticalThumb:
+      switch (state) {
+        case kNormal:
+          state_id = SCRBS_NORMAL;
+          break;
+        case kHovered:
+          // Mimic WebKit's behaviour in ScrollbarThemeChromiumWin.cpp.
+          state_id = base::win::GetVersion() < base::win::VERSION_VISTA ?
+              SCRBS_HOT : SCRBS_HOVER;
+          break;
+        case kPressed:
+          state_id = SCRBS_PRESSED;
+          break;
+        case kDisabled:
+          state_id = SCRBS_DISABLED;
           break;
         default:
           NOTREACHED() << "Invalid state: " << state;
