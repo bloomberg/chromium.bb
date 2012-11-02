@@ -225,7 +225,7 @@ cr.define('login', function() {
       screen.classList.remove('faded');
 
       if (Oobe.getInstance().isNewOobe())
-        Oobe.getInstance().updateInnerContainerSize_(screen);
+        Oobe.getInstance().updateScreenSize(screen);
     },
 
     /**
