@@ -62,9 +62,6 @@ class CrashService {
   // Override the name of the Windows named pipe on which we will
   // listen for crash dump request messages.
   static const char kPipeName[];
-  // --archive-dumps-by-pid
-  // Archive crash dumps into separate directory by client process id.
-  static const char kArchiveDumpsByPid[];
 
   // Returns number of crash dumps handled.
   int requests_handled() const {
@@ -104,9 +101,6 @@ class CrashService {
   // The caller is supposed to free the security descriptor by calling
   // LocalFree.
   PSECURITY_DESCRIPTOR GetSecurityDescriptorForLowIntegrity();
-
-  // Whether to archive crash dumps by client process id.
-  static bool archive_dumps_by_pid_;
 
   google_breakpad::CrashGenerationServer* dumper_;
   google_breakpad::CrashReportSender* sender_;
