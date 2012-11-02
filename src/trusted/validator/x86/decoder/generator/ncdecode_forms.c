@@ -254,7 +254,7 @@ static NaClOpFlags NaClGetIcatFlags(NaClInstCat icat,
 }
 
 /* Add miscellaneous flags defined elsewhere. */
-static void NaClAddMiscellaneousFlags() {
+static void NaClAddMiscellaneousFlags(void) {
   DEBUG(NaClLog(LOG_INFO, "-> Adding Miscellaneous Flags\n"));
   NaClAddZeroExtend32FlagIfApplicable();
   NaClLockableFlagIfApplicable();
@@ -425,12 +425,12 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
   return FALSE;
 }
 
-static void NaClOperandForm_Ap() {
+static void NaClOperandForm_Ap(void) {
   NaClDefOp(A_Operand, NACL_OPFLAG(OperandFar) | NACL_OPFLAG(OperandRelative));
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_p));
 }
 
-static void NaClOperandForm_CdSlq() {
+static void NaClOperandForm_CdSlq(void) {
   /* Note: For Cd/q, we don't worry about the size of the
    * control registers for NaCl. Hence, for now, we ignore the
    * size constraint
@@ -438,7 +438,7 @@ static void NaClOperandForm_CdSlq() {
   NaClDefOp(C_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_DdSlq() {
+static void NaClOperandForm_DdSlq(void) {
   /* Note: For Dd/q, we don't worry about the size of the
    * debug register for NaCl. Hence, for now, we ignore the
    * size constraint.
@@ -446,7 +446,7 @@ static void NaClOperandForm_DdSlq() {
   NaClDefOp(D_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Eb() {
+static void NaClOperandForm_Eb(void) {
   /* For Eb, we must worry about earlier arguments, which in some cases,
    * have already specified valid effective operand sizes. If so, we must make
    * the size of the this operand be byte specific. If size hasn't been
@@ -463,11 +463,11 @@ static void NaClOperandForm_Eb() {
   }
 }
 
-static void NaClOperandForm_Ed() {
+static void NaClOperandForm_Ed(void) {
   NaClDefOp(Ev_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_EdSlq() {
+static void NaClOperandForm_EdSlq(void) {
   /* Note: For Ed/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
    */
@@ -476,7 +476,7 @@ static void NaClOperandForm_EdSlq() {
                 NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_EdSlqSld() {
+static void NaClOperandForm_EdSlqSld(void) {
   /* Ed/q/d is used for Ed/q when operand size is 32 bits (vs 64 bits).
    * Note: For Ed/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
@@ -485,7 +485,7 @@ static void NaClOperandForm_EdSlqSld() {
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_EdSlqSlq() {
+static void NaClOperandForm_EdSlqSlq(void) {
   /* Ed/q/q is used for Ed/q when operand size is 64 bits (vs 32 bits).
    * Note: For Ed/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
@@ -494,41 +494,41 @@ static void NaClOperandForm_EdSlqSlq() {
   NaClAddIFlags(NACL_IFLAG(OperandSize_o) | NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_Ev() {
+static void NaClOperandForm_Ev(void) {
   NaClDefOp(E_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Ew() {
+static void NaClOperandForm_Ew(void) {
   NaClDefOp(Ew_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Fvw() {
+static void NaClOperandForm_Fvw(void) {
   NaClDefOp(RegRFLAGS, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
 }
 
-static void NaClOperandForm_Fvd() {
+static void NaClOperandForm_Fvd(void) {
   NaClDefOp(RegRFLAGS, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
 }
 
-static void NaClOperandForm_Fvq() {
+static void NaClOperandForm_Fvq(void) {
   NaClDefOp(RegRFLAGS, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Gb() {
+static void NaClOperandForm_Gb(void) {
   NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_b));
 }
 
-static void NaClOperandForm_Gd() {
+static void NaClOperandForm_Gd(void) {
   NaClDefOp(Gv_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_GdQ() {
+static void NaClOperandForm_GdQ(void) {
   /* Note: For Gd/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
    */
@@ -537,21 +537,21 @@ static void NaClOperandForm_GdQ() {
                 NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_Gq() {
+static void NaClOperandForm_Gq(void) {
   NaClDefOp(Go_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Gv() {
+static void NaClOperandForm_Gv(void) {
   NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Gw() {
+static void NaClOperandForm_Gw(void) {
   NaClDefOp(Gw_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Ib() {
+static void NaClOperandForm_Ib(void) {
   int i;
   NaClModeledInst* inst = NaClGetDefInst();
   /* First look to see if 1st or 2nd instance of an immediate value,
@@ -574,28 +574,28 @@ static void NaClOperandForm_Ib() {
   }
 }
 
-static void NaClOperandForm_I2b() {
+static void NaClOperandForm_I2b(void) {
   NaClDefOp(I2_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed2_b));
 }
 
-static void NaClOperandForm_Iv() {
+static void NaClOperandForm_Iv(void) {
   NaClDefOp(I_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_w) |
                 NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Iw() {
+static void NaClOperandForm_Iw(void) {
   NaClDefOp(I_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_w));
 }
 
-static void NaClOperandForm_Iz() {
+static void NaClOperandForm_Iz(void) {
   NaClDefOp(I_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_z));
 }
 
-static void NaClOperandForm_Jb() {
+static void NaClOperandForm_Jb(void) {
   NaClDefOp(J_Operand,
             NACL_OPFLAG(OperandRelative) | NACL_OPFLAG(OperandNear));
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_b));
@@ -616,7 +616,7 @@ static void DefOperandJzBaseUseImmedV(Bool use_immed_v) {
 }
 
 /* Installs Jz where immediate value is based on z size. */
-static void DefOperandJzBase() {
+static void DefOperandJzBase(void) {
   /* Note: when in 32-bit mode, the relative offset can be a 16 or 32 bit
    * immediate offset, depending on the operand size. When in 64-bit mode,
    * the relative offset is ALWAYS a 32-bit immediate value (see page
@@ -627,18 +627,18 @@ static void DefOperandJzBase() {
   DefOperandJzBaseUseImmedV(X86_64 == NACL_FLAGS_run_mode);
 }
 
-static void NaClOperandForm_Jz() {
+static void NaClOperandForm_Jz(void) {
   DefOperandJzBase();
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Jzd() {
+static void NaClOperandForm_Jzd(void) {
   DefOperandJzBaseUseImmedV(TRUE);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Jzw() {
+static void NaClOperandForm_Jzw(void) {
   DefOperandJzBase();
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
   /* Note: Special case 64-bit with 66 prefix, which is not supported on
@@ -651,34 +651,34 @@ static void NaClOperandForm_Jzw() {
   }
 }
 
-static void NaClOperandForm_M() {
+static void NaClOperandForm_M(void) {
   NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OpcodeAllowsData16));
 }
 
-static void NaClOperandForm_Ma() {
+static void NaClOperandForm_Ma(void) {
   NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
   NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v));
 }
 
-static void NaClOperandForm_Mb() {
+static void NaClOperandForm_Mb(void) {
   NaClDefOp(Mb_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Md() {
+static void NaClOperandForm_Md(void) {
   NaClDefOp(Mv_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Mdq() {
+static void NaClOperandForm_Mdq(void) {
   NaClDefOp(Mdq_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Mf() {
+static void NaClOperandForm_Mf(void) {
   NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_MdSlq() {
+static void NaClOperandForm_MdSlq(void) {
   /* Note: For Ed/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
    */
@@ -687,52 +687,52 @@ static void NaClOperandForm_MdSlq() {
                 NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_Mp() {
+static void NaClOperandForm_Mp(void) {
   /* TODO(karl) fix measurement size. */
   NaClDefOp(M_Operand, NACL_OPFLAG(OperandFar));
 }
 
-static void NaClOperandForm_Ms() {
+static void NaClOperandForm_Ms(void) {
   /* TODO(karl): fix size of data accessed in memory. */
   NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Mq() {
+static void NaClOperandForm_Mq(void) {
   NaClDefOp(Mo_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Mv() {
+static void NaClOperandForm_Mv(void) {
   NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Mw() {
+static void NaClOperandForm_Mw(void) {
   NaClDefOp(Mw_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_MwSlRv() {
+static void NaClOperandForm_MwSlRv(void) {
   /* TODO(karl) Verify that Mw/Rv as same as Ev? */
   NaClOperandForm_Ev();
 }
 
-static void NaClOperandForm_Ob() {
+static void NaClOperandForm_Ob(void) {
   NaClDefOp(O_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_b) | NACL_IFLAG(OpcodeHasImmed_Addr));
 }
 
-static void NaClOperandForm_Ov() {
+static void NaClOperandForm_Ov(void) {
   NaClDefOp(O_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_Addr) | NACL_IFLAG(OperandSize_w) |
                 NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
 
-static void NaClOperandForm_One() {
+static void NaClOperandForm_One(void) {
   NaClDefOp(Const_1, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_PdSlq() {
+static void NaClOperandForm_PdSlq(void) {
   /* Note: For Pd/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
    */
@@ -741,7 +741,7 @@ static void NaClOperandForm_PdSlq() {
                 NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_PdSlqSld() {
+static void NaClOperandForm_PdSlqSld(void) {
   /* Pd/q/d is used for Pd/q when operand size is 32 bits (vs 64 bits).
    * Note: For Pd/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
@@ -750,7 +750,7 @@ static void NaClOperandForm_PdSlqSld() {
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_PdSlqSlq() {
+static void NaClOperandForm_PdSlqSlq(void) {
   /* Pd/q/q is used for Pd/q when operand size is 64 bits (vs 32 bits).
    * Note: For Pd/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
@@ -759,53 +759,53 @@ static void NaClOperandForm_PdSlqSlq() {
   NaClAddIFlags(NACL_IFLAG(OperandSize_o) | NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_Pq() {
+static void NaClOperandForm_Pq(void) {
   /* TODO(karl) Add q size restriction. */
   NaClDefOp(Mmx_G_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_PRq() {
+static void NaClOperandForm_PRq(void) {
   /* Note: We ignore sizes for Mmx operands, since they
    * aren't used to compute memory addresses in NaCl.
    */
   NaClDefOp(Mmx_N_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Qd() {
+static void NaClOperandForm_Qd(void) {
   /* TODO(karl) add d size restriction. */
   NaClDefOp(Mmx_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Qq() {
+static void NaClOperandForm_Qq(void) {
   /* TODO(karl) add q size restriction. */
   NaClDefOp(Mmx_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Rd() {
+static void NaClOperandForm_Rd(void) {
   NaClDefOp(Ev_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
-static void NaClOperandForm_Rq() {
+static void NaClOperandForm_Rq(void) {
   NaClDefOp(Eo_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
-static void NaClOperandForm_RdSlMb() {
+static void NaClOperandForm_RdSlMb(void) {
   /* Note: For Rd/Mb, we ignore the size on memory,
    * since we don't need to specify sizes on memory.
    */
   NaClDefOp(Ev_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_RdSlMw() {
+static void NaClOperandForm_RdSlMw(void) {
   /* Note: For Rd/Mw, we ignore the size on memory,
    * since we don't need to specify sizes on memory for NaCl.
    */
   NaClDefOp(Ev_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_RdSlq() {
+static void NaClOperandForm_RdSlq(void) {
   /* Note: It appears that Rd/q opcodes are connected to
    * the architecture size, and only have one choice based
    * on that size.
@@ -817,82 +817,82 @@ static void NaClOperandForm_RdSlq() {
   }
 }
 
-static void NaClOperandForm_RdSlqSlMb() {
+static void NaClOperandForm_RdSlqSlMb(void) {
   /* Note: For Rd/q/Mb, we ignore the size on memory,
    * since we don't need to specify sizes on memory for NaCl.
    */
   NaClOperandForm_EdSlq();
 }
 
-static void NaClOperandForm_RdSlqSlMw() {
+static void NaClOperandForm_RdSlqSlMw(void) {
   /* Note: For Rd/q/Mw, we ignore the size on memory,
    * since we don't need to specify sizes on memory for NaCl.
    */
   NaClOperandForm_EdSlq();
 }
 
-static void NaClOperandForm_rAXv() {
+static void NaClOperandForm_rAXv(void) {
   NaClDefOp(RegREAX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_rAXva() {
+static void NaClOperandForm_rAXva(void) {
   NaClDefOp(RegREAXa, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_rAXvd() {
+static void NaClOperandForm_rAXvd(void) {
   NaClDefOp(RegEAX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
 }
 
-static void NaClOperandForm_rAXvq() {
+static void NaClOperandForm_rAXvq(void) {
   NaClDefOp(RegRAX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_rAXvw() {
+static void NaClOperandForm_rAXvw(void) {
   NaClDefOp(RegAX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
 }
 
-static void NaClOperandForm_rBXv() {
+static void NaClOperandForm_rBXv(void) {
   NaClDefOp(RegREBX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_rCXv() {
+static void NaClOperandForm_rCXv(void) {
   NaClDefOp(RegRECX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_rDXv() {
+static void NaClOperandForm_rDXv(void) {
   NaClDefOp(RegREDX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_rSPv() {
+static void NaClOperandForm_rSPv(void) {
   NaClDefOp(RegRESP, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_rBPv() {
+static void NaClOperandForm_rBPv(void) {
   NaClDefOp(RegREBP, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_rSIv() {
+static void NaClOperandForm_rSIv(void) {
   NaClDefOp(RegRESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_rDIv() {
+static void NaClOperandForm_rDIv(void) {
   NaClDefOp(RegREDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
@@ -904,7 +904,7 @@ static void NaClOperandForm_rDIv() {
  *        DIL, and the optional registers r8-r15 if REX.b is set. Register
  *        choice is based on the register value embedded in the opcode.
  */
-static void NaClOperandForm_r8b() {
+static void NaClOperandForm_r8b(void) {
   NaClDefOp(G_OpcodeBase, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_b));
 }
@@ -914,7 +914,7 @@ static void NaClOperandForm_r8b() {
  *        optional registers r8-r15 if REX.b is set, based on the register value
  *        embedded in the opcode.
  */
-static void NaClOperandForm_r8v() {
+static void NaClOperandForm_r8v(void) {
   NaClDefOp(G_OpcodeBase, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
@@ -926,7 +926,7 @@ static void NaClOperandForm_r8v() {
  *        embedded in the opcode
  *   vd - A doubleword only when the effective operand size matches.
  */
-static void NaClOperandForm_r8vd() {
+static void NaClOperandForm_r8vd(void) {
   NaClDefOp(G_OpcodeBase, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
 }
@@ -937,53 +937,53 @@ static void NaClOperandForm_r8vd() {
  *        embedded in the opcode.
  *   vq - A quadword only when the effective operand size matches.
  */
-static void NaClOperandForm_r8vq() {
+static void NaClOperandForm_r8vq(void) {
   NaClDefOp(G_OpcodeBase, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_SGz() {
+static void NaClOperandForm_SGz(void) {
   NaClDefOp(Seg_G_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Sw() {
+static void NaClOperandForm_Sw(void) {
   NaClDefOp(S_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(ModRmRegSOperand));
 }
 
-static void NaClOperandForm_Udq() {
+static void NaClOperandForm_Udq(void) {
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_UdqMd() {
+static void NaClOperandForm_UdqMd(void) {
   /* TODO: how to define size, based on register (Udq) or
    * memory (Md).
    */
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_UdqMq() {
+static void NaClOperandForm_UdqMq(void) {
   /* TODO: how to define size, based on register (Udq) or
    * memory (Mq).
    */
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_UdqMw() {
+static void NaClOperandForm_UdqMw(void) {
   /* TODO: how to define size, based on register (Udq) or
    * memory (Mw).
    */
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Vdq() {
+static void NaClOperandForm_Vdq(void) {
   /* TODO(karl) Add dq size restriction. */
   NaClDefOp(Xmm_G_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_VdSlq() {
+static void NaClOperandForm_VdSlq(void) {
   /* Note: For Vd/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
    */
@@ -992,7 +992,7 @@ static void NaClOperandForm_VdSlq() {
                 NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_VdSlqSld() {
+static void NaClOperandForm_VdSlqSld(void) {
   /* Vd/q/d is used for Vd/q when operand size is 32 bits (vs 64 bits).
    * Note: For Vd/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
@@ -1001,7 +1001,7 @@ static void NaClOperandForm_VdSlqSld() {
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_VdSlqSlq() {
+static void NaClOperandForm_VdSlqSlq(void) {
   /* Vd/q/q is used for Vd/q when operand size is 64 bits (vs 32 bits).
    * Note: For Vd/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
@@ -1010,27 +1010,27 @@ static void NaClOperandForm_VdSlqSlq() {
   NaClAddIFlags(NACL_IFLAG(OperandSize_o) | NACL_IFLAG(SizeIgnoresData16));
 }
 
-static void NaClOperandForm_Vpd() {
+static void NaClOperandForm_Vpd(void) {
   NaClDefOp(Xmm_G_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Vps() {
+static void NaClOperandForm_Vps(void) {
   NaClDefOp(Xmm_G_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Vq() {
+static void NaClOperandForm_Vq(void) {
   NaClDefOp(Xmm_Go_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Vsd() {
+static void NaClOperandForm_Vsd(void) {
   NaClDefOp(Xmm_G_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Vss() {
+static void NaClOperandForm_Vss(void) {
   NaClDefOp(Xmm_G_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_VRdq() {
+static void NaClOperandForm_VRdq(void) {
   /* Note: We ignore sizes for Mmx operands, since they
    * aren't used to compute memory addresses in NaCl.
    */
@@ -1038,7 +1038,7 @@ static void NaClOperandForm_VRdq() {
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
-static void NaClOperandForm_VRps() {
+static void NaClOperandForm_VRps(void) {
   /* Note: We ignore sizes for Xmm operands, since they
    * aren't used to compute memory addresses in NaCl.
    */
@@ -1046,7 +1046,7 @@ static void NaClOperandForm_VRps() {
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
-static void NaClOperandForm_VRq() {
+static void NaClOperandForm_VRq(void) {
   /* Note: We ignore sizes for Xmm operands, since they
    * aren't used to compute memory addresses in NaCl.
    */
@@ -1054,7 +1054,7 @@ static void NaClOperandForm_VRq() {
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
-static void NaClOperandForm_VRpd() {
+static void NaClOperandForm_VRpd(void) {
   /* Note: We ignore sizes for Xmm operands, since they
    * aren't used to compute memory addresses in NaCl.
    */
@@ -1062,93 +1062,93 @@ static void NaClOperandForm_VRpd() {
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
-static void NaClOperandForm_Wdq() {
+static void NaClOperandForm_Wdq(void) {
   /* TODO(karl) Add dq size restriction. */
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Wpd() {
+static void NaClOperandForm_Wpd(void) {
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Wps() {
+static void NaClOperandForm_Wps(void) {
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Wq() {
+static void NaClOperandForm_Wq(void) {
   /* TODO(karl) Add q size restriction. */
   NaClDefOp(Xmm_Eo_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Wsd() {
+static void NaClOperandForm_Wsd(void) {
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Wss() {
+static void NaClOperandForm_Wss(void) {
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
-static void NaClOperandForm_Xb() {
+static void NaClOperandForm_Xb(void) {
   NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_b));
 }
 
-static void NaClOperandForm_Xvw() {
+static void NaClOperandForm_Xvw(void) {
   NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
 }
 
-static void NaClOperandForm_Xvd() {
+static void NaClOperandForm_Xvd(void) {
   NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
 }
 
-static void NaClOperandForm_Xvq() {
+static void NaClOperandForm_Xvq(void) {
   NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Xzd() {
+static void NaClOperandForm_Xzd(void) {
   NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Xzw() {
+static void NaClOperandForm_Xzw(void) {
   NaClDefOp(RegDS_ESI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
 }
 
-static void NaClOperandForm_Yb() {
+static void NaClOperandForm_Yb(void) {
   NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_b));
 }
 
-static void NaClOperandForm_Yvd() {
+static void NaClOperandForm_Yvd(void) {
   NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
 }
 
-static void NaClOperandForm_Yvq() {
+static void NaClOperandForm_Yvq(void) {
   NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Yvw() {
+static void NaClOperandForm_Yvw(void) {
   NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
 }
 
-static void NaClOperandForm_Yzw() {
+static void NaClOperandForm_Yzw(void) {
   NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w));
 }
 
-static void NaClOperandForm_Yzd() {
+static void NaClOperandForm_Yzd(void) {
   NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
-static void NaClOperandForm_Zvd() {
+static void NaClOperandForm_Zvd(void) {
   NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v));
 }

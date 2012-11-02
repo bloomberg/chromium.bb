@@ -79,7 +79,7 @@ void Info(const char *fmt, ...) {
   va_end(ap);
 }
 
-static void usage() {
+static void usage(void) {
   fprintf(stderr,
           "usage: ncdis [options] [file]\n"
           "\n"
@@ -128,7 +128,7 @@ static void usage() {
 }
 
 /* Converts command line flags to corresponding disassemble flags. */
-static NaClDisassembleFlags NaClGetDisassembleFlags() {
+static NaClDisassembleFlags NaClGetDisassembleFlags(void) {
   NaClDisassembleFlags flags = 0;
   if (NACL_FLAGS_validator_decoder) {
     NaClAddBits(flags, NACL_DISASSEMBLE_FLAG(NaClDisassembleValidatorDecoder));
@@ -213,7 +213,7 @@ static Bool FLAGS_self_document = FALSE;
  * NOTE: we only allow the specification of -use_iter at the top-level
  * command line..
  */
-static void ResetFlags() {
+static void ResetFlags(void) {
   int i;
   static uint32_t DEFAULT_decode_pc;
   static char* DEFAULT_commands;

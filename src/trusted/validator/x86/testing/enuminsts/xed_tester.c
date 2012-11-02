@@ -46,7 +46,7 @@ struct {
 
 
 /* Initialize xed state before we try to decode anything. */
-static void XedSetup() {
+static void XedSetup(void) {
   xed_tables_init();
   xed_state_zero(&xed_decoder._xed_state);
 
@@ -176,7 +176,7 @@ static size_t InstLength(const NaClEnumerator* enumerator) {
   return (size_t) xed_decoder._xedd._decoded_length;
 }
 
-static inline xed_inst_t const* GetXedInst() {
+static inline xed_inst_t const* GetXedInst(void) {
   if (xed_decoder._xed_inst == NULL) {
     xed_decoder._xed_inst = xed_decoded_inst_inst(&xed_decoder._xedd);
   }
@@ -237,7 +237,7 @@ static void InstallFlag(const NaClEnumerator* enumerator,
 /* Defines the registry function that creates a xed decoder, and returns
  * the decoder to be registered.
  */
-NaClEnumeratorDecoder* RegisterXedDecoder() {
+NaClEnumeratorDecoder* RegisterXedDecoder(void) {
   XedSetup();
   xed_decoder._base._id_name = "xed";
   xed_decoder._base._parse_inst_fn = ParseInst;

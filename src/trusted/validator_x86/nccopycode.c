@@ -106,7 +106,7 @@ static int IsTrustedWrite(uint8_t *dst,
 void* g_squashybuffer = NULL;
 char g_firstbyte = 0;
 
-static Bool SerializeAllProcessors() {
+static Bool SerializeAllProcessors(void) {
   /*
    * We rely on the OS mprotect() call to issue interprocessor interrupts,
    * which will cause other processors to execute an IRET, which is

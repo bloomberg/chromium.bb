@@ -22,14 +22,14 @@ struct state {
 
 extern struct state states[];
 
-uint16_t NumStates();
+uint16_t NumStates(void);
 
 void AddRange(int state_idx,
               uint8_t byte_begin,
               uint8_t byte_end,
               uint16_t target);
 
-void InitTransitions();
+void InitTransitions(void);
 
 extern uint16_t start_state;
 

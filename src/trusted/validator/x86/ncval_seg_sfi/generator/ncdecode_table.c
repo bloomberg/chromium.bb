@@ -728,7 +728,7 @@ static char* asmprint(char** asmstr, const char* opcode,
 }
 #endif
 
-static void InitializeGlobalTables() {
+static void InitializeGlobalTables(void) {
   int i, j;
   /* pre-initialize g_Op1ByteTable */
   for (i = 0; i < NCDTABLESIZE; i++) {
@@ -800,7 +800,7 @@ static void Encode87Op(OpMetaInfo* g87tab[NCDTABLESIZE],
   EncodeModed87Op(g87tab, set1, set2, FLAGS_run_mode);
 }
 
-static void BuildSSE4Tables() {
+static void BuildSSE4Tables(void) {
   TODO(brad, "extend hcf to check three byte instructions");
   EncodeOp660F(0x38, 1, IMM_NONE, NACLi_3BYTE, "SSE4");
   EncodeOp660F(0x3A, 1, IMM_FIXED1, NACLi_3BYTE, "SSE4");
@@ -897,7 +897,7 @@ static void BuildSSE4Tables() {
   EncodeOp660F3A(0x0f, 1, IMM_FIXED1, NACLi_SSSE3, "palignr $V, $W, $Ib");
 }
 
-static void Buildx87Tables() {
+static void Buildx87Tables(void) {
   int i;
   /* since these are so repetative I'm using a little bit of a hack */
   /* to make this more concise.                                     */
@@ -1100,7 +1100,7 @@ static void NCDefNop(const char* sequence) {
 }
 
 /* Define set of explicitly defined nop byte sequences. */
-static void NCDefNops() {
+static void NCDefNops(void) {
   /* Note: The following could be recognized as nops, but are already
    * parsed and accepted by the validator:
    *
@@ -1129,7 +1129,7 @@ static void NCDefNops() {
   NCDefNop("6666666666662e0f1f840000000000");
 }
 
-static void BuildMetaTables() {
+static void BuildMetaTables(void) {
    InitializeGlobalTables();
 
    NCDefNops();

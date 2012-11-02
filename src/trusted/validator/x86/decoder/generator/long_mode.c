@@ -43,7 +43,7 @@ static const NaClMnemonic kLongModeOp[] = {
 };
 
 /* Add LongMode instruction flag if applicable. */
-void NaClAddLongModeIfApplicable() {
+void NaClAddLongModeIfApplicable(void) {
   if (NaClInInstructionSet(kLongModeOp, NACL_ARRAY_SIZE(kLongModeOp),
                            NULL, 0)) {
     NaClAddIFlags(NACL_IFLAG(LongMode));

@@ -388,7 +388,7 @@ struct NaClValidatorState* NaClValStateCreate(
 }
 
 /* Returns the decoder tables to use. */
-static const NaClDecodeTables* NaClGetDecoderTables() {
+static const NaClDecodeTables* NaClGetDecoderTables(void) {
   return NACL_FLAGS_validator_decoder
       ? kNaClValDecoderTables
       : kNaClDecoderTables;

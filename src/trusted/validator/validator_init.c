@@ -11,11 +11,11 @@
 /* The function is not static to avoid compiler error on platforms where it is
  * not used.
  */
-void EmitExperimentalValidatorWarning() {
+void EmitExperimentalValidatorWarning(void) {
   NaClLog(LOG_WARNING, "DANGER! USING THE EXPERIMENTAL DFA VALIDATOR!\n");
 }
 
-const struct NaClValidatorInterface *NaClCreateValidator() {
+const struct NaClValidatorInterface *NaClCreateValidator(void) {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   return NaClValidatorCreateArm();
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips

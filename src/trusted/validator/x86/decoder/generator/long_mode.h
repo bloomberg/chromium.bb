@@ -12,6 +12,6 @@
 #endif
 
 /* Add LongMode instruction flag to the current instruction, if applicable. */
-void NaClAddLongModeIfApplicable();
+void NaClAddLongModeIfApplicable(void);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_DECODER_GENERATOR_LONG_MODE_H_ */

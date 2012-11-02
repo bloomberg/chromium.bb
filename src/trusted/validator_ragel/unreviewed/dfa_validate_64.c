@@ -158,6 +158,6 @@ static const struct NaClValidatorInterface validator = {
   ValidatorCodeReplacement_x86_64,
 };
 
-const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_64() {
+const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_64(void) {
   return &validator;
 }

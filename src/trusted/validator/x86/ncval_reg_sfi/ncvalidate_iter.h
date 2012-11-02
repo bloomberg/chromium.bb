@@ -91,7 +91,7 @@ extern Bool NACL_FLAGS_report_conditions_on_all;
 #endif
 
 /* Changes all validator trace flags to true. */
-void NaClValidatorFlagsSetTraceVerbose();
+void NaClValidatorFlagsSetTraceVerbose(void);
 
 /* The model of a validator state. */
 typedef struct NaClValidatorState NaClValidatorState;

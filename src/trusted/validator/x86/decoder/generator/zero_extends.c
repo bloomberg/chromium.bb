@@ -138,7 +138,7 @@ static void AddZeroExtendToOpDestArgs(NaClModeledInst* inst) {
 }
 
 /* Add OperandZeroExtends_v instruction flag if applicable. */
-void NaClAddZeroExtend32FlagIfApplicable() {
+void NaClAddZeroExtend32FlagIfApplicable(void) {
   if ((X86_64 == NACL_FLAGS_run_mode) &&
       NaClInInstructionSet(kZeroExtend32Op,
                            NACL_ARRAY_SIZE(kZeroExtend32Op),

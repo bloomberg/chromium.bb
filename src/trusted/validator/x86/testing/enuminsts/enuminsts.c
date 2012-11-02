@@ -198,7 +198,7 @@ static void PrintBindings(ComparedInstruction* cinst) {
 }
 
 /* Prints out summary of how to use this executable. and then exits. */
-static void Usage() {
+static void Usage(void) {
   size_t i;
   fprintf(stderr, "usage: %s [decoders] [options] [hexbytes ...]\n",
           gArgv0);
@@ -1023,7 +1023,7 @@ static const size_t kInitialInstBytesSize = 1024;
 static const size_t kInitialInstListInstsSize = 256;
 
 /* Creates an initially empty list of instructions. */
-static InstList* CreateEmptyInstList() {
+static InstList* CreateEmptyInstList(void) {
   InstList* list = (InstList*) malloc(sizeof(InstList));
   if (NULL == list) ReportFatalError("Out of memory");
   list->bytes_ = (uint8_t*) malloc(kInitialInstBytesSize);
@@ -1256,12 +1256,12 @@ static void NaClPreregisterEnumeratorDecoder(ComparedInstruction* cinst,
 }
 
 /* Define decoders that can be registered. */
-extern NaClEnumeratorDecoder* RegisterXedDecoder();
-extern NaClEnumeratorDecoder* RegisterNaClDecoder();
-extern NaClEnumeratorDecoder* RegisterRagelDecoder();
+extern NaClEnumeratorDecoder* RegisterXedDecoder(void);
+extern NaClEnumeratorDecoder* RegisterNaClDecoder(void);
+extern NaClEnumeratorDecoder* RegisterRagelDecoder(void);
 
 /* Initialize the set of available decoders. */
-static void NaClInitializeAvailableDecoders() {
+static void NaClInitializeAvailableDecoders(void) {
   kNumAvailableDecoders = 0;
 #ifdef NACL_XED_DECODER
   NaClPreregisterEnumeratorDecoder(&gCinst, RegisterXedDecoder());

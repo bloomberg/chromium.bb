@@ -27,6 +27,6 @@
 extern int ReadAnInstruction(InstByteArray ibytes);
 
 /* Defines an input decoder for instructions read from stdin. */
-extern NaClEnumeratorDecoder* RegisterInputDecoder();
+extern NaClEnumeratorDecoder* RegisterInputDecoder(void);
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_TESTING_ENUMINSTS_INPUT_TESTER_H_

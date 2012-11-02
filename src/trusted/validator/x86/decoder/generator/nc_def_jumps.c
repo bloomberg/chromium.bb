@@ -62,7 +62,7 @@ static void NaClAddJumpFlags(NaClIFlag flag, const NaClMnemonic* name,
 }
 
 
-void NaClAddJumpFlagsIfApplicable() {
+void NaClAddJumpFlagsIfApplicable(void) {
   NaClAddJumpFlags(JumpInstruction, kDefinesUnconditionalJump,
                    NACL_ARRAY_SIZE(kDefinesUnconditionalJump));
   NaClAddJumpFlags(ConditionalJump, kDefinesConditionalJumpWithHints,

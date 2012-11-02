@@ -127,15 +127,15 @@ struct NaClValidatorInterface {
 };
 
 /* Make a choice of validating functions. */
-const struct NaClValidatorInterface *NaClCreateValidator();
+const struct NaClValidatorInterface *NaClCreateValidator(void);
 
 /* Known Validator API initializers. Private. Do not use outside validator. */
-const struct NaClValidatorInterface *NaClValidatorCreate_x86_64();
-const struct NaClValidatorInterface *NaClValidatorCreate_x86_32();
-const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_32();
-const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_64();
-const struct NaClValidatorInterface *NaClValidatorCreateArm();
-const struct NaClValidatorInterface *NaClValidatorCreateMips();
+const struct NaClValidatorInterface *NaClValidatorCreate_x86_64(void);
+const struct NaClValidatorInterface *NaClValidatorCreate_x86_32(void);
+const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_32(void);
+const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_64(void);
+const struct NaClValidatorInterface *NaClValidatorCreateArm(void);
+const struct NaClValidatorInterface *NaClValidatorCreateMips(void);
 
 /* Applies the validator, as used in a command-line tool to report issues.
  * Note: This is intentionally separated from ApplyValidator, since it need

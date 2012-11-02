@@ -41,7 +41,7 @@ void NaClDefInstPrefix(const NaClInstPrefix prefix);
 /* Resets the default opcode prefix to the value of the last
  * call to NaClDefDefaultInstPrefix.
  */
-void NaClResetToDefaultInstPrefix();
+void NaClResetToDefaultInstPrefix(void);
 
 /* Same as NaClDefInstChoices, but you can explicitly define the
  * prefix associated with the opcode.
@@ -79,9 +79,9 @@ void NaClDefPrefixInstMrmChoices_32_64(const NaClInstPrefix prefix,
  * call is made. When this is called, these sanity checks
  * are turned off until the explicit call to NaClApplySanityChecks.
  */
-void NaClDelaySanityChecks();
+void NaClDelaySanityChecks(void);
 
-void NaClApplySanityChecks();
+void NaClApplySanityChecks(void);
 
 /* Define the next opcode (instruction), initializing with
  * no operands.
@@ -97,7 +97,7 @@ void NaClDefInst(
  * that modifies the current instruction will invalidate the contents
  * returned by this function.
  */
-NaClModeledInst* NaClGetDefInst();
+NaClModeledInst* NaClGetDefInst(void);
 
 /* Define an opcode extension for the current instruction, which is
  * a value between 0 and 7, that appears in the modrm byte of the
@@ -155,7 +155,7 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* context_st);
 void NaClDef0FInsts(struct NaClSymbolTable* context_st);
 
 /* Defines two byte opcodes beginning with DC. */
-void NaClDefDCInsts();
+void NaClDefDCInsts(void);
 
 /* Defines SSE instructions (i.e. instructions using MMX and XMM registers). */
 void NaClDefSseInsts(struct NaClSymbolTable* context_st);

@@ -14,6 +14,6 @@
 /* Looks the current instruction up in a table of instructions that
  * assume the default operand size is 64 bits instead of 32 bits.
  */
-void NaClAddSizeDefaultIs64();
+void NaClAddSizeDefaultIs64(void);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_DECODER_GENERATOR_DEFSIZE64_H_ */

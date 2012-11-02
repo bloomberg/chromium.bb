@@ -101,7 +101,7 @@ static const NaClNameOpcodeSeq kNameSeqSizeDefaultIs64[] = {
   { InstRet , { 0xc3 , END_OPCODE_SEQ } },
 };
 
-void NaClAddSizeDefaultIs64() {
+void NaClAddSizeDefaultIs64(void) {
   NaClModeledInst* inst = NaClGetDefInst();
   if ((X86_64 == NACL_FLAGS_run_mode) &&
       (NaClOperandSizes(inst) & NACL_IFLAG(OperandSize_o)) &&

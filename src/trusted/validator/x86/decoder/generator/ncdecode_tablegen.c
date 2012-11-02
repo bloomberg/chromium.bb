@@ -478,11 +478,11 @@ void NaClDefInstPrefix(const NaClInstPrefix prefix) {
   current_opcode_prefix = prefix;
 }
 
-void NaClResetToDefaultInstPrefix() {
+void NaClResetToDefaultInstPrefix(void) {
   NaClDefInstPrefix(default_opcode_prefix);
 }
 
-NaClModeledInst* NaClGetDefInst() {
+NaClModeledInst* NaClGetDefInst(void) {
   return current_inst;
 }
 
@@ -839,7 +839,7 @@ static void NaClInstallCurrentIntoOpcodeMrm(const NaClInstPrefix prefix,
  * Used when Opcode32Only or Opcode64Only flag is added, and
  * the flag doesn't match the subarchitecture being modeled.
  */
-static void NaClRemoveCurrentInstMrmFromInstTable() {
+static void NaClRemoveCurrentInstMrmFromInstTable(void) {
   uint8_t opcode = current_inst->opcode[current_inst->num_opcode_bytes - 1];
   NaClModeledInst* prev = NULL;
   NaClModeledInst* next = tables.inst_table[opcode][current_inst->prefix];
@@ -865,7 +865,7 @@ static void NaClRemoveCurrentInstMrmFromInstTable() {
  * Used when Opcode32Only or Opcode64Only flag is added, and
  * the flag doesn't match the subarchitecture being modeled.
  */
-static void NaClRemoveCurrentInstMrmFromInstMrmTable() {
+static void NaClRemoveCurrentInstMrmFromInstMrmTable(void) {
   /* Be sure to try opcode in first operand (if applicable),
    * and the default list NACL_NO_MODRM_OPCODE, in case
    * the operand hasn't been processed yet.
@@ -937,7 +937,7 @@ static void NaClPrintlnOpFlags(struct Gio* g, NaClOpFlags flags) {
   gprintf(g, "\n");
 }
 
-static void NaClApplySanityChecksToInst();
+static void NaClApplySanityChecksToInst(void);
 
 void NaClDefOpcodeExtension(int opcode) {
   uint8_t byte_opcode;
@@ -1106,7 +1106,7 @@ static Bool NaClIFlagsMatchesRunMode(NaClIFlags flags) {
 }
 
 /* Check that the flags defined for an opcode make sense. */
-static void NaClApplySanityChecksToInst() {
+static void NaClApplySanityChecksToInst(void) {
   const NaClIFlags operand_sizes = NaClOperandSizes(current_inst);
   if (!apply_sanity_checks) return;
   if ((current_inst->flags & NACL_IFLAG(Opcode32Only)) &&
@@ -1310,7 +1310,7 @@ void NaClDefPrefixInstChoices_32_64(const NaClInstPrefix prefix,
 /* Adds opcode flags corresponding to REP/REPNE flags if defined by
  * the prefix.
  */
-static void NaClAddRepPrefixFlagsIfApplicable() {
+static void NaClAddRepPrefixFlagsIfApplicable(void) {
   switch (current_opcode_prefix) {
     case Prefix660F:
     case Prefix660F38:
@@ -1513,7 +1513,7 @@ static void NaClDefInstSeq(const char* opcode_seq) {
 /* Apply checks to current instruction flags, and update model as
  * appropriate.
  */
-static void NaClRecheckIFlags() {
+static void NaClRecheckIFlags(void) {
   if (!NaClIFlagsMatchesRunMode(current_inst->flags)) {
     NaClRemoveCurrentInstMrmFromInstTable();
     NaClRemoveCurrentInstMrmFromInstMrmTable();
@@ -1557,11 +1557,11 @@ void NaClRemoveIFlags(NaClIFlags less_flags) {
   NaClRecheckIFlags();
 }
 
-void NaClDelaySanityChecks() {
+void NaClDelaySanityChecks(void) {
   apply_sanity_checks = FALSE;
 }
 
-void NaClApplySanityChecks() {
+void NaClApplySanityChecks(void) {
   apply_sanity_checks = TRUE;
   if (NULL != current_inst) {
     int i;
@@ -1572,7 +1572,7 @@ void NaClApplySanityChecks() {
   }
 }
 
-static void NaClInitInstTables() {
+static void NaClInitInstTables(void) {
   int i;
   NaClInstPrefix prefix;
   int j;
@@ -1597,7 +1597,7 @@ static void NaClInitInstTables() {
   tables.undefined_inst = current_inst;
 }
 
-static void NaClDefPrefixBytes() {
+static void NaClDefPrefixBytes(void) {
   NaClEncodePrefixName(kValueSEGES,  "kPrefixSEGES");
   NaClEncodePrefixName(kValueSEGCS,  "kPrefixSEGCS");
   NaClEncodePrefixName(kValueSEGSS,  "kPrefixSEGSS");
@@ -1634,7 +1634,7 @@ static void NaClDefNopSeq(const char* sequence, uint8_t opcode) {
   NaClDefNopLikeSeq(sequence, opcode, InstNop);
 }
 
-static void NaClDefNops() {
+static void NaClDefNops(void) {
   /* Note: The following could be recognized as nops, but are already
    * parsed and accepted by the validator.
    *
@@ -1693,7 +1693,7 @@ static void NaClDefNops() {
 }
 
 /* Build the set of x64 opcode (instructions). */
-static void NaClBuildInstTables() {
+static void NaClBuildInstTables(void) {
   struct NaClSymbolTable* st = NaClSymbolTableCreate(5, NULL);
 
   /* Create common (global) symbol table with instruction set presumptions. */
@@ -1743,7 +1743,7 @@ static void NaClFatalChoiceCount(const int expected,
 /* Verify that the number of possible choies for each prefix:opcode matches
  * what was explicitly defined.
  */
-static void NaClVerifyInstCounts() {
+static void NaClVerifyInstCounts(void) {
   int i, j;
   NaClInstPrefix prefix;
   for (i = 0; i < NCDTABLESIZE; ++i) {
@@ -1785,7 +1785,7 @@ static void NaClInstRemove64Stuff(NaClModeledInst* inst) {
 /* Simplifies the instructions if possible. Mostly removes flags that
  * don't correspond to the run mode.
  */
-static void NaClSimplifyIfApplicable() {
+static void NaClSimplifyIfApplicable(void) {
   int i;
   for (i = 0; i < NCDTABLESIZE; ++i) {
     NaClInstPrefix prefix;
@@ -2217,7 +2217,7 @@ static void FillInTrieMissingOperandsDescs(NaClModeledInstNode* node) {
 /* Define the operands description field of each modeled
  * opcode instruction, if it hasn't explicitly been defined.
  */
-static void FillInMissingOperandsDescs() {
+static void FillInMissingOperandsDescs(void) {
   int i;
   NaClInstPrefix prefix;
   for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
@@ -2232,7 +2232,7 @@ static void FillInMissingOperandsDescs() {
   FillInTrieMissingOperandsDescs(tables.inst_node_root);
 }
 
-static void InitTables() {
+static void InitTables(void) {
   tables.inst_node_root = NULL;
   tables.operands_size = 0;
   tables.ops_compressed_size = 0;

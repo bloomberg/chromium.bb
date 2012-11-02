@@ -90,7 +90,7 @@ void NaClConditionAppend(char* condition,
 /* Define the stop instruction. */
 const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
 
-void NaClValidatorFlagsSetTraceVerbose() {
+void NaClValidatorFlagsSetTraceVerbose(void) {
   NACL_FLAGS_validator_trace_instructions = TRUE;
   NACL_FLAGS_validator_trace_inst_internals = TRUE;
 }

@@ -50,7 +50,7 @@ static const NaClMnemonic kLockableOp[] = {
   InstXor
 };
 
-void NaClLockableFlagIfApplicable() {
+void NaClLockableFlagIfApplicable(void) {
   if (NaClInInstructionSet(kLockableOp, NACL_ARRAY_SIZE(kLockableOp),
                            NULL, 0)) {
     NaClAddIFlags(NACL_IFLAG(OpcodeLockable));

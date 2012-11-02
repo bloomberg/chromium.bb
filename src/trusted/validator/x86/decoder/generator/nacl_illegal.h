@@ -18,6 +18,6 @@
  * TODO(karl) This table is incomplete. As we fix instructions to use the new
  * generator model, this table will be extended.
  */
-void NaClAddNaClIllegalIfApplicable();
+void NaClAddNaClIllegalIfApplicable(void);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_DECODER_GENERATOR_NACL_ILLEGAL_H_ */

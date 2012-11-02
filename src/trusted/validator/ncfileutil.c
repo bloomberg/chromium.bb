@@ -27,7 +27,7 @@
 /* in sel_ldr. To prevent unintended production usage, define a symbol  */
 /* that will cause a load-time error for sel_ldr.                       */
 int gNaClValidateImage_foo = 0;
-void NaClValidateImage() { gNaClValidateImage_foo += 1; }
+void NaClValidateImage(void) { gNaClValidateImage_foo += 1; }
 
 static void NcLoadFilePrintError(const char* format, ...)
     ATTRIBUTE_FORMAT_PRINTF(1, 2);

@@ -75,7 +75,7 @@ static int kMaxDiagnostics = 0;
  */
 static Bool NACL_FLAG_unsafe_single_inst32_mode = FALSE;
 
-int NCValidatorGetMaxDiagnostics() {
+int NCValidatorGetMaxDiagnostics(void) {
   return kMaxDiagnostics;
 }
 

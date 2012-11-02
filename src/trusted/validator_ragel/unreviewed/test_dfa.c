@@ -27,7 +27,7 @@ const int kErrNotADir = 3;
 const int kErrChortBuf = 4;
 const int kErrOpenOutput = 5;
 
-static void InitStates() {
+static void InitStates(void) {
   int i, t;
 
   for (i = 0; i < NumStates(); i++) {

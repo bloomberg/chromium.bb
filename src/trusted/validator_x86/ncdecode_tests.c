@@ -323,7 +323,7 @@ struct NCDecodeTestCase NCDecoderTests[] = {
 };
 
 #define sizeofA(array)  (sizeof(array)/sizeof(array[0]))
-void ncdecode_unittests() {
+void ncdecode_unittests(void) {
   size_t i;
 
   for (i = 0; i < sizeofA(NCDecoderTests); i++) {
@@ -335,7 +335,7 @@ void ncdecode_unittests() {
   }
 }
 
-int main() {
+int main(void) {
   struct GioFile gio_out_stream;
   struct Gio *gout = (struct Gio*) &gio_out_stream;
   if (!GioFileRefCtor(&gio_out_stream, stdout)) {

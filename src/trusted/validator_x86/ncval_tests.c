@@ -986,7 +986,7 @@ static void TestValidator(struct NCValTestCase *vtest, int didstubout) {
   exit(-1);
 }
 
-void test_fail_on_bad_alignment() {
+void test_fail_on_bad_alignment(void) {
   struct NCValidatorState *vstate;
 
    printf("Running test_fail_on_bad_alignment...\n");
@@ -1002,7 +1002,7 @@ void test_fail_on_bad_alignment() {
   CHECK(vstate == NULL);
 }
 
-void test_stubout() {
+void test_stubout(void) {
   /* Similar to test 68 */
   struct NCValTestCase test = {
     "test stubout",
@@ -1021,7 +1021,7 @@ void test_stubout() {
   NaClSetCPUFeature(&g_ncval_cpu_features, NaClCPUFeature_MMX, TRUE);
 }
 
-void ncvalidate_unittests() {
+void ncvalidate_unittests(void) {
   size_t i;
 
   /* Default to stubbing out nothing. */
@@ -1038,7 +1038,7 @@ void ncvalidate_unittests() {
 }
 
 
-int main() {
+int main(void) {
   struct GioFile gio_out_stream;
   struct Gio *gout = (struct Gio*) &gio_out_stream;
   if (!GioFileRefCtor(&gio_out_stream, stdout)) {

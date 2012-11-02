@@ -15,6 +15,6 @@
  * zero extends 32-bit registers to 64-bit registers, and adds corresponding
  * instruction flag to OpDest operands, if applicable.
  */
-void NaClAddZeroExtend32FlagIfApplicable();
+void NaClAddZeroExtend32FlagIfApplicable(void);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_DECODER_GENERATOR_ZERO_EXTENDS_H_ */

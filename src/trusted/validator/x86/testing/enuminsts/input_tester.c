@@ -160,7 +160,7 @@ static void InstallFlag(const NaClEnumerator* enumerator,
 /* Defines the registry function that creates a input decoder, and returns
  * the decoder to be registered.
  */
-NaClEnumeratorDecoder* RegisterInputDecoder() {
+NaClEnumeratorDecoder* RegisterInputDecoder(void) {
   input_decoder.base_._id_name = "in";
   input_decoder.base_._legal_only = TRUE;
   input_decoder.base_._parse_inst_fn = ParseInst;

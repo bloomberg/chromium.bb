@@ -192,7 +192,7 @@ static const NaClNameOpcodeSeq kNaClIllegal32OpSeq[] = {
   { InstBtc , { 0x0f , 0xba , SL(7) , END_OPCODE_SEQ } },
 };
 
-void NaClAddNaClIllegalIfApplicable() {
+void NaClAddNaClIllegalIfApplicable(void) {
   Bool is_illegal = FALSE;  /* until proven otherwise. */
   NaClModeledInst* inst = NaClGetDefInst();
 

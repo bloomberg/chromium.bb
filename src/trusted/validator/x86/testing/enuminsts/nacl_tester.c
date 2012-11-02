@@ -312,7 +312,7 @@ static void InstallFlag(const NaClEnumerator* enumerator,
 }
 
 /* Generates a decoder for the (sel_ldr) nacl validator. */
-NaClEnumeratorDecoder* RegisterNaClDecoder() {
+NaClEnumeratorDecoder* RegisterNaClDecoder(void) {
   nacl_decoder._base._id_name = "nacl";
   nacl_decoder._base._parse_inst_fn = ParseInst;
   nacl_decoder._base._inst_length_fn = InstLength;

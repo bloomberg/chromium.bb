@@ -13,6 +13,6 @@
  * instruction.
  */
 
-void NaClAddJumpFlagsIfApplicable();
+void NaClAddJumpFlagsIfApplicable(void);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_DECODER_GENERATOR_NC_DEF_JUMPS_H__ */

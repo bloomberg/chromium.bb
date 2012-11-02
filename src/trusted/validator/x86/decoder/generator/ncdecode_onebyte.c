@@ -101,7 +101,7 @@ static void NaClBuildBinaryOps_00_05(const uint8_t base,
 }
 
 /* Define the Xchg operator where the register is embedded in the opcode */
-static void NaClDefXchgRegister() {
+static void NaClDefXchgRegister(void) {
   /* Note: xchg is commutative, so order of operands is unimportant. */
   int i;
   struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, NULL);

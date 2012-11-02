@@ -241,7 +241,7 @@ static const char TM_CPUID0[kVendorIDLength]      = "GenuineTMx86";
 static const char NSC_CPUID0[kVendorIDLength]     = "Geode by NSC";
 #endif
 
-static int asm_HasCPUID() {
+static int asm_HasCPUID(void) {
   volatile int before, after, result;
 #if NACL_BUILD_SUBARCH == 64
   /* Note: If we are running in x86-64, then cpuid must be defined,

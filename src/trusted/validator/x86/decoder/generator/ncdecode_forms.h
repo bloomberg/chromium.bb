@@ -134,7 +134,7 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
                           size_t name_and_opcode_seq_size);
 
 /* Model of a an operand processing function. */
-typedef void (*NaClDefOperand)();
+typedef void (*NaClDefOperand)(void);
 
 /***************************************************************************
  * This section is the new API for defining instructions. It uses a string,

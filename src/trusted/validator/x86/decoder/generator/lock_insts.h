@@ -15,6 +15,6 @@
  * that can have a lock prefix, and adds corresponding
  * instruciton flag if applicable.
  */
-void NaClLockableFlagIfApplicable();
+void NaClLockableFlagIfApplicable(void);
 
 #endif  /*  NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_DECODER_GENERATOR_LOCK_INSTS_H_ */

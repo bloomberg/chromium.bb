@@ -15,6 +15,6 @@
  * can have REP/REPE/REPZ (F3) and REPNE/REPNZ (F2) prefix bytes, and
  * adds corresponding instruction flags if applicable.
  */
-void NaClAddRepPrefixFlagsIfApplicable();
+void NaClAddRepPrefixFlagsIfApplicable(void);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_DECODER_GENERATOR_NC_REP_PREFIX_H_ */

@@ -30,7 +30,7 @@ struct {
 } ragel_decoder;
 
 /* Initialize ragel state before we try to decode anything. */
-static void RagelSetup() {
+static void RagelSetup(void) {
 }
 
 struct RagelDecodeState {
@@ -48,7 +48,7 @@ static const char* RGetInstMnemonic(const NaClEnumerator* enumerator) {
   return RState.inst_name;
 }
 
-static void RagelPrintInst() {
+static void RagelPrintInst(void) {
   int i;
   int print_num_bytes = RState.inst_num_bytes;
 
@@ -199,7 +199,7 @@ static void InstallFlag(const NaClEnumerator* enumerator,
 /* Defines the registry function that creates a ragel decoder, and returns
  * the decoder to be registered.
  */
-NaClEnumeratorDecoder* RegisterRagelDecoder() {
+NaClEnumeratorDecoder* RegisterRagelDecoder(void) {
   RagelSetup();
   ragel_decoder._base._id_name = "ragel";
   ragel_decoder._base._parse_inst_fn = RParseInst;

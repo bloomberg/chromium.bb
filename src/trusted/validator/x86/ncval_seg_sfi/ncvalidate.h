@@ -125,7 +125,7 @@ void NCStatsPrint(struct NCValidatorState *vstate);
  * If >0, only that many diagnostic errors are printed.
  * If negative, all validator diagnostics are printed.
  */
-int NCValidatorGetMaxDiagnostics();
+int NCValidatorGetMaxDiagnostics(void);
 
 /* Changes default flag for printing validator error messages.
  * If zero, no messages are printed.

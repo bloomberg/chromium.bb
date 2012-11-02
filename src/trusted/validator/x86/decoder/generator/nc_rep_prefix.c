@@ -79,7 +79,7 @@ static const NaClNameOpcodeSeq kAllowableRepMnemonicOpseq[] = {
   { InstMovsw , { 0xa5 , END_OPCODE_SEQ } },
 };
 
-void NaClAddRepPrefixFlagsIfApplicable() {
+void NaClAddRepPrefixFlagsIfApplicable(void) {
   if (NaClInInstructionSet(kAllowableRepMnemonic,
                            NACL_ARRAY_SIZE(kAllowableRepMnemonic),
                            kAllowableRepMnemonicOpseq,

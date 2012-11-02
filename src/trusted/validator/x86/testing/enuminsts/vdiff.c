@@ -170,23 +170,23 @@ struct vdiff_stats {
   int64_t errors;
 } gVDiffStats = {0, 0, 0, 0};
 
-static void IncrTried() {
+static void IncrTried(void) {
   gVDiffStats.tried += 1;
 }
 
-static void IncrValid() {
+static void IncrValid(void) {
   gVDiffStats.valid += 1;
 }
 
-static void IncrInvalid() {
+static void IncrInvalid(void) {
   gVDiffStats.invalid += 1;
 }
 
-static void IncrErrors() {
+static void IncrErrors(void) {
   gVDiffStats.errors += 1;
 }
 
-static void PrintStats() {
+static void PrintStats(void) {
   printf("Stats:\n");
   if (!gEasyDiffMode) {
     printf("valid: %" NACL_PRIu64 "\n", gVDiffStats.valid);
@@ -378,7 +378,7 @@ const uint32_t kREXRange = 0x10;
 const uint32_t kREXMax = 0x50;  /* kREXBase + kREXRange */
 
 /* Generate a random REX prefix, to use for the entire run. */
-static uint32_t RandomRexPrefix() {
+static uint32_t RandomRexPrefix(void) {
   static uint32_t static_rex_prefix = 0;
 
   if (0 == static_rex_prefix) {
@@ -432,7 +432,7 @@ static void WithREX(TestAllFunction testall,
 /* For all prefixes, call TestAllWithPrefix() to enumrate and test
  * all instructions.
  */
-static void TestAllInstructions() {
+static void TestAllInstructions(void) {
   gSkipRepeatReports = TRUE;
   /* NOTE: Prefix byte order needs to be reversed when written as
    * an integer. For example, for integer prefix 0x3a0f, 0f will
@@ -476,7 +476,7 @@ static void TestOneInstruction(const char *asciihex) {
  * Mostly this program has been tested by TestAllInstructions(),
  * possible since this program is much faster than xed_compare.py
  */
-static void RunRegressionTests() {
+static void RunRegressionTests(void) {
   TestOneInstruction("0024c2");
   TestOneInstruction("017967");
   TestOneInstruction("0f12c0");
@@ -517,11 +517,11 @@ static void RunRegressionTests() {
 }
 
 /* Define decoders that can be registered. */
-extern NaClEnumeratorDecoder* RegisterNaClDecoder();
-extern NaClEnumeratorDecoder* RegisterRagelDecoder();
+extern NaClEnumeratorDecoder* RegisterNaClDecoder(void);
+extern NaClEnumeratorDecoder* RegisterRagelDecoder(void);
 
 /* Initialize the set of available decoders. */
-static void VDiffInitializeAvailableDecoders() {
+static void VDiffInitializeAvailableDecoders(void) {
   vProd = RegisterNaClDecoder();
   vDFA = RegisterRagelDecoder();
 }
