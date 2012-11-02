@@ -38,11 +38,11 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  void set_mtp_device_delegate(MtpDeviceDelegate* delegate) {
+  void set_mtp_device_delegate(MTPDeviceDelegate* delegate) {
     mtp_device_delegate_ = delegate;
   }
 
-  MtpDeviceDelegate* mtp_device_delegate() const {
+  MTPDeviceDelegate* mtp_device_delegate() const {
     return mtp_device_delegate_.get();
   }
 #endif
@@ -92,7 +92,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Store the current mtp device delegate.
-  scoped_refptr<MtpDeviceDelegate> mtp_device_delegate_;
+  scoped_refptr<MTPDeviceDelegate> mtp_device_delegate_;
 #endif
 };
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/notification_observer.h"
@@ -24,34 +25,35 @@ namespace chrome {
 // Helper class to communicate with MTP storage to complete isolated file system
 // operations. This class contains platform specific code to communicate with
 // the attached MTP storage. Instantiate this class per MTP storage.
-// This class is ref-counted, because MtpDeviceDelegate is ref-counted.
-class MtpDeviceDelegateImplLinux : public fileapi::MtpDeviceDelegate,
+// This class is ref-counted, because MTPDeviceDelegate is ref-counted.
+class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceDelegate,
                                    public content::NotificationObserver {
  public:
   // Constructed on UI thread. Defer the device initializations until the first
   // file operation request. Do all the initializations in LazyInit() function.
-  explicit MtpDeviceDelegateImplLinux(const std::string& device_location);
+  explicit MTPDeviceDelegateImplLinux(const std::string& device_location);
 
-  // Overridden from MtpDeviceDelegate. All the functions are called on
+  // Overridden from MTPDeviceDelegate. All the functions are called on
   // |media_task_runner_|.
   virtual base::PlatformFileError GetFileInfo(
       const FilePath& file_path,
       base::PlatformFileInfo* file_info) OVERRIDE;
   virtual fileapi::FileSystemFileUtil::AbstractFileEnumerator*
-      CreateFileEnumerator(const FilePath& root, bool recursive) OVERRIDE;
+      CreateFileEnumerator(const FilePath& root,
+                           bool recursive) OVERRIDE;
   virtual base::PlatformFileError CreateSnapshotFile(
       const FilePath& device_file_path,
       const FilePath& local_path,
       base::PlatformFileInfo* file_info) OVERRIDE;
-  virtual base::SequencedTaskRunner* media_task_runner() OVERRIDE;
+  virtual base::SequencedTaskRunner* GetMediaTaskRunner() OVERRIDE;
   virtual void DeleteOnCorrectThread() const OVERRIDE;
 
  private:
-  friend struct fileapi::MtpDeviceDelegateDeleter;
-  friend class base::DeleteHelper<MtpDeviceDelegateImplLinux>;
+  friend struct fileapi::MTPDeviceDelegateDeleter;
+  friend class base::DeleteHelper<MTPDeviceDelegateImplLinux>;
 
   // Private because this class is ref-counted.
-  virtual ~MtpDeviceDelegateImplLinux();
+  virtual ~MTPDeviceDelegateImplLinux();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -87,7 +89,7 @@ class MtpDeviceDelegateImplLinux : public fileapi::MtpDeviceDelegate,
   // Used to listen for application termination message.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(MtpDeviceDelegateImplLinux);
+  DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplLinux);
 };
 
 }  // namespace chrome

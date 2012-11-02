@@ -14,13 +14,13 @@
 namespace fileapi {
 
 // static
-MtpDeviceMapService* MtpDeviceMapService::GetInstance() {
-  return Singleton<MtpDeviceMapService>::get();
+MTPDeviceMapService* MTPDeviceMapService::GetInstance() {
+  return Singleton<MTPDeviceMapService>::get();
 }
 
-void MtpDeviceMapService::AddDelegate(
+void MTPDeviceMapService::AddDelegate(
     const FilePath::StringType& device_location,
-    scoped_refptr<MtpDeviceDelegate> delegate) {
+    scoped_refptr<MTPDeviceDelegate> delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(delegate.get());
   DCHECK(!device_location.empty());
@@ -31,7 +31,7 @@ void MtpDeviceMapService::AddDelegate(
   delegate_map_[device_location] = delegate;
 }
 
-void MtpDeviceMapService::RemoveDelegate(
+void MTPDeviceMapService::RemoveDelegate(
     const FilePath::StringType& device_location) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DelegateMap::iterator it = delegate_map_.find(device_location);
@@ -39,7 +39,7 @@ void MtpDeviceMapService::RemoveDelegate(
   delegate_map_.erase(it);
 }
 
-MtpDeviceDelegate* MtpDeviceMapService::GetMtpDeviceDelegate(
+MTPDeviceDelegate* MTPDeviceMapService::GetMTPDeviceDelegate(
     const std::string& filesystem_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FilePath device_path;
@@ -56,12 +56,12 @@ MtpDeviceDelegate* MtpDeviceMapService::GetMtpDeviceDelegate(
   return it->second.get();
 }
 
-MtpDeviceMapService::MtpDeviceMapService() {
+MTPDeviceMapService::MTPDeviceMapService() {
   // This object is constructed on UI Thread but the member functions are
   // accessed on IO thread. Therefore, detach from current thread.
   thread_checker_.DetachFromThread();
 }
 
-MtpDeviceMapService::~MtpDeviceMapService() {}
+MTPDeviceMapService::~MTPDeviceMapService() {}
 
 }  // namespace fileapi

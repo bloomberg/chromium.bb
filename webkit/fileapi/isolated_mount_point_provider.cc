@@ -123,16 +123,16 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   if (url.type() == kFileSystemTypeDeviceMedia) {
-    MtpDeviceMapService* map_service = MtpDeviceMapService::GetInstance();
-    MtpDeviceDelegate* device_delegate =
-        map_service->GetMtpDeviceDelegate(url.filesystem_id());
+    MTPDeviceMapService* map_service = MTPDeviceMapService::GetInstance();
+    MTPDeviceDelegate* device_delegate =
+        map_service->GetMTPDeviceDelegate(url.filesystem_id());
     if (!device_delegate) {
       if (error_code)
         *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
       return NULL;
     }
     operation_context->set_mtp_device_delegate(device_delegate);
-    operation_context->set_task_runner(device_delegate->media_task_runner());
+    operation_context->set_task_runner(device_delegate->GetMediaTaskRunner());
     operation_context->set_media_path_filter(media_path_filter_.get());
   }
 #endif

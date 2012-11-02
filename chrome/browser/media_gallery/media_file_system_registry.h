@@ -41,7 +41,7 @@ namespace chrome {
 
 class ExtensionGalleriesHost;
 class MediaGalleriesPreferences;
-class ScopedMtpDeviceMapEntry;
+class ScopedMTPDeviceMapEntry;
 
 struct MediaFileSystemInfo {
   MediaFileSystemInfo(const std::string& fs_name,
@@ -64,12 +64,12 @@ class MediaFileSystemContext {
       const std::string& device_id, const FilePath& path) = 0;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // Registers and returns the file system id for the mtp or ptp device
+  // Registers and returns the file system id for the MTP or PTP device
   // specified by |device_id| and |path|. Updates |entry| with the corresponding
-  // ScopedMtpDeviceMapEntry object.
-  virtual std::string RegisterFileSystemForMtpDevice(
+  // ScopedMTPDeviceMapEntry object.
+  virtual std::string RegisterFileSystemForMTPDevice(
       const std::string& device_id, const FilePath& path,
-      scoped_refptr<ScopedMtpDeviceMapEntry>* entry) = 0;
+      scoped_refptr<ScopedMTPDeviceMapEntry>* entry) = 0;
 #endif
 
   // Revoke the passed |fsid|.
@@ -120,10 +120,10 @@ class MediaFileSystemRegistry
   typedef std::map<Profile*, PrefChangeRegistrar*> PrefChangeRegistrarMap;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // Map a mtp or ptp device location to the weak pointer of
-  // ScopedMtpDeviceMapEntry.
+  // Map a MTP or PTP device location to the weak pointer of
+  // ScopedMTPDeviceMapEntry.
   typedef std::map<const FilePath::StringType,
-                   base::WeakPtr<ScopedMtpDeviceMapEntry> >
+                   base::WeakPtr<ScopedMTPDeviceMapEntry> >
       MTPDeviceDelegateMap;
 #endif
 
@@ -136,13 +136,13 @@ class MediaFileSystemRegistry
                                    const std::string& pref_name) OVERRIDE;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // Returns ScopedMtpDeviceMapEntry object for the given |device_location|.
-  ScopedMtpDeviceMapEntry* GetOrCreateScopedMtpDeviceMapEntry(
+  // Returns ScopedMTPDeviceMapEntry object for the given |device_location|.
+  ScopedMTPDeviceMapEntry* GetOrCreateScopedMTPDeviceMapEntry(
       const FilePath::StringType& device_location);
 
-  // Removes the ScopedMtpDeviceMapEntry associated with the given
+  // Removes the ScopedMTPDeviceMapEntry associated with the given
   // |device_location|.
-  void RemoveScopedMtpDeviceMapEntry(
+  void RemoveScopedMTPDeviceMapEntry(
       const FilePath::StringType& device_location);
 #endif
 

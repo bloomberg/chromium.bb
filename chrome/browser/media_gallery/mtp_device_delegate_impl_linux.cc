@@ -56,10 +56,10 @@ const char kRootPath[] = "/";
 
 // Returns MediaTransferProtocolManager instance on success or NULL on failure.
 MediaTransferProtocolManager* GetMediaTransferProtocolManager() {
-  MediaTransferProtocolManager* mtp_dev_mgr =
+  MediaTransferProtocolManager* mtp_device_mgr =
       MediaTransferProtocolManager::GetInstance();
-  DCHECK(mtp_dev_mgr);
-  return mtp_dev_mgr;
+  DCHECK(mtp_device_mgr);
+  return mtp_device_mgr;
 }
 
 // Does nothing.
@@ -89,7 +89,7 @@ std::string GetDeviceRelativePath(const std::string& registered_dev_path,
   return actual_file_path;
 }
 
-// Worker class to open a mtp device for communication. This class is
+// Worker class to open a MTP device for communication. This class is
 // instantiated and destructed on |media_task_runner_|. In order to post a
 // request on Dbus thread, the caller should run on UI thread. Therefore, this
 // class posts the open device request on UI thread and receives the response
@@ -146,7 +146,7 @@ class OpenStorageWorker
     // This object must be destructed on |media_task_runner_|.
   }
 
-  // Dispatches a request to MediaTransferProtocolManager to open the mtp
+  // Dispatches a request to MediaTransferProtocolManager to open the MTP
   // storage for communication. This is called on UI thread.
   void DoWorkOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -697,7 +697,7 @@ class RecursiveMediaFileEnumerator
 
 }  // namespace
 
-MtpDeviceDelegateImplLinux::MtpDeviceDelegateImplLinux(
+MTPDeviceDelegateImplLinux::MTPDeviceDelegateImplLinux(
     const std::string& device_location)
     : device_path_(device_location),
       on_task_completed_event_(false, false),
@@ -714,14 +714,14 @@ MtpDeviceDelegateImplLinux::MtpDeviceDelegateImplLinux(
   DCHECK(media_task_runner_);
 }
 
-MtpDeviceDelegateImplLinux::~MtpDeviceDelegateImplLinux() {
+MTPDeviceDelegateImplLinux::~MTPDeviceDelegateImplLinux() {
   registrar_.RemoveAll();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GetMediaTransferProtocolManager()->CloseStorage(device_handle_,
                                                   Bind(&DoNothing));
 }
 
-PlatformFileError MtpDeviceDelegateImplLinux::GetFileInfo(
+PlatformFileError MTPDeviceDelegateImplLinux::GetFileInfo(
     const FilePath& file_path,
     PlatformFileInfo* file_info) {
   if (!LazyInit())
@@ -735,7 +735,7 @@ PlatformFileError MtpDeviceDelegateImplLinux::GetFileInfo(
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*
-MtpDeviceDelegateImplLinux::CreateFileEnumerator(
+MTPDeviceDelegateImplLinux::CreateFileEnumerator(
         const FilePath& root,
         bool recursive) {
   if (root.value().empty() || !LazyInit())
@@ -757,7 +757,7 @@ MtpDeviceDelegateImplLinux::CreateFileEnumerator(
   return new MediaFileEnumerator(worker->get_file_entries());
 }
 
-PlatformFileError MtpDeviceDelegateImplLinux::CreateSnapshotFile(
+PlatformFileError MTPDeviceDelegateImplLinux::CreateSnapshotFile(
     const FilePath& device_file_path,
     const FilePath& local_path,
     PlatformFileInfo* file_info) {
@@ -786,11 +786,11 @@ PlatformFileError MtpDeviceDelegateImplLinux::CreateSnapshotFile(
   return error;
 }
 
-SequencedTaskRunner* MtpDeviceDelegateImplLinux::media_task_runner() {
+SequencedTaskRunner* MTPDeviceDelegateImplLinux::GetMediaTaskRunner() {
   return media_task_runner_.get();
 }
 
-void MtpDeviceDelegateImplLinux::DeleteOnCorrectThread() const {
+void MTPDeviceDelegateImplLinux::DeleteOnCorrectThread() const {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
     return;
@@ -798,7 +798,7 @@ void MtpDeviceDelegateImplLinux::DeleteOnCorrectThread() const {
   delete this;
 }
 
-void MtpDeviceDelegateImplLinux::Observe(
+void MTPDeviceDelegateImplLinux::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -807,7 +807,7 @@ void MtpDeviceDelegateImplLinux::Observe(
   on_task_completed_event_.Signal();
 }
 
-bool MtpDeviceDelegateImplLinux::LazyInit() {
+bool MTPDeviceDelegateImplLinux::LazyInit() {
   DCHECK(media_task_runner_);
   DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
 

@@ -7,6 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -19,14 +20,14 @@ class Time;
 
 namespace fileapi {
 
-struct MtpDeviceDelegateDeleter;
+struct MTPDeviceDelegateDeleter;
 
-// Delegate for mtp device to perform media device isolated file system
-// operations. Class that implements this delegate does the actual communication
-// with the mtp device.
-class MtpDeviceDelegate
-    : public base::RefCountedThreadSafe<MtpDeviceDelegate,
-                                        MtpDeviceDelegateDeleter> {
+// Delegate for media transfer protocol (MTP_ device to perform media device
+// isolated file system operations. Class that implements this delegate does
+// the actual communication with the MTP device.
+class MTPDeviceDelegate
+    : public base::RefCountedThreadSafe<MTPDeviceDelegate,
+                                        MTPDeviceDelegateDeleter> {
  public:
   // Returns information about the given file path.
   virtual base::PlatformFileError GetFileInfo(
@@ -50,23 +51,23 @@ class MtpDeviceDelegate
       base::PlatformFileInfo* file_info) = 0;
 
   // Returns TaskRunner on which the operation is performed.
-  virtual base::SequencedTaskRunner* media_task_runner() = 0;
+  virtual base::SequencedTaskRunner* GetMediaTaskRunner() = 0;
 
   // Helper function to destruct the delegate object on UI thread.
   virtual void DeleteOnCorrectThread() const = 0;
 
  protected:
-  virtual ~MtpDeviceDelegate() {}
+  virtual ~MTPDeviceDelegate() {}
 
  private:
-  friend struct MtpDeviceDelegateDeleter;
-  friend class base::DeleteHelper<MtpDeviceDelegate>;
-  friend class base::RefCountedThreadSafe<MtpDeviceDelegate,
-                                          MtpDeviceDelegateDeleter>;
+  friend struct MTPDeviceDelegateDeleter;
+  friend class base::DeleteHelper<MTPDeviceDelegate>;
+  friend class base::RefCountedThreadSafe<MTPDeviceDelegate,
+                                          MTPDeviceDelegateDeleter>;
 };
 
-struct MtpDeviceDelegateDeleter {
-  static void Destruct(const MtpDeviceDelegate* delegate) {
+struct MTPDeviceDelegateDeleter {
+  static void Destruct(const MTPDeviceDelegate* delegate) {
     delegate->DeleteOnCorrectThread();
   }
 };

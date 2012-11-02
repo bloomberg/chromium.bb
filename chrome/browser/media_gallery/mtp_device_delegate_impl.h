@@ -18,9 +18,9 @@
 
 namespace chrome {
 
-// TODO(kmadhusu): Implement mtp device delegates on other platforms.
+// TODO(kmadhusu): Implement MTP device delegates on other platforms.
 #if defined(OS_LINUX)  // Implies OS_CHROMEOS
-typedef class MtpDeviceDelegateImplLinux MtpDeviceDelegateImpl;
+typedef class MTPDeviceDelegateImplLinux MTPDeviceDelegateImpl;
 #endif
 
 }  // namespace chrome

@@ -59,7 +59,7 @@ using content::WebContents;
 using fileapi::IsolatedContext;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-using fileapi::MtpDeviceMapService;
+using fileapi::MTPDeviceMapService;
 #endif
 
 namespace chrome {
@@ -126,56 +126,56 @@ MediaFileSystemInfo::MediaFileSystemInfo(const std::string& fs_name,
 MediaFileSystemInfo::MediaFileSystemInfo() {}
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-// Class to manage MtpDeviceDelegateImpl object for the attached mtp device.
-// Refcounted to reuse the same mtp device delegate entry across extensions.
+// Class to manage MTPDeviceDelegateImpl object for the attached MTP device.
+// Refcounted to reuse the same MTP device delegate entry across extensions.
 // This class supports WeakPtr (extends SupportsWeakPtr) to expose itself as
 // a weak pointer to MediaFileSystemRegistry.
-class ScopedMtpDeviceMapEntry
-    : public base::RefCounted<ScopedMtpDeviceMapEntry>,
-      public base::SupportsWeakPtr<ScopedMtpDeviceMapEntry> {
+class ScopedMTPDeviceMapEntry
+    : public base::RefCounted<ScopedMTPDeviceMapEntry>,
+      public base::SupportsWeakPtr<ScopedMTPDeviceMapEntry> {
  public:
-  // |no_references_callback| is called when the last ScopedMtpDeviceMapEntry
+  // |no_references_callback| is called when the last ScopedMTPDeviceMapEntry
   // reference goes away.
-  ScopedMtpDeviceMapEntry(const FilePath::StringType& device_location,
+  ScopedMTPDeviceMapEntry(const FilePath::StringType& device_location,
                           const base::Closure& no_references_callback)
       : device_location_(device_location),
-        delegate_(new MtpDeviceDelegateImpl(device_location)),
+        delegate_(new MTPDeviceDelegateImpl(device_location)),
         no_references_callback_(no_references_callback) {
     DCHECK(delegate_);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        Bind(&MtpDeviceMapService::AddDelegate,
-             base::Unretained(MtpDeviceMapService::GetInstance()),
+        Bind(&MTPDeviceMapService::AddDelegate,
+             base::Unretained(MTPDeviceMapService::GetInstance()),
              device_location_, make_scoped_refptr(delegate_)));
   }
 
  private:
   // Friend declaration for ref counted implementation.
-  friend class base::RefCounted<ScopedMtpDeviceMapEntry>;
+  friend class base::RefCounted<ScopedMTPDeviceMapEntry>;
 
   // Private because this class is ref-counted.
-  ~ScopedMtpDeviceMapEntry() {
+  ~ScopedMTPDeviceMapEntry() {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        Bind(&MtpDeviceMapService::RemoveDelegate,
-             base::Unretained(MtpDeviceMapService::GetInstance()),
+        Bind(&MTPDeviceMapService::RemoveDelegate,
+             base::Unretained(MTPDeviceMapService::GetInstance()),
              device_location_));
     no_references_callback_.Run();
   }
 
-  // Store the mtp or ptp device location.
+  // Store the MTP or PTP device location.
   const FilePath::StringType device_location_;
 
-  // Store a raw pointer of MtpDeviceDelegateImpl object.
-  // MtpDeviceDelegateImpl is ref-counted and owned by MtpDeviceMapService.
-  // This class tells MtpDeviceMapService to dispose of it when the last
+  // Store a raw pointer of MTPDeviceDelegateImpl object.
+  // MTPDeviceDelegateImpl is ref-counted and owned by MTPDeviceMapService.
+  // This class tells MTPDeviceMapService to dispose of it when the last
   // reference to |this| goes away.
-  MtpDeviceDelegateImpl* delegate_;
+  MTPDeviceDelegateImpl* delegate_;
 
   // A callback to call when the last reference of this object goes away.
   base::Closure no_references_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedMtpDeviceMapEntry);
+  DISALLOW_COPY_AND_ASSIGN(ScopedMTPDeviceMapEntry);
 };
 #endif
 
@@ -247,10 +247,10 @@ class ExtensionGalleriesHost
     pref_id_map_.erase(gallery);
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-    MediaDeviceEntryReferencesMap::iterator mtp_device_host =
+    MediaDeviceEntryReferencesMap::iterator MTP_device_host =
         media_device_map_references_.find(id);
-    if (mtp_device_host != media_device_map_references_.end())
-      media_device_map_references_.erase(mtp_device_host);
+    if (MTP_device_host != media_device_map_references_.end())
+      media_device_map_references_.erase(MTP_device_host);
 #endif
   }
 
@@ -282,7 +282,7 @@ class ExtensionGalleriesHost
       PrefIdFsInfoMap;
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   typedef std::map<MediaGalleryPrefId,
-                   scoped_refptr<ScopedMtpDeviceMapEntry> >
+                   scoped_refptr<ScopedMTPDeviceMapEntry> >
       MediaDeviceEntryReferencesMap;
 #endif
   typedef std::map<const RenderProcessHost*, std::set<const WebContents*> >
@@ -365,11 +365,11 @@ class ExtensionGalleriesHost
             device_id, path);
       } else {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-        scoped_refptr<ScopedMtpDeviceMapEntry> mtp_device_host;
-        fsid = file_system_context_->RegisterFileSystemForMtpDevice(
-            device_id, path, &mtp_device_host);
-        DCHECK(mtp_device_host.get());
-        media_device_map_references_[pref_id] = mtp_device_host;
+        scoped_refptr<ScopedMTPDeviceMapEntry> MTP_device_host;
+        fsid = file_system_context_->RegisterFileSystemForMTPDevice(
+            device_id, path, &MTP_device_host);
+        DCHECK(MTP_device_host.get());
+        media_device_map_references_[pref_id] = MTP_device_host;
 #else
         NOTIMPLEMENTED();
         continue;
@@ -634,9 +634,9 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   }
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  virtual std::string RegisterFileSystemForMtpDevice(
+  virtual std::string RegisterFileSystemForMTPDevice(
       const std::string& device_id, const FilePath& path,
-      scoped_refptr<ScopedMtpDeviceMapEntry>* entry) {
+      scoped_refptr<ScopedMTPDeviceMapEntry>* entry) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!MediaStorageUtil::IsMassStorageDevice(device_id));
 
@@ -649,7 +649,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
             fileapi::kFileSystemTypeDeviceMedia, path, &fs_name);
     CHECK(!fsid.empty());
     DCHECK(entry);
-    *entry = registry_->GetOrCreateScopedMtpDeviceMapEntry(path.value());
+    *entry = registry_->GetOrCreateScopedMTPDeviceMapEntry(path.value());
     return fsid;
   }
 #endif
@@ -719,22 +719,22 @@ void MediaFileSystemRegistry::OnPreferenceChanged(
 }
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-ScopedMtpDeviceMapEntry*
-MediaFileSystemRegistry::GetOrCreateScopedMtpDeviceMapEntry(
+ScopedMTPDeviceMapEntry*
+MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
     const FilePath::StringType& device_location) {
   MTPDeviceDelegateMap::iterator delegate_it =
       mtp_delegate_map_.find(device_location);
   if (delegate_it != mtp_delegate_map_.end() && delegate_it->second.get())
     return delegate_it->second;
-  ScopedMtpDeviceMapEntry* mtp_device_host = new ScopedMtpDeviceMapEntry(
+  ScopedMTPDeviceMapEntry* MTP_device_host = new ScopedMTPDeviceMapEntry(
       device_location, base::Bind(
-          &MediaFileSystemRegistry::RemoveScopedMtpDeviceMapEntry,
+          &MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry,
           base::Unretained(this), device_location));
-  mtp_delegate_map_[device_location] = mtp_device_host->AsWeakPtr();
-  return mtp_device_host;
+  mtp_delegate_map_[device_location] = MTP_device_host->AsWeakPtr();
+  return MTP_device_host;
 }
 
-void MediaFileSystemRegistry::RemoveScopedMtpDeviceMapEntry(
+void MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry(
     const FilePath::StringType& device_location) {
   MTPDeviceDelegateMap::iterator delegate_it =
       mtp_delegate_map_.find(device_location);

@@ -15,18 +15,18 @@
 
 namespace fileapi {
 
-class MtpDeviceDelegate;
+class MTPDeviceDelegate;
 
 // Helper class to manage media device delegates which can communicate with mtp
 // devices to complete media file system operations.
-class WEBKIT_STORAGE_EXPORT MtpDeviceMapService {
+class WEBKIT_STORAGE_EXPORT MTPDeviceMapService {
  public:
-  static MtpDeviceMapService* GetInstance();
+  static MTPDeviceMapService* GetInstance();
 
   // Adds the media device delegate for the given |device_location|. Called on
   // IO thread.
   void AddDelegate(const FilePath::StringType& device_location,
-                   scoped_refptr<MtpDeviceDelegate> delegate);
+                   scoped_refptr<MTPDeviceDelegate> delegate);
 
   // Removes the media device delegate for the given |device_location| if
   // exists. Called on IO thread.
@@ -35,19 +35,19 @@ class WEBKIT_STORAGE_EXPORT MtpDeviceMapService {
   // Gets the media device delegate associated with |filesystem_id|.
   // Return NULL if the |filesystem_id| is no longer valid (e.g. because the
   // corresponding device is detached etc). Called on IO thread.
-  MtpDeviceDelegate* GetMtpDeviceDelegate(const std::string& filesystem_id);
+  MTPDeviceDelegate* GetMTPDeviceDelegate(const std::string& filesystem_id);
 
  private:
-  friend struct DefaultSingletonTraits<MtpDeviceMapService>;
+  friend struct DefaultSingletonTraits<MTPDeviceMapService>;
 
-  typedef scoped_refptr<MtpDeviceDelegate> MtpDeviceDelegateObj;
+  typedef scoped_refptr<MTPDeviceDelegate> MTPDeviceDelegateObj;
 
-  // Mapping of device_location and MtpDeviceDelegate object.
-  typedef std::map<FilePath::StringType, MtpDeviceDelegateObj> DelegateMap;
+  // Mapping of device_location and MTPDeviceDelegate object.
+  typedef std::map<FilePath::StringType, MTPDeviceDelegateObj> DelegateMap;
 
   // Get access to this class using GetInstance() method.
-  MtpDeviceMapService();
-  ~MtpDeviceMapService();
+  MTPDeviceMapService();
+  ~MTPDeviceMapService();
 
   // Stores a map of attached mtp device delegates.
   DelegateMap delegate_map_;
@@ -56,7 +56,7 @@ class WEBKIT_STORAGE_EXPORT MtpDeviceMapService {
   // called on same thread.
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(MtpDeviceMapService);
+  DISALLOW_COPY_AND_ASSIGN(MTPDeviceMapService);
 };
 
 }  // namespace fileapi
