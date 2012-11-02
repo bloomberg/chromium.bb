@@ -16,6 +16,8 @@
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
+#include "ui/base/native_theme/native_theme_aura.h"
+#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
@@ -31,8 +33,7 @@
 
 namespace views {
 
-DEFINE_WINDOW_PROPERTY_KEY(
-    aura::Window*, kContentWindowForRootWindow, NULL);
+DEFINE_WINDOW_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL);
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, public:
@@ -56,6 +57,21 @@ DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
 aura::Window* DesktopRootWindowHostWin::GetContentWindowForHWND(HWND hwnd) {
   aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(hwnd);
   return root ? root->GetProperty(kContentWindowForRootWindow) : NULL;
+}
+
+// static
+ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
+  // Use NativeThemeWin for windows shown on the desktop, those not on the
+  // desktop come from Ash and get NativeThemeAura.
+  aura::RootWindow* root = window->GetRootWindow();
+  if (root) {
+    HWND root_hwnd = root->GetAcceleratedWidget();
+    if (root_hwnd &&
+        DesktopRootWindowHostWin::GetContentWindowForHWND(root_hwnd)) {
+      return ui::NativeThemeWin::instance();
+    }
+  }
+  return ui::NativeThemeAura::instance();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

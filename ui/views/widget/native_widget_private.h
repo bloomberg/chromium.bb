@@ -17,6 +17,7 @@ class Rect;
 }
 
 namespace ui {
+class NativeTheme;
 class OSExchangeData;
 }
 
@@ -214,6 +215,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
       const gfx::Vector2d& drag_offset) = 0;
   virtual void EndMoveLoop() = 0;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;
+  virtual ui::NativeTheme* GetNativeTheme() = 0;
 
   // Overridden from NativeWidget:
   virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;

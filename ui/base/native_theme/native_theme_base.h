@@ -19,7 +19,7 @@ class Size;
 namespace ui {
 
 // Theme support for non-Windows toolkits.
-class NativeThemeBase : public NativeTheme {
+class UI_EXPORT NativeThemeBase : public NativeTheme {
  public:
   // NativeTheme implementation:
   virtual gfx::Size GetPartSize(Part part,

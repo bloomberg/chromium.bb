@@ -12,6 +12,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/ime/input_method.h"
@@ -411,6 +412,10 @@ void DesktopNativeWidgetAura::EndMoveLoop() {
 void DesktopNativeWidgetAura::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   desktop_root_window_host_->SetVisibilityChangedAnimationsEnabled(value);
+}
+
+ui::NativeTheme* DesktopNativeWidgetAura::GetNativeTheme() {
+  return DesktopRootWindowHost::GetNativeTheme(window_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

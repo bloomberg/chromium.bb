@@ -21,6 +21,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
@@ -482,6 +483,10 @@ void NativeWidgetWin::EndMoveLoop() {
 
 void NativeWidgetWin::SetVisibilityChangedAnimationsEnabled(bool value) {
   message_handler_->SetVisibilityChangedAnimationsEnabled(value);
+}
+
+ui::NativeTheme* NativeWidgetWin::GetNativeTheme() {
+  return ui::NativeTheme::instance();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -123,6 +123,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       const gfx::Vector2d& drag_offset) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
+  virtual ui::NativeTheme* GetNativeTheme() OVERRIDE;
 
   // Overridden from aura::WindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;

@@ -23,6 +23,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
+#include "ui/base/native_theme/native_theme_aura.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -44,6 +45,10 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#endif
+
+#if !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_root_window_host.h"
 #endif
 
 namespace views {
@@ -613,6 +618,13 @@ void NativeWidgetAura::EndMoveLoop() {
 
 void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {
   window_->SetProperty(aura::client::kAnimationsDisabledKey, !value);
+}
+
+ui::NativeTheme* NativeWidgetAura::GetNativeTheme() {
+#if !defined(OS_CHROMEOS)
+  return DesktopRootWindowHost::GetNativeTheme(window_);
+#endif
+  return ui::NativeThemeAura::instance();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

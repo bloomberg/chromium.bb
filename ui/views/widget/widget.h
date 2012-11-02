@@ -45,6 +45,7 @@ namespace ui {
 class Accelerator;
 class Compositor;
 class Layer;
+class NativeTheme;
 class OSExchangeData;
 class ThemeProvider;
 }
@@ -430,6 +431,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns the ThemeProvider that provides theme resources for this Widget.
   virtual ui::ThemeProvider* GetThemeProvider() const;
+
+  ui::NativeTheme* GetNativeTheme();
 
   // Returns the FocusManager for this widget.
   // Note that all widgets in a widget hierarchy share the same focus manager.

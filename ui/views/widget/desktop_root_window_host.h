@@ -19,6 +19,10 @@ class ImageSkia;
 class Rect;
 }
 
+namespace ui {
+class NativeTheme;
+}
+
 namespace views {
 class DesktopNativeWidgetAura;
 namespace internal {
@@ -34,6 +38,9 @@ class VIEWS_EXPORT DesktopRootWindowHost {
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds);
+
+  // Return the NativeTheme to use for |window|.
+  static ui::NativeTheme* GetNativeTheme(aura::Window* window);
 
   // Creates the aura resources associated with the native window we built.
   // Caller takes ownership of returned RootWindow.

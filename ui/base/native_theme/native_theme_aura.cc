@@ -53,10 +53,12 @@ const SkColor kTextfieldSelectionColor =
 
 namespace ui {
 
+#if !defined(OS_WIN)
 // static
 NativeTheme* NativeTheme::instance() {
   return NativeThemeAura::instance();
 }
+#endif
 
 // static
 NativeThemeAura* NativeThemeAura::instance() {

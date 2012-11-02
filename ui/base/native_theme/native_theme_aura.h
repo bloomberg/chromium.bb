@@ -12,7 +12,7 @@
 namespace ui {
 
 // Aura implementation of native theme support.
-class NativeThemeAura : public NativeThemeBase {
+class UI_EXPORT NativeThemeAura : public NativeThemeBase {
  public:
   static NativeThemeAura* instance();
 

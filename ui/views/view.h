@@ -46,6 +46,7 @@ namespace ui {
 struct AccessibleViewState;
 class Compositor;
 class Layer;
+class NativeTheme;
 class TextInputClient;
 class Texture;
 class ThemeProvider;
@@ -470,6 +471,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Get the theme provider from the parent widget.
   virtual ui::ThemeProvider* GetThemeProvider() const;
+
+  // Returns the NativeTheme to use for this View. This calls through to
+  // GetNativeTheme() on the Widget this View is in. If this View is not in a
+  // Widget this returns NULL.
+  ui::NativeTheme* GetNativeTheme();
 
   // RTL painting --------------------------------------------------------------
 

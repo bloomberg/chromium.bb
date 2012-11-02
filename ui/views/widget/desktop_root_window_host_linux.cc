@@ -21,6 +21,7 @@
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/window_property.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/ime/input_method_bridge.h"
@@ -85,6 +86,11 @@ DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
 }
 
 DesktopRootWindowHostLinux::~DesktopRootWindowHostLinux() {
+}
+
+// static
+ui::NativeTheme* DesktopRootWindowLinux::GetNativeTheme(aura::Window* window) {
+  return NativeTheme::instance();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
