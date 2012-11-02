@@ -60,7 +60,7 @@ class DevToolsInstrumentedObjectsCheck(devtools_test_base.DevToolsTestBase):
     total = snapshot.GetProcessPrivateMemorySize()
     counted_objects = snapshot.GetInstrumentedObjectsCount()
     counted_unknown_objects = snapshot.GetNumberOfInstrumentedObjectsNotInHeap()
-    if not counted_objects or not counted_unknown_objects:
+    if counted_objects is None or counted_unknown_objects is None:
       logging.info('No information about number of instrumented objects.')
       return
     logging.info('Got data for: %s, objects count = %d (unknown = %d) ' %
