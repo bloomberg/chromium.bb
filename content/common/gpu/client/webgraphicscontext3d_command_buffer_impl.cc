@@ -149,7 +149,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       frame_number_(0),
       bind_generates_resources_(false),
       use_echo_for_swap_ack_(true) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if (defined(OS_MACOSX) || defined(OS_WIN)) && !defined(USE_AURA)
   // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   use_echo_for_swap_ack_ =
