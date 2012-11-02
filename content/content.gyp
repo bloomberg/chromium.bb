@@ -303,6 +303,16 @@
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
         {
+          'target_name': 'surface_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_dir': 'content',
+            'input_java_class': 'android/view/Surface.class',
+            'input_jar_file': '<(android_sdk)/android.jar',
+          },
+          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+        },
+        {
           'target_name': 'content_jni_headers',
           'type': 'none',
           'dependencies': [
