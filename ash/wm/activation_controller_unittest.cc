@@ -197,7 +197,7 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
   ad1.SetWindow(w1.get());
   EXPECT_EQ(NULL, wm::GetActiveWindow());
 
-  // Clicking on an activatable window activtes the window.
+  // Clicking on an activatable window activates the window.
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
   generator.ClickLeftButton();
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
@@ -465,6 +465,41 @@ TEST_F(ActivationControllerTest, ActivateWithHiddenLayer) {
   EXPECT_TRUE(wm::CanActivateWindow(w1.get()));
   w1->layer()->SetVisible(false);
   EXPECT_TRUE(wm::CanActivateWindow(w1.get()));
+}
+
+// Verifies that a unrelated window cannot be activated when in a system modal
+// dialog.
+TEST_F(ActivationControllerTest, DontActivateWindowWhenInSystemModalDialog) {
+  scoped_ptr<aura::Window> normal_window(
+      aura::test::CreateTestWindowWithId(-1, NULL));
+  EXPECT_FALSE(wm::IsActiveWindow(normal_window.get()));
+  wm::ActivateWindow(normal_window.get());
+  EXPECT_TRUE(wm::IsActiveWindow(normal_window.get()));
+
+  // Create and activate a system modal window.
+  aura::Window* modal_container =
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
+          ash::internal::kShellWindowId_SystemModalContainer);
+  scoped_ptr<aura::Window> modal_window(
+      aura::test::CreateTestWindowWithId(-2, modal_container));
+  modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+  wm::ActivateWindow(modal_window.get());
+  EXPECT_TRUE(ash::Shell::GetInstance()->IsModalWindowOpen());
+  EXPECT_FALSE(wm::IsActiveWindow(normal_window.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(modal_window.get()));
+
+  // We try to but cannot activate the normal window while we
+  // have the system modal window.
+  wm::ActivateWindow(normal_window.get());
+  EXPECT_TRUE(ash::Shell::GetInstance()->IsModalWindowOpen());
+  EXPECT_FALSE(wm::IsActiveWindow(normal_window.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(modal_window.get()));
+
+  modal_window->Hide();
+  modal_window.reset();
+  EXPECT_FALSE(ash::Shell::GetInstance()->IsModalWindowOpen());
+  EXPECT_TRUE(wm::IsActiveWindow(normal_window.get()));
 }
 
 }  // namespace test

@@ -254,6 +254,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_TRUE(wm::IsActiveWindow(transient.get()));
 
   // Now close the transient.
+  transient->Hide();
   transient.reset();
 
   MessageLoopForUI::current()->RunAllPending();
@@ -456,6 +457,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
   EXPECT_TRUE(wm::IsActiveWindow(modal1.get()));
 
   // No more modal screen.
+  modal1->Hide();
   modal1.reset();
   EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
   EXPECT_TRUE(wm::IsActiveWindow(normal.get()));

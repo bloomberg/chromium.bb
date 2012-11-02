@@ -15,6 +15,7 @@
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_windows.h"
@@ -165,6 +166,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
           internal::kShellWindowId_SystemModalContainer);
   scoped_ptr<Window> modal_window(
       CreateTestWindowWithId(-2, modal_container));
+  modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
   wm::ActivateWindow(modal_window.get());
   EXPECT_TRUE(wm::IsActiveWindow(modal_window.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD, false);

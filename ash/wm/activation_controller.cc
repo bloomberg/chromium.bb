@@ -46,6 +46,15 @@ const int kWindowContainerIds[] = {
     kShellWindowId_StatusContainer,
 };
 
+bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
+                                            int container_id) {
+  for (; window; window = window->parent()) {
+    if (window->id() >= container_id)
+      return true;
+  }
+  return false;
+}
+
 // Returns true if children of |window| can be activated.
 // These are the only containers in which windows can receive focus.
 bool SupportsChildActivation(aura::Window* window) {
@@ -101,7 +110,10 @@ bool CanActivateWindowWithEvent(aura::Window* window,
       VisibilityMatches(window, visibility_type) &&
       (!aura::client::GetActivationDelegate(window) ||
         aura::client::GetActivationDelegate(window)->ShouldActivate(event)) &&
-      SupportsChildActivation(window->parent());
+      SupportsChildActivation(window->parent()) &&
+      (BelongsToContainerWithEqualOrGreaterId(
+          window, kShellWindowId_SystemModalContainer) ||
+       !Shell::GetInstance()->IsModalWindowOpen());
 }
 
 // When a modal window is activated, we bring its entire transient parent chain

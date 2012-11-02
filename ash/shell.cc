@@ -358,9 +358,13 @@ const aura::Window* Shell::GetContainer(const aura::RootWindow* root_window,
 // static
 std::vector<aura::Window*> Shell::GetAllContainers(int container_id) {
   std::vector<aura::Window*> containers;
-  aura::Window* container = GetPrimaryRootWindow()->GetChildById(container_id);
-  if (container)
-    containers.push_back(container);
+  RootWindowList root_windows = GetAllRootWindows();
+  for (RootWindowList::const_iterator it = root_windows.begin();
+       it != root_windows.end(); ++it) {
+    aura::Window* container = (*it)->GetChildById(container_id);
+    if (container)
+      containers.push_back(container);
+  }
   return containers;
 }
 
@@ -555,11 +559,19 @@ bool Shell::IsScreenLocked() const {
 bool Shell::IsModalWindowOpen() const {
   if (simulate_modal_window_open_for_testing_)
     return true;
-  // TODO(oshima): Walk though all root windows.
-  const aura::Window* modal_container = GetContainer(
-      GetPrimaryRootWindow(),
+  const std::vector<aura::Window*> containers = GetAllContainers(
       internal::kShellWindowId_SystemModalContainer);
-  return !modal_container->children().empty();
+  for (std::vector<aura::Window*>::const_iterator cit = containers.begin();
+       cit != containers.end(); ++cit) {
+    for (aura::Window::Windows::const_iterator wit = (*cit)->children().begin();
+         wit != (*cit)->children().end(); ++wit) {
+      if ((*wit)->GetProperty(aura::client::kModalKey) ==
+          ui::MODAL_TYPE_SYSTEM && (*wit)->TargetVisibility()) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
