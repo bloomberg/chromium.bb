@@ -123,11 +123,15 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
     uint32_t expected_branch_target_register = expect_bx_or_blx ?
         (i & 0xF) :  // When present, always Rm(3:0).
         nacl_arm_dec::Register::kNone;
-    bool expect_literal_pool_head =(i == nacl_arm_dec::kLiteralPoolHead);
+    bool expect_literal_pool_head = (i == nacl_arm_dec::kLiteralPoolHead);
     bool expect_load_store_or_unsafe = expect_unconditional ?
         // Advanced SIMD element or structure load/store instructions.
         // 1111 0100 xx0x xxxx xxxx xxxx xxxx xxxx
-        ((i & 0x0F100000) == 0x04000000) :
+        (((i & 0x0F100000) == 0x04000000) ||
+         // Memory hints, Advanced SIMD instructions, and miscellaneous
+         // instructions: preloads.
+         // PLD, PLDW, PLI: 1111 01xD UR01 nnnn 1111 xxxx xxxx xxxx
+         (((i & 0xFC30F000) == 0xF410F000))) :
         (  // Conditional instructions:
             // Synchronization primitives.
             // cccc 0001 xxxx xxxx xxxx xxxx 1001 xxxx
@@ -154,7 +158,11 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
     uint32_t expected_base_address_register = expect_load_store_or_unsafe ?
         (i >> 16) & 0xF :  // When present, always Rn(19:16).
         nacl_arm_dec::Register::kNone;
-    bool expect_literal_load_or_unsafe = !expect_unconditional &&
+    bool expect_literal_load_or_unsafe = expect_unconditional ?
+        // Memory hints, Advanced SIMD instructions, and miscellaneous
+        // instructions: literal preloads.
+        // PLD, PLDW, PLI: 1111 01xD UR01 1111 1111 xxxx xxxx xxxx
+        (((i & 0xFC3FF000) == 0xF41FF000)) :
         (
             // Extra load/store instructions.
             // LDRH:  cccc 0001 U101 1111 tttt iiii 1011 iiii
@@ -256,6 +264,7 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
     EXPECT_EQ(branch_target_register, expected_branch_target_register);
     // Only BKPT #special_imm is a literal pool head.
     EXPECT_EQ(is_literal_pool_head, expect_literal_pool_head);
+
     if (is_may_be_safe) {
       // TODO(jfb) The following tests aren't full negative test: some
       //           instructions might be left out by being marked as
