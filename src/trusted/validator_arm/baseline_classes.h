@@ -581,6 +581,7 @@ class Unary2RegisterOp : public ClassDecoder {
   Unary2RegisterOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOp);
@@ -607,6 +608,67 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPcNoCondUpdates);
+};
+
+// Models a 2 register immediate shifted unary operation of the form:
+// Op(S)<c> <Rd>, <Rm> (, #<imm> | {, <shift> })
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |  cond  |              | S|        |   Rd   |   imm5   |type|  |   Rm   |
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rm - The source register.
+//
+// NaCl disallows writing to PC to cause a jump.
+class Unary2RegisterShiftedOp : public Unary2RegisterOp {
+ public:
+  // Interface for components in the instruction.
+  static const ShiftTypeBits5To6Interface shift_type;
+  static const Imm5Bits7To11Interface imm5;
+
+  Unary2RegisterShiftedOp() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterShiftedOp);
+};
+
+// A Unary2RegisterShiftedOp with the additional constraint that imm5!=00000.
+//   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+//             imm5=00000 => DECODER_ERROR &
+//             Rd=1111 => FORBIDDEN_OPERANDS;      # NaCl
+class Unary2RegisterShiftedOpImmNotZero : public Unary2RegisterShiftedOp {
+ public:
+  Unary2RegisterShiftedOpImmNotZero() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterShiftedOpImmNotZero);
+};
+
+// Models a register immediate shifted binary operation of the form:
+// Op(S)<c> <Rd>, <Rn>, <Rm> {, <shift>}
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |  cond  |              | S|  Rn    |   Rd   |   imm5   |type|  |   Rm   |
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The first source register.
+//    Rm - The second source register.
+//
+// NaCl disallows writing to PC to cause a jump.
+class Binary3RegisterShiftedOp : public Unary2RegisterShiftedOp {
+ public:
+  static const RegBits16To19Interface n;
+
+  Binary3RegisterShiftedOp() {}
+  virtual RegisterList uses(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedOp);
 };
 
 // Models a 3-register binary operation of the form:
@@ -1841,6 +1903,7 @@ class Binary2RegisterImmedShiftedTest : public ClassDecoder {
   Binary2RegisterImmedShiftedTest() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
   // The shift value to use.
   uint32_t ShiftValue(const Instruction& i) const {

@@ -160,23 +160,23 @@ bool Binary2RegisterImmedShiftedTestTesterCase3
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0000x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase4
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase4
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase4(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase4(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -184,7 +184,7 @@ class Binary3RegisterImmedShiftedOpTesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase4
+bool Binary3RegisterShiftedOpTesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -193,40 +193,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase4
   if ((inst.Bits() & 0x01E00000) != 0x00000000 /* op1(24:20)=~0000x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase4
+bool Binary3RegisterShiftedOpTesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0001x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase5
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase5
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase5(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase5(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -234,7 +234,7 @@ class Binary3RegisterImmedShiftedOpTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase5
+bool Binary3RegisterShiftedOpTesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -243,40 +243,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase5
   if ((inst.Bits() & 0x01E00000) != 0x00200000 /* op1(24:20)=~0001x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase5
+bool Binary3RegisterShiftedOpTesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0010x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase6
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase6
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase6(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase6(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -284,7 +284,7 @@ class Binary3RegisterImmedShiftedOpTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase6
+bool Binary3RegisterShiftedOpTesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -293,40 +293,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase6
   if ((inst.Bits() & 0x01E00000) != 0x00400000 /* op1(24:20)=~0010x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase6
+bool Binary3RegisterShiftedOpTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0011x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase7
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase7
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase7(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase7(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -334,7 +334,7 @@ class Binary3RegisterImmedShiftedOpTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase7
+bool Binary3RegisterShiftedOpTesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -343,40 +343,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase7
   if ((inst.Bits() & 0x01E00000) != 0x00600000 /* op1(24:20)=~0011x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase7
+bool Binary3RegisterShiftedOpTesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0100x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase8
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase8
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase8(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase8(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -384,7 +384,7 @@ class Binary3RegisterImmedShiftedOpTesterCase8
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase8
+bool Binary3RegisterShiftedOpTesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -393,40 +393,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase8
   if ((inst.Bits() & 0x01E00000) != 0x00800000 /* op1(24:20)=~0100x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase8
+bool Binary3RegisterShiftedOpTesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0101x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase9
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase9
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase9(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase9(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -434,7 +434,7 @@ class Binary3RegisterImmedShiftedOpTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase9
+bool Binary3RegisterShiftedOpTesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -443,40 +443,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase9
   if ((inst.Bits() & 0x01E00000) != 0x00A00000 /* op1(24:20)=~0101x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase9
+bool Binary3RegisterShiftedOpTesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0110x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase10
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase10
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase10(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase10(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -484,7 +484,7 @@ class Binary3RegisterImmedShiftedOpTesterCase10
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase10
+bool Binary3RegisterShiftedOpTesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -493,40 +493,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase10
   if ((inst.Bits() & 0x01E00000) != 0x00C00000 /* op1(24:20)=~0110x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase10
+bool Binary3RegisterShiftedOpTesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0111x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase11
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase11
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase11(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase11(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -534,7 +534,7 @@ class Binary3RegisterImmedShiftedOpTesterCase11
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase11
+bool Binary3RegisterShiftedOpTesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -543,40 +543,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase11
   if ((inst.Bits() & 0x01E00000) != 0x00E00000 /* op1(24:20)=~0111x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase11
+bool Binary3RegisterShiftedOpTesterCase11
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1100x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase12
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase12
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase12(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase12(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -584,7 +584,7 @@ class Binary3RegisterImmedShiftedOpTesterCase12
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase12
+bool Binary3RegisterShiftedOpTesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -593,41 +593,41 @@ bool Binary3RegisterImmedShiftedOpTesterCase12
   if ((inst.Bits() & 0x01E00000) != 0x01800000 /* op1(24:20)=~1100x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase12
+bool Binary3RegisterShiftedOpTesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOpImmNotZero',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(11:7)=00000 => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOpImmNotZero,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12), imm5(11:7)],
 //       imm5: imm5(11:7),
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTesterCase13
-    : public Unary2RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, imm5(11:7)=00000 => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpTesterCase13
+    : public Unary2RegisterShiftedOpTester {
  public:
-  Unary2RegisterImmedShiftedOpTesterCase13(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTester(decoder) {}
+  Unary2RegisterShiftedOpTesterCase13(const NamedClassDecoder& decoder)
+    : Unary2RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -635,7 +635,7 @@ class Unary2RegisterImmedShiftedOpTesterCase13
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary2RegisterImmedShiftedOpTesterCase13
+bool Unary2RegisterShiftedOpTesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -647,42 +647,42 @@ bool Unary2RegisterImmedShiftedOpTesterCase13
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary2RegisterImmedShiftedOpTesterCase13
+bool Unary2RegisterShiftedOpTesterCase13
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary2RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
-  EXPECT_TRUE((inst.Bits() & 0x00000F80) != 0x00000000 /* imm5(11:7)=00000 => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
+  EXPECT_TRUE((inst.Bits() & 0x00000F80) != 0x00000000 /* imm5(11:7)=00000 => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOpImmNotZero',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(11:7)=00000 => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOpImmNotZero,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12), imm5(11:7)],
 //       imm5: imm5(11:7),
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTesterCase14
-    : public Unary2RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, imm5(11:7)=00000 => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpTesterCase14
+    : public Unary2RegisterShiftedOpTester {
  public:
-  Unary2RegisterImmedShiftedOpTesterCase14(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTester(decoder) {}
+  Unary2RegisterShiftedOpTesterCase14(const NamedClassDecoder& decoder)
+    : Unary2RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -690,7 +690,7 @@ class Unary2RegisterImmedShiftedOpTesterCase14
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary2RegisterImmedShiftedOpTesterCase14
+bool Unary2RegisterShiftedOpTesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -702,19 +702,19 @@ bool Unary2RegisterImmedShiftedOpTesterCase14
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary2RegisterImmedShiftedOpTesterCase14
+bool Unary2RegisterShiftedOpTesterCase14
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary2RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
-  EXPECT_TRUE((inst.Bits() & 0x00000F80) != 0x00000000 /* imm5(11:7)=00000 => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
+  EXPECT_TRUE((inst.Bits() & 0x00000F80) != 0x00000000 /* imm5(11:7)=00000 => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
@@ -722,7 +722,7 @@ bool Unary2RegisterImmedShiftedOpTesterCase14
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {baseline: 'Unary2RegisterOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
@@ -731,7 +731,7 @@ bool Unary2RegisterImmedShiftedOpTesterCase14
 //       baseline: Unary2RegisterOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTesterCase15
     : public Unary2RegisterOpTester {
  public:
@@ -765,7 +765,7 @@ bool Unary2RegisterOpTesterCase15
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Unary2RegisterOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
   return Unary2RegisterOpTester::
     ApplySanityChecks(inst, decoder);
@@ -775,7 +775,7 @@ bool Unary2RegisterOpTesterCase15
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {baseline: 'Unary2RegisterOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
@@ -784,7 +784,7 @@ bool Unary2RegisterOpTesterCase15
 //       baseline: Unary2RegisterOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTesterCase16
     : public Unary2RegisterOpTester {
  public:
@@ -818,7 +818,7 @@ bool Unary2RegisterOpTesterCase16
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Unary2RegisterOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
   return Unary2RegisterOpTester::
     ApplySanityChecks(inst, decoder);
@@ -826,23 +826,23 @@ bool Unary2RegisterOpTesterCase16
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTesterCase17
-    : public Unary2RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpTesterCase17
+    : public Unary2RegisterShiftedOpTester {
  public:
-  Unary2RegisterImmedShiftedOpTesterCase17(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTester(decoder) {}
+  Unary2RegisterShiftedOpTesterCase17(const NamedClassDecoder& decoder)
+    : Unary2RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -850,7 +850,7 @@ class Unary2RegisterImmedShiftedOpTesterCase17
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary2RegisterImmedShiftedOpTesterCase17
+bool Unary2RegisterShiftedOpTesterCase17
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -861,40 +861,40 @@ bool Unary2RegisterImmedShiftedOpTesterCase17
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary2RegisterImmedShiftedOpTesterCase17
+bool Unary2RegisterShiftedOpTesterCase17
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary2RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTesterCase18
-    : public Unary2RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpTesterCase18
+    : public Unary2RegisterShiftedOpTester {
  public:
-  Unary2RegisterImmedShiftedOpTesterCase18(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTester(decoder) {}
+  Unary2RegisterShiftedOpTesterCase18(const NamedClassDecoder& decoder)
+    : Unary2RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -902,7 +902,7 @@ class Unary2RegisterImmedShiftedOpTesterCase18
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary2RegisterImmedShiftedOpTesterCase18
+bool Unary2RegisterShiftedOpTesterCase18
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -913,40 +913,40 @@ bool Unary2RegisterImmedShiftedOpTesterCase18
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary2RegisterImmedShiftedOpTesterCase18
+bool Unary2RegisterShiftedOpTesterCase18
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary2RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1110x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTesterCase19
-    : public Binary3RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTesterCase19
+    : public Binary3RegisterShiftedOpTester {
  public:
-  Binary3RegisterImmedShiftedOpTesterCase19(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTester(decoder) {}
+  Binary3RegisterShiftedOpTesterCase19(const NamedClassDecoder& decoder)
+    : Binary3RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -954,7 +954,7 @@ class Binary3RegisterImmedShiftedOpTesterCase19
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterImmedShiftedOpTesterCase19
+bool Binary3RegisterShiftedOpTesterCase19
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -963,40 +963,40 @@ bool Binary3RegisterImmedShiftedOpTesterCase19
   if ((inst.Bits() & 0x01E00000) != 0x01C00000 /* op1(24:20)=~1110x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterImmedShiftedOpTesterCase19
+bool Binary3RegisterShiftedOpTesterCase19
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Binary3RegisterImmedShiftedOpTester::
+  return Binary3RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTesterCase20
-    : public Unary2RegisterImmedShiftedOpTester {
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpTesterCase20
+    : public Unary2RegisterShiftedOpTester {
  public:
-  Unary2RegisterImmedShiftedOpTesterCase20(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTester(decoder) {}
+  Unary2RegisterShiftedOpTesterCase20(const NamedClassDecoder& decoder)
+    : Unary2RegisterShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -1004,7 +1004,7 @@ class Unary2RegisterImmedShiftedOpTesterCase20
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary2RegisterImmedShiftedOpTesterCase20
+bool Unary2RegisterShiftedOpTesterCase20
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1014,18 +1014,18 @@ bool Unary2RegisterImmedShiftedOpTesterCase20
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary2RegisterImmedShiftedOpTesterCase20
+bool Unary2RegisterShiftedOpTesterCase20
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary2RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return Unary2RegisterImmedShiftedOpTester::
+  return Unary2RegisterShiftedOpTester::
     ApplySanityChecks(inst, decoder);
 }
 
@@ -1038,19 +1038,19 @@ bool Unary2RegisterImmedShiftedOpTesterCase20
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {baseline: 'Binary2RegisterImmedShiftedTest',
 //       constraints: ,
-//       rule: 'Tst_Rule_231_A1_P456'}
+//       rule: 'TST_register'}
 //
 // Representative case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {baseline: Binary2RegisterImmedShiftedTest,
 //       constraints: ,
-//       rule: Tst_Rule_231_A1_P456}
+//       rule: TST_register}
 class Binary2RegisterImmedShiftedTestTester_Case0
     : public Binary2RegisterImmedShiftedTestTesterCase0 {
  public:
   Binary2RegisterImmedShiftedTestTester_Case0()
     : Binary2RegisterImmedShiftedTestTesterCase0(
-      state_.Binary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456_instance_)
+      state_.Binary2RegisterImmedShiftedTest_TST_register_instance_)
   {}
 };
 
@@ -1058,19 +1058,19 @@ class Binary2RegisterImmedShiftedTestTester_Case0
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {baseline: 'Binary2RegisterImmedShiftedTest',
 //       constraints: ,
-//       rule: 'Teq_Rule_228_A1_P450'}
+//       rule: 'TEQ_register'}
 //
 // Representative case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {baseline: Binary2RegisterImmedShiftedTest,
 //       constraints: ,
-//       rule: Teq_Rule_228_A1_P450}
+//       rule: TEQ_register}
 class Binary2RegisterImmedShiftedTestTester_Case1
     : public Binary2RegisterImmedShiftedTestTesterCase1 {
  public:
   Binary2RegisterImmedShiftedTestTester_Case1()
     : Binary2RegisterImmedShiftedTestTesterCase1(
-      state_.Binary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450_instance_)
+      state_.Binary2RegisterImmedShiftedTest_TEQ_register_instance_)
   {}
 };
 
@@ -1078,19 +1078,19 @@ class Binary2RegisterImmedShiftedTestTester_Case1
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {baseline: 'Binary2RegisterImmedShiftedTest',
 //       constraints: ,
-//       rule: 'Cmp_Rule_36_A1_P82'}
+//       rule: 'CMP_register'}
 //
 // Representative case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {baseline: Binary2RegisterImmedShiftedTest,
 //       constraints: ,
-//       rule: Cmp_Rule_36_A1_P82}
+//       rule: CMP_register}
 class Binary2RegisterImmedShiftedTestTester_Case2
     : public Binary2RegisterImmedShiftedTestTesterCase2 {
  public:
   Binary2RegisterImmedShiftedTestTester_Case2()
     : Binary2RegisterImmedShiftedTestTesterCase2(
-      state_.Binary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82_instance_)
+      state_.Binary2RegisterImmedShiftedTest_CMP_register_instance_)
   {}
 };
 
@@ -1098,296 +1098,296 @@ class Binary2RegisterImmedShiftedTestTester_Case2
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {baseline: 'Binary2RegisterImmedShiftedTest',
 //       constraints: ,
-//       rule: 'Cmn_Rule_33_A1_P76'}
+//       rule: 'CMN_register'}
 //
 // Representative case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {baseline: Binary2RegisterImmedShiftedTest,
 //       constraints: ,
-//       rule: Cmn_Rule_33_A1_P76}
+//       rule: CMN_register}
 class Binary2RegisterImmedShiftedTestTester_Case3
     : public Binary2RegisterImmedShiftedTestTesterCase3 {
  public:
   Binary2RegisterImmedShiftedTestTester_Case3()
     : Binary2RegisterImmedShiftedTestTesterCase3(
-      state_.Binary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76_instance_)
+      state_.Binary2RegisterImmedShiftedTest_CMN_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'And_Rule_7_A1_P36',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'AND_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0000x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: And_Rule_7_A1_P36,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case4
-    : public Binary3RegisterImmedShiftedOpTesterCase4 {
+//       rule: AND_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case4
+    : public Binary3RegisterShiftedOpTesterCase4 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case4()
-    : Binary3RegisterImmedShiftedOpTesterCase4(
-      state_.Binary3RegisterImmedShiftedOp_And_Rule_7_A1_P36_instance_)
+  Binary3RegisterShiftedOpTester_Case4()
+    : Binary3RegisterShiftedOpTesterCase4(
+      state_.Binary3RegisterShiftedOp_AND_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Eor_Rule_45_A1_P96',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'EOR_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0001x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Eor_Rule_45_A1_P96,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case5
-    : public Binary3RegisterImmedShiftedOpTesterCase5 {
+//       rule: EOR_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case5
+    : public Binary3RegisterShiftedOpTesterCase5 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case5()
-    : Binary3RegisterImmedShiftedOpTesterCase5(
-      state_.Binary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96_instance_)
+  Binary3RegisterShiftedOpTester_Case5()
+    : Binary3RegisterShiftedOpTesterCase5(
+      state_.Binary3RegisterShiftedOp_EOR_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Sub_Rule_213_A1_P422',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'SUB_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0010x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Sub_Rule_213_A1_P422,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case6
-    : public Binary3RegisterImmedShiftedOpTesterCase6 {
+//       rule: SUB_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case6
+    : public Binary3RegisterShiftedOpTesterCase6 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case6()
-    : Binary3RegisterImmedShiftedOpTesterCase6(
-      state_.Binary3RegisterImmedShiftedOp_Sub_Rule_213_A1_P422_instance_)
+  Binary3RegisterShiftedOpTester_Case6()
+    : Binary3RegisterShiftedOpTesterCase6(
+      state_.Binary3RegisterShiftedOp_SUB_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Rsb_Rule_143_P286',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'RSB_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0011x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Rsb_Rule_143_P286,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case7
-    : public Binary3RegisterImmedShiftedOpTesterCase7 {
+//       rule: RSB_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case7
+    : public Binary3RegisterShiftedOpTesterCase7 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case7()
-    : Binary3RegisterImmedShiftedOpTesterCase7(
-      state_.Binary3RegisterImmedShiftedOp_Rsb_Rule_143_P286_instance_)
+  Binary3RegisterShiftedOpTester_Case7()
+    : Binary3RegisterShiftedOpTesterCase7(
+      state_.Binary3RegisterShiftedOp_RSB_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Add_Rule_6_A1_P24',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'ADD_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0100x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Add_Rule_6_A1_P24,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case8
-    : public Binary3RegisterImmedShiftedOpTesterCase8 {
+//       rule: ADD_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case8
+    : public Binary3RegisterShiftedOpTesterCase8 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case8()
-    : Binary3RegisterImmedShiftedOpTesterCase8(
-      state_.Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24_instance_)
+  Binary3RegisterShiftedOpTester_Case8()
+    : Binary3RegisterShiftedOpTesterCase8(
+      state_.Binary3RegisterShiftedOp_ADD_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Adc_Rule_2_A1_P16',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'ADC_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0101x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Adc_Rule_2_A1_P16,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case9
-    : public Binary3RegisterImmedShiftedOpTesterCase9 {
+//       rule: ADC_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case9
+    : public Binary3RegisterShiftedOpTesterCase9 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case9()
-    : Binary3RegisterImmedShiftedOpTesterCase9(
-      state_.Binary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16_instance_)
+  Binary3RegisterShiftedOpTester_Case9()
+    : Binary3RegisterShiftedOpTesterCase9(
+      state_.Binary3RegisterShiftedOp_ADC_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Sbc_Rule_152_A1_P304',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'SBC_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0110x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Sbc_Rule_152_A1_P304,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case10
-    : public Binary3RegisterImmedShiftedOpTesterCase10 {
+//       rule: SBC_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case10
+    : public Binary3RegisterShiftedOpTesterCase10 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case10()
-    : Binary3RegisterImmedShiftedOpTesterCase10(
-      state_.Binary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304_instance_)
+  Binary3RegisterShiftedOpTester_Case10()
+    : Binary3RegisterShiftedOpTesterCase10(
+      state_.Binary3RegisterShiftedOp_SBC_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Rsc_Rule_146_A1_P292',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'RSC_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0111x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Rsc_Rule_146_A1_P292,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case11
-    : public Binary3RegisterImmedShiftedOpTesterCase11 {
+//       rule: RSC_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case11
+    : public Binary3RegisterShiftedOpTesterCase11 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case11()
-    : Binary3RegisterImmedShiftedOpTesterCase11(
-      state_.Binary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292_instance_)
+  Binary3RegisterShiftedOpTester_Case11()
+    : Binary3RegisterShiftedOpTesterCase11(
+      state_.Binary3RegisterShiftedOp_RSC_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Orr_Rule_114_A1_P230',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'ORR_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1100x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Orr_Rule_114_A1_P230,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case12
-    : public Binary3RegisterImmedShiftedOpTesterCase12 {
+//       rule: ORR_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case12
+    : public Binary3RegisterShiftedOpTesterCase12 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case12()
-    : Binary3RegisterImmedShiftedOpTesterCase12(
-      state_.Binary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230_instance_)
+  Binary3RegisterShiftedOpTester_Case12()
+    : Binary3RegisterShiftedOpTesterCase12(
+      state_.Binary3RegisterShiftedOp_ORR_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOpImmNotZero',
 //       constraints: ,
-//       rule: 'Lsl_Rule_88_A1_P178',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'LSL_immediate',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(11:7)=00000 => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOpImmNotZero,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12), imm5(11:7)],
 //       imm5: imm5(11:7),
-//       rule: Lsl_Rule_88_A1_P178,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTester_Case13
-    : public Unary2RegisterImmedShiftedOpTesterCase13 {
+//       rule: LSL_immediate,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, imm5(11:7)=00000 => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpImmNotZeroTester_Case13
+    : public Unary2RegisterShiftedOpTesterCase13 {
  public:
-  Unary2RegisterImmedShiftedOpTester_Case13()
-    : Unary2RegisterImmedShiftedOpTesterCase13(
-      state_.Unary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178_instance_)
+  Unary2RegisterShiftedOpImmNotZeroTester_Case13()
+    : Unary2RegisterShiftedOpTesterCase13(
+      state_.Unary2RegisterShiftedOpImmNotZero_LSL_immediate_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOpImmNotZero',
 //       constraints: ,
-//       rule: 'Ror_Rule_139_A1_P278',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'ROR_immediate',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(11:7)=00000 => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOpImmNotZero,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12), imm5(11:7)],
 //       imm5: imm5(11:7),
-//       rule: Ror_Rule_139_A1_P278,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTester_Case14
-    : public Unary2RegisterImmedShiftedOpTesterCase14 {
+//       rule: ROR_immediate,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, imm5(11:7)=00000 => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpImmNotZeroTester_Case14
+    : public Unary2RegisterShiftedOpTesterCase14 {
  public:
-  Unary2RegisterImmedShiftedOpTester_Case14()
-    : Unary2RegisterImmedShiftedOpTesterCase14(
-      state_.Unary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278_instance_)
+  Unary2RegisterShiftedOpImmNotZeroTester_Case14()
+    : Unary2RegisterShiftedOpTesterCase14(
+      state_.Unary2RegisterShiftedOpImmNotZero_ROR_immediate_instance_)
   {}
 };
 
@@ -1395,8 +1395,8 @@ class Unary2RegisterImmedShiftedOpTester_Case14
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {baseline: 'Unary2RegisterOp',
 //       constraints: ,
-//       rule: 'Mov_Rule_97_A1_P196',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'MOV_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
@@ -1405,14 +1405,14 @@ class Unary2RegisterImmedShiftedOpTester_Case14
 //       baseline: Unary2RegisterOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Mov_Rule_97_A1_P196,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       rule: MOV_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTester_Case15
     : public Unary2RegisterOpTesterCase15 {
  public:
   Unary2RegisterOpTester_Case15()
     : Unary2RegisterOpTesterCase15(
-      state_.Unary2RegisterOp_Mov_Rule_97_A1_P196_instance_)
+      state_.Unary2RegisterOp_MOV_register_instance_)
   {}
 };
 
@@ -1420,8 +1420,8 @@ class Unary2RegisterOpTester_Case15
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {baseline: 'Unary2RegisterOp',
 //       constraints: ,
-//       rule: 'Rrx_Rule_141_A1_P282',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'RRX',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
@@ -1430,114 +1430,114 @@ class Unary2RegisterOpTester_Case15
 //       baseline: Unary2RegisterOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Rrx_Rule_141_A1_P282,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       rule: RRX,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTester_Case16
     : public Unary2RegisterOpTesterCase16 {
  public:
   Unary2RegisterOpTester_Case16()
     : Unary2RegisterOpTesterCase16(
-      state_.Unary2RegisterOp_Rrx_Rule_141_A1_P282_instance_)
+      state_.Unary2RegisterOp_RRX_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Lsr_Rule_90_A1_P182',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'LSR_immediate',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Lsr_Rule_90_A1_P182,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTester_Case17
-    : public Unary2RegisterImmedShiftedOpTesterCase17 {
+//       rule: LSR_immediate,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpTester_Case17
+    : public Unary2RegisterShiftedOpTesterCase17 {
  public:
-  Unary2RegisterImmedShiftedOpTester_Case17()
-    : Unary2RegisterImmedShiftedOpTesterCase17(
-      state_.Unary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182_instance_)
+  Unary2RegisterShiftedOpTester_Case17()
+    : Unary2RegisterShiftedOpTesterCase17(
+      state_.Unary2RegisterShiftedOp_LSR_immediate_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Asr_Rule_14_A1_P40',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'ASR_immediate',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Asr_Rule_14_A1_P40,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTester_Case18
-    : public Unary2RegisterImmedShiftedOpTesterCase18 {
+//       rule: ASR_immediate,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpTester_Case18
+    : public Unary2RegisterShiftedOpTesterCase18 {
  public:
-  Unary2RegisterImmedShiftedOpTester_Case18()
-    : Unary2RegisterImmedShiftedOpTesterCase18(
-      state_.Unary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40_instance_)
+  Unary2RegisterShiftedOpTester_Case18()
+    : Unary2RegisterShiftedOpTesterCase18(
+      state_.Unary2RegisterShiftedOp_ASR_immediate_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Bic_Rule_20_A1_P52',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'BIC_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1110x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Bic_Rule_20_A1_P52,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Binary3RegisterImmedShiftedOpTester_Case19
-    : public Binary3RegisterImmedShiftedOpTesterCase19 {
+//       rule: BIC_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Binary3RegisterShiftedOpTester_Case19
+    : public Binary3RegisterShiftedOpTesterCase19 {
  public:
-  Binary3RegisterImmedShiftedOpTester_Case19()
-    : Binary3RegisterImmedShiftedOpTesterCase19(
-      state_.Binary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52_instance_)
+  Binary3RegisterShiftedOpTester_Case19()
+    : Binary3RegisterShiftedOpTesterCase19(
+      state_.Binary3RegisterShiftedOp_BIC_register_instance_)
   {}
 };
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       rule: 'Mvn_Rule_107_A1_P216',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       rule: 'MVN_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       rule: Mvn_Rule_107_A1_P216,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
-class Unary2RegisterImmedShiftedOpTester_Case20
-    : public Unary2RegisterImmedShiftedOpTesterCase20 {
+//       rule: MVN_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+class Unary2RegisterShiftedOpTester_Case20
+    : public Unary2RegisterShiftedOpTesterCase20 {
  public:
-  Unary2RegisterImmedShiftedOpTester_Case20()
-    : Unary2RegisterImmedShiftedOpTesterCase20(
-      state_.Unary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216_instance_)
+  Unary2RegisterShiftedOpTester_Case20()
+    : Unary2RegisterShiftedOpTesterCase20(
+      state_.Unary2RegisterShiftedOp_MVN_register_instance_)
   {}
 };
 
@@ -1552,572 +1552,530 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'Binary2RegisterImmedShiftedTest',
 //       baseline: 'Binary2RegisterImmedShiftedTest',
 //       constraints: ,
 //       pattern: 'cccc00010001nnnn0000iiiiitt0mmmm',
-//       rule: 'Tst_Rule_231_A1_P456'}
+//       rule: 'TST_register'}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: Binary2RegisterImmedShiftedTest,
 //       baseline: Binary2RegisterImmedShiftedTest,
 //       constraints: ,
 //       pattern: cccc00010001nnnn0000iiiiitt0mmmm,
-//       rule: Tst_Rule_231_A1_P456}
+//       rule: TST_register}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmedShiftedTestTester_Case0_TestCase0) {
-  Binary2RegisterImmedShiftedTestTester_Case0 baseline_tester;
-  NamedDontCareInst_Tst_Rule_231_A1_P456 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00010001nnnn0000iiiiitt0mmmm");
+  Binary2RegisterImmedShiftedTestTester_Case0 tester;
+  tester.Test("cccc00010001nnnn0000iiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'Binary2RegisterImmedShiftedTest',
 //       baseline: 'Binary2RegisterImmedShiftedTest',
 //       constraints: ,
 //       pattern: 'cccc00010011nnnn0000iiiiitt0mmmm',
-//       rule: 'Teq_Rule_228_A1_P450'}
+//       rule: 'TEQ_register'}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: Binary2RegisterImmedShiftedTest,
 //       baseline: Binary2RegisterImmedShiftedTest,
 //       constraints: ,
 //       pattern: cccc00010011nnnn0000iiiiitt0mmmm,
-//       rule: Teq_Rule_228_A1_P450}
+//       rule: TEQ_register}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmedShiftedTestTester_Case1_TestCase1) {
-  Binary2RegisterImmedShiftedTestTester_Case1 baseline_tester;
-  NamedDontCareInst_Teq_Rule_228_A1_P450 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00010011nnnn0000iiiiitt0mmmm");
+  Binary2RegisterImmedShiftedTestTester_Case1 tester;
+  tester.Test("cccc00010011nnnn0000iiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'Binary2RegisterImmedShiftedTest',
 //       baseline: 'Binary2RegisterImmedShiftedTest',
 //       constraints: ,
 //       pattern: 'cccc00010101nnnn0000iiiiitt0mmmm',
-//       rule: 'Cmp_Rule_36_A1_P82'}
+//       rule: 'CMP_register'}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: Binary2RegisterImmedShiftedTest,
 //       baseline: Binary2RegisterImmedShiftedTest,
 //       constraints: ,
 //       pattern: cccc00010101nnnn0000iiiiitt0mmmm,
-//       rule: Cmp_Rule_36_A1_P82}
+//       rule: CMP_register}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmedShiftedTestTester_Case2_TestCase2) {
-  Binary2RegisterImmedShiftedTestTester_Case2 baseline_tester;
-  NamedDontCareInst_Cmp_Rule_36_A1_P82 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00010101nnnn0000iiiiitt0mmmm");
+  Binary2RegisterImmedShiftedTestTester_Case2 tester;
+  tester.Test("cccc00010101nnnn0000iiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'Binary2RegisterImmedShiftedTest',
 //       baseline: 'Binary2RegisterImmedShiftedTest',
 //       constraints: ,
 //       pattern: 'cccc00010111nnnn0000iiiiitt0mmmm',
-//       rule: 'Cmn_Rule_33_A1_P76'}
+//       rule: 'CMN_register'}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: Binary2RegisterImmedShiftedTest,
 //       baseline: Binary2RegisterImmedShiftedTest,
 //       constraints: ,
 //       pattern: cccc00010111nnnn0000iiiiitt0mmmm,
-//       rule: Cmn_Rule_33_A1_P76}
+//       rule: CMN_register}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmedShiftedTestTester_Case3_TestCase3) {
-  Binary2RegisterImmedShiftedTestTester_Case3 baseline_tester;
-  NamedDontCareInst_Cmn_Rule_33_A1_P76 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00010111nnnn0000iiiiitt0mmmm");
+  Binary2RegisterImmedShiftedTestTester_Case3 tester;
+  tester.Test("cccc00010111nnnn0000iiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0000000unnnnddddiiiiitt0mmmm',
-//       rule: 'And_Rule_7_A1_P36',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0000000snnnnddddiiiiitt0mmmm',
+//       rule: 'AND_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=0000x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0000000unnnnddddiiiiitt0mmmm,
-//       rule: And_Rule_7_A1_P36,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0000000snnnnddddiiiiitt0mmmm,
+//       rule: AND_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case4_TestCase4) {
-  Binary3RegisterImmedShiftedOpTester_Case4 baseline_tester;
-  NamedDefs12To15_And_Rule_7_A1_P36 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000000unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case4_TestCase4) {
+  Binary3RegisterShiftedOpTester_Case4 tester;
+  tester.Test("cccc0000000snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0000001unnnnddddiiiiitt0mmmm',
-//       rule: 'Eor_Rule_45_A1_P96',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0000001snnnnddddiiiiitt0mmmm',
+//       rule: 'EOR_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=0001x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0000001unnnnddddiiiiitt0mmmm,
-//       rule: Eor_Rule_45_A1_P96,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0000001snnnnddddiiiiitt0mmmm,
+//       rule: EOR_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case5_TestCase5) {
-  Binary3RegisterImmedShiftedOpTester_Case5 baseline_tester;
-  NamedDefs12To15_Eor_Rule_45_A1_P96 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000001unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case5_TestCase5) {
+  Binary3RegisterShiftedOpTester_Case5 tester;
+  tester.Test("cccc0000001snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0000010unnnnddddiiiiitt0mmmm',
-//       rule: 'Sub_Rule_213_A1_P422',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0000010snnnnddddiiiiitt0mmmm',
+//       rule: 'SUB_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=0010x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0000010unnnnddddiiiiitt0mmmm,
-//       rule: Sub_Rule_213_A1_P422,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0000010snnnnddddiiiiitt0mmmm,
+//       rule: SUB_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case6_TestCase6) {
-  Binary3RegisterImmedShiftedOpTester_Case6 baseline_tester;
-  NamedDefs12To15_Sub_Rule_213_A1_P422 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000010unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case6_TestCase6) {
+  Binary3RegisterShiftedOpTester_Case6 tester;
+  tester.Test("cccc0000010snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0000011unnnnddddiiiiitt0mmmm',
-//       rule: 'Rsb_Rule_143_P286',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0000011snnnnddddiiiiitt0mmmm',
+//       rule: 'RSB_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=0011x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0000011unnnnddddiiiiitt0mmmm,
-//       rule: Rsb_Rule_143_P286,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0000011snnnnddddiiiiitt0mmmm,
+//       rule: RSB_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case7_TestCase7) {
-  Binary3RegisterImmedShiftedOpTester_Case7 baseline_tester;
-  NamedDefs12To15_Rsb_Rule_143_P286 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000011unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case7_TestCase7) {
+  Binary3RegisterShiftedOpTester_Case7 tester;
+  tester.Test("cccc0000011snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0000100unnnnddddiiiiitt0mmmm',
-//       rule: 'Add_Rule_6_A1_P24',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0000100snnnnddddiiiiitt0mmmm',
+//       rule: 'ADD_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=0100x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0000100unnnnddddiiiiitt0mmmm,
-//       rule: Add_Rule_6_A1_P24,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0000100snnnnddddiiiiitt0mmmm,
+//       rule: ADD_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case8_TestCase8) {
-  Binary3RegisterImmedShiftedOpTester_Case8 baseline_tester;
-  NamedDefs12To15_Add_Rule_6_A1_P24 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000100unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case8_TestCase8) {
+  Binary3RegisterShiftedOpTester_Case8 tester;
+  tester.Test("cccc0000100snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0000101unnnnddddiiiiitt0mmmm',
-//       rule: 'Adc_Rule_2_A1_P16',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0000101snnnnddddiiiiitt0mmmm',
+//       rule: 'ADC_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=0101x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0000101unnnnddddiiiiitt0mmmm,
-//       rule: Adc_Rule_2_A1_P16,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0000101snnnnddddiiiiitt0mmmm,
+//       rule: ADC_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case9_TestCase9) {
-  Binary3RegisterImmedShiftedOpTester_Case9 baseline_tester;
-  NamedDefs12To15_Adc_Rule_2_A1_P16 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000101unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case9_TestCase9) {
+  Binary3RegisterShiftedOpTester_Case9 tester;
+  tester.Test("cccc0000101snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0000110unnnnddddiiiiitt0mmmm',
-//       rule: 'Sbc_Rule_152_A1_P304',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0000110snnnnddddiiiiitt0mmmm',
+//       rule: 'SBC_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=0110x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0000110unnnnddddiiiiitt0mmmm,
-//       rule: Sbc_Rule_152_A1_P304,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0000110snnnnddddiiiiitt0mmmm,
+//       rule: SBC_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case10_TestCase10) {
-  Binary3RegisterImmedShiftedOpTester_Case10 baseline_tester;
-  NamedDefs12To15_Sbc_Rule_152_A1_P304 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000110unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case10_TestCase10) {
+  Binary3RegisterShiftedOpTester_Case10 tester;
+  tester.Test("cccc0000110snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0000111unnnnddddiiiiitt0mmmm',
-//       rule: 'Rsc_Rule_146_A1_P292',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0000111snnnnddddiiiiitt0mmmm',
+//       rule: 'RSC_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=0111x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0000111unnnnddddiiiiitt0mmmm,
-//       rule: Rsc_Rule_146_A1_P292,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0000111snnnnddddiiiiitt0mmmm,
+//       rule: RSC_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case11_TestCase11) {
-  Binary3RegisterImmedShiftedOpTester_Case11 baseline_tester;
-  NamedDefs12To15_Rsc_Rule_146_A1_P292 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0000111unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case11_TestCase11) {
+  Binary3RegisterShiftedOpTester_Case11 tester;
+  tester.Test("cccc0000111snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0001100unnnnddddiiiiitt0mmmm',
-//       rule: 'Orr_Rule_114_A1_P230',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001100snnnnddddiiiiitt0mmmm',
+//       rule: 'ORR_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1100x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0001100unnnnddddiiiiitt0mmmm,
-//       rule: Orr_Rule_114_A1_P230,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001100snnnnddddiiiiitt0mmmm,
+//       rule: ORR_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case12_TestCase12) {
-  Binary3RegisterImmedShiftedOpTester_Case12 baseline_tester;
-  NamedDefs12To15_Orr_Rule_114_A1_P230 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001100unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case12_TestCase12) {
+  Binary3RegisterShiftedOpTester_Case12 tester;
+  tester.Test("cccc0001100snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Defs12To15',
-//       baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {actual: 'Unary2RegisterShiftedOpImmNotZero',
+//       baseline: 'Unary2RegisterShiftedOpImmNotZero',
 //       constraints: ,
-//       pattern: 'cccc0001101u0000ddddiiiii000mmmm',
-//       rule: 'Lsl_Rule_88_A1_P178',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001101s0000ddddiiiii000mmmm',
+//       rule: 'LSL_immediate',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(11:7)=00000 => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       actual: Unary2RegisterShiftedOpImmNotZero,
+//       baseline: Unary2RegisterShiftedOpImmNotZero,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12), imm5(11:7)],
 //       imm5: imm5(11:7),
-//       pattern: cccc0001101u0000ddddiiiii000mmmm,
-//       rule: Lsl_Rule_88_A1_P178,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001101s0000ddddiiiii000mmmm,
+//       rule: LSL_immediate,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, imm5(11:7)=00000 => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterImmedShiftedOpTester_Case13_TestCase13) {
-  Unary2RegisterImmedShiftedOpTester_Case13 baseline_tester;
-  NamedDefs12To15_Lsl_Rule_88_A1_P178 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001101u0000ddddiiiii000mmmm");
+       Unary2RegisterShiftedOpImmNotZeroTester_Case13_TestCase13) {
+  Unary2RegisterShiftedOpImmNotZeroTester_Case13 tester;
+  tester.Test("cccc0001101s0000ddddiiiii000mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Defs12To15',
-//       baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {actual: 'Unary2RegisterShiftedOpImmNotZero',
+//       baseline: 'Unary2RegisterShiftedOpImmNotZero',
 //       constraints: ,
-//       pattern: 'cccc0001101u0000ddddiiiii110mmmm',
-//       rule: 'Ror_Rule_139_A1_P278',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001101s0000ddddiiiii110mmmm',
+//       rule: 'ROR_immediate',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(11:7)=00000 => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       actual: Unary2RegisterShiftedOpImmNotZero,
+//       baseline: Unary2RegisterShiftedOpImmNotZero,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12), imm5(11:7)],
 //       imm5: imm5(11:7),
-//       pattern: cccc0001101u0000ddddiiiii110mmmm,
-//       rule: Ror_Rule_139_A1_P278,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001101s0000ddddiiiii110mmmm,
+//       rule: ROR_immediate,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, imm5(11:7)=00000 => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterImmedShiftedOpTester_Case14_TestCase14) {
-  Unary2RegisterImmedShiftedOpTester_Case14 baseline_tester;
-  NamedDefs12To15_Ror_Rule_139_A1_P278 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001101u0000ddddiiiii110mmmm");
+       Unary2RegisterShiftedOpImmNotZeroTester_Case14_TestCase14) {
+  Unary2RegisterShiftedOpImmNotZeroTester_Case14 tester;
+  tester.Test("cccc0001101s0000ddddiiiii110mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Defs12To15',
+//    = {actual: 'Unary2RegisterOp',
 //       baseline: 'Unary2RegisterOp',
 //       constraints: ,
-//       pattern: 'cccc0001101u0000dddd00000000mmmm',
-//       rule: 'Mov_Rule_97_A1_P196',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001101s0000dddd00000000mmmm',
+//       rule: 'MOV_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
+//       actual: Unary2RegisterOp,
 //       baseline: Unary2RegisterOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0001101u0000dddd00000000mmmm,
-//       rule: Mov_Rule_97_A1_P196,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001101s0000dddd00000000mmmm,
+//       rule: MOV_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpTester_Case15_TestCase15) {
-  Unary2RegisterOpTester_Case15 baseline_tester;
-  NamedDefs12To15_Mov_Rule_97_A1_P196 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001101u0000dddd00000000mmmm");
+  Unary2RegisterOpTester_Case15 tester;
+  tester.Test("cccc0001101s0000dddd00000000mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Defs12To15',
+//    = {actual: 'Unary2RegisterOp',
 //       baseline: 'Unary2RegisterOp',
 //       constraints: ,
-//       pattern: 'cccc0001101u0000dddd00000110mmmm',
-//       rule: 'Rrx_Rule_141_A1_P282',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001101s0000dddd00000110mmmm',
+//       rule: 'RRX',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
+//       actual: Unary2RegisterOp,
 //       baseline: Unary2RegisterOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0001101u0000dddd00000110mmmm,
-//       rule: Rrx_Rule_141_A1_P282,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001101s0000dddd00000110mmmm,
+//       rule: RRX,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpTester_Case16_TestCase16) {
-  Unary2RegisterOpTester_Case16 baseline_tester;
-  NamedDefs12To15_Rrx_Rule_141_A1_P282 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001101u0000dddd00000110mmmm");
+  Unary2RegisterOpTester_Case16 tester;
+  tester.Test("cccc0001101s0000dddd00000110mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Defs12To15',
-//       baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {actual: 'Unary2RegisterShiftedOp',
+//       baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0001101u0000ddddiiiii010mmmm',
-//       rule: 'Lsr_Rule_90_A1_P182',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001101s0000ddddiiiii010mmmm',
+//       rule: 'LSR_immediate',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       actual: Unary2RegisterShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0001101u0000ddddiiiii010mmmm,
-//       rule: Lsr_Rule_90_A1_P182,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001101s0000ddddiiiii010mmmm,
+//       rule: LSR_immediate,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterImmedShiftedOpTester_Case17_TestCase17) {
-  Unary2RegisterImmedShiftedOpTester_Case17 baseline_tester;
-  NamedDefs12To15_Lsr_Rule_90_A1_P182 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001101u0000ddddiiiii010mmmm");
+       Unary2RegisterShiftedOpTester_Case17_TestCase17) {
+  Unary2RegisterShiftedOpTester_Case17 tester;
+  tester.Test("cccc0001101s0000ddddiiiii010mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Defs12To15',
-//       baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {actual: 'Unary2RegisterShiftedOp',
+//       baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0001101u0000ddddiiiii100mmmm',
-//       rule: 'Asr_Rule_14_A1_P40',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001101s0000ddddiiiii100mmmm',
+//       rule: 'ASR_immediate',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       actual: Unary2RegisterShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0001101u0000ddddiiiii100mmmm,
-//       rule: Asr_Rule_14_A1_P40,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001101s0000ddddiiiii100mmmm,
+//       rule: ASR_immediate,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterImmedShiftedOpTester_Case18_TestCase18) {
-  Unary2RegisterImmedShiftedOpTester_Case18 baseline_tester;
-  NamedDefs12To15_Asr_Rule_14_A1_P40 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001101u0000ddddiiiii100mmmm");
+       Unary2RegisterShiftedOpTester_Case18_TestCase18) {
+  Unary2RegisterShiftedOpTester_Case18 tester;
+  tester.Test("cccc0001101s0000ddddiiiii100mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = {actual: 'Defs12To15',
-//       baseline: 'Binary3RegisterImmedShiftedOp',
+//    = {actual: 'Binary3RegisterShiftedOp',
+//       baseline: 'Binary3RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0001110unnnnddddiiiiitt0mmmm',
-//       rule: 'Bic_Rule_20_A1_P52',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001110snnnnddddiiiiitt0mmmm',
+//       rule: 'BIC_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1110x
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Binary3RegisterImmedShiftedOp,
+//       actual: Binary3RegisterShiftedOp,
+//       baseline: Binary3RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0001110unnnnddddiiiiitt0mmmm,
-//       rule: Bic_Rule_20_A1_P52,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001110snnnnddddiiiiitt0mmmm,
+//       rule: BIC_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Case19_TestCase19) {
-  Binary3RegisterImmedShiftedOpTester_Case19 baseline_tester;
-  NamedDefs12To15_Bic_Rule_20_A1_P52 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001110unnnnddddiiiiitt0mmmm");
+       Binary3RegisterShiftedOpTester_Case19_TestCase19) {
+  Binary3RegisterShiftedOpTester_Case19 tester;
+  tester.Test("cccc0001110snnnnddddiiiiitt0mmmm");
 }
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Defs12To15',
-//       baseline: 'Unary2RegisterImmedShiftedOp',
+//    = {actual: 'Unary2RegisterShiftedOp',
+//       baseline: 'Unary2RegisterShiftedOp',
 //       constraints: ,
-//       pattern: 'cccc0001111u0000ddddiiiiitt0mmmm',
-//       rule: 'Mvn_Rule_107_A1_P216',
-//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//       pattern: 'cccc0001111s0000ddddiiiiitt0mmmm',
+//       rule: 'MVN_register',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => DECODER_ERROR', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
-// Representative case:
+// Representaive case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Defs12To15,
-//       baseline: Unary2RegisterImmedShiftedOp,
+//       actual: Unary2RegisterShiftedOp,
+//       baseline: Unary2RegisterShiftedOp,
 //       constraints: ,
 //       fields: [S(20), Rd(15:12)],
-//       pattern: cccc0001111u0000ddddiiiiitt0mmmm,
-//       rule: Mvn_Rule_107_A1_P216,
-//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//       pattern: cccc0001111s0000ddddiiiiitt0mmmm,
+//       rule: MVN_register,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterImmedShiftedOpTester_Case20_TestCase20) {
-  Unary2RegisterImmedShiftedOpTester_Case20 baseline_tester;
-  NamedDefs12To15_Mvn_Rule_107_A1_P216 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0001111u0000ddddiiiiitt0mmmm");
+       Unary2RegisterShiftedOpTester_Case20_TestCase20) {
+  Unary2RegisterShiftedOpTester_Case20 tester;
+  tester.Test("cccc0001111s0000ddddiiiiitt0mmmm");
 }
 
 }  // namespace nacl_arm_test

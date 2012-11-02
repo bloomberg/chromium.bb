@@ -128,7 +128,7 @@
 #       Corresponds to defining virtual sets_Z_if_clear_bits.
 # target: The register use to compute an indirect branch,
 #       if defined (defaults to None).
-# uses: The set of registers  used. (missing imlies {})
+# uses: The set of registers  used. (missing implies {})
 ##############################################################
 
 ##############################################################
@@ -182,6 +182,7 @@ class Store3RegisterImm5Op : LoadStore3RegisterImm5Op
 class Store3RegisterOp : LoadStore3RegisterOp
 class Unary1RegisterImmediateOpDynCodeReplace : Unary1RegisterImmediateOp
 class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
+class Unary2RegisterShiftedOpImmNotZero : Unary2RegisterShiftedOp
 class UndefinedCondDecoder : UnsafeCondDecoder
 class UnpredictableUncondDecoder : UnsafeUncondDecoder
 class Vector2RegisterMiscellaneous_RG : Vector2RegisterMiscellaneous
@@ -308,88 +309,104 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "      10x10      -        ->msr_immediate_and_hints
 +--
 
-# Note: We track conditions flags on many of the class decoders
-# in this section, since they can be used to change the value of SP,
-# and we want to allow masking to follow in the next instruction.
 +-- data_processing_register (See Section A5.2.1)
-*1 Binary3RegisterImmedShiftedOp => Defs12To15
-   { cond(31:28), S(20), Rn(19:16), Rd(15:12), imm5(11:7), type(6:5), Rm(3:0) }
+*RdRm
+   { cond(31:28), S(20), Rd(15:12), Rm(3:0) }
+   baseline := Unary2RegisterOp;
    defs := { Rd , NZCV if S else None };
-   safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
+   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
              Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
-   uses := { Rn , Rm };
-*2 Binary2RegisterImmedShiftedTest => DontCareInst
+   uses := { Rm };
+*RdRmSh *RdRm
+   { cond(31:28), S(20), Rd(15:12), imm5(11:7), type(6:5), Rm(3:0) }
+   baseline := Unary2RegisterShiftedOp;
+   shift := DecodeImmShift(type, imm5);
+*RnRmShTst
    { cond(31:28), S(20), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0) }
+   shift := DecodeImmShift(type, imm5);
+   baseline := Binary2RegisterImmedShiftedTest;
    defs := { NZCV if S else None };
    uses := { Rn , Rm };
-*3 Unary2RegisterOp => Defs12To15
-   { cond(31:28), S(20), Rd(15:12), Rm(3:0) }
-   defs := { Rd , NZCV if S else None };
-   safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
-             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
-   uses := { Rm };
-*4 Unary2RegisterImmedShiftedOp => Defs12To15
-   { cond(31:28), S(20), Rd(15:12), imm5(11:7), Rm(3:0) }
-   defs := { Rd , NZCV if S else None };
-   safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
-             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
-   uses := { Rm };
+*RdRmShInz *RdRmSh
+   baseline := Unary2RegisterShiftedOpImmNotZero;
+   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+             imm5=00000 => DECODER_ERROR &
+             Rd=1111 => FORBIDDEN_OPERANDS;      # NaCl
+*RdRnRmSh *RdRmSh
+   { cond(31:28), S(20), Rn(19:16), Rd(15:12), imm5(11:7), type(6:5), Rm(3:0) }
+   baseline := Binary3RegisterShiftedOp;
+   uses := { Rn , Rm };
 +--
 | op1(24:20) op2(11:7) op3(6:5)
-| 0000x      -         -        = *1 pattern := cccc0000000unnnnddddiiiiitt0mmmm;
-                                  rule := And_Rule_7_A1_P36;
-| 0001x      -         -        = *1 pattern := cccc0000001unnnnddddiiiiitt0mmmm;
-                                  rule := Eor_Rule_45_A1_P96;
-| 0010x      -         -        = *1 pattern := cccc0000010unnnnddddiiiiitt0mmmm;
+| 0000x      -         -        = *RdRnRmSh
+                                  pattern := cccc0000000snnnnddddiiiiitt0mmmm;
+                                  rule := AND_register;
+| 0001x      -         -        = *RdRnRmSh
+                                  pattern := cccc0000001snnnnddddiiiiitt0mmmm;
+                                  rule := EOR_register;
+| 0010x      -         -        = *RdRnRmSh
+                                   pattern := cccc0000010snnnnddddiiiiitt0mmmm;
 # Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
-# Hence, parse restriction does not apply (See Sub_Rule_216_P428 in manual).
-                                  rule := Sub_Rule_213_A1_P422;
-| 0011x      -         -        = *1 pattern := cccc0000011unnnnddddiiiiitt0mmmm;
-                                  rule := Rsb_Rule_143_P286;
-| 0100x      -         -        = *1 pattern := cccc0000100unnnnddddiiiiitt0mmmm;
+# Hence, this parse restriction does not apply (See SUB (SP minus register)).
+                                  rule := SUB_register;
+| 0011x      -         -        = *RdRnRmSh
+                                   pattern := cccc0000011snnnnddddiiiiitt0mmmm;
+                                   rule := RSB_register;
+| 0100x      -         -        = *RdRnRmSh
+                                   pattern := cccc0000100snnnnddddiiiiitt0mmmm;
 # Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
-# Hence, parse restriction does not apply (See Add_Rule_8_A1_P28 in manual).
-                                  rule := Add_Rule_6_A1_P24;
-| 0101x      -         -        = *1 pattern := cccc0000101unnnnddddiiiiitt0mmmm;
-                                  rule := Adc_Rule_2_A1_P16;
-| 0110x      -         -        = *1 pattern := cccc0000110unnnnddddiiiiitt0mmmm;
-                                  rule := Sbc_Rule_152_A1_P304;
-| 0111x      -         -        = *1 pattern := cccc0000111unnnnddddiiiiitt0mmmm;
-                                  rule := Rsc_Rule_146_A1_P292;
-| 10001      -         -        = *2 pattern := cccc00010001nnnn0000iiiiitt0mmmm;
-                                  rule := Tst_Rule_231_A1_P456;
-| 10011      -         -        = *2 pattern := cccc00010011nnnn0000iiiiitt0mmmm;
-                                  rule := Teq_Rule_228_A1_P450;
-| 10101      -         -        = *2 pattern := cccc00010101nnnn0000iiiiitt0mmmm;
-                                  rule := Cmp_Rule_36_A1_P82;
-| 10111      -         -        = *2 pattern := cccc00010111nnnn0000iiiiitt0mmmm;
-                                  rule := Cmn_Rule_33_A1_P76;
+# Hence, this parse restriction does not apply (See ADD (SP plus register)).
+                                   rule := ADD_register;
+| 0101x      -         -        = *RdRnRmSh
+                                   pattern := cccc0000101snnnnddddiiiiitt0mmmm;
+                                   rule := ADC_register;
+| 0110x      -         -        = *RdRnRmSh
+                                   pattern := cccc0000110snnnnddddiiiiitt0mmmm;
+                                   rule := SBC_register;
+| 0111x      -         -        = *RdRnRmSh
+                                   pattern := cccc0000111snnnnddddiiiiitt0mmmm;
+                                   rule := RSC_register;
+| 10001      -         -        = *RnRmShTst
+                                   pattern := cccc00010001nnnn0000iiiiitt0mmmm;
+                                   rule := TST_register;
+| 10011      -         -        = *RnRmShTst
+                                   pattern := cccc00010011nnnn0000iiiiitt0mmmm;
+                                   rule := TEQ_register;
+| 10101      -         -        = *RnRmShTst
+                                   pattern := cccc00010101nnnn0000iiiiitt0mmmm;
+                                   rule := CMP_register;
+| 10111      -         -        = *RnRmShTst
+                                   pattern := cccc00010111nnnn0000iiiiitt0mmmm;
+                                   rule := CMN_register;
 # TODO(jfb) op==10xx0 should be unreachable from here:
 #           the previous table should handle it.
-| 1100x      -         -        = *1 pattern := cccc0001100unnnnddddiiiiitt0mmmm;
-                                  rule := Orr_Rule_114_A1_P230;
-| 1101x      00000     00       = *3 pattern := cccc0001101u0000dddd00000000mmmm;
-                                  rule := Mov_Rule_97_A1_P196;
-| "          ~00000    00       = *4 pattern := cccc0001101u0000ddddiiiii000mmmm;
-                                  rule := Lsl_Rule_88_A1_P178;
-                                  safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
-                                            imm5=00000 => UNDEFINED &
-                                            Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
-| "          -         01       = *4 pattern := cccc0001101u0000ddddiiiii010mmmm;
-                                  rule := Lsr_Rule_90_A1_P182;
-| "          -         10       = *4 pattern := cccc0001101u0000ddddiiiii100mmmm;
-                                  rule := Asr_Rule_14_A1_P40;
-| "          00000     11       = *3 pattern := cccc0001101u0000dddd00000110mmmm;
-                                  rule := Rrx_Rule_141_A1_P282;
-| "          ~00000    11       = *4 pattern := cccc0001101u0000ddddiiiii110mmmm;
-                                  rule := Ror_Rule_139_A1_P278;
-                                  safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
-                                            imm5=00000 => UNDEFINED &
-                                            Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
-| 1110x      -         -        = *1 pattern := cccc0001110unnnnddddiiiiitt0mmmm;
-                                  rule := Bic_Rule_20_A1_P52;
-| 1111x      -         -        = *4 pattern := cccc0001111u0000ddddiiiiitt0mmmm;
-                                  rule := Mvn_Rule_107_A1_P216;
+| 1100x      -         -        = *RdRnRmSh
+                                   pattern := cccc0001100snnnnddddiiiiitt0mmmm;
+                                   rule := ORR_register;
+| 1101x      00000     00       = *RdRm
+                                   pattern := cccc0001101s0000dddd00000000mmmm;
+                                   rule := MOV_register;
+| "          ~00000    00       = *RdRmShInz
+                                   pattern := cccc0001101s0000ddddiiiii000mmmm;
+                                   rule := LSL_immediate;
+| "          -         01       = *RdRmSh
+                                   pattern := cccc0001101s0000ddddiiiii010mmmm;
+                                   rule := LSR_immediate;
+| "          -         10       = *RdRmSh
+                                   pattern := cccc0001101s0000ddddiiiii100mmmm;
+                                   rule := ASR_immediate;
+| "          00000     11       = *RdRm
+                                   pattern := cccc0001101s0000dddd00000110mmmm;
+                                   rule := RRX;
+| "          ~00000    11       = *RdRmShInz
+                                   pattern := cccc0001101s0000ddddiiiii110mmmm;
+                                   rule := ROR_immediate;
+| 1110x      -         -        = *RdRnRmSh
+                                   pattern := cccc0001110snnnnddddiiiiitt0mmmm;
+                                   rule := BIC_register;
+| 1111x      -         -        = *RdRmSh
+                                   pattern := cccc0001111s0000ddddiiiiitt0mmmm;
+                                   rule := MVN_register;
 +--
 
 +-- data_processing_register_shifted_register (See Section A5.2.2)

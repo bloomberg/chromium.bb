@@ -15,41 +15,41 @@
 namespace nacl_arm_dec {
 
 // UncondDecoder
-SafetyLevel UncondDecoder::safety(const Instruction i) const {
+SafetyLevel UncondDecoder::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList UncondDecoder::defs(const Instruction i) const {
+RegisterList UncondDecoder::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
 }
 
 // CondDecoder
-SafetyLevel CondDecoder::safety(const Instruction i) const {
+SafetyLevel CondDecoder::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList CondDecoder::defs(const Instruction i) const {
+RegisterList CondDecoder::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
 }
 
 // CondAdvSIMDOp
-SafetyLevel CondAdvSIMDOp::safety(const Instruction i) const {
+SafetyLevel CondAdvSIMDOp::safety(Instruction i) const {
   return (cond.value(i) == Instruction::AL)
       ? MAY_BE_SAFE
       : DEPRECATED;
 }
 
 // MoveImmediate12ToApsr
-SafetyLevel MoveImmediate12ToApsr::safety(const Instruction i) const {
+SafetyLevel MoveImmediate12ToApsr::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList MoveImmediate12ToApsr::defs(const Instruction i) const {
+RegisterList MoveImmediate12ToApsr::defs(Instruction i) const {
   RegisterList regs;
   if (UpdatesConditions(i)) {
     regs.Add(Register::Conditions());
@@ -58,23 +58,23 @@ RegisterList MoveImmediate12ToApsr::defs(const Instruction i) const {
 }
 
 // Immediate16Use
-SafetyLevel Immediate16Use::safety(const Instruction i) const {
+SafetyLevel Immediate16Use::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList Immediate16Use::defs(const Instruction i) const {
+RegisterList Immediate16Use::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
 }
 
 // BranchImmediate24
-SafetyLevel BranchImmediate24::safety(const Instruction i) const {
+SafetyLevel BranchImmediate24::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList BranchImmediate24::defs(const Instruction i) const {
+RegisterList BranchImmediate24::defs(Instruction i) const {
   return RegisterList(Register::Pc()).
       Add(link_flag.IsDefined(i) ? Register::Lr() : Register::None());
 }
@@ -89,7 +89,7 @@ int32_t BranchImmediate24::branch_target_offset(Instruction i) const {
 }
 
 // BreakPointAndConstantPoolHead
-SafetyLevel BreakPointAndConstantPoolHead::safety(const Instruction i) const {
+SafetyLevel BreakPointAndConstantPoolHead::safety(Instruction i) const {
   if (i.GetCondition() != Instruction::AL)
     return UNPREDICTABLE;
   // Restrict BKPT's encoding to values we've chosen as safe.
@@ -100,12 +100,12 @@ SafetyLevel BreakPointAndConstantPoolHead::safety(const Instruction i) const {
 }
 
 bool BreakPointAndConstantPoolHead::
-is_literal_pool_head(const Instruction i) const {
+is_literal_pool_head(Instruction i) const {
   return i.Bits(31, 0) == kLiteralPoolHead;
 }
 
 // BranchToRegister
-SafetyLevel BranchToRegister::safety(const Instruction i) const {
+SafetyLevel BranchToRegister::safety(Instruction i) const {
   // Extra NaCl constraint: can't branch to PC. This would branch to 8 bytes
   // after the current instruction. This instruction should be in an instruction
   // pair, the mask should therefore be to PC and fail checking, but there's
@@ -120,17 +120,17 @@ SafetyLevel BranchToRegister::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList BranchToRegister::defs(const Instruction i) const {
+RegisterList BranchToRegister::defs(Instruction i) const {
   return RegisterList(Register::Pc()).
       Add(link_register.IsUpdated(i) ? Register::Lr() : Register::None());
 }
 
-Register BranchToRegister::branch_target_register(const Instruction i) const {
+Register BranchToRegister::branch_target_register(Instruction i) const {
   return m.reg(i);
 }
 
 // Unary1RegisterImmediateOp
-SafetyLevel Unary1RegisterImmediateOp::safety(const Instruction i) const {
+SafetyLevel Unary1RegisterImmediateOp::safety(Instruction i) const {
   if (d.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -138,7 +138,7 @@ SafetyLevel Unary1RegisterImmediateOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Unary1RegisterImmediateOp::defs(const Instruction i) const {
+RegisterList Unary1RegisterImmediateOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
@@ -230,18 +230,24 @@ bool MaskedBinaryRegisterImmediateTest::sets_Z_if_bits_clear(
 }
 
 // Unary2RegisterOp
-SafetyLevel Unary2RegisterOp::safety(const Instruction i) const {
+SafetyLevel Unary2RegisterOp::safety(Instruction i) const {
+  if (d.reg(i).Equals(Register::Pc()) && conditions.is_updated(i))
+    return DECODER_ERROR;
   // NaCl Constraint.
   if (d.reg(i).Equals(Register::Pc())) return FORBIDDEN_OPERANDS;
   return MAY_BE_SAFE;
 }
 
-RegisterList Unary2RegisterOp::defs(const Instruction i) const {
+RegisterList Unary2RegisterOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+RegisterList Unary2RegisterOp::uses(Instruction i) const {
+  return RegisterList(m.reg(i));
+}
+
 // Unary2RegsiterOpNotRmIsPc
-SafetyLevel Unary2RegisterOpNotRmIsPc::safety(const Instruction i) const {
+SafetyLevel Unary2RegisterOpNotRmIsPc::safety(Instruction i) const {
   SafetyLevel level = Unary2RegisterOp::safety(i);
   if (MAY_BE_SAFE != level) return level;
   if (m.reg(i).Equals(Register::Pc()))
@@ -251,12 +257,24 @@ SafetyLevel Unary2RegisterOpNotRmIsPc::safety(const Instruction i) const {
 
 // Unary2RegisterOpNotRmIsPcNoCondUpdates
 RegisterList Unary2RegisterOpNotRmIsPcNoCondUpdates
-::defs(const Instruction i) const {
+::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
+// Unary2RegisterShiftedOpImmNotZero
+SafetyLevel Unary2RegisterShiftedOpImmNotZero::
+safety(Instruction i) const {
+  if (imm5.value(i) == 0) return DECODER_ERROR;
+  return Unary2RegisterShiftedOp::safety(i);
+}
+
+// Binary3RegisterShiftedOp
+RegisterList Binary3RegisterShiftedOp::uses(Instruction i) const {
+  return RegisterList().Add(n.reg(i)).Add(m.reg(i));
+}
+
 // Binary3RegisterOp
-SafetyLevel Binary3RegisterOp::safety(const Instruction i) const {
+SafetyLevel Binary3RegisterOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
       Contains(Register::Pc())) {
@@ -268,12 +286,12 @@ SafetyLevel Binary3RegisterOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary3RegisterOp::defs(const Instruction i) const {
+RegisterList Binary3RegisterOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
 // Binary3RegisterOpAltA
-SafetyLevel Binary3RegisterOpAltA::safety(const Instruction i) const {
+SafetyLevel Binary3RegisterOpAltA::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
       Contains(Register::Pc())) {
@@ -285,14 +303,13 @@ SafetyLevel Binary3RegisterOpAltA::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary3RegisterOpAltA::defs(const Instruction i) const {
+RegisterList Binary3RegisterOpAltA::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
 
 // Binary3RegisterOpAltBNoCondUpdates
-SafetyLevel Binary3RegisterOpAltBNoCondUpdates::
-safety(const Instruction i) const {
+SafetyLevel Binary3RegisterOpAltBNoCondUpdates::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
       Contains(Register::Pc())) {
@@ -304,13 +321,12 @@ safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary3RegisterOpAltBNoCondUpdates
-::defs(const Instruction i) const {
+RegisterList Binary3RegisterOpAltBNoCondUpdates::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
 // Binary4RegisterDualOp
-SafetyLevel Binary4RegisterDualOp::safety(const Instruction i) const {
+SafetyLevel Binary4RegisterDualOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).Add(a.reg(i)).
       Contains(Register::Pc())) {
@@ -322,12 +338,12 @@ SafetyLevel Binary4RegisterDualOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary4RegisterDualOp::defs(const Instruction i) const {
+RegisterList Binary4RegisterDualOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
 // Binary4RegisterDualResult
-SafetyLevel Binary4RegisterDualResult::safety(const Instruction i) const {
+SafetyLevel Binary4RegisterDualResult::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if (RegisterList(d_lo.reg(i)).Add(d_hi.reg(i)).Add(n.reg(i)).Add(m.reg(i)).
       Contains(Register::Pc())) {
@@ -344,13 +360,13 @@ SafetyLevel Binary4RegisterDualResult::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary4RegisterDualResult::defs(const Instruction i) const {
+RegisterList Binary4RegisterDualResult::defs(Instruction i) const {
   return RegisterList(d_hi.reg(i)).Add(d_lo.reg(i)).
       Add(conditions.conds_if_updated(i));
 }
 
 // LoadExclusive2RegisterOp
-SafetyLevel LoadExclusive2RegisterOp::safety(const Instruction i) const {
+SafetyLevel LoadExclusive2RegisterOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if (RegisterList(n.reg(i)).Add(t.reg(i)).Contains(Register::Pc())) {
     return UNPREDICTABLE;
@@ -361,17 +377,16 @@ SafetyLevel LoadExclusive2RegisterOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadExclusive2RegisterOp::defs(const Instruction i) const {
+RegisterList LoadExclusive2RegisterOp::defs(Instruction i) const {
   return RegisterList(t.reg(i));
 }
 
-Register LoadExclusive2RegisterOp::base_address_register(
-    const Instruction i) const {
+Register LoadExclusive2RegisterOp::base_address_register(Instruction i) const {
   return n.reg(i);
 }
 
 // LoadExclusive2RegisterDoubleOp
-SafetyLevel LoadExclusive2RegisterDoubleOp::safety(const Instruction i) const {
+SafetyLevel LoadExclusive2RegisterDoubleOp::safety(Instruction i) const {
   SafetyLevel level = LoadExclusive2RegisterOp::safety(i);
   if (MAY_BE_SAFE != level) return level;
 
@@ -387,12 +402,12 @@ SafetyLevel LoadExclusive2RegisterDoubleOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadExclusive2RegisterDoubleOp::defs(const Instruction i) const {
+RegisterList LoadExclusive2RegisterDoubleOp::defs(Instruction i) const {
   return RegisterList(t.reg(i)).Add(t2.reg(i));
 }
 
 // LoadStore2RegisterImm8Op
-SafetyLevel LoadStore2RegisterImm8Op::safety(const Instruction i) const {
+SafetyLevel LoadStore2RegisterImm8Op::safety(Instruction i) const {
   // Arm restrictions for this instruction.
   if (t.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
@@ -429,8 +444,7 @@ bool LoadStore2RegisterImm8Op::base_address_register_writeback_small_immediate(
   return HasWriteBack(i);
 }
 
-Register LoadStore2RegisterImm8Op::base_address_register(
-    const Instruction i) const {
+Register LoadStore2RegisterImm8Op::base_address_register(Instruction i) const {
   return n.reg(i);
 }
 
@@ -450,8 +464,7 @@ RegisterList Store2RegisterImm8Op::defs(Instruction i) const {
 }
 
 // LoadStore2RegisterImm8DoubleOp
-SafetyLevel LoadStore2RegisterImm8DoubleOp::
-safety(const Instruction i) const {
+SafetyLevel LoadStore2RegisterImm8DoubleOp::safety(Instruction i) const {
   SafetyLevel level = LoadStore2RegisterImm8Op::safety(i);
   if (MAY_BE_SAFE != level) return level;
 
@@ -531,7 +544,7 @@ Register PreloadRegisterPairOp::base_address_register(Instruction i) const {
 }
 
 // LoadStore2RegisterImm12Op
-SafetyLevel LoadStore2RegisterImm12Op::safety(const Instruction i) const {
+SafetyLevel LoadStore2RegisterImm12Op::safety(Instruction i) const {
   // Arm restrictions for this instruction.
   if (HasWriteBack(i) &&
       (n.reg(i).Equals(Register::Pc()) ||
@@ -564,8 +577,7 @@ bool LoadStore2RegisterImm12Op::base_address_register_writeback_small_immediate(
   return HasWriteBack(i);
 }
 
-Register LoadStore2RegisterImm12Op::base_address_register(
-    const Instruction i) const {
+Register LoadStore2RegisterImm12Op::base_address_register(Instruction i) const {
   return n.reg(i);
 }
 
@@ -627,7 +639,7 @@ RegisterList LoadStoreRegisterList::defs(Instruction i) const {
 }
 
 Register LoadStoreRegisterList::
-base_address_register(const Instruction i) const {
+base_address_register(Instruction i) const {
   return n.reg(i);
 }
 
@@ -637,7 +649,7 @@ bool LoadStoreRegisterList::base_address_register_writeback_small_immediate(
 }
 
 // LoadRegisterList
-SafetyLevel LoadRegisterList::safety(const Instruction i) const {
+SafetyLevel LoadRegisterList::safety(Instruction i) const {
   SafetyLevel level = LoadStoreRegisterList::safety(i);
   if (MAY_BE_SAFE != level) return level;
   if (wback.IsDefined(i) && register_list.registers(i).Contains(n.reg(i))) {
@@ -649,12 +661,12 @@ SafetyLevel LoadRegisterList::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList LoadRegisterList::defs(const Instruction i) const {
+RegisterList LoadRegisterList::defs(Instruction i) const {
   return register_list.registers(i).Union(LoadStoreRegisterList::defs(i));
 }
 
 // StoreRegisterList
-SafetyLevel StoreRegisterList::safety(const Instruction i) const {
+SafetyLevel StoreRegisterList::safety(Instruction i) const {
   SafetyLevel level = LoadStoreRegisterList::safety(i);
   if (MAY_BE_SAFE != level) return level;
   if (wback.IsDefined(i) && register_list.registers(i).Contains(n.reg(i)) &&
@@ -683,7 +695,7 @@ Register LoadStoreVectorOp::FirstReg(const Instruction& i) const {
 }
 
 Register LoadStoreVectorOp::
-base_address_register(const Instruction i) const {
+base_address_register(Instruction i) const {
   return n.reg(i);
 }
 
@@ -696,7 +708,7 @@ uint32_t LoadStoreVectorRegisterList::NumRegisters(const Instruction& i) const {
       : imm8.value(i);
 }
 
-SafetyLevel LoadStoreVectorRegisterList::safety(const Instruction i) const {
+SafetyLevel LoadStoreVectorRegisterList::safety(Instruction i) const {
   SafetyLevel level = LoadStoreVectorOp::safety(i);
   if (MAY_BE_SAFE != level) return level;
 
@@ -749,7 +761,7 @@ bool LoadVectorRegisterList::is_literal_load(Instruction i) const {
 }
 
 // StoreVectorRegisterList
-SafetyLevel StoreVectorRegisterList::safety(const Instruction i) const {
+SafetyLevel StoreVectorRegisterList::safety(Instruction i) const {
   SafetyLevel level = LoadStoreVectorRegisterList::safety(i);
   if (MAY_BE_SAFE != level) return level;
   if (n.reg(i).Equals(Register::Pc()))
@@ -766,7 +778,7 @@ bool LoadVectorRegister::is_literal_load(Instruction i) const {
 }
 
 // StoreVectorRegister
-SafetyLevel StoreVectorRegister::safety(const Instruction i) const {
+SafetyLevel StoreVectorRegister::safety(Instruction i) const {
   SafetyLevel level = LoadStoreVectorRegister::safety(i);
   if (MAY_BE_SAFE != level) return level;
   if (n.reg(i).Equals(Register::Pc())) {
@@ -780,7 +792,7 @@ SafetyLevel StoreVectorRegister::safety(const Instruction i) const {
 }
 
 // LoadStore3RegisterOp
-SafetyLevel LoadStore3RegisterOp::safety(const Instruction i) const {
+SafetyLevel LoadStore3RegisterOp::safety(Instruction i) const {
   if (indexing.IsPreIndexing(i)) {
     // If pre-indexing is set, the address of the load is computed as the sum
     // of the two register parameters.  We have checked that the first register
@@ -814,13 +826,12 @@ SafetyLevel LoadStore3RegisterOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-Register LoadStore3RegisterOp::base_address_register(
-    const Instruction i) const {
+Register LoadStore3RegisterOp::base_address_register(Instruction i) const {
   return n.reg(i);
 }
 
 // Load3RegisterOp
-RegisterList Load3RegisterOp::defs(const Instruction i) const {
+RegisterList Load3RegisterOp::defs(Instruction i) const {
   RegisterList defines(t.reg(i));
   if (HasWriteBack(i)) {
     defines.Add(n.reg(i));
@@ -838,7 +849,7 @@ RegisterList Store3RegisterOp::defs(Instruction i) const {
 }
 
 // LoadStore3RegisterDoubleOp
-SafetyLevel LoadStore3RegisterDoubleOp::safety(const Instruction i) const {
+SafetyLevel LoadStore3RegisterDoubleOp::safety(Instruction i) const {
   SafetyLevel level = LoadStore3RegisterOp::safety(i);
   if (MAY_BE_SAFE != level) return level;
 
@@ -869,7 +880,7 @@ SafetyLevel LoadStore3RegisterDoubleOp::safety(const Instruction i) const {
 }
 
 // StoreExclusive3RegisterOp
-SafetyLevel StoreExclusive3RegisterOp::safety(const Instruction i) const {
+SafetyLevel StoreExclusive3RegisterOp::safety(Instruction i) const {
   // Arm restrictions for this instruction.
   if (RegisterList(d.reg(i)).Add(t.reg(i)).Add(n.reg(i)).
       Contains(Register::Pc())) {
@@ -885,17 +896,16 @@ SafetyLevel StoreExclusive3RegisterOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList StoreExclusive3RegisterOp::defs(const Instruction i) const {
+RegisterList StoreExclusive3RegisterOp::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
-Register StoreExclusive3RegisterOp::base_address_register(
-    const Instruction i) const {
+Register StoreExclusive3RegisterOp::base_address_register(Instruction i) const {
   return n.reg(i);
 }
 
 // StoreExclusive3RegisterDoubleOp
-SafetyLevel StoreExclusive3RegisterDoubleOp::safety(const Instruction i) const {
+SafetyLevel StoreExclusive3RegisterDoubleOp::safety(Instruction i) const {
   SafetyLevel level = StoreExclusive3RegisterOp::safety(i);
   if (MAY_BE_SAFE != level) return level;
 
@@ -916,7 +926,7 @@ SafetyLevel StoreExclusive3RegisterDoubleOp::safety(const Instruction i) const {
 }
 
 // Load3RegisterDoubleOp
-RegisterList Load3RegisterDoubleOp::defs(const Instruction i) const {
+RegisterList Load3RegisterDoubleOp::defs(Instruction i) const {
   RegisterList defines;
   defines.Add(t.reg(i)).Add(t2.reg(i));
   if (HasWriteBack(i)) {
@@ -935,7 +945,7 @@ RegisterList Store3RegisterDoubleOp::defs(Instruction i) const {
 }
 
 // LoadStore3RegisterImm5Op
-SafetyLevel LoadStore3RegisterImm5Op::safety(const Instruction i) const {
+SafetyLevel LoadStore3RegisterImm5Op::safety(Instruction i) const {
   if (indexing.IsPreIndexing(i)) {
     // If pre-indexing is set, the address of the load is computed as the sum
     // of the two register parameters.  We have checked that the first register
@@ -975,13 +985,12 @@ SafetyLevel LoadStore3RegisterImm5Op::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-Register LoadStore3RegisterImm5Op::base_address_register(
-    const Instruction i) const {
+Register LoadStore3RegisterImm5Op::base_address_register(Instruction i) const {
   return n.reg(i);
 }
 
 // Load3RegisterImm5Op
-RegisterList Load3RegisterImm5Op::defs(const Instruction i) const {
+RegisterList Load3RegisterImm5Op::defs(Instruction i) const {
   RegisterList defines(t.reg(i));
   if (HasWriteBack(i)) {
     defines.Add(n.reg(i));
@@ -999,26 +1008,25 @@ RegisterList Store3RegisterImm5Op::defs(Instruction i) const {
 }
 
 // Unary2RegisterImmedShiftedOp
-SafetyLevel Unary2RegisterImmedShiftedOp::safety(const Instruction i) const {
+SafetyLevel Unary2RegisterImmedShiftedOp::safety(Instruction i) const {
   // NaCl Constraint.
   if (d.reg(i).Equals(Register::Pc())) return FORBIDDEN_OPERANDS;
   return MAY_BE_SAFE;
 }
 
-RegisterList Unary2RegisterImmedShiftedOp::defs(const Instruction i) const {
+RegisterList Unary2RegisterImmedShiftedOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
 // Unary2RegisterImmediateShiftedOpRegsNotPc
-SafetyLevel Unary2RegisterImmedShiftedOpRegsNotPc::
-safety(const Instruction i) const {
+SafetyLevel Unary2RegisterImmedShiftedOpRegsNotPc::safety(Instruction i) const {
   if (RegisterList(d.reg(i)).Add(m.reg(i)).Contains(Register::Pc()))
       return FORBIDDEN_OPERANDS;
   return MAY_BE_SAFE;
 }
 
 // Unary2RegisterSatImmedShiftedOp
-SafetyLevel Unary2RegisterSatImmedShiftedOp::safety(const Instruction i) const {
+SafetyLevel Unary2RegisterSatImmedShiftedOp::safety(Instruction i) const {
   if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(Register::Pc()))
     return UNPREDICTABLE;
 
@@ -1027,7 +1035,7 @@ SafetyLevel Unary2RegisterSatImmedShiftedOp::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Unary2RegisterSatImmedShiftedOp::defs(const Instruction i) const {
+RegisterList Unary2RegisterSatImmedShiftedOp::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
@@ -1043,24 +1051,24 @@ SafetyLevel Unary3RegisterShiftedOp::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Unary3RegisterShiftedOp::defs(const Instruction i) const {
+RegisterList Unary3RegisterShiftedOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
 // Binary3RegisterImmedShiftedOp
-SafetyLevel Binary3RegisterImmedShiftedOp::safety(const Instruction i) const {
+SafetyLevel Binary3RegisterImmedShiftedOp::safety(Instruction i) const {
   // NaCl Constraint.
   if (d.reg(i).Equals(Register::Pc())) return FORBIDDEN_OPERANDS;
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary3RegisterImmedShiftedOp::defs(const Instruction i) const {
+RegisterList Binary3RegisterImmedShiftedOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
 // Binary3RegisterImmedShiftedOpRegsNotPc
 SafetyLevel Binary3RegisterImmedShiftedOpRegsNotPc::
-safety(const Instruction i) const {
+safety(Instruction i) const {
   if (RegisterList(d.reg(i)).Add(n.reg(i)).Add(m.reg(i))
       .Contains(Register::Pc())) {
     return UNPREDICTABLE;
@@ -1081,18 +1089,22 @@ SafetyLevel Binary4RegisterShiftedOp::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary4RegisterShiftedOp::defs(const Instruction i) const {
+RegisterList Binary4RegisterShiftedOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
 // Binary2RegisterImmedShiftedTest
-SafetyLevel Binary2RegisterImmedShiftedTest::safety(const Instruction i) const {
+SafetyLevel Binary2RegisterImmedShiftedTest::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary2RegisterImmedShiftedTest::defs(const Instruction i) const {
+RegisterList Binary2RegisterImmedShiftedTest::defs(Instruction i) const {
   return RegisterList(conditions.conds_if_updated(i));
+}
+
+RegisterList Binary2RegisterImmedShiftedTest::uses(Instruction i) const {
+  return RegisterList().Add(n.reg(i)).Add(m.reg(i));
 }
 
 // Binary3RegisterShiftedTest
@@ -1104,7 +1116,7 @@ SafetyLevel Binary3RegisterShiftedTest::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
+RegisterList Binary3RegisterShiftedTest::defs(Instruction i) const {
   return RegisterList(conditions.conds_if_updated(i));
 }
 
@@ -1544,7 +1556,7 @@ SafetyLevel VfpUsesRegOp::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList VfpUsesRegOp::defs(const Instruction i) const {
+RegisterList VfpUsesRegOp::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
 }
@@ -1554,7 +1566,7 @@ SafetyLevel VfpMrsOp::safety(Instruction i) const {
   return CondVfpOp::safety(i);
 }
 
-RegisterList VfpMrsOp::defs(const Instruction i) const {
+RegisterList VfpMrsOp::defs(Instruction i) const {
   return RegisterList(t.reg(i).Equals(Register::Pc())
                       ? Register::Conditions() : t.reg(i));
 }
@@ -1568,7 +1580,7 @@ SafetyLevel MoveVfpRegisterOp::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList MoveVfpRegisterOp::defs(const Instruction i) const {
+RegisterList MoveVfpRegisterOp::defs(Instruction i) const {
   RegisterList defs;
   if (to_arm_reg.IsDefined(i)) defs.Add(t.reg(i));
   return defs;
@@ -1602,7 +1614,7 @@ SafetyLevel MoveDoubleVfpRegisterOp::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList MoveDoubleVfpRegisterOp::defs(const Instruction i) const {
+RegisterList MoveDoubleVfpRegisterOp::defs(Instruction i) const {
   RegisterList defs;
   if (to_arm_reg.IsDefined(i)) defs.Add(t.reg(i)).Add(t2.reg(i));
   return defs;

@@ -673,6 +673,29 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// Unary2RegisterShiftedOpTester
+bool Unary2RegisterShiftedOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_EQ(expected_decoder_.shift_type.value(inst), inst.Bits(6, 5));
+  EXPECT_EQ(expected_decoder_.imm5.value(inst), inst.Bits(11, 7));
+
+  return true;
+}
+
+// Binary3RegisterShiftedOpTester
+bool Binary3RegisterShiftedOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(19, 16)));
+
+  return true;
+}
+
 // Binary3RegisterOpTester
 Binary3RegisterOpTester::Binary3RegisterOpTester(
     const NamedClassDecoder& decoder)

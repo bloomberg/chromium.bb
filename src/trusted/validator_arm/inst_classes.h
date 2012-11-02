@@ -739,11 +739,14 @@ class ClassDecoder {
 
   // Gets the set of registers affected when an instruction executes.  This set
   // is complete, and includes
-  //  - explicit destination register(s),
-  //  - changes to condition flags,
+  //  - explicit destination (general purpose) register(s),
+  //  - changes to condition APSR flags NZCV.
   //  - indexed-addressing writeback,
   //  - changes to r15 by branches,
   //  - implicit register results, like branch-with-link.
+  //
+  // Note: This virtual only tracks effects to ARM general purpose flags, and
+  // NZCV APSR flags.
   //
   // Note: If you are unsure if an instruction changes condition flags, be
   // conservative and add it to the set of registers returned by this
@@ -754,6 +757,14 @@ class ClassDecoder {
   // all possible side effects will occur -- override if this is not
   // appropriate. :-)
   virtual RegisterList defs(Instruction i) const;
+
+  // Gets the set of general purpose registers used by the instruction.
+  // This set includes:
+  //  - explicit source (general purpose) register(s).
+  //  - implicit registers, like branch-with-link.
+  //
+  // The default implementation returns the empty set.
+  virtual RegisterList uses(Instruction i) const;
 
   // Returns true if the base register has small immediate writeback.
   //

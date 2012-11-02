@@ -148,7 +148,9 @@ class Arm32DecoderState : DecoderState {
   // by the table methods above. This speeds up the code since
   // the class decoders need to only be built once (and reused
   // for each call to "decode").
+  const Binary2RegisterImmedShiftedTest Binary2RegisterImmedShiftedTest_instance_;
   const Binary2RegisterImmediateOpDynCodeReplace Binary2RegisterImmediateOpDynCodeReplace_instance_;
+  const Binary3RegisterShiftedOp Binary3RegisterShiftedOp_instance_;
   const Branch Branch_instance_;
   const Breakpoint Breakpoint_instance_;
   const BxBlx BxBlx_instance_;
@@ -203,6 +205,9 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterImmediateOpDynCodeReplace Unary1RegisterImmediateOpDynCodeReplace_instance_;
   const Unary1RegisterSet Unary1RegisterSet_instance_;
   const Unary1RegisterUse Unary1RegisterUse_instance_;
+  const Unary2RegisterOp Unary2RegisterOp_instance_;
+  const Unary2RegisterShiftedOp Unary2RegisterShiftedOp_instance_;
+  const Unary2RegisterShiftedOpImmNotZero Unary2RegisterShiftedOpImmNotZero_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
   const Vector1RegisterImmediate_BIT Vector1RegisterImmediate_BIT_instance_;

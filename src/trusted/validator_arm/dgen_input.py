@@ -56,7 +56,7 @@ decoder        ::= (id ('=>' id)?)?
 decoder_action ::= '=" decoder_defn
 decoder_defn   ::= (decoder (fields? action_option* |
                              action_options_deprecated arch?)
-                   | '*' (int | id) action_option*)
+                   | '*' (int | id) fields? action_option*)
 decoder_method ::= '->' id
 default_row    ::= 'else' ':' action
 fields         ::= '{' column (',' column)* '}'
@@ -539,7 +539,7 @@ class Parser(object):
   def _decoder_defn(self, starred_actions):
     """decoder_defnn ::=  (decoder (fields? action_option* |
                                     action_options_deprecated arch?)
-                           | '*' (int | id) action_option*)
+                           | '*' (int | id) fields? action_option*)
     """
     if self._next_token().kind == '*':
       return self._decoder_action_extend(starred_actions)
@@ -565,7 +565,7 @@ class Parser(object):
     return action
 
   def _decoder_action_extend(self, starred_actions):
-    """'*' (int | id) action_option*
+    """'*' (int | id) fields? action_option*
 
        Helper function to _decoder_action."""
     self._read_token('*')
@@ -581,6 +581,10 @@ class Parser(object):
     # inheriting definition.
     action = dgen_core.DecoderAction()
     action.inherits(indexed_action)
+
+    # Recognize fields if applicable.
+    if self._next_token().kind == '{':
+      self._define('fields', self._fields(action), action)
 
     # Recognize overriding options.
     self._decoder_action_options(action)

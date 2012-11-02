@@ -744,107 +744,107 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_register
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x01F00000) == 0x01100000 /* op1(24:20)=10001 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456_instance_;
+    return Binary2RegisterImmedShiftedTest_TST_register_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000) == 0x01300000 /* op1(24:20)=10011 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450_instance_;
+    return Binary2RegisterImmedShiftedTest_TEQ_register_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000) == 0x01500000 /* op1(24:20)=10101 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82_instance_;
+    return Binary2RegisterImmedShiftedTest_CMP_register_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000) == 0x01700000 /* op1(24:20)=10111 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76_instance_;
+    return Binary2RegisterImmedShiftedTest_CMN_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x00000000 /* op1(24:20)=0000x */) {
-    return Binary3RegisterImmedShiftedOp_And_Rule_7_A1_P36_instance_;
+    return Binary3RegisterShiftedOp_AND_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x00200000 /* op1(24:20)=0001x */) {
-    return Binary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96_instance_;
+    return Binary3RegisterShiftedOp_EOR_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x00400000 /* op1(24:20)=0010x */) {
-    return Binary3RegisterImmedShiftedOp_Sub_Rule_213_A1_P422_instance_;
+    return Binary3RegisterShiftedOp_SUB_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x00600000 /* op1(24:20)=0011x */) {
-    return Binary3RegisterImmedShiftedOp_Rsb_Rule_143_P286_instance_;
+    return Binary3RegisterShiftedOp_RSB_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x00800000 /* op1(24:20)=0100x */) {
-    return Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24_instance_;
+    return Binary3RegisterShiftedOp_ADD_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x00A00000 /* op1(24:20)=0101x */) {
-    return Binary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16_instance_;
+    return Binary3RegisterShiftedOp_ADC_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x00C00000 /* op1(24:20)=0110x */) {
-    return Binary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304_instance_;
+    return Binary3RegisterShiftedOp_SBC_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x00E00000 /* op1(24:20)=0111x */) {
-    return Binary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292_instance_;
+    return Binary3RegisterShiftedOp_RSC_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01800000 /* op1(24:20)=1100x */) {
-    return Binary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230_instance_;
+    return Binary3RegisterShiftedOp_ORR_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000F80) != 0x00000000 /* op2(11:7)=~00000 */ &&
       (inst.Bits() & 0x00000060) == 0x00000000 /* op3(6:5)=00 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178_instance_;
+    return Unary2RegisterShiftedOpImmNotZero_LSL_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000F80) != 0x00000000 /* op2(11:7)=~00000 */ &&
       (inst.Bits() & 0x00000060) == 0x00000060 /* op3(6:5)=11 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278_instance_;
+    return Unary2RegisterShiftedOpImmNotZero_ROR_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000F80) == 0x00000000 /* op2(11:7)=00000 */ &&
       (inst.Bits() & 0x00000060) == 0x00000000 /* op3(6:5)=00 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterOp_Mov_Rule_97_A1_P196_instance_;
+    return Unary2RegisterOp_MOV_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000F80) == 0x00000000 /* op2(11:7)=00000 */ &&
       (inst.Bits() & 0x00000060) == 0x00000060 /* op3(6:5)=11 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterOp_Rrx_Rule_141_A1_P282_instance_;
+    return Unary2RegisterOp_RRX_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000060) == 0x00000020 /* op3(6:5)=01 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182_instance_;
+    return Unary2RegisterShiftedOp_LSR_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000060) == 0x00000040 /* op3(6:5)=10 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40_instance_;
+    return Unary2RegisterShiftedOp_ASR_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20)=1110x */) {
-    return Binary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52_instance_;
+    return Binary3RegisterShiftedOp_BIC_register_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20)=1111x */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216_instance_;
+    return Unary2RegisterShiftedOp_MVN_register_instance_;
   }
 
   // Catch any attempt to fall through...

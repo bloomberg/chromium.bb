@@ -13,7 +13,9 @@ namespace nacl_arm_dec {
 
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
+  , Binary2RegisterImmedShiftedTest_instance_()
   , Binary2RegisterImmediateOpDynCodeReplace_instance_()
+  , Binary3RegisterShiftedOp_instance_()
   , Branch_instance_()
   , Breakpoint_instance_()
   , BxBlx_instance_()
@@ -68,6 +70,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary1RegisterImmediateOpDynCodeReplace_instance_()
   , Unary1RegisterSet_instance_()
   , Unary1RegisterUse_instance_()
+  , Unary2RegisterOp_instance_()
+  , Unary2RegisterShiftedOp_instance_()
+  , Unary2RegisterShiftedOpImmNotZero_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
   , Vector1RegisterImmediate_BIT_instance_()
@@ -600,22 +605,62 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
      const Instruction inst) const
 {
   UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
+      (inst.Bits() & 0x00000F80) != 0x00000000 /* op2(11:7)=~00000 */ &&
+      (inst.Bits() & 0x00000060) == 0x00000000 /* op3(6:5)=00 */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Unary2RegisterShiftedOpImmNotZero_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
+      (inst.Bits() & 0x00000F80) != 0x00000000 /* op2(11:7)=~00000 */ &&
+      (inst.Bits() & 0x00000060) == 0x00000060 /* op3(6:5)=11 */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Unary2RegisterShiftedOpImmNotZero_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
+      (inst.Bits() & 0x00000F80) == 0x00000000 /* op2(11:7)=00000 */ &&
+      (inst.Bits() & 0x00000060) == 0x00000000 /* op3(6:5)=00 */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Unary2RegisterOp_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
+      (inst.Bits() & 0x00000F80) == 0x00000000 /* op2(11:7)=00000 */ &&
+      (inst.Bits() & 0x00000060) == 0x00000060 /* op3(6:5)=11 */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Unary2RegisterOp_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
+      (inst.Bits() & 0x00000060) == 0x00000020 /* op3(6:5)=01 */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Unary2RegisterShiftedOp_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
+      (inst.Bits() & 0x00000060) == 0x00000040 /* op3(6:5)=10 */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Unary2RegisterShiftedOp_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20)=1111x */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Unary2RegisterShiftedOp_instance_;
+  }
+
   if ((inst.Bits() & 0x01900000) == 0x01100000 /* op1(24:20)=10xx1 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return DontCareInst_instance_;
+    return Binary2RegisterImmedShiftedTest_instance_;
   }
 
   if ((inst.Bits() & 0x01A00000) == 0x01800000 /* op1(24:20)=11x0x */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((inst.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20)=11x1x */ &&
-      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15_instance_;
+    return Binary3RegisterShiftedOp_instance_;
   }
 
   if ((inst.Bits() & 0x01000000) == 0x00000000 /* op1(24:20)=0xxxx */) {
-    return Defs12To15_instance_;
+    return Binary3RegisterShiftedOp_instance_;
   }
 
   // Catch any attempt to fall though ...

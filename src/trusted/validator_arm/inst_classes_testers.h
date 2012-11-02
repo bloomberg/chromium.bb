@@ -548,6 +548,59 @@ class Unary2RegisterOpNotRmIsPcTesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPcTesterRegsNotPc);
 };
 
+// Implements a decoder tester for Unary2RegisterShiftedOp.
+// Op(S)<c> <Rd>, <Rm> (, #<imm> | {, <shift> })
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |  cond  |              | S|        |   Rd   |   imm5   |type|  |   Rm   |
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rm - The source register.
+//
+// NaCl disallows writing to PC to cause a jump.
+class Unary2RegisterShiftedOpTester : public Unary2RegisterOpTester {
+ public:
+  explicit Unary2RegisterShiftedOpTester(const NamedClassDecoder& decoder)
+      : Unary2RegisterOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::Unary2RegisterShiftedOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterShiftedOpTester);
+};
+
+// Implements a decoder tester for Binary3RegisterShiftedOp
+// Op(S)<c> <Rd>, <Rn>, <Rm> {, <shift>}
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |  cond  |              | S|  Rn    |   Rd   |   imm5   |type|  |   Rm   |
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The first source register.
+//    Rm - The second source register.
+class Binary3RegisterShiftedOpTester : public Unary2RegisterShiftedOpTester {
+ public:
+  explicit Binary3RegisterShiftedOpTester(const NamedClassDecoder& decoder)
+      : Unary2RegisterShiftedOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::Binary3RegisterShiftedOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedOpTester);
+};
+
 // Implements a decoder tester for decoder Binary2RegisterImmediateOp.
 // Op(S)<c> <Rd>, <Rn>, #<const>
 // +--------+--------------+--+--------+--------+------------------------+
