@@ -510,8 +510,8 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
   switch (snap_type_) {
     case SNAP_LEFT:
     case SNAP_RIGHT: {
-      // Get the window coordinates on the screen for restore purposes.
-      gfx::Rect restore = widget->GetNativeWindow()->bounds();
+      // Get the bounds in screen coordinates for restore purposes.
+      gfx::Rect restore = widget->GetWindowBoundsInScreen();
       if (widget->IsMaximized()) {
         // In case of maximized we have a restore boundary.
         DCHECK(ash::GetRestoreBoundsInScreen(widget->GetNativeWindow()));
@@ -533,8 +533,8 @@ void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
       }
       // Remember the widow's bounds for restoration.
       ash::SetRestoreBoundsInScreen(widget->GetNativeWindow(), restore);
-      }
       break;
+    }
     case SNAP_MAXIMIZE:
       widget->Maximize();
       break;
