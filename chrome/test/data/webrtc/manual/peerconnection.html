@@ -77,6 +77,13 @@
             Toggle Audio</button>
       </td>
     </tr>
+    <tr>
+      <td>Options</td>
+      <td>
+        <input type="checkbox" id="force-opus" onclick="forceOpusChanged();"/>
+            Force Opus in outgoing SDP
+      </td>
+    </tr>
   </table>
 
   <table border="0" width="100%">
@@ -163,6 +170,13 @@
           <li>The Constraints field can pass in arbitrary constraints. The code
             will attempt to eval the code you write in and pass it whenever the
             code asks for constraints. [experimental]</li>
+          <li>The Force Opus checkbox will remove all codecs except OPUS for all
+            outgoing messages sent by this page. Note that this ONLY means that
+            we are guaranteed to send Opus to the other side; it does NOT mean
+            that the other side will necessarily send Opus to us. To do that,
+            you need to check the box on the other side too. You can either
+            check the box before the call, or check the box and then re-send the
+            local stream.</li>
         </ul>
       </td>
     </tr>

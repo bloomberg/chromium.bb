@@ -237,7 +237,9 @@ function disconnect() {
  * Sends a message to a peer through the peerconnection_server.
  */
 function sendToPeer(peer, message) {
-  debug('Sending message ' + message + ' to peer ' + peer + '.');
+  var messageToLog = message.sdp ? message.sdp : message;
+  debug('Sending message ' + messageToLog + ' to peer ' + peer + '.');
+
   var request = new XMLHttpRequest();
   var url = gServerUrl + '/message?peer_id=' + gOurPeerId + '&to=' + peer;
   request.open('POST', url, false);

@@ -72,6 +72,15 @@ function stopLocalFromHere() {
   stopLocalStream();
 }
 
+function forceOpusChanged() {
+  var forceOpus = document.getElementById('force-opus').checked;
+  if (forceOpus) {
+    forceOpus_();
+  } else {
+    dontTouchSdp_();
+  }
+}
+
 function showServerHelp() {
   alert('You need to build and run a peerconnection_server on some '
     + 'suitable machine. To build it in chrome, just run make/ninja '
@@ -125,4 +134,50 @@ function print_(message) {
 function debug_(message) {
   console.log(message);
   document.getElementById('debug').innerHTML += message + '<br>';
+}
+
+/** @private */
+function swapSdpLines_(sdp, line, swapWith) {
+  var lines = sdp.split('\r\n');
+  var lineStart = lines.indexOf(line);
+  var swapLineStart = lines.indexOf(swapWith);
+  if (lineStart == -1 || swapLineStart == -1)
+    return sdp;  // This generally happens on the first message.
+
+  var tmp = lines[lineStart];
+  lines[lineStart] = lines[swapLineStart];
+  lines[swapLineStart] = tmp;
+
+  return lines.join('\r\n');
+}
+
+// TODO(phoglund): Not currently used; delete once it clear we do not need to
+// test opus prioritization.
+/** @private */
+function preferOpus_() {
+  setOutgoingSdpTransform(function(sdp) {
+    sdp = sdp.replace('103 104 111', '111 103 104');
+
+    // TODO(phoglund): We need to swap the a= lines too. I don't think this
+    // should be needed but it apparently is right now.
+    return swapSdpLines_(sdp,
+                         "a=rtpmap:103 ISAC/16000",
+                         "a=rtpmap:111 opus/48000");
+  });
+}
+
+/** @private */
+function forceOpus_() {
+  setOutgoingSdpTransform(function(sdp) {
+    // Remove all other codecs.
+    sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
+                      'm=audio $1 RTP/SAVPF 111\r\n');
+    sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3}.*\r\n/g, '');
+    return sdp;
+  });
+}
+
+/** @private */
+function dontTouchSdp_() {
+  setOutgoingSdpTransform(function(sdp) { return sdp; });
 }
