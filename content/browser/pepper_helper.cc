@@ -13,7 +13,7 @@ namespace content {
 void EnablePepperSupportForChannel(IPC::ChannelProxy* channel,
                                    net::HostResolver* host_resolver) {
   channel->AddFilter(
-      new PepperMessageFilter(PepperMessageFilter::PLUGIN, host_resolver));
+      new PepperMessageFilter(PepperMessageFilter::NACL, host_resolver));
 }
 
 }  // namespace content

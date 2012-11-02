@@ -61,7 +61,7 @@ class PepperMessageFilter
     : public BrowserMessageFilter,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  enum ProcessType { PLUGIN, RENDERER };
+  enum ProcessType { PLUGIN, RENDERER, NACL };
 
   // Constructor when used in the context of a render process (the argument is
   // provided for sanity checking).

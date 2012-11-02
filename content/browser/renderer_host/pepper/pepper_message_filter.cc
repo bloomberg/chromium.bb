@@ -110,7 +110,7 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
       host_resolver_(host_resolver),
       next_socket_id_(1),
       incognito_(false) {
-  DCHECK(type == PLUGIN);
+  DCHECK(type == PLUGIN || type == NACL);
   DCHECK(host_resolver);
 }
 
@@ -812,7 +812,7 @@ uint32 PepperMessageFilter::GenerateSocketID() {
 bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (process_type_ == PLUGIN) {
-    // Always allow socket APIs for out-process plugins.
+    // Always allow socket APIs for out-process plugins (except NACL).
     return true;
   }
 
