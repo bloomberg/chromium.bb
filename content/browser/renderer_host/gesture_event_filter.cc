@@ -136,8 +136,9 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
       coalesced_gesture_events_.push_back(gesture_event);
       return ShouldHandleEventNow();
     case WebInputEvent::GestureTapDown:
-      // GestureTapDown is always paired with either a Tap or TapCancel, so
-      // it should be impossible to have more than one outstanding at a time.
+      // GestureTapDown is always paired with either a Tap, DoubleTap, LongPress
+      // or TapCancel, so it should be impossible to have more than one
+      // outstanding at a time.
       DCHECK_EQ(deferred_tap_down_event_.type, WebInputEvent::Undefined);
       deferred_tap_down_event_ = gesture_event;
       send_gtd_timer_.Start(FROM_HERE,
@@ -156,6 +157,8 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
       send_gtd_timer_.Stop();
       deferred_tap_down_event_.type = WebInputEvent::Undefined;
       return false;
+    case WebInputEvent::GestureLongPress:
+    case WebInputEvent::GestureDoubleTap:
     case WebInputEvent::GestureTap:
       send_gtd_timer_.Stop();
       if (deferred_tap_down_event_.type != WebInputEvent::Undefined) {
