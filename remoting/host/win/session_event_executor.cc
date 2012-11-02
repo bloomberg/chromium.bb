@@ -41,13 +41,17 @@ using protocol::MouseEvent;
 using protocol::KeyEvent;
 
 SessionEventExecutorWin::SessionEventExecutorWin(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_ptr<EventExecutor> nested_executor)
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_ptr<EventExecutor> nested_executor,
+    scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
+    const base::Closure& inject_sas)
     : nested_executor_(nested_executor.Pass()),
-      task_runner_(main_task_runner),
+      input_task_runner_(input_task_runner),
+      inject_sas_task_runner_(inject_sas_task_runner),
+      inject_sas_(inject_sas),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
-  // Let |weak_ptr_| be used on the |task_runner_| thread.
+  // Let |weak_ptr_| be used on the |input_task_runner_| thread.
   // |weak_ptr_| and |weak_ptr_factory_| share a ThreadChecker, so the
   // following line affects both of them.
   weak_ptr_factory_.DetachFromThread();
@@ -58,8 +62,8 @@ SessionEventExecutorWin::~SessionEventExecutorWin() {
 
 void SessionEventExecutorWin::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::Start,
                    weak_ptr_, base::Passed(&client_clipboard)));
@@ -70,8 +74,8 @@ void SessionEventExecutorWin::Start(
 }
 
 void SessionEventExecutorWin::StopAndDelete() {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::StopAndDelete,
                    weak_ptr_));
@@ -84,8 +88,8 @@ void SessionEventExecutorWin::StopAndDelete() {
 
 void SessionEventExecutorWin::InjectClipboardEvent(
     const ClipboardEvent& event) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::InjectClipboardEvent,
                    weak_ptr_, event));
@@ -96,8 +100,8 @@ void SessionEventExecutorWin::InjectClipboardEvent(
 }
 
 void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::InjectKeyEvent,
                    weak_ptr_, event));
@@ -114,9 +118,14 @@ void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
           CheckCtrlAndAltArePressed(pressed_keys_)) {
         VLOG(3) << "Sending Secure Attention Sequence to console";
 
-        if (sas_injector_.get() == NULL)
-          sas_injector_ = SasInjector::Create();
-        sas_injector_->InjectSas();
+        if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+          if (!sas_injector_)
+            sas_injector_ = SasInjector::Create();
+          if (!sas_injector_->InjectSas())
+            LOG(ERROR) << "Failed to inject Secure Attention Sequence.";
+        } else {
+          inject_sas_task_runner_->PostTask(FROM_HERE, inject_sas_);
+        }
       }
 
       pressed_keys_.insert(event.usb_keycode());
@@ -130,8 +139,8 @@ void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
 }
 
 void SessionEventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SessionEventExecutorWin::InjectMouseEvent,
                    weak_ptr_, event));

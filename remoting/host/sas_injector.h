@@ -15,7 +15,7 @@ class SasInjector {
  public:
   virtual ~SasInjector() {}
 
-  // Sends the Secure Attention Sequence to the console session.
+  // Sends Secure Attention Sequence to the console session.
   virtual bool InjectSas() = 0;
 
   // Creates an instance of SasInjector if supported by the OS, otherwise

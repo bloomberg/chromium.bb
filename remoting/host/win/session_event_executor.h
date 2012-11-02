@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/event_executor.h"
@@ -21,11 +22,18 @@ namespace remoting {
 
 class SasInjector;
 
+// Monitors and passes key/mouse events to a nested event executor. Injects
+// Secure Attention Sequence (SAS) when Ctrl+Alt+Del key combination has been
+// detected.
 class SessionEventExecutorWin : public EventExecutor {
  public:
+  // |inject_sas| is invoked on |inject_sas_task_runner| to generate SAS on
+  // Vista+.
   SessionEventExecutorWin(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_ptr<EventExecutor> nested_executor);
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_ptr<EventExecutor> nested_executor,
+      scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
+      const base::Closure& inject_sas);
   ~SessionEventExecutorWin();
 
   // EventExecutor implementation.
@@ -46,13 +54,19 @@ class SessionEventExecutorWin : public EventExecutor {
   // the current one.
   void SwitchToInputDesktop();
 
+  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
+
   // Pointer to the next event executor.
   scoped_ptr<EventExecutor> nested_executor_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner_;
 
   ScopedThreadDesktop desktop_;
 
+  // Used to inject Secure Attention Sequence on Vista+.
+  base::Closure inject_sas_;
+
+  // Used to inject Secure Attention Sequence on XP.
   scoped_ptr<SasInjector> sas_injector_;
 
   // Keys currently pressed by the client, used to detect Ctrl-Alt-Del.

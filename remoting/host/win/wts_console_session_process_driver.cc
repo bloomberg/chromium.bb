@@ -9,7 +9,10 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_message_macros.h"
+#include "remoting/host/chromoting_messages.h"
 #include "remoting/host/ipc_consts.h"
+#include "remoting/host/sas_injector.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_monitor.h"
 #include "remoting/host/win/wts_session_process_delegate.h"
@@ -54,7 +57,13 @@ bool WtsConsoleSessionProcessDriver::OnMessageReceived(
     const IPC::Message& message) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(WtsConsoleSessionProcessDriver, message)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_SendSasToConsole,
+                        OnSendSasToConsole)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void WtsConsoleSessionProcessDriver::OnPermanentError() {
@@ -105,6 +114,18 @@ void WtsConsoleSessionProcessDriver::DoStop() {
 
   launcher_.reset();
   CompleteStopping();
+}
+
+void WtsConsoleSessionProcessDriver::OnSendSasToConsole() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (!launcher_)
+    return;
+
+  if (!sas_injector_)
+    sas_injector_ = SasInjector::Create();
+  if (!sas_injector_->InjectSas())
+    LOG(ERROR) << "Failed to inject Secure Attention Sequence.";
 }
 
 } // namespace remoting

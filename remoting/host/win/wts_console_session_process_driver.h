@@ -19,6 +19,7 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
+class SasInjector;
 class WorkerProcessLauncher;
 class WtsConsoleMonitor;
 
@@ -55,6 +56,9 @@ class WtsConsoleSessionProcessDriver
   // Stoppable implementation.
   virtual void DoStop() OVERRIDE;
 
+  // Sends Secure Attention Sequence to the console session.
+  void OnSendSasToConsole();
+
  private:
   // Task runner on which public methods of this class must be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
@@ -67,6 +71,8 @@ class WtsConsoleSessionProcessDriver
 
   // Used to unsubscribe from session attach and detach events.
   WtsConsoleMonitor* monitor_;
+
+  scoped_ptr<SasInjector> sas_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(WtsConsoleSessionProcessDriver);
 };

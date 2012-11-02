@@ -34,10 +34,10 @@ const wchar_t kSystemPolicyKeyName[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System";
 const wchar_t kSoftwareSasValueName[] = L"SoftwareSASGeneration";
 
-const DWORD kEnableSoftwareSasByApps = 2;
+const DWORD kEnableSoftwareSasByServices = 1;
 
 // Toggles the default software SAS generation policy to enable SAS generation
-// by applications. Non-default policy is not changed.
+// by services. Non-default policy is not changed.
 class ScopedSoftwareSasPolicy {
  public:
   ScopedSoftwareSasPolicy();
@@ -89,7 +89,7 @@ bool ScopedSoftwareSasPolicy::Apply() {
   // Override the default policy (i.e. there is no value in the registry) only.
   if (!custom_policy) {
     result = system_policy_.WriteValue(kSoftwareSasValueName,
-                                       kEnableSoftwareSasByApps);
+                                       kEnableSoftwareSasByServices);
     if (result != ERROR_SUCCESS) {
       SetLastError(result);
       LOG_GETLASTERROR(ERROR)
@@ -105,9 +105,9 @@ bool ScopedSoftwareSasPolicy::Apply() {
 
 } // namespace
 
-// Sends the Secure Attention Sequence using the SendSAS() function from
-// sas.dll. This library is shipped starting from Win7/W2K8 R2 only. However
-// Win7 SDK includes a redistributable verion of the same library that works on
+// Sends Secure Attention Sequence using the SendSAS() function from sas.dll.
+// This library is shipped starting from Win7/W2K8 R2 only. However Win7 SDK
+// includes a redistributable verion of the same library that works on
 // Vista/W2K8. We install the latter along with our binaries.
 class SasInjectorWin : public SasInjector {
  public:
@@ -170,7 +170,7 @@ bool SasInjectorWin::InjectSas() {
   }
 
   // Enable software SAS generation by services and send SAS. SAS can still fail
-  // if the policy does not allow applications to generate software SAS.
+  // if the policy does not allow services to generate software SAS.
   ScopedSoftwareSasPolicy enable_sas;
   if (!enable_sas.Apply())
     return false;
