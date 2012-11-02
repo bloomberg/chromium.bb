@@ -681,6 +681,7 @@ def generate_simplified(
   Cleans up and extracts only files from within root_dir then processes
   variables and relative_cwd.
   """
+  root_dir = os.path.realpath(root_dir)
   logging.info(
       'generate_simplified(%d files, %s, %s, %s)' %
       (len(tracked) + len(untracked) + len(touched),
@@ -1423,7 +1424,8 @@ class SavedState(Flattenable):
   def load(cls, data):
     out = super(SavedState, cls).load(data)
     if out.isolate_file:
-      out.isolate_file = trace_inputs.get_native_path_case(out.isolate_file)
+      out.isolate_file = trace_inputs.get_native_path_case(
+          unicode(out.isolate_file))
     return out
 
   def __str__(self):
@@ -1600,6 +1602,7 @@ def load_complete_state(options, subdir):
 
   # Regenerate complete_state.isolated.files.
   if subdir:
+    subdir = unicode(subdir)
     subdir = eval_variables(subdir, complete_state.saved_state.variables)
     subdir = subdir.replace('/', os.path.sep)
   complete_state.process_inputs(subdir)
@@ -1890,7 +1893,7 @@ def CMDtrace(args):
     raise ExecutionError('No command to run')
   cmd = trace_inputs.fix_python_path(cmd)
   cwd = os.path.normpath(os.path.join(
-      complete_state.root_dir, complete_state.isolated.relative_cwd))
+      unicode(complete_state.root_dir), complete_state.isolated.relative_cwd))
   cmd[0] = os.path.normpath(os.path.join(cwd, cmd[0]))
   if not os.path.isfile(cmd[0]):
     raise ExecutionError(
@@ -1999,11 +2002,11 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
     if options.isolate:
       options.isolate = trace_inputs.get_native_path_case(
           os.path.abspath(
-              options.isolate.replace('/', os.path.sep)))
+              unicode(options.isolate.replace('/', os.path.sep))))
 
     if options.outdir and not re.match(r'^https?://.+$', options.outdir):
       options.outdir = os.path.abspath(
-          options.outdir.replace('/', os.path.sep))
+          unicode(options.outdir.replace('/', os.path.sep)))
 
     return options, args
 

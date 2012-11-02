@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -43,8 +45,7 @@ class FakeProgress(object):
 
 class TraceInputsBase(unittest.TestCase):
   def setUp(self):
-    self.tempdir = tempfile.mkdtemp(prefix='trace_smoke_test')
-    self.log = os.path.join(self.tempdir, 'log')
+    self.tempdir = None
     self.trace_inputs_path = os.path.join(ROOT_DIR, 'trace_inputs.py')
 
     # Wraps up all the differences between OSes here.
@@ -73,6 +74,9 @@ class TraceInputsBase(unittest.TestCase):
     import trace_inputs
     self.real_executable = trace_inputs.get_native_path_case(
         unicode(self.executable))
+    self.tempdir = trace_inputs.get_native_path_case(
+        unicode(tempfile.mkdtemp(prefix='trace_smoke_test')))
+    self.log = os.path.join(self.tempdir, 'log')
     trace_inputs = None
 
     # self.naked_executable will only be naked on Windows.
@@ -81,10 +85,11 @@ class TraceInputsBase(unittest.TestCase):
       self.naked_executable = os.path.basename(sys.executable)
 
   def tearDown(self):
-    if VERBOSE:
-      print 'Leaking: %s' % self.tempdir
-    else:
-      shutil.rmtree(self.tempdir)
+    if self.tempdir:
+      if VERBOSE:
+        print 'Leaking: %s' % self.tempdir
+      else:
+        shutil.rmtree(self.tempdir)
 
   @staticmethod
   def get_child_command(from_data):
@@ -162,7 +167,7 @@ class TraceInputs(TraceInputsBase):
           '--blacklist', '.*\\.svn',
           '--blacklist', '.*do_not_care\\.txt',
         ],
-        cwd=ROOT_DIR)
+        cwd=unicode(ROOT_DIR))
     self.assertEquals(expected, actual)
     self.assertEquals(trace_expected, trace_actual)
 
@@ -234,7 +239,7 @@ class TraceInputs(TraceInputsBase):
           '--blacklist', '.*do_not_care\\.txt',
           '--json',
         ],
-        cwd=ROOT_DIR)
+        cwd=unicode(ROOT_DIR))
     actual_json = json.loads(actual_text)
     self.assertEquals(list, actual_json.__class__)
     self.assertEquals(1, len(actual_json))
@@ -262,8 +267,7 @@ class TraceInputsImport(TraceInputsBase):
   def _execute_trace(self, command):
     # Similar to what trace_test_cases.py does.
     api = self.trace_inputs.get_api()
-    _, _ = self.trace_inputs.trace(
-          self.log, command, self.cwd, api, True)
+    _, _ = self.trace_inputs.trace(self.log, command, self.cwd, api, True)
     # TODO(maruel): Check
     #self.assertEquals(0, returncode)
     #self.assertEquals('', output)
@@ -271,8 +275,12 @@ class TraceInputsImport(TraceInputsBase):
       return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
     data = api.parse_log(self.log, blacklist, None)
     self.assertEqual(1, len(data))
-    self.assertTrue('exception' not in data[0])
-    return data[0]['results'].strip_root(ROOT_DIR)
+    if 'exception' in data[0]:
+      raise data[0]['exception'][0], \
+          data[0]['exception'][1], \
+          data[0]['exception'][2]
+
+    return data[0]['results'].strip_root(unicode(ROOT_DIR))
 
   def _gen_dict_wrong_path(self):
     """Returns the expected flattened Results when child1.py is called with the
@@ -432,7 +440,7 @@ class TraceInputsImport(TraceInputsBase):
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
     simplified = self.trace_inputs.extract_directories(
-        ROOT_DIR, results.files, blacklist)
+        unicode(ROOT_DIR), results.files, blacklist)
     self.assertEquals(files, [f.path for f in simplified])
 
   def test_trace_multiple(self):
@@ -503,7 +511,7 @@ class TraceInputsImport(TraceInputsBase):
 
       self.assertEquals(['output', 'results'], sorted(actual_results[key]))
       results = actual_results[key]['results']
-      results = results.strip_root(ROOT_DIR)
+      results = results.strip_root(unicode(ROOT_DIR))
       actual = results.flatten()
       self.assertTrue(actual['root'].pop('pid'))
       if index != busted:
@@ -550,7 +558,7 @@ class TraceInputsImport(TraceInputsBase):
       def blacklist(f):
         return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
       simplified = self.trace_inputs.extract_directories(
-          ROOT_DIR, results.files, blacklist)
+          unicode(ROOT_DIR), results.files, blacklist)
       self.assertEquals(files, [f.path for f in simplified])
 
   def test_trace_quoted(self):
@@ -614,6 +622,61 @@ class TraceInputsImport(TraceInputsBase):
 
   def test_trace_touch_only_stat(self):
     self._touch_expected('stat')
+
+  def test_trace_tricky_filename(self):
+    # TODO(maruel):  On Windows, it's using the current code page so some
+    # characters can't be represented. As a nice North American, hard code the
+    # string to something representable in code page 1252. The exact code page
+    # depends on the user system.
+    if sys.platform == 'win32':
+      filename = u'foo, bar,  ~p#o,,ué^t%t .txt'
+    else:
+      filename = u'foo, bar,  ~p#o,,ué^t%t 和平.txt'
+
+    exe = os.path.join(self.tempdir, 'tricky_filename.py')
+    shutil.copyfile(
+        os.path.join(self.cwd, 'trace_inputs', 'tricky_filename.py'), exe)
+    expected = {
+      'root': {
+        'children': [],
+        'command': [
+          self.executable,
+          exe,
+        ],
+        'executable': self.real_executable,
+        'files': [
+          {
+            'path':  filename,
+            'size': long(len('Bingo!')),
+          },
+          {
+            'path': u'tricky_filename.py',
+            'size': self._size(REL_DATA, 'tricky_filename.py'),
+          },
+        ],
+        'initial_cwd': self.tempdir if sys.platform != 'win32' else None,
+      },
+    }
+
+    api = self.trace_inputs.get_api()
+    returncode, output = self.trace_inputs.trace(
+        self.log, [exe], self.tempdir, api, True)
+    self.assertEquals('', output)
+    self.assertEquals(0, returncode)
+    data = api.parse_log(self.log, lambda _: False, None)
+    self.assertEqual(1, len(data))
+    if 'exception' in data[0]:
+      raise data[0]['exception'][0], \
+          data[0]['exception'][1], \
+          data[0]['exception'][2]
+    actual = data[0]['results'].strip_root(self.tempdir).flatten()
+    self.assertTrue(actual['root'].pop('pid'))
+    self.assertEqual(expected, actual)
+    self.trace_inputs.get_api().clean_trace(self.log)
+    files = sorted(
+        unicodedata.normalize('NFC', i)
+        for i in os.listdir(unicode(self.tempdir)))
+    self.assertEqual([filename, 'tricky_filename.py'], files)
 
 
 if __name__ == '__main__':

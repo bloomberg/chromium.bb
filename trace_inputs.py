@@ -24,6 +24,7 @@ import getpass
 import glob
 import json
 import logging
+import unicodedata
 import optparse
 import os
 import re
@@ -79,9 +80,10 @@ if sys.platform == 'win32':
   def QueryDosDevice(drive_letter):
     """Returns the Windows 'native' path for a DOS drive letter."""
     assert re.match(r'^[a-zA-Z]:$', drive_letter), drive_letter
+    assert isinstance(drive_letter, unicode)
     # Guesswork. QueryDosDeviceW never returns the required number of bytes.
     chars = 1024
-    drive_letter = unicode(drive_letter)
+    drive_letter = drive_letter
     p = create_unicode_buffer(chars)
     if 0 == windll.kernel32.QueryDosDeviceW(drive_letter, p, chars):
       err = GetLastError()
@@ -96,7 +98,7 @@ if sys.platform == 'win32':
 
   def GetShortPathName(long_path):
     """Returns the Windows short path equivalent for a 'long' path."""
-    long_path = unicode(long_path)
+    assert isinstance(long_path, unicode)
     # Adds '\\\\?\\' when given an absolute path so the MAX_PATH (260) limit is
     # not enforced.
     if os.path.isabs(long_path) and not long_path.startswith('\\\\?\\'):
@@ -118,7 +120,7 @@ if sys.platform == 'win32':
 
   def GetLongPathName(short_path):
     """Returns the Windows long path equivalent for a 'short' path."""
-    short_path = unicode(short_path)
+    assert isinstance(short_path, unicode)
     # Adds '\\\\?\\' when given an absolute path so the MAX_PATH (260) limit is
     # not enforced.
     if os.path.isabs(short_path) and not short_path.startswith('\\\\?\\'):
@@ -152,12 +154,12 @@ if sys.platform == 'win32':
       """Lazy loads the cache."""
       if not self._MAPPING:
         # This is related to UNC resolver on windows. Ignore that.
-        self._MAPPING['\\Device\\Mup'] = None
-        self._MAPPING['\\SystemRoot'] = os.environ['SystemRoot']
+        self._MAPPING[u'\\Device\\Mup'] = None
+        self._MAPPING[u'\\SystemRoot'] = os.environ[u'SystemRoot']
 
         for letter in (chr(l) for l in xrange(ord('C'), ord('Z')+1)):
           try:
-            letter = '%s:' % letter
+            letter = u'%s:' % letter
             mapped = QueryDosDevice(letter)
             if mapped in self._MAPPING:
               logging.warn(
@@ -237,7 +239,8 @@ if sys.platform == 'win32':
     """Splits a commandline into argv using CommandLineToArgvW()."""
     # http://msdn.microsoft.com/library/windows/desktop/bb776391.aspx
     size = c_int()
-    ptr = windll.shell32.CommandLineToArgvW(unicode(command_line), byref(size))
+    assert isinstance(command_line, unicode)
+    ptr = windll.shell32.CommandLineToArgvW(command_line, byref(size))
     try:
       return [arg for arg in (c_wchar_p * size.value).from_address(ptr)]
     finally:
@@ -265,10 +268,13 @@ elif sys.platform == 'darwin':
 
   def _native_case(p):
     """Gets the native path case. Warning: this function resolves symlinks."""
-    logging.debug('native_case(%s)' % p)
     try:
-      rel_ref, _ = Carbon.File.FSPathMakeRef(p)
-      out = rel_ref.FSRefMakePath()
+      rel_ref, _ = Carbon.File.FSPathMakeRef(p.encode('utf-8'))
+      # The OSX underlying code uses NFD but python strings are in NFC. This
+      # will cause issues with os.listdir() for example. Since the dtrace log
+      # *is* in NFC, normalize it here.
+      out = unicodedata.normalize(
+          'NFC', rel_ref.FSRefMakePath().decode('utf-8'))
       if p.endswith(os.path.sep) and not out.endswith(os.path.sep):
         return out + os.path.sep
       return out
@@ -302,6 +308,7 @@ elif sys.platform == 'darwin':
     Technically, it's only HFS+ on OSX that is case preserving and
     insensitive. It's the default setting on HFS+ but can be changed.
     """
+    assert isinstance(path, unicode), path
     if not isabs(path):
       raise ValueError(
           'Can\'t get native path case for a non-absolute path: %s' % path,
@@ -314,6 +321,7 @@ elif sys.platform == 'darwin':
     resolved = _native_case(path)
     if resolved.lower() == path.lower():
       # This code path is incredibly faster.
+      logging.debug('get_native_path_case(%s) = %s' % (path, resolved))
       return resolved
 
     # There was a symlink, process it.
@@ -332,6 +340,7 @@ elif sys.platform == 'darwin':
       assert len(base) > len(prev), (prev, base, symlink)
     # Make sure no symlink was resolved.
     assert base.lower() == path.lower(), (base, path)
+    logging.debug('get_native_path_case(%s) = %s' % (path, base))
     return base
 
 
@@ -590,6 +599,21 @@ def write_json(filepath_or_handle, data, dense):
         json.dump(data, f, sort_keys=True, indent=2)
 
 
+def assert_is_renderable(pseudo_string):
+  """Asserts the input is a valid object to be processed by render()."""
+  assert (
+      isinstance(pseudo_string, (None.__class__, unicode)) or
+      hasattr(pseudo_string, 'render')), repr(pseudo_string)
+
+
+def render(pseudo_string):
+  """Converts the pseudo-string to an unicode string."""
+  assert_is_renderable(pseudo_string)
+  if isinstance(pseudo_string, (None.__class__, unicode)):
+    return pseudo_string
+  return pseudo_string.render()
+
+
 class Results(object):
   """Results of a trace session."""
 
@@ -599,6 +623,8 @@ class Results(object):
       logging.debug(
           '%s(%s, %s, %s, %s, %s)' %
           (self.__class__.__name__, root, path, tainted, size, nb_files))
+      assert_is_renderable(root)
+      assert_is_renderable(path)
       self.root = root
       self.path = path
       self.tainted = tainted
@@ -666,7 +692,11 @@ class Results(object):
       return self
 
     def strip_root(self, root):
-      """Returns a clone of itself with 'root' stripped off."""
+      """Returns a clone of itself with 'root' stripped off.
+
+      Note that the file is kept if it is either accessible from a symlinked
+      path that was used to access the file or through the real path.
+      """
       # Check internal consistency.
       assert self.tainted or (isabs(root) and root.endswith(os.path.sep)), root
       if not self.full_path.startswith(root):
@@ -814,6 +844,9 @@ class Results(object):
   def strip_root(self, root):
     """Returns a clone with all the files outside the directory |root| removed
     and converts all the path to be relative paths.
+
+    It keeps files accessible through the |root| directory or that have been
+    accessed through any symlink which points to the same directory.
     """
     # Resolve any symlink
     root = os.path.realpath(root)
@@ -844,6 +877,7 @@ class ApiBase(object):
       def __init__(self, blacklist, pid, initial_cwd):
         # Check internal consistency.
         assert isinstance(pid, int), repr(pid)
+        assert_is_renderable(initial_cwd)
         self.pid = pid
         # children are Process instances.
         self.children = []
@@ -868,9 +902,7 @@ class ApiBase(object):
           if not x:
             # Do not convert None instance to 'None'.
             return x
-          # TODO(maruel): Do not upconvert to unicode here, on linux we don't
-          # know the file path encoding so they must be treated as bytes.
-          x = unicode(x)
+          x = render(x)
           if os.path.isabs(x):
             # If the path is not absolute, which tends to happen occasionally on
             # Windows, it is not possible to get the native path case so ignore
@@ -914,12 +946,12 @@ class ApiBase(object):
 
       def add_file(self, filepath, touch_only):
         """Adds a file if it passes the blacklist."""
-        if self._blacklist(unicode(filepath)):
+        if self._blacklist(render(filepath)):
           return
         logging.debug('add_file(%d, %s, %s)' % (self.pid, filepath, touch_only))
-        # Note that filepath and not unicode(filepath) is added. It is because
-        # filepath could be something else than a string, like a RelativePath
-        # instance for dtrace logs.
+        # Note that filepath and not render(filepath) is added. It is
+        # because filepath could be something else than a string, like a
+        # RelativePath instance for dtrace logs.
         if touch_only:
           self.only_touched.add(filepath)
         else:
@@ -1034,6 +1066,24 @@ class ApiBase(object):
 
 class Strace(ApiBase):
   """strace implies linux."""
+  @staticmethod
+  def load_filename(filename):
+    """Parses a filename in a log."""
+    assert isinstance(filename, str)
+    out = ''
+    i = 0
+    while i < len(filename):
+      c = filename[i]
+      if c == '\\':
+        out += chr(int(filename[i+1:i+4], 8))
+        i += 4
+      else:
+        out += c
+        i += 1
+    # TODO(maruel): That's not necessarily true that the current code page is
+    # utf-8.
+    return out.decode('utf-8')
+
   class Context(ApiBase.Context):
     """Processes a strace log line and keeps the list of existent and non
     existent files accessed.
@@ -1115,8 +1165,13 @@ class Strace(ApiBase):
       class RelativePath(object):
         """A late-bound relative path."""
         def __init__(self, parent, value):
+          assert_is_renderable(parent)
           self.parent = parent
-          self.value = value
+          assert isinstance(value, (None.__class__, str)), repr(value)
+          self.value = Strace.load_filename(value) if value else value
+          if self.value:
+            assert '\\' not in self.value, value
+            assert '\\' not in self.value, (repr(value), repr(self.value))
 
         def render(self):
           """Returns the current directory this instance is representing.
@@ -1125,19 +1180,12 @@ class Strace(ApiBase):
           """
           if self.value and self.value.startswith(u'/'):
             # An absolute path.
+            # TODO(maruel): This is wrong, we can't assert it is utf-8.
             return self.value
           parent = self.parent.render() if self.parent else u'<None>'
           if self.value:
             return os.path.normpath(os.path.join(parent, self.value))
           return parent
-
-        def __unicode__(self):
-          """Acts as a string whenever needed."""
-          return unicode(self.render())
-
-        def __str__(self):
-          """Acts as a string whenever needed."""
-          return str(self.render())
 
       def __init__(self, root, pid):
         """Keeps enough information to be able to guess the original process
@@ -1175,6 +1223,7 @@ class Strace(ApiBase):
         return self.initial_cwd.render()
 
       def on_line(self, line):
+        assert isinstance(line, str)
         self._line_number += 1
         if self._done:
           raise TracingFailure(
@@ -1416,11 +1465,12 @@ class Strace(ApiBase):
 
       def _handle_file(self, filepath, touch_only):
         filepath = self.RelativePath(self.get_cwd(), filepath)
-        #assert not touch_only, unicode(filepath)
+        #assert not touch_only, render(filepath)
         self.add_file(filepath, touch_only)
 
     def __init__(self, blacklist, initial_cwd):
       super(Strace.Context, self).__init__(blacklist)
+      assert_is_renderable(initial_cwd)
       self.initial_cwd = initial_cwd
 
     def render(self):
@@ -1559,7 +1609,6 @@ class Strace(ApiBase):
           pid = pidfile.rsplit('.', 1)[1]
           if pid.isdigit():
             pid = int(pid)
-            # TODO(maruel): Load as utf-8
             for line in open(pidfile, 'rb'):
               context.on_line(pid, line)
         result['results'] = context.to_results()
@@ -1609,12 +1658,14 @@ class Dtrace(ApiBase):
       logging.info(
           '%s(%d, %s)' % (self.__class__.__name__, thunk_pid, initial_cwd))
       super(Dtrace.Context, self).__init__(blacklist)
+      assert isinstance(initial_cwd, unicode), initial_cwd
       # Process ID of the temporary script created by create_thunk().
       self._thunk_pid = thunk_pid
       self._initial_cwd = initial_cwd
       self._line_number = 0
 
     def on_line(self, line):
+      assert isinstance(line, unicode), line
       self._line_number += 1
       match = self.RE_HEADER.match(line)
       if not match:
@@ -1698,7 +1749,7 @@ class Dtrace(ApiBase):
       self._process_lookup[pid] = proc
       logging.debug(
           'New child: %s -> %d  cwd:%s' %
-          (ppid, pid, unicode(proc.initial_cwd)))
+          (ppid, pid, render(proc.initial_cwd)))
 
     def handle_proc_exit(self, pid, _args):
       """Removes cwd."""
@@ -2358,7 +2409,9 @@ class Dtrace(ApiBase):
       }
       try:
         context = cls.Context(blacklist_more, item['pid'], item['cwd'])
-        for line in open(logname + '.log', 'rb'):
+        # It's fine to assume the file as UTF-8: OSX enforces the file names to
+        # be valid UTF-8 and we control the log output.
+        for line in codecs.open(logname + '.log', 'rb', encoding='utf-8'):
           context.on_line(line)
         result['results'] = context.to_results()
       except TracingFailure:
@@ -2539,8 +2592,7 @@ class LogmanTrace(ApiBase):
         # Not a process we care about.
         return
 
-      match = re.match(r'^\"(.+)\"$', line[OPEN_PATH])
-      raw_path = match.group(1)
+      raw_path = line[OPEN_PATH]
       # Ignore directories and bare drive right away.
       if raw_path.endswith(os.path.sep):
         return
@@ -2586,19 +2638,10 @@ class LogmanTrace(ApiBase):
 
       ppid = line[self.PID]
       pid = int(line[PROCESS_ID], 16)
+      command_line = CommandLineToArgvW(line[COMMAND_LINE])
       logging.debug(
           'New process %d->%d (%s) %s' %
-            (ppid, pid, line[IMAGE_FILE_NAME], line[COMMAND_LINE]))
-
-      command_line = None
-      def get_command_line():
-        # TODO(maruel): Process escapes.
-        if (not line[COMMAND_LINE].startswith('"') or
-            not line[COMMAND_LINE].endswith('"')):
-          raise TracingFailure(
-              'Command line is not properly quoted: %s' % line[COMMAND_LINE],
-              None, None, None)
-        return CommandLineToArgvW(line[COMMAND_LINE][1:-1])
+            (ppid, pid, line[IMAGE_FILE_NAME], command_line))
 
       if pid == self._thunk_pid:
         # Need to ignore processes we don't know about because the log is
@@ -2607,7 +2650,6 @@ class LogmanTrace(ApiBase):
         # it happens often that the process ID of the thunk script created by
         # create_thunk() is reused. So just detecting the pid here is not
         # sufficient, we must confirm the command line.
-        command_line = get_command_line()
         if command_line[:len(self._thunk_cmd)] != self._thunk_cmd:
           logging.info(
               'Ignoring duplicate pid %d for %s: %s while searching for %s',
@@ -2635,14 +2677,8 @@ class LogmanTrace(ApiBase):
         return
       self._process_lookup[pid] = proc
 
-      if (not line[IMAGE_FILE_NAME].startswith('"') or
-          not line[IMAGE_FILE_NAME].endswith('"')):
-        raise TracingFailure(
-            'Command line is not properly quoted: %s' % line[IMAGE_FILE_NAME],
-            None, None, None)
-
-      proc.command = command_line or get_command_line()
-      proc.executable = line[IMAGE_FILE_NAME][1:-1]
+      proc.command = command_line
+      proc.executable = line[IMAGE_FILE_NAME]
       # proc.command[0] may be the absolute path of 'executable' but it may be
       # anything else too. If it happens that command[0] ends with executable,
       # use it, otherwise defaults to the base name.
@@ -2734,6 +2770,127 @@ class LogmanTrace(ApiBase):
     TIMESTAMP = 16
     NULL_GUID = '{00000000-0000-0000-0000-000000000000}'
     USER_DATA = 19
+
+    class CsvReader(object):
+      """CSV reader that reads files generated by tracerpt.exe.
+
+      csv.reader() fails to read them properly, it mangles file names quoted
+      with "" with a comma in it.
+      """
+        # 0. Had a ',' or one of the following ' ' after a comma, next should
+        # be ' ', '"' or string or ',' for an empty field.
+      ( HAD_DELIMITER,
+        # 1. Processing an unquoted field up to ','.
+        IN_STR,
+        # 2. Processing a new field starting with '"'.
+        STARTING_STR_QUOTED,
+        # 3. Second quote in a row at the start of a field. It could be either
+        # '""foo""' or '""'. Who the hell thought it was a great idea to use
+        # the same character for delimiting and escaping?
+        STARTING_SECOND_QUOTE,
+        # 4. A quote inside a quoted string where the previous character was
+        # not a quote, so the string is not empty. Can be either: end of a
+        # quoted string (a delimiter) or a quote escape. The next char must be
+        # either '"' or ','.
+        HAD_QUOTE_IN_QUOTED,
+        # 5. Second quote inside a quoted string.
+        HAD_SECOND_QUOTE_IN_A_ROW_IN_QUOTED,
+        # 6. Processing a field that started with '"'.
+        IN_STR_QUOTED) = range(7)
+
+      def __init__(self, f):
+        self.f = f
+
+      def __iter__(self):
+        return self
+
+      def next(self):
+        """Splits the line in fields."""
+        line = self.f.readline()
+        if not line:
+          raise StopIteration()
+        line = line.strip()
+        fields = []
+        state = self.HAD_DELIMITER
+        for i, c in enumerate(line):
+          if state == self.HAD_DELIMITER:
+            if c == ',':
+              # Empty field.
+              fields.append('')
+            elif c == ' ':
+              # Ignore initial whitespaces
+              pass
+            elif c == '"':
+              state = self.STARTING_STR_QUOTED
+              fields.append('')
+            else:
+              # Start of a new field.
+              state = self.IN_STR
+              fields.append(c)
+
+          elif state == self.IN_STR:
+            # Do not accept quote inside unquoted field.
+            assert c != '"', (i, c, line, fields)
+            if c == ',':
+              fields[-1] = fields[-1].strip()
+              state = self.HAD_DELIMITER
+            else:
+              fields[-1] = fields[-1] + c
+
+          elif state == self.STARTING_STR_QUOTED:
+            if c == '"':
+              # Do not store the character yet.
+              state = self.STARTING_SECOND_QUOTE
+            else:
+              state = self.IN_STR_QUOTED
+              fields[-1] = fields[-1] + c
+
+          elif state == self.STARTING_SECOND_QUOTE:
+            if c == ',':
+              # It was an empty field. '""' == ''.
+              state = self.HAD_DELIMITER
+            else:
+              fields[-1] = fields[-1] + '"' + c
+              state = self.IN_STR_QUOTED
+
+          elif state == self.HAD_QUOTE_IN_QUOTED:
+            if c == ',':
+              # End of the string.
+              state = self.HAD_DELIMITER
+            elif c == '"':
+              state = self.HAD_SECOND_QUOTE_IN_A_ROW_IN_QUOTED
+            else:
+              # The previous double-quote was just an unescaped quote.
+              fields[-1] = fields[-1] + '"' + c
+              state = self.IN_STR_QUOTED
+
+          elif state == self.HAD_SECOND_QUOTE_IN_A_ROW_IN_QUOTED:
+            if c == ',':
+              # End of the string.
+              state = self.HAD_DELIMITER
+              fields[-1] = fields[-1] + '"'
+            else:
+              assert False, (i, c, line, fields)
+
+          elif state == self.IN_STR_QUOTED:
+            if c == '"':
+              # Could be a delimiter or an escape.
+              state = self.HAD_QUOTE_IN_QUOTED
+            else:
+              fields[-1] = fields[-1] + c
+
+        if state == self.HAD_SECOND_QUOTE_IN_A_ROW_IN_QUOTED:
+          fields[-1] = fields[-1] + '"'
+        else:
+          assert state in (
+              # Terminated with a normal field.
+              self.IN_STR,
+              # Terminated with an empty field.
+              self.STARTING_SECOND_QUOTE,
+              # Terminated with a normal quoted field.
+              self.HAD_QUOTE_IN_QUOTED), (
+              line, state, fields)
+        return fields
 
     def __init__(self, logname):
       """Starts the log collection.
@@ -2877,47 +3034,14 @@ class LogmanTrace(ApiBase):
       log.
       """
       if logformat == 'csv_utf16':
-        def load_file():
-          def utf_8_encoder(unicode_csv_data):
-            """Encodes the unicode object as utf-8 encoded str instance"""
-            for line in unicode_csv_data:
-              yield line.encode('utf-8')
-
-          def unicode_csv_reader(unicode_csv_data, **kwargs):
-            """Encodes temporarily as UTF-8 since csv module doesn't do unicode.
-            """
-            csv_reader = csv.reader(utf_8_encoder(unicode_csv_data), **kwargs)
-            for row in csv_reader:
-              # Decode str utf-8 instances back to unicode instances, cell by
-              # cell:
-              yield [cell.decode('utf-8') for cell in row]
-
-          # The CSV file is UTF-16 so use codecs.open() to load the file into
-          # the python internal unicode format (utf-8). Then explicitly
-          # re-encode as utf8 as str instances so csv can parse it fine. Then
-          # decode the utf-8 str back into python unicode instances. This
-          # sounds about right.
-          for line in unicode_csv_reader(
-              codecs.open(self._logname + '.' + logformat, 'r', 'utf-16')):
-            # line is a list of unicode objects
-            # So much white space!
-            yield [i.strip() for i in line]
+        file_handle = codecs.open(
+            self._logname + '.' + logformat, 'r', encoding='utf-16')
 
       elif logformat == 'csv':
-        def load_file():
-          def ansi_csv_reader(ansi_csv_data, **kwargs):
-            """Loads an 'ANSI' code page and returns unicode() objects."""
-            assert sys.getfilesystemencoding() == 'mbcs'
-            encoding = get_current_encoding()
-            for row in csv.reader(ansi_csv_data, **kwargs):
-              # Decode str 'ansi' instances to unicode instances, cell by cell:
-              yield [cell.decode(encoding) for cell in row]
-
-          # The fastest and smallest format but only supports 'ANSI' file paths.
-          # E.g. the filenames are encoding in the 'current' encoding.
-          for line in ansi_csv_reader(open(self._logname + '.' + logformat)):
-            # line is a list of unicode objects.
-            yield [i.strip() for i in line]
+        assert sys.getfilesystemencoding() == 'mbcs'
+        file_handle = codecs.open(
+              self._logname + '.' + logformat, 'r',
+              encoding=get_current_encoding())
 
       supported_events = LogmanTrace.Context.supported_events()
 
@@ -2931,7 +3055,7 @@ class LogmanTrace(ApiBase):
           if not index:
             if line != self.EXPECTED_HEADER:
               raise TracingFailure(
-                  'Found malformed header: %s' % ' '.join(line),
+                  'Found malformed header: %s' % line,
                   None, None, None)
             continue
           # As you can see, the CSV is full of useful non-redundant information:
@@ -2969,7 +3093,7 @@ class LogmanTrace(ApiBase):
         # of having to escape a string.
         out = csv.writer(
             f, delimiter='$', quotechar='*', quoting=csv.QUOTE_MINIMAL)
-        for line in trim(load_file()):
+        for line in trim(self.CsvReader(file_handle)):
           out.writerow([s.encode('utf-8') for s in line])
 
     def _convert_log(self, logformat):
@@ -3103,7 +3227,10 @@ def extract_directories(root_dir, files, blacklist):
   logging.info(
       'extract_directories(%s, %d files, ...)' % (root_dir, len(files)))
   assert not (root_dir or '').endswith(os.path.sep), root_dir
-  assert not root_dir or (get_native_path_case(root_dir) == root_dir)
+  # It is important for root_dir to not be a symlinked path, make sure to call
+  # os.path.realpath() as needed.
+  assert not root_dir or (
+      os.path.realpath(get_native_path_case(root_dir)) == root_dir)
   assert not any(isinstance(f, Results.Directory) for f in files)
   # Remove non existent files.
   files = [f for f in files if f.existent]
@@ -3226,7 +3353,7 @@ def CMDread(args):
   options, args = parser.parse_args(args)
 
   if options.root_dir:
-    options.root_dir = os.path.abspath(options.root_dir)
+    options.root_dir = unicode(os.path.abspath(options.root_dir))
 
   variables = dict(options.variables)
   api = get_api()

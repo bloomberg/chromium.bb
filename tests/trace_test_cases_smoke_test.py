@@ -88,10 +88,10 @@ class TraceTestCases(unittest.TestCase):
     lines = out.splitlines()
     expected_out_re = [
       r'Tracing\.\.\.',
-      r'\[1/4\]   \d\.\d\ds .+',
-      r'\[2/4\]   \d\.\d\ds .+',
-      r'\[3/4\]   \d\.\d\ds .+',
-      r'\[4/4\]   \d\.\d\ds .+',
+      r'\[1/4\] +\d+\.\d\ds .+',
+      r'\[2/4\] +\d+\.\d\ds .+',
+      r'\[3/4\] +\d+\.\d\ds .+',
+      r'\[4/4\] +\d+\.\d\ds .+',
       r'Reading trace logs\.\.\.',
     ]
     self.assertEqual(len(expected_out_re), len(lines), lines)
@@ -143,9 +143,10 @@ class TraceTestCases(unittest.TestCase):
         u'root': {
           u'children': [],
           u'command': [
-            sys.executable, TARGET_PATH, '--gtest_filter=' + test_case,
+            self.executable, TARGET_PATH, '--gtest_filter=' + test_case,
           ],
-          u'executable': trace_inputs.get_native_path_case(sys.executable),
+          u'executable': trace_inputs.get_native_path_case(
+            unicode(self.executable)),
           u'initial_cwd': ROOT_DIR,
         },
       }

@@ -50,7 +50,12 @@ class IsolateTestCases(unittest.TestCase):
 
   def tearDown(self):
     if self.tempdir:
-      shutil.rmtree(self.tempdir)
+      if VERBOSE:
+        # If -v is used, this means the user wants to do further analisys on
+        # the data.
+        print('Leaking %s' % self.tempdir)
+      else:
+        shutil.rmtree(self.tempdir)
 
   def _copy(self, *relpath):
     relpath = os.path.join(*relpath)
@@ -131,12 +136,13 @@ class IsolateTestCases(unittest.TestCase):
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate() or ('', '')  # pylint is confused.
+    logging.info(err)
     self.assertEqual(0, proc.returncode, (out, err))
     lines = out.splitlines()
     expected_out_re = [
-      r'\[1/3\]   \d\.\d\ds .+',
-      r'\[2/3\]   \d\.\d\ds .+',
-      r'\[3/3\]   \d\.\d\ds .+',
+      r'\[1/3\]   \d+\.\d\ds .+',
+      r'\[2/3\]   \d+\.\d\ds .+',
+      r'\[3/3\]   \d+\.\d\ds .+',
     ]
     self.assertEqual(len(expected_out_re), len(lines), (out, err))
     for index in range(len(expected_out_re)):
@@ -144,7 +150,6 @@ class IsolateTestCases(unittest.TestCase):
           re.match('^%s$' % expected_out_re[index], lines[index]),
           '%d\n%r\n%r\n%r' % (
             index, expected_out_re[index], lines[index], out))
-    logging.info(err)
     # Junk is printed on win32.
     if sys.platform != 'win32' and not VERBOSE:
       self.assertEqual('', err)

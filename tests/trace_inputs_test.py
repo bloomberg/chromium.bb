@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+# coding=utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import StringIO
 import logging
 import os
 import tempfile
@@ -56,14 +58,14 @@ class TraceInputs(unittest.TestCase):
           trace_inputs.Dtrace.Context.process_escaped_arguments(actual))
 
   def test_variable_abs(self):
-    value = trace_inputs.Results.File(None, '/foo/bar', False, False)
+    value = trace_inputs.Results.File(None, u'/foo/bar', False, False)
     actual = value.replace_variables({'$FOO': '/foo'})
     self.assertEquals('$FOO/bar', actual.path)
     self.assertEquals('$FOO/bar', actual.full_path)
     self.assertEquals(True, actual.tainted)
 
   def test_variable_rel(self):
-    value = trace_inputs.Results.File('/usr', 'foo/bar', False, False)
+    value = trace_inputs.Results.File(u'/usr', u'foo/bar', False, False)
     actual = value.replace_variables({'$FOO': 'foo'})
     self.assertEquals('$FOO/bar', actual.path)
     self.assertEquals(os.path.join('/usr', '$FOO/bar'), actual.full_path)
@@ -82,13 +84,43 @@ class TraceInputs(unittest.TestCase):
     path = trace_inputs.get_native_path_case(ROOT_DIR) + os.path.sep
     self.assertEquals(trace_inputs.get_native_path_case(path), path)
 
+  def test_strace_filename(self):
+    filename = u'foo, bar,  ~p#o,,ué^t%t.txt'
+    data = 'foo, bar,  ~p#o,,u\\303\\251^t%t.txt'
+    self.assertEqual(filename, trace_inputs.Strace.load_filename(data))
+
+  def test_CsvReader(self):
+    test_cases = {
+      u'   Next is empty, ,  {00000000-0000}':
+        [u'Next is empty', u'', u'{00000000-0000}'],
+      u'   Foo, , "\\\\NT AUTHORITY\\SYSTEM", "Idle", ""':
+        [u'Foo', u'', u'\\\\NT AUTHORITY\\SYSTEM', u'Idle', u''],
+      u'   Foo,  ""Who the hell thought delimiters are great as escape too""':
+        [u'Foo', u'"Who the hell thought delimiters are great as escape too"'],
+      (
+        u'  "remoting.exe", ""C:\\Program Files\\remoting.exe" '
+        u'--host="C:\\ProgramData\\host.json""'
+      ):
+        [
+          u'remoting.exe',
+          u'"C:\\Program Files\\remoting.exe" '
+          u'--host="C:\\ProgramData\\host.json"'
+        ],
+      u'"MONSTRE", "", 0x0': [u'MONSTRE', u'', u'0x0'],
+    }
+    for data, expected in test_cases.iteritems():
+      csv = trace_inputs.LogmanTrace.Tracer.CsvReader(StringIO.StringIO(data))
+      actual = [i for i in csv]
+      self.assertEqual(1, len(actual))
+      self.assertEqual(expected, actual[0])
+
   if sys.platform in ('darwin', 'win32'):
     def test_native_case_not_sensitive(self):
       # The home directory is almost guaranteed to have mixed upper/lower case
       # letters on both Windows and OSX.
       # This test also ensures that the output is independent on the input
       # string case.
-      path = os.path.expanduser('~')
+      path = os.path.expanduser(u'~')
       self.assertTrue(os.path.isdir(path))
       # This test assumes the variable is in the native path case on disk, this
       # should be the case. Verify this assumption:
@@ -102,7 +134,7 @@ class TraceInputs(unittest.TestCase):
       # string case.
       non_existing = os.path.join(
           'trace_input_test_this_dir_should_not_exist', 'really not', '')
-      path = os.path.expanduser(os.path.join('~', non_existing))
+      path = os.path.expanduser(os.path.join(u'~', non_existing))
       self.assertFalse(os.path.exists(path))
       lower = trace_inputs.get_native_path_case(path.lower())
       upper = trace_inputs.get_native_path_case(path.upper())
@@ -165,7 +197,7 @@ class TraceInputs(unittest.TestCase):
   if sys.platform == 'win32':
     def test_native_case_alternate_datastream(self):
       # Create the file manually, since tempfile doesn't support ADS.
-      tempdir = tempfile.mkdtemp(prefix='trace_inputs')
+      tempdir = unicode(tempfile.mkdtemp(prefix='trace_inputs'))
       try:
         tempdir = trace_inputs.get_native_path_case(tempdir)
         basename = 'foo.txt'
@@ -243,7 +275,7 @@ if sys.platform != 'win32':
       command = [
         '/home/foo_bar_user/out/unittests', '--gtest_filter=AtExitTest.Basic',
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', files, command)
+      self._test_lines(lines, u'/home/foo_bar_user/src', files, command)
 
     def test_empty(self):
       try:
@@ -263,13 +295,13 @@ if sys.platform != 'win32':
       lines = [
           (self._ROOT_PID, 'chmod("temp/file", 0100644) = 0'),
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', [])
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
 
     def test_close(self):
       lines = [
         (self._ROOT_PID, 'close(7)                          = 0'),
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', [])
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
 
     def test_clone(self):
       # Grand-child with relative directory.
@@ -283,7 +315,7 @@ if sys.platform != 'win32':
             '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = %d' %
             self._GRAND_CHILD_PID),
         (self._GRAND_CHILD_PID,
-          'open("%s", O_RDONLY)       = 76' % os.path.basename(FILE_PATH)),
+          'open("%s", O_RDONLY)       = 76' % os.path.basename(str(FILE_PATH))),
       ]
       size = os.stat(FILE_PATH).st_size
       expected = {
@@ -513,7 +545,7 @@ if sys.platform != 'win32':
           'size': -1,
         },
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', files)
+      self._test_lines(lines, u'/home/foo_bar_user/src', files)
 
     def test_open_resumed(self):
       lines = [
@@ -535,7 +567,7 @@ if sys.platform != 'win32':
           'size': -1,
         },
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', files)
+      self._test_lines(lines, u'/home/foo_bar_user/src', files)
 
     def test_openat(self):
       lines = [
@@ -556,26 +588,26 @@ if sys.platform != 'win32':
         },
       ]
 
-      self._test_lines(lines, '/home/foo_bar_user/src', files)
+      self._test_lines(lines, u'/home/foo_bar_user/src', files)
 
     def test_rmdir(self):
       lines = [
           (self._ROOT_PID, 'rmdir("directory/to/delete") = 0'),
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', [])
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
 
     def test_setxattr(self):
       lines = [
           (self._ROOT_PID,
            'setxattr("file.exe", "attribute", "value", 0, 0) = 0'),
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', [])
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
 
     def test_sig_unexpected(self):
       lines = [
         (self._ROOT_PID, 'exit_group(0)                     = ?'),
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', [])
+      self._test_lines(lines, u'/home/foo_bar_user/src', [])
 
     def test_stray(self):
       lines = [
@@ -591,7 +623,7 @@ if sys.platform != 'win32':
           'size': -1,
         },
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', files)
+      self._test_lines(lines, u'/home/foo_bar_user/src', files)
 
     def test_truncate(self):
       lines = [
@@ -611,7 +643,7 @@ if sys.platform != 'win32':
           'size': -1,
         },
       ]
-      self._test_lines(lines, '/home/foo_bar_user/src', files)
+      self._test_lines(lines, u'/home/foo_bar_user/src', files)
 
 
 if __name__ == '__main__':

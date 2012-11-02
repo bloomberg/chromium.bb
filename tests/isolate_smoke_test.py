@@ -652,7 +652,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
   # canonical format so they shouldn't be changed.
   def _check_merge(self, filename):
     filepath = isolate.trace_inputs.get_native_path_case(
-        os.path.join(ROOT_DIR, 'tests', 'isolate', filename))
+        os.path.join(unicode(ROOT_DIR), 'tests', 'isolate', filename))
     expected = 'Updating %s\n' % filepath
     with open(filepath, 'rb') as f:
       old_content = f.read()
@@ -957,7 +957,8 @@ class IsolateNoOutdir(IsolateBase):
 
     output = self._execute('merge', [], True)
     expected = 'Updating %s\n' % isolate.trace_inputs.get_native_path_case(
-        os.path.join(self.root, 'tests', 'isolate', 'touch_root.isolate'))
+        unicode(os.path.join(
+          self.root, 'tests', 'isolate', 'touch_root.isolate')))
     self.assertEquals(expected, output)
     # In theory the file is going to be updated but in practice its content
     # won't change.
