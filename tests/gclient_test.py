@@ -307,6 +307,73 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     self.assertEqual(['baz', 'unix'], sorted(obj.enforced_os))
 
+  def testTargetOsWithTargetOsOnly(self):
+    """Verifies that specifying a target_os and target_os_only pulls in only
+    the relevant dependencies.
+
+    The target_os variable allows specifying the name of an additional OS which
+    should be considered when selecting dependencies from a DEPS' deps_os. With
+    target_os_only also set, the _enforced_os tuple will be set to only the
+    target_os value.
+    """
+
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo",\n'
+        '    "url": "svn://example.com/foo",\n'
+        '  }]\n'
+        'target_os = ["baz"]\n'
+        'target_os_only = True')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "foo/dir1": "/dir1",'
+        '}\n'
+        'deps_os = {\n'
+        '  "unix": { "foo/dir2": "/dir2", },\n'
+        '  "baz": { "foo/dir3": "/dir3", },\n'
+        '}')
+
+    parser = gclient.Parser()
+    options, _ = parser.parse_args(['--jobs', '1'])
+    options.deps_os = "unix"
+
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    self.assertEqual(['baz'], sorted(obj.enforced_os))
+
+  def testTargetOsOnlyWithoutTargetOs(self):
+    """Verifies that specifying a target_os_only without target_os_only raises
+    an exception.
+    """
+
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo",\n'
+        '    "url": "svn://example.com/foo",\n'
+        '  }]\n'
+        'target_os_only = True')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "foo/dir1": "/dir1",'
+        '}\n'
+        'deps_os = {\n'
+        '  "unix": { "foo/dir2": "/dir2", },\n'
+        '}')
+
+    parser = gclient.Parser()
+    options, _ = parser.parse_args(['--jobs', '1'])
+    options.deps_os = "unix"
+
+    exception_raised = False
+    try:
+      gclient.GClient.LoadCurrentConfig(options)
+    except gclient_utils.Error:
+      exception_raised = True
+    self.assertTrue(exception_raised)
+
   def testTargetOsInDepsFile(self):
     """Verifies that specifying a target_os value in a DEPS file pulls in all
     relevant dependencies.

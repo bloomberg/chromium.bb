@@ -55,6 +55,13 @@ Specifying a target OS
 
   Example:
     target_os = [ "android" ]
+
+  If the "target_os_only" key is also present and true, then *only* the
+  operating systems listed in "target_os" will be used.
+
+  Example:
+    target_os = [ "ios" ]
+    target_os_only = True
 """
 
 __version__ = "0.6.4"
@@ -886,7 +893,14 @@ solutions = [
 
     # Append any target OS that is not already being enforced to the tuple.
     target_os = config_dict.get('target_os', [])
-    self._enforced_os = tuple(set(self._enforced_os).union(target_os))
+    if config_dict.get('target_os_only', False):
+      self._enforced_os = tuple(set(target_os))
+    else:
+      self._enforced_os = tuple(set(self._enforced_os).union(target_os))
+
+    if not target_os and config_dict.get('target_os_only', False):
+      raise gclient_utils.Error('Can\'t use target_os_only if target_os is '
+                                'not specified')
 
     deps_to_add = []
     for s in config_dict.get('solutions', []):
