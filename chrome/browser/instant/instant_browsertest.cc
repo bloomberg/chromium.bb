@@ -560,7 +560,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, RejectsURLs) {
 
 // Test that Instant doesn't fire for intranet paths that look like searches.
 // http://crbug.com/99836
-IN_PROC_BROWSER_TEST_F(InstantTest, IntranetPathLooksLikeSearch) {
+// Disabled, http://crbug.com/80118 .
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_IntranetPathLooksLikeSearch) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Navigate to a URL that looks like a search (when the scheme is stripped).
@@ -690,7 +691,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
 }
 
 // Test that a non-Instant search provider shows no previews.
-IN_PROC_BROWSER_TEST_F(InstantTest, NonInstantSearchProvider) {
+// Disabled, http://crbug.com/80118 .
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_NonInstantSearchProvider) {
   instant_url_ = test_server()->GetURL("files/empty.html");
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
