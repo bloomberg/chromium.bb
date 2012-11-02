@@ -16,6 +16,7 @@ class DesktopCursorClient;
 class DesktopDispatcherClient;
 class FocusManager;
 namespace client {
+class DefaultCaptureClient;
 class ScreenPositionClient;
 }
 namespace shared {
@@ -25,7 +26,6 @@ class InputMethodEventFilter;
 }
 
 namespace views {
-class DesktopCaptureClient;
 class HWNDMessageHandler;
 
 class VIEWS_EXPORT DesktopRootWindowHostWin
@@ -208,7 +208,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   aura::RootWindow* root_window_;
 
   scoped_ptr<HWNDMessageHandler> message_handler_;
-  scoped_ptr<DesktopCaptureClient> capture_client_;
+  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::FocusManager> focus_manager_;
   // Depends on focus_manager_.

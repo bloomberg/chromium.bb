@@ -18,8 +18,8 @@ namespace aura {
 class FocusManager;
 class RootWindow;
 class TestScreen;
-namespace shared {
-class RootWindowCaptureClient;
+namespace client {
+class DefaultCaptureClient;
 }
 namespace test {
 class TestActivationClient;
@@ -53,7 +53,7 @@ class AuraTestHelper {
   scoped_ptr<RootWindow> root_window_;
   scoped_ptr<TestStackingClient> stacking_client_;
   scoped_ptr<TestActivationClient> test_activation_client_;
-  scoped_ptr<shared::RootWindowCaptureClient> root_window_capture_client_;
+  scoped_ptr<client::DefaultCaptureClient> capture_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
   scoped_ptr<FocusManager> focus_manager_;
   scoped_ptr<aura::TestScreen> test_screen_;

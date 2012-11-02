@@ -8,12 +8,12 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "ui/aura/aura_export.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/views_export.h"
 
 namespace aura {
 class FocusManager;
@@ -24,9 +24,9 @@ class ActivationChangeObserver;
 // An activation client that handles activation events in a single
 // RootWindow. Used only on the Desktop where there can be multiple RootWindow
 // objects.
-class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
-                                            public WindowObserver,
-                                            public FocusChangeObserver {
+class VIEWS_EXPORT DesktopActivationClient : public client::ActivationClient,
+                                             public WindowObserver,
+                                             public FocusChangeObserver {
  public:
   explicit DesktopActivationClient(FocusManager* focus_manager);
   virtual ~DesktopActivationClient();

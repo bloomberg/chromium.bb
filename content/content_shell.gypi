@@ -185,6 +185,7 @@
         }],  # use_aura==1
         ['chromeos==1', {
           'dependencies': [
+            '../ash/ash.gyp:ash',
             '../chromeos/chromeos.gyp:chromeos',
            ],
         }], # chromeos==1

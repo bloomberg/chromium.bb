@@ -7,6 +7,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_cursor_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
@@ -22,7 +23,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/ime/input_method_win.h"
-#include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -107,7 +107,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
 
   native_widget_delegate_->OnNativeWidgetCreated();
 
-  capture_client_.reset(new DesktopCaptureClient);
+  capture_client_.reset(new aura::client::DefaultCaptureClient(root_window_));
   aura::client::SetCaptureClient(root_window_, capture_client_.get());
 
   focus_manager_.reset(new aura::FocusManager);

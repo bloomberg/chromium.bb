@@ -29,6 +29,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/screen_ash.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/shell/shell_stacking_client_ash.h"
 #else
@@ -192,7 +193,7 @@ class ShellWindowDelegateView : public WidgetDelegateView,
 
     layout->AddPaddingRow(0, 5);
   }
-  // Overriden from TextfieldController
+  // Overridden from TextfieldController
   virtual void ContentsChanged(Textfield* sender,
                                const string16& new_contents) OVERRIDE {
   }
@@ -211,7 +212,7 @@ class ShellWindowDelegateView : public WidgetDelegateView,
    return false;
   }
 
-  // Overriden from ButtonListener
+  // Overridden from ButtonListener
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
     if (sender == back_button_)
       shell_->GoBackOrForward(-1);
@@ -223,7 +224,7 @@ class ShellWindowDelegateView : public WidgetDelegateView,
       shell_->Stop();
   }
 
-  // Overriden from WidgetDelegateView
+  // Overridden from WidgetDelegateView
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual bool CanMaximize() const OVERRIDE { return true; }
   virtual string16 GetWindowTitle() const OVERRIDE {
@@ -237,7 +238,7 @@ class ShellWindowDelegateView : public WidgetDelegateView,
   }
   virtual View* GetContentsView() OVERRIDE { return this; }
 
-  // Overriden from View
+  // Overridden from View
   virtual void ViewHierarchyChanged(bool is_add,
                                     View* parent,
                                     View* child) OVERRIDE {
@@ -285,11 +286,13 @@ void Shell::PlatformInitialize() {
   aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
 #if defined(OS_CHROMEOS)
   stacking_client_ = new content::ShellStackingClientAsh();
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, new ash::ScreenAsh);
 #else
   stacking_client_ = new aura::DesktopStackingClient();
-#endif
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
+#endif
   views_delegate_ = new ShellViewsDelegateAura();
 }
 

@@ -29,6 +29,7 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 }
 
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
+#if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
   if (!chrome::ShouldOpenAshOnStartup())
 #endif
@@ -38,6 +39,7 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
     aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
     stacking_client_.reset(new aura::DesktopStackingClient);
   }
+#endif
 
 #if !defined(USE_ASH) && defined(OS_LINUX)
   // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.

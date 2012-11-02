@@ -5,7 +5,7 @@
 #ifndef UI_AURA_DESKTOP_DESKTOP_SCREEN_H_
 #define UI_AURA_DESKTOP_DESKTOP_SCREEN_H_
 
-#include "ui/aura/aura_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Screen;
@@ -15,7 +15,7 @@ namespace aura {
 
 // Creates a Screen that represents the screen of the environment that hosts
 // a RootWindowHost. Caller owns the result.
-AURA_EXPORT gfx::Screen* CreateDesktopScreen();
+VIEWS_EXPORT gfx::Screen* CreateDesktopScreen();
 
 }  // namespace aura
 

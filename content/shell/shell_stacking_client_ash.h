@@ -12,10 +12,12 @@
 namespace aura {
 class RootWindow;
 class Window;
+namespace client {
+class DefaultCaptureClient;
+}
 namespace shared {
 class CompoundEventFilter;
 class InputMethodEventFilter;
-class RootWindowCaptureClient;
 }
 namespace test {
 class TestActivationClient;
@@ -46,7 +48,7 @@ class ShellStackingClientAsh : public aura::client::StackingClient {
   // Owned by RootWindow
   aura::shared::CompoundEventFilter* root_window_event_filter_;
 
-  scoped_ptr<aura::shared::RootWindowCaptureClient> capture_client_;
+  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
 
