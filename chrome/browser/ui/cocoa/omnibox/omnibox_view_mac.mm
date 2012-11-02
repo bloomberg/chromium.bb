@@ -486,8 +486,8 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
       toolbar_model()->GetSecurityLevel();
 
   // Emphasize the scheme for security UI display purposes (if necessary).
-  if (!model()->user_input_in_progress() && scheme.is_nonempty() &&
-      (security_level != ToolbarModel::NONE)) {
+  if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
+      scheme.is_nonempty() && (security_level != ToolbarModel::NONE)) {
     NSColor* color;
     if (security_level == ToolbarModel::EV_SECURE ||
         security_level == ToolbarModel::SECURE) {

@@ -871,8 +871,12 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   }
 
   // Emphasize the scheme for security UI display purposes (if necessary).
-  if (!model()->user_input_in_progress() && scheme.is_nonempty() &&
-      (security_level_ != ToolbarModel::NONE)) {
+  // Note that we check CurrentTextIsURL() because if we're replacing search
+  // URLs with search terms, we may have a non-URL even when the user is not
+  // editing; and in some cases, e.g. for "site:foo.com" searches, the parser
+  // may have incorrectly identified a qualifier as a scheme.
+  if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
+      scheme.is_nonempty() && (security_level_ != ToolbarModel::NONE)) {
     SkColor security_color = LocationBarView::GetColor(
         security_level_, LocationBarView::SECURITY_TEXT);
     bool use_strikethrough = (security_level_ == ToolbarModel::SECURITY_ERROR);

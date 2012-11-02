@@ -1651,8 +1651,8 @@ void OmniboxViewGtk::EmphasizeURLComponents() {
 
   strikethrough_ = CharRange();
   // Emphasize the scheme for security UI display purposes (if necessary).
-  if (!model()->user_input_in_progress() && scheme.is_nonempty() &&
-      (security_level_ != ToolbarModel::NONE)) {
+  if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
+      scheme.is_nonempty() && (security_level_ != ToolbarModel::NONE)) {
     CharRange scheme_range = CharRange(GetUTF8Offset(text, scheme.begin),
                                        GetUTF8Offset(text, scheme.end()));
     ItersFromCharRange(scheme_range, &start, &end);

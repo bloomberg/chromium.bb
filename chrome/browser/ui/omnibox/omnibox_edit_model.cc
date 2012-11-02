@@ -351,10 +351,14 @@ string16 OmniboxEditModel::GetDesiredTLD() const {
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  // If !user_input_in_progress_, the permanent text is showing, which should
-  // always be a URL, so no further checking is needed.  By avoiding checking in
-  // this case, we avoid calling into the autocomplete providers, and thus
-  // initializing the history system, as long as possible, which speeds startup.
+  if (view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms())
+    return false;
+
+  // If current text is not composed of replaced search terms and
+  // !user_input_in_progress_, then permanent text is showing and should be a
+  // URL, so no further checking is needed.  By avoiding checking in this case,
+  // we avoid calling into the autocomplete providers, and thus initializing the
+  // history system, as long as possible, which speeds startup.
   if (!user_input_in_progress_)
     return true;
 

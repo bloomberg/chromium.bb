@@ -59,6 +59,9 @@ class OmniboxView {
   CommandUpdater* command_updater() { return command_updater_; }
   const CommandUpdater* command_updater() const { return command_updater_; }
 
+  ToolbarModel* toolbar_model() { return toolbar_model_; }
+  const ToolbarModel* toolbar_model() const { return toolbar_model_; }
+
   // For use when switching tabs, this saves the current state onto the tab so
   // that it can be restored during a later call to Update().
   virtual void SaveStateToTab(content::WebContents* tab) = 0;
@@ -242,8 +245,6 @@ class OmniboxView {
   virtual void EmphasizeURLComponents() = 0;
 
   OmniboxEditController* controller() { return controller_; }
-  ToolbarModel* toolbar_model() { return toolbar_model_; }
-  const ToolbarModel* toolbar_model() const { return toolbar_model_; }
 
  private:
   // |model_| can be NULL in tests.
