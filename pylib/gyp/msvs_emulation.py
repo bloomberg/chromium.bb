@@ -402,6 +402,7 @@ class MsvsSettings(object):
     ld('IgnoreDefaultLibraryNames', prefix='/NODEFAULTLIB:')
     ld('ResourceOnlyDLL', map={'true': '/NOENTRY'})
     ld('EntryPointSymbol', prefix='/ENTRY:')
+    ld('ProgramDatabaseFile', prefix='/PDB:')
     ld('Profile', map={ 'true': '/PROFILE'})
     # TODO(scottmg): This should sort of be somewhere else (not really a flag).
     ld('AdditionalDependencies', prefix='')
