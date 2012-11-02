@@ -200,6 +200,9 @@ PrerenderManager::PrerenderManager(Profile* profile,
   // the same thread that it was created on.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (IsLocalPredictorEnabled())
+    local_predictor_.reset(new PrerenderLocalPredictor(this));
+
   // Certain experiments override our default config_ values.
   switch (PrerenderManager::GetMode()) {
     case PrerenderManager::PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP:
