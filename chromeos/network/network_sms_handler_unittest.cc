@@ -12,7 +12,10 @@
 #include "base/message_loop.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -54,6 +57,15 @@ class NetworkSmsHandlerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     // Initialize DBusThreadManager with a stub implementation.
     DBusThreadManager::InitializeWithStub();
+    ShillManagerClient::TestInterface* manager_test =
+        DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
+    ASSERT_TRUE(manager_test);
+    manager_test->AddDevice("stub_cellular_device2");
+    ShillDeviceClient::TestInterface* device_test =
+        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
+    ASSERT_TRUE(device_test);
+    device_test->AddDevice("stub_cellular_device2", flimflam::kTypeCellular,
+                           "/org/freedesktop/ModemManager1/stub/0", ":stub.0");
   }
 
   virtual void TearDown() OVERRIDE {
@@ -85,6 +97,7 @@ TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
   const std::set<std::string>& messages(test_observer->messages());
   // Note: The following string corresponds to values in
   // ModemMessagingClientStubImpl and SmsClientStubImpl.
+  // TODO(stevenjb): Use a TestInterface to set this up to remove dependency.
   const char kMessage1[] = "SMSClientStubImpl: Test Message: /SMS/0";
   EXPECT_EQ(messages.find(kMessage1), messages.end());
 

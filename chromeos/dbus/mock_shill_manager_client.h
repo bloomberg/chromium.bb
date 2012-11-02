@@ -42,6 +42,7 @@ class MockShillManagerClient : public ShillManagerClient {
   MOCK_METHOD3(GetService, void(const base::DictionaryValue& properties,
                                 const ObjectPathCallback& callback,
                                 const ErrorCallback& error_callback));
+  MOCK_METHOD0(GetTestInterface, TestInterface*());
 };
 
 }  // namespace chromeos

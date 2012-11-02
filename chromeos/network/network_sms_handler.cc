@@ -400,7 +400,8 @@ void NetworkSmsHandler::DevicePropertiesCallback(
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    LOG(ERROR) << "NetworkSmsHandler: ERROR: " << call_status;
+    LOG(ERROR) << "NetworkSmsHandler: ERROR: " << call_status
+               << " For: " << device_path;
     return;
   }
 

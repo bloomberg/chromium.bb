@@ -32,6 +32,23 @@ class CHROMEOS_EXPORT ShillManagerClient {
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
 
+  // Interface for setting up devices, services, and technologies for testing.
+  // Accessed through GetTestInterface(), only implemented in the Stub Impl.
+  class TestInterface {
+   public:
+    virtual void AddDevice(const std::string& device_path) = 0;
+    virtual void RemoveDevice(const std::string& device_path) = 0;
+    virtual void AddService(const std::string& service_path,
+                            bool add_to_watch_list) = 0;
+    virtual void RemoveService(const std::string& service_path) = 0;
+    virtual void AddTechnology(const std::string& type, bool enabled) = 0;
+    virtual void RemoveTechnology(const std::string& type) = 0;
+    virtual void ClearProperties() = 0;
+
+   protected:
+    ~TestInterface() {}
+  };
+
   virtual ~ShillManagerClient();
 
   // Factory function, creates a new instance which is owned by the caller.
@@ -95,6 +112,9 @@ class CHROMEOS_EXPORT ShillManagerClient {
   virtual void GetService(const base::DictionaryValue& properties,
                           const ObjectPathCallback& callback,
                           const ErrorCallback& error_callback) = 0;
+
+  // Returns an interface for testing (stub only), or returns NULL.
+  virtual TestInterface* GetTestInterface() = 0;
 
  protected:
   // Create() should be used instead.

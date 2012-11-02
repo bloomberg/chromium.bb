@@ -39,12 +39,30 @@ class CHROMEOS_EXPORT ShillServiceClient {
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
 
+  // Interface for setting up services for testing.
+  // Accessed through GetTestInterface(), only implemented in the Stub Impl.
+  class TestInterface {
+   public:
+    virtual void AddService(const std::string& service_path,
+                            const std::string& name,
+                            const std::string& type,
+                            const std::string& state,
+                            const std::string& security) = 0;
+    virtual void RemoveService(const std::string& service_path) = 0;
+    virtual void SetServiceProperty(const std::string& service_path,
+                                    const std::string& property,
+                                    const base::Value& value) = 0;
+    virtual void ClearServices() = 0;
+
+   protected:
+    ~TestInterface() {}
+  };
   virtual ~ShillServiceClient();
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static ShillServiceClient* Create(DBusClientImplementationType type,
-                                       dbus::Bus* bus);
+                                    dbus::Bus* bus);
 
   // Adds a property changed |observer| to the service at |service_path|.
   virtual void AddPropertyChangedObserver(
@@ -110,6 +128,9 @@ class CHROMEOS_EXPORT ShillServiceClient {
   virtual bool CallActivateCellularModemAndBlock(
       const dbus::ObjectPath& service_path,
       const std::string& carrier) = 0;
+
+  // Returns an interface for testing (stub only), or returns NULL.
+  virtual TestInterface* GetTestInterface() = 0;
 
  protected:
   // Create() should be used instead.

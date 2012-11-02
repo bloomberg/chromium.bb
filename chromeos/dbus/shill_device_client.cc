@@ -188,6 +188,10 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
         &method_call, callback, error_callback);
   }
 
+  virtual TestInterface* GetTestInterface() OVERRIDE {
+    return NULL;
+  }
+
  private:
   typedef std::map<std::string, ShillClientHelper*> HelperMap;
 
@@ -215,45 +219,17 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
 
 // A stub implementation of ShillDeviceClient.
 // Implemented: Stub cellular device for SMS testing.
-class ShillDeviceClientStubImpl : public ShillDeviceClient {
+class ShillDeviceClientStubImpl : public ShillDeviceClient,
+                                  public ShillDeviceClient::TestInterface {
  public:
   ShillDeviceClientStubImpl() : weak_ptr_factory_(this) {
-    // Add a cellular device for SMS. Note: name matches Manager entry.
-    const char kStubCellular1[] = "stub_cellular1";
-    base::DictionaryValue* cellular_properties = new base::DictionaryValue;
-    cellular_properties->SetWithoutPathExpansion(
-        flimflam::kTypeProperty,
-        base::Value::CreateStringValue(flimflam::kTypeCellular));
-    cellular_properties->SetWithoutPathExpansion(
-        flimflam::kDBusConnectionProperty,
-        base::Value::CreateStringValue("/stub"));
-    cellular_properties->SetWithoutPathExpansion(
-        flimflam::kDBusObjectProperty,
-        base::Value::CreateStringValue("/device/cellular1"));
-    stub_devices_.Set(kStubCellular1, cellular_properties);
-
-    // Create a second device stubbing a modem managed by
-    // ModemManager1 interfaces.
-    // Note: name matches Manager entry.
-    const char kStubCellular2[] = "stub_cellular2";
-    cellular_properties = new base::DictionaryValue;
-    cellular_properties->SetWithoutPathExpansion(
-        flimflam::kTypeProperty,
-        base::Value::CreateStringValue(flimflam::kTypeCellular));
-    cellular_properties->SetWithoutPathExpansion(
-        flimflam::kDBusConnectionProperty,
-        base::Value::CreateStringValue(":stub.0"));
-    cellular_properties->SetWithoutPathExpansion(
-        flimflam::kDBusObjectProperty,
-        base::Value::CreateStringValue(
-                "/org/freedesktop/ModemManager1/stub/0"));
-    stub_devices_.Set(kStubCellular2, cellular_properties);
+    SetDefaultProperties();
   }
 
   virtual ~ShillDeviceClientStubImpl() {}
 
-  ///////////////////////////////////
   // ShillDeviceClient overrides.
+
   virtual void AddPropertyChangedObserver(
       const dbus::ObjectPath& device_path,
       ShillPropertyChangedObserver* observer) OVERRIDE {}
@@ -273,7 +249,10 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
 
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& device_path) OVERRIDE {
-    return new base::DictionaryValue;
+    base::DictionaryValue* device_properties = NULL;
+    stub_devices_.GetDictionaryWithoutPathExpansion(
+        device_path.value(), &device_properties);
+    return device_properties;
   }
 
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
@@ -366,7 +345,6 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
-  // ShillDeviceClient override.
   virtual void SetCarrier(const dbus::ObjectPath& device_path,
                           const std::string& carrier,
                           const base::Closure& callback,
@@ -374,11 +352,53 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
     MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
+  virtual ShillDeviceClient::TestInterface* GetTestInterface() OVERRIDE {
+    return this;
+  }
+
+  // ShillDeviceClient::TestInterface overrides.
+
+  virtual void AddDevice(const std::string& device_path,
+                         const std::string& type,
+                         const std::string& object_path,
+                         const std::string& connection_path) OVERRIDE {
+    base::DictionaryValue* properties = GetDeviceProperties(device_path);
+    properties->SetWithoutPathExpansion(
+        flimflam::kTypeProperty,
+        base::Value::CreateStringValue(type));
+    properties->SetWithoutPathExpansion(
+        flimflam::kDBusObjectProperty,
+        base::Value::CreateStringValue(object_path));
+    properties->SetWithoutPathExpansion(
+        flimflam::kDBusConnectionProperty,
+        base::Value::CreateStringValue(connection_path));
+  }
+
+  virtual void RemoveDevice(const std::string& device_path) OVERRIDE {
+    stub_devices_.RemoveWithoutPathExpansion(device_path, NULL);
+  }
+
+  virtual void ClearDevices() OVERRIDE {
+    stub_devices_.Clear();
+  }
+
  private:
+  void SetDefaultProperties() {
+    // Add a wifi device. Note: path matches Manager entry.
+    AddDevice("stub_wifi_device1", flimflam::kTypeWifi,
+              "/device/wifi1", "/stub");
+
+    // Add a cellular device. Used in SMS stub. Note: path matches
+    // Manager entry.
+    AddDevice("stub_cellular_device1", flimflam::kTypeCellular,
+              "/device/cellular1", "/stub");
+  }
+
   void PassStubDeviceProperties(const dbus::ObjectPath& device_path,
-                               const DictionaryValueCallback& callback) const {
+                                const DictionaryValueCallback& callback) const {
     const base::DictionaryValue* device_properties = NULL;
-    if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
+    if (!stub_devices_.GetDictionaryWithoutPathExpansion(
+            device_path.value(), &device_properties)) {
       base::DictionaryValue empty_dictionary;
       callback.Run(DBUS_METHOD_CALL_FAILURE, empty_dictionary);
       return;
@@ -391,6 +411,16 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient {
                         DBusMethodCallStatus status) {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback, status));
+  }
+
+  base::DictionaryValue* GetDeviceProperties(const std::string& device_path) {
+    base::DictionaryValue* properties = NULL;
+    if (!stub_devices_.GetDictionaryWithoutPathExpansion(
+            device_path, &properties)) {
+      properties = new base::DictionaryValue;
+      stub_devices_.Set(device_path, properties);
+    }
+    return properties;
   }
 
   // Dictionary of <device_name, Dictionary>.
