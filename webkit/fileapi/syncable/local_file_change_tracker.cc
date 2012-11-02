@@ -144,12 +144,10 @@ void LocalFileChangeTracker::ClearChangesForURL(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
   ClearDirtyOnDatabase(url);
-
   FileChangeMap::iterator found = changes_.find(url);
   DCHECK(found != changes_.end());
   change_seqs_.erase(found->second.change_seq);
   changes_.erase(found);
-  UpdateNumChanges();
 }
 
 SyncStatusCode LocalFileChangeTracker::Initialize(
@@ -162,11 +160,6 @@ SyncStatusCode LocalFileChangeTracker::Initialize(
   if (status == SYNC_STATUS_OK)
     initialized_ = true;
   return status;
-}
-
-void LocalFileChangeTracker::UpdateNumChanges() {
-  base::AutoLock lock(num_changes_lock_);
-  num_changes_ = static_cast<int64>(change_seqs_.size());
 }
 
 void LocalFileChangeTracker::GetAllChangedURLs(FileSystemURLSet* urls) {
@@ -274,12 +267,10 @@ void LocalFileChangeTracker::RecordChange(
   info.change_list.Update(change);
   if (info.change_list.empty()) {
     changes_.erase(url);
-    UpdateNumChanges();
     return;
   }
   info.change_seq = current_change_seq_++;
   change_seqs_[info.change_seq] = url;
-  UpdateNumChanges();
 }
 
 // TrackerDB -------------------------------------------------------------------
