@@ -7,8 +7,6 @@
 
 #include "cc/layer_tiling_data.h"
 
-#include "IntRect.h"
-#include "IntSize.h"
 #include "base/logging.h"
 
 using namespace std;
@@ -21,7 +19,7 @@ scoped_ptr<LayerTilingData> LayerTilingData::create(const gfx::Size& tileSize, B
 }
 
 LayerTilingData::LayerTilingData(const gfx::Size& tileSize, BorderTexelOption border)
-    : m_tilingData(cc::IntSize(tileSize), cc::IntSize(), border == HasBorderTexels)
+    : m_tilingData(tileSize, gfx::Size(), border == HasBorderTexels)
 {
     setTileSize(tileSize);
 }
@@ -37,12 +35,12 @@ void LayerTilingData::setTileSize(const gfx::Size& size)
 
     reset();
 
-    m_tilingData.setMaxTextureSize(cc::IntSize(size));
+    m_tilingData.SetMaxTextureSize(size);
 }
 
 gfx::Size LayerTilingData::tileSize() const
 {
-    return cc::IntSize(m_tilingData.maxTextureSize());
+    return m_tilingData.max_texture_size();
 }
 
 void LayerTilingData::setBorderTexelOption(BorderTexelOption borderTexelOption)
@@ -52,7 +50,7 @@ void LayerTilingData::setBorderTexelOption(BorderTexelOption borderTexelOption)
         return;
 
     reset();
-    m_tilingData.setHasBorderTexels(borderTexels);
+    m_tilingData.SetHasBorderTexels(borderTexels);
 }
 
 const LayerTilingData& LayerTilingData::operator=(const LayerTilingData& tiler)
@@ -91,15 +89,15 @@ void LayerTilingData::contentRectToTileIndices(const gfx::Rect& contentRect, int
     //        since the normal use of this function is to enumerate some tiles.
     DCHECK(!contentRect.IsEmpty());
 
-    left = m_tilingData.tileXIndexFromSrcCoord(contentRect.x());
-    top = m_tilingData.tileYIndexFromSrcCoord(contentRect.y());
-    right = m_tilingData.tileXIndexFromSrcCoord(contentRect.right() - 1);
-    bottom = m_tilingData.tileYIndexFromSrcCoord(contentRect.bottom() - 1);
+    left = m_tilingData.TileXIndexFromSrcCoord(contentRect.x());
+    top = m_tilingData.TileYIndexFromSrcCoord(contentRect.y());
+    right = m_tilingData.TileXIndexFromSrcCoord(contentRect.right() - 1);
+    bottom = m_tilingData.TileYIndexFromSrcCoord(contentRect.bottom() - 1);
 }
 
 gfx::Rect LayerTilingData::tileRect(const Tile* tile) const
 {
-    gfx::Rect tileRect = cc::IntRect(m_tilingData.tileBoundsWithBorder(tile->i(), tile->j()));
+    gfx::Rect tileRect = m_tilingData.TileBoundsWithBorder(tile->i(), tile->j());
     tileRect.set_size(tileSize());
     return tileRect;
 }
@@ -127,7 +125,7 @@ Region LayerTilingData::opaqueRegionInContentRect(const gfx::Rect& contentRect) 
 
 void LayerTilingData::setBounds(const gfx::Size& size)
 {
-    m_tilingData.setTotalSize(cc::IntSize(size));
+    m_tilingData.SetTotalSize(size);
     if (size.IsEmpty()) {
         m_tiles.clear();
         return;
@@ -147,7 +145,7 @@ void LayerTilingData::setBounds(const gfx::Size& size)
 
 gfx::Size LayerTilingData::bounds() const
 {
-    return cc::IntSize(m_tilingData.totalSize());
+    return m_tilingData.total_size();
 }
 
 } // namespace cc

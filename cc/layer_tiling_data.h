@@ -10,12 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/hash_pair.h"
 #include "cc/scoped_ptr_hash_map.h"
+#include "cc/tiling_data.h"
 #include "ui/gfx/rect.h"
 #include "Region.h"
-#include "TilingData.h"
 
 namespace cc {
-class IntRect;
 
 class LayerTilingData {
 public:
@@ -25,21 +24,18 @@ public:
 
     static scoped_ptr<LayerTilingData> create(const gfx::Size& tileSize, BorderTexelOption);
 
-    bool hasEmptyBounds() const { return m_tilingData.hasEmptyBounds(); }
-    int numTilesX() const { return m_tilingData.numTilesX(); }
-    int numTilesY() const { return m_tilingData.numTilesY(); }
-    gfx::Rect tileBounds(int i, int j) const { return cc::IntRect(m_tilingData.tileBounds(i, j)); }
-    gfx::Vector2d textureOffset(int xIndex, int yIndex) const {
-      cc::IntPoint p(m_tilingData.textureOffset(xIndex, yIndex));
-      return gfx::Vector2d(p.x(), p.y());
-    }
+    bool hasEmptyBounds() const { return m_tilingData.has_empty_bounds(); }
+    int numTilesX() const { return m_tilingData.num_tiles_x(); }
+    int numTilesY() const { return m_tilingData.num_tiles_y(); }
+    gfx::Rect tileBounds(int i, int j) const { return m_tilingData.TileBounds(i, j); }
+    gfx::Vector2d textureOffset(int xIndex, int yIndex) const { return m_tilingData.TextureOffset(xIndex, yIndex); }
 
     // Change the tile size. This may invalidate all the existing tiles.
     void setTileSize(const gfx::Size&);
     gfx::Size tileSize() const;
     // Change the border texel setting. This may invalidate all existing tiles.
     void setBorderTexelOption(BorderTexelOption);
-    bool hasBorderTexels() const { return m_tilingData.borderTexels(); }
+    bool hasBorderTexels() const { return m_tilingData.border_texels(); }
 
     bool isEmpty() const { return hasEmptyBounds() || !tiles().size(); }
 
