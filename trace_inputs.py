@@ -2256,7 +2256,7 @@ class Dtrace(ApiBase):
       The script will detect any instance of the script created with
       create_thunk() and will start tracing it.
       """
-      return (
+      out = (
           'inline int PID = %d;\n'
           'inline string SCRIPT = "%s";\n'
           'inline int FILE_ID = %d;\n'
@@ -2265,7 +2265,15 @@ class Dtrace(ApiBase):
               os.getpid(),
               self._script,
               self._dummy_file_id,
-              self.D_CODE) + self.D_CODE_EXECVE
+              self.D_CODE)
+      if os.environ.get('TRACE_INPUTS_DTRACE_ENABLE_EXECVE') == '1':
+        # Do not enable by default since it tends to spew dtrace: error lines
+        # because the execve() parameters are not in valid memory at the time of
+        # logging.
+        # TODO(maruel): Find a way to make this reliable since it's useful but
+        # only works in limited/trivial uses cases for now.
+        out += self.D_CODE_EXECVE
+      return out
 
     def trace(self, cmd, cwd, tracename, output):
       """Runs dtrace on an executable.

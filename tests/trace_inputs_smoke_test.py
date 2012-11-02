@@ -682,4 +682,7 @@ class TraceInputsImport(TraceInputsBase):
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
+  # Necessary for the dtrace logger to work around execve() hook. See
+  # trace_inputs.py for more details.
+  os.environ['TRACE_INPUTS_DTRACE_ENABLE_EXECVE'] = '1'
   unittest.main()
