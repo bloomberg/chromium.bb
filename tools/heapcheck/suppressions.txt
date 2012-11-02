@@ -1426,6 +1426,14 @@
   fun:GtkThemeService::GetDefaultFavicon
 }
 {
+  bug_132431
+  Heapcheck:Leak
+  ...
+  fun:gfx::::LoadDefaults
+  ...
+  fun:::ChromeToMobileServiceTest_RequirementsToEnable_Test::TestBody
+}
+{
    bug_134527
    Heapcheck:Leak
    fun:IA__FcMatrixCopy
@@ -1587,10 +1595,19 @@
    fun:dom_storage::DomStorageContext::CreateSessionNamespace
 }
 {
-  bug_132431
-  Heapcheck:Leak
-  ...
-  fun:gfx::::LoadDefaults
-  ...
-  fun:::ChromeToMobileServiceTest_RequirementsToEnable_Test::TestBody
+   bug_159191
+   Heapcheck:Leak
+   ...
+   fun:FontConfigDirect::FontConfigDirect
+   fun:GetFcImpl
+   fun:SkFontHost::CreateTypeface
+   fun:SkTypeface::GetDefaultTypeface
+   fun:SkScalerContext::MakeRec
+   fun:SkPaint::descriptorProc
+   fun:SkPaint::detachCache
+   fun:SkAutoGlyphCache::SkAutoGlyphCache
+   fun:SkDraw::drawText
+   fun:SkDevice::drawText
+   fun:SkCanvas::drawText
+   fun:media::FakeVideoCaptureDevice::OnCaptureTask
 }

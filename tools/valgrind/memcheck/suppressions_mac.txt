@@ -2377,3 +2377,14 @@
    fun:_ZN7content16RenderThreadImplC1ERKSs
    fun:_ZN7content21WebRTCAudioDeviceTest5SetUpEv
 }
+{
+   bug_159190
+   Memcheck:Uninitialized
+   fun:_Z12sc_ScanChar2PK15fnt_ElementTypeP13sc_GlobalDataP13sc_BitMapDatasslP13memoryContext
+   fun:_Z12RenderBitmapP13fsg_SplineKeyP13memoryContextPK11scalerGlyphP12scalerBitmapl
+   fun:TTRenderGlyphs
+   fun:_ZNK19TConcreteFontScaler15CopyGlyphBitmapEtjP6CGRectPm
+   ...
+   fun:_ZN9Offscreen5getCGERK19SkScalerContext_MacRK7SkGlyphtPmb
+   fun:_ZN19SkScalerContext_Mac13generateImageERK7SkGlyph
+}
