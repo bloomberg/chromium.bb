@@ -1310,7 +1310,7 @@ bool Conn::EmitFrame(
   uint8 header[10];
   int header_size = 2;
   DCHECK(chan);
-  DCHECK(opcode >= 0 && opcode < 16);
+  DCHECK(opcode >= 0 && static_cast<int>(opcode) < 16);
   header[0] = opcode | 0x80;  // FIN bit set.
   if (size < 126) {
     header[1] = size;
