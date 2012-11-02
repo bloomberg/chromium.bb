@@ -1630,13 +1630,30 @@ def real_main(argv):
   if root == "/":
     for db_pkg in final_db.match_pkgs("sys-apps/portage"):
       portage_pkg = deps_graph.get(db_pkg.cpv)
-      if portage_pkg and len(deps_graph) > 1:
-        portage_pkg["needs"].clear()
-        portage_pkg["provides"].clear()
-        deps_graph = { str(db_pkg.cpv): portage_pkg }
+      if portage_pkg:
         portage_upgrade = True
         if "--quiet" not in emerge.opts:
           print "Upgrading portage first, then restarting..."
+
+  # Upgrade Portage first, then the rest of the packages.
+  #
+  # In order to grant the child permission to run setsid, we need to run sudo
+  # again. We preserve SUDO_USER here in case an ebuild depends on it.
+  if portage_upgrade:
+    # Calculate what arguments to use when re-invoking.
+    args = ["sudo", "-E", "SUDO_USER=%s" % os.environ.get("SUDO_USER", "")]
+    args += [os.path.abspath(sys.argv[0])] + parallel_emerge_args
+    args += ["--exclude=sys-apps/portage"]
+
+    # First upgrade Portage.
+    passthrough_args = ("--quiet", "--pretend", "--verbose")
+    emerge_args = [k for k in emerge.opts if k in passthrough_args]
+    ret = emerge_main(emerge_args + ["portage"])
+    if ret != 0:
+      return ret
+
+    # Now upgrade the rest.
+    os.execvp(args[0], args)
 
   # Run the queued emerges.
   scheduler = EmergeQueue(deps_graph, emerge, deps.package_db, deps.show_output)
@@ -1645,17 +1662,6 @@ def real_main(argv):
   finally:
     scheduler._Shutdown()
   scheduler = None
-
-  # If we already upgraded portage, we don't need to do so again. But we do
-  # need to upgrade the rest of the packages. So we'll go ahead and do that.
-  #
-  # In order to grant the child permission to run setsid, we need to run sudo
-  # again. We preserve SUDO_USER here in case an ebuild depends on it.
-  if portage_upgrade:
-    args = ["sudo", "-E", "SUDO_USER=%s" % os.environ.get("SUDO_USER", "")]
-    args += [os.path.abspath(sys.argv[0])] + parallel_emerge_args
-    args += ["--exclude=sys-apps/portage"]
-    os.execvp("sudo", args)
 
   clean_logs(emerge.settings)
 
