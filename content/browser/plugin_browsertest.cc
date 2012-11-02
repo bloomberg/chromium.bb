@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, GetJavaScriptURL2) {
 }
 
 // Test is flaky on linux/cros/win builders.  http://crbug.com/71904
-IN_PROC_BROWSER_TEST_F(PluginTest, GetURLRedirectNotification) {
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_GetURLRedirectNotification) {
   LoadAndWait(GetURL("geturl_redirect_notify.html"));
 }
 
