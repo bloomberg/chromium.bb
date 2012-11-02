@@ -145,10 +145,6 @@ function updateAccountMetadata(accountMetadata) {
       quotaUsedInMb + ' / ' + quotaTotalInMb + ' (MB)';
   $('account-largest-changestamp-remote').textContent =
       accountMetadata['account-largest-changestamp-remote'];
-  $('account-largest-changestamp-local').textContent =
-      accountMetadata['account-largest-changestamp-local'];
-  $('account-metadata-origin').textContent =
-      accountMetadata['account-metadata-origin'];
 
   var installedAppContainer = $('account-installed-apps');
   for (var i = 0; i < accountMetadata['installed-apps'].length; i++) {
@@ -162,6 +158,17 @@ function updateAccountMetadata(accountMetadata) {
 
     installedAppContainer.appendChild(tr);
   }
+}
+
+/**
+ * Updates the local cache information about account metadata.
+ * @param {Object} localMetadata Dictionary describing account metadata.
+ */
+function updateLocalMetadata(localMetadata) {
+  $('account-largest-changestamp-local').textContent =
+      localMetadata['account-largest-changestamp-local'];
+  $('account-metadata-origin').textContent =
+      localMetadata['account-metadata-origin'];
 }
 
 /**

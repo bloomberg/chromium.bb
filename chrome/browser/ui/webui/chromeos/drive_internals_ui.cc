@@ -192,6 +192,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       google_apis::DriveServiceInterface* drive_service);
   void UpdateAccountMetadataSection(
       google_apis::DriveServiceInterface* drive_service);
+  void UpdateLocalMetadataSection(
+      google_apis::DriveServiceInterface* drive_service);
   void UpdateDeltaUpdateStatusSection();
   void UpdateInFlightOperationsSection(
       google_apis::DriveServiceInterface* drive_service);
@@ -284,13 +286,6 @@ void DriveInternalsWebUIHandler::OnGetAccountMetadata(
     account_metadata.Set("installed-apps", installed_apps);
   }
 
-  // Add the local largest chargestamp.
-  const drive::DriveFileSystemMetadata metadata =
-      GetSystemService()->file_system()->GetMetadata();
-  account_metadata.SetDouble("account-largest-changestamp-local",
-                             metadata.largest_changestamp);
-  account_metadata.SetString("account-metadata-origin", metadata.origin);
-
   web_ui()->CallJavascriptFunction("updateAccountMetadata", account_metadata);
 }
 
@@ -328,6 +323,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateDriveRelatedPreferencesSection();
   UpdateAuthStatusSection(drive_service);
   UpdateAccountMetadataSection(drive_service);
+  UpdateLocalMetadataSection(drive_service);
   UpdateDeltaUpdateStatusSection();
   UpdateInFlightOperationsSection(drive_service);
   UpdateGCacheContentsSection();
@@ -405,6 +401,19 @@ void DriveInternalsWebUIHandler::UpdateAccountMetadataSection(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void DriveInternalsWebUIHandler::UpdateLocalMetadataSection(
+    google_apis::DriveServiceInterface* drive_service) {
+  DCHECK(drive_service);
+
+  base::DictionaryValue local_metadata;
+  const drive::DriveFileSystemMetadata metadata =
+      GetSystemService()->file_system()->GetMetadata();
+  local_metadata.SetDouble("account-largest-changestamp-local",
+                           metadata.largest_changestamp);
+  local_metadata.SetString("account-metadata-origin", metadata.origin);
+  web_ui()->CallJavascriptFunction("updateLocalMetadata", local_metadata);
+}
+
 void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
   const drive::DriveFileSystemMetadata metadata =
       GetSystemService()->file_system()->GetMetadata();
@@ -424,7 +433,6 @@ void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
 
   web_ui()->CallJavascriptFunction("updateDeltaUpdateStatus",
                                    delta_update_status);
-
 }
 
 void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
