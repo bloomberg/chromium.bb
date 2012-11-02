@@ -527,6 +527,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // for convenience.
   std::vector<string16> GetPermissionMessageStrings() const;
 
+  // Returns true if the extension does not require permission warnings
+  // to be displayed at install time.
+  bool ShouldSkipPermissionWarnings() const;
+
   // Sets the active |permissions|.
   void SetActivePermissions(const PermissionSet* permissions) const;
 

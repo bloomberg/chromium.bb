@@ -605,7 +605,8 @@ void ExtensionInstallPrompt::OnMintTokenFailure(
 void ExtensionInstallPrompt::ShowConfirmation() {
   prompt_.set_type(prompt_type_);
 
-  if (permissions_) {
+  if (permissions_ &&
+      (!extension_ || !extension_->ShouldSkipPermissionWarnings())) {
     Extension::Type extension_type = extension_ ? extension_->GetType() :
                                                   Extension::TYPE_UNKNOWN;
     prompt_.SetPermissions(permissions_->GetWarningMessages(extension_type));

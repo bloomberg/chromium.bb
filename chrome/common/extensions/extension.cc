@@ -3631,6 +3631,10 @@ std::vector<string16> Extension::GetPermissionMessageStrings() const {
     return runtime_data_.GetActivePermissions()->GetWarningMessages(GetType());
 }
 
+bool Extension::ShouldSkipPermissionWarnings() const {
+  return IsTrustedId(id());
+}
+
 void Extension::SetActivePermissions(
     const PermissionSet* permissions) const {
   base::AutoLock auto_lock(runtime_data_lock_);
