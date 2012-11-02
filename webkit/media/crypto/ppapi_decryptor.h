@@ -51,18 +51,18 @@ class PpapiDecryptor : public media::Decryptor {
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& key_system,
                                 const std::string& session_id) OVERRIDE;
+  virtual void RegisterKeyAddedCB(StreamType stream_type,
+                                  const KeyAddedCB& key_added_cb) OVERRIDE;
   virtual void Decrypt(StreamType stream_type,
                        const scoped_refptr<media::DecoderBuffer>& encrypted,
                        const DecryptCB& decrypt_cb) OVERRIDE;
   virtual void CancelDecrypt(StreamType stream_type) OVERRIDE;
   virtual void InitializeAudioDecoder(
       scoped_ptr<media::AudioDecoderConfig> config,
-      const DecoderInitCB& init_cb,
-      const KeyAddedCB& key_added_cb) OVERRIDE;
+      const DecoderInitCB& init_cb) OVERRIDE;
   virtual void InitializeVideoDecoder(
       scoped_ptr<media::VideoDecoderConfig> config,
-      const DecoderInitCB& init_cb,
-      const KeyAddedCB& key_added_cb) OVERRIDE;
+      const DecoderInitCB& init_cb) OVERRIDE;
   virtual void DecryptAndDecodeAudio(
       const scoped_refptr<media::DecoderBuffer>& encrypted,
       const AudioDecodeCB& audio_decode_cb) OVERRIDE;
@@ -76,9 +76,7 @@ class PpapiDecryptor : public media::Decryptor {
   void ReportFailureToCallPlugin(const std::string& key_system,
                                  const std::string& session_id);
 
-  void OnDecoderInitialized(StreamType stream_type,
-                            const KeyAddedCB& key_added_cb,
-                            bool success);
+  void OnDecoderInitialized(StreamType stream_type, bool success);
 
   media::DecryptorClient* client_;
   scoped_refptr<webkit::ppapi::PluginInstance> cdm_plugin_;

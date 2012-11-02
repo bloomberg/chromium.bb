@@ -96,6 +96,20 @@ void PpapiDecryptor::CancelKeyRequest(const std::string& key_system,
     ReportFailureToCallPlugin(key_system, session_id);
 }
 
+void PpapiDecryptor::RegisterKeyAddedCB(StreamType stream_type,
+                                        const KeyAddedCB& key_added_cb) {
+  switch (stream_type) {
+    case kAudio:
+      audio_key_added_cb_ = key_added_cb;
+      break;
+    case kVideo:
+      video_key_added_cb_ = key_added_cb;
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 void PpapiDecryptor::Decrypt(
     StreamType stream_type,
     const scoped_refptr<media::DecoderBuffer>& encrypted,
@@ -119,12 +133,11 @@ void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
 
 void PpapiDecryptor::InitializeAudioDecoder(
       scoped_ptr<media::AudioDecoderConfig> config,
-      const DecoderInitCB& init_cb,
-      const KeyAddedCB& key_added_cb) {
+      const DecoderInitCB& init_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
     render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &PpapiDecryptor::InitializeAudioDecoder, weak_this_,
-        base::Passed(&config), init_cb, key_added_cb));
+        base::Passed(&config), init_cb));
     return;
   }
 
@@ -134,8 +147,7 @@ void PpapiDecryptor::InitializeAudioDecoder(
 
   audio_decoder_init_cb_ = init_cb;
   if (!cdm_plugin_->InitializeAudioDecoder(*config, base::Bind(
-      &PpapiDecryptor::OnDecoderInitialized, weak_this_,
-      kAudio, key_added_cb))) {
+      &PpapiDecryptor::OnDecoderInitialized, weak_this_, kAudio))) {
     base::ResetAndReturn(&audio_decoder_init_cb_).Run(false);
     return;
   }
@@ -143,12 +155,11 @@ void PpapiDecryptor::InitializeAudioDecoder(
 
 void PpapiDecryptor::InitializeVideoDecoder(
     scoped_ptr<media::VideoDecoderConfig> config,
-    const DecoderInitCB& init_cb,
-    const KeyAddedCB& key_added_cb) {
+    const DecoderInitCB& init_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
     render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &PpapiDecryptor::InitializeVideoDecoder, weak_this_,
-        base::Passed(&config), init_cb, key_added_cb));
+        base::Passed(&config), init_cb));
     return;
   }
 
@@ -158,8 +169,7 @@ void PpapiDecryptor::InitializeVideoDecoder(
 
   video_decoder_init_cb_ = init_cb;
   if (!cdm_plugin_->InitializeVideoDecoder(*config, base::Bind(
-      &PpapiDecryptor::OnDecoderInitialized, weak_this_,
-      kVideo, key_added_cb))) {
+      &PpapiDecryptor::OnDecoderInitialized, weak_this_, kVideo))) {
     base::ResetAndReturn(&video_decoder_init_cb_).Run(false);
     return;
   }
@@ -212,6 +222,7 @@ void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
         &PpapiDecryptor::DeinitializeDecoder, weak_this_, stream_type));
     return;
   }
+
   DVLOG(2) << "DeinitializeDecoder() - stream_type: " << stream_type;
   cdm_plugin_->DeinitializeDecoder(stream_type);
 }
@@ -223,27 +234,16 @@ void PpapiDecryptor::ReportFailureToCallPlugin(const std::string& key_system,
 }
 
 void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
-                                          const KeyAddedCB& key_added_cb,
                                           bool success) {
-  DCHECK(!key_added_cb.is_null());
-
   switch (stream_type) {
     case kAudio:
-      DCHECK(audio_key_added_cb_.is_null());
       DCHECK(!audio_decoder_init_cb_.is_null());
-      if (success)
-        audio_key_added_cb_ = key_added_cb;
       base::ResetAndReturn(&audio_decoder_init_cb_).Run(success);
       break;
-
     case kVideo:
-      DCHECK(video_key_added_cb_.is_null());
       DCHECK(!video_decoder_init_cb_.is_null());
-      if (success)
-        video_key_added_cb_ = key_added_cb;
       base::ResetAndReturn(&video_decoder_init_cb_).Run(success);
       break;
-
     default:
       NOTREACHED();
   }
