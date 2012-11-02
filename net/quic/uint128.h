@@ -11,7 +11,7 @@
 namespace net {
 
 struct uint128 {
-  uint128() {}
+  uint128() : hi(0), lo(0) {}
   uint128(uint64 hi, uint64 lo) : hi(hi), lo(lo) {}
   uint64 hi;
   uint64 lo;
