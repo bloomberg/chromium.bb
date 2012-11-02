@@ -5,7 +5,7 @@
 var fileSystem = null;
 var testDirName = null;
 var testFileName = null;
-var watchfileUrl = null;
+var watchDirectoryUrl = null;
 
 function errorCallback(e) {
   var msg = '';
@@ -54,31 +54,31 @@ function deleteDirectory() {
 
 // Sets up directory watch, kicks of file removal from the directory.
 function setupDirectoryWatch(dirEntry) {
-  watchfileUrl = dirEntry.toURL();
+  watchDirectoryUrl = dirEntry.toURL();
   chrome.fileBrowserPrivate.addFileWatch(
-      watchfileUrl,
+      watchDirectoryUrl,
       function(success) {
         if (!success) {
           chrome.test.fail("File watch setup failed.");
         } else {
-          console.log("Added new file watch: " + watchfileUrl);
+          console.log("Added new file watch: " + watchDirectoryUrl);
           fileSystem.root.getFile(testDirName+'/'+testFileName, {create: false},
-              triggerFolderChange, errorCallback);
+              triggerDirectoryChange, errorCallback);
         }
   });
 }
 
-function triggerFolderChange(fileEntry) {
-  // Just delete test file, this should trigger onFolderChanged call below.
+function triggerDirectoryChange(fileEntry) {
+  // Just delete test file, this should trigger onDirectoryChanged call below.
   fileEntry.remove(function() {}, errorCallback);
 }
 
-function onFolderChanged(info) {
+function onDirectoryChanged(info) {
   if (info && info.eventType == 'changed' &&
-      info.fileUrl == watchfileUrl) {
+      info.directoryUrl == watchDirectoryUrl) {
     // Remove file watch.
-    console.log("Removing file watch: " + info.fileUrl);
-    chrome.fileBrowserPrivate.removeFileWatch(info.fileUrl,
+    console.log("Removing file watch: " + info.directoryUrl);
+    chrome.fileBrowserPrivate.removeFileWatch(info.directoryUrl,
        function(success) {
          if (success) {
            chrome.test.succeed();
@@ -134,7 +134,8 @@ function start() {
     },
 
     function file_watcher() {
-      chrome.fileBrowserPrivate.onFileChanged.addListener(onFolderChanged);
+      chrome.fileBrowserPrivate.onDirectoryChanged.addListener(
+          onDirectoryChanged);
       console.log("Setting up watch of : " + testDirName);
       fileSystem.root.getDirectory(testDirName, {create: false},
           setupDirectoryWatch, errorCallback);

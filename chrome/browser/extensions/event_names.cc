@@ -30,7 +30,7 @@ const char kOnExtensionEnabled[] = "management.onEnabled";
 const char kOnExtensionDisabled[] = "management.onDisabled";
 
 const char kOnFileBrowserDiskChanged[] = "fileBrowserPrivate.onDiskChanged";
-const char kOnFileChanged[] = "fileBrowserPrivate.onFileChanged";
+const char kOnDirectoryChanged[] = "fileBrowserPrivate.onDirectoryChanged";
 const char kOnFileBrowserMountCompleted[] =
     "fileBrowserPrivate.onMountCompleted";
 const char kOnFileTransfersUpdated[] =

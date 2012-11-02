@@ -504,12 +504,13 @@ void FileBrowserEventRouter::HandleFileWatchNotification(
   if (iter == file_watchers_.end()) {
     return;
   }
-  DispatchFolderChangeEvent(iter->second->GetVirtualPath(), got_error,
-                            iter->second->GetExtensions());
+  DispatchDirectoryChangeEvent(iter->second->GetVirtualPath(), got_error,
+                               iter->second->GetExtensions());
 }
 
-void FileBrowserEventRouter::DispatchFolderChangeEvent(
-    const FilePath& virtual_path, bool got_error,
+void FileBrowserEventRouter::DispatchDirectoryChangeEvent(
+    const FilePath& virtual_path,
+    bool got_error,
     const FileBrowserEventRouter::ExtensionUsageRegistry& extensions) {
   if (!profile_) {
     NOTREACHED();
@@ -522,17 +523,25 @@ void FileBrowserEventRouter::DispatchFolderChangeEvent(
         iter->first));
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);
-    GURL target_file_url = GURL(base_url.spec() + virtual_path.value());
+    GURL target_directory_url = GURL(base_url.spec() + virtual_path.value());
     scoped_ptr<ListValue> args(new ListValue());
     DictionaryValue* watch_info = new DictionaryValue();
     args->Append(watch_info);
-    watch_info->SetString("fileUrl", target_file_url.spec());
+    watch_info->SetString("directoryUrl", target_directory_url.spec());
     watch_info->SetString("eventType",
                           got_error ? kPathWatchError : kPathChanged);
 
+    // TODO(mtomasz): Pass set of entries. http://crbug.com/157834
+    ListValue* watch_info_entries = new ListValue();
+    watch_info->Set("changedEntries", watch_info_entries);
+
     extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(iter->first,
-            extensions::event_names::kOnFileChanged, args.Pass(), NULL, GURL());
+        DispatchEventToExtension(
+            iter->first,
+            extensions::event_names::kOnDirectoryChanged,
+            args.Pass(),
+            NULL,
+            GURL());
   }
 }
 

@@ -113,7 +113,7 @@ chrome.fileBrowserPrivate = {
   /**
    * File system change notification.
    */
-  onFileChanged: new MockEventSource(),
+  onDirectoryChanged: new MockEventSource(),
 
   /**
    * File watchers.

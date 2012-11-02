@@ -1529,7 +1529,7 @@ DialogType.isModal = function(type) {
     // Failing to fetch a thumbnail likely means that the thumbnail URL
     // is now stale. Request a refresh of the current directory, to get
     // the new thumbnail URLs. Once the directory is refreshed, we'll get
-    // notified via onFileChanged event.
+    // notified via onDirectoryChanged event.
     var onImageLoadError = this.fileWatcher_.requestMetadataRefresh.bind(
         this.fileWatcher_, imageUrl);
 

@@ -165,9 +165,9 @@ class FileBrowserEventRouter
   void HandleFileWatchNotification(const FilePath& path,
                                    bool got_error);
 
-  // Sends folder change event.
-  void DispatchFolderChangeEvent(const FilePath& path, bool error,
-                                 const ExtensionUsageRegistry& extensions);
+  // Sends directory change event.
+  void DispatchDirectoryChangeEvent(const FilePath& path, bool error,
+                                    const ExtensionUsageRegistry& extensions);
 
   // Sends filesystem changed extension message to all renderers.
   void DispatchDiskEvent(const chromeos::disks::DiskMountManager::Disk* disk,

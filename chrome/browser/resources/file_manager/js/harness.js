@@ -120,8 +120,8 @@ var harness = {
         harness.fileManager.getCurrentDirectory(),
         [].slice.call(event.target.files),
         function() {
-          harness.chrome.fileBrowserPrivate.onFileChanged.notify({
-            fileUrl: harness.fileManager.getCurrentDirectoryURL()
+          harness.chrome.fileBrowserPrivate.onDirectoryChanged.notify({
+            directoryUrl: harness.fileManager.getCurrentDirectoryURL()
         });
     });
   },

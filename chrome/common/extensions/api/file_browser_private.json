@@ -347,17 +347,35 @@
       {
         "id": "FileWatchEvent",
         "type": "object",
-        "description": "Payload data for disk mount / unmount event.",
+        "description": "Directory change notification details.",
         "properties": {
           "eventType": {
             "type": "string",
             "enum": ["changed", "error"],
             "description": "Specifies type of event that is raised."
           },
-          "fileUrl": {
+          "directoryUrl": {
             "type": "string",
-            "description":"URL of watched file"
+            "description": "URL of watched directory."
+          },
+          "changedEntries": {
+            "type": "array",
+            "items": {"$ref": "FileWatchChangedEntry"}
           }
+        }
+      },
+      {
+        "id": "FileWatchChangedEntry",
+        "type": "object",
+        "description": "Information about changed file or directory",
+        "properties": {
+          "type": "string",
+          "enum": ["added", "deleted", "updated"],
+          "description": "Specifies type of the change."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL of the changed file."
         }
       }
     ],
@@ -1032,7 +1050,7 @@
       },
       {
         "name": "requestDirectoryRefresh",
-        "description": "Requests a refresh of a directory. Used to get the latest metadata of files in a particular directory. Upon completion, onFileChanged event is raised against the target directory, so that the file browser can redraw contents in the directory. Note that the onFileChanged event can be raised even if there is no change in the directory as it's expensive to check if the new contents match the existing ones.",
+        "description": "Requests a refresh of a directory. Used to get the latest metadata of files in a particular directory. Upon completion, onDirectoryChanged event is raised against the target directory, so that the file browser can redraw contents in the directory. Note that the onFileChanged event can be raised even if there is no change in the directory as it's expensive to check if the new contents match the existing ones.",
         "parameters": [
           {
             "name": "fileURL",
@@ -1081,9 +1099,9 @@
         ]
       },
       {
-        "name": "onFileChanged",
+        "name": "onDirectoryChanged",
         "type": "function",
-        "description": "Fired when watched file change event is detected.",
+        "description": "Fired when watched file change event is detected in a watched directory.",
         "parameters": [
           {
             "$ref": "FileWatchEvent",

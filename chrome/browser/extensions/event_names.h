@@ -37,7 +37,7 @@ extern const char kOnExtensionDisabled[];
 
 // FileBrowser.
 extern const char kOnFileBrowserDiskChanged[];
-extern const char kOnFileChanged[];
+extern const char kOnDirectoryChanged[];
 extern const char kOnFileBrowserMountCompleted[];
 extern const char kOnFileTransfersUpdated[];
 extern const char kOnDocumentFeedFetched[];
