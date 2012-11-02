@@ -387,7 +387,6 @@ bool WebPluginDelegateProxy::Initialize(
 
   // Now tell the PluginInstance in the plugin process to initialize.
   PluginMsg_Init_Params params;
-  params.containing_window = render_view_->host_window();
   params.url = url;
   params.page_url = page_url_;
   params.arg_names = arg_names;

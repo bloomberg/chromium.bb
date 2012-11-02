@@ -44,33 +44,32 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   MessageFilter() : channel_(NULL) { }
 
-  base::WaitableEvent* GetModalDialogEvent(
-      gfx::NativeViewId containing_window) {
+  base::WaitableEvent* GetModalDialogEvent(int render_view_id) {
     base::AutoLock auto_lock(modal_dialog_event_map_lock_);
-    if (!modal_dialog_event_map_.count(containing_window)) {
+    if (!modal_dialog_event_map_.count(render_view_id)) {
       NOTREACHED();
       return NULL;
     }
 
-    return modal_dialog_event_map_[containing_window].event;
+    return modal_dialog_event_map_[render_view_id].event;
   }
 
   // Decrement the ref count associated with the modal dialog event for the
   // given tab.
-  void ReleaseModalDialogEvent(gfx::NativeViewId containing_window) {
+  void ReleaseModalDialogEvent(int render_view_id) {
     base::AutoLock auto_lock(modal_dialog_event_map_lock_);
-    if (!modal_dialog_event_map_.count(containing_window)) {
+    if (!modal_dialog_event_map_.count(render_view_id)) {
       NOTREACHED();
       return;
     }
 
-    if (--(modal_dialog_event_map_[containing_window].refcount))
+    if (--(modal_dialog_event_map_[render_view_id].refcount))
       return;
 
     // Delete the event when the stack unwinds as it could be in use now.
     MessageLoop::current()->DeleteSoon(
-        FROM_HERE, modal_dialog_event_map_[containing_window].event);
-    modal_dialog_event_map_.erase(containing_window);
+        FROM_HERE, modal_dialog_event_map_[render_view_id].event);
+    modal_dialog_event_map_.erase(render_view_id);
   }
 
   bool Send(IPC::Message* message) {
@@ -93,8 +92,6 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
            message.type() == PluginMsg_ResetModalDialogEvent::ID;
   }
 
-
-
  protected:
   virtual ~MessageFilter() {
     // Clean up in case of renderer crash.
@@ -107,34 +104,34 @@ class PluginChannel::MessageFilter : public IPC::ChannelProxy::MessageFilter {
  private:
   void OnInit(const PluginMsg_Init_Params& params, IPC::Message* reply_msg) {
     base::AutoLock auto_lock(modal_dialog_event_map_lock_);
-    if (modal_dialog_event_map_.count(params.containing_window)) {
-      modal_dialog_event_map_[params.containing_window].refcount++;
+    if (modal_dialog_event_map_.count(params.host_render_view_routing_id)) {
+      modal_dialog_event_map_[params.host_render_view_routing_id].refcount++;
       return;
     }
 
     WaitableEventWrapper wrapper;
     wrapper.event = new base::WaitableEvent(true, false);
     wrapper.refcount = 1;
-    modal_dialog_event_map_[params.containing_window] = wrapper;
+    modal_dialog_event_map_[params.host_render_view_routing_id] = wrapper;
   }
 
-  void OnSignalModalDialogEvent(gfx::NativeViewId containing_window) {
+  void OnSignalModalDialogEvent(int render_view_id) {
     base::AutoLock auto_lock(modal_dialog_event_map_lock_);
-    if (modal_dialog_event_map_.count(containing_window))
-      modal_dialog_event_map_[containing_window].event->Signal();
+    if (modal_dialog_event_map_.count(render_view_id))
+      modal_dialog_event_map_[render_view_id].event->Signal();
   }
 
-  void OnResetModalDialogEvent(gfx::NativeViewId containing_window) {
+  void OnResetModalDialogEvent(int render_view_id) {
     base::AutoLock auto_lock(modal_dialog_event_map_lock_);
-    if (modal_dialog_event_map_.count(containing_window))
-      modal_dialog_event_map_[containing_window].event->Reset();
+    if (modal_dialog_event_map_.count(render_view_id))
+      modal_dialog_event_map_[render_view_id].event->Reset();
   }
 
   struct WaitableEventWrapper {
     base::WaitableEvent* event;
     int refcount;  // There could be multiple plugin instances per tab.
   };
-  typedef std::map<gfx::NativeViewId, WaitableEventWrapper> ModalDialogEventMap;
+  typedef std::map<int, WaitableEventWrapper> ModalDialogEventMap;
   ModalDialogEventMap modal_dialog_event_map_;
   base::Lock modal_dialog_event_map_lock_;
 
@@ -196,9 +193,8 @@ int PluginChannel::GenerateRouteID() {
   return ++last_id;
 }
 
-base::WaitableEvent* PluginChannel::GetModalDialogEvent(
-    gfx::NativeViewId containing_window) {
-  return filter_->GetModalDialogEvent(containing_window);
+base::WaitableEvent* PluginChannel::GetModalDialogEvent(int render_view_id) {
+  return filter_->GetModalDialogEvent(render_view_id);
 }
 
 PluginChannel::~PluginChannel() {
@@ -273,8 +269,8 @@ void PluginChannel::OnDestroyInstance(int instance_id,
   for (size_t i = 0; i < plugin_stubs_.size(); ++i) {
     if (plugin_stubs_[i]->instance_id() == instance_id) {
       scoped_refptr<MessageFilter> filter(filter_);
-      gfx::NativeViewId window =
-          plugin_stubs_[i]->webplugin()->containing_window();
+      int render_view_id =
+          plugin_stubs_[i]->webplugin()->host_render_view_routing_id();
       plugin_stubs_.erase(plugin_stubs_.begin() + i);
       Send(reply_msg);
       RemoveRoute(instance_id);
@@ -283,7 +279,8 @@ void PluginChannel::OnDestroyInstance(int instance_id,
       // stack unwinds since the plugin can be destroyed later if it's in use
       // right now.
       MessageLoop::current()->PostNonNestableTask(FROM_HERE, base::Bind(
-          &MessageFilter::ReleaseModalDialogEvent, filter.get(), window));
+          &MessageFilter::ReleaseModalDialogEvent, filter.get(),
+          render_view_id));
       return;
     }
   }

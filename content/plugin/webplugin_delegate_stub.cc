@@ -164,8 +164,7 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
       command_line.GetSwitchValuePath(switches::kPluginPath);
 
   webplugin_ = new WebPluginProxy(
-      channel_, instance_id_, page_url_, params.containing_window,
-      params.host_render_view_routing_id);
+      channel_, instance_id_, page_url_, params.host_render_view_routing_id);
   delegate_ = webkit::npapi::WebPluginDelegateImpl::Create(path, mime_type_);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);
@@ -280,8 +279,8 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id) {
   // delegate. It will delete itself sooner if the proxy tells it that it has
   // been released, or if the channel to the proxy is closed.
   NPObjectStub* scriptable_stub = new NPObjectStub(
-      object, channel_.get(), *route_id, webplugin_->containing_window(),
-      page_url_);
+      object, channel_.get(), *route_id,
+      webplugin_->host_render_view_routing_id(), page_url_);
   plugin_scriptable_object_ = scriptable_stub->AsWeakPtr();
 
   // Release ref added by GetPluginScriptableObject (our stub holds its own).

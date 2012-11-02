@@ -24,7 +24,6 @@
 #define IPC_MESSAGE_START PluginMsgStart
 
 IPC_STRUCT_BEGIN(PluginMsg_Init_Params)
-  IPC_STRUCT_MEMBER(gfx::NativeViewId, containing_window)
   IPC_STRUCT_MEMBER(GURL,  url)
   IPC_STRUCT_MEMBER(GURL,  page_url)
   IPC_STRUCT_MEMBER(std::vector<std::string>, arg_names)
@@ -275,10 +274,10 @@ IPC_MESSAGE_ROUTED2(PluginMsg_HTTPRangeRequestReply,
                     int /* range_request_id */)
 
 IPC_MESSAGE_CONTROL1(PluginMsg_SignalModalDialogEvent,
-                     gfx::NativeViewId /* containing_window */)
+                     int /* render_view_id */)
 
 IPC_MESSAGE_CONTROL1(PluginMsg_ResetModalDialogEvent,
-                     gfx::NativeViewId /* containing_window */)
+                     int /* render_view_id */)
 
 #if defined(OS_MACOSX)
 // This message, used only on 10.6 and later, transmits the "fake"

@@ -59,7 +59,6 @@ WebPluginProxy::WebPluginProxy(
     PluginChannel* channel,
     int route_id,
     const GURL& page_url,
-    gfx::NativeViewId containing_window,
     int host_render_view_routing_id)
     : channel_(channel),
       route_id_(route_id),
@@ -67,7 +66,6 @@ WebPluginProxy::WebPluginProxy(
       plugin_element_(NULL),
       delegate_(NULL),
       waiting_for_paint_(false),
-      containing_window_(containing_window),
       page_url_(page_url),
       transparent_(false),
       windowless_buffer_index_(0),
@@ -221,7 +219,7 @@ NPObject* WebPluginProxy::GetWindowScriptNPObject() {
     return NULL;
 
   window_npobject_ = NPObjectProxy::Create(
-      channel_, npobject_route_id, containing_window_, page_url_);
+      channel_, npobject_route_id, host_render_view_routing_id_, page_url_);
 
   return window_npobject_;
 }
@@ -238,7 +236,7 @@ NPObject* WebPluginProxy::GetPluginElement() {
     return NULL;
 
   plugin_element_ = NPObjectProxy::Create(
-      channel_, npobject_route_id, containing_window_, page_url_);
+      channel_, npobject_route_id, host_render_view_routing_id_, page_url_);
 
   return plugin_element_;
 }

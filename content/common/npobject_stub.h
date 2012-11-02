@@ -16,7 +16,6 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "ui/gfx/native_widget_types.h"
 
 struct NPObject;
 
@@ -36,7 +35,7 @@ class NPObjectStub : public IPC::Listener,
   NPObjectStub(NPObject* npobject,
                NPChannelBase* channel,
                int route_id,
-               gfx::NativeViewId containing_window,
+               int render_view_id,
                const GURL& page_url);
   virtual ~NPObjectStub();
 
@@ -89,7 +88,7 @@ class NPObjectStub : public IPC::Listener,
   NPObject* npobject_;
   scoped_refptr<NPChannelBase> channel_;
   int route_id_;
-  gfx::NativeViewId containing_window_;
+  int render_view_id_;
 
   // The url of the main frame hosting the plugin.
   GURL page_url_;

@@ -111,8 +111,7 @@ NPObjectBase* NPChannelBase::GetNPObjectListenerForRoute(int route_id) {
   return iter->second;
 }
 
-base::WaitableEvent* NPChannelBase::GetModalDialogEvent(
-    gfx::NativeViewId containing_window) {
+base::WaitableEvent* NPChannelBase::GetModalDialogEvent(int render_view_id) {
   return NULL;
 }
 

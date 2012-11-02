@@ -49,7 +49,7 @@ void CreateNPVariantParam(const NPVariant& variant,
                           NPChannelBase* channel,
                           NPVariant_Param* param,
                           bool release,
-                          gfx::NativeViewId containing_window,
+                          int render_view_id,
                           const GURL& page_url);
 
 // Creates an NPVariant from the marshalled object.
@@ -57,7 +57,7 @@ void CreateNPVariantParam(const NPVariant& variant,
 bool CreateNPVariant(const NPVariant_Param& param,
                      NPChannelBase* channel,
                      NPVariant* result,
-                     gfx::NativeViewId containing_window,
+                     int render_view_id,
                      const GURL& page_url);
 
 #if defined(OS_WIN)

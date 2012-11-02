@@ -60,11 +60,11 @@ IPC::Listener* NPObjectProxy::GetChannelListener() {
 NPObjectProxy::NPObjectProxy(
     NPChannelBase* channel,
     int route_id,
-    gfx::NativeViewId containing_window,
+    int render_view_id,
     const GURL& page_url)
     : channel_(channel),
       route_id_(route_id),
-      containing_window_(containing_window),
+      render_view_id_(render_view_id),
       page_url_(page_url) {
   channel_->AddRoute(route_id, this, this);
 }
@@ -84,12 +84,11 @@ NPObjectProxy::~NPObjectProxy() {
 
 NPObject* NPObjectProxy::Create(NPChannelBase* channel,
                                 int route_id,
-                                gfx::NativeViewId containing_window,
+                                int render_view_id,
                                 const GURL& page_url) {
   NPObjectWrapper* obj = reinterpret_cast<NPObjectWrapper*>(
       WebBindings::createObject(0, &npclass_proxy_));
-  obj->proxy = new NPObjectProxy(
-      channel, route_id, containing_window, page_url);
+  obj->proxy = new NPObjectProxy(channel, route_id, render_view_id, page_url);
   channel->AddMappingForNPObjectProxy(route_id, &obj->object);
   return reinterpret_cast<NPObject*>(obj);
 }
@@ -178,7 +177,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
   }
 
   bool result = false;
-  gfx::NativeViewId containing_window = proxy->containing_window_;
+  int render_view_id = proxy->render_view_id_;
   NPIdentifier_Param name_param;
   if (is_default) {
     // The data won't actually get used, but set it so we don't send random
@@ -195,7 +194,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
   for (unsigned int i = 0; i < arg_count; ++i) {
     NPVariant_Param param;
     CreateNPVariantParam(
-        args[i], channel_copy, &param, false, containing_window,
+        args[i], channel_copy, &param, false, render_view_id,
         proxy->page_url_);
     args_param.push_back(param);
   }
@@ -212,7 +211,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
   // messages are pumped).
   if (IsPluginProcess() && proxy->channel()) {
     msg->set_pump_messages_event(
-        proxy->channel()->GetModalDialogEvent(containing_window));
+        proxy->channel()->GetModalDialogEvent(render_view_id));
   }
 
   GURL page_url = proxy->page_url_;
@@ -225,7 +224,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
     return false;
 
   CreateNPVariant(
-      param_result, channel_copy, np_result, containing_window, page_url);
+      param_result, channel_copy, np_result, render_view_id, page_url);
   return true;
 }
 
@@ -272,7 +271,7 @@ bool NPObjectProxy::NPGetProperty(NPObject *obj,
   }
 
   bool result = false;
-  gfx::NativeViewId containing_window = proxy->containing_window_;
+  int render_view_id = proxy->render_view_id_;
   NPIdentifier_Param name_param;
   CreateNPIdentifierParam(name, &name_param);
 
@@ -288,7 +287,7 @@ bool NPObjectProxy::NPGetProperty(NPObject *obj,
     return false;
 
   CreateNPVariant(
-      param, channel.get(), np_result, containing_window, page_url);
+      param, channel.get(), np_result, render_view_id, page_url);
 
   return true;
 }
@@ -305,14 +304,14 @@ bool NPObjectProxy::NPSetProperty(NPObject *obj,
   }
 
   bool result = false;
-  gfx::NativeViewId containing_window = proxy->containing_window_;
+  int render_view_id = proxy->render_view_id_;
   NPIdentifier_Param name_param;
   CreateNPIdentifierParam(name, &name_param);
 
   NPVariant_Param value_param;
   CreateNPVariantParam(
-      *value, proxy->channel(), &value_param, false,
-      containing_window, proxy->page_url_);
+      *value, proxy->channel(), &value_param, false, render_view_id,
+      proxy->page_url_);
 
   proxy->Send(new NPObjectMsg_SetProperty(
       proxy->route_id(), name_param, value_param, &result));
@@ -412,7 +411,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
   }
 
   bool result = false;
-  gfx::NativeViewId containing_window = proxy->containing_window_;
+  int render_view_id = proxy->render_view_id_;
 
   // Note: This instance can get destroyed in the context of
   // Send so addref the channel in this scope.
@@ -421,7 +420,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
   for (unsigned int i = 0; i < arg_count; ++i) {
     NPVariant_Param param;
     CreateNPVariantParam(
-        args[i], channel_copy, &param, false, containing_window,
+        args[i], channel_copy, &param, false, render_view_id,
         proxy->page_url_);
     args_param.push_back(param);
   }
@@ -433,7 +432,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
   // See comment in NPObjectProxy::NPInvokePrivate.
   if (IsPluginProcess() && proxy->channel()) {
     msg->set_pump_messages_event(
-        proxy->channel()->GetModalDialogEvent(proxy->containing_window_));
+        proxy->channel()->GetModalDialogEvent(proxy->render_view_id_));
   }
 
   GURL page_url = proxy->page_url_;
@@ -446,7 +445,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
     return false;
 
   CreateNPVariant(
-      param_result, channel_copy, np_result, containing_window, page_url);
+      param_result, channel_copy, np_result, render_view_id, page_url);
   return true;
 }
 
@@ -460,7 +459,7 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
   }
 
   bool result = false;
-  gfx::NativeViewId containing_window = proxy->containing_window_;
+  int render_view_id = proxy->render_view_id_;
   bool popups_allowed = false;
 
   if (npp) {
@@ -483,7 +482,7 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
   // See comment in NPObjectProxy::NPInvokePrivate.
   if (IsPluginProcess() && proxy->channel()) {
     msg->set_pump_messages_event(
-        proxy->channel()->GetModalDialogEvent(containing_window));
+        proxy->channel()->GetModalDialogEvent(render_view_id));
   }
   scoped_refptr<NPChannelBase> channel(proxy->channel_);
 
@@ -495,7 +494,7 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
     return false;
 
   CreateNPVariant(
-      result_param, channel.get(), result_var, containing_window, page_url);
+      result_param, channel.get(), result_var, render_view_id, page_url);
   return true;
 }
 

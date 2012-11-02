@@ -53,7 +53,6 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   WebPluginProxy(PluginChannel* channel,
                  int route_id,
                  const GURL& page_url,
-                 gfx::NativeViewId containing_window,
                  int host_render_view_routing_id);
   virtual ~WebPluginProxy();
 
@@ -131,7 +130,6 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual void ResourceClientDeleted(
       webkit::npapi::WebPluginResourceClient* resource_client) OVERRIDE;
-  gfx::NativeViewId containing_window() { return containing_window_; }
 
 #if defined(OS_MACOSX)
   virtual void FocusChanged(bool focused) OVERRIDE;
@@ -273,7 +271,6 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   webkit::npapi::WebPluginDelegateImpl* delegate_;
   gfx::Rect damaged_rect_;
   bool waiting_for_paint_;
-  gfx::NativeViewId containing_window_;
   // The url of the main frame hosting the plugin.
   GURL page_url_;
 

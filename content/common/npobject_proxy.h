@@ -37,7 +37,7 @@ class NPObjectProxy : public IPC::Listener,
 
   static NPObject* Create(NPChannelBase* channel,
                           int route_id,
-                          gfx::NativeViewId containing_window,
+                          int render_view_id,
                           const GURL& page_url);
 
   // IPC::Sender implementation:
@@ -100,7 +100,7 @@ class NPObjectProxy : public IPC::Listener,
  private:
   NPObjectProxy(NPChannelBase* channel,
                 int route_id,
-                gfx::NativeViewId containing_window,
+                int render_view_id,
                 const GURL& page_url);
 
   // IPC::Listener implementation:
@@ -116,7 +116,7 @@ class NPObjectProxy : public IPC::Listener,
 
   scoped_refptr<NPChannelBase> channel_;
   int route_id_;
-  gfx::NativeViewId containing_window_;
+  int render_view_id_;
 
   // The url of the main frame hosting the plugin.
   GURL page_url_;
