@@ -46,8 +46,8 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        m_rootLayer1->setBounds(IntSize(30, 30));
-        m_rootLayer2->setBounds(IntSize(30, 30));
+        m_rootLayer1->setBounds(gfx::Size(30, 30));
+        m_rootLayer2->setBounds(gfx::Size(30, 30));
 
         postSetNeedsCommitToMainThread();
     }

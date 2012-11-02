@@ -8,6 +8,10 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace cc {
 
 class IntPoint;
@@ -31,7 +35,7 @@ public:
     // can be scrolled, ScrollOnMainThread if the scroll event should instead be
     // delegated to the main thread, or ScrollIgnored if there is nothing to be
     // scrolled at the given coordinates.
-    virtual ScrollStatus scrollBegin(const IntPoint&, ScrollInputType) = 0;
+    virtual ScrollStatus scrollBegin(const gfx::Point&, ScrollInputType) = 0;
 
     // Scroll the selected layer starting at the given position. If the scroll
     // type given to scrollBegin was a gesture, then the scroll point and delta
@@ -40,7 +44,7 @@ public:
     // layer in the requested direction, its first ancestor layer that can be
     // scrolled will be moved instead. Should only be called if scrollBegin()
     // returned ScrollStarted.
-    virtual void scrollBy(const IntPoint&, const IntSize&) = 0;
+    virtual void scrollBy(const gfx::Point&, const IntSize&) = 0;
 
     // Stop scrolling the selected layer. Should only be called if scrollBegin()
     // returned ScrollStarted.

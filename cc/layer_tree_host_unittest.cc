@@ -1184,7 +1184,7 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setViewportSize(IntSize(10, 10), IntSize(10, 10));
+        m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
         m_layerTreeHost->rootLayer()->addChild(m_updateCheckLayer);
 
         postSetNeedsCommitToMainThread();
@@ -1298,12 +1298,12 @@ public:
 
         m_rootLayer->setIsDrawable(true);
         m_rootLayer->setBounds(gfx::Size(30, 30));
-        m_rootLayer->setAnchorPoint(FloatPoint(0, 0));
+        m_rootLayer->setAnchorPoint(gfx::PointF(0, 0));
 
         m_childLayer->setIsDrawable(true);
         m_childLayer->setPosition(gfx::Point(2, 2));
         m_childLayer->setBounds(gfx::Size(10, 10));
-        m_childLayer->setAnchorPoint(FloatPoint(0, 0));
+        m_childLayer->setAnchorPoint(gfx::PointF(0, 0));
 
         m_layerTreeHost->setRootLayer(m_rootLayer);
     }
@@ -2232,18 +2232,17 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        IntSize viewportSize(10, 10);
-        IntSize deviceViewportSize = viewportSize;
-        deviceViewportSize.scale(m_deviceScaleFactor, m_deviceScaleFactor);
+        gfx::Size viewportSize(10, 10);
+        gfx::Size deviceViewportSize = gfx::ToCeiledSize(viewportSize.Scale(m_deviceScaleFactor));
         m_layerTreeHost->setViewportSize(viewportSize, deviceViewportSize);
 
         m_layerTreeHost->setDeviceScaleFactor(m_deviceScaleFactor);
 
         m_rootScrollLayer = ContentLayer::create(&m_mockDelegate);
-        m_rootScrollLayer->setBounds(IntSize(110, 110));
+        m_rootScrollLayer->setBounds(gfx::Size(110, 110));
 
-        m_rootScrollLayer->setPosition(FloatPoint(0, 0));
-        m_rootScrollLayer->setAnchorPoint(FloatPoint(0, 0));
+        m_rootScrollLayer->setPosition(gfx::PointF(0, 0));
+        m_rootScrollLayer->setAnchorPoint(gfx::PointF(0, 0));
 
         m_rootScrollLayer->setIsDrawable(true);
         m_rootScrollLayer->setScrollable(true);
@@ -2252,12 +2251,12 @@ public:
 
         m_childLayer = ContentLayer::create(&m_mockDelegate);
         m_childLayer->setLayerScrollClient(this);
-        m_childLayer->setBounds(IntSize(110, 110));
+        m_childLayer->setBounds(gfx::Size(110, 110));
 
         // The scrolls will happen at 5, 5. If they are treated like device pixels, then
         // they will be at 2.5, 2.5 in logical pixels, and will miss this layer.
-        m_childLayer->setPosition(FloatPoint(5, 5));
-        m_childLayer->setAnchorPoint(FloatPoint(0, 0));
+        m_childLayer->setPosition(gfx::PointF(5, 5));
+        m_childLayer->setAnchorPoint(gfx::PointF(0, 0));
 
         m_childLayer->setIsDrawable(true);
         m_childLayer->setScrollable(true);
@@ -2317,8 +2316,8 @@ public:
         switch (impl->sourceFrameNumber()) {
         case 0:
             // Gesture scroll on impl thread.
-            EXPECT_EQ(impl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
-            impl->scrollBy(IntPoint(), m_scrollAmount);
+            EXPECT_EQ(impl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
+            impl->scrollBy(gfx::Point(), m_scrollAmount);
             impl->scrollEnd();
 
             EXPECT_POINT_EQ(m_initialScroll, childLayer->scrollPosition());
@@ -2326,8 +2325,8 @@ public:
             break;
         case 1:
             // Wheel scroll on impl thread.
-            EXPECT_EQ(impl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-            impl->scrollBy(IntPoint(), m_scrollAmount);
+            EXPECT_EQ(impl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+            impl->scrollBy(gfx::Point(), m_scrollAmount);
             impl->scrollEnd();
 
             EXPECT_POINT_EQ(m_secondScroll, childLayer->scrollPosition());
@@ -2393,9 +2392,8 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        IntSize viewportSize(10, 10);
-        IntSize deviceViewportSize = viewportSize;
-        deviceViewportSize.scale(m_deviceScaleFactor, m_deviceScaleFactor);
+        gfx::Size viewportSize(10, 10);
+        gfx::Size deviceViewportSize = gfx::ToCeiledSize(viewportSize.Scale(m_deviceScaleFactor));
         m_layerTreeHost->setViewportSize(viewportSize, deviceViewportSize);
 
         m_layerTreeHost->setDeviceScaleFactor(m_deviceScaleFactor);
@@ -2403,8 +2401,8 @@ public:
         m_rootScrollLayer = ContentLayer::create(&m_mockDelegate);
         m_rootScrollLayer->setBounds(IntSize(110, 110));
 
-        m_rootScrollLayer->setPosition(FloatPoint(0, 0));
-        m_rootScrollLayer->setAnchorPoint(FloatPoint(0, 0));
+        m_rootScrollLayer->setPosition(gfx::PointF(0, 0));
+        m_rootScrollLayer->setAnchorPoint(gfx::PointF(0, 0));
 
         m_rootScrollLayer->setIsDrawable(true);
         m_rootScrollLayer->setScrollable(true);
@@ -2453,8 +2451,8 @@ public:
         switch (impl->sourceFrameNumber()) {
         case 0:
             // Gesture scroll on impl thread.
-            EXPECT_EQ(impl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
-            impl->scrollBy(IntPoint(), m_scrollAmount);
+            EXPECT_EQ(impl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
+            impl->scrollBy(gfx::Point(), m_scrollAmount);
             impl->scrollEnd();
 
             EXPECT_POINT_EQ(m_initialScroll, rootScrollLayer->scrollPosition());
@@ -2462,8 +2460,8 @@ public:
             break;
         case 1:
             // Wheel scroll on impl thread.
-            EXPECT_EQ(impl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-            impl->scrollBy(IntPoint(), m_scrollAmount);
+            EXPECT_EQ(impl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+            impl->scrollBy(gfx::Point(), m_scrollAmount);
             impl->scrollEnd();
 
             EXPECT_POINT_EQ(m_secondScroll, rootScrollLayer->scrollPosition());
@@ -2548,13 +2546,13 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setViewportSize(IntSize(100, 100), IntSize(100, 100));
+        m_layerTreeHost->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
 
-        m_rootLayer->setBounds(IntSize(100, 100));
-        m_surfaceLayer1->setBounds(IntSize(100, 100));
+        m_rootLayer->setBounds(gfx::Size(100, 100));
+        m_surfaceLayer1->setBounds(gfx::Size(100, 100));
         m_surfaceLayer1->setForceRenderSurface(true);
         m_surfaceLayer1->setOpacity(0.5);
-        m_surfaceLayer2->setBounds(IntSize(100, 100));
+        m_surfaceLayer2->setBounds(gfx::Size(100, 100));
         m_surfaceLayer2->setForceRenderSurface(true);
         m_surfaceLayer2->setOpacity(0.5);
 
@@ -2639,7 +2637,7 @@ private:
         if (m_texture.get())
             return;
         m_texture = PrioritizedTexture::create(layerTreeHost()->contentsTextureManager());
-        m_texture->setDimensions(IntSize(10, 10), GL_RGBA);
+        m_texture->setDimensions(gfx::Size(10, 10), GL_RGBA);
         m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     }
 
@@ -2716,10 +2714,10 @@ public:
     virtual void beginTest() OVERRIDE
     {
         m_layerTreeHost->setRootLayer(m_layer);
-        m_layerTreeHost->setViewportSize(IntSize(10, 20), IntSize(10, 20));
+        m_layerTreeHost->setViewportSize(gfx::Size(10, 20), gfx::Size(10, 20));
 
         WebTransformationMatrix identityMatrix;
-        setLayerPropertiesForTesting(m_layer.get(), 0, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(10, 20), true);
+        setLayerPropertiesForTesting(m_layer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(10, 20), true);
 
         postSetNeedsCommitToMainThread();
     }
@@ -2849,10 +2847,10 @@ public:
     virtual void beginTest() OVERRIDE
     {
         m_layerTreeHost->setRootLayer(m_layer);
-        m_layerTreeHost->setViewportSize(IntSize(10, 20), IntSize(10, 20));
+        m_layerTreeHost->setViewportSize(gfx::Size(10, 20), gfx::Size(10, 20));
 
         WebTransformationMatrix identityMatrix;
-        setLayerPropertiesForTesting(m_layer.get(), 0, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(10, 20), true);
+        setLayerPropertiesForTesting(m_layer.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(10, 20), true);
 
         postSetNeedsCommitToMainThread();
     }
@@ -2974,12 +2972,12 @@ public:
     virtual void beginTest()
     {
         m_layerTreeHost->setRootLayer(m_parent);
-        m_layerTreeHost->setViewportSize(IntSize(m_numChildren, 1), IntSize(m_numChildren, 1));
+        m_layerTreeHost->setViewportSize(gfx::Size(m_numChildren, 1), gfx::Size(m_numChildren, 1));
 
         WebTransformationMatrix identityMatrix;
-        setLayerPropertiesForTesting(m_parent.get(), 0, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(m_numChildren, 1), true);
+        setLayerPropertiesForTesting(m_parent.get(), 0, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(m_numChildren, 1), true);
         for (int i = 0; i < m_numChildren; i++)
-            setLayerPropertiesForTesting(m_children[i].get(), m_parent.get(), identityMatrix, FloatPoint(0, 0), FloatPoint(i, 0), IntSize(1, 1), false);
+            setLayerPropertiesForTesting(m_children[i].get(), m_parent.get(), identityMatrix, gfx::PointF(0, 0), gfx::PointF(i, 0), gfx::Size(1, 1), false);
 
         postSetNeedsCommitToMainThread();
     }
@@ -3022,8 +3020,8 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setViewportSize(IntSize(10, 10), IntSize(10, 10));
-        m_layerTreeHost->rootLayer()->setBounds(IntSize(10, 10));
+        m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
+        m_layerTreeHost->rootLayer()->setBounds(gfx::Size(10, 10));
 
         postSetNeedsCommitToMainThread();
     }
@@ -3072,8 +3070,8 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setViewportSize(IntSize(10, 10), IntSize(10, 10));
-        m_layerTreeHost->rootLayer()->setBounds(IntSize(10, 10));
+        m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
+        m_layerTreeHost->rootLayer()->setBounds(gfx::Size(10, 10));
 
         m_contentLayer = ContentLayer::create(&m_mockDelegate);
         m_contentLayer->setBounds(gfx::Size(10, 10));
@@ -3174,8 +3172,8 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setViewportSize(IntSize(10, 10), IntSize(10, 10));
-        m_layerTreeHost->rootLayer()->setBounds(IntSize(10, 10));
+        m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
+        m_layerTreeHost->rootLayer()->setBounds(gfx::Size(10, 10));
 
         postSetNeedsCommitToMainThread();
     }

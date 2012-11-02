@@ -6,7 +6,6 @@
 
 #include "cc/render_surface_filters.h"
 
-#include "FloatSize.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -14,6 +13,7 @@
 #include "third_party/skia/include/effects/SkMagnifierImageFilter.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
+#include "ui/gfx/size_f.h"
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 #include <public/WebGraphicsContext3D.h>
@@ -67,8 +67,10 @@ void getSaturateMatrix(float amount, SkScalar matrix[20])
 
 void getHueRotateMatrix(float hue, SkScalar matrix[20])
 {
-    float cosHue = cosf(hue * piFloat / 180); 
-    float sinHue = sinf(hue * piFloat / 180); 
+    const float kPi = 3.1415926535897932384626433832795f;
+
+    float cosHue = cosf(hue * kPi / 180);
+    float sinHue = sinf(hue * kPi / 180);
     matrix[0] = 0.213f + cosHue * 0.787f - sinHue * 0.213f;
     matrix[1] = 0.715f - cosHue * 0.715f - sinHue * 0.715f;
     matrix[2] = 0.072f - cosHue * 0.072f + sinHue * 0.928f;
@@ -236,7 +238,7 @@ bool getColorMatrix(const WebKit::WebFilterOperation& op, SkScalar matrix[20])
 
 class FilterBufferState {
 public:
-    FilterBufferState(GrContext* grContext, const FloatSize& size, unsigned textureId)
+    FilterBufferState(GrContext* grContext, const gfx::SizeF& size, unsigned textureId)
         : m_grContext(grContext)
         , m_currentTexture(0)
     {
@@ -365,7 +367,7 @@ WebKit::WebFilterOperations RenderSurfaceFilters::optimize(const WebKit::WebFilt
     return newList;
 }
 
-SkBitmap RenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filters, unsigned textureId, const FloatSize& size, WebKit::WebGraphicsContext3D* context3D, GrContext* grContext)
+SkBitmap RenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filters, unsigned textureId, const gfx::SizeF& size, WebKit::WebGraphicsContext3D* context3D, GrContext* grContext)
 {
     if (!context3D || !grContext)
         return SkBitmap();

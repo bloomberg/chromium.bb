@@ -336,8 +336,8 @@ TEST_P(LayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
     m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
     initializeRendererAndDrawFrame();
 
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), IntSize(0, 10));
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
     m_hostImpl->scrollEnd();
     EXPECT_TRUE(m_didRequestRedraw);
     EXPECT_TRUE(m_didRequestCommit);
@@ -346,7 +346,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
 TEST_P(LayerTreeHostImplTest, scrollWithoutRootLayer)
 {
     // We should not crash when trying to scroll an empty layer tree.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
 }
 
 TEST_P(LayerTreeHostImplTest, scrollWithoutRenderer)
@@ -361,7 +361,7 @@ TEST_P(LayerTreeHostImplTest, scrollWithoutRenderer)
     setupScrollAndContentsLayers(gfx::Size(100, 100));
 
     // We should not crash when trying to scroll after the renderer initialization fails.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
 }
 
 TEST_P(LayerTreeHostImplTest, replaceTreeWhileScrolling)
@@ -373,14 +373,14 @@ TEST_P(LayerTreeHostImplTest, replaceTreeWhileScrolling)
     initializeRendererAndDrawFrame();
 
     // We should not crash if the tree is replaced while we are scrolling.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->detachLayerTree();
 
     setupScrollAndContentsLayers(gfx::Size(100, 100));
 
     // We should still be scrolling, because the scrolled layer also exists in the new tree.
     IntSize scrollDelta(0, 10);
-    m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo, scrollLayerId, scrollDelta);
@@ -395,7 +395,7 @@ TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
     // We should be able to scroll even if the root layer loses its render surface after the most
     // recent render.
     m_hostImpl->rootLayer()->clearRenderSurface();
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
 }
 
 TEST_P(LayerTreeHostImplTest, wheelEventHandlers)
@@ -408,10 +408,10 @@ TEST_P(LayerTreeHostImplTest, wheelEventHandlers)
     root->setHaveWheelEventHandlers(true);
 
     // With registered event handlers, wheel scrolls have to go to the main thread.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
 
     // But gesture scrolls can still be handled.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
 }
 
 TEST_P(LayerTreeHostImplTest, shouldScrollOnMainThread)
@@ -423,8 +423,8 @@ TEST_P(LayerTreeHostImplTest, shouldScrollOnMainThread)
 
     root->setShouldScrollOnMainThread(true);
 
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollOnMainThread);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollOnMainThread);
 }
 
 TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionBasic)
@@ -437,15 +437,15 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionBasic)
     root->setNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
 
     // All scroll types inside the non-fast scrollable region should fail.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(25, 25), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(25, 25), InputHandlerClient::Gesture), InputHandlerClient::ScrollOnMainThread);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(25, 25), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(25, 25), InputHandlerClient::Gesture), InputHandlerClient::ScrollOnMainThread);
 
     // All scroll types outside this region should succeed.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(75, 75), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), IntSize(0, 10));
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(75, 75), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
     m_hostImpl->scrollEnd();
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(75, 75), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), IntSize(0, 10));
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(75, 75), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
     m_hostImpl->scrollEnd();
 }
 
@@ -460,12 +460,12 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
     initializeRendererAndDrawFrame();
 
     // This point would fall into the non-fast scrollable region except that we've moved the layer down by 25 pixels.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(40, 10), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), IntSize(0, 1));
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(40, 10), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 1));
     m_hostImpl->scrollEnd();
 
     // This point is still inside the non-fast region.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(10, 10), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(10, 10), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
 }
 
 TEST_P(LayerTreeHostImplTest, maxScrollPositionChangedByDeviceScaleFactor)
@@ -533,8 +533,8 @@ TEST_P(LayerTreeHostImplTest, implPinchZoom)
         m_hostImpl->pinchGestureEnd();
 
         IntSize scrollDelta(0, 10);
-        EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-        m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+        EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+        m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
         m_hostImpl->scrollEnd();
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -785,8 +785,8 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
 
     // Scrolling during the animation is ignored.
     const IntSize scrollDelta(0, 10);
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(25, 25), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(25, 25), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
 
     // The final page scale and scroll deltas should match what we got
@@ -1027,7 +1027,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootIgnored)
     initializeRendererAndDrawFrame();
 
     // Scroll event is ignored because layer is not scrollable.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
     EXPECT_FALSE(m_didRequestRedraw);
     EXPECT_FALSE(m_didRequestCommit);
 }
@@ -1060,8 +1060,8 @@ TEST_P(LayerTreeHostImplTest, scrollNonCompositedRoot)
     m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
     initializeRendererAndDrawFrame();
 
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), IntSize(0, 10));
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
     m_hostImpl->scrollEnd();
     EXPECT_TRUE(m_didRequestRedraw);
     EXPECT_TRUE(m_didRequestCommit);
@@ -1078,8 +1078,8 @@ TEST_P(LayerTreeHostImplTest, scrollChildCallsCommitAndRedraw)
     m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
     initializeRendererAndDrawFrame();
 
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), IntSize(0, 10));
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
     m_hostImpl->scrollEnd();
     EXPECT_TRUE(m_didRequestRedraw);
     EXPECT_TRUE(m_didRequestCommit);
@@ -1095,7 +1095,7 @@ TEST_P(LayerTreeHostImplTest, scrollMissesChild)
     initializeRendererAndDrawFrame();
 
     // Scroll event is ignored because the input coordinate is outside the layer boundaries.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(15, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(15, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
     EXPECT_FALSE(m_didRequestRedraw);
     EXPECT_FALSE(m_didRequestCommit);
 }
@@ -1118,7 +1118,7 @@ TEST_P(LayerTreeHostImplTest, scrollMissesBackfacingChild)
 
     // Scroll event is ignored because the scrollable layer is not facing the viewer and there is
     // nothing scrollable behind it.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
     EXPECT_FALSE(m_didRequestRedraw);
     EXPECT_FALSE(m_didRequestCommit);
 }
@@ -1138,7 +1138,7 @@ TEST_P(LayerTreeHostImplTest, scrollBlockedByContentLayer)
     initializeRendererAndDrawFrame();
 
     // Scrolling fails because the content layer is asking to be scrolled on the main thread.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
 }
 
 TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
@@ -1153,8 +1153,8 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     IntSize scrollDelta(0, 10);
     IntSize expectedScrollDelta(scrollDelta);
     IntSize expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollPosition());
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
 
     // Set new page scale from main thread.
@@ -1187,8 +1187,8 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     IntSize scrollDelta(0, 10);
     IntSize expectedScrollDelta(scrollDelta);
     IntSize expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollPosition());
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
 
     // Set new page scale on impl thread by pinching.
@@ -1274,8 +1274,8 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
     IntSize scrollDelta(0, 10);
     IntSize expectedScrollDelta(scrollDelta);
     IntSize expectedMaxScroll(child->maxScrollPosition());
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
 
     float pageScale = 2;
@@ -1319,8 +1319,8 @@ TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
     initializeRendererAndDrawFrame();
     {
         IntSize scrollDelta(-8, -7);
-        EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-        m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+        EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+        m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
         m_hostImpl->scrollEnd();
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -1351,8 +1351,8 @@ TEST_P(LayerTreeHostImplTest, scrollEventBubbling)
     initializeRendererAndDrawFrame();
     {
         IntSize scrollDelta(0, 4);
-        EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-        m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+        EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+        m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
         m_hostImpl->scrollEnd();
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -1375,7 +1375,7 @@ TEST_P(LayerTreeHostImplTest, scrollBeforeRedraw)
     m_hostImpl->setRootLayer(createScrollableLayer(2, surfaceSize));
 
     // Scrolling should still work even though we did not draw yet.
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
 }
 
 TEST_P(LayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
@@ -1393,8 +1393,8 @@ TEST_P(LayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
 
     // Scroll to the right in screen coordinates with a gesture.
     IntSize gestureScrollDelta(10, 0);
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), gestureScrollDelta);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), gestureScrollDelta);
     m_hostImpl->scrollEnd();
 
     // The layer should have scrolled down in its local coordinates.
@@ -1404,8 +1404,8 @@ TEST_P(LayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
     // Reset and scroll down with the wheel.
     m_hostImpl->rootLayer()->setScrollDelta(FloatSize());
     IntSize wheelScrollDelta(0, 10);
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), wheelScrollDelta);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), wheelScrollDelta);
     m_hostImpl->scrollEnd();
 
     // The layer should have scrolled down in its local coordinates.
@@ -1438,8 +1438,8 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
     {
         // Scroll down in screen coordinates with a gesture.
         IntSize gestureScrollDelta(0, 10);
-        EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
-        m_hostImpl->scrollBy(IntPoint(), gestureScrollDelta);
+        EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
+        m_hostImpl->scrollBy(gfx::Point(), gestureScrollDelta);
         m_hostImpl->scrollEnd();
 
         // The child layer should have scrolled down in its local coordinates an amount proportional to
@@ -1457,8 +1457,8 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
         // Now reset and scroll the same amount horizontally.
         m_hostImpl->rootLayer()->children()[1]->setScrollDelta(FloatSize());
         IntSize gestureScrollDelta(10, 0);
-        EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
-        m_hostImpl->scrollBy(IntPoint(), gestureScrollDelta);
+        EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
+        m_hostImpl->scrollBy(gfx::Point(), gestureScrollDelta);
         m_hostImpl->scrollEnd();
 
         // The child layer should have scrolled down in its local coordinates an amount proportional to
@@ -1490,8 +1490,8 @@ TEST_P(LayerTreeHostImplTest, scrollScaledLayer)
 
     // Scroll down in screen coordinates with a gesture.
     IntSize scrollDelta(0, 10);
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
 
     // The layer should have scrolled down in its local coordinates, but half he amount.
@@ -1501,8 +1501,8 @@ TEST_P(LayerTreeHostImplTest, scrollScaledLayer)
     // Reset and scroll down with the wheel.
     m_hostImpl->rootLayer()->setScrollDelta(FloatSize());
     IntSize wheelScrollDelta(0, 10);
-    EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(IntPoint(), wheelScrollDelta);
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), wheelScrollDelta);
     m_hostImpl->scrollEnd();
 
     // The scale should not have been applied to the scroll delta.

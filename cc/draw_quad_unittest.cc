@@ -280,19 +280,19 @@ TEST(DrawQuadTest, copyYUVVideoDrawQuad)
 {
     VideoLayerImpl::FramePlane yPlane;
     yPlane.resourceId = 45;
-    yPlane.size = IntSize(34, 23);
+    yPlane.size = gfx::Size(34, 23);
     yPlane.format = 8;
-    yPlane.visibleSize = IntSize(623, 235);
+    yPlane.visibleSize = gfx::Size(623, 235);
     VideoLayerImpl::FramePlane uPlane;
     uPlane.resourceId = 532;
-    uPlane.size = IntSize(134, 16);
+    uPlane.size = gfx::Size(134, 16);
     uPlane.format = 2;
-    uPlane.visibleSize = IntSize(126, 27);
+    uPlane.visibleSize = gfx::Size(126, 27);
     VideoLayerImpl::FramePlane vPlane;
     vPlane.resourceId = 4;
-    vPlane.size = IntSize(456, 486);
+    vPlane.size = gfx::Size(456, 486);
     vPlane.format = 46;
-    vPlane.visibleSize = IntSize(19, 45);
+    vPlane.visibleSize = gfx::Size(19, 45);
 
     CREATE_SHARED_STATE();
     CREATE_QUAD_3(YUVVideoDrawQuad, yPlane, uPlane, vPlane);

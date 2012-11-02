@@ -11,7 +11,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "web_layer_impl.h"
-#include "webcore_convert.h"
 
 using namespace cc;
 
@@ -88,7 +87,7 @@ public:
 
     virtual void appendCopy(unsigned sourceTexture, unsigned destinationTexture, WebSize size) OVERRIDE
     {
-        TextureCopier::Parameters copy = { sourceTexture, destinationTexture, convert(size) };
+        TextureCopier::Parameters copy = { sourceTexture, destinationTexture, size };
         m_queue.appendCopy(copy);
     }
 

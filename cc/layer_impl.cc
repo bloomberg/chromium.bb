@@ -198,7 +198,7 @@ FloatSize LayerImpl::scrollBy(const FloatSize& scroll)
     return unscrolled;
 }
 
-InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::Point& screenSpacePoint, InputHandlerClient::ScrollInputType type) const
+InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::PointF& screenSpacePoint, InputHandlerClient::ScrollInputType type) const
 {
     if (shouldScrollOnMainThread()) {
         TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed shouldScrollOnMainThread");
@@ -212,7 +212,7 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::Point& screenSp
 
     if (!nonFastScrollableRegion().IsEmpty()) {
         bool clipped = false;
-        gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), gfx::PointF(screenSpacePoint), clipped);
+        gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), screenSpacePoint, clipped);
         if (!clipped && nonFastScrollableRegion().Contains(gfx::ToFlooredPoint(hitTestPointInLocalSpace))) {
             TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed nonFastScrollableRegion");
             return InputHandlerClient::ScrollOnMainThread;

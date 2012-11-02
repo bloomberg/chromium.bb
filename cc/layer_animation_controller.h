@@ -19,7 +19,6 @@ class WebTransformationMatrix;
 namespace cc {
 
 class Animation;
-class IntSize;
 class KeyframeValueList;
 
 class LayerAnimationControllerClient {

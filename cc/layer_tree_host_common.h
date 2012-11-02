@@ -25,7 +25,7 @@ public:
     static void calculateDrawTransforms(LayerImpl* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter*, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     // Performs hit testing for a given renderSurfaceLayerList.
-    static LayerImpl* findLayerThatIsHitByPoint(const gfx::Point& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
+    static LayerImpl* findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
 

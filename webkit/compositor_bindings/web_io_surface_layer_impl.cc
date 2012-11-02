@@ -6,7 +6,6 @@
 #include "web_io_surface_layer_impl.h"
 
 #include "cc/io_surface_layer.h"
-#include "webcore_convert.h"
 #include "web_layer_impl.h"
 
 using cc::IOSurfaceLayer;
@@ -30,7 +29,7 @@ WebIOSurfaceLayerImpl::~WebIOSurfaceLayerImpl()
 
 void WebIOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, WebSize size)
 {
-    static_cast<IOSurfaceLayer*>(m_layer->layer())->setIOSurfaceProperties(ioSurfaceId, convert(size));
+    static_cast<IOSurfaceLayer*>(m_layer->layer())->setIOSurfaceProperties(ioSurfaceId, size);
 }
 
 WebLayer* WebIOSurfaceLayerImpl::layer()

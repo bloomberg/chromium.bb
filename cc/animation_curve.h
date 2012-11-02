@@ -12,7 +12,6 @@ namespace cc {
 
 class FloatAnimationCurve;
 class TransformAnimationCurve;
-class IntSize;
 class TransformOperations;
 
 // An animation curve is a function that returns a value given a time.

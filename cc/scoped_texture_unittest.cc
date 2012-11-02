@@ -30,7 +30,7 @@ TEST(ScopedTextureTest, NewScopedTexture)
     EXPECT_EQ(0u, texture->id());
 
     // New scoped textures do not have a size yet.
-    EXPECT_EQ(IntSize(), texture->size());
+    EXPECT_EQ(gfx::Size(), texture->size());
     EXPECT_EQ(0u, texture->bytes());
 }
 
@@ -40,7 +40,7 @@ TEST(ScopedTextureTest, CreateScopedTexture)
     DebugScopedSetImplThread implThread;
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
     scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
-    texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+    texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
 
     // The texture has an allocated byte-size now.
     size_t expectedBytes = 30 * 30 * 4;
@@ -48,7 +48,7 @@ TEST(ScopedTextureTest, CreateScopedTexture)
 
     EXPECT_LT(0u, texture->id());
     EXPECT_EQ(GL_RGBA, texture->format());
-    EXPECT_EQ(IntSize(30, 30), texture->size());
+    EXPECT_EQ(gfx::Size(30, 30), texture->size());
 }
 
 TEST(ScopedTextureTest, ScopedTextureIsDeleted)
@@ -61,7 +61,7 @@ TEST(ScopedTextureTest, ScopedTextureIsDeleted)
         scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
 
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+        texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
     }
@@ -71,7 +71,7 @@ TEST(ScopedTextureTest, ScopedTextureIsDeleted)
     {
         scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+        texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
         texture->free();
@@ -89,7 +89,7 @@ TEST(ScopedTextureTest, LeakScopedTexture)
         scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
 
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
+        texture->allocate(Renderer::ImplPool, gfx::Size(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
 

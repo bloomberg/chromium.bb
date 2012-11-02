@@ -5,7 +5,6 @@
 #ifndef HeadsUpDisplayLayerChromium_h
 #define HeadsUpDisplayLayerChromium_h
 
-#include "IntSize.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/font_atlas.h"
 #include "cc/layer.h"

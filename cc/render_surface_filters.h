@@ -9,17 +9,20 @@
 class GrContext;
 class SkBitmap;
 
+namespace gfx {
+class SizeF;
+}
+
 namespace WebKit {
 class WebFilterOperations;
 class WebGraphicsContext3D;
 }
 
 namespace cc {
-class FloatSize;
 
 class RenderSurfaceFilters {
 public:
-    static SkBitmap apply(const WebKit::WebFilterOperations& filters, unsigned textureId, const FloatSize&, WebKit::WebGraphicsContext3D*, GrContext*);
+    static SkBitmap apply(const WebKit::WebFilterOperations& filters, unsigned textureId, const gfx::SizeF&, WebKit::WebGraphicsContext3D*, GrContext*);
     static WebKit::WebFilterOperations optimize(const WebKit::WebFilterOperations& filters);
 
 private:

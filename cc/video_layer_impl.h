@@ -5,12 +5,12 @@
 #ifndef CCVideoLayerImpl_h
 #define CCVideoLayerImpl_h
 
-#include "IntSize.h"
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
 #include "cc/layer_impl.h"
 #include "media/base/video_frame.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/size.h"
 #include <public/WebTransformationMatrix.h>
 #include <public/WebVideoFrameProvider.h>
 
@@ -56,9 +56,9 @@ public:
 
     struct FramePlane {
         ResourceProvider::ResourceId resourceId;
-        IntSize size;
+        gfx::Size size;
         GLenum format;
-        IntSize visibleSize;
+        gfx::Size visibleSize;
 
         FramePlane() : resourceId(0) { }
 

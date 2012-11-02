@@ -14,10 +14,10 @@ namespace {
 
 TEST(LayerQuadTest, FloatQuadConversion)
 {
-    FloatPoint p1(-0.5, -0.5);
-    FloatPoint p2( 0.5, -0.5);
-    FloatPoint p3( 0.5,  0.5);
-    FloatPoint p4(-0.5,  0.5);
+    gfx::PointF p1(-0.5, -0.5);
+    gfx::PointF p2( 0.5, -0.5);
+    gfx::PointF p3( 0.5,  0.5);
+    gfx::PointF p4(-0.5,  0.5);
 
     FloatQuad quadCW(p1, p2, p3, p4);
     LayerQuad layerQuadCW(quadCW);
@@ -30,10 +30,10 @@ TEST(LayerQuadTest, FloatQuadConversion)
 
 TEST(LayerQuadTest, Inflate)
 {
-    FloatPoint p1(-0.5, -0.5);
-    FloatPoint p2( 0.5, -0.5);
-    FloatPoint p3( 0.5,  0.5);
-    FloatPoint p4(-0.5,  0.5);
+    gfx::PointF p1(-0.5, -0.5);
+    gfx::PointF p2( 0.5, -0.5);
+    gfx::PointF p3( 0.5,  0.5);
+    gfx::PointF p4(-0.5,  0.5);
 
     FloatQuad quad(p1, p2, p3, p4);
     LayerQuad layerQuad(quad);

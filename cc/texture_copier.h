@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/program_binding.h"
 #include "cc/shader.h"
-#include "IntSize.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/size.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -23,7 +23,7 @@ public:
     struct Parameters {
         unsigned sourceTexture;
         unsigned destTexture;
-        IntSize size;
+        gfx::Size size;
     };
     // Copy the base level contents of |sourceTexture| to |destTexture|. Both texture objects
     // must be complete and have a base level of |size| dimensions. The color formats do not need

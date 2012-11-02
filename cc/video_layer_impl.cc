@@ -287,7 +287,7 @@ static bool hasPaddingBytes(const media::VideoFrame& frame, size_t plane)
     return frame.stride(plane) > videoFrameDimension(frame.data_size().width(), plane, frame.format());
 }
 
-IntSize computeVisibleSize(const media::VideoFrame& frame, size_t plane)
+gfx::Size computeVisibleSize(const media::VideoFrame& frame, size_t plane)
 {
     int visibleWidth = videoFrameDimension(frame.data_size().width(), plane, frame.format());
     int originalWidth = visibleWidth;
@@ -308,7 +308,7 @@ IntSize computeVisibleSize(const media::VideoFrame& frame, size_t plane)
             visibleWidth = originalWidth - 2;
     }
 
-    return IntSize(visibleWidth, visibleHeight);
+    return gfx::Size(visibleWidth, visibleHeight);
 }
 
 bool VideoLayerImpl::FramePlane::allocateData(ResourceProvider* resourceProvider)
@@ -336,9 +336,9 @@ bool VideoLayerImpl::allocatePlaneData(ResourceProvider* resourceProvider)
     for (size_t planeIndex = 0; planeIndex < planeCount; ++planeIndex) {
         VideoLayerImpl::FramePlane& plane = m_framePlanes[planeIndex];
 
-        IntSize requiredTextureSize(m_frame->stride(planeIndex), videoFrameDimension(m_frame->data_size().height(), planeIndex, m_frame->format()));
+        gfx::Size requiredTextureSize(m_frame->stride(planeIndex), videoFrameDimension(m_frame->data_size().height(), planeIndex, m_frame->format()));
         // FIXME: Remove the test against maxTextureSize when tiled layers are implemented.
-        if (requiredTextureSize.isZero() || requiredTextureSize.width() > maxTextureSize || requiredTextureSize.height() > maxTextureSize)
+        if (requiredTextureSize.IsEmpty() || requiredTextureSize.width() > maxTextureSize || requiredTextureSize.height() > maxTextureSize)
             return false;
 
         if (plane.size != requiredTextureSize || plane.format != m_format) {

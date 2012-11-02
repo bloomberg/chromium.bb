@@ -25,7 +25,7 @@ IOSurfaceLayer::~IOSurfaceLayer()
 {
 }
 
-void IOSurfaceLayer::setIOSurfaceProperties(uint32_t ioSurfaceId, const IntSize& size)
+void IOSurfaceLayer::setIOSurfaceProperties(uint32_t ioSurfaceId, const gfx::Size& size)
 {
     m_ioSurfaceId = ioSurfaceId;
     m_ioSurfaceSize = size;
@@ -46,8 +46,8 @@ void IOSurfaceLayer::pushPropertiesTo(LayerImpl* layer)
 {
     Layer::pushPropertiesTo(layer);
 
-    IOSurfaceLayerImpl* textureLayer = static_cast<IOSurfaceLayerImpl*>(layer);
-    textureLayer->setIOSurfaceProperties(m_ioSurfaceId, m_ioSurfaceSize);
+    IOSurfaceLayerImpl* ioSurfaceLayer = static_cast<IOSurfaceLayerImpl*>(layer);
+    ioSurfaceLayer->setIOSurfaceProperties(m_ioSurfaceId, m_ioSurfaceSize);
 }
 
 }

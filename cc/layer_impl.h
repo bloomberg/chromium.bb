@@ -217,7 +217,7 @@ public:
     void setDrawCheckerboardForMissingTiles(bool checkerboard) { m_drawCheckerboardForMissingTiles = checkerboard; }
     bool drawCheckerboardForMissingTiles() const;
 
-    InputHandlerClient::ScrollStatus tryScroll(const gfx::Point& viewportPoint, InputHandlerClient::ScrollInputType) const;
+    InputHandlerClient::ScrollStatus tryScroll(const gfx::PointF& screenSpacePoint, InputHandlerClient::ScrollInputType) const;
 
     const gfx::Rect& visibleContentRect() const { return m_visibleContentRect; }
     void setVisibleContentRect(const gfx::Rect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }

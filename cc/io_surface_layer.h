@@ -13,7 +13,7 @@ class IOSurfaceLayer : public Layer {
 public:
     static scoped_refptr<IOSurfaceLayer> create();
 
-    void setIOSurfaceProperties(uint32_t ioSurfaceId, const IntSize&);
+    void setIOSurfaceProperties(uint32_t ioSurfaceId, const gfx::Size&);
 
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
@@ -26,7 +26,7 @@ private:
     virtual ~IOSurfaceLayer();
 
     uint32_t m_ioSurfaceId;
-    IntSize m_ioSurfaceSize;
+    gfx::Size m_ioSurfaceSize;
 };
 
 }

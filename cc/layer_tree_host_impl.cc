@@ -31,6 +31,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/software_renderer.h"
 #include "cc/texture_uploader.h"
+#include "ui/gfx/size_conversions.h"
 #include <algorithm>
 
 using WebKit::WebTransformationMatrix;
@@ -297,8 +298,7 @@ void LayerTreeHostImpl::startPageScaleAnimation(const IntSize& targetPosition, b
     IntSize scrollTotal = flooredIntSize(m_rootScrollLayerImpl->scrollPosition() + m_rootScrollLayerImpl->scrollDelta());
     scrollTotal.scale(m_pinchZoomViewport.pageScaleDelta());
     float scaleTotal = m_pinchZoomViewport.totalPageScaleFactor();
-    IntSize scaledContentSize = cc::IntSize(contentSize());
-    scaledContentSize.scale(m_pinchZoomViewport.pageScaleDelta());
+    gfx::Size scaledContentSize = gfx::ToFlooredSize(contentSize().Scale(m_pinchZoomViewport.pageScaleDelta()));
 
     double startTimeSeconds = (startTime - base::TimeTicks()).InSecondsF();
     m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, scaleTotal, cc::IntSize(m_deviceViewportSize), scaledContentSize, startTimeSeconds);
@@ -1017,7 +1017,7 @@ bool LayerTreeHostImpl::ensureRenderSurfaceLayerList()
     return m_renderSurfaceLayerList.size();
 }
 
-InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(const IntPoint& viewportPoint, InputHandlerClient::ScrollInputType type)
+InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(const gfx::Point& viewportPoint, InputHandlerClient::ScrollInputType type)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::scrollBegin");
 
@@ -1027,8 +1027,7 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(const IntPoint& 
     if (!ensureRenderSurfaceLayerList())
         return ScrollIgnored;
 
-    IntPoint deviceViewportPoint = viewportPoint;
-    deviceViewportPoint.scale(m_deviceScaleFactor, m_deviceScaleFactor);
+    gfx::PointF deviceViewportPoint = viewportPoint.Scale(m_deviceScaleFactor);
 
     // First find out which layer was hit from the saved list of visible layers
     // in the most recent frame.
@@ -1071,15 +1070,14 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(const IntPoint& 
     return ScrollIgnored;
 }
 
-static FloatSize scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewport, LayerImpl& layerImpl, float scaleFromViewportToScreenSpace, const FloatPoint& viewportPoint, const FloatSize& viewportDelta)
+static FloatSize scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewport, LayerImpl& layerImpl, float scaleFromViewportToScreenSpace, const gfx::PointF& viewportPoint, const FloatSize& viewportDelta)
 {
     // Layers with non-invertible screen space transforms should not have passed the scroll hit
     // test in the first place.
     DCHECK(layerImpl.screenSpaceTransform().isInvertible());
     WebTransformationMatrix inverseScreenSpaceTransform = layerImpl.screenSpaceTransform().inverse();
 
-    FloatPoint screenSpacePoint = viewportPoint;
-    screenSpacePoint.scale(scaleFromViewportToScreenSpace, scaleFromViewportToScreenSpace);
+    gfx::PointF screenSpacePoint = viewportPoint.Scale(scaleFromViewportToScreenSpace);
 
     FloatSize screenSpaceDelta = viewportDelta;
     screenSpaceDelta.scale(scaleFromViewportToScreenSpace, scaleFromViewportToScreenSpace);
@@ -1087,9 +1085,9 @@ static FloatSize scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewport, 
     // First project the scroll start and end points to local layer space to find the scroll delta
     // in layer coordinates.
     bool startClipped, endClipped;
-    FloatPoint screenSpaceEndPoint = screenSpacePoint + screenSpaceDelta;
-    FloatPoint localStartPoint = cc::FloatPoint(MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpacePoint, startClipped));
-    FloatPoint localEndPoint = cc::FloatPoint(MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpaceEndPoint, endClipped));
+    gfx::PointF screenSpaceEndPoint = screenSpacePoint + screenSpaceDelta;
+    gfx::PointF localStartPoint = MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpacePoint, startClipped);
+    gfx::PointF localEndPoint = MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpaceEndPoint, endClipped);
 
     // In general scroll point coordinates should not get clipped.
     DCHECK(!startClipped);
@@ -1100,29 +1098,27 @@ static FloatSize scrollLayerWithViewportSpaceDelta(PinchZoomViewport* viewport, 
     // localStartPoint and localEndPoint are in content space but we want to move them to layer space for scrolling.
     float widthScale = 1 / layerImpl.contentsScaleX();
     float heightScale = 1 / layerImpl.contentsScaleY();
-    localStartPoint.scale(widthScale, heightScale);
-    localEndPoint.scale(widthScale, heightScale);
+    localStartPoint = localStartPoint.Scale(widthScale, heightScale);
+    localEndPoint = localEndPoint.Scale(widthScale, heightScale);
 
     // Apply the scroll delta.
     FloatSize previousDelta(layerImpl.scrollDelta());
-    FloatSize unscrolled = layerImpl.scrollBy(localEndPoint - localStartPoint);
+    FloatSize unscrolled = layerImpl.scrollBy(cc::FloatSize(localEndPoint - localStartPoint));
 
     if (viewport)
         viewport->applyScroll(unscrolled);
 
     // Get the end point in the layer's content space so we can apply its screenSpaceTransform.
-    FloatPoint actualLocalEndPoint = localStartPoint + layerImpl.scrollDelta() - previousDelta;
-    gfx::PointF actualLocalContentEndPoint = actualLocalEndPoint;
-    actualLocalContentEndPoint = actualLocalContentEndPoint.Scale(1 / widthScale, 1 / heightScale);
+    gfx::PointF actualLocalEndPoint = localStartPoint + layerImpl.scrollDelta() - previousDelta;
+    gfx::PointF actualLocalContentEndPoint = actualLocalEndPoint.Scale(1 / widthScale, 1 / heightScale);
 
     // Calculate the applied scroll delta in viewport space coordinates.
-    FloatPoint actualScreenSpaceEndPoint = cc::FloatPoint(MathUtil::mapPoint(layerImpl.screenSpaceTransform(), actualLocalContentEndPoint, endClipped));
+    gfx::PointF actualScreenSpaceEndPoint = MathUtil::mapPoint(layerImpl.screenSpaceTransform(), actualLocalContentEndPoint, endClipped);
     DCHECK(!endClipped);
     if (endClipped)
         return FloatSize();
-    FloatPoint actualViewportEndPoint = actualScreenSpaceEndPoint;
-    actualViewportEndPoint.scale(1 / scaleFromViewportToScreenSpace, 1 / scaleFromViewportToScreenSpace);
-    return actualViewportEndPoint - viewportPoint;
+    gfx::PointF actualViewportEndPoint = actualScreenSpaceEndPoint.Scale(1 / scaleFromViewportToScreenSpace);
+    return cc::FloatSize(actualViewportEndPoint - viewportPoint);
 }
 
 static FloatSize scrollLayerWithLocalDelta(LayerImpl& layerImpl, const FloatSize& localDelta)
@@ -1132,7 +1128,7 @@ static FloatSize scrollLayerWithLocalDelta(LayerImpl& layerImpl, const FloatSize
     return layerImpl.scrollDelta() - previousDelta;
 }
 
-void LayerTreeHostImpl::scrollBy(const IntPoint& viewportPoint, const IntSize& scrollDelta)
+void LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint, const IntSize& scrollDelta)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::scrollBy");
     if (!m_currentlyScrollingLayerImpl)

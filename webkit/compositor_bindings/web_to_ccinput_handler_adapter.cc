@@ -49,12 +49,12 @@ public:
 
     virtual ScrollStatus scrollBegin(WebPoint point, ScrollInputType type) OVERRIDE
     {
-        return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(convert(point), static_cast<cc::InputHandlerClient::ScrollInputType>(type)));
+        return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(point, static_cast<cc::InputHandlerClient::ScrollInputType>(type)));
     }
 
     virtual void scrollBy(WebPoint point, WebSize offset) OVERRIDE
     {
-        m_client->scrollBy(convert(point), convert(offset));
+        m_client->scrollBy(point, convert(offset));
     }
 
     virtual void scrollEnd() OVERRIDE

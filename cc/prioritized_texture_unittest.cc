@@ -89,7 +89,7 @@ public:
     }
 
 protected:
-    const IntSize m_textureSize;
+    const gfx::Size m_textureSize;
     const GLenum m_textureFormat;
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;

@@ -859,7 +859,7 @@ void LayerTreeHostCommon::calculateDrawTransforms(LayerImpl* rootLayer, const gf
     DCHECK(rootLayer->renderSurface());
 }
 
-static bool pointHitsRect(const gfx::Point& screenSpacePoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, gfx::RectF localSpaceRect)
+static bool pointHitsRect(const gfx::PointF& screenSpacePoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, gfx::RectF localSpaceRect)
 {
     // If the transform is not invertible, then assume that this point doesn't hit this rect.
     if (!localSpaceToScreenSpaceTransform.isInvertible())
@@ -867,7 +867,7 @@ static bool pointHitsRect(const gfx::Point& screenSpacePoint, const WebTransform
 
     // Transform the hit test point from screen space to the local space of the given rect.
     bool clipped = false;
-    gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(localSpaceToScreenSpaceTransform.inverse(), gfx::PointF(screenSpacePoint), clipped);
+    gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(localSpaceToScreenSpaceTransform.inverse(), screenSpacePoint, clipped);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this rect.
     if (clipped)
@@ -876,7 +876,7 @@ static bool pointHitsRect(const gfx::Point& screenSpacePoint, const WebTransform
     return localSpaceRect.Contains(hitTestPointInLocalSpace);
 }
 
-static bool pointIsClippedBySurfaceOrClipRect(const gfx::Point& screenSpacePoint, LayerImpl* layer)
+static bool pointIsClippedBySurfaceOrClipRect(const gfx::PointF& screenSpacePoint, LayerImpl* layer)
 {
     LayerImpl* currentLayer = layer;
 
@@ -898,7 +898,7 @@ static bool pointIsClippedBySurfaceOrClipRect(const gfx::Point& screenSpacePoint
     return false;
 }
 
-LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::Point& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList)
+LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::PointF& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
     LayerImpl* foundLayer = 0;
 

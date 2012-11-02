@@ -109,8 +109,8 @@ public:
     virtual ~LayerTreeHostImpl();
 
     // InputHandlerClient implementation
-    virtual InputHandlerClient::ScrollStatus scrollBegin(const IntPoint&, InputHandlerClient::ScrollInputType) OVERRIDE;
-    virtual void scrollBy(const IntPoint&, const IntSize&) OVERRIDE;
+    virtual InputHandlerClient::ScrollStatus scrollBegin(const gfx::Point&, InputHandlerClient::ScrollInputType) OVERRIDE;
+    virtual void scrollBy(const gfx::Point&, const IntSize&) OVERRIDE;
     virtual void scrollEnd() OVERRIDE;
     virtual void pinchGestureBegin() OVERRIDE;
     virtual void pinchGestureUpdate(float, const IntPoint&) OVERRIDE;
