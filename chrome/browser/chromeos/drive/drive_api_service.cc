@@ -199,7 +199,7 @@ void DriveAPIService::DeleteDocument(
   NOTREACHED();
 }
 
-void DriveAPIService::CreateDirectory(
+void DriveAPIService::AddNewDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
     const google_apis::GetDataCallback& callback) {

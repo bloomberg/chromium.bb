@@ -224,7 +224,7 @@ void GDataWapiService::DeleteDocument(
                                   document_url));
 }
 
-void GDataWapiService::CreateDirectory(
+void GDataWapiService::AddNewDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
     const GetDataCallback& callback) {

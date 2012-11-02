@@ -44,7 +44,7 @@ MockDriveService::MockDriveService() {
   ON_CALL(*this, RemoveResourceFromDirectory(_, _, _, _))
       .WillByDefault(
           Invoke(this, &MockDriveService::RemoveResourceFromDirectoryStub));
-  ON_CALL(*this, CreateDirectory(_, _, _))
+  ON_CALL(*this, AddNewDirectory(_, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::CreateDirectoryStub));
   ON_CALL(*this, DownloadFile(_, _, _, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::DownloadFileStub));

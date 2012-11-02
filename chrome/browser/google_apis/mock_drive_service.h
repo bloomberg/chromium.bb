@@ -74,7 +74,7 @@ class MockDriveService : public DriveServiceInterface {
                     const GURL& resource_url,
                     const std::string& resource_id,
                     const EntryActionCallback& callback));
-  MOCK_METHOD3(CreateDirectory,
+  MOCK_METHOD3(AddNewDirectory,
                void(const GURL& parent_content_url,
                     const FilePath::StringType& directory_name,
                     const GetDataCallback& callback));

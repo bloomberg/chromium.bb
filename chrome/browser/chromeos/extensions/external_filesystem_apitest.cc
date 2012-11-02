@@ -382,8 +382,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
 
   // First, file browser will try to create new directory.
   scoped_ptr<base::Value> dir_value(LoadJSONFile(kTestDirectory));
-  EXPECT_CALL(*mock_drive_service_,
-              CreateDirectory(_, _, _))
+  EXPECT_CALL(*mock_drive_service_, AddNewDirectory(_, _, _))
       .WillOnce(MockCreateDirectoryCallback(
           google_apis::HTTP_SUCCESS, &dir_value));
 

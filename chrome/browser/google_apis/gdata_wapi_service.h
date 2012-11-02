@@ -88,7 +88,7 @@ class GDataWapiService : public DriveServiceInterface,
       const GURL& resource_url,
       const std::string& resource_id,
       const EntryActionCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(
+  virtual void AddNewDirectory(
       const GURL& parent_content_url,
       const FilePath::StringType& directory_name,
       const GetDataCallback& callback) OVERRIDE;

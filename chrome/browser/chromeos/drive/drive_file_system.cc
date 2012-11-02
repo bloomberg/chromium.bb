@@ -707,7 +707,7 @@ void DriveFileSystem::CreateDirectoryAfterFindFirstMissingPath(
     return;
   }
 
-  drive_service_->CreateDirectory(
+  drive_service_->AddNewDirectory(
       result.last_dir_content_url,
       result.first_missing_parent_path.BaseName().value(),
       base::Bind(&DriveFileSystem::AddNewDirectory,

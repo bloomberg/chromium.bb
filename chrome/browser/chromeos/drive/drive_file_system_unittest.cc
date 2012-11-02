@@ -1958,7 +1958,7 @@ TEST_F(DriveFileSystemTest, FindFirstMissingParentDirectory) {
 TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
   LoadRootFeedDocument("gdata/root_feed.json");
   EXPECT_CALL(*mock_drive_service_,
-              CreateDirectory(_, "Sample Directory Title", _)).Times(1);
+              AddNewDirectory(_, "Sample Directory Title", _)).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 

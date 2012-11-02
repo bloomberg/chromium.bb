@@ -191,11 +191,13 @@ class DriveServiceInterface {
       const std::string& resource_id,
       const EntryActionCallback& callback) = 0;
 
-  // Creates new collection with |directory_name| under parent directory
+  // Adds new collection with |directory_name| under parent directory
   // identified with |parent_content_url|. If |parent_content_url| is empty,
   // the new collection will be created in the root. Upon completion,
   // invokes |callback| and passes newly created entry on the calling thread.
-  virtual void CreateDirectory(const GURL& parent_content_url,
+  // This function cannot be named as "CreateDirectory" as it conflicts with
+  // a macro on Windows.
+  virtual void AddNewDirectory(const GURL& parent_content_url,
                                const FilePath::StringType& directory_name,
                                const GetDataCallback& callback) = 0;
 
