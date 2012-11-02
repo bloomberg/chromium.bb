@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "media/base/decoder_buffer.h"
@@ -381,6 +382,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* decoded_frame) {
   DVLOG(1) << "DecryptAndDecodeFrame()";
+  TRACE_EVENT0("eme", "ClearKeyCdm::DecryptAndDecodeFrame");
 
   scoped_refptr<media::DecoderBuffer> buffer;
   cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);

@@ -1926,6 +1926,8 @@ bool PluginInstance::DecryptAndDecodeVideo(
 
   const uint32_t request_id = next_decryption_request_id_++;
   DVLOG(2) << "DecryptAndDecodeVideo() - request_id " << request_id;
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "eme", "PluginInstance::DecryptAndDecodeVideo", request_id);
 
   PP_EncryptedBlockInfo block_info;
   if (!MakeEncryptedBlockInfo(
@@ -2757,6 +2759,9 @@ void PluginInstance::DeliverFrame(PP_Instance instance,
     DVLOG(1) << "DeliverFrame() - request_id " << request_id << " not found";
     return;
   }
+
+  TRACE_EVENT_ASYNC_END0(
+      "eme", "PluginInstance::DecryptAndDecodeVideo", request_id);
 
   DCHECK(!pending_video_decode_cb_.is_null());
   pending_video_decode_request_id_ = 0;
