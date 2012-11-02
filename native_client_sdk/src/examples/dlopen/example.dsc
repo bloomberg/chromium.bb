@@ -11,7 +11,7 @@
       'NAME' : 'libeightball',
       'TYPE' : 'so',
       'SOURCES' : ['eightball.cc', 'eightball.h'],
-      'CXXFLAGS': ['$(NACL_CXXFLAGS)', '-fPIC'],
+      'CXXFLAGS': ['-fPIC'],
       'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],

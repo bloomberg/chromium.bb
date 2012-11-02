@@ -6,7 +6,6 @@
       'TYPE' : 'main',
       'SOURCES' : ['hello_world.cc', 'matrix.cc', 'matrix.h'],
       'CXXFLAGS': [
-        '$(NACL_CXXFLAGS)', 
         '-I../../src',
         '-I../../src/ppapi/lib/gl'
       ],

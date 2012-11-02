@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,9 +21,6 @@ CHROME_PATH?=Undefined
 # Defaults
 #
 NACL_WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic
-NACL_CCFLAGS:=-O0 -g -pthread $(NACL_WARNINGS)
-NACL_CXXFLAGS:= -O0 -g -pthread -std=gnu++98 $(NACL_WARNINGS)
-NACL_LDFLAGS:=-Wl,-as-needed -g -pthread -lppapi_cpp -lppapi 
 
 
 #

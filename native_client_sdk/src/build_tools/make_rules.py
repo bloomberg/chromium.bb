@@ -45,11 +45,12 @@ TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 """
 
 LINUX_DEFAULTS = """
+LINUX_WARNINGS?=-Wno-long-long -Wall -Wswitch-enum -Werror
 LINUX_CC?=gcc -c
 LINUX_CXX?=g++ -c
 LINUX_LINK?=g++
 LINUX_LIB?=ar r
-LINUX_CCFLAGS=-I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
+LINUX_CCFLAGS=-MMD -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
 """
 
 WIN_DEFAULTS = """
