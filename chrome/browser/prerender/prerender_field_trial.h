@@ -29,6 +29,9 @@ bool IsSpeculativeResourcePrefetchingLearningEnabled(Profile* profile);
 // resource prefetching experiment.
 bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile);
 
+// Returns true iff the Prerender Local Predictor is enabled.
+bool IsLocalPredictorEnabled();
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_
