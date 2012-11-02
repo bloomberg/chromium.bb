@@ -72,6 +72,9 @@ var EventsView = (function() {
     $(EventsView.SORT_BY_DESCRIPTION_ID).addEventListener(
         'click', this.sortByDescription_.bind(this), true);
 
+    new MouseOverHelp(EventsView.FILTER_HELP_ID,
+                      EventsView.FILTER_HELP_HOVER_ID);
+
     // Sets sort order and filter.
     this.setFilter_('');
 
@@ -85,6 +88,8 @@ var EventsView = (function() {
   EventsView.TBODY_ID = 'events-view-source-list-tbody';
   EventsView.FILTER_INPUT_ID = 'events-view-filter-input';
   EventsView.FILTER_COUNT_ID = 'events-view-filter-count';
+  EventsView.FILTER_HELP_ID = 'events-view-filter-help';
+  EventsView.FILTER_HELP_HOVER_ID = 'events-view-filter-help-hover';
   EventsView.SELECT_ALL_ID = 'events-view-select-all';
   EventsView.SORT_BY_ID_ID = 'events-view-sort-by-id';
   EventsView.SORT_BY_SOURCE_TYPE_ID = 'events-view-sort-by-source';

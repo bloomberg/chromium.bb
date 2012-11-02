@@ -4,11 +4,33 @@
 <div id=events-view-filter-box>
   <table width=100%>
     <tr>
-      <td width=1%>Filter:</td>
+      <td width=1%>
+        Filter <span id=events-view-filter-help-hover class=mouse-over-help-hover>(?)</span>:
+      </td>
       <td width=98%><input type="search" incremental id=events-view-filter-input></td>
       <td width=1% id=events-view-filter-count>(1 of 34)</td>
     </tr>
   </table>
+</div>
+<!-- Inline filter help -->
+<div id=events-view-filter-help class=mouse-over-help>
+  Sort options:
+  <ul>
+    <li>sort:id (default)
+    <li>sort:desc
+    <li>sort:duration
+    <li>sort:type
+    <li>sort:-&lt;option&gt; Reverses sort order
+  </ul>
+
+  Additional filters:
+  <ul>
+    <li>id:#[,#]*
+    <li>type:&lt;type&gt;[,&lt;type&gt;]*
+    <li>is:active
+    <li>is:error
+    <li>is:-&lt;option&gt; Inverts "is" filter.
+  </ul>
 </div>
 <!-- Events Box: This the panel on the left which lists the sources -->
 <div id=events-view-source-list>

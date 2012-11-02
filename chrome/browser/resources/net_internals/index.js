@@ -5,6 +5,7 @@
 <include src="util.js"/>
 <include src="table_printer.js"/>
 <include src="view.js"/>
+<include src="mouse_over_help.js"/>
 <include src="tab_switcher_view.js"/>
 <include src="import_view.js"/>
 <include src="capture_view.js"/>
