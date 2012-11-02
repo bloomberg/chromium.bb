@@ -738,7 +738,7 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     public Bitmap getBitmap(int width, int height) {
-        if (getWidth() == 0 || getHeight() == 0) return null;
+        if (width == 0 || height == 0 || getWidth() == 0 || getHeight() == 0) return null;
 
         Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
@@ -746,9 +746,9 @@ public class ContentViewCore implements MotionEventDelegate {
                 nativePopulateBitmapFromCompositor(mNativeContentViewCore, b)) {
             // If we successfully grabbed a bitmap, check if we have to draw the Android overlay
             // components as well.
-            if (mContainerView.getParent() != null &&
-                    mContainerView.getVisibility() == View.VISIBLE) {
+            if (mContainerView.getChildCount() > 0) {
                 Canvas c = new Canvas(b);
+                c.scale(1, -1, width / 2, height / 2);
                 c.scale(width / (float) getWidth(), height / (float) getHeight());
                 mContainerView.draw(c);
             }
