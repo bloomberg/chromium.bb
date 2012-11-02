@@ -177,7 +177,9 @@ Bool ProcessInstruction(
     }
   }
 
-  Bool result = (validation_info & VALIDATION_ERRORS_MASK) ? FALSE : TRUE;
+  Bool result = (validation_info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
+                ? FALSE
+                : TRUE;
 
   // We clear bit for each processed error, and in the end if there are still
   // errors we did not report, we produce generic error message.
