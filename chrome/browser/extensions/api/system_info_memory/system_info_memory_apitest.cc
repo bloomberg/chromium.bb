@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(SystemInfoMemoryApiTest, Memory) {
   MemoryInfoProvider* provider = new MockMemoryInfoProviderImpl();
   // The provider is owned by the single MemoryInfoProvider instance.
   MemoryInfoProvider::InitializeForTesting(provider);
-  ASSERT_TRUE(RunExtensionTest("systeminfo/memory")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("systeminfo/memory")) << message_;
 }
 
 }  // namespace extensions

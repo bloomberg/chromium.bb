@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 
 class ExtensionProcessManager;
+class ShellWindow;
 
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
@@ -168,6 +169,13 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
 
   // Wait for the crx installer to be done. Returns true if it really is done.
   bool WaitForCrxInstallerDone();
+
+  // Closes |window| and waits until it's gone.
+  void CloseShellWindow(ShellWindow* window);
+
+  // Close any Shell Windows and wait for the app's background page to be
+  // unloaded.
+  void CloseShellWindowsAndWaitForAppToExit();
 
   // Simulates a page calling window.open on an URL and waits for the
   // navigation.

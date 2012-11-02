@@ -148,8 +148,14 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunPageTest(const std::string& page_url, int flags);
 
   // Similar to RunExtensionTest, except used for running tests in platform app
-  // shell windows.
+  // shell windows. After running the test will close all shell windows and wait
+  // for the background page to be unloaded.
   bool RunPlatformAppTest(const char* extension_name);
+
+  // Similar to RunPlatformAppTest, except after running the test returns
+  // without closing shell windows or waiting for the background page to be
+  // unloaded.
+  bool RunPlatformAppTestReturnImmediately(const char* extension_name);
 
   // Start the test server, and store details of its state.  Those details
   // will be available to javascript tests using chrome.test.getConfig().

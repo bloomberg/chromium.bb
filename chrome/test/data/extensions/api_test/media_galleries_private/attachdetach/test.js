@@ -48,6 +48,6 @@ function removeAttachListener() {
 }
 
 function removeDummyDetachListener() {
-  chrome.mediaGalleriesPrivate.onDeviceAttached.removeListener(testDummyDetach);
+  chrome.mediaGalleriesPrivate.onDeviceDetached.removeListener(testDummyDetach);
   chrome.test.sendMessage('remove_dummy_detach_ok');
 }

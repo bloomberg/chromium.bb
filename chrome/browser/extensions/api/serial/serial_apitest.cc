@@ -178,12 +178,12 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialFakeHardware) {
       FakeSerialOpenFunctionFactory));
 #endif
 
-  ASSERT_TRUE(RunExtensionTest("serial/api")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("serial/api")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialRealHardware) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  ASSERT_TRUE(RunExtensionTest("serial/real_hardware")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("serial/real_hardware")) << message_;
 }

@@ -113,4 +113,5 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Isolation) {
                               source2->GetWebContents(),
                               &cookie_size, &cookie_value);
   EXPECT_EQ("guest1=true; guest2=true", cookie_value);
+  CloseShellWindowsAndWaitForAppToExit();
 }

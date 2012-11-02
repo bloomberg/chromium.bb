@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(SystemInfoCpuApiTest, Cpu) {
   CpuInfoProvider* provider = new MockCpuInfoProviderImpl();
   // The provider is owned by the single CpuInfoProvider instance.
   CpuInfoProvider::InitializeForTesting(provider);
-  ASSERT_TRUE(RunExtensionTest("systeminfo/cpu")) << message_;
+  ASSERT_TRUE(RunPlatformAppTest("systeminfo/cpu")) << message_;
 }
 
 }  // namespace extensions

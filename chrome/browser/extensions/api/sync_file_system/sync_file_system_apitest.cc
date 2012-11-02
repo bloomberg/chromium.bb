@@ -41,12 +41,12 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
-  ASSERT_TRUE(RunExtensionTest("sync_file_system/get_usage_and_quota"))
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_usage_and_quota"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, RequestFileSystem) {
-  ASSERT_TRUE(RunExtensionTest("sync_file_system/request_file_system"))
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/request_file_system"))
       << message_;
 }
 

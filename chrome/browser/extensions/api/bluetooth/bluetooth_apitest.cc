@@ -330,6 +330,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
   discovery_stopped.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
@@ -360,6 +361,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
   discovery_stopped.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
@@ -381,6 +383,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
@@ -414,6 +417,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesConcurrently) {
@@ -425,9 +429,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesConcurrently) {
 
   // Save the callback to delay execution so that we can force the calls to
   // happen concurrently.  This will be called after the listener is satisfied.
-  BluetoothDevice::ProvidesServiceCallback callback;
+  BluetoothDevice::ProvidesServiceCallback* callback =
+      new BluetoothDevice::ProvidesServiceCallback;
   EXPECT_CALL(*device1_, ProvidesServiceWithName(testing::_, testing::_))
-      .WillOnce(testing::SaveArg<1>(&callback));
+      .WillOnce(testing::SaveArg<1>(callback));
 
   EXPECT_CALL(*mock_adapter_, GetDevices())
       .WillOnce(testing::Return(devices));
@@ -438,10 +443,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesConcurrently) {
         test_data_dir_.AppendASCII("bluetooth/get_devices_concurrently")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-  callback.Run(false);
+  callback->Run(false);
+  delete callback;
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesError) {
@@ -457,4 +464,5 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesError) {
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  CloseShellWindowsAndWaitForAppToExit();
 }
