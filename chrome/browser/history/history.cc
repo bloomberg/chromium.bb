@@ -62,6 +62,10 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "sync/api/sync_change.h"
+#include "sync/api/sync_data.h"
+#include "sync/api/sync_error_factory.h"
+#include "sync/protocol/sync.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using base::Time;
@@ -911,6 +915,56 @@ base::WeakPtr<HistoryService> HistoryService::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+syncer::SyncError HistoryService::MergeDataAndStartSyncing(
+    syncer::ModelType type,
+    const syncer::SyncDataList& initial_sync_data,
+    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
+  for (syncer::SyncDataList::const_iterator it = initial_sync_data.begin();
+       it != initial_sync_data.end(); ++it) {
+    DCHECK_EQ(it->GetDataType(), syncer::HISTORY_DELETE_DIRECTIVES);
+    ProcessDeleteDirective(it->GetSpecifics().history_delete_directive());
+  }
+  return syncer::SyncError();
+}
+
+void HistoryService::StopSyncing(syncer::ModelType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
+  // Do nothing.
+}
+
+syncer::SyncDataList HistoryService::GetAllSyncData(
+    syncer::ModelType type) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
+  // TODO(akalin): Keep track of existing delete directives.
+  return syncer::SyncDataList();
+}
+
+syncer::SyncError HistoryService::ProcessSyncChanges(
+    const tracked_objects::Location& from_here,
+    const syncer::SyncChangeList& change_list) {
+  for (syncer::SyncChangeList::const_iterator it = change_list.begin();
+       it != change_list.end(); ++it) {
+    switch (it->change_type()) {
+      case syncer::SyncChange::ACTION_ADD:
+        ProcessDeleteDirective(
+            it->sync_data().GetSpecifics().history_delete_directive());
+        break;
+      case syncer::SyncChange::ACTION_DELETE:
+        // TODO(akalin): Keep track of existing delete directives.
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  return syncer::SyncError();
+}
+
 void HistoryService::SetInMemoryBackend(int backend_id,
     history::InMemoryHistoryBackend* mem_backend) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1077,4 +1131,13 @@ void HistoryService::NotifyVisitDBObserversOnAddVisit(
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(history::VisitDatabaseObserver, visit_database_observers_,
                     OnAddVisit(info));
+}
+
+void HistoryService::ProcessDeleteDirective(
+    const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // TODO(akalin): Actually process the delete directive.
+  // TODO(akalin): Keep track of which delete directives we've already
+  // processed.
+  NOTREACHED();
 }

@@ -112,6 +112,14 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     if (it.Get() == syncer::EXTENSIONS) {
       expected_preferred_types.Put(syncer::EXTENSION_SETTINGS);
     }
+    if (it.Get() == syncer::SESSIONS) {
+      expected_preferred_types.Put(syncer::HISTORY_DELETE_DIRECTIVES);
+    }
+    // TODO(akalin): Remove this when history delete directives are
+    // registered by default.
+    if (it.Get() == syncer::HISTORY_DELETE_DIRECTIVES) {
+      expected_preferred_types.Clear();
+    }
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
     EXPECT_TRUE(expected_preferred_types.Equals(
         sync_prefs.GetPreferredDataTypes(user_types)));

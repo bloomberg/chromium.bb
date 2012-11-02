@@ -641,6 +641,10 @@ const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 
+// Enables syncing of history delete directives.
+const char kEnableSyncHistoryDeleteDirectives[] =
+    "enable-sync-history-delete-directives";
+
 // Disables syncing browser sessions. Will override kEnableSyncTabs.
 const char kDisableSyncTabs[]               = "disable-sync-tabs";
 

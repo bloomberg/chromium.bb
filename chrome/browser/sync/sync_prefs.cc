@@ -297,6 +297,9 @@ void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[syncer::EXTENSIONS].Put(syncer::EXTENSION_SETTINGS);
 
   pref_groups_[syncer::PREFERENCES].Put(syncer::SEARCH_ENGINES);
+
+  // TODO(akalin): Revisit this once UI lands.
+  pref_groups_[syncer::SESSIONS].Put(syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
 void SyncPrefs::RegisterPreferences() {

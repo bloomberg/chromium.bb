@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 #include "sql/init_status.h"
+#include "sync/api/syncable_service.h"
 #include "ui/base/layout.h"
 
 #if defined(OS_ANDROID)
@@ -65,6 +66,9 @@ class URLDatabase;
 class VisitDatabaseObserver;
 }  // namespace history
 
+namespace sync_pb {
+class HistoryDeleteDirectiveSpecifics;
+}
 
 // HistoryDBTask can be used to process arbitrary work on the history backend
 // thread. HistoryDBTask is scheduled using HistoryService::ScheduleDBTask.
@@ -99,6 +103,7 @@ class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
 // thread that made the request.
 class HistoryService : public CancelableRequestProvider,
                        public content::NotificationObserver,
+                       public syncer::SyncableService,
                        public ProfileKeyedService {
  public:
   // Miscellaneous commonly-used types.
@@ -627,6 +632,19 @@ class HistoryService : public CancelableRequestProvider,
 
   base::WeakPtr<HistoryService> AsWeakPtr();
 
+  // syncer::SyncableService implementation.
+  virtual syncer::SyncError MergeDataAndStartSyncing(
+      syncer::ModelType type,
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE;
+  virtual syncer::SyncDataList GetAllSyncData(
+      syncer::ModelType type) const OVERRIDE;
+  virtual syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) OVERRIDE;
+
  protected:
   // These are not currently used, hopefully we can do something in the future
   // to ensure that the most important things happen first.
@@ -826,6 +844,11 @@ class HistoryService : public CancelableRequestProvider,
   // Call to schedule a given task for running on the history thread with the
   // specified priority. The task will have ownership taken.
   void ScheduleTask(SchedulePriority priority, const base::Closure& task);
+
+  // Delete local history according to the given directive (from
+  // sync).
+  void ProcessDeleteDirective(
+      const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
 
   // Schedule ------------------------------------------------------------------
   //
