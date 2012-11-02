@@ -131,11 +131,7 @@ class NetworkMenuModel : public ui::MenuModel {
   virtual ~NetworkMenuModel() {}
 
   // Connect or reconnect to the network at |index|.
-  // If remember >= 0, set the favorite state of the network.
-  void ConnectToNetworkAt(int index,
-                          const std::string& passphrase,
-                          const std::string& ssid,
-                          int remember) const;
+  void ConnectToNetworkAt(int index);
 
   // Called by NetworkMenu::UpdateMenu to initialize menu items.
   virtual void InitMenuItems(bool should_open_button_options) = 0;
@@ -269,19 +265,13 @@ class MainMenuModel : public NetworkMenuModel {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, public methods:
 
-void NetworkMenuModel::ConnectToNetworkAt(int index,
-                                          const std::string& passphrase,
-                                          const std::string& ssid,
-                                          int auto_connect) const {
+void NetworkMenuModel::ConnectToNetworkAt(int index) {
   int flags = menu_items_[index].flags;
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   const std::string& service_path = menu_items_[index].service_path;
   if (flags & FLAG_WIFI) {
     WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path);
     if (wifi) {
-      // Connect or reconnect.
-      if (auto_connect >= 0)
-        wifi->SetAutoConnect(auto_connect ? true : false);
       owner_->ConnectToNetwork(wifi);
     } else {
       // If we are attempting to connect to a network that no longer exists,
@@ -435,7 +425,7 @@ void NetworkMenuModel::ActivatedAt(int index) {
                       FLAG_WIMAX |
                       FLAG_CELLULAR | FLAG_ADD_CELLULAR |
                       FLAG_VPN | FLAG_ADD_VPN)) {
-    ConnectToNetworkAt(index, std::string(), std::string(), -1);
+    ConnectToNetworkAt(index);
   } else if (flags & FLAG_DISCONNECT_VPN) {
     const VirtualNetwork* active_vpn = cros->virtual_network();
     if (active_vpn)
