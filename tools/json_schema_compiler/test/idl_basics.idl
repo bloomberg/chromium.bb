@@ -26,6 +26,11 @@
   callback Callback3 = void(MyType1 arg);
   callback Callback4 = void(MyType2[] arg);
   callback Callback5 = void(EnumType type);
+  // A comment on a callback.
+  // |x|: A parameter.
+  callback Callback6 = void(long x);
+  // |x|: Just a parameter comment, with no comment on the callback.
+  callback Callback7 = void(long x);
 
   interface Functions {
     static void function1();
@@ -60,6 +65,11 @@
     // "switch" is a reserved word and should cause a C++ compile error if we
     // emit code for this declaration.
     [nocompile] static void function15(long switch);
+
+    static void function16(Callback6 cb);
+    static void function17(Callback7 cb);
+    // |cb|: Override callback comment.
+    static void function18(Callback7 cb);
   };
 
   interface Events {

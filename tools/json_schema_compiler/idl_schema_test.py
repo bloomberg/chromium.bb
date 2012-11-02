@@ -30,20 +30,20 @@ class IdlSchemaTest(unittest.TestCase):
 
   def testSimpleCallbacks(self):
     schema = self.idl_basics
-    expected = [{'type':'function', 'name':'Callback1', 'parameters':[]}]
+    expected = [{'type':'function', 'name':'cb', 'parameters':[]}]
     self.assertEquals(expected, getParams(schema, 'function4'))
 
-    expected = [{'type':'function', 'name':'Callback2',
+    expected = [{'type':'function', 'name':'cb',
                  'parameters':[{'name':'x', 'type':'integer'}]}]
     self.assertEquals(expected, getParams(schema, 'function5'))
 
-    expected = [{'type':'function', 'name':'Callback3',
+    expected = [{'type':'function', 'name':'cb',
                  'parameters':[{'name':'arg', '$ref':'idl_basics.MyType1'}]}]
     self.assertEquals(expected, getParams(schema, 'function6'))
 
   def testCallbackWithArrayArgument(self):
     schema = self.idl_basics
-    expected = [{'type':'function', 'name':'Callback4',
+    expected = [{'type':'function', 'name':'cb',
                  'parameters':[{'name':'arg', 'type':'array',
                                 'items':{'$ref':'idl_basics.MyType2'}}]}]
     self.assertEquals(expected, getParams(schema, 'function12'))
@@ -70,7 +70,7 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertEquals(expected, getType(schema, expected['id']))
 
     expected = [{'name':'type', '$ref':'idl_basics.EnumType'},
-                {'type':'function', 'name':'Callback5',
+                {'type':'function', 'name':'cb',
                   'parameters':[{'name':'type', '$ref':'idl_basics.EnumType'}]}]
     self.assertEquals(expected, getParams(schema, 'function13'))
 
@@ -89,6 +89,20 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertEquals('idl_basics', idl_basics['namespace'])
     self.assertTrue(idl_basics['internal'])
     self.assertFalse(idl_basics['nodoc'])
+
+  def testCallbackComment(self):
+    schema = self.idl_basics
+    self.assertEquals('A comment on a callback.',
+                      getParams(schema, 'function16')[0]['description'])
+    self.assertEquals(
+        'A parameter.',
+        getParams(schema, 'function16')[0]['parameters'][0]['description'])
+    self.assertEquals(
+        'Just a parameter comment, with no comment on the callback.',
+        getParams(schema, 'function17')[0]['parameters'][0]['description'])
+    self.assertEquals(
+        'Override callback comment.',
+        getParams(schema, 'function18')[0]['description'])
 
   def testFunctionComment(self):
     schema = self.idl_basics

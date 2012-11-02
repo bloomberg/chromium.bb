@@ -57,7 +57,7 @@ def ProcessComment(comment):
     )
   '''
   # Find all the parameter comments of the form '|name|: comment'.
-  parameter_starts = list(re.finditer(r'\n *\|([^|]*)\| *: *', comment))
+  parameter_starts = list(re.finditer(r' *\|([^|]*)\| *: *', comment))
 
   # Get the parent comment (everything before the first parameter comment.
   first_parameter_location = (parameter_starts[0].start()
@@ -229,10 +229,16 @@ class Typeref(object):
       properties['type'] = 'function'
     else:
       if self.typeref in callbacks:
+        # Do not override name and description if they are already specified.
+        name = properties.get('name', None)
+        description = properties.get('description', None)
         properties.update(callbacks[self.typeref])
+        if description is not None:
+          properties['description'] = description
+        if name is not None:
+          properties['name'] = name
       else:
         properties['$ref'] = self.typeref
-
     return result
 
 

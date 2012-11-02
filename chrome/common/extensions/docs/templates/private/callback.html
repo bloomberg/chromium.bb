@@ -9,6 +9,9 @@
   {{/}}
 </p>
 <pre>function({{#parameters}}{{+partials.variable_type}} {{name}}{{^last}}, {{/}}{{/}}) <span class="subdued">{...}</span>;</pre>
+{{?description}}<p>
+  {{description}}
+</p>{{/}}
 <dl>
   {{#parameters}}{{+partials.parameter_full}}{{/}}
 </dl>
