@@ -593,6 +593,26 @@ if sys.platform != 'win32':
       ]
       self._test_lines(lines, '/home/foo_bar_user/src', files)
 
+    def test_truncate(self):
+      lines = [
+          (self._ROOT_PID,
+          'execve("../out/unittests", '
+            '["../out/unittests"...], [/* 44 vars */])         = 0'),
+          (self._ROOT_PID,
+           'truncate("file.exe", 0) = 0'),
+      ]
+      files = [
+        {
+          'path': u'/home/foo_bar_user/out/unittests',
+          'size': -1,
+        },
+        {
+          'path': u'/home/foo_bar_user/src/file.exe',
+          'size': -1,
+        },
+      ]
+      self._test_lines(lines, '/home/foo_bar_user/src', files)
+
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv

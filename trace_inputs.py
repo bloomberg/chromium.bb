@@ -1386,6 +1386,10 @@ class Strace(ApiBase):
       def handle_symlink(self, _args, _result):
         pass
 
+      @parse_args(r'^\"(.+?)\", \d+', True)
+      def handle_truncate(self, args, _result):
+        self._handle_file(args[0], False)
+
       def handle_unlink(self, _args, _result):
         # In theory, the file had to be created anyway.
         pass
