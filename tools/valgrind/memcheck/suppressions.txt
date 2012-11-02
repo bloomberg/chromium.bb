@@ -4139,7 +4139,6 @@
    fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
    fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
    fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEii
    ...
    fun:_ZN7WebCore15GraphicsContext*
 }
@@ -5399,26 +5398,6 @@
    fun:qcms_transform_data_type
    fun:_ZN7WebCore16JPEGImageDecoder15outputScanlinesEv
    fun:_ZN7WebCore15JPEGImageReader6decodeERKNS_12SharedBufferEb
-}
-{
-   bug_139664
-   Memcheck:Uninitialized
-   fun:_ZN4skia12_GLOBAL__N_18ClampTo8Ei
-   fun:_ZN4skia12_GLOBAL__N_120ConvolveHorizontallyILb1EEEvPKhRKNS_19ConvolutionFilter1DEPh
-   fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
-   fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZNK7WebCore15NativeImageSkia13resizedBitmapERK7SkIRectiiS3_
-}
-{
-   bug_139664b
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN4skia12_GLOBAL__N_118ConvolveVerticallyILb1EEEvPKsiPKPhiS4_
-   fun:_ZN4skia14BGRAConvolve2DEPKhibRKNS_19ConvolutionFilter1DES4_iPhb
-   fun:_ZN4skia15ImageOperations11ResizeBasicERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
-   fun:_ZNK7WebCore15NativeImageSkia13resizedBitmapERK7SkIRectiiS3_
 }
 {
    bug_139853
