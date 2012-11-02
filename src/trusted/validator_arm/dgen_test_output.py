@@ -649,6 +649,11 @@ TEST_CC_HEADER="""%(FILE_HEADER)s
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
+using nacl_arm_dec::Instruction;
+using nacl_arm_dec::ClassDecoder;
+using nacl_arm_dec::Register;
+using nacl_arm_dec::RegisterList;
+
 namespace nacl_arm_test {
 
 // The following classes are derived class decoder testers that
@@ -713,15 +718,21 @@ SAFETY_TESTER_HEADER="""
 bool %(base_tester)s
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(%(base_base_tester)s::ApplySanityChecks(inst, decoder));
-"""
+  NC_PRECOND(%(base_base_tester)s::ApplySanityChecks(inst, decoder));"""
 
 SAFETY_TESTER_CHECK="""
+
+  // safety: %s
   EXPECT_TRUE(%s);"""
 
+DEFS_SAFETY_CHECK="""
+
+  // defs: %s;
+  EXPECT_TRUE(decoder.defs(inst).IsSame(%s));"""
+
 SAFETY_TESTER_FOOTER="""
-  return %(base_base_tester)s::
-    ApplySanityChecks(inst, decoder);
+
+  return true;
 }
 """
 
@@ -821,10 +832,9 @@ def _filter_test_action(action, with_patterns, with_rules):
   """Filters the actions to pull out relavant entries, based on whether we
      want to include patterns and rules.
      """
+  action_fields = ['baseline', 'constraints', 'safety', 'defs']
   if with_patterns:
-    action_fields = ['actual', 'baseline', 'pattern', 'constraints', 'safety']
-  else:
-    action_fields = ['baseline', 'constraints', 'safety']
+    action_fields += ['actual', 'pattern' ]
   if with_rules:
     action_fields += ['rule']
   return action.action_filter(action_fields)
@@ -915,10 +925,11 @@ def _generate_constraint_testers(decoder, values, out):
     row = _row_filter_interesting_patterns(r)
     action = _install_test_row(row, decoder, values)
     safety_to_check = _safety_to_check(action.safety())
+    defs_to_check = action.defs()
     out.write(CONSTRAINT_TESTER_CLASS_HEADER % values)
     if row.patterns or action.constraints().restrictions:
       out.write(CONSTRAINT_TESTER_RESTRICTIONS_HEADER % values);
-    if safety_to_check:
+    if safety_to_check or defs_to_check:
       out.write(CONSTRAINT_TESTER_SANITY_HEADER % values)
     out.write(CONSTRAINT_TESTER_CLASS_CLOSE % values)
     if row.patterns or action.constraints().restrictions:
@@ -933,11 +944,13 @@ def _generate_constraint_testers(decoder, values, out):
           out.write(CONSTRAINT_CHECK %
                     c.negate().to_commented_bool())
       out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
-    if safety_to_check:
+    if safety_to_check or defs_to_check:
       out.write(SAFETY_TESTER_HEADER % values)
       for check in safety_to_check:
-        out.write(SAFETY_TESTER_CHECK %
-                  check.to_commented_bool());
+        out.write(SAFETY_TESTER_CHECK % (check, check.to_bool()))
+      if defs_to_check:
+        out.write(DEFS_SAFETY_CHECK % (defs_to_check,
+                                       defs_to_check.to_register_list()))
       out.write(SAFETY_TESTER_FOOTER % values)
 
 def _generate_rule_testers(decoder, values, out):

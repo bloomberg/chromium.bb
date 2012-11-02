@@ -112,7 +112,8 @@ class BitExpr(object):
   def to_register_list(self, options={}):
     """Returns a string describing this as a C++ RegisterList
        expression."""
-    raise Exception("to_register_list not defined for %s." % type(self))
+    raise Exception("to_register_list not defined for %s %s." %
+                    (type(self), self))
 
   def to_commmented_register_list(self, options={}):
     """Returns a string describing this as a C++ RegisterList
@@ -739,6 +740,11 @@ class IfThenElse(BitExpr):
     return "(%s ? %s : %s)" % (self._test.to_bool(options),
                                self._then_value.to_bool(options),
                                self._else_value.to_bool(options))
+
+  def to_register_list(self, options={}):
+    return '(%s ? %s : %s)' % (self._test.to_bool(options),
+                               self._then_value.to_register_list(options),
+                               self._else_value.to_register_list(options))
 
   def to_uint32(self, options={}):
     return "(%s ? %s : %s)" % (self._test.to_bool(options),
@@ -1761,6 +1767,10 @@ class DecoderAction:
     """Returns the safety associated with the action."""
     s = self.find('safety')
     return s if s else []
+
+  def defs(self):
+    """Returns the defs defined for the instruction, or None if undefined."""
+    return self.find('defs')
 
   def __eq__(self, other):
     return (type(self) == type(other) and

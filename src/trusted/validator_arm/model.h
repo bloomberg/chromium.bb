@@ -106,6 +106,8 @@ class Register {
   static const Number kLr = 14;  // Link register.
   static const Number kPc = 15;  // Program counter.
   static const Number kConditions = 16;
+  // TODO(karl): CondsDontCare is deprecated, and should be removed as soon
+  // as possible
   static const Number kCondsDontCareFlag = 17;
   static const Number kNone = 32;  // Out of GPR and FPR range.
 
@@ -130,6 +132,8 @@ class Register {
   //
   // Note: Do not add Register::CondsDontCareFlag() to a RegisterList. Rather,
   // use the constant RegisterList::CondsDontCare().
+  // TODO(karl): CondsDontCare is deprecated, and should be removed as soon
+  // as possible
   static Register CondsDontCareFlag() { return Register(kCondsDontCareFlag); }
 
   // Registers with special meaning in our model:
@@ -177,8 +181,15 @@ class RegisterList {
     return bits_ & other.bits_;
   }
 
+  // Returns true if the two register lists are identical.
   bool Equals(const RegisterList& other) const {
     return bits_ == other.bits_;
+  }
+
+  // Returns true if the two register list contain the same
+  // general purpose registers and NZCV APSR flags.
+  bool IsSame(const RegisterList& other) const {
+    return JustGprAndApsrBits() == other.JustGprAndApsrBits();
   }
 
   // Adds a register to the register list.
@@ -231,6 +242,8 @@ class RegisterList {
   // lists returned from virtual ClassDecoder::defs, and only for actual
   // class decoders. It is used to communicate to class decoder testers
   // that the actual class decoder is not tracking conditions.
+  // TODO(karl): CondsDontCare is deprecated, and should be removed as soon
+  // as possible
   static RegisterList CondsDontCare() {
     return RegisterList(((1 << Register::kConditions) |
                          (1 << Register::kCondsDontCareFlag)));
@@ -248,6 +261,15 @@ class RegisterList {
  private:
   Register::Mask bits_;
   RegisterList& operator=(const RegisterList& r);  // Disallow assignment.
+
+  // Returns just the general purpose registers and NZCV APSR flags
+  // register (i.e. it removes the CondsDontCare bit), so that they
+  // can be compared.
+  // TODO(karl): CondsDontCare is deprecated, and should be removed as soon
+  // as possible
+  Register::Mask JustGprAndApsrBits() const {
+    return bits() & ~(1 << Register::kCondsDontCareFlag);
+  }
 };
 
 

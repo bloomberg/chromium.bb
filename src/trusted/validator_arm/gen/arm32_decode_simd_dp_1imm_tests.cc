@@ -17,6 +17,11 @@
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
+using nacl_arm_dec::Instruction;
+using nacl_arm_dec::ClassDecoder;
+using nacl_arm_dec::Register;
+using nacl_arm_dec::RegisterList;
+
 namespace nacl_arm_test {
 
 // The following classes are derived class decoder testers that
@@ -73,11 +78,16 @@ bool Vector1RegisterImmediateTesterCase0
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000000) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C)) /* op(5)=0 && cmode(0)=1 && cmode(3:2)=~11 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000020) && ((inst.Bits() & 0x00000F00) != 0x00000E00)) /* op(5)=1 && cmode(11:8)=~1110 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: op(5)=0 && cmode(0)=1 && cmode(3:2)=~11 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000000) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C)));
+
+  // safety: op(5)=1 && cmode(11:8)=~1110 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000020) && ((inst.Bits() & 0x00000F00) != 0x00000E00)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -126,10 +136,13 @@ bool Vector1RegisterImmediateTesterCase1
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000000) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) == 0x0000000C)) /* cmode(0)=0 || cmode(3:2)=11 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: cmode(0)=0 || cmode(3:2)=11 => DECODER_ERROR
+  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000000) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) == 0x0000000C)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -179,11 +192,16 @@ bool Vector1RegisterImmediateTesterCase2
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000000) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C)) /* op(5)=0 && cmode(0)=1 && cmode(3:2)=~11 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000020) && ((inst.Bits() & 0x00000F00) != 0x00000E00)) /* op(5)=1 && cmode(11:8)=~1110 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: op(5)=0 && cmode(0)=1 && cmode(3:2)=~11 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000000) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C)));
+
+  // safety: op(5)=1 && cmode(11:8)=~1110 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000020) && ((inst.Bits() & 0x00000F00) != 0x00000E00)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -232,10 +250,13 @@ bool Vector1RegisterImmediateTesterCase3
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000000) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) == 0x0000000C)) /* cmode(0)=0 || cmode(3:2)=11 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: cmode(0)=0 || cmode(3:2)=11 => DECODER_ERROR
+  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000000) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) == 0x0000000C)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -285,11 +306,16 @@ bool Vector1RegisterImmediateTesterCase4
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000000) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C)) /* op(5)=0 && cmode(0)=1 && cmode(3:2)=~11 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000020) && ((inst.Bits() & 0x00000F00) != 0x00000E00)) /* op(5)=1 && cmode(11:8)=~1110 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: op(5)=0 && cmode(0)=1 && cmode(3:2)=~11 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000000) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C)));
+
+  // safety: op(5)=1 && cmode(11:8)=~1110 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000020) && ((inst.Bits() & 0x00000F00) != 0x00000E00)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -339,11 +365,16 @@ bool Vector1RegisterImmediateTesterCase5
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000000) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C)) /* op(5)=0 && cmode(0)=1 && cmode(3:2)=~11 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000020) && ((inst.Bits() & 0x00000F00) != 0x00000E00)) /* op(5)=1 && cmode(11:8)=~1110 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: op(5)=0 && cmode(0)=1 && cmode(3:2)=~11 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000000) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C)));
+
+  // safety: op(5)=1 && cmode(11:8)=~1110 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000020) == 0x00000020) && ((inst.Bits() & 0x00000F00) != 0x00000E00)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -392,10 +423,13 @@ bool Vector1RegisterImmediateTesterCase6
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C))) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E) == 0x0000000E)) /* (cmode(0)=1 && cmode(3:2)=~11) || cmode(3:1)=111 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: (cmode(0)=1 && cmode(3:2)=~11) || cmode(3:1)=111 => DECODER_ERROR
+  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C))) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E) == 0x0000000E)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -444,10 +478,13 @@ bool Vector1RegisterImmediateTesterCase7
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000000) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) == 0x0000000C)) /* cmode(0)=0 || cmode(3:2)=11 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: cmode(0)=0 || cmode(3:2)=11 => DECODER_ERROR
+  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000000) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) == 0x0000000C)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -496,10 +533,13 @@ bool Vector1RegisterImmediateTesterCase8
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C))) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E) == 0x0000000E)) /* (cmode(0)=1 && cmode(3:2)=~11) || cmode(3:1)=111 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: (cmode(0)=1 && cmode(3:2)=~11) || cmode(3:1)=111 => DECODER_ERROR
+  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C))) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E) == 0x0000000E)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -548,10 +588,13 @@ bool Vector1RegisterImmediateTesterCase9
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C))) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E) == 0x0000000E)) /* (cmode(0)=1 && cmode(3:2)=~11) || cmode(3:1)=111 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: (cmode(0)=1 && cmode(3:2)=~11) || cmode(3:1)=111 => DECODER_ERROR
+  EXPECT_TRUE(!(((((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000001) && ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) != 0x0000000C))) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000E) == 0x0000000E)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // Neutral case:
@@ -600,10 +643,13 @@ bool Vector1RegisterImmediateTesterCase10
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector1RegisterImmediateTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000000) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) == 0x0000000C)) /* cmode(0)=0 || cmode(3:2)=11 => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)) /* Q(6)=1 && Vd(0)=1 => UNDEFINED */);
-  return Vector1RegisterImmediateTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: cmode(0)=0 || cmode(3:2)=11 => DECODER_ERROR
+  EXPECT_TRUE(!(((((inst.Bits() & 0x00000F00) >> 8) & 0x00000001) == 0x00000000) || ((((inst.Bits() & 0x00000F00) >> 8) & 0x0000000C) == 0x0000000C)));
+
+  // safety: Q(6)=1 && Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)));
+
+  return true;
 }
 
 // The following are derived class decoder testers for decoder actions

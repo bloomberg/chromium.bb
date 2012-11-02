@@ -17,6 +17,11 @@
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
+using nacl_arm_dec::Instruction;
+using nacl_arm_dec::ClassDecoder;
+using nacl_arm_dec::Register;
+using nacl_arm_dec::RegisterList;
+
 namespace nacl_arm_test {
 
 // The following classes are derived class decoder testers that
@@ -30,6 +35,7 @@ namespace nacl_arm_test {
 // inst(11:8)=0000
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
 // Representaive case:
@@ -40,6 +46,7 @@ namespace nacl_arm_test {
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [L:imm6(6:0)=0000xxx => DECODER_ERROR, Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED]}
@@ -73,16 +80,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase0
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000 /* L:imm6(6:0)=0000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: L:imm6(6:0)=0000xxx => DECODER_ERROR
+  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=0001
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
 // Representaive case:
@@ -93,6 +107,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase0
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [L:imm6(6:0)=0000xxx => DECODER_ERROR, Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED]}
@@ -126,16 +141,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase1
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000 /* L:imm6(6:0)=0000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: L:imm6(6:0)=0000xxx => DECODER_ERROR
+  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=0010
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
 // Representaive case:
@@ -146,6 +168,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase1
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [L:imm6(6:0)=0000xxx => DECODER_ERROR, Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED]}
@@ -179,16 +202,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase2
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000 /* L:imm6(6:0)=0000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: L:imm6(6:0)=0000xxx => DECODER_ERROR
+  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=0011
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
 // Representaive case:
@@ -199,6 +229,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase2
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [L:imm6(6:0)=0000xxx => DECODER_ERROR, Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED]}
@@ -232,16 +263,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase3
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000 /* L:imm6(6:0)=0000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: L:imm6(6:0)=0000xxx => DECODER_ERROR
+  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=0100 & inst(24)=1
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
 // Representaive case:
@@ -252,6 +290,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase3
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [L:imm6(6:0)=0000xxx => DECODER_ERROR, Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED]}
@@ -286,16 +325,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase4
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000 /* L:imm6(6:0)=0000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: L:imm6(6:0)=0000xxx => DECODER_ERROR
+  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=0101 & inst(24)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
 // Representaive case:
@@ -306,6 +352,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase4
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [L:imm6(6:0)=0000xxx => DECODER_ERROR, Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED]}
@@ -340,16 +387,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase5
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000 /* L:imm6(6:0)=0000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: L:imm6(6:0)=0000xxx => DECODER_ERROR
+  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=0101 & inst(24)=1
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
 // Representaive case:
@@ -360,6 +414,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase5
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [L:imm6(6:0)=0000xxx => DECODER_ERROR, Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED]}
@@ -394,16 +449,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase6
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000 /* L:imm6(6:0)=0000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: L:imm6(6:0)=0000xxx => DECODER_ERROR
+  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1000 & inst(24)=0 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64R',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED']}
 //
 // Representaive case:
@@ -411,6 +473,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase6
 //    = {Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [imm6(21:16)=000xxx => DECODER_ERROR, Vm(0)=1 => UNDEFINED]}
@@ -447,16 +510,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase7
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001 /* Vm(0)=1 => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vm(0)=1 => UNDEFINED
+  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001);
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1000 & inst(24)=0 & inst(6)=1 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64R',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED']}
 //
 // Representaive case:
@@ -464,6 +534,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase7
 //    = {Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [imm6(21:16)=000xxx => DECODER_ERROR, Vm(0)=1 => UNDEFINED]}
@@ -500,16 +571,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase8
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001 /* Vm(0)=1 => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vm(0)=1 => UNDEFINED
+  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001);
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1000 & inst(24)=1 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
 // Representaive case:
@@ -518,6 +596,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase8
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -555,17 +634,26 @@ bool VectorBinary2RegisterShiftAmountTesterCase9
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001 /* Vm(0)=1 => UNDEFINED */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)) /* U(24)=0 && op(8)=0 => DECODER_ERROR */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vm(0)=1 => UNDEFINED
+  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001);
+
+  // safety: U(24)=0 && op(8)=0 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1000 & inst(24)=1 & inst(6)=1 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
 // Representaive case:
@@ -574,6 +662,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase9
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -611,17 +700,26 @@ bool VectorBinary2RegisterShiftAmountTesterCase10
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001 /* Vm(0)=1 => UNDEFINED */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)) /* U(24)=0 && op(8)=0 => DECODER_ERROR */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vm(0)=1 => UNDEFINED
+  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001);
+
+  // safety: U(24)=0 && op(8)=0 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1001 & inst(24)=0 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
 // Representaive case:
@@ -630,6 +728,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase10
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -667,17 +766,26 @@ bool VectorBinary2RegisterShiftAmountTesterCase11
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001 /* Vm(0)=1 => UNDEFINED */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)) /* U(24)=0 && op(8)=0 => DECODER_ERROR */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vm(0)=1 => UNDEFINED
+  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001);
+
+  // safety: U(24)=0 && op(8)=0 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1001 & inst(24)=0 & inst(6)=1 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
 // Representaive case:
@@ -686,6 +794,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase11
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -723,17 +832,26 @@ bool VectorBinary2RegisterShiftAmountTesterCase12
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001 /* Vm(0)=1 => UNDEFINED */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)) /* U(24)=0 && op(8)=0 => DECODER_ERROR */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vm(0)=1 => UNDEFINED
+  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001);
+
+  // safety: U(24)=0 && op(8)=0 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1001 & inst(24)=1 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
 // Representaive case:
@@ -742,6 +860,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase12
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -779,17 +898,26 @@ bool VectorBinary2RegisterShiftAmountTesterCase13
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001 /* Vm(0)=1 => UNDEFINED */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)) /* U(24)=0 && op(8)=0 => DECODER_ERROR */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vm(0)=1 => UNDEFINED
+  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001);
+
+  // safety: U(24)=0 && op(8)=0 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1001 & inst(24)=1 & inst(6)=1 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
 // Representaive case:
@@ -798,6 +926,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase13
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -835,17 +964,26 @@ bool VectorBinary2RegisterShiftAmountTesterCase14
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001 /* Vm(0)=1 => UNDEFINED */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)) /* U(24)=0 && op(8)=0 => DECODER_ERROR */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vm(0)=1 => UNDEFINED
+  EXPECT_TRUE(((inst.Bits() & 0x0000000F) & 0x00000001) != 0x00000001);
+
+  // safety: U(24)=0 && op(8)=0 => DECODER_ERROR
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=1010 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_E8_16_32L',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(15:12)(0)=1 => UNDEFINED']}
 //
 // Representaive case:
@@ -853,6 +991,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase14
 //    = {Vd: Vd(15:12),
 //       baseline: VectorBinary2RegisterShiftAmount_E8_16_32L,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12)],
 //       imm6: imm6(21:16),
 //       safety: [imm6(21:16)=000xxx => DECODER_ERROR, Vd(0)=1 => UNDEFINED]}
@@ -888,16 +1027,23 @@ bool VectorBinary2RegisterShiftAmountTesterCase15
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) != 0x00000001 /* Vd(0)=1 => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) != 0x00000001);
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=011x
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_ILS',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED', 'inst(24)=0 && inst(8)=0 => UNDEFINED']}
 //
 // Representaive case:
@@ -909,6 +1055,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase15
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_ILS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), Vd(15:12), op(8), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -943,17 +1090,26 @@ bool VectorBinary2RegisterShiftAmountTesterCase16
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000 /* L:imm6(6:0)=0000xxx => DECODER_ERROR */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)) /* U(24)=0 && op(8)=0 => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: L:imm6(6:0)=0000xxx => DECODER_ERROR
+  EXPECT_TRUE(((((((inst.Bits() & 0x00000080) >> 7)) << 6) | ((inst.Bits() & 0x003F0000) >> 16)) & 0x00000078) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // safety: U(24)=0 && op(8)=0 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x00000000) && ((inst.Bits() & 0x00000100) == 0x00000000)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // Neutral case:
 // inst(11:8)=111x & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_CVT',
 //       constraints: ,
+//       defs: {},
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(21:16)=0xxxxx => UNDEFINED', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
 // Representaive case:
@@ -963,6 +1119,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase16
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_CVT,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       safety: [imm6(21:16)=000xxx => DECODER_ERROR, imm6(21:16)=0xxxxx => UNDEFINED, Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED]}
@@ -997,11 +1154,19 @@ bool VectorBinary2RegisterShiftAmountTesterCase17
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterShiftAmountTester::ApplySanityChecks(inst, decoder));
 
-  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000 /* imm6(21:16)=000xxx => DECODER_ERROR */);
-  EXPECT_TRUE((inst.Bits() & 0x00200000) != 0x00000000 /* imm6(21:16)=0xxxxx => UNDEFINED */);
-  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED */);
-  return VectorBinary2RegisterShiftAmountTester::
-    ApplySanityChecks(inst, decoder);
+  // safety: imm6(21:16)=000xxx => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x00380000) != 0x00000000);
+
+  // safety: imm6(21:16)=0xxxxx => UNDEFINED
+  EXPECT_TRUE((inst.Bits() & 0x00200000) != 0x00000000);
+
+  // safety: Q(6)=1 && (Vd(0)=1 || Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || (((inst.Bits() & 0x0000000F) & 0x00000001) == 0x00000001)))));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
 }
 
 // The following are derived class decoder testers for decoder actions
@@ -1013,6 +1178,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase17
 // inst(11:8)=0000
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VSHR',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
@@ -1024,6 +1190,7 @@ bool VectorBinary2RegisterShiftAmountTesterCase17
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VSHR,
@@ -1041,6 +1208,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case0
 // inst(11:8)=0001
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VSRA',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
@@ -1052,6 +1220,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case0
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VSRA,
@@ -1069,6 +1238,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case1
 // inst(11:8)=0010
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VRSHR',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
@@ -1080,6 +1250,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case1
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VRSHR,
@@ -1097,6 +1268,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case2
 // inst(11:8)=0011
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VRSRA',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
@@ -1108,6 +1280,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case2
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VRSRA,
@@ -1125,6 +1298,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case3
 // inst(11:8)=0100 & inst(24)=1
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VSRI',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
@@ -1136,6 +1310,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case3
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VSRI,
@@ -1153,6 +1328,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case4
 // inst(11:8)=0101 & inst(24)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VSHL_immediate',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
@@ -1164,6 +1340,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case4
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VSHL_immediate,
@@ -1181,6 +1358,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case5
 // inst(11:8)=0101 & inst(24)=1
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VSLI',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
@@ -1192,6 +1370,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case5
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VSLI,
@@ -1209,6 +1388,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case6
 // inst(11:8)=1000 & inst(24)=0 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64R',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED']}
 //
@@ -1217,6 +1397,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case6
 //    = {Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VSHRN,
@@ -1234,6 +1415,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case7
 // inst(11:8)=1000 & inst(24)=0 & inst(6)=1 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64R',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VRSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED']}
 //
@@ -1242,6 +1424,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case7
 //    = {Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VRSHRN,
@@ -1259,6 +1442,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case8
 // inst(11:8)=1000 & inst(24)=1 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VQRSHRUN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
@@ -1268,6 +1452,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case8
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1286,6 +1471,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case9
 // inst(11:8)=1000 & inst(24)=1 & inst(6)=1 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VQRSHRUN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
@@ -1295,6 +1481,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case9
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1313,6 +1500,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case10
 // inst(11:8)=1001 & inst(24)=0 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VQSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
@@ -1322,6 +1510,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case10
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1340,6 +1529,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case11
 // inst(11:8)=1001 & inst(24)=0 & inst(6)=1 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VQRSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
@@ -1349,6 +1539,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case11
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1367,6 +1558,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case12
 // inst(11:8)=1001 & inst(24)=1 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VQSHRUN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
@@ -1376,6 +1568,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case12
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1394,6 +1587,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case13
 // inst(11:8)=1001 & inst(24)=1 & inst(6)=1 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VQRSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
 //
@@ -1403,6 +1597,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case13
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1421,6 +1616,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case14
 // inst(11:8)=1010 & inst(6)=0 & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_E8_16_32L',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VSHLL_A1_or_VMOVL',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(15:12)(0)=1 => UNDEFINED']}
 //
@@ -1429,6 +1625,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case14
 //    = {Vd: Vd(15:12),
 //       baseline: VectorBinary2RegisterShiftAmount_E8_16_32L,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12)],
 //       imm6: imm6(21:16),
 //       rule: VSHLL_A1_or_VMOVL,
@@ -1446,6 +1643,7 @@ class VectorBinary2RegisterShiftAmount_E8_16_32LTester_Case15
 // inst(11:8)=011x
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_ILS',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VQSHL_VQSHLU_immediate',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED', 'inst(24)=0 && inst(8)=0 => UNDEFINED']}
 //
@@ -1458,6 +1656,7 @@ class VectorBinary2RegisterShiftAmount_E8_16_32LTester_Case15
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_ILS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), Vd(15:12), op(8), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1476,6 +1675,7 @@ class VectorBinary2RegisterShiftAmount_ILSTester_Case16
 // inst(11:8)=111x & inst(7)=0
 //    = {baseline: 'VectorBinary2RegisterShiftAmount_CVT',
 //       constraints: ,
+//       defs: {},
 //       rule: 'VCVT_between_floating_point_and_fixed_point',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(21:16)=0xxxxx => UNDEFINED', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
 //
@@ -1486,6 +1686,7 @@ class VectorBinary2RegisterShiftAmount_ILSTester_Case16
 //       Vm: Vm(3:0),
 //       baseline: VectorBinary2RegisterShiftAmount_CVT,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       rule: VCVT_between_floating_point_and_fixed_point,
@@ -1513,6 +1714,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //    = {actual: 'VectorBinary2RegisterShiftAmount_I',
 //       baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd0000lqm1mmmm',
 //       rule: 'VSHR',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
@@ -1526,6 +1728,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       actual: VectorBinary2RegisterShiftAmount_I,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 1111001u1diiiiiidddd0000lqm1mmmm,
@@ -1542,6 +1745,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_I',
 //       baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd0001lqm1mmmm',
 //       rule: 'VSRA',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
@@ -1555,6 +1759,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_I,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 1111001u1diiiiiidddd0001lqm1mmmm,
@@ -1571,6 +1776,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_I',
 //       baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd0010lqm1mmmm',
 //       rule: 'VRSHR',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
@@ -1584,6 +1790,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_I,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 1111001u1diiiiiidddd0010lqm1mmmm,
@@ -1600,6 +1807,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_I',
 //       baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd0011lqm1mmmm',
 //       rule: 'VRSRA',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
@@ -1613,6 +1821,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_I,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 1111001u1diiiiiidddd0011lqm1mmmm,
@@ -1629,6 +1838,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_I',
 //       baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       pattern: '111100111diiiiiidddd0100lqm1mmmm',
 //       rule: 'VSRI',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
@@ -1642,6 +1852,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_I,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 111100111diiiiiidddd0100lqm1mmmm,
@@ -1658,6 +1869,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_I',
 //       baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       pattern: '111100101diiiiiidddd0101lqm1mmmm',
 //       rule: 'VSHL_immediate',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
@@ -1671,6 +1883,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_I,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 111100101diiiiiidddd0101lqm1mmmm,
@@ -1687,6 +1900,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_I',
 //       baseline: 'VectorBinary2RegisterShiftAmount_I',
 //       constraints: ,
+//       defs: {},
 //       pattern: '111100111diiiiiidddd0101lqm1mmmm',
 //       rule: 'VSLI',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
@@ -1700,6 +1914,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_I,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 111100111diiiiiidddd0101lqm1mmmm,
@@ -1716,6 +1931,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_N16_32_64R',
 //       baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64R',
 //       constraints: ,
+//       defs: {},
 //       pattern: '111100101diiiiiidddd100000m1mmmm',
 //       rule: 'VSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED']}
@@ -1726,6 +1942,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 111100101diiiiiidddd100000m1mmmm,
@@ -1742,6 +1959,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_N16_32_64R',
 //       baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64R',
 //       constraints: ,
+//       defs: {},
 //       pattern: '111100101diiiiiidddd100001m1mmmm',
 //       rule: 'VRSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED']}
@@ -1752,6 +1970,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 111100101diiiiiidddd100001m1mmmm,
@@ -1768,6 +1987,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd100p00m1mmmm',
 //       rule: 'VQRSHRUN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
@@ -1779,6 +1999,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1796,6 +2017,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd100p01m1mmmm',
 //       rule: 'VQRSHRUN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
@@ -1807,6 +2029,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1824,6 +2047,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd100p00m1mmmm',
 //       rule: 'VQSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
@@ -1835,6 +2059,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1852,6 +2077,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd100p01m1mmmm',
 //       rule: 'VQRSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
@@ -1863,6 +2089,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1880,6 +2107,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd100p00m1mmmm',
 //       rule: 'VQSHRUN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
@@ -1891,6 +2119,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1908,6 +2137,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       baseline: 'VectorBinary2RegisterShiftAmount_N16_32_64RS',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd100p01m1mmmm',
 //       rule: 'VQRSHRN',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(3:0)(0)=1 => UNDEFINED', 'inst(24)=0 && inst(8)=0 => DECODER_ERROR']}
@@ -1919,6 +2149,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), op(8), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1936,6 +2167,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_E8_16_32L',
 //       baseline: 'VectorBinary2RegisterShiftAmount_E8_16_32L',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd101000m1mmmm',
 //       rule: 'VSHLL_A1_or_VMOVL',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(15:12)(0)=1 => UNDEFINED']}
@@ -1946,6 +2178,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_E8_16_32L,
 //       baseline: VectorBinary2RegisterShiftAmount_E8_16_32L,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12)],
 //       imm6: imm6(21:16),
 //       pattern: 1111001u1diiiiiidddd101000m1mmmm,
@@ -1962,6 +2195,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_ILS',
 //       baseline: 'VectorBinary2RegisterShiftAmount_ILS',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd011plqm1mmmm',
 //       rule: 'VQSHL_VQSHLU_immediate',
 //       safety: ['inst(7):inst(21:16)(6:0)=0000xxx => DECODER_ERROR', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED', 'inst(24)=0 && inst(8)=0 => UNDEFINED']}
@@ -1976,6 +2210,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_ILS,
 //       baseline: VectorBinary2RegisterShiftAmount_ILS,
 //       constraints: ,
+//       defs: {},
 //       fields: [U(24), imm6(21:16), Vd(15:12), op(8), L(7), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       op: op(8),
@@ -1993,6 +2228,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'VectorBinary2RegisterShiftAmount_CVT',
 //       baseline: 'VectorBinary2RegisterShiftAmount_CVT',
 //       constraints: ,
+//       defs: {},
 //       pattern: '1111001u1diiiiiidddd111p0qm1mmmm',
 //       rule: 'VCVT_between_floating_point_and_fixed_point',
 //       safety: ['inst(21:16)=000xxx => DECODER_ERROR', 'inst(21:16)=0xxxxx => UNDEFINED', 'inst(6)=1 && (inst(15:12)(0)=1 || inst(3:0)(0)=1) => UNDEFINED']}
@@ -2005,6 +2241,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: VectorBinary2RegisterShiftAmount_CVT,
 //       baseline: VectorBinary2RegisterShiftAmount_CVT,
 //       constraints: ,
+//       defs: {},
 //       fields: [imm6(21:16), Vd(15:12), Q(6), Vm(3:0)],
 //       imm6: imm6(21:16),
 //       pattern: 1111001u1diiiiiidddd111p0qm1mmmm,

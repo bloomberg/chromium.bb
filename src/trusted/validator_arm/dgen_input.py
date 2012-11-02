@@ -441,6 +441,9 @@ class Parser(object):
         value = _PREDEFINED_CONSTS.get(name)
         if not value:
           self._unexpected("Can't find definition for %s" % name)
+        # Lift predefined symbol into context, so that the high-level
+        # definition will be available when the context is printed.
+        context.define(name, value)
       return dgen_core.IdRef(name, value)
 
   def _bit_set(self, context):
