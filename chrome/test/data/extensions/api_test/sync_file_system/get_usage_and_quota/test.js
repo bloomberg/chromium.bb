@@ -10,7 +10,7 @@ chrome.test.runTests([
         'drive',
         chrome.test.callbackPass(function(info) {
             chrome.test.assertEq(0, info.usage_bytes);
-            chrome.test.assertEq(524288000, info.quota_bytes);
+            chrome.test.assertEq(123456789, info.quota_bytes);
         }));
   }
 ]);
