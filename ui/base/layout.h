@@ -56,6 +56,9 @@ UI_EXPORT ScaleFactor GetScaleFactorFromScale(float scale);
 // Returns the ScaleFactor used by |view|.
 UI_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
 
+// Returns the maximum device scale factor supported by this platform.
+UI_EXPORT ScaleFactor GetMaxScaleFactor();
+
 // Returns a vector with the scale factors which are supported by this
 // platform, in ascending order.
 UI_EXPORT std::vector<ScaleFactor> GetSupportedScaleFactors();

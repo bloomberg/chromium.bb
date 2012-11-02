@@ -34,6 +34,10 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -229,7 +233,7 @@ void ResourceBundle::AddDataPackFromFile(base::PlatformFile file,
   scoped_ptr<DataPack> data_pack(
       new DataPack(scale_factor));
   if (data_pack->LoadFromFile(file)) {
-    data_packs_.push_back(data_pack.release());
+    AddDataPack(data_pack.release());
   } else {
     LOG(ERROR) << "Failed to load data pack from file."
                << "\nSome features may not be available.";
@@ -306,7 +310,7 @@ void ResourceBundle::LoadTestResources(const FilePath& path,
   scoped_ptr<DataPack> data_pack(
       new DataPack(SCALE_FACTOR_100P));
   if (!path.empty() && data_pack->LoadFromPath(path))
-    data_packs_.push_back(data_pack.release());
+    AddDataPack(data_pack.release());
 
   data_pack.reset(new DataPack(ui::SCALE_FACTOR_NONE));
   if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
@@ -518,7 +522,8 @@ void ResourceBundle::ReloadFonts() {
 ResourceBundle::ResourceBundle(Delegate* delegate)
     : delegate_(delegate),
       images_and_fonts_lock_(new base::Lock),
-      locale_resources_data_lock_(new base::Lock) {
+      locale_resources_data_lock_(new base::Lock),
+      max_scale_factor_(SCALE_FACTOR_100P) {
 }
 
 ResourceBundle::~ResourceBundle() {
@@ -548,11 +553,28 @@ void ResourceBundle::AddDataPackFromPathInternal(const FilePath& path,
   scoped_ptr<DataPack> data_pack(
       new DataPack(scale_factor));
   if (data_pack->LoadFromPath(pack_path)) {
-    data_packs_.push_back(data_pack.release());
+    AddDataPack(data_pack.release());
   } else if (!optional) {
     LOG(ERROR) << "Failed to load " << pack_path.value()
                << "\nSome features may not be available.";
   }
+}
+
+void ResourceBundle::AddDataPack(DataPack* data_pack) {
+  data_packs_.push_back(data_pack);
+
+#if defined(OS_CHROMEOS)
+  // When Chrome is running on desktop and force-device-scale-factor is not
+  // specified, use SCALE_FACTOR_100P as |max_scale_factor_|.
+  if (!base::chromeos::IsRunningOnChromeOS() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceDeviceScaleFactor))
+    return;
+#endif
+
+  if (GetScaleFactorScale(data_pack->GetScaleFactor()) >
+      GetScaleFactorScale(max_scale_factor_))
+    max_scale_factor_ = data_pack->GetScaleFactor();
 }
 
 void ResourceBundle::LoadFontsIfNecessary() {

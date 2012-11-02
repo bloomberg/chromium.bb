@@ -25,7 +25,17 @@
 #include <Windows.h>
 #endif  // defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/resource/resource_bundle.h"
+#endif
+
+namespace ui {
+
 namespace {
+
+bool ScaleFactorComparator(const ScaleFactor& lhs, const ScaleFactor& rhs){
+  return GetScaleFactorScale(lhs) < GetScaleFactorScale(rhs);
+}
 
 #if defined(OS_WIN)
 // Helper function that determines whether we want to optimize the UI for touch.
@@ -55,45 +65,46 @@ bool UseTouchOptimizedUI() {
 #endif  // defined(OS_WIN)
 
 const float kScaleFactorScales[] = {1.0f, 1.4f, 1.8f, 2.0f};
-COMPILE_ASSERT(ui::NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
+COMPILE_ASSERT(NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
                kScaleFactorScales_incorrect_size);
 const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);
 
-std::vector<ui::ScaleFactor>& GetSupportedScaleFactorsInternal() {
-  static std::vector<ui::ScaleFactor>* supported_scale_factors =
-      new std::vector<ui::ScaleFactor>();
+std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
+  static std::vector<ScaleFactor>* supported_scale_factors =
+      new std::vector<ScaleFactor>();
   if (supported_scale_factors->empty()) {
 #if !defined(OS_IOS)
     // On platforms other than iOS, 100P is always a supported scale factor.
-    supported_scale_factors->push_back(ui::SCALE_FACTOR_100P);
+    supported_scale_factors->push_back(SCALE_FACTOR_100P);
 #endif
 
 #if defined(OS_IOS)
     gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
     if (display.device_scale_factor() > 1.0) {
       DCHECK_EQ(2.0, display.device_scale_factor());
-      supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
+      supported_scale_factors->push_back(SCALE_FACTOR_200P);
     } else {
-      supported_scale_factors->push_back(ui::SCALE_FACTOR_100P);
+      supported_scale_factors->push_back(SCALE_FACTOR_100P);
     }
 #elif defined(OS_MACOSX)
     if (base::mac::IsOSLionOrLater())
-      supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
+      supported_scale_factors->push_back(SCALE_FACTOR_200P);
 #elif defined(OS_WIN) && defined(ENABLE_HIDPI)
     if (base::win::IsMetroProcess() && base::win::IsTouchEnabled()) {
-      supported_scale_factors->push_back(ui::SCALE_FACTOR_140P);
-      supported_scale_factors->push_back(ui::SCALE_FACTOR_180P);
+      supported_scale_factors->push_back(SCALE_FACTOR_140P);
+      supported_scale_factors->push_back(SCALE_FACTOR_180P);
     }
 #elif defined(USE_ASH)
-    supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
+    supported_scale_factors->push_back(SCALE_FACTOR_200P);
 #endif
+    std::sort(supported_scale_factors->begin(),
+              supported_scale_factors->end(),
+              ScaleFactorComparator);
   }
   return *supported_scale_factors;
 }
 
 }  // namespace
-
-namespace ui {
 
 // Note that this function should be extended to select
 // LAYOUT_TOUCH when appropriate on more platforms than just
@@ -130,6 +141,14 @@ float GetScaleFactorScale(ScaleFactor scale_factor) {
   return kScaleFactorScales[scale_factor];
 }
 
+ScaleFactor GetMaxScaleFactor() {
+#if defined(OS_CHROMEOS)
+  return ResourceBundle::GetSharedInstance().max_scale_factor();
+#else
+  return GetSupportedScaleFactorsInternal().back();
+#endif
+}
+
 std::vector<ScaleFactor> GetSupportedScaleFactors() {
   return GetSupportedScaleFactorsInternal();
 }
@@ -148,6 +167,9 @@ void SetSupportedScaleFactors(
   std::vector<ui::ScaleFactor>& supported_scale_factors =
       GetSupportedScaleFactorsInternal();
   supported_scale_factors = scale_factors;
+  std::sort(supported_scale_factors.begin(),
+            supported_scale_factors.end(),
+            ScaleFactorComparator);
 }
 
 }  // namespace test

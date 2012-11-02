@@ -107,12 +107,13 @@ gfx::Size GetCopySizeForThumbnail(content::RenderWidgetHostView* view) {
 // Returns the size of the thumbnail stored in the database in pixel.
 gfx::Size GetThumbnailSizeInPixel() {
   gfx::Size thumbnail_size(kThumbnailWidth, kThumbnailHeight);
-  // Determine the resolution of the thumbnail based on the primary monitor.
-  // TODO(oshima): Use device's default scale factor.
-  gfx::Display primary_display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-  return gfx::ToFlooredSize(
-      thumbnail_size.Scale(primary_display.device_scale_factor()));
+  // Determine the resolution of the thumbnail based on the maximum scale
+  // factor.
+  // TODO(mazda|oshima): Update thumbnail when the max scale factor changes.
+  // crbug.com/159157.
+  float max_scale_factor =
+      ui::GetScaleFactorScale(ui::GetMaxScaleFactor());
+  return gfx::ToFlooredSize(thumbnail_size.Scale(max_scale_factor));
 }
 
 // Returns the clipping rectangle that is used for creating a thumbnail with

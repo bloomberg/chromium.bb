@@ -33,6 +33,7 @@ class RefCountedStaticMemory;
 
 namespace ui {
 
+class DataPack;
 class ResourceHandle;
 
 // ResourceBundle is a central facility to load images and other resources,
@@ -246,6 +247,12 @@ class UI_EXPORT ResourceBundle {
   FilePath GetLocaleFilePath(const std::string& app_locale,
                              bool test_file_exists);
 
+  // Returns the maximum scale factor currently loaded.
+  // Returns SCALE_FACTOR_100P if no resource is loaded.
+  ScaleFactor max_scale_factor() const {
+    return max_scale_factor_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetPathForResourcePack);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetPathForLocalePack);
@@ -278,6 +285,10 @@ class UI_EXPORT ResourceBundle {
   void AddDataPackFromPathInternal(const FilePath& path,
                                    ScaleFactor scale_factor,
                                    bool optional);
+
+  // Inserts |data_pack| to |data_pack_| and updates |max_scale_factor_|
+  // accordingly.
+  void AddDataPack(DataPack* data_pack);
 
   // Try to load the locale specific strings from an external data module.
   // Returns the locale that is loaded.
@@ -330,6 +341,9 @@ class UI_EXPORT ResourceBundle {
   // Handles for data sources.
   scoped_ptr<ResourceHandle> locale_resources_data_;
   ScopedVector<ResourceHandle> data_packs_;
+
+  // The maximum scale factor currently loaded.
+  ScaleFactor max_scale_factor_;
 
   // Cached images. The ResourceBundle caches all retrieved images and keeps
   // ownership of the pointers.
