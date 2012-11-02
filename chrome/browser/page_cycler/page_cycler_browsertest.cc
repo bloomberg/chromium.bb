@@ -317,12 +317,10 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
 // TODO(rdevlin.cronin): Perhaps page cycler isn't completely implemented on
 // ChromeOS?
 #else
-#if defined(OS_LINUX)
-// Bug 159026: Randomly fails on Linux release and debug.
-#define MAYBE_PlaybackMode DISABLED_PlaybackMode
-#else
-#if (defined(OS_WIN) || defined(OS_MACOSX)) && !defined(NDEBUG)
+#if (defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)) && \
+    !defined(NDEBUG)
 // Bug 131333: This test fails on a XP debug bot since Build 17609.
+// Bug 159026: Also fails on Linux debug bot.
 #define MAYBE_PlaybackMode DISABLED_PlaybackMode
 #else
 #define MAYBE_PlaybackMode PlaybackMode
