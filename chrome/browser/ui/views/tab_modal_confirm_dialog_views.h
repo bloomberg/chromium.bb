@@ -11,6 +11,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace views {
 class MessageBoxView;
 }
@@ -24,7 +28,7 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
                                    public views::DialogDelegate {
  public:
   TabModalConfirmDialogViews(TabModalConfirmDialogDelegate* delegate,
-                             TabContents* tab_contents,
+                             content::WebContents* web_contents,
                              bool enable_chrome_style);
 
   // views::DialogDelegate:

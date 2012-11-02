@@ -1490,7 +1490,7 @@ void Browser::ViewSourceForFrame(WebContents* source,
 
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
   TabModalConfirmDialog::Create(new RepostFormWarningController(source),
-                                TabContents::FromWebContents(source));
+                                source);
 }
 
 bool Browser::ShouldCreateWebContents(

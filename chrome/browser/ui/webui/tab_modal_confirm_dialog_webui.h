@@ -17,6 +17,10 @@
 
 class ConstrainedWebDialogDelegate;
 
+namespace content {
+class WebContents;
+}
+
 // Displays a tab-modal dialog, i.e. a dialog that will block the current page
 // but still allow the user to switch to a different page.
 // To display the dialog, allocate this object on the heap. It will open the
@@ -27,7 +31,7 @@ class TabModalConfirmDialogWebUI : public TabModalConfirmDialog,
  public:
   TabModalConfirmDialogWebUI(
       TabModalConfirmDialogDelegate* dialog_delegate,
-      TabContents* tab_contents);
+      content::WebContents* web_contents);
 
   // ui::WebDialogDelegate implementation.
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;

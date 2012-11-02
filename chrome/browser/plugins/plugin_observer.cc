@@ -321,7 +321,7 @@ void PluginObserver::InstallMissingPlugin(
     TabModalConfirmDialog::Create(
         new ConfirmInstallDialogDelegate(
             web_contents(), installer, plugin_metadata.Pass()),
-            TabContents::FromWebContents(web_contents()));
+        web_contents());
   }
 }
 

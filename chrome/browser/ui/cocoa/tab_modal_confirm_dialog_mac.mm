@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -18,13 +17,13 @@
 // static
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabModalConfirmDialogDelegate* delegate,
-    TabContents* tab_contents) {
+    content::WebContents* web_contents) {
   if (chrome::IsFramelessConstrainedDialogEnabled()) {
     // Deletes itself when closed.
-    return new TabModalConfirmDialogMac2(delegate, tab_contents);
+    return new TabModalConfirmDialogMac2(delegate, web_contents);
   }
   // Deletes itself when closed.
-  return new TabModalConfirmDialogMac(delegate, tab_contents);
+  return new TabModalConfirmDialogMac(delegate, web_contents);
 }
 
 // The delegate of the NSAlert used to display the dialog. Forwards the alert's
@@ -59,7 +58,7 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
 
 TabModalConfirmDialogMac::TabModalConfirmDialogMac(
     TabModalConfirmDialogDelegate* delegate,
-    TabContents* tab_contents)
+    content::WebContents* web_contents)
     : ConstrainedWindowMacDelegateSystemSheet(
         [[[TabModalConfirmDialogMacBridge alloc] initWithDelegate:delegate]
             autorelease],
@@ -80,8 +79,7 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
 
   set_sheet(alert);
 
-  delegate->set_window(
-      new ConstrainedWindowMac(tab_contents->web_contents(), this));
+  delegate->set_window(new ConstrainedWindowMac(web_contents, this));
 }
 
 TabModalConfirmDialogMac::~TabModalConfirmDialogMac() {
@@ -138,7 +136,7 @@ void TabModalConfirmDialogMac::CancelTabModalDialog() {
 
 TabModalConfirmDialogMac2::TabModalConfirmDialogMac2(
     TabModalConfirmDialogDelegate* delegate,
-    TabContents* tab_contents)
+    content::WebContents* web_contents)
     : delegate_(delegate) {
   bridge_.reset([[TabModalConfirmDialogMacBridge2 alloc]
       initWithDelegate:delegate]);
@@ -162,8 +160,7 @@ TabModalConfirmDialogMac2::TabModalConfirmDialogMac2(
   [[alert_ closeButton] setAction:@selector(onCancelButton:)];
   [alert_ layout];
 
-  window_.reset(new ConstrainedWindowMac2(
-      this, tab_contents->web_contents(), [alert_ window]));
+  window_.reset(new ConstrainedWindowMac2(this, web_contents, [alert_ window]));
   delegate->set_window(window_.get());
 }
 

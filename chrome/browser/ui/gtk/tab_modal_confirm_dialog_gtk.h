@@ -13,8 +13,11 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class TabContents;
 class TabModalConfirmDialogDelegate;
+
+namespace content {
+class WebContents;
+}
 
 // Displays a tab-modal dialog, i.e. a dialog that will block the current page
 // but still allow the user to switch to a different page.
@@ -25,7 +28,7 @@ class TabModalConfirmDialogGtk : public TabModalConfirmDialog,
                                  public ConstrainedWindowGtkDelegate {
  public:
   TabModalConfirmDialogGtk(TabModalConfirmDialogDelegate* delegate,
-                           TabContents* tab_contents);
+                           content::WebContents* web_contents);
 
   // ConstrainedWindowGtkDelegate:
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;

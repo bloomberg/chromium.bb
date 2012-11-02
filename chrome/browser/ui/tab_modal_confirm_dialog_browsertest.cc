@@ -42,7 +42,7 @@ void TabModalConfirmDialogTest::SetUpOnMainThread() {
   delegate_ = new MockTabModalConfirmDialogDelegate(
       chrome::GetActiveWebContents(browser()));
   dialog_ = TabModalConfirmDialog::Create(
-      delegate_, chrome::GetActiveTabContents(browser()));
+      delegate_, chrome::GetActiveWebContents(browser()));
   content::RunAllPendingInMessageLoop();
 }
 

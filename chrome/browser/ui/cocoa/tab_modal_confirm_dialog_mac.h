@@ -13,8 +13,11 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 
 @class ConstrainedWindowAlert;
-class TabContents;
 class TabModalConfirmDialogDelegate;
+
+namespace content {
+class WebContents;
+}
 
 // Displays a tab-modal dialog, i.e. a dialog that will block the current page
 // but still allow the user to switch to a different page.
@@ -26,7 +29,7 @@ class TabModalConfirmDialogMac
       public ConstrainedWindowMacDelegateSystemSheet {
  public:
   TabModalConfirmDialogMac(TabModalConfirmDialogDelegate* delegate,
-                           TabContents* tab_contents);
+                           content::WebContents* web_contents);
 
   // ConstrainedWindowDelegateMacSystemSheet:
   virtual void DeleteDelegate() OVERRIDE;
@@ -51,7 +54,7 @@ class TabModalConfirmDialogMac2 : public TabModalConfirmDialog,
                                   public ConstrainedWindowMacDelegate2 {
  public:
   TabModalConfirmDialogMac2(TabModalConfirmDialogDelegate* delegate,
-                            TabContents* tab_contents);
+                            content::WebContents* web_contents);
 
  private:
   virtual ~TabModalConfirmDialogMac2();

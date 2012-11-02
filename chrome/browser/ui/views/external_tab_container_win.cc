@@ -765,7 +765,7 @@ void ExternalTabContainerWin::BeforeUnloadFired(WebContents* tab,
 
 void ExternalTabContainerWin::ShowRepostFormWarningDialog(WebContents* source) {
   TabModalConfirmDialog::Create(new RepostFormWarningController(source),
-                                    TabContents::FromWebContents(source));
+                                source);
 }
 
 void ExternalTabContainerWin::RunFileChooser(
