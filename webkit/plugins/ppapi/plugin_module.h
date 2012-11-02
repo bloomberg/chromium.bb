@@ -111,8 +111,8 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   scoped_refptr<PluginModule> CreateModuleForNaClInstance();
 
   // Initializes the NaCl module for the out of process proxy. InitAsProxied
-  // must be called before calling InitAsProxiedNaCl.
-  void InitAsProxiedNaCl(PluginInstance* instance);
+  // must be called before calling InitAsProxiedNaCl. Returns true on success.
+  bool InitAsProxiedNaCl(PluginInstance* instance);
 
   static const PPB_Core* GetCore();
 

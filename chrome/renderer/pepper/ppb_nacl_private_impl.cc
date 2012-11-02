@@ -130,11 +130,9 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
             instance_info.permissions,
             instance_info.channel_handle,
             instance_info.plugin_child_id);
-    if (renderer_ppapi_host) {
-      // Allow the module to reset the instance to the new proxy.
-      nacl_plugin_module->InitAsProxiedNaCl(plugin_instance);
+    if (renderer_ppapi_host &&
+        nacl_plugin_module->InitAsProxiedNaCl(plugin_instance))
       return PP_TRUE;
-    }
   }
   return PP_FALSE;
 }

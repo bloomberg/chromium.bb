@@ -512,7 +512,7 @@ scoped_refptr<PluginModule> PluginModule::CreateModuleForNaClInstance() {
   return nacl_module;
 }
 
-void PluginModule::InitAsProxiedNaCl(PluginInstance* plugin_instance) {
+bool PluginModule::InitAsProxiedNaCl(PluginInstance* plugin_instance) {
   DCHECK(out_of_process_proxy_.get());
   // InitAsProxied (for the trusted/out-of-process case) initializes only the
   // module, and one or more instances are added later. In this case, the
@@ -522,7 +522,7 @@ void PluginModule::InitAsProxiedNaCl(PluginInstance* plugin_instance) {
   // In NaCl, we need to tell the instance to reset itself as proxied. This will
   // clear cached interface pointers and send DidCreate (etc) to the plugin
   // side of the proxy.
-  plugin_instance->ResetAsProxied(this);
+  return plugin_instance->ResetAsProxied(this);
 }
 
 // static

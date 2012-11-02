@@ -3134,7 +3134,7 @@ bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined) {
     // The proxy must support at least one usable PPP_Instance interface.
-    NOTREACHED();
+    // Don't assert; some tests exercise this path.
     return false;
   }
   instance_interface_.reset(ppp_instance_combined);

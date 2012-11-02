@@ -233,7 +233,6 @@ int IrtInit() {
 }
 
 int PpapiPluginMain() {
-  base::AtExitManager exit_manager;
   MessageLoop loop;
   IPC::Logging::set_log_function_map(&g_log_function_mapping);
   ppapi::proxy::PluginGlobals plugin_globals;
