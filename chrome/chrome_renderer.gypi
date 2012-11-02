@@ -310,6 +310,11 @@
           ],
         }],
         ['OS=="android"', {
+          'sources!': [
+            'renderer/prerender/prerender_webmediaplayer.cc',
+            'renderer/prerender/prerender_webmediaplayer.h',
+            'renderer/print_web_view_helper.cc',
+          ],
           'defines': [
             'ENABLE_MOBILE_YOUTUBE_PLUGIN',
           ],
