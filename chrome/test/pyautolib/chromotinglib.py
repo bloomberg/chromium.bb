@@ -197,6 +197,9 @@ class ChromotingMixIn(object):
             'document.getElementById("submit_deny_access")',
             tab_index, windex),
         msg='Did not go to permission page.')
+    self._WaitForJavascriptCondition(
+        '!document.getElementById("submit_deny_access").disabled',
+        tab_index, windex)
     self._ExecuteJavascript(
         'document.getElementById("submit_deny_access").click();',
         tab_index, windex)
