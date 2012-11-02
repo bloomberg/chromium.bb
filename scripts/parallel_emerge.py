@@ -849,12 +849,13 @@ def SetupWorkerSignals():
   signal.signal(signal.SIGINT, ExitHandler)
   signal.signal(signal.SIGTERM, ExitHandler)
 
-def EmergeProcess(scheduler, output):
+def EmergeProcess(output, *args, **kwargs):
   """Merge a package in a subprocess.
 
   Args:
-    scheduler: Scheduler object.
     output: Temporary file to write output.
+    *args: Arguments to pass to Scheduler constructor.
+    **kwargs: Keyword arguments to pass to Scheduler constructor.
 
   Returns:
     The exit code returned by the subprocess.
@@ -881,7 +882,13 @@ def EmergeProcess(scheduler, output):
       # Portage doesn't like when sys.stdin.fileno() != 0, so point sys.stdin
       # at the filehandle we just created in _setup_pipes.
       if sys.stdin.fileno() != 0:
-        sys.stdin = os.fdopen(0, "r")
+        sys.__stdin__ = sys.stdin = os.fdopen(0, "r")
+
+      scheduler = Scheduler(*args, **kwargs)
+
+      # Enable blocker handling even though we're in --nodeps mode. This
+      # allows us to unmerge the blocker after we've merged the replacement.
+      scheduler._opts_ignore_blockers = frozenset()
 
       # Actually do the merge.
       retval = scheduler.merge()
@@ -973,14 +980,9 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False):
     else:
       try:
         emerge.scheduler_graph.mergelist = install_list
-        scheduler = Scheduler(settings, trees, mtimedb, opts, spinner,
-            favorites=emerge.favorites, graph_config=emerge.scheduler_graph)
-
-        # Enable blocker handling even though we're in --nodeps mode. This
-        # allows us to unmerge the blocker after we've merged the replacement.
-        scheduler._opts_ignore_blockers = frozenset()
-
-        retcode = EmergeProcess(scheduler, output)
+        retcode = EmergeProcess(output, settings, trees, mtimedb, opts,
+            spinner, favorites=emerge.favorites,
+            graph_config=emerge.scheduler_graph)
       except Exception:
         traceback.print_exc(file=output)
         retcode = 1
