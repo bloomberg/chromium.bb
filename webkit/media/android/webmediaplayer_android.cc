@@ -307,15 +307,10 @@ void WebMediaPlayerAndroid::OnSeekComplete(base::TimeDelta current_time) {
 
 void WebMediaPlayerAndroid::OnMediaError(int error_type) {
   switch (error_type) {
-    case MediaPlayerBridge::MEDIA_ERROR_UNKNOWN:
-      // When playing an bogus URL or bad file we fire a MEDIA_ERROR_UNKNOWN.
-      // As WebKit uses FormatError to indicate an error for bogus URL or bad
-      // file we default a MEDIA_ERROR_UNKNOWN to NetworkStateFormatError.
+    case MediaPlayerBridge::MEDIA_ERROR_FORMAT:
       UpdateNetworkState(WebMediaPlayer::NetworkStateFormatError);
       break;
-    case MediaPlayerBridge::MEDIA_ERROR_SERVER_DIED:
-      // TODO(zhenghao): Media server died. In this case, the application must
-      // release the MediaPlayer object and instantiate a new one.
+    case MediaPlayerBridge::MEDIA_ERROR_DECODE:
       UpdateNetworkState(WebMediaPlayer::NetworkStateDecodeError);
       break;
     case MediaPlayerBridge::MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:

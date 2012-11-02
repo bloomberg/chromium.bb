@@ -34,8 +34,8 @@ class MEDIA_EXPORT MediaPlayerBridge {
  public:
   // Error types for MediaErrorCB.
   enum MediaErrorType {
-    MEDIA_ERROR_UNKNOWN,
-    MEDIA_ERROR_SERVER_DIED,
+    MEDIA_ERROR_FORMAT,
+    MEDIA_ERROR_DECODE,
     MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK,
     MEDIA_ERROR_INVALID_CODE,
   };

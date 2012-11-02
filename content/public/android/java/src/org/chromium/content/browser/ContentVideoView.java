@@ -57,16 +57,6 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
     // Type needs to be kept in sync with surface_texture_peer.h.
     private static final int SET_VIDEO_SURFACE_TEXTURE = 1;
 
-    /** Unspecified media player error.
-     * @see android.media.MediaPlayer.OnErrorListener
-     */
-    public static final int MEDIA_ERROR_UNKNOWN = 0;
-
-    /** Media server died. In this case, the application must release the
-     * MediaPlayer object and instantiate a new one.
-     */
-    public static final int MEDIA_ERROR_SERVER_DIED = 1;
-
     /** The video is streamed and its container is not valid for progressive
      * playback i.e the video's index (e.g moov atom) is not at the start of the
      * file.

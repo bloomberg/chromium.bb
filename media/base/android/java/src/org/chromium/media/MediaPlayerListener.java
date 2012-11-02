@@ -23,10 +23,14 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
                                      MediaPlayer.OnErrorListener {
     // These values are mirrored as enums in media/base/android/media_player_bridge.h.
     // Please ensure they stay in sync.
-    private static final int MEDIA_ERROR_UNKNOWN = 0;
-    private static final int MEDIA_ERROR_SERVER_DIED = 1;
+    private static final int MEDIA_ERROR_FORMAT = 0;
+    private static final int MEDIA_ERROR_DECODE = 1;
     private static final int MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = 2;
     private static final int MEDIA_ERROR_INVALID_CODE = 3;
+
+    // These values are copied from android media player.
+    public static final int MEDIA_ERROR_MALFORMED = -1007;
+    public static final int MEDIA_ERROR_TIMED_OUT = -110;
 
     // Used to determine the class instance to dispatch the native call to.
     private int mNativeMediaPlayerListener = 0;
@@ -40,10 +44,20 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
         int errorType;
         switch (what) {
             case MediaPlayer.MEDIA_ERROR_UNKNOWN:
-                errorType = MEDIA_ERROR_UNKNOWN;
+                switch (extra) {
+                    case MEDIA_ERROR_MALFORMED:
+                        errorType = MEDIA_ERROR_DECODE;
+                        break;
+                    case MEDIA_ERROR_TIMED_OUT:
+                        errorType = MEDIA_ERROR_INVALID_CODE;
+                        break;
+                    default:
+                        errorType = MEDIA_ERROR_FORMAT;
+                        break;
+                }
                 break;
             case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
-                errorType = MEDIA_ERROR_SERVER_DIED;
+                errorType = MEDIA_ERROR_DECODE;
                 break;
             case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
                 errorType = MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK;

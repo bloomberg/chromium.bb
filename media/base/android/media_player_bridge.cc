@@ -145,7 +145,7 @@ void MediaPlayerBridge::GetCookiesCallback(const std::string& cookies) {
     JNI_MediaPlayer::Java_MediaPlayer_prepareAsync(
         env, j_media_player_.obj());
   } else {
-    media_error_cb_.Run(player_id_, MEDIA_ERROR_UNKNOWN);
+    media_error_cb_.Run(player_id_, MEDIA_ERROR_FORMAT);
   }
 }
 
