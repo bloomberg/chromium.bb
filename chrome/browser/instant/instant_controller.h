@@ -203,7 +203,7 @@ class InstantController {
 
   // Counterpart to Hide(). Asks the |browser_| to display the preview with
   // the given |height|.
-  void Show(int height, InstantSizeUnits units);
+  void Show(InstantShownReason reason, int height, InstantSizeUnits units);
 
   // Send the omnibox dropdown bounds to the page.
   void SendBoundsToPage();
@@ -216,10 +216,6 @@ class InstantController {
                      const GURL& tab_url,
                      std::string* instant_url) const;
 
-  // Returns true if the preview is no longer relevant, say because the last
-  // Update() was for a URL and not a search query, or the user switched tabs.
-  bool IsOutOfDate() const;
-
   chrome::BrowserInstantController* const browser_;
 
   InstantModel model_;
@@ -228,12 +224,6 @@ class InstantController {
 
   // See the enum description above.
   const Mode mode_;
-
-  // The active tab at the time of the last Update(). Used by IsOutOfDate() to
-  // know whether the user switched tabs. ***NEVER DEREFERENCE THIS POINTER.***
-  // It may be a dangling pointer to a freed object. Should only be used for
-  // pointer comparisons.
-  const void* last_active_tab_;
 
   // The most recent full_text passed to Update().
   string16 last_full_text_;

@@ -15,7 +15,7 @@ class InstantModelObserver {
   // Informs the observer that the preview state has has changed.
   // This can mean the model state has changed, or the contents of the
   // preview.
-  virtual void DisplayStateChanged(const InstantModel& model) = 0;
+  virtual void PreviewStateChanged(const InstantModel& model) = 0;
 
  protected:
   virtual ~InstantModelObserver() {}

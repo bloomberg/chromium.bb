@@ -25,9 +25,9 @@ InstantPreviewControllerViews::InstantPreviewControllerViews(
 InstantPreviewControllerViews::~InstantPreviewControllerViews() {
 }
 
-void InstantPreviewControllerViews::DisplayStateChanged(
+void InstantPreviewControllerViews::PreviewStateChanged(
     const InstantModel& model) {
-  if (model.is_ready()) {
+  if (model.preview_state() == InstantModel::QUERY_RESULTS) {
     ShowInstant(model.GetPreviewContents(),
                 model.height(), model.height_units());
   } else {

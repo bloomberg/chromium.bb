@@ -22,7 +22,7 @@ class InstantPreviewControllerMac : public InstantPreviewController {
   virtual ~InstantPreviewControllerMac();
 
   // InstantModelObserver overrides:
-  virtual void DisplayStateChanged(const InstantModel& model) OVERRIDE;
+  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE;
 
  private:
 

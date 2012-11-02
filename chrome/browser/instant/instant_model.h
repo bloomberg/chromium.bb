@@ -16,23 +16,27 @@ class TabContents;
 // layout of the Instant preview.
 class InstantModel {
  public:
-  enum DisplayState {
-    // When the preview contents are out of date, the preview should not be
-    // shown.
+  enum PreviewState {
+    // Contents are stale.
     NOT_READY,
 
-    // When the preview contents is updated and ready for display its state
-    // transitions to |QUERY_RESULTS|.
+    // Waiting for suggestions in response to the first omnibox interaction.
+    AWAITING_SUGGESTIONS,
+
+    // Showing search results and suggestions.
     QUERY_RESULTS,
+
+    // Showing custom NTP content.
+    CUSTOM_NTP_CONTENT,
   };
 
   explicit InstantModel(InstantController* controller);
   ~InstantModel();
 
-  void SetDisplayState(DisplayState display,
-                       int height, InstantSizeUnits height_units);
-  DisplayState display_state() const { return display_state_; }
-  bool is_ready() const { return display_state_ != NOT_READY; }
+  void SetPreviewState(PreviewState preview_state,
+                       int height,
+                       InstantSizeUnits height_units);
+  PreviewState preview_state() const { return preview_state_; }
   int height() const { return height_; }
   InstantSizeUnits height_units() const { return height_units_; }
 
@@ -45,9 +49,7 @@ class InstantModel {
   bool HasObserver(InstantModelObserver* observer) const;
 
  private:
-  // |QUERY_RESULTS| if the preview should be displayed. Guaranteed to be
-  // |NOT_READY| if InstantController::IsOutOfDate() is true.
-  DisplayState display_state_;
+  PreviewState preview_state_;
   int height_;
   InstantSizeUnits height_units_;
 

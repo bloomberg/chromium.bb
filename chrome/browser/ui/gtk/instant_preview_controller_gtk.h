@@ -23,7 +23,7 @@ class InstantPreviewControllerGtk : public InstantPreviewController {
   virtual ~InstantPreviewControllerGtk();
 
   // InstantModelObserver overrides:
-  virtual void DisplayStateChanged(const InstantModel& model) OVERRIDE;
+  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE;
 
  private:
   void ShowInstant(TabContents* preview, int height, InstantSizeUnits units);

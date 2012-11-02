@@ -30,7 +30,7 @@ class InstantPreviewControllerViews : public InstantPreviewController {
   virtual ~InstantPreviewControllerViews();
 
   // InstantModelObserver overrides:
-  virtual void DisplayStateChanged(const InstantModel& model) OVERRIDE;
+  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE;
 
   views::WebView* preview_container() { return preview_container_; }
   views::WebView* release_preview_container() {

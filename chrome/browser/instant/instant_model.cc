@@ -8,7 +8,7 @@
 #include "chrome/browser/instant/instant_model_observer.h"
 
 InstantModel::InstantModel(InstantController* controller)
-  : display_state_(NOT_READY),
+  : preview_state_(NOT_READY),
     height_(0),
     height_units_(INSTANT_SIZE_PIXELS),
     preview_contents_(NULL),
@@ -18,20 +18,20 @@ InstantModel::InstantModel(InstantController* controller)
 InstantModel::~InstantModel() {
 }
 
-void InstantModel::SetDisplayState(DisplayState display_state,
+void InstantModel::SetPreviewState(PreviewState preview_state,
                                    int height,
                                    InstantSizeUnits height_units) {
-  if (display_state_ == display_state &&
+  if (preview_state_ == preview_state &&
       height_ == height &&
       height_units_ == height_units)
     return;
 
-  display_state_ = display_state;
+  preview_state_ = preview_state;
   height_ = height;
   height_units_ = height_units;
 
   FOR_EACH_OBSERVER(InstantModelObserver, observers_,
-                    DisplayStateChanged(*this));
+                    PreviewStateChanged(*this));
 }
 
 void InstantModel::SetPreviewContents(TabContents* preview_contents) {
@@ -41,7 +41,7 @@ void InstantModel::SetPreviewContents(TabContents* preview_contents) {
   preview_contents_ = preview_contents;
 
   FOR_EACH_OBSERVER(InstantModelObserver, observers_,
-                    DisplayStateChanged(*this));
+                    PreviewStateChanged(*this));
 }
 
 TabContents* InstantModel::GetPreviewContents() const {

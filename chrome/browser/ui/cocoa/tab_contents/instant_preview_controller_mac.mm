@@ -21,9 +21,9 @@ InstantPreviewControllerMac::InstantPreviewControllerMac(
 InstantPreviewControllerMac::~InstantPreviewControllerMac() {
 }
 
-void InstantPreviewControllerMac::DisplayStateChanged(
+void InstantPreviewControllerMac::PreviewStateChanged(
     const InstantModel& model) {
-  if (model.is_ready()) {
+  if (model.preview_state() == InstantModel::QUERY_RESULTS) {
     // TODO(dhollowa): Needs height and units implementation on Mac.
     [previewable_contents_controller_
         showPreview:model.GetPreviewContents()->web_contents()];

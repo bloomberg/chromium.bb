@@ -20,9 +20,9 @@ InstantPreviewControllerGtk::InstantPreviewControllerGtk(
 InstantPreviewControllerGtk::~InstantPreviewControllerGtk() {
 }
 
-void InstantPreviewControllerGtk::DisplayStateChanged(
+void InstantPreviewControllerGtk::PreviewStateChanged(
     const InstantModel& model) {
-  if (model.is_ready()) {
+  if (model.preview_state() == InstantModel::QUERY_RESULTS) {
     ShowInstant(model.GetPreviewContents(),
                 model.height(), model.height_units());
   } else {

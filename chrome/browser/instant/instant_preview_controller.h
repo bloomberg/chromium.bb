@@ -21,7 +21,7 @@ class InstantPreviewController : public InstantModelObserver,
   virtual ~InstantPreviewController();
 
   // Overridden from InstantModelObserver:
-  virtual void DisplayStateChanged(const InstantModel& model) OVERRIDE = 0;
+  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE = 0;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
