@@ -2,29 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/client/default_capture_client.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 
 namespace aura {
-namespace client {
+namespace shared {
 
-DefaultCaptureClient::DefaultCaptureClient(RootWindow* root_window)
+////////////////////////////////////////////////////////////////////////////////
+// RootWindowCaptureClient, public:
+
+RootWindowCaptureClient::RootWindowCaptureClient(RootWindow* root_window)
     : root_window_(root_window),
       capture_window_(NULL) {
-  client::SetCaptureClient(root_window_, this);
+  client::SetCaptureClient(root_window, this);
 }
 
-DefaultCaptureClient::~DefaultCaptureClient() {
+RootWindowCaptureClient::~RootWindowCaptureClient() {
   client::SetCaptureClient(root_window_, NULL);
 }
 
-void DefaultCaptureClient::SetCapture(Window* window) {
+////////////////////////////////////////////////////////////////////////////////
+// RootWindowCaptureClient, client::CaptureClient implementation:
+
+void RootWindowCaptureClient::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
   root_window_->gesture_recognizer()->TransferEventsTo(capture_window_, window);
 
-  Window* old_capture_window = capture_window_;
+  aura::Window* old_capture_window = capture_window_;
   capture_window_ = window;
 
   if (capture_window_)
@@ -35,15 +42,15 @@ void DefaultCaptureClient::SetCapture(Window* window) {
   root_window_->UpdateCapture(old_capture_window, capture_window_);
 }
 
-void DefaultCaptureClient::ReleaseCapture(Window* window) {
+void RootWindowCaptureClient::ReleaseCapture(Window* window) {
   if (capture_window_ != window)
     return;
   SetCapture(NULL);
 }
 
-Window* DefaultCaptureClient::GetCaptureWindow() {
+Window* RootWindowCaptureClient::GetCaptureWindow() {
   return capture_window_;
 }
 
-}  // namespace client
+}  // namespace shared
 }  // namespace aura

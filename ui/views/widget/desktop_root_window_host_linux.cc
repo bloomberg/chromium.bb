@@ -12,7 +12,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_cursor_client.h"
@@ -26,6 +25,7 @@
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/ime/input_method_bridge.h"
+#include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/widget/desktop_layout_manager.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
@@ -189,7 +189,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
 
   native_widget_delegate_->OnNativeWidgetCreated();
 
-  capture_client_.reset(new aura::client::DefaultCaptureClient(root_window_));
+  capture_client_.reset(new DesktopCaptureClient);
   aura::client::SetCaptureClient(root_window_, capture_client_.get());
 
   root_window_->set_focus_manager(

@@ -4,11 +4,11 @@
 
 #include "content/shell/shell_stacking_client_ash.h"
 
-#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/test/test_activation_client.h"
 
 namespace content {
@@ -48,7 +48,7 @@ aura::Window* ShellStackingClientAsh::GetDefaultParent(
         new aura::test::TestActivationClient(root_window_.get()));
 
     capture_client_.reset(
-        new aura::client::DefaultCaptureClient(root_window_.get()));
+        new aura::shared::RootWindowCaptureClient(root_window_.get()));
   }
   return root_window_.get();
 }

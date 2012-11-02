@@ -5,12 +5,12 @@
 #ifndef UI_AURA_DESKTOP_DESKTOP_SCREEN_WIN_H_
 #define UI_AURA_DESKTOP_DESKTOP_SCREEN_WIN_H_
 
+#include "ui/aura/aura_export.h"
 #include "ui/gfx/screen_win.h"
-#include "ui/views/views_export.h"
 
 namespace aura {
 
-class VIEWS_EXPORT DesktopScreenWin : public gfx::ScreenWin {
+class AURA_EXPORT DesktopScreenWin : public gfx::ScreenWin {
 public:
   DesktopScreenWin();
   virtual ~DesktopScreenWin();

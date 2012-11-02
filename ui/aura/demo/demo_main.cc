@@ -8,10 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/single_display_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -102,9 +102,10 @@ class DemoStackingClient : public aura::client::StackingClient {
   // Overridden from aura::client::StackingClient:
   virtual aura::Window* GetDefaultParent(aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE {
+
     if (!capture_client_.get()) {
       capture_client_.reset(
-          new aura::client::DefaultCaptureClient(root_window_));
+          new aura::shared::RootWindowCaptureClient(root_window_));
     }
     return root_window_;
   }
@@ -112,7 +113,7 @@ class DemoStackingClient : public aura::client::StackingClient {
  private:
   aura::RootWindow* root_window_;
 
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  scoped_ptr<aura::shared::RootWindowCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoStackingClient);
 };

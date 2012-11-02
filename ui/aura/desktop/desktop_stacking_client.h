@@ -10,19 +10,19 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/views_export.h"
+#include "ui/aura/aura_export.h"
 
 namespace aura {
 class RootWindow;
 class Window;
 
-namespace client {
-class DefaultCaptureClient;
+namespace shared {
+class RootWindowCaptureClient;
 }
 
 // A stacking client for the desktop; always sets the default parent to the
 // RootWindow of the passed in Window.
-class VIEWS_EXPORT DesktopStackingClient : public client::StackingClient {
+class AURA_EXPORT DesktopStackingClient : public client::StackingClient {
  public:
   DesktopStackingClient();
   virtual ~DesktopStackingClient();
@@ -35,7 +35,7 @@ class VIEWS_EXPORT DesktopStackingClient : public client::StackingClient {
   // Windows with NULL parents are parented to this.
   scoped_ptr<aura::RootWindow> null_parent_;
 
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  scoped_ptr<aura::shared::RootWindowCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopStackingClient);
 };

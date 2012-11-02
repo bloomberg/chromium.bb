@@ -7,12 +7,11 @@
 
 #include "base/basictypes.h"
 #include "ui/aura/client/dispatcher_client.h"
-#include "ui/views/views_export.h"
 
 namespace aura {
 
 // TODO(erg): I won't lie to you; I have no idea what this is or what it does.
-class VIEWS_EXPORT DesktopDispatcherClient : public client::DispatcherClient {
+class AURA_EXPORT DesktopDispatcherClient : public client::DispatcherClient {
  public:
   DesktopDispatcherClient();
   virtual ~DesktopDispatcherClient();

@@ -27,7 +27,6 @@ class DesktopCursorClient;
 class DesktopDispatcherClient;
 class FocusManager;
 namespace client {
-class DefaultCaptureClient;
 class ScreenPositionClient;
 }
 namespace shared {
@@ -37,6 +36,7 @@ class InputMethodEventFilter;
 }
 
 namespace views {
+class DesktopCaptureClient;
 class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
 
@@ -201,7 +201,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   aura::RootWindow* root_window_;
 
   // aura:: objects that we own.
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  scoped_ptr<DesktopCaptureClient> capture_client_;
   scoped_ptr<aura::DesktopActivationClient> activation_client_;
   scoped_ptr<aura::DesktopCursorClient> cursor_client_;
   scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
