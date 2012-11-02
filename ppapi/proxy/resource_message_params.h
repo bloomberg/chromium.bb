@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "ipc/ipc_message_utils.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -23,32 +24,40 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   PP_Resource pp_resource() const { return pp_resource_; }
   int32_t sequence() const { return sequence_; }
 
-  const std::vector<SerializedHandle> handles() const { return handles_; }
+  // Note that the caller doesn't take ownership of the returned handles.
+  const std::vector<SerializedHandle>& handles() const {
+    return handles_->data();
+  }
 
-  // Returns a pointer to the handle at the given index if it exists and is of
-  // the given type. If the index doesn't exist or the handle isn't of the
-  // given type, returns NULL. Note that the pointer will be into an internal
-  // vector so will be invalidated if the params are mutated.
-  const SerializedHandle* GetHandleOfTypeAtIndex(
-      size_t index,
-      SerializedHandle::Type type) const;
+  // Returns the handle at the given index if it exists and is of the given
+  // type. The corresponding slot in the list is set to an invalid handle.
+  // If the index doesn't exist or the handle isn't of the given type, returns
+  // an invalid handle.
+  // Note that the caller is responsible for closing the returned handle, if it
+  // is valid.
+  SerializedHandle TakeHandleOfTypeAtIndex(size_t index,
+                                           SerializedHandle::Type type) const;
 
-  // Helper functions to return shared memory handles passed in the params
-  // struct. If the index has a valid handle of the given type, it will be
-  // placed in the output parameter and the function will return true. If the
-  // handle doesn't exist or is a different type, the functions will return
-  // false and the output parameter will be untouched.
+  // Helper functions to return shared memory or socket handles passed in the
+  // params struct.
+  // If the index has a valid handle of the given type, it will be placed in the
+  // output parameter, the corresponding slot in the list will be set to an
+  // invalid handle, and the function will return true. If the handle doesn't
+  // exist or is a different type, the functions will return false and the
+  // output parameter will be untouched.
   //
-  // Note that the handle could still be a "null" or invalid handle of
-  // the right type and the functions will succeed.
-  bool GetSharedMemoryHandleAtIndex(size_t index,
-                                    base::SharedMemoryHandle* handle) const;
-  bool GetSocketHandleAtIndex(size_t index,
-                              IPC::PlatformFileForTransit* handle) const;
+  // Note: 1) the handle could still be a "null" or invalid handle of the right
+  //          type and the functions will succeed.
+  //       2) the caller is responsible for closing the returned handle, if it
+  //          is valid.
+  bool TakeSharedMemoryHandleAtIndex(size_t index,
+                                     base::SharedMemoryHandle* handle) const;
+  bool TakeSocketHandleAtIndex(size_t index,
+                               IPC::PlatformFileForTransit* handle) const;
 
   // Appends the given handle to the list of handles sent with the call or
   // reply.
-  void AppendHandle(const SerializedHandle& handle);
+  void AppendHandle(const SerializedHandle& handle) const;
 
  protected:
   ResourceMessageParams();
@@ -58,6 +67,29 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   virtual bool Deserialize(const IPC::Message* msg, PickleIterator* iter);
 
  private:
+  class SerializedHandles : public base::RefCounted<SerializedHandles> {
+   public:
+    SerializedHandles();
+    ~SerializedHandles();
+
+    void set_should_close(bool value) { should_close_ = value; }
+    std::vector<SerializedHandle>& data() { return data_; }
+
+   private:
+    friend class base::RefCounted<SerializedHandles>;
+
+    // Whether the handles stored in |data_| should be closed when this object
+    // goes away.
+    //
+    // It is set to true by ResourceMessageParams::Deserialize(), so that the
+    // receiving side of the params (the host side for
+    // ResourceMessageCallParams; the plugin side for
+    // ResourceMessageReplyParams) will close those handles which haven't been
+    // taken using any of the Take*() methods.
+    bool should_close_;
+    std::vector<SerializedHandle> data_;
+  };
+
   PP_Resource pp_resource_;
 
   // Identifier for this message. Sequence numbers are quasi-unique within a
@@ -78,7 +110,9 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   // A list of all handles transferred in the message. Handles go here so that
   // the NaCl adapter can extract them generally when it rewrites them to
   // go between Windows and NaCl (Posix) apps.
-  std::vector<SerializedHandle> handles_;
+  // TODO(yzshen): Mark it as mutable so that we can take/append handles using a
+  // const reference. We need to change all the callers and make it not mutable.
+  mutable scoped_refptr<SerializedHandles> handles_;
 };
 
 // Parameters common to all ResourceMessage "Call" requests.

@@ -71,14 +71,11 @@ int32_t PepperGamepadHost::OnMsgRequestMemory(
 }
 
 void PepperGamepadHost::GotUserGesture(
-    const ppapi::host::ReplyMessageContext& in_context) {
+    const ppapi::host::ReplyMessageContext& context) {
   base::SharedMemoryHandle handle =
       gamepad_service_->GetSharedMemoryHandleForProcess(
           browser_ppapi_host_->GetPluginProcessHandle());
 
-  // The shared memory handle is sent in the params struct
-  // (in the reply context), so we have to make a copy to mutate it.
-  ppapi::host::ReplyMessageContext context = in_context;
   context.params.AppendHandle(ppapi::proxy::SerializedHandle(
       handle, sizeof(ppapi::ContentGamepadHardwareBuffer)));
   host()->SendReply(context, PpapiPluginMsg_Gamepad_SendMemory());

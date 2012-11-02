@@ -164,6 +164,9 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     return Header(type_, size_);
   }
 
+  // Closes the handle and sets it to invalid.
+  void Close();
+
   // Write/Read a Header, which contains all the data except the handle. This
   // allows us to write the handle in a platform-specific way, as is necessary
   // in NaClIPCAdapter to share handles with NaCl from Windows.

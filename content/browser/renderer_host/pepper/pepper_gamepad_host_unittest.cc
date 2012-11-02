@@ -178,7 +178,7 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
 
   // Extract the shared memory handle.
   base::SharedMemoryHandle reply_handle;
-  EXPECT_TRUE(reply_params.GetSharedMemoryHandleAtIndex(0, &reply_handle));
+  EXPECT_TRUE(reply_params.TakeSharedMemoryHandleAtIndex(0, &reply_handle));
 
   // Validate the shared memory.
   base::SharedMemory shared_memory(reply_handle, true);

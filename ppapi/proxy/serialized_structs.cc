@@ -5,10 +5,18 @@
 #include "ppapi/proxy/serialized_structs.h"
 
 #include "base/pickle.h"
+#include "base/platform_file.h"
+#include "base/shared_memory.h"
+#include "build/build_config.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/shared_impl/var.h"
+
+#if defined(OS_NACL)
+#include <unistd.h>
+#endif
 
 namespace ppapi {
 namespace proxy {
@@ -104,6 +112,31 @@ bool SerializedHandle::IsHandleValid() const {
   else if (type_ == SOCKET || type_ == CHANNEL_HANDLE)
     return !(IPC::InvalidPlatformFileForTransit() == descriptor_);
   return false;
+}
+
+void SerializedHandle::Close() {
+  if (IsHandleValid()) {
+    switch (type_) {
+      case INVALID:
+        NOTREACHED();
+        break;
+      case SHARED_MEMORY:
+        base::SharedMemory::CloseHandle(shm_handle_);
+        break;
+      case SOCKET:
+      case CHANNEL_HANDLE:
+        base::PlatformFile file =
+            IPC::PlatformFileForTransitToPlatformFile(descriptor_);
+#if !defined(OS_NACL)
+        base::ClosePlatformFile(file);
+#else
+        close(file);
+#endif
+        break;
+      // No default so the compiler will warn us if a new type is added.
+    }
+  }
+  *this = SerializedHandle();
 }
 
 // static
