@@ -15,6 +15,10 @@ function FileCopyManager(root) {
   this.cancelCallback_ = null;
   this.root_ = root;
   this.unloadTimeout_ = null;
+
+  window.addEventListener('error', function(e) {
+    this.log_('Unhandled error: ', e.message, e.filename + ':' + e.lineno);
+  }.bind(this));
 }
 
 var fileCopyManagerInstance = null;
