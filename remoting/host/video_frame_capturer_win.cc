@@ -67,7 +67,7 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
     int resource_generation;
   };
 
-  // Make sure that the device contexts and the current bufffer match the screen
+  // Make sure that the device contexts and the current buffer match the screen
   // configuration.
   void PrepareCaptureResources();
 
@@ -75,11 +75,16 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   // and desktop dimensions, releasing any pre-existing buffer.
   void AllocateBuffer(int buffer_index, int resource_generation);
 
+  // Compares the most recently captured screen contents with the previous
+  // contents reported to the caller, to determine the dirty region.
   void CalculateInvalidRegion();
+
+  // Creates a CaptureData instance wrapping the current framebuffer and calls
+  // |callback| with it.
   void CaptureRegion(const SkRegion& region,
                      const CaptureCompletedCallback& callback);
 
-  // Generates an image in the current buffer.
+  // Captures the current screen contents into the next available framebuffer.
   void CaptureImage();
 
   // Expand the cursor shape to add a white outline for visibility against
@@ -292,6 +297,11 @@ void VideoFrameCapturerWin::AllocateBuffer(int buffer_index,
       CreateDIBSection(*desktop_dc_, &bmi, DIB_RGB_COLORS,
                        static_cast<void**>(&buffers_[buffer_index].data),
                        NULL, 0);
+
+  // TODO(wez): Cope gracefully with failure (crbug.com/157170).
+  CHECK(target_bitmap_[buffer_index] != NULL);
+  CHECK(buffers_[buffer_index].data != NULL);
+
   buffers_[buffer_index].size = SkISize::Make(bmi.bmiHeader.biWidth,
                                               std::abs(bmi.bmiHeader.biHeight));
   buffers_[buffer_index].bytes_per_pixel = bmi.bmiHeader.biBitCount / 8;
