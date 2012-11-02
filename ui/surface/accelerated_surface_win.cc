@@ -131,11 +131,14 @@ bool UsingOcclusionQuery() {
 int GetResampleCount(const gfx::Rect& src_subrect,
                      const gfx::Size& dst_size,
                      const gfx::Size& back_buffer_size) {
-  if (src_subrect.size() == dst_size) {
-    // Even when the size of |src_subrect| is equal to |dst_size|, it is
-    // necessary to resample pixels at least once unless |src_subrect| exactly
-    // covers the back buffer.
-    return (src_subrect == gfx::Rect(back_buffer_size)) ? 0 : 1;
+  // Unless the back buffer is exactly the same as the dst, and src_subrect
+  // covers the whole back buffer, at least one copy is required. This is
+  // because GetRenderTargetData requires its src and dst to have the same
+  // dimensions.
+  int min_resample_count = 1;
+  if (src_subrect == gfx::Rect(back_buffer_size) &&
+      dst_size == back_buffer_size) {
+    min_resample_count = 0;
   }
   int width_count = 0;
   int width = src_subrect.width();
@@ -149,7 +152,8 @@ int GetResampleCount(const gfx::Rect& src_subrect,
     ++height_count;
     height >>= 1;
   }
-  return std::max(width_count, height_count);
+  return std::max(std::max(width_count, height_count),
+                  min_resample_count);
 }
 
 // Returns half the size of |size| no smaller than |min_size|.
@@ -474,10 +478,17 @@ void AcceleratedPresenter::Present(HDC dc) {
   PresentWithGDI(dc);
 }
 
-bool AcceleratedPresenter::CopyTo(const gfx::Rect& src_subrect,
+bool AcceleratedPresenter::CopyTo(const gfx::Rect& requested_src_subrect,
                                   const gfx::Size& dst_size,
                                   void* buf) {
+  TRACE_EVENT2(
+      "gpu", "CopyTo",
+      "width", dst_size.width(),
+      "height", dst_size.height());
+
   base::AutoLock locked(lock_);
+
+  TRACE_EVENT0("gpu", "CopyTo_locked");
 
   if (!swap_chain_)
     return false;
@@ -498,6 +509,11 @@ bool AcceleratedPresenter::CopyTo(const gfx::Rect& src_subrect,
   if (back_buffer_size.IsEmpty())
     return false;
 
+  // With window resizing, it's possible that the back buffer is smaller than
+  // the requested src subset. Clip to the actual back buffer .
+  gfx::Rect src_subrect = requested_src_subrect;
+  src_subrect.Intersect(gfx::Rect(back_buffer_size));
+
   // Set up intermediate buffers needed for downsampling.
   const int resample_count =
       GetResampleCount(src_subrect, dst_size, back_buffer_size);
@@ -506,6 +522,7 @@ bool AcceleratedPresenter::CopyTo(const gfx::Rect& src_subrect,
   if (resample_count == 0)
     final_surface = back_buffer;
   if (resample_count > 0) {
+    TRACE_EVENT0("gpu", "CreateTemporarySurface");
     if (!CreateTemporarySurface(present_thread_->device(),
                                 dst_size,
                                 final_surface.Receive()))
@@ -514,19 +531,20 @@ bool AcceleratedPresenter::CopyTo(const gfx::Rect& src_subrect,
   const gfx::Size half_size =
       GetHalfSizeNoLessThan(src_subrect.size(), dst_size);
   if (resample_count > 1) {
+    TRACE_EVENT0("gpu", "CreateTemporarySurface");
     if (!CreateTemporarySurface(present_thread_->device(),
                                 half_size,
                                 temp_buffer[0].Receive()))
       return false;
   }
   if (resample_count > 2) {
+    TRACE_EVENT0("gpu", "CreateTemporarySurface");
     const gfx::Size quarter_size = GetHalfSizeNoLessThan(half_size, dst_size);
     if (!CreateTemporarySurface(present_thread_->device(),
                                 quarter_size,
                                 temp_buffer[1].Receive()))
       return false;
   }
-
 
   // Repeat downsampling the surface until its size becomes identical to
   // |dst_size|. We keep the factor of each downsampling no more than two
@@ -536,6 +554,7 @@ bool AcceleratedPresenter::CopyTo(const gfx::Rect& src_subrect,
   int read_buffer_index = 1;
   int write_buffer_index = 0;
   for (int i = 0; i < resample_count; ++i) {
+    TRACE_EVENT0("gpu", "StretchRect");
     base::win::ScopedComPtr<IDirect3DSurface9> read_buffer =
         (i == 0) ? back_buffer : temp_buffer[read_buffer_index];
     base::win::ScopedComPtr<IDirect3DSurface9> write_buffer =
@@ -555,22 +574,28 @@ bool AcceleratedPresenter::CopyTo(const gfx::Rect& src_subrect,
   }
 
   base::win::ScopedComPtr<IDirect3DSurface9> temp_surface;
-  HANDLE handle = reinterpret_cast<HANDLE>(buf);
-  hr =  present_thread_->device()->CreateOffscreenPlainSurface(
-    dst_size.width(),
-    dst_size.height(),
-    D3DFMT_A8R8G8B8,
-    D3DPOOL_SYSTEMMEM,
-    temp_surface.Receive(),
-    &handle);
-  if (FAILED(hr))
-    return false;
+  {
+    TRACE_EVENT0("gpu", "CreateOffscreenPlainSurface");
+    HANDLE handle = reinterpret_cast<HANDLE>(buf);
+    hr = present_thread_->device()->CreateOffscreenPlainSurface(
+        dst_size.width(),
+        dst_size.height(),
+        D3DFMT_A8R8G8B8,
+        D3DPOOL_SYSTEMMEM,
+        temp_surface.Receive(),
+        &handle);
+    if (FAILED(hr))
+      return false;
+  }
 
-  // Copy the data in the temporary buffer to the surface backed by |buf|.
-  hr = present_thread_->device()->GetRenderTargetData(final_surface,
-                                                      temp_surface);
-  if (FAILED(hr))
-    return false;
+  {
+    // Copy the data in the temporary buffer to the surface backed by |buf|.
+    TRACE_EVENT0("gpu", "GetRenderTargetData");
+    hr = present_thread_->device()->GetRenderTargetData(final_surface,
+                                                        temp_surface);
+    if (FAILED(hr))
+      return false;
+  }
 
   return true;
 }
