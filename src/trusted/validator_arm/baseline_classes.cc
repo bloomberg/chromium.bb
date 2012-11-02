@@ -290,6 +290,10 @@ RegisterList Binary3RegisterOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+RegisterList Binary3RegisterOp::uses(const Instruction i) const {
+  return RegisterList(n.reg(i)).Add(m.reg(i));
+}
+
 // Binary3RegisterOpAltA
 SafetyLevel Binary3RegisterOpAltA::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
@@ -1055,6 +1059,10 @@ RegisterList Unary3RegisterShiftedOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+RegisterList Unary3RegisterShiftedOp::uses(const Instruction i) const {
+  return RegisterList(m.reg(i)).Add(s.reg(i));
+}
+
 // Binary3RegisterImmedShiftedOp
 SafetyLevel Binary3RegisterImmedShiftedOp::safety(Instruction i) const {
   // NaCl Constraint.
@@ -1093,6 +1101,10 @@ RegisterList Binary4RegisterShiftedOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+RegisterList Binary4RegisterShiftedOp::uses(const Instruction i) const {
+  return RegisterList(n.reg(i)).Add(m.reg(i)).Add(s.reg(i));
+}
+
 // Binary2RegisterImmedShiftedTest
 SafetyLevel Binary2RegisterImmedShiftedTest::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
@@ -1118,6 +1130,10 @@ SafetyLevel Binary3RegisterShiftedTest::safety(Instruction i) const {
 
 RegisterList Binary3RegisterShiftedTest::defs(Instruction i) const {
   return RegisterList(conditions.conds_if_updated(i));
+}
+
+RegisterList Binary3RegisterShiftedTest::uses(const Instruction i) const {
+  return RegisterList(n.reg(i)).Add(m.reg(i)).Add(s.reg(i));
 }
 
 // Vector2RegisterMiscellaneous_RG

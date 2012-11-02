@@ -150,7 +150,10 @@ class Arm32DecoderState : DecoderState {
   // for each call to "decode").
   const Binary2RegisterImmedShiftedTest Binary2RegisterImmedShiftedTest_instance_;
   const Binary2RegisterImmediateOpDynCodeReplace Binary2RegisterImmediateOpDynCodeReplace_instance_;
+  const Binary3RegisterOp Binary3RegisterOp_instance_;
   const Binary3RegisterShiftedOp Binary3RegisterShiftedOp_instance_;
+  const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
+  const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
   const Branch Branch_instance_;
   const Breakpoint Breakpoint_instance_;
   const BxBlx BxBlx_instance_;
@@ -160,16 +163,13 @@ class Arm32DecoderState : DecoderState {
   const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
   const Defs12To15CondsDontCareRdRnNotPcBitfieldExtract Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_;
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
-  const Defs12To15RdRmRnNotPc Defs12To15RdRmRnNotPc_instance_;
   const Defs12To15RdRnNotPc Defs12To15RdRnNotPc_instance_;
-  const Defs12To15RdRnRsRmNotPc Defs12To15RdRnRsRmNotPc_instance_;
   const Defs12To19CondsDontCareRdRmRnNotPc Defs12To19CondsDontCareRdRmRnNotPc_instance_;
   const Defs16To19CondsDontCareRdRaRmRnNotPc Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
   const Defs16To19CondsDontCareRdRmRnNotPc Defs16To19CondsDontCareRdRmRnNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const DontCareInst DontCareInst_instance_;
   const DontCareInstRdNotPc DontCareInstRdNotPc_instance_;
-  const DontCareInstRnRsRmNotPc DontCareInstRnRsRmNotPc_instance_;
   const DuplicateToAdvSIMDRegisters DuplicateToAdvSIMDRegisters_instance_;
   const Forbidden Forbidden_instance_;
   const InstructionBarrier InstructionBarrier_instance_;
@@ -208,6 +208,7 @@ class Arm32DecoderState : DecoderState {
   const Unary2RegisterOp Unary2RegisterOp_instance_;
   const Unary2RegisterShiftedOp Unary2RegisterShiftedOp_instance_;
   const Unary2RegisterShiftedOpImmNotZero Unary2RegisterShiftedOpImmNotZero_instance_;
+  const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
   const Vector1RegisterImmediate_BIT Vector1RegisterImmediate_BIT_instance_;

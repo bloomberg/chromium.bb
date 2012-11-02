@@ -15,7 +15,10 @@ namespace nacl_arm_dec {
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary2RegisterImmedShiftedTest_instance_()
   , Binary2RegisterImmediateOpDynCodeReplace_instance_()
+  , Binary3RegisterOp_instance_()
   , Binary3RegisterShiftedOp_instance_()
+  , Binary3RegisterShiftedTest_instance_()
+  , Binary4RegisterShiftedOp_instance_()
   , Branch_instance_()
   , Breakpoint_instance_()
   , BxBlx_instance_()
@@ -25,16 +28,13 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Defs12To15CondsDontCareRdRnNotPc_instance_()
   , Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
-  , Defs12To15RdRmRnNotPc_instance_()
   , Defs12To15RdRnNotPc_instance_()
-  , Defs12To15RdRnRsRmNotPc_instance_()
   , Defs12To19CondsDontCareRdRmRnNotPc_instance_()
   , Defs16To19CondsDontCareRdRaRmRnNotPc_instance_()
   , Defs16To19CondsDontCareRdRmRnNotPc_instance_()
   , Deprecated_instance_()
   , DontCareInst_instance_()
   , DontCareInstRdNotPc_instance_()
-  , DontCareInstRnRsRmNotPc_instance_()
   , DuplicateToAdvSIMDRegisters_instance_()
   , Forbidden_instance_()
   , InstructionBarrier_instance_()
@@ -73,6 +73,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary2RegisterOp_instance_()
   , Unary2RegisterShiftedOp_instance_()
   , Unary2RegisterShiftedOpImmNotZero_instance_()
+  , Unary3RegisterShiftedOp_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
   , Vector1RegisterImmediate_BIT_instance_()
@@ -673,22 +674,27 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register_shifted_r
      const Instruction inst) const
 {
   UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Binary3RegisterOp_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20)=1111x */ &&
+      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Unary3RegisterShiftedOp_instance_;
+  }
+
   if ((inst.Bits() & 0x01900000) == 0x01100000 /* op1(24:20)=10xx1 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return DontCareInstRnRsRmNotPc_instance_;
+    return Binary3RegisterShiftedTest_instance_;
   }
 
   if ((inst.Bits() & 0x01A00000) == 0x01800000 /* op1(24:20)=11x0x */) {
-    return Defs12To15RdRnRsRmNotPc_instance_;
-  }
-
-  if ((inst.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20)=11x1x */ &&
-      (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15RdRmRnNotPc_instance_;
+    return Binary4RegisterShiftedOp_instance_;
   }
 
   if ((inst.Bits() & 0x01000000) == 0x00000000 /* op1(24:20)=0xxxx */) {
-    return Defs12To15RdRnRsRmNotPc_instance_;
+    return Binary4RegisterShiftedOp_instance_;
   }
 
   // Catch any attempt to fall though ...

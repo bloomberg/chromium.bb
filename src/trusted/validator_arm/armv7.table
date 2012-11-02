@@ -410,72 +410,93 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 +--
 
 +-- data_processing_register_shifted_register (See Section A5.2.2)
-*1 Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc
-   { cond(31:28), S(20), Rn(19:16), Rd(15:12), Rs(11:8), type(6:5), Rm(3:0) }
-   setflags := S=1; shift_t := DecodeRegShift(type);
-   defs := {Rd, NZCV if setflags else None};
-   safety := Pc in {Rn, Rd, Rs, Rm} => UNPREDICTABLE;
-   uses := {Rn, Rm, Rs};
-*2 Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc
-   { cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0) }
-   shift_t := DecodeRegShift(type);
-   defs := {NZCV};  # S(20)=1
-   safety := Pc in {Rn, Rm, Rs} => UNPREDICTABLE;
-   uses := {Rn, Rm, Rs};
-*3 Binary3RegisterOp => Defs12To15RdRmRnNotPc
-   { cond(31:28), S(20), Rd(15:12), Rm(11:8), Rn(3:0) }
-   setflags := S=1;
-   defs := {Rd, NZCV if setflags else None};   
-   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
-   uses := {Rn, Rm};
-*4 Unary3RegisterShiftedOp => Defs12To15RdRmRnNotPc
+*RdRsRm
    { cond(31:28), S(20), Rd(15:12), Rs(11:8), type(6:5), Rm(3:0) }
+   baseline := Unary3RegisterShiftedOp;
    setflags := S=1; shift_t := DecodeRegShift(type);
    defs := {Rd, NZCV if setflags else None};
    safety := Pc in {Rd, Rm, Rs} => UNPREDICTABLE;
    uses := {Rm, Rs};
+*RnRdRsRm *RdRsRm
+   { cond(31:28), S(20), Rn(19:16), Rd(15:12), Rs(11:8), type(6:5), Rm(3:0) }
+   baseline := Binary4RegisterShiftedOp;
+   safety := Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE;
+   uses := {Rn, Rm, Rs};
+*RnRsRm
+   { cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0) }
+   baseline := Binary3RegisterShiftedTest;
+   shift_t := DecodeRegShift(type);
+   defs := {NZCV};  # S(20)=1
+   safety := Pc in {Rn, Rm, Rs} => UNPREDICTABLE;
+   uses := {Rn, Rm, Rs};
+*RdRmRn
+   { cond(31:28), S(20), Rd(15:12), Rm(11:8), Rn(3:0) }
+   baseline := Binary3RegisterOp;
+   setflags := S=1;
+   defs := {Rd, NZCV if setflags else None};   
+   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
+   uses := {Rn, Rm};
 +--
 | op1(24:20) op2(6:5)
-| 0000x      -        = *1 pattern := cccc0000000snnnnddddssss0tt1mmmm;
-                           rule := AND_register_shifted_register_A1;
-| 0001x      -        = *1 pattern := cccc0000001snnnnddddssss0tt1mmmm;
-                           rule := EOR_register_shifted_register_A1;
-| 0010x      -        = *1 pattern := cccc0000010snnnnddddssss0tt1mmmm;
-                           rule := SUB_register_shifted_register_A1;
-| 0011x      -        = *1 pattern := cccc0000011snnnnddddssss0tt1mmmm;
-                           rule := RSB_register_shfited_register_A1;
-| 0100x      -        = *1 pattern := cccc0000100snnnnddddssss0tt1mmmm;
-                           rule := ADD_register_shifted_register_A1;
-| 0101x      -        = *1 pattern := cccc0000101snnnnddddssss0tt1mmmm;
-                           rule := ADC_register_shifted_register_A1;
-| 0110x      -        = *1 pattern := cccc0000110snnnnddddssss0tt1mmmm;
-                           rule := SBC_register_shifted_register_A1;
-| 0111x      -        = *1 pattern := cccc0000111snnnnddddssss0tt1mmmm;
-                           rule := RSC_register_shifted_register_A1;
+| 0000x      -        = *RnRdRsRm
+                         pattern := cccc0000000snnnnddddssss0tt1mmmm;
+                         rule := AND_register_shifted_register;
+| 0001x      -        = *RnRdRsRm
+                         pattern := cccc0000001snnnnddddssss0tt1mmmm;
+                         rule := EOR_register_shifted_register;
+| 0010x      -        = *RnRdRsRm
+                         pattern := cccc0000010snnnnddddssss0tt1mmmm;
+                        rule := SUB_register_shifted_register;
+| 0011x      -        = *RnRdRsRm
+                         pattern := cccc0000011snnnnddddssss0tt1mmmm;
+                         rule := RSB_register_shfited_register;
+| 0100x      -        = *RnRdRsRm
+                         pattern := cccc0000100snnnnddddssss0tt1mmmm;
+                         rule := ADD_register_shifted_register;
+| 0101x      -        = *RnRdRsRm
+                         pattern := cccc0000101snnnnddddssss0tt1mmmm;
+                         rule := ADC_register_shifted_register;
+| 0110x      -        = *RnRdRsRm
+                         pattern := cccc0000110snnnnddddssss0tt1mmmm;
+                         rule := SBC_register_shifted_register;
+| 0111x      -        = *RnRdRsRm
+                         pattern := cccc0000111snnnnddddssss0tt1mmmm;
+                         rule := RSC_register_shifted_register;
 # TODO(jfb) op==10xx0 should be unreachable from here:
 #           the previous table should handle it.
-| 10001      -        = *2 pattern := cccc00010001nnnn0000ssss0tt1mmmm;
-                           rule := TST_register_shifted_register_A1;
-| 10011      -        = *2 pattern := cccc00010011nnnn0000ssss0tt1mmmm;
-                           rule := TEQ_register_shifted_register_A1;
-| 10101      -        = *2 pattern := cccc00010101nnnn0000ssss0tt1mmmm;
-                           rule := CMP_register_shifted_register_A1;
-| 10111      -        = *2 pattern := cccc00010111nnnn0000ssss0tt1mmmm;
-                           rule := CMN_register_shifted_register_A1;
-| 1100x      -        = *1 pattern := cccc0001100snnnnddddssss0tt1mmmm;
-                           rule := ORR_register_shifted_register_A1;
-| 1101x      00       = *3 pattern := cccc0001101s0000ddddmmmm0001nnnn;
-                           rule := LSL_register_A1;
-| "          01       = *3 pattern := cccc0001101s0000ddddmmmm0011nnnn;
-                           rule := LSR_register_A1;
-| "          10       = *3 pattern := cccc0001101s0000ddddmmmm0101nnnn;
-                           rule := ASR_register_A1;
-| "          11       = *3 pattern := cccc0001101s0000ddddmmmm0111nnnn;
-                           rule := ROR_register_A1;
-| 1110x      -        = *1 pattern := cccc0001110snnnnddddssss0tt1mmmm;
-                           rule := BIC_register_shifted_register_A1;
-| 1111x      -        = *4 pattern := cccc0001111s0000ddddssss0tt1mmmm;
-                           rule := MVN_register_shifted_register_A1;
+| 10001      -        = *RnRsRm
+                         pattern := cccc00010001nnnn0000ssss0tt1mmmm;
+                         rule := TST_register_shifted_register;
+| 10011      -        = *RnRsRm
+                         pattern := cccc00010011nnnn0000ssss0tt1mmmm;
+                         rule := TEQ_register_shifted_register;
+| 10101      -        = *RnRsRm
+                         pattern := cccc00010101nnnn0000ssss0tt1mmmm;
+                         rule := CMP_register_shifted_register;
+| 10111      -        = *RnRsRm
+                         pattern := cccc00010111nnnn0000ssss0tt1mmmm;
+                         rule := CMN_register_shifted_register;
+| 1100x      -        = *RnRdRsRm
+                         pattern := cccc0001100snnnnddddssss0tt1mmmm;
+                         rule := ORR_register_shifted_register;
+| 1101x      00       = *RdRmRn
+                         pattern := cccc0001101s0000ddddmmmm0001nnnn;
+                         rule := LSL_register;
+| "          01       = *RdRmRn
+                         pattern := cccc0001101s0000ddddmmmm0011nnnn;
+                         rule := LSR_register;
+| "          10       = *RdRmRn
+                         pattern := cccc0001101s0000ddddmmmm0101nnnn;
+                         rule := ASR_register;
+| "          11       = *RdRmRn
+                         pattern := cccc0001101s0000ddddmmmm0111nnnn;
+                         rule := ROR_register;
+| 1110x      -        = *RnRdRsRm
+                         pattern := cccc0001110snnnnddddssss0tt1mmmm;
+                         rule := BIC_register_shifted_register;
+| 1111x      -        = *RdRsRm
+                         pattern := cccc0001111s0000ddddssss0tt1mmmm;
+                         rule := MVN_register_shifted_register;
 +--
 
 +-- data_processing_immediate (See Section A5.2.3)

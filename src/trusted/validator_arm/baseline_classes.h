@@ -705,6 +705,7 @@ class Binary3RegisterOp : public ClassDecoder {
   Binary3RegisterOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOp);
@@ -1758,6 +1759,7 @@ class Unary3RegisterShiftedOp : public ClassDecoder {
   Unary3RegisterShiftedOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary3RegisterShiftedOp);
@@ -1867,6 +1869,7 @@ class Binary4RegisterShiftedOp : public ClassDecoder {
   Binary4RegisterShiftedOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterShiftedOp);
@@ -1949,6 +1952,7 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
   Binary3RegisterShiftedTest() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTest);
