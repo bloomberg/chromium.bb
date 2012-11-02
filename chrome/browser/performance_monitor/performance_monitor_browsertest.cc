@@ -593,12 +593,14 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, GatherStatistics) {
   EXPECT_GT(stats[1].value, 0);
 }
 
+// Disabled on other platforms because of flakiness: http://crbug.com/159172.
 #if !defined(OS_WIN)
 // Disabled on Windows due to a bug where Windows will return a normal exit
 // code in the testing environment, even if the process died (this is not the
 // case when hand-testing). This code can be traced to MSDN functions in
 // base::GetTerminationStatus(), so there's not much we can do.
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererKilledEvent) {
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
+                       DISABLED_RendererKilledEvent) {
   content::CrashTab(chrome::GetActiveWebContents(browser()));
 
   Database::EventVector events = GetEvents();
