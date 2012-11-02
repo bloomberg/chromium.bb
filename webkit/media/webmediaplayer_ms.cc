@@ -100,7 +100,13 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
     SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
     GetClient()->sourceOpened();
     GetClient()->setOpaque(true);
-    video_frame_provider_->Start();
+    if (video_frame_provider_) {
+      video_frame_provider_->Start();
+    } else {
+      // This is audio-only mode.
+      SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+      SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+    }
   } else {
     SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
   }
