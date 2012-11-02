@@ -178,12 +178,6 @@ class IsolateTestCases(unittest.TestCase):
     expected = {
       'variables': {
         'command': ['../gtest_fake/gtest_fake_pass.py'],
-        'isolate_dependency_tracked': [
-          # TODO(maruel): In theory, this file should be listed in the else
-          # clause of the condition below but that becomes tricky at that
-          # point.
-          '../gtest_fake/gtest_fake_pass.py',
-        ],
       },
       'conditions': [
         ['OS=="%s"' % isolate.get_flavor(), {
@@ -192,6 +186,12 @@ class IsolateTestCases(unittest.TestCase):
               '../gtest_fake/',
             ],
           },
+        }, {
+         'variables': {
+           'isolate_dependency_tracked': [
+             '../gtest_fake/gtest_fake_pass.py',
+             ],
+           },
         }],
       ],
     }

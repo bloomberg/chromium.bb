@@ -382,6 +382,45 @@ class IsolateTest(unittest.TestCase):
     self.assertEqual(expected_values, actual_values)
     self.assertEqual(oses, actual_oses)
 
+  def test_reduce_inputs_merge_subfolders_and_files(self):
+    values = {
+      'command': {},
+      KEY_TRACKED: {
+        'folder/tracked_file': set(['win']),
+        'folder_helper/tracked_file': set(['win']),
+      },
+      KEY_UNTRACKED: {
+        'folder/': set(['linux', 'mac', 'win']),
+        'folder/subfolder/': set(['win']),
+        'folder/untracked_file': set(['linux', 'mac', 'win']),
+        'folder_helper/': set(['linux']),
+      },
+      KEY_TOUCHED: {
+        'folder/touched_file': set (['win']),
+        'folder/helper_folder/deep_file': set(['win']),
+        'folder_helper/touched_file1': set (['mac', 'win']),
+        'folder_helper/touched_file2': set (['linux']),
+      },
+    }
+    oses = set(['linux', 'mac', 'win'])
+    expected_values = {
+      'command': {},
+      KEY_TRACKED: {
+        'folder_helper/tracked_file': set(['win']),
+      },
+      KEY_UNTRACKED: {
+        'folder/': set([None]),
+        'folder_helper/': set(['linux']),
+      },
+      KEY_TOUCHED: {
+        'folder_helper/touched_file1': set (['!linux']),
+      },
+      'read_only': {},
+    }
+    actual_values, actual_oses = isolate.reduce_inputs(values, oses)
+    self.assertEqual(expected_values, actual_values)
+    self.assertEqual(oses, actual_oses)
+
   def test_reduce_inputs_take_strongest_dependency(self):
     values = {
       'command': {

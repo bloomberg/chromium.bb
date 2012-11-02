@@ -970,6 +970,24 @@ def remove_weak_dependencies(values, key, item, item_oses):
   return item_oses
 
 
+def remove_repeated_dependencies(folders, key, item, item_oses):
+  """Remove any OSes from this key if the item is in a folder that is already
+  included."""
+
+  if key in (KEY_UNTRACKED, KEY_TRACKED, KEY_TOUCHED):
+    for (folder, oses) in folders.iteritems():
+      if folder != item and item.startswith(folder):
+        item_oses -= oses
+
+  return item_oses
+
+
+def get_folders(values_dict):
+  """Return a dict of all the folders in the given value_dict."""
+  return dict((item, oses) for (item, oses) in values_dict.iteritems()
+          if item.endswith('/'))
+
+
 def invert_map(variables):
   """Converts a dict(OS, dict(deptype, list(dependencies)) to a flattened view.
 
@@ -1018,12 +1036,17 @@ def reduce_inputs(values, oses):
     'command',
     'read_only',
   )
+
+  # Folders can only live in KEY_UNTRACKED.
+  folders = get_folders(values.get(KEY_UNTRACKED, {}))
+
   out = dict((key, {}) for key in KEYS)
   assert all(oses), oses
   if len(oses) > 2:
     for key in KEYS:
       for item, item_oses in values.get(key, {}).iteritems():
         item_oses = remove_weak_dependencies(values, key, item, item_oses)
+        item_oses = remove_repeated_dependencies(folders, key, item, item_oses)
         if not item_oses:
           continue
 
