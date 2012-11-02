@@ -1,0 +1,3 @@
+# Seems to be hanging content_unittests. Disabling this speculatively to see
+# if it helps. See http://crbug.com/159234.
+WebContentsVideoCaptureDeviceTest.*
