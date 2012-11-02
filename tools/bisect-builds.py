@@ -32,8 +32,10 @@ DEPS_FILE= 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
 WEBKIT_CHANGELOG_URL = 'http://trac.webkit.org/log/' \
                        'trunk/?rev=%d&stop_rev=%d&verbose=on&limit=10000'
 
-DONE_MESSAGE = 'You are probably looking for a change made after ' \
-               '%s (known good), but no later than %s (first known bad).'
+DONE_MESSAGE_GOOD_MIN = 'You are probably looking for a change made after %s ' \
+                        '(known good), but no later than %s (first known bad).'
+DONE_MESSAGE_GOOD_MAX = 'You are probably looking for a change made after %s ' \
+                        '(known bad), but no later than %s (first known good).'
 
 ###############################################################################
 
@@ -140,8 +142,7 @@ class PathContext(object):
 
   def ParseDirectoryIndex(self):
     """Parses the Google Storage directory listing into a list of revision
-    numbers. The range starts with self.good_revision and goes until
-    self.bad_revision."""
+    numbers."""
 
     def _FetchAndParse(url):
       """Fetches a URL and returns a 2-Tuple of ([revisions], next-marker). If
@@ -198,8 +199,8 @@ class PathContext(object):
     """Gets the list of revision numbers between self.good_revision and
     self.bad_revision."""
     # Download the revlist and filter for just the range between good and bad.
-    minrev = self.good_revision
-    maxrev = self.bad_revision
+    minrev = min(self.good_revision, self.bad_revision)
+    maxrev = max(self.good_revision, self.bad_revision)
     revlist = map(int, self.ParseDirectoryIndex())
     revlist = [x for x in revlist if x >= int(minrev) and x <= int(maxrev)]
     revlist.sort()
@@ -209,8 +210,8 @@ class PathContext(object):
     """Gets the list of official build numbers between self.good_revision and
     self.bad_revision."""
     # Download the revlist and filter for just the range between good and bad.
-    minrev = self.good_revision
-    maxrev = self.bad_revision
+    minrev = min(self.good_revision, self.bad_revision)
+    maxrev = max(self.good_revision, self.bad_revision)
     handle = urllib.urlopen(OFFICIAL_BASE_URL)
     dirindex = handle.read()
     handle.close()
@@ -392,8 +393,8 @@ def Bisect(platform,
 
   @param platform Which build to download/run ('mac', 'win', 'linux64', etc.).
   @param official_builds Specify build type (Chromium or Official build).
-  @param good_rev Number/tag of the last known good revision.
-  @param bad_rev Number/tag of the first known bad revision.
+  @param good_rev Number/tag of the known good revision.
+  @param bad_rev Number/tag of the known bad revision.
   @param num_runs Number of times to run each build for asking good/bad.
   @param try_args A tuple of arguments to pass to the test application.
   @param profile The name of the user profile to run with.
@@ -436,36 +437,41 @@ def Bisect(platform,
     msg = 'We don\'t have enough builds to bisect. revlist: %s' % revlist
     raise RuntimeError(msg)
 
-  print 'Bisecting range [%s, %s].' % (revlist[0], revlist[-1])
-
   # Figure out our bookends and first pivot point; fetch the pivot revision.
-  good = 0
-  bad = len(revlist) - 1
-  pivot = bad / 2
+  minrev = 0
+  maxrev = len(revlist) - 1
+  pivot = maxrev / 2
   rev = revlist[pivot]
   zipfile = _GetDownloadPath(rev)
-  initial_fetch = DownloadJob(context, 'initial_fetch', rev, zipfile)
-  initial_fetch.Start()
-  initial_fetch.WaitFor()
+  fetch = DownloadJob(context, 'initial_fetch', rev, zipfile)
+  fetch.Start()
+  fetch.WaitFor()
 
   # Binary search time!
-  while zipfile and bad - good > 1:
+  while fetch and fetch.zipfile and maxrev - minrev > 1:
+    if bad_rev < good_rev:
+      min_str, max_str = "bad", "good"
+    else:
+      min_str, max_str = "good", "bad"
+    print 'Bisecting range [%s (%s), %s (%s)].' % (revlist[minrev], min_str, \
+                                                   revlist[maxrev], max_str)
+
     # Pre-fetch next two possible pivots
     #   - down_pivot is the next revision to check if the current revision turns
     #     out to be bad.
     #   - up_pivot is the next revision to check if the current revision turns
     #     out to be good.
-    down_pivot = int((pivot - good) / 2) + good
+    down_pivot = int((pivot - minrev) / 2) + minrev
     down_fetch = None
-    if down_pivot != pivot and down_pivot != good:
+    if down_pivot != pivot and down_pivot != minrev:
       down_rev = revlist[down_pivot]
       down_fetch = DownloadJob(context, 'down_fetch', down_rev,
                                _GetDownloadPath(down_rev))
       down_fetch.Start()
 
-    up_pivot = int((bad - pivot) / 2) + pivot
+    up_pivot = int((maxrev - pivot) / 2) + pivot
     up_fetch = None
-    if up_pivot != pivot and up_pivot != bad:
+    if up_pivot != pivot and up_pivot != maxrev:
       up_rev = revlist[up_pivot]
       up_fetch = DownloadJob(context, 'up_fetch', up_rev,
                              _GetDownloadPath(up_rev))
@@ -478,43 +484,44 @@ def Bisect(platform,
     try:
       (status, stdout, stderr) = RunRevision(context,
                                              rev,
-                                             zipfile,
+                                             fetch.zipfile,
                                              profile,
                                              num_runs,
                                              try_args)
     except Exception, e:
       print >>sys.stderr, e
-    os.unlink(zipfile)
-    zipfile = None
+    fetch.Stop()
+    fetch = None
 
     # Call the evaluate function to see if the current revision is good or bad.
     # On that basis, kill one of the background downloads and complete the
     # other, as described in the comments above.
     try:
       answer = evaluate(rev, official_builds, status, stdout, stderr)
-      if answer == 'g':
-        good = pivot
+      if answer == 'g' and good_rev < bad_rev or \
+          answer == 'b' and bad_rev < good_rev:
+        minrev = pivot
         if down_fetch:
           down_fetch.Stop()  # Kill the download of the older revision.
         if up_fetch:
           up_fetch.WaitFor()
           pivot = up_pivot
-          zipfile = up_fetch.zipfile
-      elif answer == 'b':
-        bad = pivot
+          fetch = up_fetch
+      elif answer == 'b' and good_rev < bad_rev or \
+          answer == 'g' and bad_rev < good_rev:
+        maxrev = pivot
         if up_fetch:
           up_fetch.Stop()  # Kill the download of the newer revision.
         if down_fetch:
           down_fetch.WaitFor()
           pivot = down_pivot
-          zipfile = down_fetch.zipfile
+          fetch = down_fetch
       elif answer == 'u':
         # Nuke the revision from the revlist and choose a new pivot.
         revlist.pop(pivot)
-        bad -= 1  # Assumes bad >= pivot.
+        maxrev -= 1  # Assumes maxrev >= pivot.
 
-        fetch = None
-        if bad - good > 1:
+        if maxrev - minrev > 1:
           # Alternate between using down_pivot or up_pivot for the new pivot
           # point, without affecting the range. Do this instead of setting the
           # pivot to the midpoint of the new range because adjacent revisions
@@ -551,7 +558,7 @@ def Bisect(platform,
 
     rev = revlist[pivot]
 
-  return (revlist[good], revlist[bad])
+  return (revlist[minrev], revlist[maxrev])
 
 
 def GetWebKitRevisionForChromiumRevision(rev):
@@ -638,43 +645,38 @@ def main():
     good_rev = int(good_rev)
     bad_rev = int(bad_rev)
 
-  if good_rev > bad_rev:
-    print ('The good revision (%s) must precede the bad revision (%s).\n' %
-           (good_rev, bad_rev))
-    parser.print_help()
-    return 1
-
   if opts.times < 1:
     print('Number of times to run (%d) must be greater than or equal to 1.' %
           opts.times)
     parser.print_help()
     return 1
 
-  (last_known_good_rev, first_known_bad_rev) = Bisect(
+  (min_chromium_rev, max_chromium_rev) = Bisect(
       opts.archive, opts.official_builds, good_rev, bad_rev, opts.times, args,
       opts.profile)
 
   # Get corresponding webkit revisions.
   try:
-    last_known_good_webkit_rev = GetWebKitRevisionForChromiumRevision(
-        last_known_good_rev)
-    first_known_bad_webkit_rev = GetWebKitRevisionForChromiumRevision(
-        first_known_bad_rev)
+    min_webkit_rev = GetWebKitRevisionForChromiumRevision(min_chromium_rev)
+    max_webkit_rev = GetWebKitRevisionForChromiumRevision(max_chromium_rev)
   except Exception, e:
     # Silently ignore the failure.
-    last_known_good_webkit_rev, first_known_bad_webkit_rev = 0, 0
+    min_webkit_rev, max_webkit_rev = 0, 0
 
   # We're done. Let the user know the results in an official manner.
-  print DONE_MESSAGE % (str(last_known_good_rev), str(first_known_bad_rev))
-  if last_known_good_webkit_rev != first_known_bad_webkit_rev:
+  if good_rev > bad_rev:
+    print DONE_MESSAGE_GOOD_MAX % (str(min_chromium_rev), str(max_chromium_rev))
+  else:
+    print DONE_MESSAGE_GOOD_MIN % (str(min_chromium_rev), str(max_chromium_rev))
+
+  if min_webkit_rev != max_webkit_rev:
     print 'WEBKIT CHANGELOG URL:'
-    print '  ' + WEBKIT_CHANGELOG_URL % (first_known_bad_webkit_rev,
-                                         last_known_good_webkit_rev)
+    print '  ' + WEBKIT_CHANGELOG_URL % (max_webkit_rev, min_webkit_rev)
   print 'CHANGELOG URL:'
   if opts.official_builds:
-    print OFFICIAL_CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev)
+    print OFFICIAL_CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
   else:
-    print '  ' + CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev)
+    print '  ' + CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
 
 if __name__ == '__main__':
   sys.exit(main())
