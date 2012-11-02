@@ -89,7 +89,7 @@ DesktopRootWindowHostLinux::~DesktopRootWindowHostLinux() {
 }
 
 // static
-ui::NativeTheme* DesktopRootWindowLinux::GetNativeTheme(aura::Window* window) {
+ui::NativeTheme* DesktopRootWindowHost::GetNativeTheme(aura::Window* window) {
   return NativeTheme::instance();
 }
 
