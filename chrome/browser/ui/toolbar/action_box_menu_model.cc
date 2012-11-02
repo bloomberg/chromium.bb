@@ -43,9 +43,9 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
   BookmarkTabHelper* bookmark_tab_helper = BookmarkTabHelper::FromWebContents(
       chrome::GetActiveWebContents(browser_));
   bool starred = bookmark_tab_helper->is_starred();
-  AddItemWithStringId(IDC_BOOKMARK_PAGE,
+  AddItemWithStringId(IDC_BOOKMARK_PAGE_FROM_STAR,
                       starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
-  SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE),
+  SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE_FROM_STAR),
           rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
 }
 

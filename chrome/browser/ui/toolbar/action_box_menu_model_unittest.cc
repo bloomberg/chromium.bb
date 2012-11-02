@@ -216,7 +216,8 @@ TEST_F(ActionBoxMenuModelTest, BookmarkedPage) {
   ActionBoxMenuModel model(browser(), this);
 
   // Bokomark item should be in menu.
-  int bookmark_item_index = model.GetIndexOfCommandId(IDC_BOOKMARK_PAGE);
+  int bookmark_item_index = model.GetIndexOfCommandId(
+      IDC_BOOKMARK_PAGE_FROM_STAR);
   EXPECT_NE(-1, bookmark_item_index);
 
   gfx::Image bookmark_icon;

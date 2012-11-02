@@ -433,6 +433,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_BOOKMARK_PAGE:
       BookmarkCurrentPage(browser_);
       break;
+    case IDC_BOOKMARK_PAGE_FROM_STAR:
+      BookmarkCurrentPageFromStar(browser_);
+      break;
     case IDC_PIN_TO_START_SCREEN:
       TogglePagePinnedToStartScreen(browser_);
       break;
