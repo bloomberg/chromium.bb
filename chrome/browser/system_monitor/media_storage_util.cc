@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
@@ -261,6 +262,12 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
       *relative_path = FilePath();
       FilePath mount_point(device_info.location);
       bool success = mount_point.AppendRelativePath(path, relative_path);
+#if defined(OS_POSIX)
+      if (!relative_path->value().empty() && device_name) {
+        *device_name += ASCIIToUTF16(" (") +
+            relative_path->BaseName().LossyDisplayName() + ASCIIToUTF16(")");
+      }
+#endif
       DCHECK(success);
     }
     return true;
