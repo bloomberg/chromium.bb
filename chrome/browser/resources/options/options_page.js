@@ -152,6 +152,10 @@ cr.define('options', function() {
     // Update tab title.
     this.setTitle_(targetPage.title);
 
+    // Update focus if any other control was focused before.
+    if (document.activeElement != document.body)
+      targetPage.focus();
+
     // Notify pages if they were shown.
     for (var i = 0; i < allPageNames.length; ++i) {
       var name = allPageNames[i];
@@ -255,6 +259,10 @@ cr.define('options', function() {
 
     // Update tab title.
     this.setTitle_(overlay.title);
+
+    // Change focus to the overlay if any other control was focused before.
+    if (document.activeElement != document.body)
+      overlay.focus();
 
     $('searchBox').setAttribute('aria-hidden', true);
 
@@ -710,6 +718,22 @@ cr.define('options', function() {
      * Initializes page content.
      */
     initializePage: function() {},
+
+    /**
+     * Sets focus on the first focusable element. Override for a custom focus
+     * strategy.
+     */
+    focus: function() {
+      var elements = this.pageDiv.querySelectorAll(
+          'input, list, select, textarea, button');
+      for (var i = 0; i < elements.length; i++) {
+        var element = elements[i];
+        // Try to focus. If fails, then continue.
+        element.focus();
+        if (document.activeElement == element)
+          return;
+      }
+    },
 
     /**
      * Gets the container div for this page if it is an overlay.
