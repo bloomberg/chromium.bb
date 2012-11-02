@@ -20,6 +20,8 @@ def Main(args):
   arch = args[0]
   objdump = args[1]
   obj_file = args[2]
+
+  whitelist_regex = None
   if arch == 'x86-32':
     objdump_args = [objdump, '-d', obj_file]
     # "%gs:4" is allowed but all other uses of %gs are suspect.
@@ -40,6 +42,7 @@ def Main(args):
     # that is not legal for an identifier (e.g., spaces, commas, brackets).
     register = 'r9'
     regex = re.compile('[^_\w]' + register)
+    whitelist_regex = re.compile(r'ldr\s+r0,\s*\[r9,\s*#4\]\s*$')
   else:
     print 'Unknown architecture: %s' % arch
     sys.exit(1)
@@ -49,7 +52,8 @@ def Main(args):
                             stdout=subprocess.PIPE,
                             bufsize=-1)
     for line in proc.stdout:
-      if regex.search(line):
+      if regex.search(line) and not (whitelist_regex is not None and
+                                     whitelist_regex.search(line)):
         print '%s use found: %s' % (register, line)
         print 'This looks like an %s direct TLS use.' % arch
         print 'Such uses are disallowed by the IRT context constraints.'
