@@ -4,6 +4,8 @@
 
 #include "ui/message_center/notification_list.h"
 
+#include "base/values.h"
+
 namespace message_center {
 
 const size_t NotificationList::kMaxVisibleMessageCenterNotifications = 100;
@@ -41,18 +43,37 @@ void NotificationList::SetMessageCenterVisible(bool visible) {
   }
 }
 
-void NotificationList::AddNotification(const std::string& id,
-                                       const string16& title,
-                                       const string16& message,
-                                       const string16& display_source,
-                                       const std::string& extension_id) {
+void NotificationList::AddNotification(
+    ui::notifications::NotificationType type,
+    const std::string& id,
+    const string16& title,
+    const string16& message,
+    const string16& display_source,
+    const std::string& extension_id,
+    const DictionaryValue* optional_fields) {
   Notification notification;
+  notification.type = type;
   notification.id = id;
   notification.title = title;
   notification.message = message;
   notification.display_source = display_source;
   notification.extension_id = extension_id;
+  UnpackOptionalFields(optional_fields, notification);
+
   PushNotification(notification);
+}
+
+void NotificationList::UnpackOptionalFields(
+    const DictionaryValue* optional_fields, Notification& notification) {
+  if (!optional_fields)
+    return;
+
+  if (optional_fields->HasKey(ui::notifications::kExtraFieldKey))
+    optional_fields->GetString(ui::notifications::kExtraFieldKey,
+                               &notification.extra_field);
+  if (optional_fields->HasKey(ui::notifications::kSecondExtraFieldKey))
+    optional_fields->GetString(ui::notifications::kSecondExtraFieldKey,
+                               &notification.second_extra_field);
 }
 
 void NotificationList::UpdateNotificationMessage(const std::string& old_id,

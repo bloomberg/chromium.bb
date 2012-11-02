@@ -7,6 +7,8 @@
     DOMString iconUrl;
     DOMString title;
     DOMString message;
+    DOMString? extraField;
+    DOMString? secondExtraField;
     DOMString replaceId;
 
     // Used for internal event routing. Do not set or rely on its value.

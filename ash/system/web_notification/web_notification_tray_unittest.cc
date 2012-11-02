@@ -12,6 +12,7 @@
 #include "ui/message_center/message_center_bubble.h"
 #include "ui/message_center/message_popup_bubble.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/notifications/notification_types.h"
 #include "ash/test/ash_test_base.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -55,11 +56,13 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
   void AddNotification(WebNotificationTray* tray, const std::string& id) {
     notification_ids_.insert(id);
     tray->message_center()->AddNotification(
+        ui::notifications::NOTIFICATION_TYPE_SIMPLE,
         id,
         ASCIIToUTF16("Test Web Notification"),
         ASCIIToUTF16("Notification message body."),
         ASCIIToUTF16("www.test.org"),
-        "" /* extension id */);
+        "" /* extension id */,
+        NULL /* optional_fields */);
   }
 
   void UpdateNotification(WebNotificationTray* tray,

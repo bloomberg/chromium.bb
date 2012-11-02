@@ -18,21 +18,26 @@ class ScrollView;
 
 namespace message_center {
 
-// Individual notifications constants
-const int kWebNotificationWidth = 320;
+// Individual notifications constants.
+const int kPaddingBetweenItems = 10;
+const int kPaddingHorizontal = 18;
 const int kWebNotificationButtonWidth = 32;
 const int kWebNotificationIconSize = 40;
+const int kWebNotificationWidth = 320;
 
-// The view for a notification entry (icon + message + buttons).
+// An abstract class that forms the basis of a view for a notification entry.
 class MessageView : public views::View,
                     public views::ButtonListener,
                     public ui::ImplicitAnimationObserver {
  public:
   MessageView(NotificationList::Delegate* list_delegate,
-              const NotificationList::Notification& notification,
-              int scroll_bar_width);
+              const NotificationList::Notification& notification);
 
   virtual ~MessageView();
+
+  // Creates the elements that make up the view layout. Must be called
+  // immediately after construction.
+  virtual void SetUpView() = 0;
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
@@ -49,11 +54,13 @@ class MessageView : public views::View,
   // Overridden from ImplicitAnimationObserver.
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
- private:
+ protected:
   enum SlideDirection {
     SLIDE_LEFT,
     SLIDE_RIGHT
   };
+
+  MessageView();
 
   // Shows the menu for the notification.
   void ShowMenu(gfx::Point screen_location);

@@ -8,11 +8,14 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/values.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/notifications/notification_types.h"
 
 // Representation of a notification to be shown to the user.
 // On non-Ash platforms these are rendered as HTML, sometimes described by a
@@ -38,6 +41,18 @@ class Notification {
                const string16& replace_id,
                NotificationDelegate* delegate);
 
+  // Initializes a notification with a given type. Takes ownership of
+  // optional_fields.
+  Notification(ui::notifications::NotificationType type,
+               const GURL& icon_url,
+               const string16& title,
+               const string16& body,
+               WebKit::WebTextDirection dir,
+               const string16& display_source,
+               const string16& replace_id,
+               const DictionaryValue* optional_fields,
+               NotificationDelegate* delegate);
+
   // Initializes a notification with text content and an icon image. Currently
   // only used on Ash. Does not generate content_url_.
   Notification(const GURL& origin_url,
@@ -55,6 +70,10 @@ class Notification {
 
   // If this is a HTML notification.
   bool is_html() const { return is_html_; }
+
+  ui::notifications::NotificationType type() const {
+    return type_;
+  }
 
   // The URL (may be data:) containing the contents for the notification.
   const GURL& content_url() const { return content_url_; }
@@ -78,6 +97,10 @@ class Notification {
   // A unique identifier used to update (replace) or remove a notification.
   const string16& replace_id() const { return replace_id_; }
 
+  const DictionaryValue* optional_fields() const {
+    return optional_fields_.get();
+  }
+
   void Display() const { delegate()->Display(); }
   void Error() const { delegate()->Error(); }
   void Click() const { delegate()->Click(); }
@@ -91,6 +114,9 @@ class Notification {
 
  private:
   NotificationDelegate* delegate() const { return delegate_.get(); }
+
+  // The type of notification we'd like displayed.
+  ui::notifications::NotificationType type_;
 
   // The Origin of the page/worker which created this notification.
   GURL origin_url_;
@@ -120,6 +146,8 @@ class Notification {
 
   // The replace ID for the notification.
   string16 replace_id_;
+
+  scoped_ptr<DictionaryValue> optional_fields_;
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.

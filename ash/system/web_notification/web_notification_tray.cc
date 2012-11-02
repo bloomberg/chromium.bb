@@ -9,8 +9,6 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
-#include "ui/message_center/message_center_bubble.h"
-#include "ui/message_center/message_popup_bubble.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -19,6 +17,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
+#include "ui/message_center/message_center_bubble.h"
+#include "ui/message_center/message_popup_bubble.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget_observer.h"
 

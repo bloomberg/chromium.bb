@@ -5,6 +5,7 @@
 #include "ui/message_center/message_popup_bubble.h"
 
 #include "ui/message_center/message_view.h"
+#include "ui/message_center/message_view_factory.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -37,7 +38,9 @@ class PopupBubbleContentsView : public views::View {
     for (NotificationList::Notifications::const_iterator iter =
              popup_notifications.begin();
          iter != popup_notifications.end(); ++iter) {
-      MessageView* view = new MessageView(list_delegate_, *iter, 0);
+      MessageView* view =
+          MessageViewFactory::ViewForNotification(*iter, list_delegate_);
+      view->SetUpView();
       content_->AddChildView(view);
     }
     content_->SizeToPreferredSize();

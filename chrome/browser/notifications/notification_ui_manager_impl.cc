@@ -75,7 +75,7 @@ void NotificationUIManagerImpl::Initialize(
 }
 
 void NotificationUIManagerImpl::Add(const Notification& notification,
-                                Profile* profile) {
+                                    Profile* profile) {
   if (TryReplacement(notification)) {
     return;
   }

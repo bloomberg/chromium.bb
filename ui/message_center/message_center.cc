@@ -44,13 +44,16 @@ bool MessageCenter::HasPopupNotifications() const {
 //------------------------------------------------------------------------------
 // Client code interface.
 
-void MessageCenter::AddNotification(const std::string& id,
-                                    const string16& title,
-                                    const string16& message,
-                                    const string16& display_source,
-                                    const std::string& extension_id) {
-  notification_list_->AddNotification(
-      id, title, message, display_source, extension_id);
+void MessageCenter::AddNotification(
+    ui::notifications::NotificationType type,
+    const std::string& id,
+    const string16& title,
+    const string16& message,
+    const string16& display_source,
+    const std::string& extension_id,
+    const base::DictionaryValue* optional_fields) {
+  notification_list_->AddNotification(type, id, title, message, display_source,
+                                      extension_id, optional_fields);
   if (host_)
     host_->MessageCenterChanged(true);
 }

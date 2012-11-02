@@ -11,6 +11,11 @@
 #include "base/string16.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_export.h"
+#include "ui/notifications/notification_types.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace message_center {
 
@@ -21,11 +26,18 @@ class MESSAGE_CENTER_EXPORT NotificationList {
     Notification();
     virtual ~Notification();
 
+    ui::notifications::NotificationType type;
     std::string id;
     string16 title;
     string16 message;
     string16 display_source;
     std::string extension_id;
+
+    // Begin unpacked values from optional_fields
+    string16 extra_field;
+    string16 second_extra_field;
+    // End unpacked values
+
     gfx::ImageSkia image;
     bool is_read;  // True if this has been seen in the message center
     bool shown_as_popup;  // True if this has been shown as a popup notification
@@ -62,11 +74,13 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // Affects whether or not a message has been "read".
   void SetMessageCenterVisible(bool visible);
 
-  void AddNotification(const std::string& id,
+  void AddNotification(ui::notifications::NotificationType type,
+                       const std::string& id,
                        const string16& title,
                        const string16& message,
                        const string16& display_source,
-                       const std::string& extension_id);
+                       const std::string& extension_id,
+                       const base::DictionaryValue* optional_fields);
 
   void UpdateNotificationMessage(const std::string& old_id,
                                  const std::string& new_id,
@@ -118,6 +132,13 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // that have not been shown as a popup.
   void GetPopupIterators(Notifications::iterator& first,
                          Notifications::iterator& last);
+
+  // Given a dictionary of optional notification fields (or NULL), unpacks all
+  // recognized values into the given Notification struct. We assume prior
+  // proper initialization of |notification| fields that correspond to
+  // |optional_fields|.
+  void UnpackOptionalFields(const base::DictionaryValue* optional_fields,
+                            Notification& notification);
 
   Delegate* delegate_;
   Notifications notifications_;

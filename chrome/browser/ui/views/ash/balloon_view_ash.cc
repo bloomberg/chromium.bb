@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/notifications/balloon_collection.h"
@@ -94,11 +95,13 @@ void BalloonViewAsh::Show(Balloon* balloon) {
   const Notification& notification = balloon_->notification();
   current_notification_id_ = notification.notification_id();
   std::string extension_id = GetExtensionId(balloon);
-  GetMessageCenter()->AddNotification(current_notification_id_,
+  GetMessageCenter()->AddNotification(notification.type(),
+                                      current_notification_id_,
                                       notification.title(),
                                       notification.body(),
                                       notification.display_source(),
-                                      extension_id);
+                                      extension_id,
+                                      notification.optional_fields());
   FetchIcon(notification);
 }
 

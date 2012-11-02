@@ -8,6 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/notifications/notification_types.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 // Class for managing the NotificationList. The client (e.g. Chrome) calls
 // [Add|Remove|Update]Notification to create and update notifications in the
@@ -81,11 +86,13 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   // |display_source| is provided, a menu item showing the source and allowing
   // notifications from that source to be disabled will be shown. All actual
   // disabling is handled by the Delegate.
-  void AddNotification(const std::string& id,
+  void AddNotification(ui::notifications::NotificationType type,
+                       const std::string& id,
                        const string16& title,
                        const string16& message,
                        const string16& display_source,
-                       const std::string& extension_id);
+                       const std::string& extension_id,
+                       const base::DictionaryValue* optional_fields);
 
   // Updates an existing notification with id = old_id and set its id to new_id.
   void UpdateNotification(const std::string& old_id,
