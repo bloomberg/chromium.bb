@@ -107,6 +107,16 @@ class Generator(object):
         releasestr = ast.releases[0]
       if releasestr == 'end':
         releasestr = ast.releases[-1]
+
+      if releasestr > ast.releases[0]:
+        InfoOut.Log('There is no unique release for %s, using last release.' %
+                    releasestr)
+        releasestr = ast.releases[-1]
+
+      if releasestr not in ast.releases:
+        self.Error('Release %s not in [%s].' %
+                   (releasestr, ', '.join(ast.releases)))
+
       if releasestr:
         InfoOut.Log('Generate release %s of %s.' % (releasestr, self.name))
         ret = self.GenerateRelease(ast, releasestr, options)
