@@ -55,6 +55,8 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   // Overridden from aura::WindowObserver.
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
+  gfx::Point mouse_location() const { return curr_mouse_loc_; }
+
  private:
   friend class ash::test::TooltipControllerTest;
 
