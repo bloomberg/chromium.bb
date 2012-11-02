@@ -76,6 +76,12 @@ inline Vector2dF operator-(const Vector2dF& lhs, const Vector2dF& rhs) {
   return result;
 }
 
+// Return the cross product of two vectors.
+UI_EXPORT double CrossProduct(const Vector2dF& lhs, const Vector2dF& rhs);
+
+// Return the dot product of two vectors.
+UI_EXPORT double DotProduct(const Vector2dF& lhs, const Vector2dF& rhs);
+
 }  // namespace gfx
 
 #endif // UI_GFX_VECTOR2D_F_H_

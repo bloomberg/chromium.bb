@@ -82,6 +82,7 @@
         'gfx/insets_unittest.cc',
         'gfx/point_unittest.cc',
         'gfx/point3_unittest.cc',
+        'gfx/quad_unittest.cc',
         'gfx/rect_unittest.cc',
         'gfx/safe_integer_conversions_unittest.cc',
         'gfx/screen_unittest.cc',

@@ -198,6 +198,7 @@
     },
     'gfx_geometry': {
       'filepath': 'ui/gfx/rect|'\
+                  'ui/gfx/quad|'\
                   'ui/gfx/point|'\
                   'ui/gfx/size|'\
                   'ui/gfx/transform|'\
