@@ -311,7 +311,8 @@ void AwContentBrowserClient::DidCreatePpapiPlugin(
 
 bool AwContentBrowserClient::AllowPepperSocketAPI(
     content::BrowserContext* browser_context,
-                                  const GURL& url) {
+    const GURL& url,
+    const content::SocketPermissionRequest& params) {
   NOTREACHED() << "Android WebView does not support plugins";
   return false;
 }

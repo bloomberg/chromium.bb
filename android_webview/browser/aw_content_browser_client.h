@@ -115,8 +115,10 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   virtual std::string GetDefaultDownloadName() OVERRIDE;
   virtual void DidCreatePpapiPlugin(
       content::BrowserPpapiHost* browser_host) OVERRIDE;
-  virtual bool AllowPepperSocketAPI(content::BrowserContext* browser_context,
-                                    const GURL& url) OVERRIDE;
+  virtual bool AllowPepperSocketAPI(
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      const content::SocketPermissionRequest& params) OVERRIDE;
  private:
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.

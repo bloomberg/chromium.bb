@@ -205,8 +205,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual std::string GetDefaultDownloadName() OVERRIDE;
   virtual void DidCreatePpapiPlugin(
       content::BrowserPpapiHost* browser_host) OVERRIDE;
-  virtual bool AllowPepperSocketAPI(content::BrowserContext* browser_context,
-                                    const GURL& url) OVERRIDE;
+  virtual bool AllowPepperSocketAPI(
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      const content::SocketPermissionRequest& params) OVERRIDE;
   virtual bool AllowPepperPrivateFileAPI() OVERRIDE;
   virtual FilePath GetHyphenDictionaryDirectory() OVERRIDE;
 

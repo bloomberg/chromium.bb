@@ -31,13 +31,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using content::SocketPermissionRequest;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::Feature;
 using extensions::PermissionSet;
 using extensions::SocketPermission;
-using extensions::SocketPermissionData;
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
@@ -448,7 +448,7 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
 }
 
 static bool CheckSocketPermission(scoped_refptr<Extension> extension,
-    SocketPermissionData::OperationType type,
+    SocketPermissionRequest::OperationType type,
     const char* host,
     int port) {
   SocketPermission::CheckParam param(type, host, port);
@@ -464,8 +464,8 @@ TEST(ExtensionTest, SocketPermissions) {
   std::string error;
 
   extension = LoadManifest("socket_permissions", "empty.json");
-  EXPECT_FALSE(CheckSocketPermission(
-        extension, SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(CheckSocketPermission(extension,
+      SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80));
 
   extension = LoadManifestUnchecked("socket_permissions",
                                     "socket1.json",
@@ -476,17 +476,19 @@ TEST(ExtensionTest, SocketPermissions) {
         errors::kInvalidPermission, "socket"), error);
 
   extension = LoadManifest("socket_permissions", "socket2.json");
-  EXPECT_TRUE(CheckSocketPermission(
-        extension, SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_TRUE(CheckSocketPermission(extension,
+      SocketPermissionRequest::TCP_CONNECT, "www.example.com", 80));
   EXPECT_FALSE(CheckSocketPermission(
-        extension, SocketPermissionData::UDP_BIND, "", 80));
+        extension, SocketPermissionRequest::UDP_BIND, "", 80));
   EXPECT_TRUE(CheckSocketPermission(
-        extension, SocketPermissionData::UDP_BIND, "", 8888));
+        extension, SocketPermissionRequest::UDP_BIND, "", 8888));
 
   EXPECT_FALSE(CheckSocketPermission(
-        extension, SocketPermissionData::UDP_SEND_TO, "example.com", 1900));
+        extension, SocketPermissionRequest::UDP_SEND_TO, "example.com", 1900));
   EXPECT_TRUE(CheckSocketPermission(
-        extension, SocketPermissionData::UDP_SEND_TO, "239.255.255.250", 1900));
+        extension,
+        SocketPermissionRequest::UDP_SEND_TO,
+        "239.255.255.250", 1900));
 }
 
 // Returns a copy of |source| resized to |size| x |size|.

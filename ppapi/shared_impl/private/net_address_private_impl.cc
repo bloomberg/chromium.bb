@@ -281,19 +281,11 @@ std::string ConvertIPv6AddressToString(const NetAddress* net_addr,
 PP_Var Describe(PP_Module /*module*/,
                 const struct PP_NetAddress_Private* addr,
                 PP_Bool include_port) {
-  const NetAddress* net_addr = ToNetAddress(addr);
-  if (!IsValid(net_addr))
+  std::string str = NetAddressPrivateImpl::DescribeNetAddress(
+      *addr, PP_ToBool(include_port));
+  if (str.empty())
     return PP_MakeUndefined();
-
-  std::string description;
-  if (net_addr->is_ipv6) {
-    description = ConvertIPv6AddressToString(net_addr,
-                                             PP_ToBool(include_port));
-  } else {
-    description = ConvertIPv4AddressToString(net_addr,
-                                             PP_ToBool(include_port));
-  }
-  return StringVar::StringToPPVar(description);
+  return StringVar::StringToPPVar(str);
 }
 
 PP_Bool ReplacePort(const struct PP_NetAddress_Private* src_addr,
@@ -497,5 +489,22 @@ bool NetAddressPrivateImpl::NetAddressToIPEndPoint(
   return true;
 }
 #endif  // !defined(OS_NACL)
+
+// static
+std::string NetAddressPrivateImpl::DescribeNetAddress(
+    const PP_NetAddress_Private& addr,
+    bool include_port) {
+  const NetAddress* net_addr = ToNetAddress(&addr);
+  if (!IsValid(net_addr))
+    return std::string();
+
+  // On Windows, |NetAddressToString()| doesn't work in the sandbox. On Mac,
+  // the output isn't consistent with RFC 5952, at least on Mac OS 10.6:
+  // |getnameinfo()| collapses length-one runs of zeros (and also doesn't
+  // display the scope).
+  if (net_addr->is_ipv6)
+    return ConvertIPv6AddressToString(net_addr, include_port);
+  return ConvertIPv4AddressToString(net_addr, include_port);
+}
 
 }  // namespace ppapi
