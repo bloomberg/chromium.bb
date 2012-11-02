@@ -71,8 +71,8 @@ public:
     //        regress OOMs situations.
     bool requestLate();
 
-    // Uploads pixels into the backing resource. This functions will aquire the backing if needed.
-    void upload(ResourceProvider*, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset);
+    // Update pixels of backing resource from image. This functions will aquire the backing if needed.
+    void setPixels(ResourceProvider*, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset);
 
     ResourceProvider::ResourceId resourceId() const;
 

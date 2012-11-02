@@ -181,7 +181,7 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
 
     if (update.bitmap) {
         update.bitmap->lockPixels();
-        update.texture->upload(
+        update.texture->setPixels(
             m_resourceProvider,
             static_cast<const uint8_t*>(update.bitmap->getPixels()),
             update.content_rect,

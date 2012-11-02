@@ -266,7 +266,7 @@ ResourceProvider::ResourceType ResourceProvider::resourceType(ResourceId id)
     return resource->type;
 }
 
-void ResourceProvider::upload(ResourceId id, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
+void ResourceProvider::setPixels(ResourceId id, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
 {
     DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);

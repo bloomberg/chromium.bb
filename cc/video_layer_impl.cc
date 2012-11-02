@@ -375,7 +375,7 @@ bool VideoLayerImpl::copyPlaneData(ResourceProvider* resourceProvider)
         VideoLayerImpl::FramePlane& plane = m_framePlanes[planeIndex];
         const uint8_t* softwarePlanePixels = m_frame->data(planeIndex);
         gfx::Rect planeRect(gfx::Point(), plane.size);
-        resourceProvider->upload(plane.resourceId, softwarePlanePixels, planeRect, planeRect, gfx::Vector2d());
+        resourceProvider->setPixels(plane.resourceId, softwarePlanePixels, planeRect, planeRect, gfx::Vector2d());
     }
     return true;
 }

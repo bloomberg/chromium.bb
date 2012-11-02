@@ -90,15 +90,15 @@ ResourceProvider::ResourceId PrioritizedTexture::resourceId() const
     return 0;
 }
 
-void PrioritizedTexture::upload(ResourceProvider* resourceProvider,
-                                const uint8_t* image, const gfx::Rect& imageRect,
-                                const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
+void PrioritizedTexture::setPixels(ResourceProvider* resourceProvider,
+                                   const uint8_t* image, const gfx::Rect& imageRect,
+                                   const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
 {
     DCHECK(m_isAbovePriorityCutoff);
     if (m_isAbovePriorityCutoff)
         acquireBackingTexture(resourceProvider);
     DCHECK(m_backing);
-    resourceProvider->upload(resourceId(), image, imageRect, sourceRect, destOffset);
+    resourceProvider->setPixels(resourceId(), image, imageRect, sourceRect, destOffset);
 
     // The component order may be bgra if we uploaded bgra pixels to rgba
     // texture. Mark contents as swizzled if image component order is

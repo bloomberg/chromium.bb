@@ -107,7 +107,7 @@ void HeadsUpDisplayLayerImpl::updateHudTexture(ResourceProvider* resourceProvide
 
     gfx::Rect layerRect(gfx::Point(), bounds());
     DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
-    resourceProvider->upload(m_hudTexture->id(), static_cast<const uint8_t*>(bitmap->getPixels()), layerRect, layerRect, gfx::Vector2d());
+    resourceProvider->setPixels(m_hudTexture->id(), static_cast<const uint8_t*>(bitmap->getPixels()), layerRect, layerRect, gfx::Vector2d());
 }
 
 void HeadsUpDisplayLayerImpl::didDraw(ResourceProvider* resourceProvider)

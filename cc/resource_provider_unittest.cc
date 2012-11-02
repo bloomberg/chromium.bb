@@ -319,7 +319,7 @@ TEST_P(ResourceProviderTest, Basic)
 
     uint8_t data[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
-    m_resourceProvider->upload(id, data, rect, rect, gfx::Vector2d());
+    m_resourceProvider->setPixels(id, data, rect, rect, gfx::Vector2d());
 
     uint8_t result[4] = {0};
     getResourcePixels(id, size, format, result);
@@ -359,7 +359,7 @@ TEST_P(ResourceProviderTest, Upload)
 
     uint8_t image[16] = {0};
     gfx::Rect imageRect(gfx::Point(), size);
-    m_resourceProvider->upload(id, image, imageRect, imageRect, gfx::Vector2d());
+    m_resourceProvider->setPixels(id, image, imageRect, imageRect, gfx::Vector2d());
 
     for (uint8_t i = 0 ; i < pixelSize; ++i)
         image[i] = i;
@@ -368,7 +368,7 @@ TEST_P(ResourceProviderTest, Upload)
     {
         gfx::Rect sourceRect(0, 0, 1, 1);
         gfx::Vector2d destOffset(0, 0);
-        m_resourceProvider->upload(id, image, imageRect, sourceRect, destOffset);
+        m_resourceProvider->setPixels(id, image, imageRect, sourceRect, destOffset);
 
         uint8_t expected[16] = {0, 1, 2, 3,   0, 0, 0, 0,
                                 0, 0, 0, 0,   0, 0, 0, 0};
@@ -378,7 +378,7 @@ TEST_P(ResourceProviderTest, Upload)
     {
         gfx::Rect sourceRect(0, 0, 1, 1);
         gfx::Vector2d destOffset(1, 1);
-        m_resourceProvider->upload(id, image, imageRect, sourceRect, destOffset);
+        m_resourceProvider->setPixels(id, image, imageRect, sourceRect, destOffset);
 
         uint8_t expected[16] = {0, 1, 2, 3,   0, 0, 0, 0,
                                 0, 0, 0, 0,   0, 1, 2, 3};
@@ -388,7 +388,7 @@ TEST_P(ResourceProviderTest, Upload)
     {
         gfx::Rect sourceRect(1, 0, 1, 1);
         gfx::Vector2d destOffset(0, 1);
-        m_resourceProvider->upload(id, image, imageRect, sourceRect, destOffset);
+        m_resourceProvider->setPixels(id, image, imageRect, sourceRect, destOffset);
 
         uint8_t expected[16] = {0, 1, 2, 3,   0, 0, 0, 0,
                                 4, 5, 6, 7,   0, 1, 2, 3};
@@ -399,7 +399,7 @@ TEST_P(ResourceProviderTest, Upload)
         gfx::Rect offsetImageRect(gfx::Point(100, 100), size);
         gfx::Rect sourceRect(100, 100, 1, 1);
         gfx::Vector2d destOffset(1, 0);
-        m_resourceProvider->upload(id, image, offsetImageRect, sourceRect, destOffset);
+        m_resourceProvider->setPixels(id, image, offsetImageRect, sourceRect, destOffset);
 
         uint8_t expected[16] = {0, 1, 2, 3,   0, 1, 2, 3,
                                 4, 5, 6, 7,   0, 1, 2, 3};
@@ -429,11 +429,11 @@ TEST_P(ResourceProviderTest, TransferResources)
     ResourceProvider::ResourceId id1 = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
     uint8_t data1[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
-    childResourceProvider->upload(id1, data1, rect, rect, gfx::Vector2d());
+    childResourceProvider->setPixels(id1, data1, rect, rect, gfx::Vector2d());
 
     ResourceProvider::ResourceId id2 = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
     uint8_t data2[4] = {5, 5, 5, 5};
-    childResourceProvider->upload(id2, data2, rect, rect, gfx::Vector2d());
+    childResourceProvider->setPixels(id2, data2, rect, rect, gfx::Vector2d());
 
     int childPool = 2;
     int childId = m_resourceProvider->createChild(childPool);
@@ -546,7 +546,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
     ResourceProvider::ResourceId id = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
     uint8_t data[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
-    childResourceProvider->upload(id, data, rect, rect, gfx::Vector2d());
+    childResourceProvider->setPixels(id, data, rect, rect, gfx::Vector2d());
 
     int childPool = 2;
     int childId = m_resourceProvider->createChild(childPool);

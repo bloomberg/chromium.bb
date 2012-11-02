@@ -95,8 +95,8 @@ public:
     // Deletes all resources owned by a given pool.
     void deleteOwnedResources(int pool);
 
-    // Upload data from image, copying sourceRect (in image) into destRect (in the resource).
-    void upload(ResourceId, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset);
+    // Update pixels from image, copying sourceRect (in image) into destRect (in the resource).
+    void setPixels(ResourceId, const uint8_t* image, const gfx::Rect& imageRect, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset);
 
     // Check upload status.
     size_t numBlockingUploads();
