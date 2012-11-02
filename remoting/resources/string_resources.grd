@@ -134,115 +134,10 @@
     <file lang="zh-TW" path="string_resources_zh-TW.xtb"/>
   </translations>
   <release allow_pseudo="false" seq="1">
-    <messages fallback_to_english="true" first_id="1000">
-      <if expr="pp_ifdef('_google_chrome')">
-        <message desc="Message shown when the Chrome Remote Desktop client tab is closed while a connection is active." name="IDR_CLOSE_PROMPT">
-          Leaving this page will end your Chrome Remote Desktop session.
-        </message>
-        <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chrome Remote Desktop app before use." name="IDR_DESCRIPTION_AUTHORIZE">
-          To use Chrome Remote Desktop you must grant extended access permissions to your computer. You only have to do this once.
-        </message>
-        <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDR_DESCRIPTION_HOME">
-          Chrome Remote Desktop allows you to securely share your computer over the Web. Both users must be running the Chrome Remote Desktop app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.
-        </message>
-        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDR_ERROR_AUTHENTICATION_FAILED">
-          Authentication failed. Please sign in to Chrome Remote Desktop again.
-        </message>
-        <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDR_ERROR_BAD_PLUGIN_VERSION">
-          Some components required for Chrome Remote Desktop are missing. Please make sure you have installed the latest version and try again.
-        </message>
-        <message desc="Error that is shown on the client side when incompatible Chrome Remote Desktop versions are installed on host and client." name="IDR_ERROR_INCOMPATIBLE_PROTOCOL">
-          An incompatible version of Chrome Remote Desktop was detected. Please make sure that you have the latest version of Chrome and Chrome Remote Desktop on both computers and try again.
-        </message>
-        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chrome Remote Desktop host, and a user in a different domain is trying to use it as a Chrome Remote Desktop host." name="IDR_ERROR_INVALID_HOST_DOMAIN">
-          Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.
-        </message>
-        <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDR_ERROR_NOT_AUTHENTICATED">
-          You are not signed in to Chrome Remote Desktop. Please sign in and try again.
-        </message>
-        <message desc="Error displayed if the client plugin fails to load." name="IDR_ERROR_MISSING_PLUGIN">
-          Some components required for Chrome Remote Desktop are missing. Please make sure you're running the latest version of Chrome and try again.
-        </message>
-        <message desc="Message displayed when the current computer is accepting remote connections." name="IDR_HOME_DAEMON_ACTIVE_MESSAGE">
-          You may securely access this computer using Chrome Remote Desktop.
-        </message>
-        <message desc="Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them." name="IDR_HOME_DAEMON_START_MESSAGE">
-          You must enable remote connections if you want to use Chrome Remote Desktop to access this computer.
-        </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_SUPPORTED">
-          To enable remote connections to a different computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
-        </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_UNSUPPORTED">
-          You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
-        </message>
-        <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDR_HOST_SETUP_CRASH_REPORTING_MESSAGE">
-          Help us improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.
-        </message>
-        <message desc="Message shown when user is asked to manually install the Host components." name="IDR_HOST_SETUP_INSTALL">
-          Chrome is downloading the Chrome Remote Desktop Host installer.  Once the download is complete, please run the installer before continuing.
-        </message>
-        <message desc="Message displayed when the client or host has disconnected." name="IDR_MESSAGE_SESSION_FINISHED">
-          Your Chrome Remote Desktop session has ended.
-        </message>
-        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDR_PRODUCT_NAME">
-          Chrome Remote Desktop
-        </message>
-      </if>
-
-      <if expr="not pp_ifdef('_google_chrome')">
-        <message desc="Message shown when the Chromoting client tab is closed while a connection is active." name="IDR_CLOSE_PROMPT">
-          Leaving this page will end your Chromoting session.
-        </message>
-        <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use." name="IDR_DESCRIPTION_AUTHORIZE">
-          To use Chromoting you must grant extended access permissions to your computer. You only have to do this once.
-        </message>
-        <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDR_DESCRIPTION_HOME">
-          Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.
-        </message>
-        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDR_ERROR_AUTHENTICATION_FAILED">
-          Authentication failed. Please sign in to Chromoting again.
-        </message>
-        <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDR_ERROR_BAD_PLUGIN_VERSION">
-          Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.
-        </message>
-        <message desc="Error that is shown on the client side when incompatible Chromoting versions are installed on host and client." name="IDR_ERROR_INCOMPATIBLE_PROTOCOL">
-          An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chrome and Chromoting on both computers and try again.
-        </message>
-        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, and a user in a different domain is trying to use it as a Chromoting host." name="IDR_ERROR_INVALID_HOST_DOMAIN">
-          Policy settings do not permit sharing this computer as a Chromoting host. Contact your system administrator for assistance.
-        </message>
-        <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDR_ERROR_NOT_AUTHENTICATED">
-          You are not signed in to Chromoting. Please sign in and try again.
-        </message>
-        <message desc="Error displayed if the client plugin fails to load." name="IDR_ERROR_MISSING_PLUGIN">
-          Some components required for Chromoting are missing. Please make sure you're running the latest version of Chrome and try again.
-        </message>
-        <message desc="Message displayed when the current computer is accepting remote connections." name="IDR_HOME_DAEMON_ACTIVE_MESSAGE">
-          You may securely access this computer using Chromoting.
-        </message>
-        <message desc="Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them." name="IDR_HOME_DAEMON_START_MESSAGE">
-          You must enable remote connections if you want to use Chromoting to access this computer.
-        </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_SUPPORTED">
-          To enable remote connections to a different computer, install Chromoting there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
-        </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_UNSUPPORTED">
-          You have no computers registered. To enable remote connections to a computer, install Chromoting there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
-        </message>
-        <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDR_HOST_SETUP_CRASH_REPORTING_MESSAGE">
-          Help us improve Chromoting by allowing us to collect usage statistics and crash reports.
-        </message>
-        <message desc="Message shown when user is asked to manually install the Host components." name="IDR_HOST_SETUP_INSTALL">
-          Chrome is downloading the Chromoting Host installer.  Once the download is complete, please run the installer before continuing.
-        </message>
-        <message desc="Message displayed when the client or host has disconnected." name="IDR_MESSAGE_SESSION_FINISHED">
-          Your Chromoting session has ended.
-        </message>
-        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDR_PRODUCT_NAME">
-          Chromoting
-        </message>
-      </if>
-
+    <messages fallback_to_english="true">
+      <message desc="Product name: Chromoting or Chrome Remote Desktop" name="IDR_REMOTING_PRODUCT_NAME">
+        Chrome Remote Desktop
+      </message>
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDR_ACCESS_CODE">
         Access code
       </message>
@@ -267,7 +162,10 @@
       <message desc="Label for general-purpose Close buttons." name="IDR_CLOSE">
         Close
       </message>
-      <message desc="Label for the connect button. Clicking this button will start the Chrome Remote Desktop session if the access code is correct." name="IDR_CONNECT_BUTTON">
+      <message desc="Message shown when the Chromoting client tab is closed while a connection is active." name="IDR_CLOSE_PROMPT">
+        Leaving this page will end your Chromoting session.
+      </message>
+      <message desc="Label for the connect button. Clicking this button will start the Chromoting session if the access code is correct." name="IDR_CONNECT_BUTTON">
         Connect
       </message>
       <message desc="Confirmation prompt shown when a user attempts to delete a Me2Me host from their host list." name="IDR_CONFIRM_HOST_DELETE">
@@ -291,8 +189,14 @@
       <message desc="Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it." name="IDR_CONTINUE_PROMPT">
         You are currently sharing this machine with another user. Do you want to continue sharing?
       </message>
+      <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use." name="IDR_DESCRIPTION_AUTHORIZE">
+        To use Chromoting you must grant extended access permissions to your computer. You only have to do this once.
+      </message>
       <message desc="Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share Now' quote should be copied verbatim from the corresponding translation." name="IDR_DESCRIPTION_CONNECT">
         Ask the user whose computer you wish to access to click ‘Share Now’ and give you the access code.
+      </message>
+      <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDR_DESCRIPTION_HOME">
+        Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.
       </message>
       <message desc="Label for the 'yes' response to the dialog asking the user to confirm whether or not they want to disable remote access to a host." name="IDR_DISABLE_HOST">
         Disable
@@ -315,17 +219,35 @@
       <message desc="Column header in the connection history table showing the length of time for which a connection was active, if available." name="IDR_DURATION_HEADER">
         Duration
       </message>
+      <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDR_ERROR_AUTHENTICATION_FAILED">
+        Authentication failed. Please sign in to Chromoting again.
+      </message>
+      <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDR_ERROR_BAD_PLUGIN_VERSION">
+        Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.
+      </message>
       <message desc="Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts." name="IDR_ERROR_HOST_OVERLOAD">
         Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with invalid PIN. Please try again later.
       </message>
       <message desc="Error that is shown on the client side when we don't get a response from the host." name="IDR_ERROR_HOST_IS_OFFLINE">
         The remote computer is not responding to connection requests. Please verify that it is online and try again.
       </message>
+      <message desc="Error that is shown on the client side when incompatible Chromoting versions are installed on host and client." name="IDR_ERROR_INCOMPATIBLE_PROTOCOL">
+        An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chromium and Chromoting on both computers and try again.
+      </message>
       <message desc="Error displayed if an invalid access code is entered." name="IDR_ERROR_INVALID_ACCESS_CODE">
         The access code is invalid. Please try again.
       </message>
+      <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, and a user in a different domain is trying to use it as a Chromoting host." name="IDR_ERROR_INVALID_HOST_DOMAIN">
+        Policy settings do not permit sharing this computer as a Chromoting host. Contact your system administrator for assistance.
+      </message>
       <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDR_ERROR_NETWORK_FAILURE">
         Unable to reach the host. This is probably due to the configuration of the network you are using.
+      </message>
+      <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDR_ERROR_NOT_AUTHENTICATED">
+        You are not signed in to Chromoting. Please sign in and try again.
+      </message>
+      <message desc="Error displayed if the client plugin fails to load." name="IDR_ERROR_MISSING_PLUGIN">
+        Some components required for Chromoting are missing. Please make sure you're running the latest version of Chromium and try again.
       </message>
       <message desc="Error displayed by the client if the server does not respond to a network request." name="IDR_ERROR_NO_RESPONSE">
         The server failed to respond to the network request.
@@ -357,6 +279,9 @@
       <message desc="Description of the 'access' or 'client' functionality, displayed next to a button that instigates an access operation." name="IDR_HOME_ACCESS_DESCRIPTION">
         See and control a shared computer.
       </message>
+      <message desc="Message displayed when the current computer is accepting remote connections." name="IDR_HOME_DAEMON_ACTIVE_MESSAGE">
+        You may securely access this computer using Chromoting.
+      </message>
       <message desc="Hyperlink displayed immediately after the message indicating that the current computer is accepting remote connectins. Clicking this link allows the user to change the PIN (personal identification number) for accessing this host." name="IDR_HOME_DAEMON_CHANGE_PIN_LINK">
         Change PIN
       </message>
@@ -366,11 +291,26 @@
       <message desc="Button displayed when the current computer is not accepting remote connections. Clicking this button causes it to start accepting remote connections." name="IDR_HOME_DAEMON_START_BUTTON">
         Enable remote connections
       </message>
+      <message desc="Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them." name="IDR_HOME_DAEMON_START_MESSAGE">
+        You must enable remote connections if you want to use Chromoting to access this computer.
+      </message>
+      <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_SUPPORTED">
+        To enable remote connections to a different computer, install Chromoting there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
+      </message>
+      <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_UNSUPPORTED">
+        You have no computers registered. To enable remote connections to a computer, install Chromoting there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
+      </message>
+      <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDR_HOST_SETUP_CRASH_REPORTING_MESSAGE">
+        Help us improve Chromoting by allowing us to collect usage statistics and crash reports.
+      </message>
       <message desc="Explanatory text displayed when the user enables remote access or changes the PIN." name="IDR_HOST_SETUP_DIALOG_DESCRIPTION">
         To protect access to this computer, please choose a PIN of <ph name="BOLD_START">$1<ex>&lt;b&gt;</ex></ph>at least six digits<ph name="BOLD_END">$2<ex>&lt;/b&gt;</ex></ph>. This PIN will be required when connecting from another location.
       </message>
       <message desc="Message shown when host service fails to start when enabling the host on local computer." name="IDR_HOST_SETUP_HOST_FAILED">
         Failed to start remote access service.
+      </message>
+      <message desc="Message shown when user is asked to manually install the Host components." name="IDR_HOST_SETUP_INSTALL">
+        Chrome is downloading the Chrome Remote Desktop Host installer.  Once the download is complete, please run the installer before continuing.
       </message>
       <message desc="Message shown when user has attempted to continue past the manual install dialog, but the Host components are not yet installed." name="IDR_HOST_SETUP_INSTALL_PENDING">
         Please run the installer before continuing.
@@ -438,6 +378,9 @@
       <message desc="Text shown while generating an access code." name="IDR_MESSAGE_GENERATING">
         Generating access code…
       </message>
+      <message desc="Message displayed when the client or host has disconnected." name="IDR_MESSAGE_SESSION_FINISHED">
+        Your Chromoting session has ended.
+      </message>
       <message desc="Message shown on the host computer while a session is active informing them who is connected." name="IDR_MESSAGE_SHARED">
         Your desktop is currently shared with <ph name="USER">$1<ex>user@domain.com</ex></ph>.
       </message>
@@ -471,8 +414,11 @@
       <message desc="Error message displayed to the user if they enter different PINs in the boxes marked 'PIN' and 'retype PIN'." name="IDR_PINS_NOT_EQUAL">
         Please enter the same PIN in both boxes.
       </message>
-      <message desc="Web-app description. Displayed in Chrome's extensions page." name="IDR_PRODUCT_DESCRIPTION">
+      <message desc="Web-app description. Displayed in Chromium's extensions page." name="IDR_PRODUCT_DESCRIPTION">
         Access other computers or allow another user to access your computer securely over the Internet.
+      </message>
+      <message desc="The product name. Displayed in various Chromium pages, including the New Tab page, and displayed prominently on the app's main page." name="IDR_PRODUCT_NAME">
+        Chromoting
       </message>
       <message desc="Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page." name="IDR_RECONNECT">
         Reconnect
