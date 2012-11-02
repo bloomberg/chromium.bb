@@ -802,6 +802,17 @@ gboolean FindBarGtk::OnKeyPressEvent(GtkWidget* widget, GdkEventKey* event,
                    GDK_SHIFT_MASK;
     find_bar->FindEntryTextInContents(forward);
     return TRUE;
+  } else if (GDK_F3 == event->keyval) {
+    // There is a bug in GTK+ version available with Ubuntu 12.04 which causes
+    // Shift+Fn key combination getting registered as Fn when used with
+    // GTK accelerators. And this broke the search backward functionality with
+    // Shift+F3. This is a workaround to fix the search functionality till we
+    // have the GTK+ fix available. The GTK+ issue is being tracked under
+    // https://bugzilla.gnome.org/show_bug.cgi?id=661973
+    bool forward = (event->state & gtk_accelerator_get_default_mod_mask()) !=
+                   GDK_SHIFT_MASK;
+    find_bar->FindEntryTextInContents(forward);
+    return TRUE;
   }
   return FALSE;
 }
