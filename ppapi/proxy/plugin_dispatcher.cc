@@ -105,9 +105,12 @@ PluginDispatcher* PluginDispatcher::GetForResource(const Resource* resource) {
 
 // static
 const void* PluginDispatcher::GetBrowserInterface(const char* interface_name) {
-  DCHECK(interface_name) << "|interface_name| is null. Did you forget to add "
-      "the |interface_name()| template function to the interface's C++ "
-      "wrapper?";
+  if (!interface_name) {
+    DLOG(WARNING) << "|interface_name| is null. Did you forget to add "
+        "the |interface_name()| template function to the interface's C++ "
+        "wrapper?";
+    return NULL;
+  }
 
   return InterfaceList::GetInstance()->GetInterfaceForPPB(interface_name);
 }
