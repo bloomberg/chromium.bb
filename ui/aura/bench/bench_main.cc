@@ -12,11 +12,11 @@
 #include "base/time.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_display_manager.h"
-#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -304,7 +304,7 @@ int main(int argc, char** argv) {
       aura::DisplayManager::CreateRootWindowForPrimaryDisplay());
   aura::client::SetCaptureClient(
       root_window.get(),
-      new aura::shared::RootWindowCaptureClient(root_window.get()));
+      new aura::client::DefaultCaptureClient(root_window.get()));
 
   scoped_ptr<aura::FocusManager> focus_manager(new aura::FocusManager);
   root_window->set_focus_manager(focus_manager.get());

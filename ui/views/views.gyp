@@ -238,6 +238,11 @@
         'controls/tree/tree_view_views.h',
         'controls/tree/tree_view_win.cc',
         'controls/tree/tree_view_win.h',
+        # TODO(beng): rename to 'corewm/' hence this sort order:
+        '../aura/shared/compound_event_filter.cc',
+        '../aura/shared/compound_event_filter.h',
+        '../aura/shared/input_method_event_filter.cc',
+        '../aura/shared/input_method_event_filter.h',
         'debug_utils.cc',
         'debug_utils.h',
         'drag_controller.h',
@@ -316,8 +321,19 @@
         'widget/child_window_message_processor.h',
         'widget/default_theme_provider.cc',
         'widget/default_theme_provider.h',
-        'widget/desktop_capture_client.cc',
-        'widget/desktop_capture_client.h',
+        # TODO(beng): rename to 'widget/desktop_aura/' hence this sort order:
+        '../aura/desktop/desktop_activation_client.cc',
+        '../aura/desktop/desktop_activation_client.h',
+        '../aura/desktop/desktop_cursor_client.cc',
+        '../aura/desktop/desktop_cursor_client.h',
+        '../aura/desktop/desktop_dispatcher_client.cc',
+        '../aura/desktop/desktop_dispatcher_client.h',
+        '../aura/desktop/desktop_screen.h',
+        '../aura/desktop/desktop_screen_win.cc',
+        '../aura/desktop/desktop_screen_win.h',
+        '../aura/desktop/desktop_screen_x11.cc',
+        '../aura/desktop/desktop_stacking_client.cc',
+        '../aura/desktop/desktop_stacking_client.h',
         'widget/desktop_layout_manager.cc',
         'widget/desktop_layout_manager.h',
         'widget/desktop_native_widget_aura.cc',
@@ -420,13 +436,15 @@
             ['OS=="mac"', {
               'sources/': [
                 ['exclude', 'mouse_watcher.cc'],
-                ['exclude', 'controls/menu/*'],
-                ['exclude', 'controls/scrollbar/*'],
+                ['exclude', 'controls/menu/'],
+                ['exclude', 'controls/scrollbar/'],
                 ['exclude', 'focus/accelerator_handler_aura.cc'],
               ],
             }],
             ['OS=="win"', {
               'sources/': [
+                ['include', '../aura/desktop/desktop_screen_win.cc'],
+                ['include', '../aura/desktop/desktop_screen_win.h'],
                 ['include', 'ime/input_method_win.cc'],
                 ['include', 'ime/input_method_win.h'],
                 ['include', 'widget/desktop_root_window_host_win.cc'],
@@ -437,6 +455,8 @@
         }],
         ['use_aura==0', {
           'sources/': [
+            ['exclude', '../aura/shared/'],
+            ['exclude', '../aura/desktop/'],
             ['exclude', '/desktop_[^/]*\\.cc$'],
             ['exclude', '/x11_[^/]*\\.cc$'],
             ['exclude', 'widget/native_widget_aura_window_observer.cc'],
@@ -448,6 +468,8 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', '/desktop_[^/]*\\.cc$'],
+            ['exclude', 'widget/x11_*'],
+            ['exclude', '../aura/desktop/'],
           ],
         }],
         ['use_aura==0 and OS=="win"', {
@@ -597,6 +619,9 @@
         'controls/textfield/native_textfield_views_unittest.cc',
         'controls/textfield/textfield_views_model_unittest.cc',
         'controls/tree/tree_view_views_unittest.cc',
+        # TODO(beng): rename 'corewm/' hence this sort order
+        '../aura/shared/compound_event_filter_unittest.cc',
+        '../aura/shared/input_method_event_filter_unittest.cc',
         'focus/focus_manager_test.h',
         'focus/focus_manager_test.cc',
         'focus/focus_manager_unittest.cc',
@@ -649,6 +674,7 @@
           ],
         }, {
           'sources/': [
+            ['exclude', '../aura/shared/'],
             ['exclude', '../aura/test/test_desktop_delegate.cc'],
             ['exclude', '../aura/test/test_desktop_delegate.h'],
             ['exclude', 'widget/native_widget_aura_unittest.cc'],

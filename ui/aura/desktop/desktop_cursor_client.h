@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/aura_export.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/views/views_export.h"
 
 namespace ui {
 class CursorLoader;
@@ -19,7 +19,7 @@ class RootWindow;
 
 // A CursorClient that interacts with only one RootWindow. (Unlike the one in
 // ash, which interacts with all the RootWindows.)
-class AURA_EXPORT DesktopCursorClient : public client::CursorClient {
+class VIEWS_EXPORT DesktopCursorClient : public client::CursorClient {
  public:
   explicit DesktopCursorClient(aura::RootWindow* window);
   virtual ~DesktopCursorClient();

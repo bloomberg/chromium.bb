@@ -2,37 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHARED_ROOT_WINDOW_CAPTURE_CLIENT_H_
-#define UI_AURA_SHARED_ROOT_WINDOW_CAPTURE_CLIENT_H_
+#ifndef UI_AURA_CLIENT_DEFAULT_CAPTURE_CLIENT_H_
+#define UI_AURA_CLIENT_DEFAULT_CAPTURE_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/client/capture_client.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/client/capture_client.h"
 
 namespace aura {
-class RootWindow;
+namespace client {
 
-namespace shared {
-
-class AURA_EXPORT RootWindowCaptureClient : public client::CaptureClient {
+class AURA_EXPORT DefaultCaptureClient : public client::CaptureClient {
  public:
-  explicit RootWindowCaptureClient(RootWindow* root_window);
-  virtual ~RootWindowCaptureClient();
+  explicit DefaultCaptureClient(RootWindow* root_window);
+  virtual ~DefaultCaptureClient();
 
+ private:
   // Overridden from client::CaptureClient:
   virtual void SetCapture(Window* window) OVERRIDE;
   virtual void ReleaseCapture(Window* window) OVERRIDE;
   virtual Window* GetCaptureWindow() OVERRIDE;
 
- private:
   RootWindow* root_window_;
   Window* capture_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootWindowCaptureClient);
+  DISALLOW_COPY_AND_ASSIGN(DefaultCaptureClient);
 };
 
-}  // namespace shared
+}  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_SHARED_ROOT_WINDOW_CAPTURE_CLIENT_H_
+#endif  // UI_AURA_CLIENT_DEFAULT_CAPTURE_CLIENT_H_

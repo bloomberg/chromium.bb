@@ -21,7 +21,8 @@ class AURA_EXPORT ActivationChangeObserver {
   virtual void OnWindowActivated(Window* active, Window* old_active) = 0;
 
  protected:
-  virtual ~ActivationChangeObserver() {}
+  ActivationChangeObserver();
+  virtual ~ActivationChangeObserver();
 };
 
 }  // namespace client
