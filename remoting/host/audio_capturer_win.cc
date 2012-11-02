@@ -58,7 +58,6 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   capture_timer_.reset(new base::RepeatingTimer<AudioCapturerWin>());
 
   HRESULT hr = S_OK;
-  com_initializer_.reset(new base::win::ScopedCOMInitializer());
 
   base::win::ScopedComPtr<IMMDeviceEnumerator> mm_device_enumerator;
   hr = mm_device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator));
@@ -206,7 +205,6 @@ void AudioCapturerWin::Stop() {
   audio_client_.Release();
   audio_capture_client_.Release();
   wave_format_ex_.Reset(NULL);
-  com_initializer_.reset();
 
   thread_checker_.DetachFromThread();
 }
