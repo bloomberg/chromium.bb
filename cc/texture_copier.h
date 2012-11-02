@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/program_binding.h"
 #include "cc/shader.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -18,7 +19,7 @@ class WebGraphicsContext3D;
 
 namespace cc {
 
-class TextureCopier {
+class CC_EXPORT TextureCopier {
 public:
     struct Parameters {
         unsigned sourceTexture;
@@ -34,7 +35,7 @@ public:
     virtual ~TextureCopier() { }
 };
 
-class AcceleratedTextureCopier : public TextureCopier {
+class CC_EXPORT AcceleratedTextureCopier : public TextureCopier {
 public:
     static scoped_ptr<AcceleratedTextureCopier> create(WebKit::WebGraphicsContext3D* context, bool usingBindUniforms)
     {

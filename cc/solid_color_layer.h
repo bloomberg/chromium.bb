@@ -6,13 +6,14 @@
 #ifndef SolidColorLayerChromium_h
 #define SolidColorLayerChromium_h
 
+#include "cc/cc_export.h"
 #include "cc/layer.h"
 
 namespace cc {
 
 // A Layer that renders a solid color. The color is specified by using
 // setBackgroundColor() on the base class.
-class SolidColorLayer : public Layer {
+class CC_EXPORT SolidColorLayer : public Layer {
 public:
     static scoped_refptr<SolidColorLayer> create();
 

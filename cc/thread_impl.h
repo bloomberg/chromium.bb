@@ -8,12 +8,13 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "cc/cc_export.h"
 #include "cc/thread.h"
 
 namespace cc {
 
 // Implements cc::Thread in terms of base::MessageLoopProxy.
-class ThreadImpl : public Thread {
+class CC_EXPORT ThreadImpl : public Thread {
 public:
     // Creates a ThreadImpl wrapping the current thread.
     static scoped_ptr<cc::Thread> createForCurrentThread();

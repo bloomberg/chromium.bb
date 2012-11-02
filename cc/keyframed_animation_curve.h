@@ -6,13 +6,14 @@
 #define CCKeyframedAnimationCurve_h
 
 #include "cc/animation_curve.h"
+#include "cc/cc_export.h"
 #include "cc/scoped_ptr_vector.h"
 #include "cc/timing_function.h"
 #include <public/WebTransformOperations.h>
 
 namespace cc {
 
-class Keyframe {
+class CC_EXPORT Keyframe {
 public:
     double time() const;
     const TimingFunction* timingFunction() const;
@@ -24,9 +25,11 @@ protected:
 private:
     double m_time;
     scoped_ptr<TimingFunction> m_timingFunction;
+
+    DISALLOW_COPY_AND_ASSIGN(Keyframe);
 };
 
-class FloatKeyframe : public Keyframe {
+class CC_EXPORT FloatKeyframe : public Keyframe {
 public:
     static scoped_ptr<FloatKeyframe> create(double time, float value, scoped_ptr<TimingFunction>);
     virtual ~FloatKeyframe();
@@ -41,7 +44,7 @@ private:
     float m_value;
 };
 
-class TransformKeyframe : public Keyframe {
+class CC_EXPORT TransformKeyframe : public Keyframe {
 public:
     static scoped_ptr<TransformKeyframe> create(double time, const WebKit::WebTransformOperations& value, scoped_ptr<TimingFunction>);
     virtual ~TransformKeyframe();
@@ -56,7 +59,7 @@ private:
     WebKit::WebTransformOperations m_value;
 };
 
-class KeyframedFloatAnimationCurve : public FloatAnimationCurve {
+class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
 public:
     // It is required that the keyframes be sorted by time.
     static scoped_ptr<KeyframedFloatAnimationCurve> create();
@@ -78,9 +81,11 @@ private:
     // Always sorted in order of increasing time. No two keyframes have the
     // same time.
     ScopedPtrVector<FloatKeyframe> m_keyframes;
+
+    DISALLOW_COPY_AND_ASSIGN(KeyframedFloatAnimationCurve);
 };
 
-class KeyframedTransformAnimationCurve : public TransformAnimationCurve {
+class CC_EXPORT KeyframedTransformAnimationCurve : public TransformAnimationCurve {
 public:
     // It is required that the keyframes be sorted by time.
     static scoped_ptr<KeyframedTransformAnimationCurve> create();
@@ -102,6 +107,8 @@ private:
     // Always sorted in order of increasing time. No two keyframes have the
     // same time.
     ScopedPtrVector<TransformKeyframe> m_keyframes;
+
+    DISALLOW_COPY_AND_ASSIGN(KeyframedTransformAnimationCurve);
 };
 
 }  // namespace cc

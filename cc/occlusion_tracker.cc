@@ -30,6 +30,11 @@ OcclusionTrackerBase<LayerType, RenderSurfaceType>::OcclusionTrackerBase(gfx::Re
 }
 
 template<typename LayerType, typename RenderSurfaceType>
+OcclusionTrackerBase<LayerType, RenderSurfaceType>::~OcclusionTrackerBase()
+{
+}
+
+template<typename LayerType, typename RenderSurfaceType>
 void OcclusionTrackerBase<LayerType, RenderSurfaceType>::enterLayer(const LayerIteratorPosition<LayerType>& layerIterator)
 {
     LayerType* renderTarget = layerIterator.targetRenderSurfaceLayer;
@@ -459,30 +464,8 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::layerClipRectInTar
     return layer->drawableContentRect();
 }
 
-// Declare the possible functions here for the linker.
-template OcclusionTrackerBase<Layer, RenderSurface>::OcclusionTrackerBase(gfx::Rect rootTargetRect, bool recordMetricsForFrame);
-template void OcclusionTrackerBase<Layer, RenderSurface>::enterLayer(const LayerIteratorPosition<Layer>&);
-template void OcclusionTrackerBase<Layer, RenderSurface>::leaveLayer(const LayerIteratorPosition<Layer>&);
-template void OcclusionTrackerBase<Layer, RenderSurface>::enterRenderTarget(const Layer* newTarget);
-template void OcclusionTrackerBase<Layer, RenderSurface>::finishedRenderTarget(const Layer* finishedTarget);
-template void OcclusionTrackerBase<Layer, RenderSurface>::leaveToRenderTarget(const Layer* newTarget);
-template void OcclusionTrackerBase<Layer, RenderSurface>::markOccludedBehindLayer(const Layer*);
-template bool OcclusionTrackerBase<Layer, RenderSurface>::occluded(const Layer*, const gfx::Rect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const;
-template gfx::Rect OcclusionTrackerBase<Layer, RenderSurface>::unoccludedContentRect(const Layer*, const gfx::Rect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const;
-template gfx::Rect OcclusionTrackerBase<Layer, RenderSurface>::unoccludedContributingSurfaceContentRect(const Layer*, bool forReplica, const gfx::Rect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const;
-template gfx::Rect OcclusionTrackerBase<Layer, RenderSurface>::layerClipRectInTarget(const Layer*) const;
-
-template OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::OcclusionTrackerBase(gfx::Rect rootTargetRect, bool recordMetricsForFrame);
-template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::enterLayer(const LayerIteratorPosition<LayerImpl>&);
-template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::leaveLayer(const LayerIteratorPosition<LayerImpl>&);
-template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::enterRenderTarget(const LayerImpl* newTarget);
-template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::finishedRenderTarget(const LayerImpl* finishedTarget);
-template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::leaveToRenderTarget(const LayerImpl* newTarget);
-template void OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::markOccludedBehindLayer(const LayerImpl*);
-template bool OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::occluded(const LayerImpl*, const gfx::Rect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const;
-template gfx::Rect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::unoccludedContentRect(const LayerImpl*, const gfx::Rect& contentRect, const WebKit::WebTransformationMatrix& drawTransform, bool implDrawTransformIsUnknown, const gfx::Rect& clippedRectInTarget, bool* hasOcclusionFromOutsideTargetSurface) const;
-template gfx::Rect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::unoccludedContributingSurfaceContentRect(const LayerImpl*, bool forReplica, const gfx::Rect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const;
-template gfx::Rect OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>::layerClipRectInTarget(const LayerImpl*) const;
-
+// Instantiate (and export) templates here for the linker.
+template class CC_EXPORT OcclusionTrackerBase<Layer, RenderSurface>;
+template class CC_EXPORT OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>;
 
 }  // namespace cc

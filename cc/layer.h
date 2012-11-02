@@ -7,6 +7,7 @@
 
 #include "Region.h"
 #include "base/memory/ref_counted.h"
+#include "cc/cc_export.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/render_surface.h"
@@ -40,7 +41,7 @@ struct RenderingStats;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
-class Layer : public base::RefCounted<Layer>, public LayerAnimationControllerClient {
+class CC_EXPORT Layer : public base::RefCounted<Layer>, public LayerAnimationControllerClient {
 public:
     typedef std::vector<scoped_refptr<Layer> > LayerList;
 

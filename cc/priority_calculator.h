@@ -5,13 +5,15 @@
 #ifndef CCPriorityCalculator_h
 #define CCPriorityCalculator_h
 
+#include "cc/cc_export.h"
+
 namespace gfx {
 class Rect;
 }
 
 namespace cc {
 
-class PriorityCalculator {
+class CC_EXPORT PriorityCalculator {
 public:
     static int uiPriority(bool drawsToRootSurface);
     static int visiblePriority(bool drawsToRootSurface);

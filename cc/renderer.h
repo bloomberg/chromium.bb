@@ -6,6 +6,7 @@
 #define CCRenderer_h
 
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 #include "cc/layer_tree_host.h"
 #include "cc/managed_memory_policy.h"
 #include "cc/render_pass.h"
@@ -14,7 +15,7 @@ namespace cc {
 
 class ScopedTexture;
 
-class RendererClient {
+class CC_EXPORT RendererClient {
 public:
     virtual const gfx::Size& deviceViewportSize() const = 0;
     virtual const LayerTreeSettings& settings() const = 0;
@@ -27,7 +28,7 @@ protected:
     virtual ~RendererClient() { }
 };
 
-class Renderer {
+class CC_EXPORT Renderer {
 public:
     // This enum defines the various resource pools for the ResourceProvider
     // where textures get allocated.

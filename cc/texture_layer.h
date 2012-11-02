@@ -5,6 +5,7 @@
 #ifndef TextureLayerChromium_h
 #define TextureLayerChromium_h
 
+#include "cc/cc_export.h"
 #include "cc/layer.h"
 
 namespace WebKit {
@@ -16,7 +17,7 @@ namespace cc {
 class TextureLayerClient;
 
 // A Layer containing a the rendered output of a plugin instance.
-class TextureLayer : public Layer {
+class CC_EXPORT TextureLayer : public Layer {
 public:
     // If this texture layer requires special preparation logic for each frame driven by
     // the compositor, pass in a non-nil client. Pass in a nil client pointer if texture updates

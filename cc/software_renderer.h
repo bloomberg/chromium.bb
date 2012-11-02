@@ -6,6 +6,7 @@
 #define CCRendererSoftware_h
 
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 #include "cc/direct_renderer.h"
 
 namespace WebKit {
@@ -22,7 +23,7 @@ class TextureDrawQuad;
 class TileDrawQuad;
 class RenderPassDrawQuad;
 
-class SoftwareRenderer : public DirectRenderer {
+class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 public:
     static scoped_ptr<SoftwareRenderer> create(RendererClient*, ResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
     virtual ~SoftwareRenderer();

@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
+#include "cc/cc_export.h"
 
 namespace gfx {
 class Point;
@@ -25,7 +26,7 @@ class IntSize;
 //
 // The InputHandler is constructed with a InputHandlerClient, which is the
 // interface by which the handler can manipulate the LayerTree.
-class InputHandlerClient {
+class CC_EXPORT InputHandlerClient {
 public:
     enum ScrollStatus { ScrollOnMainThread, ScrollStarted, ScrollIgnored };
     enum ScrollInputType { Gesture, Wheel };
@@ -71,7 +72,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(InputHandlerClient);
 };
 
-class InputHandler {
+class CC_EXPORT InputHandler {
 public:
     virtual ~InputHandler() { }
 

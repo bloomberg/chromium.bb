@@ -6,6 +6,7 @@
 #define CCSolidColorDrawQuad_h
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/draw_quad.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -13,7 +14,7 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class SolidColorDrawQuad : public DrawQuad {
+class CC_EXPORT SolidColorDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<SolidColorDrawQuad> create(const SharedQuadState*, const gfx::Rect&, SkColor);
 

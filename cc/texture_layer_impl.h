@@ -5,11 +5,12 @@
 #ifndef CCTextureLayerImpl_h
 #define CCTextureLayerImpl_h
 
+#include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 
 namespace cc {
 
-class TextureLayerImpl : public LayerImpl {
+class CC_EXPORT TextureLayerImpl : public LayerImpl {
 public:
     static scoped_ptr<TextureLayerImpl> create(int id)
     {

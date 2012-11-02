@@ -12,12 +12,13 @@
 #include "ui/gfx/rect_f.h"
 #include <public/WebTransformationMatrix.h>
 #include <vector>
+#include "cc/cc_export.h"
 
 namespace cc {
 
 class Layer;
 
-class RenderSurface {
+class CC_EXPORT RenderSurface {
 public:
     explicit RenderSurface(Layer*);
     ~RenderSurface();

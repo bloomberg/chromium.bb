@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/animation_events.h"
+#include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/layer_sorter.h"
 #include "cc/render_pass.h"
@@ -100,9 +101,9 @@ private:
 };
 
 // LayerTreeHostImpl owns the LayerImpl tree as well as associated rendering state
-class LayerTreeHostImpl : public InputHandlerClient,
-                            public RendererClient,
-                            public WebKit::WebCompositorOutputSurfaceClient {
+class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
+                                    public RendererClient,
+                                    public NON_EXPORTED_BASE(WebKit::WebCompositorOutputSurfaceClient) {
     typedef std::vector<LayerImpl*> LayerList;
 
 public:
@@ -119,7 +120,7 @@ public:
     virtual void startPageScaleAnimation(const IntSize& targetPosition, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
 
-    struct FrameData : public RenderPassSink {
+    struct CC_EXPORT FrameData : public RenderPassSink {
         FrameData();
         ~FrameData();
 
@@ -233,7 +234,7 @@ public:
     DebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
 
-    class CullRenderPassesWithCachedTextures {
+    class CC_EXPORT CullRenderPassesWithCachedTextures {
     public:
         bool shouldRemoveRenderPass(const RenderPassDrawQuad&, const FrameData&) const;
 
@@ -249,7 +250,7 @@ public:
         Renderer& m_renderer;
     };
 
-    class CullRenderPassesWithNoQuads {
+    class CC_EXPORT CullRenderPassesWithNoQuads {
     public:
         bool shouldRemoveRenderPass(const RenderPassDrawQuad&, const FrameData&) const;
 

@@ -5,6 +5,7 @@
 #ifndef CCTiledLayerImpl_h
 #define CCTiledLayerImpl_h
 
+#include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include <public/WebTransformationMatrix.h>
 
@@ -13,7 +14,7 @@ namespace cc {
 class LayerTilingData;
 class DrawableTile;
 
-class TiledLayerImpl : public LayerImpl {
+class CC_EXPORT TiledLayerImpl : public LayerImpl {
 public:
     static scoped_ptr<TiledLayerImpl> create(int id)
     {

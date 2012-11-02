@@ -5,11 +5,11 @@
 #ifndef CCLayerAnimationController_h
 #define CCLayerAnimationController_h
 
-#include "cc/animation_events.h"
-
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/animation_events.h"
+#include "cc/cc_export.h"
 #include "cc/scoped_ptr_vector.h"
 
 namespace WebKit {
@@ -21,7 +21,7 @@ namespace cc {
 class Animation;
 class KeyframeValueList;
 
-class LayerAnimationControllerClient {
+class CC_EXPORT LayerAnimationControllerClient {
 public:
     virtual ~LayerAnimationControllerClient() { }
 
@@ -32,7 +32,7 @@ public:
     virtual const WebKit::WebTransformationMatrix& transform() const = 0;
 };
 
-class LayerAnimationController {
+class CC_EXPORT LayerAnimationController {
 public:
     static scoped_ptr<LayerAnimationController> create(LayerAnimationControllerClient*);
 

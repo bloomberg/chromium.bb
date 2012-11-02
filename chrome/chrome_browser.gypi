@@ -33,6 +33,7 @@
         'sync_file_system_proto',
         'variations_seed_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../cc/cc.gyp:cc',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',

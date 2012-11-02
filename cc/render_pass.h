@@ -6,6 +6,7 @@
 #define CCRenderPass_h
 
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 #include "cc/draw_quad.h"
 #include "cc/hash_pair.h"
 #include "cc/scoped_ptr_hash_map.h"
@@ -44,7 +45,7 @@ public:
 
 typedef ScopedPtrVector<SharedQuadState> SharedQuadStateList;
 
-class RenderPass {
+class CC_EXPORT RenderPass {
 public:
     ~RenderPass();
 

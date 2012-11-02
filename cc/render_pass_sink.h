@@ -6,12 +6,13 @@
 #define CCRenderPassSink_h
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 
 class RenderPass;
 
-class RenderPassSink {
+class CC_EXPORT RenderPassSink {
 public:
     virtual void appendRenderPass(scoped_ptr<RenderPass>) = 0;
 };

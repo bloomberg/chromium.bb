@@ -7,12 +7,13 @@
 
 #include "base/callback.h"
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 
 // Thread provides basic infrastructure for messaging with the compositor in a
 // platform-neutral way.
-class Thread {
+class CC_EXPORT Thread {
 public:
     virtual ~Thread() { }
 

@@ -7,6 +7,7 @@
 
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
+#include "cc/cc_export.h"
 
 class SkBitmap;
 class SkPicture;
@@ -15,7 +16,7 @@ namespace cc {
 
 class PrioritizedTexture;
 
-struct ResourceUpdate {
+struct CC_EXPORT ResourceUpdate {
     static ResourceUpdate Create(PrioritizedTexture*,
                                  const SkBitmap*,
                                  gfx::Rect content_rect,

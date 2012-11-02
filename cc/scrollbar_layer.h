@@ -7,6 +7,7 @@
 #define ScrollbarLayerChromium_h
 
 #include "cc/caching_bitmap_content_layer_updater.h"
+#include "cc/cc_export.h"
 #include "cc/contents_scaling_layer.h"
 #include <public/WebScrollbar.h>
 #include <public/WebScrollbarThemeGeometry.h>
@@ -18,7 +19,7 @@ class ResourceUpdateQueue;
 class Scrollbar;
 class ScrollbarThemeComposite;
 
-class ScrollbarLayer : public ContentsScalingLayer {
+class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
 public:
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
 

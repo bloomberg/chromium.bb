@@ -231,7 +231,7 @@
   'targets': [
     {
       'target_name': 'cc',
-      'type': 'static_library',
+      'type': '<(component)',
       'includes': [
         'cc.gypi',
       ],
@@ -245,10 +245,10 @@
         '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
         '<(webkit_src_dir)/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore_platform_geometry',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'defines': [
-        # http://crbug.com/154052
-        'WEBKIT_GLUE_IMPLEMENTATION=1',
+        'CC_IMPLEMENTATION=1',
       ],
       'include_dirs': [
         '<(webkit_src_dir)/Source/Platform/chromium',

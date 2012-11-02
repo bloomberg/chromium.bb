@@ -7,13 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/draw_quad.h"
 #include "cc/render_pass.h"
 #include "cc/resource_provider.h"
 
 namespace cc {
 
-class RenderPassDrawQuad : public DrawQuad {
+class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<RenderPassDrawQuad> create(const SharedQuadState*, const gfx::Rect&, RenderPass::Id renderPassId, bool isReplica, ResourceProvider::ResourceId maskResourceId, const gfx::Rect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
 

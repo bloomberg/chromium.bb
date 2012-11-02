@@ -6,6 +6,7 @@
 #define CCTileDrawQuad_h
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/draw_quad.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/point.h"
@@ -15,7 +16,7 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class TileDrawQuad : public DrawQuad {
+class CC_EXPORT TileDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<TileDrawQuad> create(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Vector2d& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 

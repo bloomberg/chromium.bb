@@ -128,22 +128,22 @@ typedef std::vector<scoped_refptr<Layer> > LayerList;
 typedef std::vector<LayerImpl*> LayerImplList;
 
 // Declare each of the above functions for Layer and LayerImpl classes so that they are linked.
-template void LayerIteratorActions::BackToFront::begin(LayerIterator<Layer, LayerList, RenderSurface, BackToFront> &);
-template void LayerIteratorActions::BackToFront::end(LayerIterator<Layer, LayerList, RenderSurface, BackToFront>&);
-template void LayerIteratorActions::BackToFront::next(LayerIterator<Layer, LayerList, RenderSurface, BackToFront>&);
+template CC_EXPORT void LayerIteratorActions::BackToFront::begin(LayerIterator<Layer, LayerList, RenderSurface, BackToFront> &);
+template CC_EXPORT void LayerIteratorActions::BackToFront::end(LayerIterator<Layer, LayerList, RenderSurface, BackToFront>&);
+template CC_EXPORT void LayerIteratorActions::BackToFront::next(LayerIterator<Layer, LayerList, RenderSurface, BackToFront>&);
 
-template void LayerIteratorActions::BackToFront::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
-template void LayerIteratorActions::BackToFront::end(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
-template void LayerIteratorActions::BackToFront::next(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
+template CC_EXPORT void LayerIteratorActions::BackToFront::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
+template CC_EXPORT void LayerIteratorActions::BackToFront::end(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
+template CC_EXPORT void LayerIteratorActions::BackToFront::next(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
 
-template void LayerIteratorActions::FrontToBack::next(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
-template void LayerIteratorActions::FrontToBack::end(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
-template void LayerIteratorActions::FrontToBack::begin(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
-template void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::next(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::end(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::begin(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
 
-template void LayerIteratorActions::FrontToBack::next(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
-template void LayerIteratorActions::FrontToBack::end(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
-template void LayerIteratorActions::FrontToBack::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
-template void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::next(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::end(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
+template CC_EXPORT void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
 
 } // namespace cc

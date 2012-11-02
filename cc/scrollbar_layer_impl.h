@@ -5,6 +5,7 @@
 #ifndef CCScrollbarLayerImpl_h
 #define CCScrollbarLayerImpl_h
 
+#include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include "cc/scrollbar_geometry_fixed_thumb.h"
 #include <public/WebRect.h>
@@ -15,7 +16,7 @@ namespace cc {
 
 class ScrollView;
 
-class ScrollbarLayerImpl : public LayerImpl {
+class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
 public:
     static scoped_ptr<ScrollbarLayerImpl> create(int id);
     virtual ~ScrollbarLayerImpl();

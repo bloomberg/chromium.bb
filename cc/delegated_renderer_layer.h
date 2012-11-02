@@ -5,11 +5,12 @@
 #ifndef DelegatedRendererLayerChromium_h
 #define DelegatedRendererLayerChromium_h
 
+#include "cc/cc_export.h"
 #include "cc/layer.h"
 
 namespace cc {
 
-class DelegatedRendererLayer : public Layer {
+class CC_EXPORT DelegatedRendererLayer : public Layer {
 public:
     static scoped_refptr<DelegatedRendererLayer> create();
 

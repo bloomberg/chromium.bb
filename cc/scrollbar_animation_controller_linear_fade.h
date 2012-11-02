@@ -5,11 +5,12 @@
 #ifndef CCScrollbarAnimationControllerLinearFade_h
 #define CCScrollbarAnimationControllerLinearFade_h
 
+#include "cc/cc_export.h"
 #include "cc/scrollbar_animation_controller.h"
 
 namespace cc {
 
-class ScrollbarAnimationControllerLinearFade : public ScrollbarAnimationController {
+class CC_EXPORT ScrollbarAnimationControllerLinearFade : public ScrollbarAnimationController {
 public:
     static scoped_ptr<ScrollbarAnimationControllerLinearFade> create(LayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength);
 

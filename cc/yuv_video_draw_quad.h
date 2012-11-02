@@ -7,12 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/draw_quad.h"
 #include "cc/video_layer_impl.h"
 
 namespace cc {
 
-class YUVVideoDrawQuad : public DrawQuad {
+class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<YUVVideoDrawQuad> create(const SharedQuadState*, const gfx::Rect&, const VideoLayerImpl::FramePlane& yPlane, const VideoLayerImpl::FramePlane& uPlane, const VideoLayerImpl::FramePlane& vPlane);
 

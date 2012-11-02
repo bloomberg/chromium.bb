@@ -6,6 +6,7 @@
 #define CCScrollbarGeometryStub_h
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include <public/WebScrollbarThemeGeometry.h>
 
 namespace cc {
@@ -13,7 +14,7 @@ namespace cc {
 // This subclass wraps an existing scrollbar geometry class so that
 // another class can derive from it and override specific functions, while
 // passing through the remaining ones.
-class ScrollbarGeometryStub : public WebKit::WebScrollbarThemeGeometry {
+class CC_EXPORT ScrollbarGeometryStub : public NON_EXPORTED_BASE(WebKit::WebScrollbarThemeGeometry) {
 public:
     virtual ~ScrollbarGeometryStub();
 
@@ -44,6 +45,8 @@ protected:
 
 private:
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;
+
+    DISALLOW_COPY_AND_ASSIGN(ScrollbarGeometryStub);
 };
 
 }

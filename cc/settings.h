@@ -6,6 +6,7 @@
 #define CCSettings_h
 
 #include "webkit/glue/webkit_glue_export.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 
@@ -13,7 +14,7 @@ namespace cc {
 // LayerTreeSettings if a ui and renderer compositor might not want the same
 // setting.
 
-class Settings {
+class CC_EXPORT Settings {
 public:
     static bool perTilePaintingEnabled();
     static bool partialSwapEnabled();

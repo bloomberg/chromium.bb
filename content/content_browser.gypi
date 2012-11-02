@@ -915,6 +915,7 @@
     }, {  # OS!="ios"
       'dependencies': [
         'browser/debugger/devtools_resources.gyp:devtools_resources',
+        '../cc/cc.gyp:cc',
         '../net/net.gyp:http_server',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',
         '../printing/printing.gyp:printing',

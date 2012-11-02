@@ -5,12 +5,13 @@
 #ifndef CCIOSurfaceLayerImpl_h
 #define CCIOSurfaceLayerImpl_h
 
+#include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
 
-class IOSurfaceLayerImpl : public LayerImpl {
+class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
 public:
     static scoped_ptr<IOSurfaceLayerImpl> create(int id)
     {

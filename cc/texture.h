@@ -5,13 +5,14 @@
 #ifndef CCTexture_h
 #define CCTexture_h
 
+#include "cc/cc_export.h"
 #include "cc/resource_provider.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
 
-class Texture {
+class CC_EXPORT Texture {
 public:
     Texture() : m_id(0) { }
     Texture(unsigned id, gfx::Size size, GLenum format)

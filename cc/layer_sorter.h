@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/quad_f.h"
@@ -38,7 +39,7 @@ namespace cc {
 struct GraphEdge;
 
 // Holds various useful properties derived from a layer's 3D outline.
-struct LayerShape {
+struct CC_EXPORT LayerShape {
     LayerShape();
     LayerShape(float width, float height, const WebKit::WebTransformationMatrix& drawTransform);
     ~LayerShape();
@@ -77,7 +78,7 @@ struct GraphEdge {
 
 
 
-class LayerSorter {
+class CC_EXPORT LayerSorter {
 public:
     LayerSorter();
     ~LayerSorter();

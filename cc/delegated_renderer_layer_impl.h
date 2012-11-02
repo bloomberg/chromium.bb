@@ -5,12 +5,13 @@
 #ifndef CCDelegatedRendererLayerImpl_h
 #define CCDelegatedRendererLayerImpl_h
 
+#include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include "cc/scoped_ptr_vector.h"
 
 namespace cc {
 
-class DelegatedRendererLayerImpl : public LayerImpl {
+class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 public:
     static scoped_ptr<DelegatedRendererLayerImpl> create(int id) { return make_scoped_ptr(new DelegatedRendererLayerImpl(id)); }
     virtual ~DelegatedRendererLayerImpl();

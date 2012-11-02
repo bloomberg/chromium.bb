@@ -91,6 +91,8 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+        '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore_platform_geometry',
+        '../ui/ui.gyp:ui',
         'cc.gyp:cc',
         'cc_test_support',
       ],

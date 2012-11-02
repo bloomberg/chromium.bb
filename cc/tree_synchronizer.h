@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/scoped_ptr_hash_map.h"
 
 namespace cc {
@@ -15,7 +16,7 @@ class LayerImpl;
 class LayerTreeHostImpl;
 class Layer;
 
-class TreeSynchronizer {
+class CC_EXPORT TreeSynchronizer {
 public:
     // Accepts a Layer tree and returns a reference to a LayerImpl tree that duplicates the structure
     // of the Layer tree, reusing the LayerImpls in the tree provided by oldLayerImplRoot if possible.

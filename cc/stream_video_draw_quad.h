@@ -6,6 +6,7 @@
 #define CCStreamVideoDrawQuad_h
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/draw_quad.h"
 #include <public/WebTransformationMatrix.h>
 
@@ -13,7 +14,7 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class StreamVideoDrawQuad : public DrawQuad {
+class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<StreamVideoDrawQuad> create(const SharedQuadState*, const gfx::Rect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
 

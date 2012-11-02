@@ -6,10 +6,11 @@
 #define managed_memory_policy_h
 
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 
-struct ManagedMemoryPolicy {
+struct CC_EXPORT ManagedMemoryPolicy {
     ManagedMemoryPolicy(size_t bytesLimitWhenVisible);
     ManagedMemoryPolicy(size_t bytesLimitWhenVisible,
                         int priorityCutoffWhenVisible,

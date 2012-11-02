@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 
@@ -21,7 +22,7 @@ namespace cc {
 //
 // The scheduler seperates "what to do next" from the updating of its internal state to
 // make testing cleaner.
-class SchedulerStateMachine {
+class CC_EXPORT SchedulerStateMachine {
 public:
     SchedulerStateMachine();
 

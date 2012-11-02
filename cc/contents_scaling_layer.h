@@ -5,13 +5,14 @@
 #ifndef CC_CONTENTS_SCALING_LAYER_H
 #define CC_CONTENTS_SCALING_LAYER_H
 
+#include "cc/cc_export.h"
 #include "cc/layer.h"
 
 namespace cc {
 
 // Base class for layers that need contents scale.
 // The content bounds are determined by bounds and scale of the contents.
-class ContentsScalingLayer : public Layer {
+class CC_EXPORT ContentsScalingLayer : public Layer {
  public:
   virtual gfx::Size contentBounds() const OVERRIDE;
   virtual float contentsScaleX() const OVERRIDE;

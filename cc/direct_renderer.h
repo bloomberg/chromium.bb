@@ -6,6 +6,7 @@
 #define CCDirectRenderer_h
 
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 #include "cc/renderer.h"
 #include "cc/resource_provider.h"
 #include "cc/scoped_texture.h"
@@ -17,7 +18,7 @@ class ResourceProvider;
 // This is the base class for code shared between the GL and software
 // renderer implementations.  "Direct" refers to the fact that it does not
 // delegate rendering to another compositor.
-class DirectRenderer : public Renderer {
+class CC_EXPORT DirectRenderer : public Renderer {
 public:
     virtual ~DirectRenderer();
 

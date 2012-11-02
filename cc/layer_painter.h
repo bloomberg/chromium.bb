@@ -6,6 +6,8 @@
 #ifndef LayerPainterChromium_h
 #define LayerPainterChromium_h
 
+#include "cc/cc_export.h"
+
 class SkCanvas;
 
 namespace gfx {
@@ -15,7 +17,7 @@ class RectF;
 
 namespace cc {
 
-class LayerPainter {
+class CC_EXPORT LayerPainter {
 public:
     virtual ~LayerPainter() { }
     virtual void paint(SkCanvas*, const gfx::Rect& contentRect, gfx::RectF& opaque) = 0;

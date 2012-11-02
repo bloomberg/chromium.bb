@@ -6,6 +6,7 @@
 #ifndef CCLayerQuad_h
 #define CCLayerQuad_h
 
+#include "cc/cc_export.h"
 #include "ui/gfx/point_f.h"
 
 namespace gfx {
@@ -16,7 +17,7 @@ static const float kAntiAliasingInflateDistance = 0.5f;
 
 namespace cc {
 
-class LayerQuad {
+class CC_EXPORT LayerQuad {
 public:
     class Edge {
     public:

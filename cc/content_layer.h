@@ -6,6 +6,7 @@
 #define ContentLayerChromium_h
 
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 #include "cc/layer_painter.h"
 #include "cc/tiled_layer.h"
 
@@ -16,7 +17,7 @@ namespace cc {
 class ContentLayerClient;
 class LayerUpdater;
 
-class ContentLayerPainter : public LayerPainter {
+class CC_EXPORT ContentLayerPainter : public LayerPainter {
 public:
     static scoped_ptr<ContentLayerPainter> create(ContentLayerClient*);
 
@@ -31,7 +32,7 @@ private:
 };
 
 // A layer that renders its contents into an SkCanvas.
-class ContentLayer : public TiledLayer {
+class CC_EXPORT ContentLayer : public TiledLayer {
 public:
     static scoped_refptr<ContentLayer> create(ContentLayerClient*);
 

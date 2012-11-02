@@ -5,10 +5,12 @@
 #ifndef CC_TEXTURE_UPLOADER_H_
 #define CC_TEXTURE_UPLOADER_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/scoped_ptr_deque.h"
-#include <set>
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace WebKit {
@@ -23,7 +25,7 @@ class Vector2d;
 
 namespace cc {
 
-class TextureUploader {
+class CC_EXPORT TextureUploader {
 public:
     static scoped_ptr<TextureUploader> create(
         WebKit::WebGraphicsContext3D* context, bool useMapTexSubImage)

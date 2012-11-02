@@ -5,6 +5,7 @@
 #ifndef ImageLayerChromium_h
 #define ImageLayerChromium_h
 
+#include "cc/cc_export.h"
 #include "cc/content_layer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -13,7 +14,7 @@ namespace cc {
 class ImageLayerUpdater;
 
 // A Layer that contains only an Image element.
-class ImageLayer : public TiledLayer {
+class CC_EXPORT ImageLayer : public TiledLayer {
 public:
     static scoped_refptr<ImageLayer> create();
 

@@ -7,7 +7,7 @@
 #ifndef CC_SWITCHES_H_
 #define CC_SWITCHES_H_
 
-#include "webkit/glue/webkit_glue_export.h"
+#include "cc/cc_export.h"
 
 // Since cc is used from the render process, anything that goes here also needs
 // to be added to render_process_host_impl.cc.
@@ -15,12 +15,12 @@
 namespace cc {
 namespace switches {
 
-WEBKIT_GLUE_EXPORT extern const char kBackgroundColorInsteadOfCheckerboard[];
-WEBKIT_GLUE_EXPORT extern const char kDisableThreadedAnimation[];
-WEBKIT_GLUE_EXPORT extern const char kEnablePartialSwap[];
-WEBKIT_GLUE_EXPORT extern const char kEnablePerTilePainting[];
-WEBKIT_GLUE_EXPORT extern const char kEnablePinchInCompositor[];
-WEBKIT_GLUE_EXPORT extern const char kJankInsteadOfCheckerboard[];
+CC_EXPORT extern const char kBackgroundColorInsteadOfCheckerboard[];
+CC_EXPORT extern const char kDisableThreadedAnimation[];
+CC_EXPORT extern const char kEnablePartialSwap[];
+CC_EXPORT extern const char kEnablePerTilePainting[];
+CC_EXPORT extern const char kEnablePinchInCompositor[];
+CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
 
 }  // namespace switches
 }  // namespace cc

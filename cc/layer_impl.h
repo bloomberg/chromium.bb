@@ -5,10 +5,13 @@
 #ifndef CCLayerImpl_h
 #define CCLayerImpl_h
 
+#include <string>
+
 #include "FloatSize.h"
 #include "Region.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/render_pass.h"
@@ -21,7 +24,6 @@
 #include "ui/gfx/rect_f.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
-#include <string>
 
 namespace cc {
 
@@ -35,7 +37,7 @@ class Layer;
 
 struct AppendQuadsData;
 
-class LayerImpl : public LayerAnimationControllerClient {
+class CC_EXPORT LayerImpl : public LayerAnimationControllerClient {
 public:
     static scoped_ptr<LayerImpl> create(int id)
     {
@@ -407,6 +409,8 @@ private:
 
     // Manages scrollbars for this layer
     scoped_ptr<ScrollbarAnimationController> m_scrollbarAnimationController;
+
+    DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };
 
 void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<LayerImpl*>::iterator end, LayerSorter*);

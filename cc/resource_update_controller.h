@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
+#include "cc/cc_export.h"
 #include "cc/resource_update_queue.h"
 
 namespace cc {
@@ -24,7 +25,7 @@ protected:
     virtual ~ResourceUpdateControllerClient() { }
 };
 
-class ResourceUpdateController {
+class CC_EXPORT ResourceUpdateController {
 public:
     static scoped_ptr<ResourceUpdateController> create(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     {

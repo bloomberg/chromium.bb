@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include <public/WebCompositorOutputSurface.h>
+#include "cc/cc_export.h"
 
 namespace gfx {
 class Rect;
@@ -23,7 +24,7 @@ struct RendererCapabilities;
 
 // Abstract class responsible for proxying commands from the main-thread side of
 // the compositor over to the compositor implementation.
-class Proxy {
+class CC_EXPORT Proxy {
 public:
     static void setMainThread(Thread*);
     static Thread* mainThread();

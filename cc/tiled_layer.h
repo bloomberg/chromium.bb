@@ -5,14 +5,15 @@
 #ifndef TiledLayerChromium_h
 #define TiledLayerChromium_h
 
+#include "cc/cc_export.h"
 #include "cc/contents_scaling_layer.h"
-#include "cc/layer_updater.h"
 #include "cc/layer_tiling_data.h"
+#include "cc/layer_updater.h"
 
 namespace cc {
 class UpdatableTile;
 
-class TiledLayer : public ContentsScalingLayer {
+class CC_EXPORT TiledLayer : public ContentsScalingLayer {
 public:
     enum TilingOption { AlwaysTile, NeverTile, AutoTile };
 

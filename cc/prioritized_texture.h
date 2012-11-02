@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/priority_calculator.h"
 #include "cc/resource_provider.h"
 #include "cc/texture.h"
@@ -20,7 +21,7 @@ namespace cc {
 
 class PrioritizedTextureManager;
 
-class PrioritizedTexture {
+class CC_EXPORT PrioritizedTexture {
 public:
     static scoped_ptr<PrioritizedTexture> create(PrioritizedTextureManager* manager, gfx::Size size, GLenum format)
     {

@@ -6,6 +6,7 @@
 #define CCScrollbarAnimationController_h
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "FloatPoint.h"
 #include "IntSize.h"
 
@@ -20,7 +21,7 @@ class ScrollbarLayerImpl;
 
 // This abstract class represents the compositor-side analogy of ScrollbarAnimator.
 // Individual platforms should subclass it to provide specialized implementation.
-class ScrollbarAnimationController {
+class CC_EXPORT ScrollbarAnimationController {
 public:
     static scoped_ptr<ScrollbarAnimationController> create(LayerImpl* scrollLayer);
 

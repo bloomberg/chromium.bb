@@ -6,6 +6,7 @@
 #define CCQuadSink_h
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 
@@ -14,7 +15,7 @@ class DrawQuad;
 struct AppendQuadsData;
 struct SharedQuadState;
 
-class QuadSink {
+class CC_EXPORT QuadSink {
 public:
     virtual ~QuadSink() { }
 

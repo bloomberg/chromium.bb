@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 
@@ -25,7 +26,7 @@ protected:
 //
 // Be sure to call setActive(false) before releasing your reference to the
 // timer, or it will keep on ticking!
-class TimeSource : public base::RefCounted<TimeSource> {
+class CC_EXPORT TimeSource : public base::RefCounted<TimeSource> {
 public:
     virtual void setClient(TimeSourceClient*) = 0;
     virtual void setActive(bool) = 0;

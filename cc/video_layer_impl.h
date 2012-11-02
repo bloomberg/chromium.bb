@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
+#include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include "media/base/video_frame.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -27,8 +28,8 @@ namespace cc {
 class LayerTreeHostImpl;
 class VideoLayerImpl;
 
-class VideoLayerImpl : public LayerImpl
-                     , public WebKit::WebVideoFrameProvider::Client {
+class CC_EXPORT VideoLayerImpl : public LayerImpl
+                               , public WebKit::WebVideoFrameProvider::Client {
 public:
     typedef base::Callback<media::VideoFrame* (WebKit::WebVideoFrame*)> FrameUnwrapper;
 

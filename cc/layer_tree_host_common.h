@@ -6,6 +6,7 @@
 #define CCLayerTreeHostCommon_h
 
 #include "base/memory/ref_counted.h"
+#include "cc/cc_export.h"
 #include "cc/scoped_ptr_vector.h"
 #include "ui/gfx/rect.h"
 #include "IntSize.h"
@@ -17,7 +18,7 @@ class LayerImpl;
 class LayerSorter;
 class Layer;
 
-class LayerTreeHostCommon {
+class CC_EXPORT LayerTreeHostCommon {
 public:
     static gfx::Rect calculateVisibleRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const WebKit::WebTransformationMatrix&);
 
@@ -49,7 +50,7 @@ public:
     };
 };
 
-struct ScrollAndScaleSet {
+struct CC_EXPORT ScrollAndScaleSet {
     ScrollAndScaleSet();
     ~ScrollAndScaleSet();
 

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/graphics_context.h"
 #include "cc/texture_copier.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -28,13 +29,11 @@ class Vector2d;
 
 namespace cc {
 
-class LayerTextureSubImage;
-class TextureCopier;
 class TextureUploader;
 
 // Thread-safety notes: this class is not thread-safe and can only be called
 // from the thread it was created on (in practice, the compositor thread).
-class ResourceProvider {
+class CC_EXPORT ResourceProvider {
 public:
     typedef unsigned ResourceId;
     typedef std::vector<ResourceId> ResourceIdArray;
@@ -54,7 +53,7 @@ public:
         Mailbox mailbox;
     };
     typedef std::vector<TransferableResource> TransferableResourceArray;
-    struct TransferableResourceList {
+    struct CC_EXPORT TransferableResourceList {
         TransferableResourceList();
         ~TransferableResourceList();
 
@@ -154,7 +153,7 @@ public:
     // needed to read and write the resource contents. The user must ensure
     // that they only use GL locks on GL resources, etc, and this is enforced
     // by assertions.
-    class ScopedReadLockGL {
+    class CC_EXPORT ScopedReadLockGL {
     public:
         ScopedReadLockGL(ResourceProvider*, ResourceProvider::ResourceId);
         ~ScopedReadLockGL();
@@ -169,7 +168,7 @@ public:
         DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
     };
 
-    class ScopedWriteLockGL {
+    class CC_EXPORT ScopedWriteLockGL {
     public:
         ScopedWriteLockGL(ResourceProvider*, ResourceProvider::ResourceId);
         ~ScopedWriteLockGL();
@@ -184,7 +183,7 @@ public:
         DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
     };
 
-    class ScopedReadLockSoftware {
+    class CC_EXPORT ScopedReadLockSoftware {
     public:
         ScopedReadLockSoftware(ResourceProvider*, ResourceProvider::ResourceId);
         ~ScopedReadLockSoftware();
@@ -199,7 +198,7 @@ public:
         DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
     };
 
-    class ScopedWriteLockSoftware {
+    class CC_EXPORT ScopedWriteLockSoftware {
     public:
         ScopedWriteLockSoftware(ResourceProvider*, ResourceProvider::ResourceId);
         ~ScopedWriteLockSoftware();

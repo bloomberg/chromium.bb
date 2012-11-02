@@ -5,6 +5,7 @@
 #ifndef ContentLayerUpdater_h
 #define ContentLayerUpdater_h
 
+#include "cc/cc_export.h"
 #include "cc/layer_updater.h"
 
 class SkCanvas;
@@ -16,7 +17,7 @@ class LayerPainter;
 // Base class for BitmapContentLayerUpdater and
 // SkPictureContentLayerUpdater that reduces code duplication between
 // their respective paintContents implementations.
-class ContentLayerUpdater : public LayerUpdater {
+class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
 protected:
     explicit ContentLayerUpdater(scoped_ptr<LayerPainter>);
     virtual ~ContentLayerUpdater();

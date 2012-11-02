@@ -5,6 +5,7 @@
 #ifndef CCRendererGL_h
 #define CCRendererGL_h
 
+#include "cc/cc_export.h"
 #include "cc/checkerboard_draw_quad.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/direct_renderer.h"
@@ -29,10 +30,10 @@ class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 
 // Class that handles drawing of composited render layers using GL.
-class GLRenderer : public DirectRenderer,
-                     public WebKit::WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
-                     public WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM ,
-                     public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+class CC_EXPORT GLRenderer : public DirectRenderer,
+                             public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM),
+                             public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM),
+                             public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback) {
 public:
     static scoped_ptr<GLRenderer> create(RendererClient*, ResourceProvider*);
 

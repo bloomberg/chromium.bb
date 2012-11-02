@@ -5,12 +5,13 @@
 #ifndef CCSolidColorLayerImpl_h
 #define CCSolidColorLayerImpl_h
 
+#include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 #include <public/WebTransformationMatrix.h>
 
 namespace cc {
 
-class SolidColorLayerImpl : public LayerImpl {
+class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
 public:
     static scoped_ptr<SolidColorLayerImpl> create(int id)
     {

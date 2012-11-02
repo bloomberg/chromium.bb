@@ -6,6 +6,7 @@
 #define LayerUpdater_h
 
 #include "base/memory/ref_counted.h"
+#include "cc/cc_export.h"
 #include "cc/prioritized_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -20,10 +21,10 @@ class TextureManager;
 struct RenderingStats;
 class ResourceUpdateQueue;
 
-class LayerUpdater : public base::RefCounted<LayerUpdater> {
+class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
 public:
     // Allows updaters to store per-resource update properties.
-    class Resource {
+    class CC_EXPORT Resource {
     public:
         virtual ~Resource();
 

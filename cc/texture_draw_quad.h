@@ -6,6 +6,7 @@
 #define CCTextureDrawQuad_h
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/draw_quad.h"
 #include "ui/gfx/rect_f.h"
 
@@ -13,7 +14,7 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class TextureDrawQuad : public DrawQuad {
+class CC_EXPORT TextureDrawQuad : public DrawQuad {
 public:
     static scoped_ptr<TextureDrawQuad> create(const SharedQuadState*, const gfx::Rect&, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
     gfx::RectF uvRect() const { return m_uvRect; }

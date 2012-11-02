@@ -6,6 +6,7 @@
 #define CCMathUtil_h
 
 #include "base/logging.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/point3_f.h"
 
@@ -65,7 +66,7 @@ struct HomogeneousCoordinate {
     double w;
 };
 
-class MathUtil {
+class CC_EXPORT MathUtil {
 public:
 
     // Background: WebTransformationMatrix code in WebCore does not do the right thing in

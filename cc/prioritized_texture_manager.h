@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/prioritized_texture.h"
 #include "cc/priority_calculator.h"
 #include "cc/texture.h"
@@ -32,7 +33,7 @@ namespace cc {
 
 class PriorityCalculator;
 
-class PrioritizedTextureManager {
+class CC_EXPORT PrioritizedTextureManager {
 public:
     static scoped_ptr<PrioritizedTextureManager> create(size_t maxMemoryLimitBytes, int maxTextureSize, int pool)
     {

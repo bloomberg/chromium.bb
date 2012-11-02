@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/animation_events.h"
+#include "cc/cc_export.h"
 #include "cc/graphics_context.h"
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_host_common.h"
@@ -49,7 +50,7 @@ class HeadsUpDisplayLayer;
 class Region;
 struct ScrollAndScaleSet;
 
-struct LayerTreeSettings {
+struct CC_EXPORT LayerTreeSettings {
     LayerTreeSettings();
     ~LayerTreeSettings();
 
@@ -90,7 +91,7 @@ struct RendererCapabilities {
     int maxTextureSize;
 };
 
-class LayerTreeHost : public RateLimiterClient {
+class CC_EXPORT LayerTreeHost : public RateLimiterClient {
 public:
     static scoped_ptr<LayerTreeHost> create(LayerTreeHostClient*, const LayerTreeSettings&);
     virtual ~LayerTreeHost();

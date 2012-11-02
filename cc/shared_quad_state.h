@@ -8,10 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 #include <public/WebTransformationMatrix.h>
+#include "cc/cc_export.h"
 
 namespace cc {
 
-struct SharedQuadState {
+struct CC_EXPORT SharedQuadState {
     int id;
 
     // Transforms from quad's original content space to its target content space.

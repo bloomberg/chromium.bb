@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/size.h"
 
 namespace gfx {
@@ -16,7 +17,7 @@ class Vector2d;
 
 namespace cc {
 
-class TilingData {
+class CC_EXPORT TilingData {
  public:
   TilingData(gfx::Size max_texture_size, gfx::Size total_size, bool has_border_texels);
   ~TilingData();

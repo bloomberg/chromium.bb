@@ -5,11 +5,12 @@
 #ifndef IOSurfaceLayerChromium_h
 #define IOSurfaceLayerChromium_h
 
+#include "cc/cc_export.h"
 #include "cc/layer.h"
 
 namespace cc {
 
-class IOSurfaceLayer : public Layer {
+class CC_EXPORT IOSurfaceLayer : public Layer {
 public:
     static scoped_refptr<IOSurfaceLayer> create();
 

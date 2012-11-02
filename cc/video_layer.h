@@ -6,6 +6,7 @@
 #define VideoLayerChromium_h
 
 #include "base/callback.h"
+#include "cc/cc_export.h"
 #include "cc/layer.h"
 
 namespace WebKit {
@@ -22,7 +23,7 @@ namespace cc {
 class VideoLayerImpl;
 
 // A Layer that contains a Video element.
-class VideoLayer : public Layer {
+class CC_EXPORT VideoLayer : public Layer {
 public:
     typedef base::Callback<media::VideoFrame* (WebKit::WebVideoFrame*)> FrameUnwrapper;
 

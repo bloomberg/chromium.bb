@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/hash_pair.h"
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/tiling_data.h"
@@ -16,7 +17,7 @@
 
 namespace cc {
 
-class LayerTilingData {
+class CC_EXPORT LayerTilingData {
 public:
     enum BorderTexelOption { HasBorderTexels, NoBorderTexels };
 

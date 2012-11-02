@@ -7,6 +7,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/rect_f.h"
 #include <vector>
 
@@ -27,7 +28,7 @@ class RenderSurfaceImpl;
 
 // Computes the region where pixels have actually changed on a RenderSurfaceImpl. This region is used
 // to scissor what is actually drawn to the screen to save GPU computation and bandwidth.
-class DamageTracker {
+class CC_EXPORT DamageTracker {
 public:
     static scoped_ptr<DamageTracker> create();
     ~DamageTracker();
@@ -61,6 +62,8 @@ private:
 
     gfx::RectF m_currentDamageRect;
     bool m_forceFullDamageNextUpdate;
+
+    DISALLOW_COPY_AND_ASSIGN(DamageTracker);
 };
 
 } // namespace cc

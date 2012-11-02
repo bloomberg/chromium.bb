@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 
@@ -22,7 +23,7 @@ class Size;
 namespace cc {
 
 // This class provides basic ability to draw text onto the heads-up display.
-class FontAtlas {
+class CC_EXPORT FontAtlas {
 public:
     static scoped_ptr<FontAtlas> create(SkBitmap bitmap, gfx::Rect asciiToRectTable[128], int fontHeight)
     {

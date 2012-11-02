@@ -6,6 +6,7 @@
 #ifndef BitmapContentLayerUpdater_h
 #define BitmapContentLayerUpdater_h
 
+#include "cc/cc_export.h"
 #include "cc/content_layer_updater.h"
 
 class SkCanvas;
@@ -17,7 +18,7 @@ class LayerPainter;
 // This class rasterizes the contentRect into a skia bitmap canvas. It then updates
 // textures by copying from the canvas into the texture, using MapSubImage if
 // possible.
-class BitmapContentLayerUpdater : public ContentLayerUpdater {
+class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
 public:
     class Resource : public LayerUpdater::Resource {
     public:

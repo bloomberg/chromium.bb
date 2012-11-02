@@ -6,13 +6,14 @@
 #define CCResourceUpdateQueue_h
 
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 #include "cc/resource_update.h"
 #include "cc/texture_copier.h"
 #include <deque>
 
 namespace cc {
 
-class ResourceUpdateQueue {
+class CC_EXPORT ResourceUpdateQueue {
 public:
     ResourceUpdateQueue();
     virtual ~ResourceUpdateQueue();

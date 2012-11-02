@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/cc_export.h"
 #include "cc/texture.h"
 
 #ifndef NDEBUG
@@ -16,7 +17,7 @@
 
 namespace cc {
 
-class ScopedTexture : protected Texture {
+class CC_EXPORT ScopedTexture : protected Texture {
 public:
     static scoped_ptr<ScopedTexture> create(ResourceProvider* resourceProvider) { return make_scoped_ptr(new ScopedTexture(resourceProvider)); }
     virtual ~ScopedTexture();

@@ -7,6 +7,7 @@
 
 #include "Region.h"
 #include "base/basictypes.h"
+#include "cc/cc_export.h"
 #include "cc/layer_iterator.h"
 #include "ui/gfx/rect.h"
 
@@ -23,9 +24,10 @@ class RenderSurface;
 // If the current layer owns a RenderSurfaceImpl, then occlusion on that RenderSurfaceImpl may also be queried via surfaceOccluded() and surfaceUnoccludedContentRect().
 // Finally, once finished with the layer, occlusion behind the layer should be marked by calling markOccludedBehindLayer().
 template<typename LayerType, typename RenderSurfaceType>
-class OcclusionTrackerBase {
+class CC_EXPORT OcclusionTrackerBase {
 public:
-  OcclusionTrackerBase(gfx::Rect rootTargetRect, bool recordMetricsForFrame);
+    OcclusionTrackerBase(gfx::Rect rootTargetRect, bool recordMetricsForFrame);
+    ~OcclusionTrackerBase();
 
     // Called at the beginning of each step in the LayerIterator's front-to-back traversal.
     void enterLayer(const LayerIteratorPosition<LayerType>&);
