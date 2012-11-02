@@ -327,9 +327,8 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     WebDocument document = frame->document();
     const extensions::Extension* extension =
         GetExtension(document.securityOrigin());
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebView) &&
-        extension &&
-        extension->HasAPIPermission(extensions::APIPermission::kWebView))
+    if (extension && extension->HasAPIPermission(
+        extensions::APIPermission::kWebView))
       return false;
   }
 
