@@ -35,6 +35,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   virtual void InspectedContentsClosing() OVERRIDE;
   virtual void FrameNavigating(const std::string& url) OVERRIDE;
   virtual void ContentsReplaced(WebContents* new_contents) OVERRIDE;
+  virtual void ReplacedWithAnotherClient() OVERRIDE;
 
   // RenderViewHostObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

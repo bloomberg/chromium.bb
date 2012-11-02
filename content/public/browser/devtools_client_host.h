@@ -42,6 +42,10 @@ class CONTENT_EXPORT DevToolsClientHost {
   // Invoked when the contents are replaced by another contents.
   virtual void ContentsReplaced(WebContents* new_contents) = 0;
 
+  // Called to notify client that it has been kicked out by some other client
+  // with greater priority.
+  virtual void ReplacedWithAnotherClient() = 0;
+
   // Creates a DevToolsClientHost for a WebContents containing the default
   // DevTools frontend implementation.
   static DevToolsClientHost* CreateDevToolsFrontendHost(

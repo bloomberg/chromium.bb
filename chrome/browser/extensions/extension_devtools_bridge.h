@@ -31,6 +31,8 @@ class ExtensionDevToolsBridge : public content::DevToolsClientHost {
 
   virtual void ContentsReplaced(content::WebContents* new_contents) OVERRIDE;
 
+  virtual void ReplacedWithAnotherClient() OVERRIDE;
+
  private:
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 

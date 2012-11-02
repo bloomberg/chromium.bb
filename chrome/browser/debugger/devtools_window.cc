@@ -655,7 +655,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   DevToolsWindow* window = AsDevToolsWindow(host);
   if (host && !window) {
     // Break remote debugging / extension debugging session.
-    DebuggerApi::MarkDevToolsClientHostAsReplaced(host);
+    host->ReplacedWithAnotherClient();
     manager->UnregisterDevToolsClientHostFor(agent);
   }
 

@@ -166,7 +166,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
     }
     DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
         agent,
-        WebKit::WebDevToolsAgent::disconnectEventAsText().utf8());
+        WebKit::WebDevToolsAgent::workerDisconnectedFromWorkerEvent().utf8());
     int cookie = DevToolsManagerImpl::GetInstance()->DetachClientHost(agent);
     agent->WorkerDestroyed();
     if (cookie == -1) {

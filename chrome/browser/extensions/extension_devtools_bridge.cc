@@ -136,3 +136,6 @@ void ExtensionDevToolsBridge::ContentsReplaced(WebContents* new_contents) {
   // We don't update the tab id as it needs to remain the same so that we can
   // properly unregister.
 }
+
+void ExtensionDevToolsBridge::ReplacedWithAnotherClient() {
+}

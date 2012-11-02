@@ -81,12 +81,4 @@ class SendCommandDebuggerFunction : public DebuggerFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class DebuggerApi {
- public:
-  // Marks ExtensionDevToolsClientHost as replaced with the bundled devtools
-  // so that we could report proper disconnect reason.
-  static void MarkDevToolsClientHostAsReplaced(
-      content::DevToolsClientHost* client_host);
-};
-
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_

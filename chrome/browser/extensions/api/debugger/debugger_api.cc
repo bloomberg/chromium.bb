@@ -101,14 +101,14 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
                             const std::string& method,
                             SendCommand::Params::CommandParams* command_params);
 
-  // Mark methods below determine the connection termination reason.
-  void MarkAsReplaced();
+  // Marks connection as to-be-terminated by the user.
   void MarkAsDismissed();
 
   // DevToolsClientHost interface
   virtual void InspectedContentsClosing() OVERRIDE;
   virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
   virtual void ContentsReplaced(WebContents* web_contents) OVERRIDE;
+  virtual void ReplacedWithAnotherClient() OVERRIDE;
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
  private:
@@ -150,16 +150,6 @@ class AttachedClientHosts {
 
   void Remove(ExtensionDevToolsClientHost* client_host) {
     client_hosts_.erase(client_host);
-  }
-
-  ExtensionDevToolsClientHost* AsExtensionDevToolsClientHost(
-      DevToolsClientHost* client_host) {
-    for (std::set<DevToolsClientHost*>::iterator it = client_hosts_.begin();
-         it != client_hosts_.end(); ++it) {
-      if (client_host == *it)
-        return static_cast<ExtensionDevToolsClientHost*>(*it);
-    }
-    return NULL;
   }
 
   ExtensionDevToolsClientHost* Lookup(WebContents* contents) {
@@ -251,6 +241,10 @@ void ExtensionDevToolsClientHost::ContentsReplaced(WebContents* web_contents) {
   web_contents_ = web_contents;
 }
 
+void ExtensionDevToolsClientHost::ReplacedWithAnotherClient() {
+  detach_reason_ = OnDetach::REASON_REPLACED_WITH_DEVTOOLS;
+}
+
 void ExtensionDevToolsClientHost::Close() {
   DevToolsManager::GetInstance()->ClientHostClosing(this);
   delete this;
@@ -273,10 +267,6 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
   std::string json_args;
   base::JSONWriter::Write(&protocol_request, &json_args);
   DevToolsManager::GetInstance()->DispatchOnInspectorBackend(this, json_args);
-}
-
-void ExtensionDevToolsClientHost::MarkAsReplaced() {
-  detach_reason_ = OnDetach::REASON_REPLACED_WITH_DEVTOOLS;
 }
 
 void ExtensionDevToolsClientHost::MarkAsDismissed() {
@@ -544,13 +534,4 @@ void SendCommandDebuggerFunction::SendResponseBody(
 
   results_ = SendCommand::Results::Create(result);
   SendResponse(true);
-}
-
-// static
-void DebuggerApi::MarkDevToolsClientHostAsReplaced(
-    DevToolsClientHost* client_host) {
-  ExtensionDevToolsClientHost* host = AttachedClientHosts::GetInstance()->
-      AsExtensionDevToolsClientHost(client_host);
-  if (host)
-    host->MarkAsReplaced();
 }

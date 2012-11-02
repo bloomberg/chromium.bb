@@ -42,6 +42,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "ui/base/layout.h"
 #include "webkit/user_agent/user_agent.h"
 #include "webkit/user_agent/user_agent_util.h"
@@ -96,7 +97,8 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
       : message_loop_(message_loop),
         server_(server),
         connection_id_(connection_id),
-        is_closed_(false) {
+        is_closed_(false),
+        detach_reason_("target_closed") {
   }
 
   ~DevToolsClientHostImpl() {}
@@ -106,6 +108,17 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
     if (is_closed_)
       return;
     is_closed_ = true;
+
+    std::string response =
+        WebKit::WebDevToolsAgent::inspectorDetachedEvent(
+            WebKit::WebString::fromUTF8(detach_reason_)).utf8();
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&net::HttpServer::SendOverWebSocket,
+                   server_,
+                   connection_id_,
+                   response));
+
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::Close, server_, connection_id_));
@@ -123,12 +136,17 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   virtual void ContentsReplaced(WebContents* new_contents) {
   }
 
+  virtual void ReplacedWithAnotherClient() {
+    detach_reason_ = "replaced_with_devtools";
+  }
+
  private:
   virtual void FrameNavigating(const std::string& url) {}
   MessageLoop* message_loop_;
   net::HttpServer* server_;
   int connection_id_;
   bool is_closed_;
+  std::string detach_reason_;
 };
 
 }  // namespace

@@ -563,6 +563,7 @@ class FakeDevToolsClientHost : public DevToolsClientHost {
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
   virtual void DispatchOnInspectorFrontend(const std::string& msg) OVERRIDE {}
   virtual void ContentsReplaced(WebContents* new_contents) OVERRIDE {}
+  virtual void ReplacedWithAnotherClient() OVERRIDE {}
 };
 
 class RestorePrerenderMode {

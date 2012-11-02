@@ -49,6 +49,9 @@ class TestDevToolsClientHost : public DevToolsClientHost {
   virtual void ContentsReplaced(WebContents* new_contents) {
   }
 
+  virtual void ReplacedWithAnotherClient() {
+  }
+
   static void ResetCounters() {
     close_counter = 0;
   }
