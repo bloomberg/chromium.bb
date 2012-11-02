@@ -14,6 +14,7 @@ from chrome_remote_control import page_runner
 from chrome_remote_control import page_set
 
 import perf_tools.first_paint_time_benchmark
+import perf_tools.jsgamebench
 import perf_tools.kraken
 import perf_tools.robohornetpro
 import perf_tools.scrolling_benchmark
@@ -24,6 +25,8 @@ import perf_tools.texture_upload_benchmark
 _BENCHMARKS = {
   'first_paint_time_benchmark':
       perf_tools.first_paint_time_benchmark.FirstPaintTimeBenchmark,
+  'jsgamebench':
+      perf_tools.jsgamebench.JsGameBench,
   'kraken':
       perf_tools.kraken.Kraken,
   'robohornetpro':
