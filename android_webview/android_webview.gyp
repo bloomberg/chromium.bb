@@ -77,6 +77,7 @@
         'lib/main/aw_main_delegate.cc',
         'lib/main/aw_main_delegate.h',
         'lib/main/webview_entry_point.cc',
+        'public/browser/gl_draw.h',
         'renderer/aw_content_renderer_client.cc',
         'renderer/aw_content_renderer_client.h',
         'renderer/aw_render_process_observer.cc',
