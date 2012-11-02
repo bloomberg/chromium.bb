@@ -7,8 +7,13 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -17,6 +22,12 @@
 namespace content {
 
 namespace {
+
+class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
+ public:
+  MockRenderWidgetHostDelegate() {}
+  virtual ~MockRenderWidgetHostDelegate() {}
+};
 
 // Generates the |length| of composition rectangle vector and save them to
 // |output|. It starts from |origin| and each rectangle contains |unit_size|.
@@ -250,6 +261,40 @@ TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDownWithAcceleratedView) {
 TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {
   rwhv_mac_->InitAsFullscreen(NULL);
   EXPECT_TRUE(rwhv_mac_->pepper_fullscreen_window());
+}
+
+// Verify that escape key down in fullscreen mode suppressed the keyup event on
+// the parent.
+TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
+  // Use our own RWH since we need to destroy it.
+  MockRenderWidgetHostDelegate delegate;
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  // Owned by its |cocoa_view()|.
+  RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
+      &delegate, process_host, MSG_ROUTING_NONE);
+  RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
+      RenderWidgetHostView::CreateViewForWidget(rwh));
+
+  view->InitAsFullscreen(rwhv_mac_);
+
+  WindowedNotificationObserver observer(
+      NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      Source<RenderWidgetHost>(rwh));
+  EXPECT_FALSE([rwhv_mac_->cocoa_view() suppressNextEscapeKeyUp]);
+
+  // Escape key down. Should close window and set |suppressNextEscapeKeyUp| on
+  // the parent.
+  [view->cocoa_view() keyEvent:
+      cocoa_test_event_utils::KeyEventWithKeyCode(53, 27, NSKeyDown, 0)];
+  observer.Wait();
+  EXPECT_TRUE([rwhv_mac_->cocoa_view() suppressNextEscapeKeyUp]);
+
+  // Escape key up on the parent should clear |suppressNextEscapeKeyUp|.
+  [rwhv_mac_->cocoa_view() keyEvent:
+      cocoa_test_event_utils::KeyEventWithKeyCode(53, 27, NSKeyUp, 0)];
+  EXPECT_FALSE([rwhv_mac_->cocoa_view() suppressNextEscapeKeyUp]);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {

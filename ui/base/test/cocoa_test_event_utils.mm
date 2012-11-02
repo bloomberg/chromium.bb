@@ -84,30 +84,28 @@ std::pair<NSEvent*,NSEvent*> MouseClickInView(NSView* view,
 }
 
 NSEvent* KeyEventWithCharacter(unichar c) {
-  NSString* chars = [NSString stringWithCharacters:&c length:1];
-  return [NSEvent keyEventWithType:NSKeyDown
-                          location:NSZeroPoint
-                     modifierFlags:0
-                         timestamp:0.0
-                      windowNumber:0
-                           context:nil
-                        characters:chars
-       charactersIgnoringModifiers:chars
-                         isARepeat:NO
-                           keyCode:0];
+  return KeyEventWithKeyCode(0, c, NSKeyDown, 0);
 }
 
 NSEvent* KeyEventWithType(NSEventType event_type, NSUInteger modifiers) {
+  return KeyEventWithKeyCode(0x78, 'x', event_type, modifiers);
+}
+
+NSEvent* KeyEventWithKeyCode(unsigned short key_code,
+                             unichar c,
+                             NSEventType event_type,
+                             NSUInteger modifiers) {
+  NSString* chars = [NSString stringWithCharacters:&c length:1];
   return [NSEvent keyEventWithType:event_type
                           location:NSZeroPoint
                      modifierFlags:modifiers
                          timestamp:0
                       windowNumber:0
                            context:nil
-                        characters:@"x"
-                  charactersIgnoringModifiers:@"x"
+                        characters:chars
+       charactersIgnoringModifiers:chars
                          isARepeat:NO
-                           keyCode:0x78];
+                           keyCode:key_code];
 }
 
 NSEvent* EnterExitEventWithType(NSEventType event_type) {

@@ -142,9 +142,16 @@ class RenderWidgetHostViewMacEditCommandHelper;
 
   // The scale factor of the display this view is in.
   float deviceScaleFactor_;
+
+  // If true then escape key down events are suppressed until the first escape
+  // key up event. (The up event is suppressed as well). This is used by the
+  // flash fullscreen code to avoid sending a key up event without a matching
+  // key down event.
+  BOOL suppressNextEscapeKeyUp_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;
+@property(nonatomic, readonly) BOOL suppressNextEscapeKeyUp;
 
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setTakesFocusOnlyOnMouseDown:(BOOL)b;
@@ -421,6 +428,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
     return pepper_fullscreen_window_;
   }
 
+  RenderWidgetHostViewMac* fullscreen_parent_host_view() const {
+    return fullscreen_parent_host_view_;
+  }
+
  private:
   friend class RenderWidgetHostView;
 
@@ -463,6 +474,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   // The fullscreen window used for pepper flash.
   scoped_nsobject<NSWindow> pepper_fullscreen_window_;
   scoped_nsobject<FullscreenWindowManager> fullscreen_window_manager_;
+  // Our parent host view, if this is fullscreen.  NULL otherwise.
+  RenderWidgetHostViewMac* fullscreen_parent_host_view_;
 
   // List of pending swaps for deferred acking:
   //   pairs of (route_id, gpu_host_id).
