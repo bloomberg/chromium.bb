@@ -192,10 +192,15 @@ bool NativeThemeWin::IsClassicTheme(ThemeName name) const {
   return !GetThemeHandle(name);
 }
 
+// TODO(sky): seems like we should default to NativeThemeWin, but that currently
+// breaks a couple of tests (FocusTraversalTest.NormalTraversal in
+// views_unittests).
+#if !defined(USE_AURA)
 // static
 NativeTheme* NativeTheme::instance() {
   return NativeThemeWin::instance();
 }
+#endif
 
 // static
 NativeThemeWin* NativeThemeWin::instance() {
