@@ -239,7 +239,8 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
   virtual ~ScopedExtensionPrefUpdate() {
   }
 
-  virtual DictionaryValue* Get() {
+  // DictionaryPrefUpdate overrides:
+  virtual DictionaryValue* Get() OVERRIDE {
     DictionaryValue* dict = DictionaryPrefUpdate::Get();
     DictionaryValue* extension = NULL;
     if (!dict->GetDictionary(extension_id_, &extension)) {
@@ -273,7 +274,8 @@ class ScopedExtensionControlledPrefUpdate : public ScopedExtensionPrefUpdate {
   virtual ~ScopedExtensionControlledPrefUpdate() {
   }
 
-  virtual DictionaryValue* Get() {
+  // ScopedExtensionPrefUpdate overrides:
+  virtual DictionaryValue* Get() OVERRIDE {
     DictionaryValue* dict = ScopedExtensionPrefUpdate::Get();
     DictionaryValue* preferences = NULL;
     if (!dict->GetDictionary(incognito_or_regular_path_, &preferences)) {
