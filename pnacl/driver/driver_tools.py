@@ -236,7 +236,7 @@ DriverArgPatterns = [
 def ShouldExpandCommandFile(arg):
   """ On windows, we may be given files with commandline arguments.
   Read in the arguments so that they can be handled as usual. """
-  if IsWindowsPython() and arg.startswith('@'):
+  if arg.startswith('@'):
     possible_file = pathtools.normalize(arg[1:])
     return pathtools.isfile(possible_file)
   else:
