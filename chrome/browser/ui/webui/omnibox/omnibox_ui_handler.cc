@@ -17,11 +17,14 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/ui/search/search.h"
 #include "content/public/browser/web_ui.h"
 
 OmniboxUIHandler::OmniboxUIHandler(Profile* profile ) {
   controller_.reset(new AutocompleteController(profile, this,
-      AutocompleteClassifier::kDefaultOmniboxProviders));
+      chrome::search::IsInstantExtendedAPIEnabled(profile) ?
+          AutocompleteClassifier::kInstantExtendedOmniboxProviders :
+          AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 
 OmniboxUIHandler::~OmniboxUIHandler() {}
