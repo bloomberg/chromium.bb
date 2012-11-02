@@ -59,17 +59,16 @@ lou_translate (const char *tableList, const widechar
 	       int *inputPos, int *cursorPos, int modex)
 {
   return trace_translate (tableList, inbufx, inlen, outbuf, outlen,
-		  typeform, spacing, outputPos, inputPos, cursorPos,
-		  NULL, NULL, modex);
+			  typeform, spacing, outputPos, inputPos, cursorPos,
+			  NULL, NULL, modex);
 }
 
 int
-trace_translate (const char *tableList, const widechar* inbufx,
-                 int* inlen, widechar* outbuf, int* outlen,
-                 char* typeform, char* spacing, int* outputPos,
-                 int* inputPos, int* cursorPos,
-                 TranslationTableRule** rules, int* rulesLen,
-                 int modex)
+trace_translate (const char *tableList, const widechar * inbufx,
+		 int *inlen, widechar * outbuf, int *outlen,
+		 char *typeform, char *spacing, int *outputPos,
+		 int *inputPos, int *cursorPos,
+		 TranslationTableRule ** rules, int *rulesLen, int modex)
 {
   int k;
   int goodTrans = 1;
@@ -161,13 +160,16 @@ trace_translate (const char *tableList, const widechar* inbufx,
 	memset (destSpacing, '*', destmax);
     }
   appliedRulesCount = 0;
-  if (rules != NULL && rulesLen != NULL) {
-    appliedRules = rules;
-    maxAppliedRules = *rulesLen;
-  } else {
-    appliedRules = NULL;
-    maxAppliedRules = 0;
-  }
+  if (rules != NULL && rulesLen != NULL)
+    {
+      appliedRules = rules;
+      maxAppliedRules = *rulesLen;
+    }
+  else
+    {
+      appliedRules = NULL;
+      maxAppliedRules = 0;
+    }
   currentPass = 0;
   if ((mode & pass1Only))
     {
@@ -265,37 +267,51 @@ trace_translate (const char *tableList, const widechar* inbufx,
 }
 
 int EXPORT_CALL
-lou_translatePrehyphenated (const char* tableList,
-                            const widechar* inbufx, int* inlen,
-                            widechar* outbuf, int* outlen,
-                            char* typeform, char* spacing,
-                            int* outputPos, int* inputPos, int* cursorPos,
-                            char* inputHyphens, char* outputHyphens,
-                            int modex) {
+lou_translatePrehyphenated (const char *tableList,
+			    const widechar * inbufx, int *inlen,
+			    widechar * outbuf, int *outlen,
+			    char *typeform, char *spacing,
+			    int *outputPos, int *inputPos, int *cursorPos,
+			    char *inputHyphens, char *outputHyphens,
+			    int modex)
+{
   int rv = 1;
-  int* alloc_inputPos = NULL;
-  if (inputHyphens != NULL) {
+  int *alloc_inputPos = NULL;
+  if (inputHyphens != NULL)
+    {
       if (outputHyphens == NULL)
-        return 0;
-      if (inputPos == NULL) {
-        alloc_inputPos = malloc(*outlen * sizeof(int));
-        inputPos = alloc_inputPos; }}
-  if (lou_translate(tableList, inbufx, inlen, outbuf, outlen, typeform,
-                    spacing, outputPos, inputPos, cursorPos, modex)) {
-    if (inputHyphens != NULL) {
-      int inpos = 0;
-      for (int outpos = 0; outpos < *outlen; outpos++) {
-        int new_inpos = inputPos[outpos];
-        if (new_inpos < inpos) {
-          rv = 0;
-          break; }
-        if (new_inpos > inpos)
-          outputHyphens[outpos] = inputHyphens[new_inpos];
-        else
-          outputHyphens[outpos] = '0';
-        inpos = new_inpos; }}}
+	return 0;
+      if (inputPos == NULL)
+	{
+	  alloc_inputPos = malloc (*outlen * sizeof (int));
+	  inputPos = alloc_inputPos;
+	}
+    }
+  if (lou_translate (tableList, inbufx, inlen, outbuf, outlen, typeform,
+		     spacing, outputPos, inputPos, cursorPos, modex))
+    {
+      if (inputHyphens != NULL)
+	{
+	  int inpos = 0;
+	  int outpos;
+	  for (outpos = 0; outpos < *outlen; outpos++)
+	    {
+	      int new_inpos = inputPos[outpos];
+	      if (new_inpos < inpos)
+		{
+		  rv = 0;
+		  break;
+		}
+	      if (new_inpos > inpos)
+		outputHyphens[outpos] = inputHyphens[new_inpos];
+	      else
+		outputHyphens[outpos] = '0';
+	      inpos = new_inpos;
+	    }
+	}
+    }
   if (alloc_inputPos != NULL)
-    free(alloc_inputPos);
+    free (alloc_inputPos);
   return rv;
 }
 
@@ -1789,7 +1805,7 @@ translateString (void)
 	goto failure;
       for_selectRule ();
       if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
-        appliedRules[appliedRulesCount++] = transRule;
+	appliedRules[appliedRulesCount++] = transRule;
       srcIncremented = 1;
       prevSrc = src;
       switch (transOpcode)	/*Rules that pre-empt context and swap */

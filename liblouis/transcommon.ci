@@ -80,7 +80,7 @@ static int *outputPositions;
 static int *inputPositions;
 static int cursorPosition;
 static int cursorStatus;
-static TranslationTableRule** appliedRules;
+static const TranslationTableRule** appliedRules;
 static int maxAppliedRules;
 static int appliedRulesCount;
 
