@@ -18,7 +18,6 @@ class GURL;
 class InfoBarDelegate;
 class PluginFinder;
 class PluginMetadata;
-class TabContents;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;

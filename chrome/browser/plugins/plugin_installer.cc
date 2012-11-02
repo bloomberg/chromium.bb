@@ -130,20 +130,21 @@ void PluginInstaller::RemoveWeakObserver(
 }
 
 void PluginInstaller::StartInstalling(const GURL& plugin_url,
-                                      TabContents* tab_contents) {
+                                      content::WebContents* web_contents) {
   DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
   state_ = INSTALLER_STATE_DOWNLOADING;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
-  content::WebContents* web_contents = tab_contents->web_contents();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(tab_contents->profile());
+      BrowserContext::GetDownloadManager(profile);
   download_util::RecordDownloadSource(
       download_util::INITIATED_BY_PLUGIN_INSTALLER);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload,
                  plugin_url,
-                 tab_contents->profile()->GetResourceContext(),
+                 profile->GetResourceContext(),
                  web_contents->GetRenderProcessHost()->GetID(),
                  web_contents->GetRenderViewHost()->GetRoutingID(),
                  base::Bind(&PluginInstaller::DownloadStarted,

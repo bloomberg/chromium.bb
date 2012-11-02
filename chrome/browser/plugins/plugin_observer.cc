@@ -104,8 +104,7 @@ string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
 }
 
 void ConfirmInstallDialogDelegate::OnAccepted() {
-  installer()->StartInstalling(plugin_metadata_->plugin_url(),
-                               TabContents::FromWebContents(web_contents_));
+  installer()->StartInstalling(plugin_metadata_->plugin_url(), web_contents_);
 }
 
 void ConfirmInstallDialogDelegate::OnCanceled() {

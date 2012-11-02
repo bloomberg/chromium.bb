@@ -15,7 +15,6 @@
 
 class FilePath;
 class PluginInstallerObserver;
-class TabContents;
 class WeakPluginInstallerObserver;
 
 namespace content {
@@ -53,7 +52,8 @@ class PluginInstaller : public content::DownloadItem::Observer {
 
   // Starts downloading the download URL and opens the downloaded file
   // when finished.
-  void StartInstalling(const GURL& plugin_url, TabContents* tab_contents);
+  void StartInstalling(const GURL& plugin_url,
+                       content::WebContents* web_contents);
 
  private:
   void DownloadStarted(scoped_refptr<content::DownloadManager> dlm,

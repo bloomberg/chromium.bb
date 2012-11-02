@@ -240,8 +240,7 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
   if (plugin_metadata_->url_for_display()) {
     installer()->OpenDownloadURL(plugin_url, web_contents);
   } else {
-    installer()->StartInstalling(plugin_url,
-                                 TabContents::FromWebContents(web_contents));
+    installer()->StartInstalling(plugin_url, web_contents);
   }
   return false;
 }
