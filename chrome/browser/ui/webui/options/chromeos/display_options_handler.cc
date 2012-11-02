@@ -196,14 +196,9 @@ void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
 void DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished(
     int layout, int offset) {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  aura::DisplayManager* display_manager =
-      aura::Env::GetInstance()->display_manager();
-  // Assumes that there are two displays at most and the second item is the
-  // secondary display.
-  if (display_manager->GetNumDisplays() > 1) {
-    gfx::Display* display = display_manager->GetDisplayAt(1);
-    SetDisplayLayoutPref(pref_service, *display, layout, offset);
-  }
+  const gfx::Display& secondary_display = ash::ScreenAsh::GetSecondaryDisplay();
+  if (secondary_display.is_valid())
+    SetDisplayLayoutPref(pref_service, secondary_display, layout, offset);
 
   SendDisplayInfo();
   ash::Shell::GetInstance()->output_configurator_animation()->
