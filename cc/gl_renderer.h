@@ -14,6 +14,7 @@
 #include "cc/solid_color_draw_quad.h"
 #include "cc/tile_draw_quad.h"
 #include "cc/yuv_video_draw_quad.h"
+#include "ui/gfx/quad_f.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -66,7 +67,7 @@ protected:
     bool isFramebufferDiscarded() const { return m_isFramebufferDiscarded; }
     bool initialize();
 
-    const FloatQuad& sharedGeometryQuad() const { return m_sharedGeometryQuad; }
+    const gfx::QuadF& sharedGeometryQuad() const { return m_sharedGeometryQuad; }
     const GeometryBinding* sharedGeometry() const { return m_sharedGeometry.get(); }
 
     bool getFramebufferTexture(ScopedTexture*, const gfx::Rect& deviceRect);
@@ -99,7 +100,7 @@ private:
     void drawYUVVideoQuad(const DrawingFrame&, const YUVVideoDrawQuad*);
 
     void setShaderOpacity(float opacity, int alphaLocation);
-    void setShaderFloatQuad(const FloatQuad&, int quadLocation);
+    void setShaderQuadF(const gfx::QuadF&, int quadLocation);
     void drawQuadGeometry(const DrawingFrame&, const WebKit::WebTransformationMatrix& drawTransform, const gfx::RectF& quadRect, int matrixLocation);
 
     void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const gfx::Rect&, const WebKit::WebTransformationMatrix& drawMatrix);
@@ -129,7 +130,7 @@ private:
     unsigned m_offscreenFramebufferId;
 
     scoped_ptr<GeometryBinding> m_sharedGeometry;
-    FloatQuad m_sharedGeometryQuad;
+    gfx::QuadF m_sharedGeometryQuad;
 
     // This block of bindings defines all of the programs used by the compositor itself.
 

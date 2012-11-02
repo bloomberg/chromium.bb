@@ -8,10 +8,12 @@
 
 #include <algorithm>
 
+#include "FloatRect.h"
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
 #include "cc/math_util.h"
 #include "cc/overdraw_metrics.h"
+#include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 
 using namespace std;
@@ -122,9 +124,9 @@ static inline Region transformSurfaceOpaqueRegion(const RenderSurfaceType* surfa
     // apply |transform| to each rect within |region| in order to transform the entire Region.
 
     bool clipped;
-    FloatQuad transformedBoundsQuad = MathUtil::mapQuad(transform, FloatQuad(region.bounds()), clipped);
+    gfx::QuadF transformedBoundsQuad = MathUtil::mapQuad(transform, gfx::QuadF(region.bounds()), clipped);
     // FIXME: Find a rect interior to each transformed quad.
-    if (clipped || !transformedBoundsQuad.isRectilinear())
+    if (clipped || !transformedBoundsQuad.IsRectilinear())
         return Region();
 
     Region transformedRegion;
@@ -251,9 +253,9 @@ static inline void addOcclusionBehindLayer(Region& region, const LayerType* laye
     DCHECK(layer->visibleContentRect().Contains(opaqueContents.bounds()));
 
     bool clipped;
-    FloatQuad visibleTransformedQuad = MathUtil::mapQuad(transform, FloatQuad(layer->visibleContentRect()), clipped);
+    gfx::QuadF visibleTransformedQuad = MathUtil::mapQuad(transform, gfx::QuadF(layer->visibleContentRect()), clipped);
     // FIXME: Find a rect interior to each transformed quad.
-    if (clipped || !visibleTransformedQuad.isRectilinear())
+    if (clipped || !visibleTransformedQuad.IsRectilinear())
         return;
 
     Vector<WebCore::IntRect> contentRects = opaqueContents.rects();
@@ -297,11 +299,11 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::markOccludedBehindLayer
     if (layerTransformsToScreenKnown(layer)) {
         WebTransformationMatrix targetToScreenTransform = m_stack.last().target->renderSurface()->screenSpaceTransform();
         bool clipped;
-        FloatQuad clipQuadInScreen = MathUtil::mapQuad(targetToScreenTransform, FloatQuad(clipRectInTarget), clipped);
+        gfx::QuadF clipQuadInScreen = MathUtil::mapQuad(targetToScreenTransform, gfx::QuadF(clipRectInTarget), clipped);
         // FIXME: Find a rect interior to the transformed clip quad.
-        if (clipped || !clipQuadInScreen.isRectilinear())
+        if (clipped || !clipQuadInScreen.IsRectilinear())
             return;
-        gfx::Rect clipRectInScreen = gfx::IntersectRects(m_rootTargetRect, gfx::ToEnclosedRect(clipQuadInScreen.boundingBox()));
+        gfx::Rect clipRectInScreen = gfx::IntersectRects(m_rootTargetRect, gfx::ToEnclosedRect(clipQuadInScreen.BoundingBox()));
         addOcclusionBehindLayer<LayerType>(m_stack.last().occlusionInScreen, layer, layer->screenSpaceTransform(), opaqueContents, clipRectInScreen, m_minimumTrackingSize, m_occludingScreenSpaceRects);
     }
 }

@@ -5,7 +5,6 @@
 #ifndef CCRenderer_h
 #define CCRenderer_h
 
-#include "FloatQuad.h"
 #include "base/basictypes.h"
 #include "cc/layer_tree_host.h"
 #include "cc/managed_memory_policy.h"

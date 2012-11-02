@@ -14,13 +14,13 @@ class WebTransformationMatrix;
 }
 
 namespace gfx {
+class QuadF;
 class Rect;
 class RectF;
 }
 
 namespace cc {
 
-class FloatQuad;
 class FloatSize;
 
 struct HomogeneousCoordinate {
@@ -84,17 +84,17 @@ public:
     // 0 to numVerticesInClippedQuad are valid in the clippedQuad array. Note that
     // numVerticesInClippedQuad may be zero, which means the entire quad was clipped, and
     // none of the vertices in the array are valid.
-    static void mapClippedQuad(const WebKit::WebTransformationMatrix&, const FloatQuad& srcQuad, gfx::PointF clippedQuad[8], int& numVerticesInClippedQuad);
+    static void mapClippedQuad(const WebKit::WebTransformationMatrix&, const gfx::QuadF& srcQuad, gfx::PointF clippedQuad[8], int& numVerticesInClippedQuad);
 
     static gfx::RectF computeEnclosingRectOfVertices(gfx::PointF vertices[], int numVertices);
     static gfx::RectF computeEnclosingClippedRect(const HomogeneousCoordinate& h1, const HomogeneousCoordinate& h2, const HomogeneousCoordinate& h3, const HomogeneousCoordinate& h4);
 
     // NOTE: These functions do not do correct clipping against w = 0 plane, but they
     // correctly detect the clipped condition via the boolean clipped.
-    static FloatQuad mapQuad(const WebKit::WebTransformationMatrix&, const FloatQuad&, bool& clipped);
+    static gfx::QuadF mapQuad(const WebKit::WebTransformationMatrix&, const gfx::QuadF&, bool& clipped);
     static gfx::PointF mapPoint(const WebKit::WebTransformationMatrix&, const gfx::PointF&, bool& clipped);
     static gfx::Point3F mapPoint(const WebKit::WebTransformationMatrix&, const gfx::Point3F&, bool& clipped);
-    static FloatQuad projectQuad(const WebKit::WebTransformationMatrix&, const FloatQuad&, bool& clipped);
+    static gfx::QuadF projectQuad(const WebKit::WebTransformationMatrix&, const gfx::QuadF&, bool& clipped);
     static gfx::PointF projectPoint(const WebKit::WebTransformationMatrix&, const gfx::PointF&, bool& clipped);
 
     static void flattenTransformTo2d(WebKit::WebTransformationMatrix&);

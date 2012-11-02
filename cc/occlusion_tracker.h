@@ -5,7 +5,6 @@
 #ifndef CCOcclusionTracker_h
 #define CCOcclusionTracker_h
 
-#include "FloatQuad.h"
 #include "Region.h"
 #include "base/basictypes.h"
 #include "cc/layer_iterator.h"

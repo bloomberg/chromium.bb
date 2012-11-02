@@ -1941,7 +1941,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveWhenClippedByW)
     // Sanity check that this transform does indeed cause w < 0 when applying the
     // transform, otherwise this code is not testing the intended scenario.
     bool clipped = false;
-    MathUtil::mapQuad(layerToSurfaceTransform, FloatQuad(gfx::RectF(layerContentRect)), clipped);
+    MathUtil::mapQuad(layerToSurfaceTransform, gfx::QuadF(gfx::RectF(layerContentRect)), clipped);
     ASSERT_TRUE(clipped);
 
     int expectedXPosition = 0;
@@ -1972,7 +1972,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
     // testing the intended scenario.
     bool clipped = false;
     gfx::RectF clippedRect = MathUtil::mapClippedRect(layerToSurfaceTransform, layerContentRect);
-    MathUtil::projectQuad(layerToSurfaceTransform.inverse(), FloatQuad(clippedRect), clipped);
+    MathUtil::projectQuad(layerToSurfaceTransform.inverse(), gfx::QuadF(clippedRect), clipped);
     ASSERT_TRUE(clipped);
 
     // Only the corner of the layer is not visible on the surface because of being

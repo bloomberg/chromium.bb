@@ -257,7 +257,6 @@
       'sources': [
         '<@(cc_source_files)',
         'stubs/FloatPoint.h',
-        'stubs/FloatQuad.h',
         'stubs/FloatRect.h',
         'stubs/FloatSize.h',
         'stubs/IntPoint.h',
@@ -269,7 +268,6 @@
 
         'stubs/config.h',
         'stubs/float_point.h',
-        'stubs/float_quad.h',
         'stubs/float_rect.h',
         'stubs/float_size.h',
         'stubs/int_point.h',

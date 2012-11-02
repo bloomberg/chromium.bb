@@ -6,7 +6,6 @@
 
 #include "cc/tiled_layer_impl.h"
 
-#include "FloatQuad.h"
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "cc/append_quads_data.h"
@@ -19,6 +18,7 @@
 #include "cc/tile_draw_quad.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/quad_f.h"
 
 using namespace std;
 using WebKit::WebTransformationMatrix;
@@ -189,8 +189,8 @@ void TiledLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
             gfx::Size textureSize(tileWidth, tileHeight);
 
             bool clipped = false;
-            FloatQuad visibleContentInTargetQuad = MathUtil::mapQuad(drawTransform(), FloatQuad(visibleContentRect()), clipped);
-            bool isAxisAlignedInTarget = !clipped && visibleContentInTargetQuad.isRectilinear();
+            gfx::QuadF visibleContentInTargetQuad = MathUtil::mapQuad(drawTransform(), gfx::QuadF(visibleContentRect()), clipped);
+            bool isAxisAlignedInTarget = !clipped && visibleContentInTargetQuad.IsRectilinear();
             bool useAA = m_tiler->hasBorderTexels() && !isAxisAlignedInTarget;
 
             bool leftEdgeAA = !i && useAA;

@@ -6,8 +6,8 @@
 
 #include "cc/math_util.h"
 
-#include "FloatQuad.h"
 #include "FloatSize.h"
+#include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/rect_f.h"
@@ -112,7 +112,7 @@ gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, co
     }
 
     // Apply the transform, but retain the result in homogeneous coordinates.
-    FloatQuad q = FloatQuad(gfx::RectF(srcRect));
+    gfx::QuadF q = gfx::QuadF(gfx::RectF(srcRect));
     HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, gfx::Point3F(q.p1()));
     HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, gfx::Point3F(q.p2()));
     HomogeneousCoordinate h3 = mapHomogeneousPoint(transform, gfx::Point3F(q.p3()));
@@ -124,7 +124,7 @@ gfx::RectF MathUtil::mapClippedRect(const WebTransformationMatrix& transform, co
 gfx::RectF MathUtil::projectClippedRect(const WebTransformationMatrix& transform, const gfx::RectF& srcRect)
 {
     // Perform the projection, but retain the result in homogeneous coordinates.
-    FloatQuad q = FloatQuad(gfx::RectF(srcRect));
+    gfx::QuadF q = gfx::QuadF(gfx::RectF(srcRect));
     HomogeneousCoordinate h1 = projectHomogeneousPoint(transform, q.p1());
     HomogeneousCoordinate h2 = projectHomogeneousPoint(transform, q.p2());
     HomogeneousCoordinate h3 = projectHomogeneousPoint(transform, q.p3());
@@ -133,7 +133,7 @@ gfx::RectF MathUtil::projectClippedRect(const WebTransformationMatrix& transform
     return computeEnclosingClippedRect(h1, h2, h3, h4);
 }
 
-void MathUtil::mapClippedQuad(const WebTransformationMatrix& transform, const FloatQuad& srcQuad, gfx::PointF clippedQuad[8], int& numVerticesInClippedQuad)
+void MathUtil::mapClippedQuad(const WebTransformationMatrix& transform, const gfx::QuadF& srcQuad, gfx::PointF clippedQuad[8], int& numVerticesInClippedQuad)
 {
     HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, gfx::Point3F(srcQuad.p1()));
     HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, gfx::Point3F(srcQuad.p2()));
@@ -196,8 +196,8 @@ gfx::RectF MathUtil::computeEnclosingClippedRect(const HomogeneousCoordinate& h1
     // If no vertices on the quad are clipped, then we can simply return the enclosing rect directly.
     bool somethingClipped = h1.shouldBeClipped() || h2.shouldBeClipped() || h3.shouldBeClipped() || h4.shouldBeClipped();
     if (!somethingClipped) {
-        FloatQuad mappedQuad = FloatQuad(h1.cartesianPoint2d(), h2.cartesianPoint2d(), h3.cartesianPoint2d(), h4.cartesianPoint2d());
-        return mappedQuad.boundingBox();
+        gfx::QuadF mappedQuad = gfx::QuadF(h1.cartesianPoint2d(), h2.cartesianPoint2d(), h3.cartesianPoint2d(), h4.cartesianPoint2d());
+        return mappedQuad.BoundingBox();
     }
 
     bool everythingClipped = h1.shouldBeClipped() && h2.shouldBeClipped() && h3.shouldBeClipped() && h4.shouldBeClipped();
@@ -237,11 +237,11 @@ gfx::RectF MathUtil::computeEnclosingClippedRect(const HomogeneousCoordinate& h1
     return gfx::RectF(gfx::PointF(xmin, ymin), gfx::SizeF(xmax - xmin, ymax - ymin));
 }
 
-FloatQuad MathUtil::mapQuad(const WebTransformationMatrix& transform, const FloatQuad& q, bool& clipped)
+gfx::QuadF MathUtil::mapQuad(const WebTransformationMatrix& transform, const gfx::QuadF& q, bool& clipped)
 {
     if (transform.isIdentityOrTranslation()) {
-        FloatQuad mappedQuad(q);
-        mappedQuad.move(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
+        gfx::QuadF mappedQuad(q);
+        mappedQuad += gfx::Vector2dF(static_cast<float>(transform.m41()), static_cast<float>(transform.m42()));
         clipped = false;
         return mappedQuad;
     }
@@ -254,7 +254,7 @@ FloatQuad MathUtil::mapQuad(const WebTransformationMatrix& transform, const Floa
     clipped = h1.shouldBeClipped() || h2.shouldBeClipped() || h3.shouldBeClipped() || h4.shouldBeClipped();
 
     // Result will be invalid if clipped == true. But, compute it anyway just in case, to emulate existing behavior.
-    return FloatQuad(h1.cartesianPoint2d(), h2.cartesianPoint2d(), h3.cartesianPoint2d(), h4.cartesianPoint2d());
+    return gfx::QuadF(h1.cartesianPoint2d(), h2.cartesianPoint2d(), h3.cartesianPoint2d(), h4.cartesianPoint2d());
 }
 
 gfx::PointF MathUtil::mapPoint(const WebTransformationMatrix& transform, const gfx::PointF& p, bool& clipped)
@@ -303,17 +303,17 @@ gfx::Point3F MathUtil::mapPoint(const WebTransformationMatrix& transform, const 
     return h.cartesianPoint3d();
 }
 
-FloatQuad MathUtil::projectQuad(const WebTransformationMatrix& transform, const FloatQuad& q, bool& clipped)
+gfx::QuadF MathUtil::projectQuad(const WebTransformationMatrix& transform, const gfx::QuadF& q, bool& clipped)
 {
-    FloatQuad projectedQuad;
+    gfx::QuadF projectedQuad;
     bool clippedPoint;
-    projectedQuad.setP1(projectPoint(transform, q.p1(), clippedPoint));
+    projectedQuad.set_p1(projectPoint(transform, q.p1(), clippedPoint));
     clipped = clippedPoint;
-    projectedQuad.setP2(projectPoint(transform, q.p2(), clippedPoint));
+    projectedQuad.set_p2(projectPoint(transform, q.p2(), clippedPoint));
     clipped |= clippedPoint;
-    projectedQuad.setP3(projectPoint(transform, q.p3(), clippedPoint));
+    projectedQuad.set_p3(projectPoint(transform, q.p3(), clippedPoint));
     clipped |= clippedPoint;
-    projectedQuad.setP4(projectPoint(transform, q.p4(), clippedPoint));
+    projectedQuad.set_p4(projectPoint(transform, q.p4(), clippedPoint));
     clipped |= clippedPoint;
 
     return projectedQuad;

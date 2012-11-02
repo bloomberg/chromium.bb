@@ -92,9 +92,9 @@ LayerSorter::ABCompareResult LayerSorter::checkOverlap(LayerShape* a, LayerShape
 
     // Check all four corners of one layer against the other layer's quad.
     for (int i = 0; i < 4; ++i) {
-        if (a->projectedQuad.containsPoint(bPoints[i]))
+        if (a->projectedQuad.Contains(bPoints[i]))
             overlapPoints.push_back(bPoints[i]);
-        if (b->projectedQuad.containsPoint(aPoints[i]))
+        if (b->projectedQuad.Contains(aPoints[i]))
             overlapPoints.push_back(aPoints[i]);
     }
 
@@ -149,7 +149,7 @@ LayerShape::LayerShape()
 
 LayerShape::LayerShape(float width, float height, const WebTransformationMatrix& drawTransform)
 {
-    FloatQuad layerQuad(gfx::RectF(0, 0, width, height));
+    gfx::QuadF layerQuad(gfx::RectF(0, 0, width, height));
 
     // Compute the projection of the layer quad onto the z = 0 plane.
 
@@ -169,13 +169,13 @@ LayerShape::LayerShape(float width, float height, const WebTransformationMatrix&
     // sorting it is equally correct to take a subsection of the polygon that can be made
     // into a quad. This will only be incorrect in the case of intersecting layers, which
     // are not supported yet anyway.
-    projectedQuad.setP1(clippedQuad[0]);
-    projectedQuad.setP2(clippedQuad[1]);
-    projectedQuad.setP3(clippedQuad[2]);
+    projectedQuad.set_p1(clippedQuad[0]);
+    projectedQuad.set_p2(clippedQuad[1]);
+    projectedQuad.set_p3(clippedQuad[2]);
     if (numVerticesInClippedQuad >= 4)
-        projectedQuad.setP4(clippedQuad[3]);
+        projectedQuad.set_p4(clippedQuad[3]);
     else
-        projectedQuad.setP4(clippedQuad[2]); // this will be a degenerate quad that is actually a triangle.
+        projectedQuad.set_p4(clippedQuad[2]); // this will be a degenerate quad that is actually a triangle.
 
     // Compute the normal of the layer's plane.
     bool clipped = false;

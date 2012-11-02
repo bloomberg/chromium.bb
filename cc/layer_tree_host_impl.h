@@ -5,6 +5,7 @@
 #ifndef CCLayerTreeHostImpl_h
 #define CCLayerTreeHostImpl_h
 
+#include "FloatPoint.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"

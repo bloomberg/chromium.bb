@@ -5,11 +5,11 @@
 #ifndef CCLayerSorter_h
 #define CCLayerSorter_h
 
-#include "FloatQuad.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "cc/layer_impl.h"
 #include "ui/gfx/point3_f.h"
+#include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/vector3d_f.h"
 
@@ -47,7 +47,7 @@ struct LayerShape {
 
     gfx::Vector3dF layerNormal;
     gfx::Point3F transformOrigin;
-    FloatQuad projectedQuad;
+    gfx::QuadF projectedQuad;
     gfx::RectF projectedBounds;
 };
 

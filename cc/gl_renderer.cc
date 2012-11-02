@@ -6,7 +6,7 @@
 
 #include "cc/gl_renderer.h"
 
-#include "FloatQuad.h"
+#include "FloatRect.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/string_split.h"
@@ -34,6 +34,7 @@
 #include "third_party/skia/include/gpu/GrTexture.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "third_party/skia/include/gpu/SkGrTexturePixelRef.h"
+#include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
@@ -456,7 +457,7 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame,
     DCHECK(!frame.currentTexture);
 
     // FIXME: Do a single readback for both the surface and replica and cache the filtered results (once filter textures are not reused).
-    gfx::Rect deviceRect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().boundingBox()));
+    gfx::Rect deviceRect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().BoundingBox()));
 
     int top, right, bottom, left;
     filters.getOutsets(top, right, bottom, left);
@@ -545,13 +546,13 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     }
 
     bool clipped = false;
-    FloatQuad deviceQuad = MathUtil::mapQuad(contentsDeviceTransform, sharedGeometryQuad(), clipped);
+    gfx::QuadF deviceQuad = MathUtil::mapQuad(contentsDeviceTransform, sharedGeometryQuad(), clipped);
     DCHECK(!clipped);
-    LayerQuad deviceLayerBounds = LayerQuad(FloatQuad(deviceQuad.boundingBox()));
+    LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceQuad.BoundingBox()));
     LayerQuad deviceLayerEdges = LayerQuad(deviceQuad);
 
     // Use anti-aliasing programs only when necessary.
-    bool useAA = (!deviceQuad.isRectilinear() || !cc::FloatRect(deviceQuad.boundingBox()).isExpressibleAsIntRect());
+    bool useAA = (!deviceQuad.IsRectilinear() || !cc::FloatRect(deviceQuad.BoundingBox()).isExpressibleAsIntRect());
     if (useAA) {
         deviceLayerBounds.inflateAntiAliasingDistance();
         deviceLayerEdges.inflateAntiAliasingDistance();
@@ -635,11 +636,11 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     }
 
     // Map device space quad to surface space. contentsDeviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
-    FloatQuad surfaceQuad = MathUtil::mapQuad(contentsDeviceTransform.inverse(), deviceLayerEdges.floatQuad(), clipped);
+    gfx::QuadF surfaceQuad = MathUtil::mapQuad(contentsDeviceTransform.inverse(), deviceLayerEdges.ToQuadF(), clipped);
     DCHECK(!clipped);
 
     setShaderOpacity(quad->opacity(), shaderAlphaLocation);
-    setShaderFloatQuad(surfaceQuad, shaderQuadLocation);
+    setShaderQuadF(surfaceQuad, shaderQuadLocation);
     drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), shaderMatrixLocation);
 }
 
@@ -714,13 +715,13 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     float fragmentTexScaleY = clampRect.height() / textureSize.height();
 
 
-    FloatQuad localQuad;
+    gfx::QuadF localQuad;
     WebTransformationMatrix deviceTransform = WebTransformationMatrix(frame.windowMatrix * frame.projectionMatrix * quad->quadTransform()).to2dTransform();
     if (!deviceTransform.isInvertible())
         return;
 
     bool clipped = false;
-    FloatQuad deviceLayerQuad = MathUtil::mapQuad(deviceTransform, FloatQuad(quad->visibleContentRect()), clipped);
+    gfx::QuadF deviceLayerQuad = MathUtil::mapQuad(deviceTransform, gfx::QuadF(quad->visibleContentRect()), clipped);
     DCHECK(!clipped);
 
     TileProgramUniforms uniforms;
@@ -755,7 +756,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
     bool useAA = !clipped && quad->isAntialiased();
     if (useAA) {
-        LayerQuad deviceLayerBounds = LayerQuad(FloatQuad(deviceLayerQuad.boundingBox()));
+        LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceLayerQuad.BoundingBox()));
         deviceLayerBounds.inflateAntiAliasingDistance();
 
         LayerQuad deviceLayerEdges = LayerQuad(deviceLayerQuad);
@@ -799,7 +800,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         if (quad->bottomEdgeAA() && tileRect.bottom() == quad->quadRect().bottom())
             bottomEdge = deviceLayerEdges.bottom();
 
-        float sign = FloatQuad(tileRect).isCounterclockwise() ? -1 : 1;
+        float sign = gfx::QuadF(tileRect).IsCounterClockwise() ? -1 : 1;
         bottomEdge.scale(sign);
         leftEdge.scale(sign);
         topEdge.scale(sign);
@@ -810,7 +811,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
         // Map device space quad to local space. contentsDeviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
         WebTransformationMatrix inverseDeviceTransform = deviceTransform.inverse();
-        localQuad = MathUtil::mapQuad(inverseDeviceTransform, deviceQuad.floatQuad(), clipped);
+        localQuad = MathUtil::mapQuad(inverseDeviceTransform, deviceQuad.ToQuadF(), clipped);
 
         // We should not DCHECK(!clipped) here, because anti-aliasing inflation may cause deviceQuad to become
         // clipped. To our knowledge this scenario does not need to be handled differently than the unclipped case.
@@ -832,10 +833,10 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     }
 
     // Normalize to tileRect.
-    localQuad.scale(1.0f / tileRect.width(), 1.0f / tileRect.height());
+    localQuad.Scale(1.0f / tileRect.width(), 1.0f / tileRect.height());
 
     setShaderOpacity(quad->opacity(), uniforms.alphaLocation);
-    setShaderFloatQuad(localQuad, uniforms.pointLocation);
+    setShaderQuadF(localQuad, uniforms.pointLocation);
 
     // The tile quad shader behaves differently compared to all other shaders.
     // The transform and vertex data are used to figure out the extents that the
@@ -1051,7 +1052,7 @@ void GLRenderer::toGLMatrix(float* flattened, const WebTransformationMatrix& m)
     flattened[15] = m.m44();
 }
 
-void GLRenderer::setShaderFloatQuad(const FloatQuad& quad, int quadLocation)
+void GLRenderer::setShaderQuadF(const gfx::QuadF& quad, int quadLocation)
 {
     if (quadLocation == -1)
         return;

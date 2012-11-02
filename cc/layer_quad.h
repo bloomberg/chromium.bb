@@ -6,7 +6,11 @@
 #ifndef CCLayerQuad_h
 #define CCLayerQuad_h
 
-#include "FloatQuad.h"
+#include "ui/gfx/point_f.h"
+
+namespace gfx {
+class QuadF;
+}
 
 static const float kAntiAliasingInflateDistance = 0.5f;
 
@@ -73,7 +77,7 @@ public:
     };
 
     LayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom);
-    LayerQuad(const FloatQuad&);
+    LayerQuad(const gfx::QuadF&);
 
     Edge left() const { return m_left; }
     Edge top() const { return m_top; }
@@ -85,7 +89,7 @@ public:
     void inflate(float d) { inflateX(d); inflateY(d); }
     void inflateAntiAliasingDistance() { inflate(kAntiAliasingInflateDistance); }
 
-    FloatQuad floatQuad() const;
+    gfx::QuadF ToQuadF() const;
 
     void toFloatArray(float[12]) const;
 

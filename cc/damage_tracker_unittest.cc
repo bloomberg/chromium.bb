@@ -348,7 +348,7 @@ TEST_F(DamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
 
     // Sanity check that the child layer's bounds would actually get clipped by w < 0,
     // otherwise this test is not actually testing the intended scenario.
-    FloatQuad testQuad(gfx::RectF(gfx::PointF(), gfx::SizeF(100, 100)));
+    gfx::QuadF testQuad(gfx::RectF(gfx::PointF(), gfx::SizeF(100, 100)));
     bool clipped = false;
     MathUtil::mapQuad(transform, testQuad, clipped);
     EXPECT_TRUE(clipped);
