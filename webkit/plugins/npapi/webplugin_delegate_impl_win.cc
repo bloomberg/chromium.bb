@@ -1239,7 +1239,8 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     if (!plugin_ime_.get())
       plugin_ime_.reset(new WebPluginIMEWin);
   }
-  WebPluginIMEWin::ScopedLock lock(plugin_ime_.get());
+  WebPluginIMEWin::ScopedLock lock(
+      event.isKeyboardEventType(event.type) ? plugin_ime_.get() : NULL);
 
   HWND last_focus_window = NULL;
 
