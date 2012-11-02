@@ -157,7 +157,7 @@
  "nacl-oneiric_32-newlib-arm_hw-pnacl-panda-spec/spec2k/compiletime_twolf/pnacl_translator.opt.hw.arm": {"reva": 10116, "revb": 10160, "type": "absolute", "improve": 19, "regress": 25, "sha1": "a1a6d7cc"},
  "nacl-oneiric_32-newlib-arm_hw-pnacl-panda-spec/spec2k/compiletime_vortex/pnacl_translator.opt.hw.arm": {"reva": 10116, "revb": 10160, "type": "absolute", "improve": 21, "regress": 26, "sha1": "3c7c1946"},
  "nacl-oneiric_32-newlib-arm_hw-pnacl-panda-spec/spec2k/compiletime_vpr/pnacl_translator.opt.hw.arm": {"reva": 10116, "revb": 10160, "type": "absolute", "improve": 13, "regress": 18, "sha1": "c6f79b39"},
- "nacl-oneiric_32-newlib-arm_hw-pnacl-panda-spec/spec2k/runtime_ammp/pnacl_translator.opt.hw.arm": {"reva": 10116, "revb": 10160, "type": "absolute", "improve": 131, "regress": 148, "sha1": "0fe8b111"},
+ "nacl-oneiric_32-newlib-arm_hw-pnacl-panda-spec/spec2k/runtime_ammp/pnacl_translator.opt.hw.arm": {"reva": 10167, "revb": 10175, "type": "absolute", "improve": 148, "regress": 165, "sha1": "6fa9c4e9"},
  "nacl-oneiric_32-newlib-arm_hw-pnacl-panda-spec/spec2k/runtime_art/pnacl_translator.opt.hw.arm": {"reva": 10116, "revb": 10160, "type": "absolute", "improve": 20, "regress": 28, "sha1": "ac1a652b"},
  "nacl-oneiric_32-newlib-arm_hw-pnacl-panda-spec/spec2k/runtime_bzip2/pnacl_translator.opt.hw.arm": {"reva": 10116, "revb": 10160, "type": "absolute", "improve": 75, "regress": 88, "sha1": "b4ec8812"},
  "nacl-oneiric_32-newlib-arm_hw-pnacl-panda-spec/spec2k/runtime_crafty/pnacl_translator.opt.hw.arm": {"reva": 10116, "revb": 10160, "type": "absolute", "improve": 42, "regress": 48, "sha1": "2ceef563"},
