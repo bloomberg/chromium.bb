@@ -24,6 +24,7 @@ struct IndexedDBHostMsg_IndexOpenCursor_Params;
 struct IndexedDBHostMsg_ObjectStoreCount_Params;
 struct IndexedDBHostMsg_ObjectStoreCreateIndex_Params;
 struct IndexedDBHostMsg_ObjectStoreOpenCursor_Params;
+struct IndexedDBHostMsg_ObjectStorePutOld_Params;
 struct IndexedDBHostMsg_ObjectStorePut_Params;
 
 namespace WebKit {
@@ -116,8 +117,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnCreateObjectStore(
         const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params,
         int32* object_store_id, WebKit::WebExceptionCode* ec);
+    void OnDeleteObjectStoreOld(int32 idb_database_id,
+                                const string16& name,
+                                int32 transaction_id,
+                                WebKit::WebExceptionCode* ec);
     void OnDeleteObjectStore(int32 idb_database_id,
-                             const string16& name,
+                             int64 object_store_id,
                              int32 transaction_id,
                              WebKit::WebExceptionCode* ec);
     void OnSetVersion(int32 idb_database_id,
@@ -125,12 +130,17 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                       int32 response_id,
                       const string16& version,
                       WebKit::WebExceptionCode* ec);
+    void OnTransactionOld(int32 thread_id,
+                          int32 idb_database_id,
+                          const std::vector<string16>& names,
+                          int32 mode,
+                          int32* idb_transaction_id,
+                          WebKit::WebExceptionCode* ec);
     void OnTransaction(int32 thread_id,
                        int32 idb_database_id,
-                       const std::vector<string16>& names,
+                       const std::vector<int64>& names,
                        int32 mode,
-                       int32* idb_transaction_id,
-                       WebKit::WebExceptionCode* ec);
+                       int32* idb_transaction_id);
     void OnOpen(int32 idb_database_id, int32 thread_id, int32 response_id);
     void OnClose(int32 idb_database_id);
     void OnDestroyed(int32 idb_database_id);
@@ -181,17 +191,26 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                int32 response_id,
                const IndexedDBKeyRange& key_range,
                int32 transaction_id);
+    void OnPutOld(const IndexedDBHostMsg_ObjectStorePutOld_Params& params);
     void OnPut(const IndexedDBHostMsg_ObjectStorePut_Params& params);
-    void OnSetIndexKeys(
+    void OnSetIndexKeysOld(
         int32 idb_object_store_id,
         const IndexedDBKey& primary_key,
         const std::vector<string16>& index_names,
         const std::vector<std::vector<IndexedDBKey> >& index_keys,
         int32 transaction_id);
+    void OnSetIndexKeys(
+        int32 idb_object_store_id,
+        const IndexedDBKey& primary_key,
+        const std::vector<int64>& index_ids,
+        const std::vector<std::vector<IndexedDBKey> >& index_keys,
+        int32 transaction_id);
+    void OnSetIndexesReadyOld(int32 idb_object_store_id,
+                              const std::vector<string16>& names,
+                              int32 transaction_id);
     void OnSetIndexesReady(int32 idb_object_store_id,
-                           const std::vector<string16>& names,
+                           const std::vector<int64>& ids,
                            int32 transaction_id);
-
     void OnDelete(int idb_object_store_id,
                   int32 thread_id,
                   int32 response_id,
@@ -205,12 +224,19 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
         const IndexedDBHostMsg_ObjectStoreCreateIndex_Params& params,
         int32* index_id,
         WebKit::WebExceptionCode* ec);
+    void OnIndexOld(int32 idb_object_store_id,
+                    const string16& name,
+                    int32* idb_index_id,
+                    WebKit::WebExceptionCode* ec);
     void OnIndex(int32 idb_object_store_id,
-                 const string16& name,
-                 int32* idb_index_id,
-                 WebKit::WebExceptionCode* ec);
+                 int64 index_id,
+                 int32* idb_index_id);
+    void OnDeleteIndexOld(int32 idb_object_store_id,
+                          const string16& name,
+                          int32 transaction_id,
+                          WebKit::WebExceptionCode* ec);
     void OnDeleteIndex(int32 idb_object_store_id,
-                       const string16& name,
+                       int64 index_id,
                        int32 transaction_id,
                        WebKit::WebExceptionCode* ec);
     void OnOpenCursor(
@@ -267,9 +293,13 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     void OnCommit(int32 transaction_id);
     void OnAbort(int32 transaction_id);
+    void OnObjectStoreOld(int32 transaction_id,
+                          const string16& name,
+                          int32* object_store_ipc_id,
+                          WebKit::WebExceptionCode* ec);
     void OnObjectStore(int32 transaction_id,
-                       const string16& name,
-                       int32* object_store_id,
+                       int64 object_store_id,
+                       int32* object_store_ipc_id,
                        WebKit::WebExceptionCode* ec);
     void OnDidCompleteTaskEvents(int transaction_id);
     void OnDestroyed(int32 idb_transaction_id);

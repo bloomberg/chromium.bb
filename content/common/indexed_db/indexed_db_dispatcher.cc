@@ -381,7 +381,7 @@ void IndexedDBDispatcher::RequestIDBIndexGetKey(
 void IndexedDBDispatcher::RequestIDBObjectStoreGet(
     const IndexedDBKeyRange& key_range,
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id,
+    int32 object_store_ipc_id,
     const WebIDBTransaction& transaction,
     WebExceptionCode* ec) {
   ResetCursorPrefetchCaches();
@@ -389,7 +389,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreGet(
 
   int32 response_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_ObjectStoreGet(
-           idb_object_store_id, CurrentWorkerId(), response_id,
+           object_store_ipc_id, CurrentWorkerId(), response_id,
            key_range, TransactionId(transaction)));
 }
 
@@ -398,7 +398,7 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
     const IndexedDBKey& key,
     WebKit::WebIDBObjectStore::PutMode put_mode,
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id,
+    int32 object_store_ipc_id,
     const WebIDBTransaction& transaction,
     const WebKit::WebVector<WebKit::WebString>& index_names,
     const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >& index_keys,
@@ -410,9 +410,9 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
     *ec = WebKit::WebIDBDatabaseExceptionDataError;
     return;
   }
-  IndexedDBHostMsg_ObjectStorePut_Params params;
+  IndexedDBHostMsg_ObjectStorePutOld_Params params;
   params.thread_id = CurrentWorkerId();
-  params.idb_object_store_id = idb_object_store_id;
+  params.object_store_ipc_id = object_store_ipc_id;
   params.response_id = pending_callbacks_.Add(callbacks.release());
   params.serialized_value = value;
   params.key = key;
@@ -430,13 +430,48 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
           params.index_keys[i][j] = IndexedDBKey(index_keys[i][j]);
       }
   }
+  Send(new IndexedDBHostMsg_ObjectStorePutOld(params));
+}
+
+void IndexedDBDispatcher::RequestIDBObjectStorePut(
+    const SerializedScriptValue& value,
+    const IndexedDBKey& key,
+    WebKit::WebIDBObjectStore::PutMode put_mode,
+    WebIDBCallbacks* callbacks_ptr,
+    int32 object_store_ipc_id,
+    const WebIDBTransaction& transaction,
+    const WebKit::WebVector<long long>& index_ids,
+    const WebKit::WebVector<WebKit::WebVector<
+        WebKit::WebIDBKey> >& index_keys) {
+  ResetCursorPrefetchCaches();
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  IndexedDBHostMsg_ObjectStorePut_Params params;
+  params.thread_id = CurrentWorkerId();
+  params.object_store_ipc_id = object_store_ipc_id;
+  params.response_id = pending_callbacks_.Add(callbacks.release());
+  params.serialized_value = value;
+  params.key = key;
+  params.put_mode = put_mode;
+  params.transaction_id = TransactionId(transaction);
+  params.index_ids.resize(index_ids.size());
+  for (size_t i = 0; i < index_ids.size(); ++i) {
+      params.index_ids[i] = index_ids[i];
+  }
+
+  params.index_keys.resize(index_keys.size());
+  for (size_t i = 0; i < index_keys.size(); ++i) {
+      params.index_keys[i].resize(index_keys[i].size());
+      for (size_t j = 0; j < index_keys[i].size(); ++j) {
+          params.index_keys[i][j] = IndexedDBKey(index_keys[i][j]);
+      }
+  }
   Send(new IndexedDBHostMsg_ObjectStorePut(params));
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreDelete(
     const IndexedDBKeyRange& key_range,
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id,
+    int32 object_store_ipc_id,
     const WebIDBTransaction& transaction,
     WebExceptionCode* ec) {
   ResetCursorPrefetchCaches();
@@ -444,13 +479,13 @@ void IndexedDBDispatcher::RequestIDBObjectStoreDelete(
 
   int32 response_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_ObjectStoreDelete(
-      idb_object_store_id, CurrentWorkerId(), response_id, key_range,
+      object_store_ipc_id, CurrentWorkerId(), response_id, key_range,
       TransactionId(transaction)));
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreClear(
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id,
+    int32 object_store_ipc_id,
     const WebIDBTransaction& transaction,
     WebExceptionCode* ec) {
   ResetCursorPrefetchCaches();
@@ -458,7 +493,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreClear(
 
   int32 response_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_ObjectStoreClear(
-      idb_object_store_id, CurrentWorkerId(), response_id,
+      object_store_ipc_id, CurrentWorkerId(), response_id,
       TransactionId(transaction)));
 }
 
@@ -466,7 +501,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
     const WebIDBKeyRange& idb_key_range,
     WebKit::WebIDBCursor::Direction direction,
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id,
+    int32 object_store_ipc_id,
     WebKit::WebIDBTransaction::TaskType task_type,
     const WebIDBTransaction& transaction,
     WebExceptionCode* ec) {
@@ -477,7 +512,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
   params.response_id = pending_callbacks_.Add(callbacks.release());
   params.key_range = IndexedDBKeyRange(idb_key_range);
   params.direction = direction;
-  params.idb_object_store_id = idb_object_store_id;
+  params.object_store_ipc_id = object_store_ipc_id;
   params.task_type = task_type;
   params.transaction_id = TransactionId(transaction);
   Send(new IndexedDBHostMsg_ObjectStoreOpenCursor(params));
@@ -486,7 +521,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
 void IndexedDBDispatcher::RequestIDBObjectStoreCount(
     const WebIDBKeyRange& idb_key_range,
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id,
+    int32 object_store_ipc_id,
     const WebIDBTransaction& transaction,
     WebExceptionCode* ec) {
   ResetCursorPrefetchCaches();
@@ -495,7 +530,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreCount(
   params.thread_id = CurrentWorkerId();
   params.response_id = pending_callbacks_.Add(callbacks.release());
   params.key_range = IndexedDBKeyRange(idb_key_range);
-  params.idb_object_store_id = idb_object_store_id;
+  params.object_store_ipc_id = object_store_ipc_id;
   params.transaction_id = TransactionId(transaction);
   Send(new IndexedDBHostMsg_ObjectStoreCount(params));
 }

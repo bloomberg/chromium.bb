@@ -154,7 +154,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void RequestIDBObjectStoreGet(
       const IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_object_store_id,
+      int32 object_store_ipc_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
@@ -163,22 +163,33 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const IndexedDBKey& key,
       WebKit::WebIDBObjectStore::PutMode putMode,
       WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_object_store_id,
+      int32 object_store_ipc_id,
       const WebKit::WebIDBTransaction& transaction,
       const WebKit::WebVector<WebKit::WebString>& indexNames,
       const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >& indexKeys,
       WebKit::WebExceptionCode* ec);
 
+  void RequestIDBObjectStorePut(
+      const SerializedScriptValue& value,
+      const IndexedDBKey& key,
+      WebKit::WebIDBObjectStore::PutMode putMode,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 object_store_ipc_id,
+      const WebKit::WebIDBTransaction& transaction,
+      const WebKit::WebVector<long long>& indexIds,
+      const WebKit::WebVector<WebKit::WebVector<
+          WebKit::WebIDBKey> >& indexKeys);
+
   void RequestIDBObjectStoreDelete(
       const IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_object_store_id,
+      int32 object_store_ipc_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreClear(
       WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_object_store_id,
+      int32 object_store_ipc_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
@@ -186,7 +197,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const WebKit::WebIDBKeyRange& idb_key_range,
       WebKit::WebIDBCursor::Direction direction,
       WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_object_store_id,
+      int32 object_store_ipc_id,
       WebKit::WebIDBTransaction::TaskType task_type,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
@@ -194,7 +205,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void RequestIDBObjectStoreCount(
       const WebKit::WebIDBKeyRange& idb_key_range,
       WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_object_store_id,
+      int32 object_store_ipc_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 

@@ -39,6 +39,10 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       const WebKit::WebString& name,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);
+  virtual void deleteObjectStore(
+      long long object_store_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode& ec);
   virtual void setVersion(
       const WebKit::WebString& version, WebKit::WebIDBCallbacks* callbacks,
       WebKit::WebExceptionCode& ec);
@@ -46,6 +50,9 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       const WebKit::WebDOMStringList& names,
       unsigned short mode,
       WebKit::WebExceptionCode& ec);
+  virtual WebKit::WebIDBTransaction* transaction(
+      const WebKit::WebVector<long long>& objectStoreIds,
+      unsigned short mode);
   virtual void close();
 
  private:

@@ -121,8 +121,18 @@ void RendererWebIDBDatabaseImpl::deleteObjectStore(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseDeleteObjectStore(
+      new IndexedDBHostMsg_DatabaseDeleteObjectStoreOld(
           idb_database_id_, name,
+          IndexedDBDispatcher::TransactionId(transaction), &ec));
+}
+
+void RendererWebIDBDatabaseImpl::deleteObjectStore(
+    long long object_store_id,
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+  IndexedDBDispatcher::Send(
+      new IndexedDBHostMsg_DatabaseDeleteObjectStore(
+          idb_database_id_, object_store_id,
           IndexedDBDispatcher::TransactionId(transaction), &ec));
 }
 
@@ -146,9 +156,26 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
     object_stores.push_back(names.item(i));
 
   int transaction_id;
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseTransaction(
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseTransactionOld(
       WorkerTaskRunner::Instance()->CurrentWorkerId(),
       idb_database_id_, object_stores, mode, &transaction_id, &ec));
+  if (!transaction_id)
+    return NULL;
+  return new RendererWebIDBTransactionImpl(transaction_id);
+}
+
+WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
+    const WebVector<long long>& object_store_ids,
+    unsigned short mode) {
+  std::vector<int64> object_stores;
+  object_stores.reserve(object_store_ids.size());
+  for (unsigned int i = 0; i < object_store_ids.size(); ++i)
+      object_stores.push_back(object_store_ids[i]);
+
+  int transaction_id;
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseTransaction(
+      WorkerTaskRunner::Instance()->CurrentWorkerId(),
+      idb_database_id_, object_stores, mode, &transaction_id));
   if (!transaction_id)
     return NULL;
   return new RendererWebIDBTransactionImpl(transaction_id);
