@@ -61,6 +61,8 @@ void BrowserTestBase::SetUp() {
 
   command_line->AppendSwitch(switches::kDomAutomationController);
 
+  command_line->AppendSwitch(switches::kSkipGpuDataLoading);
+
   MainFunctionParams params(*command_line);
   params.ui_task =
       new base::Closure(
