@@ -308,6 +308,19 @@ bool Bus::Connect() {
                << (error.is_set() ? error.message() : "");
     return false;
   }
+
+  if (bus_type_ == CUSTOM_ADDRESS) {
+    // We should call dbus_bus_register here, otherwise unique name can not be
+    // acquired. According to dbus specification, it is responsible to call
+    // org.freedesktop.DBus.Hello method at the beging of bus connection to
+    // acquire unique name. In the case of dbus_bus_get, dbus_bus_register is
+    // called internally.
+    if (!dbus_bus_register(connection_, error.get())) {
+      LOG(ERROR) << "Failed to register the bus component: "
+                 << (error.is_set() ? error.message() : "");
+      return false;
+    }
+  }
   // We shouldn't exit on the disconnected signal.
   dbus_connection_set_exit_on_disconnect(connection_, false);
 
