@@ -11,7 +11,7 @@ namespace gfx {
 
 int ClampToInt(float value) {
   if (value != value)
-    return 0; // no int NaN.
+     return 0; // no int NaN.
   if (value >= std::numeric_limits<int>::max())
     return std::numeric_limits<int>::max();
   if (value <= std::numeric_limits<int>::min())
@@ -34,16 +34,6 @@ int ToRoundedInt(float value) {
   else
     rounded = std::ceil(value - 0.5f);
   return ClampToInt(rounded);
-}
-
-bool IsExpressibleAsInt(float value) {
-  if (value != value)
-    return false; // no int NaN.
-  if (value > std::numeric_limits<int>::max())
-    return false;
-  if (value < std::numeric_limits<int>::min())
-    return false;
-  return true;
 }
 
 }  // namespace gfx

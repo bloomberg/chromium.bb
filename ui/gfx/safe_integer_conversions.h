@@ -13,7 +13,6 @@ UI_EXPORT int ClampToInt(float value);
 UI_EXPORT int ToFlooredInt(float value);
 UI_EXPORT int ToCeiledInt(float value);
 UI_EXPORT int ToRoundedInt(float value);
-UI_EXPORT bool IsExpressibleAsInt(float value);
 
 }  // namespace gfx
 
