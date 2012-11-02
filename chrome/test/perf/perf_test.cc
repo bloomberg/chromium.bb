@@ -231,13 +231,13 @@ std::string IOPerfInfoToString(const std::string& test_name,
   }
 
   std::string t_name(test_name);
-  AppendResult(output, "read_op_b", "", "r_op_b" + t_name, read_op_b, "ops",
+  AppendResult(output, "read_op_b", "", "r_op_b" + t_name, read_op_b, "",
                false);
-  AppendResult(output, "write_op_b", "", "w_op_b" + t_name, write_op_b, "ops",
+  AppendResult(output, "write_op_b", "", "w_op_b" + t_name, write_op_b, "",
                false);
-  AppendResult(output, "other_op_b", "", "o_op_b" + t_name, other_op_b, "ops",
+  AppendResult(output, "other_op_b", "", "o_op_b" + t_name, other_op_b, "",
                false);
-  AppendResult(output, "total_op_b", "", "IO_op_b" + t_name, total_op_b, "ops",
+  AppendResult(output, "total_op_b", "", "IO_op_b" + t_name, total_op_b, "",
                false);
 
   AppendResult(output, "read_byte_b", "", "r_b" + t_name, read_byte_b, "kb",
@@ -249,13 +249,13 @@ std::string IOPerfInfoToString(const std::string& test_name,
   AppendResult(output, "total_byte_b", "", "IO_b" + t_name, total_byte_b, "kb",
                false);
 
-  AppendResult(output, "read_op_r", "", "r_op_r" + t_name, read_op_r, "ops",
+  AppendResult(output, "read_op_r", "", "r_op_r" + t_name, read_op_r, "",
                false);
-  AppendResult(output, "write_op_r", "", "w_op_r" + t_name, write_op_r, "ops",
+  AppendResult(output, "write_op_r", "", "w_op_r" + t_name, write_op_r, "",
                false);
-  AppendResult(output, "other_op_r", "", "o_op_r" + t_name, other_op_r, "ops",
+  AppendResult(output, "other_op_r", "", "o_op_r" + t_name, other_op_r, "",
                false);
-  AppendResult(output, "total_op_r", "", "IO_op_r" + t_name, total_op_r, "ops",
+  AppendResult(output, "total_op_r", "", "IO_op_r" + t_name, total_op_r, "",
                false);
 
   AppendResult(output, "read_byte_r", "", "r_r" + t_name, read_byte_r, "kb",
@@ -412,7 +412,7 @@ std::string MemoryUsageInfoToString(const std::string& test_name,
   NOTIMPLEMENTED();
 #endif
   AppendResult(output, "processes", "", "proc_" + trace_name,
-               chrome_processes.size(), "count",
+               chrome_processes.size(), "",
                false /* not important */);
 
   return output;
