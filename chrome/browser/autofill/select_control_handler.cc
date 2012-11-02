@@ -14,6 +14,8 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/common/form_field_data.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -194,6 +196,38 @@ bool FillExpirationMonthSelectControl(const string16& value,
   return filled;
 }
 
+// Try to fill a credit card type |value| (Visa, MasterCard, etc.) into the
+// given |field|.
+bool FillCreditCardTypeSelectControl(const string16& value,
+                                     FormFieldData* field) {
+  // Try stripping off spaces.
+  string16 value_stripped;
+  RemoveChars(StringToLowerASCII(value), kWhitespaceUTF16, &value_stripped);
+
+  for (size_t i = 0; i < field->option_values.size(); ++i) {
+    string16 option_value_lowercase;
+    RemoveChars(StringToLowerASCII(field->option_values[i]), kWhitespaceUTF16,
+                &option_value_lowercase);
+    string16 option_contents_lowercase;
+    RemoveChars(StringToLowerASCII(field->option_contents[i]), kWhitespaceUTF16,
+                &option_contents_lowercase);
+
+    // Perform a case-insensitive comparison; but fill the form with the
+    // original text, not the lowercased version.
+    if (value_stripped == option_value_lowercase ||
+        value_stripped == option_contents_lowercase) {
+      field->value = field->option_values[i];
+      return true;
+    }
+  }
+
+  // For American Express, also try filling as "AmEx".
+  if (value == l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX))
+    return FillCreditCardTypeSelectControl(ASCIIToUTF16("AmEx"), field);
+
+  return false;
+}
+
 }  // namespace
 
 namespace autofill {
@@ -243,6 +277,8 @@ void FillSelectControl(const FormGroup& form_group,
     // fact that our heuristics do not always correctly detect when a website
     // requests a 2-digit rather than a 4-digit year.
     FillSelectControl(form_group, CREDIT_CARD_EXP_2_DIGIT_YEAR, field);
+  } else if (type == CREDIT_CARD_TYPE) {
+    FillCreditCardTypeSelectControl(field_text, field);
   }
 
   return;

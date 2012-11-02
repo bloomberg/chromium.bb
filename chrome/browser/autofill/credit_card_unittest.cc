@@ -180,3 +180,15 @@ TEST_F(CreditCardTest, SetInfoExpirationMonth) {
   card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("Apr"));
   EXPECT_EQ(ASCIIToUTF16("04"), card.GetInfo(CREDIT_CARD_EXP_MONTH));
 }
+
+TEST_F(CreditCardTest, CreditCardType) {
+  CreditCard card;
+
+  // The card type cannot be set directly.
+  card.SetInfo(CREDIT_CARD_TYPE, ASCIIToUTF16("Visa"));
+  EXPECT_EQ(string16(), card.GetInfo(CREDIT_CARD_TYPE));
+
+  // Setting the number should implicitly set the type.
+  card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111 1111 1111 1111"));
+  EXPECT_EQ(ASCIIToUTF16("Visa"), card.GetInfo(CREDIT_CARD_TYPE));
+}

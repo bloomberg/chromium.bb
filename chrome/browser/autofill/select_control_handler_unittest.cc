@@ -16,8 +16,9 @@ TEST(SelectControlHandlerTest, CreditCardMonthExact) {
     "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
   };
   std::vector<string16> options(arraysize(kMonthsNumeric));
-  for (size_t i = 0; i < arraysize(kMonthsNumeric); ++i)
+  for (size_t i = 0; i < arraysize(kMonthsNumeric); ++i) {
     options[i] = ASCIIToUTF16(kMonthsNumeric[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";
@@ -36,8 +37,9 @@ TEST(SelectControlHandlerTest, CreditCardMonthAbbreviated) {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   };
   std::vector<string16> options(arraysize(kMonthsAbbreviated));
-  for (size_t i = 0; i < arraysize(kMonthsAbbreviated); ++i)
+  for (size_t i = 0; i < arraysize(kMonthsAbbreviated); ++i) {
     options[i] = ASCIIToUTF16(kMonthsAbbreviated[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";
@@ -56,8 +58,9 @@ TEST(SelectControlHandlerTest, CreditCardMonthFull) {
     "July", "August", "September", "October", "November", "December",
   };
   std::vector<string16> options(arraysize(kMonthsFull));
-  for (size_t i = 0; i < arraysize(kMonthsFull); ++i)
+  for (size_t i = 0; i < arraysize(kMonthsFull); ++i) {
     options[i] = ASCIIToUTF16(kMonthsFull[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";
@@ -75,8 +78,9 @@ TEST(SelectControlHandlerTest, CreditCardMonthNumeric) {
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
   };
   std::vector<string16> options(arraysize(kMonthsNumeric));
-  for (size_t i = 0; i < arraysize(kMonthsNumeric); ++i)
+  for (size_t i = 0; i < arraysize(kMonthsNumeric); ++i) {
     options[i] = ASCIIToUTF16(kMonthsNumeric[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";
@@ -94,8 +98,9 @@ TEST(SelectControlHandlerTest, CreditCardTwoDigitYear) {
     "12", "13", "14", "15", "16", "17", "18", "19"
   };
   std::vector<string16> options(arraysize(kYears));
-  for (size_t i = 0; i < arraysize(kYears); ++i)
+  for (size_t i = 0; i < arraysize(kYears); ++i) {
     options[i] = ASCIIToUTF16(kYears[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";
@@ -109,13 +114,65 @@ TEST(SelectControlHandlerTest, CreditCardTwoDigitYear) {
   EXPECT_EQ(ASCIIToUTF16("17"), field.value);
 }
 
+TEST(SelectControlHandlerTest, CreditCardType) {
+  const char* const kCreditCardTypes[] = {
+    "Visa", "Master Card", "AmEx", "discover"
+  };
+  std::vector<string16> options(arraysize(kCreditCardTypes));
+  for (size_t i = 0; i < arraysize(kCreditCardTypes); ++i) {
+    options[i] = ASCIIToUTF16(kCreditCardTypes[i]);
+  }
+
+  FormFieldData field;
+  field.form_control_type = "select-one";
+  field.option_values = options;
+  field.option_contents = options;
+
+  // Credit card types are inferred from the numbers, so we use test numbers for
+  // each card type.  Test card numbers are drawn from
+  // http://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
+
+  {
+    // Normal case:
+    CreditCard credit_card;
+    credit_card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+    autofill::FillSelectControl(credit_card, CREDIT_CARD_TYPE, &field);
+    EXPECT_EQ(ASCIIToUTF16("Visa"), field.value);
+  }
+
+  {
+    // Filling should be able to handle intervening whitespace:
+    CreditCard credit_card;
+    credit_card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("5105105105105100"));
+    autofill::FillSelectControl(credit_card, CREDIT_CARD_TYPE, &field);
+    EXPECT_EQ(ASCIIToUTF16("Master Card"), field.value);
+  }
+
+  {
+    // American Express is sometimes abbreviated as AmEx:
+    CreditCard credit_card;
+    credit_card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("371449635398431"));
+    autofill::FillSelectControl(credit_card, CREDIT_CARD_TYPE, &field);
+    EXPECT_EQ(ASCIIToUTF16("AmEx"), field.value);
+  }
+
+  {
+    // Case insensitivity:
+    CreditCard credit_card;
+    credit_card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("6011111111111117"));
+    autofill::FillSelectControl(credit_card, CREDIT_CARD_TYPE, &field);
+    EXPECT_EQ(ASCIIToUTF16("discover"), field.value);
+  }
+}
+
 TEST(SelectControlHandlerTest, AddressCountryFull) {
   const char* const kCountries[] = {
     "Albania", "Canada"
   };
   std::vector<string16> options(arraysize(kCountries));
-  for (size_t i = 0; i < arraysize(kCountries); ++i)
+  for (size_t i = 0; i < arraysize(kCountries); ++i) {
     options[i] = ASCIIToUTF16(kCountries[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";
@@ -133,8 +190,9 @@ TEST(SelectControlHandlerTest, AddressCountryAbbrev) {
     "AL", "CA"
   };
   std::vector<string16> options(arraysize(kCountries));
-  for (size_t i = 0; i < arraysize(kCountries); ++i)
+  for (size_t i = 0; i < arraysize(kCountries); ++i) {
     options[i] = ASCIIToUTF16(kCountries[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";
@@ -152,8 +210,9 @@ TEST(SelectControlHandlerTest, AddressStateFull) {
     "Alabama", "California"
   };
   std::vector<string16> options(arraysize(kStates));
-  for (size_t i = 0; i < arraysize(kStates); ++i)
+  for (size_t i = 0; i < arraysize(kStates); ++i) {
     options[i] = ASCIIToUTF16(kStates[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";
@@ -171,8 +230,9 @@ TEST(SelectControlHandlerTest, AddressStateAbbrev) {
     "AL", "CA"
   };
   std::vector<string16> options(arraysize(kStates));
-  for (size_t i = 0; i < arraysize(kStates); ++i)
+  for (size_t i = 0; i < arraysize(kStates); ++i) {
     options[i] = ASCIIToUTF16(kStates[i]);
+  }
 
   FormFieldData field;
   field.form_control_type = "select-one";

@@ -10199,28 +10199,28 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
         Include addresses from my Address Book card
       </message>
-      <message name="IDS_AUTOFILL_CC_AMEX" desc="American Express credit card name, for use as an image's 'alt' attribute.">
+      <message name="IDS_AUTOFILL_CC_AMEX" desc="American Express credit card name.">
         American Express
       </message>
-      <message name="IDS_AUTOFILL_CC_DINERS" desc="Diners Club credit card name, for use as an image's 'alt' attribute.">
+      <message name="IDS_AUTOFILL_CC_DINERS" desc="Diners Club credit card name.">
         Diners Club
       </message>
-      <message name="IDS_AUTOFILL_CC_DISCOVER" desc="Discover credit card name, for use as an image's 'alt' attribute.">
+      <message name="IDS_AUTOFILL_CC_DISCOVER" desc="Discover credit card name.">
         Discover
       </message>
       <message name="IDS_AUTOFILL_CC_GENERIC" desc="Generic credit card description, for use as an image's 'alt' attribute.">
         Credit card (other)
       </message>
-      <message name="IDS_AUTOFILL_CC_JCB" desc="JCB credit card name, for use as an image's 'alt' attribute.">
+      <message name="IDS_AUTOFILL_CC_JCB" desc="JCB credit card name.">
         JCB
       </message>
-      <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name, for use as an image's 'alt' attribute.">
+      <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name.">
         MasterCard
       </message>
-      <message name="IDS_AUTOFILL_CC_SOLO" desc="Solo credit card name, for use as an image's 'alt' attribute.">
-        Solo debit card
+      <message name="IDS_AUTOFILL_CC_SOLO" desc="Solo debit card name.">
+        Solo
       </message>
-      <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name, for use as an image's 'alt' attribute.">
+      <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name.">
         Visa
       </message>
       <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">

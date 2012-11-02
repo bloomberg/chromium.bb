@@ -122,6 +122,34 @@ std::string GetCreditCardType(const string16& number) {
   return kGenericCard;
 }
 
+string16 GetCreditCardTypeDisplayName(const std::string& card_type) {
+  if (card_type == kAmericanExpressCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
+
+  if (card_type == kDinersCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
+
+  if (card_type == kDiscoverCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
+
+  if (card_type == kJCBCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
+
+  if (card_type == kMasterCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
+
+  if (card_type == kSoloCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_SOLO);
+
+  if (card_type == kVisaCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
+
+  // If you hit this DCHECK, the above list of cases needs to be updated to
+  // include a new card.
+  DCHECK_EQ(kGenericCard, card_type);
+  return string16();
+}
+
 bool ConvertYear(const string16& year, int* num) {
   // If the |year| is empty, clear the stored value.
   if (year.empty()) {
@@ -207,6 +235,7 @@ CreditCard::~CreditCard() {}
 void CreditCard::GetSupportedTypes(FieldTypeSet* supported_types) const {
   supported_types->insert(CREDIT_CARD_NAME);
   supported_types->insert(CREDIT_CARD_NUMBER);
+  supported_types->insert(CREDIT_CARD_TYPE);
   supported_types->insert(CREDIT_CARD_EXP_MONTH);
   supported_types->insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
   supported_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
@@ -245,8 +274,7 @@ string16 CreditCard::GetInfo(AutofillFieldType type) const {
     }
 
     case CREDIT_CARD_TYPE:
-      // We don't handle this case.
-      return string16();
+      return GetCreditCardTypeDisplayName(type_);
 
     case CREDIT_CARD_NUMBER:
       return number_;
