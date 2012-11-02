@@ -39,24 +39,25 @@
       'filepath': 'ui/aura/|'\
                   'ash/',
     },
-    # TODO(blundell): Add any new paths to this file after applying jam's
-    # comments.
     'autofill': {
-      'filepath': 'chrome/browser/autofill/|'\
-        'chrome/browser/resources/options/autofill_|'\
-        'chrome/browser/sync/glue/autofill_|'\
-        'chrome/browser/ui/webui/options/autofill_|'\
-        'chrome/common/form_|'\
-        'chrome/common/password_|'\
-        'chrome/renderer/autofill/|'\
-        'chrome/test/data/autofill/|'\
-        'chrome/test/data/autofill/heuristics/input/|'\
-        'chrome/test/data/autofill/heuristics/output/|'\
-        'chrome/test/data/autofill/merge/input/|'\
-        'chrome/test/data/autofill/merge/output/|'\
-        'content/public/common/password_|'\
-        'content/public/renderer/password_'\
-        'content/renderer/password_',
+      'filepath': 'chrome/browser/api/webdata/|'\
+                  'chrome/browser/autofill/|'\
+                  'chrome/browser/resources/options/autofill_|'\
+                  'chrome/browser/sync/glue/autofill_|'\
+                  'chrome/browser/ui/android/autofill/|'\
+                  'chrome/browser/ui/autofill/|'\
+                  'chrome/browser/ui/gtk/autofill/|'\
+                  'chrome/browser/ui/views/autofill/|'\
+                  'chrome/browser/ui/webui/options/autofill_|'\
+                  'chrome/browser/webdata/|'\
+                  'chrome/common/autofill_|'\
+                  'chrome/common/form_|'\
+                  'chrome/common/password_|'\
+                  'chrome/renderer/autofill/|'\
+                  'chrome/test/data/autofill/|'\
+                  'content/public/common/password_|'\
+                  'content/public/renderer/password_|'\
+                  'content/renderer/password_',
     },
     'automation': {
       'filepath': 'chrome/browser/automation/|chrome/test/automation/',
@@ -484,7 +485,9 @@
     'appcache': ['michaeln@chromium.org'],
     'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
     'autofill': ['dhollowa+watch@chromium.org', 'isherman@chromium.org',
-                 'dyu@chromium.org'],
+                 'dyu@chromium.org', 'abodenha@chromium.org',
+                 'dbeam+watch-autofill@chromium.org',
+                 'estade+watch@chromium.org'],
     'automation': ['kkania@chromium.org',
                    'robertshield@chromium.org'],
     'base': ['erikwright+watch@chromium.org'],
