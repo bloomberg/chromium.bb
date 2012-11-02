@@ -527,14 +527,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
   }
 }
 
-// Tests that no launch data is sent through if the platform app provides
-// an intent with the wrong action.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongIntent) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_intent"))
-      << message_;
-}
-
 // Tests that no launch data is sent through if the file is of the wrong MIME
 // type.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongType) {

@@ -895,6 +895,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                            const base::DictionaryValue& intent_service,
                            string16* error);
   bool LoadWebIntentServices(string16* error);
+  bool LoadFileHandler(const std::string& handler_id,
+                       const base::DictionaryValue& handler_info,
+                       string16* error);
+  bool LoadFileHandlers(string16* error);
   bool LoadExtensionFeatures(const APIPermissionSet& api_permissions,
                              string16* error);
   bool LoadDevToolsPage(string16* error);

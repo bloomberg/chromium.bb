@@ -119,6 +119,10 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "file_handlers": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
   "homepage_url": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

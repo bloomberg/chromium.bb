@@ -15,10 +15,10 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
-#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -35,8 +35,8 @@
 #include "chrome/common/extensions/features/simple_feature_provider.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
@@ -2108,6 +2108,73 @@ bool Extension::LoadWebIntentServices(string16* error) {
   return true;
 }
 
+bool Extension::LoadFileHandler(const std::string& handler_id,
+                                const DictionaryValue& handler_info,
+                                string16* error) {
+  DCHECK(error);
+  DCHECK(is_platform_app());
+  webkit_glue::WebIntentServiceData service;
+
+  // TODO(jeremya): use a file-handler-specific data structure instead of web
+  // intents.
+  service.action = ASCIIToUTF16("http://webintents.org/view");
+
+  const ListValue* mime_types = NULL;
+  if (!handler_info.HasKey(keys::kFileHandlerTypes) ||
+      !handler_info.GetList(keys::kFileHandlerTypes, &mime_types) ||
+      mime_types->GetSize() == 0) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidFileHandlerType, handler_id);
+    return false;
+  }
+
+  service.service_url = GetBackgroundURL();
+
+  if (handler_info.HasKey(keys::kFileHandlerTitle) &&
+      !handler_info.GetString(keys::kFileHandlerTitle, &service.title)) {
+    *error = ASCIIToUTF16(errors::kInvalidFileHandlerTitle);
+    return false;
+  }
+
+  for (size_t i = 0; i < mime_types->GetSize(); ++i) {
+    if (!mime_types->GetString(i, &service.type)) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidFileHandlerTypeElement, handler_id,
+          std::string(base::IntToString(i)));
+      return false;
+    }
+    intents_services_.push_back(service);
+  }
+  return true;
+}
+
+bool Extension::LoadFileHandlers(string16* error) {
+  DCHECK(error);
+
+  if (!manifest_->HasKey(keys::kFileHandlers))
+    return true;
+
+  DictionaryValue* all_handlers = NULL;
+  if (!manifest_->GetDictionary(keys::kFileHandlers, &all_handlers)) {
+    *error = ASCIIToUTF16(errors::kInvalidFileHandlers);
+    return false;
+  }
+
+  for (DictionaryValue::key_iterator iter(all_handlers->begin_keys());
+       iter != all_handlers->end_keys(); ++iter) {
+    // A file handler entry is a title and a list of MIME types to handle.
+    DictionaryValue* handler = NULL;
+    if (all_handlers->GetDictionaryWithoutPathExpansion(*iter, &handler)) {
+      if (!LoadFileHandler(*iter, *handler, error))
+        return false;
+    } else {
+      *error = ASCIIToUTF16(errors::kInvalidFileHandlers);
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Extension::LoadExtensionFeatures(const APIPermissionSet& api_permissions,
                                       string16* error) {
   if (manifest_->HasKey(keys::kConvertedFromUserScript))
@@ -2125,6 +2192,7 @@ bool Extension::LoadExtensionFeatures(const APIPermissionSet& api_permissions,
       !LoadOmnibox(error) ||
       !LoadTextToSpeechVoices(error) ||
       !LoadIncognitoMode(error) ||
+      !LoadFileHandlers(error) ||
       !LoadContentSecurityPolicy(error))
     return false;
 

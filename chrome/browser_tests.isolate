@@ -536,7 +536,6 @@
           'test/data/extensions/platform_apps/geometry/',
           'test/data/extensions/platform_apps/launch_file/',
           'test/data/extensions/platform_apps/launch_reply/',
-          'test/data/extensions/platform_apps/launch_wrong_intent/',
           'test/data/extensions/platform_apps/launch_wrong_type/',
           'test/data/extensions/platform_apps/restrictions/',
           'test/data/extensions/platform_apps/storage/',

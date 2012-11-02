@@ -1,9 +1,9 @@
 {
   "name": "Platform App Launch Test",
   "version": "1",
-  "intents": {
-    "http://webintents.org/view": {
-      "type": [
+  "file_handlers": {
+    "text": {
+      "types": [
         "text/*"
       ],
       "title": "Test editor"

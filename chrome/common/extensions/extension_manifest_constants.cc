@@ -33,6 +33,9 @@ const char kExcludeMatches[] = "exclude_matches";
 const char kFileAccessList[] = "file_access";
 const char kFileFilters[] = "file_filters";
 const char kFileBrowserHandlers[] = "file_browser_handlers";
+const char kFileHandlers[] = "file_handlers";
+const char kFileHandlerTitle[] = "title";
+const char kFileHandlerTypes[] = "types";
 const char kHomepageURL[] = "homepage_url";
 const char kIcons[] = "icons";
 const char kId[] = "id";
@@ -244,6 +247,14 @@ const char kInvalidFileFiltersList[] =
     "Invalid value for 'file_filters'.";
 const char kInvalidFileFilterValue[] =
     "Invalid value for 'file_filters[*]'.";
+const char kInvalidFileHandlers[] =
+    "Invalid value for 'file_handlers'.";
+const char kInvalidFileHandlerTitle[] =
+    "Invalid value for 'file_handlers[*].title'.";
+const char kInvalidFileHandlerType[] =
+    "Invalid value for 'file_handlers[*].type'.";
+const char kInvalidFileHandlerTypeElement[] =
+    "Invalid value for 'file_handlers[*].type[*]'.";
 const char kInvalidGlob[] =
     "Invalid value for 'content_scripts[*].*[*]'.";
 const char kInvalidGlobList[] =

@@ -38,6 +38,9 @@ namespace extension_manifest_keys {
   extern const char kExcludeGlobs[];
   extern const char kExcludeMatches[];
   extern const char kFileAccessList[];
+  extern const char kFileHandlers[];
+  extern const char kFileHandlerTitle[];
+  extern const char kFileHandlerTypes[];
   extern const char kFileFilters[];
   extern const char kFileBrowserHandlers[];
   extern const char kHomepageURL[];
@@ -207,6 +210,10 @@ namespace extension_manifest_errors {
   extern const char kInvalidFileBrowserHandler[];
   extern const char kInvalidFileFiltersList[];
   extern const char kInvalidFileFilterValue[];
+  extern const char kInvalidFileHandlers[];
+  extern const char kInvalidFileHandlerTitle[];
+  extern const char kInvalidFileHandlerType[];
+  extern const char kInvalidFileHandlerTypeElement[];
   extern const char kInvalidGlob[];
   extern const char kInvalidGlobList[];
   extern const char kInvalidHomepageURL[];
