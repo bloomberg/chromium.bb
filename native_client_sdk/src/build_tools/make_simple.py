@@ -129,7 +129,7 @@ $(TARGET): $(OBJS)
 link_section = """
 $(TARGET): $(OBJS)
 \t@mkdir -p $(dir $@)
-\t$(LINK.%(toolset)s) $(LDFLAGS_%(target_name_var)s_$(BUILDTYPE)) $(LDFLAGS.%(toolset)s) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS_%(target_name_var)s_$(BUILDTYPE))
+\t$(LINK.%(toolset)s) $(LDFLAGS_%(target_name_var)s_$(BUILDTYPE)) $(LDFLAGS.%(toolset)s) -o $@ -Wl,--start-group $^ $(LIBS_%(target_name_var)s_$(BUILDTYPE)) -Wl,--end-group
 """
 
 

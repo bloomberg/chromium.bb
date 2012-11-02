@@ -33,10 +33,10 @@ NEXE_TARGET = """\
       'sources': %(SOURCES)s,
       'libraries': %(LIBS)s,
       'include_dirs': %(INCLUDES)s,
-      'cflags': ['-m32'] + %(CFLAGS)s,
+      'cflags': ['-m32', '-pedantic'] + %(CFLAGS)s,
       'make_valid_configurations': ['newlib-debug', 'newlib-release',
                                     'glibc-debug', 'glibc-release'],
-      'ldflags': ['-m32'],
+      'ldflags': ['-m32', '-L../../lib/x86_32/<(CONFIGURATION_NAME)'],
       'toolset': 'target',
       %(CONFIGS)s
     },
@@ -49,7 +49,40 @@ NEXE_TARGET = """\
       'include_dirs': %(INCLUDES)s,
       'make_valid_configurations': ['newlib-debug', 'newlib-release',
                                     'glibc-debug', 'glibc-release'],
-      'cflags': ['-m64'] + %(CFLAGS)s,
+      'cflags': ['-m64', '-pedantic'] + %(CFLAGS)s,
+      'ldflags': ['-m64', '-L../../lib/x86_64/<(CONFIGURATION_NAME)'],
+      'toolset': 'target',
+      %(CONFIGS)s
+    },
+"""
+
+NLIB_TARGET = """\
+    {
+      'target_name': '%(NAME)s_x86_32%(EXT)s',
+      'product_name': 'lib%(NAME)s%(EXT)s',
+      'product_dir': '../../lib/x86_32/<(CONFIGURATION_NAME)',
+      'type': '%(GYP_TYPE)s',
+      'sources': %(SOURCES)s,
+      'libraries': %(LIBS)s,
+      'include_dirs': %(INCLUDES)s,
+      'cflags': ['-m32', '-pedantic'] + %(CFLAGS)s,
+      'make_valid_configurations': ['newlib-debug', 'newlib-release',
+                                    'glibc-debug', 'glibc-release'],
+      'ldflags': ['-m32'],
+      'toolset': 'target',
+      %(CONFIGS)s
+    },
+    {
+      'target_name': '%(NAME)s_x86_64%(EXT)s',
+      'product_name': 'lib%(NAME)s%(EXT)s',
+      'product_dir': '../../lib/x86_64/<(CONFIGURATION_NAME)',
+      'type': '%(GYP_TYPE)s',
+      'sources': %(SOURCES)s,
+      'libraries': %(LIBS)s,
+      'include_dirs': %(INCLUDES)s,
+      'make_valid_configurations': ['newlib-debug', 'newlib-release',
+                                    'glibc-debug', 'glibc-release'],
+      'cflags': ['-m64', '-pedantic'] + %(CFLAGS)s,
       'ldflags': ['-m64'],
       'toolset': 'target',
       %(CONFIGS)s
@@ -66,7 +99,7 @@ HOST_LIB_TARGET = """\
       'cflags_c': ['-std=gnu99'],
       'include_dirs': %(INCLUDES)s,
       'make_valid_configurations': ['host-debug', 'host-release'],
-      'product_dir': '../../lib/%(HOST)s_%(ARCH)s_host/<(CONFIGURATION_NAME)',
+      'product_dir': '../../lib/%(ARCH)s/<(CONFIGURATION_NAME)',
       'product_name': '%(NAME)s%(EXT)s',
       %(CONFIGS)s
     },
@@ -80,14 +113,14 @@ HOST_EXE_TARGET = """\
       'sources': %(SOURCES)s,
       'cflags': %(CFLAGS)s,
       'cflags_c': ['-std=gnu99'],
-      'ldflags': ['-L../../lib/%(HOST)s_%(ARCH)s_host/<(CONFIGURATION_NAME)'],
+      'ldflags': ['-L../../lib/%(ARCH)s/<(CONFIGURATION_NAME)'],
       'libraries': %(LIBS)s,
       'include_dirs': %(INCLUDES)s,
       'make_valid_configurations': ['host-debug', 'host-release'],
       'msvs_settings': {
         'VCLinkerTool': {
           'AdditionalLibraryDirectories':
-            ['../../lib/%(HOST)s_%(ARCH)s_host/<(CONFIGURATION_NAME)'],
+            ['../../lib/%(ARCH)s/<(CONFIGURATION_NAME)'],
          }
        },
        %(CONFIGS)s
@@ -184,7 +217,10 @@ def WriteNaClTargets(output, target, tools):
       configs += NEXE_CONFIG % {'toolchain': tc}
   configs += "      }"
   target['CONFIGS'] = configs
-  output.write(NEXE_TARGET % target)
+  if target['TYPE'] == 'lib':
+    output.write(NLIB_TARGET % target)
+  else:
+    output.write(NEXE_TARGET % target)
 
 
 def ConfigName(toolchain):

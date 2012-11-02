@@ -22,6 +22,6 @@
     'link_settings': { 'ldflags': ['-Wl,-as-needed'] },
     'libraries' : ['-lppapi', '-lppapi_cpp'],
     'ldflags': ['-pthread'],
-    'cflags': ['-pthread', '-Wno-long-long', '-Wall', '-Wswitch-enum', '-Werror', '-pedantic'],
+    'cflags': ['-pthread', '-Wno-long-long', '-Wall', '-Wswitch-enum', '-Werror'],
   },
 }
