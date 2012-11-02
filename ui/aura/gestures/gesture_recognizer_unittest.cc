@@ -143,6 +143,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_update() const { return pinch_update_; }
   bool pinch_end() const { return pinch_end_; }
   bool long_press() const { return long_press_; }
+  bool long_tap() const { return long_tap_; }
   bool fling() const { return fling_; }
   bool two_finger_tap() const { return two_finger_tap_; }
   bool swipe_left() const { return swipe_left_; }
@@ -228,6 +229,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         long_press_ = true;
         touch_id_ = gesture->details().touch_id();
         break;
+      case ui::ET_GESTURE_LONG_TAP:
+        long_tap_ = true;
+        break;
       case ui::ET_SCROLL_FLING_START:
         EXPECT_TRUE(gesture->details().velocity_x() != 0 ||
                     gesture->details().velocity_y() != 0);
@@ -272,6 +276,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_update_;
   bool pinch_end_;
   bool long_press_;
+  bool long_tap_;
   bool fling_;
   bool two_finger_tap_;
   bool swipe_left_;
@@ -1144,6 +1149,51 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
   EXPECT_FALSE(delegate->tap_cancel());
+}
+
+// Check that appropriate touch events generate long tap events
+TEST_F(GestureRecognizerTest, GestureEventLongTap) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId = 2;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  delegate->Reset();
+
+  TimerTestGestureRecognizer* gesture_recognizer =
+      new TimerTestGestureRecognizer(root_window());
+
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                            kTouchId, GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_TRUE(delegate->begin());
+  EXPECT_FALSE(delegate->tap_cancel());
+
+  // We haven't pressed long enough for a long press to occur
+  EXPECT_FALSE(delegate->long_press());
+
+  // Wait until the timer runs out
+  delegate->WaitUntilReceivedGesture(ui::ET_GESTURE_LONG_PRESS);
+  EXPECT_TRUE(delegate->long_press());
+  EXPECT_EQ(0, delegate->touch_id());
+  EXPECT_FALSE(delegate->tap_cancel());
+
+  delegate->Reset();
+  ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                              kTouchId, GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  EXPECT_FALSE(delegate->long_press());
+  EXPECT_TRUE(delegate->long_tap());
+
+  // Note the tap down isn't cancelled until the release
+  EXPECT_TRUE(delegate->tap_cancel());
 }
 
 // Check that second tap cancels a long press

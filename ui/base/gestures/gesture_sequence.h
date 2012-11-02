@@ -94,6 +94,8 @@ class UI_EXPORT GestureSequence {
   void AppendDoubleClickGestureEvent(const GesturePoint& point,
                                      Gestures* gestures);
   void AppendLongPressGestureEvent();
+  void AppendLongTapGestureEvent(const GesturePoint& point,
+                                 Gestures* gestures);
 
   // Scroll gestures.
   void AppendScrollGestureBegin(const GesturePoint& point,

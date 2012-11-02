@@ -873,6 +873,9 @@ bool GestureSequence::Click(const TouchEvent& event,
     if (double_tap)
       AppendDoubleClickGestureEvent(point, gestures);
     return true;
+  } else if (point.IsInsideManhattanSquare(event) &&
+      !GetLongPressTimer()->IsRunning()) {
+    AppendLongTapGestureEvent(point, gestures);
   }
   return false;
 }
@@ -979,6 +982,18 @@ void GestureSequence::AppendLongPressGestureEvent() {
       base::Time::FromDoubleT(point->last_touch_time()),
       1 << point->touch_id()));
   helper_->DispatchLongPressGestureEvent(gesture.get());
+}
+
+void GestureSequence::AppendLongTapGestureEvent(const GesturePoint& point,
+                                                Gestures* gestures) {
+  gfx::Rect er = point.enclosing_rectangle();
+  gfx::Point center = er.CenterPoint();
+  gestures->push_back(CreateGestureEvent(
+      GestureEventDetails(ui::ET_GESTURE_LONG_TAP, 0, 0),
+      center,
+      flags_,
+      base::Time::FromDoubleT(point.last_touch_time()),
+      1 << point.touch_id()));
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,

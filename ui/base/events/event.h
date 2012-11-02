@@ -123,6 +123,7 @@ class UI_EXPORT Event {
       case ET_GESTURE_PINCH_END:
       case ET_GESTURE_PINCH_UPDATE:
       case ET_GESTURE_LONG_PRESS:
+      case ET_GESTURE_LONG_TAP:
       case ET_GESTURE_MULTIFINGER_SWIPE:
         return true;
 
