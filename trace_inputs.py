@@ -89,10 +89,9 @@ if sys.platform == 'win32':
       err = GetLastError()
       if err:
         # pylint: disable=E0602
-        raise WindowsError(
-            err,
-            'QueryDosDevice(%s): %s (%d)' % (
-              str(drive_letter), FormatError(err), err))
+        msg = u'QueryDosDevice(%s): %s (%d)' % (
+              drive_letter, FormatError(err), err)
+        raise WindowsError(err, msg.encode('utf-8'))
     return p.value
 
 
@@ -112,10 +111,9 @@ if sys.platform == 'win32':
     err = GetLastError()
     if err:
       # pylint: disable=E0602
-      raise WindowsError(
-          err,
-          'GetShortPathName(%s): %s (%d)' % (
-            str(long_path), FormatError(err), err))
+      msg = u'GetShortPathName(%s): %s (%d)' % (
+            long_path, FormatError(err), err)
+      raise WindowsError(err, msg.encode('utf-8'))
 
 
   def GetLongPathName(short_path):
@@ -134,10 +132,9 @@ if sys.platform == 'win32':
     err = GetLastError()
     if err:
       # pylint: disable=E0602
-      raise WindowsError(
-          err,
-          'GetLongPathName(%s): %s (%d)' % (
-            str(short_path), FormatError(err), err))
+      msg = u'GetLongPathName(%s): %s (%d)' % (
+            short_path, FormatError(err), err)
+      raise WindowsError(err, msg.encode('utf-8'))
 
 
   def get_current_encoding():
