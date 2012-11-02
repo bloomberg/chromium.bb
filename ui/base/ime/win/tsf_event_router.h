@@ -22,58 +22,58 @@ struct ITfDocumentMgr;
 
 namespace ui {
 
-class TsfEventRouterObserver {
+class TSFEventRouterObserver {
  public:
-  TsfEventRouterObserver() {}
+  TSFEventRouterObserver() {}
 
   // Called when the number of currently opened candidate windows changes.
   virtual void OnCandidateWindowCountChanged(size_t window_count) {}
 
   // Called when a composition is started.
-  virtual void OnTsfStartComposition() {}
+  virtual void OnTSFStartComposition() {}
 
   // Called when the text contents are updated. If there is no composition,
   // ui::Range::InvalidRange is passed to |composition_range|.
   virtual void OnTextUpdated(const ui::Range& composition_range) {}
 
   // Called when a composition is terminated.
-  virtual void OnTsfEndComposition() {}
+  virtual void OnTSFEndComposition() {}
 
  protected:
-  virtual ~TsfEventRouterObserver() {}
+  virtual ~TSFEventRouterObserver() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TsfEventRouterObserver);
+  DISALLOW_COPY_AND_ASSIGN(TSFEventRouterObserver);
 };
 
 // This class monitores TSF related events and forwards them to given
 // |observer|.
-class UI_EXPORT TsfEventRouter {
+class UI_EXPORT TSFEventRouter {
  public:
   // Do not pass NULL to |observer|.
-  explicit TsfEventRouter(TsfEventRouterObserver* observer);
-  virtual ~TsfEventRouter();
+  explicit TSFEventRouter(TSFEventRouterObserver* observer);
+  virtual ~TSFEventRouter();
 
   // Returns true if the IME is composing text.
   bool IsImeComposing();
 
-  // Callbacks from the TsfEventRouterDelegate:
+  // Callbacks from the TSFEventRouterDelegate:
   void OnCandidateWindowCountChanged(size_t window_count);
-  void OnTsfStartComposition();
+  void OnTSFStartComposition();
   void OnTextUpdated(const ui::Range& composition_range);
-  void OnTsfEndComposition();
+  void OnTSFEndComposition();
 
   // Sets |thread_manager| to be monitored. |thread_manager| can be NULL.
   void SetManager(ITfThreadMgr* thread_manager);
 
  private:
-  class TsfEventRouterDelegate;
+  class Delegate;
 
-  CComPtr<TsfEventRouterDelegate> delegate_;
+  CComPtr<Delegate> delegate_;
 
-  TsfEventRouterObserver* observer_;
+  TSFEventRouterObserver* observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(TsfEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(TSFEventRouter);
 };
 
 }  // namespace ui

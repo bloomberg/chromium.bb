@@ -917,7 +917,7 @@ void RenderWidgetHostViewWin::SetScrollOffsetPinning(
 
 void RenderWidgetHostViewWin::SetCompositionText(
     const ui::CompositionText& composition) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
   }
@@ -937,7 +937,7 @@ void RenderWidgetHostViewWin::SetCompositionText(
 }
 
 void RenderWidgetHostViewWin::ConfirmCompositionText()  {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
   }
@@ -946,7 +946,7 @@ void RenderWidgetHostViewWin::ConfirmCompositionText()  {
 }
 
 void RenderWidgetHostViewWin::ClearCompositionText() {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
   }
@@ -955,7 +955,7 @@ void RenderWidgetHostViewWin::ClearCompositionText() {
 }
 
 void RenderWidgetHostViewWin::InsertText(const string16& text) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
   }
@@ -964,7 +964,7 @@ void RenderWidgetHostViewWin::InsertText(const string16& text) {
 }
 
 void RenderWidgetHostViewWin::InsertChar(char16 ch, int flags) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
   }
@@ -973,7 +973,7 @@ void RenderWidgetHostViewWin::InsertChar(char16 ch, int flags) {
 }
 
 ui::TextInputType RenderWidgetHostViewWin::GetTextInputType() const {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return ui::TEXT_INPUT_TYPE_NONE;
   }
@@ -981,7 +981,7 @@ ui::TextInputType RenderWidgetHostViewWin::GetTextInputType() const {
 }
 
 bool RenderWidgetHostViewWin::CanComposeInline() const {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -991,7 +991,7 @@ bool RenderWidgetHostViewWin::CanComposeInline() const {
 }
 
 gfx::Rect RenderWidgetHostViewWin::GetCaretBounds() {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return gfx::Rect(0, 0, 0, 0);
   }
@@ -1002,7 +1002,7 @@ gfx::Rect RenderWidgetHostViewWin::GetCaretBounds() {
 
 bool RenderWidgetHostViewWin::GetCompositionCharacterBounds(
     uint32 index, gfx::Rect* rect) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1016,7 +1016,7 @@ bool RenderWidgetHostViewWin::GetCompositionCharacterBounds(
 }
 
 bool RenderWidgetHostViewWin::HasCompositionText() {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1026,7 +1026,7 @@ bool RenderWidgetHostViewWin::HasCompositionText() {
 }
 
 bool RenderWidgetHostViewWin::GetTextRange(ui::Range* range) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1036,7 +1036,7 @@ bool RenderWidgetHostViewWin::GetTextRange(ui::Range* range) {
 }
 
 bool RenderWidgetHostViewWin::GetCompositionTextRange(ui::Range* range) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1046,7 +1046,7 @@ bool RenderWidgetHostViewWin::GetCompositionTextRange(ui::Range* range) {
 }
 
 bool RenderWidgetHostViewWin::GetSelectionRange(ui::Range* range) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1056,7 +1056,7 @@ bool RenderWidgetHostViewWin::GetSelectionRange(ui::Range* range) {
 }
 
 bool RenderWidgetHostViewWin::SetSelectionRange(const ui::Range& range) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1066,7 +1066,7 @@ bool RenderWidgetHostViewWin::SetSelectionRange(const ui::Range& range) {
 }
 
 bool RenderWidgetHostViewWin::DeleteRange(const ui::Range& range) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1077,7 +1077,7 @@ bool RenderWidgetHostViewWin::DeleteRange(const ui::Range& range) {
 
 bool RenderWidgetHostViewWin::GetTextFromRange(const ui::Range& range,
                                                string16* text) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1098,7 +1098,7 @@ bool RenderWidgetHostViewWin::GetTextFromRange(const ui::Range& range,
 }
 
 void RenderWidgetHostViewWin::OnInputMethodChanged() {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
   }
@@ -1108,7 +1108,7 @@ void RenderWidgetHostViewWin::OnInputMethodChanged() {
 
 bool RenderWidgetHostViewWin::ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;
   }
@@ -1120,7 +1120,7 @@ bool RenderWidgetHostViewWin::ChangeTextDirectionAndLayoutAlignment(
 void RenderWidgetHostViewWin::ExtendSelectionAndDelete(
     size_t before,
     size_t after) {
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
   }
@@ -1387,8 +1387,8 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
   render_widget_host_->GotFocus();
   render_widget_host_->SetActive(true);
 
-  if (base::win::IsTsfAwareRequired())
-    ui::TsfBridge::GetInstance()->SetFocusedClient(m_hWnd, this);
+  if (base::win::IsTSFAwareRequired())
+    ui::TSFBridge::GetInstance()->SetFocusedClient(m_hWnd, this);
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
@@ -1401,8 +1401,8 @@ void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
 
   last_touch_location_ = gfx::Point(-1, -1);
 
-  if (base::win::IsTsfAwareRequired())
-    ui::TsfBridge::GetInstance()->RemoveFocusedClient(this);
+  if (base::win::IsTSFAwareRequired())
+    ui::TSFBridge::GetInstance()->RemoveFocusedClient(this);
 }
 
 void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {
@@ -1709,8 +1709,8 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
       case WM_RBUTTONDOWN:
         // Finish the ongoing composition whenever a mouse click happens.
         // It matches IE's behavior.
-        if (base::win::IsTsfAwareRequired()) {
-          ui::TsfBridge::GetInstance()->CancelComposition();
+        if (base::win::IsTSFAwareRequired()) {
+          ui::TSFBridge::GetInstance()->CancelComposition();
         } else {
           ime_input_.CleanupComposition(m_hWnd);
         }
@@ -2102,8 +2102,8 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnTouchEvent");
   // Finish the ongoing composition whenever a touch event happens.
   // It matches IE's behavior.
-  if (base::win::IsTsfAwareRequired()) {
-    ui::TsfBridge::GetInstance()->CancelComposition();
+  if (base::win::IsTSFAwareRequired()) {
+    ui::TSFBridge::GetInstance()->CancelComposition();
   } else {
     ime_input_.CleanupComposition(m_hWnd);
   }
@@ -2976,8 +2976,8 @@ LRESULT RenderWidgetHostViewWin::OnQueryCharPosition(
 }
 
 void RenderWidgetHostViewWin::UpdateIMEState() {
-  if (base::win::IsTsfAwareRequired()) {
-    ui::TsfBridge::GetInstance()->OnTextInputTypeChanged(this);
+  if (base::win::IsTSFAwareRequired()) {
+    ui::TSFBridge::GetInstance()->OnTextInputTypeChanged(this);
     return;
   }
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&

@@ -44,7 +44,7 @@ class NativeTextfieldWin
       public CRichEditCommands<NativeTextfieldWin>,
       public NativeTextfieldWrapper,
       public ui::SimpleMenuModel::Delegate,
-      public ui::TsfEventRouterObserver {
+      public ui::TSFEventRouterObserver {
  public:
   DECLARE_WND_SUPERCLASS(L"ViewsTextfieldEdit", MSFTEDIT_CLASS);
 
@@ -66,7 +66,7 @@ class NativeTextfieldWin
   // See the code in textfield.cc that calls this for why this is here.
   void AttachHack();
 
-  // Overridden from NativeTextfieldWrapper:
+  // NativeTextfieldWrapper:
   virtual string16 GetText() const OVERRIDE;
   virtual void UpdateText() OVERRIDE;
   virtual void AppendText(const string16& text) OVERRIDE;
@@ -104,7 +104,7 @@ class NativeTextfieldWin
   virtual void ClearEditHistory() OVERRIDE;
   virtual int GetFontHeight() OVERRIDE;
 
-  // Overridden from ui::SimpleMenuModel::Delegate:
+  // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
@@ -112,10 +112,10 @@ class NativeTextfieldWin
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
-  // Overridden from ui::TsfEventRouterObserver:
+  // ui::TSFEventRouterObserver:
   virtual void OnTextUpdated(const ui::Range& composition_range) OVERRIDE;
-  virtual void OnTsfStartComposition() OVERRIDE;
-  virtual void OnTsfEndComposition() OVERRIDE;
+  virtual void OnTSFStartComposition() OVERRIDE;
+  virtual void OnTSFEndComposition() OVERRIDE;
 
   // Update accessibility information.
   void InitializeAccessibilityInfo();
@@ -189,7 +189,7 @@ class NativeTextfieldWin
     DISALLOW_COPY_AND_ASSIGN(ScopedSuspendUndo);
   };
 
-  // message handlers
+  // Message handlers.
   void OnChar(TCHAR key, UINT repeat_count, UINT flags);
   void OnContextMenu(HWND window, const POINT& point);
   void OnCopy();
@@ -315,7 +315,7 @@ class NativeTextfieldWin
   //  The accessibility state of this object.
   int accessibility_state_;
 
-  scoped_ptr<ui::TsfEventRouter> tsf_event_router_;
+  scoped_ptr<ui::TSFEventRouter> tsf_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldWin);
 };

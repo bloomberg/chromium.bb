@@ -17,35 +17,34 @@
 namespace ui {
 
 
-// TsfEventRouter::TsfEventRouterDelegate  ------------------------------------
+// TSFEventRouter::Delegate  ------------------------------------
 
 // The implementation class of ITfUIElementSink, whose member functions will be
 // called back by TSF when the UI element status is changed, for example when
 // the candidate window is opened or closed. This class also implements
 // ITfTextEditSink, whose member function is called back by TSF when the text
 // editting session is finished.
-class ATL_NO_VTABLE TsfEventRouter::TsfEventRouterDelegate
+class ATL_NO_VTABLE TSFEventRouter::Delegate
     : public ATL::CComObjectRootEx<CComSingleThreadModel>,
       public ITfUIElementSink,
       public ITfTextEditSink {
  public:
-  BEGIN_COM_MAP(TsfEventRouterDelegate)
+  BEGIN_COM_MAP(Delegate)
     COM_INTERFACE_ENTRY(ITfUIElementSink)
     COM_INTERFACE_ENTRY(ITfTextEditSink)
   END_COM_MAP()
 
-  TsfEventRouterDelegate();
-  ~TsfEventRouterDelegate();
+  Delegate();
+  ~Delegate();
 
   // ITfTextEditSink:
-  STDMETHOD_(HRESULT, OnEndEdit)(ITfContext* context,
-                                 TfEditCookie read_only_cookie,
-                                 ITfEditRecord* edit_record) OVERRIDE;
+  STDMETHOD(OnEndEdit)(ITfContext* context, TfEditCookie read_only_cookie,
+                       ITfEditRecord* edit_record) OVERRIDE;
 
   // ITfUiElementSink:
-  STDMETHOD_(HRESULT, BeginUIElement)(DWORD element_id, BOOL* is_show) OVERRIDE;
-  STDMETHOD_(HRESULT, UpdateUIElement)(DWORD element_id) OVERRIDE;
-  STDMETHOD_(HRESULT, EndUIElement)(DWORD element_id) OVERRIDE;
+  STDMETHOD(BeginUIElement)(DWORD element_id, BOOL* is_show) OVERRIDE;
+  STDMETHOD(UpdateUIElement)(DWORD element_id) OVERRIDE;
+  STDMETHOD(EndUIElement)(DWORD element_id) OVERRIDE;
 
   // Sets |thread_manager| to be monitored. |thread_manager| can be NULL.
   void SetManager(ITfThreadMgr* thread_manager);
@@ -54,7 +53,7 @@ class ATL_NO_VTABLE TsfEventRouter::TsfEventRouterDelegate
   bool IsImeComposing();
 
   // Sets |router| to be forwarded TSF-related events.
-  void SetRouter(TsfEventRouter* router);
+  void SetRouter(TSFEventRouter* router);
 
  private:
   // Returns current composition range. Returns ui::Range::InvalidRange if there
@@ -85,29 +84,28 @@ class ATL_NO_VTABLE TsfEventRouter::TsfEventRouterDelegate
   // The cookie for |ui_source_|.
   DWORD ui_source_cookie_;
 
-  TsfEventRouter* router_;
+  TSFEventRouter* router_;
   ui::Range previous_composition_range_;
 
-  DISALLOW_COPY_AND_ASSIGN(TsfEventRouterDelegate);
+  DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-TsfEventRouter::TsfEventRouterDelegate::TsfEventRouterDelegate()
+TSFEventRouter::Delegate::Delegate()
     : context_source_cookie_(TF_INVALID_COOKIE),
       ui_source_cookie_(TF_INVALID_COOKIE),
       router_(NULL),
       previous_composition_range_(ui::Range::InvalidRange()) {
 }
 
-TsfEventRouter::TsfEventRouterDelegate::~TsfEventRouterDelegate() {}
+TSFEventRouter::Delegate::~Delegate() {}
 
-void TsfEventRouter::TsfEventRouterDelegate::SetRouter(TsfEventRouter* router) {
+void TSFEventRouter::Delegate::SetRouter(TSFEventRouter* router) {
   router_ = router;
 }
 
-STDMETHODIMP TsfEventRouter::TsfEventRouterDelegate::OnEndEdit(
-    ITfContext* context,
-    TfEditCookie read_only_cookie,
-    ITfEditRecord* edit_record) {
+STDMETHODIMP TSFEventRouter::Delegate::OnEndEdit(ITfContext* context,
+                                                 TfEditCookie read_only_cookie,
+                                                 ITfEditRecord* edit_record) {
   if (!edit_record || !context)
     return E_INVALIDARG;
   if (!router_)
@@ -130,7 +128,7 @@ STDMETHODIMP TsfEventRouter::TsfEventRouterDelegate::OnEndEdit(
   const ui::Range composition_range = GetCompositionRange(context);
 
   if (!previous_composition_range_.IsValid() && composition_range.IsValid())
-    router_->OnTsfStartComposition();
+    router_->OnTSFStartComposition();
 
   // |fetched_count| != 0 means there is at least one range that contains
   // updated text.
@@ -138,15 +136,14 @@ STDMETHODIMP TsfEventRouter::TsfEventRouterDelegate::OnEndEdit(
     router_->OnTextUpdated(composition_range);
 
   if (previous_composition_range_.IsValid() && !composition_range.IsValid())
-    router_->OnTsfEndComposition();
+    router_->OnTSFEndComposition();
 
   previous_composition_range_ = composition_range;
   return S_OK;
 }
 
-STDMETHODIMP TsfEventRouter::TsfEventRouterDelegate::BeginUIElement(
-    DWORD element_id,
-    BOOL* is_show) {
+STDMETHODIMP TSFEventRouter::Delegate::BeginUIElement(DWORD element_id,
+                                                      BOOL* is_show) {
   if (is_show)
     *is_show = TRUE;  // Without this the UI element will not be shown.
 
@@ -162,19 +159,19 @@ STDMETHODIMP TsfEventRouter::TsfEventRouterDelegate::BeginUIElement(
   return S_OK;
 }
 
-STDMETHODIMP TsfEventRouter::TsfEventRouterDelegate::UpdateUIElement(
+STDMETHODIMP TSFEventRouter::Delegate::UpdateUIElement(
     DWORD element_id) {
   return S_OK;
 }
 
-STDMETHODIMP TsfEventRouter::TsfEventRouterDelegate::EndUIElement(
+STDMETHODIMP TSFEventRouter::Delegate::EndUIElement(
     DWORD element_id) {
   if ((open_candidate_window_ids_.erase(element_id) != 0) && router_)
     router_->OnCandidateWindowCountChanged(open_candidate_window_ids_.size());
   return S_OK;
 }
 
-void TsfEventRouter::TsfEventRouterDelegate::SetManager(
+void TSFEventRouter::Delegate::SetManager(
     ITfThreadMgr* thread_manager) {
   context_.Release();
 
@@ -211,12 +208,12 @@ void TsfEventRouter::TsfEventRouterDelegate::SetManager(
                          &ui_source_cookie_);
 }
 
-bool TsfEventRouter::TsfEventRouterDelegate::IsImeComposing() {
+bool TSFEventRouter::Delegate::IsImeComposing() {
   return context_ && GetCompositionRange(context_).IsValid();
 }
 
 // static
-ui::Range TsfEventRouter::TsfEventRouterDelegate::GetCompositionRange(
+ui::Range TSFEventRouter::Delegate::GetCompositionRange(
     ITfContext* context) {
   DCHECK(context);
   base::win::ScopedComPtr<ITfContextComposition> context_composition;
@@ -247,8 +244,7 @@ ui::Range TsfEventRouter::TsfEventRouterDelegate::GetCompositionRange(
   return ui::Range(start, start + length);
 }
 
-bool TsfEventRouter::TsfEventRouterDelegate::IsCandidateWindowInternal(
-    DWORD element_id) {
+bool TSFEventRouter::Delegate::IsCandidateWindowInternal(DWORD element_id) {
   DCHECK(ui_element_manager_.get());
   base::win::ScopedComPtr<ITfUIElement> ui_element;
   if (FAILED(ui_element_manager_->GetUIElement(element_id,
@@ -259,52 +255,51 @@ bool TsfEventRouter::TsfEventRouterDelegate::IsCandidateWindowInternal(
 }
 
 
-// TsfEventRouter  ------------------------------------------------------------
+// TSFEventRouter  ------------------------------------------------------------
 
-TsfEventRouter::TsfEventRouter(TsfEventRouterObserver* observer)
+TSFEventRouter::TSFEventRouter(TSFEventRouterObserver* observer)
     : observer_(observer),
       delegate_(NULL) {
-  DCHECK(base::win::IsTsfAwareRequired())
-      << "Do not use TsfEventRouter without TSF environment.";
+  DCHECK(base::win::IsTSFAwareRequired())
+      << "Do not use TSFEventRouter without TSF environment.";
   DCHECK(observer_);
-  CComObject<TsfEventRouterDelegate>* delegate;
+  CComObject<Delegate>* delegate;
   ui::win::CreateATLModuleIfNeeded();
-  if (SUCCEEDED(CComObject<TsfEventRouterDelegate>::CreateInstance(
-      &delegate))) {
+  if (SUCCEEDED(CComObject<Delegate>::CreateInstance(&delegate))) {
     delegate->AddRef();
     delegate_.Attach(delegate);
     delegate_->SetRouter(this);
   }
 }
 
-TsfEventRouter::~TsfEventRouter() {
+TSFEventRouter::~TSFEventRouter() {
   if (delegate_) {
     delegate_->SetManager(NULL);
     delegate_->SetRouter(NULL);
   }
 }
 
-bool TsfEventRouter::IsImeComposing() {
+bool TSFEventRouter::IsImeComposing() {
   return delegate_->IsImeComposing();
 }
 
-void TsfEventRouter::OnCandidateWindowCountChanged(size_t window_count) {
+void TSFEventRouter::OnCandidateWindowCountChanged(size_t window_count) {
   observer_->OnCandidateWindowCountChanged(window_count);
 }
 
-void TsfEventRouter::OnTsfStartComposition() {
-  observer_->OnTsfStartComposition();
+void TSFEventRouter::OnTSFStartComposition() {
+  observer_->OnTSFStartComposition();
 }
 
-void TsfEventRouter::OnTextUpdated(const ui::Range& composition_range) {
+void TSFEventRouter::OnTextUpdated(const ui::Range& composition_range) {
   observer_->OnTextUpdated(composition_range);
 }
 
-void TsfEventRouter::OnTsfEndComposition() {
-  observer_->OnTsfEndComposition();
+void TSFEventRouter::OnTSFEndComposition() {
+  observer_->OnTSFEndComposition();
 }
 
-void TsfEventRouter::SetManager(ITfThreadMgr* thread_manager) {
+void TSFEventRouter::SetManager(ITfThreadMgr* thread_manager) {
   delegate_->SetManager(thread_manager);
 }
 

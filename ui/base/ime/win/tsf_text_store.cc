@@ -20,7 +20,7 @@ const TsViewCookie kViewCookie = 1;
 
 }  // namespace
 
-TsfTextStore::TsfTextStore()
+TSFTextStore::TSFTextStore()
     : ref_count_(0),
       text_store_acp_sink_mask_(0),
       window_handle_(NULL),
@@ -39,14 +39,14 @@ TsfTextStore::TsfTextStore()
   }
 }
 
-TsfTextStore::~TsfTextStore() {
+TSFTextStore::~TSFTextStore() {
 }
 
-ULONG STDMETHODCALLTYPE TsfTextStore::AddRef() {
+ULONG STDMETHODCALLTYPE TSFTextStore::AddRef() {
   return InterlockedIncrement(&ref_count_);
 }
 
-ULONG STDMETHODCALLTYPE TsfTextStore::Release() {
+ULONG STDMETHODCALLTYPE TSFTextStore::Release() {
   const LONG count = InterlockedDecrement(&ref_count_);
   if (!count) {
     delete this;
@@ -55,7 +55,7 @@ ULONG STDMETHODCALLTYPE TsfTextStore::Release() {
   return static_cast<ULONG>(count);
 }
 
-STDMETHODIMP TsfTextStore::QueryInterface(REFIID iid, void** result) {
+STDMETHODIMP TSFTextStore::QueryInterface(REFIID iid, void** result) {
   if (iid == IID_IUnknown || iid == IID_ITextStoreACP) {
     *result = static_cast<ITextStoreACP*>(this);
   } else if (iid == IID_ITfContextOwnerCompositionSink) {
@@ -70,7 +70,8 @@ STDMETHODIMP TsfTextStore::QueryInterface(REFIID iid, void** result) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::AdviseSink(REFIID iid, IUnknown* unknown,
+STDMETHODIMP TSFTextStore::AdviseSink(REFIID iid,
+                                      IUnknown* unknown,
                                       DWORD mask) {
   if (!IsEqualGUID(iid, IID_ITextStoreACPSink))
     return E_INVALIDARG;
@@ -89,7 +90,7 @@ STDMETHODIMP TsfTextStore::AdviseSink(REFIID iid, IUnknown* unknown,
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::FindNextAttrTransition(
+STDMETHODIMP TSFTextStore::FindNextAttrTransition(
     LONG acp_start,
     LONG acp_halt,
     ULONG num_filter_attributes,
@@ -108,18 +109,17 @@ STDMETHODIMP TsfTextStore::FindNextAttrTransition(
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::GetACPFromPoint(
-    TsViewCookie view_cookie,
-    const POINT* point,
-    DWORD flags,
-    LONG* acp) {
+STDMETHODIMP TSFTextStore::GetACPFromPoint(TsViewCookie view_cookie,
+                                           const POINT* point,
+                                           DWORD flags,
+                                           LONG* acp) {
   NOTIMPLEMENTED();
   if (view_cookie != kViewCookie)
     return E_INVALIDARG;
   return E_NOTIMPL;
 }
 
-STDMETHODIMP TsfTextStore::GetActiveView(TsViewCookie* view_cookie) {
+STDMETHODIMP TSFTextStore::GetActiveView(TsViewCookie* view_cookie) {
   if (!view_cookie)
     return E_INVALIDARG;
   // We support only one view.
@@ -127,7 +127,7 @@ STDMETHODIMP TsfTextStore::GetActiveView(TsViewCookie* view_cookie) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::GetEmbedded(LONG acp_pos,
+STDMETHODIMP TSFTextStore::GetEmbedded(LONG acp_pos,
                                        REFGUID service,
                                        REFIID iid,
                                        IUnknown** unknown) {
@@ -139,7 +139,7 @@ STDMETHODIMP TsfTextStore::GetEmbedded(LONG acp_pos,
   return E_NOTIMPL;
 }
 
-STDMETHODIMP TsfTextStore::GetEndACP(LONG* acp) {
+STDMETHODIMP TSFTextStore::GetEndACP(LONG* acp) {
   if (!acp)
     return E_INVALIDARG;
   if (!HasReadLock())
@@ -148,13 +148,13 @@ STDMETHODIMP TsfTextStore::GetEndACP(LONG* acp) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::GetFormattedText(LONG acp_start, LONG acp_end,
+STDMETHODIMP TSFTextStore::GetFormattedText(LONG acp_start, LONG acp_end,
                                             IDataObject** data_object) {
   NOTIMPLEMENTED();
   return E_NOTIMPL;
 }
 
-STDMETHODIMP TsfTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
+STDMETHODIMP TSFTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
   if (view_cookie != kViewCookie)
     return E_INVALIDARG;
   if (!rect)
@@ -187,7 +187,7 @@ STDMETHODIMP TsfTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::GetSelection(ULONG selection_index,
+STDMETHODIMP TSFTextStore::GetSelection(ULONG selection_index,
                                         ULONG selection_buffer_size,
                                         TS_SELECTION_ACP* selection_buffer,
                                         ULONG* fetched_count) {
@@ -209,7 +209,7 @@ STDMETHODIMP TsfTextStore::GetSelection(ULONG selection_index,
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::GetStatus(TS_STATUS* status) {
+STDMETHODIMP TSFTextStore::GetStatus(TS_STATUS* status) {
   if (!status)
     return E_INVALIDARG;
 
@@ -220,7 +220,7 @@ STDMETHODIMP TsfTextStore::GetStatus(TS_STATUS* status) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::GetText(LONG acp_start,
+STDMETHODIMP TSFTextStore::GetText(LONG acp_start,
                                    LONG acp_end,
                                    wchar_t* text_buffer,
                                    ULONG text_buffer_size,
@@ -266,7 +266,7 @@ STDMETHODIMP TsfTextStore::GetText(LONG acp_start,
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::GetTextExt(TsViewCookie view_cookie,
+STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
                                       LONG acp_start,
                                       LONG acp_end,
                                       RECT* rect,
@@ -351,7 +351,7 @@ STDMETHODIMP TsfTextStore::GetTextExt(TsViewCookie view_cookie,
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::GetWnd(TsViewCookie view_cookie,
+STDMETHODIMP TSFTextStore::GetWnd(TsViewCookie view_cookie,
                                   HWND* window_handle) {
   if (!window_handle)
     return E_INVALIDARG;
@@ -361,7 +361,7 @@ STDMETHODIMP TsfTextStore::GetWnd(TsViewCookie view_cookie,
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::InsertEmbedded(DWORD flags,
+STDMETHODIMP TSFTextStore::InsertEmbedded(DWORD flags,
                                           LONG acp_start,
                                           LONG acp_end,
                                           IDataObject* data_object,
@@ -371,7 +371,7 @@ STDMETHODIMP TsfTextStore::InsertEmbedded(DWORD flags,
   return E_NOTIMPL;
 }
 
-STDMETHODIMP TsfTextStore::InsertEmbeddedAtSelection(DWORD flags,
+STDMETHODIMP TSFTextStore::InsertEmbeddedAtSelection(DWORD flags,
                                                      IDataObject* data_object,
                                                      LONG* acp_start,
                                                      LONG* acp_end,
@@ -381,7 +381,7 @@ STDMETHODIMP TsfTextStore::InsertEmbeddedAtSelection(DWORD flags,
   return E_NOTIMPL;
 }
 
-STDMETHODIMP TsfTextStore::InsertTextAtSelection(DWORD flags,
+STDMETHODIMP TSFTextStore::InsertTextAtSelection(DWORD flags,
                                                  const wchar_t* text_buffer,
                                                  ULONG text_buffer_size,
                                                  LONG* acp_start,
@@ -425,7 +425,7 @@ STDMETHODIMP TsfTextStore::InsertTextAtSelection(DWORD flags,
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::QueryInsert(
+STDMETHODIMP TSFTextStore::QueryInsert(
     LONG acp_test_start,
     LONG acp_test_end,
     ULONG text_size,
@@ -443,7 +443,7 @@ STDMETHODIMP TsfTextStore::QueryInsert(
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::QueryInsertEmbedded(const GUID* service,
+STDMETHODIMP TSFTextStore::QueryInsertEmbedded(const GUID* service,
                                                const FORMATETC* format,
                                                BOOL* insertable) {
   if (!format)
@@ -454,7 +454,7 @@ STDMETHODIMP TsfTextStore::QueryInsertEmbedded(const GUID* service,
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::RequestAttrsAtPosition(
+STDMETHODIMP TSFTextStore::RequestAttrsAtPosition(
     LONG acp_pos,
     ULONG attribute_buffer_size,
     const TS_ATTRID* attribute_buffer,
@@ -465,7 +465,7 @@ STDMETHODIMP TsfTextStore::RequestAttrsAtPosition(
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::RequestAttrsTransitioningAtPosition(
+STDMETHODIMP TSFTextStore::RequestAttrsTransitioningAtPosition(
     LONG acp_pos,
     ULONG attribute_buffer_size,
     const TS_ATTRID* attribute_buffer,
@@ -476,7 +476,7 @@ STDMETHODIMP TsfTextStore::RequestAttrsTransitioningAtPosition(
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
+STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   if (!text_store_acp_sink_.get())
     return E_FAIL;
   if (!result)
@@ -578,7 +578,7 @@ STDMETHODIMP TsfTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::RequestSupportedAttrs(
+STDMETHODIMP TSFTextStore::RequestSupportedAttrs(
     DWORD /* flags */,  // Seems that we should ignore this.
     ULONG attribute_buffer_size,
     const TS_ATTRID* attribute_buffer) {
@@ -592,7 +592,7 @@ STDMETHODIMP TsfTextStore::RequestSupportedAttrs(
   return E_FAIL;
 }
 
-STDMETHODIMP TsfTextStore::RetrieveRequestedAttrs(
+STDMETHODIMP TSFTextStore::RetrieveRequestedAttrs(
     ULONG attribute_buffer_size,
     TS_ATTRVAL* attribute_buffer,
     ULONG* attribute_buffer_copied) {
@@ -608,14 +608,14 @@ STDMETHODIMP TsfTextStore::RetrieveRequestedAttrs(
   attribute_buffer[0].dwOverlapId = 0;
   attribute_buffer[0].idAttr = GUID_PROP_INPUTSCOPE;
   attribute_buffer[0].varValue.vt = VT_UNKNOWN;
-  attribute_buffer[0].varValue.punkVal = new TsfInputScope(
+  attribute_buffer[0].varValue.punkVal = new TSFInputScope(
       text_input_client_->GetTextInputType());
   attribute_buffer[0].varValue.punkVal->AddRef();
   *attribute_buffer_copied = 1;
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::SetSelection(
+STDMETHODIMP TSFTextStore::SetSelection(
     ULONG selection_buffer_size,
     const TS_SELECTION_ACP* selection_buffer) {
   if (!HasReadWriteLock())
@@ -634,7 +634,7 @@ STDMETHODIMP TsfTextStore::SetSelection(
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::SetText(DWORD flags,
+STDMETHODIMP TSFTextStore::SetText(DWORD flags,
                                    LONG acp_start,
                                    LONG acp_end,
                                    const wchar_t* text_buffer,
@@ -671,7 +671,7 @@ STDMETHODIMP TsfTextStore::SetText(DWORD flags,
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::UnadviseSink(IUnknown* unknown) {
+STDMETHODIMP TSFTextStore::UnadviseSink(IUnknown* unknown) {
   if (!text_store_acp_sink_.IsSameObject(unknown))
     return CONNECT_E_NOCONNECTION;
   text_store_acp_sink_.Release();
@@ -679,7 +679,7 @@ STDMETHODIMP TsfTextStore::UnadviseSink(IUnknown* unknown) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::OnStartComposition(
+STDMETHODIMP TSFTextStore::OnStartComposition(
     ITfCompositionView* composition_view,
     BOOL* ok) {
   if (ok)
@@ -687,18 +687,18 @@ STDMETHODIMP TsfTextStore::OnStartComposition(
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::OnUpdateComposition(
+STDMETHODIMP TSFTextStore::OnUpdateComposition(
     ITfCompositionView* composition_view,
     ITfRange* range) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::OnEndComposition(
+STDMETHODIMP TSFTextStore::OnEndComposition(
     ITfCompositionView* composition_view) {
   return S_OK;
 }
 
-STDMETHODIMP TsfTextStore::OnEndEdit(ITfContext* context,
+STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
                                      TfEditCookie read_only_edit_cookie,
                                      ITfEditRecord* edit_record) {
   if (!context || !edit_record)
@@ -716,7 +716,7 @@ STDMETHODIMP TsfTextStore::OnEndEdit(ITfContext* context,
   return S_OK;
 }
 
-bool TsfTextStore::GetDisplayAttribute(TfGuidAtom guid_atom,
+bool TSFTextStore::GetDisplayAttribute(TfGuidAtom guid_atom,
                                        TF_DISPLAYATTRIBUTE* attribute) {
   GUID guid;
   if (FAILED(category_manager_->GetGUID(guid_atom, &guid)))
@@ -730,7 +730,7 @@ bool TsfTextStore::GetDisplayAttribute(TfGuidAtom guid_atom,
   return SUCCEEDED(display_attribute_info->GetAttributeInfo(attribute));
 }
 
-bool TsfTextStore::GetCompositionStatus(
+bool TSFTextStore::GetCompositionStatus(
     ITfContext* context,
     const TfEditCookie read_only_edit_cookie,
     size_t* committed_size,
@@ -815,14 +815,14 @@ bool TsfTextStore::GetCompositionStatus(
   return true;
 }
 
-void TsfTextStore::SetFocusedTextInputClient(
+void TSFTextStore::SetFocusedTextInputClient(
     HWND focused_window,
     TextInputClient* text_input_client) {
   window_handle_ = focused_window;
   text_input_client_ = text_input_client;
 }
 
-void TsfTextStore::RemoveFocusedTextInputClient(
+void TSFTextStore::RemoveFocusedTextInputClient(
     TextInputClient* text_input_client) {
   if (text_input_client_ == text_input_client) {
     window_handle_ = NULL;
@@ -830,16 +830,16 @@ void TsfTextStore::RemoveFocusedTextInputClient(
   }
 }
 
-void TsfTextStore::SendOnLayoutChange() {
+void TSFTextStore::SendOnLayoutChange() {
   if (text_store_acp_sink_ && (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE))
     text_store_acp_sink_->OnLayoutChange(TS_LC_CHANGE, 0);
 }
 
-bool TsfTextStore::HasReadLock() const {
+bool TSFTextStore::HasReadLock() const {
   return (current_lock_type_ & TS_LF_READ) == TS_LF_READ;
 }
 
-bool TsfTextStore::HasReadWriteLock() const {
+bool TSFTextStore::HasReadWriteLock() const {
   return (current_lock_type_ & TS_LF_READWRITE) == TS_LF_READWRITE;
 }
 

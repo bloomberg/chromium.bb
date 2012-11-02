@@ -479,8 +479,8 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
       security_level_(ToolbarModel::NONE),
       text_object_model_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          tsf_event_router_(base::win::IsTsfAwareRequired() ?
-              new ui::TsfEventRouter(this) : NULL)) {
+          tsf_event_router_(base::win::IsTSFAwareRequired() ?
+              new ui::TSFEventRouter(this) : NULL)) {
   if (!loaded_library_module_)
     loaded_library_module_ = LoadLibrary(kRichEditDLLName);
 
@@ -1394,7 +1394,7 @@ void OmniboxViewWin::OnCopy() {
 }
 
 LRESULT OmniboxViewWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
-  if (base::win::IsTsfAwareRequired()) {
+  if (base::win::IsTSFAwareRequired()) {
     // Enable TSF support of RichEdit.
     SetEditStyle(SES_USECTF, SES_USECTF);
   }
@@ -1409,7 +1409,7 @@ LRESULT OmniboxViewWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
   // to guarantee we've always called OnBeforePossibleChange() before
   // OnAfterPossibleChange(), we therefore call that here.  Note that multiple
   // (i.e. unmatched) calls to this function in a row are safe.
-  if (base::win::IsTsfAwareRequired())
+  if (base::win::IsTSFAwareRequired())
     OnBeforePossibleChange();
   return 0;
 }
@@ -1954,7 +1954,7 @@ void OmniboxViewWin::OnSetFocus(HWND focus_wnd) {
     // Document manager created by RichEdit can be obtained only after
     // WM_SETFOCUS event is handled.
     tsf_event_router_->SetManager(
-        ui::TsfBridge::GetInstance()->GetThreadManager());
+        ui::TSFBridge::GetInstance()->GetThreadManager());
     SetMsgHandled(true);
   }
 }

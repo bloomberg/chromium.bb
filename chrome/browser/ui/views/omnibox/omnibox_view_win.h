@@ -43,7 +43,7 @@ class OmniboxViewWin
                                     ES_NOHIDESEL> >,
       public CRichEditCommands<OmniboxViewWin>,
       public ui::SimpleMenuModel::Delegate,
-      public ui::TsfEventRouterObserver,
+      public ui::TSFEventRouterObserver,
       public OmniboxView {
  public:
   struct State {
@@ -329,7 +329,7 @@ class OmniboxViewWin
   // If a host name is found, it makes it visually stronger.
   virtual void EmphasizeURLComponents() OVERRIDE;
 
-  // TsfEventRouter::Observer:
+  // TSFEventRouter::Observer:
   virtual void OnCandidateWindowCountChanged(size_t window_count) OVERRIDE;
   virtual void OnTextUpdated(const ui::Range& composition_range) OVERRIDE;
 
@@ -516,7 +516,7 @@ class OmniboxViewWin
   views::NativeViewHost* native_view_host_;
 
   // TSF related event router.
-  scoped_ptr<ui::TsfEventRouter> tsf_event_router_;
+  scoped_ptr<ui::TSFEventRouter> tsf_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewWin);
 };

@@ -99,10 +99,10 @@ class MockStoreACPSink : public ITextStoreACPSink {
 
 }  // namespace
 
-class TsfTextStoreTest : public testing::Test {
+class TSFTextStoreTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    text_store_ = new TsfTextStore();
+    text_store_ = new TSFTextStore();
     text_store_->AddRef();
     sink_ = new MockStoreACPSink();
     sink_->AddRef();
@@ -119,20 +119,20 @@ class TsfTextStoreTest : public testing::Test {
 
   base::win::ScopedCOMInitializer com_initializer_;
   MockTextInputClient text_input_client_;
-  TsfTextStore* text_store_;
+  TSFTextStore* text_store_;
   MockStoreACPSink* sink_;
 };
 
-class TsfTextStoreTestCallback {
+class TSFTextStoreTestCallback {
  public:
-  explicit TsfTextStoreTestCallback(TsfTextStore* text_store)
+  explicit TSFTextStoreTestCallback(TSFTextStore* text_store)
       : text_store_(text_store) {
     CHECK(text_store_);
   }
-  virtual ~TsfTextStoreTestCallback() {}
+  virtual ~TSFTextStoreTestCallback() {}
 
  protected:
-  // Accessors to the internal state of TsfTextStore.
+  // Accessors to the internal state of TSFTextStore.
   bool* edit_flag() { return &text_store_->edit_flag_; }
   string16* string_buffer() { return &text_store_->string_buffer_; }
   size_t* committed_size() { return &text_store_->committed_size_; }
@@ -278,10 +278,10 @@ class TsfTextStoreTestCallback {
                                       &rect, &clipped));
   }
 
-  TsfTextStore* text_store_;
+  TSFTextStore* text_store_;
 };
 
-TEST_F(TsfTextStoreTest, GetStatusTest) {
+TEST_F(TSFTextStoreTest, GetStatusTest) {
   TS_STATUS status;
   EXPECT_EQ(S_OK, text_store_->GetStatus(&status));
   EXPECT_EQ(0, status.dwDynamicFlags);
@@ -289,10 +289,10 @@ TEST_F(TsfTextStoreTest, GetStatusTest) {
 }
 
 
-class SyncRequestLockTestCallback : public TsfTextStoreTestCallback {
+class SyncRequestLockTestCallback : public TSFTextStoreTestCallback {
  public:
-  explicit SyncRequestLockTestCallback(TsfTextStore* text_store)
-      : TsfTextStoreTestCallback(text_store) {
+  explicit SyncRequestLockTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {
   }
 
   HRESULT LockGranted1(DWORD flags) {
@@ -346,7 +346,7 @@ class SyncRequestLockTestCallback : public TsfTextStoreTestCallback {
   }
 };
 
-TEST_F(TsfTextStoreTest, SynchronousRequestLockTest) {
+TEST_F(TSFTextStoreTest, SynchronousRequestLockTest) {
   SyncRequestLockTestCallback callback(text_store_);
   EXPECT_CALL(*sink_, OnLockGranted(_))
       .WillOnce(Invoke(&callback, &SyncRequestLockTestCallback::LockGranted1))
@@ -376,10 +376,10 @@ TEST_F(TsfTextStoreTest, SynchronousRequestLockTest) {
   EXPECT_EQ(S_OK, result);
 }
 
-class AsyncRequestLockTestCallback : public TsfTextStoreTestCallback {
+class AsyncRequestLockTestCallback : public TSFTextStoreTestCallback {
  public:
-  explicit AsyncRequestLockTestCallback(TsfTextStore* text_store)
-      : TsfTextStoreTestCallback(text_store),
+  explicit AsyncRequestLockTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store),
         state_(0) {
   }
 
@@ -444,7 +444,7 @@ class AsyncRequestLockTestCallback : public TsfTextStoreTestCallback {
   int state_;
 };
 
-TEST_F(TsfTextStoreTest, AsynchronousRequestLockTest) {
+TEST_F(TSFTextStoreTest, AsynchronousRequestLockTest) {
   AsyncRequestLockTestCallback callback(text_store_);
   EXPECT_CALL(*sink_, OnLockGranted(_))
       .WillOnce(Invoke(&callback, &AsyncRequestLockTestCallback::LockGranted1))
@@ -458,10 +458,10 @@ TEST_F(TsfTextStoreTest, AsynchronousRequestLockTest) {
   EXPECT_EQ(S_OK, result);
 }
 
-class RequestLockTextChangeTestCallback : public TsfTextStoreTestCallback {
+class RequestLockTextChangeTestCallback : public TSFTextStoreTestCallback {
  public:
-  explicit RequestLockTextChangeTestCallback(TsfTextStore* text_store)
-      : TsfTextStoreTestCallback(text_store),
+  explicit RequestLockTextChangeTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store),
         state_(0) {
   }
 
@@ -517,7 +517,7 @@ class RequestLockTextChangeTestCallback : public TsfTextStoreTestCallback {
   int state_;
 };
 
-TEST_F(TsfTextStoreTest, RequestLockOnTextChangeTest) {
+TEST_F(TSFTextStoreTest, RequestLockOnTextChangeTest) {
   RequestLockTextChangeTestCallback callback(text_store_);
   EXPECT_CALL(*sink_, OnLockGranted(_))
       .WillOnce(Invoke(&callback,
@@ -544,10 +544,10 @@ TEST_F(TsfTextStoreTest, RequestLockOnTextChangeTest) {
   EXPECT_EQ(S_OK, result);
 }
 
-class SelectionTestCallback : public TsfTextStoreTestCallback {
+class SelectionTestCallback : public TSFTextStoreTestCallback {
  public:
-  explicit SelectionTestCallback(TsfTextStore* text_store)
-      : TsfTextStoreTestCallback(text_store) {
+  explicit SelectionTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {
   }
 
   HRESULT ReadLockGranted(DWORD flags) {
@@ -621,7 +621,7 @@ class SelectionTestCallback : public TsfTextStoreTestCallback {
   }
 };
 
-TEST_F(TsfTextStoreTest, SetGetSelectionTest) {
+TEST_F(TSFTextStoreTest, SetGetSelectionTest) {
   SelectionTestCallback callback(text_store_);
   EXPECT_CALL(*sink_, OnLockGranted(_))
       .WillOnce(Invoke(&callback, &SelectionTestCallback::ReadLockGranted))
@@ -640,10 +640,10 @@ TEST_F(TsfTextStoreTest, SetGetSelectionTest) {
 }
 
 
-class SetGetTextTestCallback : public TsfTextStoreTestCallback {
+class SetGetTextTestCallback : public TSFTextStoreTestCallback {
  public:
-  explicit SetGetTextTestCallback(TsfTextStore* text_store)
-      : TsfTextStoreTestCallback(text_store) {
+  explicit SetGetTextTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {
   }
 
   HRESULT ReadLockGranted(DWORD flags) {
@@ -819,7 +819,7 @@ class SetGetTextTestCallback : public TsfTextStoreTestCallback {
   }
 };
 
-TEST_F(TsfTextStoreTest, SetGetTextTest) {
+TEST_F(TSFTextStoreTest, SetGetTextTest) {
   SetGetTextTestCallback callback(text_store_);
   EXPECT_CALL(*sink_, OnLockGranted(_))
       .WillOnce(Invoke(&callback, &SetGetTextTestCallback::ReadLockGranted))
@@ -843,10 +843,10 @@ TEST_F(TsfTextStoreTest, SetGetTextTest) {
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
 }
 
-class InsertTextAtSelectionTestCallback : public TsfTextStoreTestCallback {
+class InsertTextAtSelectionTestCallback : public TSFTextStoreTestCallback {
  public:
-  explicit InsertTextAtSelectionTestCallback(TsfTextStore* text_store)
-      : TsfTextStoreTestCallback(text_store) {
+  explicit InsertTextAtSelectionTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {
   }
 
   HRESULT ReadLockGranted(DWORD flags) {
@@ -907,7 +907,7 @@ class InsertTextAtSelectionTestCallback : public TsfTextStoreTestCallback {
   }
 };
 
-TEST_F(TsfTextStoreTest, InsertTextAtSelectionTest) {
+TEST_F(TSFTextStoreTest, InsertTextAtSelectionTest) {
   InsertTextAtSelectionTestCallback callback(text_store_);
   EXPECT_CALL(*sink_, OnLockGranted(_))
       .WillOnce(Invoke(&callback,
@@ -921,10 +921,10 @@ TEST_F(TsfTextStoreTest, InsertTextAtSelectionTest) {
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
 }
 
-class ScenarioTestCallback : public TsfTextStoreTestCallback {
+class ScenarioTestCallback : public TSFTextStoreTestCallback {
  public:
-  explicit ScenarioTestCallback(TsfTextStore* text_store)
-      : TsfTextStoreTestCallback(text_store) {
+  explicit ScenarioTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {
   }
 
   HRESULT LockGranted1(DWORD flags) {
@@ -1022,7 +1022,7 @@ class ScenarioTestCallback : public TsfTextStoreTestCallback {
   }
 };
 
-TEST_F(TsfTextStoreTest, ScenarioTest) {
+TEST_F(TSFTextStoreTest, ScenarioTest) {
   ScenarioTestCallback callback(text_store_);
   EXPECT_CALL(text_input_client_, SetCompositionText(_))
       .WillOnce(Invoke(&callback, &ScenarioTestCallback::SetCompositionText1))
@@ -1056,10 +1056,10 @@ TEST_F(TsfTextStoreTest, ScenarioTest) {
   EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
 }
 
-class GetTextExtTestCallback : public TsfTextStoreTestCallback {
+class GetTextExtTestCallback : public TSFTextStoreTestCallback {
  public:
-  explicit GetTextExtTestCallback(TsfTextStore* text_store)
-      : TsfTextStoreTestCallback(text_store),
+  explicit GetTextExtTestCallback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store),
         layout_prepared_character_num_(0) {
   }
 
@@ -1124,7 +1124,7 @@ class GetTextExtTestCallback : public TsfTextStoreTestCallback {
   uint32 layout_prepared_character_num_;
 };
 
-TEST_F(TsfTextStoreTest, GetTextExtTest) {
+TEST_F(TSFTextStoreTest, GetTextExtTest) {
   GetTextExtTestCallback callback(text_store_);
   EXPECT_CALL(text_input_client_, GetCaretBounds())
       .WillRepeatedly(Invoke(&callback,

@@ -14,31 +14,21 @@
 
 namespace ui {
 
-class MockTsfBridge : public TsfBridge {
+class MockTSFBridge : public TSFBridge {
  public:
-  MockTsfBridge();
-  virtual ~MockTsfBridge();
+  MockTSFBridge();
+  virtual ~MockTSFBridge();
 
-  // TsfBridge override.
+  // TSFBridge:
   virtual void Shutdown() OVERRIDE;
-
-  // TsfBridge override.
   virtual bool CancelComposition() OVERRIDE;
-
-  // TsfBridge override.
   virtual void OnTextInputTypeChanged(TextInputClient* client) OVERRIDE;
-
-  // TsfBridge override.
   virtual void SetFocusedClient(HWND focused_window,
                                 TextInputClient* client) OVERRIDE;
-
-  // TsfBridge override.
   virtual void RemoveFocusedClient(TextInputClient* client) OVERRIDE;
-
-  // TsfBridge override.
   virtual base::win::ScopedComPtr<ITfThreadMgr> GetThreadManager() OVERRIDE;
 
-  // Resets MockTsfBridge state including function call counter.
+  // Resets MockTSFBridge state including function call counter.
   void Reset();
 
   // Call count of Shutdown().
@@ -92,7 +82,7 @@ class MockTsfBridge : public TsfBridge {
   TextInputType latest_text_input_type_;
   base::win::ScopedComPtr<ITfThreadMgr> thread_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockTsfBridge);
+  DISALLOW_COPY_AND_ASSIGN(MockTSFBridge);
 };
 
 }  // namespace ui

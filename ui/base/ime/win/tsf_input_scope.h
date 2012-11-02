@@ -17,35 +17,20 @@ namespace ui {
 // The implementation class of ITfInputScope, which is the Windows-specific
 // category representation corresponding to ui::TextInputType that we are using
 // to specify the expected text type in the target field.
-class TsfInputScope : public ITfInputScope {
+class TSFInputScope : public ITfInputScope {
  public:
-  explicit TsfInputScope(TextInputType text_input_type);
-  virtual ~TsfInputScope();
+  explicit TSFInputScope(TextInputType text_input_type);
+  virtual ~TSFInputScope();
 
-  // ITfInputScope override.
-  virtual ULONG STDMETHODCALLTYPE AddRef() OVERRIDE;
-
-  // ITfInputScope override.
-  virtual ULONG STDMETHODCALLTYPE Release() OVERRIDE;
-
-  // ITfInputScope override.
-  virtual STDMETHODIMP QueryInterface(REFIID iid, void** result) OVERRIDE;
-
-  // ITfInputScope override.
-  virtual STDMETHODIMP GetInputScopes(InputScope** input_scopes,
-                                      UINT* count) OVERRIDE;
-
-  // ITfInputScope override.
-  virtual STDMETHODIMP GetPhrase(BSTR** phrases, UINT* count) OVERRIDE;
-
-  // ITfInputScope override.
-  virtual STDMETHODIMP GetRegularExpression(BSTR* regexp) OVERRIDE;
-
-  // ITfInputScope override.
-  virtual STDMETHODIMP GetSRGS(BSTR* srgs) OVERRIDE;
-
-  // ITfInputScope override.
-  virtual STDMETHODIMP GetXML(BSTR* xml) OVERRIDE;
+  // ITfInputScope:
+  STDMETHOD_(ULONG, AddRef)() OVERRIDE;
+  STDMETHOD_(ULONG, Release)() OVERRIDE;
+  STDMETHOD(QueryInterface)(REFIID iid, void** result) OVERRIDE;
+  STDMETHOD(GetInputScopes)(InputScope** input_scopes, UINT* count) OVERRIDE;
+  STDMETHOD(GetPhrase)(BSTR** phrases, UINT* count) OVERRIDE;
+  STDMETHOD(GetRegularExpression)(BSTR* regexp) OVERRIDE;
+  STDMETHOD(GetSRGS)(BSTR* srgs) OVERRIDE;
+  STDMETHOD(GetXML)(BSTR* xml) OVERRIDE;
 
  private:
   // The corresponding text input type.
@@ -54,7 +39,7 @@ class TsfInputScope : public ITfInputScope {
   // The refrence count of this instance.
   volatile LONG ref_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(TsfInputScope);
+  DISALLOW_COPY_AND_ASSIGN(TSFInputScope);
 };
 
 }  // namespace ui

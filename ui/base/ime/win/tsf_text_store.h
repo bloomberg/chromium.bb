@@ -19,61 +19,61 @@
 namespace ui {
 class TextInputClient;
 
-// TsfTextStore is used to interact with the input method via TSF manager.
-// TsfTextStore have a string buffer which is manipulated by TSF manager through
+// TSFTextStore is used to interact with the input method via TSF manager.
+// TSFTextStore have a string buffer which is manipulated by TSF manager through
 // ITextStoreACP interface methods such as SetText().
-// When the input method updates the composition, TsfTextStore calls
+// When the input method updates the composition, TSFTextStore calls
 // TextInputClient::SetCompositionText(). And when the input method finishes the
-// composition, TsfTextStore calls TextInputClient::InsertText() and clears the
+// composition, TSFTextStore calls TextInputClient::InsertText() and clears the
 // buffer.
 //
-// How TsfTextStore works:
+// How TSFTextStore works:
 //  - The user enters "a".
 //    - The input method set composition as "a".
-//    - TSF manager calls TsfTextStore::RequestLock().
-//    - TsfTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - TSF manager calls TSFTextStore::RequestLock().
+//    - TSFTextStore callbacks ITextStoreACPSink::OnLockGranted().
 //    - In OnLockGranted(), TSF manager calls
-//      - TsfTextStore::OnStartComposition()
-//      - TsfTextStore::SetText()
+//      - TSFTextStore::OnStartComposition()
+//      - TSFTextStore::SetText()
 //        The string buffer is set as "a".
-//      - TsfTextStore::OnUpdateComposition()
-//      - TsfTextStore::OnEndEdit()
-//        TsfTextStore can get the composition information such as underlines.
-//   - TsfTextStore calls TextInputClient::SetCompositionText().
+//      - TSFTextStore::OnUpdateComposition()
+//      - TSFTextStore::OnEndEdit()
+//        TSFTextStore can get the composition information such as underlines.
+//   - TSFTextStore calls TextInputClient::SetCompositionText().
 //     "a" is shown with an underline as composition string.
 // - The user enters <space>.
 //    - The input method set composition as "A".
-//    - TSF manager calls TsfTextStore::RequestLock().
-//    - TsfTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - TSF manager calls TSFTextStore::RequestLock().
+//    - TSFTextStore callbacks ITextStoreACPSink::OnLockGranted().
 //    - In OnLockGranted(), TSF manager calls
-//      - TsfTextStore::SetText()
+//      - TSFTextStore::SetText()
 //        The string buffer is set as "A".
-//      - TsfTextStore::OnUpdateComposition()
-//      - TsfTextStore::OnEndEdit()
-//   - TsfTextStore calls TextInputClient::SetCompositionText().
+//      - TSFTextStore::OnUpdateComposition()
+//      - TSFTextStore::OnEndEdit()
+//   - TSFTextStore calls TextInputClient::SetCompositionText().
 //     "A" is shown with an underline as composition string.
 // - The user enters <enter>.
 //    - The input method commits "A".
-//    - TSF manager calls TsfTextStore::RequestLock().
-//    - TsfTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - TSF manager calls TSFTextStore::RequestLock().
+//    - TSFTextStore callbacks ITextStoreACPSink::OnLockGranted().
 //    - In OnLockGranted(), TSF manager calls
-//      - TsfTextStore::OnEndComposition()
-//      - TsfTextStore::OnEndEdit()
-//        TsfTextStore knows "A" is committed.
-//   - TsfTextStore calls TextInputClient::InsertText().
+//      - TSFTextStore::OnEndComposition()
+//      - TSFTextStore::OnEndEdit()
+//        TSFTextStore knows "A" is committed.
+//   - TSFTextStore calls TextInputClient::InsertText().
 //     "A" is shown as committed string.
-//   - TsfTextStore clears the string buffer.
-//   - TsfTextStore calls OnSelectionChange(), OnLayoutChange() and
+//   - TSFTextStore clears the string buffer.
+//   - TSFTextStore calls OnSelectionChange(), OnLayoutChange() and
 //     OnTextChange() of ITextStoreACPSink to let TSF manager know that the
 //     string buffer has been changed.
 //
 // About the locking scheme:
 // When TSF manager manipulates the string buffer it calls RequestLock() to get
-// the lock of the document. If TsfTextStore can grant the lock request, it
+// the lock of the document. If TSFTextStore can grant the lock request, it
 // callbacks ITextStoreACPSink::OnLockGranted().
 // RequestLock() is called from only one thread, but called recursively in
 // OnLockGranted() or OnSelectionChange() or OnLayoutChange() or OnTextChange().
-// If the document is locked and the lock request is asynchronous, TsfTextStore
+// If the document is locked and the lock request is asynchronous, TSFTextStore
 // queues the request. The queued requests will be handled after the current
 // lock is removed.
 // More information about document locks can be found here:
@@ -81,135 +81,120 @@ class TextInputClient;
 //
 // More information about TSF can be found here:
 //   http://msdn.microsoft.com/en-us/library/ms629032
-class UI_EXPORT TsfTextStore : public ITextStoreACP,
+class UI_EXPORT TSFTextStore : public ITextStoreACP,
                                public ITfContextOwnerCompositionSink,
                                public ITfTextEditSink {
  public:
-  TsfTextStore();
-  virtual ~TsfTextStore();
+  TSFTextStore();
+  virtual ~TSFTextStore();
 
-  virtual ULONG STDMETHODCALLTYPE AddRef() OVERRIDE;
-  virtual ULONG STDMETHODCALLTYPE Release() OVERRIDE;
-
-  // Subclasses should extend this to return any interfaces they provide.
-  virtual STDMETHODIMP QueryInterface(REFIID iid, void** ppv) OVERRIDE;
-
-  // ITextStoreACP overrides.
-  virtual STDMETHODIMP AdviseSink(REFIID iid, IUnknown* unknown,
-                                  DWORD mask) OVERRIDE;
-  virtual STDMETHODIMP FindNextAttrTransition(
-      LONG acp_start,
-      LONG acp_halt,
-      ULONG num_filter_attributes,
-      const TS_ATTRID* filter_attributes,
-      DWORD flags,
-      LONG* acp_next,
-      BOOL* found,
-      LONG* found_offset) OVERRIDE;
-  virtual STDMETHODIMP GetACPFromPoint(TsViewCookie view_cookie,
-                                       const POINT* point,
-                                       DWORD flags,
-                                       LONG* acp) OVERRIDE;
-  virtual STDMETHODIMP GetActiveView(TsViewCookie* view_cookie) OVERRIDE;
-  virtual STDMETHODIMP GetEmbedded(LONG acp_pos,
-                                   REFGUID service,
-                                   REFIID iid,
-                                   IUnknown** unknown) OVERRIDE;
-  virtual STDMETHODIMP GetEndACP(LONG* acp) OVERRIDE;
-  virtual STDMETHODIMP GetFormattedText(LONG acp_start,
-                                        LONG acp_end,
-                                        IDataObject** data_object) OVERRIDE;
-  virtual STDMETHODIMP GetScreenExt(TsViewCookie view_cookie,
-                                    RECT* rect) OVERRIDE;
-  virtual STDMETHODIMP GetSelection(ULONG selection_index,
-                                    ULONG selection_buffer_size,
-                                    TS_SELECTION_ACP* selection_buffer,
-                                    ULONG* fetched_count) OVERRIDE;
-  virtual STDMETHODIMP GetStatus(TS_STATUS* pdcs) OVERRIDE;
-  virtual STDMETHODIMP GetText(LONG acp_start,
-                               LONG acp_end,
-                               wchar_t* text_buffer,
-                               ULONG text_buffer_size,
-                               ULONG* text_buffer_copied,
-                               TS_RUNINFO* run_info_buffer,
-                               ULONG run_info_buffer_size,
-                               ULONG* run_info_buffer_copied,
-                               LONG* next_acp) OVERRIDE;
-  virtual STDMETHODIMP GetTextExt(TsViewCookie view_cookie,
-                                  LONG acp_start,
-                                  LONG acp_end,
-                                  RECT* rect,
-                                  BOOL* clipped) OVERRIDE;
-  virtual STDMETHODIMP GetWnd(TsViewCookie view_cookie,
-                              HWND* window_handle) OVERRIDE;
-  virtual STDMETHODIMP InsertEmbedded(DWORD flags,
-                                      LONG acp_start,
-                                      LONG acp_end,
-                                      IDataObject* data_object,
-                                      TS_TEXTCHANGE* change) OVERRIDE;
-  virtual STDMETHODIMP InsertEmbeddedAtSelection(
-      DWORD flags,
-      IDataObject* data_object,
-      LONG* acp_start,
-      LONG* acp_end,
-      TS_TEXTCHANGE* change) OVERRIDE;
-  virtual STDMETHODIMP InsertTextAtSelection(
-      DWORD flags,
-      const wchar_t* text_buffer,
-      ULONG text_buffer_size,
-      LONG* acp_start,
-      LONG* acp_end,
-      TS_TEXTCHANGE* text_change) OVERRIDE;
-  virtual STDMETHODIMP QueryInsert(LONG acp_test_start,
-                                   LONG acp_test_end,
-                                   ULONG text_size,
-                                   LONG* acp_result_start,
-                                   LONG* acp_result_end) OVERRIDE;
-  virtual STDMETHODIMP QueryInsertEmbedded(const GUID* service,
-                                           const FORMATETC* format,
-                                           BOOL* insertable) OVERRIDE;
-  virtual STDMETHODIMP RequestAttrsAtPosition(
+  // ITextStoreACP:
+  STDMETHOD_(ULONG, AddRef)() OVERRIDE;
+  STDMETHOD_(ULONG, Release)() OVERRIDE;
+  STDMETHOD(QueryInterface)(REFIID iid, void** ppv) OVERRIDE;
+  STDMETHOD(AdviseSink)(REFIID iid, IUnknown* unknown, DWORD mask) OVERRIDE;
+  STDMETHOD(FindNextAttrTransition)(LONG acp_start,
+                                    LONG acp_halt,
+                                    ULONG num_filter_attributes,
+                                    const TS_ATTRID* filter_attributes,
+                                    DWORD flags,
+                                    LONG* acp_next,
+                                    BOOL* found,
+                                    LONG* found_offset) OVERRIDE;
+  STDMETHOD(GetACPFromPoint)(TsViewCookie view_cookie,
+                             const POINT* point,
+                             DWORD flags,
+                             LONG* acp) OVERRIDE;
+  STDMETHOD(GetActiveView)(TsViewCookie* view_cookie) OVERRIDE;
+  STDMETHOD(GetEmbedded)(LONG acp_pos,
+                         REFGUID service,
+                         REFIID iid,
+                         IUnknown** unknown) OVERRIDE;
+  STDMETHOD(GetEndACP)(LONG* acp) OVERRIDE;
+  STDMETHOD(GetFormattedText)(LONG acp_start,
+                              LONG acp_end,
+                              IDataObject** data_object) OVERRIDE;
+  STDMETHOD(GetScreenExt)(TsViewCookie view_cookie, RECT* rect) OVERRIDE;
+  STDMETHOD(GetSelection)(ULONG selection_index,
+                          ULONG selection_buffer_size,
+                          TS_SELECTION_ACP* selection_buffer,
+                          ULONG* fetched_count) OVERRIDE;
+  STDMETHOD(GetStatus)(TS_STATUS* pdcs) OVERRIDE;
+  STDMETHOD(GetText)(LONG acp_start,
+                     LONG acp_end,
+                     wchar_t* text_buffer,
+                     ULONG text_buffer_size,
+                     ULONG* text_buffer_copied,
+                     TS_RUNINFO* run_info_buffer,
+                     ULONG run_info_buffer_size,
+                     ULONG* run_info_buffer_copied,
+                     LONG* next_acp) OVERRIDE;
+  STDMETHOD(GetTextExt)(TsViewCookie view_cookie,
+                        LONG acp_start,
+                        LONG acp_end,
+                        RECT* rect,
+                        BOOL* clipped) OVERRIDE;
+  STDMETHOD(GetWnd)(TsViewCookie view_cookie, HWND* window_handle) OVERRIDE;
+  STDMETHOD(InsertEmbedded)(DWORD flags,
+                            LONG acp_start,
+                            LONG acp_end,
+                            IDataObject* data_object,
+                            TS_TEXTCHANGE* change) OVERRIDE;
+  STDMETHOD(InsertEmbeddedAtSelection)(DWORD flags,
+                                       IDataObject* data_object,
+                                       LONG* acp_start,
+                                       LONG* acp_end,
+                                       TS_TEXTCHANGE* change) OVERRIDE;
+  STDMETHOD(InsertTextAtSelection)(DWORD flags,
+                                   const wchar_t* text_buffer,
+                                   ULONG text_buffer_size,
+                                   LONG* acp_start,
+                                   LONG* acp_end,
+                                   TS_TEXTCHANGE* text_change) OVERRIDE;
+  STDMETHOD(QueryInsert)(LONG acp_test_start,
+                         LONG acp_test_end,
+                         ULONG text_size,
+                         LONG* acp_result_start,
+                         LONG* acp_result_end) OVERRIDE;
+  STDMETHOD(QueryInsertEmbedded)(const GUID* service,
+                                 const FORMATETC* format,
+                                 BOOL* insertable) OVERRIDE;
+  STDMETHOD(RequestAttrsAtPosition)(LONG acp_pos,
+                                    ULONG attribute_buffer_size,
+                                    const TS_ATTRID* attribute_buffer,
+                                    DWORD flags) OVERRIDE;
+  STDMETHOD(RequestAttrsTransitioningAtPosition)(
       LONG acp_pos,
       ULONG attribute_buffer_size,
       const TS_ATTRID* attribute_buffer,
       DWORD flags) OVERRIDE;
-  virtual STDMETHODIMP RequestAttrsTransitioningAtPosition(
-      LONG acp_pos,
-      ULONG attribute_buffer_size,
-      const TS_ATTRID* attribute_buffer,
-      DWORD flags) OVERRIDE;
-  virtual STDMETHODIMP RequestLock(DWORD lock_flags, HRESULT* result) OVERRIDE;
-  virtual STDMETHODIMP RequestSupportedAttrs(
-      DWORD flags,
-      ULONG attribute_buffer_size,
-      const TS_ATTRID* attribute_buffer) OVERRIDE;
-  virtual STDMETHODIMP RetrieveRequestedAttrs(
-      ULONG attribute_buffer_size,
-      TS_ATTRVAL* attribute_buffer,
-      ULONG* attribute_buffer_copied) OVERRIDE;
-  virtual STDMETHODIMP SetSelection(
-      ULONG selection_buffer_size,
-      const TS_SELECTION_ACP* selection_buffer) OVERRIDE;
-  virtual STDMETHODIMP SetText(DWORD flags,
-                               LONG acp_start,
-                               LONG acp_end,
-                               const wchar_t* text_buffer,
-                               ULONG text_buffer_size,
-                               TS_TEXTCHANGE* text_change) OVERRIDE;
-  virtual STDMETHODIMP UnadviseSink(IUnknown* unknown) OVERRIDE;
+  STDMETHOD(RequestLock)(DWORD lock_flags, HRESULT* result) OVERRIDE;
+  STDMETHOD(RequestSupportedAttrs)(DWORD flags,
+                                   ULONG attribute_buffer_size,
+                                   const TS_ATTRID* attribute_buffer) OVERRIDE;
+  STDMETHOD(RetrieveRequestedAttrs)(ULONG attribute_buffer_size,
+                                    TS_ATTRVAL* attribute_buffer,
+                                    ULONG* attribute_buffer_copied) OVERRIDE;
+  STDMETHOD(SetSelection)(ULONG selection_buffer_size,
+                          const TS_SELECTION_ACP* selection_buffer) OVERRIDE;
+  STDMETHOD(SetText)(DWORD flags,
+                     LONG acp_start,
+                     LONG acp_end,
+                     const wchar_t* text_buffer,
+                     ULONG text_buffer_size,
+                     TS_TEXTCHANGE* text_change) OVERRIDE;
+  STDMETHOD(UnadviseSink)(IUnknown* unknown) OVERRIDE;
 
-  // ITfContextOwnerCompositionSink overrides.
-  virtual STDMETHODIMP OnStartComposition(ITfCompositionView* composition_view,
-                                          BOOL* ok) OVERRIDE;
-  virtual STDMETHODIMP OnUpdateComposition(ITfCompositionView* composition_view,
-                                           ITfRange* range) OVERRIDE;
-  virtual STDMETHODIMP OnEndComposition(
-      ITfCompositionView* composition_view) OVERRIDE;
+  // ITfContextOwnerCompositionSink:
+  STDMETHOD(OnStartComposition)(ITfCompositionView* composition_view,
+                                BOOL* ok) OVERRIDE;
+  STDMETHOD(OnUpdateComposition)(ITfCompositionView* composition_view,
+                                 ITfRange* range) OVERRIDE;
+  STDMETHOD(OnEndComposition)(ITfCompositionView* composition_view) OVERRIDE;
 
-  // ITfTextEditSink overrides.
-  virtual STDMETHODIMP OnEndEdit(ITfContext* context,
-                                 TfEditCookie read_only_edit_cookie,
-                                 ITfEditRecord* edit_record) OVERRIDE;
+  // ITfTextEditSink:
+  STDMETHOD(OnEndEdit)(ITfContext* context, TfEditCookie read_only_edit_cookie,
+                       ITfEditRecord* edit_record) OVERRIDE;
 
   // Sets currently focused TextInputClient.
   void SetFocusedTextInputClient(HWND focused_window,
@@ -221,8 +206,8 @@ class UI_EXPORT TsfTextStore : public ITextStoreACP,
   void SendOnLayoutChange();
 
  private:
-  friend class TsfTextStoreTest;
-  friend class TsfTextStoreTestCallback;
+  friend class TSFTextStoreTest;
+  friend class TSFTextStoreTestCallback;
 
   // Checks if the document has a read-only lock.
   bool HasReadLock() const;
@@ -298,7 +283,7 @@ class UI_EXPORT TsfTextStore : public ITextStoreACP,
   base::win::ScopedComPtr<ITfCategoryMgr> category_manager_;
   base::win::ScopedComPtr<ITfDisplayAttributeMgr> display_attribute_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(TsfTextStore);
+  DISALLOW_COPY_AND_ASSIGN(TSFTextStore);
 };
 
 }  // namespace ui

@@ -216,7 +216,7 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
 void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
 
-  if (base::win::IsTsfAwareRequired()) {
+  if (base::win::IsTSFAwareRequired()) {
     // Create a TSF message filter for the message loop. MessageLoop takes
     // ownership of the filter.
     scoped_ptr<base::win::TextServicesMessageFilter> tsf_message_filter(

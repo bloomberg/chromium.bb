@@ -98,8 +98,8 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
       container_view_(new NativeViewHost),
       bg_color_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          tsf_event_router_(base::win::IsTsfAwareRequired() ?
-              new ui::TsfEventRouter(this) : NULL)) {
+          tsf_event_router_(base::win::IsTSFAwareRequired() ?
+              new ui::TSFEventRouter(this) : NULL)) {
   if (!loaded_libarary_module_) {
     // msftedit.dll is RichEdit ver 4.1.
     // This version is available from WinXP SP1 and has TSF support.
@@ -348,7 +348,7 @@ bool NativeTextfieldWin::IsIMEComposing() const {
   // Retrieve the length of the composition string to check if an IME is
   // composing text. (If this length is > 0 then an IME is being used to compose
   // text.)
-  if (base::win::IsTsfAwareRequired())
+  if (base::win::IsTSFAwareRequired())
     return tsf_event_router_->IsImeComposing();
 
   HIMC imm_context = ImmGetContext(m_hWnd);
@@ -507,11 +507,11 @@ void NativeTextfieldWin::OnImeEndCompositionInternal() {
   textfield_->SyncText();
 }
 
-void NativeTextfieldWin::OnTsfStartComposition() {
+void NativeTextfieldWin::OnTSFStartComposition() {
   OnImeStartCompositionInternal();
 }
 
-void NativeTextfieldWin::OnTsfEndComposition() {
+void NativeTextfieldWin::OnTSFEndComposition() {
   OnImeEndCompositionInternal();
 }
 
@@ -620,7 +620,7 @@ void NativeTextfieldWin::OnCopy() {
 }
 
 LRESULT NativeTextfieldWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
-  if (base::win::IsTsfAwareRequired()) {
+  if (base::win::IsTSFAwareRequired()) {
     // Enable TSF support of RichEdit.
     SetEditStyle(SES_USECTF, SES_USECTF);
 
@@ -1053,7 +1053,7 @@ void NativeTextfieldWin::OnSetFocus(HWND hwnd) {
   }
   focus_manager->SetFocusedView(textfield_);
 
-  if (!base::win::IsTsfAwareRequired()) {
+  if (!base::win::IsTSFAwareRequired()) {
     return;
   }
 
@@ -1062,7 +1062,7 @@ void NativeTextfieldWin::OnSetFocus(HWND hwnd) {
   // Document manager created by RichEdit can be obtained only after
   // WM_SET_FOCUS event is handled.
   tsf_event_router_->SetManager(
-      ui::TsfBridge::GetInstance()->GetThreadManager());
+      ui::TSFBridge::GetInstance()->GetThreadManager());
   SetMsgHandled(TRUE);
 }
 

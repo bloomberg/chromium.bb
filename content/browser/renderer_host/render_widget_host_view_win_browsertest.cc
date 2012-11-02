@@ -28,8 +28,8 @@ class RenderWidgetHostViewWinTest : public ContentBrowserTest {
 // crbug.com/151798
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
                        DISABLED_SwichToPasswordField) {
-  ui::MockTsfBridge mock_bridge;
-  ui::TsfBridge* old_bridge = ui::TsfBridge::ReplaceForTesting(&mock_bridge);
+  ui::MockTSFBridge mock_bridge;
+  ui::TSFBridge* old_bridge = ui::TSFBridge::ReplaceForTesting(&mock_bridge);
   GURL test_url = GetTestUrl("textinput", "ime_enable_disable_test.html");
 
   NavigateToURL(shell(), test_url);
@@ -60,14 +60,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
   RunAllPendingInMessageLoop();
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, mock_bridge.latest_text_iput_type());
 
-  ui::TsfBridge::ReplaceForTesting(old_bridge);
+  ui::TSFBridge::ReplaceForTesting(old_bridge);
 }
 
 // crbug.com/151798
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
                        DISABLED_SwitchToSameField) {
-  ui::MockTsfBridge mock_bridge;
-  ui::TsfBridge* old_bridge = ui::TsfBridge::ReplaceForTesting(&mock_bridge);
+  ui::MockTSFBridge mock_bridge;
+  ui::TSFBridge* old_bridge = ui::TSFBridge::ReplaceForTesting(&mock_bridge);
   GURL test_url = GetTestUrl("textinput", "ime_enable_disable_test.html");
 
   NavigateToURL(shell(), test_url);
@@ -98,14 +98,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
   RunAllPendingInMessageLoop();
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, mock_bridge.latest_text_iput_type());
 
-  ui::TsfBridge::ReplaceForTesting(old_bridge);
+  ui::TSFBridge::ReplaceForTesting(old_bridge);
 }
 
 // crbug.com/151798
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
                        DISABLED_SwitchToSamePasswordField) {
-  ui::MockTsfBridge mock_bridge;
-  ui::TsfBridge* old_bridge = ui::TsfBridge::ReplaceForTesting(&mock_bridge);
+  ui::MockTSFBridge mock_bridge;
+  ui::TSFBridge* old_bridge = ui::TSFBridge::ReplaceForTesting(&mock_bridge);
   GURL test_url = GetTestUrl("textinput", "ime_enable_disable_test.html");
 
   NavigateToURL(shell(), test_url);
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewWinTest,
   RunAllPendingInMessageLoop();
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, mock_bridge.latest_text_iput_type());
 
-  ui::TsfBridge::ReplaceForTesting(old_bridge);
+  ui::TSFBridge::ReplaceForTesting(old_bridge);
 }
 
 }  // namespace content

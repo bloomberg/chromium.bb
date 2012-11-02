@@ -15,33 +15,33 @@
 namespace ui {
 class TextInputClient;
 
-// TsfBridge provides high level IME related operations on top of Text Services
-// Framework (TSF). TsfBridge is managed by TLS because TSF related stuff is
+// TSFBridge provides high level IME related operations on top of Text Services
+// Framework (TSF). TSFBridge is managed by TLS because TSF related stuff is
 // associated with each thread and not allowed to access across thread boundary.
-// To be consistent with IMM32 behavior, TsfBridge is shared in the same thread.
-// TsfBridge is used by the web content text inputting field, for example
+// To be consistent with IMM32 behavior, TSFBridge is shared in the same thread.
+// TSFBridge is used by the web content text inputting field, for example
 // DisableIME() should be called if a password field is focused.
 //
-// TsfBridge also manages connectivity between TsfTextStore which is the backend
+// TSFBridge also manages connectivity between TSFTextStore which is the backend
 // of text inputting and current focused TextInputClient.
 //
 // All methods in this class must be used in UI thread.
-class UI_EXPORT TsfBridge {
+class UI_EXPORT TSFBridge {
  public:
-  virtual ~TsfBridge();
+  virtual ~TSFBridge();
 
-  // Returns the thread local TsfBridge instance. Initialize() must be called
-  // first. Do not cache this pointer and use it after TsfBridge Shutdown().
-  static TsfBridge* GetInstance();
+  // Returns the thread local TSFBridge instance. Initialize() must be called
+  // first. Do not cache this pointer and use it after TSFBridge Shutdown().
+  static TSFBridge* GetInstance();
 
   // Sets the thread local instance. Must be called before any calls to
   // GetInstance().
   static bool Initialize();
 
-  // Injects an alternative TsfBridge such as MockTsfBridge for testing. The
+  // Injects an alternative TSFBridge such as MockTSFBridge for testing. The
   // injected object should be released by the caller. This function returns
-  // previous TsfBridge pointer with ownership.
-  static TsfBridge* ReplaceForTesting(TsfBridge* bridge);
+  // previous TSFBridge pointer with ownership.
+  static TSFBridge* ReplaceForTesting(TSFBridge* bridge);
 
   // Destroys the thread local instance.
   virtual void Shutdown() = 0;
@@ -69,10 +69,13 @@ class UI_EXPORT TsfBridge {
 
  protected:
   // Uses GetInstance() instead.
-  TsfBridge();
+  TSFBridge();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TsfBridge);
+  // Releases TLS instance.
+  static void Finalize(void* data);
+
+  DISALLOW_COPY_AND_ASSIGN(TSFBridge);
 };
 
 }  // namespace ui

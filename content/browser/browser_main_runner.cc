@@ -59,7 +59,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 #if defined(OS_WIN)
     if (parameters.command_line.HasSwitch(
             switches::kEnableTextServicesFramework)) {
-      base::win::SetForceToUseTsf();
+      base::win::SetForceToUseTSF();
     }
 #endif  // OS_WIN
 
@@ -91,8 +91,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     base::allocator::SetupSubprocessAllocator();
 #endif
     ole_initializer_.reset(new ui::ScopedOleInitializer);
-    if (base::win::IsTsfAwareRequired())
-      ui::TsfBridge::Initialize();
+    if (base::win::IsTSFAwareRequired())
+      ui::TSFBridge::Initialize();
 #endif  // OS_WIN
 
 #if defined(OS_ANDROID)
@@ -127,8 +127,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       main_loop_->ShutdownThreadsAndCleanUp();
 
 #if defined(OS_WIN)
-    if (base::win::IsTsfAwareRequired())
-      ui::TsfBridge::GetInstance()->Shutdown();
+    if (base::win::IsTSFAwareRequired())
+      ui::TSFBridge::GetInstance()->Shutdown();
     ole_initializer_.reset(NULL);
 #endif
 

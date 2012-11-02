@@ -8,19 +8,19 @@
 
 namespace ui {
 
-TsfInputScope::TsfInputScope(TextInputType text_input_type)
+TSFInputScope::TSFInputScope(TextInputType text_input_type)
   : text_input_type_(text_input_type),
     ref_count_(0) {
 }
 
-TsfInputScope::~TsfInputScope() {
+TSFInputScope::~TSFInputScope() {
 }
 
-ULONG STDMETHODCALLTYPE TsfInputScope::AddRef() {
+ULONG STDMETHODCALLTYPE TSFInputScope::AddRef() {
   return InterlockedIncrement(&ref_count_);
 }
 
-ULONG STDMETHODCALLTYPE TsfInputScope::Release() {
+ULONG STDMETHODCALLTYPE TSFInputScope::Release() {
   const LONG count = InterlockedDecrement(&ref_count_);
   if (!count) {
     delete this;
@@ -29,7 +29,7 @@ ULONG STDMETHODCALLTYPE TsfInputScope::Release() {
   return static_cast<ULONG>(count);
 }
 
-STDMETHODIMP TsfInputScope::QueryInterface(REFIID iid, void** result) {
+STDMETHODIMP TSFInputScope::QueryInterface(REFIID iid, void** result) {
   if (!result)
     return E_INVALIDARG;
   if (iid == IID_IUnknown || iid == IID_ITfInputScope) {
@@ -42,7 +42,7 @@ STDMETHODIMP TsfInputScope::QueryInterface(REFIID iid, void** result) {
   return S_OK;
 }
 
-STDMETHODIMP TsfInputScope::GetInputScopes(InputScope** input_scopes,
+STDMETHODIMP TSFInputScope::GetInputScopes(InputScope** input_scopes,
                                            UINT* count) {
   DCHECK_NE(text_input_type_, TEXT_INPUT_TYPE_NONE);
   if (!count || !input_scopes)
@@ -58,19 +58,19 @@ STDMETHODIMP TsfInputScope::GetInputScopes(InputScope** input_scopes,
   return S_OK;
 }
 
-STDMETHODIMP TsfInputScope::GetPhrase(BSTR** phrases, UINT* count) {
+STDMETHODIMP TSFInputScope::GetPhrase(BSTR** phrases, UINT* count) {
   return E_NOTIMPL;
 }
 
-STDMETHODIMP TsfInputScope::GetRegularExpression(BSTR* regexp) {
+STDMETHODIMP TSFInputScope::GetRegularExpression(BSTR* regexp) {
   return E_NOTIMPL;
 }
 
-STDMETHODIMP TsfInputScope::GetSRGS(BSTR* srgs) {
+STDMETHODIMP TSFInputScope::GetSRGS(BSTR* srgs) {
   return E_NOTIMPL;
 }
 
-STDMETHODIMP TsfInputScope::GetXML(BSTR* xml) {
+STDMETHODIMP TSFInputScope::GetXML(BSTR* xml) {
   return E_NOTIMPL;
 }
 

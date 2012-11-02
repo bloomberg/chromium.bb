@@ -9,7 +9,7 @@
 
 namespace ui {
 
-MockTsfBridge::MockTsfBridge()
+MockTSFBridge::MockTSFBridge()
   : shutdown_call_count_(0),
     enable_ime_call_count_(0),
     disalbe_ime_call_count_(0),
@@ -22,41 +22,41 @@ MockTsfBridge::MockTsfBridge()
     latest_text_input_type_(TEXT_INPUT_TYPE_NONE) {
 }
 
-MockTsfBridge::~MockTsfBridge() {
+MockTSFBridge::~MockTSFBridge() {
 }
 
-void MockTsfBridge::Shutdown() {
+void MockTSFBridge::Shutdown() {
   shutdown_call_count_++;
 }
 
-bool MockTsfBridge::CancelComposition() {
+bool MockTSFBridge::CancelComposition() {
   ++cancel_composition_call_count_;
   return true;
 }
 
-void MockTsfBridge::OnTextInputTypeChanged(TextInputClient* client) {
+void MockTSFBridge::OnTextInputTypeChanged(TextInputClient* client) {
   latest_text_input_type_ = client->GetTextInputType();
 }
 
-void MockTsfBridge::SetFocusedClient(HWND focused_window,
+void MockTSFBridge::SetFocusedClient(HWND focused_window,
                                      TextInputClient* client) {
   ++set_focused_client_call_count_;
   focused_window_ = focused_window;
   text_input_client_ = client;
 }
 
-void MockTsfBridge::RemoveFocusedClient(TextInputClient* client) {
+void MockTSFBridge::RemoveFocusedClient(TextInputClient* client) {
   ++remove_focused_client_call_count_;
   DCHECK_EQ(client, text_input_client_);
   text_input_client_ = NULL;
   focused_window_ = NULL;
 }
 
-base::win::ScopedComPtr<ITfThreadMgr> MockTsfBridge::GetThreadManager() {
+base::win::ScopedComPtr<ITfThreadMgr> MockTSFBridge::GetThreadManager() {
   return thread_manager_;
 }
 
-void MockTsfBridge::Reset() {
+void MockTSFBridge::Reset() {
   shutdown_call_count_ = 0;
   enable_ime_call_count_ = 0;
   disalbe_ime_call_count_ = 0;
