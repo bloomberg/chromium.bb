@@ -20,6 +20,9 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/types.h>
+#if NACL_ANDROID
+#include <linux/ashmem.h>
+#endif
 
 #include <algorithm>
 
@@ -53,8 +56,26 @@ void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
   g_create_memory_object_func = func;
 }
 
-
 namespace nacl {
+
+#if NACL_ANDROID
+#define ASHMEM_DEVICE "/dev/ashmem"
+
+static int AshmemCreateRegion(size_t size) {
+  int fd;
+
+  fd = open(ASHMEM_DEVICE, O_RDWR);
+  if (fd < 0)
+    return -1;
+
+  if (ioctl(fd, ASHMEM_SET_SIZE, size) < 0) {
+    close(fd);
+    return -1;
+  }
+
+  return fd;
+}
+#endif
 
 bool WouldBlock() {
   return (errno == EAGAIN) ? true : false;
@@ -80,14 +101,8 @@ int GetLastErrorString(char* buffer, size_t length) {
 #endif
 }
 
+#if !NACL_ANDROID
 static Atomic32 memory_object_count = 0;
-
-#if NACL_ANDROID
-// TODO(olonho): plain wrong, must use ashmem instead. See
-// http://code.google.com/p/nativeclient/issues/detail?id=3024.
-#define shm_open open
-#define shm_unlink unlink
-#endif
 
 static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
   if (0 == length) {
@@ -125,6 +140,7 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
     // Retry only if we got EEXIST.
   }
 }
+#endif
 
 Handle CreateMemoryObject(size_t length, bool executable) {
   if (0 == length) {
@@ -138,11 +154,13 @@ Handle CreateMemoryObject(size_t length, bool executable) {
       return fd;
   }
 
+#if NACL_ANDROID
+  return AshmemCreateRegion(length);
+#else
   // /dev/shm is not always available on Linux.
   // Sometimes it's mounted as noexec.
   // To handle this case, sel_ldr can take a path
   // to tmpfs from the environment.
-
 #if NACL_LINUX && defined(NACL_ENABLE_TMPFS_REDIRECT_VAR)
   if (NACL_ENABLE_TMPFS_REDIRECT_VAR) {
     const char* prefix = getenv(kNaClTempPrefixVar);
@@ -164,6 +182,7 @@ Handle CreateMemoryObject(size_t length, bool executable) {
 
   // Try shm_open().
   return TryShmOrTempOpen(length, kShmOpenPrefix, false);
+#endif  // !NACL_ANDROID
 }
 
 void* Map(struct NaClDescEffector* effp,
