@@ -42,6 +42,7 @@
       './overrides',
       './<@(libjingle_source)',
       '../../testing/gtest/include',
+      '../../third_party',
       '../../third_party/libyuv/include',
       '../../third_party/webrtc',
     ],
@@ -58,6 +59,7 @@
         './overrides',
         './<@(libjingle_source)',
         '../../testing/gtest/include',
+        '../../third_party',
         '../../third_party/webrtc',
       ],
       'defines': [
@@ -720,7 +722,7 @@
               'xcode_settings': {
                 'WARNING_CFLAGS': [
                   # Suppres warnings about using deprecated functions in
-                  # macdevicemanager.cc. 
+                  # macdevicemanager.cc.
                   '-Wno-deprecated-declarations',
                 ],
               },
