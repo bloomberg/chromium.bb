@@ -29,6 +29,9 @@ struct DetailInput {
 extern const DetailInput kBillingInputs[];
 extern const size_t kBillingInputsSize;
 
+extern const DetailInput kShippingInputs[];
+extern const size_t kShippingInputsSize;
+
 }  // namespace
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_TEMPLATE_H_

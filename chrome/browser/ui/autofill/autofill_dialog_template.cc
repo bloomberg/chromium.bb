@@ -24,4 +24,15 @@ const DetailInput kBillingInputs[] = {
 
 const size_t kBillingInputsSize = arraysize(kBillingInputs);
 
+const DetailInput kShippingInputs[] = {
+  { ++row_count, NAME_FULL, "Full name" },
+  { ++row_count, ADDRESS_HOME_LINE1, "Street address" },
+  { ++row_count, ADDRESS_HOME_LINE2, "Street address (optional)" },
+  { ++row_count, ADDRESS_HOME_CITY, "City" },
+  { ++row_count, ADDRESS_HOME_STATE, "State" },
+  {   row_count, ADDRESS_HOME_ZIP, "ZIP code", 0.5 },
+};
+
+const size_t kShippingInputsSize = arraysize(kShippingInputs);
+
 }  // namespace

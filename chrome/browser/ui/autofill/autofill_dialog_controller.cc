@@ -43,6 +43,16 @@ string16 AutofillDialogController::BillingSectionLabel() const {
   return string16(ASCIIToUTF16("Billing details fixme"));
 }
 
+string16 AutofillDialogController::UseBillingForShippingText() const {
+  // TODO(estade): real strings and l10n.
+  return string16(ASCIIToUTF16("also ship here"));
+}
+
+string16 AutofillDialogController::ShippingSectionLabel() const {
+  // TODO(estade): real strings and l10n.
+  return string16(ASCIIToUTF16("Shipping details fixme"));
+}
+
 string16 AutofillDialogController::WalletOptionText() const {
   // TODO(estade): real strings and l10n.
   return string16(ASCIIToUTF16("I love lamp."));

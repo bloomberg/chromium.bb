@@ -13,6 +13,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
@@ -21,7 +22,7 @@ namespace autofill {
 namespace {
 
 // Returns a label that describes a details section.
-views::Label* CreateSectionLabel(const string16& text) {
+views::Label* CreateDetailsSectionLabel(const string16& text) {
   views::Label* label = new views::Label(text);
   label->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
   label->SetFont(label->font().DeriveFont(0, gfx::Font::BOLD));
@@ -29,6 +30,39 @@ views::Label* CreateSectionLabel(const string16& text) {
   // inset. It's hard to get at, so for now it's hard-coded.
   label->set_border(views::Border::CreateEmptyBorder(4, 0, 0, 0));
   return label;
+}
+
+// Creates a detail section (Shipping, Billing, etc.) with the given label and
+// inputs View.
+views::View* CreateDetailsSection(const string16& label,
+                                  views::View* inputs) {
+  views::View* view = new views::View();
+  views::GridLayout* layout = new views::GridLayout(view);
+  view->SetLayoutManager(layout);
+
+  const int column_set_id = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
+  // TODO(estade): pull out these constants, and figure out better values
+  // for them.
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::FIXED,
+                        180,
+                        0);
+  column_set->AddPaddingColumn(0, 15);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::FIXED,
+                        300,
+                        0);
+
+  // Email section.
+  layout->StartRow(0, column_set_id);
+  layout->AddView(CreateDetailsSectionLabel(label));
+  layout->AddView(inputs);
+  return view;
 }
 
 }  // namespace
@@ -106,12 +140,18 @@ bool AutofillDialogViews::Accept() {
   return true;
 }
 
+void AutofillDialogViews::ButtonPressed(views::Button* sender,
+                                        const ui::Event& event) {
+  DCHECK_EQ(sender, use_billing_for_shipping_);
+  shipping_section_->SetVisible(!use_billing_for_shipping_->checked());
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+}
+
 void AutofillDialogViews::InitChildViews() {
   contents_ = new views::View();
   views::GridLayout* layout = new views::GridLayout(contents_);
   contents_->SetLayoutManager(layout);
 
-  // A column set for things that span the whole dialog.
   const int single_column_set = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_set);
   column_set->AddColumn(views::GridLayout::FILL,
@@ -126,36 +166,9 @@ void AutofillDialogViews::InitChildViews() {
   intro->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(intro);
 
-  // A column set for input fields.
-  const int info_column_set = 1;
-  column_set = layout->AddColumnSet(info_column_set);
-  // TODO(estade): pull out these constants, and figure out better values
-  // for them.
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::FIXED,
-                        180,
-                        0);
-  column_set->AddPaddingColumn(0, 15);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::FIXED,
-                        300,
-                        0);
-
-  // Email section.
-  layout->StartRowWithPadding(0, info_column_set,
+  layout->StartRowWithPadding(0, single_column_set,
                               0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(CreateSectionLabel(controller_->EmailSectionLabel()));
-  layout->AddView(CreateEmailSection());
-
-  // Billing section.
-  layout->StartRowWithPadding(0, info_column_set,
-                              0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(CreateSectionLabel(controller_->BillingSectionLabel()));
-  layout->AddView(CreateBillingSection());
+  layout->AddView(CreateDetailsContainer());
 
   // Separator.
   layout->StartRowWithPadding(0, single_column_set,
@@ -168,21 +181,68 @@ void AutofillDialogViews::InitChildViews() {
   layout->AddView(new views::Checkbox(controller_->WalletOptionText()));
 }
 
-views::View* AutofillDialogViews::CreateEmailSection() {
+views::View* AutofillDialogViews::CreateDetailsContainer() {
+  views::View* view = new views::View();
+  // A box layout is used because it respects widget visibility.
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           views::kRelatedControlVerticalSpacing));
+
+  // Email.
+  view->AddChildView(CreateDetailsSection(
+      controller_->EmailSectionLabel(), CreateEmailInputs()));
+  // Billing.
+  view->AddChildView(CreateDetailsSection(
+      controller_->BillingSectionLabel(), CreateBillingInputs()));
+  // Shipping.
+  shipping_section_ = CreateDetailsSection(
+      controller_->ShippingSectionLabel(), CreateShippingInputs());
+  view->AddChildView(shipping_section_);
+  shipping_section_->SetVisible(!use_billing_for_shipping_->checked());
+
+  return view;
+}
+
+views::View* AutofillDialogViews::CreateEmailInputs() {
   views::Textfield* field = new views::Textfield();
   field->set_placeholder_text(ASCIIToUTF16("placeholder text"));
   return field;
 }
 
-// TODO(estade): we should be using Chrome-style constrained window padding
-// values.
-views::View* AutofillDialogViews::CreateBillingSection() {
+views::View* AutofillDialogViews::CreateBillingInputs() {
   views::View* billing = new views::View();
-  views::GridLayout* layout = new views::GridLayout(billing);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           views::kRelatedControlVerticalSpacing);
   billing->SetLayoutManager(layout);
 
-  for (size_t i = 0; i < kBillingInputsSize; ++i) {
-    const DetailInput& input = kBillingInputs[i];
+  billing->AddChildView(
+      InitInputsFromTemplate(kBillingInputs, kBillingInputsSize));
+
+  use_billing_for_shipping_ =
+      new views::Checkbox(controller_->UseBillingForShippingText());
+  use_billing_for_shipping_->SetChecked(true);
+  use_billing_for_shipping_->set_listener(this);
+  billing->AddChildView(use_billing_for_shipping_);
+
+  return billing;
+}
+
+views::View* AutofillDialogViews::CreateShippingInputs() {
+  return InitInputsFromTemplate(kShippingInputs, kShippingInputsSize);
+}
+
+// TODO(estade): we should be using Chrome-style constrained window padding
+// values.
+views::View* AutofillDialogViews::InitInputsFromTemplate(
+    const DetailInput* inputs,
+    size_t inputs_len) {
+  views::View* view = new views::View();
+  views::GridLayout* layout = new views::GridLayout(view);
+  view->SetLayoutManager(layout);
+
+  for (size_t i = 0; i < inputs_len; ++i) {
+    const DetailInput& input = inputs[i];
     if (!controller_->ShouldShowInput(input))
       continue;
 
@@ -191,7 +251,7 @@ views::View* AutofillDialogViews::CreateBillingSection() {
     if (!column_set) {
       // Create a new column set and row.
       column_set = layout->AddColumnSet(column_set_id);
-      if (billing->has_children())
+      if (i > 0)
         layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, column_set_id);
     } else {
@@ -215,7 +275,7 @@ views::View* AutofillDialogViews::CreateBillingSection() {
     layout->AddView(field);
   }
 
-  return billing;
+  return view;
 }
 
 }  // namespace autofill

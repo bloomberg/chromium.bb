@@ -36,6 +36,8 @@ class AutofillDialogController {
   string16 IntroText() const;
   string16 EmailSectionLabel() const;
   string16 BillingSectionLabel() const;
+  string16 UseBillingForShippingText() const;
+  string16 ShippingSectionLabel() const;
   string16 WalletOptionText() const;
   bool ShouldShowInput(const DetailInput& input) const;
   string16 CancelButtonText() const;
