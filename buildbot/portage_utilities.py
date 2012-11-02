@@ -38,6 +38,9 @@ _ver = '(?P<version>' + \
        '(?P<rev>(-r(\d+)))?)'
 _pvr_re = re.compile('^%s-%s$' % (_pkg, _ver), re.VERBOSE)
 
+# This regex matches blank lines, commented lines, and the EAPI line.
+_blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')
+
 
 def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   """Return the list of overlays to use for a given buildbot.
@@ -222,9 +225,9 @@ class EBuild(object):
       if not redirect_file:
         redirect_file = sys.stdout
 
-      # Always add variables at the top of the ebuild, before any un-commented
-      # lines.
-      if not written and not line.startswith('#'):
+      # Always add variables at the top of the ebuild, before the first
+      # nonblank line other than the EAPI line.
+      if not written and not _blank_or_eapi_re.match(line):
         for key, value in sorted(variables.items()):
           assert key is not None and value is not None
           redirect_file.write('%s=%s\n' % (key, value))
