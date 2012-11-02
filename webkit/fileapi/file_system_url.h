@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_URL_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_URL_H_
 
+#include <set>
 #include <string>
 
 #include "base/platform_file.h"
@@ -116,6 +117,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
 
   bool is_valid_;
 };
+
+typedef std::set<FileSystemURL, FileSystemURL::Comparator> FileSystemURLSet;
 
 }  // namespace fileapi
 

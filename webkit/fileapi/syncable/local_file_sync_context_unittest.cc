@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/mock_blob_url_request_context.h"
@@ -237,10 +238,10 @@ TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
   const FileSystemURL kURL(file_system.URL("foo"));
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kURL));
 
-  std::vector<FileSystemURL> urls;
+  FileSystemURLSet urls;
   file_system.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_EQ(kURL, urls[0]);
+  EXPECT_TRUE(ContainsKey(urls, kURL));
 
   // Finishing the test.
   sync_context_->ShutdownOnUIThread();
@@ -273,10 +274,10 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system1.CreateFile(kURL1));
 
   // file_system1's tracker must have recorded the change.
-  std::vector<FileSystemURL> urls;
+  FileSystemURLSet urls;
   file_system1.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_EQ(kURL1, urls[0]);
+  EXPECT_TRUE(ContainsKey(urls, kURL1));
 
   // file_system1's tracker must have no change.
   urls.clear();
@@ -290,13 +291,13 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   urls.clear();
   file_system1.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_EQ(kURL1, urls[0]);
+  EXPECT_TRUE(ContainsKey(urls, kURL1));
 
   // file_system2's tracker now must have the change for kURL2.
   urls.clear();
   file_system2.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_EQ(kURL2, urls[0]);
+  EXPECT_TRUE(ContainsKey(urls, kURL2));
 
   SyncFileType file_type;
   FileChangeList changes;
@@ -403,12 +404,15 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kChild));
 
   // file_system's change tracker must have recorded the creation.
-  std::vector<FileSystemURL> urls;
+  FileSystemURLSet urls;
   file_system.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(3U, urls.size());
-  for (size_t i = 0; i < urls.size(); ++i) {
-    EXPECT_TRUE(urls[i] == kFile || urls[i] == kDir || urls[i] == kChild);
-    file_system.FinalizeSyncForURLInTracker(urls[i]);
+  ASSERT_TRUE(ContainsKey(urls, kFile));
+  ASSERT_TRUE(ContainsKey(urls, kDir));
+  ASSERT_TRUE(ContainsKey(urls, kChild));
+  for (FileSystemURLSet::iterator iter = urls.begin();
+       iter != urls.end(); ++iter) {
+    file_system.ClearChangeForURLInTracker(*iter);
   }
 
   // At this point the usage must be greater than the initial usage.
@@ -490,11 +494,11 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
             file_system.DirectoryExists(kDir));
 
   // file_system's change tracker must have recorded the creation.
-  std::vector<FileSystemURL> urls;
+  FileSystemURLSet urls;
   file_system.GetChangedURLsInTracker(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_EQ(kFile1, urls[0]);
-  file_system.FinalizeSyncForURLInTracker(urls[0]);
+  EXPECT_TRUE(ContainsKey(urls, kFile1));
+  file_system.ClearChangeForURLInTracker(*urls.begin());
 
   // Prepare temporary files which represent the remote file data.
   const FilePath kFilePath1(temp_dir.path().Append(FPL("file1")));

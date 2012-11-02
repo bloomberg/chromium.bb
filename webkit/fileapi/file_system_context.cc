@@ -296,7 +296,10 @@ void FileSystemContext::set_sync_context(
   sync_context_ = sync_context;
 }
 
-FileSystemContext::~FileSystemContext() {}
+FileSystemContext::~FileSystemContext() {
+  task_runners_->file_task_runner()->DeleteSoon(
+      FROM_HERE, change_tracker_.release());
+}
 
 void FileSystemContext::DeleteOnCorrectThread() const {
   if (!task_runners_->io_task_runner()->RunsTasksOnCurrentThread() &&

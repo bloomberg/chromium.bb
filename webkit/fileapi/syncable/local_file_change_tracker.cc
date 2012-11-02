@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -53,6 +54,9 @@ class LocalFileChangeTracker::TrackerDB {
   DISALLOW_COPY_AND_ASSIGN(TrackerDB);
 };
 
+LocalFileChangeTracker::ChangeInfo::ChangeInfo() : change_seq(-1) {}
+LocalFileChangeTracker::ChangeInfo::~ChangeInfo() {}
+
 // LocalFileChangeTracker ------------------------------------------------------
 
 LocalFileChangeTracker::LocalFileChangeTracker(
@@ -60,20 +64,19 @@ LocalFileChangeTracker::LocalFileChangeTracker(
     base::SequencedTaskRunner* file_task_runner)
     : initialized_(false),
       file_task_runner_(file_task_runner),
-      tracker_db_(new TrackerDB(base_path)) {}
+      tracker_db_(new TrackerDB(base_path)),
+      current_change_seq_(0) {
+}
 
 LocalFileChangeTracker::~LocalFileChangeTracker() {
-  if (!file_task_runner_->RunsTasksOnCurrentThread()) {
-    file_task_runner_->DeleteSoon(FROM_HERE, tracker_db_.release());
-    return;
-  }
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   tracker_db_.reset();
 }
 
 void LocalFileChangeTracker::OnStartUpdate(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  // TODO(kinuko): we may want to reduce the number of this call if
-  // the URL is already marked dirty.
+  if (ContainsKey(changes_, url))
+    return;
   // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
   MarkDirtyOnDatabase(url);
 }
@@ -111,16 +114,18 @@ void LocalFileChangeTracker::OnRemoveDirectory(const FileSystemURL& url) {
                                SYNC_FILE_TYPE_DIRECTORY));
 }
 
-void LocalFileChangeTracker::GetChangedURLs(std::vector<FileSystemURL>* urls) {
+void LocalFileChangeTracker::GetNextChangedURLs(
+    std::vector<FileSystemURL>* urls, int max_urls) {
   DCHECK(urls);
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   urls->clear();
-  FileChangeMap::iterator iter = changes_.begin();
-  while (iter != changes_.end()) {
-    if (iter->second.empty())
-      changes_.erase(iter++);
-    else
-      urls->push_back(iter++->first);
+  // Mildly prioritizes the URLs that older changes and have not been updated
+  // for a while.
+  for (ChangeSeqMap::iterator iter = change_seqs_.begin();
+       iter != change_seqs_.end() &&
+       (max_urls == 0 || urls->size() < static_cast<size_t>(max_urls));
+       ++iter) {
+    urls->push_back(iter->second);
   }
 }
 
@@ -132,14 +137,17 @@ void LocalFileChangeTracker::GetChangesForURL(
   FileChangeMap::iterator found = changes_.find(url);
   if (found == changes_.end())
     return;
-  *changes = found->second;
+  *changes = found->second.change_list;
 }
 
-void LocalFileChangeTracker::FinalizeSyncForURL(const FileSystemURL& url) {
+void LocalFileChangeTracker::ClearChangesForURL(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
   ClearDirtyOnDatabase(url);
-  changes_.erase(url);
+  FileChangeMap::iterator found = changes_.find(url);
+  DCHECK(found != changes_.end());
+  change_seqs_.erase(found->second.change_seq);
+  changes_.erase(found);
 }
 
 SyncStatusCode LocalFileChangeTracker::Initialize(
@@ -152,6 +160,18 @@ SyncStatusCode LocalFileChangeTracker::Initialize(
   if (status == SYNC_STATUS_OK)
     initialized_ = true;
   return status;
+}
+
+void LocalFileChangeTracker::GetAllChangedURLs(FileSystemURLSet* urls) {
+  std::vector<FileSystemURL> url_vector;
+  GetNextChangedURLs(&url_vector, 0);
+  urls->clear();
+  urls->insert(url_vector.begin(), url_vector.end());
+}
+
+void LocalFileChangeTracker::DropAllChanges() {
+  changes_.clear();
+  change_seqs_.clear();
 }
 
 SyncStatusCode LocalFileChangeTracker::MarkDirtyOnDatabase(
@@ -197,13 +217,13 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
     switch (file_util->GetFileInfo(&context, url, &file_info, &platform_path)) {
       case base::PLATFORM_FILE_OK: {
         if (!file_info.is_directory) {
-          changes_[url].Update(FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                          SYNC_FILE_TYPE_FILE));
+          RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                       SYNC_FILE_TYPE_FILE));
           break;
         }
 
-        changes_[url].Update(FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                                        SYNC_FILE_TYPE_DIRECTORY));
+        RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                     SYNC_FILE_TYPE_DIRECTORY));
 
         // Push files and directories in this directory into |dirty_files|.
         scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
@@ -224,8 +244,8 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
         //
         // NOTE: Directory to have been reverted (that is, ADD -> DELETE) is
         // also treated as FILE_CHANGE_DELETE.
-        changes_[url].Update(FileChange(FileChange::FILE_CHANGE_DELETE,
-                                        SYNC_FILE_TYPE_UNKNOWN));
+        RecordChange(url, FileChange(FileChange::FILE_CHANGE_DELETE,
+                                     SYNC_FILE_TYPE_UNKNOWN));
         break;
       }
       case base::PLATFORM_FILE_ERROR_FAILED:
@@ -241,8 +261,16 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
 void LocalFileChangeTracker::RecordChange(
     const FileSystemURL& url, const FileChange& change) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(initialized_);
-  changes_[url].Update(change);
+  ChangeInfo& info = changes_[url];
+  if (info.change_seq >= 0)
+    change_seqs_.erase(info.change_seq);
+  info.change_list.Update(change);
+  if (info.change_list.empty()) {
+    changes_.erase(url);
+    return;
+  }
+  info.change_seq = current_change_seq_++;
+  change_seqs_[info.change_seq] = url;
 }
 
 // TrackerDB -------------------------------------------------------------------

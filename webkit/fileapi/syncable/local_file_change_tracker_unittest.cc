@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/mock_blob_url_request_context.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -82,11 +83,11 @@ class LocalFileChangeTrackerTest : public testing::Test {
     EXPECT_EQ(expected_change, changes.list()[0]);
 
     // Clear the URL from the change tracker.
-    change_tracker()->FinalizeSyncForURL(url);
+    change_tracker()->ClearChangesForURL(url);
   }
 
   void DropChangesInTracker() {
-    change_tracker()->changes_.clear();
+    change_tracker()->DropAllChanges();
   }
 
   void RestoreChangesFromTrackerDB() {
@@ -102,8 +103,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
 };
 
 TEST_F(LocalFileChangeTrackerTest, GetChanges) {
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.OpenFileSystem());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
 
   // Test URLs (no parent/child relationships, as we test such cases
   // mainly in LocalFileSyncStatusTest).
@@ -123,20 +123,48 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   change_tracker()->OnCreateFile(URL(kPath5));
   change_tracker()->OnRemoveFile(URL(kPath5));  // Recorded as 'delete'.
 
-  std::vector<FileSystemURL> urls;
-  change_tracker()->GetChangedURLs(&urls);
-  std::set<FileSystemURL, FileSystemURL::Comparator> urlset;
-  urlset.insert(urls.begin(), urls.end());
+  FileSystemURLSet urls;
+  file_system_.GetChangedURLsInTracker(&urls);
 
-  EXPECT_EQ(5U, urlset.size());
-  EXPECT_TRUE(urlset.find(URL(kPath1)) != urlset.end());
-  EXPECT_TRUE(urlset.find(URL(kPath2)) != urlset.end());
-  EXPECT_TRUE(urlset.find(URL(kPath3)) != urlset.end());
-  EXPECT_TRUE(urlset.find(URL(kPath4)) != urlset.end());
-  EXPECT_TRUE(urlset.find(URL(kPath5)) != urlset.end());
+  EXPECT_EQ(5U, urls.size());
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath1)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath2)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath3)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath4)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath5)));
 
   // Changes for kPath0 must have been offset and removed.
-  EXPECT_TRUE(urlset.find(URL(kPath0)) == urlset.end());
+  EXPECT_FALSE(ContainsKey(urls, URL(kPath0)));
+
+  // GetNextChangedURLs only returns up to max_urls (i.e. 3) urls.
+  std::vector<FileSystemURL> urls_to_process;
+  change_tracker()->GetNextChangedURLs(&urls_to_process, 3);
+  ASSERT_EQ(3U, urls_to_process.size());
+
+  // Let it return all.
+  urls_to_process.clear();
+  change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
+  ASSERT_EQ(5U, urls_to_process.size());
+
+  // The changes must be in the last-modified-time order.
+  EXPECT_EQ(URL(kPath1), urls_to_process[0]);
+  EXPECT_EQ(URL(kPath2), urls_to_process[1]);
+  EXPECT_EQ(URL(kPath3), urls_to_process[2]);
+  EXPECT_EQ(URL(kPath4), urls_to_process[3]);
+  EXPECT_EQ(URL(kPath5), urls_to_process[4]);
+
+  // Modify kPath4 again.
+  change_tracker()->OnModifyFile(URL(kPath4));
+
+  // Now the order must be changed.
+  urls_to_process.clear();
+  change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
+  ASSERT_EQ(5U, urls_to_process.size());
+  EXPECT_EQ(URL(kPath1), urls_to_process[0]);
+  EXPECT_EQ(URL(kPath2), urls_to_process[1]);
+  EXPECT_EQ(URL(kPath3), urls_to_process[2]);
+  EXPECT_EQ(URL(kPath5), urls_to_process[3]);
+  EXPECT_EQ(URL(kPath4), urls_to_process[4]);
 
   VerifyAndClearChange(URL(kPath1),
                FileChange(FileChange::FILE_CHANGE_DELETE,
@@ -156,11 +184,9 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.OpenFileSystem());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
 
-  std::vector<FileSystemURL> urls;
-  std::set<FileSystemURL, FileSystemURL::Comparator> urlset;
+  FileSystemURLSet urls;
 
   const char kPath0[] = "file a";
   const char kPath1[] = "dir a";
@@ -174,9 +200,8 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   const char kPath3Copy[] = "dir b/file a";  // To be copied from kPath3
   const char kPath4Copy[] = "dir b/file b";  // To be copied from kPath4
 
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  ASSERT_EQ(0U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(0U, urls.size());
 
   const GURL blob_url("blob:test");
   const std::string kData("Lorem ipsum.");
@@ -206,27 +231,22 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.Copy(URL(kPath1), URL(kPath1Copy)));  // Copy the dir.
 
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  EXPECT_EQ(10U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_EQ(10U, urls.size());
 
   DropChangesInTracker();
 
   // Make sure we have no in-memory changes in the tracker.
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  ASSERT_EQ(0U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(0U, urls.size());
 
   RestoreChangesFromTrackerDB();
 
   // Make sure the changes are restored from the DB.
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  EXPECT_EQ(10U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_EQ(10U, urls.size());
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -262,11 +282,9 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.OpenFileSystem());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
 
-  std::vector<FileSystemURL> urls;
-  std::set<FileSystemURL, FileSystemURL::Comparator> urlset;
+  FileSystemURLSet urls;
 
   const char kPath0[] = "file";
   const char kPath1[] = "dir a";
@@ -275,9 +293,8 @@ TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
   const char kPath4[] = "dir b/dir c";
   const char kPath5[] = "dir b/dir c/file";
 
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  ASSERT_EQ(0U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(0U, urls.size());
 
   // Creates and removes a same file.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -304,30 +321,24 @@ TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
             file_system_.Remove(URL(kPath2), true /* recursive */));
 
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  EXPECT_EQ(3U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  EXPECT_EQ(3U, urls.size());
 
   DropChangesInTracker();
 
   // Make sure we have no in-memory changes in the tracker.
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  ASSERT_EQ(0U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(0U, urls.size());
 
   RestoreChangesFromTrackerDB();
 
   // Make sure the changes are restored from the DB.
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
+  file_system_.GetChangedURLsInTracker(&urls);
   // Since directories to have been reverted (kPath1, kPath2, kPath4) are
   // treated as FILE_CHANGE_DELETE, the number of changes should be 6.
-  EXPECT_EQ(6U, urlset.size());
+  EXPECT_EQ(6U, urls.size());
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
@@ -350,11 +361,9 @@ TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.OpenFileSystem());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
 
-  std::vector<FileSystemURL> urls;
-  std::set<FileSystemURL, FileSystemURL::Comparator> urlset;
+  FileSystemURLSet urls;
 
   const char kPath0[] = "file a";
   const char kPath1[] = "dir a";
@@ -368,9 +377,8 @@ TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
   const char kPath8[] = "dir b/dir";       // To be moved from kPath3.
   const char kPath9[] = "dir b/dir/file";  // To be moved from kPath4.
 
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  ASSERT_EQ(0U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(0U, urls.size());
 
   // Creates and moves a same file.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -391,31 +399,25 @@ TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
             file_system_.Move(URL(kPath1), URL(kPath6)));
 
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
+  file_system_.GetChangedURLsInTracker(&urls);
   // Since kPath1 and kPath3 were reverted, the number of changes should be 8.
-  EXPECT_EQ(8U, urlset.size());
+  EXPECT_EQ(8U, urls.size());
 
   DropChangesInTracker();
 
   // Make sure we have no in-memory changes in the tracker.
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
-  ASSERT_EQ(0U, urlset.size());
+  file_system_.GetChangedURLsInTracker(&urls);
+  ASSERT_EQ(0U, urls.size());
 
   RestoreChangesFromTrackerDB();
 
   // Make sure the changes are restored from the DB.
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
+  file_system_.GetChangedURLsInTracker(&urls);
   // Since directories to have been reverted (kPath1 and kPath3) are treated as
   // FILE_CHANGE_DELETE, the number of changes should be 10.
-  EXPECT_EQ(10U, urlset.size());
+  EXPECT_EQ(10U, urls.size());
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,
@@ -447,6 +449,88 @@ TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
   VerifyAndClearChange(URL(kPath9),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                   SYNC_FILE_TYPE_FILE));
+}
+
+TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveCopy) {
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
+
+  FileSystemURLSet urls;
+
+  const char kPath0[] = "dir a";
+  const char kPath1[] = "dir a/file";
+  const char kPath2[] = "dir a/dir";
+
+  const char kPath0Copy[] = "dir b";
+  const char kPath1Copy[] = "dir b/file";
+  const char kPath2Copy[] = "dir b/dir";
+
+  // Creates kPath0,1,2 and then copies them all.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateDirectory(URL(kPath0)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateFile(URL(kPath1)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateDirectory(URL(kPath2)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.Copy(URL(kPath0), URL(kPath0Copy)));
+
+  std::vector<FileSystemURL> urls_to_process;
+  change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
+  ASSERT_EQ(6U, urls_to_process.size());
+
+  // Creation must have occured first.
+  EXPECT_EQ(URL(kPath0), urls_to_process[0]);
+  EXPECT_EQ(URL(kPath1), urls_to_process[1]);
+  EXPECT_EQ(URL(kPath2), urls_to_process[2]);
+
+  // Then recursive copy took place. The exact order cannot be determined
+  // but the parent directory must have been created first.
+  EXPECT_EQ(URL(kPath0Copy), urls_to_process[3]);
+  EXPECT_TRUE(URL(kPath1Copy) == urls_to_process[4] ||
+              URL(kPath2Copy) == urls_to_process[4]);
+  EXPECT_TRUE(URL(kPath1Copy) == urls_to_process[5] ||
+              URL(kPath2Copy) == urls_to_process[5]);
+}
+
+TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveRemove) {
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
+
+  FileSystemURLSet urls;
+
+  const char kPath0[] = "dir a";
+  const char kPath1[] = "dir a/file1";
+  const char kPath2[] = "dir a/file2";
+
+  // Creates kPath0,1,2 and then removes them all.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateDirectory(URL(kPath0)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateFile(URL(kPath1)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateFile(URL(kPath2)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.Remove(URL(kPath0), true /* recursive */));
+
+  std::vector<FileSystemURL> urls_to_process;
+  change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
+
+  // This is actually not really desirable, but since the directory
+  // creation and deletion have been offset now we only have two
+  // file deletion changes.
+  //
+  // NOTE: This will cause 2 local sync for deleting nonexistent files
+  // on the remote side.
+  //
+  // TODO(kinuko): For micro optimization we could probably restore the ADD
+  // change type (other than ADD_OR_UPDATE) and offset file ADD+DELETE
+  // changes too.
+  ASSERT_EQ(2U, urls_to_process.size());
+
+  // The exact order of recursive removal cannot be determined.
+  EXPECT_TRUE(URL(kPath1) == urls_to_process[0] ||
+              URL(kPath2) == urls_to_process[0]);
+  EXPECT_TRUE(URL(kPath1) == urls_to_process[1] ||
+              URL(kPath2) == urls_to_process[1]);
 }
 
 }  // namespace fileapi

@@ -109,8 +109,8 @@ class CannedSyncableFileSystem {
   quota::QuotaStatusCode GetUsageAndQuota(int64* usage, int64* quota);
 
   // ChangeTracker related methods. They run on file task runner.
-  void GetChangedURLsInTracker(std::vector<FileSystemURL>* urls);
-  void FinalizeSyncForURLInTracker(const FileSystemURL& url);
+  void GetChangedURLsInTracker(FileSystemURLSet* urls);
+  void ClearChangeForURLInTracker(const FileSystemURL& url);
 
   // Returns new FileSystemOperation.
   FileSystemOperation* NewOperation();

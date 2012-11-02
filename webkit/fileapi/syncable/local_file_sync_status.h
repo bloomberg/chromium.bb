@@ -66,7 +66,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
 
  private:
   typedef std::map<FileSystemURL, int64, FileSystemURL::Comparator> URLCountMap;
-  typedef std::set<FileSystemURL, FileSystemURL::Comparator> URLSet;
 
   bool IsChildOrParentWriting(const FileSystemURL& url) const;
   bool IsChildOrParentSyncing(const FileSystemURL& url) const;
@@ -75,7 +74,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
   URLCountMap writing_;
 
   // If this flag is set sync process is running on the file.
-  URLSet syncing_;
+  FileSystemURLSet syncing_;
 
   ObserverList<Observer> observer_list_;
 

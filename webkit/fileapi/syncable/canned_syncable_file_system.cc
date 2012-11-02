@@ -348,21 +348,21 @@ quota::QuotaStatusCode CannedSyncableFileSystem::GetUsageAndQuota(
 }
 
 void CannedSyncableFileSystem::GetChangedURLsInTracker(
-    std::vector<FileSystemURL>* urls) {
+    FileSystemURLSet* urls) {
   return RunOnThread(
       file_task_runner_,
       FROM_HERE,
-      base::Bind(&LocalFileChangeTracker::GetChangedURLs,
+      base::Bind(&LocalFileChangeTracker::GetAllChangedURLs,
                  base::Unretained(file_system_context_->change_tracker()),
                  urls));
 }
 
-void CannedSyncableFileSystem::FinalizeSyncForURLInTracker(
+void CannedSyncableFileSystem::ClearChangeForURLInTracker(
     const FileSystemURL& url) {
   return RunOnThread(
       file_task_runner_,
       FROM_HERE,
-      base::Bind(&LocalFileChangeTracker::FinalizeSyncForURL,
+      base::Bind(&LocalFileChangeTracker::ClearChangesForURL,
                  base::Unretained(file_system_context_->change_tracker()),
                  url));
 }

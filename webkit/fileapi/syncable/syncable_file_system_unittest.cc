@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -65,7 +66,7 @@ class SyncableFileSystemTest : public testing::Test {
     EXPECT_EQ(expected_change, changes.list()[0]);
 
     // Clear the URL from the change tracker.
-    change_tracker()->FinalizeSyncForURL(url);
+    change_tracker()->ClearChangesForURL(url);
   }
 
   FileSystemURL URL(const std::string& path) {
@@ -175,15 +176,13 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.TruncateFile(URL(kPath2), 2));  // Modifies it again.
 
-  std::vector<FileSystemURL> urls;
-  change_tracker()->GetChangedURLs(&urls);
-  std::set<FileSystemURL, FileSystemURL::Comparator> urlset;
-  urlset.insert(urls.begin(), urls.end());
+  FileSystemURLSet urls;
+  file_system_.GetChangedURLsInTracker(&urls);
 
-  EXPECT_EQ(3U, urlset.size());
-  EXPECT_TRUE(urlset.find(URL(kPath0)) != urlset.end());
-  EXPECT_TRUE(urlset.find(URL(kPath1)) != urlset.end());
-  EXPECT_TRUE(urlset.find(URL(kPath2)) != urlset.end());
+  EXPECT_EQ(3U, urls.size());
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath0)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath1)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath2)));
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -203,7 +202,7 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
   // The changes will be offset.
   urls.clear();
-  change_tracker()->GetChangedURLs(&urls);
+  file_system_.GetChangedURLsInTracker(&urls);
   EXPECT_TRUE(urls.empty());
 
   // Recursively removes the kPath0 directory.
@@ -211,15 +210,13 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
             file_system_.Remove(URL(kPath0), true /* recursive */));
 
   urls.clear();
-  urlset.clear();
-  change_tracker()->GetChangedURLs(&urls);
-  urlset.insert(urls.begin(), urls.end());
+  file_system_.GetChangedURLsInTracker(&urls);
 
   // kPath0 and its all chidren (kPath1 and kPath2) must have been deleted.
-  EXPECT_EQ(3U, urlset.size());
-  EXPECT_TRUE(urlset.find(URL(kPath0)) != urlset.end());
-  EXPECT_TRUE(urlset.find(URL(kPath1)) != urlset.end());
-  EXPECT_TRUE(urlset.find(URL(kPath2)) != urlset.end());
+  EXPECT_EQ(3U, urls.size());
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath0)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath1)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath2)));
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_DELETE,

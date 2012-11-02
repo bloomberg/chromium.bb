@@ -75,8 +75,8 @@ bool LocalFileSyncStatus::IsChildOrParentWriting(
 bool LocalFileSyncStatus::IsChildOrParentSyncing(
     const FileSystemURL& url) const {
   DCHECK(CalledOnValidThread());
-  URLSet::const_iterator upper = syncing_.upper_bound(url);
-  URLSet::const_reverse_iterator rupper(upper);
+  FileSystemURLSet::const_iterator upper = syncing_.upper_bound(url);
+  FileSystemURLSet::const_reverse_iterator rupper(upper);
   if (upper != syncing_.end() && url.IsParent(*upper))
     return true;
   if (rupper != syncing_.rend() &&
