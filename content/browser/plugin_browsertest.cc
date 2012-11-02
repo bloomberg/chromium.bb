@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeleteCreatePluginInNPNEvaluate) {
 #if !defined(OS_MACOSX)
 // Disabled on Mac because the plugin side isn't implemented yet, see
 // "TODO(port)" in plugin_javascript_open_popup.cc.
-IN_PROC_BROWSER_TEST_F(PluginTest, OpenPopupWindowWithPlugin) {
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_OpenPopupWindowWithPlugin) {
   LoadAndWait(GetURL("get_javascript_open_popup_with_plugin.html"));
 }
 #endif
