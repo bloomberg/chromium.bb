@@ -457,7 +457,9 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 }
 
 // Assertions around dragging to the left/right edge of the screen.
-TEST_F(WorkspaceWindowResizerTest, Edge) {
+// TODO(phoglund): Re-enable once breakage from
+// https://chromiumcodereview.appspot.com/11369017 gets fixed.
+TEST_F(WorkspaceWindowResizerTest, DISABLED_Edge) {
   int bottom =
       ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
