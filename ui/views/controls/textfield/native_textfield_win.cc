@@ -1069,6 +1069,7 @@ void NativeTextfieldWin::OnSetFocus(HWND hwnd) {
 void NativeTextfieldWin::OnKillFocus(HWND hwnd) {
   if(tsf_event_router_)
     tsf_event_router_->SetManager(NULL);
+  SetMsgHandled(FALSE);
 }
 
 void NativeTextfieldWin::OnSysChar(TCHAR ch, UINT repeat_count, UINT flags) {
