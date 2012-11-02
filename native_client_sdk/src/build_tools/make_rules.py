@@ -83,13 +83,13 @@ WIN_CC_RULES = {
 # Link rules for various platforms.
 #
 NEXE_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> -Wl,--start-group <LIBLIST> -Wl,--end-group',
-  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config>  -Wl,--start-group <LIBLIST> -Wl,--end-group'
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/<libdir>/<config> -Wl,--start-group <LIBLIST> -Wl,--end-group',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/<libdir>/<config>  -Wl,--start-group <LIBLIST> -Wl,--end-group'
 }
 
 SO_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config>',
-  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config>',
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/<libdir>/<config>',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/<libdir>/<config>',
 }
 
 LINUX_SO_LINK_RULES = {
@@ -108,8 +108,8 @@ PEXE_TRANSLATE_RULE = """
 <TAB>$(TRANSLATE) -arch arm $< -o $@"""
 
 PEXE_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
-  'Release': '<TAB>$(<LINK>) -o $@ $^ $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/<libdir>/<config> <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
+  'Release': '<TAB>$(<LINK>) -o $@ $^ $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/<libdir>/<config> <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
 }
 
 WIN_LINK_RULES = {
@@ -186,7 +186,7 @@ NACL_TOOL = {
   'MAIN': '<tc>/<config>/<proj>_<ARCH>.nexe',
   'NMFMAIN': '<tc>/<config>/<proj>_<ARCH>.nexe',
   'SO': '<tc>/<config>/<proj>_<ARCH>.so',
-  'LIB': '$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config>/lib<proj>.a',
+  'LIB': '$(NACL_SDK_ROOT)/lib/<libdir>/<config>/lib<proj>.a',
 }
 
 PNACL_TOOL = {
@@ -199,7 +199,7 @@ PNACL_TOOL = {
       '<tc>/<config>/<proj>_x86_64.nexe '
       '<tc>/<config>/<proj>_arm.nexe',
   'SO': None,
-  'LIB': '$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config>/lib<proj>.a',
+  'LIB': '$(NACL_SDK_ROOT)/lib/<libdir>/<config>/lib<proj>.a',
 }
 
 
@@ -223,7 +223,6 @@ NACL_X86_64 = {
 }
 NACL_PNACL = {
   '<arch>': 'pnacl',
-  '<ARCH>': 'PNACL',
   '<MACH>': '',
 }
 WIN_32 = {
@@ -306,6 +305,7 @@ class MakeRules(object):
     self.cfg = ''
     self.arch = ''
     self.ptype = ''
+    self.arch_ext = ''
     self.defines = []
     self.includes = []
     self.libraries = []
@@ -342,8 +342,9 @@ class MakeRules(object):
 
   def BuildCompileRule(self, ext, src):
     self.vars['<EXT>'] = ext
-    out = '<tc>/<config>/%s_<ARCH>.o : %s $(THIS_MAKE) | <tc>/<config>\n' % (
-        os.path.splitext(src)[0], src)
+    objname = '%s%s.o' % (os.path.splitext(src)[0], self.arch_ext)
+    out = '<tc>/<config>/%s : %s $(THIS_MAKE) | <tc>/<config>\n' % (objname,
+        src)
     rule = BUILD_RULES[self.tc][ext][self.cfg]
     if ext == 'CXX':
       rule = rule.replace('<CC>', '<CXX>')
@@ -355,22 +356,23 @@ class MakeRules(object):
     out = ''
     if self.ptype == 'lib':
       out = 'ALL_TARGETS+=%s\n' % target
-    out += target + ' : $(<PROJ>_<TC>_<CONFIG>_<ARCH>_O)\n'
+    out += target + (' : $(<PROJ>_<TC>_<CONFIG>%s_O)\n' %
+                     self.arch_ext)
     out += BUILD_RULES[self.tc][self.ptype.upper()][self.cfg] + '\n\n'
     return self.Replace(out)
 
   def BuildObjectList(self):
     obj_list = self.GetObjectList()
-    sub_str = '$(patsubst %%,%s/%s/%%_%s.o,$(%s_OBJS))' % (
-        self.tc, self.cfg, self.arch['<ARCH>'], self.project.upper())
+    sub_str = '$(patsubst %%,%s/%s/%%%s.o,$(%s_OBJS))' % (
+        self.tc, self.cfg, self.arch_ext, self.project.upper())
     return '%s:=%s\n' % (obj_list, sub_str)
 
   def GetArches(self):
     return BUILD_RULES[self.tc]['ARCHES']
 
   def GetObjectList(self):
-    return '%s_%s_%s_%s_O' % (self.project.upper(), self.tc.upper(),
-                              self.cfg.upper(), self.arch['<ARCH>'])
+    return '%s_%s_%s%s_O' % (self.project.upper(), self.tc.upper(),
+                              self.cfg.upper(), self.arch_ext)
 
   def GetPepperPlugin(self):
     plugin = self.Replace(BUILD_RULES[self.tc]['TOOL']['MAIN'])
@@ -383,6 +385,11 @@ class MakeRules(object):
     self.arch = arch
     for key in arch:
       self.vars[key] = arch[key]
+    if '<ARCH>' in self.vars:
+      self.arch_ext = "_" + self.arch['<ARCH>']
+      self.vars['<libdir>'] = "%s_%s" % (self.tc, self.vars['<ARCH>'])
+    else:
+      self.vars['<libdir>'] = self.tc
 
   def SetConfig(self, config):
     self.cfg = config
@@ -481,12 +488,13 @@ def GenerateNMFRules(tc, main, dlls, cfg, arches):
 
   for arch in arches:
     replace = {
-      '<ARCH>' : arch['<ARCH>'],
       '<config>' : cfg,
       '<DUMP>' : '%s_DUMP' % tc.upper(),
       '<TAB>' : '\t',
       '<tc>' : tc
     }
+    if '<ARCH>' in arch:
+      replace['<ARCH>'] = arch['<ARCH>']
     for dll in dlls:
       replace['<proj>'] = dll
       nmf_targets.append(Replace(dll_target, replace))
