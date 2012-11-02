@@ -163,30 +163,10 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   FilePath path =
       command_line.GetSwitchValuePath(switches::kPluginPath);
 
-  gfx::PluginWindowHandle parent = gfx::kNullPluginWindow;
-#if defined(USE_AURA)
-#if defined(OS_WIN)
-  // Copy of gfx::NativeViewFromId that's defined without Aura.
-  parent = reinterpret_cast<HWND>(params.containing_window);
-#else
-  // Nothing.
-#endif
-#elif defined(OS_WIN)
-  parent = gfx::NativeViewFromId(params.containing_window);
-#elif defined(OS_LINUX)
-  // This code is disabled, See issue 17110.
-  // The problem is that the XID can change at arbitrary times (e.g. when the
-  // tab is detached then reattached), so we need to be able to track these
-  // changes, and let the PluginInstance know.
-  // PluginThread::current()->Send(new PluginProcessHostMsg_MapNativeViewId(
-  //    params.containing_window, &parent));
-#endif
-
   webplugin_ = new WebPluginProxy(
       channel_, instance_id_, page_url_, params.containing_window,
       params.host_render_view_routing_id);
-  delegate_ = webkit::npapi::WebPluginDelegateImpl::Create(
-      path, mime_type_, parent);
+  delegate_ = webkit::npapi::WebPluginDelegateImpl::Create(path, mime_type_);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);
     std::vector<std::string> arg_names = params.arg_names;

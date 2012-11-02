@@ -23,6 +23,7 @@
 #include "base/win/windows_version.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/win/hwnd_util.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
@@ -219,11 +220,7 @@ bool GetPluginPropertyFromWindow(
 }  // namespace
 
 bool WebPluginDelegateImpl::IsPluginDelegateWindow(HWND window) {
-  static const int kBufLen = 64;
-  wchar_t class_name[kBufLen];
-  if (!GetClassNameW(window, class_name, kBufLen))
-    return false;
-  return wcscmp(class_name, kNativeWindowClassName) == 0;
+  return ui::GetClassName(window) == string16(kNativeWindowClassName);
 }
 
 // static
@@ -253,7 +250,7 @@ bool WebPluginDelegateImpl::IsDummyActivationWindow(HWND window) {
   return false;
 }
 
-HWND WebPluginDelegateImpl::GetDefaultDummyActivationWindowParent() {
+HWND WebPluginDelegateImpl::GetDefaultWindowParent() {
   return GetDesktopWindow();
 }
 
@@ -279,10 +276,8 @@ LRESULT CALLBACK WebPluginDelegateImpl::MouseHookProc(
 }
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
-    gfx::PluginWindowHandle containing_view,
     PluginInstance* instance)
-    : parent_(containing_view),
-      instance_(instance),
+    : instance_(instance),
       quirks_(0),
       plugin_(NULL),
       windowless_(false),
@@ -292,6 +287,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       last_message_(0),
       is_calling_wndproc(false),
       dummy_window_for_activation_(NULL),
+      dummy_window_parent_(NULL),
+      old_dummy_window_proc_(NULL),
       handle_event_message_filter_hook_(NULL),
       handle_event_pump_messages_event_(NULL),
       user_gesture_message_posted_(false),
@@ -374,8 +371,16 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
-  if (::IsWindow(dummy_window_for_activation_))
+  if (::IsWindow(dummy_window_for_activation_)) {
+    WNDPROC current_wnd_proc = reinterpret_cast<WNDPROC>(
+        GetWindowLongPtr(dummy_window_for_activation_, GWLP_WNDPROC));
+    if (current_wnd_proc == DummyWindowProc) {
+      SetWindowLongPtr(dummy_window_for_activation_,
+                       GWLP_WNDPROC,
+                       reinterpret_cast<LONG>(old_dummy_window_proc_));
+    }
     ::DestroyWindow(dummy_window_for_activation_);
+  }
 
   DestroyInstance();
 
@@ -517,27 +522,25 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
       0,
       0,
       0,
-      parent_,
+      GetDefaultWindowParent(),
       0,
       GetModuleHandle(NULL),
       0);
   if (windowed_handle_ == 0)
     return false;
 
-  if (IsWindow(parent_)) {
     // This is a tricky workaround for Issue 2673 in chromium "Flash: IME not
     // available". To use IMEs in this window, we have to make Windows attach
-    // IMEs to this window (i.e. load IME DLLs, attach them to this process,
-    // and add their message hooks to this window). Windows attaches IMEs while
-    // this process creates a top-level window. On the other hand, to layout
-    // this window correctly in the given parent window (RenderWidgetHostHWND),
-    // this window should be a child window of the parent window.
-    // To satisfy both of the above conditions, this code once creates a
-    // top-level window and change it to a child window of the parent window.
+  // IMEs to this window (i.e. load IME DLLs, attach them to this process, and
+  // add their message hooks to this window). Windows attaches IMEs while this
+  // process creates a top-level window. On the other hand, to layout this
+  // window correctly in the given parent window (RenderWidgetHostViewWin or
+  // RenderWidgetHostViewAura), this window should be a child window of the
+  // parent window. To satisfy both of the above conditions, this code once
+  // creates a top-level window and change it to a child window of the parent
+  // window (in the browser process).
     SetWindowLongPtr(windowed_handle_, GWL_STYLE,
                      WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-    SetParent(windowed_handle_, parent_);
-  }
 
   BOOL result = SetProp(windowed_handle_, kWebPluginDelegateProperty, this);
   DCHECK(result == TRUE) << "SetProp failed, last error = " << GetLastError();
@@ -687,8 +690,8 @@ void WebPluginDelegateImpl::ThrottleMessage(WNDPROC proc, HWND hwnd,
 // windowless plugins.  We throttle the rate at which they deliver messages
 // so that they will not consume outrageous amounts of CPU.
 // static
-LRESULT CALLBACK WebPluginDelegateImpl::FlashWindowlessWndProc(HWND hwnd,
-    UINT message, WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK WebPluginDelegateImpl::FlashWindowlessWndProc(
+    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   std::map<HWND, WNDPROC>::iterator index =
       g_window_handle_proc_map.Get().find(hwnd);
 
@@ -715,6 +718,41 @@ LRESULT CALLBACK WebPluginDelegateImpl::FlashWindowlessWndProc(HWND hwnd,
     }
   }
   return CallWindowProc(old_proc, hwnd, message, wparam, lparam);
+}
+
+LRESULT CALLBACK WebPluginDelegateImpl::DummyWindowProc(
+    HWND hwnd, UINT message, WPARAM w_param, LPARAM l_param) {
+  WebPluginDelegateImpl* delegate = reinterpret_cast<WebPluginDelegateImpl*>(
+      GetProp(hwnd, kWebPluginDelegateProperty));
+  CHECK(delegate);
+  if (message == WM_WINDOWPOSCHANGING) {
+    // We need to know when the dummy window is parented because windowless
+    // plugins need the parent window for things like menus. There's no message
+    // for a parent being changed, but a WM_WINDOWPOSCHANGING is sent so we
+    // check every time we get it.
+    // For non-aura builds, this never changes since RenderWidgetHostViewWin's
+    // window is constant. For aura builds, this changes every time the tab gets
+    // dragged to a new window.
+    HWND parent = GetParent(hwnd);
+    if (parent != delegate->dummy_window_parent_) {
+      delegate->dummy_window_parent_ = parent;
+
+      // Set the containing window handle as the instance window handle. This is
+      // what Safari does. Not having a valid window handle causes subtle bugs
+      // with plugins which retrieve the window handle and use it for things
+      // like context menus. The window handle can be retrieved via
+      // NPN_GetValue of NPNVnetscapeWindow.
+      delegate->instance_->set_window_handle(parent);
+
+      // The plugin caches the result of NPNVnetscapeWindow when we originally
+      // called NPP_SetWindow, so force it to get the new value.
+      delegate->WindowlessSetWindow();
+    }
+  } else if (message == WM_NCDESTROY) {
+    RemoveProp(hwnd, kWebPluginDelegateProperty);
+  }
+  return CallWindowProc(
+      delegate->old_dummy_window_proc_, hwnd, message, w_param, l_param);
 }
 
 // Callback for enumerating the Flash windows.
@@ -757,13 +795,20 @@ bool WebPluginDelegateImpl::CreateDummyWindowForActivation() {
     0,
     // We don't know the parent of the dummy window yet, so just set it to the
     // desktop and it'll get parented by the browser.
-    GetDefaultDummyActivationWindowParent(),
+      GetDefaultWindowParent(),
     0,
     GetModuleHandle(NULL),
     0);
 
   if (dummy_window_for_activation_ == 0)
     return false;
+
+  BOOL result = SetProp(dummy_window_for_activation_,
+                        kWebPluginDelegateProperty, this);
+  DCHECK(result == TRUE) << "SetProp failed, last error = " << GetLastError();
+  old_dummy_window_proc_ = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
+      dummy_window_for_activation_, GWLP_WNDPROC,
+      reinterpret_cast<LONG>(DummyWindowProc)));
 
   // Flash creates background windows which use excessive CPU in our
   // environment; we wrap these windows and throttle them so that they don't
@@ -868,7 +913,7 @@ ATOM WebPluginDelegateImpl::RegisterNativeWindowClass() {
   WNDCLASSEX wcex;
   wcex.cbSize         = sizeof(WNDCLASSEX);
   wcex.style          = CS_DBLCLKS;
-  wcex.lpfnWndProc    = DummyWindowProc;
+  wcex.lpfnWndProc    = WrapperWindowProc;
   wcex.cbClsExtra     = 0;
   wcex.cbWndExtra     = 0;
   wcex.hInstance      = GetModuleHandle(NULL);
@@ -887,7 +932,7 @@ ATOM WebPluginDelegateImpl::RegisterNativeWindowClass() {
   return RegisterClassEx(&wcex);
 }
 
-LRESULT CALLBACK WebPluginDelegateImpl::DummyWindowProc(
+LRESULT CALLBACK WebPluginDelegateImpl::WrapperWindowProc(
     HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
   // This is another workaround for Issue 2673 in chromium "Flash: IME not
   // available". Somehow, the CallWindowProc() function does not dispatch
@@ -1261,7 +1306,8 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     // windowless plugin is under the mouse and to handle this. This would
     // also require some changes in RenderWidgetHost to detect this in the
     // WM_MOUSEACTIVATE handler and inform the renderer accordingly.
-    bool valid = GetParent(dummy_window_for_activation_) != GetDesktopWindow();
+    bool valid =
+        GetParent(dummy_window_for_activation_) != GetDefaultWindowParent();
     if (valid) {
       last_focus_window = ::SetFocus(dummy_window_for_activation_);
     } else {
@@ -1384,7 +1430,7 @@ BOOL WINAPI WebPluginDelegateImpl::TrackPopupMenuPatch(
     if (::GetCurrentThreadId() != window_thread_id) {
       bool valid =
           GetParent(g_current_plugin_instance->dummy_window_for_activation_) !=
-              GetDesktopWindow();
+              GetDefaultWindowParent();
       if (valid) {
         window = g_current_plugin_instance->dummy_window_for_activation_;
       } else {

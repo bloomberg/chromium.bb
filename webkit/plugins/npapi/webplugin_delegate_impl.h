@@ -78,8 +78,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
-                                       const std::string& mime_type,
-                                       gfx::PluginWindowHandle containing_view);
+                                       const std::string& mime_type);
 
 #if defined(OS_WIN)
   static bool IsPluginDelegateWindow(HWND window);
@@ -92,9 +91,9 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // activation window for windowless plugins.
   static bool IsDummyActivationWindow(HWND window);
 
-  // Returns the default HWND to parent the dummy window to when none is
-  // available.
-  static HWND GetDefaultDummyActivationWindowParent();
+  // Returns the default HWND to parent the windowed plugins and dummy windows
+  // for activation to when none isavailable.
+  static HWND GetDefaultWindowParent();
 #endif
 
   // WebPluginDelegate implementation
@@ -217,8 +216,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   friend class base::DeleteHelper<WebPluginDelegateImpl>;
   friend class WebPluginDelegate;
 
-  WebPluginDelegateImpl(gfx::PluginWindowHandle containing_view,
-                        PluginInstance* instance);
+  explicit WebPluginDelegateImpl(PluginInstance* instance);
   virtual ~WebPluginDelegateImpl();
 
   // Called by Initialize() for platform-specific initialization.
@@ -254,12 +252,14 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   ATOM RegisterNativeWindowClass();
 
   // Our WndProc functions.
-  static LRESULT CALLBACK DummyWindowProc(
+  static LRESULT CALLBACK WrapperWindowProc(
       HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
   static LRESULT CALLBACK NativeWndProc(
       HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
   static LRESULT CALLBACK FlashWindowlessWndProc(
       HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+  static LRESULT CALLBACK DummyWindowProc(
+      HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
   // Used for throttling Flash messages.
   static void ClearThrottleQueueForWindow(HWND window);
@@ -350,7 +350,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   void EnsurePixmapAtLeastSize(int width, int height);
 #endif
 
-  gfx::PluginWindowHandle parent_;
   NPWindow window_;
   gfx::Rect window_rect_;
   gfx::Rect clip_rect_;
@@ -369,6 +368,8 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // receives a WM_LBUTTONDOWN/WM_RBUTTONDOWN message via NPP_HandleEvent.
 
   HWND dummy_window_for_activation_;
+  HWND dummy_window_parent_;
+  WNDPROC old_dummy_window_proc_;
   bool CreateDummyWindowForActivation();
 
   // Returns true if the event passed in needs to be tracked for a potential

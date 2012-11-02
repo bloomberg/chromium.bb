@@ -150,14 +150,12 @@ int ExternalDragTracker::WebEventButtonModifierMask() {
 #pragma mark Core WebPluginDelegate implementation
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
-    gfx::PluginWindowHandle containing_view,
     PluginInstance* instance)
     : windowed_handle_(gfx::kNullPluginWindow),
       // all Mac plugins are "windowless" in the Windows/X11 sense
       windowless_(true),
       plugin_(NULL),
       instance_(instance),
-      parent_(containing_view),
       quirks_(0),
       use_buffer_context_(true),
       buffer_context_(NULL),

@@ -12,9 +12,7 @@ using WebKit::WebInputEvent;
 namespace webkit {
 namespace npapi {
 
-WebPluginDelegateImpl::WebPluginDelegateImpl(
-    gfx::PluginWindowHandle containing_view,
-    PluginInstance* instance) {
+WebPluginDelegateImpl::WebPluginDelegateImpl(PluginInstance* instance) {
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {

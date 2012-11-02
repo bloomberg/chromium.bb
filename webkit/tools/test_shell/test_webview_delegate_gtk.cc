@@ -200,13 +200,7 @@ void TestWebViewDelegate::runModal() {
 webkit::npapi::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     const FilePath& path,
     const std::string& mime_type) {
-  // TODO(evanm): we probably shouldn't be doing this mapping to X ids at
-  // this level.
-  GdkNativeWindow plugin_parent =
-      GDK_WINDOW_XWINDOW(shell_->webViewHost()->view_handle()->window);
-
-  return webkit::npapi::WebPluginDelegateImpl::Create(
-      path, mime_type, plugin_parent);
+  return webkit::npapi::WebPluginDelegateImpl::Create(path, mime_type);
 }
 
 void TestWebViewDelegate::CreatedPluginWindow(

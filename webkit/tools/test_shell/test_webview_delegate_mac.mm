@@ -233,9 +233,8 @@ webkit::npapi::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
   if (!host)
     return NULL;
 
-  gfx::PluginWindowHandle containing_view = gfx::kNullPluginWindow;
   WebPluginDelegateImpl* delegate =
-      WebPluginDelegateImpl::Create(path, mime_type, containing_view);
+      WebPluginDelegateImpl::Create(path, mime_type);
   if (delegate)
     delegate->SetNoBufferContext();
   return delegate;

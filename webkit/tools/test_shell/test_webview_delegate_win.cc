@@ -139,7 +139,7 @@ webkit::npapi::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
   if (!hwnd)
     return NULL;
 
-  return webkit::npapi::WebPluginDelegateImpl::Create(path, mime_type, hwnd);
+  return webkit::npapi::WebPluginDelegateImpl::Create(path, mime_type);
 }
 
 void TestWebViewDelegate::CreatedPluginWindow(

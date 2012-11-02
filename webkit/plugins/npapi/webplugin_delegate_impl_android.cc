@@ -16,14 +16,12 @@ namespace webkit {
 namespace npapi {
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
-    gfx::PluginWindowHandle containing_view,
     PluginInstance* instance)
     : windowed_handle_(0),
       windowed_did_set_window_(false),
       windowless_(false),
       plugin_(NULL),
       instance_(instance),
-      parent_(containing_view),
       quirks_(0),
       handle_event_depth_(0),
       first_set_window_call_(true) {
