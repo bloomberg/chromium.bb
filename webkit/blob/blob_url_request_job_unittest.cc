@@ -136,10 +136,6 @@ class BlobURLRequestJobTest : public testing::Test {
 
     net::URLRequest::Deprecated::RegisterProtocolFactory(
         "blob", &BlobURLRequestJobFactory);
-
-    ASSERT_EQ(static_cast<int>(arraysize(kTestFileData1) - 1),
-              file_util::WriteFile(temp_file1_, kTestFileData1,
-                                   arraysize(kTestFileData1) - 1));
   }
 
   void TearDown() {
