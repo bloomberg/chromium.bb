@@ -74,8 +74,7 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
 
   virtual gfx::Size GetSurfaceSize() const = 0;
 
-  virtual bool IsInSameContextShareGroup(
-      const GpuCommandBufferStubBase& other) const = 0;
+  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const = 0;
 
   virtual void SetMemoryAllocation(
       const GpuMemoryAllocation& allocation) = 0;
@@ -130,9 +129,8 @@ class GpuCommandBufferStub
   // Returns surface size.
   virtual gfx::Size GetSurfaceSize() const OVERRIDE;
 
-  // Returns true iff |other| is in the same context share group as this stub.
-  virtual bool IsInSameContextShareGroup(
-      const GpuCommandBufferStubBase& other) const OVERRIDE;
+  // Returns the memory tracker for this stub.
+  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE;
 
   // Sets buffer usage depending on Memory Allocation
   virtual void SetMemoryAllocation(

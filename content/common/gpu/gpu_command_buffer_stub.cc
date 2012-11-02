@@ -47,6 +47,7 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
   GpuCommandBufferMemoryTracker(GpuChannel* channel) {
     gpu_memory_manager_tracking_group_ = new GpuMemoryTrackingGroup(
         channel->renderer_pid(),
+        this,
         channel->gpu_channel_manager()->gpu_memory_manager());
   }
 
@@ -834,10 +835,8 @@ gfx::Size GpuCommandBufferStub::GetSurfaceSize() const {
   return surface_->GetSize();
 }
 
-bool GpuCommandBufferStub::IsInSameContextShareGroup(
-    const GpuCommandBufferStubBase& other) const {
-  return context_group_ ==
-      static_cast<const GpuCommandBufferStub&>(other).context_group_;
+gpu::gles2::MemoryTracker* GpuCommandBufferStub::GetMemoryTracker() const {
+  return context_group_->memory_tracker();
 }
 
 const GpuCommandBufferStubBase::MemoryManagerState&

@@ -5,9 +5,19 @@
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
+#include "content/common/gpu/gpu_memory_tracking.h"
 #include "ui/gfx/size_conversions.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+
+class FakeMemoryTracker : public gpu::gles2::MemoryTracker {
+ public:
+  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) {
+  }
+ private:
+  ~FakeMemoryTracker() {
+  }
+};
 
 namespace content {
 
@@ -40,42 +50,30 @@ class StubAssignmentCollector {
 StubAssignmentCollector::StubMemoryStatMap
     StubAssignmentCollector::stub_memory_stats_for_last_manage_;
 
-class FakeCommandBufferStub : public GpuCommandBufferStubBase {
+class FakeCommandBufferStubBase : public GpuCommandBufferStubBase {
  public:
   MemoryManagerState memory_manager_state_;
   GpuMemoryAllocation allocation_;
-  gfx::Size surface_size_;
   size_t total_gpu_memory_;
+  scoped_refptr<gpu::gles2::MemoryTracker> memory_tracker_;
+  gpu::gles2::MemoryTracker* overridden_memory_tracker_;
 
-  FakeCommandBufferStub()
+  FakeCommandBufferStubBase()
       : memory_manager_state_(0, false, base::TimeTicks())
-      , total_gpu_memory_(0) {
-    memory_manager_state_.client_has_memory_allocation_changed_callback = true;
-  }
-
-  FakeCommandBufferStub(int32 surface_id,
-                        bool visible,
-                        base::TimeTicks last_used_time)
-      : memory_manager_state_(surface_id != 0, visible, last_used_time)
-      , total_gpu_memory_(0) {
+      , total_gpu_memory_(0)
+      , memory_tracker_(new FakeMemoryTracker())
+      , overridden_memory_tracker_(0) {
     memory_manager_state_.client_has_memory_allocation_changed_callback = true;
   }
 
   virtual const MemoryManagerState& memory_manager_state() const {
     return memory_manager_state_;
   }
-
-  virtual gfx::Size GetSurfaceSize() const {
-    return surface_size_;
-  }
-  virtual bool IsInSameContextShareGroup(
-      const GpuCommandBufferStubBase& stub) const {
-    return false;
-  }
   virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
     allocation_ = alloc;
     StubAssignmentCollector::AddStubStat(this, alloc);
   }
+
   virtual bool GetTotalGpuMemory(size_t* bytes) {
     if (total_gpu_memory_) {
       *bytes = total_gpu_memory_;
@@ -83,41 +81,49 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
     }
     return false;
   }
-
   void SetTotalGpuMemory(size_t bytes) { total_gpu_memory_ = bytes; }
+
+  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE {
+    if (overridden_memory_tracker_)
+      return overridden_memory_tracker_;
+    return memory_tracker_.get();
+  }
+
+  void SetInSameShareGroup(GpuCommandBufferStubBase* stub) {
+    overridden_memory_tracker_ = stub->GetMemoryTracker();
+  }
+};
+
+class FakeCommandBufferStub : public FakeCommandBufferStubBase {
+ public:
+  gfx::Size surface_size_;
+
+  FakeCommandBufferStub() {
+  }
+
+  FakeCommandBufferStub(int32 surface_id,
+                        bool visible,
+                        base::TimeTicks last_used_time) {
+    memory_manager_state_.has_surface = (surface_id != 0);
+    memory_manager_state_.visible = visible;
+    memory_manager_state_.last_used_time = last_used_time;
+  }
+
+  virtual gfx::Size GetSurfaceSize() const {
+    return surface_size_;
+  }
   void SetSurfaceSize(gfx::Size size) { surface_size_ = size; }
 };
 
-class FakeCommandBufferStubWithoutSurface : public GpuCommandBufferStubBase {
+class FakeCommandBufferStubWithoutSurface : public FakeCommandBufferStubBase {
  public:
-  MemoryManagerState memory_manager_state_;
-  GpuMemoryAllocation allocation_;
-  std::vector<GpuCommandBufferStubBase*> share_group_;
-
-  FakeCommandBufferStubWithoutSurface()
-      : memory_manager_state_(false, true, base::TimeTicks()) {
-    memory_manager_state_.client_has_memory_allocation_changed_callback = true;
-  }
-
-  virtual const MemoryManagerState& memory_manager_state() const {
-    return memory_manager_state_;
+  FakeCommandBufferStubWithoutSurface() {
+    memory_manager_state_.has_surface = false;
+    memory_manager_state_.visible = true;
   }
 
   virtual gfx::Size GetSurfaceSize() const {
     return gfx::Size();
-  }
-  virtual bool IsInSameContextShareGroup(
-      const GpuCommandBufferStubBase& stub) const {
-    return std::find(share_group_.begin(),
-                     share_group_.end(),
-                     &stub) != share_group_.end();
-  }
-  virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
-    allocation_ = alloc;
-    StubAssignmentCollector::AddStubStat(this, alloc);
-  }
-  virtual bool GetTotalGpuMemory(size_t* bytes) {
-    return false;
   }
 };
 
@@ -307,8 +313,8 @@ TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
 
   // Test stubs without surface, with share group of 1 stub.
   FakeCommandBufferStubWithoutSurface stub3, stub4;
-  stub3.share_group_.push_back(&stub1);
-  stub4.share_group_.push_back(&stub2);
+  stub3.SetInSameShareGroup(&stub1);
+  stub4.SetInSameShareGroup(&stub2);
   client_.stubs_.push_back(&stub3);
   client_.stubs_.push_back(&stub4);
 
@@ -320,8 +326,7 @@ TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
 
   // Test stub without surface, with share group of multiple stubs.
   FakeCommandBufferStubWithoutSurface stub5;
-  stub5.share_group_.push_back(&stub1);
-  stub5.share_group_.push_back(&stub2);
+  stub5.SetInSameShareGroup(&stub2);
   client_.stubs_.push_back(&stub5);
 
   Manage();
@@ -340,14 +345,13 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingVisibility) {
   client_.stubs_.push_back(&stub2);
 
   FakeCommandBufferStubWithoutSurface stub3, stub4;
-  stub3.share_group_.push_back(&stub1);
-  stub4.share_group_.push_back(&stub2);
+  stub3.SetInSameShareGroup(&stub1);
+  stub4.SetInSameShareGroup(&stub2);
   client_.stubs_.push_back(&stub3);
   client_.stubs_.push_back(&stub4);
 
   FakeCommandBufferStubWithoutSurface stub5;
-  stub5.share_group_.push_back(&stub1);
-  stub5.share_group_.push_back(&stub2);
+  stub5.SetInSameShareGroup(&stub2);
   client_.stubs_.push_back(&stub5);
 
   Manage();
@@ -382,14 +386,13 @@ TEST_F(GpuMemoryManagerTest, TestManageManyVisibleStubs) {
   client_.stubs_.push_back(&stub4);
 
   FakeCommandBufferStubWithoutSurface stub5, stub6;
-  stub5.share_group_.push_back(&stub1);
-  stub6.share_group_.push_back(&stub2);
+  stub5.SetInSameShareGroup(&stub1);
+  stub6.SetInSameShareGroup(&stub2);
   client_.stubs_.push_back(&stub5);
   client_.stubs_.push_back(&stub6);
 
   FakeCommandBufferStubWithoutSurface stub7;
-  stub7.share_group_.push_back(&stub1);
-  stub7.share_group_.push_back(&stub2);
+  stub7.SetInSameShareGroup(&stub2);
   client_.stubs_.push_back(&stub7);
 
   Manage();
@@ -416,14 +419,13 @@ TEST_F(GpuMemoryManagerTest, TestManageManyNotVisibleStubs) {
   client_.stubs_.push_back(&stub4);
 
   FakeCommandBufferStubWithoutSurface stub5, stub6;
-  stub5.share_group_.push_back(&stub1);
-  stub6.share_group_.push_back(&stub4);
+  stub5.SetInSameShareGroup(&stub1);
+  stub6.SetInSameShareGroup(&stub4);
   client_.stubs_.push_back(&stub5);
   client_.stubs_.push_back(&stub6);
 
   FakeCommandBufferStubWithoutSurface stub7;
-  stub7.share_group_.push_back(&stub1);
-  stub7.share_group_.push_back(&stub4);
+  stub7.SetInSameShareGroup(&stub1);
   client_.stubs_.push_back(&stub7);
 
   Manage();
@@ -450,14 +452,13 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingLastUsedTime) {
   client_.stubs_.push_back(&stub4);
 
   FakeCommandBufferStubWithoutSurface stub5, stub6;
-  stub5.share_group_.push_back(&stub3);
-  stub6.share_group_.push_back(&stub4);
+  stub5.SetInSameShareGroup(&stub3);
+  stub6.SetInSameShareGroup(&stub4);
   client_.stubs_.push_back(&stub5);
   client_.stubs_.push_back(&stub6);
 
   FakeCommandBufferStubWithoutSurface stub7;
-  stub7.share_group_.push_back(&stub3);
-  stub7.share_group_.push_back(&stub4);
+  stub7.SetInSameShareGroup(&stub3);
   client_.stubs_.push_back(&stub7);
 
   Manage();
@@ -479,7 +480,7 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingLastUsedTime) {
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceYes(stub4.allocation_));
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceNo(stub5.allocation_));
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub6.allocation_));
-  EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub7.allocation_));
+  EXPECT_TRUE(IsAllocationHibernatedForSurfaceNo(stub7.allocation_));
 }
 
 // Test GpuMemoryManager::Manage functionality: Test changing importance of
@@ -499,10 +500,8 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   client_.stubs_.push_back(&stub2);
 
   FakeCommandBufferStubWithoutSurface stub3, stub4;
-  stub3.share_group_.push_back(&stub1);
-  stub3.share_group_.push_back(&stub2);
-  stub4.share_group_.push_back(&stub1);
-  stub4.share_group_.push_back(&stub2);
+  stub3.SetInSameShareGroup(&stub2);
+  stub4.SetInSameShareGroup(&stub2);
   client_.stubs_.push_back(&stub3);
   client_.stubs_.push_back(&stub4);
 
@@ -681,7 +680,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
 
   FakeCommandBufferStubWithoutSurface stub2;
   client_.stubs_.push_back(&stub2);
-  stub2.share_group_.push_back(&stub1);
+  stub2.SetInSameShareGroup(&stub1);
   Manage();
   stats = StubAssignmentCollector::GetStubStatsForLastManage();
   EXPECT_EQ(stats.count(&stub1), 1ul);

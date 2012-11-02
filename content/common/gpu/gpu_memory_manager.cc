@@ -25,22 +25,10 @@ namespace {
 
 const int kDelayedScheduleManageTimeoutMs = 67;
 
-bool IsInSameContextShareGroupAsAnyOf(
-    const GpuCommandBufferStubBase* stub,
-    const std::vector<GpuCommandBufferStubBase*>& stubs) {
-  for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
-      stubs.begin(); it != stubs.end(); ++it) {
-    if (stub->IsInSameContextShareGroup(**it))
-      return true;
-  }
-  return false;
-}
-
 void AssignMemoryAllocations(
-    const std::vector<GpuCommandBufferStubBase*>& stubs,
+    const GpuMemoryManager::StubVector& stubs,
     const GpuMemoryAllocation& allocation) {
-  for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
-          stubs.begin();
+  for (GpuMemoryManager::StubVector::const_iterator it = stubs.begin();
       it != stubs.end();
       ++it) {
     (*it)->SetMemoryAllocation(allocation);
@@ -104,7 +92,7 @@ size_t GpuMemoryManager::CalcAvailableFromGpuTotal(size_t total_gpu_memory) {
 }
 
 void GpuMemoryManager::UpdateAvailableGpuMemory(
-   std::vector<GpuCommandBufferStubBase*>& stubs) {
+   const StubVector& stubs) {
   // If the amount of video memory to use was specified at the command
   // line, never change it.
   if (bytes_available_gpu_memory_overridden_)
@@ -114,39 +102,50 @@ void GpuMemoryManager::UpdateAvailableGpuMemory(
   // On Android we use the surface size, so this finds the largest visible
   // surface size instead of lowest gpu's limit.
   int max_surface_area = 0;
-  for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
-      it != stubs.end(); ++it) {
-    GpuCommandBufferStubBase* stub = *it;
-    gfx::Size surface_size = stub->GetSurfaceSize();
-    max_surface_area = std::max(max_surface_area, surface_size.width() *
-                                                  surface_size.height());
-  }
-  bytes_available_gpu_memory_ = CalcAvailableFromViewportArea(max_surface_area);
 #else
+  // On non-Android, we use an operating system query when possible.
   // We do not have a reliable concept of multiple GPUs existing in
   // a system, so just be safe and go with the minimum encountered.
   size_t bytes_min = 0;
-  for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
+#endif
+
+  // Only use the stubs that are visible, because otherwise the set of stubs
+  // we are querying could become extremely large.
+  for (StubVector::const_iterator it = stubs.begin();
       it != stubs.end(); ++it) {
     GpuCommandBufferStubBase* stub = *it;
+    if (!stub->memory_manager_state().has_surface)
+      continue;
+    if (!stub->memory_manager_state().visible)
+      continue;
+
+#if defined(OS_ANDROID)
+    gfx::Size surface_size = stub->GetSurfaceSize();
+    max_surface_area = std::max(max_surface_area, surface_size.width() *
+                                                  surface_size.height());
+#else
     size_t bytes = 0;
     if (stub->GetTotalGpuMemory(&bytes)) {
       if (!bytes_min || bytes < bytes_min)
         bytes_min = bytes;
     }
+#endif
   }
+
+#if defined(OS_ANDROID)
+  bytes_available_gpu_memory_ = CalcAvailableFromViewportArea(max_surface_area);
+#else
   if (!bytes_min)
     return;
 
   bytes_available_gpu_memory_ = CalcAvailableFromGpuTotal(bytes_min);
-
 #endif
 
-  // And never go below the default allocation
+  // Never go below the default allocation
   bytes_available_gpu_memory_ = std::max(bytes_available_gpu_memory_,
                                          GetDefaultAvailableGpuMemory());
 
-  // And never go above the maximum.
+  // Never go above the maximum.
   bytes_available_gpu_memory_ = std::min(bytes_available_gpu_memory_,
                                          GetMaximumTotalGpuMemory());
 }
@@ -281,14 +280,13 @@ void GpuMemoryManager::Manage() {
   delayed_manage_callback_.Cancel();
 
   // Create stub lists by separating out the two types received from client
-  std::vector<GpuCommandBufferStubBase*> stubs_with_surface;
-  std::vector<GpuCommandBufferStubBase*> stubs_without_surface;
+  StubVector stubs_with_surface;
+  StubVector stubs_without_surface;
   {
-    std::vector<GpuCommandBufferStubBase*> stubs;
+    StubVector stubs;
     client_->AppendAllCommandBufferStubs(stubs);
 
-    for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
-        it != stubs.end(); ++it) {
+    for (StubVector::iterator it = stubs.begin(); it != stubs.end(); ++it) {
       GpuCommandBufferStubBase* stub = *it;
       if (!stub->memory_manager_state().
          client_has_memory_allocation_changed_callback)
@@ -308,95 +306,86 @@ void GpuMemoryManager::Manage() {
   DCHECK(std::unique(stubs_with_surface.begin(), stubs_with_surface.end()) ==
          stubs_with_surface.end());
 
-  // Separate stubs into memory allocation sets.
-  std::vector<GpuCommandBufferStubBase*> stubs_with_surface_foreground,
-                                         stubs_with_surface_background,
-                                         stubs_with_surface_hibernated,
-                                         stubs_without_surface_foreground,
-                                         stubs_without_surface_background,
-                                         stubs_without_surface_hibernated;
+  std::set<gpu::gles2::MemoryTracker*> memory_trackers_not_hibernated;
 
+  // Separate the stubs with surfaces into the ones that will get a
+  // frontbuffer (the ones that are visible, and then the most recently
+  // used, up to a limit) and those that do not get a frontbuffer.
+  size_t stubs_with_surface_visible_count = 0;
+  StubVector stubs_with_surface_not_hibernated;
+  StubVector stubs_with_surface_hibernated;
   for (size_t i = 0; i < stubs_with_surface.size(); ++i) {
     GpuCommandBufferStubBase* stub = stubs_with_surface[i];
     DCHECK(stub->memory_manager_state().has_surface);
+
     if (stub->memory_manager_state().visible)
-      stubs_with_surface_foreground.push_back(stub);
-    else if (i < max_surfaces_with_frontbuffer_soft_limit_)
-      stubs_with_surface_background.push_back(stub);
-    else
+      stubs_with_surface_visible_count++;
+
+    if (stub->memory_manager_state().visible ||
+        i < max_surfaces_with_frontbuffer_soft_limit_) {
+      memory_trackers_not_hibernated.insert(stub->GetMemoryTracker());
+      stubs_with_surface_not_hibernated.push_back(stub);
+    } else {
       stubs_with_surface_hibernated.push_back(stub);
+    }
   }
-  for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
+
+  // Separate the stubs without surfaces into the ones that will be given a
+  // memory allocation (the ones that are in a share group with a stub with
+  // a surface that has a frontbuffer) and those that won't.
+  StubVector stubs_without_surface_not_hibernated;
+  StubVector stubs_without_surface_hibernated;
+  for (StubVector::const_iterator it =
       stubs_without_surface.begin(); it != stubs_without_surface.end(); ++it) {
     GpuCommandBufferStubBase* stub = *it;
     DCHECK(!stub->memory_manager_state().has_surface);
-
-    // Stubs without surfaces have deduced allocation state using the state
-    // of surface stubs which are in the same context share group.
-    if (IsInSameContextShareGroupAsAnyOf(stub, stubs_with_surface_foreground))
-      stubs_without_surface_foreground.push_back(stub);
-    else if (IsInSameContextShareGroupAsAnyOf(
-        stub, stubs_with_surface_background))
-      stubs_without_surface_background.push_back(stub);
+    if (memory_trackers_not_hibernated.count(stub->GetMemoryTracker()))
+      stubs_without_surface_not_hibernated.push_back(stub);
     else
       stubs_without_surface_hibernated.push_back(stub);
   }
 
-  // Update the amount of GPU memory available on the system. Only use the
-  // stubs that are visible, because otherwise the set of stubs we are
-  // querying could become extremely large (resulting in hundreds of calls
-  // to the driver).
-  UpdateAvailableGpuMemory(stubs_with_surface_foreground);
+  // Update the amount of GPU memory available on the system.
+  UpdateAvailableGpuMemory(stubs_with_surface);
 
-  size_t bonus_allocation = 0;
   // Calculate bonus allocation by splitting remainder of global limit equally
   // after giving out the minimum to those that need it.
-  size_t num_stubs_need_mem = stubs_with_surface_foreground.size() +
-                              stubs_without_surface_foreground.size() +
-                              stubs_without_surface_background.size();
+  size_t num_stubs_need_mem = stubs_with_surface_visible_count +
+                              stubs_without_surface_not_hibernated.size();
   size_t base_allocation_size = GetMinimumTabAllocation() * num_stubs_need_mem;
+  size_t bonus_allocation = 0;
   if (base_allocation_size < GetAvailableGpuMemory() &&
-      !stubs_with_surface_foreground.empty())
+      stubs_with_surface_visible_count)
     bonus_allocation = (GetAvailableGpuMemory() - base_allocation_size) /
-                       stubs_with_surface_foreground.size();
-  size_t stubs_with_surface_foreground_allocation = GetMinimumTabAllocation() +
-                                                    bonus_allocation;
+                       stubs_with_surface_visible_count;
+  size_t stubs_allocation_when_visible = GetMinimumTabAllocation() +
+                                         bonus_allocation;
 
   // If we have received a window count message, then override the stub-based
   // scheme with a per-window scheme
   if (window_count_has_been_received_) {
-    stubs_with_surface_foreground_allocation = std::max(
-       stubs_with_surface_foreground_allocation,
+    stubs_allocation_when_visible = std::max(
+       stubs_allocation_when_visible,
        GetAvailableGpuMemory()/std::max(window_count_, 1u));
   }
 
   // Limit the memory per stub to its maximum allowed level.
-  if (stubs_with_surface_foreground_allocation >= GetMaximumTabAllocation())
-    stubs_with_surface_foreground_allocation = GetMaximumTabAllocation();
+  if (stubs_allocation_when_visible >= GetMaximumTabAllocation())
+    stubs_allocation_when_visible = GetMaximumTabAllocation();
 
   // Now give out allocations to everyone.
   AssignMemoryAllocations(
-      stubs_with_surface_foreground,
-      GpuMemoryAllocation(stubs_with_surface_foreground_allocation,
-                          GpuMemoryAllocation::kHasFrontbuffer));
-
-  AssignMemoryAllocations(
-      stubs_with_surface_background,
-      GpuMemoryAllocation(stubs_with_surface_foreground_allocation,
+      stubs_with_surface_not_hibernated,
+      GpuMemoryAllocation(stubs_allocation_when_visible,
                           GpuMemoryAllocation::kHasFrontbuffer));
 
   AssignMemoryAllocations(
       stubs_with_surface_hibernated,
-      GpuMemoryAllocation(stubs_with_surface_foreground_allocation,
+      GpuMemoryAllocation(stubs_allocation_when_visible,
                           GpuMemoryAllocation::kHasNoFrontbuffer));
 
   AssignMemoryAllocations(
-      stubs_without_surface_foreground,
-      GpuMemoryAllocation(GetMinimumTabAllocation(),
-                          GpuMemoryAllocation::kHasNoFrontbuffer));
-
-  AssignMemoryAllocations(
-      stubs_without_surface_background,
+      stubs_without_surface_not_hibernated,
       GpuMemoryAllocation(GetMinimumTabAllocation(),
                           GpuMemoryAllocation::kHasNoFrontbuffer));
 

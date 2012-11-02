@@ -49,6 +49,7 @@ class CONTENT_EXPORT GpuMemoryManager :
     public base::SupportsWeakPtr<GpuMemoryManager> {
  public:
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
+  typedef std::vector<GpuCommandBufferStubBase*> StubVector;
 
   GpuMemoryManager(GpuMemoryManagerClient* client,
                    size_t max_surfaces_with_frontbuffer_soft_limit);
@@ -83,7 +84,7 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
-  void UpdateAvailableGpuMemory(std::vector<GpuCommandBufferStubBase*>& stubs);
+  void UpdateAvailableGpuMemory(const StubVector& stubs);
 
   // The amount of video memory which is available for allocation
   size_t GetAvailableGpuMemory() const {

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/gpu/gpu_memory_manager.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 
 namespace content {
 
@@ -16,9 +17,12 @@ namespace content {
 // which tracks GPU resource consumption for the entire context group.
 class GpuMemoryTrackingGroup {
  public:
-  GpuMemoryTrackingGroup(base::ProcessId pid, GpuMemoryManager* memory_manager)
+  GpuMemoryTrackingGroup(base::ProcessId pid,
+                         gpu::gles2::MemoryTracker* memory_tracker,
+                         GpuMemoryManager* memory_manager)
       : pid_(pid),
         size_(0),
+        memory_tracker_(memory_tracker),
         memory_manager_(memory_manager) {
     memory_manager_->AddTrackingGroup(this);
   }
@@ -43,10 +47,14 @@ class GpuMemoryTrackingGroup {
   size_t GetSize() const {
     return size_;
   }
+  gpu::gles2::MemoryTracker* GetMemoryTracker() const {
+    return memory_tracker_;
+  }
 
  private:
   base::ProcessId pid_;
   size_t size_;
+  gpu::gles2::MemoryTracker* memory_tracker_;
   GpuMemoryManager* memory_manager_;
 };
 
