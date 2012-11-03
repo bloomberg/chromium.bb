@@ -97,7 +97,7 @@ handle-error() {
 # less coverage on the main waterfall now:
 # http://code.google.com/p/nativeclient/issues/detail?id=2581
 readonly SCONS_COMMON="./scons --verbose bitcode=1 -j${PNACL_CONCURRENCY}"
-readonly SCONS_COMMON_SLOW="./scons --verbose bitcode=1"
+readonly SCONS_COMMON_SLOW="./scons --verbose bitcode=1 -j2"
 
 build-sbtc-prerequisites() {
   local platform=$1
@@ -133,12 +133,24 @@ scons-tests-translator() {
   ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} ${targets} \
       translate_in_build_step=0 do_not_run_tests=1 || handle-error
 
-  # translate pexes (one at a time)
-  # TODO(robertm): maybe speed this up for non-arm
+  # translate pexes
   echo "@@@BUILD_STEP scons-sb-trans-trans [${platform}] [${targets}]@@@"
-  ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
-      do_not_run_tests=1 || handle-error
-
+  if [[ ${platform} = arm ]] ; then
+      # For ARM we use less parallelism to avoid mysterious QEMU crashes.
+      # We also force a timeout for translation only.
+      export QEMU_PREFIX_HOOK="timeout 120"
+      ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
+          do_not_run_tests=1 || handle-error
+      # Run it again in case we failed to translate some of the pexes
+      ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
+          do_not_run_tests=1 || handle-error
+      # Do not use the prefix hook for running actual tests as
+      # it will break some of them due to exit code sign inversion.
+      unset QEMU_PREFIX_HOOK
+  else
+      ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} ${targets} \
+          do_not_run_tests=1 || handle-error
+  fi
   # finally run the tests
   echo "@@@BUILD_STEP scons-sb-trans-run [${platform}] [${targets}]@@@"
   ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} || handle-error
@@ -150,9 +162,21 @@ scons-tests-translator() {
       translate_in_build_step=0 do_not_run_tests=1 || handle-error
 
   echo "@@@BUILD_STEP scons-sb-trans-trans [fast] [${platform}] [${targets}]@@@"
-  ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
-       do_not_run_tests=1 || handle-error
-
+  if [[ ${platform} = arm ]] ; then
+      # For ARM we use less parallelism to avoid mysterious QEMU crashes.
+      # We also force a timeout for translation only.
+      export QEMU_PREFIX_HOOK="timeout 120"
+      ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
+          do_not_run_tests=1 || handle-error
+      ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} \
+          do_not_run_tests=1 || handle-error
+      # Do not use the prefix hook for running actual tests as
+      # it will break some of them due to exit code sign inversion.
+      unset QEMU_PREFIX_HOOK
+  else
+      ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} ${targets} \
+          do_not_run_tests=1 || handle-error
+  fi
   echo "@@@BUILD_STEP scons-sb-trans-run [fast] [${platform}] [${targets}]@@@"
   ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} ${targets} || handle-error
 }
