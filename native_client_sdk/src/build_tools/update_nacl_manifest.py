@@ -479,6 +479,13 @@ class Updater(object):
     Args:
       manifest: The manifest used as a template for updating. Only pepper
       bundles that contain no archives will be considered for auto-updating."""
+    # Make sure there is only one stable branch: the one with the max version.
+    # All others are post-stable.
+    stable_major_versions = [SplitVersion(version)[0] for _, version, channel, _
+                             in self.versions_to_update if channel == 'stable']
+    # Add 0 in case there are no stable versions.
+    max_stable_version = max([0] + stable_major_versions)
+
     for bundle_name, version, channel, archives in self.versions_to_update:
       self.delegate.Print('Updating %s to %s...' % (bundle_name, version))
       bundle = manifest.GetBundle(bundle_name)
@@ -489,7 +496,12 @@ class Updater(object):
         # snippet.
         platform_bundle.name = bundle_name
         bundle.MergeWithBundle(platform_bundle)
-      bundle.stability = channel
+
+      major_version = SplitVersion(version)[0]
+      if major_version < max_stable_version and channel == 'stable':
+        bundle.stability = 'post_stable'
+      else:
+        bundle.stability = channel
       # We always recommend the stable version.
       if channel == 'stable':
         bundle.recommended = 'yes'

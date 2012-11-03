@@ -31,6 +31,7 @@ OS_M = ('mac',)
 OS_ML = ('mac', 'linux')
 OS_MW = ('mac', 'win')
 OS_MLW = ('mac', 'linux', 'win')
+POST_STABLE = 'post_stable'
 STABLE = 'stable'
 BETA = 'beta'
 DEV = 'dev'
@@ -515,6 +516,20 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self._AssertUploadedManifestHasBundle(bundle, BETA)
     self.assertEqual(len(self.uploaded_manifest.GetBundles()), 1)
 
+  def testOnlyOneStableBundle(self):
+    self.manifest = MakeManifest(B18_R1_NONE, B19_R1_NONE)
+    self.history.Add(OS_MLW, STABLE, V18_0_1025_163)
+    self.history.Add(OS_MLW, STABLE, V19_0_1084_41)
+    self.files.Add(B18_0_1025_163_R1_MLW)
+    self.files.Add(B19_0_1084_41_R1_MLW)
+    self._MakeDelegate()
+    self._Run(OS_MLW)
+    self._ReadUploadedManifest()
+    p18_bundle = self.uploaded_manifest.GetBundle(B18_R1_NONE.name)
+    self.assertEqual(p18_bundle.stability, POST_STABLE)
+    p19_bundle = self.uploaded_manifest.GetBundle(B19_R1_NONE.name)
+    self.assertEqual(p19_bundle.stability, STABLE)
+
 
 class TestUpdateVitals(unittest.TestCase):
   def setUp(self):
@@ -538,7 +553,6 @@ class TestUpdateVitals(unittest.TestCase):
       # (file:///C:\whatever)
       path = '/' + path
     archive.url = 'file://' + path
-    print archive.url
 
     bundle = MakeBundle(18)
     bundle.AddArchive(archive)
