@@ -193,7 +193,11 @@ void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
     stats.numMainThreadScrolls = ccStats.numMainThreadScrolls;
 }
 
-void WebLayerTreeViewImpl::setFontAtlas(SkBitmap bitmap, WebRect asciiToWebRectTable[128], int fontHeight)
+void WebLayerTreeViewImpl::setFontAtlas(SkBitmap bitmap, WebRect asciiToWebRectTable[128], int fontHeight) {
+    setFontAtlas(asciiToWebRectTable, bitmap, fontHeight);
+}
+
+void WebLayerTreeViewImpl::setFontAtlas(WebRect asciiToWebRectTable[128], const SkBitmap& bitmap, int fontHeight)
 {
     gfx::Rect asciiToRectTable[128];
     for (int i = 0; i < 128; ++i)
