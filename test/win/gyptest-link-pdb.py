@@ -26,7 +26,9 @@ if sys.platform == 'win32':
 
   # Verify the specified PDB is created when ProgramDatabaseFile
   # is provided.
-  if not FindFile('name_set.pdb'):
+  if not FindFile('name_outdir.pdb'):
     test.fail_test()
-  else:
-    test.pass_test()
+  if not FindFile('name_proddir.pdb'):
+    test.fail_test()
+
+  test.pass_test()

@@ -4,9 +4,10 @@
 
 {
  'targets': [
-    # Verify that 'ProgramDataBase' option correctly makes it to LINK steup in Ninja
+    # Verify that 'ProgramDataBase' option correctly makes it to LINK step in Ninja
     {
-      'target_name': 'test_pdb_set',
+      # Verify that VC macros and windows paths work correctly
+      'target_name': 'test_pdb_outdir',
       'type': 'executable',
       'sources': ['hello.cc'],
       'msvs_settings': {
@@ -15,7 +16,22 @@
         },
         'VCLinkerTool': {
           'GenerateDebugInformation': 'true',
-          'ProgramDatabaseFile': '<(PRODUCT_DIR)\\name_set.pdb',
+          'ProgramDatabaseFile': '$(OutDir)\\name_outdir.pdb',
+        },
+      },
+    },
+    {
+      # Verify that GYP macros and POSIX paths work correctly
+      'target_name': 'test_pdb_proddir',
+      'type': 'executable',
+      'sources': ['hello.cc'],
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'DebugInformationFormat': '3'
+        },
+        'VCLinkerTool': {
+          'GenerateDebugInformation': 'true',
+          'ProgramDatabaseFile': '<(PRODUCT_DIR)/name_proddir.pdb',
         },
       },
     },
