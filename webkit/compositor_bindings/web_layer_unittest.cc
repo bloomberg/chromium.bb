@@ -33,7 +33,11 @@ namespace {
 
 class MockWebContentLayerClient : public WebContentLayerClient {
 public:
+#if WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
+    MOCK_METHOD4(paintContents, void(WebCanvas*, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque));
+#else
     MOCK_METHOD3(paintContents, void(WebCanvas*, const WebRect& clip, WebFloatRect& opaque));
+#endif  // WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
 };
 
 class WebLayerTest : public Test {
@@ -144,7 +148,12 @@ TEST_F(WebLayerTest, Client)
 
     // Content layer.
     MockWebContentLayerClient contentClient;
+#if WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
+    EXPECT_CALL(contentClient, paintContents(_, _, _, _)).Times(AnyNumber());
+#else
     EXPECT_CALL(contentClient, paintContents(_, _, _)).Times(AnyNumber());
+#endif  // WEBCONTENTLAYERCLIENT_HAS_CANPAINTLCDTEXT
+                                             
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
     scoped_ptr<WebContentLayer> contentLayer(WebContentLayer::create(&contentClient));
     m_rootLayer->addChild(contentLayer->layer());
