@@ -1,3 +1,37 @@
+# For patches touching specific topics, try the topic-specific OWNERS at the
+# bottom of the file. For patches that touch multiple areas or if you aren't
+# sure, try the more general OWNERS at the top.
+#
+# Folks listed as unofficial can't do OWNERS approvals but are good people to
+# ask for informal reviews.
+
 enne@chromium.org
 jamesr@chromium.org
 nduca@chromium.org
+
+# layers / quads / passes
+enne@chromium.org
+danakj@chromium.org
+
+# ubercompositor
+piman@chromium.org
+danakj@chromium.org
+
+# resource management
+# unofficial: epenner@chromium.org
+ccameron@chromium.org
+
+# input, gestures, scrolling
+# unofficial: aelias@chromium.org
+jamesr@chromium.org
+
+# scheduling and texture uploading
+brianderson@chromium.org
+reveman@chromium.org
+
+# math / geometry / layer_tree_host_common
+# unofficial: shawnsingh@chromium.org
+enne@chromium.org
+
+# animation
+vollick@chromium.org
