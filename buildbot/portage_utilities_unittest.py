@@ -263,6 +263,8 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     m_file = self.mox.CreateMock(file)
     portage_utilities.fileinput.input(self.revved_ebuild_path,
                                       inplace=1).AndReturn(ebuild_content)
+    m_file.write('EAPI=2\n')
+
     if multi:
       m_file.write('CROS_WORKON_COMMIT=("my_id1" "my_id2")\n')
       m_file.write('CROS_WORKON_TREE=("treehash1" "treehash2")\n')
@@ -270,7 +272,6 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
       m_file.write('CROS_WORKON_COMMIT="my_id"\n')
       m_file.write('CROS_WORKON_TREE="treehash"\n')
 
-    m_file.write('EAPI=2\n')
     m_file.write('KEYWORDS=\"x86 arm amd64\"\n')
     m_file.write('src_unpack(){}\n')
     # MarkAsStable() returns here
