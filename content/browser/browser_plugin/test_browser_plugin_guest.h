@@ -26,8 +26,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   TestBrowserPluginGuest(int instance_id,
                          WebContentsImpl* web_contents,
                          RenderViewHost* render_view_host,
-                         bool focused,
-                         bool visible);
+                         const BrowserPluginHostMsg_CreateGuest_Params& params);
   virtual ~TestBrowserPluginGuest();
 
   WebContentsImpl* web_contents() const;

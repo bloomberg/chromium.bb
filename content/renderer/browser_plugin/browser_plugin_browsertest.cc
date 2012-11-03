@@ -453,19 +453,13 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
     ASSERT_TRUE(create_msg);
 
     int create_instance_id;
-    std::string storage_partition;
-    bool persist_storage = true;
-    bool focused = false;
-    bool visible = false;
+    BrowserPluginHostMsg_CreateGuest_Params params;
     BrowserPluginHostMsg_CreateGuest::Read(
         create_msg,
         &create_instance_id,
-        &storage_partition,
-        &persist_storage,
-        &focused,
-        &visible);
-    EXPECT_STREQ("storage", storage_partition.c_str());
-    EXPECT_FALSE(persist_storage);
+        &params);
+    EXPECT_STREQ("storage", params.storage_partition_id.c_str());
+    EXPECT_FALSE(params.persist_storage);
 
     const IPC::Message* msg =
         browser_plugin_manager()->sink().GetUniqueMessageMatching(
@@ -638,6 +632,68 @@ TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
   ProcessPendingMessages();
 
   EXPECT_EQ(NULL, browser_plugin_manager()->GetBrowserPlugin(instance_id));
+}
+
+TEST_F(BrowserPluginTest, AutoSizeAttributes) {
+  std::string html = StringPrintf(kHTMLForSourcelessPluginObject,
+                                  content::kBrowserPluginMimeType);
+  LoadHTML(html.c_str());
+  const char* kSetAutoSizeParametersAndNavigate =
+    "var browserplugin = document.getElementById('browserplugin');"
+    "browserplugin.autoSize = true;"
+    "browserplugin.minWidth = 42;"
+    "browserplugin.minHeight = 43;"
+    "browserplugin.maxWidth = 1337;"
+    "browserplugin.maxHeight = 1338;"
+    "browserplugin.src = 'foobar';";
+  const char* kDisableAutoSize =
+    "document.getElementById('browserplugin').autoSize = false;";
+
+  // Set some autosize parameters before navigating then navigate.
+  // Verify that the BrowserPluginHostMsg_CreateGuest message contains
+  // the correct autosize parameters.
+  ExecuteJavaScript(kSetAutoSizeParametersAndNavigate);
+  ProcessPendingMessages();
+  {
+    const IPC::Message* create_msg =
+    browser_plugin_manager()->sink().GetUniqueMessageMatching(
+        BrowserPluginHostMsg_CreateGuest::ID);
+    ASSERT_TRUE(create_msg);
+
+    int create_instance_id;
+    BrowserPluginHostMsg_CreateGuest_Params params;
+    BrowserPluginHostMsg_CreateGuest::Read(
+        create_msg,
+        &create_instance_id,
+        &params);
+     EXPECT_TRUE(params.auto_size.enable);
+     EXPECT_EQ(42, params.auto_size.min_width);
+     EXPECT_EQ(43, params.auto_size.min_height);
+     EXPECT_EQ(1337, params.auto_size.max_width);
+     EXPECT_EQ(1338, params.auto_size.max_height);
+  }
+  // Disable autosize and verify that the BrowserPlugin issues a
+  // BrowserPluginHostMsg_SetAutoSize with the change.
+  ExecuteJavaScript(kDisableAutoSize);
+  ProcessPendingMessages();
+  {
+    const IPC::Message* auto_size_msg =
+    browser_plugin_manager()->sink().GetUniqueMessageMatching(
+        BrowserPluginHostMsg_SetAutoSize::ID);
+    ASSERT_TRUE(auto_size_msg);
+
+    int instance_id;
+    BrowserPluginHostMsg_AutoSize_Params params;
+    BrowserPluginHostMsg_SetAutoSize::Read(
+        auto_size_msg,
+        &instance_id,
+        &params);
+     EXPECT_FALSE(params.enable);
+     EXPECT_EQ(42, params.min_width);
+     EXPECT_EQ(43, params.min_height);
+     EXPECT_EQ(1337, params.max_width);
+     EXPECT_EQ(1338, params.max_height);
+  }
 }
 
 }  // namespace content

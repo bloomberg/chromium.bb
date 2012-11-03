@@ -91,13 +91,11 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
       int instance_id,
       WebContentsImpl* web_contents,
       RenderViewHost* render_view_host,
-      bool focused,
-      bool visible) OVERRIDE {
+      const BrowserPluginHostMsg_CreateGuest_Params& params) OVERRIDE {
     return new TestBrowserPluginGuest(instance_id,
                                       web_contents,
                                       render_view_host,
-                                      focused,
-                                      visible);
+                                      params);
   }
 
   // Also keeps track of number of instances created.
@@ -149,13 +147,12 @@ class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
       int instance_id,
       WebContentsImpl* web_contents,
       RenderViewHost* render_view_host,
-      bool focused,
-      bool visible) OVERRIDE {
-    BrowserPluginGuest* guest = new TestBrowserPluginGuest(instance_id,
-                                                         web_contents,
-                                                         render_view_host,
-                                                         focused,
-                                                         visible);
+      const BrowserPluginHostMsg_CreateGuest_Params& params) OVERRIDE {
+    BrowserPluginGuest* guest =
+        new TestBrowserPluginGuest(instance_id,
+                                   web_contents,
+                                   render_view_host,
+                                   params);
     guest->set_guest_hang_timeout_for_testing(TestTimeouts::tiny_timeout());
     return guest;
   }

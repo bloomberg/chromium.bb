@@ -36,6 +36,7 @@ namespace content {
 namespace {
 
 const char kAddEventListener[] = "addEventListener";
+const char kAutoSizeAttribute[] = "autoSize";
 const char kBackMethod[] = "back";
 const char kCanGoBack[] = "canGoBack";
 const char kCanGoForward[] = "canGoForward";
@@ -43,6 +44,10 @@ const char kContentWindow[] = "contentWindow";
 const char kForwardMethod[] = "forward";
 const char kGetProcessId[] = "getProcessId";
 const char kGoMethod[] = "go";
+const char kMaxHeightAttribute[] = "maxHeight";
+const char kMaxWidthAttribute[] = "maxWidth";
+const char kMinHeightAttribute[] = "minHeight";
+const char kMinWidthAttribute[] = "minWidth";
 const char kPartitionAttribute[] = "partition";
 const char kReloadMethod[] = "reload";
 const char kRemoveEventListener[] = "removeEventListener";
@@ -65,6 +70,26 @@ bool IdentifierIsPartitionAttribute(NPIdentifier identifier) {
 
 bool IdentifierIsSrcAttribute(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kSrcAttribute) == identifier;
+}
+
+bool IdentifierIsMaxHeightAttribute(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kMaxHeightAttribute) == identifier;
+}
+
+bool IdentifierIsMaxWidthAttribute(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kMaxWidthAttribute) == identifier;
+}
+
+bool IdentifierIsMinHeightAttribute(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kMinHeightAttribute) == identifier;
+}
+
+bool IdentifierIsMinWidthAttribute(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kMinWidthAttribute) == identifier;
+}
+
+bool IdentifierIsAutoSizeAttribute(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kAutoSizeAttribute) == identifier;
 }
 
 int Int32FromNPVariant(const NPVariant& variant) {
@@ -145,7 +170,12 @@ bool BrowserPluginBindingsInvokeDefault(NPObject* np_obj,
 bool BrowserPluginBindingsHasProperty(NPObject* np_obj, NPIdentifier name) {
   return IdentifierIsSrcAttribute(name) ||
       IdentifierIsContentWindow(name) ||
-      IdentifierIsPartitionAttribute(name);
+      IdentifierIsPartitionAttribute(name) ||
+      IdentifierIsAutoSizeAttribute(name) ||
+      IdentifierIsMaxHeightAttribute(name) ||
+      IdentifierIsMaxWidthAttribute(name) ||
+      IdentifierIsMinHeightAttribute(name) ||
+      IdentifierIsMinWidthAttribute(name);
 }
 
 bool BrowserPluginBindingsGetProperty(NPObject* np_obj, NPIdentifier name,
@@ -163,7 +193,7 @@ bool BrowserPluginBindingsGetProperty(NPObject* np_obj, NPIdentifier name,
     return false;
 
   if (IdentifierIsSrcAttribute(name)) {
-    std::string src = bindings->instance()->GetSrcAttribute();
+    std::string src = bindings->instance()->src_attribute();
     return StringToNPVariant(src, result);
   }
 
@@ -173,6 +203,36 @@ bool BrowserPluginBindingsGetProperty(NPObject* np_obj, NPIdentifier name,
       result->type = NPVariantType_Object;
       result->value.objectValue = WebBindings::retainObject(obj);
     }
+    return true;
+  }
+
+  if (IdentifierIsAutoSizeAttribute(name)) {
+    bool autosize = bindings->instance()->auto_size_attribute();
+    BOOLEAN_TO_NPVARIANT(autosize, *result);
+    return true;
+  }
+
+  if (IdentifierIsMaxHeightAttribute(name)) {
+    int max_height = bindings->instance()->max_height_attribute();
+    INT32_TO_NPVARIANT(max_height, *result);
+    return true;
+  }
+
+  if (IdentifierIsMaxWidthAttribute(name)) {
+    int max_width = bindings->instance()->max_width_attribute();
+    INT32_TO_NPVARIANT(max_width, *result);
+    return true;
+  }
+
+  if (IdentifierIsMinHeightAttribute(name)) {
+    int min_height = bindings->instance()->min_height_attribute();
+    INT32_TO_NPVARIANT(min_height, *result);
+    return true;
+  }
+
+  if (IdentifierIsMinWidthAttribute(name)) {
+    int min_width = bindings->instance()->min_width_attribute();
+    INT32_TO_NPVARIANT(min_width, *result);
     return true;
   }
 
@@ -212,6 +272,36 @@ bool BrowserPluginBindingsSetProperty(NPObject* np_obj, NPIdentifier name,
           np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
       return false;
     }
+    return true;
+  }
+
+  if (IdentifierIsAutoSizeAttribute(name)) {
+    bool autosize = NPVARIANT_TO_BOOLEAN(*variant);
+    bindings->instance()->SetAutoSizeAttribute(autosize);
+    return true;
+  }
+
+  if (IdentifierIsMaxHeightAttribute(name)) {
+    int max_height = Int32FromNPVariant(*variant);
+    bindings->instance()->SetMaxHeightAttribute(max_height);
+    return true;
+  }
+
+  if (IdentifierIsMaxWidthAttribute(name)) {
+    int max_width = Int32FromNPVariant(*variant);
+    bindings->instance()->SetMaxWidthAttribute(max_width);
+    return true;
+  }
+
+  if (IdentifierIsMinHeightAttribute(name)) {
+    int min_height = Int32FromNPVariant(*variant);
+    bindings->instance()->SetMinHeightAttribute(min_height);
+    return true;
+  }
+
+  if (IdentifierIsMinWidthAttribute(name)) {
+    int min_width = Int32FromNPVariant(*variant);
+    bindings->instance()->SetMinWidthAttribute(min_width);
     return true;
   }
 

@@ -31,6 +31,7 @@
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webdropdata.h"
 
+struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 
 namespace WebKit {
@@ -69,10 +70,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Creates a new guest.
   void CreateGuest(RenderViewHost* render_view_host,
                    int instance_id,
-                   std::string storage_partition_id,
-                   bool persist_storage,
-                   bool focused,
-                   bool visible);
+                   const BrowserPluginHostMsg_CreateGuest_Params& params);
 
   // Navigates in a guest (new or existing).
   void NavigateGuest(

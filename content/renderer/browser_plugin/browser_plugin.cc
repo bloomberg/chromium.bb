@@ -90,6 +90,11 @@ BrowserPlugin::BrowserPlugin(
       guest_crashed_(false),
       resize_pending_(false),
       navigate_src_sent_(false),
+      auto_size_(false),
+      max_height_(0),
+      max_width_(0),
+      min_height_(0),
+      min_width_(0),
       process_id_(-1),
       persist_storage_(false),
       content_window_routing_id_(MSG_ROUTING_NONE),
@@ -121,10 +126,6 @@ void BrowserPlugin::Cleanup() {
     FreeDamageBuffer();
 }
 
-std::string BrowserPlugin::GetSrcAttribute() const {
-  return src_;
-}
-
 void BrowserPlugin::SetSrcAttribute(const std::string& src) {
   if (src.empty() || (src == src_ && !guest_crashed_))
     return;
@@ -133,14 +134,17 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
   // after creation. If |src| is empty, we can delay the creation until we
   // acutally need it.
   if (!navigate_src_sent_) {
+    BrowserPluginHostMsg_CreateGuest_Params params;
+    params.storage_partition_id = storage_partition_id_;
+    params.persist_storage = persist_storage_;
+    params.focused = focused_;
+    params.visible = visible_;
+    PopulateAutoSizeParameters(&params.auto_size);
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_CreateGuest(
             render_view_routing_id_,
             instance_id_,
-            storage_partition_id_,
-            persist_storage_,
-            focused_,
-            visible_));
+            params));
   }
 
   scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> params(
@@ -158,6 +162,69 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
   // so this value is used for enforcing this.
   navigate_src_sent_ = true;
   src_ = src;
+}
+
+void BrowserPlugin::SetAutoSizeAttribute(bool auto_size) {
+  if (auto_size_ == auto_size)
+    return;
+  auto_size_ = auto_size;
+  UpdateGuestAutoSizeState();
+}
+
+void BrowserPlugin::PopulateAutoSizeParameters(
+    BrowserPluginHostMsg_AutoSize_Params* params) const {
+  params->enable = auto_size_;
+  params->max_height = max_height_;
+  params->max_width = max_width_;
+  params->min_height = min_height_;
+  params->min_width = min_width_;
+}
+
+void BrowserPlugin::UpdateGuestAutoSizeState() const {
+  if (!navigate_src_sent_)
+    return;
+  BrowserPluginHostMsg_AutoSize_Params params;
+  PopulateAutoSizeParameters(&params);
+  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetAutoSize(
+      render_view_routing_id_,
+      instance_id_,
+      params));
+}
+
+void BrowserPlugin::SetMaxHeightAttribute(int max_height) {
+  if (max_height_ == max_height)
+    return;
+  max_height_ = max_height;
+  if (!auto_size_)
+    return;
+  UpdateGuestAutoSizeState();
+}
+
+void BrowserPlugin::SetMaxWidthAttribute(int max_width) {
+  if (max_width_ == max_width)
+    return;
+  max_width_ = max_width;
+  if (!auto_size_)
+    return;
+  UpdateGuestAutoSizeState();
+}
+
+void BrowserPlugin::SetMinHeightAttribute(int min_height) {
+  if (min_height_ == min_height)
+    return;
+  min_height_ = min_height;
+  if (!auto_size_)
+     return;
+  UpdateGuestAutoSizeState();
+}
+
+void BrowserPlugin::SetMinWidthAttribute(int min_width) {
+  if (min_width_ == min_width)
+    return;
+  min_width_ = min_width;
+  if (!auto_size_)
+     return;
+  UpdateGuestAutoSizeState();
 }
 
 NPObject* BrowserPlugin::GetContentWindow() const {
@@ -278,9 +345,6 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
                                  v8::Local<v8::Object>* event) {
   WebKit::WebElement plugin = container()->element();
 
-  // TODO(fsamuel): Copying the event listeners is insufficent because
-  // new persistent handles are not created when the copy constructor is
-  // called. See http://crbug.com/155044.
   const EventListeners& listeners = event_listener_map_[event_name.c_str()];
   // A v8::Local copy of the listeners is created from the v8::Persistent
   // listeners before firing them. This is to ensure that if one of these
@@ -688,8 +752,8 @@ void BrowserPlugin::updateGeometry(
   int old_width = width();
   int old_height = height();
   plugin_rect_ = window_rect;
-  if (old_width == window_rect.width &&
-      old_height == window_rect.height) {
+  if (auto_size_ || (old_width == window_rect.width &&
+                    old_height == window_rect.height)) {
     return;
   }
 

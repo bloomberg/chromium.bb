@@ -39,11 +39,11 @@ namespace {
 const int kGuestHangTimeoutMs = 5000;
 }
 
-BrowserPluginGuest::BrowserPluginGuest(int instance_id,
-                                       WebContentsImpl* web_contents,
-                                       RenderViewHost* render_view_host,
-                                       bool focused,
-                                       bool visible)
+BrowserPluginGuest::BrowserPluginGuest(
+    int instance_id,
+    WebContentsImpl* web_contents,
+    RenderViewHost* render_view_host,
+    const BrowserPluginHostMsg_CreateGuest_Params& params)
     : WebContentsObserver(web_contents),
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
@@ -54,8 +54,13 @@ BrowserPluginGuest::BrowserPluginGuest(int instance_id,
       pending_update_counter_(0),
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kGuestHangTimeoutMs)),
-      focused_(focused),
-      visible_(visible) {
+      focused_(params.focused),
+      visible_(params.visible),
+      auto_size_(params.auto_size.enable),
+      max_height_(params.auto_size.max_height),
+      max_width_(params.auto_size.max_width),
+      min_height_(params.auto_size.min_height),
+      min_width_(params.auto_size.min_width) {
   DCHECK(web_contents);
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, render_view_host);
@@ -73,18 +78,16 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     int instance_id,
     WebContentsImpl* web_contents,
     content::RenderViewHost* render_view_host,
-    bool focused,
-    bool visible) {
+    const BrowserPluginHostMsg_CreateGuest_Params& params) {
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
   if (factory_) {
     return factory_->CreateBrowserPluginGuest(instance_id,
                                               web_contents,
                                               render_view_host,
-                                              focused,
-                                              visible);
+                                              params);
   }
   return new BrowserPluginGuest(
-      instance_id, web_contents, render_view_host, focused, visible);
+      instance_id, web_contents, render_view_host, params);
 }
 
 void BrowserPluginGuest::Observe(int type,

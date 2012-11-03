@@ -29,20 +29,114 @@
 
 IPC_ENUM_TRAITS(WebKit::WebDragStatus)
 
+IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
+  IPC_STRUCT_MEMBER(bool, enable)
+  IPC_STRUCT_MEMBER(int, max_height)
+  IPC_STRUCT_MEMBER(int, max_width)
+  IPC_STRUCT_MEMBER(int, min_height)
+  IPC_STRUCT_MEMBER(int, min_width)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
+  IPC_STRUCT_MEMBER(std::string, storage_partition_id)
+  IPC_STRUCT_MEMBER(bool, persist_storage)
+  IPC_STRUCT_MEMBER(bool, focused)
+  IPC_STRUCT_MEMBER(bool, visible)
+  IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
+  // An identifier to the new buffer to use to transport damage to the embedder
+  // renderer process.
+  IPC_STRUCT_MEMBER(TransportDIB::Id, damage_buffer_id)
+#if defined(OS_MACOSX)
+  // On OSX, a handle to the new buffer is used to map the transport dib since
+  // we don't let browser manage the dib.
+  IPC_STRUCT_MEMBER(TransportDIB::Handle, damage_buffer_handle)
+#endif
+#if defined(OS_WIN)
+  // The size of the damage buffer because this information is not available
+  // on Windows.
+  IPC_STRUCT_MEMBER(int, damage_buffer_size)
+#endif
+  // The new width of the plugin container.
+  IPC_STRUCT_MEMBER(int, width)
+  // The new height of the plugin container.
+  IPC_STRUCT_MEMBER(int, height)
+  // Indicates whether the embedder is currently waiting on a ACK from the
+  // guest for a previous resize request.
+  IPC_STRUCT_MEMBER(bool, resize_pending)
+  // Indicates the scale factor of the embedder WebView.
+  IPC_STRUCT_MEMBER(float, scale_factor)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
+  // The current URL of the guest.
+  IPC_STRUCT_MEMBER(GURL, url)
+  // Indicates whether the navigation was on the top-level frame.
+  IPC_STRUCT_MEMBER(bool, is_top_level)
+  // Chrome's process ID for the guest.
+  IPC_STRUCT_MEMBER(int, process_id)
+  // The index of the current navigation entry after this navigation was
+  // committed.
+  IPC_STRUCT_MEMBER(int, current_entry_index)
+  // The number of navigation entries after this navigation was committed.
+  IPC_STRUCT_MEMBER(int, entry_count)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
+  // The position and size of the bitmap.
+  IPC_STRUCT_MEMBER(gfx::Rect, bitmap_rect)
+
+  // The scroll offset.  Only one of these can be non-zero, and if they are
+  // both zero, then it means there is no scrolling and the scroll_rect is
+  // ignored.
+  IPC_STRUCT_MEMBER(int, dx)
+  IPC_STRUCT_MEMBER(int, dy)
+
+  // The rectangular region to scroll.
+  IPC_STRUCT_MEMBER(gfx::Rect, scroll_rect)
+
+  // The scroll offset of the render view.
+  IPC_STRUCT_MEMBER(gfx::Point, scroll_offset)
+
+  // The regions of the bitmap (in view coords) that contain updated pixels.
+  // In the case of scrolling, this includes the scroll damage rect.
+  IPC_STRUCT_MEMBER(std::vector<gfx::Rect>, copy_rects)
+
+  // The size of the RenderView when this message was generated.  This is
+  // included so the host knows how large the view is from the perspective of
+  // the renderer process.  This is necessary in case a resize operation is in
+  // progress. If auto-resize is enabled, this should update the corresponding
+  // view size.
+  IPC_STRUCT_MEMBER(gfx::Size, view_size)
+
+  // All the above coordinates are in DIP. This is the scale factor needed
+  // to convert them to pixels.
+  IPC_STRUCT_MEMBER(float, scale_factor)
+
+  // Is this UpdateRect an ACK to a resize request?
+  IPC_STRUCT_MEMBER(bool, is_resize_ack)
+IPC_STRUCT_END()
+
 // Browser plugin messages
 
 // -----------------------------------------------------------------------------
 // These messages are from the embedder to the browser process.
 
+// This message is sent to the browser process to enable or disable autosize
+// mode.
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetAutoSize,
+                    int /* instance_id */,
+                    BrowserPluginHostMsg_AutoSize_Params)
+
+
 // This message is sent to the browser process to create the browser plugin
 // embedder and helper. It is sent once prior to sending the first
 // BrowserPluginHostMsg_NavigateGuest message.
-IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_CreateGuest,
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_CreateGuest,
                     int /* instance_id */,
-                    std::string /* storage_partition_id */,
-                    bool /* persist_storage */,
-                    bool /* focused */,
-                    bool /* visible */)
+                    BrowserPluginHostMsg_CreateGuest_Params /* params */)
 
 // Tells the browser process to terminate the guest associated with the
 // browser plugin associated with the provided |instance_id|.
@@ -84,31 +178,6 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_UpdateRect_ACK,
                     int /* instance_id */,
                     int /* message_id */,
                     gfx::Size /* repaint_view_size */)
-
-IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
-  // An identifier to the new buffer to use to transport damage to the embedder
-  // renderer process.
-  IPC_STRUCT_MEMBER(TransportDIB::Id, damage_buffer_id)
-#if defined(OS_MACOSX)
-  // On OSX, a handle to the new buffer is used to map the transport dib since
-  // we don't let browser manage the dib.
-  IPC_STRUCT_MEMBER(TransportDIB::Handle, damage_buffer_handle)
-#endif
-#if defined(OS_WIN)
-  // The size of the damage buffer because this information is not available
-  // on Windows.
-  IPC_STRUCT_MEMBER(int, damage_buffer_size)
-#endif
-  // The new width of the plugin container.
-  IPC_STRUCT_MEMBER(int, width)
-  // The new height of the plugin container.
-  IPC_STRUCT_MEMBER(int, height)
-  // Indicates whether the embedder is currently waiting on a ACK from the
-  // guest for a previous resize request.
-  IPC_STRUCT_MEMBER(bool, resize_pending)
-  // Indicates the scale factor of the embedder WebView.
-  IPC_STRUCT_MEMBER(float, scale_factor)
-IPC_STRUCT_END()
 
 // A BrowserPlugin sends this to BrowserPluginEmbedder (browser process) when it
 // wants to navigate to a given src URL. If a guest WebContents already exists,
@@ -182,20 +251,6 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadRedirect,
                      GURL /* new_url */,
                      bool /* is_top_level */)
 
-IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
-  // The current URL of the guest.
-  IPC_STRUCT_MEMBER(GURL, url)
-  // Indicates whether the navigation was on the top-level frame.
-  IPC_STRUCT_MEMBER(bool, is_top_level)
-  // Chrome's process ID for the guest.
-  IPC_STRUCT_MEMBER(int, process_id)
-  // The index of the current navigation entry after this navigation was
-  // committed.
-  IPC_STRUCT_MEMBER(int, current_entry_index)
-  // The number of navigation entries after this navigation was committed.
-  IPC_STRUCT_MEMBER(int, entry_count)
-IPC_STRUCT_END()
-
 // When the guest commits a navigation, the browser process informs
 // the embedder through the BrowserPluginMsg_DidCommit message.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_LoadCommit,
@@ -213,41 +268,6 @@ IPC_MESSAGE_CONTROL3(BrowserPluginMsg_GuestGone,
                      int /* instance_id */,
                      int /* process_id */,
                      int /* This is really base::TerminationStatus */)
-
-IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
-  // The position and size of the bitmap.
-  IPC_STRUCT_MEMBER(gfx::Rect, bitmap_rect)
-
-  // The scroll offset.  Only one of these can be non-zero, and if they are
-  // both zero, then it means there is no scrolling and the scroll_rect is
-  // ignored.
-  IPC_STRUCT_MEMBER(int, dx)
-  IPC_STRUCT_MEMBER(int, dy)
-
-  // The rectangular region to scroll.
-  IPC_STRUCT_MEMBER(gfx::Rect, scroll_rect)
-
-  // The scroll offset of the render view.
-  IPC_STRUCT_MEMBER(gfx::Vector2d, scroll_offset)
-
-  // The regions of the bitmap (in view coords) that contain updated pixels.
-  // In the case of scrolling, this includes the scroll damage rect.
-  IPC_STRUCT_MEMBER(std::vector<gfx::Rect>, copy_rects)
-
-  // The size of the RenderView when this message was generated.  This is
-  // included so the host knows how large the view is from the perspective of
-  // the renderer process.  This is necessary in case a resize operation is in
-  // progress. If auto-resize is enabled, this should update the corresponding
-  // view size.
-  IPC_STRUCT_MEMBER(gfx::Size, view_size)
-
-  // All the above coordinates are in DIP. This is the scale factor needed
-  // to convert them to pixels.
-  IPC_STRUCT_MEMBER(float, scale_factor)
-
-  // Is this UpdateRect an ACK to a resize request?
-  IPC_STRUCT_MEMBER(bool, is_resize_ack)
-IPC_STRUCT_END()
 
 // When the user tabs to the end of the tab stops of a guest, the browser
 // process informs the embedder to tab out of the browser plugin.

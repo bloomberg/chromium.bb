@@ -22,6 +22,7 @@ class Point;
 class Size;
 }
 
+struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct WebDropData;
 
@@ -56,10 +57,7 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
  private:
   // Message handlers.
   void OnCreateGuest(int instance_id,
-                     const std::string& storage_partition_id,
-                     bool persist_storage,
-                     bool focused,
-                     bool visible);
+                     const BrowserPluginHostMsg_CreateGuest_Params& params);
   void OnNavigateGuest(int instance_id,
                        const std::string& src,
                        const BrowserPluginHostMsg_ResizeGuest_Params& params);

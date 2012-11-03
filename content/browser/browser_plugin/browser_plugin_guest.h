@@ -43,6 +43,7 @@
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 
+struct BrowserPluginHostMsg_CreateGuest_Params;
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
 struct WebDropData;
@@ -68,11 +69,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
  public:
   virtual ~BrowserPluginGuest();
 
-  static BrowserPluginGuest* Create(int instance_id,
-                                    WebContentsImpl* web_contents,
-                                    content::RenderViewHost* render_view_host,
-                                    bool focused,
-                                    bool visible);
+  static BrowserPluginGuest* Create(
+      int instance_id,
+      WebContentsImpl* web_contents,
+      content::RenderViewHost* render_view_host,
+      const BrowserPluginHostMsg_CreateGuest_Params& params);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
@@ -219,8 +220,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   BrowserPluginGuest(int instance_id,
                      WebContentsImpl* web_contents,
                      RenderViewHost* render_view_host,
-                     bool focused,
-                     bool visible);
+                     const BrowserPluginHostMsg_CreateGuest_Params& params);
 
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
@@ -262,6 +262,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   base::TimeDelta guest_hang_timeout_;
   bool focused_;
   bool visible_;
+  bool auto_size_;
+  int max_height_;
+  int max_width_;
+  int min_height_;
+  int min_width_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

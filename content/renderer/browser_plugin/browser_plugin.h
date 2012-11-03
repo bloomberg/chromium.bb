@@ -19,6 +19,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
 
+struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct BrowserPluginMsg_LoadCommit_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
@@ -34,14 +35,34 @@ class CONTENT_EXPORT BrowserPlugin :
   // Called only by tests to clean up before we blow away the MockRenderProcess.
   void Cleanup();
 
-  // Get the src attribute value of the BrowserPlugin instance if the guest
-  // has not crashed.
-  std::string GetSrcAttribute() const;
-  // Set the src attribute value of the BrowserPlugin instance and reset
-  // the guest_crashed_ flag.
+  // Get the src attribute value of the BrowserPlugin instance.
+  std::string src_attribute() const { return src_; }
+  // Set the src attribute value of the BrowserPlugin instance.
   void SetSrcAttribute(const std::string& src);
+  // Get the autosize attribute value.
+  bool auto_size_attribute() const { return auto_size_; }
+  // Sets the autosize attribute value.
+  void SetAutoSizeAttribute(bool auto_size);
+  // Get the maxheight attribute value.
+  int max_height_attribute() const { return max_height_; }
+  // Set the maxheight attribute value.
+  void SetMaxHeightAttribute(int maxheight);
+  // Get the maxwidth attribute value.
+  int max_width_attribute() const { return max_width_; }
+  // Set the maxwidth attribute value.
+  void SetMaxWidthAttribute(int max_width);
+  // Get the minheight attribute value.
+  int min_height_attribute() const { return min_height_; }
+  // Set the minheight attribute value.
+  void SetMinHeightAttribute(int minheight);
+  // Get the minwidth attribute value.
+  int min_width_attribute() const { return min_width_; }
+  // Set the minwidth attribute value.
+  void SetMinWidthAttribute(int minwidth);
+
   // Get the guest's DOMWindow proxy.
   NPObject* GetContentWindow() const;
+
   // Returns Chrome's process ID for the current guest.
   int process_id() const { return process_id_; }
   // The partition identifier string is stored as UTF-8.
@@ -206,6 +227,12 @@ class CONTENT_EXPORT BrowserPlugin :
   // Frees up the damage buffer. Overridden in tests.
   virtual void FreeDamageBuffer();
 
+  // Populates BrowserPluginHostMsg_AutoSize_Params object with autosize state.
+  void PopulateAutoSizeParameters(
+      BrowserPluginHostMsg_AutoSize_Params* params) const;
+  // Informs the guest of an updated autosize state.
+  void UpdateGuestAutoSizeState() const;
+
   int instance_id_;
   base::WeakPtr<RenderViewImpl> render_view_;
   // We cache the |render_view_|'s routing ID because we need it on destruction.
@@ -225,6 +252,11 @@ class CONTENT_EXPORT BrowserPlugin :
   // True if we have ever sent a NavigateGuest message to the embedder.
   bool navigate_src_sent_;
   std::string src_;
+  bool auto_size_;
+  int max_height_;
+  int max_width_;
+  int min_height_;
+  int min_width_;
   int process_id_;
   std::string storage_partition_id_;
   bool persist_storage_;
