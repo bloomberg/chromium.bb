@@ -172,6 +172,8 @@ class WebMediaPlayerAndroid
   WebMediaPlayerManagerAndroid* manager() const { return manager_; }
 
  private:
+  void ReallocateVideoFrame();
+
   WebKit::WebMediaPlayerClient* const client_;
 
   // Save the list of buffered time ranges.

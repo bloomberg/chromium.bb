@@ -32,7 +32,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     StreamTextureFactory* factory)
     : client_(client),
       buffered_(1u),
-      video_frame_(new WebVideoFrameImpl(VideoFrame::CreateEmptyFrame())),
       main_loop_(MessageLoop::current()),
       pending_seek_(0),
       seeking_(false),
@@ -50,6 +49,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   if (stream_texture_factory_.get()) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
     stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
+    ReallocateVideoFrame();
   }
 }
 
@@ -328,13 +328,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
 
   natural_size_.width = width;
   natural_size_.height = height;
-  if (texture_id_) {
-    video_frame_.reset(new WebVideoFrameImpl(VideoFrame::WrapNativeTexture(
-        texture_id_, kGLTextureExternalOES, natural_size_, natural_size_,
-        base::TimeDelta(),
-        VideoFrame::ReadPixelsCB(),
-        base::Closure())));
-  }
+  ReallocateVideoFrame();
 }
 
 void WebMediaPlayerAndroid::UpdateNetworkState(
@@ -370,13 +364,23 @@ void WebMediaPlayerAndroid::WillDestroyCurrentMessageLoop() {
     stream_id_ = 0;
   }
 
-  video_frame_.reset(new WebVideoFrameImpl(VideoFrame::CreateEmptyFrame()));
+  video_frame_.reset();
 
   if (manager_)
     manager_->UnregisterMediaPlayer(player_id_);
 
   manager_ = NULL;
   main_loop_ = NULL;
+}
+
+void WebMediaPlayerAndroid::ReallocateVideoFrame() {
+  if (texture_id_) {
+    video_frame_.reset(new WebVideoFrameImpl(VideoFrame::WrapNativeTexture(
+        texture_id_, kGLTextureExternalOES, natural_size_, natural_size_,
+        base::TimeDelta(),
+        VideoFrame::ReadPixelsCB(),
+        base::Closure())));
+  }
 }
 
 WebVideoFrame* WebMediaPlayerAndroid::getCurrentFrame() {
