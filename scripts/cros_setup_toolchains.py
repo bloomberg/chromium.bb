@@ -129,7 +129,7 @@ def GetCrossdevConf(target):
               print_cmd=False, redirect_stdout=True).output.splitlines()
     # List of tuples split at the first '=', converted into dict.
     val[target] = dict([x.split('=', 1) for x in out])
-    setattr(VAR_CACHE, CACHE_ATTR, {})
+    setattr(VAR_CACHE, CACHE_ATTR, val)
   return val[target]
 
 
@@ -517,7 +517,7 @@ def UpdateTargets(targets, usepkg):
 
   if not packages:
     print 'Nothing to update!'
-    return
+    return False
 
   print 'Updating packages:'
   print packages
@@ -528,6 +528,7 @@ def UpdateTargets(targets, usepkg):
 
   cmd.extend(packages)
   cros_build_lib.RunCommand(cmd)
+  return True
 
 
 def CleanTargets(targets):
@@ -651,11 +652,11 @@ def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
   targets['host'] = {}
 
   # Now update all packages.
-  UpdateTargets(targets, usepkg)
-  SelectActiveToolchains(targets, CONFIG_TARGET_SUFFIXES)
+  if UpdateTargets(targets, usepkg):
+    SelectActiveToolchains(targets, CONFIG_TARGET_SUFFIXES)
 
-  if deleteold:
-    CleanTargets(targets)
+    if deleteold:
+      CleanTargets(targets)
 
 
 def main(argv):
