@@ -488,6 +488,7 @@ class PrintWebViewHelper
     State state_;
   };
 
+  bool print_node_in_progress_;
   PrintPreviewContext print_preview_context_;
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
 };

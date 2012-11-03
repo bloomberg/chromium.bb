@@ -713,7 +713,8 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
       user_cancelled_scripted_print_count_(0),
       is_scripted_printing_blocked_(false),
       notify_browser_of_print_failure_(true),
-      print_for_preview_(false) {
+      print_for_preview_(false),
+      print_node_in_progress_(false) {
 }
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
@@ -1124,6 +1125,15 @@ void PrintWebViewHelper::PrintNode(const WebKit::WebNode& node) {
     return;
   }
 
+  if (print_node_in_progress_) {
+    // This can happen as a result of processing sync messages when printing
+    // from ppapi plugins. It's a rare case, so its OK to just fail here.
+    // See http://crbug.com/159165.
+    return;
+  }
+
+  print_node_in_progress_ = true;
+
   // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
   // its |context_menu_node_|.
   if (is_preview_enabled_) {
@@ -1133,6 +1143,8 @@ void PrintWebViewHelper::PrintNode(const WebKit::WebNode& node) {
     WebKit::WebNode duplicate_node(node);
     Print(duplicate_node.document().frame(), duplicate_node);
   }
+
+  print_node_in_progress_ = false;
 }
 
 void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
