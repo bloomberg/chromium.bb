@@ -443,8 +443,9 @@ TEST_P(ResourceProviderTest, TransferResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
         resourceIdsToTransfer.push_back(id2);
-        ResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
-        EXPECT_NE(0u, list.syncPoint);
+        TransferableResourceList list;
+        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        EXPECT_NE(0u, list.sync_point);
         EXPECT_EQ(2u, list.resources.size());
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id1));
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id2));
@@ -473,8 +474,9 @@ TEST_P(ResourceProviderTest, TransferResources)
         // parent is a noop.
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
-        ResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
-        EXPECT_EQ(0u, list.syncPoint);
+        TransferableResourceList list;
+        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        EXPECT_EQ(0u, list.sync_point);
         EXPECT_EQ(0u, list.resources.size());
     }
 
@@ -483,8 +485,9 @@ TEST_P(ResourceProviderTest, TransferResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(mappedId1);
         resourceIdsToTransfer.push_back(mappedId2);
-        ResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
-        EXPECT_NE(0u, list.syncPoint);
+        TransferableResourceList list;
+        m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer, &list);
+        EXPECT_NE(0u, list.sync_point);
         EXPECT_EQ(2u, list.resources.size());
         childResourceProvider->receiveFromParent(list);
     }
@@ -514,8 +517,9 @@ TEST_P(ResourceProviderTest, TransferResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
         resourceIdsToTransfer.push_back(id2);
-        ResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
-        EXPECT_NE(0u, list.syncPoint);
+        TransferableResourceList list;
+        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        EXPECT_NE(0u, list.sync_point);
         EXPECT_EQ(2u, list.resources.size());
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id1));
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id2));
@@ -555,8 +559,9 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
         // Transfer some resource to the parent.
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id);
-        ResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
-        EXPECT_NE(0u, list.syncPoint);
+        TransferableResourceList list;
+        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        EXPECT_NE(0u, list.sync_point);
         EXPECT_EQ(1u, list.resources.size());
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id));
         m_resourceProvider->receiveFromChild(childId, list);
@@ -573,8 +578,9 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
         EXPECT_NE(0u, mappedId);
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(mappedId);
-        ResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
-        EXPECT_NE(0u, list.syncPoint);
+        TransferableResourceList list;
+        m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer, &list);
+        EXPECT_NE(0u, list.sync_point);
         EXPECT_EQ(1u, list.resources.size());
         childResourceProvider->receiveFromParent(list);
     }

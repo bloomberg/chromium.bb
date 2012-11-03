@@ -16,6 +16,7 @@
 #include "cc/gl_renderer.h" // For the GLC() macro.
 #include "cc/proxy.h"
 #include "cc/texture_uploader.h"
+#include "cc/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"
@@ -56,14 +57,6 @@ static GLenum textureToStorageFormat(GLenum textureFormat)
 static bool isTextureFormatSupportedForStorage(GLenum format)
 {
     return (format == GL_RGBA || format == GL_BGRA_EXT);
-}
-
-ResourceProvider::TransferableResourceList::TransferableResourceList()
-{
-}
-
-ResourceProvider::TransferableResourceList::~TransferableResourceList()
-{
 }
 
 ResourceProvider::Resource::Resource()
@@ -548,37 +541,36 @@ const ResourceProvider::ResourceIdMap& ResourceProvider::getChildToParentMap(int
     return it->second.childToParentMap;
 }
 
-ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToParent(const ResourceIdArray& resources)
+void ResourceProvider::prepareSendToParent(const ResourceIdArray& resources, TransferableResourceList* list)
 {
     DCHECK(Proxy::isImplThread());
-    TransferableResourceList list;
-    list.syncPoint = 0;
+    list->sync_point = 0;
+    list->resources.clear();
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent()) {
         // FIXME: Implement this path for software compositing.
-        return list;
+        return;
     }
     for (ResourceIdArray::const_iterator it = resources.begin(); it != resources.end(); ++it) {
         TransferableResource resource;
         if (transferResource(context3d, *it, &resource)) {
             m_resources.find(*it)->second.exported = true;
-            list.resources.push_back(resource);
+            list->resources.push_back(resource);
         }
     }
-    if (list.resources.size())
-        list.syncPoint = context3d->insertSyncPoint();
-    return list;
+    if (list->resources.size())
+        list->sync_point = context3d->insertSyncPoint();
 }
 
-ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToChild(int child, const ResourceIdArray& resources)
+void ResourceProvider::prepareSendToChild(int child, const ResourceIdArray& resources, TransferableResourceList* list)
 {
     DCHECK(Proxy::isImplThread());
-    TransferableResourceList list;
-    list.syncPoint = 0;
+    list->sync_point = 0;
+    list->resources.clear();
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent()) {
         // FIXME: Implement this path for software compositing.
-        return list;
+        return;
     }
     Child& childInfo = m_children.find(child)->second;
     for (ResourceIdArray::const_iterator it = resources.begin(); it != resources.end(); ++it) {
@@ -589,12 +581,11 @@ ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToChild(
         resource.id = childInfo.parentToChildMap[*it];
         childInfo.parentToChildMap.erase(*it);
         childInfo.childToParentMap.erase(resource.id);
-        list.resources.push_back(resource);
+        list->resources.push_back(resource);
         deleteResource(*it);
     }
-    if (list.resources.size())
-        list.syncPoint = context3d->insertSyncPoint();
-    return list;
+    if (list->resources.size())
+        list->sync_point = context3d->insertSyncPoint();
 }
 
 void ResourceProvider::receiveFromChild(int child, const TransferableResourceList& resources)
@@ -605,14 +596,14 @@ void ResourceProvider::receiveFromChild(int child, const TransferableResourceLis
         // FIXME: Implement this path for software compositing.
         return;
     }
-    if (resources.syncPoint) {
+    if (resources.sync_point) {
         // NOTE: If the parent is a browser and the child a renderer, the parent
         // is not supposed to have its context wait, because that could induce
         // deadlocks and/or security issues. The caller is responsible for
-        // waiting asynchronously, and resetting syncPoint before calling this.
+        // waiting asynchronously, and resetting sync_point before calling this.
         // However if the parent is a renderer (e.g. browser tag), it may be ok
         // (and is simpler) to wait.
-        GLC(context3d, context3d->waitSyncPoint(resources.syncPoint));
+        GLC(context3d, context3d->waitSyncPoint(resources.sync_point));
     }
     Child& childInfo = m_children.find(child)->second;
     for (TransferableResourceArray::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
@@ -637,8 +628,8 @@ void ResourceProvider::receiveFromParent(const TransferableResourceList& resourc
         // FIXME: Implement this path for software compositing.
         return;
     }
-    if (resources.syncPoint)
-        GLC(context3d, context3d->waitSyncPoint(resources.syncPoint));
+    if (resources.sync_point)
+        GLC(context3d, context3d->waitSyncPoint(resources.sync_point));
     for (TransferableResourceArray::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
         ResourceMap::iterator mapIterator = m_resources.find(it->id);
         DCHECK(mapIterator != m_resources.end());
@@ -667,7 +658,7 @@ bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceI
     resource->id = id;
     resource->format = source->format;
     resource->size = source->size;
-    if (m_mailboxes.size()) {
+    if (!m_mailboxes.empty()) {
         resource->mailbox = m_mailboxes.front();
         m_mailboxes.pop_front();
     }

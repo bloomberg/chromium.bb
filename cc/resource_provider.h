@@ -11,6 +11,7 @@
 #include "cc/cc_export.h"
 #include "cc/graphics_context.h"
 #include "cc/texture_copier.h"
+#include "cc/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -42,23 +43,6 @@ public:
     enum ResourceType {
         GLTexture = 1,
         Bitmap,
-    };
-    struct Mailbox {
-        GLbyte name[64];
-    };
-    struct TransferableResource {
-        unsigned id;
-        GLenum format;
-        gfx::Size size;
-        Mailbox mailbox;
-    };
-    typedef std::vector<TransferableResource> TransferableResourceArray;
-    struct CC_EXPORT TransferableResourceList {
-        TransferableResourceList();
-        ~TransferableResourceList();
-
-        TransferableResourceArray resources;
-        unsigned syncPoint;
     };
 
     static scoped_ptr<ResourceProvider> create(GraphicsContext*);
@@ -122,16 +106,16 @@ public:
 
     // Prepares resources to be transfered to the parent, moving them to
     // mailboxes and serializing meta-data into TransferableResources.
-    // Resources are not removed from the ResourceProvider, but are markes as
+    // Resources are not removed from the ResourceProvider, but are marked as
     // "in use".
-    TransferableResourceList prepareSendToParent(const ResourceIdArray&);
+    void prepareSendToParent(const ResourceIdArray&, TransferableResourceList*);
 
     // Prepares resources to be transfered back to the child, moving them to
     // mailboxes and serializing meta-data into TransferableResources.
     // Resources are removed from the ResourceProvider. Note: the resource IDs
     // passed are in the parent namespace and will be translated to the child
     // namespace when returned.
-    TransferableResourceList prepareSendToChild(int child, const ResourceIdArray&);
+    void prepareSendToChild(int child, const ResourceIdArray&, TransferableResourceList*);
 
     // Receives resources from a child, moving them from mailboxes. Resource IDs
     // passed are in the child namespace, and will be translated to the parent

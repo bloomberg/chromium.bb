@@ -218,6 +218,8 @@
       'time_source.h',
       'timing_function.cc',
       'timing_function.h',
+      'transferable_resource.cc',
+      'transferable_resource.h',
       'tree_synchronizer.cc',
       'tree_synchronizer.h',
       'video_layer.cc',
