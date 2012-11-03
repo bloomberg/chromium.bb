@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "ui/gfx/insets_f.h"
 #include "ui/gfx/rect_base_impl.h"
+#include "ui/gfx/safe_integer_conversions.h"
 
 namespace gfx {
 
@@ -38,6 +39,12 @@ RectF::RectF(const gfx::PointF& origin, const gfx::SizeF& size)
 }
 
 RectF::~RectF() {}
+
+bool RectF::IsExpressibleAsRect() const {
+  return IsExpressibleAsInt(x()) && IsExpressibleAsInt(y()) &&
+      IsExpressibleAsInt(width()) && IsExpressibleAsInt(height()) &&
+      IsExpressibleAsInt(right()) && IsExpressibleAsInt(bottom());
+}
 
 std::string RectF::ToString() const {
   return base::StringPrintf("%s %s",

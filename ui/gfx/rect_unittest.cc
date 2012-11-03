@@ -670,4 +670,34 @@ TEST(RectTest, BoundingRect) {
   }
 }
 
+TEST(RectTest, IsExpressibleAsRect) {
+  EXPECT_TRUE(gfx::RectF().IsExpressibleAsRect());
+
+  float min = std::numeric_limits<int>::min();
+  float max = std::numeric_limits<int>::max();
+  float infinity = std::numeric_limits<float>::infinity();
+
+  EXPECT_TRUE(gfx::RectF(
+      min + 200, min + 200, max - 200, max - 200).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(
+      min - 200, min + 200, max + 200, max + 200).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(
+      min + 200 , min - 200, max + 200, max + 200).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(
+      min + 200, min + 200, max + 200, max - 200).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(
+      min + 200, min + 200, max - 200, max + 200).IsExpressibleAsRect());
+
+  EXPECT_TRUE(gfx::RectF(0, 0, max - 200, max - 200).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(200, 0, max + 200, max - 200).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(0, 200, max - 200, max + 200).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(0, 0, max + 200, max - 200).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(0, 0, max - 200, max + 200).IsExpressibleAsRect());
+
+  EXPECT_FALSE(gfx::RectF(infinity, 0, 1, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(0, infinity, 1, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(0, 0, infinity, 1).IsExpressibleAsRect());
+  EXPECT_FALSE(gfx::RectF(0, 0, 1, infinity).IsExpressibleAsRect());
+}
+
 }  // namespace gfx
