@@ -206,7 +206,6 @@
       'thread_impl.h',
       'thread_proxy.cc',
       'thread_proxy.h',
-      'threaded_test.h',
       'tile_draw_quad.cc',
       'tile_draw_quad.h',
       'tiled_layer.cc',
