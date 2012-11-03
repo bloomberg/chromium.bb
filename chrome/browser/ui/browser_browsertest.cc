@@ -1360,12 +1360,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
 
   WebContents* contents = chrome::GetActiveWebContents(browser());
-  TestInterstitialPage* interstitial = new TestInterstitialPage(
-      contents, false, GURL());
 
   content::WindowedNotificationObserver interstitial_observer(
       content::NOTIFICATION_INTERSTITIAL_ATTACHED,
       content::Source<WebContents>(contents));
+  TestInterstitialPage* interstitial = new TestInterstitialPage(
+      contents, false, GURL());
   interstitial_observer.Wait();
 
   EXPECT_TRUE(contents->ShowingInterstitialPage());
@@ -1386,6 +1386,26 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCloseTab) {
+  WebContents* contents = chrome::GetActiveWebContents(browser());
+
+  content::WindowedNotificationObserver interstitial_observer(
+      content::NOTIFICATION_INTERSTITIAL_ATTACHED,
+      content::Source<WebContents>(contents));
+  // Interstitial will delete itself when we close the tab.
+  new TestInterstitialPage(contents, false, GURL());
+  interstitial_observer.Wait();
+
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
+
+  content::WindowedNotificationObserver interstitial_detach_observer(
+      content::NOTIFICATION_INTERSTITIAL_DETACHED,
+      content::Source<WebContents>(contents));
+  chrome::CloseTab(browser());
+  interstitial_detach_observer.Wait();
+  // interstitial is deleted now.
 }
 
 class MockWebContentsObserver : public WebContentsObserver {

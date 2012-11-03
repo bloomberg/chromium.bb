@@ -303,6 +303,11 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   AckPendingSwapBuffers();
   UnlockMouse();
+  // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
+  // RenderWidgetHost does we need to tell it not to hold a stale pointer to
+  // us.
+  if (render_widget_host_)
+    render_widget_host_->SetView(NULL);
 }
 
 void RenderWidgetHostViewMac::SetDelegate(

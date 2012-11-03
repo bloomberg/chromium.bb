@@ -24,6 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "googleurl/src/url_util.h"
@@ -1099,7 +1100,6 @@ TEST_F(WebContentsImplTest,
 
   // Now don't proceed.
   interstitial->DontProceed();
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
@@ -1107,6 +1107,9 @@ TEST_F(WebContentsImplTest,
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page (with the navigation initiated from the renderer,
@@ -1144,7 +1147,6 @@ TEST_F(WebContentsImplTest,
 
   // Now don't proceed.
   interstitial->DontProceed();
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
@@ -1152,6 +1154,9 @@ TEST_F(WebContentsImplTest,
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page that shows an interstitial without creating a new
@@ -1188,7 +1193,6 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
 
   // Now don't proceed.
   interstitial->DontProceed();
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
@@ -1196,6 +1200,9 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page (with the navigation initiated from the browser,
@@ -1237,6 +1244,7 @@ TEST_F(WebContentsImplTest,
   // Then proceed.
   interstitial->Proceed();
   // The interstitial should show until the new navigation commits.
+  RunAllPendingInMessageLoop();
   ASSERT_FALSE(deleted);
   EXPECT_EQ(TestInterstitialPage::OKED, state);
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
@@ -1247,7 +1255,6 @@ TEST_F(WebContentsImplTest,
   GURL url3("http://www.thepage.com");
   test_rvh()->SendNavigate(2, url3);
 
-  EXPECT_TRUE(deleted);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   entry = controller().GetActiveEntry();
@@ -1255,6 +1262,9 @@ TEST_F(WebContentsImplTest,
   EXPECT_TRUE(entry->GetURL() == url3);
 
   EXPECT_EQ(2, controller().GetEntryCount());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page (with the navigation initiated from the renderer,
@@ -1292,6 +1302,7 @@ TEST_F(WebContentsImplTest,
   // Then proceed.
   interstitial->Proceed();
   // The interstitial should show until the new navigation commits.
+  RunAllPendingInMessageLoop();
   ASSERT_FALSE(deleted);
   EXPECT_EQ(TestInterstitialPage::OKED, state);
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
@@ -1302,7 +1313,6 @@ TEST_F(WebContentsImplTest,
   GURL url3("http://www.thepage.com");
   test_rvh()->SendNavigate(2, url3);
 
-  EXPECT_TRUE(deleted);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   entry = controller().GetActiveEntry();
@@ -1310,6 +1320,9 @@ TEST_F(WebContentsImplTest,
   EXPECT_TRUE(entry->GetURL() == url3);
 
   EXPECT_EQ(2, controller().GetEntryCount());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page that shows an interstitial without creating a new
@@ -1348,7 +1361,6 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
   interstitial->Proceed();
   // Since this is not a new navigation, the previous page is dismissed right
   // away and shows the original page.
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::OKED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
@@ -1357,6 +1369,9 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
   EXPECT_TRUE(entry->GetURL() == url1);
 
   EXPECT_EQ(1, controller().GetEntryCount());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page that shows an interstitial, then navigating away.
@@ -1376,8 +1391,10 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenNavigate) {
   const GURL url2("http://www.yahoo.com");
   test_rvh()->SendNavigate(1, url2);
 
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page that shows an interstitial, then going back.
@@ -1405,11 +1422,13 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenGoBack) {
 
   // Make sure we are back to the original page and that the interstitial is
   // gone.
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url1.spec(), entry->GetURL().spec());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page that shows an interstitial, has a renderer crash,
@@ -1443,11 +1462,13 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
 
   // Make sure we are back to the original page and that the interstitial is
   // gone.
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url1.spec(), entry->GetURL().spec());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test navigating to a page that shows an interstitial, has the renderer crash,
@@ -1493,8 +1514,10 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseTab) {
 
   // Now close the contents.
   DeleteContents();
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test that after Proceed is called and an interstitial is still shown, no more
@@ -1523,6 +1546,7 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedMultipleCommands) {
 
   // Then proceed.
   interstitial->Proceed();
+  RunAllPendingInMessageLoop();
   ASSERT_FALSE(deleted);
 
   // While the navigation to the new page is pending, send other commands, they
@@ -1562,23 +1586,26 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
   interstitial2->TestDidNavigate(1, url2);
 
   // Showing interstitial2 should have caused interstitial1 to go away.
-  EXPECT_TRUE(deleted1);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state1);
+  EXPECT_EQ(TestInterstitialPage::UNDECIDED, state2);
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted1);
+  ASSERT_FALSE(deleted2);
 
   // Let's make sure interstitial2 is working as intended.
-  ASSERT_FALSE(deleted2);
-  EXPECT_EQ(TestInterstitialPage::UNDECIDED, state2);
   interstitial2->Proceed();
   GURL landing_url("http://www.thepage.com");
   test_rvh()->SendNavigate(2, landing_url);
 
-  EXPECT_TRUE(deleted2);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
   NavigationEntry* entry = controller().GetActiveEntry();
   ASSERT_TRUE(entry != NULL);
   EXPECT_TRUE(entry->GetURL() == landing_url);
   EXPECT_EQ(2, controller().GetEntryCount());
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted2);
 }
 
 // Test showing an interstitial, proceeding and then navigating to another
@@ -1618,15 +1645,17 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
   interstitial2->TestDidNavigate(1, url2);
 
   // Showing interstitial2 should have caused interstitial1 to go away.
+  EXPECT_EQ(TestInterstitialPage::UNDECIDED, state2);
+  RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted1);
+  ASSERT_FALSE(deleted2);
 
   // Let's make sure interstitial2 is working as intended.
-  ASSERT_FALSE(deleted2);
-  EXPECT_EQ(TestInterstitialPage::UNDECIDED, state2);
   interstitial2->Proceed();
   GURL landing_url("http://www.thepage.com");
   test_rvh()->SendNavigate(2, landing_url);
 
+  RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted2);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
@@ -1654,15 +1683,18 @@ TEST_F(WebContentsImplTest, NavigateBeforeInterstitialShows) {
   // interstitial finishes loading.
   const GURL url("http://www.google.com");
   controller().LoadURL(url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  ASSERT_FALSE(deleted);
   EXPECT_FALSE(interstitial->is_showing());
+  RunAllPendingInMessageLoop();
+  ASSERT_FALSE(deleted);
 
   // Now let's make the interstitial navigation commit.
   interstitial->TestDidNavigate(1, interstitial_url);
 
   // After it loaded the interstitial should be gone.
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Test that a new request to show an interstitial while an interstitial is
@@ -1692,12 +1724,13 @@ TEST_F(WebContentsImplTest, TwoQuickInterstitials) {
   interstitial2->Show();
 
   // The first interstitial should have been closed and deleted.
-  EXPECT_TRUE(deleted1);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state1);
-
   // The 2nd one should still be OK.
-  ASSERT_FALSE(deleted2);
   EXPECT_EQ(TestInterstitialPage::UNDECIDED, state2);
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted1);
+  ASSERT_FALSE(deleted2);
 
   // Make the interstitial navigation commit it should be showing.
   interstitial2->TestDidNavigate(1, interstitial_url);
@@ -1719,8 +1752,9 @@ TEST_F(WebContentsImplTest, InterstitialCrasher) {
   interstitial->TestRenderViewGone(
       base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   // The interstitial should have been dismissed.
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 
   // Now try again but this time crash the intersitial after it was shown.
   interstitial =
@@ -1731,8 +1765,9 @@ TEST_F(WebContentsImplTest, InterstitialCrasher) {
   interstitial->TestRenderViewGone(
       base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   // The interstitial should have been dismissed.
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
 }
 
 // Tests that showing an interstitial as a result of a browser initiated
@@ -1775,10 +1810,11 @@ TEST_F(WebContentsImplTest, NewInterstitialDoesNotCancelPendingEntry) {
   EXPECT_EQ(kUrl, entry->GetURL().spec());
 
   // And that the first interstitial is gone, but not the second.
-  EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  EXPECT_FALSE(deleted2);
   EXPECT_EQ(TestInterstitialPage::UNDECIDED, state2);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
+  EXPECT_FALSE(deleted2);
 }
 
 // Tests that Javascript messages are not shown while an interstitial is
