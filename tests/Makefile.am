@@ -8,7 +8,8 @@ TESTS =						\
 	map-test				\
 	os-wrappers-test			\
 	sanity-test				\
-	socket-test
+	socket-test				\
+	queue-test
 
 check_PROGRAMS =				\
 	$(TESTS)				\
@@ -28,6 +29,7 @@ list_test_SOURCES = list-test.c $(test_runner_src)
 map_test_SOURCES = map-test.c $(test_runner_src)
 sanity_test_SOURCES = sanity-test.c $(test_runner_src)
 socket_test_SOURCES = socket-test.c $(test_runner_src)
+queue_test_SOURCES = queue-test.c $(test_runner_src)
 
 fixed_benchmark_SOURCES = fixed-benchmark.c
 
