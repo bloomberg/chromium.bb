@@ -31,6 +31,9 @@ static const size_t uploadHistorySizeInitial = 100;
 // More than one thread will not access this variable, so we do not need to synchronize access.
 static const double defaultEstimatedTexturesPerSecond = 48.0 * 60.0;
 
+// Flush interval when performing texture uploads.
+const int textureUploadFlushPeriod = 4;
+
 } // anonymous namespace
 
 namespace cc {
@@ -89,11 +92,15 @@ bool TextureUploader::Query::isNonBlocking()
 }
 
 TextureUploader::TextureUploader(
-    WebKit::WebGraphicsContext3D* context, bool useMapTexSubImage)
+    WebKit::WebGraphicsContext3D* context,
+    bool useMapTexSubImage,
+    bool useShallowFlush)
     : m_context(context)
     , m_numBlockingTextureUploads(0)
     , m_useMapTexSubImage(useMapTexSubImage)
     , m_subImageSize(0)
+    , m_useShallowFlush(useShallowFlush)
+    , m_numTextureUploadsSinceLastFlush(0)
 {
     for (size_t i = uploadHistorySizeInitial; i > 0; i--)
         m_texturesPerSecondHistory.insert(defaultEstimatedTexturesPerSecond);
@@ -173,6 +180,20 @@ void TextureUploader::upload(const uint8* image,
 
     if (isFullUpload)
         endQuery();
+
+    m_numTextureUploadsSinceLastFlush++;
+    if (m_numTextureUploadsSinceLastFlush >= textureUploadFlushPeriod)
+      flush();
+}
+
+void TextureUploader::flush() {
+  if (!m_numTextureUploadsSinceLastFlush)
+    return;
+
+  if (m_useShallowFlush)
+    m_context->shallowFlushCHROMIUM();
+
+  m_numTextureUploadsSinceLastFlush = 0;
 }
 
 void TextureUploader::uploadWithTexSubImage(const uint8* image,

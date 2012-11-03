@@ -322,6 +322,14 @@ double ResourceProvider::estimatedUploadsPerSecond()
     return m_textureUploader->estimatedTexturesPerSecond();
 }
 
+void ResourceProvider::flushUploads()
+{
+    if (!m_textureUploader)
+        return;
+
+    m_textureUploader->flush();
+}
+
 void ResourceProvider::flush()
 {
     DCHECK(Proxy::isImplThread());
@@ -508,7 +516,7 @@ bool ResourceProvider::initialize()
 
     m_textureCopier = AcceleratedTextureCopier::create(context3d, useBindUniform);
 
-    m_textureUploader = TextureUploader::create(context3d, useMapSub);
+    m_textureUploader = TextureUploader::create(context3d, useMapSub, m_useShallowFlush);
     GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize));
     return true;
 }

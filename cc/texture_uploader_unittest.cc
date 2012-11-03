@@ -56,7 +56,7 @@ void uploadTexture(TextureUploader* uploader)
 TEST(TextureUploaderTest, NumBlockingUploads)
 {
     scoped_ptr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(new FakeWebGraphicsContext3DWithQueryTesting);
-    scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false);
+    scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false, false);
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());
@@ -77,7 +77,7 @@ TEST(TextureUploaderTest, NumBlockingUploads)
 TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking)
 {
     scoped_ptr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(new FakeWebGraphicsContext3DWithQueryTesting);
-    scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false);
+    scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false, false);
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());

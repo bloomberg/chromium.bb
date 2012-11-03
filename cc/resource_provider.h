@@ -85,6 +85,7 @@ public:
     size_t numBlockingUploads();
     void markPendingUploadsAsNonBlocking();
     double estimatedUploadsPerSecond();
+    void flushUploads();
 
     // Flush all context operations, kicking uploads and ensuring ordering with
     // respect to other contexts.

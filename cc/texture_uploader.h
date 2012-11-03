@@ -28,9 +28,12 @@ namespace cc {
 class CC_EXPORT TextureUploader {
 public:
     static scoped_ptr<TextureUploader> create(
-        WebKit::WebGraphicsContext3D* context, bool useMapTexSubImage)
+        WebKit::WebGraphicsContext3D* context,
+        bool useMapTexSubImage,
+        bool useShallowFlush)
     {
-        return make_scoped_ptr(new TextureUploader(context, useMapTexSubImage));
+        return make_scoped_ptr(
+            new TextureUploader(context, useMapTexSubImage, useShallowFlush));
     }
     ~TextureUploader();
 
@@ -48,6 +51,8 @@ public:
                 const gfx::Vector2d& dest_offset,
                 GLenum format,
                 const gfx::Size& size);
+
+    void flush();
 
 private:
     class Query {
@@ -74,7 +79,9 @@ private:
         bool m_isNonBlocking;
     };
 
-    TextureUploader(WebKit::WebGraphicsContext3D*, bool useMapTexSubImage);
+    TextureUploader(WebKit::WebGraphicsContext3D*,
+                    bool useMapTexSubImage,
+                    bool useShallowFlush);
 
     void beginQuery();
     void endQuery();
@@ -100,6 +107,9 @@ private:
     bool m_useMapTexSubImage;
     size_t m_subImageSize;
     scoped_array<uint8> m_subImage;
+
+    bool m_useShallowFlush;
+    size_t m_numTextureUploadsSinceLastFlush;
 
     DISALLOW_COPY_AND_ASSIGN(TextureUploader);
 };

@@ -32,9 +32,6 @@ const double textureUpdateTickRate = 0.004;
 // Measured in seconds.
 const double uploaderBusyTickRate = 0.001;
 
-// Flush interval when performing texture uploads.
-const int textureUploadFlushPeriod = 4;
-
 // Number of blocking update intervals to allow.
 const size_t maxBlockingUpdateIntervals = 4;
 
@@ -193,25 +190,13 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
 
 void ResourceUpdateController::finalize()
 {
-    size_t uploadCount = 0;
-    while (m_queue->fullUploadSize()) {
-        if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
-            m_resourceProvider->shallowFlushIfSupported();
-
+    while (m_queue->fullUploadSize())
         updateTexture(m_queue->takeFirstFullUpload());
-        uploadCount++;
-    }
 
-    while (m_queue->partialUploadSize()) {
-        if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
-            m_resourceProvider->shallowFlushIfSupported();
-
+    while (m_queue->partialUploadSize())
         updateTexture(m_queue->takeFirstPartialUpload());
-        uploadCount++;
-    }
 
-    if (uploadCount)
-        m_resourceProvider->shallowFlushIfSupported();
+    m_resourceProvider->flushUploads();
 
     if (m_queue->copySize()) {
         TextureCopier* copier = m_resourceProvider->textureCopier();
@@ -291,14 +276,10 @@ void ResourceUpdateController::updateMoreTexturesNow()
     if (!uploads)
         return;
 
-    size_t uploadCount = 0;
-    while (m_queue->fullUploadSize() && uploadCount < uploads) {
-        if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
-            m_resourceProvider->shallowFlushIfSupported();
+    while (m_queue->fullUploadSize() && uploads--)
         updateTexture(m_queue->takeFirstFullUpload());
-        uploadCount++;
-    }
-    m_resourceProvider->shallowFlushIfSupported();
+
+    m_resourceProvider->flushUploads();
 }
 
 }  // namespace cc
