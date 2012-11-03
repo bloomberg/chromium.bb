@@ -102,6 +102,10 @@ private:
 
 typedef OcclusionTrackerBase<Layer, RenderSurface> OcclusionTracker;
 typedef OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl> OcclusionTrackerImpl;
+#if !defined(COMPILER_MSVC)
+extern template class OcclusionTrackerBase<Layer, RenderSurface>;
+extern template class OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>;
+#endif
 
 }  // namespace cc
 

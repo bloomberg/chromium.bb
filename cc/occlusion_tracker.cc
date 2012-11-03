@@ -465,7 +465,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::layerClipRectInTar
 }
 
 // Instantiate (and export) templates here for the linker.
-template class CC_EXPORT OcclusionTrackerBase<Layer, RenderSurface>;
-template class CC_EXPORT OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>;
+template class OcclusionTrackerBase<Layer, RenderSurface>;
+template class OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>;
 
 }  // namespace cc
