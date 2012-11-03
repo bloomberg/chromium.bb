@@ -354,18 +354,14 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
     """Returns True if the new ebuild is redundant.
 
     This is True if there if the current stable ebuild is the exact same copy
-    of the new one OR the chrome versions are the same and we're revving
-    constants.CHROME_REV_LATEST (as we don't care about 9999 changes for it).
+    of the new one.
     """
     if not stable_ebuild:
       return False
 
     if stable_candidate.chrome_version == new_ebuild.chrome_version:
-      if chrome_rev == constants.CHROME_REV_LATEST:
-        return True
-      else:
-        return filecmp.cmp(
-            new_ebuild.ebuild_path, stable_ebuild.ebuild_path, shallow=False)
+      return filecmp.cmp(
+          new_ebuild.ebuild_path, stable_ebuild.ebuild_path, shallow=False)
 
   base_path = os.path.join(overlay_dir, 'chromeos-chrome-%s' % chrome_version)
   # Case where we have the last stable candidate with same version just rev.
