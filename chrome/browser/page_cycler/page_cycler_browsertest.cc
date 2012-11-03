@@ -311,16 +311,17 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
   ASSERT_FALSE(errors[0].compare(expected_error));
 }
 
-// Test that PageCycler will visit all the urls from a cache directory
-// successfully while in playback mode.
-#if defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 // TODO(rdevlin.cronin): Perhaps page cycler isn't completely implemented on
 // ChromeOS?
-#else
-#if (defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)) && \
-    !defined(NDEBUG)
+
+// Test that PageCycler will visit all the urls from a cache directory
+// successfully while in playback mode.
+#if defined(OS_LINUX)
+// Bug 159026: Fails on Linux in both debug and release mode.
+#define MAYBE_PlaybackMode DISABLED_PlaybackMode
+#elif (defined(OS_WIN) || defined(OS_MACOSX) ) && !defined(NDEBUG)
 // Bug 131333: This test fails on a XP debug bot since Build 17609.
-// Bug 159026: Also fails on Linux debug bot.
 #define MAYBE_PlaybackMode DISABLED_PlaybackMode
 #else
 #define MAYBE_PlaybackMode PlaybackMode
@@ -340,6 +341,11 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_PlaybackMode) {
   ASSERT_TRUE(file_util::PathExists(stats_file()));
   ASSERT_FALSE(file_util::PathExists(errors_file()));
 }
+#endif  // !defined(OS_CHROMEOS)
+
+#if !defined(OS_CHROMEOS)
+// TODO(rdevlin.cronin): Perhaps page cycler isn't completely implemented on
+// ChromeOS?
 
 // Test that PageCycler will have a cache miss if a URL is missing from the
 // cache directory while in playback mode.
@@ -386,4 +392,4 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_URLNotInCache) {
 
   ASSERT_FALSE(errors[0].compare(expected_error));
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
