@@ -403,6 +403,11 @@ void DisplayController::SetPrimaryDisplay(
   primary_display_id = new_primary_display.id();
   desired_primary_display_id_ = primary_display_id;
 
+  display_manager->UpdateWorkAreaOfDisplayNearestWindow(
+      primary_root, old_primary_display.GetWorkAreaInsets());
+  display_manager->UpdateWorkAreaOfDisplayNearestWindow(
+      non_primary_root, new_primary_display.GetWorkAreaInsets());
+
   // Update the layout.
   SetLayoutForDisplayName(
       display_manager->GetDisplayNameFor(old_primary_display),
@@ -410,7 +415,7 @@ void DisplayController::SetPrimaryDisplay(
 
   // Update the dispay manager with new display info.
   std::vector<gfx::Display> displays;
-  displays.push_back(GetDisplayManager()->GetDisplayForId(primary_display_id));
+  displays.push_back(display_manager->GetDisplayForId(primary_display_id));
   displays.push_back(*GetSecondaryDisplay());
   GetDisplayManager()->set_force_bounds_changed(true);
   GetDisplayManager()->OnNativeDisplaysChanged(displays);

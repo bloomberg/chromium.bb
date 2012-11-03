@@ -256,6 +256,13 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_EQ(primary_display.id(),
             Shell::GetScreen()->GetDisplayNearestWindow(NULL).id());
 
+#if !defined(OS_WIN)
+  EXPECT_EQ("0,0 200x200", primary_display.bounds().ToString());
+  EXPECT_EQ("0,0 200x152", primary_display.work_area().ToString());
+  EXPECT_EQ("200,0 300x300", secondary_display.bounds().ToString());
+  EXPECT_EQ("200,0 300x300", secondary_display.work_area().ToString());
+#endif
+
   // Switch primary and secondary
   display_controller->SetPrimaryDisplay(secondary_display);
   EXPECT_EQ(secondary_display.id(),
@@ -275,6 +282,16 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
       display_controller->GetRootWindowForDisplayId(primary_display.id()));
   EXPECT_TRUE(primary_root->Contains(launcher_window));
   EXPECT_FALSE(secondary_root->Contains(launcher_window));
+
+#if !defined(OS_WIN)
+  // Test if the bounds are correctly swapped.
+  gfx::Display swapped_primary = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display swapped_secondary = ScreenAsh::GetSecondaryDisplay();
+  EXPECT_EQ("0,0 300x300", swapped_primary.bounds().ToString());
+  EXPECT_EQ("0,0 300x252", swapped_primary.work_area().ToString());
+  EXPECT_EQ("-200,-50 200x200", swapped_secondary.bounds().ToString());
+  EXPECT_EQ("-200,-50 200x200", swapped_secondary.work_area().ToString());
+#endif
 
   const DisplayLayout& inverted_layout =
       display_controller->GetLayoutForDisplay(primary_display);
