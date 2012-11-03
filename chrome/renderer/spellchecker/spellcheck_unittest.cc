@@ -358,6 +358,7 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     {L"2012", true},
     {L"100,000,000", true},
     {L"3.141592653", true},
+
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
@@ -1085,6 +1086,58 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
     EXPECT_EQ(WebKit::WebTextCheckingTypeGrammar, textcheck_results[0].type);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
     EXPECT_EQ(spellcheck_results[0].length, textcheck_results[0].length);
+  }
+}
+
+// Checks some words that should be present in all English dictionaries.
+TEST_F(SpellCheckTest, EnglishWords) {
+  static const struct {
+    const char* input;
+    bool should_pass;
+  } kTestCases[] = {
+    // Issue 146093: "Chromebook" and "Chromebox" not included in spell-checking
+    // dictionary.
+    {"Chromebook", true},
+    {"Chromebooks", true},
+    {"Chromebox", true},
+    {"Chromeboxes", true},
+    {"Chromeblade", true},
+    {"Chromeblades", true},
+    {"Chromebase", true},
+    {"Chromebases", true},
+    // Issue 94708: Spell-checker incorrectly reports whisky as misspelled.
+    {"whisky", true},
+    {"whiskey", true},
+    {"whiskies", true},
+    // Issue 98678: "Recency" should be included in client-side dictionary.
+    {"recency", true},
+    {"recencies", false},
+    // Issue 140486
+    {"movie", true},
+    {"movies", true},
+  };
+
+  static const char* kLocales[] = { "en-GB", "en-US", "en-CA", "en-AU" };
+
+  for (size_t j = 0; j < arraysize(kLocales); ++j) {
+    ReinitializeSpellCheck(kLocales[j]);
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+      size_t input_length = 0;
+      if (kTestCases[i].input != NULL)
+        input_length = strlen(kTestCases[i].input);
+
+      int misspelling_start = 0;
+      int misspelling_length = 0;
+      bool result = spell_check()->SpellCheckWord(
+          ASCIIToUTF16(kTestCases[i].input).c_str(),
+          static_cast<int>(input_length),
+          0,
+          &misspelling_start,
+          &misspelling_length, NULL);
+
+      EXPECT_EQ(kTestCases[i].should_pass, result) << kTestCases[i].input <<
+          " in " << kLocales[j];
+    }
   }
 }
 
