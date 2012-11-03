@@ -67,7 +67,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Verify 'boards' is explicitly set for every config."""
 
     for build_name, config in cbuildbot_config.config.iteritems():
-      self.assertTrue(isinstance(config['boards'], list),
+      self.assertTrue(isinstance(config['boards'], (tuple, list)),
                       "Config %s doesn't have a list of boards." % build_name)
       self.assertEqual(len(set(config['boards'])), len(config['boards']),
                        'Config %s has duplicate boards.' % build_name)
