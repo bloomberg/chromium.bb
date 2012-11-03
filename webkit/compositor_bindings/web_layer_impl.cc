@@ -5,6 +5,7 @@
 #include "config.h"
 #include "web_layer_impl.h"
 
+#include "Region.h"
 #include "SkMatrix44.h"
 #ifdef LOG
 #undef LOG
@@ -395,21 +396,18 @@ bool WebLayerImpl::shouldScrollOnMainThread() const
 
 void WebLayerImpl::setNonFastScrollableRegion(const WebVector<WebRect>& rects)
 {
-    WebCore::Region region;
-    for (size_t i = 0; i < rects.size(); ++i) {
-        WebCore::IntRect rect = convert(rects[i]);
-        region.unite(rect);
-    }
+    cc::Region region;
+    for (size_t i = 0; i < rects.size(); ++i)
+        region.Union(rects[i]);
     m_layer->setNonFastScrollableRegion(region);
-
 }
 
 WebVector<WebRect> WebLayerImpl::nonFastScrollableRegion() const
 {
-    Vector<WebCore::IntRect> regionRects = m_layer->nonFastScrollableRegion().rects();
+    cc::Region::Iterator regionRects(m_layer->nonFastScrollableRegion());
     WebVector<WebRect> result(regionRects.size());
-    for (size_t i = 0; i < regionRects.size(); ++i)
-        result[i] = convert(regionRects[i]);
+    for (size_t i = 0; regionRects.has_rect(); regionRects.next(), ++i)
+        result[i] = regionRects.rect();
     return result;
 }
 

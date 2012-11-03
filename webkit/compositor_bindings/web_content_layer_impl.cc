@@ -7,8 +7,6 @@
 
 #include "SkMatrix44.h"
 #include "cc/content_layer.h"
-#include "cc/stubs/float_rect.h"
-#include "cc/stubs/int_rect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"

@@ -472,9 +472,9 @@ protected:
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 30, 70, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 30, 70, 70)));
@@ -524,9 +524,9 @@ protected:
         this->enterLayer(layer1, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(20, 20, 50, 50), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(20, 20, 50, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // This checks cases where the quads don't match their "containing"
         // layers, e.g. in terms of transforms or clip rect. This is typical for
@@ -568,9 +568,9 @@ protected:
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 30, 70, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 30, 70, 70)));
@@ -620,9 +620,9 @@ protected:
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(50, 50, 50, 50), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(50, 50, 50, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(50, 50, 50, 50)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(49, 50, 50, 50)));
@@ -689,17 +689,17 @@ protected:
         this->enterContributingSurface(child, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 40, 70, 60), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(10, 430, 60, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 40, 70, 60), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(30, 40, 70, 60), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 40, 70, 60)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 40, 70, 60)));
@@ -771,9 +771,9 @@ protected:
         this->enterLayer(layer2, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(100, 100, 100, 100), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_TRUE(occlusion.occlusionInTargetSurface().IsEmpty());
-        EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 25, 25), occlusion.unoccludedLayerContentRect(layer2, gfx::Rect(0, 0, 25, 25)));
         EXPECT_RECT_EQ(gfx::Rect(10, 25, 15, 25), occlusion.unoccludedLayerContentRect(layer2, gfx::Rect(10, 25, 25, 25)));
@@ -811,32 +811,32 @@ protected:
         this->visitLayer(child2, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 60, 20), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 60, 20), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitLayer(layer, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(10, 430, 60, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->enterContributingSurface(child, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(10, 430, 60, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // Occlusion in |child2| should get merged with the |child| surface we are leaving now.
         this->leaveContributingSurface(child, occlusion);
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(30, 30, 70, 70)));
         EXPECT_RECT_EQ(gfx::Rect(90, 30, 10, 10), occlusion.unoccludedLayerContentRect(parent, gfx::Rect(30, 30, 70, 70)));
@@ -926,9 +926,9 @@ protected:
         this->enterContributingSurface(child, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(0u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(clippedLayerInChild, occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(child, clippedLayerInChild));
         EXPECT_TRUE(occlusion.unoccludedLayerContentRect(child, clippedLayerInChild).IsEmpty());
@@ -953,9 +953,9 @@ protected:
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(0u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(75, 55, 1, 1)));
         EXPECT_RECT_EQ(gfx::Rect(75, 55, 1, 1), occlusion.unoccludedLayerContentRect(parent, gfx::Rect(75, 55, 1, 1)));
@@ -991,9 +991,9 @@ protected:
         this->enterContributingSurface(child, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 40, 70, 60), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(10, 430, 60, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(child, gfx::Rect(10, 430, 60, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(child, gfx::Rect(9, 430, 60, 70)));
@@ -1011,9 +1011,9 @@ protected:
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 40, 70, 60), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(30, 40, 70, 60), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(30, 40, 70, 60)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(29, 40, 70, 60)));
@@ -1080,9 +1080,9 @@ protected:
         this->enterContributingSurface(child2, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(20, 30, 80, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(-10, 420, 70, 80), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 80)));
         EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-11, 420, 70, 80)));
@@ -1106,9 +1106,9 @@ protected:
         this->enterContributingSurface(child1, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(20, 20, 80, 80), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(-10, 430, 80, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(child1, gfx::Rect(-10, 430, 80, 70)));
         EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(-11, 430, 80, 70)));
@@ -1123,9 +1123,9 @@ protected:
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(20, 20, 80, 80), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(20, 20, 80, 80), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(20, 20, 80, 80)));
 
@@ -1196,9 +1196,9 @@ protected:
         this->enterLayer(child2, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(20, 30, 80, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(-10, 420, 70, 80), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(child2, gfx::Rect(-10, 420, 70, 80)));
         EXPECT_FALSE(occlusion.occludedLayer(child2, gfx::Rect(-11, 420, 70, 80)));
@@ -1217,9 +1217,9 @@ protected:
         this->enterContributingSurface(child1, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(10, 20, 90, 80), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(420, -20, 80, 90), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(child1, gfx::Rect(420, -20, 80, 90)));
         EXPECT_FALSE(occlusion.occludedLayer(child1, gfx::Rect(419, -20, 80, 90)));
@@ -1236,9 +1236,9 @@ protected:
         this->enterLayer(parent, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(10, 20, 90, 80), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(10, 20, 90, 80), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(10, 20, 90, 80)));
         EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(9, 20, 90, 80)));
@@ -1325,16 +1325,16 @@ protected:
         this->enterContributingSurface(opaqueLayer, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 430, 70, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // And it gets translated to the parent surface.
         this->leaveContributingSurface(opaqueLayer, occlusion);
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // The blur layer needs to throw away any occlusion from outside its subtree.
         this->enterLayer(blurLayer, occlusion);
@@ -1351,9 +1351,9 @@ protected:
         this->leaveContributingSurface(blurLayer, occlusion);
         this->enterLayer(parent, occlusion);
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(30, 30, 70, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 
@@ -1376,16 +1376,16 @@ protected:
         this->visitLayer(surface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 100, 50, 50), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitContributingSurface(surface, occlusion);
         this->enterLayer(parent, occlusion);
 
         // The surface and replica should both be occluding the parent.
         EXPECT_RECT_EQ(gfx::Rect(0, 100, 100, 100), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 
@@ -1409,16 +1409,16 @@ protected:
         this->visitLayer(surface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 100, 50, 50), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitContributingSurface(surface, occlusion);
         this->enterLayer(parent, occlusion);
 
         // The surface and replica should both be occluding the parent.
         EXPECT_RECT_EQ(gfx::Rect(0, 100, 100, 70), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 
@@ -1442,16 +1442,16 @@ protected:
         this->visitLayer(surface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 100, 50, 50), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitContributingSurface(surface, occlusion);
         this->enterLayer(parent, occlusion);
 
         // The replica should not be occluding the parent, since it has a mask applied to it.
         EXPECT_RECT_EQ(gfx::Rect(0, 100, 50, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 
@@ -1859,7 +1859,7 @@ protected:
         this->enterLayer(parent, occlusion);
 
         EXPECT_TRUE(occlusion.occlusionInScreenSpace().bounds().IsEmpty());
-        EXPECT_EQ(0u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
     }
 };
 
@@ -1884,7 +1884,7 @@ protected:
             this->enterLayer(parent, occlusion);
 
             EXPECT_RECT_EQ(gfx::Rect(100, 100, 100, 100), occlusion.occlusionInScreenSpace().bounds());
-            EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+            EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
 
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(0, 100, 100, 100)));
             EXPECT_TRUE(occlusion.occludedLayer(parent, gfx::Rect(100, 100, 100, 100)));
@@ -1900,7 +1900,7 @@ protected:
             this->enterLayer(parent, occlusion);
 
             EXPECT_RECT_EQ(gfx::Rect(120, 120, 180, 180), occlusion.occlusionInScreenSpace().bounds());
-            EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+            EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
 
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(0, 100, 100, 100)));
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(100, 100, 100, 100)));
@@ -1916,7 +1916,7 @@ protected:
             this->enterLayer(parent, occlusion);
 
             EXPECT_RECT_EQ(gfx::Rect(250, 250, 50, 50), occlusion.occlusionInScreenSpace().bounds());
-            EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+            EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
 
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(0, 100, 100, 100)));
             EXPECT_FALSE(occlusion.occludedLayer(parent, gfx::Rect(100, 100, 100, 100)));
@@ -2076,8 +2076,8 @@ protected:
         // The |layer| is entirely behind the camera and should not occlude.
         this->visitLayer(layer, occlusion);
         this->enterLayer(parent, occlusion);
-        EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
-        EXPECT_EQ(0u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
     }
 };
 
@@ -2110,9 +2110,9 @@ protected:
         this->visitLayer(layer, occlusion);
         this->enterLayer(parent, occlusion);
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
     }
 };
 
@@ -2259,7 +2259,7 @@ protected:
         this->enterContributingSurface(surface2, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 300), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
 
         this->leaveContributingSurface(surface2, occlusion);
         this->enterLayer(surfaceChild2, occlusion);
@@ -2273,9 +2273,9 @@ protected:
         this->enterLayer(surfaceChild, occlusion);
         EXPECT_FALSE(occlusion.occludedLayer(surfaceChild, gfx::Rect(0, 0, 100, 300)));
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 300), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 300), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
         EXPECT_RECT_EQ(gfx::Rect(100, 0, 200, 300), occlusion.unoccludedLayerContentRect(surface, gfx::Rect(0, 0, 300, 300)));
 
         // The surfaceChild is occluded by the surfaceChild2, but is moving relative its target and the screen, so it
@@ -2287,17 +2287,17 @@ protected:
         this->enterLayer(surface, occlusion);
         // The surfaceChild is moving in screen space but not relative to its target, so occlusion should happen in its target space only.
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 300), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 300), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
         EXPECT_RECT_EQ(gfx::Rect(100, 0, 200, 300), occlusion.unoccludedLayerContentRect(surface, gfx::Rect(0, 0, 300, 300)));
 
         this->leaveLayer(surface, occlusion);
         // The surface's owning layer is moving in screen space but not relative to its target, so occlusion should happen in its target space only.
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 300), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 300), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), occlusion.unoccludedLayerContentRect(surface, gfx::Rect(0, 0, 300, 300)));
 
         this->enterContributingSurface(surface, occlusion);
@@ -2342,9 +2342,9 @@ protected:
         this->visitContributingSurface(surface2, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(50, 50, 200, 200), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(50, 50, 200, 200), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // Clear any stored occlusion.
         occlusion.setOcclusionInScreenSpace(Region());
@@ -2354,9 +2354,9 @@ protected:
         this->visitContributingSurface(surface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 400, 400), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 400, 400), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 
@@ -2380,9 +2380,9 @@ protected:
         this->visitContributingSurface(surface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 200), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 200), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 
@@ -2407,16 +2407,16 @@ protected:
         this->visitLayer(topmost, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 100, 100, 100), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 100, 100, 100), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitLayer(surface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 200), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->enterContributingSurface(surface, occlusion);
 
@@ -2446,16 +2446,16 @@ protected:
         this->visitLayer(topmost, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 110), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 110), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitLayer(surface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 110), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->enterContributingSurface(surface, occlusion);
 
@@ -2488,16 +2488,16 @@ protected:
         this->visitLayer(overSurface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 200), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 200), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitLayer(surface, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 200), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->enterContributingSurface(surface, occlusion);
 
@@ -2529,18 +2529,18 @@ protected:
         this->visitLayer(topmost, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 50), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitLayer(surfaceChild, occlusion);
 
         // surfaceChild increases the occlusion in the screen by a narrow sliver.
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 60), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         // In its own surface, surfaceChild is at 0,0 as is its occlusion.
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // The root layer always has a clipRect. So the parent of |surface| has a clipRect. However, the owning layer for |surface| does not
         // mask to bounds, so it doesn't have a clipRect of its own. Thus the parent of |surfaceChild| exercises different code paths
@@ -2555,9 +2555,9 @@ protected:
         // When the surfaceChild's occlusion is transformed up to its parent, make sure it is not clipped away inappropriately also.
         this->enterLayer(surface, occlusion);
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 60), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 10, 100, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
         this->leaveLayer(surface, occlusion);
 
         this->enterContributingSurface(surface, occlusion);
@@ -2630,17 +2630,17 @@ protected:
         this->visitLayer(topmost, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 80, 50), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 80, 50), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // surfaceChild is not opaque and does not occlude, so we have a non-empty unoccluded area on surface.
         this->visitLayer(surfaceChild, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 80, 50), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // The root layer always has a clipRect. So the parent of |surface| has a clipRect. However, the owning layer for |surface| does not
         // mask to bounds, so it doesn't have a clipRect of its own. Thus the parent of |surfaceChild| exercises different code paths
@@ -2704,9 +2704,9 @@ protected:
         this->visitLayer(occludingLayer1, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // Everything outside the surface/replica is occluded but the surface/replica itself is not.
         this->enterLayer(filteredSurface, occlusion);
@@ -2723,9 +2723,9 @@ protected:
 
         // The filtered layer/replica does not occlude.
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // The surface has a background blur, so it needs pixels that are currently considered occluded in order to be drawn. So the pixels
         // it needs should be removed some the occluded area so that when we get to the parent they are drawn.
@@ -2733,9 +2733,9 @@ protected:
 
         this->enterLayer(parent, occlusion);
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         gfx::Rect outsetRect;
         gfx::Rect testRect;
@@ -2816,24 +2816,24 @@ protected:
 
         this->visitLayer(occludingLayerAbove, occlusion);
         EXPECT_RECT_EQ(gfx::Rect(100 / 2, 100 / 2, 50 / 2, 50 / 2), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(100 / 2, 100 / 2, 50 / 2, 50 / 2), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         this->visitLayer(filteredSurface2, occlusion);
         this->visitContributingSurface(filteredSurface2, occlusion);
         this->visitLayer(filteredSurface1, occlusion);
         this->visitContributingSurface(filteredSurface1, occlusion);
 
-        ASSERT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
-        ASSERT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        ASSERT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
+        ASSERT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // Test expectations in the target.
         gfx::Rect expectedOcclusion = gfx::Rect(100 / 2 + outsetRight * 2, 100 / 2 + outsetBottom * 2, 50 / 2 - (outsetLeft + outsetRight) * 2, 50 / 2 - (outsetTop + outsetBottom) * 2);
-        EXPECT_RECT_EQ(expectedOcclusion, occlusion.occlusionInTargetSurface().rects()[0]);
+        EXPECT_RECT_EQ(expectedOcclusion, Region::Iterator(occlusion.occlusionInTargetSurface()).rect());
 
         // Test expectations in the screen are the same as in the target, as the render surface is 1:1 with the screen.
-        EXPECT_RECT_EQ(expectedOcclusion, occlusion.occlusionInScreenSpace().rects()[0]);
+        EXPECT_RECT_EQ(expectedOcclusion, Region::Iterator(occlusion.occlusionInScreenSpace()).rect());
     }
 };
 
@@ -2882,9 +2882,9 @@ protected:
         this->visitLayer(occludingLayer1, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // Everything outside the surface/replica is occluded but the surface/replica itself is not.
         this->enterLayer(filteredSurface, occlusion);
@@ -2901,9 +2901,9 @@ protected:
 
         // The filtered layer/replica does not occlude.
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // The surface has a background blur, so it needs pixels that are currently considered occluded in order to be drawn. So the pixels
         // it needs should be removed some the occluded area so that when we get to the parent they are drawn.
@@ -2911,7 +2911,7 @@ protected:
 
         this->enterContributingSurface(clippingSurface, occlusion);
         EXPECT_RECT_EQ(gfx::Rect(0, 0, 300, 150), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(5u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(5u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
 
         gfx::Rect outsetRect;
         gfx::Rect clippedOutsetRect;
@@ -3003,9 +3003,9 @@ protected:
 
         gfx::Rect expectedOpaqueBounds = gfx::UnionRects(occlusionBehindSurface, occlusionBehindReplica);
         EXPECT_RECT_EQ(expectedOpaqueBounds, occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(expectedOpaqueBounds, occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 
@@ -3052,9 +3052,9 @@ protected:
 
         gfx::Rect expectedOpaqueBounds = gfx::UnionRects(occlusionAboveSurface, occlusionAboveReplica);
         EXPECT_RECT_EQ(expectedOpaqueBounds, occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(expectedOpaqueBounds, occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(2u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(2u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 
@@ -3118,15 +3118,17 @@ protected:
         expectedOcclusion.Union(occlusionBesideSurface);
         expectedOcclusion.Union(occlusionBesideReplica);
 
-        ASSERT_EQ(expectedOcclusion.rects().size(), occlusion.occlusionInTargetSurface().rects().size());
-        ASSERT_EQ(expectedOcclusion.rects().size(), occlusion.occlusionInScreenSpace().rects().size());
+        ASSERT_EQ(Region::Iterator(expectedOcclusion).size(), Region::Iterator(occlusion.occlusionInTargetSurface()).size());
+        ASSERT_EQ(Region::Iterator(expectedOcclusion).size(), Region::Iterator(occlusion.occlusionInScreenSpace()).size());
 
-        for (size_t i = 0; i < expectedOcclusion.rects().size(); ++i) {
-            cc::IntRect expectedRect = expectedOcclusion.rects()[i];
-            cc::IntRect screenRect = occlusion.occlusionInScreenSpace().rects()[i];
-            cc::IntRect targetRect = occlusion.occlusionInTargetSurface().rects()[i];
-            EXPECT_EQ(expectedRect, screenRect);
-            EXPECT_EQ(expectedRect, targetRect);
+        Region::Iterator expectedRects(expectedOcclusion);
+        Region::Iterator screenSpaceRects(occlusion.occlusionInScreenSpace());
+        Region::Iterator targetSurfaceRects(occlusion.occlusionInTargetSurface());
+        for (; expectedRects.has_rect(); expectedRects.next(), screenSpaceRects.next(), targetSurfaceRects.next()) {
+            ASSERT_TRUE(screenSpaceRects.has_rect());
+            ASSERT_TRUE(targetSurfaceRects.has_rect());
+            EXPECT_EQ(expectedRects.rect(), screenSpaceRects.rect());
+            EXPECT_EQ(expectedRects.rect(), targetSurfaceRects.rect());
         }
     }
 };
@@ -3155,17 +3157,17 @@ protected:
         this->visitLayer(small, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(0u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(0u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
 
         // The large layer is tracked as it is large enough.
         this->visitLayer(large, occlusion);
 
         EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), trackingSize), occlusion.occlusionInScreenSpace().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInScreenSpace()).size());
         EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), trackingSize), occlusion.occlusionInTargetSurface().bounds());
-        EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
+        EXPECT_EQ(1u, Region::Iterator(occlusion.occlusionInTargetSurface()).size());
     }
 };
 

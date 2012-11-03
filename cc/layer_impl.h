@@ -8,6 +8,7 @@
 #include <string>
 
 #include "FloatSize.h"
+#include "IntPoint.h"
 #include "Region.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

@@ -6,7 +6,6 @@
 
 #include "cc/test/layer_test_common.h"
 
-#include "FloatRect.h"
 #include "Region.h"
 #include "cc/draw_quad.h"
 #include "cc/math_util.h"
@@ -25,12 +24,11 @@ const char* quadString = "    Quad: ";
 bool canRectFBeSafelyRoundedToRect(const gfx::RectF& r)
 {
     // Ensure that range of float values is not beyond integer range.
-    if (!cc::FloatRect(r).isExpressibleAsIntRect())
+    if (!r.IsExpressibleAsRect())
         return false;
 
     // Ensure that the values are actually integers.
-    if (gfx::ToFlooredPoint(r.origin()) == r.origin()
-        && gfx::ToFlooredSize(r.size()) == r.size())
+    if (gfx::ToFlooredPoint(r.origin()) == r.origin() && gfx::ToFlooredSize(r.size()) == r.size())
         return true;
 
     return false;

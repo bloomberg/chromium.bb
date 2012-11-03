@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "FloatRect.h"
 #include "cc/layer.h"
 #include "cc/layer_impl.h"
 #include "cc/math_util.h"
@@ -136,10 +135,9 @@ static inline Region transformSurfaceOpaqueRegion(const RenderSurfaceType* surfa
 
     Region transformedRegion;
 
-    Vector<WebCore::IntRect> rects = region.rects();
-    for (size_t i = 0; i < rects.size(); ++i) {
+    for (Region::Iterator rects(region); rects.has_rect(); rects.next()) {
         // We've already checked for clipping in the mapQuad call above, these calls should not clip anything further.
-        gfx::Rect transformedRect = gfx::ToEnclosedRect(MathUtil::mapClippedRect(transform, cc::FloatRect(rects[i])));
+        gfx::Rect transformedRect = gfx::ToEnclosedRect(MathUtil::mapClippedRect(transform, gfx::RectF(rects.rect())));
         if (!surface->clipRect().IsEmpty())
             transformedRect.Intersect(surface->clipRect());
         transformedRegion.Union(transformedRect);
@@ -153,11 +151,11 @@ static inline void reduceOcclusion(const gfx::Rect& affectedArea, const gfx::Rec
         return;
 
     Region affectedOcclusion = intersect(occlusion, affectedArea);
-    Vector<WebCore::IntRect> affectedOcclusionRects = affectedOcclusion.rects();
+    Region::Iterator affectedOcclusionRects(affectedOcclusion);
 
     occlusion.Subtract(affectedArea);
-    for (size_t j = 0; j < affectedOcclusionRects.size(); ++j) {
-        WebCore::IntRect& occlusionRect = affectedOcclusionRects[j];
+    for (; affectedOcclusionRects.has_rect(); affectedOcclusionRects.next()) {
+        gfx::Rect occlusionRect = affectedOcclusionRects.rect();
 
         // Shrink the rect by expanding the non-opaque pixels outside the rect.
 
@@ -175,11 +173,10 @@ static inline void reduceOcclusion(const gfx::Rect& affectedArea, const gfx::Rec
         // the occlusionRect into it, shrinking its right edge.
         int shrinkLeft = occlusionRect.x() == affectedArea.x() ? 0 : expandedPixel.right();
         int shrinkTop = occlusionRect.y() == affectedArea.y() ? 0 : expandedPixel.bottom();
-        int shrinkRight = occlusionRect.maxX() == affectedArea.right() ? 0 : -expandedPixel.x();
-        int shrinkBottom = occlusionRect.maxY() == affectedArea.bottom() ? 0 : -expandedPixel.y();
+        int shrinkRight = occlusionRect.right() == affectedArea.right() ? 0 : -expandedPixel.x();
+        int shrinkBottom = occlusionRect.bottom() == affectedArea.bottom() ? 0 : -expandedPixel.y();
 
-        occlusionRect.move(shrinkLeft, shrinkTop);
-        occlusionRect.contract(shrinkLeft + shrinkRight, shrinkTop + shrinkBottom);
+        occlusionRect.Inset(shrinkLeft, shrinkTop, shrinkRight, shrinkBottom);
 
         occlusion.Union(occlusionRect);
     }
@@ -263,10 +260,9 @@ static inline void addOcclusionBehindLayer(Region& region, const LayerType* laye
     if (clipped || !visibleTransformedQuad.IsRectilinear())
         return;
 
-    Vector<WebCore::IntRect> contentRects = opaqueContents.rects();
-    for (size_t i = 0; i < contentRects.size(); ++i) {
+    for (Region::Iterator opaqueContentRects(opaqueContents); opaqueContentRects.has_rect(); opaqueContentRects.next()) {
         // We've already checked for clipping in the mapQuad call above, these calls should not clip anything further.
-        gfx::Rect transformedRect = gfx::ToEnclosedRect(MathUtil::mapClippedRect(transform, cc::FloatRect(contentRects[i])));
+        gfx::Rect transformedRect = gfx::ToEnclosedRect(MathUtil::mapClippedRect(transform, gfx::RectF(opaqueContentRects.rect())));
         transformedRect.Intersect(clipRectInTarget);
         if (transformedRect.width() >= minimumTrackingSize.width() || transformedRect.height() >= minimumTrackingSize.height()) {
             if (occludingScreenSpaceRects)

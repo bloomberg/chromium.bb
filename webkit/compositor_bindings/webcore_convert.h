@@ -6,11 +6,8 @@
 #define WEBKIT_COMPOSITOR_BINDINGS_WEBCORE_CONVERT_H_
 
 #include "FloatPoint.h"
-#include "FloatRect.h"
 #include "IntPoint.h"
-#include "IntRect.h"
 #include "IntSize.h"
-#include <public/WebFloatRect.h>
 #include <public/WebFloatPoint.h>
 #include <public/WebRect.h>
 #include <public/WebPoint.h>
@@ -18,12 +15,9 @@
 
 namespace WebKit {
 
-WebCore::FloatRect convert(const WebFloatRect& rect);
 WebCore::FloatPoint convert(const WebFloatPoint& point);
-WebCore::IntRect convert(const WebRect& rect);
 WebCore::IntPoint convert(const WebPoint& point);
 WebCore::IntSize convert(const WebSize& size);
-WebRect convert(const WebCore::IntRect& rect);
 WebSize convert(const WebCore::IntSize& size);
 WebFloatPoint convert(const WebCore::FloatPoint& point);
 

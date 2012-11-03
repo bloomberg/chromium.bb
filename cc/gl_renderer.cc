@@ -6,7 +6,6 @@
 
 #include "cc/gl_renderer.h"
 
-#include "FloatRect.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/string_split.h"
@@ -552,7 +551,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     LayerQuad deviceLayerEdges = LayerQuad(deviceQuad);
 
     // Use anti-aliasing programs only when necessary.
-    bool useAA = (!deviceQuad.IsRectilinear() || !cc::FloatRect(deviceQuad.BoundingBox()).isExpressibleAsIntRect());
+    bool useAA = (!deviceQuad.IsRectilinear() || !deviceQuad.BoundingBox().IsExpressibleAsRect());
     if (useAA) {
         deviceLayerBounds.inflateAntiAliasingDistance();
         deviceLayerEdges.inflateAntiAliasingDistance();

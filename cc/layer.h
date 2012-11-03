@@ -5,6 +5,7 @@
 #ifndef LayerChromium_h
 #define LayerChromium_h
 
+#include "IntPoint.h"
 #include "Region.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"

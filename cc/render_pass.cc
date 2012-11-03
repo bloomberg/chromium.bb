@@ -98,10 +98,9 @@ void RenderPass::appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBac
     SharedQuadState* sharedQuadState = quadCuller.useSharedQuadState(SharedQuadState::create(rootLayer->drawTransform(), rootTargetRect, rootTargetRect, opacity, opaque));
     DCHECK(rootLayer->screenSpaceTransform().isInvertible());
     WebTransformationMatrix transformToLayerSpace = rootLayer->screenSpaceTransform().inverse();
-    Vector<WebCore::IntRect> fillRects = fillRegion.rects();
-    for (size_t i = 0; i < fillRects.size(); ++i) {
+    for (Region::Iterator fillRects(fillRegion); fillRects.has_rect(); fillRects.next()) {
         // The root layer transform is composed of translations and scales only, no perspective, so mapping is sufficient.
-        gfx::Rect layerRect = MathUtil::mapClippedRect(transformToLayerSpace, cc::IntRect(fillRects[i]));
+        gfx::Rect layerRect = MathUtil::mapClippedRect(transformToLayerSpace, fillRects.rect());
         // Skip the quad culler and just append the quads directly to avoid occlusion checks.
         m_quadList.append(SolidColorDrawQuad::create(sharedQuadState, layerRect, screenBackgroundColor).PassAs<DrawQuad>());
     }

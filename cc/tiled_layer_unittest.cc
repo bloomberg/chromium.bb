@@ -1271,7 +1271,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_RECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds), opaqueContents.bounds());
-    EXPECT_EQ(1u, opaqueContents.rects().size());
+    EXPECT_EQ(1u, Region::Iterator(opaqueContents).size());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
@@ -1284,7 +1284,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_RECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds), opaqueContents.bounds());
-    EXPECT_EQ(1u, opaqueContents.rects().size());
+    EXPECT_EQ(1u, Region::Iterator(opaqueContents).size());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
@@ -1299,7 +1299,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_RECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds), opaqueContents.bounds());
-    EXPECT_EQ(1u, opaqueContents.rects().size());
+    EXPECT_EQ(1u, Region::Iterator(opaqueContents).size());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2 + 1, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
@@ -1314,7 +1314,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     updateTextures();
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_RECT_EQ(gfx::IntersectRects(gfx::Rect(10, 100, 90, 100), visibleBounds), opaqueContents.bounds());
-    EXPECT_EQ(1u, opaqueContents.rects().size());
+    EXPECT_EQ(1u, Region::Iterator(opaqueContents).size());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2 + 1  + 1, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);

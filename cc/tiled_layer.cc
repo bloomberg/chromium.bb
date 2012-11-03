@@ -151,9 +151,8 @@ void TiledLayer::updateBounds()
     Region oldRegion = gfx::Rect(gfx::Point(), oldBounds);
     Region newRegion = gfx::Rect(gfx::Point(), newBounds);
     newRegion.Subtract(oldRegion);
-    Vector<WebCore::IntRect> rects = newRegion.rects();
-    for (size_t i = 0; i < rects.size(); ++i)
-        invalidateContentRect(cc::IntRect(rects[i]));
+    for (Region::Iterator newRects(newRegion); newRects.has_rect(); newRects.next())
+        invalidateContentRect(newRects.rect());
 }
 
 void TiledLayer::setTileSize(const gfx::Size& size)
