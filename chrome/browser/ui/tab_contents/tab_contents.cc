@@ -118,13 +118,13 @@ TabContents::TabContents(WebContents* contents)
   TabAutofillManagerDelegate::CreateForWebContents(contents);
   AutofillManager::CreateForWebContentsAndDelegate(
       contents, TabAutofillManagerDelegate::FromWebContents(contents));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewAutofillUi)) {
-    AutofillExternalDelegate::CreateForWebContentsAndManager(
-        contents, AutofillManager::FromWebContents(contents));
-    AutofillManager::FromWebContents(contents)->SetExternalDelegate(
-        AutofillExternalDelegate::FromWebContents(contents));
-  }
+#if defined(OS_ANDROID)
+  // Not ready on non-Android yet, http://crbug.com/51644
+  AutofillExternalDelegate::CreateForWebContentsAndManager(
+      contents, AutofillManager::FromWebContents(contents));
+  AutofillManager::FromWebContents(contents)->SetExternalDelegate(
+      AutofillExternalDelegate::FromWebContents(contents));
+#endif
   BlockedContentTabHelper::CreateForWebContents(contents);
   BookmarkTabHelper::CreateForWebContents(contents);
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(contents);
