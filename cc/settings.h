@@ -5,7 +5,6 @@
 #ifndef CCSettings_h
 #define CCSettings_h
 
-#include "webkit/glue/webkit_glue_export.h"
 #include "cc/cc_export.h"
 
 namespace cc {

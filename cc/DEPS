@@ -7,7 +7,6 @@ include_rules = [
   "+media",
 # http://crbug.com/144542
   "+third_party/WebKit/Source/WebCore/platform/graphics/FloatPoint.h",
-  "+third_party/WebKit/Source/WebCore/platform/graphics/FloatPoint3D.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/FloatQuad.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/FloatRect.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/FloatSize.h",
@@ -15,7 +14,6 @@ include_rules = [
   "+third_party/WebKit/Source/WebCore/platform/graphics/IntRect.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/IntSize.h",
   "+Source/WebCore/platform/graphics/FloatPoint.h",
-  "+Source/WebCore/platform/graphics/FloatPoint3D.h",
   "+Source/WebCore/platform/graphics/FloatQuad.h",
   "+Source/WebCore/platform/graphics/FloatRect.h",
   "+Source/WebCore/platform/graphics/FloatSize.h",
@@ -27,11 +25,7 @@ include_rules = [
   "+Source/WebCore/platform/graphics/Region.h",
 # TODO(jamesr): Resolve these
   "+third_party/WebKit/Source/WebCore/platform/graphics/UnitBezier.h",
-  "+third_party/WebKit/Source/WebCore/platform/graphics/gpu/TilingData.h",
   "+Source/WebCore/platform/graphics/UnitBezier.h",
-  "+Source/WebCore/platform/graphics/gpu/TilingData.h",
-# http://crbug.com/154052
-  "+webkit/glue/webkit_glue_export.h",
 # http://crbug.com/154451
   "+third_party/WebKit/Source/WTF/config.h",
   "+Source/WTF/config.h",
