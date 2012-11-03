@@ -271,7 +271,7 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       MetroPinTabHelper* tab_helper =
           web_contents ? MetroPinTabHelper::FromWebContents(web_contents)
                        : NULL;
-      if (tab_helper && tab_helper->is_pinned())
+      if (tab_helper && tab_helper->IsPinned())
         string_id = IDS_UNPIN_FROM_START_SCREEN;
       return l10n_util::GetStringUTF16(string_id);
     }

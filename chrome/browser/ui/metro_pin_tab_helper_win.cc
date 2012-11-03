@@ -363,21 +363,31 @@ void MetroPinTabHelper::FaviconDownloader::OnDidDownloadFavicon(
 }
 
 MetroPinTabHelper::MetroPinTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      is_pinned_(false) {}
+    : content::WebContentsObserver(web_contents) {}
 
 MetroPinTabHelper::~MetroPinTabHelper() {}
 
+bool MetroPinTabHelper::IsPinned() const {
+  HMODULE metro_module = base::win::GetMetroModule();
+  if (!metro_module)
+    return false;
+
+  typedef BOOL (*MetroIsPinnedToStartScreen)(const string16&);
+  MetroIsPinnedToStartScreen metro_is_pinned_to_start_screen =
+      reinterpret_cast<MetroIsPinnedToStartScreen>(
+          ::GetProcAddress(metro_module, "MetroIsPinnedToStartScreen"));
+  if (!metro_is_pinned_to_start_screen) {
+    NOTREACHED();
+    return false;
+  }
+
+  GURL url = web_contents()->GetURL();
+  string16 tile_id = GenerateTileId(UTF8ToUTF16(url.spec()));
+  return metro_is_pinned_to_start_screen(tile_id) != 0;
+}
+
 void MetroPinTabHelper::TogglePinnedToStartScreen() {
-  UpdatePinnedStateForCurrentURL();
-  bool was_pinned = is_pinned_;
-
-  // TODO(benwells): This will update the state incorrectly if the user
-  // cancels. To fix this some sort of callback needs to be introduced as
-  // the pinning happens on another thread.
-  is_pinned_ = !is_pinned_;
-
-  if (was_pinned) {
+  if (IsPinned()) {
     UnPinPageFromStartScreen();
     return;
   }
@@ -400,7 +410,6 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
 void MetroPinTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& /*details*/,
     const content::FrameNavigateParams& /*params*/) {
-  UpdatePinnedStateForCurrentURL();
   // Cancel any outstanding pin operations once the user navigates away from
   // the page.
   if (favicon_downloader_.get())
@@ -434,25 +443,6 @@ void MetroPinTabHelper::OnDidDownloadFavicon(
   if (favicon_downloader_.get())
     favicon_downloader_->OnDidDownloadFavicon(id, image_url, errored,
                                               requested_size, bitmaps);
-}
-
-void MetroPinTabHelper::UpdatePinnedStateForCurrentURL() {
-  HMODULE metro_module = base::win::GetMetroModule();
-  if (!metro_module)
-    return;
-
-  typedef BOOL (*MetroIsPinnedToStartScreen)(const string16&);
-  MetroIsPinnedToStartScreen metro_is_pinned_to_start_screen =
-      reinterpret_cast<MetroIsPinnedToStartScreen>(
-          ::GetProcAddress(metro_module, "MetroIsPinnedToStartScreen"));
-  if (!metro_is_pinned_to_start_screen) {
-    NOTREACHED();
-    return;
-  }
-
-  GURL url = web_contents()->GetURL();
-  string16 tile_id = GenerateTileId(UTF8ToUTF16(url.spec()));
-  is_pinned_ = metro_is_pinned_to_start_screen(tile_id) != 0;
 }
 
 void MetroPinTabHelper::UnPinPageFromStartScreen() {

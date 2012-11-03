@@ -20,7 +20,7 @@ class MetroPinTabHelper
  public:
   virtual ~MetroPinTabHelper();
 
-  bool is_pinned() const { return is_pinned_; }
+  bool IsPinned() const;
 
   void TogglePinnedToStartScreen();
 
@@ -49,16 +49,10 @@ class MetroPinTabHelper
                             int requested_size,
                             const std::vector<SkBitmap>& bitmaps);
 
-  // Queries the metro driver about the pinned state of the current URL.
-  void UpdatePinnedStateForCurrentURL();
-
   void UnPinPageFromStartScreen();
 
   // Called by the |favicon_downloader_| when it has finished.
   void FaviconDownloaderFinished();
-
-  // Whether the current URL is pinned to the metro start screen.
-  bool is_pinned_;
 
   // Candidate Favicon URLs for the current page.
   std::vector<FaviconURL> favicon_url_candidates_;
