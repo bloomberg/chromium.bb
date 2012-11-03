@@ -19,10 +19,8 @@ readonly QEMU=${SDK_ROOT}/qemu-arm
 readonly QEMU_STOCK=/usr/bin/qemu-arm
 readonly QEMU_JAIL=${SDK_ROOT}
 
-# qemu occasionally hangs - so force a timeout, default (10min)
-readonly QEMU_MAX_RUN_TIME_SECS=${QEMU_MAX_RUN_TIME_SECS:-600}
-# Note: timeouts will be reported as error code 124
-readonly TIMEOUT_CMD="timeout --kill-after=5 ${QEMU_MAX_RUN_TIME_SECS}"
+# Hook for adding stuff like timeout wrappers
+readonly QEMU_PREFIX_HOOK=${QEMU_PREFIX_HOOK:-}
 
 # NOTE: some useful debugging options for qemu:
 #       env vars:
@@ -81,7 +79,7 @@ help () {
 #@   run emulation using a locally patched qemu
 run() {
   CheckPrerequisites
-  exec ${TIMEOUT_CMD} ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
+  exec ${QEMU_PREFIX_HOOK} ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
 }
 
 #@
@@ -89,7 +87,7 @@ run() {
 #@
 #@   run emulation using the stock qemu
 run_stock() {
-  exec ${TIMEOUT_CMD} ${QEMU_STOCK} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
+  exec ${QEMU_PREFIX_HOOK} ${QEMU_STOCK} -L ${QEMU_JAIL} ${QEMU_ARGS} "$@"
 }
 
 #@

@@ -485,6 +485,9 @@ if pre_base_env.Bit('use_environ'):
 # so let's do it in all cases.
 pre_base_env['ENV']['CYGWIN'] = os.environ.get('CYGWIN', 'nodosfilewarning')
 
+# Note: QEMU_PREFIX_HOOK may influence test runs and sb translator invocations
+pre_base_env['ENV']['QEMU_PREFIX_HOOK'] = os.environ.get('QEMU_PREFIX_HOOK', '')
+
 # Allow the zero-based sandbox model to run insecurely.
 # TODO(arbenson): remove this once binutils bug is fixed (see
 # src/trusted/service_runtime/arch/x86_64/sel_addrspace_posix_x86_64.c)
