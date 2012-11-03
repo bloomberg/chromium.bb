@@ -22,8 +22,3 @@ ClientSocketPoolBaseTest.DisableCleanupTimer
 
 # Flaky, see http://crbug.com/108422
 SSLClientSocketTest.ConnectMismatched
-
-# Crashes consistently under drmemory:
-# http://crbug.com/157132
-*SpdyNetworkTransactionSpdy*Test.*
-

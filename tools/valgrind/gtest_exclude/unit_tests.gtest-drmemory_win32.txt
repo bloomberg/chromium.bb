@@ -53,10 +53,3 @@ TemplateURLFetcherTest.*
 GAIAInfoUpdateServiceTest.*
 ProfileManagerTest.*
 ProfileInfoCacheTest.*
-
-# crashes under drmemory:
-# http://crbug.com/157132
-SignatureUtilWinTest.*
-SafeBrowsingDatabaseTest.*
-# In fact the whole test is crashing, so disabling all for now:
-*
