@@ -59,6 +59,7 @@ void wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
 
 struct wl_connection;
 struct wl_closure;
+struct wl_proxy;
 
 struct wl_connection *wl_connection_create(int fd);
 void wl_connection_destroy(struct wl_connection *connection);
@@ -80,6 +81,7 @@ struct wl_closure {
 	void *args[20];
 	uint32_t *start;
 	struct wl_list link;
+	struct wl_proxy *proxy;
 	uint32_t buffer[0];
 };
 

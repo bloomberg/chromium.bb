@@ -45,11 +45,17 @@
 
 /** \cond */
 
+enum wl_proxy_flag {
+	WL_PROXY_FLAG_ID_DELETED = (1 << 0),
+	WL_PROXY_FLAG_DESTROYED = (1 << 1)
+};
+
 struct wl_proxy {
 	struct wl_object object;
 	struct wl_display *display;
 	struct wl_event_queue *queue;
-	int id_deleted;
+	uint32_t flags;
+	int refcount;
 	void *user_data;
 };
 
@@ -216,7 +222,8 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	proxy->object.implementation = NULL;
 	proxy->display = display;
 	proxy->queue = factory->queue;
-	proxy->id_deleted = 0;
+	proxy->flags = 0;
+	proxy->refcount = 1;
 
 	pthread_mutex_lock(&display->mutex);
 	proxy->object.id = wl_map_insert_new(&display->objects,
@@ -243,7 +250,8 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	proxy->object.id = id;
 	proxy->display = display;
 	proxy->queue = factory->queue;
-	proxy->id_deleted = 0;
+	proxy->flags = 0;
+	proxy->refcount = 1;
 
 	wl_map_insert_at(&display->objects, id, proxy);
 
@@ -259,9 +267,11 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
-	pthread_mutex_lock(&proxy->display->mutex);
+	struct wl_display *display = proxy->display;
 
-	if (proxy->id_deleted)
+	pthread_mutex_lock(&display->mutex);
+
+	if (proxy->flags & WL_PROXY_FLAG_ID_DELETED)
 		wl_map_remove(&proxy->display->objects, proxy->object.id);
 	else if (proxy->object.id < WL_SERVER_ID_START)
 		wl_map_insert_at(&proxy->display->objects,
@@ -270,9 +280,14 @@ wl_proxy_destroy(struct wl_proxy *proxy)
 		wl_map_insert_at(&proxy->display->objects,
 				 proxy->object.id, NULL);
 
-	pthread_mutex_unlock(&proxy->display->mutex);
 
-	free(proxy);
+	proxy->flags |= WL_PROXY_FLAG_DESTROYED;
+
+	proxy->refcount--;
+	if (!proxy->refcount)
+		free(proxy);
+
+	pthread_mutex_unlock(&display->mutex);
 }
 
 /** Set a proxy's listener
@@ -401,7 +416,7 @@ display_handle_delete_id(void *data, struct wl_display *display, uint32_t id)
 
 	proxy = wl_map_lookup(&display->objects, id);
 	if (proxy != WL_ZOMBIE_OBJECT)
-		proxy->id_deleted = 1;
+		proxy->flags |= WL_PROXY_FLAG_ID_DELETED;
 	else
 		wl_map_remove(&display->objects, id);
 
@@ -514,6 +529,8 @@ wl_display_connect_to_fd(int fd)
 	display->proxy.object.implementation = (void(**)(void)) &display_listener;
 	display->proxy.user_data = display;
 	display->proxy.queue = &display->queue;
+	display->proxy.flags = 0;
+	display->proxy.refcount = 1;
 
 	display->connection = wl_connection_create(display->fd);
 	if (display->connection == NULL) {
@@ -673,6 +690,31 @@ create_proxies(struct wl_proxy *sender, struct wl_closure *closure)
 	return 0;
 }
 
+static void
+increase_closure_args_refcount(struct wl_closure *closure)
+{
+	const char *signature;
+	struct argument_details arg;
+	int i, count;
+	struct wl_proxy *proxy;
+
+	signature = closure->message->signature;
+	count = arg_count_for_signature(signature) + 2;
+	for (i = 2; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		switch (arg.type) {
+		case 'n':
+		case 'o':
+			proxy = *(struct wl_proxy **) closure->args[i];
+			if (proxy)
+				proxy->refcount++;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 static int
 queue_event(struct wl_display *display, int len)
 {
@@ -709,6 +751,15 @@ queue_event(struct wl_display *display, int len)
 		return -1;
 	}
 
+	if (wl_closure_lookup_objects(closure, &display->objects) != 0) {
+		wl_closure_destroy(closure);
+		return -1;
+	}
+
+	increase_closure_args_refcount(closure);
+	proxy->refcount++;
+	closure->proxy = proxy;
+
 	if (wl_list_empty(&proxy->queue->event_list))
 		pthread_cond_signal(&proxy->queue->cond);
 	wl_list_insert(proxy->queue->event_list.prev, &closure->link);
@@ -717,31 +768,68 @@ queue_event(struct wl_display *display, int len)
 }
 
 static void
+decrease_closure_args_refcount(struct wl_closure *closure)
+{
+	const char *signature;
+	struct argument_details arg;
+	int i, count;
+	struct wl_proxy *proxy;
+
+	signature = closure->message->signature;
+	count = arg_count_for_signature(signature) + 2;
+	for (i = 2; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		switch (arg.type) {
+		case 'n':
+		case 'o':
+			proxy = *(struct wl_proxy **) closure->args[i];
+			if (proxy) {
+				if (proxy->flags & WL_PROXY_FLAG_DESTROYED)
+					*(void **) closure->args[i] = NULL;
+
+				proxy->refcount--;
+				if (!proxy->refcount)
+					free(proxy);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+static void
 dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 {
 	struct wl_closure *closure;
 	struct wl_proxy *proxy;
-	uint32_t id;
-	int opcode, ret;
+	int opcode;
+	bool proxy_destroyed;
 
 	closure = container_of(queue->event_list.next,
 			       struct wl_closure, link);
 	wl_list_remove(&closure->link);
-	id = closure->buffer[0];
 	opcode = closure->buffer[1] & 0xffff;
 
-	/* Verify that the receiving object is still valid and look up
-	 * proxies for any arguments.  We have to do this just before
-	 * calling the handler, since preceeding events may have
-	 * destroyed either the proxy or the proxy args since the
-	 * event was queued. */
-	proxy = wl_map_lookup(&display->objects, id);
-	ret = wl_closure_lookup_objects(closure, &display->objects);
+	/* Verify that the receiving object is still valid by checking if has
+	 * been destroyed by the application. */
+
+	decrease_closure_args_refcount(closure);
+	proxy = closure->proxy;
+	proxy_destroyed = !!(proxy->flags & WL_PROXY_FLAG_DESTROYED);
+
+	proxy->refcount--;
+	if (!proxy->refcount)
+		free(proxy);
+
+	if (proxy_destroyed) {
+		wl_closure_destroy(closure);
+		return;
+	}
 
 	pthread_mutex_unlock(&display->mutex);
 
-	if (proxy != WL_ZOMBIE_OBJECT &&
-	    proxy->object.implementation && ret == 0) {
+	if (proxy->object.implementation) {
 		if (wl_debug)
 			wl_closure_print(closure, &proxy->object, false);
 
