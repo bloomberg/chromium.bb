@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -90,7 +90,7 @@ void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
   sig_ctx->t9          = 0;
   sig_ctx->k0          = 0;
   sig_ctx->k1          = 0;
-  sig_ctx->global_ptr  = th_ctx->global_ptr;
+  sig_ctx->global_ptr  = 0;
   sig_ctx->stack_ptr   = th_ctx->stack_ptr;
   sig_ctx->frame_ptr   = th_ctx->frame_ptr;
   sig_ctx->return_addr = th_ctx->prog_ctr;

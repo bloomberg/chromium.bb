@@ -26,7 +26,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    uint32_t             new_prog_ctr) {
   struct NaClThreadContext  *context;
 
-  natp->user.trusted_stack_ptr = (NaClGetStackPtr() & ~0xf) + 4;
+  natp->user.trusted_stack_ptr = NaClGetStackPtr() & ~NACL_STACK_ALIGN_MASK;
 
   context = &natp->user;
   context->new_prog_ctr = new_prog_ctr;
@@ -39,11 +39,6 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * conditionalize this.
    */
   context->sysret = context->stack_ptr;
-
-  /*
-   * Just to be sure that app does not spoil gp
-   */
-  context->global_ptr = NaClGetGlobalPtr();
 
   /*
    * context stored in $a0

@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdint.h>
@@ -13,13 +13,5 @@ uint32_t NaClGetStackPtr(void) {
   asm("move %0, $sp" : "=r" (sp));
 
   return sp;
-}
-
-uint32_t NaClGetGlobalPtr(void) {
-  uint32_t gp;
-
-  asm("move %0, $gp" : "=r" (gp));
-
-  return gp;
 }
 

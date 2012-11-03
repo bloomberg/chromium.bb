@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/service_runtime/arch/mips/sel_rt.h"
@@ -56,7 +56,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
   lw $s6, NACL_THREAD_CONTEXT_OFFSET_S6($a0)
   lw $s7, NACL_THREAD_CONTEXT_OFFSET_S7($a0)
   lw $t8, NACL_THREAD_CONTEXT_OFFSET_T8($a0)
-  lw $gp, NACL_THREAD_CONTEXT_OFFSET_GLOBAL_PTR($a0)
   lw $sp, NACL_THREAD_CONTEXT_OFFSET_STACK_PTR($a0)
   lw $fp, NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR($a0)
 

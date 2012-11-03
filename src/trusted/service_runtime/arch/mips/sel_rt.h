@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -20,7 +20,6 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 
 uint32_t NaClGetStackPtr(void);
-uint32_t NaClGetGlobalPtr(void);
 
 typedef uint32_t nacl_reg_t;
 
@@ -39,8 +38,8 @@ struct NaClThreadContext {
   nacl_reg_t  s0, s1, s2, s3, s4, s5, s6, s7, t8;
   /*           0   4   8   c  10  14  18  1c  20 */
 
-  nacl_reg_t  global_ptr, stack_ptr, frame_ptr, prog_ctr;
-  /*                  24         28         2c        30 */
+  nacl_reg_t  stack_ptr, frame_ptr, prog_ctr;
+  /*                 24         28        2c */
 
   /*
    * sys_ret and new_prog_ctr are not a part of the thread's register set,
@@ -48,15 +47,15 @@ struct NaClThreadContext {
    * use the same interface.
    */
   uint32_t  sysret;
-  /*            34 */
+  /*            30 */
   uint32_t  new_prog_ctr;
-  /*            38 */
+  /*            34 */
   uint32_t  trusted_stack_ptr;
-  /*            3c */
+  /*            38 */
   uint32_t  tls_idx;
-  /*            40 */
+  /*            3c */
   uint32_t  tls_value2;
-  /*            44 */
+  /*            40 */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -70,15 +69,14 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_S6                  0x18
 #define NACL_THREAD_CONTEXT_OFFSET_S7                  0x1c
 #define NACL_THREAD_CONTEXT_OFFSET_T8                  0x20
-#define NACL_THREAD_CONTEXT_OFFSET_GLOBAL_PTR          0x24
-#define NACL_THREAD_CONTEXT_OFFSET_STACK_PTR           0x28
-#define NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR           0x2c
-#define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR            0x30
-#define NACL_THREAD_CONTEXT_OFFSET_SYSRET              0x34
-#define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR        0x38
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR   0x3c
-#define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX             0x40
-#define NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE2          0x44
+#define NACL_THREAD_CONTEXT_OFFSET_STACK_PTR           0x24
+#define NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR           0x28
+#define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR            0x2c
+#define NACL_THREAD_CONTEXT_OFFSET_SYSRET              0x30
+#define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR        0x34
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR   0x38
+#define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX             0x3c
+#define NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE2          0x40
 
 #if !defined(__ASSEMBLER__)
 
@@ -105,7 +103,6 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_S6, s6);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_S7, s7);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_T8, t8);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_GLOBAL_PTR, global_ptr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_STACK_PTR, stack_ptr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR, frame_ptr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_PROG_CTR, prog_ctr);
@@ -118,7 +115,6 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   CHECK(offset == sizeof(struct NaClThreadContext));
 
 #undef NACL_CHECK_FIELD
-
 }
 
 #endif /* !defined(__ASSEMBLER__) */

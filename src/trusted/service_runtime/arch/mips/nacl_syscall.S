@@ -1,7 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/service_runtime/arch/mips/sel_rt.h"
@@ -67,11 +67,16 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
  * scons-out//gen/native_client/src/trusted/service_runtime).
  */
 
-  /* Place a0-a3 argument registers in the reserved 16-byte region in caller's
-     stack frame (o32 ABI), and place return address on top of that. */
-
+  /*
+   * .cpload will expand into the three instructions function prologue that sets
+   * up the $gp register to the trusted value.
+   */
   .cpload $t9
 
+  /*
+   * Place a0-a3 argument registers in the reserved 16-byte region in caller's
+   * stack frame (o32 ABI), and place return address on top of that.
+   */
   sw    $a3, 12($sp)
   sw    $a2,  8($sp)
   sw    $a1,  4($sp)
@@ -90,8 +95,10 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   addu  $a3, $v1, $a3
   lw    $a0, 0($a3)
 
-  /* Load the nacl_user entry of this thread.
-   * a1 = nacl_user[a0*4] */
+  /*
+   * Load the nacl_user entry of this thread.
+   * a1 = nacl_user[a0*4]
+   */
   lw    $a1,%got(nacl_user)($28)
   sll   $a0, $a0, 2
   addu  $a1, $a1, $a0
@@ -106,15 +113,15 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   sw $s6, NACL_THREAD_CONTEXT_OFFSET_S6($a1)
   sw $s7, NACL_THREAD_CONTEXT_OFFSET_S7($a1)
   sw $t8, NACL_THREAD_CONTEXT_OFFSET_T8($a1)
-  sw $gp, NACL_THREAD_CONTEXT_OFFSET_GLOBAL_PTR($a1)
   sw $sp, NACL_THREAD_CONTEXT_OFFSET_STACK_PTR($a1)
   sw $fp, NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR($a1)
 
   /* Restore the thread index. */
   srl   $a0, $a0, 2
 
-  /* Reserve 16-byte for arguments (o32 ABI) */
-  addiu $sp, $sp, -16
+  /* Restore the trusted stack */
+  lw $sp, NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR($a1)
+
   lw    $t9,%call16(NaClSyscallCSegHook)($gp)
   jr    $t9
   nop
@@ -123,7 +130,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 
   /*
    * If the thread returns, which must not happen, it will be halted
-   * by the following instruction
+   * by the following instruction.
    */
 
   NACL_HALT
