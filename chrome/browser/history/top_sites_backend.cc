@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/top_sites_database.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -32,18 +33,18 @@ void TopSitesBackend::Shutdown() {
       base::Bind(&TopSitesBackend::ShutdownDBOnDBThread, this));
 }
 
-TopSitesBackend::Handle TopSitesBackend::GetMostVisitedThumbnails(
-    CancelableRequestConsumerBase* consumer,
-    const GetMostVisitedThumbnailsCallback& callback) {
-  GetMostVisitedThumbnailsRequest* request =
-      new GetMostVisitedThumbnailsRequest(callback);
-  request->value = new MostVisitedThumbnails;
-  AddRequest(request, consumer);
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::GetMostVisitedThumbnailsOnDBThread, this,
-                 make_scoped_refptr(request)));
-  return request->handle();
+void TopSitesBackend::GetMostVisitedThumbnails(
+      const GetMostVisitedThumbnailsCallback& callback,
+      CancelableTaskTracker* tracker) {
+  scoped_refptr<MostVisitedThumbnails> thumbnails = new MostVisitedThumbnails();
+  bool* need_history_migration = new bool(false);
+
+  tracker->PostTaskAndReply(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      FROM_HERE,
+      base::Bind(&TopSitesBackend::GetMostVisitedThumbnailsOnDBThread,
+                 this, thumbnails, need_history_migration),
+      base::Bind(callback, thumbnails, base::Owned(need_history_migration)));
 }
 
 void TopSitesBackend::UpdateTopSites(const TopSitesDelta& delta) {
@@ -98,20 +99,16 @@ void TopSitesBackend::ShutdownDBOnDBThread() {
 }
 
 void TopSitesBackend::GetMostVisitedThumbnailsOnDBThread(
-    scoped_refptr<GetMostVisitedThumbnailsRequest> request) {
+    scoped_refptr<MostVisitedThumbnails> thumbnails,
+    bool* need_history_migration) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
-  if (request->canceled())
-    return;
-
-  bool may_need_history_migration = false;
+  *need_history_migration = false;
   if (db_.get()) {
-    db_->GetPageThumbnails(&(request->value->most_visited),
-                           &(request->value->url_to_images_map));
-    may_need_history_migration = db_->may_need_history_migration();
+    db_->GetPageThumbnails(&(thumbnails->most_visited),
+                           &(thumbnails->url_to_images_map));
+    *need_history_migration = db_->may_need_history_migration();
   }
-  request->ForwardResult(request->handle(), request->value,
-                         may_need_history_migration);
 }
 
 void TopSitesBackend::UpdateTopSitesOnDBThread(const TopSitesDelta& delta) {

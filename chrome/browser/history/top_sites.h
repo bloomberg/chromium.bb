@@ -21,6 +21,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "chrome/browser/history/top_sites_backend.h"
+#include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/thumbnail_score.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -37,7 +39,6 @@ class RefCountedMemory;
 namespace history {
 
 class TopSitesCache;
-class TopSitesBackend;
 class TopSitesTest;
 
 // Stores the data for the top "most visited" sites. This includes a cache of
@@ -301,9 +302,9 @@ class TopSites
       CancelableRequestProvider::Handle handle);
 
   // Callback from TopSites with the top sites/thumbnails.
-  void OnGotMostVisitedThumbnails(CancelableRequestProvider::Handle handle,
-                                  scoped_refptr<MostVisitedThumbnails> data,
-                                  bool may_need_history_migration);
+  void OnGotMostVisitedThumbnails(
+      const scoped_refptr<MostVisitedThumbnails>& thumbnails,
+      const bool* need_history_migration);
 
   // Called when history service returns a list of top URLs.
   void OnTopSitesAvailableFromHistory(CancelableRequestProvider::Handle handle,
@@ -328,6 +329,7 @@ class TopSites
   // with (HistoryService and TopSitesBackend).
   CancelableRequestConsumer history_consumer_;
   CancelableRequestConsumer top_sites_consumer_;
+  CancelableTaskTracker cancelable_task_tracker_;
 
   // Timer that asks history for the top sites. This is used to make sure our
   // data stays in sync with history.

@@ -2045,6 +2045,7 @@
         'browser/webdata/web_database_migration_unittest.cc',
         'browser/webdata/web_intents_table_unittest.cc',
         'common/bzip2_unittest.cc',
+        'common/cancelable_task_tracker_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
         'common/chrome_paths_unittest.cc',
         'common/common_param_traits_unittest.cc',

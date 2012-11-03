@@ -68,6 +68,8 @@
         'common/badge_util.cc',
         'common/badge_util.h',
         'common/bzip2_error_handler.cc',
+        'common/cancelable_task_tracker.cc',
+        'common/cancelable_task_tracker.h',
         'common/child_process_logging.h',
         'common/child_process_logging_mac.mm',
         'common/child_process_logging_posix.cc',

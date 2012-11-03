@@ -19,7 +19,6 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/page_usage_data.h"
-#include "chrome/browser/history/top_sites_backend.h"
 #include "chrome/browser/history/top_sites_cache.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -215,9 +214,9 @@ void TopSites::Init(const FilePath& db_name) {
   backend_ = new TopSitesBackend;
   backend_->Init(db_name);
   backend_->GetMostVisitedThumbnails(
-      &top_sites_consumer_,
       base::Bind(&TopSites::OnGotMostVisitedThumbnails,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &cancelable_task_tracker_);
 
   // History may have already finished loading by the time we're created.
   HistoryService* history =
@@ -904,20 +903,19 @@ void TopSites::OnHistoryMigrationWrittenToDisk(TopSitesBackend::Handle handle) {
 }
 
 void TopSites::OnGotMostVisitedThumbnails(
-    CancelableRequestProvider::Handle handle,
-    scoped_refptr<MostVisitedThumbnails> data,
-    bool may_need_history_migration) {
+    const scoped_refptr<MostVisitedThumbnails>& thumbnails,
+    const bool* need_history_migration) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(top_sites_state_, TOP_SITES_LOADING);
 
-  if (!may_need_history_migration) {
+  if (!*need_history_migration) {
     top_sites_state_ = TOP_SITES_LOADED;
 
     // Set the top sites directly in the cache so that SetTopSites diffs
     // correctly.
-    cache_->SetTopSites(data->most_visited);
-    SetTopSites(data->most_visited);
-    cache_->SetThumbnails(data->url_to_images_map);
+    cache_->SetTopSites(thumbnails->most_visited);
+    SetTopSites(thumbnails->most_visited);
+    cache_->SetThumbnails(thumbnails->url_to_images_map);
 
     ResetThreadSafeImageCache();
 

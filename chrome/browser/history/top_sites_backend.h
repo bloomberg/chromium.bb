@@ -12,6 +12,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 
+class CancelableTaskTracker;
 class FilePath;
 
 namespace history {
@@ -25,6 +26,12 @@ class TopSitesBackend
     : public base::RefCountedThreadSafe<TopSitesBackend>,
       public CancelableRequestProvider {
  public:
+  // The boolean parameter indicates if the DB existed on disk or needs to be
+  // migrated.
+  typedef base::Callback<void(const scoped_refptr<MostVisitedThumbnails>&,
+                              const bool*)>
+      GetMostVisitedThumbnailsCallback;
+
   TopSitesBackend();
 
   void Init(const FilePath& path);
@@ -32,19 +39,10 @@ class TopSitesBackend
   // Schedules the db to be shutdown.
   void Shutdown();
 
-  // The boolean parameter indicates if the DB existed on disk or needs to be
-  // migrated.
-  typedef base::Callback<
-      void(Handle, scoped_refptr<MostVisitedThumbnails>, bool)>
-          GetMostVisitedThumbnailsCallback;
-  typedef CancelableRequest1<TopSitesBackend::GetMostVisitedThumbnailsCallback,
-                             scoped_refptr<MostVisitedThumbnails> >
-      GetMostVisitedThumbnailsRequest;
-
   // Fetches MostVisitedThumbnails.
-  Handle GetMostVisitedThumbnails(
-      CancelableRequestConsumerBase* consumer,
-      const GetMostVisitedThumbnailsCallback& callback);
+  void GetMostVisitedThumbnails(
+      const GetMostVisitedThumbnailsCallback& callback,
+      CancelableTaskTracker* tracker);
 
   // Updates top sites database from the specified delta.
   void UpdateTopSites(const TopSitesDelta& delta);
@@ -80,7 +78,8 @@ class TopSitesBackend
 
   // Does the work of getting the most visted thumbnails.
   void GetMostVisitedThumbnailsOnDBThread(
-      scoped_refptr<GetMostVisitedThumbnailsRequest> request);
+      scoped_refptr<MostVisitedThumbnails> thumbnails,
+      bool* need_history_migration);
 
   // Updates top sites.
   void UpdateTopSitesOnDBThread(const TopSitesDelta& delta);
