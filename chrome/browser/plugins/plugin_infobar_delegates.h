@@ -125,6 +125,8 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
 class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
                                        public WeakPluginInstallerObserver {
  public:
+  typedef base::Callback<void(const PluginMetadata*)> InstallCallback;
+
   // Shows an infobar asking whether to install the plugin represented by
   // |installer|. When the user accepts, |callback| is called.
   // During installation of the plug-in, the infobar will change to reflect the
@@ -132,7 +134,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   static InfoBarDelegate* Create(InfoBarService* infobar_service,
                                  PluginInstaller* installer,
                                  scoped_ptr<PluginMetadata> plugin_metadata,
-                                 const base::Closure& callback);
+                                 const InstallCallback& callback);
 
  private:
   friend class OutdatedPluginInfoBarDelegate;
@@ -140,7 +142,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   PluginInstallerInfoBarDelegate(InfoBarService* infobar_service,
                                  PluginInstaller* installer,
                                  scoped_ptr<PluginMetadata> plugin_metadata,
-                                 const base::Closure& callback,
+                                 const InstallCallback& callback,
                                  bool new_install,
                                  const string16& message);
   virtual ~PluginInstallerInfoBarDelegate();
@@ -169,7 +171,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   scoped_ptr<PluginMetadata> plugin_metadata_;
 
-  base::Closure callback_;
+  InstallCallback callback_;
 
   // True iff the plug-in isn't installed yet.
   bool new_install_;

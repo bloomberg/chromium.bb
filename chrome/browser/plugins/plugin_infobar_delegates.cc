@@ -301,7 +301,7 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
     return;
   InfoBarDelegate* delegate = new PluginInstallerInfoBarDelegate(
       owner(), installer(), plugin_metadata_->Clone(),
-      base::Closure(), false, message);
+      PluginInstallerInfoBarDelegate::InstallCallback(), false, message);
   owner()->ReplaceInfoBar(this, delegate);
 }
 
@@ -311,7 +311,7 @@ PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata,
-    const base::Closure& callback,
+    const InstallCallback& callback,
     bool new_install,
     const string16& message)
     : ConfirmInfoBarDelegate(infobar_service),
@@ -329,7 +329,7 @@ InfoBarDelegate* PluginInstallerInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata,
-    const base::Closure& callback) {
+    const InstallCallback& callback) {
   string16 message;
   switch (installer->state()) {
     case PluginInstaller::INSTALLER_STATE_IDLE:
@@ -366,7 +366,7 @@ string16 PluginInstallerInfoBarDelegate::GetButtonLabel(
 }
 
 bool PluginInstallerInfoBarDelegate::Accept() {
-  callback_.Run();
+  callback_.Run(plugin_metadata_.get());
   return false;
 }
 
@@ -430,7 +430,7 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
     return;
   InfoBarDelegate* delegate = new PluginInstallerInfoBarDelegate(
       owner(), installer(), plugin_metadata_->Clone(),
-      base::Closure(), new_install_, message);
+      InstallCallback(), new_install_, message);
   owner()->ReplaceInfoBar(this, delegate);
 }
 
