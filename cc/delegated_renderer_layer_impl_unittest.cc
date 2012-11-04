@@ -14,6 +14,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/solid_color_layer_impl.h"
+#include "cc/test/fake_proxy.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/geometry_test_utils.h"
@@ -34,11 +35,13 @@ namespace {
 class DelegatedRendererLayerImplTest : public testing::Test, public LayerTreeHostImplClient {
 public:
     DelegatedRendererLayerImplTest()
+        : m_proxy(scoped_ptr<Thread>(NULL))
+        , m_alwaysImplThreadAndMainThreadBlocked(&m_proxy)
     {
         LayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = gfx::Size();
 
-        m_hostImpl = LayerTreeHostImpl::create(settings, this);
+        m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
         m_hostImpl->initializeRenderer(createContext());
         m_hostImpl->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
     }
@@ -60,9 +63,8 @@ protected:
         return FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3D)).PassAs<GraphicsContext>();
     }
 
-    DebugScopedSetImplThread m_alwaysImplThread;
-    DebugScopedSetMainThreadBlocked m_alwaysMainThreadBlocked;
-
+    FakeProxy m_proxy;
+    DebugScopedSetImplThreadAndMainThreadBlocked m_alwaysImplThreadAndMainThreadBlocked;
     scoped_ptr<LayerTreeHostImpl> m_hostImpl;
 };
 

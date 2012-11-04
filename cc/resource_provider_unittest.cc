@@ -10,12 +10,12 @@
 #include "cc/graphics_context.h"
 #include "cc/scoped_ptr_deque.h"
 #include "cc/scoped_ptr_hash_map.h"
-#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/rect.h"
 #include <public/WebGraphicsContext3D.h>
 
 using namespace cc;
@@ -300,7 +300,6 @@ public:
     }
 
 protected:
-    DebugScopedSetImplThread implThread;
     scoped_ptr<ContextSharedData> m_sharedData;
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;

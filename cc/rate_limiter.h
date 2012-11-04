@@ -13,6 +13,8 @@ class WebGraphicsContext3D;
 
 namespace cc {
 
+class Thread;
+
 class RateLimiterClient {
 public:
     virtual void rateLimit() = 0;
@@ -24,7 +26,7 @@ public:
 // compositor.
 class RateLimiter : public base::RefCounted<RateLimiter> {
 public:
-    static scoped_refptr<RateLimiter> create(WebKit::WebGraphicsContext3D*, RateLimiterClient*);
+    static scoped_refptr<RateLimiter> create(WebKit::WebGraphicsContext3D*, RateLimiterClient*, Thread*);
 
     void start();
 
@@ -32,7 +34,7 @@ public:
     void stop();
 
 private:
-    RateLimiter(WebKit::WebGraphicsContext3D*, RateLimiterClient*);
+    RateLimiter(WebKit::WebGraphicsContext3D*, RateLimiterClient*, Thread*);
     ~RateLimiter();
     friend class base::RefCounted<RateLimiter>;
 
@@ -43,6 +45,7 @@ private:
     WebKit::WebGraphicsContext3D* m_context;
     bool m_active;
     RateLimiterClient *m_client;
+    Thread* m_thread;
 };
 
 }

@@ -11,6 +11,7 @@
 #include "cc/graphics_context.h"
 #include "cc/layer_tree_host.h"
 #include "cc/resource_update_controller.h"
+#include "cc/thread.h"
 
 namespace cc {
 
@@ -20,7 +21,8 @@ scoped_ptr<Proxy> SingleThreadProxy::create(LayerTreeHost* layerTreeHost)
 }
 
 SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layerTreeHost)
-    : m_layerTreeHost(layerTreeHost)
+    : Proxy(scoped_ptr<Thread>(NULL))
+    , m_layerTreeHost(layerTreeHost)
     , m_contextLost(false)
     , m_rendererInitialized(false)
     , m_nextFrameIsNewlyCommittedFrame(false)
@@ -32,7 +34,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layerTreeHost)
 
 void SingleThreadProxy::start()
 {
-    DebugScopedSetImplThread impl;
+    DebugScopedSetImplThread impl(this);
     m_layerTreeHostImpl = m_layerTreeHost->createLayerTreeHostImpl(this);
 }
 
@@ -71,7 +73,7 @@ void SingleThreadProxy::finishAllRendering()
 {
     DCHECK(Proxy::isMainThread());
     {
-        DebugScopedSetImplThread impl;
+        DebugScopedSetImplThread impl(this);
         m_layerTreeHostImpl->finishAllRendering();
     }
 }
@@ -99,7 +101,7 @@ void SingleThreadProxy::setSurfaceReady()
 
 void SingleThreadProxy::setVisible(bool visible)
 {
-    DebugScopedSetImplThread impl;
+    DebugScopedSetImplThread impl(this);
     m_layerTreeHostImpl->setVisible(visible);
 }
 
@@ -108,7 +110,7 @@ bool SingleThreadProxy::initializeRenderer()
     DCHECK(Proxy::isMainThread());
     DCHECK(m_contextBeforeInitialization.get());
     {
-        DebugScopedSetImplThread impl;
+        DebugScopedSetImplThread impl(this);
         bool ok = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitialization.Pass());
         if (ok) {
             m_rendererInitialized = true;
@@ -131,8 +133,8 @@ bool SingleThreadProxy::recreateContext()
 
     bool initialized;
     {
-        DebugScopedSetMainThreadBlocked mainThreadBlocked;
-        DebugScopedSetImplThread impl;
+        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+        DebugScopedSetImplThread impl(this);
         if (!m_layerTreeHostImpl->contentsTexturesPurged())
             m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
         initialized = m_layerTreeHostImpl->initializeRenderer(context.Pass());
@@ -179,8 +181,8 @@ void SingleThreadProxy::doCommit(scoped_ptr<ResourceUpdateQueue> queue)
     DCHECK(Proxy::isMainThread());
     // Commit immediately
     {
-        DebugScopedSetMainThreadBlocked mainThreadBlocked;
-        DebugScopedSetImplThread impl;
+        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+        DebugScopedSetImplThread impl(this);
 
         base::TimeTicks startTime = base::TimeTicks::HighResNow();
         m_layerTreeHostImpl->beginCommit();
@@ -193,7 +195,8 @@ void SingleThreadProxy::doCommit(scoped_ptr<ResourceUpdateQueue> queue)
                 NULL,
                 Proxy::mainThread(),
                 queue.Pass(),
-                m_layerTreeHostImpl->resourceProvider());
+                m_layerTreeHostImpl->resourceProvider(),
+                hasImplThread());
         updateController->finalize();
 
         m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());
@@ -254,8 +257,8 @@ void SingleThreadProxy::stop()
     TRACE_EVENT0("cc", "SingleThreadProxy::stop");
     DCHECK(Proxy::isMainThread());
     {
-        DebugScopedSetMainThreadBlocked mainThreadBlocked;
-        DebugScopedSetImplThread impl;
+        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+        DebugScopedSetImplThread impl(this);
 
         if (!m_layerTreeHostImpl->contentsTexturesPurged())
             m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
@@ -277,7 +280,7 @@ void SingleThreadProxy::setNeedsCommitOnImplThread()
 void SingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
 {
     DCHECK(Proxy::isImplThread());
-    DebugScopedSetMainThread main;
+    DebugScopedSetMainThread main(this);
     m_layerTreeHost->setAnimationEvents(events.Pass(), wallClockTime);
 }
 
@@ -318,7 +321,7 @@ void SingleThreadProxy::compositeImmediately()
 void SingleThreadProxy::forceSerializeOnSwapBuffers()
 {
     {
-        DebugScopedSetImplThread impl;
+        DebugScopedSetImplThread impl(this);
         if (m_rendererInitialized)
             m_layerTreeHostImpl->renderer()->doNoOp();
     }
@@ -339,7 +342,7 @@ bool SingleThreadProxy::commitAndComposite()
     // Unlink any texture backings that were deleted
     PrioritizedTextureManager::BackingList evictedContentsTexturesBackings;
     {
-        DebugScopedSetImplThread implThread;
+        DebugScopedSetImplThread impl(this);
         m_layerTreeHost->contentsTextureManager()->getEvictedBackings(evictedContentsTexturesBackings);
     }
     m_layerTreeHost->contentsTextureManager()->unlinkEvictedBackings(evictedContentsTexturesBackings);
@@ -361,7 +364,7 @@ bool SingleThreadProxy::doComposite()
 {
     DCHECK(!m_contextLost);
     {
-        DebugScopedSetImplThread impl;
+        DebugScopedSetImplThread impl(this);
 
         if (!m_layerTreeHostImpl->visible())
             return false;

@@ -5,6 +5,7 @@
 #ifndef CCThreadProxy_h
 #define CCThreadProxy_h
 
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/animation_events.h"
 #include "cc/completion_event.h"
@@ -24,7 +25,7 @@ class Thread;
 
 class ThreadProxy : public Proxy, LayerTreeHostImplClient, SchedulerClient, ResourceUpdateControllerClient {
 public:
-    static scoped_ptr<Proxy> create(LayerTreeHost*);
+    static scoped_ptr<Proxy> create(LayerTreeHost*, scoped_ptr<Thread> implThread);
 
     virtual ~ThreadProxy();
 
@@ -77,7 +78,7 @@ public:
     virtual void readyToFinalizeTextureUpdates() OVERRIDE;
 
 private:
-    explicit ThreadProxy(LayerTreeHost*);
+    ThreadProxy(LayerTreeHost*, scoped_ptr<Thread> implThread);
 
     // Set on impl thread, read on main thread.
     struct BeginFrameAndCommitState {

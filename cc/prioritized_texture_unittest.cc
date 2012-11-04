@@ -9,6 +9,7 @@
 #include "cc/prioritized_texture_manager.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_graphics_context.h"
+#include "cc/test/fake_proxy.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/texture.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,17 +22,18 @@ namespace cc {
 class PrioritizedTextureTest : public testing::Test {
 public:
     PrioritizedTextureTest()
-        : m_textureSize(256, 256)
+        : m_proxy(scoped_ptr<Thread>(NULL))
+        , m_textureSize(256, 256)
         , m_textureFormat(GL_RGBA)
         , m_context(WebKit::createFakeGraphicsContext())
     {
-        DebugScopedSetImplThread implThread;
+        DebugScopedSetImplThread implThread(&m_proxy);
         m_resourceProvider = ResourceProvider::create(m_context.get());
     }
 
     virtual ~PrioritizedTextureTest()
     {
-        DebugScopedSetImplThread implThread;
+        DebugScopedSetImplThread implThread(&m_proxy);
         m_resourceProvider.reset();
     }
 
@@ -42,7 +44,7 @@ public:
 
     scoped_ptr<PrioritizedTextureManager> createManager(size_t maxTextures)
     {
-        return PrioritizedTextureManager::create(texturesMemorySize(maxTextures), 1024, 0);
+        return PrioritizedTextureManager::create(texturesMemorySize(maxTextures), 1024, 0, &m_proxy);
     }
 
     bool validateTexture(scoped_ptr<PrioritizedTexture>& texture, bool requestLate)
@@ -51,7 +53,7 @@ public:
         if (requestLate)
             texture->requestLate();
         textureManagerAssertInvariants(texture->textureManager());
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         bool success = texture->canAcquireBackingTexture();
         if (success)
             texture->acquireBackingTexture(resourceProvider());
@@ -66,7 +68,7 @@ public:
 
     void textureManagerUpdateBackingsPriorities(PrioritizedTextureManager* textureManager)
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->pushTexturePrioritiesToBackings();
     }
 
@@ -78,7 +80,7 @@ public:
     void textureManagerAssertInvariants(PrioritizedTextureManager* textureManager)
     {
 #ifndef NDEBUG
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->assertInvariants();
 #endif
     }
@@ -89,6 +91,7 @@ public:
     }
 
 protected:
+    FakeProxy m_proxy;
     const gfx::Size m_textureSize;
     const GLenum m_textureFormat;
     scoped_ptr<GraphicsContext> m_context;
@@ -135,7 +138,7 @@ TEST_F(PrioritizedTextureTest, requestTextureExceedingMaxLimit)
     EXPECT_EQ(texturesMemorySize(maxTextures), textureManager->memoryAboveCutoffBytes());
     EXPECT_LE(textureManager->memoryUseBytes(), textureManager->memoryAboveCutoffBytes());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -156,7 +159,7 @@ TEST_F(PrioritizedTextureTest, changeMemoryLimits)
     for (size_t i = 0; i < maxTextures; ++i)
         validateTexture(textures[i], false);
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->reduceMemory(resourceProvider());
     }
 
@@ -169,7 +172,7 @@ TEST_F(PrioritizedTextureTest, changeMemoryLimits)
     for (size_t i = 0; i < maxTextures; ++i)
         EXPECT_EQ(validateTexture(textures[i], false), i < 5);
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->reduceMemory(resourceProvider());
     }
 
@@ -182,14 +185,14 @@ TEST_F(PrioritizedTextureTest, changeMemoryLimits)
     for (size_t i = 0; i < maxTextures; ++i)
         EXPECT_EQ(validateTexture(textures[i], false), i < 4);
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->reduceMemory(resourceProvider());
     }
 
     EXPECT_EQ(texturesMemorySize(4), textureManager->memoryAboveCutoffBytes());
     EXPECT_LE(textureManager->memoryUseBytes(), textureManager->memoryAboveCutoffBytes());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -213,7 +216,7 @@ TEST_F(PrioritizedTextureTest, changePriorityCutoff)
     for (size_t i = 0; i < maxTextures; ++i)
         EXPECT_EQ(validateTexture(textures[i], true), i < 6);
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->reduceMemory(resourceProvider());
     }
     EXPECT_EQ(texturesMemorySize(6), textureManager->memoryAboveCutoffBytes());
@@ -225,7 +228,7 @@ TEST_F(PrioritizedTextureTest, changePriorityCutoff)
     for (size_t i = 0; i < maxTextures; ++i)
         EXPECT_EQ(validateTexture(textures[i], false), i < 4);
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->reduceMemory(resourceProvider());
     }
     EXPECT_EQ(texturesMemorySize(4), textureManager->memoryAboveCutoffBytes());
@@ -233,7 +236,7 @@ TEST_F(PrioritizedTextureTest, changePriorityCutoff)
     // Do a one-time eviction for one more texture based on priority cutoff
     PrioritizedTextureManager::BackingList evictedBackings;
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->reduceMemoryOnImplThread(texturesMemorySize(8), 104, resourceProvider());
         textureManager->getEvictedBackings(evictedBackings);
         EXPECT_EQ(0, evictedBackings.size());
@@ -249,12 +252,12 @@ TEST_F(PrioritizedTextureTest, changePriorityCutoff)
     for (size_t i = 0; i < maxTextures; ++i)
         EXPECT_EQ(validateTexture(textures[i], false), i < 4);
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->reduceMemory(resourceProvider());
     }
     EXPECT_EQ(texturesMemorySize(4), textureManager->memoryAboveCutoffBytes());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -314,7 +317,7 @@ TEST_F(PrioritizedTextureTest, textureManagerPartialUpdateTextures)
     EXPECT_FALSE(textures[2]->haveBackingTexture());
     EXPECT_FALSE(textures[3]->haveBackingTexture());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -354,7 +357,7 @@ TEST_F(PrioritizedTextureTest, textureManagerPrioritiesAreEqual)
     EXPECT_EQ(texturesMemorySize(8), textureManager->memoryAboveCutoffBytes());
     EXPECT_LE(textureManager->memoryUseBytes(), textureManager->memoryAboveCutoffBytes());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -374,7 +377,7 @@ TEST_F(PrioritizedTextureTest, textureManagerDestroyedFirst)
     EXPECT_TRUE(texture->haveBackingTexture());
 
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->clearAllMemory(resourceProvider());
     }
     textureManager.reset();
@@ -402,7 +405,7 @@ TEST_F(PrioritizedTextureTest, textureMovedToNewManager)
     texture->setTextureManager(0);
 
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManagerOne->clearAllMemory(resourceProvider());
     }
     textureManagerOne.reset();
@@ -418,7 +421,7 @@ TEST_F(PrioritizedTextureTest, textureMovedToNewManager)
     EXPECT_TRUE(texture->canAcquireBackingTexture());
     EXPECT_TRUE(texture->haveBackingTexture());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManagerTwo->clearAllMemory(resourceProvider());
 }
 
@@ -464,7 +467,7 @@ TEST_F(PrioritizedTextureTest, renderSurfacesReduceMemoryAvailableOutsideRootSur
     EXPECT_EQ(texturesMemorySize(4), textureManager->memoryForSelfManagedTextures());
     EXPECT_LE(textureManager->memoryUseBytes(), textureManager->memoryAboveCutoffBytes());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -501,7 +504,7 @@ TEST_F(PrioritizedTextureTest, renderSurfacesReduceMemoryAvailableForRequestLate
     EXPECT_EQ(texturesMemorySize(4), textureManager->memoryForSelfManagedTextures());
     EXPECT_LE(textureManager->memoryUseBytes(), textureManager->memoryAboveCutoffBytes());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -541,7 +544,7 @@ TEST_F(PrioritizedTextureTest, whenRenderSurfaceNotAvailableTexturesAlsoNotAvail
     EXPECT_EQ(texturesMemorySize(2), textureManager->memoryForSelfManagedTextures());
     EXPECT_LE(textureManager->memoryUseBytes(), textureManager->memoryAboveCutoffBytes());
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -589,7 +592,7 @@ TEST_F(PrioritizedTextureTest, requestLateBackingsSorting)
     for (size_t i = 1; i < maxTextures; i += 2)
         EXPECT_FALSE(textureBackingIsAbovePriorityCutoff(textures[i].get()));
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 
@@ -614,7 +617,7 @@ TEST_F(PrioritizedTextureTest, clearUploadsToEvictedResources)
         EXPECT_TRUE(validateTexture(textures[i], false));
 
     ResourceUpdateQueue queue;
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     for (size_t i = 0; i < maxTextures; ++i) {
         const ResourceUpdate upload = ResourceUpdate::Create(
             textures[i].get(), NULL, gfx::Rect(), gfx::Rect(), gfx::Vector2d());
@@ -666,7 +669,7 @@ TEST_F(PrioritizedTextureTest, usageStatistics)
 
     // Validate the statistics.
     {
-        DebugScopedSetImplThread implThread;
+        DebugScopedSetImplThread implThread(&m_proxy);
         EXPECT_EQ(texturesMemorySize(2), textureManager->memoryUseBytes());
         EXPECT_EQ(texturesMemorySize(1), textureManager->memoryVisibleBytes());
         EXPECT_EQ(texturesMemorySize(3), textureManager->memoryVisibleAndNearbyBytes());
@@ -682,7 +685,7 @@ TEST_F(PrioritizedTextureTest, usageStatistics)
 
     // Verify that we still see the old values.
     {
-        DebugScopedSetImplThread implThread;
+        DebugScopedSetImplThread implThread(&m_proxy);
         EXPECT_EQ(texturesMemorySize(2), textureManager->memoryUseBytes());
         EXPECT_EQ(texturesMemorySize(1), textureManager->memoryVisibleBytes());
         EXPECT_EQ(texturesMemorySize(3), textureManager->memoryVisibleAndNearbyBytes());
@@ -690,14 +693,14 @@ TEST_F(PrioritizedTextureTest, usageStatistics)
 
     // Push priorities to backings, and verify we see the new values.
     {
-        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
         textureManager->pushTexturePrioritiesToBackings();
         EXPECT_EQ(texturesMemorySize(2), textureManager->memoryUseBytes());
         EXPECT_EQ(texturesMemorySize(3), textureManager->memoryVisibleBytes());
         EXPECT_EQ(texturesMemorySize(4), textureManager->memoryVisibleAndNearbyBytes());
     }
 
-    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(&m_proxy);
     textureManager->clearAllMemory(resourceProvider());
 }
 

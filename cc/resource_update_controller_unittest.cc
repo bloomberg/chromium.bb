@@ -7,6 +7,7 @@
 #include "cc/resource_update_controller.h"
 
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
+#include "cc/test/fake_proxy.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/scheduler_test_common.h"
@@ -63,8 +64,9 @@ private:
 class ResourceUpdateControllerTest : public Test {
 public:
     ResourceUpdateControllerTest()
-        : m_queue(make_scoped_ptr(new ResourceUpdateQueue))
-        , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool))
+        : m_proxy(scoped_ptr<Thread>(NULL))
+        , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
+        , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool, &m_proxy))
         , m_fullUploadCountExpected(0)
         , m_partialCountExpected(0)
         , m_totalUploadCountExpected(0)
@@ -79,7 +81,7 @@ public:
     ~ResourceUpdateControllerTest()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
-            implThreadAndMainThreadBlocked;
+            implThreadAndMainThreadBlocked(&m_proxy);
         m_textureManager->clearAllMemory(m_resourceProvider.get());
     }
 
@@ -122,7 +124,6 @@ protected:
         }
         m_textureManager->prioritizeTextures();
 
-        DebugScopedSetImplThread implThread;
         m_resourceProvider = ResourceProvider::create(m_context.get());
     }
 
@@ -169,18 +170,20 @@ protected:
     void updateTextures()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
-            implThreadAndMainThreadBlocked;
+            implThreadAndMainThreadBlocked(&m_proxy);
         scoped_ptr<ResourceUpdateController> updateController =
             ResourceUpdateController::create(
                 NULL,
-                Proxy::implThread(),
+                m_proxy.implThread(),
                 m_queue.Pass(),
-                m_resourceProvider.get());
+                m_resourceProvider.get(),
+                m_proxy.hasImplThread());
         updateController->finalize();
     }
 
 protected:
     // Classes required to interact and test the ResourceUpdateController
+    FakeProxy m_proxy;
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
@@ -340,7 +343,7 @@ public:
 
 protected:
     FakeResourceUpdateController(cc::ResourceUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
-        : cc::ResourceUpdateController(client, thread, queue.Pass(), resourceProvider)
+        : cc::ResourceUpdateController(client, thread, queue.Pass(), resourceProvider, false)
         , m_updateMoreTexturesSize(0) { }
 
     base::TimeTicks m_now;
@@ -365,7 +368,7 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThreadAndMainThreadBlocked
-        implThreadAndMainThreadBlocked;
+        implThreadAndMainThreadBlocked(&m_proxy);
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
@@ -411,7 +414,7 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThreadAndMainThreadBlocked
-        implThreadAndMainThreadBlocked;
+        implThreadAndMainThreadBlocked(&m_proxy);
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
@@ -451,7 +454,7 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThreadAndMainThreadBlocked
-        implThreadAndMainThreadBlocked;
+        implThreadAndMainThreadBlocked(&m_proxy);
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(

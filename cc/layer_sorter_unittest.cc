@@ -189,8 +189,6 @@ TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform)
 
 TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
 {
-    DebugScopedSetImplThread thisScopeIsOnImplThread;
-
     // If there is no reason to re-sort the layers (i.e. no 3d z difference), then the
     // existing ordering provided on input should be retained. This test covers the fix in
     // https://bugs.webkit.org/show_bug.cgi?id=75046. Before this fix, ordering was

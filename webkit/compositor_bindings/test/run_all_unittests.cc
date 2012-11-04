@@ -12,10 +12,7 @@ int main(int argc, char** argv) {
   ::testing::InitGoogleMock(&argc, argv);
   TestSuite testSuite(argc, argv);
   MessageLoop message_loop;
-  scoped_ptr<cc::Thread> mainCCThread = cc::ThreadImpl::createForCurrentThread();
-  cc::Proxy::setMainThread(mainCCThread.get());
   int result = testSuite.Run();
 
   return result;
 }
-

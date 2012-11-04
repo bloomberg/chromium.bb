@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "cc/cc_export.h"
 #include "cc/graphics_context.h"
 #include "cc/texture_copier.h"
@@ -32,8 +33,8 @@ namespace cc {
 
 class TextureUploader;
 
-// Thread-safety notes: this class is not thread-safe and can only be called
-// from the thread it was created on (in practice, the compositor thread).
+// This class is not thread-safe and can only be called from the thread it was
+// created on (in practice, the impl thread).
 class CC_EXPORT ResourceProvider {
 public:
     typedef unsigned ResourceId;
@@ -261,6 +262,8 @@ private:
     scoped_ptr<TextureUploader> m_textureUploader;
     scoped_ptr<AcceleratedTextureCopier> m_textureCopier;
     int m_maxTextureSize;
+
+    base::ThreadChecker m_threadChecker;
 
     DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };

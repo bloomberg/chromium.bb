@@ -118,7 +118,6 @@ private:
 
     // WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM implementation.
     virtual void onMemoryAllocationChanged(WebKit::WebGraphicsMemoryAllocation) OVERRIDE;
-    void onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemoryAllocation);
     void discardFramebuffer();
     void ensureFramebuffer();
     void enforceMemoryPolicy();

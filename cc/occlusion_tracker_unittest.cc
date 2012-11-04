@@ -425,14 +425,12 @@ private:
 
 #define RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName) \
     class ClassName##ImplThreadOpaqueLayers : public ClassName<OcclusionTrackerTestImplThreadTypes> { \
-        DebugScopedSetImplThread impl; \
     public: \
         ClassName##ImplThreadOpaqueLayers() : ClassName<OcclusionTrackerTestImplThreadTypes>(true) { } \
     }; \
     TEST_F(ClassName##ImplThreadOpaqueLayers, runTest) { runMyTest(); }
 #define RUN_TEST_IMPL_THREAD_OPAQUE_PAINTS(ClassName) \
     class ClassName##ImplThreadOpaquePaints : public ClassName<OcclusionTrackerTestImplThreadTypes> { \
-        DebugScopedSetImplThread impl; \
     public: \
         ClassName##ImplThreadOpaquePaints() : ClassName<OcclusionTrackerTestImplThreadTypes>(false) { } \
     }; \
