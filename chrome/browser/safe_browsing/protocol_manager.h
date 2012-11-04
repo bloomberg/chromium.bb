@@ -22,18 +22,19 @@
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
 class URLFetcher;
+class URLRequestContextGetter;
 }  // namespace net
 
 #if defined(COMPILER_GCC)
 // Allows us to use URLFetchers in a hash_map with gcc (MSVC is okay without
 // specifying this).
-namespace __gnu_cxx {
+namespace BASE_HASH_NAMESPACE {
 template<>
 struct hash<const net::URLFetcher*> {
   size_t operator()(const net::URLFetcher* fetcher) const {
@@ -50,19 +51,8 @@ struct SafeBrowsingProtocolConfig {
   bool disable_auto_update;
 };
 
-class SafeBrowsingProtocolManager;
-// Interface of a factory to create ProtocolManager.  Useful for tests.
-class SBProtocolManagerFactory {
- public:
-  SBProtocolManagerFactory() {}
-  virtual ~SBProtocolManagerFactory() {}
-  virtual SafeBrowsingProtocolManager* CreateProtocolManager(
-      SafeBrowsingService* sb_service,
-      net::URLRequestContextGetter* request_context_getter,
-      const SafeBrowsingProtocolConfig& config) = 0;
- private:
-  DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactory);
-};
+class SBProtocolManagerFactory;
+class SafeBrowsingProtocolManagerDelegate;
 
 class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
  public:
@@ -85,7 +75,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
 
   // Create an instance of the safe browsing service.
   static SafeBrowsingProtocolManager* Create(
-      SafeBrowsingService* sb_service,
+      SafeBrowsingProtocolManagerDelegate* delegate,
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config);
 
@@ -181,14 +171,12 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
                                   ResultType result_type);
 
  protected:
-  // Constructs a SafeBrowsingProtocolManager for |sb_service| that issues
-  // network requests using |request_context_getter|. When |disable_auto_update|
-  // is true, protocol manager won't schedule next update until
-  // ForceScheduleNextUpdate is called.
+  // Constructs a SafeBrowsingProtocolManager for |delegate| that issues
+  // network requests using |request_context_getter|.
   SafeBrowsingProtocolManager(
-      SafeBrowsingService* sb_service,
+      SafeBrowsingProtocolManagerDelegate* delegate,
       net::URLRequestContextGetter* request_context_getter,
-      const SafeBrowsingProtocolConfig& url_prefix);
+      const SafeBrowsingProtocolConfig& config);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestBackOffTimes);
@@ -302,8 +290,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // This is used by tests.
   static SBProtocolManagerFactory* factory_;
 
-  // Main SafeBrowsing interface object.
-  SafeBrowsingService* sb_service_;
+  // Our delegate.
+  SafeBrowsingProtocolManagerDelegate* delegate_;
 
   // Current active request (in case we need to cancel) for updates or chunks
   // from the SafeBrowsing service. We can only have one of these outstanding
@@ -388,6 +376,52 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   bool disable_auto_update_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingProtocolManager);
+};
+
+// Interface of a factory to create ProtocolManager.  Useful for tests.
+class SBProtocolManagerFactory {
+ public:
+  SBProtocolManagerFactory() {}
+  virtual ~SBProtocolManagerFactory() {}
+  virtual SafeBrowsingProtocolManager* CreateProtocolManager(
+      SafeBrowsingProtocolManagerDelegate* delegate,
+      net::URLRequestContextGetter* request_context_getter,
+      const SafeBrowsingProtocolConfig& config) = 0;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactory);
+};
+
+// Delegate interface for the SafeBrowsingProtocolManager.
+class SafeBrowsingProtocolManagerDelegate {
+ public:
+  typedef base::Callback<void(const std::vector<SBListChunkRanges>&, bool)>
+      GetChunksCallback;
+
+  virtual ~SafeBrowsingProtocolManagerDelegate();
+
+  // |UpdateStarted()| is called just before the SafeBrowsing update protocol
+  // has begun.
+  virtual void UpdateStarted() = 0;
+
+  // |UpdateFinished()| is called just after the SafeBrowsing update protocol
+  // has completed.
+  virtual void UpdateFinished(bool success) = 0;
+
+  // Wipe out the local database. The SafeBrowsing server can request this.
+  virtual void ResetDatabase() = 0;
+
+  // Retrieve all the local database chunks, and invoke |callback| with the
+  // results. The SafeBrowsingProtocolManagerDelegate must only invoke the
+  // callback if the SafeBrowsingProtocolManager is still alive. Only one call
+  // may be made to GetChunks at a time.
+  virtual void GetChunks(GetChunksCallback callback) = 0;
+
+  // Add new chunks to the database.
+  virtual void AddChunks(const std::string& list, SBChunkList* chunks) = 0;
+
+  // Delete chunks from the database.
+  virtual void DeleteChunks(
+      std::vector<SBChunkDelete>* delete_chunks) = 0;
 };
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_MANAGER_H_
