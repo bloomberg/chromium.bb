@@ -35,6 +35,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/url_constants.h"
@@ -411,9 +412,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_WIN8_DESKTOP_RESTART:
       browser::AttemptRestartWithModeSwitch();
+      content::RecordAction(content::UserMetricsAction("Win8DesktopRestart"));
       break;
     case IDC_WIN8_METRO_RESTART:
       new SwichToMetroUIHandler;
+      content::RecordAction(content::UserMetricsAction("Win8MetroRestart"));
       break;
 #endif
 
