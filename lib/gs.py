@@ -17,6 +17,17 @@ from chromite.lib import cros_build_lib
 # method; we set it initially here just for the sake of making clear it
 # exists.
 GSUTIL_BIN = None
+PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
+PRIVATE_BASE_HTTPS_URL = 'https://sandbox.google.com/storage/'
+BASE_GS_URL = 'gs://'
+
+
+def CanonicalizeURL(url):
+  """Convert provided URL to gs:// URL, if it follows a known format."""
+  for prefix in (PUBLIC_BASE_HTTPS_URL, PRIVATE_BASE_HTTPS_URL):
+    if url.startswith(prefix):
+      return url.replace(prefix, BASE_GS_URL)
+  return url
 
 
 class GSContextException(Exception):

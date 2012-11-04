@@ -6,6 +6,7 @@
 # Copyright 2003-2004 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+import collections
 import cStringIO
 import operator
 import os
@@ -18,6 +19,8 @@ from chromite.lib import gs
 
 
 TWO_WEEKS = 60 * 60 * 24 * 7 * 2
+
+_Package = collections.namedtuple('_Package', ['mtime', 'uri'])
 
 class PackageIndex(object):
   """A parser for the Portage Packages index file.
@@ -56,12 +59,13 @@ class PackageIndex(object):
       expires: The time at which prebuilts expire from the binhost.
     """
 
-    uri = self.header['URI']
+    uri = gs.CanonicalizeURL(self.header['URI'])
     for pkg in self.packages:
       cpv, sha1, mtime = pkg['CPV'], pkg.get('SHA1'), pkg.get('MTIME')
-      if sha1 and mtime and int(mtime) > expires:
+      oldpkg = db.get(sha1, _Package(0, None))
+      if sha1 and mtime and int(mtime) > max(expires, oldpkg.mtime):
         path = pkg.get('PATH', cpv + '.tbz2')
-        db[sha1] = '%s/%s' % (uri.rstrip('/'), path)
+        db[sha1] = _Package(int(mtime), '%s/%s' % (uri.rstrip('/'), path))
 
   def _ReadPkgIndex(self, pkgfile):
     """Read a list of key/value pairs from the Packages file into a dictionary.
@@ -185,16 +189,20 @@ class PackageIndex(object):
     db = {}
     now = int(time.time())
     expires = now - TWO_WEEKS
+    base_uri = gs.CanonicalizeURL(self.header['URI'])
     for pkgindex in pkgindexes:
-      pkgindex._PopulateDuplicateDB(db, expires)
+      if gs.CanonicalizeURL(pkgindex.header['URI']) == base_uri:
+        # pylint: disable=W0212
+        pkgindex._PopulateDuplicateDB(db, expires)
 
     uploads = []
     base_uri = self.header['URI']
     for pkg in self.packages:
       sha1 = pkg.get('SHA1')
-      uri = db.get(sha1)
-      if sha1 and uri and uri.startswith(base_uri):
-        pkg['PATH'] = uri[len(base_uri):].lstrip('/')
+      dup = db.get(sha1)
+      if sha1 and dup and dup.uri.startswith(base_uri):
+        pkg['PATH'] = dup.uri[len(base_uri):].lstrip('/')
+        pkg['MTIME'] = str(dup.mtime)
       else:
         pkg['MTIME'] = str(now)
         uploads.append(pkg)

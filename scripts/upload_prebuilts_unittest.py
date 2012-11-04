@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.scripts import upload_prebuilts as prebuilt
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import binpkg
 from chromite.lib import osutils
 
@@ -27,7 +28,7 @@ PRIVATE_PACKAGES = [{'CPV': 'private', 'SHA1': '3', 'MTIME': '3'}]
 def SimplePackageIndex(header=True, packages=True):
   pkgindex = binpkg.PackageIndex()
   if header:
-    pkgindex.header['URI'] = 'http://www.example.com'
+    pkgindex.header['URI'] = 'gs://example'
   if packages:
     pkgindex.packages = copy.deepcopy(PUBLIC_PACKAGES + PRIVATE_PACKAGES)
   return pkgindex
@@ -123,117 +124,136 @@ class TestPrebuilt(cros_test_lib.MoxTestCase):
                      expected_path)
 
 
-class TestPackagesFileFiltering(cros_test_lib.TestCase):
+class TestPkgIndex(cros_test_lib.TestCase):
+
+  def setUp(self):
+    self.db = {}
+    self.pkgindex = SimplePackageIndex()
+    self.empty = SimplePackageIndex(packages=False)
+
+  def assertURIs(self, uris):
+    """Verify that the duplicate DB has the specified URLs."""
+    expected = [v.uri for _, v in sorted(self.db.items())]
+    self.assertEqual(expected, uris)
+
+
+class TestPackagesFileFiltering(TestPkgIndex):
 
   def testFilterPkgIndex(self):
-    pkgindex = SimplePackageIndex()
-    pkgindex.RemoveFilteredPackages(lambda pkg: pkg in PRIVATE_PACKAGES)
-    self.assertEqual(pkgindex.packages, PUBLIC_PACKAGES)
-    self.assertEqual(pkgindex.modified, True)
+    """Test filtering out of private packages."""
+    self.pkgindex.RemoveFilteredPackages(lambda pkg: pkg in PRIVATE_PACKAGES)
+    self.assertEqual(self.pkgindex.packages, PUBLIC_PACKAGES)
+    self.assertEqual(self.pkgindex.modified, True)
 
 
-class TestPopulateDuplicateDB(cros_test_lib.TestCase):
+class TestPopulateDuplicateDB(TestPkgIndex):
 
   def testEmptyIndex(self):
-    pkgindex = SimplePackageIndex(packages=False)
-    db = {}
-    pkgindex._PopulateDuplicateDB(db, 0)
-    self.assertEqual(db, {})
+    """Test population of the duplicate DB with an empty index."""
+    self.empty._PopulateDuplicateDB(self.db, 0)
+    self.assertEqual(self.db, {})
 
   def testNormalIndex(self):
-    pkgindex = SimplePackageIndex()
-    db = {}
-    pkgindex._PopulateDuplicateDB(db, 0)
-    self.assertEqual(len(db), 3)
-    self.assertEqual(db['1'], 'http://www.example.com/gtk+/public1.tbz2')
-    self.assertEqual(db['2'], 'http://www.example.com/gtk+/foo.tgz')
-    self.assertEqual(db['3'], 'http://www.example.com/private.tbz2')
+    """Test population of the duplicate DB with a full index."""
+    self.pkgindex._PopulateDuplicateDB(self.db, 0)
+    self.assertURIs(['gs://example/gtk+/public1.tbz2',
+                     'gs://example/gtk+/foo.tgz',
+                     'gs://example/private.tbz2'])
 
   def testMissingSHA1(self):
-    db = {}
-    pkgindex = SimplePackageIndex()
-    del pkgindex.packages[0]['SHA1']
-    pkgindex._PopulateDuplicateDB(db, 0)
-    self.assertEqual(len(db), 2)
-    self.assertEqual(db['2'], 'http://www.example.com/gtk+/foo.tgz')
-    self.assertEqual(db['3'], 'http://www.example.com/private.tbz2')
+    """Test population of the duplicate DB with a missing SHA1."""
+    del self.pkgindex.packages[0]['SHA1']
+    self.pkgindex._PopulateDuplicateDB(self.db, 0)
+    self.assertURIs(['gs://example/gtk+/foo.tgz',
+                     'gs://example/private.tbz2'])
 
   def testFailedPopulate(self):
-    db = {}
-    pkgindex = SimplePackageIndex(header=False)
-    self.assertRaises(KeyError, pkgindex._PopulateDuplicateDB, db, 0)
-    pkgindex = SimplePackageIndex()
-    del pkgindex.packages[0]['CPV']
-    self.assertRaises(KeyError, pkgindex._PopulateDuplicateDB, db, 0)
+    """Test failure conditions for the populate method."""
+    headerless = SimplePackageIndex(header=False)
+    self.assertRaises(KeyError, headerless._PopulateDuplicateDB, self.db, 0)
+    del self.pkgindex.packages[0]['CPV']
+    self.assertRaises(KeyError, self.pkgindex._PopulateDuplicateDB, self.db, 0)
 
 
-class TestResolveDuplicateUploads(cros_test_lib.MoxTestCase):
+class TestResolveDuplicateUploads(cros_test_lib.MoxTestCase, TestPkgIndex):
 
   def setUp(self):
     self.mox.StubOutWithMock(binpkg.time, 'time')
     binpkg.time.time().AndReturn(binpkg.TWO_WEEKS)
-    # wtf...?
     self.mox.ReplayAll()
+    self.db = {}
+    self.dup = SimplePackageIndex()
+    self.expected_pkgindex = SimplePackageIndex()
+
+  def assertNoDuplicates(self, candidates):
+    """Verify no duplicates are found with the specified candidates."""
+    uploads = self.pkgindex.ResolveDuplicateUploads(candidates)
+    self.assertEqual(uploads, self.pkgindex.packages)
+    self.assertEqual(len(self.pkgindex.packages),
+                     len(self.expected_pkgindex.packages))
+    for pkg1, pkg2 in zip(self.pkgindex.packages,
+                          self.expected_pkgindex.packages):
+      self.assertNotEqual(pkg1['MTIME'], pkg2['MTIME'])
+      del pkg1['MTIME']
+      del pkg2['MTIME']
+    self.assertEqual(self.pkgindex.modified, False)
+    self.assertEqual(self.pkgindex.packages, self.expected_pkgindex.packages)
+
+  def assertAllDuplicates(self, candidates):
+    """Verify every package is a duplicate in the specified list."""
+    for pkg in self.expected_pkgindex.packages:
+      pkg.setdefault('PATH', pkg['CPV'] + '.tbz2')
+    self.pkgindex.ResolveDuplicateUploads(candidates)
+    self.assertEqual(self.pkgindex.packages, self.expected_pkgindex.packages)
 
   def testEmptyList(self):
-    pkgindex = SimplePackageIndex()
-    pristine = SimplePackageIndex()
-    uploads = pkgindex.ResolveDuplicateUploads([])
-    self.assertEqual(uploads, pkgindex.packages)
-    self.assertEqual(len(pkgindex.packages), len(pristine.packages))
-    for pkg1, pkg2 in zip(pkgindex.packages, pristine.packages):
-      self.assertNotEqual(pkg1['MTIME'], pkg2['MTIME'])
-      del pkg1['MTIME']
-      del pkg2['MTIME']
-    self.assertEqual(pkgindex.modified, False)
+    """If no candidates are supplied, no duplicates should be found."""
+    self.assertNoDuplicates([])
 
   def testEmptyIndex(self):
-    pkgindex = SimplePackageIndex()
-    pristine = SimplePackageIndex()
-    empty = SimplePackageIndex(packages=False)
-    uploads = pkgindex.ResolveDuplicateUploads([empty])
-    self.assertEqual(uploads, pkgindex.packages)
-    self.assertEqual(len(pkgindex.packages), len(pristine.packages))
-    for pkg1, pkg2 in zip(pkgindex.packages, pristine.packages):
-      self.assertNotEqual(pkg1['MTIME'], pkg2['MTIME'])
-      del pkg1['MTIME']
-      del pkg2['MTIME']
-      self.assertEqual(pkg1, pkg2)
-    self.assertEqual(pkgindex.modified, False)
+    """If no packages are supplied, no duplicates should be found."""
+    self.assertNoDuplicates([self.empty])
 
-  def testDuplicates(self):
-    pkgindex = SimplePackageIndex()
-    dup_pkgindex = SimplePackageIndex()
-    expected_pkgindex = SimplePackageIndex()
-    for pkg in expected_pkgindex.packages:
-      pkg.setdefault('PATH', pkg['CPV'] + '.tbz2')
-    pkgindex.ResolveDuplicateUploads([dup_pkgindex])
-    self.assertEqual(pkgindex.packages, expected_pkgindex.packages)
+  def testDifferentURI(self):
+    """If the URI differs, no duplicates should be found."""
+    self.dup.header['URI'] = 'gs://example2'
+    self.assertNoDuplicates([self.dup])
+
+  def testUpdateModificationTime(self):
+    """When duplicates are found, we should use the latest mtime."""
+    for pkg in self.expected_pkgindex.packages:
+      pkg['MTIME'] = '10'
+    for pkg in self.dup.packages:
+      pkg['MTIME'] = '4'
+    self.assertAllDuplicates([self.expected_pkgindex, self.dup])
+
+  def testCanonicalUrl(self):
+    """If the URL is in a different format, we should still find duplicates."""
+    self.dup.header['URI'] = gs.PUBLIC_BASE_HTTPS_URL + 'example'
+    self.assertAllDuplicates([self.dup])
 
   def testMissingSHA1(self):
-    pkgindex = SimplePackageIndex()
-    dup_pkgindex = SimplePackageIndex()
-    expected_pkgindex = SimplePackageIndex()
-    del pkgindex.packages[0]['SHA1']
-    del expected_pkgindex.packages[0]['SHA1']
-    for pkg in expected_pkgindex.packages[1:]:
+    """We should not find duplicates if there is no SHA1."""
+    del self.pkgindex.packages[0]['SHA1']
+    del self.expected_pkgindex.packages[0]['SHA1']
+    for pkg in self.expected_pkgindex.packages[1:]:
       pkg.setdefault('PATH', pkg['CPV'] + '.tbz2')
-    pkgindex.ResolveDuplicateUploads([dup_pkgindex])
-    self.assertNotEqual(pkgindex.packages[0]['MTIME'],
-                        expected_pkgindex.packages[0]['MTIME'])
-    del pkgindex.packages[0]['MTIME']
-    del expected_pkgindex.packages[0]['MTIME']
-    self.assertEqual(pkgindex.packages, expected_pkgindex.packages)
+    self.pkgindex.ResolveDuplicateUploads([self.dup])
+    self.assertNotEqual(self.pkgindex.packages[0]['MTIME'],
+                        self.expected_pkgindex.packages[0]['MTIME'])
+    del self.pkgindex.packages[0]['MTIME']
+    del self.expected_pkgindex.packages[0]['MTIME']
+    self.assertEqual(self.pkgindex.packages, self.expected_pkgindex.packages)
 
 
-class TestWritePackageIndex(cros_test_lib.MoxTestCase):
+class TestWritePackageIndex(cros_test_lib.MoxTestCase, TestPkgIndex):
 
   def testSimple(self):
-    pkgindex = SimplePackageIndex()
-    self.mox.StubOutWithMock(pkgindex, 'Write')
-    pkgindex.Write(mox.IgnoreArg())
+    """Test simple call of WriteToNamedTemporaryFile()"""
+    self.mox.StubOutWithMock(self.pkgindex, 'Write')
+    self.pkgindex.Write(mox.IgnoreArg())
     self.mox.ReplayAll()
-    f = pkgindex.WriteToNamedTemporaryFile()
+    f = self.pkgindex.WriteToNamedTemporaryFile()
     self.assertEqual(f.read(), '')
 
 
