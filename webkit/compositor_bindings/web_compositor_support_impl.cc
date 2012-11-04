@@ -5,6 +5,7 @@
 #include "config.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
+#include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/settings.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
@@ -56,6 +57,9 @@ WebCompositorSupportImpl::~WebCompositorSupportImpl() {
 }
 
 void WebCompositorSupportImpl::initialize(WebKit::WebThread* thread) {
+  if (thread) {
+    TRACE_EVENT_INSTANT0("test_gpu", "ThreadedCompositingInitialization");
+  }
   WebCompositorImpl::initialize(thread);
 }
 
