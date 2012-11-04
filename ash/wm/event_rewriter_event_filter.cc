@@ -58,9 +58,9 @@ bool EventRewriterEventFilter::PreHandleMouseEvent(
   return false;
 }
 
-ui::TouchStatus EventRewriterEventFilter::PreHandleTouchEvent(
+ui::EventResult EventRewriterEventFilter::PreHandleTouchEvent(
     aura::Window* target, ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
+  return ui::ER_UNHANDLED;  // Not handled.
 }
 
 ui::EventResult EventRewriterEventFilter::PreHandleGestureEvent(

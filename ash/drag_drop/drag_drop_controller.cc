@@ -229,14 +229,14 @@ bool DragDropController::PreHandleMouseEvent(aura::Window* target,
   return true;
 }
 
-ui::TouchStatus DragDropController::PreHandleTouchEvent(
+ui::EventResult DragDropController::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
   // TODO(sad): Also check for the touch-id.
   // TODO(varunjain): Add code for supporting drag-and-drop across displays
   // (http://crbug.com/114755).
   if (!IsDragDropInProgress())
-    return ui::TOUCH_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   switch (event->type()) {
     case ui::ET_TOUCH_MOVED:
       DragUpdate(target, *event);
@@ -248,9 +248,9 @@ ui::TouchStatus DragDropController::PreHandleTouchEvent(
       DragCancel();
       break;
     default:
-      return ui::TOUCH_STATUS_UNKNOWN;
+      return ui::ER_UNHANDLED;
   }
-  return ui::TOUCH_STATUS_CONTINUE;
+  return ui::ER_CONSUMED;
 }
 
 ui::EventResult DragDropController::PreHandleGestureEvent(

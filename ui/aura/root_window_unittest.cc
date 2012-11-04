@@ -103,10 +103,10 @@ class EventCountFilter : public EventFilter {
     num_mouse_events_++;
     return true;
   }
-  virtual ui::TouchStatus PreHandleTouchEvent(
+  virtual ui::EventResult PreHandleTouchEvent(
       Window* target, ui::TouchEvent* event) OVERRIDE {
     num_touch_events_++;
-    return ui::TOUCH_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   }
   virtual ui::EventResult PreHandleGestureEvent(
       Window* target, ui::GestureEvent* event) OVERRIDE {
@@ -459,11 +459,11 @@ class EventFilterRecorder : public EventFilter {
     events_.push_back(event->type());
     return true;
   }
-  virtual ui::TouchStatus PreHandleTouchEvent(
+  virtual ui::EventResult PreHandleTouchEvent(
       Window* target,
       ui::TouchEvent* event) OVERRIDE {
     events_.push_back(event->type());
-    return ui::TOUCH_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   }
   virtual ui::EventResult PreHandleGestureEvent(
       Window* target,

@@ -50,11 +50,11 @@ bool UserActivityDetector::PreHandleMouseEvent(aura::Window* target,
   return false;
 }
 
-ui::TouchStatus UserActivityDetector::PreHandleTouchEvent(
+ui::EventResult UserActivityDetector::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
   MaybeNotify();
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult UserActivityDetector::PreHandleGestureEvent(

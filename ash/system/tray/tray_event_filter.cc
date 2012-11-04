@@ -41,13 +41,13 @@ bool TrayEventFilter::PreHandleMouseEvent(aura::Window* target,
   return false;
 }
 
-ui::TouchStatus TrayEventFilter::PreHandleTouchEvent(aura::Window* target,
+ui::EventResult TrayEventFilter::PreHandleTouchEvent(aura::Window* target,
                                                      ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED) {
     if (ProcessLocatedEvent(target, *event))
-      return ui::TOUCH_STATUS_END;
+      return ui::ER_CONSUMED;
   }
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult TrayEventFilter::PreHandleGestureEvent(

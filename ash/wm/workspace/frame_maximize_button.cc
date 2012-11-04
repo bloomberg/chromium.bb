@@ -51,7 +51,7 @@ class FrameMaximizeButton::EscapeEventFilter : public aura::EventFilter {
                                  ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
                                    ui::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(
+  virtual ui::EventResult PreHandleTouchEvent(
       aura::Window* target,
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::EventResult PreHandleGestureEvent(
@@ -90,10 +90,10 @@ bool FrameMaximizeButton::EscapeEventFilter::PreHandleMouseEvent(
   return false;
 }
 
-ui::TouchStatus FrameMaximizeButton::EscapeEventFilter::PreHandleTouchEvent(
+ui::EventResult FrameMaximizeButton::EscapeEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult FrameMaximizeButton::EscapeEventFilter::PreHandleGestureEvent(

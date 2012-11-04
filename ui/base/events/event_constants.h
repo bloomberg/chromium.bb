@@ -116,26 +116,6 @@ enum EventPhase {
   EP_POSTDISPATCH
 };
 
-enum TouchStatus {
-  TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
-                             // that the touch event was not handled.
-  TOUCH_STATUS_START,        // The touch event initiated a touch sequence.
-  TOUCH_STATUS_CONTINUE,     // The touch event is part of a previously
-                             // started touch sequence.
-  TOUCH_STATUS_END,          // The touch event ended the touch sequence.
-  TOUCH_STATUS_QUEUED,       // The touch event has not been processed yet, but
-                             // may be processed asynchronously later. This also
-                             // places a lock on touch-events (i.e. all
-                             // subsequent touch-events should be sent to the
-                             // current handler).
-  TOUCH_STATUS_QUEUED_END,   // Similar to TOUCH_STATUS_QUEUED, except that
-                             // subsequent touch-events can be sent to any
-                             // handler.
-};
-
-// Returns an equivalent EventResult from a TouchStatus.
-UI_EXPORT EventResult EventResultFromTouchStatus(TouchStatus status);
-
 // Updates the list of devices for cached properties.
 UI_EXPORT void UpdateDeviceList();
 

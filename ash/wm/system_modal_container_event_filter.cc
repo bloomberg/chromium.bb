@@ -30,11 +30,11 @@ bool SystemModalContainerEventFilter::PreHandleMouseEvent(
   return !delegate_->CanWindowReceiveEvents(target);
 }
 
-ui::TouchStatus SystemModalContainerEventFilter::PreHandleTouchEvent(
+ui::EventResult SystemModalContainerEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
   // TODO(sadrul): !
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult SystemModalContainerEventFilter::PreHandleGestureEvent(

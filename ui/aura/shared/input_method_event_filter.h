@@ -39,7 +39,7 @@ class VIEWS_EXPORT InputMethodEventFilter
   virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(Window* target,
                                    ui::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(
+  virtual ui::EventResult PreHandleTouchEvent(
       Window* target,
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::EventResult PreHandleGestureEvent(

@@ -301,7 +301,7 @@ bool TooltipController::PreHandleMouseEvent(aura::Window* target,
   return false;
 }
 
-ui::TouchStatus TooltipController::PreHandleTouchEvent(
+ui::EventResult TooltipController::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
   // TODO(varunjain): need to properly implement tooltips for
@@ -312,7 +312,7 @@ ui::TouchStatus TooltipController::PreHandleTouchEvent(
   if (tooltip_window_)
     tooltip_window_->RemoveObserver(this);
   tooltip_window_ = NULL;
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult TooltipController::PreHandleGestureEvent(

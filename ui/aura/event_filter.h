@@ -52,9 +52,9 @@ class AURA_EXPORT EventFilter : public ui::EventHandler {
   virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event);
   virtual bool PreHandleMouseEvent(Window* target, ui::MouseEvent* event);
 
-  // Returns a value other than ui::TOUCH_STATUS_UNKNOWN if the event is
+  // Returns a value other than ui::ER_UNHANDLED if the event is
   // consumed.
-  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
+  virtual ui::EventResult PreHandleTouchEvent(Window* target,
                                               ui::TouchEvent* event);
 
   // Returns a value other than ui::ER_UNHANDLED if the gesture is

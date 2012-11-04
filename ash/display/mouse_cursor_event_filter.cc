@@ -92,10 +92,10 @@ bool MouseCursorEventFilter::PreHandleMouseEvent(aura::Window* target,
       WarpMouseCursorIfNecessary(target->GetRootWindow(), point_in_screen);
 }
 
-ui::TouchStatus MouseCursorEventFilter::PreHandleTouchEvent(
+ui::EventResult MouseCursorEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult MouseCursorEventFilter::PreHandleGestureEvent(

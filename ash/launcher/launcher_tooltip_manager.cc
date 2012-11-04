@@ -295,11 +295,11 @@ bool LauncherTooltipManager::PreHandleMouseEvent(aura::Window* target,
   return false;
 }
 
-ui::TouchStatus LauncherTooltipManager::PreHandleTouchEvent(
+ui::EventResult LauncherTooltipManager::PreHandleTouchEvent(
     aura::Window* target, ui::TouchEvent* event) {
   if (widget_ && widget_->IsVisible() && widget_->GetNativeWindow() != target)
     Close();
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult LauncherTooltipManager::PreHandleGestureEvent(

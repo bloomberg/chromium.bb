@@ -17,9 +17,9 @@ bool EventFilter::PreHandleMouseEvent(Window* target, ui::MouseEvent* event) {
   return false;
 }
 
-ui::TouchStatus EventFilter::PreHandleTouchEvent(Window* target,
+ui::EventResult EventFilter::PreHandleTouchEvent(Window* target,
                                                  ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult EventFilter::PreHandleGestureEvent(Window* target,
@@ -42,9 +42,7 @@ ui::EventResult EventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 ui::EventResult EventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  ui::TouchStatus status = PreHandleTouchEvent(
-      static_cast<Window*>(event->target()), event);
-  return ui::EventResultFromTouchStatus(status);
+  return PreHandleTouchEvent(static_cast<Window*>(event->target()), event);
 }
 
 ui::EventResult EventFilter::OnGestureEvent(ui::GestureEvent* event) {

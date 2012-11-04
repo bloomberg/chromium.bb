@@ -59,9 +59,9 @@ bool OverlayEventFilter::PreHandleMouseEvent(
   return false;  // Not handled.
 }
 
-ui::TouchStatus OverlayEventFilter::PreHandleTouchEvent(
+ui::EventResult OverlayEventFilter::PreHandleTouchEvent(
     aura::Window* target, ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
+  return ui::ER_UNHANDLED;  // Not handled.
 }
 
 ui::EventResult OverlayEventFilter::PreHandleGestureEvent(

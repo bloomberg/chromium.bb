@@ -111,10 +111,10 @@ bool X11WindowEventFilter::PreHandleMouseEvent(aura::Window* target,
   return DispatchHostWindowDragMovement(component, root_location);
 }
 
-ui::TouchStatus X11WindowEventFilter::PreHandleTouchEvent(
+ui::EventResult X11WindowEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult X11WindowEventFilter::PreHandleGestureEvent(

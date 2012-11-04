@@ -192,11 +192,11 @@ bool TouchObserverHUD::PreHandleMouseEvent(aura::Window* target,
   return false;
 }
 
-ui::TouchStatus TouchObserverHUD::PreHandleTouchEvent(
+ui::EventResult TouchObserverHUD::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
   if (event->touch_id() >= kMaxTouchPoints)
-    return ui::TOUCH_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
 
   if (event->type() != ui::ET_TOUCH_CANCELLED)
     touch_positions_[event->touch_id()] = event->root_location();
@@ -210,7 +210,7 @@ ui::TouchStatus TouchObserverHUD::PreHandleTouchEvent(
 
   widget_->SetSize(widget_->GetContentsView()->GetPreferredSize());
 
-  return ui::TOUCH_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult TouchObserverHUD::PreHandleGestureEvent(
