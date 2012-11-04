@@ -257,7 +257,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   transient->Hide();
   transient.reset();
 
-  MessageLoopForUI::current()->RunAllPending();
+  MessageLoopForUI::current()->RunUntilIdle();
 
   // parent should now be active again.
   EXPECT_TRUE(wm::IsActiveWindow(parent.get()));

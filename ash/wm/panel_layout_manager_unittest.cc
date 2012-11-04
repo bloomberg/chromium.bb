@@ -96,7 +96,7 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
 
   void IsCalloutAbovePanel(aura::Window* panel) {
     // Flush the message loop, since callout updates use a delayed task.
-    MessageLoop::current()->RunAllPending();
+    MessageLoop::current()->RunUntilIdle();
     views::Widget* widget = NULL;
     GetCalloutWidget(&widget);
     EXPECT_TRUE(widget->IsVisible());
