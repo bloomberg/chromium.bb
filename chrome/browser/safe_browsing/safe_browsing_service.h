@@ -24,7 +24,6 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
-#include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -35,6 +34,7 @@ class MalwareDetails;
 class PrefChangeRegistrar;
 class PrefService;
 class SafeBrowsingDatabase;
+class SafeBrowsingProtocolManager;
 class SafeBrowsingServiceFactory;
 class SafeBrowsingURLRequestContextGetter;
 
@@ -57,8 +57,7 @@ class SafeBrowsingService
     : public base::RefCountedThreadSafe<
           SafeBrowsingService, content::BrowserThread::DeleteOnUIThread>,
       public content::NotificationObserver,
-      public PrefObserver,
-      public SafeBrowsingProtocolManagerDelegate {
+      public PrefObserver {
  public:
   class Client;
   // Passed a boolean indicating whether or not it is OK to proceed with
@@ -240,6 +239,14 @@ class SafeBrowsingService
       const std::vector<SBFullHashResult>& full_hashes,
       bool can_cache);
 
+  // Called on the IO thread.
+  void HandleChunk(const std::string& list, SBChunkList* chunks);
+  void HandleChunkDelete(std::vector<SBChunkDelete>* chunk_deletes);
+
+  // Update management.  Called on the IO thread.
+  void UpdateStarted();
+  void UpdateFinished(bool update_succeeded);
+
   // The blocking page on the UI thread has completed.
   void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,
                           bool proceed);
@@ -263,6 +270,9 @@ class SafeBrowsingService
   }
 
   net::URLRequestContextGetter* url_request_context();
+
+  // Called on the IO thread to reset the database.
+  void ResetDatabase();
 
   // Called on the IO thread to release memory.
   void PurgeMemory();
@@ -360,12 +370,11 @@ class SafeBrowsingService
   void OnCheckDone(SafeBrowsingCheck* info);
 
   // Called on the database thread to retrieve chunks.
-  void GetAllChunksFromDatabase(GetChunksCallback callback);
+  void GetAllChunksFromDatabase();
 
   // Called on the IO thread with the results of all chunks.
   void OnGetAllChunksFromDatabase(const std::vector<SBListChunkRanges>& lists,
-                                  bool database_error,
-                                  GetChunksCallback callback);
+                                  bool database_error);
 
   // Called on the IO thread after the database reports that it added a chunk.
   void OnChunkInserted();
@@ -380,7 +389,7 @@ class SafeBrowsingService
   void HandleChunkForDatabase(const std::string& list,
                               SBChunkList* chunks);
 
-  void DeleteDatabaseChunks(std::vector<SBChunkDelete>* chunk_deletes);
+  void DeleteChunks(std::vector<SBChunkDelete>* chunk_deletes);
 
   static SBThreatType GetThreatTypeFromListname(const std::string& list_name);
 
@@ -466,15 +475,6 @@ class SafeBrowsingService
   // PrefObserver override
   virtual void OnPreferenceChanged(PrefServiceBase* service,
                                    const std::string& pref_name) OVERRIDE;
-
-  // SafeBrowsingProtocolManageDelegate override
-  virtual void ResetDatabase() OVERRIDE;
-  virtual void UpdateStarted() OVERRIDE;
-  virtual void UpdateFinished(bool success) OVERRIDE;
-  virtual void GetChunks(GetChunksCallback callback) OVERRIDE;
-  virtual void AddChunks(const std::string& list, SBChunkList* chunks) OVERRIDE;
-  virtual void DeleteChunks(
-      std::vector<SBChunkDelete>* delete_chunks) OVERRIDE;
 
   // Starts following the safe browsing preference on |pref_service|.
   void AddPrefService(PrefService* pref_service);

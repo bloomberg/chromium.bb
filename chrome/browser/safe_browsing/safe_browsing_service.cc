@@ -534,28 +534,20 @@ void SafeBrowsingService::HandleGetHashResults(
   }
 }
 
-void SafeBrowsingService::GetChunks(GetChunksCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(enabled_);
-  DCHECK(!callback.is_null());
-  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SafeBrowsingService::GetAllChunksFromDatabase, this, callback));
-}
-
-void SafeBrowsingService::AddChunks(const std::string& list,
-                                    SBChunkList* chunks) {
+void SafeBrowsingService::HandleChunk(const std::string& list,
+                                      SBChunkList* chunks) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(enabled_);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
       &SafeBrowsingService::HandleChunkForDatabase, this, list, chunks));
 }
 
-void SafeBrowsingService::DeleteChunks(
+void SafeBrowsingService::HandleChunkDelete(
     std::vector<SBChunkDelete>* chunk_deletes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(enabled_);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SafeBrowsingService::DeleteDatabaseChunks, this, chunk_deletes));
+      &SafeBrowsingService::DeleteChunks, this, chunk_deletes));
 }
 
 void SafeBrowsingService::UpdateStarted() {
@@ -563,6 +555,8 @@ void SafeBrowsingService::UpdateStarted() {
   DCHECK(enabled_);
   DCHECK(!update_in_progress_);
   update_in_progress_ = true;
+  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
+      &SafeBrowsingService::GetAllChunksFromDatabase, this));
 }
 
 void SafeBrowsingService::UpdateFinished(bool update_succeeded) {
@@ -880,7 +874,7 @@ void SafeBrowsingService::OnCheckDone(SafeBrowsingCheck* check) {
   }
 }
 
-void SafeBrowsingService::GetAllChunksFromDatabase(GetChunksCallback callback) {
+void SafeBrowsingService::GetAllChunksFromDatabase() {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
 
   bool database_error = true;
@@ -897,15 +891,14 @@ void SafeBrowsingService::GetAllChunksFromDatabase(GetChunksCallback callback) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingService::OnGetAllChunksFromDatabase,
-                 this, lists, database_error, callback));
+                 this, lists, database_error));
 }
 
 void SafeBrowsingService::OnGetAllChunksFromDatabase(
-    const std::vector<SBListChunkRanges>& lists, bool database_error,
-    GetChunksCallback callback) {
+    const std::vector<SBListChunkRanges>& lists, bool database_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (enabled_)
-    callback.Run(lists, database_error);
+    protocol_manager_->OnGetChunksComplete(lists, database_error);
 }
 
 void SafeBrowsingService::OnChunkInserted() {
@@ -956,7 +949,7 @@ void SafeBrowsingService::HandleChunkForDatabase(
       base::Bind(&SafeBrowsingService::OnChunkInserted, this));
 }
 
-void SafeBrowsingService::DeleteDatabaseChunks(
+void SafeBrowsingService::DeleteChunks(
     std::vector<SBChunkDelete>* chunk_deletes) {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   if (chunk_deletes) {

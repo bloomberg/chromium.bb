@@ -211,10 +211,10 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
 // safebrowsing server for testing purpose.
 class TestProtocolManager :  public SafeBrowsingProtocolManager {
  public:
-  TestProtocolManager(SafeBrowsingProtocolManagerDelegate* delegate,
+  TestProtocolManager(SafeBrowsingService* sb_service,
                       net::URLRequestContextGetter* request_context_getter,
                       const SafeBrowsingProtocolConfig& config)
-      : SafeBrowsingProtocolManager(delegate, request_context_getter, config),
+      : SafeBrowsingProtocolManager(sb_service, request_context_getter, config),
         delay_ms_(0) {
     create_count_++;
   }
@@ -275,10 +275,10 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
   virtual ~TestSBProtocolManagerFactory() {}
 
   virtual SafeBrowsingProtocolManager* CreateProtocolManager(
-      SafeBrowsingProtocolManagerDelegate* delegate,
+      SafeBrowsingService* sb_service,
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config) OVERRIDE {
-    pm_ = new TestProtocolManager(delegate, request_context_getter, config);
+    pm_ = new TestProtocolManager(sb_service, request_context_getter, config);
     return pm_;
   }
 
