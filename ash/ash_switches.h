@@ -7,6 +7,8 @@
 
 #include "ash/ash_export.h"
 
+#include "build/build_config.h"
+
 namespace ash {
 namespace switches {
 
@@ -24,6 +26,9 @@ ASH_EXPORT extern const char kAshDisableAutoWindowPlacement[];
 ASH_EXPORT extern const char kAshDisablePanelFitting[];
 ASH_EXPORT extern const char kAshDisableBootAnimation2[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
+#if defined(OS_LINUX)
+ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
+#endif
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];
 ASH_EXPORT extern const char kAshLauncherPerDisplay[];

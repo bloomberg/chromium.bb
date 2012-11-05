@@ -38,6 +38,11 @@ const char kAshDisablePanelFitting[] = "ash-disable-panel-fitting";
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 
+#if defined(OS_LINUX)
+// Enable memory monitoring.
+const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
+#endif
+
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 

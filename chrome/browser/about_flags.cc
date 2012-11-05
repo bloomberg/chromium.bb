@@ -993,6 +993,14 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshEnableAdvancedGestures),
   },
+#if defined(OS_LINUX)
+  { "ash-enable-memory-monitor",
+      IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME,
+      IDS_FLAGS_ENABLE_MEMORY_MONITOR_DESCRIPTION,
+      kOsCrOS,
+      SINGLE_VALUE_TYPE(ash::switches::kAshEnableMemoryMonitor),
+  },
+#endif
 #endif
 #if defined(OS_CHROMEOS)
   {
