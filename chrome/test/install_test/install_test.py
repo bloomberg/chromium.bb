@@ -114,7 +114,12 @@ class InstallTest(unittest.TestCase):
 
   def tearDown(self):
     """Called at the end of each unittest to do any test related cleanup."""
-    self._driver.quit()
+    # Confirm ChromeDriver was instantiated, before attempting to quit.
+    if self._driver != None:
+      try:
+        self._driver.quit()
+      except WebDriverException:
+        pass
     self._service.stop()
     self._installation.Uninstall()
 

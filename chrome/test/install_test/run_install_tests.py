@@ -186,6 +186,10 @@ class Main(object):
     result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
     # Run tests again if installation type is 'both'(i.e., user and system).
     if self._opts.install_type == 'both':
+      # Load the tests again so test parameters can be reinitialized.
+      all_tests = unittest.defaultTestLoader.loadTestsFromModule(
+          sample_updater)
+      tests = self._FilterTestSuite(all_tests, self._opts.filter)
       InstallTest.SetInstallType(chrome_installer_win.InstallationType.SYSTEM)
       result = pyauto_utils.GTestTextTestRunner(verbosity=1).run(tests)
     del(tests)
