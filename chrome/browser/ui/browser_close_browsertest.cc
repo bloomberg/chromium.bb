@@ -525,14 +525,16 @@ std::string BrowserCloseTest::DownloadsCloseCheckCase::DebugString() const {
 #define MAYBE_DownloadsCloseCheck_1 DownloadsCloseCheck_1
 #endif
 
-#define MAYBE_DownloadsCloseCheck_3 DownloadsCloseCheck_3
-#define MAYBE_DownloadsCloseCheck_4 DownloadsCloseCheck_4
 // Timing out on XP debug. http://crbug.com/111914
 #if defined(OS_WIN)
 # define MAYBE_DownloadsCloseCheck_2 DISABLED_DownloadsCloseCheck_2
+# define MAYBE_DownloadsCloseCheck_3 DISABLED_DownloadsCloseCheck_3
+# define MAYBE_DownloadsCloseCheck_4 DISABLED_DownloadsCloseCheck_4
 # define MAYBE_DownloadsCloseCheck_5 DISABLED_DownloadsCloseCheck_5
 #else
 # define MAYBE_DownloadsCloseCheck_2 DownloadsCloseCheck_2
+# define MAYBE_DownloadsCloseCheck_3 DownloadsCloseCheck_3
+# define MAYBE_DownloadsCloseCheck_4 DownloadsCloseCheck_4
 # define MAYBE_DownloadsCloseCheck_5 DownloadsCloseCheck_5
 #endif  // defined(OS_WIN)
 
