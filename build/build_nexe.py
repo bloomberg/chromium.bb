@@ -7,7 +7,7 @@ from optparse import OptionParser
 import os
 import subprocess
 import sys
-
+import tempfile
 
 """NEXE building script
 
@@ -255,6 +255,12 @@ class Builder(object):
     # For POSIX style path on windows for POSIX based toolchain
     # (just for arguments, not for the path to the command itself)
     cmd_line = [cmd_line[0]] + [cmd.replace('\\', '/') for cmd in cmd_line[1:]]
+    # Windows has a command line length limitation of 8191 characters.
+    temp_file = None
+    if len(' '.join(cmd_line)) > 8000:
+      with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(' '.join(cmd_line[1:]))
+      cmd_line = [cmd_line[0], '@' + temp_file.name]
 
     if self.verbose:
       print ' '.join(cmd_line)
@@ -271,6 +277,9 @@ class Builder(object):
     if ecode != 0:
       print 'Err %d: nacl-%s %s' % (ecode, os.path.basename(cmd_line[0]), out)
       print '>>%s<<' % '<< >>'.join(cmd_line)
+
+    if temp_file is not None:
+      os.remove(temp_file.name)
     return ecode
 
   def GetObjectName(self, src):
