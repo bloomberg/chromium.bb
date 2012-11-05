@@ -11,6 +11,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -19,6 +20,7 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -97,7 +99,7 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       requested_menu_position_(POSITION_BEST_FIT),
       actual_menu_position_(requested_menu_position_),
       use_right_margin_(true) {
-  // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes supplies a
+  // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes() supplies a
   // NULL delegate.
   Init(NULL, 0, SUBMENU, delegate);
 }
@@ -551,11 +553,10 @@ void MenuItemView::SetMargins(int top_margin, int bottom_margin) {
 }
 
 const MenuConfig& MenuItemView::GetMenuConfig() const {
-  const MenuItemView* root_menu_item = GetRootMenuItem();
-  if (root_menu_item->menu_config_.get())
-    return *(root_menu_item->menu_config_);
-
- return MenuConfig::instance();
+  const MenuController* controller = GetMenuController();
+  if (controller)
+    return controller->menu_config_;
+  return MenuConfig::instance(NULL);
 }
 
 MenuItemView::MenuItemView(MenuItemView* parent,
@@ -593,7 +594,6 @@ std::string MenuItemView::GetClassName() const {
 //
 // This is invoked prior to Running a menu.
 void MenuItemView::UpdateMenuPartSizes() {
-  MenuConfig::Reset();
   const MenuConfig& config = GetMenuConfig();
 
   item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
@@ -618,6 +618,7 @@ void MenuItemView::UpdateMenuPartSizes() {
     label_start_ += config.gutter_width + config.gutter_to_label;
 
   EmptyMenuMenuItem menu_item(this);
+  menu_item.set_controller(GetMenuController());
   pref_menu_height_ = menu_item.GetPreferredSize().height();
 }
 
@@ -645,7 +646,9 @@ void MenuItemView::Init(MenuItemView* parent,
     SetEnabled(root_delegate->IsCommandEnabled(command));
 }
 
-void MenuItemView::PrepareForRun(bool has_mnemonics, bool show_mnemonics) {
+void MenuItemView::PrepareForRun(bool is_first_menu,
+                                 bool has_mnemonics,
+                                 bool show_mnemonics) {
   // Currently we only support showing the root.
   DCHECK(!parent_menu_item_);
 
@@ -659,7 +662,7 @@ void MenuItemView::PrepareForRun(bool has_mnemonics, bool show_mnemonics) {
 
   AddEmptyMenus();
 
-  if (!MenuController::GetActiveInstance()) {
+  if (is_first_menu) {
     // Only update the menu size if there are no menus showing, otherwise
     // things may shift around.
     UpdateMenuPartSizes();
@@ -673,7 +676,7 @@ int MenuItemView::GetDrawStringFlags() {
   else
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
 
-  if (has_mnemonics_) {
+  if (GetRootMenuItem()->has_mnemonics_) {
     if (GetMenuConfig().show_mnemonics || GetRootMenuItem()->show_mnemonics_) {
       flags |= gfx::Canvas::SHOW_PREFIX;
     } else {
@@ -684,10 +687,13 @@ int MenuItemView::GetDrawStringFlags() {
 }
 
 const gfx::Font& MenuItemView::GetFont() {
-  // Check for item-specific font.
   const MenuDelegate* delegate = GetDelegate();
-  return delegate ?
-      delegate->GetLabelFont(GetCommand()) : GetMenuConfig().font;
+  if (delegate) {
+    const gfx::Font* font = delegate->GetLabelFont(GetCommand());
+    if (font)
+      return *font;
+  }
+  return GetMenuConfig().font;
 }
 
 void MenuItemView::AddEmptyMenus() {
@@ -741,15 +747,14 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
   gfx::Rect accel_bounds(width() - accel_right_margin - max_accel_width,
                          GetTopMargin(), max_accel_width, available_height);
   accel_bounds.set_x(GetMirroredXForRect(accel_bounds));
-  int flags = GetRootMenuItem()->GetDrawStringFlags() |
-      gfx::Canvas::TEXT_VALIGN_MIDDLE;
+  int flags = GetDrawStringFlags() | gfx::Canvas::TEXT_VALIGN_MIDDLE;
   flags &= ~(gfx::Canvas::TEXT_ALIGN_RIGHT | gfx::Canvas::TEXT_ALIGN_LEFT);
   if (base::i18n::IsRTL())
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
   else
     flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
   canvas->DrawStringInt(
-      accel_text, font, ui::NativeTheme::instance()->GetSystemColor(
+      accel_text, font, GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_TextButtonDisabledColor),
       accel_bounds.x(), accel_bounds.y(), accel_bounds.width(),
       accel_bounds.height(), flags);

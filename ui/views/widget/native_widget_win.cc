@@ -485,7 +485,7 @@ void NativeWidgetWin::SetVisibilityChangedAnimationsEnabled(bool value) {
   message_handler_->SetVisibilityChangedAnimationsEnabled(value);
 }
 
-ui::NativeTheme* NativeWidgetWin::GetNativeTheme() {
+ui::NativeTheme* NativeWidgetWin::GetNativeTheme() const {
   return ui::NativeTheme::instance();
 }
 

@@ -84,9 +84,9 @@ class MenuScrollButton : public View {
     gfx::Rect item_bounds(0, 0, width(), height());
     NativeTheme::ExtraParams extra;
     extra.menu_item.is_selected = false;
-    NativeTheme::instance()->Paint(canvas->sk_canvas(),
-                                   NativeTheme::kMenuItemBackground,
-                                   NativeTheme::kNormal, item_bounds, extra);
+    GetNativeTheme()->Paint(canvas->sk_canvas(),
+                            NativeTheme::kMenuItemBackground,
+                            NativeTheme::kNormal, item_bounds, extra);
 #if defined(OS_WIN)
     SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 #else
@@ -203,7 +203,7 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
 #endif
   gfx::Rect bounds(0, 0, width(), height());
   NativeTheme::ExtraParams extra;
-  NativeTheme::instance()->Paint(canvas->sk_canvas(),
+  GetNativeTheme()->Paint(canvas->sk_canvas(),
       NativeTheme::kMenuPopupBackground, NativeTheme::kNormal, bounds, extra);
 #if defined(OS_WIN)
   canvas->EndPlatformPaint();

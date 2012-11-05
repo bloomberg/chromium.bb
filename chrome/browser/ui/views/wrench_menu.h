@@ -20,6 +20,7 @@ class Browser;
 
 namespace views {
 class MenuButton;
+struct MenuConfig;
 class MenuItemView;
 class MenuRunner;
 class View;
@@ -40,6 +41,8 @@ class WrenchMenu : public views::MenuDelegate,
 
   // Whether the menu is currently visible to the user.
   bool IsShowing();
+
+  const views::MenuConfig& GetMenuConfig() const;
 
   // MenuDelegate overrides:
   virtual string16 GetTooltipText(int id, const gfx::Point& p) const OVERRIDE;

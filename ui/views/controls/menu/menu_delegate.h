@@ -69,7 +69,7 @@ class VIEWS_EXPORT MenuDelegate {
   virtual string16 GetLabel(int id) const;
 
   // The font for the menu item label.
-  virtual const gfx::Font& GetLabelFont(int id) const;
+  virtual const gfx::Font* GetLabelFont(int id) const;
 
   // The tooltip shown for the menu item. This is invoked when the user
   // hovers over the item, and no tooltip text has been set for that item.

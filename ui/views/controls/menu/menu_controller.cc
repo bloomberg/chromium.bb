@@ -15,6 +15,7 @@
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -1034,7 +1035,8 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
   return true;
 }
 
-MenuController::MenuController(bool blocking,
+MenuController::MenuController(ui::NativeTheme* theme,
+                               bool blocking,
                                internal::MenuControllerDelegate* delegate)
     : blocking_run_(blocking),
       showing_(false),
@@ -1056,7 +1058,8 @@ MenuController::MenuController(bool blocking,
       menu_button_(NULL),
       active_mouse_view_(NULL),
       delegate_(delegate),
-      message_loop_depth_(0) {
+      message_loop_depth_(0),
+      menu_config_(theme) {
   active_instance_ = this;
 }
 
@@ -1193,7 +1196,8 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
                                   button->width(), button->height() - 1),
                         anchor, state_.context_menu);
   alt_menu->PrepareForRun(
-      has_mnemonics, source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
+      false, has_mnemonics,
+      source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
   alt_menu->controller_ = this;
   SetSelection(alt_menu, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   return true;

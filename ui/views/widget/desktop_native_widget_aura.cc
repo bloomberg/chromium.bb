@@ -414,7 +414,7 @@ void DesktopNativeWidgetAura::SetVisibilityChangedAnimationsEnabled(
   desktop_root_window_host_->SetVisibilityChangedAnimationsEnabled(value);
 }
 
-ui::NativeTheme* DesktopNativeWidgetAura::GetNativeTheme() {
+ui::NativeTheme* DesktopNativeWidgetAura::GetNativeTheme() const {
   return DesktopRootWindowHost::GetNativeTheme(window_);
 }
 

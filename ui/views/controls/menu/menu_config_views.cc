@@ -13,8 +13,15 @@
 
 namespace views {
 
-void MenuConfig::Init() {
-  text_color = ui::NativeTheme::instance()->GetSystemColor(
+#if !defined(OS_WIN)
+void MenuConfig::Init(const ui::NativeTheme* theme) {
+  InitAura();
+}
+#endif
+
+void MenuConfig::InitAura() {
+  ui::NativeTheme* theme = ui::NativeThemeAura::instance();
+  text_color = theme->GetSystemColor(
       ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
   submenu_horizontal_margin_size = 0;
   submenu_vertical_margin_size = 0;
@@ -40,5 +47,15 @@ void MenuConfig::Init() {
   align_arrow_and_shortcut = true;
   offset_context_menus = true;
 }
+
+#if !defined(OS_WIN)
+// static
+const MenuConfig& MenuConfig::instance(const ui::NativeTheme* theme) {
+  static MenuConfig* views_instance = NULL;
+  if (!views_instance)
+    views_instance = new MenuConfig(theme);
+  return *views_instance;
+}
+#endif
 
 }  // namespace views

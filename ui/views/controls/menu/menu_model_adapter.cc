@@ -102,12 +102,13 @@ string16 MenuModelAdapter::GetLabel(int id) const {
   return string16();
 }
 
-const gfx::Font& MenuModelAdapter::GetLabelFont(int id) const {
+const gfx::Font* MenuModelAdapter::GetLabelFont(int id) const {
   ui::MenuModel* model = menu_model_;
   int index = 0;
   if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index)) {
     const gfx::Font* font = model->GetLabelFontAt(index);
-    return font ? *font : MenuDelegate::GetLabelFont(id);
+    if (font)
+      return font;
   }
 
   // This line may be reached for the empty menu item.

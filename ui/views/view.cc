@@ -734,8 +734,8 @@ ui::ThemeProvider* View::GetThemeProvider() const {
   return widget ? widget->GetThemeProvider() : NULL;
 }
 
-ui::NativeTheme* View::GetNativeTheme() {
-  Widget* widget = GetWidget();
+const ui::NativeTheme* View::GetNativeTheme() const {
+  const Widget* widget = GetWidget();
   return widget ? widget->GetNativeTheme() : NULL;
 }
 

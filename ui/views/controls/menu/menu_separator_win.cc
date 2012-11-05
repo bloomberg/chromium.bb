@@ -20,7 +20,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   const MenuConfig& config = parent_menu_item_->GetMenuConfig();
   // The gutter is rendered before the background.
   int start_x = 0;
-  const ui::NativeTheme* theme = ui::NativeTheme::instance();
+  const ui::NativeTheme* theme = GetNativeTheme();
   if (config.render_gutter) {
     // If render_gutter is true, we're on Vista and need to render the
     // gutter, then indent the separator from the gutter.

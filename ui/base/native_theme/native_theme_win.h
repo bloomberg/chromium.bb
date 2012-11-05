@@ -96,10 +96,6 @@ class UI_EXPORT NativeThemeWin : public NativeTheme {
                          bool fill_content_area,
                          bool draw_edges) const;
 
- private:
-  NativeThemeWin();
-  ~NativeThemeWin();
-
   // NativeTheme Implementation:
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
@@ -110,6 +106,10 @@ class UI_EXPORT NativeThemeWin : public NativeTheme {
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const OVERRIDE;
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
+
+ private:
+  NativeThemeWin();
+  ~NativeThemeWin();
 
   // Paint directly to canvas' HDC.
   void PaintDirect(SkCanvas* canvas,

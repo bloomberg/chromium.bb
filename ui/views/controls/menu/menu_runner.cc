@@ -161,19 +161,20 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
   running_ = true;
   for_drop_ = (types & MenuRunner::FOR_DROP) != 0;
   bool has_mnemonics = (types & MenuRunner::HAS_MNEMONICS) != 0 && !for_drop_;
-  menu_->PrepareForRun(has_mnemonics,
-                       !for_drop_ && ShouldShowMnemonics(button));
-  int mouse_event_flags = 0;
   owns_controller_ = false;
   if (!controller) {
     // No menus are showing, show one.
-    controller = new MenuController(!for_drop_, this);
+    controller = new MenuController(parent->GetNativeTheme(), !for_drop_, this);
     owns_controller_ = true;
   }
   controller_ = controller;
   menu_->set_controller(controller_);
+  menu_->PrepareForRun(owns_controller_,
+                       has_mnemonics,
+                       !for_drop_ && ShouldShowMnemonics(button));
 
   // Run the loop.
+  int mouse_event_flags = 0;
   MenuItemView* result = controller->Run(parent, button, menu_, bounds, anchor,
                                         (types & MenuRunner::CONTEXT_MENU) != 0,
                                          &mouse_event_flags);

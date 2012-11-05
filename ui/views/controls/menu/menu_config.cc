@@ -6,12 +6,11 @@
 
 #include "build/build_config.h"
 #include "ui/base/layout.h"
+#include "ui/base/native_theme/native_theme.h"
 
 namespace views {
 
-static MenuConfig* config_instance = NULL;
-
-MenuConfig::MenuConfig()
+MenuConfig::MenuConfig(const ui::NativeTheme* theme)
     : text_color(SK_ColorBLACK),
       submenu_horizontal_margin_size(3),
       submenu_vertical_margin_size(3),
@@ -51,21 +50,9 @@ MenuConfig::MenuConfig()
     item_top_margin = item_no_icon_top_margin = 12;
     item_bottom_margin = item_no_icon_bottom_margin = 13;
   }
-  Init();
+  Init(theme);
 }
 
 MenuConfig::~MenuConfig() {}
-
-void MenuConfig::Reset() {
-  delete config_instance;
-  config_instance = NULL;
-}
-
-// static
-const MenuConfig& MenuConfig::instance() {
-  if (!config_instance)
-    config_instance = new MenuConfig();
-  return *config_instance;
-}
 
 }  // namespace views

@@ -475,7 +475,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns the NativeTheme to use for this View. This calls through to
   // GetNativeTheme() on the Widget this View is in. If this View is not in a
   // Widget this returns NULL.
-  ui::NativeTheme* GetNativeTheme();
+  ui::NativeTheme* GetNativeTheme() {
+    return const_cast<ui::NativeTheme*>(
+        const_cast<const View*>(this)->GetNativeTheme());
+  }
+  const ui::NativeTheme* GetNativeTheme() const;
 
   // RTL painting --------------------------------------------------------------
 

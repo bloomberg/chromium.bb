@@ -483,6 +483,11 @@
             'controls/tree/tree_view_views.h',
           ],
         }],
+        ['use_aura==1 and OS=="win"', {
+          'sources/': [
+            ['include', 'controls/menu/menu_config_win.cc'],
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             # For accessibility

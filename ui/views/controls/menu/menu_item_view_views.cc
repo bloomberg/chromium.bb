@@ -36,8 +36,9 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // Render the background. As MenuScrollViewContainer draws the background, we
   // only need the background when we want it to look different, as when we're
   // selected.
+  ui::NativeTheme* native_theme = GetNativeTheme();
   if (render_selection) {
-    SkColor bg_color = ui::NativeTheme::instance()->GetSystemColor(
+    SkColor bg_color = native_theme->GetSystemColor(
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
     canvas->DrawColor(bg_color, SkXfermode::kSrc_Mode);
   }
@@ -65,7 +66,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   // Render the foreground.
-  SkColor fg_color = ui::NativeTheme::instance()->GetSystemColor(
+  SkColor fg_color = native_theme->GetSystemColor(
       enabled() ? ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor
           : ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
 
@@ -74,8 +75,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   gfx::Rect text_bounds(label_start_, top_margin, width, available_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
-  int flags = GetRootMenuItem()->GetDrawStringFlags() |
-              gfx::Canvas::TEXT_VALIGN_MIDDLE;
+  int flags = GetDrawStringFlags() | gfx::Canvas::TEXT_VALIGN_MIDDLE;
   if (mode == PB_FOR_DRAG)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
   canvas->DrawStringInt(title(), font, fg_color,

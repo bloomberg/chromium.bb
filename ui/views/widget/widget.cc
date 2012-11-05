@@ -672,7 +672,7 @@ ui::ThemeProvider* Widget::GetThemeProvider() const {
   return default_theme_provider_.get();
 }
 
-ui::NativeTheme* Widget::GetNativeTheme() {
+const ui::NativeTheme* Widget::GetNativeTheme() const {
   return native_widget_->GetNativeTheme();
 }
 

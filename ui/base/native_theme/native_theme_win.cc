@@ -208,52 +208,6 @@ NativeThemeWin* NativeThemeWin::instance() {
   return &s_native_theme;
 }
 
-NativeThemeWin::NativeThemeWin()
-    : theme_dll_(LoadLibrary(L"uxtheme.dll")),
-      draw_theme_(NULL),
-      draw_theme_ex_(NULL),
-      get_theme_color_(NULL),
-      get_theme_content_rect_(NULL),
-      get_theme_part_size_(NULL),
-      open_theme_(NULL),
-      close_theme_(NULL),
-      set_theme_properties_(NULL),
-      is_theme_active_(NULL),
-      get_theme_int_(NULL) {
-  if (theme_dll_) {
-    draw_theme_ = reinterpret_cast<DrawThemeBackgroundPtr>(
-        GetProcAddress(theme_dll_, "DrawThemeBackground"));
-    draw_theme_ex_ = reinterpret_cast<DrawThemeBackgroundExPtr>(
-        GetProcAddress(theme_dll_, "DrawThemeBackgroundEx"));
-    get_theme_color_ = reinterpret_cast<GetThemeColorPtr>(
-        GetProcAddress(theme_dll_, "GetThemeColor"));
-    get_theme_content_rect_ = reinterpret_cast<GetThemeContentRectPtr>(
-        GetProcAddress(theme_dll_, "GetThemeBackgroundContentRect"));
-    get_theme_part_size_ = reinterpret_cast<GetThemePartSizePtr>(
-        GetProcAddress(theme_dll_, "GetThemePartSize"));
-    open_theme_ = reinterpret_cast<OpenThemeDataPtr>(
-        GetProcAddress(theme_dll_, "OpenThemeData"));
-    close_theme_ = reinterpret_cast<CloseThemeDataPtr>(
-        GetProcAddress(theme_dll_, "CloseThemeData"));
-    set_theme_properties_ = reinterpret_cast<SetThemeAppPropertiesPtr>(
-        GetProcAddress(theme_dll_, "SetThemeAppProperties"));
-    is_theme_active_ = reinterpret_cast<IsThemeActivePtr>(
-        GetProcAddress(theme_dll_, "IsThemeActive"));
-    get_theme_int_ = reinterpret_cast<GetThemeIntPtr>(
-        GetProcAddress(theme_dll_, "GetThemeInt"));
-  }
-  memset(theme_handles_, 0, sizeof(theme_handles_));
-}
-
-NativeThemeWin::~NativeThemeWin() {
-  if (theme_dll_) {
-    // todo (cpu): fix this soon.  Making a call to CloseHandles() here breaks
-    // certain tests and the reliability bots.
-    // CloseHandles();
-    FreeLibrary(theme_dll_);
-  }
-}
-
 gfx::Size NativeThemeWin::GetPartSize(Part part,
                                       State state,
                                       const ExtraParams& extra) const {
@@ -321,6 +275,52 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
     PaintIndirect(canvas, part, state, rect, extra);
   else
     PaintDirect(canvas, part, state, rect, extra);
+}
+
+NativeThemeWin::NativeThemeWin()
+    : theme_dll_(LoadLibrary(L"uxtheme.dll")),
+      draw_theme_(NULL),
+      draw_theme_ex_(NULL),
+      get_theme_color_(NULL),
+      get_theme_content_rect_(NULL),
+      get_theme_part_size_(NULL),
+      open_theme_(NULL),
+      close_theme_(NULL),
+      set_theme_properties_(NULL),
+      is_theme_active_(NULL),
+      get_theme_int_(NULL) {
+  if (theme_dll_) {
+    draw_theme_ = reinterpret_cast<DrawThemeBackgroundPtr>(
+        GetProcAddress(theme_dll_, "DrawThemeBackground"));
+    draw_theme_ex_ = reinterpret_cast<DrawThemeBackgroundExPtr>(
+        GetProcAddress(theme_dll_, "DrawThemeBackgroundEx"));
+    get_theme_color_ = reinterpret_cast<GetThemeColorPtr>(
+        GetProcAddress(theme_dll_, "GetThemeColor"));
+    get_theme_content_rect_ = reinterpret_cast<GetThemeContentRectPtr>(
+        GetProcAddress(theme_dll_, "GetThemeBackgroundContentRect"));
+    get_theme_part_size_ = reinterpret_cast<GetThemePartSizePtr>(
+        GetProcAddress(theme_dll_, "GetThemePartSize"));
+    open_theme_ = reinterpret_cast<OpenThemeDataPtr>(
+        GetProcAddress(theme_dll_, "OpenThemeData"));
+    close_theme_ = reinterpret_cast<CloseThemeDataPtr>(
+        GetProcAddress(theme_dll_, "CloseThemeData"));
+    set_theme_properties_ = reinterpret_cast<SetThemeAppPropertiesPtr>(
+        GetProcAddress(theme_dll_, "SetThemeAppProperties"));
+    is_theme_active_ = reinterpret_cast<IsThemeActivePtr>(
+        GetProcAddress(theme_dll_, "IsThemeActive"));
+    get_theme_int_ = reinterpret_cast<GetThemeIntPtr>(
+        GetProcAddress(theme_dll_, "GetThemeInt"));
+  }
+  memset(theme_handles_, 0, sizeof(theme_handles_));
+}
+
+NativeThemeWin::~NativeThemeWin() {
+  if (theme_dll_) {
+    // todo (cpu): fix this soon.  Making a call to CloseHandles() here breaks
+    // certain tests and the reliability bots.
+    // CloseHandles();
+    FreeLibrary(theme_dll_);
+  }
 }
 
 void NativeThemeWin::PaintDirect(SkCanvas* canvas,

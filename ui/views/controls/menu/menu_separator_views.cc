@@ -33,8 +33,8 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
       break;
   }
   canvas->FillRect(gfx::Rect(0, pos, width(), kSeparatorHeight),
-      ui::NativeTheme::instance()->GetSystemColor(
-            ui::NativeTheme::kColorId_MenuSeparatorColor));
+                   GetNativeTheme()->GetSystemColor(
+                       ui::NativeTheme::kColorId_MenuSeparatorColor));
 }
 
 gfx::Size MenuSeparator::GetPreferredSize() {

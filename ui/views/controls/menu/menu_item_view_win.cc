@@ -28,6 +28,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int state;
   NativeTheme::State control_state;
 
+  ui::NativeTheme* native_theme = GetNativeTheme();
+
   if (enabled()) {
     if (render_selection) {
       control_state = NativeTheme::kHovered;
@@ -51,11 +53,11 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                             height());
     AdjustBoundsForRTLUI(&gutter_bounds);
     NativeTheme::ExtraParams extra;
-    NativeTheme::instance()->Paint(canvas->sk_canvas(),
-                                   NativeTheme::kMenuPopupGutter,
-                                   NativeTheme::kNormal,
-                                   gutter_bounds,
-                                   extra);
+    native_theme->Paint(canvas->sk_canvas(),
+                        NativeTheme::kMenuPopupGutter,
+                        NativeTheme::kNormal,
+                        gutter_bounds,
+                        extra);
   }
 
   // Render the background.
@@ -64,7 +66,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     NativeTheme::ExtraParams extra;
     extra.menu_item.is_selected = render_selection;
     AdjustBoundsForRTLUI(&item_bounds);
-    NativeTheme::instance()->Paint(canvas->sk_canvas(),
+    native_theme->Paint(canvas->sk_canvas(),
         NativeTheme::kMenuItemBackground, control_state, item_bounds, extra);
   }
 
@@ -87,8 +89,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   int height = this->height() - GetTopMargin() - GetBottomMargin();
-  int flags = gfx::Canvas::TEXT_VALIGN_MIDDLE |
-              GetRootMenuItem()->GetDrawStringFlags();
+  int flags = gfx::Canvas::TEXT_VALIGN_MIDDLE | GetDrawStringFlags();
   gfx::Rect text_bounds(label_start_, top_margin, width, height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   if (mode == PB_FOR_DRAG) {
@@ -120,7 +121,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     ui::NativeTheme::ExtraParams extra;
     extra.menu_arrow.pointing_right = !base::i18n::IsRTL();
     extra.menu_arrow.is_selected = render_selection;
-    ui::NativeTheme::instance()->Paint(canvas->sk_canvas(),
+    native_theme->Paint(canvas->sk_canvas(),
         ui::NativeTheme::kMenuPopupArrow, control_state, arrow_bounds, extra);
   }
 }
@@ -150,13 +151,13 @@ void MenuItemView::PaintCheck(gfx::Canvas* canvas,
   // Draw the background.
   gfx::Rect bg_bounds(0, 0, icon_x + icon_width, height());
   AdjustBoundsForRTLUI(&bg_bounds);
-  NativeTheme::instance()->Paint(canvas->sk_canvas(),
+  GetNativeTheme()->Paint(canvas->sk_canvas(),
       NativeTheme::kMenuCheckBackground, state, bg_bounds, extra);
 
   // And the check.
   gfx::Rect icon_bounds(icon_x / 2, icon_y, icon_width, icon_height);
   AdjustBoundsForRTLUI(&icon_bounds);
-  NativeTheme::instance()->Paint(canvas->sk_canvas(),
+  GetNativeTheme()->Paint(canvas->sk_canvas(),
       NativeTheme::kMenuCheck, state, bg_bounds, extra);
 }
 

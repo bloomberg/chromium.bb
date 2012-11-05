@@ -167,7 +167,7 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
       const gfx::Vector2d& drag_offset) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
-  virtual ui::NativeTheme* GetNativeTheme() OVERRIDE;
+  virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
 
  protected:
   // Deletes this window as it is destroyed, override to provide different

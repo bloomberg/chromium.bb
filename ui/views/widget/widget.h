@@ -432,7 +432,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the ThemeProvider that provides theme resources for this Widget.
   virtual ui::ThemeProvider* GetThemeProvider() const;
 
-  ui::NativeTheme* GetNativeTheme();
+  ui::NativeTheme* GetNativeTheme() {
+    return const_cast<ui::NativeTheme*>(
+        const_cast<const Widget*>(this)->GetNativeTheme());
+  }
+  const ui::NativeTheme* GetNativeTheme() const;
 
   // Returns the FocusManager for this widget.
   // Note that all widgets in a widget hierarchy share the same focus manager.

@@ -121,10 +121,12 @@ class FullscreenButton : public ImageButton {
 // insets, the actual painting is done in MenuButtonBackground.
 class MenuButtonBorder : public views::Border {
  public:
-  MenuButtonBorder()
-    : horizontal_padding_(IsNewMenu() ?
-                              kHorizontalTouchPadding :
-                              kHorizontalPadding) {}
+  explicit MenuButtonBorder(const MenuConfig& config)
+      : horizontal_padding_(IsNewMenu() ?
+                            kHorizontalTouchPadding : kHorizontalPadding),
+        insets_(config.item_top_margin, horizontal_padding_,
+                config.item_bottom_margin, horizontal_padding_) {
+  }
 
   // Overridden from views::Border.
   virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
@@ -132,15 +134,14 @@ class MenuButtonBorder : public views::Border {
   }
 
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    insets->Set(MenuConfig::instance().item_top_margin,
-                horizontal_padding_,
-                MenuConfig::instance().item_bottom_margin,
-                horizontal_padding_);
+    *insets = insets_;
   }
 
  private:
   // The horizontal padding dependent on the layout.
   const int horizontal_padding_;
+
+  const gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuButtonBorder);
 };
@@ -336,7 +337,7 @@ string16 GetAccessibleNameForWrenchMenuItem(
 class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
  public:
   WrenchMenuView(WrenchMenu* menu, MenuModel* menu_model)
-      : menu_(menu), menu_model_(menu_model) { }
+      : menu_(menu), menu_model_(menu_model) {}
 
   TextButton* CreateAndConfigureButton(int string_id,
                                        MenuButtonBackground::ButtonType type,
@@ -362,12 +363,13 @@ class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
     button->set_prefix_type(TextButton::PREFIX_HIDE);
     MenuButtonBackground* bg = new MenuButtonBackground(type);
     button->set_background(bg);
-    button->SetEnabledColor(MenuConfig::instance().text_color);
+    const MenuConfig& menu_config = menu_->GetMenuConfig();
+    button->SetEnabledColor(menu_config.text_color);
     if (background)
       *background = bg;
-    button->set_border(new MenuButtonBorder());
+    button->set_border(new MenuButtonBorder(menu_config));
     button->set_alignment(TextButton::ALIGN_CENTER);
-    button->SetFont(views::MenuConfig::instance().font);
+    button->SetFont(menu_config.font);
     button->ClearMaxTextSize();
     AddChildView(button);
     return button;
@@ -523,8 +525,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 #endif
             MenuButtonBackground::CENTER_BUTTON);
     zoom_label_->set_background(center_bg);
-    zoom_label_->set_border(new MenuButtonBorder());
-    zoom_label_->SetFont(MenuConfig::instance().font);
+    const MenuConfig& menu_config(menu->GetMenuConfig());
+    zoom_label_->set_border(new MenuButtonBorder(menu_config));
+    zoom_label_->SetFont(menu_config.font);
 
     AddChildView(zoom_label_);
     zoom_label_width_ = MaxWidthForZoomLabel();
@@ -545,7 +548,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
       decrement_button_->SetEnabledColor(kTouchButtonText);
       increment_button_->SetEnabledColor(kTouchButtonText);
     } else {
-      zoom_label_->SetEnabledColor(MenuConfig::instance().text_color);
+      zoom_label_->SetEnabledColor(menu_config.text_color);
     }
 
     fullscreen_button_->set_focusable(true);
@@ -764,6 +767,13 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
 
 bool WrenchMenu::IsShowing() {
   return menu_runner_.get() && menu_runner_->IsRunning();
+}
+
+const views::MenuConfig& WrenchMenu::GetMenuConfig() const {
+  views::Widget* browser_widget = views::Widget::GetWidgetForNativeView(
+      browser_->window()->GetNativeWindow());
+  DCHECK(browser_widget);
+  return MenuConfig::instance(browser_widget->GetNativeTheme());
 }
 
 string16 WrenchMenu::GetTooltipText(int id,
