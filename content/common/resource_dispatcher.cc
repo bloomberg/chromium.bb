@@ -362,8 +362,12 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
 
     base::TimeTicks time_start = base::TimeTicks::Now();
 
+    const char* data_ptr = static_cast<char*>(request_info->buffer->memory());
+    CHECK(data_ptr);
+    CHECK(data_ptr + data_offset);
+
     request_info->peer->OnReceivedData(
-        static_cast<char*>(request_info->buffer->memory()) + data_offset,
+        data_ptr + data_offset,
         data_length,
         encoded_data_length);
 
