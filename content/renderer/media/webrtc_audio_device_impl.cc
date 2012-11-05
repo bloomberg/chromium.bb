@@ -676,16 +676,12 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
     // renderer_ pointer over to a local variable, release the lock, and call
     // Play() using the local variable.
     base::AutoLock auto_lock(lock_);
-    if (!renderer_)
-      return -1;
-
-    renderer_->Play();
+    if (renderer_)
+      renderer_->Play();
   }
 
   playing_ = true;
-
   start_render_time_ = base::Time::Now();
-
   return 0;
 }
 
@@ -707,10 +703,8 @@ int32_t WebRtcAudioDeviceImpl::StopPlayout() {
     base::AutoLock auto_lock(lock_);
     // TODO(xians): transfer ownership of the renderer_ pointer over to a local
     // variable, release the lock, and call Pause() using the local variable.
-    if (!renderer_)
-      return -1;
-
-    renderer_->Pause();
+    if (renderer_)
+      renderer_->Pause();
   }
 
   playing_ = false;
