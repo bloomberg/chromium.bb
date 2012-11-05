@@ -4,7 +4,7 @@ libman_PRE = drmAvailable.man \
 	drmModeGetResources.man
 libman_DATA = $(libman_PRE:man=@LIB_MAN_SUFFIX@)
 EXTRA_DIST = $(libman_PRE)
-CLEANFILE = $(libman_DATA)
+CLEANFILES = $(libman_DATA)
 SUFFIXES = .$(LIB_MAN_SUFFIX) .man
 
 .man.$(LIB_MAN_SUFFIX):
