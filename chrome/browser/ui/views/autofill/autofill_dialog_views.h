@@ -7,12 +7,17 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class ConstrainedWindowViews;
 
 namespace views {
 class Checkbox;
+}
+
+namespace ui {
+class ComboboxModel;
 }
 
 namespace autofill {
@@ -24,7 +29,8 @@ struct DetailInput;
 // imperative autocomplete API call.
 class AutofillDialogViews : public AutofillDialogView,
                             public views::DialogDelegate,
-                            public views::ButtonListener {
+                            public views::ButtonListener,
+                            public views::ComboboxListener {
  public:
   explicit AutofillDialogViews(AutofillDialogController* controller);
   virtual ~AutofillDialogViews();
@@ -48,11 +54,33 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  // views::ComboboxListener implementation:
+  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
+
  private:
+  // A convenience struct for holding pointers to views within each detail
+  // section. None of the member pointers are owned.
+  struct DetailsGroup {
+    DetailsGroup();
+
+    // The view that contains the entire section (label + input).
+    views::View* container;
+    // The combobox that holds suggested values.
+    views::Combobox* suggested_input;
+    // The view that allows manual input.
+    views::View* manual_input;
+  };
+
   void InitChildViews();
 
   // Creates and returns a view that holds all detail sections.
   views::View* CreateDetailsContainer();
+
+  // Creates a detail section (Shipping, Billing, etc.) with the given label,
+  // inputs View, and suggestion model.
+  DetailsGroup CreateDetailsSection(const string16& label,
+                                    views::View* inputs,
+                                    ui::ComboboxModel* model);
 
   // These functions create the views that hold inputs for the section.
   views::View* CreateEmailInputs();
@@ -62,6 +90,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // Reads a DetailInput array and creates inputs in a grid.
   views::View* InitInputsFromTemplate(const DetailInput* inputs,
                                       size_t inputs_len);
+
+  // Updates the visual state of the given group as per the model.
+  void UpdateDetailsGroupState(const DetailsGroup& group);
 
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
@@ -73,12 +104,13 @@ class AutofillDialogViews : public AutofillDialogView,
   // The top-level View for the dialog. Owned by the constrained window.
   views::View* contents_;
 
+  DetailsGroup email_;
+  DetailsGroup billing_;
+  DetailsGroup shipping_;
+
   // The checkbox that controls whether to use the billing details for shipping
   // as well.
   views::Checkbox* use_billing_for_shipping_;
-
-  // The shipping section. May not be visible.
-  views::View* shipping_section_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogViews);
 };

@@ -13,7 +13,16 @@ namespace autofill {
 
 AutofillDialogController::AutofillDialogController(
     content::WebContents* contents)
-    : contents_(contents) {}
+    : contents_(contents) {
+  // TODO(estade): replace with real data.
+  suggested_emails_.AddItem(ASCIIToUTF16("captain.jack@gmail.com"));
+  suggested_emails_.AddItem(ASCIIToUTF16("major.major@gmail.com"));
+  suggested_emails_.AddItem(ASCIIToUTF16("Enter new email"));
+  suggested_billing_.AddItem(ASCIIToUTF16("this one"));
+  suggested_billing_.AddItem(ASCIIToUTF16("that one"));
+  suggested_billing_.AddItem(ASCIIToUTF16("Enter new billing"));
+  suggested_shipping_.AddItem(ASCIIToUTF16("Enter new shipping"));
+}
 
 AutofillDialogController::~AutofillDialogController() {}
 
@@ -82,4 +91,27 @@ void AutofillDialogController::ViewClosed(Action action) {
   delete this;
 }
 
+// SuggestionsComboboxModel ----------------------------------------------------
+
+AutofillDialogController::SuggestionsComboboxModel::SuggestionsComboboxModel() {
+}
+
+AutofillDialogController::SuggestionsComboboxModel::
+    ~SuggestionsComboboxModel() {}
+
+void AutofillDialogController::SuggestionsComboboxModel::AddItem(
+    const string16& item) {
+  items_.push_back(item);
+}
+
+int AutofillDialogController::SuggestionsComboboxModel::GetItemCount() const {
+  return items_.size();
+}
+
+string16 AutofillDialogController::SuggestionsComboboxModel::GetItemAt(
+    int index) {
+  return items_.at(index);
+}
+
 }  // namespace autofill
+
