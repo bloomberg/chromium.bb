@@ -422,7 +422,7 @@ class IBusEngineServiceImpl : public IBusEngineService {
     }
     engine_handler_->CandidateClicked(
         index,
-        static_cast<IBusEngineHandlerInterface::IBusMouseButton>(button),
+        static_cast<ibus::IBusMouseButton>(button),
         state);
     dbus::Response* response = dbus::Response::FromMethodCall(method_call);
     response_sender.Run(response);

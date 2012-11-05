@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/ibus/ibus_constants.h"
 
 namespace dbus {
 class Bus;
@@ -46,14 +47,6 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
     IBUS_PROPERTY_STATE_UNCHECKED = 0U,
     IBUS_PROPERTY_STATE_CHECKED = 1U,
     IBUS_PROPERTY_STATE_INCONSISTENT = 2U,
-  };
-
-  // Following button indicator value is introduced from
-  // http://developer.gnome.org/gdk/stable/gdk-Event-Structures.html#GdkEventButton
-  enum IBusMouseButton {
-    IBUS_MOUSE_BUTTON_LEFT = 1U,
-    IBUS_MOUSE_BUTTON_MIDDLE = 2U,
-    IBUS_MOUSE_BUTTON_RIGHT = 3U,
   };
 
   virtual ~IBusEngineHandlerInterface() {}
@@ -101,7 +94,7 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
   // based candidate index in lookup table. The |state| is same value as
   // GdkModifierType in
   // http://developer.gnome.org/gdk/stable/gdk-Windows.html#GdkModifierType
-  virtual void CandidateClicked(uint32 index, IBusMouseButton button,
+  virtual void CandidateClicked(uint32 index, ibus::IBusMouseButton button,
                                 uint32 state) = 0;
 
   // Called when a new surrounding text is set. The |text| is surrounding text

@@ -85,7 +85,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
   virtual void Reset() OVERRIDE;
   virtual void ProcessKeyEvent(uint32 keysym, uint32 keycode, uint32 state,
                                const KeyEventDoneCallback& callback) OVERRIDE;
-  virtual void CandidateClicked(uint32 index, IBusMouseButton button,
+  virtual void CandidateClicked(uint32 index, ibus::IBusMouseButton button,
                                 uint32 state) OVERRIDE;
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
                                   uint32 anchor_pos) OVERRIDE;

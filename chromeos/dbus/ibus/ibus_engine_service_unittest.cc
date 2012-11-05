@@ -46,7 +46,8 @@ class MockIBusEngineHandler : public IBusEngineHandlerInterface {
       uint32 keycode,
       uint32 state,
       const KeyEventDoneCallback& callback));
-  MOCK_METHOD3(CandidateClicked, void(uint32 index, IBusMouseButton button,
+  MOCK_METHOD3(CandidateClicked, void(uint32 index,
+                                      ibus::IBusMouseButton button,
                                       uint32 state));
   MOCK_METHOD3(SetSurroundingText, void(const std::string& text,
                                         uint32 cursor_pos,
@@ -926,8 +927,7 @@ TEST_F(IBusEngineServiceTest, CandidateClickedTest) {
   // Set expectations.
   const uint32 kSerialNo = 1;
   const uint32 kIndex = 4;
-  const IBusEngineHandlerInterface::IBusMouseButton kIBusMouseButton =
-      IBusEngineHandlerInterface::IBUS_MOUSE_BUTTON_MIDDLE;
+  const ibus::IBusMouseButton kIBusMouseButton = ibus::IBUS_MOUSE_BUTTON_MIDDLE;
   const uint32 kState = 3;
   EXPECT_CALL(*engine_handler_, CandidateClicked(kIndex, kIBusMouseButton,
                                                  kState));

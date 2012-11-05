@@ -96,6 +96,8 @@
         'dbus/ibus/ibus_text.h',
         'dbus/ibus/ibus_input_context_client.cc',
         'dbus/ibus/ibus_input_context_client.h',
+        'dbus/ibus/ibus_panel_service.cc',
+        'dbus/ibus/ibus_panel_service.h',
         'dbus/image_burner_client.cc',
         'dbus/image_burner_client.h',
         'dbus/introspectable_client.cc',
@@ -225,6 +227,8 @@
         'dbus/ibus/mock_ibus_engine_factory_service.h',
         'dbus/ibus/mock_ibus_engine_service.cc',
         'dbus/ibus/mock_ibus_engine_service.h',
+        'dbus/ibus/mock_ibus_panel_service.cc',
+        'dbus/ibus/mock_ibus_panel_service.h',
       ],
       'include_dirs': [
         '..',

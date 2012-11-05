@@ -440,7 +440,7 @@ void InputMethodEngineIBus::ProcessKeyEvent(
 
 void InputMethodEngineIBus::CandidateClicked(
     uint32 index,
-    IBusMouseButton button,
+    ibus::IBusMouseButton button,
     uint32 state) {
   if (index > candidate_ids_.size()) {
     return;
@@ -448,13 +448,13 @@ void InputMethodEngineIBus::CandidateClicked(
 
   MouseButtonEvent pressed_button;
   switch (button) {
-    case IBusEngineHandlerInterface::IBUS_MOUSE_BUTTON_LEFT:
+    case ibus::IBUS_MOUSE_BUTTON_LEFT:
       pressed_button = MOUSE_BUTTON_LEFT;
       break;
-    case IBusEngineHandlerInterface::IBUS_MOUSE_BUTTON_MIDDLE:
+    case ibus::IBUS_MOUSE_BUTTON_MIDDLE:
       pressed_button = MOUSE_BUTTON_MIDDLE;
       break;
-    case IBusEngineHandlerInterface::IBUS_MOUSE_BUTTON_RIGHT:
+    case ibus::IBUS_MOUSE_BUTTON_RIGHT:
       pressed_button = MOUSE_BUTTON_RIGHT;
       break;
     default:

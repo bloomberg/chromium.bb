@@ -68,11 +68,35 @@ const char kRequireSurroundingTextSignal[] = "RequireSurroundingText";
 const char kCommitTextSignal[] = "CommitText";
 }  // namespace engine
 
+namespace panel {
+const char kServicePath[] = "/org/freedesktop/IBus/Panel";
+const char kServiceInterface[] = "org.freedesktop.IBus.Panel";
+const char kUpdateLookupTableMethod[] = "UpdateLookupTable";
+const char kHideLookupTableMethod[] = "HideLookupTable";
+const char kUpdateAuxiliaryTextMethod[] = "UpdateAuxiliaryText";
+const char kHideAuxiliaryTextMethod[] = "HideAuxiliaryText";
+const char kUpdatePreeditTextMethod[] = "UpdatePreeditText";
+const char kHidePreeditTextMethod[] = "HidePreeditText";
+const char kCandidateClickedSignal[] = "CandidateClicked";
+const char kCursorUpSignal[] = "CursorUp";
+const char kCursorDownSignal[] = "CursorDown";
+const char kPageUpSignal[] = "PageUp";
+const char kPageDownSignal[] = "PageDown";
+}  // namespace panel
+
 // Following variables indicate state of IBusProperty.
 enum IBusPropertyState {
   IBUS_PROPERTY_STATE_UNCHECKED = 0,
   IBUS_PROPERTY_STATE_CHECKED = 1,
   IBUS_PROPERTY_STATE_INCONSISTENT = 2,
+};
+
+// Following button indicator value is introduced from
+// http://developer.gnome.org/gdk/stable/gdk-Event-Structures.html#GdkEventButton
+enum IBusMouseButton {
+  IBUS_MOUSE_BUTTON_LEFT = 1U,
+  IBUS_MOUSE_BUTTON_MIDDLE = 2U,
+  IBUS_MOUSE_BUTTON_RIGHT = 3U,
 };
 
 }  // namespace ibus
