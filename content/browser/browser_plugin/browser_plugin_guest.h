@@ -44,6 +44,7 @@
 #include "webkit/glue/webcursor.h"
 
 struct BrowserPluginHostMsg_CreateGuest_Params;
+struct BrowserPluginHostMsg_ResizeGuest_Params;
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
 struct WebDropData;
@@ -189,6 +190,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // Kill the guest process.
   void Terminate();
 
+  // Grab the new damage buffer from the embedder, and resize the guest's
+  // web contents.
+  void Resize(RenderViewHost* embedder_rvh,
+              const BrowserPluginHostMsg_ResizeGuest_Params& params);
+
   // Overridden in tests.
   // Handles input event routed through the embedder (which is initiated in the
   // browser plugin (renderer side of the embedder)).
@@ -230,6 +236,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   float damage_buffer_scale_factor() const {
     return damage_buffer_scale_factor_;
   }
+  // Returns the transport DIB associated with the dib in resize |params|.
+  TransportDIB* GetDamageBufferFromEmbedder(
+      RenderViewHost* embedder_rvh,
+      const BrowserPluginHostMsg_ResizeGuest_Params& params);
 
   // Helper to send messages to embedder. Overridden in test implementation
   // since we want to intercept certain messages for testing.

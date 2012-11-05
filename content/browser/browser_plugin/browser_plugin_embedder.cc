@@ -4,11 +4,7 @@
 
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 
-#include <set>
-
-#include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/time.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder_helper.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
@@ -19,11 +15,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/size.h"
-#include "ui/surface/transport_dib.h"
 
 namespace content {
 
@@ -168,58 +162,8 @@ void BrowserPluginEmbedder::ResizeGuest(
     int instance_id,
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
-  if (!guest)
-    return;
-  WebContentsImpl* guest_web_contents =
-      static_cast<WebContentsImpl*>(guest->GetWebContents());
-
-  if (!TransportDIB::is_valid_id(params.damage_buffer_id)) {
-    // Invalid transport dib, so just resize the WebContents.
-    if (params.width && params.height) {
-      guest_web_contents->GetView()->SizeContents(gfx::Size(params.width,
-                                                            params.height));
-    }
-    return;
-  }
-
-  TransportDIB* damage_buffer = GetDamageBuffer(render_view_host, params);
-  guest->SetDamageBuffer(damage_buffer,
-#if defined(OS_WIN)
-                         params.damage_buffer_size,
-#endif
-                         gfx::Size(params.width, params.height),
-                         params.scale_factor);
-  if (!params.resize_pending) {
-    guest_web_contents->GetView()->SizeContents(gfx::Size(params.width,
-                                                          params.height));
-  }
-}
-
-TransportDIB* BrowserPluginEmbedder::GetDamageBuffer(
-    RenderViewHost* render_view_host,
-    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
-  TransportDIB* damage_buffer = NULL;
-#if defined(OS_WIN)
-  // On Windows we need to duplicate the handle from the remote process.
-  HANDLE section;
-  DuplicateHandle(render_view_host->GetProcess()->GetHandle(),
-                  params.damage_buffer_id.handle,
-                  GetCurrentProcess(),
-                  &section,
-                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
-                  FALSE,
-                  0);
-  damage_buffer = TransportDIB::Map(section);
-#elif defined(OS_MACOSX)
-  // On OSX, we need the handle to map the transport dib.
-  damage_buffer = TransportDIB::Map(params.damage_buffer_handle);
-#elif defined(OS_ANDROID)
-  damage_buffer = TransportDIB::Map(params.damage_buffer_id);
-#elif defined(OS_POSIX)
-  damage_buffer = TransportDIB::Map(params.damage_buffer_id.shmkey);
-#endif  // defined(OS_POSIX)
-  DCHECK(damage_buffer);
-  return damage_buffer;
+  if (guest)
+    guest->Resize(render_view_host, params);
 }
 
 void BrowserPluginEmbedder::SetFocus(int instance_id,

@@ -139,11 +139,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   void DestroyGuestByInstanceID(int instance_id);
   void DestroyGuests();
 
-  // Returns the transport DIB associated with the dib in resize |params|.
-  TransportDIB* GetDamageBuffer(
-      RenderViewHost* render_view_host,
-      const BrowserPluginHostMsg_ResizeGuest_Params& params);
-
   // Called when visiblity of web_contents changes, so the embedder will
   // show/hide its guest.
   void WebContentsVisibilityChanged(bool visible);

@@ -22,6 +22,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/result_codes.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "net/base/net_errors.h"
@@ -213,6 +214,58 @@ void BrowserPluginGuest::Terminate() {
   base::ProcessHandle process_handle =
       web_contents()->GetRenderProcessHost()->GetHandle();
   base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
+}
+
+void BrowserPluginGuest::Resize(
+    RenderViewHost* embedder_rvh,
+    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
+  if (!TransportDIB::is_valid_id(params.damage_buffer_id)) {
+    // Invalid transport dib, so just resize the WebContents.
+    if (params.width && params.height) {
+      web_contents()->GetView()->SizeContents(gfx::Size(params.width,
+                                                        params.height));
+    }
+    return;
+  }
+  TransportDIB* damage_buffer =
+      GetDamageBufferFromEmbedder(embedder_rvh, params);
+  SetDamageBuffer(damage_buffer,
+#if defined(OS_WIN)
+                  params.damage_buffer_size,
+#endif
+                  gfx::Size(params.width, params.height),
+                  params.scale_factor);
+  if (!params.resize_pending) {
+    web_contents()->GetView()->SizeContents(gfx::Size(params.width,
+                                                      params.height));
+  }
+}
+
+TransportDIB* BrowserPluginGuest::GetDamageBufferFromEmbedder(
+    RenderViewHost* embedder_rvh,
+    const BrowserPluginHostMsg_ResizeGuest_Params& params) {
+  TransportDIB* damage_buffer = NULL;
+#if defined(OS_WIN)
+  // On Windows we need to duplicate the handle from the remote process.
+  HANDLE section;
+  DuplicateHandle(embedder_rvh->GetProcess()->GetHandle(),
+                  params.damage_buffer_id.handle,
+                  GetCurrentProcess(),
+                  &section,
+                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
+                  FALSE,
+                  0);
+  damage_buffer = TransportDIB::Map(section);
+#elif defined(OS_MACOSX)
+  // On OSX, we need the handle to map the transport dib.
+  damage_buffer = TransportDIB::Map(params.damage_buffer_handle);
+#elif defined(OS_ANDROID)
+  damage_buffer = TransportDIB::Map(params.damage_buffer_id);
+#elif defined(OS_POSIX)
+  damage_buffer = TransportDIB::Map(params.damage_buffer_id.shmkey);
+#endif  // defined(OS_POSIX)
+  DCHECK(damage_buffer);
+  return damage_buffer;
 }
 
 void BrowserPluginGuest::SetDamageBuffer(
