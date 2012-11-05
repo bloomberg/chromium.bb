@@ -37,6 +37,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"

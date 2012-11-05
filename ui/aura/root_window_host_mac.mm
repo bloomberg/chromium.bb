@@ -14,6 +14,7 @@
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_mac.h"
 #include "ui/aura/root_window_view_mac.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/gfx/point.h"
 
 namespace aura {

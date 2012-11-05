@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/gfx/screen.h"
 
 namespace views {

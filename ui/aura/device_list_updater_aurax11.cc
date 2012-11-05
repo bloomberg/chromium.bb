@@ -6,7 +6,7 @@
 
 #include <X11/extensions/XInput2.h>
 
-#include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_utils.h"
 
 namespace aura {
 

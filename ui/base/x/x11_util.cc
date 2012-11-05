@@ -33,6 +33,7 @@
 #include "base/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/valuators.h"

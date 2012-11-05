@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"

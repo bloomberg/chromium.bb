@@ -6,8 +6,10 @@
 
 #include "ui/base/events/event_constants.h"
 
+#include "base/event_types.h"
 #include "base/logging.h"
 #include "base/time.h"
+#include "ui/base/events/event_utils.h"
 #import "ui/base/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/gfx/point.h"
 

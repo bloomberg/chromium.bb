@@ -6,7 +6,9 @@
 #define ASH_ACCELERATORS_ACCELERATOR_TABLE_H_
 
 #include "ash/ash_export.h"
+#include "base/basictypes.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace ash {
 

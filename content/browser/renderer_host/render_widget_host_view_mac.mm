@@ -49,6 +49,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect_conversions.h"

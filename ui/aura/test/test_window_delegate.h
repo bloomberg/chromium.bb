@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {

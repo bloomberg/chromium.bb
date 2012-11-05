@@ -11,6 +11,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/windows_version.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/native_theme/native_theme_win.h"
 #include "ui/base/win/hwnd_util.h"

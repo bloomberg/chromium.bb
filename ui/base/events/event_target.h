@@ -5,6 +5,7 @@
 #ifndef UI_BASE_EVENTS_EVENT_TARGET_H_
 #define UI_BASE_EVENTS_EVENT_TARGET_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/base/ui_export.h"

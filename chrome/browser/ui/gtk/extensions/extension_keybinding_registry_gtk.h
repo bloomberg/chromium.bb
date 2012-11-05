@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 

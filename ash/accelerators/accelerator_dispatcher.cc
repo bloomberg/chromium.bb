@@ -22,6 +22,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_utils.h"
 
 namespace ash {
 namespace {

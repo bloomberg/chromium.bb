@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "ui/aura/event_filter.h"
+#include "ui/base/events/event.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace ui {

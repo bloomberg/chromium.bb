@@ -7,6 +7,7 @@
 
 #include "base/event_types.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {

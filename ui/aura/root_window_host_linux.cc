@@ -30,6 +30,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/ui_base_switches.h"

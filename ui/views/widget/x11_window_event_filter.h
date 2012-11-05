@@ -21,6 +21,10 @@ class RootWindow;
 class Window;
 }
 
+namespace gfx {
+class Point;
+}
+
 namespace views {
 class NativeWidgetAura;
 

@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_utils.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {
