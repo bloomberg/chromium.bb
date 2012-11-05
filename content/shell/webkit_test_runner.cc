@@ -8,10 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/sys_string_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "content/public/renderer/render_view.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_render_process_observer.h"
+#include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
@@ -227,9 +230,22 @@ long long WebKitTestRunner::getCurrentTimeInMillisecond() {
 
 WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
     const std::string& utf8_path) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebTestDelegate", "getAbsoluteWebStringFromUTF8Path"));
-  return WebString();
+#if defined(OS_WIN)
+  FilePath path(UTF8ToWide(utf8_path));
+#else
+  FilePath path(base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
+#endif
+  if (!path.IsAbsolute()) {
+    GURL base_url =
+        net::FilePathToFileURL(current_working_directory_.Append(
+            FILE_PATH_LITERAL("foo")));
+    net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
+  }
+#if defined(OS_WIN)
+  return WebString(path.value());
+#else
+  return WideToUTF16(base::SysNativeMBToWide(path.value()));
+#endif
 }
 
 // RenderViewObserver  --------------------------------------------------------
@@ -254,6 +270,8 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(WebKitTestRunner, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureTextDump, OnCaptureTextDump)
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureImageDump, OnCaptureImageDump)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_SetCurrentWorkingDirectory,
+                        OnSetCurrentWorkingDirectory)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetIsMainWindow, OnSetIsMainWindow)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -314,6 +332,11 @@ void WebKitTestRunner::OnCaptureImageDump(
   }
   Send(new ShellViewHostMsg_ImageDump(
       routing_id(), actual_pixel_hash, snapshot));
+}
+
+void WebKitTestRunner::OnSetCurrentWorkingDirectory(
+    const FilePath& current_working_directory) {
+  current_working_directory_ = current_working_directory;
 }
 
 void WebKitTestRunner::OnSetIsMainWindow() {

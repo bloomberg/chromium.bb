@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/navigation_controller.h"
@@ -235,10 +236,14 @@ void WebKitTestController::PluginCrashed(const FilePath& plugin_path) {
 }
 
 void WebKitTestController::RenderViewReady() {
-  if (did_set_as_main_window_)
-    return;
+  FilePath cwd;
+  file_util::GetCurrentDirectory(&cwd);
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
+  render_view_host->Send(new ShellViewMsg_SetCurrentWorkingDirectory(
+      render_view_host->GetRoutingID(), cwd));
+  if (did_set_as_main_window_)
+    return;
   render_view_host->Send(new ShellViewMsg_SetIsMainWindow(
       render_view_host->GetRoutingID()));
   did_set_as_main_window_ = true;

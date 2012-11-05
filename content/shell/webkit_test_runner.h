@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
 #define CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
 
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
@@ -51,9 +52,11 @@ class WebKitTestRunner : public RenderViewObserver,
   void OnCaptureTextDump(bool as_text, bool printing, bool recursive);
   void OnCaptureImageDump(const std::string& expected_pixel_hash);
   void OnSetIsMainWindow();
+  void OnSetCurrentWorkingDirectory(const FilePath& current_working_directory);
 
   scoped_ptr<WebKit::WebContextMenuData> last_context_menu_data_;
   bool is_main_window_;
+  FilePath current_working_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };

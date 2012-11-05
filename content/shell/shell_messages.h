@@ -11,6 +11,10 @@
 
 #define IPC_MESSAGE_START ShellMsgStart
 
+// Sets the current working directory to use for layout tests.
+IPC_MESSAGE_ROUTED1(ShellViewMsg_SetCurrentWorkingDirectory,
+                    FilePath /* current_working_directory */)
+
 // Tells the render view to capture a text dump of the page. The render view
 // responds with a ShellViewHostMsg_TextDump.
 IPC_MESSAGE_ROUTED3(ShellViewMsg_CaptureTextDump,
