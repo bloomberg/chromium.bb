@@ -801,7 +801,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     grandChild->setFixedToContainerLayer(true);
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedChildTransform;
@@ -811,7 +811,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 10
-    child->setScrollDelta(IntSize(10, 10));
+    child->setScrollDelta(gfx::Vector2d(10, 10));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child is affected by scrollDelta, but the fixed position grandChild should not be affected.
@@ -847,7 +847,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     grandChild->setFixedToContainerLayer(true);
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedChildTransform;
@@ -859,7 +859,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 20
-    child->setScrollDelta(IntSize(10, 20));
+    child->setScrollDelta(gfx::Vector2d(10, 20));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // The child should be affected by scrollDelta, but the fixed position grandChild should not be affected.
@@ -887,7 +887,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     greatGrandChild->setFixedToContainerLayer(true);
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedChildTransform;
@@ -901,7 +901,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 10
-    child->setScrollDelta(IntSize(10, 10));
+    child->setScrollDelta(gfx::Vector2d(10, 10));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child and grandChild are affected by scrollDelta, but the fixed position greatGrandChild should not be affected.
@@ -936,7 +936,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     greatGrandChild->setFixedToContainerLayer(true); // greatGrandChild is positioned upside-down with respect to the renderTarget.
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedChildTransform;
@@ -954,7 +954,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 20
-    child->setScrollDelta(IntSize(10, 20));
+    child->setScrollDelta(gfx::Vector2d(10, 20));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child and grandChild are affected by scrollDelta, but the fixed position greatGrandChild should not be affected.
@@ -998,7 +998,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     greatGrandChild->setFixedToContainerLayer(true); // greatGrandChild is positioned upside-down with respect to the renderTarget.
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedChildTransform;
@@ -1016,8 +1016,8 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 20
-    child->setScrollDelta(IntSize(10, 0));
-    grandChild->setScrollDelta(IntSize(5, 0));
+    child->setScrollDelta(gfx::Vector2d(10, 0));
+    grandChild->setScrollDelta(gfx::Vector2d(5, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child and grandChild are affected by scrollDelta, but the fixed position greatGrandChild should not be affected.
@@ -1061,7 +1061,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     grandChild->setTransform(rotationAboutZ);
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedChildTransform;
@@ -1077,7 +1077,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 30
-    child->setScrollDelta(IntSize(10, 30));
+    child->setScrollDelta(gfx::Vector2d(10, 30));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the grandChild remains unchanged, because it scrolls along with the
@@ -1153,7 +1153,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     greatGrandChild->setTransform(rotationAboutZ);
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedChildTransform;
@@ -1182,7 +1182,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedFixedPositionChildTransform, fixedPositionChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 30
-    child->setScrollDelta(IntSize(10, 30));
+    child->setScrollDelta(gfx::Vector2d(10, 30));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     expectedChildTransform.makeIdentity();
@@ -1239,7 +1239,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     grandChild->setDrawsContent(true);
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedSurfaceDrawTransform;
@@ -1252,7 +1252,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 10
-    child->setScrollDelta(IntSize(10, 10));
+    child->setScrollDelta(gfx::Vector2d(10, 10));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // The surface is translated by scrollDelta, the child transform doesn't change
@@ -1287,7 +1287,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatI
     grandChild->setIsContainerForFixedPositionLayers(true);
 
     // Case 1: scrollDelta of 0, 0
-    child->setScrollDelta(IntSize(0, 0));
+    child->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix expectedChildTransform;
@@ -1296,7 +1296,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatI
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 
     // Case 2: scrollDelta of 10, 10
-    child->setScrollDelta(IntSize(10, 10));
+    child->setScrollDelta(gfx::Vector2d(10, 10));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // Here the child is affected by scrollDelta, but the fixed position grandChild should not be affected.
@@ -1324,7 +1324,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     grandChild->setFixedToContainerLayer(true);
 
     // Case 1: root scrollDelta of 0, 0
-    root->setScrollDelta(IntSize(0, 0));
+    root->setScrollDelta(gfx::Vector2d(0, 0));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     WebTransformationMatrix identityMatrix;
@@ -1333,7 +1333,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, grandChild->drawTransform());
 
     // Case 2: root scrollDelta of 10, 10
-    root->setScrollDelta(IntSize(10, 20));
+    root->setScrollDelta(gfx::Vector2d(10, 20));
     executeCalculateDrawTransformsAndVisibility(root.get());
 
     // The child is affected by scrollDelta, but it is already implcitly accounted for by

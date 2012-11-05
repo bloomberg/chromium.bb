@@ -62,9 +62,9 @@ bool SingleThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect
     return true;
 }
 
-void SingleThreadProxy::startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration)
+void SingleThreadProxy::startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration)
 {
-    m_layerTreeHostImpl->startPageScaleAnimation(targetPosition, useAnchor, scale, base::TimeTicks::Now(), duration);
+    m_layerTreeHostImpl->startPageScaleAnimation(targetOffset, useAnchor, scale, base::TimeTicks::Now(), duration);
 }
 
 void SingleThreadProxy::finishAllRendering()

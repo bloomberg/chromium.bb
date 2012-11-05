@@ -257,18 +257,10 @@
       ],
       'sources': [
         '<@(cc_source_files)',
-        'stubs/FloatPoint.h',
-        'stubs/FloatSize.h',
-        'stubs/IntPoint.h',
-        'stubs/IntSize.h',
         'stubs/Region.h',
         'stubs/UnitBezier.h',
 
         'stubs/config.h',
-        'stubs/float_point.h',
-        'stubs/float_size.h',
-        'stubs/int_point.h',
-        'stubs/int_size.h',
         'stubs/unit_bezier.h',
       ],
     },

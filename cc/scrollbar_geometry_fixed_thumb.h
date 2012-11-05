@@ -5,9 +5,9 @@
 #ifndef CC_SCROLLBAR_GEOMETRY_FIXED_THUMB_H_
 #define CC_SCROLLBAR_GEOMETRY_FIXED_THUMB_H_
 
-#include "IntSize.h"
 #include "cc/cc_export.h"
 #include "cc/scrollbar_geometry_stub.h"
+#include "ui/gfx/size.h"
 
 namespace cc {
 
@@ -32,7 +32,7 @@ public:
 private:
     explicit ScrollbarGeometryFixedThumb(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
 
-    IntSize m_thumbSize;
+    gfx::Size m_thumbSize;
 };
 
 }

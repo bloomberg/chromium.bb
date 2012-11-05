@@ -408,21 +408,21 @@ bool Layer::transformIsAnimating() const
     return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Transform);
 }
 
-void Layer::setScrollPosition(const IntPoint& scrollPosition)
+void Layer::setScrollOffset(gfx::Vector2d scrollOffset)
 {
-    if (m_scrollPosition == scrollPosition)
+    if (m_scrollOffset == scrollOffset)
         return;
-    m_scrollPosition = scrollPosition;
+    m_scrollOffset = scrollOffset;
     if (m_layerScrollClient)
         m_layerScrollClient->didScroll();
     setNeedsCommit();
 }
 
-void Layer::setMaxScrollPosition(const IntSize& maxScrollPosition)
+void Layer::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
 {
-    if (m_maxScrollPosition == maxScrollPosition)
+    if (m_maxScrollOffset == maxScrollOffset)
         return;
-    m_maxScrollPosition = maxScrollPosition;
+    m_maxScrollOffset = maxScrollOffset;
     setNeedsCommit();
 }
 
@@ -587,8 +587,8 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setFixedToContainerLayer(m_fixedToContainerLayer);
     layer->setPreserves3D(preserves3D());
     layer->setUseParentBackfaceVisibility(m_useParentBackfaceVisibility);
-    layer->setScrollPosition(m_scrollPosition);
-    layer->setMaxScrollPosition(m_maxScrollPosition);
+    layer->setScrollOffset(m_scrollOffset);
+    layer->setMaxScrollOffset(m_maxScrollOffset);
     layer->setSublayerTransform(m_sublayerTransform);
     if (!transformIsAnimating())
         layer->setTransform(m_transform);
@@ -600,7 +600,7 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setUpdateRect(m_updateRect);
 
     layer->setScrollDelta(layer->scrollDelta() - layer->sentScrollDelta());
-    layer->setSentScrollDelta(IntSize());
+    layer->setSentScrollDelta(gfx::Vector2d());
 
     layer->setStackingOrderChanged(m_stackingOrderChanged);
 

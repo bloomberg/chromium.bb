@@ -6,7 +6,8 @@
 #define CC_PAGE_SCALE_ANIMATION_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "IntSize.h"
+#include "ui/gfx/size.h"
+#include "ui/gfx/vector2d.h"
 
 namespace cc {
 
@@ -19,7 +20,7 @@ public:
     // Construct with the starting page scale and scroll offset (which is in
     // pageScaleStart space). The window size is the user-viewable area
     // in pixels.
-    static scoped_ptr<PageScaleAnimation> create(const IntSize& scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime);
+    static scoped_ptr<PageScaleAnimation> create(gfx::Vector2d scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime);
     ~PageScaleAnimation();
 
     // The following methods initialize the animation. Call one of them
@@ -27,16 +28,16 @@ public:
 
     // Zoom while explicitly specifying the top-left scroll position. The
     // scroll offset is in finalPageScale coordinates.
-    void zoomTo(const IntSize& finalScroll, float finalPageScale, double duration);
+    void zoomTo(gfx::Vector2d finalScroll, float finalPageScale, double duration);
 
     // Zoom based on a specified onscreen anchor, which will remain at the same
     // position on the screen throughout the animation. The anchor is in local
     // space relative to scrollStart.
-    void zoomWithAnchor(const IntSize& anchor, float finalPageScale, double duration);
+    void zoomWithAnchor(gfx::Vector2d anchor, float finalPageScale, double duration);
 
     // Call these functions while the animation is in progress to output the
     // current state.
-    IntSize scrollOffsetAtTime(double time) const;
+    gfx::Vector2d scrollOffsetAtTime(double time) const;
     float pageScaleAtTime(double time) const;
     bool isAnimationCompleteAtTime(double time) const;
 
@@ -45,25 +46,25 @@ public:
     double startTime() const { return m_startTime; }
     double duration() const { return m_duration; }
     double endTime() const { return m_startTime + m_duration; }
-    const IntSize& finalScrollOffset() const { return m_scrollEnd; }
+    gfx::Vector2d finalScrollOffset() const { return m_scrollEnd; }
     float finalPageScale() const { return m_pageScaleEnd; }
 
 protected:
-    PageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime);
+    PageScaleAnimation(gfx::Vector2d scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime);
 
 private:
     float progressRatioForTime(double time) const;
-    IntSize scrollOffsetAtRatio(float ratio) const;
+    gfx::Vector2d scrollOffsetAtRatio(float ratio) const;
     float pageScaleAtRatio(float ratio) const;
 
-    IntSize m_scrollStart;
+    gfx::Vector2d m_scrollStart;
     float m_pageScaleStart;
     gfx::Size m_windowSize;
     gfx::Size m_contentSize;
 
     bool m_anchorMode;
-    IntSize m_anchor;
-    IntSize m_scrollEnd;
+    gfx::Vector2d m_anchor;
+    gfx::Vector2d m_scrollEnd;
     float m_pageScaleEnd;
 
     double m_startTime;

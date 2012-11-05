@@ -16,7 +16,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "webcore_convert.h"
 #include "web_layer_impl.h"
 #include "web_to_ccinput_handler_adapter.h"
 
@@ -130,7 +129,7 @@ void WebLayerTreeViewImpl::setPageScaleFactorAndLimits(float pageScaleFactor, fl
 void WebLayerTreeViewImpl::startPageScaleAnimation(const WebPoint& scroll, bool useAnchor, float newPageScale, double durationSec)
 {
     base::TimeDelta duration = base::TimeDelta::FromMicroseconds(durationSec * base::Time::kMicrosecondsPerSecond);
-    m_layerTreeHost->startPageScaleAnimation(IntSize(scroll.x, scroll.y), useAnchor, newPageScale, duration);
+    m_layerTreeHost->startPageScaleAnimation(gfx::Vector2d(scroll.x, scroll.y), useAnchor, newPageScale, duration);
 }
 
 void WebLayerTreeViewImpl::setNeedsAnimate()
@@ -231,9 +230,9 @@ void WebLayerTreeViewImpl::layout()
     m_client->layout();
 }
 
-void WebLayerTreeViewImpl::applyScrollAndScale(const cc::IntSize& scrollDelta, float pageScale)
+void WebLayerTreeViewImpl::applyScrollAndScale(gfx::Vector2d scrollDelta, float pageScale)
 {
-    m_client->applyScrollAndScale(convert(scrollDelta), pageScale);
+    m_client->applyScrollAndScale(scrollDelta, pageScale);
 }
 
 scoped_ptr<WebCompositorOutputSurface> WebLayerTreeViewImpl::createOutputSurface()

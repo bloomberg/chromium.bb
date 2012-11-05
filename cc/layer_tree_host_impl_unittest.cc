@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "cc/delegated_renderer_layer_impl.h"
+#include "cc/geometry.h"
 #include "cc/gl_renderer.h"
 #include "cc/heads_up_display_layer_impl.h"
 #include "cc/io_surface_layer_impl.h"
@@ -40,6 +41,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gfx/vector2d_conversions.h"
 #include <public/WebVideoFrame.h>
 #include <public/WebVideoFrameProvider.h>
 
@@ -122,20 +124,19 @@ public:
 
     static void expectClearedScrollDeltasRecursive(LayerImpl* layer)
     {
-        ASSERT_EQ(layer->scrollDelta(), IntSize());
+        ASSERT_EQ(layer->scrollDelta(), gfx::Vector2d());
         for (size_t i = 0; i < layer->children().size(); ++i)
             expectClearedScrollDeltasRecursive(layer->children()[i]);
     }
 
-    static void expectContains(const ScrollAndScaleSet& scrollInfo, int id, const IntSize& scrollDelta)
+    static void expectContains(const ScrollAndScaleSet& scrollInfo, int id, const gfx::Vector2d& scrollDelta)
     {
         int timesEncountered = 0;
 
         for (size_t i = 0; i < scrollInfo.scrolls.size(); ++i) {
             if (scrollInfo.scrolls[i].layerId != id)
                 continue;
-            EXPECT_EQ(scrollDelta.width(), scrollInfo.scrolls[i].scrollDelta.width());
-            EXPECT_EQ(scrollDelta.height(), scrollInfo.scrolls[i].scrollDelta.height());
+            EXPECT_VECTOR_EQ(scrollDelta, scrollInfo.scrolls[i].scrollDelta);
             timesEncountered++;
         }
 
@@ -146,8 +147,8 @@ public:
     {
         scoped_ptr<LayerImpl> root = LayerImpl::create(1);
         root->setScrollable(true);
-        root->setScrollPosition(IntPoint(0, 0));
-        root->setMaxScrollPosition(cc::IntSize(contentSize));
+        root->setScrollOffset(gfx::Vector2d(0, 0));
+        root->setMaxScrollOffset(gfx::Vector2d(contentSize.width(), contentSize.height()));
         root->setBounds(contentSize);
         root->setContentBounds(contentSize);
         root->setPosition(gfx::PointF(0, 0));
@@ -170,7 +171,7 @@ public:
         layer->setDrawsContent(true);
         layer->setBounds(size);
         layer->setContentBounds(size);
-        layer->setMaxScrollPosition(IntSize(size.width() * 2, size.height() * 2));
+        layer->setMaxScrollOffset(gfx::Vector2d(size.width() * 2, size.height() * 2));
         return layer.Pass();
     }
 
@@ -299,13 +300,13 @@ TEST_P(LayerTreeHostImplTest, scrollDeltaTreeButNoChanges)
 
 TEST_P(LayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
 {
-    IntPoint scrollPosition(20, 30);
-    IntSize scrollDelta(11, -15);
+    gfx::Vector2d scrollOffset(20, 30);
+    gfx::Vector2d scrollDelta(11, -15);
     {
         scoped_ptr<LayerImpl> root = LayerImpl::create(1);
-        root->setScrollPosition(scrollPosition);
+        root->setScrollOffset(scrollOffset);
         root->setScrollable(true);
-        root->setMaxScrollPosition(IntSize(100, 100));
+        root->setMaxScrollOffset(gfx::Vector2d(100, 100));
         root->scrollBy(scrollDelta);
         m_hostImpl->setRootLayer(root.Pass());
     }
@@ -315,17 +316,17 @@ TEST_P(LayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
 
     scrollInfo = m_hostImpl->processScrollDeltas();
     ASSERT_EQ(scrollInfo->scrolls.size(), 1u);
-    EXPECT_EQ(root->sentScrollDelta(), scrollDelta);
+    EXPECT_VECTOR_EQ(root->sentScrollDelta(), scrollDelta);
     expectContains(*scrollInfo, root->id(), scrollDelta);
 
-    IntSize scrollDelta2(-5, 27);
+    gfx::Vector2d scrollDelta2(-5, 27);
     root->scrollBy(scrollDelta2);
     scrollInfo = m_hostImpl->processScrollDeltas();
     ASSERT_EQ(scrollInfo->scrolls.size(), 1u);
-    EXPECT_EQ(root->sentScrollDelta(), scrollDelta + scrollDelta2);
+    EXPECT_VECTOR_EQ(root->sentScrollDelta(), scrollDelta + scrollDelta2);
     expectContains(*scrollInfo, root->id(), scrollDelta + scrollDelta2);
 
-    root->scrollBy(IntSize());
+    root->scrollBy(gfx::Vector2d());
     scrollInfo = m_hostImpl->processScrollDeltas();
     EXPECT_EQ(root->sentScrollDelta(), scrollDelta + scrollDelta2);
 }
@@ -337,7 +338,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
     initializeRendererAndDrawFrame();
 
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
+    m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 10));
     m_hostImpl->scrollEnd();
     EXPECT_TRUE(m_didRequestRedraw);
     EXPECT_TRUE(m_didRequestCommit);
@@ -379,7 +380,7 @@ TEST_P(LayerTreeHostImplTest, replaceTreeWhileScrolling)
     setupScrollAndContentsLayers(gfx::Size(100, 100));
 
     // We should still be scrolling, because the scrolled layer also exists in the new tree.
-    IntSize scrollDelta(0, 10);
+    gfx::Vector2d scrollDelta(0, 10);
     m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -442,10 +443,10 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionBasic)
 
     // All scroll types outside this region should succeed.
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(75, 75), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
+    m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 10));
     m_hostImpl->scrollEnd();
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(75, 75), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
+    m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 10));
     m_hostImpl->scrollEnd();
 }
 
@@ -461,14 +462,14 @@ TEST_P(LayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
 
     // This point would fall into the non-fast scrollable region except that we've moved the layer down by 25 pixels.
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(40, 10), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 1));
+    m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 1));
     m_hostImpl->scrollEnd();
 
     // This point is still inside the non-fast region.
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(10, 10), InputHandlerClient::Wheel), InputHandlerClient::ScrollOnMainThread);
 }
 
-TEST_P(LayerTreeHostImplTest, maxScrollPositionChangedByDeviceScaleFactor)
+TEST_P(LayerTreeHostImplTest, maxScrollOffsetChangedByDeviceScaleFactor)
 {
     setupScrollAndContentsLayers(gfx::Size(100, 100));
 
@@ -477,12 +478,12 @@ TEST_P(LayerTreeHostImplTest, maxScrollPositionChangedByDeviceScaleFactor)
     gfx::Size deviceViewport(gfx::ToFlooredSize(layoutViewport.Scale(deviceScaleFactor)));
     m_hostImpl->setViewportSize(layoutViewport, deviceViewport);
     m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
-    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), IntSize(25, 25));
+    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), gfx::Vector2d(25, 25));
 
     deviceScaleFactor = 1;
     m_hostImpl->setViewportSize(layoutViewport, layoutViewport);
     m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
-    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), IntSize(75, 75));
+    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), gfx::Vector2d(75, 75));
 }
 
 TEST_P(LayerTreeHostImplTest, implPinchZoom)
@@ -505,11 +506,11 @@ TEST_P(LayerTreeHostImplTest, implPinchZoom)
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
-        scrollLayer->setScrollDelta(IntSize());
+        scrollLayer->setScrollDelta(gfx::Vector2d());
 
         float pageScaleDelta = 2;
         m_hostImpl->pinchGestureBegin();
-        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(50, 50));
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(50, 50));
         m_hostImpl->pinchGestureEnd();
         EXPECT_TRUE(m_didRequestRedraw);
         EXPECT_TRUE(m_didRequestCommit);
@@ -517,7 +518,7 @@ TEST_P(LayerTreeHostImplTest, implPinchZoom)
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
 
-        EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), IntSize(50, 50));
+        EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), gfx::Vector2d(50, 50));
     }
 
     // Scrolling after a pinch gesture should always be in local space.  The scroll deltas do not
@@ -525,14 +526,14 @@ TEST_P(LayerTreeHostImplTest, implPinchZoom)
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
-        scrollLayer->setScrollDelta(IntSize());
+        scrollLayer->setScrollDelta(gfx::Vector2d());
 
         float pageScaleDelta = 2;
         m_hostImpl->pinchGestureBegin();
-        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(0, 0));
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(0, 0));
         m_hostImpl->pinchGestureEnd();
 
-        IntSize scrollDelta(0, 10);
+        gfx::Vector2d scrollDelta(0, 10);
         EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
         m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
         m_hostImpl->scrollEnd();
@@ -559,11 +560,11 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
-        scrollLayer->setScrollDelta(IntSize());
+        scrollLayer->setScrollDelta(gfx::Vector2d());
 
         float pageScaleDelta = 2;
         m_hostImpl->pinchGestureBegin();
-        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(50, 50));
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(50, 50));
         m_hostImpl->pinchGestureEnd();
         EXPECT_TRUE(m_didRequestRedraw);
         EXPECT_TRUE(m_didRequestCommit);
@@ -576,11 +577,11 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
-        scrollLayer->setScrollDelta(IntSize());
+        scrollLayer->setScrollDelta(gfx::Vector2d());
         float pageScaleDelta = 10;
 
         m_hostImpl->pinchGestureBegin();
-        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(50, 50));
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(50, 50));
         m_hostImpl->pinchGestureEnd();
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -591,12 +592,12 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
-        scrollLayer->setScrollDelta(IntSize());
-        scrollLayer->setScrollPosition(IntPoint(50, 50));
+        scrollLayer->setScrollDelta(gfx::Vector2d());
+        scrollLayer->setScrollOffset(gfx::Vector2d(50, 50));
 
         float pageScaleDelta = 0.1f;
         m_hostImpl->pinchGestureBegin();
-        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(0, 0));
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(0, 0));
         m_hostImpl->pinchGestureEnd();
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -604,7 +605,7 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
 
         if (!Settings::pageScalePinchZoomEnabled()) {
             // Pushed to (0,0) via clamping against contents layer size.
-            expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
+            expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(-50, -50));
         } else {
             EXPECT_TRUE(scrollInfo->scrolls.empty());
         }
@@ -614,18 +615,18 @@ TEST_P(LayerTreeHostImplTest, pinchGesture)
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
-        scrollLayer->setScrollDelta(IntSize());
-        scrollLayer->setScrollPosition(IntPoint(20, 20));
+        scrollLayer->setScrollDelta(gfx::Vector2d());
+        scrollLayer->setScrollOffset(gfx::Vector2d(20, 20));
 
         float pageScaleDelta = 1;
         m_hostImpl->pinchGestureBegin();
-        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(10, 10));
-        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(20, 20));
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(10, 10));
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, gfx::Point(20, 20));
         m_hostImpl->pinchGestureEnd();
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
-        expectContains(*scrollInfo, scrollLayer->id(), IntSize(-10, -10));
+        expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(-10, -10));
     }
 }
 
@@ -650,9 +651,9 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
-        scrollLayer->setScrollPosition(IntPoint(50, 50));
+        scrollLayer->setScrollOffset(gfx::Vector2d(50, 50));
 
-        m_hostImpl->startPageScaleAnimation(IntSize(0, 0), false, 2, startTime, duration);
+        m_hostImpl->startPageScaleAnimation(gfx::Vector2d(0, 0), false, 2, startTime, duration);
         m_hostImpl->animate(halfwayThroughAnimation, base::Time());
         EXPECT_TRUE(m_didRequestRedraw);
         m_hostImpl->animate(endTime, base::Time());
@@ -660,16 +661,16 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
 
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, 2);
-        expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
+        expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(-50, -50));
     }
 
     // Anchor zoom-out
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         scrollLayer->setImplTransform(identityScaleTransform);
-        scrollLayer->setScrollPosition(IntPoint(50, 50));
+        scrollLayer->setScrollOffset(gfx::Vector2d(50, 50));
 
-        m_hostImpl->startPageScaleAnimation(IntSize(25, 25), true, minPageScale, startTime, duration);
+        m_hostImpl->startPageScaleAnimation(gfx::Vector2d(25, 25), true, minPageScale, startTime, duration);
         m_hostImpl->animate(endTime, base::Time());
         EXPECT_TRUE(m_didRequestRedraw);
         EXPECT_TRUE(m_didRequestCommit);
@@ -677,7 +678,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleAnimation)
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
         // Pushed to (0,0) via clamping against contents layer size.
-        expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
+        expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(-50, -50));
     }
 }
 
@@ -699,7 +700,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
         const float zoomInDelta = 2;
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         m_hostImpl->pinchGestureBegin();
-        m_hostImpl->pinchGestureUpdate(zoomInDelta, IntPoint(50, 50));
+        m_hostImpl->pinchGestureUpdate(zoomInDelta, gfx::Point(50, 50));
 
         // Because we are pinch zooming in, we shouldn't get any scroll or page
         // scale deltas.
@@ -712,7 +713,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
         scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, zoomInDelta);
         if (!Settings::pageScalePinchZoomEnabled()) {
-            expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+            expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(25, 25));
         } else {
             EXPECT_TRUE(scrollInfo->scrolls.empty());
         }
@@ -724,14 +725,14 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
         const float zoomOutDelta = 0.75;
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
         m_hostImpl->pinchGestureBegin();
-        m_hostImpl->pinchGestureUpdate(zoomOutDelta, IntPoint(50, 50));
+        m_hostImpl->pinchGestureUpdate(zoomOutDelta, gfx::Point(50, 50));
 
         // Since we are pinch zooming out, we should get an update to zoom all
         // the way out to the minimum page scale.
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         if (!Settings::pageScalePinchZoomEnabled()) {
             EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
-            expectContains(*scrollInfo, scrollLayer->id(), IntSize(0, 0));
+            expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(0, 0));
         } else {
             EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
             EXPECT_TRUE(scrollInfo->scrolls.empty());
@@ -742,10 +743,10 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
         scrollInfo = m_hostImpl->processScrollDeltas();
         if (Settings::pageScalePinchZoomEnabled()) {
             EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
-            expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+            expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(25, 25));
         } else {
             EXPECT_EQ(scrollInfo->pageScaleDelta, zoomOutDelta);
-            expectContains(*scrollInfo, scrollLayer->id(), IntSize(8, 8));
+            expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(8, 8));
         }
     }
 }
@@ -768,7 +769,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
     // Start a page scale animation.
     const float pageScaleDelta = 2;
     m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
-    m_hostImpl->startPageScaleAnimation(IntSize(50, 50), false, pageScaleDelta, startTime, duration);
+    m_hostImpl->startPageScaleAnimation(gfx::Vector2d(50, 50), false, pageScaleDelta, startTime, duration);
 
     // We should immediately get the final zoom and scroll values for the
     // animation.
@@ -777,14 +778,14 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
 
     if (!Settings::pageScalePinchZoomEnabled()) {
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
-        expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+        expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(25, 25));
     } else {
         EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
         EXPECT_TRUE(scrollInfo->scrolls.empty());
     }
 
     // Scrolling during the animation is ignored.
-    const IntSize scrollDelta(0, 10);
+    const gfx::Vector2d scrollDelta(0, 10);
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(25, 25), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
@@ -794,7 +795,7 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
     m_hostImpl->animate(endTime, base::Time());
     scrollInfo = m_hostImpl->processScrollDeltas();
     EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
-    expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+    expectContains(*scrollInfo, scrollLayer->id(), gfx::Vector2d(25, 25));
 }
 
 class DidDrawCheckLayer : public TiledLayerImpl {
@@ -1049,7 +1050,7 @@ TEST_P(LayerTreeHostImplTest, scrollNonCompositedRoot)
 
     scoped_ptr<LayerImpl> scrollLayer = LayerImpl::create(2);
     scrollLayer->setScrollable(true);
-    scrollLayer->setMaxScrollPosition(cc::IntSize(surfaceSize));
+    scrollLayer->setMaxScrollOffset(gfx::Vector2d(surfaceSize.width(), surfaceSize.height()));
     scrollLayer->setBounds(surfaceSize);
     scrollLayer->setContentBounds(surfaceSize);
     scrollLayer->setPosition(gfx::PointF(0, 0));
@@ -1061,7 +1062,7 @@ TEST_P(LayerTreeHostImplTest, scrollNonCompositedRoot)
     initializeRendererAndDrawFrame();
 
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
+    m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 10));
     m_hostImpl->scrollEnd();
     EXPECT_TRUE(m_didRequestRedraw);
     EXPECT_TRUE(m_didRequestCommit);
@@ -1079,7 +1080,7 @@ TEST_P(LayerTreeHostImplTest, scrollChildCallsCommitAndRedraw)
     initializeRendererAndDrawFrame();
 
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
-    m_hostImpl->scrollBy(gfx::Point(), IntSize(0, 10));
+    m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 10));
     m_hostImpl->scrollEnd();
     EXPECT_TRUE(m_didRequestRedraw);
     EXPECT_TRUE(m_didRequestCommit);
@@ -1150,9 +1151,9 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
     initializeRendererAndDrawFrame();
 
-    IntSize scrollDelta(0, 10);
-    IntSize expectedScrollDelta(scrollDelta);
-    IntSize expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollPosition());
+    gfx::Vector2d scrollDelta(0, 10);
+    gfx::Vector2d expectedScrollDelta(scrollDelta);
+    gfx::Vector2d expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollOffset());
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
@@ -1162,13 +1163,13 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
 
     if (!Settings::pageScalePinchZoomEnabled()) {
         // The scale should apply to the scroll delta.
-        expectedScrollDelta.scale(pageScale);
+        expectedScrollDelta = gfx::ToFlooredVector2d(cc::ScaleVector2d(expectedScrollDelta, pageScale));
     }
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedScrollDelta);
 
     // The scroll range should also have been updated.
-    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), expectedMaxScroll);
+    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), expectedMaxScroll);
 
     // The page scale delta remains constant because the impl thread did not scale.
     EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), WebTransformationMatrix());
@@ -1184,16 +1185,16 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     m_hostImpl->setPageScaleFactorAndLimits(1, 1, pageScale);
     initializeRendererAndDrawFrame();
 
-    IntSize scrollDelta(0, 10);
-    IntSize expectedScrollDelta(scrollDelta);
-    IntSize expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollPosition());
+    gfx::Vector2d scrollDelta(0, 10);
+    gfx::Vector2d expectedScrollDelta(scrollDelta);
+    gfx::Vector2d expectedMaxScroll(m_hostImpl->rootLayer()->maxScrollOffset());
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
 
     // Set new page scale on impl thread by pinching.
     m_hostImpl->pinchGestureBegin();
-    m_hostImpl->pinchGestureUpdate(pageScale, IntPoint());
+    m_hostImpl->pinchGestureUpdate(pageScale, gfx::Point());
     m_hostImpl->pinchGestureEnd();
     m_hostImpl->updateRootScrollLayerImplTransform();
 
@@ -1202,7 +1203,7 @@ TEST_P(LayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedScrollDelta);
 
     // The scroll range should also have been updated.
-    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), expectedMaxScroll);
+    EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), expectedMaxScroll);
 
     // The page scale delta should match the new scale on the impl side.
     WebTransformationMatrix expectedScale;
@@ -1231,7 +1232,7 @@ TEST_P(LayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
 
     // Set new page scale on impl thread by pinching.
     m_hostImpl->pinchGestureBegin();
-    m_hostImpl->pinchGestureUpdate(newPageScale, IntPoint());
+    m_hostImpl->pinchGestureUpdate(newPageScale, gfx::Point());
     m_hostImpl->pinchGestureEnd();
     m_hostImpl->updateRootScrollLayerImplTransform();
 
@@ -1271,9 +1272,9 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 
     LayerImpl* child = m_hostImpl->rootLayer()->children()[0];
 
-    IntSize scrollDelta(0, 10);
-    IntSize expectedScrollDelta(scrollDelta);
-    IntSize expectedMaxScroll(child->maxScrollPosition());
+    gfx::Vector2d scrollDelta(0, 10);
+    gfx::Vector2d expectedScrollDelta(scrollDelta);
+    gfx::Vector2d expectedMaxScroll(child->maxScrollOffset());
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
@@ -1285,13 +1286,13 @@ TEST_P(LayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 
     if (!Settings::pageScalePinchZoomEnabled()) {
         // The scale should apply to the scroll delta.
-        expectedScrollDelta.scale(pageScale);
+        expectedScrollDelta = gfx::ToFlooredVector2d(cc::ScaleVector2d(expectedScrollDelta, pageScale));
     }
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), scrollLayerId, expectedScrollDelta);
 
     // The scroll range should not have changed.
-    EXPECT_EQ(child->maxScrollPosition(), expectedMaxScroll);
+    EXPECT_EQ(child->maxScrollOffset(), expectedMaxScroll);
 
     // The page scale delta remains constant because the impl thread did not scale.
     WebTransformationMatrix identityTransform;
@@ -1307,10 +1308,10 @@ TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
     scoped_ptr<LayerImpl> root = createScrollableLayer(1, surfaceSize);
 
     scoped_ptr<LayerImpl> grandChild = createScrollableLayer(3, surfaceSize);
-    grandChild->setScrollPosition(IntPoint(0, 5));
+    grandChild->setScrollOffset(gfx::Vector2d(0, 5));
 
     scoped_ptr<LayerImpl> child = createScrollableLayer(2, surfaceSize);
-    child->setScrollPosition(IntPoint(3, 0));
+    child->setScrollOffset(gfx::Vector2d(3, 0));
     child->addChild(grandChild.Pass());
 
     root->addChild(child.Pass());
@@ -1318,7 +1319,7 @@ TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
     m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
     initializeRendererAndDrawFrame();
     {
-        IntSize scrollDelta(-8, -7);
+        gfx::Vector2d scrollDelta(-8, -7);
         EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
         m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
         m_hostImpl->scrollEnd();
@@ -1328,10 +1329,10 @@ TEST_P(LayerTreeHostImplTest, scrollChildBeyondLimit)
         // The grand child should have scrolled up to its limit.
         LayerImpl* child = m_hostImpl->rootLayer()->children()[0];
         LayerImpl* grandChild = child->children()[0];
-        expectContains(*scrollInfo.get(), grandChild->id(), IntSize(0, -5));
+        expectContains(*scrollInfo.get(), grandChild->id(), gfx::Vector2d(0, -5));
 
         // The child should have only scrolled on the other axis.
-        expectContains(*scrollInfo.get(), child->id(), IntSize(-3, 0));
+        expectContains(*scrollInfo.get(), child->id(), gfx::Vector2d(-3, 0));
     }
 }
 
@@ -1350,7 +1351,7 @@ TEST_P(LayerTreeHostImplTest, scrollEventBubbling)
     m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
     initializeRendererAndDrawFrame();
     {
-        IntSize scrollDelta(0, 4);
+        gfx::Vector2d scrollDelta(0, 4);
         EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(5, 5), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
         m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
         m_hostImpl->scrollEnd();
@@ -1392,18 +1393,18 @@ TEST_P(LayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
     initializeRendererAndDrawFrame();
 
     // Scroll to the right in screen coordinates with a gesture.
-    IntSize gestureScrollDelta(10, 0);
+    gfx::Vector2d gestureScrollDelta(10, 0);
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), gestureScrollDelta);
     m_hostImpl->scrollEnd();
 
     // The layer should have scrolled down in its local coordinates.
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
-    expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), IntSize(0, gestureScrollDelta.width()));
+    expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), gfx::Vector2d(0, gestureScrollDelta.x()));
 
     // Reset and scroll down with the wheel.
-    m_hostImpl->rootLayer()->setScrollDelta(FloatSize());
-    IntSize wheelScrollDelta(0, 10);
+    m_hostImpl->rootLayer()->setScrollDelta(gfx::Vector2dF());
+    gfx::Vector2d wheelScrollDelta(0, 10);
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), wheelScrollDelta);
     m_hostImpl->scrollEnd();
@@ -1428,7 +1429,7 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
     child->setTransform(rotateTransform);
 
     // Only allow vertical scrolling.
-    child->setMaxScrollPosition(IntSize(0, child->contentBounds().height()));
+    child->setMaxScrollOffset(gfx::Vector2d(0, child->contentBounds().height()));
     m_hostImpl->rootLayer()->addChild(child.Pass());
 
     gfx::Size surfaceSize(50, 50);
@@ -1437,14 +1438,14 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
 
     {
         // Scroll down in screen coordinates with a gesture.
-        IntSize gestureScrollDelta(0, 10);
+        gfx::Vector2d gestureScrollDelta(0, 10);
         EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
         m_hostImpl->scrollBy(gfx::Point(), gestureScrollDelta);
         m_hostImpl->scrollEnd();
 
         // The child layer should have scrolled down in its local coordinates an amount proportional to
         // the angle between it and the input scroll delta.
-        IntSize expectedScrollDelta(0, gestureScrollDelta.height() * cosf(deg2rad(childLayerAngle)));
+        gfx::Vector2d expectedScrollDelta(0, gestureScrollDelta.y() * cosf(deg2rad(childLayerAngle)));
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         expectContains(*scrollInfo.get(), childLayerId, expectedScrollDelta);
 
@@ -1455,21 +1456,21 @@ TEST_P(LayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
 
     {
         // Now reset and scroll the same amount horizontally.
-        m_hostImpl->rootLayer()->children()[1]->setScrollDelta(FloatSize());
-        IntSize gestureScrollDelta(10, 0);
+        m_hostImpl->rootLayer()->children()[1]->setScrollDelta(gfx::Vector2dF());
+        gfx::Vector2d gestureScrollDelta(10, 0);
         EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
         m_hostImpl->scrollBy(gfx::Point(), gestureScrollDelta);
         m_hostImpl->scrollEnd();
 
         // The child layer should have scrolled down in its local coordinates an amount proportional to
         // the angle between it and the input scroll delta.
-        IntSize expectedScrollDelta(0, -gestureScrollDelta.width() * sinf(deg2rad(childLayerAngle)));
+        gfx::Vector2d expectedScrollDelta(0, -gestureScrollDelta.x() * sinf(deg2rad(childLayerAngle)));
         scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         expectContains(*scrollInfo.get(), childLayerId, expectedScrollDelta);
 
         // The root layer should have scrolled more, since the input scroll delta was mostly
         // orthogonal to the child layer's vertical scroll axis.
-        IntSize expectedRootScrollDelta(gestureScrollDelta.width() * pow(cosf(deg2rad(childLayerAngle)), 2), 0);
+        gfx::Vector2d expectedRootScrollDelta(gestureScrollDelta.x() * pow(cosf(deg2rad(childLayerAngle)), 2), 0);
         expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedRootScrollDelta);
     }
 }
@@ -1489,18 +1490,18 @@ TEST_P(LayerTreeHostImplTest, scrollScaledLayer)
     initializeRendererAndDrawFrame();
 
     // Scroll down in screen coordinates with a gesture.
-    IntSize scrollDelta(0, 10);
+    gfx::Vector2d scrollDelta(0, 10);
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), scrollDelta);
     m_hostImpl->scrollEnd();
 
     // The layer should have scrolled down in its local coordinates, but half he amount.
     scoped_ptr<ScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
-    expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), IntSize(0, scrollDelta.height() / scale));
+    expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), gfx::Vector2d(0, scrollDelta.y() / scale));
 
     // Reset and scroll down with the wheel.
-    m_hostImpl->rootLayer()->setScrollDelta(FloatSize());
-    IntSize wheelScrollDelta(0, 10);
+    m_hostImpl->rootLayer()->setScrollDelta(gfx::Vector2dF());
+    gfx::Vector2d wheelScrollDelta(0, 10);
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), wheelScrollDelta);
     m_hostImpl->scrollEnd();

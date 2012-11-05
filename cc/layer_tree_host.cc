@@ -451,9 +451,9 @@ void LayerTreeHost::setVisible(bool visible)
     m_proxy->setVisible(visible);
 }
 
-void LayerTreeHost::startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration)
+void LayerTreeHost::startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration)
 {
-    m_proxy->startPageScaleAnimation(targetPosition, useAnchor, scale, duration);
+    m_proxy->startPageScaleAnimation(targetOffset, useAnchor, scale, duration);
 }
 
 void LayerTreeHost::loseContext(int numTimes)
@@ -694,7 +694,7 @@ void LayerTreeHost::applyScrollAndScale(const ScrollAndScaleSet& info)
         return;
 
     Layer* rootScrollLayer = findFirstScrollableLayer(m_rootLayer.get());
-    IntSize rootScrollDelta;
+    gfx::Vector2d rootScrollDelta;
 
     for (size_t i = 0; i < info.scrolls.size(); ++i) {
         Layer* layer = LayerTreeHostCommon::findLayerInSubtree(m_rootLayer.get(), info.scrolls[i].layerId);
@@ -703,9 +703,9 @@ void LayerTreeHost::applyScrollAndScale(const ScrollAndScaleSet& info)
         if (layer == rootScrollLayer)
             rootScrollDelta += info.scrolls[i].scrollDelta;
         else
-            layer->setScrollPosition(layer->scrollPosition() + info.scrolls[i].scrollDelta);
+            layer->setScrollOffset(layer->scrollOffset() + info.scrolls[i].scrollDelta);
     }
-    if (!rootScrollDelta.isZero() || info.pageScaleDelta != 1)
+    if (!rootScrollDelta.IsZero() || info.pageScaleDelta != 1)
         m_client->applyScrollAndScale(rootScrollDelta, info.pageScaleDelta);
 }
 

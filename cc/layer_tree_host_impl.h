@@ -5,7 +5,6 @@
 #ifndef CC_LAYER_TREE_HOST_IMPL_H_
 #define CC_LAYER_TREE_HOST_IMPL_H_
 
-#include "FloatPoint.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -78,14 +77,14 @@ public:
 
     // Returns the bounds and offset of the scaled and translated viewport to use for pinch-zoom.
     gfx::RectF bounds() const;
-    const FloatPoint& scrollDelta() const { return m_pinchViewportScrollDelta; }
+    const gfx::Vector2dF& scrollDelta() const { return m_pinchViewportScrollDelta; }
 
     void setLayoutViewportSize(const gfx::SizeF& size) { m_layoutViewportSize = size; }
 
     // Apply the scroll offset in layout space to the offset of the pinch-zoom viewport. The viewport cannot be
     // scrolled outside of the layout viewport bounds. Returns the component of the scroll that is un-applied due to
     // this constraint.
-    FloatSize applyScroll(const gfx::Vector2dF&);
+    gfx::Vector2dF applyScroll(const gfx::Vector2dF&);
 
     WebKit::WebTransformationMatrix implTransform() const;
 
@@ -96,7 +95,7 @@ private:
     float m_maxPageScaleFactor;
     float m_minPageScaleFactor;
 
-    FloatPoint m_pinchViewportScrollDelta;
+    gfx::Vector2dF m_pinchViewportScrollDelta;
     gfx::SizeF m_layoutViewportSize;
 };
 
@@ -111,13 +110,13 @@ public:
     virtual ~LayerTreeHostImpl();
 
     // InputHandlerClient implementation
-    virtual InputHandlerClient::ScrollStatus scrollBegin(const gfx::Point&, InputHandlerClient::ScrollInputType) OVERRIDE;
-    virtual void scrollBy(const gfx::Point&, const IntSize&) OVERRIDE;
+    virtual InputHandlerClient::ScrollStatus scrollBegin(gfx::Point, InputHandlerClient::ScrollInputType) OVERRIDE;
+    virtual void scrollBy(gfx::Point, gfx::Vector2d) OVERRIDE;
     virtual void scrollEnd() OVERRIDE;
     virtual void pinchGestureBegin() OVERRIDE;
-    virtual void pinchGestureUpdate(float, const IntPoint&) OVERRIDE;
+    virtual void pinchGestureUpdate(float, gfx::Point) OVERRIDE;
     virtual void pinchGestureEnd() OVERRIDE;
-    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration) OVERRIDE;
+    virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
 
     struct CC_EXPORT FrameData : public RenderPassSink {
@@ -213,7 +212,7 @@ public:
     scoped_ptr<ScrollAndScaleSet> processScrollDeltas();
     WebKit::WebTransformationMatrix implTransform() const;
 
-    void startPageScaleAnimation(const IntSize& tragetPosition, bool useAnchor, float scale, base::TimeDelta duration);
+    void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration);
 
     SkColor backgroundColor() const { return m_backgroundColor; }
     void setBackgroundColor(SkColor color) { m_backgroundColor = color; }
@@ -285,10 +284,10 @@ protected:
 private:
     void computeDoubleTapZoomDeltas(ScrollAndScaleSet* scrollInfo);
     void computePinchZoomDeltas(ScrollAndScaleSet* scrollInfo);
-    void makeScrollAndScaleSet(ScrollAndScaleSet* scrollInfo, const IntSize& scrollOffset, float pageScale);
+    void makeScrollAndScaleSet(ScrollAndScaleSet* scrollInfo, gfx::Vector2d scrollOffset, float pageScale);
 
     void setPageScaleDelta(float);
-    void updateMaxScrollPosition();
+    void updateMaxScrollOffset();
     void trackDamageForAllSurfaces(LayerImpl* rootDrawLayer, const LayerList& renderSurfaceLayerList);
 
     // Returns false if the frame should not be displayed. This function should
@@ -331,7 +330,7 @@ private:
     // If this is true, it is necessary to traverse the layer tree ticking the animators.
     bool m_needsAnimateLayers;
     bool m_pinchGestureActive;
-    IntPoint m_previousPinchAnchor;
+    gfx::Point m_previousPinchAnchor;
 
     scoped_ptr<PageScaleAnimation> m_pageScaleAnimation;
 

@@ -190,7 +190,7 @@ public:
     bool visible() const { return m_visible; }
     void setVisible(bool);
 
-    void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration);
+    void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration);
 
     void applyScrollAndScale(const ScrollAndScaleSet&);
     gfx::PointF adjustEventPointForPinchZoom(const gfx::PointF&) const;

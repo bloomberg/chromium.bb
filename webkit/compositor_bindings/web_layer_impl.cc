@@ -18,7 +18,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "web_animation_impl.h"
-#include "webcore_convert.h"
 
 using cc::ActiveAnimation;
 using cc::Layer;
@@ -346,22 +345,22 @@ void WebLayerImpl::setForceRenderSurface(bool forceRenderSurface)
 
 void WebLayerImpl::setScrollPosition(WebPoint position)
 {
-    m_layer->setScrollPosition(convert(position));
+    m_layer->setScrollOffset(gfx::Point(position).OffsetFromOrigin());
 }
 
 WebPoint WebLayerImpl::scrollPosition() const
 {
-    return WebPoint(m_layer->scrollPosition().x(), m_layer->scrollPosition().y());
+    return gfx::PointAtOffsetFromOrigin(m_layer->scrollOffset());
 }
 
 void WebLayerImpl::setMaxScrollPosition(WebSize maxScrollPosition)
 {
-    m_layer->setMaxScrollPosition(convert(maxScrollPosition));
+    m_layer->setMaxScrollOffset(maxScrollPosition);
 }
 
 WebSize WebLayerImpl::maxScrollPosition() const
 {
-    return convert(m_layer->maxScrollPosition());
+    return m_layer->maxScrollOffset();
 }
 
 void WebLayerImpl::setScrollable(bool scrollable)
