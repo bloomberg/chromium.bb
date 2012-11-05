@@ -45,7 +45,7 @@ class AutofillExternalDelegateViews : public AutofillExternalDelegate {
   void CreateViewIfNeeded();
 
   // We use a raw pointer here because even though we usually create the view,
-  // its widget handles deleting it.
+  // its widget handles deleting it (which means it may outlive this object).
   AutofillPopupViewViews* popup_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegateViews);

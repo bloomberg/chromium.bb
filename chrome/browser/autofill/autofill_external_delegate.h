@@ -13,6 +13,8 @@
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "chrome/common/password_form_fill_data.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class AutofillManager;
@@ -32,7 +34,8 @@ class WebContents;
 // Delegate for external processing of Autocomplete and Autofill
 // display and selection.
 class AutofillExternalDelegate
-    : public content::WebContentsUserData<AutofillExternalDelegate> {
+    : public content::WebContentsUserData<AutofillExternalDelegate>,
+      public content::NotificationObserver {
  public:
   // Creates an AutofillExternalDelegate and attaches it to the specified
   // contents; the second argument is an AutofillManager managing Autofill for
@@ -164,6 +167,11 @@ class AutofillExternalDelegate
                             std::vector<string16>* autofill_icons,
                             std::vector<int>* autofill_unique_ids);
 
+  // content::NotificationObserver method override.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   content::WebContents* web_contents_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
 
@@ -173,6 +181,9 @@ class AutofillExternalDelegate
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
   int autofill_query_id_;
+
+  // A scoped container for notification registries.
+  content::NotificationRegistrar registrar_;
 
   // The current form and field selected by Autofill.
   FormData autofill_query_form_;

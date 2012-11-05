@@ -41,12 +41,14 @@ class AutofillPopupViewGtk : public AutofillPopupView,
                        GtkWidget* parent);
   virtual ~AutofillPopupViewGtk();
 
+  // AutofillPopupView implementation.
+  virtual void Hide() OVERRIDE;
+
  protected:
   // AutofillPopupView implementations.
   virtual void ShowInternal() OVERRIDE;
-  virtual void HideInternal() OVERRIDE;
   virtual void InvalidateRow(size_t row) OVERRIDE;
-  virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
+  virtual void UpdateBoundsAndRedrawPopupInternal() OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleButtonRelease,

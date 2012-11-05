@@ -6,9 +6,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/common/url_constants.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
@@ -32,6 +37,8 @@ class MockAutofillExternalDelegateViews : public AutofillExternalDelegateViews {
   AutofillPopupViewViews* popup_view() {
     return AutofillExternalDelegateViews::popup_view();
   }
+
+  virtual void ClearPreviewedForm() OVERRIDE {}
 
   bool popup_hidden_;
 };
@@ -95,4 +102,22 @@ IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
   popup_widget->CloseNow();
 
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden_);
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateViewsBrowserTest,
+                       HandlePopupClosingAndChangingPages) {
+  GeneratePopup();
+
+  // Close popup.
+  autofill_external_delegate_->HideAutofillPopup();
+
+  // Navigate to a new page
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<content::NavigationController>(
+          &(web_contents_->GetController())));
+  browser()->OpenURL(content::OpenURLParams(
+      GURL(chrome::kAboutBlankURL), content::Referrer(),
+      CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+  observer.Wait();
 }

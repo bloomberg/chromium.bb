@@ -39,6 +39,8 @@ class AutofillExternalDelegateGtk : public AutofillExternalDelegate {
   CHROMEGTK_CALLBACK_1(AutofillExternalDelegateGtk, gboolean,
                        HandleViewFocusOut, GdkEventFocus*);
 
+  // Unlike in the Views implementation, the popup is always destroyed when
+  // this class is.
   scoped_ptr<AutofillPopupViewGtk> view_;
 
   gfx::NativeView tab_native_view_;  // Weak reference.

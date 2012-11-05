@@ -8,6 +8,10 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -32,6 +36,16 @@ AutofillExternalDelegate::AutofillExternalDelegate(
       display_warning_if_disabled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
       popup_visible_(false) {
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+                 content::Source<content::WebContents>(web_contents));
+  if (web_contents) {
+    registrar_.Add(
+        this,
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::Source<content::NavigationController>(
+            &(web_contents->GetController())));
+  }
 }
 
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id) {
@@ -221,6 +235,7 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
 void AutofillExternalDelegate::HideAutofillPopup() {
   popup_visible_ = false;
 
+  ClearPreviewedForm();
   HideAutofillPopupInternal();
 }
 
@@ -345,6 +360,21 @@ void AutofillExternalDelegate::InsertDataListValues(
                               data_list_unique_ids_.begin(),
                               data_list_unique_ids_.end());
 }
+
+void AutofillExternalDelegate::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
+    if (!*content::Details<bool>(details).ptr())
+      HideAutofillPopup();
+  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
+    HideAutofillPopup();
+  } else {
+    NOTREACHED();
+  }
+}
+
 
 
 #if defined(OS_MACOSX)

@@ -41,6 +41,12 @@ AutofillPopupViewViews::~AutofillPopupViewViews() {
   external_delegate_->InvalidateView();
 }
 
+void AutofillPopupViewViews::Hide() {
+  if (GetWidget())
+    GetWidget()->Close();
+  web_contents_->GetRenderViewHost()->RemoveKeyboardListener(this);
+}
+
 void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawColor(kPopupBackground);
   OnPaintBorder(canvas);
@@ -70,7 +76,11 @@ bool AutofillPopupViewViews::HandleKeyPressEvent(ui::KeyEvent* event) {
       SetSelectedLine(autofill_values().size() - 1);
       return true;
     case ui::VKEY_ESCAPE:
-      Hide();
+      if (external_delegate()) {
+        external_delegate()->HideAutofillPopup();
+      } else {
+        Hide();
+      }
       return true;
     case ui::VKEY_DELETE:
       return event->IsShiftDown() && RemoveSelectedLine();
@@ -103,23 +113,16 @@ void AutofillPopupViewViews::ShowInternal() {
 
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
 
-  UpdatePopupBounds();
   UpdateBoundsAndRedrawPopup();
 
   web_contents_->GetRenderViewHost()->AddKeyboardListener(this);
-}
-
-void AutofillPopupViewViews::HideInternal() {
-  if (GetWidget())
-    GetWidget()->Close();
-  web_contents_->GetRenderViewHost()->RemoveKeyboardListener(this);
 }
 
 void AutofillPopupViewViews::InvalidateRow(size_t row) {
   SchedulePaintInRect(GetRectForRow(row, width()));
 }
 
-void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
+void AutofillPopupViewViews::UpdateBoundsAndRedrawPopupInternal() {
   SetBoundsRect(element_bounds());
   SchedulePaintInRect(element_bounds());
 }

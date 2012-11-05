@@ -77,6 +77,12 @@ AutofillPopupViewGtk::~AutofillPopupViewGtk() {
   gtk_widget_destroy(window_);
 }
 
+void AutofillPopupViewGtk::Hide() {
+  render_view_host_->RemoveKeyboardListener(this);
+
+  gtk_widget_hide(window_);
+}
+
 void AutofillPopupViewGtk::ShowInternal() {
   SetBounds();
   UpdateBoundsAndRedrawPopup();
@@ -90,12 +96,6 @@ void AutofillPopupViewGtk::ShowInternal() {
   ui::StackPopupWindow(window_, toplevel);
 }
 
-void AutofillPopupViewGtk::HideInternal() {
-  render_view_host_->RemoveKeyboardListener(this);
-
-  gtk_widget_hide(window_);
-}
-
 void AutofillPopupViewGtk::InvalidateRow(size_t row) {
   GdkRectangle row_rect = GetRectForRow(
       row,
@@ -104,7 +104,7 @@ void AutofillPopupViewGtk::InvalidateRow(size_t row) {
   gdk_window_invalidate_rect(gdk_window, &row_rect, FALSE);
 }
 
-void AutofillPopupViewGtk::UpdateBoundsAndRedrawPopup() {
+void AutofillPopupViewGtk::UpdateBoundsAndRedrawPopupInternal() {
   gtk_widget_set_size_request(window_,
                               element_bounds().width(),
                               element_bounds().height());
@@ -197,7 +197,7 @@ bool AutofillPopupViewGtk::HandleKeyPressEvent(GdkEventKey* event) {
       SetSelectedLine(autofill_values().size() - 1);
       return true;
     case GDK_Escape:
-      Hide();
+      external_delegate()->HideAutofillPopup();
       return true;
     case GDK_Delete:
     case GDK_KP_Delete:

@@ -25,6 +25,8 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
   virtual void RemoveAutocompleteEntry(const string16& value) OVERRIDE {}
   virtual void RemoveAutofillProfileOrCreditCard(int unique_id) OVERRIDE {}
   virtual void ClearPreviewedForm() OVERRIDE {}
+
+  MOCK_METHOD0(HideAutofillPopupInternal, void());
 };
 
 class TestAutofillPopupView : public AutofillPopupView {
@@ -54,8 +56,8 @@ class TestAutofillPopupView : public AutofillPopupView {
   }
 
   MOCK_METHOD1(InvalidateRow, void(size_t));
-  MOCK_METHOD0(HideInternal, void());
-  MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
+  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD0(UpdateBoundsAndRedrawPopupInternal, void());
 
  private:
   virtual void ShowInternal() OVERRIDE {}
@@ -70,9 +72,8 @@ class AutofillPopupViewUnitTest : public ::testing::Test {
   }
   virtual ~AutofillPopupViewUnitTest() {}
 
+protected:
   scoped_ptr<TestAutofillPopupView> autofill_popup_view_;
-
- private:
   MockAutofillExternalDelegate external_delegate_;
 };
 
@@ -80,7 +81,7 @@ TEST_F(AutofillPopupViewUnitTest, SetBounds) {
   // Ensure the popup size can be set and causes a redraw.
   gfx::Rect popup_bounds(10, 10, 100, 100);
 
-  EXPECT_CALL(*autofill_popup_view_, UpdateBoundsAndRedrawPopup());
+  EXPECT_CALL(*autofill_popup_view_, UpdateBoundsAndRedrawPopupInternal());
 
   autofill_popup_view_->SetElementBounds(popup_bounds);
 
@@ -160,13 +161,14 @@ TEST_F(AutofillPopupViewUnitTest, RemoveLine) {
 
   // Remove the first entry. The popup should be redrawn since its size has
   // changed.
-  EXPECT_CALL(*autofill_popup_view_, UpdateBoundsAndRedrawPopup());
+  EXPECT_CALL(*autofill_popup_view_, UpdateBoundsAndRedrawPopupInternal());
   autofill_popup_view_->SetSelectedLine(0);
   EXPECT_TRUE(autofill_popup_view_->RemoveSelectedLine());
 
   // Remove the last entry. The popup should then be hidden since there are
   // no Autofill entries left.
-  EXPECT_CALL(*autofill_popup_view_, HideInternal());
+  EXPECT_CALL(external_delegate_, HideAutofillPopupInternal());
+
   autofill_popup_view_->SetSelectedLine(0);
   EXPECT_TRUE(autofill_popup_view_->RemoveSelectedLine());
 }
