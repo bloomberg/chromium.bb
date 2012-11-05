@@ -14,16 +14,18 @@ namespace nacl_arm_dec {
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary2RegisterImmedShiftedTest_instance_()
+  , Binary2RegisterImmediateOp_instance_()
+  , Binary2RegisterImmediateOpAddSub_instance_()
   , Binary2RegisterImmediateOpDynCodeReplace_instance_()
   , Binary3RegisterOp_instance_()
   , Binary3RegisterShiftedOp_instance_()
   , Binary3RegisterShiftedTest_instance_()
   , Binary4RegisterShiftedOp_instance_()
+  , BinaryRegisterImmediateTest_instance_()
   , Branch_instance_()
   , Breakpoint_instance_()
   , BxBlx_instance_()
   , DataBarrier_instance_()
-  , Defs12To15_instance_()
   , Defs12To15CondsDontCareMsbGeLsb_instance_()
   , Defs12To15CondsDontCareRdRnNotPc_instance_()
   , Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_()
@@ -48,7 +50,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LoadMultiple_instance_()
   , LoadVectorRegister_instance_()
   , LoadVectorRegisterList_instance_()
-  , MaskAddress_instance_()
+  , MaskedBinary2RegisterImmediateOp_instance_()
+  , MaskedBinaryRegisterImmediateTest_instance_()
   , MoveDoubleVfpRegisterOp_instance_()
   , MoveVfpRegisterOp_instance_()
   , MoveVfpRegisterOpWithTypeSel_instance_()
@@ -65,9 +68,10 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreRegisterList_instance_()
   , StoreVectorRegister_instance_()
   , StoreVectorRegisterList_instance_()
-  , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRangeMsbGeLsb_instance_()
+  , Unary1RegisterImmediateOp12DynCodeReplace_instance_()
   , Unary1RegisterImmediateOpDynCodeReplace_instance_()
+  , Unary1RegisterImmediateOpPc_instance_()
   , Unary1RegisterSet_instance_()
   , Unary1RegisterUse_instance_()
   , Unary2RegisterOp_instance_()
@@ -566,17 +570,45 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x01F00000) == 0x01100000 /* op(24:20)=10001 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return TestIfAddressMasked_instance_;
+    return MaskedBinaryRegisterImmediateTest_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000) == 0x01500000 /* op(24:20)=10101 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return DontCareInst_instance_;
+    return BinaryRegisterImmediateTest_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000) == 0x01300000 /* op(24:20)=10x11 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return DontCareInst_instance_;
+    return BinaryRegisterImmediateTest_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x00400000 /* op(24:20)=0010x */ &&
+      (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
+    return Binary2RegisterImmediateOpAddSub_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x00400000 /* op(24:20)=0010x */ &&
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) {
+    return Unary1RegisterImmediateOpPc_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x00800000 /* op(24:20)=0100x */ &&
+      (inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) {
+    return Binary2RegisterImmediateOpAddSub_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x00800000 /* op(24:20)=0100x */ &&
+      (inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) {
+    return Unary1RegisterImmediateOpPc_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x00A00000 /* op(24:20)=0101x */) {
+    return Binary2RegisterImmediateOp_instance_;
+  }
+
+  if ((inst.Bits() & 0x01E00000) == 0x00C00000 /* op(24:20)=0110x */) {
+    return Binary2RegisterImmediateOp_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01800000 /* op(24:20)=1100x */) {
@@ -584,16 +616,20 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op(24:20)=1110x */) {
-    return MaskAddress_instance_;
+    return MaskedBinary2RegisterImmediateOp_instance_;
+  }
+
+  if ((inst.Bits() & 0x01600000) == 0x00600000 /* op(24:20)=0x11x */) {
+    return Binary2RegisterImmediateOp_instance_;
   }
 
   if ((inst.Bits() & 0x01A00000) == 0x01A00000 /* op(24:20)=11x1x */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary1RegisterImmediateOpDynCodeReplace_instance_;
+    return Unary1RegisterImmediateOp12DynCodeReplace_instance_;
   }
 
-  if ((inst.Bits() & 0x01000000) == 0x00000000 /* op(24:20)=0xxxx */) {
-    return Defs12To15_instance_;
+  if ((inst.Bits() & 0x01C00000) == 0x00000000 /* op(24:20)=000xx */) {
+    return Binary2RegisterImmediateOp_instance_;
   }
 
   // Catch any attempt to fall though ...

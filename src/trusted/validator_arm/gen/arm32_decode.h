@@ -149,16 +149,18 @@ class Arm32DecoderState : DecoderState {
   // the class decoders need to only be built once (and reused
   // for each call to "decode").
   const Binary2RegisterImmedShiftedTest Binary2RegisterImmedShiftedTest_instance_;
+  const Binary2RegisterImmediateOp Binary2RegisterImmediateOp_instance_;
+  const Binary2RegisterImmediateOpAddSub Binary2RegisterImmediateOpAddSub_instance_;
   const Binary2RegisterImmediateOpDynCodeReplace Binary2RegisterImmediateOpDynCodeReplace_instance_;
   const Binary3RegisterOp Binary3RegisterOp_instance_;
   const Binary3RegisterShiftedOp Binary3RegisterShiftedOp_instance_;
   const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
+  const BinaryRegisterImmediateTest BinaryRegisterImmediateTest_instance_;
   const Branch Branch_instance_;
   const Breakpoint Breakpoint_instance_;
   const BxBlx BxBlx_instance_;
   const DataBarrier DataBarrier_instance_;
-  const Defs12To15 Defs12To15_instance_;
   const Defs12To15CondsDontCareMsbGeLsb Defs12To15CondsDontCareMsbGeLsb_instance_;
   const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
   const Defs12To15CondsDontCareRdRnNotPcBitfieldExtract Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_;
@@ -183,7 +185,8 @@ class Arm32DecoderState : DecoderState {
   const LoadMultiple LoadMultiple_instance_;
   const LoadVectorRegister LoadVectorRegister_instance_;
   const LoadVectorRegisterList LoadVectorRegisterList_instance_;
-  const MaskAddress MaskAddress_instance_;
+  const MaskedBinary2RegisterImmediateOp MaskedBinary2RegisterImmediateOp_instance_;
+  const MaskedBinaryRegisterImmediateTest MaskedBinaryRegisterImmediateTest_instance_;
   const MoveDoubleVfpRegisterOp MoveDoubleVfpRegisterOp_instance_;
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
@@ -200,9 +203,10 @@ class Arm32DecoderState : DecoderState {
   const StoreRegisterList StoreRegisterList_instance_;
   const StoreVectorRegister StoreVectorRegister_instance_;
   const StoreVectorRegisterList StoreVectorRegisterList_instance_;
-  const TestIfAddressMasked TestIfAddressMasked_instance_;
   const Unary1RegisterBitRangeMsbGeLsb Unary1RegisterBitRangeMsbGeLsb_instance_;
+  const Unary1RegisterImmediateOp12DynCodeReplace Unary1RegisterImmediateOp12DynCodeReplace_instance_;
   const Unary1RegisterImmediateOpDynCodeReplace Unary1RegisterImmediateOpDynCodeReplace_instance_;
+  const Unary1RegisterImmediateOpPc Unary1RegisterImmediateOpPc_instance_;
   const Unary1RegisterSet Unary1RegisterSet_instance_;
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Unary2RegisterOp Unary2RegisterOp_instance_;

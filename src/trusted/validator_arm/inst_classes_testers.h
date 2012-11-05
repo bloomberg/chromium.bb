@@ -310,6 +310,33 @@ class BranchToRegisterTesterRegsNotPc : public BranchToRegisterTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(BranchToRegisterTesterRegsNotPc);
 };
 
+// Implements a decoder tester for decoder Unary1RegisterImmediateOp12
+// Models a 1-register assignment of a 12-bit immediate.
+// Op(S)<c> Rd, #const
+// +--------+--------------+--+--------+--------+------------------------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+------------------------+
+// |  cond  |              | S|        |   Rd   |         imm12          |
+// +--------+--------------+--+--------+--------+------------------------+
+//   setflags := S=1; imm32 := ARMExpandImm(imm12);
+//   defs := {Rd, NZCV if setflags else None};
+//   safety := (Rd=1111 & S=1) => DECODER_ERROR &
+//             Rd=1111 => FORBIDDEN_OPERANDS;
+class Unary1RegisterImmediateOp12Tester : public CondDecoderTester {
+ public:
+  explicit Unary1RegisterImmediateOp12Tester(
+      const NamedClassDecoder& decoder)
+      : CondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::Unary1RegisterImmediateOp12 expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOp12Tester);
+};
+
 // Implements a decoder tester for decoder Unary1RegisterImmediateOp.
 // Op(S)<c> Rd, #const
 // +--------+--------------+--+--------+--------+------------------------+
@@ -320,7 +347,8 @@ class BranchToRegisterTesterRegsNotPc : public BranchToRegisterTester {
 // Definitions:
 //    Rd = The destination register.
 //    const = ZeroExtend(imm4:imm12, 32)
-class Unary1RegisterImmediateOpTester : public CondDecoderTester {
+class Unary1RegisterImmediateOpTester
+    : public Unary1RegisterImmediateOp12Tester {
  public:
   explicit Unary1RegisterImmediateOpTester(
       const NamedClassDecoder& decoder);
@@ -332,6 +360,37 @@ class Unary1RegisterImmediateOpTester : public CondDecoderTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpTester);
+};
+
+// Implements a decoder tester for decoder Unary1RegisterImmediateOpPc
+// Models a 1-register assignment that implicitly uses Pc.
+// Op(S)<c> Rd, #const
+// +--------+------------------------+--------+------------------------+
+// |31302928|272625242322212019181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+------------------------+--------+------------------------+
+// |  cond  |                        |   Rd   |         imm12          |
+// +--------+------------------------+--------+------------------------+
+// Definitions:
+//    Rd = The destination register.
+//    const = ZeroExtend(imm4:imm12, 32)
+//
+//   imm32 := ARMExpandImm(imm12);
+//   defs := {Rd};
+//   safety := Rd=1111 => FORBIDDEN_OPERANDS;
+//   uses := {Pc};
+class Unary1RegisterImmediateOpPcTester : public CondDecoderTester {
+ public:
+  explicit Unary1RegisterImmediateOpPcTester(
+      const NamedClassDecoder& decoder)
+      : CondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::Unary1RegisterImmediateOpPc expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpPcTester);
 };
 
 // Implements a decoder tester for decoder Unary1RegisterImmediateOp

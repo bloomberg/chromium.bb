@@ -324,6 +324,45 @@ class BranchToRegister : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(BranchToRegister);
 };
 
+// Models a 1-register assignment of a 12-bit immediate.
+// Op(S)<c> Rd, #const
+// +--------+--------------+--+--------+--------+------------------------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+------------------------+
+// |  cond  |              | S|        |   Rd   |         imm12          |
+// +--------+--------------+--+--------+--------+------------------------+
+//   setflags := S=1; imm32 := ARMExpandImm(imm12);
+//   defs := {Rd, NZCV if setflags else None};
+//   safety := (Rd=1111 & S=1) => DECODER_ERROR &
+//             Rd=1111 => FORBIDDEN_OPERANDS;
+class Unary1RegisterImmediateOp12 : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const Imm12Bits0To11Interface imm12;
+  static const RegBits12To15Interface d;
+  static const UpdatesConditionsBit20Interface conditions;
+  static const ConditionBits28To31Interface cond;
+
+  Unary1RegisterImmediateOp12() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOp12);
+};
+
+// Special case of Unary1RegisterImmediateOp12, where dynamic code replace
+// can replace the immediate value.
+class Unary1RegisterImmediateOp12DynCodeReplace
+    : public Unary1RegisterImmediateOp12 {
+ public:
+  Unary1RegisterImmediateOp12DynCodeReplace() {}
+  Instruction dynamic_code_replacement_sentinel(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOp12DynCodeReplace);
+};
+
 // Models a 1-register assignment of a 16-bit immediate.
 // Op(S)<c> Rd, #const
 // +--------+--------------+--+--------+--------+------------------------+
@@ -340,19 +379,14 @@ class BranchToRegister : public ClassDecoder {
 //
 // Implements:
 //    MOV (immediate) A2 A8-194
-class Unary1RegisterImmediateOp : public ClassDecoder {
+class Unary1RegisterImmediateOp : public Unary1RegisterImmediateOp12 {
  public:
   // Interfaces for components in the instruction.
-  static const Imm12Bits0To11Interface imm12;
-  static const RegBits12To15Interface d;
   static const Imm4Bits16To19Interface imm4;
-  static const UpdatesConditionsBit20Interface conditions;
-  static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  Unary1RegisterImmediateOp() : ClassDecoder() {}
+  Unary1RegisterImmediateOp() {}
   virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const;
 
   // The immediate value stored in the instruction.
   uint32_t ImmediateValue(const Instruction& i) const {
@@ -373,6 +407,37 @@ class Unary1RegisterImmediateOpDynCodeReplace
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpDynCodeReplace);
+};
+
+// Models a 1-register assignment that implicitly uses Pc.
+// Op(S)<c> Rd, #const
+// +--------+------------------------+--------+------------------------+
+// |31302928|272625242322212019181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+------------------------+--------+------------------------+
+// |  cond  |                        |   Rd   |         imm12          |
+// +--------+------------------------+--------+------------------------+
+// Definitions:
+//    Rd = The destination register.
+//    const = ZeroExtend(imm4:imm12, 32)
+//
+//   imm32 := ARMExpandImm(imm12);
+//   defs := {Rd};
+//   safety := Rd=1111 => FORBIDDEN_OPERANDS;
+//   uses := {Pc};
+class Unary1RegisterImmediateOpPc : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const Imm12Bits0To11Interface imm12;
+  static const RegBits12To15Interface d;
+  static const ConditionBits28To31Interface cond;
+
+  Unary1RegisterImmediateOpPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpPc);
 };
 
 // Models a 2-register binary operation with two immediate values
@@ -461,6 +526,9 @@ class Binary2RegisterBitRangeNotRnIsPcBitfieldExtract : public ClassDecoder {
 //    const = The immediate value to be used as the second argument.
 //
 // NaCl disallows writing to PC to cause a jump.
+//
+//   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+//             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
 class Binary2RegisterImmediateOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
@@ -474,6 +542,7 @@ class Binary2RegisterImmediateOp : public ClassDecoder {
   Binary2RegisterImmediateOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmediateOp);
@@ -485,9 +554,6 @@ class Binary2RegisterImmediateOp : public ClassDecoder {
 class MaskedBinary2RegisterImmediateOp : public Binary2RegisterImmediateOp {
  public:
   MaskedBinary2RegisterImmediateOp() : Binary2RegisterImmediateOp() {}
-  // TODO(karl): find out why we added this so that we allowed an
-  // override on NaCl restriction that one can write to r15.
-  // virtual SafetyLevel safety(Instruction i) const;
   virtual bool clears_bits(Instruction i, uint32_t mask) const;
 
  private:
@@ -504,6 +570,19 @@ class Binary2RegisterImmediateOpDynCodeReplace
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmediateOpDynCodeReplace);
+};
+
+// Models a Binary2RegisterImmediateOp with the safety constraints:
+//   safety := (Rd=1111 & S=1) => DECODER_ERROR &  # ARM
+//             (Rn=1111 & S=0) => DECODER_ERROR &
+//             Rd=1111 => FORBIDDEN_OPERANDS;      # NaCl
+class Binary2RegisterImmediateOpAddSub : public Binary2RegisterImmediateOp {
+ public:
+  Binary2RegisterImmediateOpAddSub() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmediateOpAddSub);
 };
 
 // Models a Register to immediate test of the form:
@@ -535,6 +614,7 @@ class BinaryRegisterImmediateTest : public ClassDecoder {
   BinaryRegisterImmediateTest() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(BinaryRegisterImmediateTest);

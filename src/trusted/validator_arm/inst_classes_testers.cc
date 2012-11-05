@@ -302,12 +302,8 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// Unary1RegisterImmediateOpTester
-Unary1RegisterImmediateOpTester::Unary1RegisterImmediateOpTester(
-    const NamedClassDecoder& decoder)
-    : CondDecoderTester(decoder) {}
-
-bool Unary1RegisterImmediateOpTester::
+// Unary1RegisterImmediateOp12Tester
+bool Unary1RegisterImmediateOp12Tester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -327,8 +323,25 @@ ApplySanityChecks(Instruction inst,
   }
 
   // Check that immediate value is computed correctly.
-  EXPECT_EQ(expected_decoder_.imm4.value(inst), inst.Bits(19, 16));
   EXPECT_EQ(expected_decoder_.imm12.value(inst), inst.Bits(11, 0));
+
+  return true;
+}
+
+// Unary1RegisterImmediateOpTester
+Unary1RegisterImmediateOpTester::Unary1RegisterImmediateOpTester(
+    const NamedClassDecoder& decoder)
+    : Unary1RegisterImmediateOp12Tester(decoder) {}
+
+bool Unary1RegisterImmediateOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(Unary1RegisterImmediateOp12Tester::
+             ApplySanityChecks(inst, decoder));
+
+  // Check that immediate value is computed correctly.
+  EXPECT_EQ(expected_decoder_.imm4.value(inst), inst.Bits(19, 16));
   EXPECT_EQ(expected_decoder_.ImmediateValue(inst),
             (inst.Bits(19, 16) << 12) | inst.Bits(11, 0));
   EXPECT_LT(expected_decoder_.ImmediateValue(inst), (uint32_t) 0x10000);
@@ -336,6 +349,20 @@ ApplySanityChecks(Instruction inst,
   // Other NaCl constraints about this instruction.
   EXPECT_FALSE(expected_decoder_.d.reg(inst).Equals(Register::Pc()))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+
+  return true;
+}
+
+// Unary1RegisterImmediateOpPcTester
+bool Unary1RegisterImmediateOpPcTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check that expected fields are properly defined.
+  EXPECT_TRUE(expected_decoder_.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_EQ(expected_decoder_.imm12.value(inst), inst.Bits(11, 0));
 
   return true;
 }

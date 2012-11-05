@@ -129,6 +129,28 @@ Register BranchToRegister::branch_target_register(Instruction i) const {
   return m.reg(i);
 }
 
+// Unary1RegisterImmediateOp12
+SafetyLevel Unary1RegisterImmediateOp12::safety(Instruction i) const {
+  if (d.reg(i).Equals(Register::Pc())) {
+    if (conditions.is_updated(i)) return DECODER_ERROR;
+    return FORBIDDEN_OPERANDS;
+  }
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary1RegisterImmediateOp12::defs(Instruction i) const {
+  return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
+}
+
+// Unary1RegisterImmediateOp12DynCodeReplace
+Instruction Unary1RegisterImmediateOp12DynCodeReplace::
+dynamic_code_replacement_sentinel(Instruction i) const {
+  if (!RegisterList::DynCodeReplaceFrozenRegs().Contains(d.reg(i))) {
+    imm12.set_value(&i, 0);
+  }
+  return i;
+}
+
 // Unary1RegisterImmediateOp
 SafetyLevel Unary1RegisterImmediateOp::safety(Instruction i) const {
   if (d.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
@@ -136,10 +158,6 @@ SafetyLevel Unary1RegisterImmediateOp::safety(Instruction i) const {
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
   // since the ARM restriction doesn't allow it anyway.
   return MAY_BE_SAFE;
-}
-
-RegisterList Unary1RegisterImmediateOp::defs(Instruction i) const {
-  return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
 // Unary1RegisterImmediateOpDynCodeReplace
@@ -150,6 +168,21 @@ dynamic_code_replacement_sentinel(Instruction i) const {
     imm12.set_value(&i, 0);
   }
   return i;
+}
+
+// Unary1RegisterImmediateOpPc
+SafetyLevel Unary1RegisterImmediateOpPc::safety(Instruction i) const {
+  if (d.reg(i).Equals(Register::Pc())) return FORBIDDEN_OPERANDS;
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary1RegisterImmediateOpPc::defs(Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
+RegisterList Unary1RegisterImmediateOpPc::uses(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList(Register::Pc());
 }
 
 // Binary2RegisterBitRangeMsbGeLsb
@@ -180,8 +213,11 @@ RegisterList Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
 
 // Binary2RegisterImmediateOp
 SafetyLevel Binary2RegisterImmediateOp::safety(Instruction i) const {
-  // NaCl Constraint.
-  if (d.reg(i).Equals(Register::Pc())) return FORBIDDEN_OPERANDS;
+  if (d.reg(i).Equals(Register::Pc())) {
+    if (conditions.is_updated(i)) return DECODER_ERROR;
+    // NaCl Constraint.
+    return FORBIDDEN_OPERANDS;
+  }
   return MAY_BE_SAFE;
 }
 
@@ -189,13 +225,9 @@ RegisterList Binary2RegisterImmediateOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
-// TODO(karl): find out why we added this so that we allowed an
-// override on NaCl restriction that one can write to r15.
-// MaskedBinary2RegisterImmediateOp
-// SafetyLevel MaskedBinary2RegisterImmediateOp::safety(Instruction i) const {
-//   UNREFERENCED_PARAMETER(i);
-//   return MAY_BE_SAFE;
-// }
+RegisterList Binary2RegisterImmediateOp::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
+}
 
 bool MaskedBinary2RegisterImmediateOp::clears_bits(
     Instruction i, uint32_t mask) const {
@@ -211,6 +243,12 @@ dynamic_code_replacement_sentinel(Instruction i) const {
   return i;
 }
 
+// Binary2RegisterImmediateOpAddSub
+SafetyLevel Binary2RegisterImmediateOpAddSub::safety(Instruction i) const {
+  if (d.reg(i).Equals(Register::Pc())) return DECODER_ERROR;  // S=x
+  return MAY_BE_SAFE;
+}
+
 // BinaryRegisterImmediateTest::
 SafetyLevel BinaryRegisterImmediateTest::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
@@ -219,6 +257,10 @@ SafetyLevel BinaryRegisterImmediateTest::safety(Instruction i) const {
 
 RegisterList BinaryRegisterImmediateTest::defs(Instruction i) const {
   return RegisterList(conditions.conds_if_updated(i));
+}
+
+RegisterList BinaryRegisterImmediateTest::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
 }
 
 // MaskedBinaryRegisterImmediateTest
@@ -443,6 +485,7 @@ SafetyLevel LoadStore2RegisterImm8Op::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
+
 bool LoadStore2RegisterImm8Op::base_address_register_writeback_small_immediate(
     Instruction i) const {
   return HasWriteBack(i);
@@ -575,6 +618,7 @@ SafetyLevel LoadStore2RegisterImm12Op::safety(Instruction i) const {
 
   return MAY_BE_SAFE;
 }
+
 
 bool LoadStore2RegisterImm12Op::base_address_register_writeback_small_immediate(
     Instruction i) const {
