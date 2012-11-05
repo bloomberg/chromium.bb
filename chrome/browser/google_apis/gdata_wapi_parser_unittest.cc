@@ -28,12 +28,8 @@ namespace google_apis {
 class GDataWAPIParserTest : public testing::Test {
  protected:
   static DocumentEntry* LoadDocumentEntryFromXml(const std::string& filename) {
-    FilePath path;
+    FilePath path = test_util::GetTestFilePath(filename);
     std::string error;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("chromeos")
-        .AppendASCII("gdata")
-        .AppendASCII(filename.c_str());
     EXPECT_TRUE(file_util::PathExists(path)) <<
         "Couldn't find " << path.value();
     std::string contents;
@@ -54,9 +50,6 @@ class GDataWAPIParserTest : public testing::Test {
   }
 };
 
-// TODO(nhiroki): Make it possible to run these tests on any platforms after
-// moving json files to out of 'chromeos' directory (http://crbug.com/149788).
-#if defined(OS_CHROMEOS)
 // Test document feed parsing.
 TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   std::string error;
@@ -189,7 +182,7 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
 
 // Test document feed parsing.
 TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
-  scoped_ptr<DocumentEntry> entry(LoadDocumentEntryFromXml("entry.xml"));
+  scoped_ptr<DocumentEntry> entry(LoadDocumentEntryFromXml("gdata/entry.xml"));
   ASSERT_TRUE(entry.get());
 
   EXPECT_EQ(ENTRY_KIND_FILE, entry->kind());
@@ -336,7 +329,6 @@ TEST_F(GDataWAPIParserTest, AccountMetadataFeedParser) {
   EXPECT_EQ(1U, second_app->primary_extensions().size());
   EXPECT_EQ(0U, second_app->secondary_extensions().size());
 }
-#endif  // OS_CHROMEOS
 
 // Test file extension checking in DocumentEntry::HasDocumentExtension().
 TEST_F(GDataWAPIParserTest, DocumentEntryHasDocumentExtension) {

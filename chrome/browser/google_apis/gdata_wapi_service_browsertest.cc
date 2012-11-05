@@ -81,14 +81,14 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
       FilePath(FILE_PATH_LITERAL("/dummy/gdata/testfile.txt")),
       GetTestCachedFilePath(FilePath(
           FILE_PATH_LITERAL("cached_testfile.txt"))),
-      gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
+      gdata_test_server_.GetURL("files/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents),
       GetContentCallback());
   content::RunMessageLoop();
 
   EXPECT_EQ(HTTP_SUCCESS, result);
   FilePath expected_filepath = gdata_test_server_.document_root().Append(
-      FilePath(FILE_PATH_LITERAL("chromeos/gdata/testfile.txt")));
+      FilePath(FILE_PATH_LITERAL("gdata/testfile.txt")));
   std::string expected_contents;
   file_util::ReadFileToString(expected_filepath, &expected_contents);
   EXPECT_EQ(expected_contents, contents);
@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
       FilePath(FILE_PATH_LITERAL("/dummy/gdata/no-such-file.txt")),
       GetTestCachedFilePath(FilePath(
           FILE_PATH_LITERAL("cache_no-such-file.txt"))),
-      gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
+      gdata_test_server_.GetURL("files/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents),
       GetContentCallback());
   content::RunMessageLoop();
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
   GDataErrorCode result = GDATA_OTHER_ERROR;
   base::Value* result_data = NULL;
   service_->GetDocuments(
-      gdata_test_server_.GetURL("files/chromeos/gdata/root_feed.json"),
+      gdata_test_server_.GetURL("files/gdata/root_feed.json"),
       0,  // start_changestamp
       std::string(),  // search string
       std::string(),  // directory resource ID
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
   EXPECT_EQ(HTTP_SUCCESS, result);
   ASSERT_TRUE(result_data);
   FilePath expected_filepath = gdata_test_server_.document_root().Append(
-      FilePath(FILE_PATH_LITERAL("chromeos/gdata/root_feed.json")));
+      FilePath(FILE_PATH_LITERAL("gdata/root_feed.json")));
   std::string expected_contents;
   file_util::ReadFileToString(expected_filepath, &expected_contents);
   scoped_ptr<base::Value> expected_data(
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
   GDataErrorCode result = GDATA_OTHER_ERROR;
   base::Value* result_data = NULL;
   service_->GetDocuments(
-      gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
+      gdata_test_server_.GetURL("files/gdata/testfile.txt"),
       0,  // start_changestamp
       std::string(),  // search string
       std::string(),  // directory resource ID
