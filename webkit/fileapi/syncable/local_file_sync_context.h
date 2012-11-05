@@ -17,6 +17,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
@@ -33,6 +35,7 @@ namespace fileapi {
 class FileChange;
 class FileSystemContext;
 class LocalFileChangeTracker;
+class LocalOriginChangeObserver;
 class SyncableFileOperationRunner;
 
 // This class works as a bridge between LocalFileSyncService (which is a
@@ -96,11 +99,24 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const FileSystemURL& url,
       const SyncStatusCallback& callback);
 
+  // They must be called on UI thread.
+  void AddOriginChangeObserver(LocalOriginChangeObserver* observer);
+  void RemoveOriginChangeObserver(LocalOriginChangeObserver* observer);
+
+  // Called by internal timer on IO thread to notify changes to UI thread.
+  void NotifyAvailableChangesOnIOThread();
+
   // OperationRunner is accessible only on IO thread.
   base::WeakPtr<SyncableFileOperationRunner> operation_runner() const;
 
   // SyncContext is accessible only on IO thread.
   LocalFileSyncStatus* sync_status() const;
+
+  // For testing; override the duration to notify changes from the
+  // default value.
+  void set_mock_notify_changes_duration_in_sec(int duration) {
+    mock_notify_changes_duration_in_sec_ = duration;
+  }
 
  protected:
   // LocalFileSyncStatus::Observer overrides. They are called on IO thread.
@@ -116,6 +132,9 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
 
   void ShutdownOnIOThread();
 
+  // Called from NotifyAvailableChangesOnIOThread.
+  void NotifyAvailableChanges(const std::set<GURL>& origins);
+
   // Helper routines for MaybeInitializeFileSystemContext.
   void InitializeFileSystemContextOnIOThread(
       const GURL& source_url,
@@ -124,7 +143,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   SyncStatusCode InitializeChangeTrackerOnFileThread(
       scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
       FileSystemContext* file_system_context);
-  void DidInitializeChangeTracker(
+  void DidInitializeChangeTrackerOnIOThread(
       scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
       const GURL& source_url,
       const std::string& service_name,
@@ -145,6 +164,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   void DidApplyRemoteChange(
       const SyncStatusCallback& callback_on_ui,
       base::PlatformFileError file_error);
+
+  base::TimeDelta NotifyChangesDuration();
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -172,6 +193,15 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // Accessed only on IO thread.
   FileSystemURL url_waiting_sync_on_io_;
   base::Closure url_syncable_callback_;
+
+  // Used only on IO thread for available changes notifications.
+  base::Time last_notified_changes_;
+  scoped_ptr<base::OneShotTimer<LocalFileSyncContext> > timer_on_io_;
+  std::set<GURL> origins_with_pending_changes_;
+
+  ObserverList<LocalOriginChangeObserver> origin_change_observers_;
+
+  int mock_notify_changes_duration_in_sec_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncContext);
 };

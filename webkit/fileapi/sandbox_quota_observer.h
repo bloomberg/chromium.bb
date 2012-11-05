@@ -23,7 +23,7 @@ class QuotaManagerProxy;
 namespace fileapi {
 
 class FileSystemURL;
-class SandboxMountPointProvider;
+class ObfuscatedFileUtil;
 
 class SandboxQuotaObserver
     : public FileUpdateObserver,
@@ -32,7 +32,7 @@ class SandboxQuotaObserver
   SandboxQuotaObserver(
       quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* update_notify_runner,
-      SandboxMountPointProvider* sandbox_provider);
+      ObfuscatedFileUtil* sandbox_file_util);
   virtual ~SandboxQuotaObserver();
 
   // FileUpdateObserver overrides.
@@ -49,8 +49,8 @@ class SandboxQuotaObserver
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<base::SequencedTaskRunner> update_notify_runner_;
 
-  // Not owned; provider owns this.
-  SandboxMountPointProvider* sandbox_provider_;
+  // Not owned; sandbox_file_util_ should have identical lifetime with this.
+  ObfuscatedFileUtil* sandbox_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxQuotaObserver);
 };
