@@ -153,8 +153,14 @@ class Arm32DecoderState : DecoderState {
   const Binary2RegisterImmediateOpAddSub Binary2RegisterImmediateOpAddSub_instance_;
   const Binary2RegisterImmediateOpDynCodeReplace Binary2RegisterImmediateOpDynCodeReplace_instance_;
   const Binary3RegisterOp Binary3RegisterOp_instance_;
+  const Binary3RegisterOpAltA Binary3RegisterOpAltA_instance_;
   const Binary3RegisterShiftedOp Binary3RegisterShiftedOp_instance_;
   const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
+  const Binary4RegisterDualOp Binary4RegisterDualOp_instance_;
+  const Binary4RegisterDualOpLtV6RdNotRn Binary4RegisterDualOpLtV6RdNotRn_instance_;
+  const Binary4RegisterDualResult Binary4RegisterDualResult_instance_;
+  const Binary4RegisterDualResultLtV6RdHiLoNotRn Binary4RegisterDualResultLtV6RdHiLoNotRn_instance_;
+  const Binary4RegisterDualResultUsesRnRm Binary4RegisterDualResultUsesRnRm_instance_;
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
   const BinaryRegisterImmediateTest BinaryRegisterImmediateTest_instance_;
   const Branch Branch_instance_;

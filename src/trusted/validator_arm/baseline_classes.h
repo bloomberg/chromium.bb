@@ -1362,6 +1362,7 @@ class Binary3RegisterOpAltA : public ClassDecoder {
   Binary3RegisterOpAltA() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltA);
@@ -1428,9 +1429,21 @@ class Binary4RegisterDualOp : public ClassDecoder {
   Binary4RegisterDualOp() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualOp);
+};
+
+// A Binary4RegisterDualOp that adds the restruction that Rd!=Rn if
+// ArchVersion<6.
+class Binary4RegisterDualOpLtV6RdNotRn : public Binary4RegisterDualOp {
+ public:
+  Binary4RegisterDualOpLtV6RdNotRn() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualOpLtV6RdNotRn);
 };
 
 // Models a dual level, 2 input, 2 output binary operation of the form:
@@ -1453,6 +1466,11 @@ class Binary4RegisterDualOp : public ClassDecoder {
 // If RdHi, RdLo, Rn, or Rm is R15, the instruction is unpredictable.
 // If RdHi == RdLo, the instruction is unpredictable.
 // NaCl disallows writing to PC to cause a jump.
+//
+//   defs := {RdLo, RdHi, NZCV if setflags else None};
+//   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &
+//             RdHi == RdLo => UNPREDICTABLE;
+//   uses := {RdLo, RdHi, Rn, Rm};
 class Binary4RegisterDualResult : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
@@ -1467,6 +1485,45 @@ class Binary4RegisterDualResult : public ClassDecoder {
   Binary4RegisterDualResult() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResult);
+};
+
+// A Binary4RegisterDualResult where its input (i.e. uses) is just
+// Rn and Rm (and doesn't include RdHi and RdLo).
+//
+//   setflags := S=1;
+//   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &     # ARM
+//             RdHi == RdLo => UNPREDICTABLE &
+//             (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE;
+//   uses := {Rn, Rm};
+class Binary4RegisterDualResultUsesRnRm : public Binary4RegisterDualResult {
+ public:
+  Binary4RegisterDualResultUsesRnRm() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResultUsesRnRm);
+};
+
+// A Binary4RegisterDualResult where RdHi and RdLo can't be Rn if
+// ArchVersion < 6.
+//
+//   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &     # ARM
+//             RdHi == RdLo => UNPREDICTABLE &
+//             (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn))
+//                          => UNPREDICTABLE;
+class Binary4RegisterDualResultLtV6RdHiLoNotRn
+    : public Binary4RegisterDualResult {
+ public:
+  Binary4RegisterDualResultLtV6RdHiLoNotRn() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResultLtV6RdHiLoNotRn);
 };
 
 // Models a 3-register load/store operation of the forms:

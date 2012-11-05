@@ -1820,23 +1820,23 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_multiply_and_multiply_ac
   }
 
   if ((inst.Bits() & 0x00E00000) == 0x00200000 /* op(23:20)=001x */) {
-    return Binary4RegisterDualOp_MLA_A1_instance_;
+    return Binary4RegisterDualOpLtV6RdNotRn_MLA_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000) == 0x00800000 /* op(23:20)=100x */) {
-    return Binary4RegisterDualResult_UMULL_A1_instance_;
+    return Binary4RegisterDualResultUsesRnRm_UMULL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000) == 0x00A00000 /* op(23:20)=101x */) {
-    return Binary4RegisterDualResult_UMLAL_A1_instance_;
+    return Binary4RegisterDualResultLtV6RdHiLoNotRn_UMLAL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000) == 0x00C00000 /* op(23:20)=110x */) {
-    return Binary4RegisterDualResult_SMULL_A1_instance_;
+    return Binary4RegisterDualResultUsesRnRm_SMULL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000) == 0x00E00000 /* op(23:20)=111x */) {
-    return Binary4RegisterDualResult_SMLAL_A1_instance_;
+    return Binary4RegisterDualResultLtV6RdHiLoNotRn_SMLAL_A1_instance_;
   }
 
   // Catch any attempt to fall through...

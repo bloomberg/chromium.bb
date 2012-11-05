@@ -157,6 +157,9 @@ class BreakPointAndConstantPoolHead : Immediate16Use
 class Binary2RegisterImmediateOpDynCodeReplace : Binary2RegisterImmediateOp
 class Binary2RegisterImmediateOpAddSub : Binary2RegisterImmediateOp
 class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
+class Binary4RegisterDualOpLtV6RdNotRn : Binary4RegisterDualOp
+class Binary4RegisterDualResultLtV6RdHiLoNotRn : Binary4RegisterDualResult
+class Binary4RegisterDualResultUsesRnRm : Binary4RegisterDualResult
 class Deprecated : UnsafeCondDecoder
 class ForbiddenCondDecoder : UnsafeCondDecoder
 class ForbiddenUncondDecoder : UnsafeUncondDecoder
@@ -611,69 +614,89 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                         rule := MVN_immediate;
 +--
 
-# Note: in all of these cases there's a currently unhandled restriction:
-#         if ArchVersion() < 6 && d == n then Unpredictable.
-#       And for long versions:
-#         if ArchVersion() < 6 && ((dhi == n) || (dlo == n)) then Unpredictable.
-#       Revisit if we want to support chips before v6.
 +-- multiply_and_multiply_accumulate (See Section A5.2.5)
-*MUL Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc
+*MUL
    { cond(31:28), S(20), Rd(19:16), Rm(11:8), Rn(3:0) }
+   baseline := Binary3RegisterOpAltA;
    setflags := S=1;
    defs := {Rd, NZCV if setflags else None};
-   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE &            # ARM
+   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE &
              (ArchVersion() < 6 & Rd == Rn) => UNPREDICTABLE;
    uses := {Rm, Rn};
-*MLS Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc
+*MLS
    { cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0) }
+   baseline := Binary4RegisterDualOp;
    defs := {Rd};
-   safety := Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE;         # ARM
+   safety := Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE;
    uses := {Rn, Rm, Ra};
    arch := v6T2;
-*MLA Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc
+*MLA
    { cond(31:28), S(20), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0) }
+   baseline := Binary4RegisterDualOpLtV6RdNotRn;
    setflags := S=1;
    defs := {Rd, NZCV if setflags else None};
-   safety := Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE &        # ARM
+   safety := Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE &
              (ArchVersion() < 6 & Rd == Rn) => UNPREDICTABLE;
    uses := {Rn, Rm, Ra};
-*UMAAL Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc
+*UMAAL
    { cond(31:28), RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0) }
+   baseline := Binary4RegisterDualResult;
    defs := {RdLo, RdHi};
-   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &     # ARM
+   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &
              RdHi == RdLo => UNPREDICTABLE;
    uses := {RdLo, RdHi, Rn, Rm};
-*MULL Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc
+*MULL
    { cond(31:28), S(20), RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0) }
+   baseline :=  Binary4RegisterDualResultUsesRnRm;
    setflags := S=1;
    defs := {RdLo, RdHi, NZCV if setflags else None};
-   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &     # ARM
+   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &
              RdHi == RdLo => UNPREDICTABLE &
              (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE;
    uses := {Rn, Rm};
-*MLAL Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc
+*MLAL
    { cond(31:28), S(20), RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0) }
+   baseline := Binary4RegisterDualResultLtV6RdHiLoNotRn;
    setflags := S=1;
    defs := {RdLo, RdHi, NZCV if setflags else None};
-   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &     # ARM
+   safety := Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE &
              RdHi == RdLo => UNPREDICTABLE &
              (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE;
    uses := {RdLo, RdHi, Rn, Rm};
 +--
 | op(23:20)
-| 000x      = *MUL pattern := cccc0000000sdddd0000mmmm1001nnnn; rule := MUL_A1;
-| 001x      = *MLA pattern := cccc0000001sddddaaaammmm1001nnnn; rule := MLA_A1;
-| 0100      = *UMAAL pattern := cccc00000100hhhhllllmmmm1001nnnn; rule := UMAAL_A1;
+| 000x      = *MUL
+              pattern := cccc0000000sdddd0000mmmm1001nnnn;
+              rule := MUL_A1;
+| 001x      = *MLA
+              pattern := cccc0000001sddddaaaammmm1001nnnn;
+              rule := MLA_A1;
+| 0100      = *UMAAL
+              pattern := cccc00000100hhhhllllmmmm1001nnnn;
+              rule := UMAAL_A1;
 | 0101      = UndefinedCondDecoder => Undefined # No rule defined in table.
               pattern := cccc00000101xxxxxxxxxxxx1001xxxx;
-| 0110      = *MLS pattern := cccc00000110ddddaaaammmm1001nnnn; rule := MLS_A1;
+| 0110      = *MLS
+              pattern := cccc00000110ddddaaaammmm1001nnnn;
+              rule := MLS_A1;
 | 0111      = UndefinedCondDecoder => Undefined # No rule defined in table.
               pattern := cccc00000111xxxxxxxxxxxx1001xxxx;
-| 100x      = *MULL pattern := cccc0000100shhhhllllmmmm1001nnnn; rule := UMULL_A1;
-| 101x      = *MLAL pattern := cccc0000101shhhhllllmmmm1001nnnn; rule := UMLAL_A1;
-| 110x      = *MULL pattern := cccc0000110shhhhllllmmmm1001nnnn; rule := SMULL_A1;
-| 111x      = *MLAL pattern := cccc0000111shhhhllllmmmm1001nnnn; rule := SMLAL_A1;
+| 100x      = *MULL
+              pattern := cccc0000100shhhhllllmmmm1001nnnn;
+              rule := UMULL_A1;
+| 101x      = *MLAL
+              pattern := cccc0000101shhhhllllmmmm1001nnnn;
+              rule := UMLAL_A1;
+| 110x      = *MULL
+              pattern := cccc0000110shhhhllllmmmm1001nnnn;
+              rule := SMULL_A1;
+| 111x      = *MLAL
+              pattern := cccc0000111shhhhllllmmmm1001nnnn;
+              rule := SMLAL_A1;
 +--
+
+# TODO(karl): Fix uses in tables below here, so that the corresponding
+#             baseline classes implement virtual uses.
 
 # None of the instructions in the following table set NZCV flags,
 # they only set the APSR's sticky Q bit (for saturation), but we

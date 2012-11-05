@@ -344,6 +344,8 @@ SafetyLevel Binary3RegisterOpAltA::safety(Instruction i) const {
     return UNPREDICTABLE;
   }
 
+  if ((ArchVersion() < 6) && m.reg(i).Equals(n.reg(i))) return UNPREDICTABLE;
+
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
   // since the ARM restriction doesn't allow it anyway.
   return MAY_BE_SAFE;
@@ -353,6 +355,9 @@ RegisterList Binary3RegisterOpAltA::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+RegisterList Binary3RegisterOpAltA::uses(Instruction i) const {
+  return RegisterList(m.reg(i)).Add(n.reg(i));
+}
 
 // Binary3RegisterOpAltBNoCondUpdates
 SafetyLevel Binary3RegisterOpAltBNoCondUpdates::safety(Instruction i) const {
@@ -388,15 +393,28 @@ RegisterList Binary4RegisterDualOp::defs(Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+RegisterList Binary4RegisterDualOp::uses(Instruction i) const {
+  return RegisterList(n.reg(i)).Add(m.reg(i)).Add(a.reg(i));
+}
+
+// Binary4RegisterDualOpLtV6RdNotRn
+SafetyLevel Binary4RegisterDualOpLtV6RdNotRn::safety(Instruction i) const {
+  SafetyLevel level = Binary4RegisterDualOp::safety(i);
+  if (level != MAY_BE_SAFE) return level;
+
+  if ((ArchVersion() < 6) && d.reg(i).Equals(n.reg(i))) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
 // Binary4RegisterDualResult
 SafetyLevel Binary4RegisterDualResult::safety(Instruction i) const {
-  // Unsafe if any register contains PC (ARM restriction).
+  // Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE
   if (RegisterList(d_lo.reg(i)).Add(d_hi.reg(i)).Add(n.reg(i)).Add(m.reg(i)).
       Contains(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
-  // Unsafe if RdHi == RdLo
+  // RdHi == RdLo => UNPREDICTABLE
   if (d_hi.reg(i).Equals(d_lo.reg(i))) {
     return UNPREDICTABLE;
   }
@@ -409,6 +427,61 @@ SafetyLevel Binary4RegisterDualResult::safety(Instruction i) const {
 RegisterList Binary4RegisterDualResult::defs(Instruction i) const {
   return RegisterList(d_hi.reg(i)).Add(d_lo.reg(i)).
       Add(conditions.conds_if_updated(i));
+}
+
+RegisterList Binary4RegisterDualResult::uses(Instruction i) const {
+  return RegisterList(d_lo.reg(i)).Add(d_hi.reg(i)).Add(n.reg(i)).Add(m.reg(i));
+}
+
+// Binary4RegisterDualResultUsesRnRm
+SafetyLevel Binary4RegisterDualResultUsesRnRm::safety(Instruction i) const {
+  // Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE
+  if (RegisterList(d_lo.reg(i)).Add(d_hi.reg(i)).Add(n.reg(i)).Add(m.reg(i)).
+      Contains(Register::Pc())) {
+    return UNPREDICTABLE;
+  }
+
+  // RdHi == RdLo => UNPREDICTABLE
+  if (d_hi.reg(i).Equals(d_lo.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE
+  if ((ArchVersion() < 6) &&
+      (RegisterList(d_hi.reg(i)).Add(d_lo.reg(i)).Contains(n.reg(i))))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+// Binary4RegisterDualResultLtV6RdHiLoNotRn
+SafetyLevel Binary4RegisterDualResultLtV6RdHiLoNotRn::
+safety(Instruction i) const {
+  // Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE
+  if (RegisterList(d_lo.reg(i)).Add(d_hi.reg(i)).Add(n.reg(i)).Add(m.reg(i)).
+      Contains(Register::Pc())) {
+    return UNPREDICTABLE;
+  }
+
+  // RdHi == RdLo => UNPREDICTABLE
+  if (d_hi.reg(i).Equals(d_lo.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // (ArchVersion() < 6 & (RdHi == Rn | RdLo == Rn)) => UNPREDICTABLE
+  if ((ArchVersion() < 6) &&
+      (RegisterList(d_hi.reg(i)).Add(d_lo.reg(i)).Contains(n.reg(i))))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary4RegisterDualResultUsesRnRm::uses(Instruction i) const {
+  return RegisterList(n.reg(i)).Add(m.reg(i));
 }
 
 // LoadExclusive2RegisterOp
