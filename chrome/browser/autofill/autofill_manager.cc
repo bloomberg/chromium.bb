@@ -58,6 +58,7 @@
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
@@ -355,6 +356,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnShowPasswordSuggestions)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_SetDataList,
                         OnSetDataList)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_RequestAutocomplete,
+                        OnRequestAutocomplete)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -790,6 +793,17 @@ void AutofillManager::OnSetDataList(const std::vector<string16>& values,
                                                  icons,
                                                  unique_ids);
   }
+}
+
+void AutofillManager::OnRequestAutocomplete(const FormData& form) {
+  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  if (!host)
+    return;
+
+  // TODO(dbeam): implement interactive autocomplete UI. Just send an error
+  // right away until we have an implementation. (http://webk.it/100560)
+  host->Send(new AutofillMsg_RequestAutocompleteFinished(
+      host->GetRoutingID(), WebKit::WebFormElement::AutocompleteResultError));
 }
 
 void AutofillManager::OnLoadedServerPredictions(

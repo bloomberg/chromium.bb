@@ -227,6 +227,9 @@ class AutofillManager : public content::WebContentsObserver,
                      const std::vector<string16>& icons,
                      const std::vector<int>& unique_ids);
 
+  // Requests an interactive autocomplete UI be shown.
+  void OnRequestAutocomplete(const FormData& form);
+
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
   bool GetHost(const std::vector<AutofillProfile*>& profiles,

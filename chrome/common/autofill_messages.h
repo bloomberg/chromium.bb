@@ -16,6 +16,7 @@
 #include "content/public/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "ui/gfx/rect.h"
 
 #define IPC_MESSAGE_START AutofillMsgStart
@@ -63,6 +64,8 @@ IPC_STRUCT_TRAITS_BEGIN(PasswordFormFillData)
   IPC_STRUCT_TRAITS_MEMBER(additional_logins)
   IPC_STRUCT_TRAITS_MEMBER(wait_for_username)
 IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(WebKit::WebFormElement::AutocompleteResult)
 
 // Autofill messages sent from the browser to the renderer.
 
@@ -131,6 +134,10 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
 IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
                     content::PasswordForm /* form checked */)
 
+// Sent when interactive autocomplete finishes.
+IPC_MESSAGE_ROUTED1(AutofillMsg_RequestAutocompleteFinished,
+                    WebKit::WebFormElement::AutocompleteResult /* result */)
+
 // Autofill messages sent from the renderer to the browser.
 
 // Notification that forms have been seen that are candidates for
@@ -186,6 +193,10 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidPreviewAutofillFormData)
 // Sent when a form is filled with Autofill suggestions.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_DidFillAutofillFormData,
                     base::TimeTicks /* timestamp */)
+
+// Sent when a form receives a request to do interactive autocomplete.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_RequestAutocomplete,
+                    FormData /* form_data */)
 
 // Instructs the browser to remove the specified Autocomplete entry from the
 // database.

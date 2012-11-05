@@ -24,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
@@ -157,6 +158,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnAcceptDataListSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptPasswordAutofillSuggestion,
                         OnAcceptPasswordAutofillSuggestion)
+    IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteFinished,
+                        OnRequestAutocompleteFinished)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -209,6 +212,29 @@ void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
   // popups should be hidden. This is only needed for the new Autofill UI
   // because WebKit already knows to hide the old UI when this occurs.
   Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
+}
+
+void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
+                                           const WebFormElement& form) {
+  FormData form_data;
+  if (!in_flight_request_form_.isNull() ||
+      !WebFormElementToFormData(form,
+                                WebFormControlElement(),
+                                REQUIRE_AUTOCOMPLETE,
+                                EXTRACT_NONE,
+                                &form_data,
+                                NULL)) {
+    WebFormElement(form).finishRequestAutocomplete(
+        WebFormElement::AutocompleteResultError);
+    return;
+  }
+
+  // Cancel any pending Autofill requests and hide any currently showing popups.
+  ++autofill_query_id_;
+  HidePopups();
+
+  in_flight_request_form_ = form;
+  Send(new AutofillHostMsg_RequestAutocomplete(routing_id(), form_data));
 }
 
 bool AutofillAgent::InputElementClicked(const WebInputElement& element,
@@ -574,6 +600,14 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
   DCHECK(handled);
 }
 
+void AutofillAgent::OnRequestAutocompleteFinished(
+    WebFormElement::AutocompleteResult result) {
+  DCHECK(!in_flight_request_form_.isNull());
+
+  in_flight_request_form_.finishRequestAutocomplete(result);
+  in_flight_request_form_.reset();
+}
+
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,
                                     bool autofill_on_empty_values,
                                     bool requires_caret_at_end,
@@ -591,10 +625,7 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
        (element.selectionStart() != element.selectionEnd() ||
         element.selectionEnd() != static_cast<int>(value.length())))) {
     // Any popup currently showing is obsolete.
-    WebKit::WebView* web_view = render_view()->GetWebView();
-    if (web_view)
-      web_view->hidePopups();
-
+    HidePopups();
     return;
   }
 
@@ -692,6 +723,12 @@ void AutofillAgent::SetNodeText(const string16& value,
   substring = substring.substr(0, node->maxLength());
 
   node->setEditingValue(substring);
+}
+
+void AutofillAgent::HidePopups() {
+  WebKit::WebView* web_view = render_view()->GetWebView();
+  if (web_view)
+    web_view->hidePopups();
 }
 
 }  // namespace autofill

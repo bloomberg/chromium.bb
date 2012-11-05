@@ -15,6 +15,7 @@
 #include "chrome/renderer/page_click_listener.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
 struct FormFieldData;
@@ -88,6 +89,9 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void textFieldDidReceiveKeyDown(
       const WebKit::WebInputElement& element,
       const WebKit::WebKeyboardEvent& event) OVERRIDE;
+  virtual void didRequestAutocomplete(
+      WebKit::WebFrame* frame,
+      const WebKit::WebFormElement& form) OVERRIDE;
 
   void OnSuggestionsReturned(int query_id,
                              const std::vector<string16>& values,
@@ -106,6 +110,10 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnSetNodeText(const string16& value);
   void OnAcceptDataListSuggestion(const string16& value);
   void OnAcceptPasswordAutofillSuggestion(const string16& value);
+
+  // For interactive autocomplete.
+  void OnRequestAutocompleteFinished(
+      WebKit::WebFormElement::AutocompleteResult result);
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976
@@ -162,6 +170,9 @@ class AutofillAgent : public content::RenderViewObserver,
   // Set |node| to display the given |value|.
   void SetNodeText(const string16& value, WebKit::WebInputElement* node);
 
+  // Hides any currently showing Autofill popups.
+  void HidePopups();
+
   FormCache form_cache_;
 
   PasswordAutofillManager* password_autofill_manager_;  // WEAK reference.
@@ -172,6 +183,9 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // The element corresponding to the last request sent for form field Autofill.
   WebKit::WebInputElement element_;
+
+  // The form element currently requesting an interactive autocomplete.
+  WebKit::WebFormElement in_flight_request_form_;
 
   // The action to take when receiving Autofill data from the AutofillManager.
   AutofillAction autofill_action_;
