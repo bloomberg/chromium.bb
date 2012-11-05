@@ -3,9 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import csv
+import inspect
 import logging
 import os
 import sys
+import traceback
 
 from chrome_remote_control import browser_finder
 from chrome_remote_control import browser_options
@@ -13,34 +15,38 @@ from chrome_remote_control import multi_page_benchmark
 from chrome_remote_control import page_runner
 from chrome_remote_control import page_set
 
-import perf_tools.first_paint_time_benchmark
-import perf_tools.jsgamebench
-import perf_tools.kraken
-import perf_tools.robohornetpro
-import perf_tools.scrolling_benchmark
-import perf_tools.skpicture_printer
-import perf_tools.texture_upload_benchmark
-import perf_tools.painting_benchmark
 
-# TODO(tonyg/nduca): Discover benchmarks automagically.
-_BENCHMARKS = {
-  'first_paint_time_benchmark':
-      perf_tools.first_paint_time_benchmark.FirstPaintTimeBenchmark,
-  'jsgamebench':
-      perf_tools.jsgamebench.JsGameBench,
-  'kraken':
-      perf_tools.kraken.Kraken,
-  'robohornetpro':
-      perf_tools.robohornetpro.RobohornetPro,
-  'scrolling_benchmark':
-      perf_tools.scrolling_benchmark.ScrollingBenchmark,
-  'skpicture_printer':
-      perf_tools.skpicture_printer.SkPicturePrinter,
-  'texture_upload_benchmark':
-      perf_tools.texture_upload_benchmark.TextureUploadBenchmark,
-  'painting_benchmark':
-      perf_tools.painting_benchmark.PaintingBenchmark
-}
+def _Discover(start_dir, clazz):
+  """Discover all classes in |start_dir| which subclass |clazz|.
+
+  Args:
+    start_dir: The directory to recursively search.
+    clazz: The base class to search for.
+
+  Returns:
+    dict of {module_name: class}.
+  """
+  top_level_dir = os.path.join(os.path.dirname(__file__), '..')
+  classes = {}
+  for dirpath, _, filenames in os.walk(start_dir):
+    for filename in filenames:
+      if not filename.endswith('.py'):
+        continue
+      name, _ = os.path.splitext(filename)
+      relpath = os.path.relpath(dirpath, top_level_dir)
+      fqn = relpath.replace('/', '.') + '.' + name
+      try:
+        module = __import__(fqn, fromlist=[True])
+      except Exception:
+        logging.error('While importing [%s]\n' % fqn)
+        traceback.print_exc()
+        continue
+      for name, obj in inspect.getmembers(module):
+        if inspect.isclass(obj):
+          if clazz in inspect.getmro(obj):
+            name = module.__name__.split('.')[-1]
+            classes[name] = obj
+  return classes
 
 
 def Main():
@@ -48,12 +54,14 @@ def Main():
 
   If args is not specified, sys.argv[1:] is used.
   """
+  start_dir = os.path.dirname(__file__)
+  benchmarks = _Discover(start_dir, multi_page_benchmark.MultiPageBenchmark)
 
   # Naively find the benchmark. If we use the browser options parser, we run
   # the risk of failing to parse if we use a benchmark-specific parameter.
   benchmark_name = None
   for arg in sys.argv:
-    if arg in _BENCHMARKS:
+    if arg in benchmarks:
       benchmark_name = arg
 
   options = browser_options.BrowserOptions()
@@ -61,7 +69,7 @@ def Main():
 
   benchmark = None
   if benchmark_name is not None:
-    benchmark = _BENCHMARKS[benchmark_name]()
+    benchmark = benchmarks[benchmark_name]()
     benchmark.AddOptions(parser)
 
   _, args = parser.parse_args()
@@ -70,7 +78,7 @@ def Main():
     parser.print_usage()
     import page_sets # pylint: disable=F0401
     print >> sys.stderr, 'Available benchmarks:\n%s\n' % ',\n'.join(
-        _BENCHMARKS.keys())
+        benchmarks.keys())
     print >> sys.stderr, 'Available page_sets:\n%s\n' % ',\n'.join(
         [os.path.relpath(f) for f in page_sets.GetAllPageSetFilenames()])
     sys.exit(1)
