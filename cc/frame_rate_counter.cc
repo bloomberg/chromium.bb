@@ -70,9 +70,10 @@ void FrameRateCounter::markEndOfFrame()
 
 bool FrameRateCounter::isBadFrameInterval(base::TimeDelta intervalBetweenConsecutiveFrames) const
 {
+    double delta = intervalBetweenConsecutiveFrames.InSecondsF();
     bool schedulerAllowsDoubleFrames = !Proxy::hasImplThread();
-    bool intervalTooFast = schedulerAllowsDoubleFrames && intervalBetweenConsecutiveFrames.InSecondsF() < kFrameTooFast;
-    bool intervalTooSlow = intervalBetweenConsecutiveFrames.InSecondsF() > kFrameTooSlow;
+    bool intervalTooFast = schedulerAllowsDoubleFrames ? delta < kFrameTooFast : delta <= 0.0;
+    bool intervalTooSlow = delta > kFrameTooSlow;
     return intervalTooFast || intervalTooSlow;
 }
 
@@ -83,10 +84,12 @@ bool FrameRateCounter::isBadFrame(int frameNumber) const
 
 void FrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, double& standardDeviation) const
 {
-    int frame = m_currentFrameNumber - 1;
-    averageFPS = 0;
-    int averageFPSCount = 0;
+    int frameNumber = m_currentFrameNumber - 1;
+    int frameCount = 0;
     double fpsVarianceNumerator = 0;
+
+    averageFPS = 0;
+    standardDeviation = 0;
 
     // Walk backwards through the samples looking for a run of good frame
     // timings from which to compute the mean and standard deviation.
@@ -98,32 +101,29 @@ void FrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, dou
     // too much for short lived animations.
     //
     // isBadFrame encapsulates the frame too slow/frame too fast logic.
-    while (1) {
-        if (!isBadFrame(frame)) {
-            averageFPSCount++;
-            base::TimeDelta secForLastFrame = m_timeStampHistory[frameIndex(frame)] -
-                                              m_timeStampHistory[frameIndex(frame - 1)];
-            double x = 1.0 / secForLastFrame.InSecondsF();
+
+    // Go through all available historical data.
+    while (frameIndex(frameNumber) != frameIndex(m_currentFrameNumber) && frameNumber >= 0) {
+        base::TimeDelta delta = frameInterval(frameNumber);
+
+        if (!isBadFrameInterval(delta)) {
+            frameCount++;
+            double x = 1.0 / delta.InSecondsF();
             double deltaFromAverage = x - averageFPS;
             // Change with caution - numerics. http://en.wikipedia.org/wiki/Standard_deviation
-            averageFPS = averageFPS + deltaFromAverage / averageFPSCount;
-            fpsVarianceNumerator = fpsVarianceNumerator + deltaFromAverage * (x - averageFPS);
-        }
-        if (averageFPSCount && isBadFrame(frame)) {
+            averageFPS += deltaFromAverage / frameCount;
+            fpsVarianceNumerator += deltaFromAverage * (x - averageFPS);
+        } else if (frameCount)
             // We've gathered a run of good samples, so stop.
             break;
-        }
-        --frame;
-        if (frameIndex(frame) == frameIndex(m_currentFrameNumber) || frame < 0) {
-            // We've gone through all available historical data, so stop.
-            break;
-        }
+        frameNumber--;
     }
 
-    standardDeviation = sqrt(fpsVarianceNumerator / averageFPSCount);
+    if (frameCount)
+        standardDeviation = sqrt(fpsVarianceNumerator / frameCount);
 }
 
-base::TimeTicks FrameRateCounter::timeStampOfRecentFrame(int n)
+base::TimeTicks FrameRateCounter::timeStampOfRecentFrame(int n) const
 {
     DCHECK(n >= 0);
     DCHECK(n < kTimeStampHistorySize);

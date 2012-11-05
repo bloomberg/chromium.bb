@@ -57,6 +57,25 @@ void FontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint
     }
 }
 
+gfx::Size FontAtlas::textSize(const std::string& text)
+{
+    int maxWidth = 0;
+    std::vector<std::string> lines;
+    base::SplitString(text, '\n', &lines);
+
+    for (size_t i = 0; i < lines.size(); ++i) {
+        int lineWidth = 0;
+        for (size_t j = 0; j < lines[i].size(); ++j) {
+            int asciiIndex = (lines[i][j] < 128) ? lines[i][j] : 0;
+            lineWidth += m_asciiToRectTable[asciiIndex].width();
+        }
+        if (lineWidth > maxWidth)
+            maxWidth = lineWidth;
+    }
+
+    return gfx::Size(maxWidth, m_fontHeight * lines.size());
+}
+
 void FontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPosition) const
 {
     DCHECK(Proxy::isImplThread());

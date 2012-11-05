@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 namespace cc {
 
@@ -43,6 +44,8 @@ static inline SkPaint createPaint()
 
 HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(int id)
     : LayerImpl(id)
+    , m_averageFPS(0)
+    , m_stdDeviation(0)
 {
 }
 
@@ -143,17 +146,10 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
         canvas->drawRect(SkRect::MakeXYWH(0, 0, bounds().width(), bounds().height()), paint);
     }
 
-    int fpsCounterHeight = 40;
-    int fpsCounterTop = 2;
-    int platformLayerTreeTop;
+    int platformLayerTreeTop = 0;
 
     if (settings.showFPSCounter)
-        platformLayerTreeTop = fpsCounterTop + fpsCounterHeight;
-    else
-        platformLayerTreeTop = 0;
-
-    if (settings.showFPSCounter)
-        drawFPSCounter(canvas, layerTreeHostImpl()->fpsCounter(), fpsCounterTop, fpsCounterHeight);
+        platformLayerTreeTop = drawFPSCounter(canvas, layerTreeHostImpl()->fpsCounter());
 
     if (settings.showPlatformLayerTree && m_fontAtlas.get()) {
         std::string layerTree = layerTreeHostImpl()->layerTreeAsText();
@@ -164,75 +160,106 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
         drawDebugRects(canvas, layerTreeHostImpl()->debugRectHistory());
 }
 
-void HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* fpsCounter, int top, int height)
+int HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* fpsCounter)
 {
-    float textWidth = 170; // so text fits on linux.
-    float graphWidth = fpsCounter->timeStampHistorySize();
+    const int left = 2;
+    const int top = 2;
 
-    // Draw the FPS text.
-    drawFPSCounterText(canvas, fpsCounter, top, textWidth, height);
+    const int padding = 4;
 
-    // Draw FPS graph.
-    const double loFPS = 0;
-    const double hiFPS = 80;
+    const int fontHeight = m_fontAtlas.get() ? m_fontAtlas->fontHeight() : 0;
+    const int graphWidth = fpsCounter->timeStampHistorySize() - 3;
+    const int graphHeight = 40;
+
+    const int width = graphWidth + 2 * padding;
+    const int height = fontHeight + graphHeight + 4 * padding + 2;
+
     SkPaint paint = createPaint();
-    paint.setColor(SkColorSetRGB(154, 205, 50));
-    canvas->drawRect(SkRect::MakeXYWH(2 + textWidth, top, graphWidth, height / 2), paint);
-
-    paint.setColor(SkColorSetRGB(255, 250, 205));
-    canvas->drawRect(SkRect::MakeXYWH(2 + textWidth, top + height / 2, graphWidth, height / 2), paint);
-
-    int graphLeft = static_cast<int>(textWidth + 3);
-    int x = 0;
-    double h = static_cast<double>(height - 2);
-    SkPath path;
-    for (int i = 0; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
-        int j = i + 1;
-        base::TimeDelta delta = fpsCounter->timeStampOfRecentFrame(j) - fpsCounter->timeStampOfRecentFrame(i);
-
-        // Skip plotting this particular instantaneous frame rate if it is not likely to have been valid.
-        if (fpsCounter->isBadFrameInterval(delta)) {
-            x += 1;
-            continue;
-        }
-
-        double fps = 1.0 / delta.InSecondsF();
-
-        // Clamp the FPS to the range we want to plot visually.
-        double p = 1 - ((fps - loFPS) / (hiFPS - loFPS));
-        if (p < 0)
-            p = 0;
-        if (p > 1)
-            p = 1;
-
-        // Plot this data point.
-        SkPoint cur = SkPoint::Make(graphLeft + x, 1 + top + p*h);
-        if (path.isEmpty())
-            path.moveTo(cur);
-        else
-            path.lineTo(cur);
-        x += 1;
-    }
-    paint.setColor(SK_ColorRED);
-    paint.setStyle(SkPaint::kStroke_Style);
-    paint.setStrokeWidth(1);
-    paint.setAntiAlias(true);
-    canvas->drawPath(path, paint);
-}
-
-void HeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, FrameRateCounter* fpsCounter, int top, int width, int height)
-{
-    double averageFPS, stdDeviation;
-    fpsCounter->getAverageFPSAndStandardDeviation(averageFPS, stdDeviation);
 
     // Draw background.
-    SkPaint paint = createPaint();
-    paint.setColor(SK_ColorBLACK);
-    canvas->drawRect(SkRect::MakeXYWH(2, top, width, height), paint);
+    paint.setColor(SkColorSetARGB(215, 17, 17, 17));
+    canvas->drawRect(SkRect::MakeXYWH(left, top, width, height), paint);
+
+    SkRect textBounds = SkRect::MakeXYWH(left + padding, top + padding, graphWidth, fontHeight);
+    SkRect graphBounds = SkRect::MakeXYWH(left + padding, textBounds.bottom() + 2 * padding, graphWidth, graphHeight);
+
+    drawFPSCounterText(canvas, paint, fpsCounter, textBounds);
+    drawFPSCounterGraph(canvas, paint, fpsCounter, graphBounds);
+
+    return top + height;
+}
+
+void HeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect bounds)
+{
+    // Update FPS text - not every frame so text is readable
+    if (base::TimeDelta(fpsCounter->timeStampOfRecentFrame(0) - textUpdateTime).InSecondsF() > 0.25) {
+        fpsCounter->getAverageFPSAndStandardDeviation(m_averageFPS, m_stdDeviation);
+        textUpdateTime = fpsCounter->timeStampOfRecentFrame(0);
+    }
 
     // Draw FPS text.
-    if (m_fontAtlas.get())
-        m_fontAtlas->drawText(canvas, createPaint(), base::StringPrintf("FPS: %4.1f +/- %3.1f", averageFPS, stdDeviation), gfx::Point(10, height / 3), gfx::Size(width, height));
+    if (m_fontAtlas.get()) {
+        std::string fpsText = base::StringPrintf("FPS:%5.1f", m_averageFPS);
+        std::string deviationText = base::StringPrintf("+/-%4.1f", m_stdDeviation);
+
+        int deviationWidth = m_fontAtlas->textSize(deviationText).width();
+        gfx::Size textArea(bounds.width(), bounds.height());
+
+        paint.setColor(SK_ColorRED);
+        m_fontAtlas->drawText(canvas, paint, fpsText, gfx::Point(bounds.left(), bounds.top()), textArea);
+        m_fontAtlas->drawText(canvas, paint, deviationText, gfx::Point(bounds.right() - deviationWidth, bounds.top()), textArea);
+    }
+}
+
+void HeadsUpDisplayLayerImpl::drawFPSCounterGraph(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect bounds)
+{
+    const double loFPS = 0;
+    const double hiFPS = 80;
+
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(1);
+
+    // Draw top and bottom line.
+    paint.setColor(SkColorSetRGB(150, 150, 150));
+    canvas->drawLine(bounds.left(), bounds.top() - 1, bounds.right(), bounds.top() - 1, paint);
+    canvas->drawLine(bounds.left(), bounds.bottom(), bounds.right(), bounds.bottom(), paint);
+
+    // Draw 60fps line.
+    paint.setColor(SkColorSetRGB(100, 100, 100));
+    canvas->drawLine(bounds.left(), bounds.top() + bounds.height() / 4, bounds.right(), bounds.top() + bounds.height() / 4, paint);
+
+    // Draw FPS graph.
+    int x = 0;
+    SkPath path;
+
+    for (int i = 1; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
+        base::TimeDelta delta = fpsCounter->timeStampOfRecentFrame(i + 1) - fpsCounter->timeStampOfRecentFrame(i);
+
+        // Skip plotting this particular instantaneous frame rate if it is not likely to have been valid.
+        if (!fpsCounter->isBadFrameInterval(delta)) {
+            double fps = 1.0 / delta.InSecondsF();
+
+            // Clamp the FPS to the range we want to plot visually.
+            double p = 1 - ((fps - loFPS) / (hiFPS - loFPS));
+            if (p < 0)
+                p = 0;
+            if (p > 1)
+                p = 1;
+
+            // Plot this data point.
+            SkPoint cur = SkPoint::Make(bounds.left() + x, bounds.top() + p * bounds.height());
+            if (path.isEmpty())
+                path.moveTo(cur);
+            else
+                path.lineTo(cur);
+        }
+
+        x += 1;
+    }
+
+    paint.setAntiAlias(true);
+    paint.setColor(SK_ColorRED);
+    canvas->drawPath(path, paint);
 }
 
 void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory* debugRectHistory)

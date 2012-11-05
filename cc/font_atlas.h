@@ -31,6 +31,9 @@ public:
     }
     ~FontAtlas();
 
+    // Current font height.
+    int fontHeight() const { return m_fontHeight; }
+
     // Draws multiple lines of text where each line of text is separated by '\n'.
     // - Correct glyphs will be drawn for ASCII codes in the range 32-127; any characters
     //   outside that range will be displayed as a default rectangle glyph.
@@ -38,6 +41,9 @@ public:
     //   target canvas bounds.
     // - Should only be called only on the impl thread.
     void drawText(SkCanvas*, const SkPaint&, const std::string& text, const gfx::Point& destPosition, const gfx::Size& clip) const;
+
+    // Gives a text's width and height on the canvas.
+    gfx::Size textSize(const std::string& text);
 
     // Draws the entire atlas at the specified position, just for debugging purposes.
     void drawDebugAtlas(SkCanvas*, const gfx::Point& destPosition) const;

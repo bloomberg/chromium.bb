@@ -21,7 +21,7 @@ HeadsUpDisplayLayer::HeadsUpDisplayLayer()
     : Layer()
 {
 
-    setBounds(gfx::Size(512, 128));
+    setBounds(gfx::Size(256, 128));
 }
 
 HeadsUpDisplayLayer::~HeadsUpDisplayLayer()
@@ -39,7 +39,7 @@ void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, 
         int height = std::min(maxTextureSize, layerTreeHost()->deviceViewportSize().height());
         bounds = gfx::Size(width, height);
     } else {
-        bounds = gfx::Size(512, 128);
+        bounds = gfx::Size(256, 128);
     }
 
     setBounds(bounds);

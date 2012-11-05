@@ -25,7 +25,8 @@ public:
 
     // n = 0 returns the oldest frame retained in the history,
     // while n = timeStampHistorySize() - 1 returns the timestamp most recent frame.
-    base::TimeTicks timeStampOfRecentFrame(int n);
+    // FIXME: Returns most recent timestamp for n = 0 when called between markBeginningOfFrame and markEndOfFrame calls.
+    base::TimeTicks timeStampOfRecentFrame(int n) const;
 
     // This is a heuristic that can be used to ignore frames in a reasonable way. Returns
     // true if the given frame interval is too fast or too slow, based on constant thresholds.
@@ -51,7 +52,7 @@ private:
     // FIXME: Determine this threshold based on monitor refresh rate, crbug.com/138642.
     static const double kDroppedFrameTime;
 
-    static const int kTimeStampHistorySize = 120;
+    static const int kTimeStampHistorySize = 170;
 
     int m_currentFrameNumber;
     base::TimeTicks m_timeStampHistory[kTimeStampHistorySize];
