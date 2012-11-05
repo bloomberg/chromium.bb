@@ -71,7 +71,7 @@ class VIEWS_EXPORT Label : public View {
   void SetEmail(const string16& email);
 
   // Returns the font used by this label.
-  gfx::Font font() const { return font_; }
+  const gfx::Font& font() const { return font_; }
 
   // Returns the label text.
   const string16& text() const { return text_; };

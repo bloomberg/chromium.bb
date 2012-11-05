@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
@@ -38,6 +39,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   bool GetTextMultiLine() const;
   void SetTextMultiLine(bool text_multi_line);
 
+  // Get or set the font used by this button.
+  const gfx::Font& GetFont() const;
+  void SetFont(const gfx::Font& font);
+
   // Get or set the horizontal alignment used for the button.
   // The optional image will lead the text, unless the button is right-aligned.
   Label::Alignment GetHorizontalAlignment() const;
@@ -60,6 +65,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Label);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Image);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
+  FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Font);
 
   // Overridden from CustomButton:
   virtual void StateChanged() OVERRIDE;

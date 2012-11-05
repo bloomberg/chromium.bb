@@ -87,6 +87,14 @@ void LabelButton::SetTextMultiLine(bool text_multi_line) {
   label_->SetMultiLine(text_multi_line);
 }
 
+const gfx::Font& LabelButton::GetFont() const {
+  return label_->font();
+}
+
+void LabelButton::SetFont(const gfx::Font& font) {
+  label_->SetFont(font);
+}
+
 Label::Alignment LabelButton::GetHorizontalAlignment() const {
   return label_->horizontal_alignment();
 }

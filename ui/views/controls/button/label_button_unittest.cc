@@ -5,6 +5,8 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/size.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -160,6 +162,28 @@ TEST_F(LabelButtonTest, LabelAndImage) {
   EXPECT_LT(button.GetPreferredSize().width(), text_width);
   EXPECT_LT(button.GetPreferredSize().width(), image_size);
   EXPECT_LT(button.GetPreferredSize().height(), image_size);
+}
+
+TEST_F(LabelButtonTest, Font) {
+  const string16 text(ASCIIToUTF16("abc"));
+  LabelButton button(NULL, text);
+
+  const gfx::Font original_font = button.GetFont();
+  const gfx::Font large_font = original_font.DeriveFont(100);
+  const int original_width = button.GetPreferredSize().width();
+  const int original_height = button.GetPreferredSize().height();
+
+  // The button size increases when the font size is increased.
+  button.SetFont(large_font);
+  EXPECT_GT(button.GetPreferredSize().width(), original_width);
+  EXPECT_GT(button.GetPreferredSize().height(), original_height);
+
+  // The button returns to its original size when the minimal size is cleared
+  // and the original font size is restored.
+  button.set_min_size(gfx::Size());
+  button.SetFont(original_font);
+  EXPECT_EQ(original_width, button.GetPreferredSize().width());
+  EXPECT_EQ(original_height, button.GetPreferredSize().height());
 }
 
 }  // namespace views
