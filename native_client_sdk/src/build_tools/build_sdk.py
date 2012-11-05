@@ -573,7 +573,6 @@ EXAMPLE_LIST = [
   'pi_generator',
   'pong',
   'sine_synth',
-  'tumbler',
   'websocket',
   'dlopen',
 ]
