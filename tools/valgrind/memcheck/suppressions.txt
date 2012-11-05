@@ -6111,9 +6111,3 @@
    fun:_ZN7WebCore11RenderBlock14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
    fun:_ZN7WebCore12RenderObject8setStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
 }
-{
-   bug_159286
-   Memcheck:Uninitialized
-   fun:_ZN2ui10Compositor20OnSwapBuffersAbortedEv
-   fun:_ZN2ui52LayerWithRealCompositorTest_CompositorObservers_Test8TestBodyEv
-}

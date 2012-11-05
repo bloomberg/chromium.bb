@@ -33,6 +33,7 @@ namespace ui {
 class Compositor;
 class CompositorObserver;
 class Layer;
+class PostedSwapQueue;
 
 // This class abstracts the creation of the 3D context for the compositor. It is
 // a global object.
@@ -218,10 +219,6 @@ class COMPOSITOR_EXPORT Compositor
   void RemoveObserver(CompositorObserver* observer);
   bool HasObserver(CompositorObserver* observer);
 
-  // Returns whether a draw is pending, that is, if we're between the Draw call
-  // and the OnCompositingEnded.
-  bool DrawPending() const { return swap_posted_; }
-
   // Creates a compositor lock. Returns NULL if it is not possible to lock at
   // this time (i.e. we're waiting to complete a previous unlock).
   scoped_refptr<CompositorLock> GetCompositorLock();
@@ -280,9 +277,8 @@ class COMPOSITOR_EXPORT Compositor
   scoped_ptr<WebKit::WebLayer> root_web_layer_;
   scoped_ptr<WebKit::WebLayerTreeView> host_;
 
-  // This is set to true when the swap buffers has been posted and we're waiting
-  // for completion.
-  bool swap_posted_;
+  // Used to verify that we have at most one draw swap in flight.
+  scoped_ptr<PostedSwapQueue> posted_swaps_;
 
   // The device scale factor of the monitor that this compositor is compositing
   // layers on.
