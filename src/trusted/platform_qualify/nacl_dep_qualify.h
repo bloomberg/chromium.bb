@@ -31,7 +31,7 @@ EXTERN_C_BEGIN
  * NOTE: the implementation of this function is architecture-specific, and can
  * be found beneath arch/ in this directory.
  */
-int NaClCheckDEP();
+int NaClCheckDEP(void);
 
 int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size);
 
@@ -43,13 +43,13 @@ int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size);
  * NOTE: the implementation of this function is platform-specific, and can be
  * found in linux/, win/, or osx/ in this directory.
  */
-int NaClAttemptToExecuteData();
+int NaClAttemptToExecuteData(void);
 
 /*
  * A void nullary function.  We generate functions of this type in the heap and
  * stack to prove that we cannot call them.  See NaClGenerateThunk, below.
  */
-typedef void (*nacl_void_thunk)();
+typedef void (*nacl_void_thunk)(void);
 
 /*
  * Generates an architecture-specific void thunk sequence into the provided

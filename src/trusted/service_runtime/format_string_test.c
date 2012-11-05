@@ -11,7 +11,7 @@
 #include "native_client/src/include/nacl_assert.h"
 
 
-int main() {
+int main(void) {
   char buf[100];
 
   sprintf(buf, "%"NACL_PRIxS, (size_t) -1);

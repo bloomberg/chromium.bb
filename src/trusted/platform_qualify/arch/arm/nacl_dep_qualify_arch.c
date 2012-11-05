@@ -12,7 +12,7 @@
 /* Assembled equivalent of "bx lr" */
 #define INST_BX_LR 0xE12FFF1E
 
-int NaClCheckDEP() {
+int NaClCheckDEP(void) {
   /*
    * We require DEP, so forward this call to the OS-specific check routine.
    */

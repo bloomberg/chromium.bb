@@ -27,7 +27,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
-void TestDEPCheckFailurePath() {
+void TestDEPCheckFailurePath(void) {
   size_t size = NACL_PAGESIZE;
   void *page;
   CHECK(NaCl_page_alloc(&page, size) == 0);
@@ -44,7 +44,7 @@ void TestDEPCheckFailurePath() {
   NaCl_page_free(page, size);
 }
 
-int main() {
+int main(void) {
   NaClLogModuleInit();
 
   if (NaClOsIsSupported() != 1) return -1;

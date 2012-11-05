@@ -33,9 +33,9 @@ extern NORETURN void NaClSwitchSavingStackPtr(
     void (*NaClSwitch)(struct NaClThreadContext *context));
 #if NACL_OSX
 /* Same as NaClSwitchNoSSE but context in %ecx */
-extern NORETURN void NaClSwitchNoSSEViaECX();
-extern NORETURN void NaClSwitchRemainingRegsViaECX();
-extern NORETURN void NaClSwitchRemainingRegsAsmEnd();
+extern NORETURN void NaClSwitchNoSSEViaECX(void);
+extern NORETURN void NaClSwitchRemainingRegsViaECX(void);
+extern NORETURN void NaClSwitchRemainingRegsAsmEnd(void);
 #endif
 #else
 extern NORETURN void NaClSwitch(struct NaClThreadContext *context);

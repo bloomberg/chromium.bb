@@ -119,7 +119,7 @@ void PrintStrTbl(char const *name, char const *const *tbl) {
   printf("--------\n");
 }
 
-int main() {
+int main(void) {
   int errors = 0;
   int i;
   struct NaClEnvCleanser nec;

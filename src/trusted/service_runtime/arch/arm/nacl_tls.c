@@ -55,7 +55,7 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
 }
 
 
-int NaClTlsInit() {
+int NaClTlsInit(void) {
   size_t i;
 
   NaClLog(2, "NaClTlsInit\n");
@@ -76,7 +76,7 @@ int NaClTlsInit() {
 }
 
 
-void NaClTlsFini() {
+void NaClTlsFini(void) {
   NaClLog(2, "NaClTlsFini\n");
   NaClMutexDtor(&gNaClTlsMu);
 #if NACL_DANGEROUS_USE_PTHREAD_GETSPECIFIC_ON_ANDROID
@@ -84,7 +84,7 @@ void NaClTlsFini() {
 #endif
 }
 
-static int NaClThreadIdxAllocate() {
+static int NaClThreadIdxAllocate(void) {
   size_t i;
 
   NaClXMutexLock(&gNaClTlsMu);

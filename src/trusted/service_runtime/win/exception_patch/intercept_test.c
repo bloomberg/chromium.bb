@@ -12,7 +12,7 @@
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 
 
-static void TryCrash() {
+static void TryCrash(void) {
   __try {
     *(volatile int *) 0 = 0;
   } __except (EXCEPTION_EXECUTE_HANDLER) {
@@ -20,7 +20,7 @@ static void TryCrash() {
   }
 }
 
-static void TestCrashes() {
+static void TestCrashes(void) {
   printf("Raising fault with 'trusted stack'...\n");
   NaClStackSafetyNowOnTrustedStack();
   TryCrash();
@@ -35,7 +35,7 @@ static void TestCrashes() {
   TryCrash();
 }
 
-static void TestPatchFallback() {
+static void TestPatchFallback(void) {
   uint8_t *ntdll_routine = NaClGetKiUserExceptionDispatcher();
   DWORD old_prot;
 

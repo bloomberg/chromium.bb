@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 
-int main() {
+int main(void) {
   uint16_t a, b, c, d, e;
 
   /* Initialize LDT services. */

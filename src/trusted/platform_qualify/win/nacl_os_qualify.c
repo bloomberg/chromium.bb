@@ -14,7 +14,7 @@
 /*
  * Returns 1 if the operating system can run Native Client modules.
  */
-int NaClOsIsSupported() {
+int NaClOsIsSupported(void) {
   SYSTEM_INFO system_info;
   OSVERSIONINFO version_info;
 
@@ -59,7 +59,7 @@ int NaClOsIsSupported() {
  * Returns 1 if the operating system is a 64-bit version of
  * Windows.
  */
-int NaClOsIs64BitWindows() {
+int NaClOsIs64BitWindows(void) {
   SYSTEM_INFO system_info;
 
   GetNativeSystemInfo(&system_info);

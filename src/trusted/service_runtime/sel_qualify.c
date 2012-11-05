@@ -13,7 +13,7 @@
 #include "native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h"
 #endif
 
-NaClErrorCode NaClRunSelQualificationTests() {
+NaClErrorCode NaClRunSelQualificationTests(void) {
   if (!NaClOsIsSupported()) {
     return LOAD_UNSUPPORTED_OS_PLATFORM;
   }

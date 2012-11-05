@@ -26,8 +26,8 @@ extern int modify_ldt(int func, void* ptr, unsigned long bytecount);
 /*
  * Module initialization and finalization.
  */
-extern int NaClLdtInit();
-extern void NaClLdtFini();
+extern int NaClLdtInit(void);
+extern void NaClLdtFini(void);
 
 /*
  * NaClLdtAllocateSelector creates an entry installed in the local descriptor

@@ -24,7 +24,7 @@ void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
   th_ctx->rsp = (nacl_reg_t) sp;
 }
 
-void NaClInitGlobals() {
+void NaClInitGlobals(void) {
   /* no need to save segment registers */
   ;
 }

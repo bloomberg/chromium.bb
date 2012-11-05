@@ -24,9 +24,9 @@
 
 struct NaClAppThread;
 
-int NaClTlsInit();
+int NaClTlsInit(void);
 
-void NaClTlsFini();
+void NaClTlsFini(void);
 
 
 #define NACL_TLS_INDEX_INVALID 0

@@ -234,7 +234,7 @@ enum NaClSignalResult NaClSignalHandlerFind(int signal, void *ctx) {
  * This is a separate function to make it obvious from the crash
  * reports that this crash is deliberate and for testing purposes.
  */
-void NaClSignalTestCrashOnStartup() {
+void NaClSignalTestCrashOnStartup(void) {
   if (getenv("NACL_CRASH_TEST") != NULL) {
     NaClSignalErrorMessage("[CRASH_TEST] Causing crash in NaCl "
                            "trusted code...\n");
@@ -249,7 +249,7 @@ void NaClSignalTestCrashOnStartup() {
   }
 }
 
-void NaClSignalHandlerInit() {
+void NaClSignalHandlerInit(void) {
   int a;
 
   /* Build the free list */
@@ -263,7 +263,7 @@ void NaClSignalHandlerInit() {
   NaClSignalHandlerAdd(NaClSignalHandleUntrusted);
 }
 
-void NaClSignalHandlerFini() {
+void NaClSignalHandlerFini(void) {
   /* We try to lock, but since we are shutting down, we ignore failures. */
   NaClSignalHandlerFiniPlatform();
 }

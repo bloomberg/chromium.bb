@@ -50,18 +50,18 @@ struct LdtEntry {
  */
 static struct NaClMutex nacl_ldt_mutex;
 
-int NaClLdtInitPlatformSpecific() {
+int NaClLdtInitPlatformSpecific(void) {
   return NaClMutexCtor(&nacl_ldt_mutex);
 }
 
-void NaClLdtFiniPlatformSpecific() {
+void NaClLdtFiniPlatformSpecific(void) {
   NaClMutexDtor(&nacl_ldt_mutex);
 }
 
 /*
  * Find a free selector.  Always invoked while holding nacl_ldt_mutex.
  */
-static int NaClFindUnusedEntryNumber() {
+static int NaClFindUnusedEntryNumber(void) {
   int size = sizeof(struct LdtEntry) * LDT_ENTRIES;
   struct LdtEntry *entries = malloc(size);
   int i;

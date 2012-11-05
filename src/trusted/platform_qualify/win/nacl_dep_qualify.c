@@ -33,7 +33,7 @@ int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size) {
 /*
  * Returns 1 if Data Execution Prevention is present and working.
  */
-int NaClAttemptToExecuteData() {
+int NaClAttemptToExecuteData(void) {
   int result;
   char *thunk_buffer = malloc(64);
   if (NULL == thunk_buffer) {

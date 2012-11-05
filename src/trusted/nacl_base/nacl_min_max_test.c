@@ -9,7 +9,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 
-int main() {
+int main(void) {
   int num_errors = 0;
 
 #define TEST(T, M, V, fmt) do {                                \

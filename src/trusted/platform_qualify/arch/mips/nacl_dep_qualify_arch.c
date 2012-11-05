@@ -13,7 +13,7 @@
 #define INST_JR_RA 0x3E00008
 #define INST_NOP   0x0000000
 
-int NaClCheckDEP() {
+int NaClCheckDEP(void) {
   /*
    * We require DEP, so forward this call to the OS-specific check routine.
    */

@@ -60,7 +60,7 @@ static int IsEnvironmentVariableSet(char const *env_name) {
   return NULL != getenv(env_name);
 }
 
-static int ShouldEnableDynamicLoading() {
+static int ShouldEnableDynamicLoading(void) {
   return !IsEnvironmentVariableSet("NACL_DISABLE_DYNAMIC_LOADING");
 }
 

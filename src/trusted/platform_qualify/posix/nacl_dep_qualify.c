@@ -31,7 +31,7 @@ static void signal_catch(int sig) {
   siglongjmp(try_state, sig);
 }
 
-static void setup_signals() {
+static void setup_signals(void) {
   try_sigaction.sa_handler = signal_catch;
   sigemptyset(&try_sigaction.sa_mask);
   try_sigaction.sa_flags = SA_RESETHAND;
@@ -39,7 +39,7 @@ static void setup_signals() {
   (void) sigaction(EXPECTED_SIGNAL, &try_sigaction, &previous_sigaction);
 }
 
-static void restore_signals() {
+static void restore_signals(void) {
   (void) sigaction(EXPECTED_SIGNAL, &previous_sigaction, 0);
 }
 
@@ -63,7 +63,7 @@ int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size) {
 /*
  * Returns 1 if Data Execution Prevention is present and working.
  */
-int NaClAttemptToExecuteData() {
+int NaClAttemptToExecuteData(void) {
   int result;
   char *thunk_buffer = malloc(64);
   if (NULL == thunk_buffer) {

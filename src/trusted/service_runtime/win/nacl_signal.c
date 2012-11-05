@@ -33,7 +33,7 @@ void NaClSignalHandlerInitPlatform(void) {
 void NaClSignalHandlerFiniPlatform(void) {
 }
 
-void NaClSignalAssertNoHandlers() {
+void NaClSignalAssertNoHandlers(void) {
   /*
    * Windows has no direct equivalent of Unix signal handlers.  There
    * is no interface for checking that no fault handlers are registered.

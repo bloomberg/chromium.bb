@@ -25,7 +25,7 @@ EXTERN_C_BEGIN
  * important enough to check at every startup, and tests that check aspects of
  * the system that may be subject to change.
  */
-NaClErrorCode NaClRunSelQualificationTests();
+NaClErrorCode NaClRunSelQualificationTests(void);
 
 EXTERN_C_END
 

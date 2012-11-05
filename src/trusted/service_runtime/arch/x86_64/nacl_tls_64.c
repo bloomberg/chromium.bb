@@ -25,7 +25,7 @@ static struct NaClMutex gNaClTlsMu;
 static int gNaClThreadIdxInUse[NACL_THREAD_MAX];  /* bool */
 static size_t const kNumThreads = NACL_ARRAY_SIZE_UNSAFE(gNaClThreadIdxInUse);
 
-static void NaClThreadStartupCheck() {
+static void NaClThreadStartupCheck(void) {
   /*
    * really only needed for OSX -- make sure that the register
    * size does not exceed the size of a void*.
@@ -42,7 +42,7 @@ static void NaClThreadStartupCheck() {
  * (0) as an error.
  */
 
-static int NaClThreadIdxInit () {
+static int NaClThreadIdxInit (void) {
   size_t i;
 
   for (i = 0; i < kNumThreads; i++) {
@@ -56,7 +56,7 @@ static int NaClThreadIdxInit () {
   return 1;
 }
 
-static void NaClThreadIdxFini() {
+static void NaClThreadIdxFini(void) {
   NaClMutexDtor(&gNaClTlsMu);
 }
 
@@ -66,7 +66,7 @@ static void NaClThreadIdxFini() {
  * array and array indexing is zero-based, we just skip the first
  * entry.
  */
-static int NaClThreadIdxAllocate() {
+static int NaClThreadIdxAllocate(void) {
   size_t i;
 
   NaClXMutexLock(&gNaClTlsMu);
@@ -146,7 +146,7 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
 pthread_key_t nacl_thread_info_key;
 uint32_t nacl_thread_index_tls_offset;
 
-int NaClTlsInit() {
+int NaClTlsInit(void) {
   int errnum;
 
   /*
@@ -202,7 +202,7 @@ int NaClTlsInit() {
   return 1;
 }
 
-void NaClTlsFini() {
+void NaClTlsFini(void) {
   int errnum = pthread_key_delete(nacl_thread_info_key);
   if (0 != errnum) {
     NaClLog(LOG_FATAL,
@@ -256,7 +256,7 @@ uint32_t NaClTlsGetIdx(void) {
 THREAD uint32_t nacl_thread_index;
 /* encoded index; 0 is used to indicate error */
 
-int NaClTlsInit() {
+int NaClTlsInit(void) {
 
   NaClThreadStartupCheck();
 
@@ -266,7 +266,7 @@ int NaClTlsInit() {
   return 1;
 }
 
-void NaClTlsFini() {
+void NaClTlsFini(void) {
   NaClThreadIdxFini();
 }
 

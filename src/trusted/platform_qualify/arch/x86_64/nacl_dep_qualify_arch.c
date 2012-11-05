@@ -16,7 +16,7 @@
 /* Assembled equivalent of "ret" */
 #define INST_RET 0xC3
 
-int NaClCheckDEP() {
+int NaClCheckDEP(void) {
   /*
    * We require DEP, so forward this call to the OS-specific check routine.
    */

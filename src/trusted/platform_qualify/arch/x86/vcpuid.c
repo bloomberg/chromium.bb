@@ -38,7 +38,7 @@ const int kMagicConst_POPCNT = 13;
 const int kMagicConst_CRC32  = 0xb906c3ea;
 
 #if !(NACL_WINDOWS && (NACL_BUILD_SUBARCH == 64))
-static int asm_HasMMX() {
+static int asm_HasMMX(void) {
   volatile int before, after;
   before = kMagicConst;
 #if defined(__GNUC__)
@@ -65,7 +65,7 @@ static int asm_HasMMX() {
 }
 
 /* TODO(brad): Test this routine on a machine with 3DNow */
-static int asm_Has3DNow() {
+static int asm_Has3DNow(void) {
   volatile int before, after;
   before = kMagicConst;
 #if defined(__GNUC__)
@@ -94,7 +94,7 @@ static int asm_Has3DNow() {
 }
 
 
-static int asm_HasSSE() {
+static int asm_HasSSE(void) {
   volatile int before, after;
   before = kMagicConst;
   after = 0;
@@ -116,7 +116,7 @@ static int asm_HasSSE() {
   return (after == kMagicConst);
 }
 
-static int asm_HasSSE2() {
+static int asm_HasSSE2(void) {
   volatile int before, after;
   before = kMagicConst;
 #if defined(__GNUC__)
@@ -142,7 +142,7 @@ static int asm_HasSSE2() {
   return (after == kMagicConst);
 }
 
-static int asm_HasSSE3() {
+static int asm_HasSSE3(void) {
   volatile int before, after;
   after = 0;
   before = kMagicConst;
@@ -169,7 +169,7 @@ static int asm_HasSSE3() {
   return (after == kMagicConst);
 }
 
-static int asm_HasSSSE3() {
+static int asm_HasSSSE3(void) {
   volatile int after;
 #if defined(__GNUC__)
   __asm__ volatile("mov $0x0000ffff, %%eax  \n\t"
@@ -199,7 +199,7 @@ static int asm_HasSSSE3() {
   return (after == 1);
 }
 
-static int asm_HasSSE41() {
+static int asm_HasSSE41(void) {
   volatile int before, after;
   before = kMagicConst;
 #if defined(__GNUC__)
@@ -234,7 +234,7 @@ static int asm_HasSSE41() {
   return (after == kMagicConst_ROUNDSS);
 }
 
-static int asm_HasSSE42() {
+static int asm_HasSSE42(void) {
   volatile int after;
 #if defined(__GNUC__)
   __asm__ volatile("mov $0x0000ffff, %%eax  \n\t"
@@ -265,7 +265,7 @@ static int asm_HasSSE42() {
   return (after == kMagicConst_CRC32);
 }
 
-static int asm_HasPOPCNT() {
+static int asm_HasPOPCNT(void) {
   volatile int before, after;
   before = kMagicConst;
 #if defined(__GNUC__)
@@ -296,7 +296,7 @@ static int asm_HasPOPCNT() {
   return (after == kMagicConst_POPCNT);
 }
 
-static int asm_HasCMOV() {
+static int asm_HasCMOV(void) {
   volatile int before, after;
   before = kMagicConst;
 #if defined(__GNUC__)
@@ -322,7 +322,7 @@ static int asm_HasCMOV() {
   return (after == kMagicConst);
 }
 
-static int asm_HasTSC() {
+static int asm_HasTSC(void) {
   uint32_t _eax, _edx;
   _eax = 0;
   _edx = 0;
@@ -343,7 +343,7 @@ static int asm_HasTSC() {
   return ((_eax | _edx) != 0);
 }
 
-static int asm_HasX87() {
+static int asm_HasX87(void) {
 #if defined(__GNUC__)
   __asm__ volatile("fld1          \n\t"
                    "fstp %st(0)    \n\t");
@@ -361,7 +361,7 @@ static int asm_HasX87() {
 
 #if 0
 /* I'm having some trouble with my cmpxchg8b instruction */
-static int asm_HasCX8() {
+static int asm_HasCX8(void) {
   uint32_t _eax, _ebx, _ecx, _edx;
   uint64_t foo64 = 0;
   _eax = 0;
@@ -421,7 +421,7 @@ void  all_sigs(struct sigaction *new_action,
   (void) sigaction(SIGTSTP, &ign, 0);
 }
 
-static void SignalInit() {
+static void SignalInit(void) {
   sawbadinstruction = 0;
   crash_detect.sa_handler = handler_load;
   sigemptyset(&crash_detect.sa_mask);
@@ -429,11 +429,11 @@ static void SignalInit() {
   all_sigs(&crash_detect, 0);
 }
 
-static void SetSawBadInst() {
+static void SetSawBadInst(void) {
   sawbadinstruction = 1;
 }
 
-static int SawBadInst() {
+static int SawBadInst(void) {
   return sawbadinstruction != 0;
 }
 
@@ -503,7 +503,7 @@ static void PrintFail(const char *why) {
 }
 
 #define TEST_NEGATIVE_CASE 0
-int CPUIDImplIsValid() {
+int CPUIDImplIsValid(void) {
   int rcode = 0;
   NaClCPUFeaturesX86 cpuf;
   NaClGetCurrentCPUFeatures(&cpuf);

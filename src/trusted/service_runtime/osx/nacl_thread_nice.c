@@ -24,7 +24,7 @@
  * CAHostTimeBase::ConvertFromNanos(uint64 inNanos) in CAHostTimeBase.h
  */
 static struct mach_timebase_info gTimeBase;
-void NaClThreadNiceInit() {
+void NaClThreadNiceInit(void) {
   if (mach_timebase_info(&gTimeBase) != KERN_SUCCESS) {
     NaClLog(LOG_WARNING, "mach_timebase_info failed\n");
     gTimeBase.numer = 1;

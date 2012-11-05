@@ -13,9 +13,9 @@
 #if (NACL_WINDOWS && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && \
      NACL_BUILD_SUBARCH == 64)
 
-void NaClPatchWindowsExceptionDispatcher();
+void NaClPatchWindowsExceptionDispatcher(void);
 
-uint8_t *NaClGetKiUserExceptionDispatcher();
+uint8_t *NaClGetKiUserExceptionDispatcher(void);
 
 extern char NaCl_exception_dispatcher_exit_fast[];
 extern char NaCl_exception_dispatcher_exit_fast_end[];

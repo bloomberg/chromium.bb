@@ -28,16 +28,16 @@ uint16_t  nacl_global_cs = 0;
 uint16_t  nacl_global_ds = 0;
 
 
-void NaClInitGlobals() {
+void NaClInitGlobals(void) {
   nacl_global_cs = NaClGetCs();
   nacl_global_ds = NaClGetDs();
 }
 
-uint16_t NaClGetGlobalDs() {
+uint16_t NaClGetGlobalDs(void) {
   return nacl_global_ds;
 }
 
-uint16_t NaClGetGlobalCs() {
+uint16_t NaClGetGlobalCs(void) {
   return nacl_global_cs;
 }
 

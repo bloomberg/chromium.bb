@@ -359,7 +359,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 }
 
 
-void NaClSignalHandlerInitPlatform() {
+void NaClSignalHandlerInitPlatform(void) {
   struct sigaction sa;
   unsigned int a;
 
@@ -391,7 +391,7 @@ void NaClSignalHandlerInitPlatform() {
   }
 }
 
-void NaClSignalHandlerFiniPlatform() {
+void NaClSignalHandlerFiniPlatform(void) {
   unsigned int a;
 
   /* Remove all handlers */
@@ -410,7 +410,7 @@ void NaClSignalHandlerFiniPlatform() {
  * triggered from untrusted code.  For background, see:
  * http://code.google.com/p/nativeclient/issues/detail?id=1607
  */
-void NaClSignalAssertNoHandlers() {
+void NaClSignalAssertNoHandlers(void) {
   unsigned int index;
   for (index = 0; index < NACL_ARRAY_SIZE(s_Signals); index++) {
     int signum = s_Signals[index];

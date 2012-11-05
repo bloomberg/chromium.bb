@@ -17,11 +17,11 @@
 
 static int g_counter = 0;
 
-void CauseFault() {
+void CauseFault(void) {
   *(int *) 0 = 0;
 }
 
-void ReplacementHandler() {
+void ReplacementHandler(void) {
   printf("In replacement handler (%i)\n", g_counter++);
   if (g_counter < 5) {
     /*
@@ -40,7 +40,7 @@ void ReplacementHandler() {
   }
 }
 
-int main() {
+int main(void) {
   HMODULE ntdll;
   uint8_t *handler;
   DWORD old_prot;

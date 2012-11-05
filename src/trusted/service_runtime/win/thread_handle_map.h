@@ -27,7 +27,7 @@ typedef struct {
 
 #define THREAD_HANDLE_MAP_INIT_SIZE 4
 
-ThreadHandleMap *CreateThreadHandleMap();
+ThreadHandleMap *CreateThreadHandleMap(void);
 void DestroyThreadHandleMap(ThreadHandleMap *map);
 int ThreadHandleMapPut(ThreadHandleMap *map,
                        DWORD thread_id,

@@ -24,7 +24,7 @@ EXTERN_C_BEGIN
 struct NaClApp;
 struct NaClSignalContext;
 
-void NaClInitGlobals();
+void NaClInitGlobals(void);
 
 uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext *th_ctx);
 

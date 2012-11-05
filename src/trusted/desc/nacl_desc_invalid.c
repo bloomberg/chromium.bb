@@ -78,7 +78,7 @@ static struct NaClDescVtbl const kNaClDescInvalidVtbl = {
 static struct NaClMutex *mutex = NULL;
 static struct NaClDescInvalid *singleton;
 
-void NaClDescInvalidInit() {
+void NaClDescInvalidInit(void) {
   mutex = (struct NaClMutex *) malloc(sizeof(*mutex));
   if (NULL == mutex) {
     NaClLog(LOG_FATAL, "Cannot allocate NaClDescInvalid mutex\n");
@@ -90,7 +90,7 @@ void NaClDescInvalidInit() {
   }
 }
 
-void NaClDescInvalidFini() {
+void NaClDescInvalidFini(void) {
   if (NULL != mutex) {
     NaClMutexDtor(mutex);
     free(mutex);
@@ -98,7 +98,7 @@ void NaClDescInvalidFini() {
   }
 }
 
-struct NaClDescInvalid const *NaClDescInvalidMake() {
+struct NaClDescInvalid const *NaClDescInvalidMake(void) {
   NaClXMutexLock(mutex);
   if (NULL == singleton) {
     do {

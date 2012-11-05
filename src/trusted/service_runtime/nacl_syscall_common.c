@@ -265,7 +265,7 @@ void NaClInsecurelyBypassAllAclChecks(void) {
   NaClAclBypassChecks = 1;
 }
 
-int NaClHighResolutionTimerEnabled() {
+int NaClHighResolutionTimerEnabled(void) {
   return NaClAclBypassChecks;
 }
 

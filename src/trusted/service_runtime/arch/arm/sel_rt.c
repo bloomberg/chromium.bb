@@ -13,7 +13,7 @@
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 
-void NaClInitGlobals() {
+void NaClInitGlobals(void) {
    NaClLog(2, "NaClInitGlobals\n");
   /* intentionally left empty */
 }

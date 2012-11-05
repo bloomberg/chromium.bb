@@ -8,6 +8,6 @@
 #ifndef SERVICE_RUNTIME_NACL_SYSCALL_H__
 #define SERVICE_RUNTIME_NACL_SYSCALL_H__
 
-extern int NaClSyscallSeg();
+extern int NaClSyscallSeg(void);
 
 #endif

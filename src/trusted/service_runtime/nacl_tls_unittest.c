@@ -47,7 +47,7 @@ struct ThreadData {
 };
 
 /* Initializes NaCl modules. */
-static void Init() {
+static void Init(void) {
   const char *nacl_verbosity = getenv("NACLVERBOSITY");
 
   NaClLogModuleInit();
@@ -58,13 +58,13 @@ static void Init() {
 }
 
 /* Shuts down NaCl modules. */
-static void Fini() {
+static void Fini(void) {
   NaClTimeFini();
   NaClLogModuleFini();
 }
 
 /* Prints an error message and exits with "failure" status. */
-static void ErrorExit() {
+static void ErrorExit(void) {
   NaClLog(LOG_ERROR, "TEST FAILED\n");
   Fini();
   exit(1);
@@ -173,7 +173,7 @@ static int MyWaitForThreadExit(HANDLE handle) {
 #endif
 
 /* Tests that threads can access TLS. */
-int main() {
+int main(void) {
 #define NUM_THREADS (10)
 
   int i;

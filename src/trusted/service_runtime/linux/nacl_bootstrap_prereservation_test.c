@@ -14,7 +14,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
-size_t GetProcSysVmMmapMinAddr() {
+size_t GetProcSysVmMmapMinAddr(void) {
   FILE *fp;
   char buf[32];
   size_t min_addr = 0;
@@ -43,7 +43,7 @@ size_t GetProcSysVmMmapMinAddr() {
  * in the address space above vm.mmap_min_addr of the process running this
  * program by examining the file /proc/self/maps.
  */
-size_t FindMinUnreservedAddress() {
+size_t FindMinUnreservedAddress(void) {
   FILE *fp;
   char buf[256];
   int result;

@@ -146,7 +146,7 @@ static void WriteJump32(uint8_t *code, uint8_t *jump_target) {
   CHECK(instruction_end + *(int32_t *) &code[1] == jump_target);
 }
 
-uint8_t *NaClGetKiUserExceptionDispatcher() {
+uint8_t *NaClGetKiUserExceptionDispatcher(void) {
   uint8_t *handler;
   HMODULE ntdll = GetModuleHandleA("ntdll.dll");
   if (ntdll == NULL) {
@@ -163,7 +163,7 @@ uint8_t *NaClGetKiUserExceptionDispatcher() {
   return handler;
 }
 
-int NaClPatchWindowsExceptionDispatcherWithCheck() {
+int NaClPatchWindowsExceptionDispatcherWithCheck(void) {
   uint8_t *ntdll_routine = NaClGetKiUserExceptionDispatcher();
   uint8_t *intercept_code;
   uint8_t *dest;
@@ -274,7 +274,7 @@ int NaClPatchWindowsExceptionDispatcherWithCheck() {
   return 1; /* Success */
 }
 
-void NaClPatchWindowsExceptionDispatcherToFailFast() {
+void NaClPatchWindowsExceptionDispatcherToFailFast(void) {
   DWORD old_prot;
   uint8_t *patch_bytes = NaCl_exception_dispatcher_exit_fast;
   size_t patch_size = (NaCl_exception_dispatcher_exit_fast_end -
@@ -295,7 +295,7 @@ void NaClPatchWindowsExceptionDispatcherToFailFast() {
   }
 }
 
-void NaClPatchWindowsExceptionDispatcher() {
+void NaClPatchWindowsExceptionDispatcher(void) {
   /*
    * We first try to apply the smarter patch that can recover from
    * trusted crashes, but if NTDLL contains unfamiliar code, we fall

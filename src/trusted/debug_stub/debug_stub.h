@@ -11,14 +11,14 @@
 
 EXTERN_C_BEGIN
 
-void NaClDebugStubInit();
-void NaClDebugStubFini();
+void NaClDebugStubInit(void);
+void NaClDebugStubFini(void);
 
 /*
  * Platform-specific init/fini functions
  */
-void NaClDebugStubPlatformInit();
-void NaClDebugStubPlatformFini();
+void NaClDebugStubPlatformInit(void);
+void NaClDebugStubPlatformFini(void);
 
 EXTERN_C_END
 

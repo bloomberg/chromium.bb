@@ -13,12 +13,12 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-int NaClTlsInit() {
+int NaClTlsInit(void) {
   return NaClLdtInit();
 }
 
 
-void NaClTlsFini() {
+void NaClTlsFini(void) {
   NaClLdtFini();
 }
 

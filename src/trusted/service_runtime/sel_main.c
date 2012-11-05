@@ -116,7 +116,7 @@ int ImportModeMap(char opt) {
   /* NOTREACHED */
 }
 
-static void PrintUsage() {
+static void PrintUsage(void) {
   /* NOTE: this is broken up into multiple statements to work around
            the constant string size limit */
   fprintf(stderr,

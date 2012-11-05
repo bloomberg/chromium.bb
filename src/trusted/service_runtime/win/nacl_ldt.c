@@ -21,7 +21,7 @@
 /*
  * A static helper for finding unused LDT entry.
  */
-static int NaClFindUnusedEntryNumber();
+static int NaClFindUnusedEntryNumber(void);
 
 /* struct LdtEntry is a structure that is laid out exactly as the segment
  * descriptors described in the Intel reference manuals.  This is needed
@@ -71,7 +71,7 @@ static NTSETLDT set_ldt_entries;
 
 static struct NaClMutex nacl_ldt_mutex;
 
-int NaClLdtInitPlatformSpecific() {
+int NaClLdtInitPlatformSpecific(void) {
   HMODULE hmod = GetModuleHandleA("ntdll.dll");
   /*
    * query_information_process is used to examine LDT entries to find a free
@@ -112,7 +112,7 @@ int NaClLdtInitPlatformSpecific() {
   return NaClMutexCtor(&nacl_ldt_mutex);
 }
 
-void NaClLdtFiniPlatformSpecific() {
+void NaClLdtFiniPlatformSpecific(void) {
   NaClMutexDtor(&nacl_ldt_mutex);
 }
 
@@ -386,7 +386,7 @@ void NaClLdtDeleteSelector(uint16_t selector) {
 /*
  * Find a free selector.  Always invoked while holding nacl_ldt_mutex.
  */
-static int NaClFindUnusedEntryNumber() {
+static int NaClFindUnusedEntryNumber(void) {
   int index;
   int retval;
 

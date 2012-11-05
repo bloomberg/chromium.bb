@@ -68,12 +68,12 @@ static int VerifyCpuList(const char* const cpulist[], int n) {
 }
 
 
-int NaCl_VerifyBlacklist() {
+int NaCl_VerifyBlacklist(void) {
   return VerifyCpuList(kNaclCpuBlacklist, NACL_ARRAY_SIZE(kNaclCpuBlacklist));
 }
 
 
-int NaCl_VerifyWhitelist() {
+int NaCl_VerifyWhitelist(void) {
   return VerifyCpuList(kNaclCpuWhitelist, NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
@@ -98,7 +98,7 @@ int NaCl_CPUIsBlacklisted(const char *myid) {
 }
 
 
-int NaCl_ThisCPUIsWhitelisted() {
+int NaCl_ThisCPUIsWhitelisted(void) {
   NaClCPUData data;
   const char* myid;
   NaClCPUDataGet(&data);
@@ -108,7 +108,7 @@ int NaCl_ThisCPUIsWhitelisted() {
                      NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
-int NaCl_ThisCPUIsBlacklisted() {
+int NaCl_ThisCPUIsBlacklisted(void) {
   NaClCPUData data;
   const char* myid;
   NaClCPUDataGet(&data);

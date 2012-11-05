@@ -15,7 +15,7 @@
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 
-static void CPUIDWhitelistUnitTests() {
+static void CPUIDWhitelistUnitTests(void) {
   /* blacklist tests */
   if (!NaCl_VerifyBlacklist()) {
     fprintf(stderr, "ERROR: blacklist malformed\n");
@@ -67,7 +67,7 @@ static void CPUIDWhitelistUnitTests() {
   printf("All whitelist unit tests passed\n");
 }
 
-int main() {
+int main(void) {
   NaClCPUData data;
   NaClCPUDataGet(&data);
   printf("white list ID: %s\n", GetCPUIDString(&data));

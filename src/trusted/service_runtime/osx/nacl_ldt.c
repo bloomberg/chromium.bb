@@ -35,11 +35,11 @@ static ldt_entry_t entries[LDT_ENTRIES];
 static struct NaClMutex nacl_ldt_mutex;
 
 
-int NaClLdtInitPlatformSpecific() {
+int NaClLdtInitPlatformSpecific(void) {
   return NaClMutexCtor(&nacl_ldt_mutex);
 }
 
-void NaClLdtFiniPlatformSpecific() {
+void NaClLdtFiniPlatformSpecific(void) {
   NaClMutexDtor(&nacl_ldt_mutex);
 }
 

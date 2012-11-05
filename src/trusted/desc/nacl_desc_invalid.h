@@ -33,11 +33,11 @@ int NaClDescInvalidInternalize(struct NaClDesc               **baseptr,
     NACL_WUR;
 
 /* Initialize and tear down the state for maintaining the singleton. */
-void NaClDescInvalidInit();
-void NaClDescInvalidFini();
+void NaClDescInvalidInit(void);
+void NaClDescInvalidFini(void);
 
 /* A factory method for returning the singleton. */
-struct NaClDescInvalid const *NaClDescInvalidMake();
+struct NaClDescInvalid const *NaClDescInvalidMake(void);
 
 EXTERN_C_END
 

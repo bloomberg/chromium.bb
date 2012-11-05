@@ -15,7 +15,7 @@ EXTERN_C_BEGIN
 /*
  * Returns 1 if the operating system can run Native Client modules.
  */
-int NaClOsIsSupported();
+int NaClOsIsSupported(void);
 
 /*
  * Returns 1 if the operating system is a 64-bit version of Windows.
@@ -27,7 +27,7 @@ int NaClOsIsSupported();
  * sel_ldr(s) are available on this system" directly, instead of
  * strewing such assumptions throughout the code.
  */
-int NaClOsIs64BitWindows();
+int NaClOsIs64BitWindows(void);
 
 EXTERN_C_END
 

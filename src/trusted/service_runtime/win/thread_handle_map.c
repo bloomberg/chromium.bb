@@ -21,7 +21,7 @@
 /*
  * Allocate map.
  */
-ThreadHandleMap *CreateThreadHandleMap() {
+ThreadHandleMap *CreateThreadHandleMap(void) {
   ThreadHandleMap *map = malloc(sizeof(ThreadHandleMap));
   if (map == NULL) {
     return NULL;

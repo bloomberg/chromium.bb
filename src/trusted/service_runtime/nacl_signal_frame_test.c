@@ -31,7 +31,7 @@
  * See http://code.google.com/p/nativeclient/issues/detail?id=1486
  */
 
-int main() {
+int main(void) {
   size_t stack_size = SIGSTKSZ;
   char *stack;
   stack_t st;

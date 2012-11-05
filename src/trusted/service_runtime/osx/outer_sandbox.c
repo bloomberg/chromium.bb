@@ -32,7 +32,7 @@ const char *sandbox_profile =
   "(allow ipc-posix-shm)";
 
 
-void NaClEnableOuterSandbox() {
+void NaClEnableOuterSandbox(void) {
   char *error;
   int rc = sandbox_init(sandbox_profile, 0, &error);
   if (rc != 0) {

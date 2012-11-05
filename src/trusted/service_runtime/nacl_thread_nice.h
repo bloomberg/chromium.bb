@@ -7,7 +7,7 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_THREAD_NICE_H__
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_THREAD_NICE_H__ 1
 
-void NaClThreadNiceInit();
+void NaClThreadNiceInit(void);
 
 int nacl_thread_nice(int nacl_nice);
 

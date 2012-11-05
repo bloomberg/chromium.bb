@@ -12,7 +12,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-int main() {
+int main(void) {
   struct NaClApp app;
   int ret_code;
 

@@ -13,11 +13,11 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 
 /* TODO(gregoryd): These need to come from a header file. */
-extern int NaClLdtInitPlatformSpecific();
-extern int NaClLdtFiniPlatformSpecific();
+extern int NaClLdtInitPlatformSpecific(void);
+extern int NaClLdtFiniPlatformSpecific(void);
 
 
-int NaClLdtInit() {
+int NaClLdtInit(void) {
   if (!NaClLdtInitPlatformSpecific()) {
     return 0;
   }
@@ -30,6 +30,6 @@ int NaClLdtInit() {
 }
 
 
-void NaClLdtFini() {
+void NaClLdtFini(void) {
   NaClLdtFiniPlatformSpecific();
 }

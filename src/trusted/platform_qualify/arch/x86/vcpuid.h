@@ -19,5 +19,5 @@
 /* This routine routines zero if CPUID appears to be implemented correctly,
  * and otherwise non-zero.
  */
-int CPUIDImplIsValid();
+int CPUIDImplIsValid(void);
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_QUALIFY_ARCH_X86_VCPUID_H_ */

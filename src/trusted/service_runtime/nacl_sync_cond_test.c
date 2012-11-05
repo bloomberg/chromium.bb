@@ -106,7 +106,7 @@ void AlarmerDisable(struct AlarmerState *sp) {
   NaClXMutexUnlock(&sp->mu);
 }
 
-static void PrintFailureSuggestions() {
+static void PrintFailureSuggestions(void) {
     printf("If this test is running on a very busy machine,\n"
            " try using the -F flag to increase the timeout\n"
            " (this is a multiplier of actual requested timeout time)\n"
@@ -255,12 +255,12 @@ void FunctorDelays(void                     (*fn)(void *),
 struct NaClMutex        gMu;
 struct NaClCondVar      gCv;
 
-void TestInit() {
+void TestInit(void) {
   NaClXMutexCtor(&gMu);
   NaClXCondVarCtor(&gCv);
 }
 
-void TestFini() {
+void TestFini(void) {
   NaClMutexDtor(&gMu);
   NaClCondVarDtor(&gCv);
 }

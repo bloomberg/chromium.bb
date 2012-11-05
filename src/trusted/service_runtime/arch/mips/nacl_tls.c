@@ -38,7 +38,7 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
 }
 
 
-int NaClTlsInit() {
+int NaClTlsInit(void) {
   size_t i;
 
   NaClLog(2, "NaClTlsInit\n");
@@ -56,13 +56,13 @@ int NaClTlsInit() {
 }
 
 
-void NaClTlsFini() {
+void NaClTlsFini(void) {
   NaClLog(2, "NaClTlsFini\n");
   NaClMutexDtor(&gNaClTlsMu);
 }
 
 
-static int NaClThreadIdxAllocate() {
+static int NaClThreadIdxAllocate(void) {
   int i;
 
   NaClXMutexLock(&gNaClTlsMu);

@@ -36,7 +36,7 @@ static int NaClModifyLdtHasProblems(const char *version) {
 /*
  * Returns 1 if the operating system can run Native Client modules.
  */
-int NaClOsIsSupported() {
+int NaClOsIsSupported(void) {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   struct utsname info;
   if (uname(&info) != 0) {
@@ -71,6 +71,6 @@ int NaClOsIsSupported() {
  * Returns 1 if the operating system is a 64-bit version of
  * Windows.  For now, all of these versions are not supported.
  */
-int NaClOsIs64BitWindows() {
+int NaClOsIs64BitWindows(void) {
   return 0;
 }
