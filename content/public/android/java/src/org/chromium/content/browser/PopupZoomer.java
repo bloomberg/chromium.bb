@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -17,8 +18,10 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region.Op;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +35,8 @@ import org.chromium.content.app.AppResource;
  * canvas and touch events to display the on-demand zoom magnifier.
  */
 class PopupZoomer extends View {
+    private static String LOGTAG = "PopupZoomer";
+
     // The padding between the edges of the view and the popup. Note that there is a mirror
     // constant in content/renderer/render_view_impl.cc which should be kept in sync if
     // this is changed.
@@ -120,23 +125,17 @@ class PopupZoomer extends View {
      */
     private static Drawable getOverlayDrawable(Context context) {
         if (sOverlayDrawable == null) {
-            sOverlayDrawable = context.getResources().getDrawable(
-                    AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY);
+            try {
+                sOverlayDrawable = context.getResources().getDrawable(
+                        AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY);
+            } catch (Resources.NotFoundException e) {
+                Log.w(LOGTAG, "No drawable resource for PopupZoomer overlay found.");
+                sOverlayDrawable = new ColorDrawable();
+            }
             sOverlayPadding = new Rect();
             sOverlayDrawable.getPadding(sOverlayPadding);
         }
         return sOverlayDrawable;
-    }
-
-    /**
-     * Injects the overlay drawable for tests. Needs to be called before any instance
-     * of this class tries to draw.
-     *
-     * @VisibleForTesting
-     */
-    static void injectOverlayDrawable(Drawable drawable) {
-        sOverlayDrawable = drawable;
-        sOverlayPadding = new Rect();
     }
 
     private static float constrain(float amount, float low, float high) {

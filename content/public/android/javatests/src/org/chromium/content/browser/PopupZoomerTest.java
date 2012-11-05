@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.drawable.ColorDrawable;
 import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -67,7 +66,6 @@ public class PopupZoomerTest extends InstrumentationTestCase {
 
     @Override
     public void setUp() {
-        PopupZoomer.injectOverlayDrawable(new ColorDrawable());
         mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
     }
 
