@@ -13,12 +13,12 @@
 
 namespace gfx {
 class Rect;
-class Vector2d;
 }
 
 namespace cc {
 
 class Thread;
+class IntSize;
 struct RenderingStats;
 struct RendererCapabilities;
 
@@ -40,7 +40,7 @@ public:
 
     virtual bool compositeAndReadback(void *pixels, const gfx::Rect&) = 0;
 
-    virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration) = 0;
+    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration) = 0;
 
     virtual void finishAllRendering() = 0;
 

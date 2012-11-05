@@ -76,7 +76,6 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     float arbitraryNumber = 0.352f;
     gfx::Size arbitrarySize = gfx::Size(111, 222);
     gfx::Point arbitraryPoint = gfx::Point(333, 444);
-    gfx::Vector2d arbitraryVector2d = gfx::Vector2d(111, 222);
     gfx::Rect arbitraryRect = gfx::Rect(arbitraryPoint, arbitrarySize);
     gfx::RectF arbitraryRectF = gfx::RectF(arbitraryPointF, gfx::SizeF(1.234f, 5.678f));
     SkColor arbitraryColor = SkColorSetRGB(10, 20, 30);
@@ -95,7 +94,7 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDrawableContentRect(arbitraryRect));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setUpdateRect(arbitraryRectF));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setVisibleContentRect(arbitraryRect));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setMaxScrollOffset(arbitraryVector2d));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setMaxScrollPosition(cc::IntSize(arbitrarySize)));
 
     // Changing these properties affects the entire subtree of layers.
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setAnchorPoint(arbitraryPointF));
@@ -110,9 +109,9 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPosition(arbitraryPointF));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPreserves3D(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setDoubleSided(false)); // constructor initializes it to "true".
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->scrollBy(arbitraryVector2d));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setScrollDelta(gfx::Vector2d()));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setScrollOffset(arbitraryVector2d));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->scrollBy(cc::IntSize(arbitrarySize)));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setScrollDelta(cc::IntSize()));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setScrollPosition(cc::IntPoint(arbitraryPoint)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setImplTransform(arbitraryTransform));
 
     // Changing these properties only affects the layer itself.
@@ -150,8 +149,8 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setPreserves3D(true));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setTransform(arbitraryTransform));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDoubleSided(false)); // constructor initializes it to "true".
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollDelta(gfx::Vector2d()));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollOffset(arbitraryVector2d));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollDelta(cc::IntSize()));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollPosition(cc::IntPoint(arbitraryPoint)));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setImplTransform(arbitraryTransform));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setContentBounds(arbitrarySize));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setContentsScale(arbitraryNumber, arbitraryNumber));

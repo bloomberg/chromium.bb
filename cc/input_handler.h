@@ -11,10 +11,12 @@
 
 namespace gfx {
 class Point;
-class Vector2d;
 }
 
 namespace cc {
+
+class IntPoint;
+class IntSize;
 
 // The InputHandler is a way for the embedders to interact with
 // the impl thread side of the compositor implementation.
@@ -34,7 +36,7 @@ public:
     // can be scrolled, ScrollOnMainThread if the scroll event should instead be
     // delegated to the main thread, or ScrollIgnored if there is nothing to be
     // scrolled at the given coordinates.
-    virtual ScrollStatus scrollBegin(gfx::Point, ScrollInputType) = 0;
+    virtual ScrollStatus scrollBegin(const gfx::Point&, ScrollInputType) = 0;
 
     // Scroll the selected layer starting at the given position. If the scroll
     // type given to scrollBegin was a gesture, then the scroll point and delta
@@ -43,17 +45,17 @@ public:
     // layer in the requested direction, its first ancestor layer that can be
     // scrolled will be moved instead. Should only be called if scrollBegin()
     // returned ScrollStarted.
-    virtual void scrollBy(gfx::Point, gfx::Vector2d) = 0;
+    virtual void scrollBy(const gfx::Point&, const IntSize&) = 0;
 
     // Stop scrolling the selected layer. Should only be called if scrollBegin()
     // returned ScrollStarted.
     virtual void scrollEnd() = 0;
 
     virtual void pinchGestureBegin() = 0;
-    virtual void pinchGestureUpdate(float magnifyDelta, gfx::Point anchor) = 0;
+    virtual void pinchGestureUpdate(float magnifyDelta, const IntPoint& anchor) = 0;
     virtual void pinchGestureEnd() = 0;
 
-    virtual void startPageScaleAnimation(gfx::Vector2d targetOffset,
+    virtual void startPageScaleAnimation(const IntSize& targetPosition,
                                          bool anchorPoint,
                                          float pageScale,
                                          base::TimeTicks startTime,

@@ -7,16 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 
-namespace gfx {
-class Vector2d;
-}
-
 namespace WebKit {
 class WebCompositorOutputSurface;
 }
 
 namespace cc {
 class InputHandler;
+class IntSize;
 
 class LayerTreeHostClient {
 public:
@@ -25,7 +22,7 @@ public:
     virtual void didBeginFrame() = 0;
     virtual void animate(double frameBeginTime) = 0;
     virtual void layout() = 0;
-    virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float pageScale) = 0;
+    virtual void applyScrollAndScale(const IntSize& scrollDelta, float pageScale) = 0;
     virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface() = 0;
     virtual void didRecreateOutputSurface(bool success) = 0;
     virtual scoped_ptr<InputHandler> createInputHandler() = 0;

@@ -34,7 +34,7 @@ public:
     virtual void drawLayersOnThread(cc::LayerTreeHostImpl*) { }
     virtual void animateLayers(cc::LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
     virtual void willAnimateLayers(cc::LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }
-    virtual void applyScrollAndScale(gfx::Vector2d, float) { }
+    virtual void applyScrollAndScale(const cc::IntSize&, float) { }
     virtual void animate(base::TimeTicks monotonicTime) { }
     virtual void layout() { }
     virtual void didRecreateOutputSurface(bool succeeded) { }

@@ -6,21 +6,22 @@
 
 #include "cc/page_scale_animation.h"
 
-#include "cc/geometry.h"
+#include "FloatPoint.h"
+#include "FloatSize.h"
+#include "IntPoint.h"
+#include "IntSize.h"
 #include "ui/gfx/rect_f.h"
-#include "ui/gfx/vector2d_conversions.h"
-#include "ui/gfx/vector2d_f.h"
 
 #include <math.h>
 
 namespace cc {
 
-scoped_ptr<PageScaleAnimation> PageScaleAnimation::create(gfx::Vector2d scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime)
+scoped_ptr<PageScaleAnimation> PageScaleAnimation::create(const IntSize& scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime)
 {
     return make_scoped_ptr(new PageScaleAnimation(scrollStart, pageScaleStart, windowSize, contentSize, startTime));
 }
 
-PageScaleAnimation::PageScaleAnimation(gfx::Vector2d scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime)
+PageScaleAnimation::PageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const gfx::Size& windowSize, const gfx::Size& contentSize, double startTime)
     : m_scrollStart(scrollStart)
     , m_pageScaleStart(pageScaleStart)
     , m_windowSize(windowSize)
@@ -37,13 +38,13 @@ PageScaleAnimation::~PageScaleAnimation()
 {
 }
 
-void PageScaleAnimation::zoomTo(gfx::Vector2d finalScroll, float finalPageScale, double duration)
+void PageScaleAnimation::zoomTo(const IntSize& finalScroll, float finalPageScale, double duration)
 {
     if (m_pageScaleStart != finalPageScale) {
         // For uniform-looking zooming, infer the anchor (point that remains in
         // place throughout the zoom) from the start and end rects.
-        gfx::RectF startRect(gfx::PointAtOffsetFromOrigin(m_scrollStart), m_windowSize);
-        gfx::RectF endRect(gfx::PointAtOffsetFromOrigin(finalScroll), m_windowSize);
+        gfx::RectF startRect(cc::FloatPoint(cc::IntPoint(m_scrollStart)), m_windowSize);
+        gfx::RectF endRect(cc::FloatPoint(cc::IntPoint(finalScroll)), m_windowSize);
         endRect.Scale(m_pageScaleStart / finalPageScale);
 
         // The anchor is the point which is at the same ratio of the sides of
@@ -60,7 +61,7 @@ void PageScaleAnimation::zoomTo(gfx::Vector2d finalScroll, float finalPageScale,
         float ratioX = (startRect.x() - endRect.x()) / (endRect.width() - startRect.width());
         float ratioY = (startRect.y() - endRect.y()) / (endRect.height() - startRect.height());
 
-        gfx::Vector2d anchor(m_windowSize.width() * ratioX, m_windowSize.height() * ratioY);
+        IntSize anchor(m_windowSize.width() * ratioX, m_windowSize.height() * ratioY);
         zoomWithAnchor(anchor, finalPageScale, duration);
     } else {
         // If this is a pure translation, then there exists no anchor. Linearly
@@ -72,17 +73,16 @@ void PageScaleAnimation::zoomTo(gfx::Vector2d finalScroll, float finalPageScale,
     }
 }
 
-void PageScaleAnimation::zoomWithAnchor(gfx::Vector2d anchor, float finalPageScale, double duration)
+void PageScaleAnimation::zoomWithAnchor(const IntSize& anchor, float finalPageScale, double duration)
 {
     m_scrollEnd = m_scrollStart + anchor;
-    m_scrollEnd = gfx::ToFlooredVector2d(cc::ScaleVector2d(m_scrollEnd, finalPageScale / m_pageScaleStart));
+    m_scrollEnd.scale(finalPageScale / m_pageScaleStart);
     m_scrollEnd -= anchor;
 
-    m_scrollEnd = ClampFromBelow(m_scrollEnd, gfx::Vector2d());
+    m_scrollEnd.clampNegativeToZero();
     gfx::SizeF scaledContentSize = m_contentSize.Scale(finalPageScale / m_pageScaleStart);
-    gfx::Vector2d maxScrollOffset = gfx::ToRoundedVector2d(BottomRight(gfx::RectF(scaledContentSize)) - BottomRight(gfx::Rect(m_windowSize)));
-    m_scrollEnd = m_scrollEnd;
-    m_scrollEnd = ClampFromAbove(m_scrollEnd, maxScrollOffset);
+    IntSize maxScrollPosition = roundedIntSize(cc::FloatSize(scaledContentSize) - cc::IntSize(m_windowSize));
+    m_scrollEnd = m_scrollEnd.shrunkTo(maxScrollPosition);
 
     m_anchor = anchor;
     m_pageScaleEnd = finalPageScale;
@@ -90,7 +90,7 @@ void PageScaleAnimation::zoomWithAnchor(gfx::Vector2d anchor, float finalPageSca
     m_anchorMode = true;
 }
 
-gfx::Vector2d PageScaleAnimation::scrollOffsetAtTime(double time) const
+IntSize PageScaleAnimation::scrollOffsetAtTime(double time) const
 {
     return scrollOffsetAtRatio(progressRatioForTime(time));
 }
@@ -113,7 +113,7 @@ float PageScaleAnimation::progressRatioForTime(double time) const
     return (time - m_startTime) / m_duration;
 }
 
-gfx::Vector2d PageScaleAnimation::scrollOffsetAtRatio(float ratio) const
+IntSize PageScaleAnimation::scrollOffsetAtRatio(float ratio) const
 {
     if (ratio <= 0)
         return m_scrollStart;
@@ -121,23 +121,23 @@ gfx::Vector2d PageScaleAnimation::scrollOffsetAtRatio(float ratio) const
         return m_scrollEnd;
 
     float currentPageScale = pageScaleAtRatio(ratio);
-    gfx::Vector2d currentScrollOffset;
+    IntSize currentScrollOffset;
     if (m_anchorMode) {
         // Keep the anchor stable on the screen at the current scale.
-        gfx::Vector2dF documentAnchor = m_scrollStart + m_anchor;
-        documentAnchor.Scale(currentPageScale / m_pageScaleStart);
-        currentScrollOffset = gfx::ToRoundedVector2d(documentAnchor - m_anchor);
+        IntSize documentAnchor = m_scrollStart + m_anchor;
+        documentAnchor.scale(currentPageScale / m_pageScaleStart);
+        currentScrollOffset = documentAnchor - m_anchor;
     } else {
         // First move both scroll offsets to the current coordinate space.
-        gfx::Vector2dF scaledStartScroll(m_scrollStart);
-        scaledStartScroll.Scale(currentPageScale / m_pageScaleStart);
-        gfx::Vector2dF scaledEndScroll(m_scrollEnd);
-        scaledEndScroll.Scale(currentPageScale / m_pageScaleEnd);
+        FloatSize scaledStartScroll(m_scrollStart);
+        scaledStartScroll.scale(currentPageScale / m_pageScaleStart);
+        FloatSize scaledEndScroll(m_scrollEnd);
+        scaledEndScroll.scale(currentPageScale / m_pageScaleEnd);
 
         // Linearly interpolate between them.
-        gfx::Vector2dF delta = scaledEndScroll - scaledStartScroll;
-        delta.Scale(ratio);
-        currentScrollOffset = gfx::ToRoundedVector2d(scaledStartScroll + delta);
+        FloatSize delta = scaledEndScroll - scaledStartScroll;
+        delta.scale(ratio);
+        currentScrollOffset = roundedIntSize(scaledStartScroll + delta);
     }
 
     return currentScrollOffset;

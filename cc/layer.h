@@ -5,6 +5,7 @@
 #ifndef CC_LAYER_H_
 #define CC_LAYER_H_
 
+#include "IntPoint.h"
 #include "Region.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
@@ -128,11 +129,11 @@ public:
     const gfx::Rect& visibleContentRect() const { return m_visibleContentRect; }
     void setVisibleContentRect(const gfx::Rect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }
 
-    void setScrollOffset(gfx::Vector2d);
-    gfx::Vector2d scrollOffset() const { return m_scrollOffset; }
+    void setScrollPosition(const IntPoint&);
+    const IntPoint& scrollPosition() const { return m_scrollPosition; }
 
-    void setMaxScrollOffset(gfx::Vector2d);
-    gfx::Vector2d maxScrollOffset() const { return m_maxScrollOffset; }
+    void setMaxScrollPosition(const IntSize&);
+    const IntSize& maxScrollPosition() const { return m_maxScrollPosition; }
 
     void setScrollable(bool);
     bool scrollable() const { return m_scrollable; }
@@ -155,7 +156,7 @@ public:
     bool forceRenderSurface() const { return m_forceRenderSurface; }
     void setForceRenderSurface(bool);
 
-    gfx::Vector2d scrollDelta() const { return gfx::Vector2d(); }
+    IntSize scrollDelta() const { return IntSize(); }
 
     void setImplTransform(const WebKit::WebTransformationMatrix&);
     const WebKit::WebTransformationMatrix& implTransform() const { return m_implTransform; }
@@ -343,8 +344,8 @@ private:
     // Uses layer's content space.
     gfx::Rect m_visibleContentRect;
 
-    gfx::Vector2d m_scrollOffset;
-    gfx::Vector2d m_maxScrollOffset;
+    IntPoint m_scrollPosition;
+    IntSize m_maxScrollPosition;
     bool m_scrollable;
     bool m_shouldScrollOnMainThread;
     bool m_haveWheelEventHandlers;

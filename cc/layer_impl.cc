@@ -9,7 +9,6 @@
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
 #include "cc/debug_border_draw_quad.h"
-#include "cc/geometry.h"
 #include "cc/layer_sorter.h"
 #include "cc/math_util.h"
 #include "cc/proxy.h"
@@ -180,15 +179,13 @@ ResourceProvider::ResourceId LayerImpl::contentsResourceId() const
     return 0;
 }
 
-gfx::Vector2dF LayerImpl::scrollBy(const gfx::Vector2dF& scroll)
+FloatSize LayerImpl::scrollBy(const FloatSize& scroll)
 {
-    gfx::Vector2dF minDelta = -m_scrollOffset;
-    gfx::Vector2dF maxDelta = m_maxScrollOffset - m_scrollOffset;
+    IntSize minDelta = -toSize(m_scrollPosition);
+    IntSize maxDelta = m_maxScrollPosition - toSize(m_scrollPosition);
     // Clamp newDelta so that position + delta stays within scroll bounds.
-    gfx::Vector2dF newDelta = (m_scrollDelta + scroll);
-    newDelta = ClampFromBelow(newDelta, minDelta);
-    newDelta = ClampFromAbove(newDelta, maxDelta);
-    gfx::Vector2dF unscrolled = m_scrollDelta + scroll - newDelta;
+    FloatSize newDelta = (m_scrollDelta + scroll).expandedTo(minDelta).shrunkTo(maxDelta);
+    FloatSize unscrolled = m_scrollDelta + scroll - newDelta;
 
     if (m_scrollDelta == newDelta)
         return unscrolled;
@@ -626,16 +623,16 @@ void LayerImpl::setContentsScale(float contentsScaleX, float contentsScaleY)
     m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setScrollOffset(gfx::Vector2d scrollOffset)
+void LayerImpl::setScrollPosition(const IntPoint& scrollPosition)
 {
-    if (m_scrollOffset == scrollOffset)
+    if (m_scrollPosition == scrollPosition)
         return;
 
-    m_scrollOffset = scrollOffset;
+    m_scrollPosition = scrollPosition;
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setScrollDelta(const gfx::Vector2dF& scrollDelta)
+void LayerImpl::setScrollDelta(const FloatSize& scrollDelta)
 {
     if (m_scrollDelta == scrollDelta)
         return;
@@ -673,9 +670,9 @@ void LayerImpl::didLoseContext()
 {
 }
 
-void LayerImpl::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
+void LayerImpl::setMaxScrollPosition(const IntSize& maxScrollPosition)
 {
-    m_maxScrollOffset = maxScrollOffset;
+    m_maxScrollPosition = maxScrollPosition;
 
     if (!m_scrollbarAnimationController)
         return;

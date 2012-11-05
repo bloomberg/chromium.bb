@@ -51,10 +51,10 @@ void ScrollbarAnimationControllerLinearFade::didPinchGestureEndAtTime(double mon
 
 void ScrollbarAnimationControllerLinearFade::updateScrollOffsetAtTime(LayerImpl* scrollLayer, double monotonicTime)
 {
-    gfx::Vector2dF previousPos = currentOffset();
+    FloatPoint previousPos = currentPos();
     ScrollbarAnimationController::updateScrollOffsetAtTime(scrollLayer, monotonicTime);
 
-    if (previousPos == currentOffset())
+    if (previousPos == currentPos())
         return;
 
     m_lastAwakenTime = monotonicTime;

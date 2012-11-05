@@ -77,20 +77,20 @@ gfx::Size ScrollbarAnimationController::getScrollLayerBounds(const LayerImpl* sc
 
 void ScrollbarAnimationController::updateScrollOffsetAtTime(LayerImpl* scrollLayer, double)
 {
-    m_currentOffset = scrollLayer->scrollOffset() + scrollLayer->scrollDelta();
+    m_currentPos = scrollLayer->scrollPosition() + scrollLayer->scrollDelta();
     m_totalSize = getScrollLayerBounds(scrollLayer);
-    m_maximum = scrollLayer->maxScrollOffset();
+    m_maximum = scrollLayer->maxScrollPosition();
 
     if (m_horizontalScrollbarLayer) {
-        m_horizontalScrollbarLayer->setCurrentPos(m_currentOffset.x());
+        m_horizontalScrollbarLayer->setCurrentPos(m_currentPos.x());
         m_horizontalScrollbarLayer->setTotalSize(m_totalSize.width());
-        m_horizontalScrollbarLayer->setMaximum(m_maximum.x());
+        m_horizontalScrollbarLayer->setMaximum(m_maximum.width());
     }
 
     if (m_verticalScrollbarLayer) {
-        m_verticalScrollbarLayer->setCurrentPos(m_currentOffset.y());
+        m_verticalScrollbarLayer->setCurrentPos(m_currentPos.y());
         m_verticalScrollbarLayer->setTotalSize(m_totalSize.height());
-        m_verticalScrollbarLayer->setMaximum(m_maximum.y());
+        m_verticalScrollbarLayer->setMaximum(m_maximum.height());
     }
 }
 

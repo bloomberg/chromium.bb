@@ -6,7 +6,10 @@
 
 #include "web_to_ccinput_handler_adapter.h"
 
+#include "cc/stubs/int_point.h"
+#include "cc/stubs/int_size.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandlerClient.h"
+#include "webcore_convert.h"
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, cc_name) \
     COMPILE_ASSERT(int(WebKit::webkit_name) == int(cc::cc_name), mismatching_enums)
@@ -51,7 +54,7 @@ public:
 
     virtual void scrollBy(WebPoint point, WebSize offset) OVERRIDE
     {
-        m_client->scrollBy(point, offset);
+        m_client->scrollBy(point, convert(offset));
     }
 
     virtual void scrollEnd() OVERRIDE
@@ -66,7 +69,7 @@ public:
 
     virtual void pinchGestureUpdate(float magnifyDelta, WebPoint anchor) OVERRIDE
     {
-        m_client->pinchGestureUpdate(magnifyDelta, anchor);
+        m_client->pinchGestureUpdate(magnifyDelta, convert(anchor));
     }
 
     virtual void pinchGestureEnd() OVERRIDE
@@ -82,7 +85,7 @@ public:
     {
         base::TimeTicks startTime = base::TimeTicks::FromInternalValue(startTimeSec * base::Time::kMicrosecondsPerSecond);
         base::TimeDelta duration = base::TimeDelta::FromMicroseconds(durationSec * base::Time::kMicrosecondsPerSecond);
-        m_client->startPageScaleAnimation(targetPosition, anchorPoint, pageScale, startTime, duration);
+        m_client->startPageScaleAnimation(convert(targetPosition), anchorPoint, pageScale, startTime, duration);
     }
 
     virtual void scheduleAnimation() OVERRIDE

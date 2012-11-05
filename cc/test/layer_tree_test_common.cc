@@ -219,7 +219,7 @@ public:
         m_testHooks->layout();
     }
 
-  virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float scale) OVERRIDE
+    virtual void applyScrollAndScale(const IntSize& scrollDelta, float scale) OVERRIDE
     {
         m_testHooks->applyScrollAndScale(scrollDelta, scale);
     }

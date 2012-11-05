@@ -7,9 +7,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
-#include "ui/gfx/size.h"
-#include "ui/gfx/vector2d.h"
-#include "ui/gfx/vector2d_f.h"
+#include "FloatPoint.h"
+#include "IntSize.h"
+
+namespace gfx {
+class Size;
+}
 
 namespace cc {
 
@@ -36,9 +39,9 @@ public:
     void setVerticalScrollbarLayer(ScrollbarLayerImpl* layer) { m_verticalScrollbarLayer = layer; }
     ScrollbarLayerImpl* verticalScrollbarLayer() const { return m_verticalScrollbarLayer; }
 
-    gfx::Vector2dF currentOffset() const { return m_currentOffset; }
+    FloatPoint currentPos() const { return m_currentPos; }
     gfx::Size totalSize() const { return m_totalSize; }
-    gfx::Vector2d maximum() const { return m_maximum; }
+    IntSize maximum() const { return m_maximum; }
 
     virtual void didPinchGestureBeginAtTime(double monotonicTime) { }
     virtual void didPinchGestureUpdateAtTime(double monotonicTime) { }
@@ -55,9 +58,9 @@ private:
     ScrollbarLayerImpl* m_horizontalScrollbarLayer;
     ScrollbarLayerImpl* m_verticalScrollbarLayer;
 
-    gfx::Vector2dF m_currentOffset;
+    FloatPoint m_currentPos;
     gfx::Size m_totalSize;
-    gfx::Vector2d m_maximum;
+    IntSize m_maximum;
 };
 
 } // namespace cc

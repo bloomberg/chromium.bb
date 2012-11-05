@@ -20,7 +20,7 @@ public:
     virtual void didBeginFrame() OVERRIDE { }
     virtual void animate(double monotonicFrameBeginTime) OVERRIDE { }
     virtual void layout() OVERRIDE { }
-    virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float pageScale) OVERRIDE { }
+    virtual void applyScrollAndScale(const IntSize& scrollDelta, float pageScale) OVERRIDE { }
 
     virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE { }

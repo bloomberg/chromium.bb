@@ -289,7 +289,7 @@ WebTransformationMatrix computeScrollCompensationForThisLayer(LayerImpl* scrolli
     partialLayerOriginTransform.multiply(scrollingLayer->implTransform());
 
     WebTransformationMatrix scrollCompensationForThisLayer = partialLayerOriginTransform; // Step 3
-    scrollCompensationForThisLayer.translate(scrollingLayer->scrollDelta().x(), scrollingLayer->scrollDelta().y()); // Step 2
+    scrollCompensationForThisLayer.translate(scrollingLayer->scrollDelta().width(), scrollingLayer->scrollDelta().height()); // Step 2
     scrollCompensationForThisLayer.multiply(partialLayerOriginTransform.inverse()); // Step 1
     return scrollCompensationForThisLayer;
 }
@@ -320,7 +320,7 @@ WebTransformationMatrix computeScrollCompensationMatrixForChildren(LayerImpl* la
     //
 
     // Avoid the overheads (including stack allocation and matrix initialization/copy) if we know that the scroll compensation doesn't need to be reset or adjusted.
-    if (!layer->isContainerForFixedPositionLayers() && layer->scrollDelta().IsZero() && !layer->renderSurface())
+    if (!layer->isContainerForFixedPositionLayers() && layer->scrollDelta().isZero() && !layer->renderSurface())
         return currentScrollCompensationMatrix;
 
     // Start as identity matrix.
@@ -332,7 +332,7 @@ WebTransformationMatrix computeScrollCompensationMatrixForChildren(LayerImpl* la
 
     // If the current layer has a non-zero scrollDelta, then we should compute its local scrollCompensation
     // and accumulate it to the nextScrollCompensationMatrix.
-    if (!layer->scrollDelta().IsZero()) {
+    if (!layer->scrollDelta().isZero()) {
         WebTransformationMatrix scrollCompensationForThisLayer = computeScrollCompensationForThisLayer(layer, parentMatrix);
         nextScrollCompensationMatrix.multiply(scrollCompensationForThisLayer);
     }
@@ -491,7 +491,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, const WebTransform
 
     gfx::Size bounds = layer->bounds();
     gfx::PointF anchorPoint = layer->anchorPoint();
-    gfx::PointF position = layer->position() - layer->scrollDelta();
+    gfx::PointF position = layer->position() - gfx::Vector2d(layer->scrollDelta().width(), layer->scrollDelta().height());
 
     WebTransformationMatrix layerLocalTransform;
     // LT = Tr[origin] * Tr[origin2anchor]

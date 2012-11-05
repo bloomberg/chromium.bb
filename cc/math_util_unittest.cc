@@ -6,8 +6,7 @@
 
 #include "cc/math_util.h"
 
-#include <cmath>
-
+#include "FloatSize.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -137,9 +136,9 @@ TEST(MathUtilTest, verifyEnclosingRectOfVerticesUsesCorrectInitialBounds)
 
 TEST(MathUtilTest, smallestAngleBetweenVectors)
 {
-    gfx::Vector2dF x(1, 0);
-    gfx::Vector2dF y(0, 1);
-    gfx::Vector2dF testVector(0.5, 0.5);
+    FloatSize x(1, 0);
+    FloatSize y(0, 1);
+    FloatSize testVector(0.5, 0.5);
 
     // Orthogonal vectors are at an angle of 90 degress.
     EXPECT_EQ(90, MathUtil::smallestAngleBetweenVectors(x, y));
@@ -155,31 +154,31 @@ TEST(MathUtilTest, smallestAngleBetweenVectors)
     EXPECT_FLOAT_EQ(180, MathUtil::smallestAngleBetweenVectors(testVector, -testVector));
 
     // The test vector is at a known angle.
-    EXPECT_FLOAT_EQ(45, std::floor(MathUtil::smallestAngleBetweenVectors(testVector, x)));
-    EXPECT_FLOAT_EQ(45, std::floor(MathUtil::smallestAngleBetweenVectors(testVector, y)));
+    EXPECT_FLOAT_EQ(45, floor(MathUtil::smallestAngleBetweenVectors(testVector, x)));
+    EXPECT_FLOAT_EQ(45, floor(MathUtil::smallestAngleBetweenVectors(testVector, y)));
 }
 
 TEST(MathUtilTest, vectorProjection)
 {
-    gfx::Vector2dF x(1, 0);
-    gfx::Vector2dF y(0, 1);
-    gfx::Vector2dF testVector(0.3f, 0.7f);
+    FloatSize x(1, 0);
+    FloatSize y(0, 1);
+    FloatSize testVector(0.3f, 0.7f);
 
     // Orthogonal vectors project to a zero vector.
-    EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), MathUtil::projectVector(x, y));
-    EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), MathUtil::projectVector(y, x));
+    EXPECT_EQ(FloatSize(0, 0), MathUtil::projectVector(x, y));
+    EXPECT_EQ(FloatSize(0, 0), MathUtil::projectVector(y, x));
 
     // Projecting a vector onto the orthonormal basis gives the corresponding component of the
     // vector.
-    EXPECT_VECTOR_EQ(gfx::Vector2dF(testVector.x(), 0), MathUtil::projectVector(testVector, x));
-    EXPECT_VECTOR_EQ(gfx::Vector2dF(0, testVector.y()), MathUtil::projectVector(testVector, y));
+    EXPECT_EQ(FloatSize(testVector.width(), 0), MathUtil::projectVector(testVector, x));
+    EXPECT_EQ(FloatSize(0, testVector.height()), MathUtil::projectVector(testVector, y));
 
     // Finally check than an arbitrary vector projected to another one gives a vector parallel to
     // the second vector.
-    gfx::Vector2dF targetVector(0.5, 0.2f);
-    gfx::Vector2dF projectedVector = MathUtil::projectVector(testVector, targetVector);
-    EXPECT_EQ(projectedVector.x() / targetVector.x(),
-              projectedVector.y() / targetVector.y());
+    FloatSize targetVector(0.5, 0.2f);
+    FloatSize projectedVector = MathUtil::projectVector(testVector, targetVector);
+    EXPECT_EQ(projectedVector.width() / targetVector.width(),
+              projectedVector.height() / targetVector.height());
 }
 
 } // namespace

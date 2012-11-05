@@ -9,7 +9,7 @@
 #include "cc/cc_export.h"
 #include "cc/scoped_ptr_vector.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/vector2d.h"
+#include "IntSize.h"
 #include <public/WebTransformationMatrix.h>
 
 namespace cc {
@@ -46,7 +46,7 @@ public:
 
     struct ScrollUpdateInfo {
         int layerId;
-        gfx::Vector2d scrollDelta;
+        IntSize scrollDelta;
     };
 };
 

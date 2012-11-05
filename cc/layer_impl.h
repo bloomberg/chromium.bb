@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "FloatSize.h"
+#include "IntPoint.h"
 #include "Region.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -185,23 +187,23 @@ public:
     float contentsScaleY() const { return m_contentsScaleY; }
     void setContentsScale(float contentsScaleX, float contentsScaleY);
 
-    gfx::Vector2d scrollOffset() const { return m_scrollOffset; }
-    void setScrollOffset(gfx::Vector2d);
+    const IntPoint& scrollPosition() const { return m_scrollPosition; }
+    void setScrollPosition(const IntPoint&);
 
-    gfx::Vector2d maxScrollOffset() const {return m_maxScrollOffset; }
-    void setMaxScrollOffset(gfx::Vector2d);
+    const IntSize& maxScrollPosition() const {return m_maxScrollPosition; }
+    void setMaxScrollPosition(const IntSize&);
 
-    const gfx::Vector2dF& scrollDelta() const { return m_scrollDelta; }
-    void setScrollDelta(const gfx::Vector2dF&);
+    const FloatSize& scrollDelta() const { return m_scrollDelta; }
+    void setScrollDelta(const FloatSize&);
 
     const WebKit::WebTransformationMatrix& implTransform() const { return m_implTransform; }
     void setImplTransform(const WebKit::WebTransformationMatrix& transform);
 
-    const gfx::Vector2d& sentScrollDelta() const { return m_sentScrollDelta; }
-    void setSentScrollDelta(const gfx::Vector2d& sentScrollDelta) { m_sentScrollDelta = sentScrollDelta; }
+    const IntSize& sentScrollDelta() const { return m_sentScrollDelta; }
+    void setSentScrollDelta(const IntSize& sentScrollDelta) { m_sentScrollDelta = sentScrollDelta; }
 
     // Returns the delta of the scroll that was outside of the bounds of the initial scroll
-    gfx::Vector2dF scrollBy(const gfx::Vector2dF& scroll);
+    FloatSize scrollBy(const FloatSize& scroll);
 
     bool scrollable() const { return m_scrollable; }
     void setScrollable(bool scrollable) { m_scrollable = scrollable; }
@@ -314,7 +316,7 @@ private:
     gfx::Size m_contentBounds;
     float m_contentsScaleX;
     float m_contentsScaleY;
-    gfx::Vector2d m_scrollOffset;
+    IntPoint m_scrollPosition;
     bool m_scrollable;
     bool m_shouldScrollOnMainThread;
     bool m_haveWheelEventHandlers;
@@ -354,9 +356,9 @@ private:
     // This is true if the layer should be fixed to the closest ancestor container.
     bool m_fixedToContainerLayer;
 
-    gfx::Vector2dF m_scrollDelta;
-    gfx::Vector2d m_sentScrollDelta;
-    gfx::Vector2d m_maxScrollOffset;
+    FloatSize m_scrollDelta;
+    IntSize m_sentScrollDelta;
+    IntSize m_maxScrollPosition;
     WebKit::WebTransformationMatrix m_implTransform;
 
     // The layer whose coordinate space this layer draws into. This can be

@@ -30,7 +30,7 @@ public:
 
     // Proxy implementation
     virtual bool compositeAndReadback(void *pixels, const gfx::Rect&) OVERRIDE;
-    virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
+    virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
     virtual void finishAllRendering() OVERRIDE;
     virtual bool isStarted() const OVERRIDE;
     virtual bool initializeContext() OVERRIDE;
@@ -111,7 +111,7 @@ private:
     void beginFrameCompleteOnImplThread(CompletionEvent*, ResourceUpdateQueue*);
     void beginFrameAbortedOnImplThread();
     void requestReadbackOnImplThread(ReadbackRequest*);
-    void requestStartPageScaleAnimationOnImplThread(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration);
+    void requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, base::TimeDelta duration);
     void finishAllRenderingOnImplThread(CompletionEvent*);
     void initializeImplOnImplThread(CompletionEvent*, InputHandler*);
     void setSurfaceReadyOnImplThread();
