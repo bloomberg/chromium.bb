@@ -1665,7 +1665,6 @@
         'isolate_dependency_untracked': [
           '../third_party/npapi/npspy/extern/plugin/',
           '../third_party/python_26/Lib/xml/parsers/',
-          '<(PRODUCT_DIR)/extensions/',
           'test/data/devtools/extensions/devtools_experimental/',
           'test/data/devtools/extensions/devtools_extension/',
           'test/data/devtools/extensions/devtools_messaging/',
