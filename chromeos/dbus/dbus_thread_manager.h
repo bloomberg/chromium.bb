@@ -40,6 +40,7 @@ class IBusClient;
 class IBusEngineFactoryService;
 class IBusEngineService;
 class IBusInputContextClient;
+class IBusPanelService;
 class ImageBurnerClient;
 class IntrospectableClient;
 class ModemMessagingClient;
@@ -257,6 +258,10 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // Removes the ibus engine services for |object_path|.
   virtual void RemoveIBusEngineService(const dbus::ObjectPath& object_path) = 0;
+
+  // Returns the ibus panel service, owned by DBusThreadManager. Do not cache
+  // this pointer and use it after DBusThreadManager is shut down.
+  virtual IBusPanelService* GetIBusPanelService() = 0;
 
   virtual ~DBusThreadManager();
 

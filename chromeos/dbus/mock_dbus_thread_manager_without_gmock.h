@@ -23,6 +23,7 @@ class MockIBusClient;
 class MockIBusEngineFactoryService;
 class MockIBusEngineService;
 class MockIBusInputContextClient;
+class MockIBusPanelService;
 
 // This class provides an another mock DBusThreadManager without gmock
 // dependency. This class is used only for places where GMock is not allowed
@@ -71,6 +72,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
       const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void RemoveIBusEngineService(
       const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual IBusPanelService* GetIBusPanelService() OVERRIDE;
 
   MockIBusClient* mock_ibus_client() {
     return mock_ibus_client_.get();
@@ -88,6 +90,10 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return mock_ibus_engine_factory_service_.get();
   }
 
+  MockIBusPanelService* mock_ibus_panel_service() {
+    return mock_ibus_panel_service_.get();
+  }
+
   void set_ibus_bus(dbus::Bus* ibus_bus) {
     ibus_bus_ = ibus_bus;
   }
@@ -97,6 +103,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;
   scoped_ptr<MockIBusEngineService> mock_ibus_engine_service_;
   scoped_ptr<MockIBusEngineFactoryService> mock_ibus_engine_factory_service_;
+  scoped_ptr<MockIBusPanelService> mock_ibus_panel_service_;
 
   dbus::Bus* ibus_bus_;
 
