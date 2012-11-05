@@ -10,7 +10,7 @@
             lang="en" context="default_100_percent" />
   </outputs>
   <release seq="1" allow_pseudo="false">
-    <structures fallback_to_low_resolution="true" first_id="10000">
+    <structures fallback_to_low_resolution="true">
       <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_16" file="chromoting16.png" />
       <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_32" file="chromoting32.png" />
     </structures>
