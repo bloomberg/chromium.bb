@@ -200,7 +200,18 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
   if (event.mountType == 'gdata') {
     if (event.status == 'success') {
       if (event.eventType == 'mount') {
+        // If the mount is not requested, the mount status will not be changed
+        // at mountGData(). Sets it here in such a case.
+        var self = this;
+        var timeout = setTimeout(function() {
+          if (self.getGDataStatus() == VolumeManager.GDataStatus.UNMOUNTED)
+            self.setGDataStatus_(VolumeManager.GDataStatus.MOUNTING);
+          timeout = null;
+        }, VolumeManager.MOUNTING_DELAY);
+
         this.waitGDataLoaded_(event.mountPath, function(success) {
+          if (timeout != null)
+            clearTimeout(timeout);
           this.setGDataStatus_(success ? VolumeManager.GDataStatus.MOUNTED :
                                          VolumeManager.GDataStatus.ERROR);
         }.bind(this));
@@ -279,11 +290,6 @@ VolumeManager.prototype.mountGData = function(successCallback, errorCallback) {
     this.setGDataStatus_(VolumeManager.GDataStatus.UNMOUNTED);
   }
   var self = this;
-  var timeout = setTimeout(function() {
-    if (self.getGDataStatus() == VolumeManager.GDataStatus.UNMOUNTED)
-      self.setGDataStatus_(VolumeManager.GDataStatus.MOUNTING);
-    timeout = null;
-  }, VolumeManager.MOUNTING_DELAY);
   this.mount_('', 'gdata', function(mountPath) {
     this.waitGDataLoaded_(mountPath, function(success, error) {
       if (success) {
@@ -295,8 +301,6 @@ VolumeManager.prototype.mountGData = function(successCallback, errorCallback) {
   }, function(error) {
     if (self.getGDataStatus() != VolumeManager.GDataStatus.MOUNTED)
       self.setGDataStatus_(VolumeManager.GDataStatus.ERROR);
-    if (timeout != null)
-      clearTimeout(timeout);
     errorCallback(error);
   });
 };
