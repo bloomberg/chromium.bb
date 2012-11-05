@@ -332,6 +332,7 @@ void RootWindowController::ShowLauncher() {
   if (!launcher_.get())
     return;
   launcher_->SetVisible(true);
+  status_area_widget_->Show();
 }
 
 void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
