@@ -12,8 +12,9 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "chrome/installer/util/work_item.h"
+#include "chrome/installer/util/installer_util_test_common.h"
 #include "chrome/installer/util/move_tree_work_item.h"
+#include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -386,8 +387,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
 
 // Move one directory from source to destination when destination already
 // exists.
-TEST_F(MoveTreeWorkItemTest,
-       FLAKY_MoveDirectoryDestExistsCheckForDuplicatesFull) {
+TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesFull) {
   // Create two level deep source dir
   FilePath from_dir1(temp_from_dir_.path());
   from_dir1 = from_dir1.AppendASCII("From_Dir1");
@@ -404,25 +404,14 @@ TEST_F(MoveTreeWorkItemTest,
   CreateTextFile(from_file.value(), kTextContent1);
   ASSERT_TRUE(file_util::PathExists(from_file));
 
-  // Create destination path
+  // // Create a file hierarchy identical to the one in the source directory.
   FilePath to_dir(temp_from_dir_.path());
   to_dir = to_dir.AppendASCII("To_Dir");
-  file_util::CreateDirectory(to_dir);
-  ASSERT_TRUE(file_util::PathExists(to_dir));
+  ASSERT_TRUE(installer::test::CopyFileHierarchy(from_dir1, to_dir));
 
-  // Create a sub-directory of the same name as in the source directory.
-  FilePath to_dir2(to_dir);
-  to_dir2 = to_dir2.AppendASCII("From_Dir2");
-  file_util::CreateDirectory(to_dir2);
-  ASSERT_TRUE(file_util::PathExists(to_dir2));
-
-  // Create an identical file in the to sub-directory.
-  FilePath orig_to_file(to_dir2);
-  orig_to_file = orig_to_file.AppendASCII("From_File");
-  CreateTextFile(orig_to_file.value(), kTextContent1);
-  ASSERT_TRUE(file_util::PathExists(orig_to_file));
-
-  // Lock one of the files in the to sub-directory to prevent moves.
+  // Lock one of the files in the to destination directory to prevent moves.
+  FilePath orig_to_file(
+      to_dir.AppendASCII("From_Dir2").AppendASCII("From_File"));
   file_util::MemoryMappedFile mapped_file;
   EXPECT_TRUE(mapped_file.Initialize(orig_to_file));
 
