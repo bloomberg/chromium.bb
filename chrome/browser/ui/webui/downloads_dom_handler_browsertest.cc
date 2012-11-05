@@ -134,6 +134,7 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
 
 // Tests that DownloadsDOMHandler detects new downloads and relays them to the
 // renderer.
+// crbug.com/159390: This test fails when daylight savings time ends.
 IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest,
     DownloadsDOMHandlerTest_Created) {
   MockDownloadsDOMHandler mddh(download_manager());
