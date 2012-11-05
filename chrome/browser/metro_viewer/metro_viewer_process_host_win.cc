@@ -71,8 +71,10 @@ void MetroViewerProcessHost::OnMouseMoved(int32 x, int32 y, int32 modifiers) {
   aura::RemoteRootWindowHostWin::Instance()->OnMouseMoved(x, y, modifiers);
 }
 
-void MetroViewerProcessHost::OnMouseButton(int32 x, int32 y, int32 modifiers) {
-  aura::RemoteRootWindowHostWin::Instance()->OnMouseClick(x, y, modifiers);
+void MetroViewerProcessHost::OnMouseButton(
+    int32 x, int32 y, int32 extra, ui::EventType type, ui::EventFlags flags) {
+  aura::RemoteRootWindowHostWin::Instance()->OnMouseButton(
+      x, y, extra, type, flags);
 }
 
 void MetroViewerProcessHost::OnKeyDown(uint32 vkey,

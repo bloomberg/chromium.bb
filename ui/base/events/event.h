@@ -369,6 +369,7 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
 
   explicit MouseWheelEvent(const base::NativeEvent& native_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
+  MouseWheelEvent(const MouseEvent& mouse_event, int offset);
 
   template <class T>
   MouseWheelEvent(const MouseWheelEvent& model,

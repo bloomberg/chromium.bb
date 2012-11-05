@@ -17,6 +17,9 @@
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/view_prop.h"
 
+// From metro_viewer_messages.h we only care for the enums.
+#include "ui/metro_viewer/metro_viewer_messages.h"
+
 using std::max;
 using std::min;
 
@@ -141,7 +144,6 @@ void RemoteRootWindowHostWin::OnDeviceScaleFactorChanged(
 }
 
 void RemoteRootWindowHostWin::PrepareForShutdown() {
-  NOTIMPLEMENTED();
 }
 
 void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 extra) {
@@ -150,14 +152,19 @@ void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 extra) {
   delegate_->OnHostMouseEvent(&event);
 }
 
-void RemoteRootWindowHostWin::OnMouseClick(int32 x, int32 y, int32 extra) {
+void RemoteRootWindowHostWin::OnMouseButton(
+    int32 x, int32 y, int32 extra, ui::EventType type, ui::EventFlags flags) {
   gfx::Point location(x, y);
-  ui::EventType type = (extra == 1) ?
-      ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED;
-  ui::MouseEvent event(type, location, location, 0);
-  event.SetClickCount(1);
-  event.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
-  delegate_->OnHostMouseEvent(&event);
+  ui::MouseEvent mouse_event(type, location, location, 0);
+  mouse_event.set_flags(flags);
+
+  if (type == ui::ET_MOUSEWHEEL) {
+    ui::MouseWheelEvent wheel_event(mouse_event, extra);
+    delegate_->OnHostMouseEvent(&wheel_event);
+  } else {
+    mouse_event.SetClickCount(1);
+    delegate_->OnHostMouseEvent(&mouse_event);
+  }
 }
 
 void RemoteRootWindowHostWin::OnKeyDown(uint32 vkey,

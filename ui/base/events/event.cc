@@ -275,6 +275,11 @@ MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
   set_type(ET_MOUSEWHEEL);
 }
 
+MouseWheelEvent::MouseWheelEvent(const MouseEvent& mouse_event, int offset)
+    : MouseEvent(mouse_event), offset_(offset) {
+  DCHECK(type() == ET_MOUSEWHEEL);
+}
+
 #if defined(OS_WIN)
 // This value matches windows WHEEL_DELTA.
 // static

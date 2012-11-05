@@ -44,6 +44,9 @@ class ChromeAppViewAsh
   HRESULT OnPointerReleased(winui::Core::ICoreWindow* sender,
                             winui::Core::IPointerEventArgs* args);
 
+  HRESULT OnWheel(winui::Core::ICoreWindow* sender,
+                  winui::Core::IPointerEventArgs* args);
+
   HRESULT OnKeyDown(winui::Core::ICoreWindow* sender,
                     winui::Core::IKeyEventArgs* args);
 
@@ -59,6 +62,7 @@ class ChromeAppViewAsh
   EventRegistrationToken pointermoved_token_;
   EventRegistrationToken pointerpressed_token_;
   EventRegistrationToken pointerreleased_token_;
+  EventRegistrationToken wheel_token_;
   EventRegistrationToken keydown_token_;
   EventRegistrationToken keyup_token_;
   EventRegistrationToken character_received_token_;

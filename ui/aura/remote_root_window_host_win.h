@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window_host.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/win/window_impl.h"
 
 namespace ui {
@@ -23,7 +24,8 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   static RemoteRootWindowHostWin* Create(const gfx::Rect& bounds);
 
   void OnMouseMoved(int32 x, int32 y, int32 extra);
-  void OnMouseClick(int32 x, int32 y, int32 extra);
+  void OnMouseButton(
+      int32 x, int32 y, int32 extra, ui::EventType type, ui::EventFlags flags);
   void OnKeyDown(uint32 vkey,
                  uint32 repeat_count,
                  uint32 scan_code,

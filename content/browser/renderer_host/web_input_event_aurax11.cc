@@ -57,9 +57,6 @@ namespace content {
 
 namespace {
 
-// This matches Firefox behavior.
-const int kPixelsPerTick = 53;
-
 int XKeyEventToWindowsKeyCode(XKeyEvent* event) {
   int windows_key_code =
       ui::KeyboardCodeFromXKeyEvent(reinterpret_cast<XEvent*>(event));
@@ -137,20 +134,6 @@ WebKit::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
 }
 
 }  // namespace
-
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
-    ui::MouseWheelEvent* event) {
-  WebKit::WebMouseWheelEvent webkit_event;
-
-  webkit_event.type = WebKit::WebInputEvent::MouseWheel;
-  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
-  webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
-  webkit_event.deltaY = event->offset();
-  webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
-
-  return webkit_event;
-}
 
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::ScrollEvent* event) {

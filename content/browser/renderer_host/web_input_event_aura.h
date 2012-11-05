@@ -19,6 +19,9 @@ class TouchEvent;
 
 namespace content {
 
+// Used for scrolling. This matches Firefox behavior.
+const int kPixelsPerTick = 53;
+
 CONTENT_EXPORT WebKit::WebMouseEvent MakeWebMouseEvent(
     ui::MouseEvent* event);
 CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(

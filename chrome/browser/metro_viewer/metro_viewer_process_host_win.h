@@ -10,6 +10,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace IPC {
@@ -34,7 +35,8 @@ class MetroViewerProcessHost : public IPC::Listener,
   void OnSetTargetSurface(gfx::NativeViewId target_surface);
   void OnMouseEvent(int32 msg, WPARAM w_param, LPARAM l_param);
   void OnMouseMoved(int32 x, int32 y, int32 modifiers);
-  void OnMouseButton(int32 x, int32 y, int32 modifiers);
+  void OnMouseButton(
+      int32 x, int32 y, int32 extra,ui::EventType type, ui::EventFlags flags);
   void OnKeyDown(uint32 vkey,
                  uint32 repeat_count,
                  uint32 scan_code,

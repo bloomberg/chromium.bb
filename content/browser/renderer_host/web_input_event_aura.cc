@@ -22,8 +22,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     base::NativeEvent native_event);
 #else
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
-    ui::MouseWheelEvent* event);
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event);
@@ -31,7 +29,10 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::ScrollEvent* event);
 #endif
 
-WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event);
+WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(
+    ui::MouseEvent* event);
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+    ui::MouseWheelEvent* event);
 
 // General approach:
 //
@@ -83,8 +84,9 @@ WebKit::WebMouseEvent MakeWebMouseEvent(ui::MouseEvent* event) {
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::MouseWheelEvent* event) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
-  WebKit::WebMouseWheelEvent webkit_event =
-      MakeUntranslatedWebMouseWheelEventFromNativeEvent(event->native_event());
+  WebKit::WebMouseWheelEvent webkit_event = event->native_event().message ?
+      MakeUntranslatedWebMouseWheelEventFromNativeEvent(event->native_event()) :
+      MakeWebMouseWheelEventFromAuraEvent(event);
 #else
   WebKit::WebMouseWheelEvent webkit_event =
       MakeWebMouseWheelEventFromAuraEvent(event);
@@ -216,6 +218,20 @@ WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
       NOTIMPLEMENTED() << "Received unexpected event: " << event->type();
       break;
   }
+
+  return webkit_event;
+}
+
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+    ui::MouseWheelEvent* event) {
+  WebKit::WebMouseWheelEvent webkit_event;
+
+  webkit_event.type = WebKit::WebInputEvent::MouseWheel;
+  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+  webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
+  webkit_event.deltaY = event->offset();
+  webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
 
   return webkit_event;
 }
