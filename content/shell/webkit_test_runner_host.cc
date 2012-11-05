@@ -146,6 +146,11 @@ bool WebKitTestController::PrepareForLayoutTest(
   DCHECK(CalledOnValidThread());
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
+  if (test_url.spec().find("/dumpAsText/") != std::string::npos ||
+      test_url.spec().find("\\dumpAsText\\") != std::string::npos) {
+    dump_as_text_ = true;
+    enable_pixel_dumping_ = false;
+  }
   printer_->reset();
   printer_->PrintTextHeader();
   content::ShellBrowserContext* browser_context =
