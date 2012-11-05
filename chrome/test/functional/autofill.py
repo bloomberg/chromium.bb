@@ -191,8 +191,6 @@ class AutofillTest(pyauto.PyUITest):
     field_nextfield_dict = dict(
         zip(field_list, field_list[1:] + field_list[:1]))
 
-    # Tab pressed for the first time.
-    tab_press.perform()
     # Wait until a field of |field_list| has received the focus.
     self.WaitUntil(lambda:
                    self._driver.switch_to_active_element().id in
