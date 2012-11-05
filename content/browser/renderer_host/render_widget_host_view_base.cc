@@ -216,7 +216,6 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     unsigned long flags = 0;
     const webkit::npapi::WebPluginGeometry& move = moves[i];
     HWND window = move.window;
-    CHECK(WebPluginDelegateImpl::IsPluginDelegateWindow(window));
 
     // As the plugin parent window which lives on the browser UI thread is
     // destroyed asynchronously, it is possible that we have a stale window
@@ -227,6 +226,13 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     HWND cur_parent = ::GetParent(window);
     if (!::IsWindow(window))
       continue;
+
+    if (!WebPluginDelegateImpl::IsPluginDelegateWindow(window)) {
+      // The renderer should only be trying to move plugin windows. However,
+      // this may happen as a result of a race condition (i.e. even after the
+      // check right above), so we ignore it.
+      continue;
+    }
 
     if (oop_plugins) {
       if (cur_parent == WebPluginDelegateImpl::GetDefaultWindowParent()) {
