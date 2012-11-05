@@ -72,7 +72,7 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 
 ShellWindow::CreateParams::CreateParams()
   : frame(ShellWindow::CreateParams::FRAME_CHROME),
-    bounds(-1, -1, kDefaultWidth, kDefaultHeight),
+    bounds(INT_MIN, INT_MIN, INT_MIN, INT_MIN),
     restore_position(true), restore_size(true),
     creator_process_id(0), hidden(false) {
 }
@@ -117,10 +117,15 @@ void ShellWindow::Init(const GURL& url,
       browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
-  native_window_.reset(NativeShellWindow::Create(this, params));
+  gfx::Rect bounds = params.bounds;
 
-  if (!params.hidden)
-    GetBaseWindow()->Show();
+  if (bounds.width() == INT_MIN)
+    bounds.set_width(kDefaultWidth);
+  if (bounds.height() == INT_MIN)
+    bounds.set_height(kDefaultHeight);
+
+  // If left and top are left undefined, the native shell window will center
+  // the window on the main screen in a platform-defined manner.
 
   if (!params.window_key.empty()) {
     window_key_ = params.window_key;
@@ -132,17 +137,22 @@ void ShellWindow::Init(const GURL& url,
       gfx::Rect cached_bounds;
       if (cache->GetGeometry(extension()->id(), params.window_key,
                              &cached_bounds)) {
-        gfx::Rect bounds = native_window_->GetBounds();
-
         if (params.restore_position)
           bounds.set_origin(cached_bounds.origin());
         if (params.restore_size)
           bounds.set_size(cached_bounds.size());
-
-        native_window_->SetBounds(bounds);
       }
     }
   }
+
+  ShellWindow::CreateParams new_params = params;
+  new_params.bounds = bounds;
+
+  native_window_.reset(NativeShellWindow::Create(this, new_params));
+  SaveWindowPosition();
+
+  if (!params.hidden)
+    GetBaseWindow()->Show();
 
   // If the new view is in the same process as the creator, block the created
   // RVH from loading anything until the background page has had a chance to do
@@ -455,6 +465,8 @@ void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
 void ShellWindow::SaveWindowPosition()
 {
   if (window_key_.empty())
+    return;
+  if (!native_window_)
     return;
 
   extensions::ShellWindowGeometryCache* cache =

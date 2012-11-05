@@ -41,7 +41,7 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
       web_contents()->GetView()->GetNativeView();
   gtk_container_add(GTK_CONTAINER(window_), native_view);
 
-  if (params.bounds.x() >= 0 && params.bounds.y() >= 0)
+  if (params.bounds.x() != INT_MIN && params.bounds.y() != INT_MIN)
     gtk_window_move(window_, params.bounds.x(), params.bounds.y());
 
   // This is done to avoid a WM "feature" where setting the window size to

@@ -201,11 +201,11 @@ ShellWindowCocoa::ShellWindowCocoa(ShellWindow* shell_window,
       params.bounds.width(), params.bounds.height());
 
   // If coordinates are < 0, center window on primary screen
-  if (params.bounds.x() < 0) {
+  if (params.bounds.x() == INT_MIN) {
     cocoa_bounds.origin.x =
         floor((NSWidth(main_screen_rect) - NSWidth(cocoa_bounds)) / 2);
   }
-  if (params.bounds.y() < 0) {
+  if (params.bounds.y() == INT_MIN) {
     cocoa_bounds.origin.y =
         floor((NSHeight(main_screen_rect) - NSHeight(cocoa_bounds)) / 2);
   }

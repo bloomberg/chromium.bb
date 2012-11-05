@@ -406,10 +406,12 @@ ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
   gfx::Rect window_bounds =
       window_->non_client_view()->GetWindowBoundsForClientBounds(
           win_params.bounds);
-  window_->SetBounds(window_bounds);
   // Center window if no position was specified.
-  if (win_params.bounds.x() < 0 || win_params.bounds.y() < 0)
+  if (win_params.bounds.x() == INT_MIN || win_params.bounds.y() == INT_MIN) {
     window_->CenterWindow(window_bounds.size());
+  } else {
+    window_->SetBounds(window_bounds);
+  }
 #if defined(OS_WIN) && !defined(USE_AURA)
   std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
       extension()->id());
