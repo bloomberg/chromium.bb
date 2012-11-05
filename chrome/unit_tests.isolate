@@ -485,10 +485,6 @@
           '../net/data/ssl/certificates/ndn.ca.crt',
           '../net/data/ssl/certificates/root_ca_cert.crt',
           '../testing/xvfb.py',
-          '../third_party/hunspell_dictionaries/en-AU-2-4.bdic',
-          '../third_party/hunspell_dictionaries/en-CA-2-4.bdic',
-          '../third_party/hunspell_dictionaries/en-GB-2-4.bdic',
-          '../third_party/hunspell_dictionaries/en-US-2-4.bdic',
           '../third_party/tlslite/tlslite/utils/PyCrypto_AES.py',
           '../third_party/tlslite/tlslite/utils/PyCrypto_RC4.py',
           '../third_party/tlslite/tlslite/utils/PyCrypto_RSAKey.py',
@@ -648,6 +644,8 @@
           'test/data/firefox2_nss_mac/libplc4.dylib',
           'test/data/firefox2_nss_mac/libplds4.dylib',
           'test/data/firefox2_nss_mac/libsoftokn3.dylib',
+          'test/data/firefox2_profile/cert8.db',
+          'test/data/firefox2_profile/key3.db',
           'test/data/firefox3_nss_mac/libfreebl3.dylib',
           'test/data/firefox3_nss_mac/libnspr4.dylib',
           'test/data/firefox3_nss_mac/libnss3.dylib',
@@ -657,6 +655,7 @@
           'test/data/firefox3_nss_mac/libplds4.dylib',
           'test/data/firefox3_nss_mac/libsoftokn3.dylib',
           'test/data/firefox3_nss_mac/libsqlite3.dylib',
+          'test/data/osdd/https.xml',
           'test/data/value_store_db/000005.log',
           'test/data/value_store_db/CURRENT',
           'test/data/value_store_db/MANIFEST-000004',
@@ -867,6 +866,10 @@
     }, {
       'variables': {
         'isolate_dependency_tracked': [
+          '../third_party/hunspell_dictionaries/en-AU-2-4.bdic',
+          '../third_party/hunspell_dictionaries/en-CA-2-4.bdic',
+          '../third_party/hunspell_dictionaries/en-GB-2-4.bdic',
+          '../third_party/hunspell_dictionaries/en-US-2-4.bdic',
           '../third_party/tlslite/tlslite/integration/TLSTwistedProtocolWrapper.py',
           'test/data/extensions/unpacker/bad_image.crx',
           'test/data/extensions/unpacker/bad_path.crx',
