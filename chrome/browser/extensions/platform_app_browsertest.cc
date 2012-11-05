@@ -158,7 +158,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseShellWindow) {
 }
 
 // Tests that platform apps can be launched in incognito mode without crashing.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchAppIncognito) {
+// Times out on ChromeOS: http://crbug.com/159392
+#if defined(OS_CHROMEOS)
+#define MAYBE_LaunchAppIncognito DISABLED_LaunchAppIncognito
+#else
+#define MAYBE_LaunchAppIncognito LaunchAppIncognito
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_LaunchAppIncognito) {
   Browser* browser_incognito = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(), GURL("about:blank"));
 
