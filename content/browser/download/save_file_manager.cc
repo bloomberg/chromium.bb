@@ -239,6 +239,8 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFile* save_file = LookupSaveFile(save_id);
   if (save_file) {
+    DCHECK(save_file->InProgress());
+
     DownloadInterruptReason reason =
         save_file->AppendDataToFile(data->data(), data_len);
     BrowserThread::PostTask(
@@ -269,8 +271,15 @@ void SaveFileManager::SaveFinished(int save_id,
   SaveFileMap::iterator it = save_file_map_.find(save_id);
   if (it != save_file_map_.end()) {
     SaveFile* save_file = it->second;
-  VLOG(20) << " " << __FUNCTION__ << "()"
-           << " save_file = " << save_file->DebugString();
+    // This routine may be called twice for the same from from
+    // SaveePackage::OnReceivedSerializedHtmlData, once for the file
+    // itself, and once when all frames have been serialized.
+    // So we can't assert that the file is InProgress() here.
+    // TODO(rdsmith): Fix this logic and put the DCHECK below back in.
+    // DCHECK(save_file->InProgress());
+
+    VLOG(20) << " " << __FUNCTION__ << "()"
+             << " save_file = " << save_file->DebugString();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&SaveFileManager::OnSaveFinished, this, save_id,
@@ -398,26 +407,25 @@ void SaveFileManager::CancelSave(int save_id) {
   if (it != save_file_map_.end()) {
     SaveFile* save_file = it->second;
 
-    // If the data comes from the net IO thread, then forward the cancel
-    // message to IO thread. If the data comes from other sources, just
-    // ignore the cancel message.
-    if (save_file->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_NET) {
+    if (!save_file->InProgress()) {
+      // We've won a race with the UI thread--we finished the file before
+      // the UI thread cancelled it on us.  Unfortunately, in this situation
+      // the cancel wins, so we need to delete the now detached file.
+      file_util::Delete(save_file->FullPath(), false);
+    } else if (save_file->save_source() ==
+               SaveFileCreateInfo::SAVE_FILE_FROM_NET) {
+      // If the data comes from the net IO thread and hasn't completed
+      // yet, then forward the cancel message to IO thread & cancel the
+      // save locally.  If the data doesn't come from the IO thread,
+      // we can ignore the message.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&SaveFileManager::ExecuteCancelSaveRequest, this,
               save_file->render_process_id(), save_file->request_id()));
-
-      // UI thread will notify the render process to stop sending data,
-      // so in here, we need not to do anything, just close the save file.
-      save_file->Cancel();
-    } else {
-      // If we did not find SaveFile in map, the saving job should either get
-      // data from other sources or have finished.
-      DCHECK(save_file->save_source() !=
-             SaveFileCreateInfo::SAVE_FILE_FROM_NET ||
-             !save_file->InProgress());
     }
-    // Whatever the save file is renamed or not, just delete it.
+
+    // Whatever the save file is complete or not, just delete it.  This
+    // will delete the underlying file if InProgress() is true.
     save_file_map_.erase(it);
     delete save_file;
   }
