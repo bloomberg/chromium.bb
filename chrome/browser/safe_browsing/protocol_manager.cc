@@ -16,7 +16,6 @@
 #include "base/stringprintf.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,11 +45,11 @@ class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
   SBProtocolManagerFactoryImpl() { }
   virtual ~SBProtocolManagerFactoryImpl() { }
   virtual SafeBrowsingProtocolManager* CreateProtocolManager(
-      SafeBrowsingService* sb_service,
+      SafeBrowsingProtocolManagerDelegate* delegate,
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config) OVERRIDE {
     return new SafeBrowsingProtocolManager(
-        sb_service, request_context_getter, config);
+        delegate, request_context_getter, config);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactoryImpl);
@@ -63,21 +62,21 @@ SBProtocolManagerFactory* SafeBrowsingProtocolManager::factory_ = NULL;
 
 // static
 SafeBrowsingProtocolManager* SafeBrowsingProtocolManager::Create(
-    SafeBrowsingService* sb_service,
+    SafeBrowsingProtocolManagerDelegate* delegate,
     net::URLRequestContextGetter* request_context_getter,
     const SafeBrowsingProtocolConfig& config) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!factory_)
     factory_ = new SBProtocolManagerFactoryImpl();
   return factory_->CreateProtocolManager(
-      sb_service, request_context_getter, config);
+      delegate, request_context_getter, config);
 }
 
 SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
-    SafeBrowsingService* sb_service,
+    SafeBrowsingProtocolManagerDelegate* delegate,
     net::URLRequestContextGetter* request_context_getter,
     const SafeBrowsingProtocolConfig& config)
-    : sb_service_(sb_service),
+    : delegate_(delegate),
       request_type_(NO_REQUEST),
       update_error_count_(0),
       gethash_error_count_(0),
@@ -127,8 +126,6 @@ SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
                              safebrowsing_reports_.end());
   safebrowsing_reports_.clear();
 }
-
-// Public API used by the SafeBrowsingService ----------------------------------
 
 // We can only have one update or chunk request outstanding, but there may be
 // multiple GetHash requests pending since we don't want to serialize them and
@@ -219,10 +216,8 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
           static_cast<int>(data.length()),
           &full_hashes);
       if (!parsed_ok) {
-        // If we fail to parse it, we must still inform the SafeBrowsingService
-        // so that it doesn't hold up the user's request indefinitely. Not sure
-        // what to do at that point though!
         full_hashes.clear();
+        // TODO(cbentzel): Should can_cache be set to false here?
       }
     } else {
       HandleGetHashError(Time::Now());
@@ -235,9 +230,9 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
     }
 
-    // Call back the SafeBrowsingService with full_hashes, even if there was a
-    // parse error or an error response code (in which case full_hashes will be
-    // empty). We can't block the user regardless of the error status.
+    // Invoke the callback with full_hashes, even if there was a parse error or
+    // an error response code (in which case full_hashes will be empty). The
+    // caller can't be blocked indefinitely.
     details.callback.Run(full_hashes, can_cache);
 
     hash_requests_.erase(it);
@@ -357,14 +352,14 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       // Handle the case were the SafeBrowsing service tells us to dump our
       // database.
       if (reset) {
-        sb_service_->ResetDatabase();
+        delegate_->ResetDatabase();
         return true;
       }
 
       // Chunks to delete from our storage.  Pass ownership of
       // |chunk_deletes|.
       if (!chunk_deletes->empty())
-        sb_service_->HandleChunkDelete(chunk_deletes.release());
+        delegate_->DeleteChunks(chunk_deletes.release());
 
       break;
     }
@@ -393,7 +388,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       // Chunks to add to storage.  Pass ownership of |chunks|.
       if (!chunks->empty()) {
         chunk_pending_to_write_ = true;
-        sb_service_->HandleChunk(chunk_url.list_name, chunks.release());
+        delegate_->AddChunks(chunk_url.list_name, chunks.release());
       }
 
       break;
@@ -478,7 +473,10 @@ base::TimeDelta SafeBrowsingProtocolManager::GetNextBackOffInterval(
 //              isn't that much overhead. Measure!
 void SafeBrowsingProtocolManager::IssueUpdateRequest() {
   request_type_ = UPDATE_REQUEST;
-  sb_service_->UpdateStarted();
+  delegate_->UpdateStarted();
+  delegate_->GetChunks(
+      base::Bind(&SafeBrowsingProtocolManager::OnGetChunksComplete,
+                 base::Unretained(this)));
 }
 
 void SafeBrowsingProtocolManager::IssueChunkRequest() {
@@ -633,7 +631,7 @@ void SafeBrowsingProtocolManager::HandleGetHashError(const Time& now) {
 void SafeBrowsingProtocolManager::UpdateFinished(bool success) {
   UMA_HISTOGRAM_COUNTS("SB2.UpdateSize", update_size_);
   update_size_ = 0;
-  sb_service_->UpdateFinished(success);
+  delegate_->UpdateFinished(success);
 }
 
 std::string SafeBrowsingProtocolManager::ComposeUrl(
@@ -752,4 +750,7 @@ SafeBrowsingProtocolManager::FullHashDetails::FullHashDetails(
 }
 
 SafeBrowsingProtocolManager::FullHashDetails::~FullHashDetails() {
+}
+
+SafeBrowsingProtocolManagerDelegate::~SafeBrowsingProtocolManagerDelegate() {
 }
