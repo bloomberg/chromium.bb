@@ -163,6 +163,7 @@ def is_dirty_git_tree(cmd):
     return True
   return False
 
+
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   """Return the corresponding git ref if |base_url| together with |glob_spec|
   matches the full |url|.
@@ -426,12 +427,12 @@ class Changelist(object):
     self.GetBranch()  # Poke the lazy loader.
     return self.branchref
 
-  def FetchUpstreamTuple(self):
+  @staticmethod
+  def FetchUpstreamTuple(branch):
     """Returns a tuple containg remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
     """
     remote = '.'
-    branch = self.GetBranch()
     upstream_branch = RunGit(['config', 'branch.%s.merge' % branch],
                              error_ok=True).strip()
     if upstream_branch:
@@ -468,22 +469,28 @@ or verify this branch is set up to track another (via the --track argument to
 
   def GetUpstreamBranch(self):
     if self.upstream_branch is None:
-      remote, upstream_branch = self.FetchUpstreamTuple()
+      remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
       if remote is not '.':
         upstream_branch = upstream_branch.replace('heads', 'remotes/' + remote)
       self.upstream_branch = upstream_branch
     return self.upstream_branch
 
-  def GetRemote(self):
+  def GetRemoteBranch(self):
     if not self._remote:
-      self._remote = self.FetchUpstreamTuple()[0]
-      if self._remote == '.':
-
+      remote, branch = None, self.GetBranch()
+      seen_branches = set()
+      while branch not in seen_branches:
+        seen_branches.add(branch)
+        remote, branch = self.FetchUpstreamTuple(branch)
+        branch = ShortBranchName(branch)
+        if remote != '.' or branch.startswith('refs/remotes'):
+          break
+      else:
         remotes = RunGit(['remote'], error_ok=True).split()
         if len(remotes) == 1:
-          self._remote, = remotes
+          remote, = remotes
         elif 'origin' in remotes:
-          self._remote = 'origin'
+          remote = 'origin'
           logging.warning('Could not determine which remote this change is '
                           'associated with, so defaulting to "%s".  This may '
                           'not be what you want.  You may prevent this message '
@@ -495,7 +502,47 @@ or verify this branch is set up to track another (via the --track argument to
                        'associated with.  You may prevent this message by '
                        'running "git svn info" as documented here:  %s',
                        GIT_INSTRUCTIONS_URL)
+        branch = 'HEAD'
+      if branch.startswith('refs/remotes'):
+        self._remote = (remote, branch)
+      else:
+        self._remote = (remote, 'refs/remotes/%s/%s' % (remote, branch))
     return self._remote
+
+  def GitSanityChecks(self, upstream_git_obj):
+    """Checks git repo status and ensures diff is from local commits."""
+
+    # Verify the commit we're diffing against is in our current branch.
+    upstream_sha = RunGit(['rev-parse', '--verify', upstream_git_obj]).strip()
+    common_ancestor = RunGit(['merge-base', upstream_sha, 'HEAD']).strip()
+    if upstream_sha != common_ancestor:
+      print >> sys.stderr, (
+          'ERROR: %s is not in the current branch.  You may need to rebase '
+          'your tracking branch' % upstream_sha)
+      return False
+
+    # List the commits inside the diff, and verify they are all local.
+    commits_in_diff = RunGit(
+        ['rev-list', '^%s' % upstream_sha, 'HEAD']).splitlines()
+    code, remote_branch = RunGitWithCode(['config', 'gitcl.remotebranch'])
+    remote_branch = remote_branch.strip()
+    if code != 0:
+      _, remote_branch = self.GetRemoteBranch()
+
+    commits_in_remote = RunGit(
+        ['rev-list', '^%s' % upstream_sha, remote_branch]).splitlines()
+
+    common_commits = set(commits_in_diff) & set(commits_in_remote)
+    if common_commits:
+      print >> sys.stderr, (
+          'ERROR: Your diff contains %d commits already in %s.\n'
+          'Run "git log --oneline %s..HEAD" to get a list of commits in '
+          'the diff.  If you are using a custom git flow, you can override'
+          ' the reference used for this check with "git config '
+          'gitcl.remotebranch <git-ref>".' % (
+              len(common_commits), remote_branch, upstream_git_obj))
+      return False
+    return True
 
   def GetGitBaseUrlFromConfig(self):
     """Return the configured base URL from branch.<branchname>.baseurl.
@@ -510,7 +557,7 @@ or verify this branch is set up to track another (via the --track argument to
 
     Returns None if there is no remote.
     """
-    remote = self.GetRemote()
+    remote, _ = self.GetRemoteBranch()
     return RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
 
   def GetIssue(self):
@@ -607,6 +654,9 @@ or verify this branch is set up to track another (via the --track argument to
     self.has_issue = False
 
   def GetChange(self, upstream_branch, author):
+    if not self.GitSanityChecks(upstream_branch):
+      DieWithError('\nGit sanity check failure')
+
     root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip() or '.'
     absroot = os.path.abspath(root)
 
@@ -1018,8 +1068,8 @@ def CMDpresubmit(parser, args):
   if args:
     base_branch = args[0]
   else:
-    # Default to diffing against the "upstream" branch.
-    base_branch = cl.GetUpstreamBranch()
+    # Default to diffing against the common ancestor of the upstream branch.
+    base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
 
   cl.RunHook(committing=not options.upload, upstream_branch=base_branch,
              may_prompt=False, verbose=options.verbose,
@@ -1216,9 +1266,9 @@ def CMDupload(parser, args):
     # TODO(ukai): is it ok for gerrit case?
     base_branch = args[0]
   else:
-    # Default to diffing against the "upstream" branch.
-    base_branch = cl.GetUpstreamBranch()
-    args = [base_branch + "..."]
+    # Default to diffing against common ancestor of upstream branch
+    base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
+    args = [base_branch]
 
   if not options.bypass_hooks:
     hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
@@ -1310,6 +1360,7 @@ def SendUpstream(parser, args, cmd):
              'before attempting to %s.' % (base_branch, cmd))
       return 1
 
+  base_branch = RunGit(['merge-base', base_branch, 'HEAD']).strip()
   if not options.bypass_hooks:
     author = None
     if options.contributor:
@@ -1403,7 +1454,7 @@ def SendUpstream(parser, args, cmd):
       RunGit(['cherry-pick', cherry_pick_commit])
     if cmd == 'push':
       # push the merge branch.
-      remote, branch = cl.FetchUpstreamTuple()
+      remote, branch = cl.FetchUpstreamTuple(cl.GetBranch())
       retcode, output = RunGitWithCode(
           ['push', '--porcelain', remote, 'HEAD:%s' % branch])
       logging.debug(output)
@@ -1656,7 +1707,9 @@ def CMDtry(parser, args):
   # Process --bot and --testfilter.
   if not options.bot:
     # Get try slaves from PRESUBMIT.py files if not specified.
-    change = cl.GetChange(cl.GetUpstreamBranch(), None)
+    change = cl.GetChange(
+      RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip(),
+      None)
     options.bot = presubmit_support.DoGetTrySlaves(
         change,
         change.LocalPaths(),

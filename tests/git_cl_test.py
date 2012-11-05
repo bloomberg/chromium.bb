@@ -97,8 +97,8 @@ class TestGitCl(TestCase):
     return (cls._git_base_calls(similarity, find_copies) +
             cls._git_upload_calls())
 
-  @staticmethod
-  def _git_base_calls(similarity, find_copies):
+  @classmethod
+  def _git_base_calls(cls, similarity, find_copies):
     if similarity is None:
       similarity = '50'
       similarity_call = ((['git', 'config', '--int', '--get',
@@ -119,10 +119,10 @@ class TestGitCl(TestCase):
     if find_copies:
       stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
                    '--find-copies-harder', '-l100000', '-C'+similarity,
-                   'master...'],), '+dat')
+                   'fake_ancestor_sha'],), '+dat')
     else:
       stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
-                   '-M'+similarity, 'master...'],), '+dat')
+                   '-M'+similarity, 'fake_ancestor_sha'],), '+dat')
 
     return [
       ((['git', 'config', 'gerrit.host'],), ''),
@@ -136,20 +136,24 @@ class TestGitCl(TestCase):
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.merge'],), 'master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'merge-base', 'master', 'HEAD'],), 'fake_ancestor_sha'),
+      ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
-      ((['git', 'diff', '--name-status', '-r', 'master...', '.'],),
+      ((['git', 'diff', '--name-status', '-r', 'fake_ancestor_sha...', '.'],),
         'M\t.gitignore\n'),
       ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
-      ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
+      ((['git', 'log', '--pretty=format:%s%n%n%b', 'fake_ancestor_sha...'],),
+       'foo'),
       ((['git', 'config', 'user.email'],), 'me@example.com'),
       stat_call,
-      ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],), 'desc\n'),
+      ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
+       'desc\n'),
     ]
 
-  @staticmethod
-  def _git_upload_calls():
+  @classmethod
+  def _git_upload_calls(cls):
     return [
       ((['git', 'config', 'rietveld.cc'],), ''),
       ((['git', 'config', 'branch.master.base-url'],), ''),
@@ -162,6 +166,25 @@ class TestGitCl(TestCase):
           'https://codereview.example.com'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset', '2'],), ''),
     ]
+
+  @staticmethod
+  def _git_sanity_checks(diff_base, working_branch):
+    fake_ancestor = 'fake_ancestor'
+    fake_cl = 'fake_cl_for_patch'
+    return [
+      # Calls to verify branch point is ancestor
+      ((['git', 'rev-parse', '--verify', diff_base],), fake_ancestor),
+      ((['git', 'merge-base', fake_ancestor, 'HEAD'],), fake_ancestor),
+      ((['git', 'rev-list', '^' + fake_ancestor, 'HEAD'],), fake_cl),
+      # Mock a config miss (error code 1)
+      ((['git', 'config', 'gitcl.remotebranch'],), (('', None), 1)),
+      # Call to GetRemoteBranch()
+      ((['git', 'config', 'branch.%s.merge' % working_branch],),
+       'refs/heads/master'),
+      ((['git', 'config', 'branch.%s.remote' % working_branch],), 'origin'),
+      ((['git', 'rev-list', '^' + fake_ancestor,
+         'refs/remotes/origin/master'],), ''),
+       ]
 
   @classmethod
   def _dcommit_calls_1(cls):
@@ -193,6 +216,8 @@ class TestGitCl(TestCase):
          '3fc18b62c4966193eb435baabe2d18a3810ec82e'),
       ((['git', 'rev-list', '^3fc18b62c4966193eb435baabe2d18a3810ec82e',
          'refs/remotes/origin/master'],), ''),
+      ((['git', 'merge-base', 'refs/remotes/origin/master', 'HEAD'],),
+       'fake_ancestor_sha'),
     ]
 
   @classmethod
@@ -201,7 +226,7 @@ class TestGitCl(TestCase):
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],),
           '00ff397798ea57439712ed7e04ab96e13969ef40'),
-      ((['git', 'diff', '--name-status', '-r', 'refs/remotes/origin/master...',
+      ((['git', 'diff', '--name-status', '-r', 'fake_ancestor_sha...',
          '.'],),
         'M\tPRESUBMIT.py'),
       ((['git', 'config', 'branch.working.rietveldissue'],), '12345'),
@@ -227,7 +252,7 @@ class TestGitCl(TestCase):
   def _dcommit_calls_3(cls):
     return [
       ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-         '-l100000', '-C50', 'refs/remotes/origin/master',
+         '-l100000', '-C50', 'fake_ancestor_sha',
          'refs/heads/working'],),
        (' PRESUBMIT.py |    2 +-\n'
         ' 1 files changed, 1 insertions(+), 1 deletions(-)\n')),
@@ -240,7 +265,7 @@ class TestGitCl(TestCase):
          'refs/heads/git-cl-cherry-pick'],), ''),
       ((['git', 'rev-parse', '--show-cdup'],), '\n'),
       ((['git', 'checkout', '-q', '-b', 'git-cl-commit'],), ''),
-      ((['git', 'reset', '--soft', 'refs/remotes/origin/master'],), ''),
+      ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
       ((['git', 'commit', '-m',
          'Issue: 12345\n\nReview URL: https://codereview.example.com/12345'],),
        ''),
@@ -261,7 +286,7 @@ class TestGitCl(TestCase):
         '--cc', 'joe@example.com',
         '--git_similarity', similarity or '50'
     ] + (['--git_no_find_copies'] if find_copies == False else []) + [
-        'master...'
+        'fake_ancestor_sha'
     ]
 
   def _run_reviewer_test(
@@ -391,6 +416,7 @@ class TestGitCl(TestCase):
   def test_dcommit(self):
     self.calls = (
         self._dcommit_calls_1() +
+        self._git_sanity_checks('fake_ancestor_sha', 'working') +
         self._dcommit_calls_normal() +
         self._dcommit_calls_3())
     git_cl.main(['dcommit'])
@@ -403,8 +429,8 @@ class TestGitCl(TestCase):
     git_cl.main(['dcommit', '--bypass-hooks'])
 
 
-  @staticmethod
-  def _gerrit_base_calls():
+  @classmethod
+  def _gerrit_base_calls(cls):
     return [
         ((['git', 'config', 'gerrit.host'],), 'gerrit.example.com'),
         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
@@ -419,32 +445,35 @@ class TestGitCl(TestCase):
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.merge'],), 'master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
+        ((['git', 'merge-base', 'master', 'HEAD'],), 'fake_ancestor_sha'),
+        ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
-        ((['git', 'diff', '--name-status', '-r', 'master...', '.'],),
+        ((['git', 'diff', '--name-status', '-r', 'fake_ancestor_sha...', '.'],),
          'M\t.gitignore\n'),
         ((['git', 'config', 'branch.master.rietveldissue'],), ''),
         ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
-        ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
+        ((['git', 'log', '--pretty=format:%s%n%n%b', 'fake_ancestor_sha...'],),
+         'foo'),
         ((['git', 'config', 'user.email'],), 'me@example.com'),
         ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-           '-l100000', '-C50', 'master...'],),
+           '-l100000', '-C50', 'fake_ancestor_sha'],),
          '+dat'),
         ]
 
   @staticmethod
   def _gerrit_upload_calls(description, reviewers):
     calls = [
-        ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],),
+        ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
          description)
         ]
     if git_cl.CHANGE_ID not in description:
       calls += [
-          ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],),
+          ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
            description),
           ((['git', 'commit', '--amend', '-m', description],),
            ''),
-          ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],),
+          ((['git', 'log', '--pretty=format:%s\n\n%b', 'fake_ancestor_sha..'],),
            description)
           ]
     calls += [
