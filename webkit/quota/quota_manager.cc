@@ -905,6 +905,7 @@ void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {
 void QuotaManager::GetUsageAndQuota(
     const GURL& origin, StorageType type,
     const GetUsageAndQuotaCallback& callback) {
+  DCHECK(origin == origin.GetOrigin());
   GetUsageAndQuotaInternal(
       origin, type, false /* global */,
       base::Bind(&CallGetUsageAndQuotaCallback, callback,
@@ -914,12 +915,14 @@ void QuotaManager::GetUsageAndQuota(
 void QuotaManager::NotifyStorageAccessed(
     QuotaClient::ID client_id,
     const GURL& origin, StorageType type) {
+  DCHECK(origin == origin.GetOrigin());
   NotifyStorageAccessedInternal(client_id, origin, type, base::Time::Now());
 }
 
 void QuotaManager::NotifyStorageModified(
     QuotaClient::ID client_id,
     const GURL& origin, StorageType type, int64 delta) {
+  DCHECK(origin == origin.GetOrigin());
   NotifyStorageModifiedInternal(client_id, origin, type, delta,
                                 base::Time::Now());
 }
@@ -947,6 +950,7 @@ void QuotaManager::DeleteOriginData(
     return;
   }
 
+  DCHECK(origin == origin.GetOrigin());
   OriginDataDeleter* deleter =
       new OriginDataDeleter(this, origin, type, quota_client_mask, callback);
   deleter->Start();

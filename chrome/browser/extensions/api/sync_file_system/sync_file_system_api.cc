@@ -56,7 +56,7 @@ bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
       InitializeForApp(
           GetFileSystemContext(),
           service_name,
-          source_url(),
+          source_url().GetOrigin(),
           base::Bind(&self::DidInitializeFileSystemContext, this,
                      service_name));
   return true;
@@ -80,7 +80,7 @@ void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
   }
   GetFileSystemContext()->OpenSyncableFileSystem(
           service_name,
-          source_url(),
+          source_url().GetOrigin(),
           fileapi::kFileSystemTypeSyncable,
           true, /* create */
           base::Bind(&self::DidOpenFileSystem, this));
@@ -124,7 +124,7 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunImpl() {
       FROM_HERE,
       Bind(&quota::QuotaManager::GetUsageAndQuota,
            quota_manager,
-           source_url(),
+           source_url().GetOrigin(),
            quota::kStorageTypeSyncable,
            Bind(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota,
                 this)));
