@@ -8,15 +8,22 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
-#include "ui/aura/test/test_windows.h"
+#include "content/public/test/test_browser_thread.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 
 namespace {
 
 class WallpaperPrivateApiUnittest : public ash::test::AshTestBase {
  public:
-  WallpaperPrivateApiUnittest() {}
+  WallpaperPrivateApiUnittest()
+      : ui_thread_(content::BrowserThread::UI, message_loop()) {}
+
+ private:
+  content::TestBrowserThread ui_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateApiUnittest);
 };
 
 class TestMinimizeFunction : public WallpaperMinimizeInactiveWindowsFunction {
@@ -26,6 +33,7 @@ class TestMinimizeFunction : public WallpaperMinimizeInactiveWindowsFunction {
   bool RunImpl() OVERRIDE {
     return WallpaperMinimizeInactiveWindowsFunction::RunImpl();
   }
+
  protected:
   virtual ~TestMinimizeFunction() {}
 };
@@ -85,5 +93,3 @@ TEST_F(WallpaperPrivateApiUnittest, HideAndRestoreWindows) {
   EXPECT_FALSE(ash::wm::IsWindowMinimized(window2.get()));
   EXPECT_TRUE(ash::wm::IsWindowMinimized(window3.get()));
 }
-
-
