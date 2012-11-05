@@ -20,6 +20,7 @@ import perf_tools.robohornetpro
 import perf_tools.scrolling_benchmark
 import perf_tools.skpicture_printer
 import perf_tools.texture_upload_benchmark
+import perf_tools.painting_benchmark
 
 # TODO(tonyg/nduca): Discover benchmarks automagically.
 _BENCHMARKS = {
@@ -36,7 +37,9 @@ _BENCHMARKS = {
   'skpicture_printer':
       perf_tools.skpicture_printer.SkPicturePrinter,
   'texture_upload_benchmark':
-      perf_tools.texture_upload_benchmark.TextureUploadBenchmark
+      perf_tools.texture_upload_benchmark.TextureUploadBenchmark,
+  'painting_benchmark':
+      perf_tools.painting_benchmark.PaintingBenchmark
 }
 
 
