@@ -51,6 +51,12 @@ struct Globals {
 
 namespace {
 
+// TODO(robertshield): Share this with chrome_app_view.cc
+void MetroExit() {
+  globals.app_exit->Exit();
+  globals.core_window = NULL;
+}
+
 class ChromeChannelListener : public IPC::Listener {
  public:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
@@ -60,7 +66,7 @@ class ChromeChannelListener : public IPC::Listener {
 
   virtual void OnChannelError() OVERRIDE {
     DVLOG(1) << "Channel error";
-    MessageLoop::current()->Quit();
+    MetroExit();
   }
 
   void Init(IPC::Sender* s) {
