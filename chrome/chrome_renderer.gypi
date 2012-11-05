@@ -21,7 +21,6 @@
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
-        '../third_party/cld/cld.gyp:cld',
         '../third_party/hunspell/hunspell.gyp:hunspell',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -35,7 +34,6 @@
       ],
       'include_dirs': [
         '..',
-        '../third_party/cld',
       ],
       'defines': [
         '<@(nacl_defines)',
@@ -301,6 +299,14 @@
         ['OS=="mac"', {
           'dependencies': [
             '../third_party/mach_override/mach_override.gyp:mach_override',
+          ],
+        }],
+        ['enable_language_detection==1', {
+          'dependencies': [
+            '../third_party/cld/cld.gyp:cld',
+          ],
+          'include_dirs': [
+            '../third_party/cld',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

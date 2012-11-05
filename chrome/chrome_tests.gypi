@@ -2700,6 +2700,11 @@
             ['exclude', '^browser/themes/'],
           ],
         }],
+        ['enable_language_detection==0', {
+          'sources!': [
+            'browser/language_usage_metrics_unittest.cc',
+          ],
+        }],
         ['enable_plugin_installation==0', {
           'sources!': [
           ],

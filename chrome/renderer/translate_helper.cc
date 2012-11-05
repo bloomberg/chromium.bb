@@ -19,9 +19,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/dom_operations.h"
+
+#if defined(ENABLE_LANGUAGE_DETECTION)
+#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
+#endif
 
 using WebKit::WebDocument;
 using WebKit::WebElement;
@@ -80,6 +83,7 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   TrimWhitespaceASCII(language, TRIM_ALL, &language);
   language = StringToLowerASCII(language);
 
+#if defined(ENABLE_LANGUAGE_DETECTION)
   if (language.empty()) {
     base::TimeTicks begin_time = base::TimeTicks::Now();
     language = DetermineTextLanguage(contents);
@@ -88,6 +92,10 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   } else {
     VLOG(9) << "PageLanguageFromMetaTag: " << language;
   }
+#else
+  if (language.empty())
+    return;
+#endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(), language, IsPageTranslatable(&document)));
@@ -121,6 +129,7 @@ bool TranslateHelper::IsPageTranslatable(WebDocument* document) {
   return true;
 }
 
+#if defined(ENABLE_LANGUAGE_DETECTION)
 // static
 std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
   std::string language = chrome::kUnknownLanguageCode;
@@ -147,6 +156,7 @@ std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
           << "\n*************************************\n";
   return language;
 }
+#endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, protected:

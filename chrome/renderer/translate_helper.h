@@ -70,9 +70,11 @@ class TranslateHelper : public content::RenderViewObserver {
   // should not be translated.
   static bool IsPageTranslatable(WebKit::WebDocument* document);
 
+#if defined(ENABLE_LANGUAGE_DETECTION)
   // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
   // if it failed.
   static std::string DetermineTextLanguage(const string16& text);
+#endif
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
