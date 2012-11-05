@@ -133,9 +133,6 @@ void EnsureDirectoryExists(Profile* profile,
 // Converts GData error code into file platform error code.
 DriveFileError GDataToDriveFileError(google_apis::GDataErrorCode status);
 
-// Returns true if the current network connection is over cellular.
-bool IsConnectionTypeCellular();
-
 }  // namespace util
 }  // namespace drive
 

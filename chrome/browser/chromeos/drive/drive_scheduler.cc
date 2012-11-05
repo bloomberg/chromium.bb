@@ -8,7 +8,6 @@
 
 #include "base/message_loop.h"
 #include "base/rand_util.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -166,7 +165,8 @@ bool DriveScheduler::ShouldStopJobLoop() {
   // Should stop if the current connection is on cellular network, and
   // fetching is disabled over cellular.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
-      util::IsConnectionTypeCellular())
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType()))
     return true;
 
   return false;

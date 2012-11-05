@@ -12,7 +12,6 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_sync_client_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -205,7 +204,8 @@ bool DriveSyncClient::ShouldStopSyncLoop() {
   // Should stop if the current connection is on cellular network, and
   // fetching is disabled over cellular.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
-      util::IsConnectionTypeCellular())
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType()))
     return true;
 
   return false;
