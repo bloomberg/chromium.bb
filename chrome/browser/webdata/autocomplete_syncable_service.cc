@@ -13,6 +13,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/escape.h"
@@ -81,9 +82,16 @@ bool MergeTimestamps(const sync_pb::AutofillSpecifics& autofill,
 }
 
 bool ShouldCullSyncedData() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+
   // To set probability to 10% - set it to 0.1, 5% to 0.05, etc.
-  static double kCullingProbability = 0.0;
-  return (base::RandDouble() < kCullingProbability);
+  double culling_probability = 0.0;
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY)
+    culling_probability = 1.0;
+  else if (channel == chrome::VersionInfo::CHANNEL_DEV)
+    culling_probability = 0.2;
+
+  return (base::RandDouble() < culling_probability);
 }
 
 }  // namespace
