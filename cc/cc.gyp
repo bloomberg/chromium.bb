@@ -262,7 +262,6 @@
         'stubs/IntPoint.h',
         'stubs/IntSize.h',
         'stubs/Region.h',
-        'stubs/SkiaUtils.h',
         'stubs/UnitBezier.h',
 
         'stubs/config.h',
@@ -270,7 +269,6 @@
         'stubs/float_size.h',
         'stubs/int_point.h',
         'stubs/int_size.h',
-        'stubs/skia_utils.h',
         'stubs/unit_bezier.h',
       ],
     },

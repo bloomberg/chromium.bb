@@ -6,7 +6,6 @@
 
 #include "cc/content_layer_updater.h"
 
-#include "SkiaUtils.h"
 #include "base/debug/trace_event.h"
 #include "base/time.h"
 #include "cc/layer_painter.h"
@@ -14,6 +13,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/rect_f.h"
 
@@ -32,12 +32,12 @@ void ContentLayerUpdater::paintContents(SkCanvas* canvas, const gfx::Rect& conte
 {
     TRACE_EVENT0("cc", "ContentLayerUpdater::paintContents");
     canvas->save();
-    canvas->translate(FloatToSkScalar(-contentRect.x()), FloatToSkScalar(-contentRect.y()));
+    canvas->translate(SkFloatToScalar(-contentRect.x()), SkFloatToScalar(-contentRect.y()));
 
     gfx::Rect layerRect = contentRect;
 
     if (contentsWidthScale != 1 || contentsHeightScale != 1) {
-        canvas->scale(FloatToSkScalar(contentsWidthScale), FloatToSkScalar(contentsHeightScale));
+        canvas->scale(SkFloatToScalar(contentsWidthScale), SkFloatToScalar(contentsHeightScale));
 
         gfx::RectF rect = gfx::ScaleRect(contentRect, 1 / contentsWidthScale, 1 / contentsHeightScale);
         layerRect = gfx::ToEnclosingRect(rect);
