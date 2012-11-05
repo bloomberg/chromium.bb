@@ -14,10 +14,7 @@ import org.chromium.base.CalledByNative;
 
 public class GoogleLocationSettingsHelperStub implements GoogleLocationSettingsHelper {
 
-    private Context mApplicationContext;
-
     public GoogleLocationSettingsHelperStub(Context context) {
-        mApplicationContext = context.getApplicationContext();
     }
 
     @Override
