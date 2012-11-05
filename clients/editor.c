@@ -922,6 +922,8 @@ main(int argc, char *argv[])
 {
 	struct editor editor;
 
+	memset(&editor, 0, sizeof editor);
+
 	editor.display = display_create(argc, argv);
 	if (editor.display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
