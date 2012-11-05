@@ -220,7 +220,7 @@ class UI_EXPORT ResourceBundle {
 
   // Return the contents of a resource in a StringPiece given the resource id
   // nearest the scale factor |scale_factor|.
-  // Use ResourceHanlde::SCALE_FACTOR_NONE for scale independent image resources
+  // Use ResourceHandle::SCALE_FACTOR_NONE for scale independent image resources
   // (such as wallpaper).
   base::StringPiece GetRawDataResourceForScale(int resource_id,
                                                ScaleFactor scale_factor) const;
