@@ -148,4 +148,4 @@ gfx::Size LayerTilingData::bounds() const
     return m_tilingData.total_size();
 }
 
-} // namespace cc
+}  // namespace cc

@@ -17,6 +17,8 @@ using testing::InSequence;
 using testing::Test;
 using testing::_;
 
+namespace {
+
 class MockContext : public FakeWebGraphicsContext3D {
 public:
     MOCK_METHOD2(bindFramebuffer, void(WGC3Denum, WebGLId));
@@ -56,3 +58,5 @@ TEST(TextureCopierTest, testDrawArraysCopy)
     TextureCopier::Parameters copy = { sourceTextureId, destTextureId, size };
     copier->copyTexture(copy);
 }
+
+}  // anonymous namespace

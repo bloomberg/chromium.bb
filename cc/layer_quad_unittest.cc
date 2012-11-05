@@ -43,4 +43,4 @@ TEST(LayerQuadTest, Inflate)
     EXPECT_TRUE(layerQuad.ToQuadF() == quad);
 }
 
-} // namespace
+}  // anonymous namespace

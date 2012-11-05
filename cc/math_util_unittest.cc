@@ -181,4 +181,4 @@ TEST(MathUtilTest, vectorProjection)
               projectedVector.height() / targetVector.height());
 }
 
-} // namespace
+}  // anonymous namespace

@@ -218,4 +218,4 @@ TEST(ActiveAnimationTest, RunStateChangesIgnoredWhileSuspended)
     EXPECT_EQ(ActiveAnimation::Running, anim->runState());
 }
 
-} // namespace
+}  // anonymous namespace

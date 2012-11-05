@@ -203,4 +203,4 @@ TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction)
     EXPECT_FLOAT_EQ(1, curve->getValue(1));
 }
 
-} // namespace
+}  // anonymous namespace

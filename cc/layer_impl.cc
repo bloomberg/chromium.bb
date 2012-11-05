@@ -705,4 +705,4 @@ void LayerImpl::setVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
     m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
-}
+}  // namespace cc

@@ -252,4 +252,4 @@ TEST(LayerIteratorTest, complexTreeMultiSurface)
     EXPECT_COUNT(root3, -1, -1, 0);
 }
 
-} // namespace
+}  // anonymous namespace

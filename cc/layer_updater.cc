@@ -17,4 +17,4 @@ LayerUpdater::Resource::~Resource()
 {
 }
 
-}
+}  // namespace cc

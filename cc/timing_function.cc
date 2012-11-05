@@ -71,4 +71,4 @@ scoped_ptr<TimingFunction> EaseInOutTimingFunction::create()
     return CubicBezierTimingFunction::create(0.42, 0, 0.58, 1).PassAs<TimingFunction>();
 }
 
-} // namespace cc
+}  // namespace cc

@@ -203,4 +203,4 @@ void PrioritizedTexture::returnBackingTexture()
         m_manager->returnBackingTexture(this);
 }
 
-} // namespace cc
+}  // namespace cc

@@ -132,4 +132,4 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
     m_contentCommitted = drawsContent();
 }
 
-}
+}  // namespace cc

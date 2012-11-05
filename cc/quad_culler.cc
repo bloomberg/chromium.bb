@@ -89,4 +89,4 @@ bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQu
     return appendQuadInternal(drawQuad.Pass(), culledRect, m_quadList, *m_occlusionTracker, m_showCullingWithDebugBorderQuads);
 }
 
-} // namespace cc
+}  // namespace cc

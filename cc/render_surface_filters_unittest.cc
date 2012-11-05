@@ -137,4 +137,4 @@ TEST(RenderSurfaceFiltersTest, testOptimize)
     EXPECT_EQ(3u, optimized.size());
 }
 
-} // namespace
+}  // anonymous namespace

@@ -397,4 +397,4 @@ void SingleThreadProxy::didSwapFrame()
     }
 }
 
-}
+}  // namespace cc

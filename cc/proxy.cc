@@ -109,4 +109,4 @@ Proxy::~Proxy()
     DCHECK(isMainThread());
 }
 
-}
+}  // namespace cc

@@ -844,4 +844,4 @@ void sortLayers(std::vector<scoped_refptr<Layer> >::iterator, std::vector<scoped
     // Currently we don't use z-order to decide what to paint, so there's no need to actually sort Layers.
 }
 
-}
+}  // namespace cc

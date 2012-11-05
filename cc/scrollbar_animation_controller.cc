@@ -94,4 +94,4 @@ void ScrollbarAnimationController::updateScrollOffsetAtTime(LayerImpl* scrollLay
     }
 }
 
-} // namespace cc
+}  // namespace cc

@@ -22,6 +22,8 @@ using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 
+namespace {
+
 class FrameCountingMemoryAllocationSettingContext : public FakeWebGraphicsContext3D {
 public:
     FrameCountingMemoryAllocationSettingContext() : m_frame(0) { }
@@ -483,3 +485,5 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
     renderer.setVisible(false);
     EXPECT_TRUE(lastCallWasSetVisiblity);
 }
+
+}  // anonymous namespace

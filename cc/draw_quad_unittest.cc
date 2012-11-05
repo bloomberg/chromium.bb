@@ -310,4 +310,4 @@ TEST(DrawQuadTest, copyYUVVideoDrawQuad)
     EXPECT_EQ(vPlane.visibleSize, copyQuad->vPlane().visibleSize);
 }
 
-} // namespace
+}  // anonymous namespace

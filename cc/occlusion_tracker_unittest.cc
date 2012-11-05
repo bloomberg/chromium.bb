@@ -3173,4 +3173,4 @@ protected:
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestMinimumTrackingSize);
 
-} // namespace
+}  // anonymous namespace

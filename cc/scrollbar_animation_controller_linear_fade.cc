@@ -74,4 +74,4 @@ float ScrollbarAnimationControllerLinearFade::opacityAtTime(double monotonicTime
     return 0;
 }
 
-} // namespace cc
+}  // namespace cc

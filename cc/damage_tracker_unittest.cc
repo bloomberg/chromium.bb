@@ -1160,4 +1160,4 @@ TEST_F(DamageTrackerTest, verifyDamageAccumulatesUntilReset)
     EXPECT_TRUE(rootDamageRect.IsEmpty());
 }
 
-} // namespace
+}  // anonymous namespace

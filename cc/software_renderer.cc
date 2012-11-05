@@ -361,4 +361,4 @@ void SoftwareRenderer::setVisible(bool visible)
     m_visible = visible;
 }
 
-}
+}  // namespace cc

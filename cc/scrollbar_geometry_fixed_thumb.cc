@@ -91,4 +91,4 @@ ScrollbarGeometryFixedThumb::ScrollbarGeometryFixedThumb(scoped_ptr<WebScrollbar
 {
 }
 
-}
+}  // namespace cc

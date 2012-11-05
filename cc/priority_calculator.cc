@@ -132,4 +132,4 @@ int PriorityCalculator::allowEverythingCutoff()
     return everythingPriorityCutoff;
 }
 
-} // cc
+}  // namespace cc

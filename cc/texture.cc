@@ -46,4 +46,4 @@ size_t Texture::memorySizeBytes(const gfx::Size& size, GLenum format)
     return bytesPerPixel(format) * size.width() * size.height();
 }
 
-}
+}  // namespace cc

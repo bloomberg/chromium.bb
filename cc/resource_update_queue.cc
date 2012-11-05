@@ -77,4 +77,4 @@ bool ResourceUpdateQueue::hasMoreUpdates() const
     return m_fullEntries.size() || m_partialEntries.size() || m_copyEntries.size();
 }
 
-}
+}  // namespace cc

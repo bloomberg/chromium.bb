@@ -55,4 +55,4 @@ void GeometryBinding::prepareForDraw()
     GLC(m_context, m_context->enableVertexAttribArray(texCoordAttribLocation()));
 }
 
-} // namespace cc
+}  // namespace cc

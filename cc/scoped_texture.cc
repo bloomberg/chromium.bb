@@ -50,4 +50,4 @@ void ScopedTexture::leak()
     setId(0);
 }
 
-}
+}  // namespace cc

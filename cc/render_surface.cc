@@ -36,4 +36,4 @@ gfx::RectF RenderSurface::drawableContentRect() const
     return drawableContentRect;
 }
 
-}
+}  // namespace cc

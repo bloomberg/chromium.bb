@@ -164,4 +164,4 @@ float ImageLayer::contentsScaleY() const
     return static_cast<float>(m_bitmap.height()) / bounds().height();
 }
 
-}
+}  // namespace cc

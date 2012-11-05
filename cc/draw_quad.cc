@@ -97,4 +97,4 @@ void DrawQuad::setSharedQuadState(const SharedQuadState* sharedQuadState)
     m_sharedQuadStateId = sharedQuadState->id;
 }
 
-}
+}  // namespace cc

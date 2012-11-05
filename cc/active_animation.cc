@@ -207,4 +207,4 @@ void ActiveAnimation::pushPropertiesTo(ActiveAnimation* other) const
     }
 }
 
-} // namespace cc
+}  // namespace cc

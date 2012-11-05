@@ -116,4 +116,4 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyForceAwakenByPinch)
 
 }
 
-}
+}  // annoymous namespace

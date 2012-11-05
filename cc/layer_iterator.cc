@@ -146,4 +146,4 @@ template CC_EXPORT void LayerIteratorActions::FrontToBack::end(LayerIterator<Lay
 template CC_EXPORT void LayerIteratorActions::FrontToBack::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
 template CC_EXPORT void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
 
-} // namespace cc
+}  // namespace cc

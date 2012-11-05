@@ -799,4 +799,4 @@ TEST(LayerTestWithoutFixture, setBoundsTriggersSetNeedsRedrawAfterGettingNonEmpt
 }
 
 
-} // namespace
+}  // anonymous namespace

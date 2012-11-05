@@ -220,4 +220,4 @@ WebTransformationMatrix KeyframedTransformAnimationCurve::getValue(double t) con
     return m_keyframes[i+1]->value().blend(m_keyframes[i]->value(), progress);
 }
 
-} // namespace cc
+}  // namespace cc

@@ -95,4 +95,4 @@ void AcceleratedTextureCopier::flush()
     GLC(m_context, m_context->flush());
 }
 
-}
+}  // namespace cc

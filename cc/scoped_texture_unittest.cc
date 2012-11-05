@@ -105,4 +105,4 @@ TEST(ScopedTextureTest, LeakScopedTexture)
     EXPECT_EQ(1u, resourceProvider->numResources());
 }
 
-}
+}  // anonymous namespace

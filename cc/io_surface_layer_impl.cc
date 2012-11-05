@@ -112,4 +112,4 @@ const char* IOSurfaceLayerImpl::layerTypeAsString() const
     return "IOSurfaceLayer";
 }
 
-}
+}  // namespace cc

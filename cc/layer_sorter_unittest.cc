@@ -264,4 +264,4 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     EXPECT_EQ(5, layerList[4]->id());
 }
 
-} // namespace
+}  // anonymous namespace

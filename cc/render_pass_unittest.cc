@@ -84,4 +84,4 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     EXPECT_EQ(sizeof(RenderPassSize), sizeof(RenderPass));
 }
 
-} // namespace
+}  // anonymous namespace

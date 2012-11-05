@@ -275,4 +275,4 @@ void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*,
         updatePart(m_thumbUpdater.get(), m_thumb.get(), originThumbRect, queue, stats);
 }
 
-}
+}  // namespace cc

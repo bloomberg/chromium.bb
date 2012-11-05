@@ -109,4 +109,4 @@ void Settings::setPageScalePinchZoomEnabled(bool enabled)
     s_pageScalePinchZoomEnabled = enabled;
 }
 
-} // namespace cc
+}  // namespace cc

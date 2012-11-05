@@ -5,6 +5,8 @@
 #include "cc/hash_pair.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
 class HashPairTest : public testing::Test {
 };
 
@@ -58,3 +60,5 @@ TEST_F(HashPairTest, IntegerPairs) {
   INSERT_PAIR_TEST(Int64Int32Pair, 9, (1 << 29) + 378128932);
   INSERT_PAIR_TEST(Int64Int64Pair, 10, (1LL << 60) + 78931732321);
 }
+
+}  // anonymous namespace

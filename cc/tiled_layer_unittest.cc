@@ -1627,4 +1627,4 @@ TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringInvalidation)
     EXPECT_RECT_EQ(layerRect, layer->trackingLayerPainter()->paintedRect());
 }
 
-} // namespace
+}  // anonymous namespace

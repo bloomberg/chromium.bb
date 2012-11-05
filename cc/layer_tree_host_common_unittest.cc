@@ -4045,4 +4045,4 @@ TEST(LayerTreeHostCommonTest, verifySubtreeSearch)
     EXPECT_EQ(0, LayerTreeHostCommon::findLayerInSubtree(root.get(), nonexistentId));
 }
 
-} // namespace
+}  // anonymous namespace

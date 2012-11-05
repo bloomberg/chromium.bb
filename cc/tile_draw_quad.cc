@@ -39,4 +39,4 @@ const TileDrawQuad* TileDrawQuad::materialCast(const DrawQuad* quad)
     return static_cast<const TileDrawQuad*>(quad);
 }
 
-}
+}  // namespace cc

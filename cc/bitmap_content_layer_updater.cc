@@ -81,4 +81,4 @@ void BitmapContentLayerUpdater::setOpaque(bool opaque)
     m_opaque = opaque;
 }
 
-} // namespace cc
+}  // namespace cc

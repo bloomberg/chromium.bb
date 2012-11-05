@@ -467,4 +467,4 @@ TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit)
     EXPECT_EQ(0, controllerPtr->numFramesPending());
 }
 
-}
+}  // anonymous namespace

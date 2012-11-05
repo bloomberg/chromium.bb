@@ -97,4 +97,4 @@ TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking)
     EXPECT_EQ(0, uploader->numBlockingUploads());
 }
 
-} // namespace
+}  // anonymous namespace

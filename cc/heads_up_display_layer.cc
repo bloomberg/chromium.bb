@@ -72,4 +72,4 @@ void HeadsUpDisplayLayer::pushPropertiesTo(LayerImpl* layerImpl)
     hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
 }
 
-}
+}  // namespace cc

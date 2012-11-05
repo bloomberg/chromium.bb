@@ -163,4 +163,4 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setBounds(arbitrarySize));
 }
 
-} // namespace
+}  // anonymous namespace

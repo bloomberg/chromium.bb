@@ -189,4 +189,4 @@ TEST_F(TextureLayerTest, syncImplWhenRemovingFromTree)
     Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
 }
 
-} // anonymous namespace
+}  // anonymous namespace

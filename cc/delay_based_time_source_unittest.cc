@@ -374,4 +374,4 @@ TEST(DelayBasedTimeSource, TestDeactivateAndReactivateAfterNextTickTime)
     EXPECT_EQ(13, thread.pendingDelayMs());
 }
 
-}
+}  // anonymous namespace

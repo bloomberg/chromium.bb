@@ -357,4 +357,4 @@ void TextureUploader::processQueries()
     }
 }
 
-}
+}  // namespace cc

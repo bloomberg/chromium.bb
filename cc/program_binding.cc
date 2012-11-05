@@ -139,4 +139,4 @@ void ProgramBindingBase::cleanupShaders(WebGraphicsContext3D* context)
     }
 }
 
-} // namespace cc
+}  // namespace cc

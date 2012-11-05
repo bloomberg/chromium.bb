@@ -870,4 +870,4 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost)
     EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-}
+}  // anonymous namespace

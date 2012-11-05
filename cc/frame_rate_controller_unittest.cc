@@ -167,4 +167,4 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled)
     EXPECT_TRUE(client.vsyncTicked());
 }
 
-}
+}  // anonymous namespace

@@ -558,4 +558,4 @@ TEST(LayerAnimationControllerTest, ForceSyncWhenSynchronizedStartTimeNeeded)
     EXPECT_EQ(ActiveAnimation::WaitingForTargetAvailability, activeAnimation->runState());
 }
 
-} // namespace
+}  // anonymous namespace

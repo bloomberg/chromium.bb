@@ -29,4 +29,4 @@ SolidColorLayer::~SolidColorLayer()
 {
 }
 
-} // namespace cc
+}  // namespace cc

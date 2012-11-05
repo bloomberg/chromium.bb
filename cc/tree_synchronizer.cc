@@ -109,4 +109,4 @@ void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrLayerIm
         scrollLayerImpl->setVerticalScrollbarLayer(scrollbarLayerImpl);
 }
 
-} // namespace cc
+}  // namespace cc

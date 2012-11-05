@@ -35,4 +35,4 @@ const TextureDrawQuad* TextureDrawQuad::materialCast(const DrawQuad* quad)
     return static_cast<const TextureDrawQuad*>(quad);
 }
 
-}
+}  // namespace cc

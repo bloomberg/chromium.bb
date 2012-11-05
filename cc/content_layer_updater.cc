@@ -62,4 +62,4 @@ void ContentLayerUpdater::paintContents(SkCanvas* canvas, const gfx::Rect& conte
     m_contentRect = contentRect;
 }
 
-} // namespace cc
+}  // namespace cc

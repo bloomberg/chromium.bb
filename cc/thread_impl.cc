@@ -42,4 +42,4 @@ ThreadImpl::ThreadImpl(scoped_refptr<base::MessageLoopProxy> thread)
 {
 }
 
-} // namespace cc
+}  // namespace cc

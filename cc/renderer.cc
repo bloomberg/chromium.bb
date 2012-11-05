@@ -18,4 +18,4 @@ bool Renderer::isContextLost()
     return false;
 }
 
-}
+}  // namespace cc

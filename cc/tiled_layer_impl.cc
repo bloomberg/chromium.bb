@@ -252,4 +252,4 @@ const char* TiledLayerImpl::layerTypeAsString() const
     return "ContentLayer";
 }
 
-} // namespace cc
+}  // namespace cc

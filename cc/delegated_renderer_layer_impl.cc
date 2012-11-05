@@ -182,4 +182,4 @@ const char* DelegatedRendererLayerImpl::layerTypeAsString() const
     return "DelegatedRendererLayer";
 }
 
-}
+}  // namespace cc

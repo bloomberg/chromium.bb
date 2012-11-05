@@ -128,4 +128,4 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     EXPECT_EQ(300, ccScrollbarLayer->maximum());
 }
 
-}
+}  // anonymous namespace

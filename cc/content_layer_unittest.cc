@@ -51,4 +51,4 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale)
     EXPECT_RECT_EQ(gfx::ToEnclosingRect(opaqueRectInContentSpace), resultingOpaqueRect);
 }
 
-} // namespace
+}  // anonymous namespace

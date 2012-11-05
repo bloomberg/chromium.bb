@@ -207,4 +207,4 @@ const char* ScrollbarLayerImpl::layerTypeAsString() const
     return "ScrollbarLayer";
 }
 
-}
+}  // namespace cc

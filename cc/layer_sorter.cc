@@ -413,4 +413,4 @@ void LayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
     m_activeEdges.clear();
 }
 
-}
+}  // namespace cc

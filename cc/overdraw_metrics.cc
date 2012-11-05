@@ -183,4 +183,4 @@ void OverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const Layer
     }
 }
 
-} // namespace cc
+}  // namespace cc

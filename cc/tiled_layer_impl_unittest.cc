@@ -241,4 +241,4 @@ TEST(TiledLayerImplTest, tileOpaqueRectForLayerNoBorders)
     }
 }
 
-} // namespace
+}  // anonymous namespace

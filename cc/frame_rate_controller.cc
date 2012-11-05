@@ -162,4 +162,4 @@ base::TimeTicks FrameRateController::nextTickTime()
     return base::TimeTicks();
 }
 
-}
+}  // namespace cc

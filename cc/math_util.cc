@@ -393,4 +393,4 @@ FloatSize MathUtil::projectVector(const FloatSize& source, const FloatSize& dest
     return FloatSize(projectedLength * destination.width(), projectedLength * destination.height());
 }
 
-} // namespace cc
+}  // namespace cc

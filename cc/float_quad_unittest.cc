@@ -58,4 +58,4 @@ TEST(FloatQuadTest, IsRectilinearTest)
     }
 }
 
-} // empty namespace
+}  // anonymous namespace

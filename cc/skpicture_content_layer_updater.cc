@@ -76,4 +76,4 @@ void SkPictureContentLayerUpdater::setOpaque(bool opaque)
     m_layerIsOpaque = opaque;
 }
 
-} // namespace cc
+}  // namespace cc

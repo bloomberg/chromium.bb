@@ -1631,4 +1631,4 @@ bool GLRenderer::isContextLost()
     return (m_context->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }
 
-} // namespace cc
+}  // namespace cc

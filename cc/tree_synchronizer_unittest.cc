@@ -403,4 +403,4 @@ TEST(TreeSynchronizerTest, synchronizeAnimations)
     EXPECT_TRUE(static_cast<FakeLayerAnimationController*>(layerTreeRoot->layerAnimationController())->synchronizedAnimations());
 }
 
-} // namespace
+}  // anonymous namespace

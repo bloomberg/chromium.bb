@@ -58,4 +58,4 @@ void RateLimiter::rateLimitContext()
     m_context->rateLimitOffscreenContextCHROMIUM();
 }
 
-}
+}  // namespace cc

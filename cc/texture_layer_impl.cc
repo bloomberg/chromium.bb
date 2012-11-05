@@ -77,4 +77,4 @@ const char* TextureLayerImpl::layerTypeAsString() const
     return "TextureLayer";
 }
 
-}
+}  // namespace cc

@@ -702,4 +702,4 @@ TEST_F(PrioritizedTextureTest, usageStatistics)
 }
 
 
-} // namespace
+}  // anonymous namespace

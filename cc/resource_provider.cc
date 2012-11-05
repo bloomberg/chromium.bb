@@ -714,4 +714,4 @@ void ResourceProvider::debugNotifyLeaveZone()
 }
 
 
-}
+}  // namespace cc

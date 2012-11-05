@@ -132,4 +132,3 @@ base::TimeTicks FrameRateCounter::timeStampOfRecentFrame(int n)
 }
 
 }  // namespace cc
-

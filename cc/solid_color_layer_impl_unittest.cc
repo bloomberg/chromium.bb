@@ -90,4 +90,4 @@ TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     EXPECT_EQ(opacity, SolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->opacity());
 }
 
-} // namespace
+}  // anonymous namespace

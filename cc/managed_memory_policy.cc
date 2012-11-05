@@ -42,4 +42,4 @@ bool ManagedMemoryPolicy::operator!=(const ManagedMemoryPolicy& other) const
     return !(*this == other);
 }
 
-} // namespace cc
+}  // namespace cc

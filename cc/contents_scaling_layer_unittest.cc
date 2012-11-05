@@ -11,6 +11,8 @@
 
 using namespace cc;
 
+namespace {
+
 class MockContentsScalingLayer : public ContentsScalingLayer {
  public:
   MockContentsScalingLayer()
@@ -74,3 +76,5 @@ TEST(ContentsScalingLayerTest, checkContentsScaleChangeTriggersNeedsDisplay) {
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 320, 240),
                        testLayer->lastNeedsDisplayRect());
 }
+
+}  // anonymous namespace

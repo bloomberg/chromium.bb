@@ -162,4 +162,4 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     EXPECT_EQ(origin, pass->transformToRootTarget());
 }
 
-} // namespace
+}  // anonymous namespace

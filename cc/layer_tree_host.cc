@@ -839,4 +839,4 @@ void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& eve
         setAnimationEventsRecursive(events, layer->children()[childIndex].get(), wallClockTime);
 }
 
-} // namespace cc
+}  // namespace cc

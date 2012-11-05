@@ -316,4 +316,4 @@ void SchedulerStateMachine::setMaximumNumberOfFailedDrawsBeforeDrawIsForced(int 
     m_maximumNumberOfFailedDrawsBeforeDrawIsForced = numDraws;
 }
 
-}
+}  // namespace cc

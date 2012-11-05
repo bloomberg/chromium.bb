@@ -452,4 +452,4 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, sharedState->quadTransform);
 }
 
-} // namespace
+}  // annonymous namespace

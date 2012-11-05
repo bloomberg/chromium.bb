@@ -430,4 +430,4 @@ const char* VideoLayerImpl::layerTypeAsString() const
     return "VideoLayer";
 }
 
-}
+}  // namespace cc

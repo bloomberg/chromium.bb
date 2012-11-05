@@ -236,4 +236,4 @@ GLenum DirectRenderer::renderPassTextureFormat(const RenderPass*)
     return GL_RGBA;
 }
 
-}
+}  // namespace cc

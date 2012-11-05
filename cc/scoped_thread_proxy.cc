@@ -43,4 +43,4 @@ void ScopedThreadProxy::runTaskIfNotShutdown(base::Closure cb)
     cb.Run();
 }
 
-}
+}  // namespace cc

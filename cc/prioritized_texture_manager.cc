@@ -472,4 +472,4 @@ void PrioritizedTextureManager::assertInvariants()
 #endif
 }
 
-} // namespace cc
+}  // namespace cc

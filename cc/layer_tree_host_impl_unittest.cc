@@ -4409,4 +4409,4 @@ INSTANTIATE_TEST_CASE_P(LayerTreeHostImplTests,
                         LayerTreeHostImplTest,
                         ::testing::Values(false, true));
 
-} // namespace
+}  // anonymous namespace

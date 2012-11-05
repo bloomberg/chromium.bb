@@ -106,4 +106,4 @@ void ScrollbarGeometryStub::splitTrack(WebScrollbar* scrollbar, const WebRect& u
     m_geometry->splitTrack(scrollbar, unconstrainedTrackRect, beforeThumbRect, thumbRect, afterThumbRect);
 }
 
-}
+}  // namespace cc

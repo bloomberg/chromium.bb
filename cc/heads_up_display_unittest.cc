@@ -110,4 +110,4 @@ TEST_F(HudWithRootLayerChange, runMultiThread)
     runTest(true);
 }
 
-} // namespace
+}  // anonymous namespace

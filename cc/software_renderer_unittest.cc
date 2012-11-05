@@ -152,4 +152,4 @@ TEST_F(SoftwareRendererTest, tileQuad)
     EXPECT_EQ(SK_ColorCYAN, pixels[outerPixels - outerSize.width() - 2]);
 }
 
-} // namespace
+}  // anonymous namespace

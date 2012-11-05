@@ -251,4 +251,4 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
                                                  maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY).PassAs<DrawQuad>(), appendQuadsData);
 }
 
-}
+}  // namespace cc

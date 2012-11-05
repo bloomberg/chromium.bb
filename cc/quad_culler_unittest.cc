@@ -468,4 +468,4 @@ TEST(QuadCullerTest, verifyWithoutMetrics)
 }
 
 
-} // namespace
+}  // anonymous namespace

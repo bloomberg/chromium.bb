@@ -106,4 +106,4 @@ void ContentLayer::setContentsOpaque(bool opaque)
         m_updater->setOpaque(opaque);
 }
 
-}
+}  // namespace cc

@@ -50,4 +50,4 @@ void IOSurfaceLayer::pushPropertiesTo(LayerImpl* layer)
     ioSurfaceLayer->setIOSurfaceProperties(m_ioSurfaceId, m_ioSurfaceSize);
 }
 
-}
+}  // namespace cc

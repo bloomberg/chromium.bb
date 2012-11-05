@@ -930,4 +930,4 @@ LayerImpl* LayerTreeHostCommon::findLayerThatIsHitByPoint(const gfx::PointF& scr
     return foundLayer;
 }
 
-} // namespace cc
+}  // namespace cc

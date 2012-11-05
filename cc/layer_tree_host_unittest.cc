@@ -3270,4 +3270,4 @@ TEST_F(LayerTreeHostTestDeferCommits, runMultiThread)
     runTest(true);
 }
 
-} // namespace
+}  // anonymous namespace

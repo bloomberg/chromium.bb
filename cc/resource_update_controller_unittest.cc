@@ -477,4 +477,4 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
     EXPECT_EQ(2, m_numTotalUploads);
 }
 
-} // namespace
+}  // anonymous namespace

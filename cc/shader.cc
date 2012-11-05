@@ -882,4 +882,4 @@ std::string FragmentShaderCheckerboard::getShaderString() const
     );
 }
 
-} // namespace cc
+}  // namespace cc

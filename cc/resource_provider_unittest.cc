@@ -592,4 +592,4 @@ INSTANTIATE_TEST_CASE_P(ResourceProviderTests,
                         ::testing::Values(ResourceProvider::GLTexture,
                                           ResourceProvider::Bitmap));
 
-} // namespace
+}  // anonymous namespace

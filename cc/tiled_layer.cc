@@ -783,4 +783,4 @@ gfx::Rect TiledLayer::idlePaintRect()
     return prepaintRect;
 }
 
-}
+}  // namespace cc
