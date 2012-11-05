@@ -46,7 +46,7 @@ void NaClSegVHandler(int signum, siginfo_t *info, void *other) {
   /* typeof(ucp->uc_mcontext) is struct __darwin_mcontext32 *. */
   faulting_pc = ucp->uc_mcontext->__ss.__eip;
 #  else
-#   error "fix this for 64bit OSX"
+  faulting_pc = ucp->uc_mcontext->__ss.__rip;
 #  endif
 # else
 #  error "fix this for non-x86 OSX"
