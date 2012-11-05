@@ -600,6 +600,9 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint image_id);
   virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint image_id);
 
+  virtual WebGLId createStreamTextureCHROMIUM(WebGLId texture);
+  virtual void destroyStreamTextureCHROMIUM(WebGLId texture);
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

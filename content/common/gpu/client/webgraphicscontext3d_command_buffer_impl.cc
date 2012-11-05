@@ -760,6 +760,16 @@ void WebGraphicsContext3DCommandBufferImpl::
       target, samples, internalformat, width, height);
 }
 
+WebGLId WebGraphicsContext3DCommandBufferImpl::createStreamTextureCHROMIUM(
+    WebGLId texture) {
+  return gl_->CreateStreamTextureCHROMIUM(texture);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::destroyStreamTextureCHROMIUM(
+    WebGLId texture) {
+  gl_->DestroyStreamTextureCHROMIUM(texture);
+}
+
 // Helper macros to reduce the amount of code.
 
 #define DELEGATE_TO_GL(name, glname)                                    \
