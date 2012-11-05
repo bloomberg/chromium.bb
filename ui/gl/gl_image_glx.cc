@@ -82,7 +82,8 @@ bool GLImageGLX::Initialize() {
   }
 
   int config_attribs[] = {
-    GLX_VISUAL_ID, visinfo->visualid,
+    static_cast<int>(GLX_VISUAL_ID),
+    static_cast<int>(visinfo->visualid),
     GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
     GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_2D_EXT,
     BindToTextureFormat(visinfo->depth), GL_TRUE,
