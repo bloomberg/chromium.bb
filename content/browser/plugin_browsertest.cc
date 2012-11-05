@@ -282,12 +282,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, CreateInstanceInPaint) {
 }
 
 // Tests that putting up an alert in response to a paint doesn't deadlock.
-#if defined(OS_WIN)
-#define MAYBE_AlertInWindowMessage DISABLED_AlertInWindowMessage
-#else
-#define MAYBE_AlertInWindowMessage AlertInWindowMessage
-#endif
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE_AlertInWindowMessage) {
+IN_PROC_BROWSER_TEST_F(PluginTest, AlertInWindowMessage) {
   NavigateToURL(shell(), GetURL("alert_in_window_message.html"));
 
   WaitForAppModalDialog(shell());
@@ -318,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeleteCreatePluginInNPNEvaluate) {
 #if !defined(OS_MACOSX)
 // Disabled on Mac because the plugin side isn't implemented yet, see
 // "TODO(port)" in plugin_javascript_open_popup.cc.
-IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_OpenPopupWindowWithPlugin) {
+IN_PROC_BROWSER_TEST_F(PluginTest, OpenPopupWindowWithPlugin) {
   LoadAndWait(GetURL("get_javascript_open_popup_with_plugin.html"));
 }
 #endif

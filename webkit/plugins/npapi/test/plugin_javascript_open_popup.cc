@@ -67,7 +67,7 @@ bool ExecuteJavascriptPopupWindowTargetPluginTest::CheckWindow(
 
   if (IsWindow(window_handle)) {
     HWND parent_window = GetParent(window_handle);
-    if (!IsWindow(parent_window) || parent_window == GetDesktopWindow())
+    if (!IsWindow(parent_window))
       SetError("Windowed plugin instantiated with NULL parent");
     return true;
   }
