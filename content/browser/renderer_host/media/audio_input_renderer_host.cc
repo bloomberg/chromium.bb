@@ -262,8 +262,10 @@ void AudioInputRendererHost::OnCreateStream(
     return;
   }
 
-  // Set the initial AGC state for the audio input stream.
-  entry->controller->SetAutomaticGainControl(automatic_gain_control);
+  // Set the initial AGC state for the audio input stream. Note that, the AGC
+  // is only supported in AUDIO_PCM_LOW_LATENCY mode.
+  if (params.format() == media::AudioParameters::AUDIO_PCM_LOW_LATENCY)
+    entry->controller->SetAutomaticGainControl(automatic_gain_control);
 
   // If we have created the controller successfully create a entry and add it
   // to the map.
