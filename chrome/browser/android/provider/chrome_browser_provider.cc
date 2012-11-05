@@ -425,7 +425,8 @@ class CreateBookmarksFolderOnceTask : public BookmarkModelTask {
     bool in_mobile_bookmarks;
     IsInMobileBookmarksBranchTask::RunOnUIThread(model, parent->id(),
                                                  &in_mobile_bookmarks);
-    if (in_mobile_bookmarks) {
+    if (!in_mobile_bookmarks) {
+      // The parent folder must be inside the Mobile Bookmarks folder.
       *result = kInvalidBookmarkId;
       return;
     }
