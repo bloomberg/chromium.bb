@@ -261,7 +261,6 @@ def AddAndroidActions(actions):
   actions.add('MobileTabSwitched')
   actions.add('MobileToolbarBack')
   actions.add('MobileToolbarForward')
-  actions.add('MobileToolbarNewTab')
   actions.add('MobileToolbarReload')
   actions.add('MobileToolbarShowMenu')
   actions.add('MobileToolbarShowStackView')

@@ -32,13 +32,14 @@ using content::BrowserThread;
 namespace {
 
 // Promotion impression types for the NewTabPage.MobilePromo histogram.
+// Should be kept in sync with the values in histograms.xml
 enum PromoImpressionBuckets {
-  PROMO_IMPRESSION_MOST_VISITED,
-  PROMO_IMPRESSION_OPEN_TABS,
-  PROMO_IMPRESSION_SYNC_PROMO,
-  PROMO_IMPRESSION_SEND_EMAIL_CLICKED,
-  PROMO_IMPRESSION_CLOSE_PROMO_CLICKED,
-  PROMO_IMPRESSION_BUCKET_BOUNDARY
+  PROMO_IMPRESSION_MOST_VISITED = 0,
+  PROMO_IMPRESSION_OPEN_TABS = 1,
+  PROMO_IMPRESSION_SYNC_PROMO = 2,
+  PROMO_IMPRESSION_SEND_EMAIL_CLICKED = 3,
+  PROMO_IMPRESSION_CLOSE_PROMO_CLICKED = 4,
+  PROMO_IMPRESSION_BUCKET_BOUNDARY = 5
 };
 
 // Helper to record an impression in NewTabPage.MobilePromo histogram.
