@@ -61,12 +61,6 @@ target_version_map = {
 }
 
 
-# Global variable cache. It has to be a descendant of 'object', rather than
-# instance thereof, because attributes cannot be set on 'object' instances.
-class VariableCache(object):
-  pass
-VAR_CACHE = VariableCache()
-
 class Crossdev(object):
   """Class for interacting with crossdev and caching its output."""
 
@@ -76,12 +70,12 @@ class Crossdev(object):
   @classmethod
   def Load(cls, reconfig):
     """Load crossdev cache from disk."""
-    crossdev_versions = GetInstalledPackageVersions('sys-devel/crossdev')
-    cls._CACHE = {'crossdev_versions': crossdev_versions}
+    crossdev_version = GetStablePackageVersion('sys-devel/crossdev', True)
+    cls._CACHE = {'crossdev_version': crossdev_version}
     if os.path.exists(cls._CACHE_FILE) and not reconfig:
       with open(cls._CACHE_FILE) as f:
         data = json.load(f)
-        if crossdev_versions == data['crossdev_versions']:
+        if crossdev_version == data.get('crossdev_version'):
           cls._CACHE = data
 
   @classmethod
@@ -191,18 +185,8 @@ def GetPackageMap(target):
 
 
 def GetHostTuple():
-  """Returns compiler tuple for the host system.
-
-  Caches the result, because the command can be fairly expensive, and never
-  changes throughout a single run.
-  """
-  CACHE_ATTR = '_host_tuple'
-
-  val = getattr(VAR_CACHE, CACHE_ATTR, None)
-  if val is None:
-    val = portage.settings['CHOST']
-    setattr(VAR_CACHE, CACHE_ATTR, val)
-  return val
+  """Returns compiler tuple for the host system."""
+  return portage.settings['CHOST']
 
 
 def GetTargetPackages(target):
@@ -227,11 +211,6 @@ def GetPortagePackage(target, package):
   assert(category)
   assert(pn)
   return '%s/%s' % (category, pn)
-
-
-def GetPortageKeyword(target):
-  """Returns a portage friendly keyword for a given target."""
-  return Crossdev.GetConfig(target)['arch']
 
 
 def IsPackageDisabled(target, package):
@@ -331,13 +310,13 @@ def GetInstalledPackageVersions(atom):
   returns the list of versions of the package currently installed.
   """
   versions = []
-  for pkg in portage.db['/']['vartree'].dbapi.match(atom):
+  for pkg in portage.db['/']['vartree'].dbapi.match(atom, use_cache=0):
     version = portage.versions.cpv_getversion(pkg)
     versions.append(version)
   return versions
 
 
-def GetStablePackageVersion(target, package, installed):
+def GetStablePackageVersion(atom, installed):
   """Extracts the current stable version for a given package.
 
   args:
@@ -346,34 +325,9 @@ def GetStablePackageVersion(target, package, installed):
 
   returns a string containing the latest version.
   """
-  def mass_portageq_splitline(entry):
-    """Splits the output of mass_best_visible into package:version tuple."""
-    # mass_best_visible returns lines of the format "package:cpv"
-    split_string = entry.split(':', 1)
-    if split_string[1]:
-      split_string[1] = portage.versions.cpv_getversion(split_string[1])
-    return split_string
-
-  CACHE_ATTR = '_target_stable_map'
-
-  pkgtype = "installed" if installed else "ebuild"
-
-  val = getattr(VAR_CACHE, CACHE_ATTR, {})
-  if not target in val:
-    val[target] = {}
-  if not pkgtype in val[target]:
-    keyword = GetPortageKeyword(target)
-    extra_env = {'ACCEPT_KEYWORDS' : '-* ' + keyword}
-    # Evaluate all packages for a target in one swoop, because it's much faster.
-    pkgs = [GetPortagePackage(target, p) for p in GetTargetPackages(target)]
-    cmd = ['portageq', 'mass_best_visible', '/', pkgtype] + pkgs
-    cpvs = cros_build_lib.RunCommand(cmd,
-                                     print_cmd=False, redirect_stdout=True,
-                                     extra_env=extra_env).output.splitlines()
-    val[target][pkgtype] = dict(map(mass_portageq_splitline, cpvs))
-    setattr(VAR_CACHE, CACHE_ATTR, val)
-
-  return val[target][pkgtype][GetPortagePackage(target, package)]
+  pkgtype = 'vartree' if installed else 'porttree'
+  cpv = portage.best(portage.db['/'][pkgtype].dbapi.match(atom, use_cache=0))
+  return portage.versions.cpv_getversion(cpv) if cpv else None
 
 
 def VersionListToNumeric(target, package, versions, installed):
@@ -388,9 +342,10 @@ def VersionListToNumeric(target, package, versions, installed):
   returns list of purely numeric versions equivalent to argument
   """
   resolved = []
+  atom = GetPortagePackage(target, package)
   for version in versions:
     if version == PACKAGE_STABLE:
-      resolved.append(GetStablePackageVersion(target, package, installed))
+      resolved.append(GetStablePackageVersion(atom, installed))
     elif version != PACKAGE_NONE:
       resolved.append(version)
   return resolved
@@ -439,8 +394,9 @@ def TargetIsInitialized(target):
     for package in GetTargetPackages(target):
       atom = GetPortagePackage(target, package)
       # Do we even want this package && is it initialized?
-      if not IsPackageDisabled(target, package) and \
-          not GetInstalledPackageVersions(atom):
+      if not IsPackageDisabled(target, package) and not (
+          GetStablePackageVersion(atom, True) and
+          GetStablePackageVersion(atom, False)):
         return False
     return True
   except cros_build_lib.RunCommandError:
@@ -460,49 +416,6 @@ def RemovePackageMask(target):
   osutils.SafeUnlink(maskfile)
 
 
-def CreatePackageMask(target, masks):
-  """[Re]creates a package.mask file for the given platform.
-
-  args:
-    target - the given target on which to operate
-    masks - a map of package : version,
-        where version is the highest permissible version (mask >)
-  """
-  maskfile = os.path.join('/etc/portage/package.mask', 'cross-' + target)
-  assert not os.path.exists(maskfile)
-  osutils.SafeMakedirs(os.path.dirname(maskfile))
-
-  with open(maskfile, 'w') as f:
-    for pkg, m in masks.items():
-      f.write('>%s-%s\n' % (pkg, m))
-
-
-def CreatePackageKeywords(target):
-  """[Re]create a package.keywords file for the platform.
-
-  This sets all package.keywords files to unmask all stable/testing packages.
-  TODO: Note that this approach should be deprecated and is only done for
-  compatibility reasons. In the future, we'd like to stop using keywords
-  altogether, and keep just stable unmasked.
-
-  args:
-    target - target for which to recreate package.keywords
-  """
-  maskfile = os.path.join('/etc/portage/package.keywords', 'cross-' + target)
-  osutils.SafeUnlink(maskfile)
-
-  osutils.SafeMakedirs(os.path.dirname(maskfile))
-
-  keyword = GetPortageKeyword(target)
-
-  with open(maskfile, 'w') as f:
-    for pkg in GetTargetPackages(target):
-      if IsPackageDisabled(target, pkg):
-        continue
-      f.write('%s %s ~%s\n' %
-              (GetPortagePackage(target, pkg), keyword, keyword))
-
-
 # Main functions performing the actual update steps.
 def UpdateTargets(targets, usepkg):
   """Determines which packages need update/unmerge and defers to portage.
@@ -511,20 +424,17 @@ def UpdateTargets(targets, usepkg):
     targets - the list of targets to update
     usepkg - copies the commandline option
   """
-  # TODO(zbehan): This process is rather complex due to package.* handling.
-  # With some semantic changes over the original setup_board functionality,
-  # it can be considerably cleaned up.
-  mergemap = {}
+  # Remove keyword files created by old versions of cros_setup_toolchains.
+  osutils.SafeUnlink('/etc/portage/package.keywords/cross-host')
 
   # For each target, we do two things. Figure out the list of updates,
   # and figure out the appropriate keywords/masks. Crossdev will initialize
   # these, but they need to be regenerated on every update.
   print 'Determining required toolchain updates...'
+  mergemap = {}
   for target in targets:
     # Record the highest needed version for each target, for masking purposes.
     RemovePackageMask(target)
-    CreatePackageKeywords(target)
-    packagemasks = {}
     for package in GetTargetPackages(target):
       # Portage name for the package
       if IsPackageDisabled(target, package):
@@ -535,17 +445,11 @@ def UpdateTargets(targets, usepkg):
       desired_num = VersionListToNumeric(target, package, desired, False)
       mergemap[pkg] = set(desired_num).difference(current)
 
-      # Pick the highest version for mask.
-      packagemasks[pkg] = portage.versions.best(desired_num)
-
-    CreatePackageMask(target, packagemasks)
-
   packages = []
   for pkg in mergemap:
     for ver in mergemap[pkg]:
       if ver != PACKAGE_NONE:
-        # Be a little more permissive for usepkg, the binaries may not exist.
-        packages.append('%s%s-%s' % ('<=' if usepkg else '=', pkg, ver))
+        packages.append(pkg)
 
   if not packages:
     print 'Nothing to update!'
