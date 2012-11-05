@@ -1,0 +1,13 @@
+Name: Java Native Interface from Android NDK
+Short Name: JNI
+URL: http://developer.android.com/sdk/index.html
+Version: NDK r7, SDK API level 16
+Security Critical: no
+License: Apache 2
+
+Description:
+  An API for native code to interface with code running in a JVM.
+
+Local modifications:
+  -See patch.diff. Made portable to windows by adding proper JNICALL and
+   JNIEXPORT defines.
