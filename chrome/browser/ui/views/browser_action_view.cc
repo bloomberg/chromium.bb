@@ -312,8 +312,8 @@ bool BrowserActionButton::Activate() {
 
 bool BrowserActionButton::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsRightMouseButton()) {
-    return IsPopup() ? MenuButton::OnMousePressed(event)
-                     : TextButton::OnMousePressed(event);
+    return IsPopup() ? MenuButton::OnMousePressed(event) :
+                       TextButton::OnMousePressed(event);
   }
 
   // See comments in MenuButton::Activate() as to why this is needed.
@@ -341,8 +341,13 @@ void BrowserActionButton::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 bool BrowserActionButton::OnKeyReleased(const ui::KeyEvent& event) {
-  return IsPopup() ? MenuButton::OnKeyReleased(event)
-                   : TextButton::OnKeyReleased(event);
+  return IsPopup() ? MenuButton::OnKeyReleased(event) :
+                     TextButton::OnKeyReleased(event);
+}
+
+ui::EventResult BrowserActionButton::OnGestureEvent(ui::GestureEvent* event) {
+  return IsPopup() ? MenuButton::OnGestureEvent(event) :
+                     TextButton::OnGestureEvent(event);
 }
 
 bool BrowserActionButton::AcceleratorPressed(
