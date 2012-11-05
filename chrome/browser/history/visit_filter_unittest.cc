@@ -239,7 +239,8 @@ TEST_F(VisitFilterTest, IntersectTimeVectors) {
   EXPECT_TRUE(result.empty());
 }
 
-TEST_F(VisitFilterTest, GetVisitScore) {
+// Disabled because this test is not DST-safe. http://crbug.com/159384
+TEST_F(VisitFilterTest, DISABLED_GetVisitScore) {
   base::Time filter_time = GetClosestMidday();
   VisitFilter filter;
   VisitRow visit;
