@@ -938,7 +938,6 @@ main(int argc, char *argv[])
 
 	editor.entry = text_entry_create(&editor, "Entry");
 	editor.editor = text_entry_create(&editor, "Editor");
-	text_entry_set_preedit(editor.editor, "preedit", strlen("preedit"));
 
 	window_set_title(editor.window, "Text Editor");
 
