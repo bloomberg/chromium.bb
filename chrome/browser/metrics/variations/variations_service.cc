@@ -512,14 +512,7 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
   }
 
   trial->SetForced();
-  bool study_expired = IsStudyExpired(study, reference_date);
-  // This metric is used to help track down a specific problem with the
-  // uniformity trials. It can be removed when that investigation is complete.
-  if (study.name() == "UMA-Uniformity-Trial-1-Percent") {
-    UMA_HISTOGRAM_BOOLEAN("Variations.ServerStudyExpiredUniformity1Percent",
-                          study_expired);
-  }
-  if (study_expired)
+  if (IsStudyExpired(study, reference_date))
     trial->Disable();
 }
 
