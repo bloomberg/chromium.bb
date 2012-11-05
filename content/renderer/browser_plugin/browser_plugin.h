@@ -269,9 +269,6 @@ class CONTENT_EXPORT BrowserPlugin :
   typedef std::vector<v8::Persistent<v8::Function> > EventListeners;
   typedef std::map<std::string, EventListeners> EventListenerMap;
   EventListenerMap event_listener_map_;
-#if defined(OS_WIN)
-  base::SharedMemory shared_memory_;
-#endif
   // Important: Do not add more history state here.
   // We strongly discourage storing additional history state (such as page IDs)
   // in the embedder process, at the risk of having incorrect information that
