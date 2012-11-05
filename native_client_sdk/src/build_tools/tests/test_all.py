@@ -8,6 +8,7 @@ import unittest
 
 TEST_MODULES = [
     'test_sdktools',
+    'test_sdktools_commands',
     'test_update_nacl_manifest'
 ]
 

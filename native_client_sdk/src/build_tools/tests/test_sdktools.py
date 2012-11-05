@@ -68,8 +68,18 @@ class SdkToolsTestCase(unittest.TestCase):
     manifest_filename = os.path.join(self.basedir, 'nacl_sdk', 'sdk_cache',
         MANIFEST_BASENAME)
     self.manifest = manifest_util.SDKManifest()
-    self.manifest.LoadDataFromString(open(manifest_filename, 'r').read())
+    self.manifest.LoadDataFromString(open(manifest_filename).read())
     self.sdk_tools_bundle = self.manifest.GetBundle('sdk_tools')
+
+  def _WriteCacheManifest(self, manifest):
+    """Write the manifest at nacl_sdk/sdk_cache.
+
+    This is useful for faking having installed a bundle.
+    """
+    manifest_filename = os.path.join(self.basedir, 'nacl_sdk', 'sdk_cache',
+        MANIFEST_BASENAME)
+    with open(manifest_filename, 'w') as stream:
+      stream.write(manifest.GetDataAsString())
 
   def _WriteManifest(self):
     with open(os.path.join(self.basedir, MANIFEST_BASENAME), 'w') as stream:
@@ -117,7 +127,11 @@ class SdkToolsTestCase(unittest.TestCase):
     cmd.extend(['-U', self.server.GetURL(MANIFEST_BASENAME)])
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
-    self.assertEqual(process.returncode, 0)
+    try:
+      self.assertEqual(process.returncode, 0)
+    except Exception:
+      print stdout
+      raise
     return stdout
 
   def _RunAndExtractRevision(self):
@@ -212,8 +226,5 @@ class TestAutoUpdateSdkToolsDifferentFilesystem(TestAutoUpdateSdkTools):
     self.SetupWithBaseDirPrefix('sdktools', tmpdir='.')
 
 
-def main():
-  unittest.main()
-
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(unittest.main())

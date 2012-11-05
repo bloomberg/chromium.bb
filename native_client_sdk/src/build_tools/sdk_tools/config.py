@@ -7,16 +7,20 @@ import logging
 import urlparse
 
 SOURCE_WHITELIST = [
+  'http://localhost/',  # For testing.
   'https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk',
 ]
 
 def IsSourceValid(url):
-  scheme, host, path, _, _, _ = urlparse.urlparse(url)
+  # E1101: Instance of 'ParseResult' has no 'scheme' member
+  # pylint: disable=E1101
+
+  given = urlparse.urlparse(url)
   for allowed_url in SOURCE_WHITELIST:
-    allowed_scheme, allowed_host, allowed_path_prefix, _, _, _ = \
-        urlparse.urlparse(allowed_url)
-    if (scheme == allowed_scheme and host == allowed_host and
-        path.startswith(allowed_path_prefix)):
+    allowed = urlparse.urlparse(allowed_url)
+    if (given.scheme == allowed.scheme and
+        given.hostname == allowed.hostname and
+        given.path.startswith(allowed.path)):
       return True
   return False
 

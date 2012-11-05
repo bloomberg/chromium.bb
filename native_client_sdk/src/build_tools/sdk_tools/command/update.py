@@ -158,7 +158,17 @@ def UpdateBundleIfNeeded(delegate, remote_manifest, local_manifest,
   bundle = remote_manifest.GetBundle(bundle_name)
   if bundle:
     if _BundleNeedsUpdate(delegate, local_manifest, bundle):
-      _UpdateBundle(delegate, bundle, local_manifest, force)
+      # TODO(binji): It would be nicer to detect whether the user has any
+      # modifications to the bundle. If not, we could update with impunity.
+      if not force and delegate.BundleDirectoryExists(bundle_name):
+        print ('%s already exists, but has an update available.\n'
+            'Run update with the --force option to overwrite the '
+            'existing directory.\nWarning: This will overwrite any '
+            'modifications you have made within this directory.'
+            % (bundle_name,))
+        return
+
+      _UpdateBundle(delegate, bundle, local_manifest)
     else:
       print '%s is already up-to-date.' % (bundle.name,)
   else:
@@ -188,7 +198,7 @@ def _BundleNeedsUpdate(delegate, local_manifest, bundle):
   return local_manifest.BundleNeedsUpdate(bundle)
 
 
-def _UpdateBundle(delegate, bundle, local_manifest, force):
+def _UpdateBundle(delegate, bundle, local_manifest):
   archive = bundle.GetHostOSArchive()
   if not archive:
     logging.warn('Bundle %s does not exist for this platform.' % (bundle.name,))
