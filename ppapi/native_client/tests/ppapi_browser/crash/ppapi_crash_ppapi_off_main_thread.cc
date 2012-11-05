@@ -17,7 +17,7 @@ namespace {
 
 void* CrashOffMainThreadFunction(void* thread_arg) {
   printf("--- CrashPPAPIOffMainThreadFunction\n");
-  PPBURLRequestInfo()->Create(pp_instance());  // Fatal CHECK failure.
+  CRASH;
   return NULL;
 }
 
