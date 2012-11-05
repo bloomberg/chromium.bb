@@ -169,10 +169,10 @@ function preferOpus_() {
 /** @private */
 function forceOpus_() {
   setOutgoingSdpTransform(function(sdp) {
-    // Remove all other codecs.
+    // Remove all other codecs (not the video codecs though).
     sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
                       'm=audio $1 RTP/SAVPF 111\r\n');
-    sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3}.*\r\n/g, '');
+    sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3} (?!VP8|red|ulpfec).*\r\n/g, '');
     return sdp;
   });
 }
