@@ -167,7 +167,7 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       change_delegate_(NULL),
       initialized_(false),
-      observing_ip_address_changes_(false),
+      observing_network_connectivity_changes_(false),
       invalidator_state_(DEFAULT_INVALIDATION_ERROR),
       throttled_data_type_tracker_(&allstatus_),
       traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord),
@@ -465,7 +465,8 @@ void SyncManagerImpl::Init(
   initialized_ = true;
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  observing_ip_address_changes_ = true;
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  observing_network_connectivity_changes_ = true;
 
   UpdateCredentials(credentials);
 
@@ -604,7 +605,7 @@ void SyncManagerImpl::UpdateCredentials(
   DCHECK(!credentials.email.empty());
   DCHECK(!credentials.sync_token.empty());
 
-  observing_ip_address_changes_ = true;
+  observing_network_connectivity_changes_ = true;
   if (!connection_manager_->set_auth_token(credentials.sync_token))
     return;  // Auth token is known to be invalid, so exit early.
 
@@ -694,7 +695,8 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
   connection_manager_.reset();
 
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  observing_ip_address_changes_ = false;
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  observing_network_connectivity_changes_ = false;
 
   if (initialized_ && directory()) {
     directory()->SaveChanges();
@@ -713,16 +715,25 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
 }
 
 void SyncManagerImpl::OnIPAddressChanged() {
-  DVLOG(1) << "IP address change detected";
-  if (!observing_ip_address_changes_) {
+  if (!observing_network_connectivity_changes_) {
     DVLOG(1) << "IP address change dropped.";
     return;
   }
-
-  OnIPAddressChangedImpl();
+  DVLOG(1) << "IP address change detected.";
+  OnNetworkConnectivityChangedImpl();
 }
 
-void SyncManagerImpl::OnIPAddressChangedImpl() {
+void SyncManagerImpl::OnConnectionTypeChanged(
+  net::NetworkChangeNotifier::ConnectionType) {
+  if (!observing_network_connectivity_changes_) {
+    DVLOG(1) << "Connection type change dropped.";
+    return;
+  }
+  DVLOG(1) << "Connection type change detected.";
+  OnNetworkConnectivityChangedImpl();
+}
+
+void SyncManagerImpl::OnNetworkConnectivityChangedImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   scheduler_->OnConnectionStatusChange();
 }
@@ -737,7 +748,7 @@ void SyncManagerImpl::OnServerConnectionEvent(
   }
 
   if (event.connection_code == HttpResponse::SYNC_AUTH_ERROR) {
-    observing_ip_address_changes_ = false;
+    observing_network_connectivity_changes_ = false;
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
   }

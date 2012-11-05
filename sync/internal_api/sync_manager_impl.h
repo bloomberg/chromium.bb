@@ -46,14 +46,16 @@ class SyncSessionContext;
 //
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
-class SyncManagerImpl : public SyncManager,
-                        public net::NetworkChangeNotifier::IPAddressObserver,
-                        public InvalidationHandler,
-                        public JsBackend,
-                        public SyncEngineEventListener,
-                        public ServerConnectionEventListener,
-                        public syncable::DirectoryChangeDelegate,
-                        public SyncEncryptionHandler::Observer {
+class SyncManagerImpl :
+    public SyncManager,
+    public net::NetworkChangeNotifier::IPAddressObserver,
+    public net::NetworkChangeNotifier::ConnectionTypeObserver,
+    public InvalidationHandler,
+    public JsBackend,
+    public SyncEngineEventListener,
+    public ServerConnectionEventListener,
+    public syncable::DirectoryChangeDelegate,
+    public SyncEncryptionHandler::Observer {
  public:
   // Create an uninitialized SyncManager.  Callers must Init() before using.
   explicit SyncManagerImpl(const std::string& name);
@@ -174,8 +176,12 @@ class SyncManagerImpl : public SyncManager,
       const ObjectIdInvalidationMap& invalidation_map,
       IncomingInvalidationSource source) OVERRIDE;
 
-  // Called only by our NetworkChangeNotifier.
+  // These OnYYYChanged() methods are only called by our NetworkChangeNotifier.
+  // Called when IP address of primary interface changes.
   virtual void OnIPAddressChanged() OVERRIDE;
+  // Called when the connection type of the system has changed.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType) OVERRIDE;
 
   const SyncScheduler* scheduler() const;
 
@@ -252,7 +258,7 @@ class SyncManagerImpl : public SyncManager,
       const ModelTypeInvalidationMap& invalidation_map);
 
   // Checks for server reachabilty and requests a nudge.
-  void OnIPAddressChangedImpl();
+  void OnNetworkConnectivityChangedImpl();
 
   // Helper function used only by the constructor.
   void BindJsMessageHandler(
@@ -342,7 +348,7 @@ class SyncManagerImpl : public SyncManager,
   // Set to true once Init has been called.
   bool initialized_;
 
-  bool observing_ip_address_changes_;
+  bool observing_network_connectivity_changes_;
 
   InvalidatorState invalidator_state_;
 
