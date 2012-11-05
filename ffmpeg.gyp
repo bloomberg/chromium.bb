@@ -497,34 +497,37 @@
               '../..',  # The chromium 'src' directory.
             ],
           },
-          'actions': [
-            {
-              'action_name': 'generate_stubs',
-              'inputs': [
-                '<(generate_stubs_script)',
-                '<(extra_header)',
-                '<@(sig_files)',
-              ],
-              'outputs': [
-                '<(intermediate_dir)/<(stubs_filename_root).cc',
-                '<(output_root)/<(project_path)/<(stubs_filename_root).h',
-              ],
-              'action': ['python',
-                         '<(generate_stubs_script)',
-                         '-i', '<(intermediate_dir)',
-                         '-o', '<(output_root)/<(project_path)',
-                         '-t', '<(outfile_type)',
-                         '-e', '<(extra_header)',
-                         '-s', '<(stubs_filename_root)',
-                         '-p', '<(project_path)',
-                         '<@(_inputs)',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Generating FFmpeg stubs for dynamic loading.',
-            },
-          ],
-
           'conditions': [
+            ['use_system_ffmpeg==0', {
+              'actions': [
+                {
+                  'action_name': 'generate_stubs',
+                  'inputs': [
+                    '<(generate_stubs_script)',
+                    '<(extra_header)',
+                    '<@(sig_files)',
+                  ],
+                  'outputs': [
+                    '<(intermediate_dir)/<(stubs_filename_root).cc',
+                    '<(output_root)/<(project_path)/<(stubs_filename_root).h',
+                  ],
+                  'action': ['python',
+                             '<(generate_stubs_script)',
+                             '-i', '<(intermediate_dir)',
+                             '-o', '<(output_root)/<(project_path)',
+                             '-t', '<(outfile_type)',
+                             '-e', '<(extra_header)',
+                             '-s', '<(stubs_filename_root)',
+                             '-p', '<(project_path)',
+                             '<@(_inputs)',
+                  ],
+                  'process_outputs_as_sources': 1,
+                  'message': 'Generating FFmpeg stubs for dynamic loading.',
+                },
+              ],
+
+            }],
+
             # Linux/Solaris need libdl for dlopen() and friends.
             ['OS == "linux" or OS == "solaris"', {
               'link_settings': {
@@ -549,6 +552,17 @@
               'direct_dependent_settings': {
                 'cflags': [
                   '<!@(pkg-config --cflags libavcodec libavformat libavutil)',
+                ],
+                'defines': [
+                  'USE_SYSTEM_FFMPEG',
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(pkg-config --libs-only-L --libs-only-other libavcodec libavformat libavutil)',
+                ],
+                'libraries': [
+                  '<!@(pkg-config --libs-only-l libavcodec libavformat libavutil)',
                 ],
               },
             }, {  # else use_system_ffmpeg == 0, add local copy to include path
