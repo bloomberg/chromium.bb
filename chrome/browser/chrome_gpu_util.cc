@@ -158,7 +158,8 @@ void InitializeCompositingFieldTrial() {
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_DEV) {
+      channel == chrome::VersionInfo::CHANNEL_DEV ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
 #if defined(OS_WIN)
     // Enable threaded compositing on Windows.
     threaded_compositing_probability = kDivisor;
