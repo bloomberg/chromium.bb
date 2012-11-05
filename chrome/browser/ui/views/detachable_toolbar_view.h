@@ -50,9 +50,15 @@ class DetachableToolbarView : public views::AccessiblePaneView {
                                    double* roundness,
                                    views::View* view);
 
-  // Paint the horizontal border separating the shelf/bar from the page content.
+  // Paint the horizontal border separating the shelf/bar from the page content,
+  // with COLOR_TOOLBAR_SEPARATOR.
   static void PaintHorizontalBorder(gfx::Canvas* canvas,
                                     DetachableToolbarView* view);
+
+  // Similar to PaintHorizontalBorder but with the specified |border_color|.
+  static void PaintHorizontalBorderWithColor(gfx::Canvas* canvas,
+                                             DetachableToolbarView* view,
+                                             SkColor border_color);
 
   // Paint the background of the content area (the surface behind the
   // bookmarks). |rect| is the rectangle to paint the background within.

@@ -134,6 +134,11 @@ static const int kInstructionsPadding = 6;
 // Tag for the 'Other bookmarks' button.
 static const int kOtherFolderButtonTag = 1;
 
+// TODO(kuan): change chrome::kNTPBookmarkBarHeight to this new height when
+// search_ntp replaces ntp4; for now, while both versions exist, this new height
+// is only needed locally.
+static const int kSearchNewtabBookmarkBarHeight = 48;
+
 namespace {
 
 // BookmarkButton -------------------------------------------------------------
@@ -1659,7 +1664,8 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   // Next, layout out the buttons. Any buttons that are placed beyond the
   // visible region and made invisible.
-  if (GetBookmarkButtonCount() == 0 && model_ && model_->IsLoaded()) {
+  if (GetBookmarkButtonCount() == 0 && model_ && model_->IsLoaded() &&
+      !browser_->search_model()->mode().is_ntp()) {
     gfx::Size pref = instructions_->GetPreferredSize();
     if (!compute_bounds_only) {
       instructions_->SetBounds(
@@ -1729,12 +1735,14 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     x += kRightMargin;
     prefsize.set_width(x);
     if (IsDetached()) {
+      int ntp_bookmark_bar_height = browser_->search_model()->mode().is_ntp() ?
+          kSearchNewtabBookmarkBarHeight : chrome::kNTPBookmarkBarHeight;
       x += static_cast<int>(
           kNewtabHorizontalPadding * (1 - size_animation_->GetCurrentValue()));
       prefsize.set_height(
           browser_defaults::kBookmarkBarHeight +
           static_cast<int>(
-              (chrome::kNTPBookmarkBarHeight -
+              (ntp_bookmark_bar_height -
                browser_defaults::kBookmarkBarHeight) *
               (1 - size_animation_->GetCurrentValue())));
     } else {

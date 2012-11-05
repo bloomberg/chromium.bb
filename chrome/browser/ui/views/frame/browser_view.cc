@@ -14,6 +14,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -221,6 +223,8 @@ BookmarkExtensionBackground::BookmarkExtensionBackground(
 
 void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                         views::View* view) const {
+  ui::ThemeProvider* tp = host_view_->GetThemeProvider();
+
   // If search mode is |NTP|, bookmark bar is detached and floating on top of
   // the content view (in z-order) and below the "Most Visited" thumbnails (in
   // the y-direction).  It's visually nicer without the bookmark background, so
@@ -228,10 +232,31 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   // each bookmark button is part of the content view.
   const chrome::search::Mode& search_mode =
       browser_view_->browser()->search_model()->mode();
-  if (search_mode.is_ntp())
+  if (search_mode.is_ntp()) {
+    BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(browser_->profile());
+    if (bookmark_model && bookmark_model->HasBookmarks()) {
+      // If a theme is being used, paint the theme background color at maximum
+      // 80% opacity to make the the bookmark bar more legible;
+      // otherwise, use a transparent background.
+      if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+        const U8CPU kBackgroundOpacity = 204;  // 80% opacity
+        SkColor color = tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
+        if (gfx::IsInvertedColorScheme())
+          color = color_utils::InvertColor(color);
+        if (SkColorGetA(color) > kBackgroundOpacity)
+          color = SkColorSetA(color, kBackgroundOpacity);
+        canvas->DrawColor(color);
+        DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
+      } else {
+        const SkColor kBorderColor = SkColorSetARGB(25, 0, 0, 0);  // 10% black
+        DetachableToolbarView::PaintHorizontalBorderWithColor(
+            canvas, host_view_, kBorderColor);
+      }
+    }
     return;
+  }
 
-  ui::ThemeProvider* tp = host_view_->GetThemeProvider();
   int toolbar_overlap = host_view_->GetToolbarOverlap();
   // The client edge is drawn below the toolbar bounds.
   if (toolbar_overlap)
@@ -272,9 +297,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
         browser_view_->OffsetPointForToolbarBackgroundImage(
             gfx::Point(host_view_->GetMirroredX(), host_view_->y())));
-    // For instant extended API, only draw bookmark separator for |MODE_DFEAULT|
-    // mode.
-    if (host_view_->height() >= toolbar_overlap && search_mode.is_default())
+    if (host_view_->height() >= toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
 }

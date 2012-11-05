@@ -13,7 +13,7 @@
 namespace chrome {
 namespace search {
 
-const int kMinContentHeightForBottomBookmarkBar = 277;
+const int kMinContentHeightForBottomBookmarkBar = 268;
 
 } //  namespace search
 } //  namespace chrome

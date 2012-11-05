@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -422,15 +423,24 @@ int BrowserViewLayout::LayoutBookmarkBarAtTop(int top) {
 
 void BrowserViewLayout::LayoutBookmarkBarAtBottom() {
   DCHECK(active_bookmark_bar_);
+  // Layout bookmark bar at bottom of content view in the y-direction.
+  // Bookmark bar is child of |BrowserView| while content view is child of
+  // ContentsContainer, so convert its bottom coordinate relative to
+  // |BrowserView|.
   gfx::Point content_bottom(
       0, browser_view_->contents_container_->bounds().bottom());
   views::View::ConvertPointToTarget(
       browser_view_->contents_container_->parent(), browser_view_,
       &content_bottom);
-  if (!browser_view_->IsBookmarkBarVisible()) {
+  // Only show bookmark bar if height of content view is >=
+  // chrome::search::kMinContentHeightForBottomBookmarkBar.
+  if (browser_view_->contents_container_->height() <
+      chrome::search::kMinContentHeightForBottomBookmarkBar ||
+      !browser_view_->IsBookmarkBarVisible()) {
     active_bookmark_bar_->SetVisible(false);
     active_bookmark_bar_->SetBounds(0, content_bottom.y(),
                                     browser_view_->width(), 0);
+    return;
   }
 
   // BookmarkBarView uses infobar visibility to determine toolbar overlap, which
@@ -438,8 +448,8 @@ void BrowserViewLayout::LayoutBookmarkBarAtBottom() {
   // bookmark bar on the NTP is detached at bottom of content view, toolbar
   // overlap is irrelevant.  So set infobar visible to force no toolbar overlap.
   active_bookmark_bar_->set_infobar_visible(true);
-  int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
   active_bookmark_bar_->SetVisible(true);
+  int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
   active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(),
                                   content_bottom.y() - bookmark_bar_height,
                                   vertical_layout_rect_.width(),

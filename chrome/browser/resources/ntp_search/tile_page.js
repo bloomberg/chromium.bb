@@ -10,13 +10,14 @@ cr.define('ntp', function() {
   //----------------------------------------------------------------------------
 
   /**
-   * Bottom Panel's minimum padding bottom, which is 57 (the height of bookmark
-   * bar in detached mode as defined by chrome::kNTPBookmarkBarHeight) minus 12
-   * (top padding of a bookmark button).
+   * Bottom Panel's minimum padding bottom, which is 48 (the height of bookmark
+   * bar in detached mode as defined by kSearchNewtabBookmarkBarHeight in
+   * chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc minus 12 (top
+   * padding of a bookmark button).
    * @type {number}
    * @const
    */
-  var BOTTOM_PANEL_MIN_PADDING_BOTTOM = 45;
+  var BOTTOM_PANEL_MIN_PADDING_BOTTOM = 36;
 
   /**
    * The height required to show 2 rows of Tiles in the Bottom Panel.
@@ -40,7 +41,7 @@ cr.define('ntp', function() {
   // TODO(pedrosimonetti): This value is related to
   // kMinContentHeightForBottomBookmarkBar defined in chrome/browser/ui/search/
   // search_ui.h.  Change that value when calulation of bottom panel changes.
-  var HEIGHT_FOR_BOTTOM_PANEL = 600;
+  var HEIGHT_FOR_BOTTOM_PANEL = 591;
 
   /**
    * The Bottom Panel width required to show 5 cols of Tiles, which is used
