@@ -642,6 +642,7 @@ const char kUnknownString[] = "UNKNOWN";
 
 namespace shill {
 // Function names.
+const char kClearPropertiesFunction[] = "ClearProperties";
 const char kRefreshFunction[] = "Refresh";
 const char kSetCarrierFunction[] = "SetCarrier";
 
