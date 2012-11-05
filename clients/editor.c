@@ -66,6 +66,40 @@ struct editor {
 	struct text_entry *editor;
 };
 
+static const char *
+utf8_start_char(const char *text, const char *p)
+{
+	for (; p >= text; --p) {
+		if ((*p & 0xc0) != 0x80)
+			return p;
+	}
+	return NULL;
+}
+
+static const char *
+utf8_prev_char(const char *text, const char *p)
+{
+	if (p > text)
+		return utf8_start_char(text, --p);
+	return NULL;
+}
+
+static const char *
+utf8_end_char(const char *p)
+{
+	while ((*p & 0xc0) == 0x80)
+		p++;
+	return p;
+}
+
+static const char *
+utf8_next_char(const char *p)
+{
+	if (*p != 0)
+		return utf8_end_char(++p);
+	return NULL;
+}
+
 static struct text_layout *
 text_layout_create(void)
 {
@@ -148,6 +182,34 @@ text_layout_extents(struct text_layout *layout, cairo_text_extents_t *extents)
 					extents);
 }
 
+static uint32_t
+bytes_from_glyphs(struct text_layout *layout, uint32_t index)
+{
+	int i;
+	uint32_t glyphs = 0, bytes = 0; 
+
+	for (i = 0; i < layout->num_clusters && glyphs < index; i++) {
+		bytes += layout->clusters[i].num_bytes;
+		glyphs += layout->clusters[i].num_glyphs;
+	}
+
+	return bytes;
+}
+
+static uint32_t
+glyphs_from_bytes(struct text_layout *layout, uint32_t index)
+{
+	int i;
+	uint32_t glyphs = 0, bytes = 0; 
+
+	for (i = 0; i < layout->num_clusters && bytes < index; i++) {
+		bytes += layout->clusters[i].num_bytes;
+		glyphs += layout->clusters[i].num_glyphs;
+	}
+
+	return glyphs;
+}
+
 static int
 text_layout_xy_to_index(struct text_layout *layout, double x, double y)
 {
@@ -168,20 +230,21 @@ text_layout_xy_to_index(struct text_layout *layout, double x, double y)
 	for (i = 0; i < layout->num_glyphs - 1; ++i) {
 		d = layout->glyphs[i + 1].x - layout->glyphs[i].x;
 		if (x < layout->glyphs[i].x + d/2)
-			return i;
+			return bytes_from_glyphs(layout, i);
 	}
 
 	d = extents.width - layout->glyphs[layout->num_glyphs - 1].x;
 	if (x < layout->glyphs[layout->num_glyphs - 1].x + d/2)
-		return layout->num_glyphs - 1;
+		return bytes_from_glyphs(layout, layout->num_glyphs - 1);
 
-	return layout->num_glyphs;
+	return bytes_from_glyphs(layout, layout->num_glyphs);
 }
 
 static void
 text_layout_index_to_pos(struct text_layout *layout, uint32_t index, cairo_rectangle_t *pos)
 {
 	cairo_text_extents_t extents;
+	int glyph_index = glyphs_from_bytes(layout, index);
 
 	if (!pos)
 		return;
@@ -190,7 +253,7 @@ text_layout_index_to_pos(struct text_layout *layout, uint32_t index, cairo_recta
 					layout->glyphs, layout->num_glyphs,
 					&extents);
 
-	if ((int)index >= layout->num_glyphs) {
+	if (glyph_index >= layout->num_glyphs) {
 		pos->x = extents.x_advance;
 		pos->y = layout->num_glyphs ? layout->glyphs[layout->num_glyphs - 1].y : 0;
 		pos->width = 1;
@@ -198,9 +261,9 @@ text_layout_index_to_pos(struct text_layout *layout, uint32_t index, cairo_recta
 		return;
 	}
 
-	pos->x = layout->glyphs[index].x;
-	pos->y = layout->glyphs[index].y;
-	pos->width = (int)index < layout->num_glyphs - 1 ? layout->glyphs[index + 1].x : extents.x_advance - pos->x;
+	pos->x = layout->glyphs[glyph_index].x;
+	pos->y = layout->glyphs[glyph_index].y;
+	pos->width = glyph_index < layout->num_glyphs - 1 ? layout->glyphs[glyph_index + 1].x : extents.x_advance - pos->x;
 	pos->height = extents.height;
 }
 
@@ -268,6 +331,7 @@ text_model_delete_surrounding_text(void *data,
 {
 	struct text_entry *entry = data;
 	uint32_t cursor_index = index + entry->cursor;
+	const char *start, *end;
 
 	if (cursor_index > strlen(entry->text)) {
 		fprintf(stderr, "Invalid cursor index %d\n", index);
@@ -282,7 +346,12 @@ text_model_delete_surrounding_text(void *data,
 	if (length == 0)
 		return;
 
-	text_entry_delete_text(entry, cursor_index, length);
+	start = utf8_start_char(entry->text, entry->text + cursor_index);
+	end = utf8_end_char(entry->text + cursor_index + length);
+
+	text_entry_delete_text(entry,
+			       start - entry->text,
+			       end - start);
 }
 
 static void
@@ -300,6 +369,7 @@ text_model_key(void *data,
 	struct text_entry *entry = data;
 	const char *state_label;
 	const char *key_label = "released";
+	const char *new_char;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		state_label = "pressed";
@@ -313,15 +383,17 @@ text_model_key(void *data,
 			key_label = "Enter";
 			break;
 		case XKB_KEY_Left:
-			if (entry->cursor > 0) {
-				entry->cursor--;
+			new_char = utf8_prev_char(entry->text, entry->text + entry->cursor);
+			if (new_char != NULL) {
+				entry->cursor = new_char - entry->text;
 				entry->anchor = entry->cursor;
 				widget_schedule_redraw(entry->widget);
 			}
 			break;
 		case XKB_KEY_Right:
-			if (entry->cursor < strlen(entry->text)) {
-				entry->cursor++;
+			new_char = utf8_next_char(entry->text + entry->cursor);
+			if (new_char != NULL) {
+				entry->cursor = new_char - entry->text;
 				entry->anchor = entry->cursor;
 				widget_schedule_redraw(entry->widget);
 			}
