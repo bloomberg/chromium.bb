@@ -71,35 +71,41 @@ function load() {
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyClearDataButton')]);
-  OptionsPage.registerOverlay(new ConfirmDialog(
-      'doNotTrackConfirm',
-      loadTimeData.getString('doNotTrackConfirmOverlayTabTitle'),
-      'do-not-track-confirm-overlay',
-      $('do-not-track-confirm-ok'),
-      $('do-not-track-confirm-cancel'),
-      $('do-not-track-enabled').pref,
-      $('do-not-track-enabled').metric));
-  OptionsPage.registerOverlay(new ConfirmDialog(
-      'instantConfirm',
-      loadTimeData.getString('instantConfirmOverlayTabTitle'),
-      'instantConfirmOverlay',
-      $('instantConfirmOk'),
-      $('instantConfirmCancel'),
-      $('instant-enabled-control').pref,
-      $('instant-enabled-control').metric,
-      'instant.confirm_dialog_shown'));
+  OptionsPage.registerOverlay(
+      new ConfirmDialog(
+          'doNotTrackConfirm',
+          loadTimeData.getString('doNotTrackConfirmOverlayTabTitle'),
+          'do-not-track-confirm-overlay',
+          $('do-not-track-confirm-ok'),
+          $('do-not-track-confirm-cancel'),
+          $('do-not-track-enabled').pref,
+          $('do-not-track-enabled').metric),
+      BrowserOptions.getInstance());
+  OptionsPage.registerOverlay(
+      new ConfirmDialog(
+          'instantConfirm',
+          loadTimeData.getString('instantConfirmOverlayTabTitle'),
+          'instantConfirmOverlay',
+          $('instantConfirmOk'),
+          $('instantConfirmCancel'),
+          $('instant-enabled-control').pref,
+          $('instant-enabled-control').metric,
+          'instant.confirm_dialog_shown'),
+      BrowserOptions.getInstance());
   // 'spelling-enabled-control' element is only present on Chrome branded
   // builds.
   if ($('spelling-enabled-control')) {
-    OptionsPage.registerOverlay(new ConfirmDialog(
-        'spellingConfirm',
-        loadTimeData.getString('spellingConfirmOverlayTabTitle'),
-        'spelling-confirm-overlay',
-        $('spelling-confirm-ok'),
-        $('spelling-confirm-cancel'),
-        $('spelling-enabled-control').pref,
-        $('spelling-enabled-control').metric,
-        'spellcheck.confirm_dialog_shown'));
+    OptionsPage.registerOverlay(
+        new ConfirmDialog(
+            'spellingConfirm',
+            loadTimeData.getString('spellingConfirmOverlayTabTitle'),
+            'spelling-confirm-overlay',
+            $('spelling-confirm-ok'),
+            $('spelling-confirm-cancel'),
+            $('spelling-enabled-control').pref,
+            $('spelling-enabled-control').metric,
+            'spellcheck.confirm_dialog_shown'),
+        BrowserOptions.getInstance());
   }
   OptionsPage.registerOverlay(ContentSettings.getInstance(),
                               BrowserOptions.getInstance(),
