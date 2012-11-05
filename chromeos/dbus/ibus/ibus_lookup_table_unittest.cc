@@ -130,8 +130,7 @@ TEST(IBusLookupTable, ReadMozcCandidateTest) {
   const bool kIsCursorVisible = true;
   const IBusLookupTable::Orientation kOrientation =
       IBusLookupTable::IBUS_LOOKUP_TABLE_ORIENTATION_VERTICAL;
-  const uint8 kSampleBuffer[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
-  const size_t kSampleBufferLength = 6UL;
+  const bool kShowWindowAtComposition = false;
 
   // Create IBusLookupTable.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -147,12 +146,12 @@ TEST(IBusLookupTable, ReadMozcCandidateTest) {
   contents_writer.OpenArray("{sv}", &attachment_array_writer);
   dbus::MessageWriter entry_writer(NULL);
   attachment_array_writer.OpenDictEntry(&entry_writer);
-  entry_writer.AppendString("mozc.candidates");
+  entry_writer.AppendString("show_window_at_composition");
   dbus::MessageWriter variant_writer(NULL);
   entry_writer.OpenVariant("v", &variant_writer);
   dbus::MessageWriter sub_variant_writer(NULL);
-  variant_writer.OpenVariant("ay", &sub_variant_writer);
-  sub_variant_writer.AppendArrayOfBytes(kSampleBuffer, kSampleBufferLength);
+  variant_writer.OpenVariant("b", &sub_variant_writer);
+  sub_variant_writer.AppendBool(kShowWindowAtComposition);
 
   // Close attachment field container.
   variant_writer.CloseContainer(&sub_variant_writer);
@@ -198,10 +197,8 @@ TEST(IBusLookupTable, ReadMozcCandidateTest) {
   EXPECT_EQ(kSampleText2, target_lookup_table.candidates().at(1).value);
   EXPECT_EQ(kSampleLabel1, target_lookup_table.candidates().at(0).label);
   EXPECT_EQ(kSampleLabel2, target_lookup_table.candidates().at(1).label);
-  const std::string expected_binary(
-      reinterpret_cast<const char*>(kSampleBuffer), kSampleBufferLength);
-  EXPECT_EQ(expected_binary,
-            target_lookup_table.serialized_mozc_candidates_data());
+  EXPECT_EQ(kShowWindowAtComposition,
+            target_lookup_table.show_window_at_composition());
 }
 
 }  // namespace ibus

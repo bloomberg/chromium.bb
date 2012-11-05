@@ -29,9 +29,8 @@ namespace ibus {
 //   string "IBusLookupTable"
 //   array [
 //     dict_entry (
-//       string "mozc.candidates"
-//       variant  variant  array of bytes [
-//         08 01 10 16 ...
+//       string "window_show_at_composition"
+//       variant  variant  boolean false
 //       ]
 //     )
 //   ]
@@ -123,12 +122,9 @@ class CHROMEOS_EXPORT IBusLookupTable {
   const std::vector<Entry>& candidates() const { return candidates_; }
   std::vector<Entry>* mutable_candidates() { return &candidates_; }
 
-  const std::string& serialized_mozc_candidates_data() {
-    return serialized_mozc_candidates_data_;
-  }
-  void set_serialized_mozc_candidates_data(
-      const std::string& serialized_mozc_candidates_data) {
-    serialized_mozc_candidates_data_ = serialized_mozc_candidates_data;
+  bool show_window_at_composition() { return show_window_at_composition_; }
+  void set_show_window_at_composition(bool show_window_at_composition) {
+    show_window_at_composition_ = show_window_at_composition;
   }
 
  private:
@@ -137,9 +133,7 @@ class CHROMEOS_EXPORT IBusLookupTable {
   bool is_cursor_visible_;
   Orientation orientation_;
   std::vector<Entry> candidates_;
-
-  // TODO(nona): Refine data structure(crbug.com/129403).
-  std::string serialized_mozc_candidates_data_;
+  bool show_window_at_composition_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusLookupTable);
 };
