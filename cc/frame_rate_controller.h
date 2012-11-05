@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCFrameRateController_h
-#define CCFrameRateController_h
+#ifndef CC_FRAME_RATE_CONTROLLER_H_
+#define CC_FRAME_RATE_CONTROLLER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -80,4 +80,4 @@ protected:
 
 }  // namespace cc
 
-#endif // CCFrameRateController_h
+#endif  // CC_FRAME_RATE_CONTROLLER_H_

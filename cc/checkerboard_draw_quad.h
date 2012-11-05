@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCCheckerboardDrawQuad_h
-#define CCCheckerboardDrawQuad_h
+#ifndef CC_CHECKERBOARD_DRAW_QUAD_H_
+#define CC_CHECKERBOARD_DRAW_QUAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -31,4 +31,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_CHECKERBOARD_DRAW_QUAD_H_

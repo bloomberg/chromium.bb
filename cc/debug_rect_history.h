@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCDebugRectHistory_h
-#define CCDebugRectHistory_h
+#ifndef CC_DEBUG_RECT_HISTORY_H_
+#define CC_DEBUG_RECT_HISTORY_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -76,4 +76,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_DEBUG_RECT_HISTORY_H_

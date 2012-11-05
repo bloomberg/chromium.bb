@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayerChromium_h
-#define LayerChromium_h
+#ifndef CC_LAYER_H_
+#define CC_LAYER_H_
 
 #include "IntPoint.h"
 #include "Region.h"
@@ -408,4 +408,4 @@ void sortLayers(std::vector<scoped_refptr<Layer> >::iterator, std::vector<scoped
 
 }  // namespace cc
 
-#endif
+#endif  // CC_LAYER_H_

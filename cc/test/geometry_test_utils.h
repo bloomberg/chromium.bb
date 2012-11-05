@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCGeometryTestUtils_h
-#define CCGeometryTestUtils_h
+#ifndef CC_TEST_GEOMETRY_TEST_UTILS_H_
+#define CC_TEST_GEOMETRY_TEST_UTILS_H_
 
 namespace WebKit {
 class WebTransformationMatrix;
@@ -55,4 +55,4 @@ void ExpectTransformationMatrixEq(const WebKit::WebTransformationMatrix& expecte
 
 } // namespace WebKitTests
 
-#endif // CCGeometryTestUtils_h
+#endif  // CC_TEST_GEOMETRY_TEST_UTILS_H_

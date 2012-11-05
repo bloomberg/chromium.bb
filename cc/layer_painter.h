@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#ifndef LayerPainterChromium_h
-#define LayerPainterChromium_h
+#ifndef CC_LAYER_PAINTER_H_
+#define CC_LAYER_PAINTER_H_
 
 #include "cc/cc_export.h"
 
@@ -24,4 +24,4 @@ public:
 };
 
 } // namespace cc
-#endif // LayerPainterChromium_h
+#endif  // CC_LAYER_PAINTER_H_

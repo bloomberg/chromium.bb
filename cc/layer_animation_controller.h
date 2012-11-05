@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerAnimationController_h
-#define CCLayerAnimationController_h
+#ifndef CC_LAYER_ANIMATION_CONTROLLER_H_
+#define CC_LAYER_ANIMATION_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
@@ -108,4 +108,4 @@ private:
 
 } // namespace cc
 
-#endif // CCLayerAnimationController_h
+#endif  // CC_LAYER_ANIMATION_CONTROLLER_H_

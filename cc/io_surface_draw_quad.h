@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCIOSurfaceDrawQuad_h
-#define CCIOSurfaceDrawQuad_h
+#ifndef CC_IO_SURFACE_DRAW_QUAD_H_
+#define CC_IO_SURFACE_DRAW_QUAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -40,4 +40,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_IO_SURFACE_DRAW_QUAD_H_

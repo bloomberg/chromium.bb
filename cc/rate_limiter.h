@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RateLimiter_h
-#define RateLimiter_h
+#ifndef CC_RATE_LIMITER_H_
+#define CC_RATE_LIMITER_H_
 
 #include "base/memory/ref_counted.h"
 
@@ -49,4 +49,4 @@ private:
 };
 
 }
-#endif
+#endif  // CC_RATE_LIMITER_H_

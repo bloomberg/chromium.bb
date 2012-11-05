@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCScopedThreadProxy_h
-#define CCScopedThreadProxy_h
+#ifndef CC_SCOPED_THREAD_PROXY_H_
+#define CC_SCOPED_THREAD_PROXY_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/callback.h"
@@ -51,4 +51,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_SCOPED_THREAD_PROXY_H_

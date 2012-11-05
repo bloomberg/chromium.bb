@@ -207,4 +207,4 @@ private:
         runTest(true);                                    \
     }
 
-#endif // CC_TEST_LAYER_TREE_TEST_COMMON_H_
+#endif  // CC_TEST_LAYER_TREE_TEST_COMMON_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCTimingFunction_h
-#define CCTimingFunction_h
+#ifndef CC_TIMING_FUNCTION_H_
+#define CC_TIMING_FUNCTION_H_
 
 #include "UnitBezier.h"
 #include "cc/animation_curve.h"
@@ -60,4 +60,4 @@ public:
 
 } // namespace cc
 
-#endif // CCTimingFunction_h
+#endif  // CC_TIMING_FUNCTION_H_

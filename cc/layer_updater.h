@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayerUpdater_h
-#define LayerUpdater_h
+#ifndef CC_LAYER_UPDATER_H_
+#define CC_LAYER_UPDATER_H_
 
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
@@ -59,4 +59,4 @@ private:
 
 }  // namespace cc
 
-#endif // LayerUpdater_h
+#endif  // CC_LAYER_UPDATER_H_

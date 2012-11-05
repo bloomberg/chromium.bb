@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_CONTENTS_SCALING_LAYER_H
-#define CC_CONTENTS_SCALING_LAYER_H
+#ifndef CC_CONTENTS_SCALING_LAYER_H_
+#define CC_CONTENTS_SCALING_LAYER_H_
 
 #include "cc/cc_export.h"
 #include "cc/layer.h"
@@ -29,4 +29,4 @@ class CC_EXPORT ContentsScalingLayer : public Layer {
 
 }  // namespace cc
 
-#endif  // CC_CONTENTS_SCALING_LAYER_H
+#endif  // CC_CONTENTS_SCALING_LAYER_H__

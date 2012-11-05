@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PlatformColor_h
-#define PlatformColor_h
+#ifndef CC_PLATFORM_COLOR_H_
+#define CC_PLATFORM_COLOR_H_
 
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -57,4 +57,4 @@ public:
 
 } // namespace cc
 
-#endif
+#endif  // CC_PLATFORM_COLOR_H_

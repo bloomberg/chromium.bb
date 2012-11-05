@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#ifndef ScrollbarLayerChromium_h
-#define ScrollbarLayerChromium_h
+#ifndef CC_SCROLLBAR_LAYER_H_
+#define CC_SCROLLBAR_LAYER_H_
 
 #include "cc/caching_bitmap_content_layer_updater.h"
 #include "cc/cc_export.h"
@@ -63,4 +63,4 @@ private:
 };
 
 }
-#endif
+#endif  // CC_SCROLLBAR_LAYER_H_

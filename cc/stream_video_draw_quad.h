@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCStreamVideoDrawQuad_h
-#define CCStreamVideoDrawQuad_h
+#ifndef CC_STREAM_VIDEO_DRAW_QUAD_H_
+#define CC_STREAM_VIDEO_DRAW_QUAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -33,4 +33,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_STREAM_VIDEO_DRAW_QUAD_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCMathUtil_h
-#define CCMathUtil_h
+#ifndef CC_MATH_UTIL_H_
+#define CC_MATH_UTIL_H_
 
 #include "base/logging.h"
 #include "cc/cc_export.h"
@@ -112,4 +112,4 @@ public:
 
 } // namespace cc
 
-#endif // #define CCMathUtil_h
+#endif  // CC_MATH_UTIL_H_

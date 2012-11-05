@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCPriorityCalculator_h
-#define CCPriorityCalculator_h
+#ifndef CC_PRIORITY_CALCULATOR_H_
+#define CC_PRIORITY_CALCULATOR_H_
 
 #include "cc/cc_export.h"
 
@@ -36,4 +36,4 @@ public:
 
 }
 
-#endif
+#endif  // CC_PRIORITY_CALCULATOR_H_

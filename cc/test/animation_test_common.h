@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCAnimationTestCommon_h
-#define CCAnimationTestCommon_h
+#ifndef CC_TEST_ANIMATION_TEST_COMMON_H_
+#define CC_TEST_ANIMATION_TEST_COMMON_H_
 
 #include "cc/active_animation.h"
 #include "cc/animation_curve.h"
@@ -88,4 +88,4 @@ void addAnimatedTransformToLayer(cc::LayerImpl&, double duration, int deltaX, in
 
 } // namespace WebKitTests
 
-#endif // CCAnimationTesctCommon_h
+#endif  // CC_TEST_ANIMATION_TEST_COMMON_H_

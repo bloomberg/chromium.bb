@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCRenderSurface_h
-#define CCRenderSurface_h
+#ifndef CC_RENDER_SURFACE_IMPL_H_
+#define CC_RENDER_SURFACE_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -126,4 +126,4 @@ private:
 };
 
 }
-#endif
+#endif  // CC_RENDER_SURFACE_IMPL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCTileDrawQuad_h
-#define CCTileDrawQuad_h
+#ifndef CC_TILE_DRAW_QUAD_H_
+#define CC_TILE_DRAW_QUAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -52,4 +52,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_TILE_DRAW_QUAD_H_

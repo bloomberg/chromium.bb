@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCRendererGL_h
-#define CCRendererGL_h
+#ifndef CC_GL_RENDERER_H_
+#define CC_GL_RENDERER_H_
 
 #include "cc/cc_export.h"
 #include "cc/checkerboard_draw_quad.h"
@@ -234,4 +234,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_GL_RENDERER_H_

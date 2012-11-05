@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeWebCompositorOutputSurface_h
-#define FakeWebCompositorOutputSurface_h
+#ifndef CC_TEST_FAKE_WEB_COMPOSITOR_OUTPUT_SURFACE_H_
+#define CC_TEST_FAKE_WEB_COMPOSITOR_OUTPUT_SURFACE_H_
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -73,4 +73,4 @@ private:
 
 } // namespace WebKit
 
-#endif // FakeWebCompositorOutputSurface_h
+#endif  // CC_TEST_FAKE_WEB_COMPOSITOR_OUTPUT_SURFACE_H_

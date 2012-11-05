@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorFakeWebGraphicsContext3D_h
-#define CompositorFakeWebGraphicsContext3D_h
+#ifndef CC_TEST_COMPOSITOR_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#define CC_TEST_COMPOSITOR_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
@@ -33,4 +33,4 @@ protected:
 
 }
 
-#endif
+#endif  // CC_TEST_COMPOSITOR_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_

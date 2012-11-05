@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCRenderingStats_h
-#define CCRenderingStats_h
+#ifndef CC_RENDERING_STATS_H_
+#define CC_RENDERING_STATS_H_
 
 namespace cc {
 
@@ -35,4 +35,4 @@ struct RenderingStats {
 
 }
 
-#endif
+#endif  // CC_RENDERING_STATS_H_

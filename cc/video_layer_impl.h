@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCVideoLayerImpl_h
-#define CCVideoLayerImpl_h
+#ifndef CC_VIDEO_LAYER_IMPL_H_
+#define CC_VIDEO_LAYER_IMPL_H_
 
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
@@ -99,4 +99,4 @@ private:
 
 }  // namespace cc
 
-#endif // CCVideoLayerImpl_h
+#endif  // CC_VIDEO_LAYER_IMPL_H_

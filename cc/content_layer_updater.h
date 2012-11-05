@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContentLayerUpdater_h
-#define ContentLayerUpdater_h
+#ifndef CC_CONTENT_LAYER_UPDATER_H_
+#define CC_CONTENT_LAYER_UPDATER_H_
 
 #include "cc/cc_export.h"
 #include "cc/layer_updater.h"
@@ -32,4 +32,4 @@ private:
 
 }  // namespace cc
 
-#endif  // ContentLayerUpdater_h
+#endif  // CC_CONTENT_LAYER_UPDATER_H_

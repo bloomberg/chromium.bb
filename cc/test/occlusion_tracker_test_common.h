@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCOcclusionTrackerTestCommon_h
-#define CCOcclusionTrackerTestCommon_h
+#ifndef CC_TEST_OCCLUSION_TRACKER_TEST_COMMON_H_
+#define CC_TEST_OCCLUSION_TRACKER_TEST_COMMON_H_
 
 #include "Region.h"
 #include "cc/occlusion_tracker.h"
@@ -33,4 +33,4 @@ typedef TestOcclusionTrackerBase<cc::LayerImpl, cc::RenderSurfaceImpl> TestOcclu
 
 }
 
-#endif // CCOcclusionTrackerTestCommon_h
+#endif  // CC_TEST_OCCLUSION_TRACKER_TEST_COMMON_H_

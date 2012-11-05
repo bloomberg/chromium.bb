@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCCompletionEvent_h
-#define CCCompletionEvent_h
+#ifndef CC_COMPLETION_EVENT_H_
+#define CC_COMPLETION_EVENT_H_
 
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
@@ -64,4 +64,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_COMPLETION_EVENT_H_

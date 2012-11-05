@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCRenderer_h
-#define CCRenderer_h
+#ifndef CC_RENDERER_H_
+#define CC_RENDERER_H_
 
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
@@ -83,4 +83,4 @@ protected:
 
 }
 
-#endif // CCRenderer_h
+#endif  // CC_RENDERER_H_

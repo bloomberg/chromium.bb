@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCDamageTracker_h
-#define CCDamageTracker_h
+#ifndef CC_DAMAGE_TRACKER_H_
+#define CC_DAMAGE_TRACKER_H_
 
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
@@ -68,4 +68,4 @@ private:
 
 } // namespace cc
 
-#endif // CCDamageTracker_h
+#endif  // CC_DAMAGE_TRACKER_H_

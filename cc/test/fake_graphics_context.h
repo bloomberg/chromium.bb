@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeCCGraphicsContext_h
-#define FakeCCGraphicsContext_h
+#ifndef CC_TEST_FAKE_GRAPHICS_CONTEXT_H_
+#define CC_TEST_FAKE_GRAPHICS_CONTEXT_H_
 
 #include "cc/graphics_context.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
@@ -19,4 +19,4 @@ static inline scoped_ptr<cc::GraphicsContext> createFakeGraphicsContext()
 
 } // namespace WebKit
 
-#endif // FakeCCGraphicsContext_h
+#endif  // CC_TEST_FAKE_GRAPHICS_CONTEXT_H_

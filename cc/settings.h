@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCSettings_h
-#define CCSettings_h
+#ifndef CC_SETTINGS_H_
+#define CC_SETTINGS_H_
 
 #include "cc/cc_export.h"
 
@@ -32,4 +32,4 @@ public:
 
 } // namespace cc
 
-#endif // Settings_h
+#endif  // CC_SETTINGS_H_

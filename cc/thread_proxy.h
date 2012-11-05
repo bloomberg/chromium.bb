@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCThreadProxy_h
-#define CCThreadProxy_h
+#ifndef CC_THREAD_PROXY_H_
+#define CC_THREAD_PROXY_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -181,4 +181,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_THREAD_PROXY_H_

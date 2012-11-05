@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCSchedulerTestCommon_h
-#define CCSchedulerTestCommon_h
+#ifndef CC_TEST_SCHEDULER_TEST_COMMON_H_
+#define CC_TEST_SCHEDULER_TEST_COMMON_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/delay_based_time_source.h"
@@ -122,4 +122,4 @@ public:
 
 }
 
-#endif // CCSchedulerTestCommon_h
+#endif  // CC_TEST_SCHEDULER_TEST_COMMON_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCHeadsUpDisplayLayerImpl_h
-#define CCHeadsUpDisplayLayerImpl_h
+#ifndef CC_HEADS_UP_DISPLAY_LAYER_IMPL_H_
+#define CC_HEADS_UP_DISPLAY_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -55,4 +55,4 @@ private:
 
 }  // namespace cc
 
-#endif // CCHeadsUpDisplayLayerImpl_h
+#endif  // CC_HEADS_UP_DISPLAY_LAYER_IMPL_H_

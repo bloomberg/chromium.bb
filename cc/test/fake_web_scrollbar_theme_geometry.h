@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeWebScrollbarThemeGeometry_h
-#define FakeWebScrollbarThemeGeometry_h
+#ifndef CC_TEST_FAKE_WEB_SCROLLBAR_THEME_GEOMETRY_H_
+#define CC_TEST_FAKE_WEB_SCROLLBAR_THEME_GEOMETRY_H_
 
 #include <public/WebScrollbarThemeGeometry.h>
 
@@ -44,4 +44,4 @@ public:
 
 } // namespace WebKit
 
-#endif // FakeWebScrollbarThemeGeometry_h
+#endif  // CC_TEST_FAKE_WEB_SCROLLBAR_THEME_GEOMETRY_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCTexture_h
-#define CCTexture_h
+#ifndef CC_TEXTURE_H_
+#define CC_TEXTURE_H_
 
 #include "cc/cc_export.h"
 #include "cc/resource_provider.h"
@@ -40,4 +40,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_TEXTURE_H_

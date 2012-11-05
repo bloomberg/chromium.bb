@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCThread_h
-#define CCThread_h
+#ifndef CC_THREAD_H_
+#define CC_THREAD_H_
 
 #include "base/callback.h"
 #include "base/basictypes.h"
@@ -28,4 +28,4 @@ public:
 
 }
 
-#endif
+#endif  // CC_THREAD_H_

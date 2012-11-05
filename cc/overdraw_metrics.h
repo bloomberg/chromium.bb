@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCOverdrawMetrics_h
-#define CCOverdrawMetrics_h
+#ifndef CC_OVERDRAW_METRICS_H_
+#define CC_OVERDRAW_METRICS_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -97,4 +97,4 @@ private:
 
 } // namespace cc
 
-#endif
+#endif  // CC_OVERDRAW_METRICS_H_

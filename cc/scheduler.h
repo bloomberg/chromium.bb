@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCScheduler_h
-#define CCScheduler_h
+#ifndef CC_SCHEDULER_H_
+#define CC_SCHEDULER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -106,4 +106,4 @@ private:
 
 }  // namespace cc
 
-#endif // CCScheduler_h
+#endif  // CC_SCHEDULER_H_

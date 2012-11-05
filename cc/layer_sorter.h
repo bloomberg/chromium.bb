@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerSorter_h
-#define CCLayerSorter_h
+#ifndef CC_LAYER_SORTER_H_
+#define CC_LAYER_SORTER_H_
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
@@ -113,4 +113,4 @@ private:
 };
 
 }
-#endif
+#endif  // CC_LAYER_SORTER_H_

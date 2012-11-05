@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextureCopier_h
-#define TextureCopier_h
+#ifndef CC_TEXTURE_COPIER_H_
+#define CC_TEXTURE_COPIER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -63,4 +63,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_TEXTURE_COPIER_H_

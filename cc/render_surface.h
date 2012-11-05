@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#ifndef RenderSurfaceChromium_h
-#define RenderSurfaceChromium_h
+#ifndef CC_RENDER_SURFACE_H_
+#define CC_RENDER_SURFACE_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -101,4 +101,4 @@ private:
 };
 
 }
-#endif
+#endif  // CC_RENDER_SURFACE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeWebGraphicsContext3D_h
-#define FakeWebGraphicsContext3D_h
+#ifndef CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#define CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 
 #include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebGraphicsContext3D.h>
@@ -257,4 +257,4 @@ protected:
 
 } // namespace WebKit
 
-#endif // FakeWebGraphicsContext3D_h
+#endif  // CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_

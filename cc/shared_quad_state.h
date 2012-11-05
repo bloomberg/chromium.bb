@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCSharedQuadState_h
-#define CCSharedQuadState_h
+#ifndef CC_SHARED_QUAD_STATE_H_
+#define CC_SHARED_QUAD_STATE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
@@ -31,4 +31,4 @@ struct CC_EXPORT SharedQuadState {
 
 }
 
-#endif
+#endif  // CC_SHARED_QUAD_STATE_H_

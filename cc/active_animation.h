@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCActiveAnimation_h
-#define CCActiveAnimation_h
+#ifndef CC_ACTIVE_ANIMATION_H_
+#define CC_ACTIVE_ANIMATION_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -159,4 +159,4 @@ private:
 
 } // namespace cc
 
-#endif // CCActiveAnimation_h
+#endif  // CC_ACTIVE_ANIMATION_H_

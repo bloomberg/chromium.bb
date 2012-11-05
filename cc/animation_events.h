@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCAnimationEvents_h
-#define CCAnimationEvents_h
+#ifndef CC_ANIMATION_EVENTS_H_
+#define CC_ANIMATION_EVENTS_H_
 
 #include <vector>
 
@@ -34,4 +34,4 @@ typedef std::vector<AnimationEvent> AnimationEventsVector;
 
 }  // namespace cc
 
-#endif // CCAnimationEvents_h
+#endif  // CC_ANIMATION_EVENTS_H_

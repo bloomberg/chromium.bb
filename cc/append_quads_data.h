@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCAppendQuadsData_h
-#define CCAppendQuadsData_h
+#ifndef CC_APPEND_QUADS_DATA_H_
+#define CC_APPEND_QUADS_DATA_H_
 
 #include "cc/render_pass.h"
 
@@ -33,4 +33,4 @@ struct AppendQuadsData {
 };
 
 }
-#endif // CCCCAppendQuadsData_h
+#endif  // CC_APPEND_QUADS_DATA_H_

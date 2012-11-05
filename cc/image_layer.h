@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageLayerChromium_h
-#define ImageLayerChromium_h
+#ifndef CC_IMAGE_LAYER_H_
+#define CC_IMAGE_LAYER_H_
 
 #include "cc/cc_export.h"
 #include "cc/content_layer.h"
@@ -43,4 +43,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_IMAGE_LAYER_H_

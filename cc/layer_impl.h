@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerImpl_h
-#define CCLayerImpl_h
+#ifndef CC_LAYER_IMPL_H_
+#define CC_LAYER_IMPL_H_
 
 #include <string>
 
@@ -418,4 +418,4 @@ void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<LayerImpl*>
 
 }
 
-#endif // CCLayerImpl_h
+#endif  // CC_LAYER_IMPL_H_

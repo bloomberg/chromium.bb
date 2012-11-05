@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BitmapSkPictureContentLayerUpdater_h
-#define BitmapSkPictureContentLayerUpdater_h
+#ifndef CC_BITMAP_SKPICTURE_CONTENT_LAYER_UPDATER_H_
+#define CC_BITMAP_SKPICTURE_CONTENT_LAYER_UPDATER_H_
 
 #include "cc/skpicture_content_layer_updater.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -39,4 +39,4 @@ private:
 
 }  // namespace cc
 
-#endif  // BitmapSkPictureContentLayerUpdater_h
+#endif  // CC_BITMAP_SKPICTURE_CONTENT_LAYER_UPDATER_H_

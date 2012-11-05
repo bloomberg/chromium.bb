@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCSingleThreadProxy_h
-#define CCSingleThreadProxy_h
+#ifndef CC_SINGLE_THREAD_PROXY_H_
+#define CC_SINGLE_THREAD_PROXY_H_
 
 #include <limits>
 
@@ -150,4 +150,4 @@ private:
 
 } // namespace cc
 
-#endif
+#endif  // CC_SINGLE_THREAD_PROXY_H_

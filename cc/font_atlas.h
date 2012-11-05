@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCFontAtlas_h
-#define CCFontAtlas_h
+#ifndef CC_FONT_ATLAS_H_
+#define CC_FONT_ATLAS_H_
 
 #include <string>
 
@@ -63,4 +63,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_FONT_ATLAS_H_

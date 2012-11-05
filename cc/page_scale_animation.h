@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCPageScaleAnimation_h
-#define CCPageScaleAnimation_h
+#ifndef CC_PAGE_SCALE_ANIMATION_H_
+#define CC_PAGE_SCALE_ANIMATION_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "IntSize.h"
@@ -72,4 +72,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_PAGE_SCALE_ANIMATION_H_

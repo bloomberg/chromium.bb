@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#ifndef SkPictureContentLayerUpdater_h
-#define SkPictureContentLayerUpdater_h
+#ifndef CC_SKPICTURE_CONTENT_LAYER_UPDATER_H_
+#define CC_SKPICTURE_CONTENT_LAYER_UPDATER_H_
 
 #include "cc/content_layer_updater.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -58,4 +58,4 @@ private:
 };
 
 } // namespace cc
-#endif // SkPictureContentLayerUpdater_h
+#endif  // CC_SKPICTURE_CONTENT_LAYER_UPDATER_H_

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#ifndef SolidColorLayerChromium_h
-#define SolidColorLayerChromium_h
+#ifndef CC_SOLID_COLOR_LAYER_H_
+#define CC_SOLID_COLOR_LAYER_H_
 
 #include "cc/cc_export.h"
 #include "cc/layer.h"
@@ -27,4 +27,4 @@ private:
 };
 
 }
-#endif
+#endif  // CC_SOLID_COLOR_LAYER_H_

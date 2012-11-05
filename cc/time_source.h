@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCTimeSource_h
-#define CCTimeSource_h
+#ifndef CC_TIME_SOURCE_H_
+#define CC_TIME_SOURCE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
@@ -43,4 +43,4 @@ private:
 };
 
 }
-#endif  // CCTimeSource_h
+#endif  // CC_TIME_SOURCE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCInputHandler_h
-#define CCInputHandler_h
+#ifndef CC_INPUT_HANDLER_H_
+#define CC_INPUT_HANDLER_H_
 
 #include "base/basictypes.h"
 #include "base/time.h"
@@ -88,4 +88,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_INPUT_HANDLER_H_

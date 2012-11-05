@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCScopedTexture_h
-#define CCScopedTexture_h
+#ifndef CC_SCOPED_TEXTURE_H_
+#define CC_SCOPED_TEXTURE_H_
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -46,4 +46,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_SCOPED_TEXTURE_H_

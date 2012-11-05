@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCTiledLayerTestCommon_h
-#define CCTiledLayerTestCommon_h
+#ifndef CC_TEST_TILED_LAYER_TEST_COMMON_H_
+#define CC_TEST_TILED_LAYER_TEST_COMMON_H_
 
 #include "Region.h"
 #include "cc/layer_updater.h"
@@ -126,4 +126,4 @@ protected:
 };
 
 }
-#endif // CCTiledLayerTestCommon_h
+#endif  // CC_TEST_TILED_LAYER_TEST_COMMON_H_

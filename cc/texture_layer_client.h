@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextureLayerChromiumClient_h
-#define TextureLayerChromiumClient_h
+#ifndef CC_TEXTURE_LAYER_CLIENT_H_
+#define CC_TEXTURE_LAYER_CLIENT_H_
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -28,4 +28,4 @@ protected:
 
 }
 
-#endif // TextureLayerChromiumClient_h
+#endif  // CC_TEXTURE_LAYER_CLIENT_H_

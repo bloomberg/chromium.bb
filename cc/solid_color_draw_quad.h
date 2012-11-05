@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCSolidColorDrawQuad_h
-#define CCSolidColorDrawQuad_h
+#ifndef CC_SOLID_COLOR_DRAW_QUAD_H_
+#define CC_SOLID_COLOR_DRAW_QUAD_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -31,4 +31,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_SOLID_COLOR_DRAW_QUAD_H_

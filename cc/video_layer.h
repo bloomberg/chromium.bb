@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VideoLayerChromium_h
-#define VideoLayerChromium_h
+#ifndef CC_VIDEO_LAYER_H_
+#define CC_VIDEO_LAYER_H_
 
 #include "base/callback.h"
 #include "cc/cc_export.h"
@@ -43,4 +43,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_VIDEO_LAYER_H_

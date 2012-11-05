@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCAnimationCurve_h
-#define CCAnimationCurve_h
+#ifndef CC_ANIMATION_CURVE_H_
+#define CC_ANIMATION_CURVE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -53,4 +53,4 @@ public:
 
 } // namespace cc
 
-#endif // CCAnimation_h
+#endif  // CC_ANIMATION_CURVE_H_

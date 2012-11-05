@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCDrawQuad_h
-#define CCDrawQuad_h
+#ifndef CC_DRAW_QUAD_H_
+#define CC_DRAW_QUAD_H_
 
 #include "cc/cc_export.h"
 #include "cc/shared_quad_state.h"
@@ -90,4 +90,4 @@ protected:
 
 }
 
-#endif
+#endif  // CC_DRAW_QUAD_H_

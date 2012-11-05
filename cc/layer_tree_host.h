@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerTreeHost_h
-#define CCLayerTreeHost_h
+#ifndef CC_LAYER_TREE_HOST_H_
+#define CC_LAYER_TREE_HOST_H_
 
 #include <limits>
 
@@ -291,4 +291,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_LAYER_TREE_HOST_H_

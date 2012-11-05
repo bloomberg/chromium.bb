@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#ifndef CCLayerTilingData_h
-#define CCLayerTilingData_h
+#ifndef CC_LAYER_TILING_DATA_H_
+#define CC_LAYER_TILING_DATA_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -86,4 +86,4 @@ protected:
 
 }
 
-#endif
+#endif  // CC_LAYER_TILING_DATA_H_

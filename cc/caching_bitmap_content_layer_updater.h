@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CACHING_BITMAP_CANVAS_LAYER_UPDATER_H_
-#define CACHING_BITMAP_CANVAS_LAYER_UPDATER_H_
+#ifndef CC_CACHING_BITMAP_CONTENT_LAYER_UPDATER_H_
+#define CC_CACHING_BITMAP_CONTENT_LAYER_UPDATER_H_
 
 #include "base/compiler_specific.h"
 #include "cc/bitmap_content_layer_updater.h"
@@ -36,4 +36,4 @@ class CachingBitmapContentLayerUpdater
 
 }  // namespace cc
 
-#endif  // CACHING_BITMAP_CANVAS_LAYER_UPDATER_H_
+#endif  // CC_CACHING_BITMAP_CONTENT_LAYER_UPDATER_H_

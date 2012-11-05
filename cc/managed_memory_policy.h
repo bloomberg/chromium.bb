@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef managed_memory_policy_h
-#define managed_memory_policy_h
+#ifndef CC_MANAGED_MEMORY_POLICY_H_
+#define CC_MANAGED_MEMORY_POLICY_H_
 
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
@@ -27,4 +27,4 @@ struct CC_EXPORT ManagedMemoryPolicy {
 
 }  // namespace cc
 
-#endif
+#endif  // CC_MANAGED_MEMORY_POLICY_H_

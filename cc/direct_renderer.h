@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCDirectRenderer_h
-#define CCDirectRenderer_h
+#ifndef CC_DIRECT_RENDERER_H_
+#define CC_DIRECT_RENDERER_H_
 
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
@@ -103,4 +103,4 @@ private:
 
 }  // namespace cc
 
-#endif  // CCDirectRenderer_h
+#endif  // CC_DIRECT_RENDERER_H_

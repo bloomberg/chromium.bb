@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContentLayerChromiumClient_h
-#define ContentLayerChromiumClient_h
+#ifndef CC_CONTENT_LAYER_CLIENT_H_
+#define CC_CONTENT_LAYER_CLIENT_H_
 
 class SkCanvas;
 
@@ -24,4 +24,4 @@ protected:
 
 }
 
-#endif // ContentLayerChromiumClient_h
+#endif  // CC_CONTENT_LAYER_CLIENT_H_

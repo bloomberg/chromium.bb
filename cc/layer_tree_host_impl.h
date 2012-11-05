@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerTreeHostImpl_h
-#define CCLayerTreeHostImpl_h
+#ifndef CC_LAYER_TREE_HOST_IMPL_H_
+#define CC_LAYER_TREE_HOST_IMPL_H_
 
 #include "FloatPoint.h"
 #include "base/basictypes.h"
@@ -360,4 +360,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_LAYER_TREE_HOST_IMPL_H_

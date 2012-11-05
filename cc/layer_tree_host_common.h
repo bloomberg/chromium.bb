@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerTreeHostCommon_h
-#define CCLayerTreeHostCommon_h
+#ifndef CC_LAYER_TREE_HOST_COMMON_H_
+#define CC_LAYER_TREE_HOST_COMMON_H_
 
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
@@ -93,4 +93,4 @@ LayerType* LayerTreeHostCommon::findLayerInSubtree(LayerType* rootLayer, int lay
 
 }  // namespace cc
 
-#endif
+#endif  // CC_LAYER_TREE_HOST_COMMON_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCResourceUpdateQueue_h
-#define CCResourceUpdateQueue_h
+#ifndef CC_RESOURCE_UPDATE_QUEUE_H_
+#define CC_RESOURCE_UPDATE_QUEUE_H_
 
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
@@ -45,4 +45,4 @@ private:
 
 }
 
-#endif // CCResourceUpdateQueue_h
+#endif  // CC_RESOURCE_UPDATE_QUEUE_H_

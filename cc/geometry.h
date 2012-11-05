@@ -18,4 +18,4 @@ inline gfx::Size ClampSizeFromAbove(gfx::Size s, gfx::Size other) {
 
 }  // namespace cc
 
-#endif // CC_GEOMETRY_H_
+#endif  // CC_GEOMETRY_H_

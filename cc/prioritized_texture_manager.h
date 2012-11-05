@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCPrioritizedTextureManager_h
-#define CCPrioritizedTextureManager_h
+#ifndef CC_PRIORITIZED_TEXTURE_MANAGER_H_
+#define CC_PRIORITIZED_TEXTURE_MANAGER_H_
 
 #include <list>
 #include <vector>
@@ -197,4 +197,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_PRIORITIZED_TEXTURE_MANAGER_H_

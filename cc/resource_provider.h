@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCResourceProvider_h
-#define CCResourceProvider_h
+#ifndef CC_RESOURCE_PROVIDER_H_
+#define CC_RESOURCE_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
@@ -270,4 +270,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_RESOURCE_PROVIDER_H_

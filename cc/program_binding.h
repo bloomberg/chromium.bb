@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ProgramBinding_h
-#define ProgramBinding_h
+#ifndef CC_PROGRAM_BINDING_H_
+#define CC_PROGRAM_BINDING_H_
 
 #include <string>
 
@@ -79,4 +79,4 @@ private:
 
 } // namespace cc
 
-#endif
+#endif  // CC_PROGRAM_BINDING_H_

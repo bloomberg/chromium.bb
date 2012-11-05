@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCProxy_h
-#define CCProxy_h
+#ifndef CC_PROXY_H_
+#define CC_PROXY_H_
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -140,4 +140,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_PROXY_H_

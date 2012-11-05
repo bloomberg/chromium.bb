@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerIterator_h
-#define CCLayerIterator_h
+#ifndef CC_LAYER_ITERATOR_H_
+#define CC_LAYER_ITERATOR_H_
 
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
@@ -205,4 +205,4 @@ struct CC_EXPORT LayerIteratorActions {
 
 } // namespace cc
 
-#endif
+#endif  // CC_LAYER_ITERATOR_H_

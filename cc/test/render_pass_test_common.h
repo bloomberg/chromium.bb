@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCRenderPassTestCommon_h
-#define CCRenderPassTestCommon_h
+#ifndef CC_TEST_RENDER_PASS_TEST_COMMON_H_
+#define CC_TEST_RENDER_PASS_TEST_COMMON_H_
 
 #include "cc/render_pass.h"
 
@@ -28,4 +28,4 @@ protected:
 
 }  // namespace WebKitTests
 
-#endif // CCRenderPassTestCommon_h
+#endif  // CC_TEST_RENDER_PASS_TEST_COMMON_H_

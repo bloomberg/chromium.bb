@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCFrameRateCounter_h
-#define CCFrameRateCounter_h
+#ifndef CC_FRAME_RATE_COUNTER_H_
+#define CC_FRAME_RATE_COUNTER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -65,4 +65,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_FRAME_RATE_COUNTER_H_

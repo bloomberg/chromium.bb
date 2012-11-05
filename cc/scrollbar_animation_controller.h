@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCScrollbarAnimationController_h
-#define CCScrollbarAnimationController_h
+#ifndef CC_SCROLLBAR_ANIMATION_CONTROLLER_H_
+#define CC_SCROLLBAR_ANIMATION_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -65,4 +65,4 @@ private:
 
 } // namespace cc
 
-#endif // CCScrollbarAnimationController_h
+#endif  // CC_SCROLLBAR_ANIMATION_CONTROLLER_H_

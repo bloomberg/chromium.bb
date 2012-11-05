@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TiledLayerChromium_h
-#define TiledLayerChromium_h
+#ifndef CC_TILED_LAYER_H_
+#define CC_TILED_LAYER_H_
 
 #include "cc/cc_export.h"
 #include "cc/contents_scaling_layer.h"
@@ -101,4 +101,4 @@ private:
 };
 
 }
-#endif
+#endif  // CC_TILED_LAYER_H_

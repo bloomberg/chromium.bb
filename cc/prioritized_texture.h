@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCPrioritizedTexture_h
-#define CCPrioritizedTexture_h
+#ifndef CC_PRIORITIZED_TEXTURE_H_
+#define CC_PRIORITIZED_TEXTURE_H_
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -153,4 +153,4 @@ private:
 
 }  // namespace cc
 
-#endif
+#endif  // CC_PRIORITIZED_TEXTURE_H_

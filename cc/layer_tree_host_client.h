@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerTreeHostClient_h
-#define CCLayerTreeHostClient_h
+#ifndef CC_LAYER_TREE_HOST_CLIENT_H_
+#define CC_LAYER_TREE_HOST_CLIENT_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -40,4 +40,4 @@ protected:
 
 }
 
-#endif // CCLayerTreeHostClient_h
+#endif  // CC_LAYER_TREE_HOST_CLIENT_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCGraphicsContext_h
-#define CCGraphicsContext_h
+#ifndef CC_GRAPHICS_CONTEXT_H_
+#define CC_GRAPHICS_CONTEXT_H_
 
 #include <public/WebCompositorOutputSurface.h>
 #include <public/WebGraphicsContext3D.h>
@@ -15,4 +15,4 @@ typedef WebKit::WebCompositorOutputSurface GraphicsContext;
 
 }  // namespace cc
 
-#endif  // CCGraphicsContext_h
+#endif  // CC_GRAPHICS_CONTEXT_H_

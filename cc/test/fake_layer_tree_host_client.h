@@ -1,8 +1,8 @@
 // Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef FakeCCLayerTreeHostClient_h
-#define FakeCCLayerTreeHostClient_h
+#ifndef CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
+#define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
 #include "config.h"
 
@@ -35,4 +35,4 @@ public:
 };
 
 }
-#endif // FakeCCLayerTreeHostClient_h
+#endif  // CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_

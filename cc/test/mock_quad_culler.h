@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockCCQuadCuller_h
-#define MockCCQuadCuller_h
+#ifndef CC_TEST_MOCK_QUAD_CULLER_H_
+#define CC_TEST_MOCK_QUAD_CULLER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/draw_quad.h"
@@ -35,4 +35,4 @@ private:
 
 }  // namespace cc
 
-#endif // MockCCQuadCuller_h
+#endif  // CC_TEST_MOCK_QUAD_CULLER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCKeyframedAnimationCurve_h
-#define CCKeyframedAnimationCurve_h
+#ifndef CC_KEYFRAMED_ANIMATION_CURVE_H_
+#define CC_KEYFRAMED_ANIMATION_CURVE_H_
 
 #include "cc/animation_curve.h"
 #include "cc/cc_export.h"
@@ -113,4 +113,4 @@ private:
 
 }  // namespace cc
 
-#endif // CCKeyframedAnimationCurve_h
+#endif  // CC_KEYFRAMED_ANIMATION_CURVE_H_

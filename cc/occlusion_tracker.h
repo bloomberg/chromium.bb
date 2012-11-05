@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCOcclusionTracker_h
-#define CCOcclusionTracker_h
+#ifndef CC_OCCLUSION_TRACKER_H_
+#define CC_OCCLUSION_TRACKER_H_
 
 #include "Region.h"
 #include "base/basictypes.h"
@@ -109,4 +109,4 @@ extern template class OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>;
 
 }  // namespace cc
 
-#endif // CCOcclusionTracker_h
+#endif  // CC_OCCLUSION_TRACKER_H_

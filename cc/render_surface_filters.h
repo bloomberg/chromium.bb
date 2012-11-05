@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#ifndef CCRenderSurfaceFilters_h
-#define CCRenderSurfaceFilters_h
+#ifndef CC_RENDER_SURFACE_FILTERS_H_
+#define CC_RENDER_SURFACE_FILTERS_H_
 
 #include "cc/cc_export.h"
 
@@ -32,4 +32,4 @@ private:
 };
 
 }
-#endif
+#endif  // CC_RENDER_SURFACE_FILTERS_H_

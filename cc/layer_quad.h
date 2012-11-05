@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 
-#ifndef CCLayerQuad_h
-#define CCLayerQuad_h
+#ifndef CC_LAYER_QUAD_H_
+#define CC_LAYER_QUAD_H_
 
 #include "cc/cc_export.h"
 #include "ui/gfx/point_f.h"
@@ -103,4 +103,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_LAYER_QUAD_H_

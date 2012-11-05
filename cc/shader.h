@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ShaderChromium_h
-#define ShaderChromium_h
+#ifndef CC_SHADER_H_
+#define CC_SHADER_H_
 
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include <string>
@@ -346,4 +346,4 @@ private:
 
 } // namespace cc
 
-#endif
+#endif  // CC_SHADER_H_

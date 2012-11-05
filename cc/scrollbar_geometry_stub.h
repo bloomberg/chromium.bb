@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCScrollbarGeometryStub_h
-#define CCScrollbarGeometryStub_h
+#ifndef CC_SCROLLBAR_GEOMETRY_STUB_H_
+#define CC_SCROLLBAR_GEOMETRY_STUB_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -51,4 +51,4 @@ private:
 
 }
 
-#endif
+#endif  // CC_SCROLLBAR_GEOMETRY_STUB_H_
