@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 TEST_F(BrowserWithTestWindowTest, IsReservedCommandOrKey) {
 #if defined(OS_CHROMEOS)
