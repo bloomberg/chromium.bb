@@ -108,7 +108,9 @@ class ProfileImpl : public Profile,
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
-  virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
+  virtual void ClearNetworkingHistorySince(
+      base::Time time,
+      const base::Closure& completion) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
   virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
   virtual void SetExitType(ExitType exit_type) OVERRIDE;

@@ -54,12 +54,12 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
         base::TimeDelta());
   }
 
-  void UpdatePrefsFromCacheOnIOConcrete() {
-    HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO();
+  void UpdatePrefsFromCacheOnIOConcrete(const base::Closure& callback) {
+    HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO(callback);
   }
 
   MOCK_METHOD0(UpdateCacheFromPrefsOnUI, void());
-  MOCK_METHOD0(UpdatePrefsFromCacheOnIO, void());
+  MOCK_METHOD1(UpdatePrefsFromCacheOnIO, void(const base::Closure&));
   MOCK_METHOD5(UpdateCacheFromPrefsOnIO,
                void(std::vector<std::string>* spdy_servers,
                     net::SpdySettingsMap* spdy_settings_map,
@@ -109,7 +109,7 @@ class HttpServerPropertiesManagerTest : public testing::Test {
   }
 
   void ExpectPrefsUpdate() {
-    EXPECT_CALL(*http_server_props_manager_, UpdatePrefsFromCacheOnIO())
+    EXPECT_CALL(*http_server_props_manager_, UpdatePrefsFromCacheOnIO(_))
         .WillOnce(
             Invoke(http_server_props_manager_.get(),
                    &TestingHttpServerPropertiesManager::
@@ -353,11 +353,10 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   ExpectPrefsUpdate();
-  // Clear http server data.
-  http_server_props_manager_->Clear();
 
-  // Run the task.
-  loop_.RunAllPending();
+  // Clear http server data, time out if we do not get a completion callback.
+  http_server_props_manager_->Clear(MessageLoop::QuitClosure());
+  loop_.Run();
 
   EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));
   EXPECT_FALSE(
@@ -434,7 +433,7 @@ TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs1) {
 
 TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs2) {
   // This posts a task to the UI thread.
-  http_server_props_manager_->UpdatePrefsFromCacheOnIOConcrete();
+  http_server_props_manager_->UpdatePrefsFromCacheOnIOConcrete(base::Closure());
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnUIThread();
   // Run the task after shutdown, but before deletion.

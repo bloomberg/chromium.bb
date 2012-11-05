@@ -269,7 +269,8 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
 }
 
 void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
-    base::Time time) {
+    base::Time time,
+    const base::Closure& completion) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LazyInitialize();
 
@@ -278,7 +279,8 @@ void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
       base::Bind(
           &ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread,
           base::Unretained(io_data_),
-          time));
+          time,
+          completion));
 }
 
 void ProfileImplIOData::Handle::LazyInitialize() const {
@@ -677,12 +679,13 @@ void ProfileImplIOData::SetUpJobFactory(
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
-    base::Time time) {
+    base::Time time,
+    const base::Closure& completion) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   LazyInitialize();
 
   DCHECK(transport_security_state());
-  transport_security_state()->DeleteSince(time);
+  transport_security_state()->DeleteSince(time);  // Completes synchronously.
   DCHECK(http_server_properties_manager());
-  http_server_properties_manager()->Clear();
+  http_server_properties_manager()->Clear(completion);
 }

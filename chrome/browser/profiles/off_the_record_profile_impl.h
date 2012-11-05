@@ -80,7 +80,9 @@ class OffTheRecordProfileImpl : public Profile,
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
 
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
-  virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
+  virtual void ClearNetworkingHistorySince(
+      base::Time time,
+      const base::Closure& completion) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
 
   // content::BrowserContext implementation:

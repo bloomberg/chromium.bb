@@ -73,7 +73,12 @@ class ProfileImplIOData : public ProfileIOData {
             const FilePath& partition_path,
             bool in_memory) const;
 
-    void ClearNetworkingHistorySince(base::Time time);
+    // Deletes all network related data since |time|. It deletes transport
+    // security state since |time| and also deletes HttpServerProperties data.
+    // Works asynchronously, however if the |completion| callback is non-null,
+    // it will be posted on the UI thread once the removal process completes.
+    void ClearNetworkingHistorySince(base::Time time,
+                                     const base::Closure& completion);
 
    private:
     typedef std::map<StoragePartitionDescriptor,
@@ -171,8 +176,12 @@ class ProfileImplIOData : public ProfileIOData {
                        net::FtpTransactionFactory* ftp_transaction_factory,
                        net::FtpAuthCache* ftp_auth_cache) const;
 
-  // Clears the networking history since |time|.
-  void ClearNetworkingHistorySinceOnIOThread(base::Time time);
+  // Deletes all network related data since |time|. It deletes transport
+  // security state since |time| and also deletes HttpServerProperties data.
+  // Works asynchronously, however if the |completion| callback is non-null,
+  // it will be posted on the UI thread once the removal process completes.
+  void ClearNetworkingHistorySinceOnIOThread(base::Time time,
+                                             const base::Closure& completion);
 
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;

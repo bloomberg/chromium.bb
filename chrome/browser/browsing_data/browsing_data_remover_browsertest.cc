@@ -112,3 +112,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
   RunScriptAndCheckResult(L"insertRecord('text2')", "done");
   RunScriptAndCheckResult(L"getRecords()", "text2");
 }
+
+// Profile::ClearNetworkingHistorySince should be exercised here too see whether
+// the call gets delegated through ProfileIO[Impl]Data properly, which is hard
+// to write unit-tests for. Currently this is done by both of the above tests.
+// Add standalone test if this changes.

@@ -136,17 +136,19 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       media_context_getter_(profile->GetMediaRequestContext()),
       deauthorize_content_licenses_request_id_(0),
       waiting_for_clear_cache_(false),
-      waiting_for_clear_nacl_cache_(false),
+      waiting_for_clear_content_licenses_(false),
       waiting_for_clear_cookies_count_(0),
+      waiting_for_clear_form_(false),
       waiting_for_clear_history_(false),
+      waiting_for_clear_hostname_resolution_cache_(false),
       waiting_for_clear_local_storage_(false),
-      waiting_for_clear_session_storage_(false),
+      waiting_for_clear_nacl_cache_(false),
+      waiting_for_clear_network_predictor_(false),
       waiting_for_clear_networking_history_(false),
-      waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_plugin_data_(false),
       waiting_for_clear_quota_managed_data_(false),
-      waiting_for_clear_content_licenses_(false),
-      waiting_for_clear_form_(false),
+      waiting_for_clear_server_bound_certs_(false),
+      waiting_for_clear_session_storage_(false),
       remove_mask_(0),
       remove_origin_(GURL()),
       origin_set_mask_(0) {
@@ -248,11 +250,20 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // reveals some history: we have no mechanism to track when these items were
     // created, so we'll clear them all. Better safe than sorry.
     if (g_browser_process->io_thread()) {
-      waiting_for_clear_networking_history_ = true;
+      waiting_for_clear_hostname_resolution_cache_ = true;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&BrowsingDataRemover::ClearNetworkingHistory,
-                     base::Unretained(this), g_browser_process->io_thread()));
+          base::Bind(
+              &BrowsingDataRemover::ClearHostnameResolutionCacheOnIOThread,
+              base::Unretained(this),
+              g_browser_process->io_thread()));
+    }
+    if (profile_->GetNetworkPredictor()) {
+      waiting_for_clear_network_predictor_ = true;
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&BrowsingDataRemover::ClearNetworkPredictorOnIOThread,
+                     base::Unretained(this)));
     }
 
     // As part of history deletion we also delete the auto-generated keywords.
@@ -490,11 +501,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         pepper_flash_settings_manager_->DeauthorizeContentLicenses();
   }
 
-  // Also delete cached network related data (like TransportSecurityState,
-  // HttpServerProperties data).
-  profile_->ClearNetworkingHistorySince(delete_begin_);
-
-  NotifyAndDeleteIfDone();
+  // Always wipe accumulated network related data (TransportSecurityState and
+  // HttpServerPropertiesManager data).
+  waiting_for_clear_networking_history_ = true;
+  profile_->ClearNetworkingHistorySince(
+      delete_begin_,
+      base::Bind(&BrowsingDataRemover::OnClearedNetworkingHistory,
+                 base::Unretained(this)));
 }
 
 void BrowsingDataRemover::AddObserver(Observer* observer) {
@@ -555,7 +568,9 @@ bool BrowsingDataRemover::AllDone() {
       !waiting_for_clear_plugin_data_ &&
       !waiting_for_clear_quota_managed_data_ &&
       !waiting_for_clear_content_licenses_ &&
-      !waiting_for_clear_form_;
+      !waiting_for_clear_form_ &&
+      !waiting_for_clear_hostname_resolution_cache_ &&
+      !waiting_for_clear_network_predictor_;
 }
 
 void BrowsingDataRemover::Observe(int type,
@@ -595,17 +610,34 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void BrowsingDataRemover::ClearedNetworkHistory() {
-  waiting_for_clear_networking_history_ = false;
-
+void BrowsingDataRemover::OnClearedHostnameResolutionCache() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_hostname_resolution_cache_ = false;
   NotifyAndDeleteIfDone();
 }
 
-void BrowsingDataRemover::ClearNetworkingHistory(IOThread* io_thread) {
-  // This function should be called on the IO thread.
+void BrowsingDataRemover::ClearHostnameResolutionCacheOnIOThread(
+    IOThread* io_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   io_thread->ClearHostCache();
+
+  // Notify the UI thread that we are done.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&BrowsingDataRemover::OnClearedHostnameResolutionCache,
+                 base::Unretained(this)));
+}
+
+void BrowsingDataRemover::OnClearedNetworkPredictor() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_network_predictor_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearNetworkPredictorOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
   if (predictor) {
@@ -615,9 +647,16 @@ void BrowsingDataRemover::ClearNetworkingHistory(IOThread* io_thread) {
 
   // Notify the UI thread that we are done.
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataRemover::ClearedNetworkHistory,
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&BrowsingDataRemover::OnClearedNetworkPredictor,
                  base::Unretained(this)));
+}
+
+void BrowsingDataRemover::OnClearedNetworkingHistory() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_networking_history_ = false;
+  NotifyAndDeleteIfDone();
 }
 
 void BrowsingDataRemover::ClearedCache() {
