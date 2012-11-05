@@ -106,4 +106,30 @@ class WallpaperSetCustomWallpaperFunction : public WallpaperFunctionBase {
   std::string image_data_;
 };
 
+class WallpaperMinimizeInactiveWindowsFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.minimizeInactiveWindows");
+
+  WallpaperMinimizeInactiveWindowsFunction();
+
+ protected:
+  virtual ~WallpaperMinimizeInactiveWindowsFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class WallpaperRestoreMinimizedWindowsFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.restoreMinimizedWindows");
+
+  WallpaperRestoreMinimizedWindowsFunction();
+
+ protected:
+  virtual ~WallpaperRestoreMinimizedWindowsFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_

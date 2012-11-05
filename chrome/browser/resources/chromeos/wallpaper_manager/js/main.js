@@ -8,10 +8,10 @@
 var wallpaperManager;
 
 function init() {
-  window.addEventListener('load',
-      windowStateManager.saveStates.bind(windowStateManager));
-  window.addEventListener('unload',
-      windowStateManager.restoreStates.bind(windowStateManager));
+  window.addEventListener('load', function() {
+      chrome.wallpaperPrivate.minimizeInactiveWindows(); });
+  window.addEventListener('unload', function() {
+      chrome.wallpaperPrivate.restoreMinimizedWindows(); });
   WallpaperManager.initStrings(function() {
     wallpaperManager = new WallpaperManager(document.body);
   });

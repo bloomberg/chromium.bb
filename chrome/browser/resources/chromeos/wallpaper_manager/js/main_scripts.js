@@ -20,5 +20,4 @@
 //<include src="butter_bar.js"/>
 //<include src="wallpaper_images_grid.js"/>
 //<include src="wallpaper_manager.js"/>
-//<include src="window_state_manager.js"/>
 //<include src="main.js"/>

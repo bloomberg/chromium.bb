@@ -404,6 +404,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<WallpaperStringsFunction>();
   RegisterFunction<WallpaperSetWallpaperFunction>();
   RegisterFunction<WallpaperSetCustomWallpaperFunction>();
+  RegisterFunction<WallpaperMinimizeInactiveWindowsFunction>();
+  RegisterFunction<WallpaperRestoreMinimizedWindowsFunction>();
 
   // InputMethod
   RegisterFunction<GetInputMethodFunction>();

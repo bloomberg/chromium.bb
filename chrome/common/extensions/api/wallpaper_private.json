@@ -73,6 +73,20 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "minimizeInactiveWindows",
+        "type": "function",
+        "description": "Minimizes all inactive open windows.",
+        "nodoc": "true",
+        "parameters": []
+      },
+      {
+        "name": "restoreMinimizedWindows",
+        "type": "function",
+        "description": "Restores all previously minimized windows.",
+        "nodoc": "true",
+        "parameters": []
       }
     ]
   }

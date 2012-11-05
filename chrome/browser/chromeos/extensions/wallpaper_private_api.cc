@@ -4,8 +4,12 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 
+#include <vector>
+
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
@@ -26,10 +30,93 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::BinaryValue;
 using content::BrowserThread;
+
+namespace {
+
+class WindowStateManager;
+
+// static
+WindowStateManager* g_window_state_manager = NULL;
+
+// WindowStateManager remembers which windows have been minimized in order to
+// restore them when the wallpaper viewer is hidden.
+class WindowStateManager : public aura::WindowObserver {
+ public:
+
+  // Minimizes all windows except the active window.
+  static void MinimizeInactiveWindows() {
+    if (g_window_state_manager)
+      delete g_window_state_manager;
+    g_window_state_manager = new WindowStateManager();
+    g_window_state_manager->BuildWindowListAndMinimizeInactive(
+        ash::wm::GetActiveWindow());
+  }
+
+  // Activates all minimized windows restoring them to their previous state.
+  // This should only be called after calling MinimizeInactiveWindows.
+  static void RestoreWindows() {
+    DCHECK(g_window_state_manager);
+    g_window_state_manager->RestoreMinimizedWindows();
+    delete g_window_state_manager;
+    g_window_state_manager = NULL;
+  }
+
+ private:
+  WindowStateManager() {}
+
+  ~WindowStateManager() {
+    for (std::vector<aura::Window*>::iterator iter = windows_.begin();
+         iter != windows_.end(); ++iter) {
+      (*iter)->RemoveObserver(this);
+    }
+  }
+
+  void BuildWindowListAndMinimizeInactive(aura::Window* active_window) {
+    windows_ = ash::WindowCycleController::BuildWindowList(NULL);
+    // Remove active window.
+    std::vector<aura::Window*>::iterator last =
+        std::remove(windows_.begin(), windows_.end(), active_window);
+    // Removes unfocusable windows.
+    last =
+        std::remove_if(
+            windows_.begin(),
+            last,
+            std::ptr_fun(ash::wm::IsWindowMinimized));
+    windows_.erase(last, windows_.end());
+
+    for (std::vector<aura::Window*>::iterator iter = windows_.begin();
+         iter != windows_.end(); ++iter) {
+      (*iter)->AddObserver(this);
+      ash::wm::MinimizeWindow(*iter);
+    }
+  }
+
+  void RestoreMinimizedWindows() {
+    for (std::vector<aura::Window*>::iterator iter = windows_.begin();
+         iter != windows_.end(); ++iter) {
+      ash::wm::ActivateWindow(*iter);
+    }
+  }
+
+  // aura::WindowObserver overrides.
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+    window->RemoveObserver(this);
+    std::vector<aura::Window*>::iterator i = std::find(windows_.begin(),
+        windows_.end(), window);
+    DCHECK(i != windows_.end());
+    windows_.erase(i);
+  }
+
+  // List of minimized windows.
+  std::vector<aura::Window*> windows_;
+};
+
+}  // namespace
 
 bool WallpaperStringsFunction::RunImpl() {
   DictionaryValue* dict = new DictionaryValue();
@@ -279,4 +366,30 @@ void WallpaperSetCustomWallpaperFunction::OnWallpaperDecoded(
       base::WeakPtr<chromeos::WallpaperDelegate>(), image);
   wallpaper_decoder_ = NULL;
   SendResponse(true);
+}
+
+WallpaperMinimizeInactiveWindowsFunction::
+    WallpaperMinimizeInactiveWindowsFunction() {
+}
+
+WallpaperMinimizeInactiveWindowsFunction::
+    ~WallpaperMinimizeInactiveWindowsFunction() {
+}
+
+bool WallpaperMinimizeInactiveWindowsFunction::RunImpl() {
+  WindowStateManager::MinimizeInactiveWindows();
+  return true;
+}
+
+WallpaperRestoreMinimizedWindowsFunction::
+    WallpaperRestoreMinimizedWindowsFunction() {
+}
+
+WallpaperRestoreMinimizedWindowsFunction::
+    ~WallpaperRestoreMinimizedWindowsFunction() {
+}
+
+bool WallpaperRestoreMinimizedWindowsFunction::RunImpl() {
+  WindowStateManager::RestoreWindows();
+  return true;
 }
