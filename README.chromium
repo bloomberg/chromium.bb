@@ -40,20 +40,21 @@ the gyp files, are located under the chromium/ folder off the root.
 Help w/ Common Tasks:
 =====================
 
--- Submitting changes to the Chromium Git.
+-- Submitting changes to Chromium's FFmpeg git repository.
 
-The goal of the Chromium Git is to eventually just be a mirror of the upstream
-Git repository.  Which means every change made should be upstreamed.  If you
-make a change, please add an entry to chromium/patches/README with a link to
-the tracking issue and code review for your change.
+The goal of Chromium's FFmpeg repository is to just be a mirror of the upstream
+Git repository.  Which means every change made must be upstreamed.  If you make
+a change, please add an entry to chromium/patches/README with a link to the
+tracking issue and code review for your change.
 
-The normal Chromium CL submission process works fine, but if you prefer to use
-Gerrit instead of Rietveld, push your code with the following:
+Unfortunately the normal Chromium CL submission process through Rietveld does
+not work with Git DEPS like FFmpeg, so you must use Gerrit to upload your change
+for review:
 
   git push ssh://gerrit.chromium.org:29418/chromium/third_party/ffmpeg \
   HEAD:refs/for/master
 
-Note: You'll need a Gerrit account to use this method, see:
+Note: You'll need a Gerrit account, see:
 
   http://www.chromium.org/chromium-os/developer-guide/gerrit-guide
 
@@ -90,7 +91,7 @@ The upstream merge process follows the normal Git merge process:
   # If conflicts:
   git mergetool
 
-  <Follow rest of "Submitting changes to the Chromium Git.">
+  <Follow rest of "Submitting changes to Chromium's FFmpeg git repository.">
 
   # Use git push for submission so commit history is kept.  Might require merge
   # approval on your Gerrit account.  Do not commit any other way.
@@ -122,7 +123,7 @@ will clear out all the patches which have been upstreamed.
   # Pull the patch out of upstream.
   git cherry-pick <hash of commit in upstream>
 
-  <Follow the steps in "Submitting changes to the Chromium Git." above>
+  <Follow rest of "Submitting changes to Chromium's FFmpeg git repository.">
 
 Building:
 =========
