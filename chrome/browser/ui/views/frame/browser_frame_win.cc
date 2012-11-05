@@ -406,8 +406,8 @@ void BrowserFrameWin::ButtonPressed(views::Button* sender,
 
   DCHECK(profile_to_switch_to);
 
-  Browser* browser_to_switch_to =
-      browser::FindTabbedBrowserDeprecated(profile_to_switch_to, false);
+  Browser* browser_to_switch_to = browser::FindTabbedBrowser(
+      profile_to_switch_to, false, chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   DCHECK(browser_to_switch_to);
 
