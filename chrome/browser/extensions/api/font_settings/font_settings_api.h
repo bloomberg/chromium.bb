@@ -25,14 +25,9 @@ class FontSettingsEventRouter : public PrefObserver {
  public:
   // Constructor for observing pref changed events on |profile|. Stores a
   // pointer to |profile| but does not take ownership. |profile| must be
-  // non-NULL and remain alive for the lifetime of the instance. Init() must be
-  // called to start observing pref changed events.
+  // non-NULL and remain alive for the lifetime of the instance.
   explicit FontSettingsEventRouter(Profile* profile);
   virtual ~FontSettingsEventRouter();
-
-  // Starts observing pref changed events on the profile. Must not be called
-  // more than once.
-  void Init();
 
  private:
   typedef std::pair<std::string, std::string> EventAndKeyPair;

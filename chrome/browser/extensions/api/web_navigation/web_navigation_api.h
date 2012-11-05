@@ -138,10 +138,6 @@ class WebNavigationEventRouter : public TabStripModelObserver,
   explicit WebNavigationEventRouter(Profile* profile);
   virtual ~WebNavigationEventRouter();
 
-  // Invoked by the extensions service once the extension system is fully set
-  // up and can start dispatching events to extensions.
-  void Init();
-
  private:
   // Used to cache the information about newly created WebContents objects.
   struct PendingWebContents{

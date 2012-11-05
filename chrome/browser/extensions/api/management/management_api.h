@@ -144,8 +144,6 @@ class ExtensionManagementEventRouter : public content::NotificationObserver {
   explicit ExtensionManagementEventRouter(Profile* profile);
   virtual ~ExtensionManagementEventRouter();
 
-  void Init();
-
  private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

@@ -513,32 +513,23 @@ void ExtensionService::InitEventRouters() {
 #if defined(ENABLE_EXTENSIONS)
   history_event_router_.reset(new HistoryExtensionEventRouter(profile_));
   browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
-  browser_event_router_->Init();
   window_event_router_.reset(new extensions::WindowEventRouter(profile_));
-  window_event_router_->Init();
   preference_event_router_.reset(
       new extensions::PreferenceEventRouter(profile_));
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       BookmarkModelFactory::GetForProfile(profile_)));
-  bookmark_event_router_->Init();
   cookies_event_router_.reset(
       new extensions::ExtensionCookiesEventRouter(profile_));
-  cookies_event_router_->Init();
   management_event_router_.reset(new ExtensionManagementEventRouter(profile_));
-  management_event_router_->Init();
   extensions::ProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
   web_navigation_event_router_.reset(
       new extensions::WebNavigationEventRouter(profile_));
-  web_navigation_event_router_->Init();
   font_settings_event_router_.reset(
       new extensions::FontSettingsEventRouter(profile_));
-  font_settings_event_router_->Init();
   managed_mode_event_router_.reset(
       new extensions::ExtensionManagedModeEventRouter(profile_));
-  managed_mode_event_router_->Init();
   push_messaging_event_router_.reset(
       new extensions::PushMessagingEventRouter(profile_));
-  push_messaging_event_router_->Init();
   media_galleries_private_event_router_.reset(
       new extensions::MediaGalleriesPrivateEventRouter(profile_));
   bluetooth_event_router_.reset(

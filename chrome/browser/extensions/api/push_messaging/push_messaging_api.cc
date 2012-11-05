@@ -46,11 +46,6 @@ namespace glue = api::push_messaging;
 
 PushMessagingEventRouter::PushMessagingEventRouter(Profile* profile)
     : profile_(profile) {
-}
-
-PushMessagingEventRouter::~PushMessagingEventRouter() {}
-
-void PushMessagingEventRouter::Init() {
   ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile_);
   // This may be NULL; for example, for the ChromeOS guest user. In these cases,
   // just return without setting up anything, since it won't work anyway.
@@ -77,6 +72,8 @@ void PushMessagingEventRouter::Init() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
 }
+
+PushMessagingEventRouter::~PushMessagingEventRouter() {}
 
 void PushMessagingEventRouter::Shutdown() {
   // We need an explicit Shutdown() due to the dependencies among the various

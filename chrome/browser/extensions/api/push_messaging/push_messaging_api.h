@@ -34,7 +34,6 @@ class PushMessagingEventRouter
   explicit PushMessagingEventRouter(Profile* profile);
   virtual ~PushMessagingEventRouter();
 
-  void Init();
   void Shutdown();
 
   PushMessagingInvalidationMapper* GetMapperForTest() const {

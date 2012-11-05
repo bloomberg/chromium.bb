@@ -137,16 +137,13 @@ void BookmarksFunction::Observe(int type,
 
 BookmarkExtensionEventRouter::BookmarkExtensionEventRouter(
     BookmarkModel* model) : model_(model) {
+  model_->AddObserver(this);
 }
 
 BookmarkExtensionEventRouter::~BookmarkExtensionEventRouter() {
   if (model_) {
     model_->RemoveObserver(this);
   }
-}
-
-void BookmarkExtensionEventRouter::Init() {
-  model_->AddObserver(this);
 }
 
 void BookmarkExtensionEventRouter::DispatchEvent(

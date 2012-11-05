@@ -34,8 +34,6 @@ class ExtensionCookiesEventRouter : public content::NotificationObserver {
   explicit ExtensionCookiesEventRouter(Profile* profile);
   virtual ~ExtensionCookiesEventRouter();
 
-  void Init();
-
  private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

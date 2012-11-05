@@ -35,9 +35,6 @@ class BrowserEventRouter : public TabStripModelObserver,
   explicit BrowserEventRouter(Profile* profile);
   virtual ~BrowserEventRouter();
 
-  // Must be called once. Subsequent calls have no effect.
-  void Init();
-
   // chrome::BrowserListObserver
   virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
@@ -153,8 +150,6 @@ class BrowserEventRouter : public TabStripModelObserver,
   void UnregisterForTabNotifications(content::WebContents* contents);
 
   content::NotificationRegistrar registrar_;
-
-  bool initialized_;
 
   // Maintain some information about known tabs, so we can:
   //

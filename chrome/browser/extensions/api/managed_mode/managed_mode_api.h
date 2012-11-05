@@ -22,8 +22,6 @@ class ExtensionManagedModeEventRouter : public PrefObserver {
   explicit ExtensionManagedModeEventRouter(Profile* profile);
   virtual ~ExtensionManagedModeEventRouter();
 
-  void Init();
-
   // PrefObserver implementation:
   virtual void OnPreferenceChanged(PrefServiceBase* service,
                                    const std::string& pref_name) OVERRIDE;

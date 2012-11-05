@@ -583,11 +583,7 @@ void UninstallFunction::ExtensionUninstallCanceled() {
 }
 
 ExtensionManagementEventRouter::ExtensionManagementEventRouter(Profile* profile)
-    : profile_(profile) {}
-
-ExtensionManagementEventRouter::~ExtensionManagementEventRouter() {}
-
-void ExtensionManagementEventRouter::Init() {
+    : profile_(profile) {
   int types[] = {
     chrome::NOTIFICATION_EXTENSION_INSTALLED,
     chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
@@ -602,6 +598,8 @@ void ExtensionManagementEventRouter::Init() {
                    content::Source<Profile>(profile_));
   }
 }
+
+ExtensionManagementEventRouter::~ExtensionManagementEventRouter() {}
 
 void ExtensionManagementEventRouter::Observe(
     int type,

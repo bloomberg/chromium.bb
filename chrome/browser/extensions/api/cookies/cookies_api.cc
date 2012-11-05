@@ -47,16 +47,13 @@ namespace keys = cookies_api_constants;
 
 ExtensionCookiesEventRouter::ExtensionCookiesEventRouter(Profile* profile)
     : profile_(profile) {
-}
-
-ExtensionCookiesEventRouter::~ExtensionCookiesEventRouter() {
-}
-
-void ExtensionCookiesEventRouter::Init() {
   CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
                  chrome::NOTIFICATION_COOKIE_CHANGED,
                  content::NotificationService::AllBrowserContextsAndSources());
+}
+
+ExtensionCookiesEventRouter::~ExtensionCookiesEventRouter() {
 }
 
 void ExtensionCookiesEventRouter::Observe(

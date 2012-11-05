@@ -39,9 +39,6 @@ class WindowEventRouter : public WindowControllerListObserver,
   explicit WindowEventRouter(Profile* profile);
   virtual ~WindowEventRouter();
 
-  // Must be called once. Subsequent calls have no effect.
-  void Init();
-
   // WindowControllerListObserver methods:
   virtual void OnWindowControllerAdded(
       WindowController* window_controller) OVERRIDE;
@@ -69,7 +66,6 @@ class WindowEventRouter : public WindowControllerListObserver,
                      scoped_ptr<base::ListValue> args);
 
   content::NotificationRegistrar registrar_;
-  bool initialized_;
 
   // The main profile that owns this event router.
   Profile* profile_;

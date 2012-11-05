@@ -24,27 +24,10 @@ namespace event_names = extensions::event_names;
 namespace extensions {
 
 WindowEventRouter::WindowEventRouter(Profile* profile)
-    : initialized_(false),
-      profile_(profile),
+    : profile_(profile),
       focused_profile_(NULL),
       focused_window_id_(extension_misc::kUnknownWindowId) {
   DCHECK(!profile->IsOffTheRecord());
-}
-
-WindowEventRouter::~WindowEventRouter() {
-  if (initialized_) {
-    WindowControllerList::GetInstance()->RemoveObserver(this);
-#if defined(TOOLKIT_VIEWS)
-    views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
-#elif defined(TOOLKIT_GTK)
-    ui::ActiveWindowWatcherX::RemoveObserver(this);
-#endif
-  }
-}
-
-void WindowEventRouter::Init() {
-  if (initialized_)
-    return;
 
   WindowControllerList::GetInstance()->AddObserver(this);
 #if defined(TOOLKIT_VIEWS)
@@ -57,8 +40,15 @@ void WindowEventRouter::Init() {
   registrar_.Add(this, chrome::NOTIFICATION_NO_KEY_WINDOW,
                  content::NotificationService::AllSources());
 #endif
+}
 
-  initialized_ = true;
+WindowEventRouter::~WindowEventRouter() {
+  WindowControllerList::GetInstance()->RemoveObserver(this);
+#if defined(TOOLKIT_VIEWS)
+  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
+#elif defined(TOOLKIT_GTK)
+  ui::ActiveWindowWatcherX::RemoveObserver(this);
+#endif
 }
 
 void WindowEventRouter::OnWindowControllerAdded(

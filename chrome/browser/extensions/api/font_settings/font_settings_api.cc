@@ -98,11 +98,7 @@ void RegisterFontFamilyMapObserver(PrefChangeRegistrar* registrar,
 }  // namespace
 
 FontSettingsEventRouter::FontSettingsEventRouter(
-    Profile* profile) : profile_(profile) {}
-
-FontSettingsEventRouter::~FontSettingsEventRouter() {}
-
-void FontSettingsEventRouter::Init() {
+    Profile* profile) : profile_(profile) {
   registrar_.Init(profile_->GetPrefs());
 
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize,
@@ -130,6 +126,8 @@ void FontSettingsEventRouter::Init() {
   RegisterFontFamilyMapObserver(&registrar_,
                                 prefs::kWebKitPictographFontFamilyMap, this);
 }
+
+FontSettingsEventRouter::~FontSettingsEventRouter() {}
 
 void FontSettingsEventRouter::AddPrefToObserve(const char* pref_name,
                                                const char* event_name,

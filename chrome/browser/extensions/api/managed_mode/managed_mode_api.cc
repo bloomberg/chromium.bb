@@ -41,9 +41,6 @@ namespace extensions {
 
 ExtensionManagedModeEventRouter::ExtensionManagedModeEventRouter(
     Profile* profile) : profile_(profile) {
-}
-
-void ExtensionManagedModeEventRouter::Init() {
   registrar_.Init(g_browser_process->local_state());
   registrar_.Add(prefs::kInManagedMode, this);
 }

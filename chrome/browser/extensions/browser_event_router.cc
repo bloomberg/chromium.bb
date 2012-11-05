@@ -74,9 +74,10 @@ DictionaryValue* BrowserEventRouter::TabEntry::DidNavigate(
   return changed_properties;
 }
 
-void BrowserEventRouter::Init() {
-  if (initialized_)
-    return;
+BrowserEventRouter::BrowserEventRouter(Profile* profile)
+    : profile_(profile) {
+  DCHECK(!profile->IsOffTheRecord());
+
   BrowserList::AddObserver(this);
 
   // Init() can happen after the browser is running, so catch up with any
@@ -95,14 +96,6 @@ void BrowserEventRouter::Init() {
       }
     }
   }
-
-  initialized_ = true;
-}
-
-BrowserEventRouter::BrowserEventRouter(Profile* profile)
-    : initialized_(false),
-      profile_(profile) {
-  DCHECK(!profile->IsOffTheRecord());
 }
 
 BrowserEventRouter::~BrowserEventRouter() {

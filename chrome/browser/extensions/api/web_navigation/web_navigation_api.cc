@@ -73,15 +73,8 @@ WebNavigationEventRouter::PendingWebContents::PendingWebContents(
 WebNavigationEventRouter::PendingWebContents::~PendingWebContents() {}
 
 WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
-    : profile_(profile) {}
-
-WebNavigationEventRouter::~WebNavigationEventRouter() {
-  BrowserList::RemoveObserver(this);
-}
-
-void WebNavigationEventRouter::Init() {
-  if (!registrar_.IsEmpty())
-    return;
+    : profile_(profile) {
+  CHECK(registrar_.IsEmpty());
   registrar_.Add(this,
                  chrome::NOTIFICATION_RETARGETING,
                  content::NotificationService::AllSources());
@@ -97,6 +90,10 @@ void WebNavigationEventRouter::Init() {
        iter != BrowserList::end(); ++iter) {
     OnBrowserAdded(*iter);
   }
+}
+
+WebNavigationEventRouter::~WebNavigationEventRouter() {
+  BrowserList::RemoveObserver(this);
 }
 
 void WebNavigationEventRouter::OnBrowserAdded(Browser* browser) {

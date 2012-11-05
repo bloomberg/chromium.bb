@@ -30,8 +30,6 @@ class BookmarkExtensionEventRouter : public BookmarkModelObserver {
   explicit BookmarkExtensionEventRouter(BookmarkModel* model);
   virtual ~BookmarkExtensionEventRouter();
 
-  void Init();
-
   // BookmarkModelObserver:
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
