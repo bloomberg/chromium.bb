@@ -374,6 +374,9 @@ void PPB_URLLoader_Impl::didFail(WebURLLoader* loader,
     // TODO(bbudge): Extend pp_errors.h to cover interesting network errors
     // from the net error domain.
     switch (error.reason) {
+      case net::ERR_ABORTED:
+        pp_error = PP_ERROR_ABORTED;
+        break;
       case net::ERR_ACCESS_DENIED:
       case net::ERR_NETWORK_ACCESS_DENIED:
         pp_error = PP_ERROR_NOACCESS;
