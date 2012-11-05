@@ -199,6 +199,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual PageTransition GetTransitionType() const = 0;
   virtual const std::string& GetLastModifiedTime() const = 0;
   virtual const std::string& GetETag() const = 0;
+  virtual bool IsSavePackageDownload() const = 0;
 
   //    Destination State accessors --------------------------------------------
 

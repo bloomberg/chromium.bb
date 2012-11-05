@@ -99,6 +99,7 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual PageTransition GetTransitionType() const OVERRIDE;
   virtual const std::string& GetLastModifiedTime() const OVERRIDE;
   virtual const std::string& GetETag() const OVERRIDE;
+  virtual bool IsSavePackageDownload() const OVERRIDE;
   virtual const FilePath& GetFullPath() const OVERRIDE;
   virtual const FilePath& GetTargetFilePath() const OVERRIDE;
   virtual const FilePath& GetForcedFilePath() const OVERRIDE;
@@ -172,7 +173,6 @@ class CONTENT_EXPORT DownloadItemImpl
   base::WeakPtr<DownloadDestinationObserver> DestinationObserverAsWeakPtr();
 
   // For dispatching on whether we're dealing with a SavePackage download.
-  virtual bool IsSavePackageDownload() const;
 
   // DownloadItemImpl routines only needed by SavePackage ----------------------
 

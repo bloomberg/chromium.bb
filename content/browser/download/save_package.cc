@@ -289,6 +289,7 @@ bool SavePackage::Init(
       ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ?
        "multipart/related" : "text/html"),
       this);
+  // Confirm above didn't delete the tab out from under us.
   if (!download_created_callback.is_null())
     download_created_callback.Run(download_);
 
@@ -1324,6 +1325,7 @@ void SavePackage::CreateDirectoryOnFileThread(
 
 void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
                                       bool can_save_as_complete) {
+
   // The WebContents which owns this SavePackage may have disappeared during
   // the UI->FILE->UI thread hop of
   // GetSaveInfo->CreateDirectoryOnFileThread->ContinueGetSaveInfo.

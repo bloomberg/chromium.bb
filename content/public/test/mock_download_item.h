@@ -55,6 +55,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetTransitionType, PageTransition());
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
+  MOCK_CONST_METHOD0(IsSavePackageDownload, bool());
   MOCK_CONST_METHOD0(GetFullPath, const FilePath&());
   MOCK_CONST_METHOD0(GetTargetFilePath, const FilePath&());
   MOCK_CONST_METHOD0(GetForcedFilePath, const FilePath&());

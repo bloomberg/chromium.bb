@@ -1469,8 +1469,10 @@ void Browser::OnStartDownload(WebContents* source,
     DownloadStartedAnimation::Show(shelf_tab);
   }
 
-  // If the download occurs in a new tab, close it.
-  if (source->GetController().IsInitialNavigation() && tab_count() > 1)
+  // If the download occurs in a new tab, and it's not a save page
+  // download (started before initial navigation completed) close it.
+  if (source->GetController().IsInitialNavigation() && tab_count() > 1 &&
+      !download->IsSavePackageDownload())
     CloseContents(source);
 }
 

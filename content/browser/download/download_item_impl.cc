@@ -560,6 +560,10 @@ const std::string& DownloadItemImpl::GetETag() const {
   return etag_;
 }
 
+bool DownloadItemImpl::IsSavePackageDownload() const {
+  return is_save_package_download_;
+}
+
 const FilePath& DownloadItemImpl::GetFullPath() const {
   return current_path_;
 }
@@ -846,10 +850,6 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
 base::WeakPtr<DownloadDestinationObserver>
 DownloadItemImpl::DestinationObserverAsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-bool DownloadItemImpl::IsSavePackageDownload() const {
-  return is_save_package_download_;
 }
 
 void DownloadItemImpl::SetTotalBytes(int64 total_bytes) {
