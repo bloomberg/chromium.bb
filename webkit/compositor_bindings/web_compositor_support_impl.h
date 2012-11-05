@@ -5,13 +5,8 @@
 #ifndef WEBKIT_COMPOSITOR_BINDINGS_WEB_COMPOSITOR_SUPPORT_IMPL_H_
 #define WEBKIT_COMPOSITOR_BINDINGS_WEB_COMPOSITOR_SUPPORT_IMPL_H_
 
-#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
-
-namespace base {
-class MessageLoopProxy;
-}
 
 namespace webkit {
 
@@ -20,7 +15,7 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   WebCompositorSupportImpl();
   virtual ~WebCompositorSupportImpl();
 
-  virtual void initialize(WebKit::WebThread* implThread);
+  virtual void initialize(WebKit::WebThread* thread);
   virtual bool isThreadingEnabled();
   virtual void shutdown();
   virtual void setPerTilePaintingEnabled(bool enabled);
@@ -55,9 +50,6 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
     createFloatAnimationCurve();
   virtual WebKit::WebTransformAnimationCurve*
     createTransformAnimationCurve();
-
- private:
-  scoped_refptr<base::MessageLoopProxy> impl_thread_message_loop_proxy_;
 };
 
 }  // namespace webkit

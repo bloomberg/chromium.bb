@@ -12,7 +12,6 @@
 #include "cc/layer_tree_host.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
-#include "cc/thread.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_common.h"
@@ -41,7 +40,7 @@ public:
     MockLayerImplTreeHost()
         : LayerTreeHost(&m_fakeClient, LayerTreeSettings())
     {
-        initialize(scoped_ptr<Thread>(NULL));
+        initialize();
     }
 
     MOCK_METHOD0(setNeedsCommit, void());
@@ -529,6 +528,8 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
 
 TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
 {
+    DebugScopedSetImplThread setImplThread;
+
     scoped_refptr<Layer> testLayer = Layer::create();
     scoped_ptr<LayerImpl> implLayer = LayerImpl::create(1);
 
@@ -554,7 +555,7 @@ public:
     {
         scoped_ptr<FakeLayerImplTreeHost> host(new FakeLayerImplTreeHost);
         // The initialize call will fail, since our client doesn't provide a valid GraphicsContext3D, but it doesn't matter in the tests that use this fake so ignore the return value.
-        host->initialize(scoped_ptr<Thread>(NULL));
+        host->initialize();
         return host.Pass();
     }
 

@@ -39,6 +39,9 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     // This test checks that surfacePropertyChanged() has the correct behavior.
     //
 
+    // This will fake that we are on the correct thread for testing purposes.
+    DebugScopedSetImplThread setImplThread;
+
     scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(1);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
@@ -73,6 +76,9 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 
 TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 {
+    // This will fake that we are on the correct thread for testing purposes.
+    DebugScopedSetImplThread setImplThread;
+
     scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(1);
 
     scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(2);
@@ -124,6 +130,9 @@ private:
 
 TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
 {
+    // This will fake that we are on the correct thread for testing purposes.
+    DebugScopedSetImplThread setImplThread;
+
     scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(1);
 
     scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(2);

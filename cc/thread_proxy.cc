@@ -16,7 +16,6 @@
 #include "cc/layer_tree_host.h"
 #include "cc/scheduler.h"
 #include "cc/scoped_thread_proxy.h"
-#include "cc/thread.h"
 #include <public/WebSharedGraphicsContext3D.h>
 
 using WebKit::WebSharedGraphicsContext3D;
@@ -30,14 +29,13 @@ const double contextRecreationTickRate = 0.03;
 
 namespace cc {
 
-scoped_ptr<Proxy> ThreadProxy::create(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implThread)
+scoped_ptr<Proxy> ThreadProxy::create(LayerTreeHost* layerTreeHost)
 {
-    return make_scoped_ptr(new ThreadProxy(layerTreeHost, implThread.Pass())).PassAs<Proxy>();
+    return make_scoped_ptr(new ThreadProxy(layerTreeHost)).PassAs<Proxy>();
 }
 
-ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implThread)
-    : Proxy(implThread.Pass())
-    , m_animateRequested(false)
+ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost)
+    : m_animateRequested(false)
     , m_commitRequested(false)
     , m_commitRequestSentToImplThread(false)
     , m_forcedCommitRequested(false)
@@ -83,7 +81,7 @@ bool ThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect)
 
     // Perform a synchronous commit.
     {
-        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+        DebugScopedSetMainThreadBlocked mainThreadBlocked;
         CompletionEvent beginFrameCompletion;
         Proxy::implThread()->postTask(base::Bind(&ThreadProxy::forceBeginFrameOnImplThread, base::Unretained(this), &beginFrameCompletion));
         beginFrameCompletion.wait();
@@ -97,7 +95,7 @@ bool ThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect)
     request.rect = rect;
     request.pixels = pixels;
     {
-        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+        DebugScopedSetMainThreadBlocked mainThreadBlocked;
         Proxy::implThread()->postTask(base::Bind(&ThreadProxy::requestReadbackOnImplThread, base::Unretained(this), &request));
         request.completion.wait();
     }
@@ -138,7 +136,7 @@ void ThreadProxy::finishAllRendering()
     DCHECK(!m_deferCommits);
 
     // Make sure all GL drawing is finished on the impl thread.
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CompletionEvent completion;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::finishAllRenderingOnImplThread, base::Unretained(this), &completion));
     completion.wait();
@@ -176,7 +174,7 @@ void ThreadProxy::setSurfaceReadyOnImplThread()
 void ThreadProxy::setVisible(bool visible)
 {
     TRACE_EVENT0("cc", "ThreadProxy::setVisible");
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CompletionEvent completion;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::setVisibleOnImplThread, base::Unretained(this), &completion, visible));
     completion.wait();
@@ -198,7 +196,7 @@ bool ThreadProxy::initializeRenderer()
     CompletionEvent completion;
     bool initializeSucceeded = false;
     RendererCapabilities capabilities;
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeRendererOnImplThread,
                                              base::Unretained(this),
                                              &completion,
@@ -232,7 +230,7 @@ bool ThreadProxy::recreateContext()
     CompletionEvent completion;
     bool recreateSucceeded = false;
     RendererCapabilities capabilities;
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::recreateContextOnImplThread,
                                              base::Unretained(this),
                                              &completion,
@@ -250,7 +248,7 @@ void ThreadProxy::renderingStats(RenderingStats* stats)
 {
     DCHECK(isMainThread());
 
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CompletionEvent completion;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::renderingStatsOnImplThread,
                                              base::Unretained(this),  &completion, stats));
@@ -430,7 +428,7 @@ void ThreadProxy::start()
     DCHECK(isMainThread());
     DCHECK(Proxy::implThread());
     // Create LayerTreeHostImpl.
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CompletionEvent completion;
     scoped_ptr<InputHandler> handler = m_layerTreeHost->createInputHandler();
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::initializeImplOnImplThread, base::Unretained(this), &completion, handler.release()));
@@ -447,7 +445,7 @@ void ThreadProxy::stop()
 
     // Synchronously deletes the impl.
     {
-        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+        DebugScopedSetMainThreadBlocked mainThreadBlocked;
 
         CompletionEvent completion;
         Proxy::implThread()->postTask(base::Bind(&ThreadProxy::layerTreeHostClosedOnImplThread, base::Unretained(this), &completion));
@@ -463,7 +461,7 @@ void ThreadProxy::stop()
 
 void ThreadProxy::forceSerializeOnSwapBuffers()
 {
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CompletionEvent completion;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::forceSerializeOnSwapBuffersOnImplThread, base::Unretained(this), &completion));
     completion.wait();
@@ -616,7 +614,7 @@ void ThreadProxy::beginFrame()
     {
         TRACE_EVENT0("cc", "commit");
 
-        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+        DebugScopedSetMainThreadBlocked mainThreadBlocked;
 
         base::TimeTicks startTime = base::TimeTicks::HighResNow();
         CompletionEvent completion;
@@ -659,7 +657,7 @@ void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, Re
 
     m_layerTreeHost->contentsTextureManager()->pushTexturePrioritiesToBackings();
 
-    m_currentResourceUpdateControllerOnImplThread = ResourceUpdateController::create(this, Proxy::implThread(), queue.Pass(), m_layerTreeHostImpl->resourceProvider(), hasImplThread());
+    m_currentResourceUpdateControllerOnImplThread = ResourceUpdateController::create(this, Proxy::implThread(), queue.Pass(), m_layerTreeHostImpl->resourceProvider());
     ResourceProvider::debugNotifyEnterZone(0x2000000);
     m_currentResourceUpdateControllerOnImplThread->performMoreUpdates(
         m_schedulerOnImplThread->anticipatedDrawTime());
@@ -797,7 +795,7 @@ void ThreadProxy::acquireLayerTextures()
         return;
 
     TRACE_EVENT0("cc", "ThreadProxy::acquireLayerTextures");
-    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CompletionEvent completion;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::acquireLayerTexturesForMainThreadOnImplThread, base::Unretained(this), &completion));
     completion.wait(); // Block until it is safe to write to layer textures from the main thread.

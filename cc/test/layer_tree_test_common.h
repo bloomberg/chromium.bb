@@ -114,8 +114,7 @@ protected:
 
     virtual void runTest(bool threaded);
 
-    cc::Thread* implThread() { return proxy() ? proxy()->implThread() : 0; }
-    cc::Proxy* proxy() const { return m_layerTreeHost ? m_layerTreeHost->proxy() : 0; }
+    cc::Thread* implThread() { return m_implCCThread.get(); }
 
     cc::LayerTreeSettings m_settings;
     scoped_ptr<MockLayerImplTreeHostClient> m_client;
@@ -133,6 +132,7 @@ private:
     bool m_started;
 
     scoped_ptr<cc::Thread> m_mainCCThread;
+    scoped_ptr<cc::Thread> m_implCCThread;
     scoped_ptr<base::Thread> m_implThread;
     base::CancelableClosure m_timeout;
 };
@@ -148,7 +148,7 @@ public:
 // Adapts LayerTreeHostImpl for test. Runs real code, then invokes test hooks.
 class MockLayerTreeHostImpl : public cc::LayerTreeHostImpl {
 public:
-    static scoped_ptr<MockLayerTreeHostImpl> create(TestHooks*, const cc::LayerTreeSettings&, cc::LayerTreeHostImplClient*, cc::Proxy*);
+    static scoped_ptr<MockLayerTreeHostImpl> create(TestHooks*, const cc::LayerTreeSettings&, cc::LayerTreeHostImplClient*);
 
     virtual void beginCommit() OVERRIDE;
     virtual void commitComplete() OVERRIDE;
@@ -164,7 +164,7 @@ protected:
     virtual base::TimeDelta lowFrequencyAnimationInterval() const OVERRIDE;
 
 private:
-    MockLayerTreeHostImpl(TestHooks*, const cc::LayerTreeSettings&, cc::LayerTreeHostImplClient*, cc::Proxy*);
+    MockLayerTreeHostImpl(TestHooks*, const cc::LayerTreeSettings&, cc::LayerTreeHostImplClient*);
 
     TestHooks* m_testHooks;
 };

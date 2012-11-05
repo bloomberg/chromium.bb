@@ -107,7 +107,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
     typedef std::vector<LayerImpl*> LayerList;
 
 public:
-    static scoped_ptr<LayerTreeHostImpl> create(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
+    static scoped_ptr<LayerTreeHostImpl> create(const LayerTreeSettings&, LayerTreeHostImplClient*);
     virtual ~LayerTreeHostImpl();
 
     // InputHandlerClient implementation
@@ -156,7 +156,6 @@ public:
     virtual void setFullRootLayerDamage() OVERRIDE;
     virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
     virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
-    virtual bool hasImplThread() const OVERRIDE;
 
     // WebCompositorOutputSurfaceClient implementation.
     virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) OVERRIDE;
@@ -234,7 +233,6 @@ public:
     FrameRateCounter* fpsCounter() const { return m_fpsCounter.get(); }
     DebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
-    Proxy* proxy() const { return m_proxy; }
 
     class CC_EXPORT CullRenderPassesWithCachedTextures {
     public:
@@ -267,7 +265,7 @@ public:
     static void removeRenderPasses(RenderPassCuller, FrameData&);
 
 protected:
-    LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
+    LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*);
 
     void animatePageScale(base::TimeTicks monotonicTime);
     void animateScrollbars(base::TimeTicks monotonicTime);
@@ -282,7 +280,6 @@ protected:
     virtual base::TimeDelta lowFrequencyAnimationInterval() const;
 
     LayerTreeHostImplClient* m_client;
-    Proxy* m_proxy;
     int m_sourceFrameNumber;
 
 private:

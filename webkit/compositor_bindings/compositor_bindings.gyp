@@ -9,6 +9,8 @@
       'web_animation_curve_common.h',
       'web_animation_impl.cc',
       'web_animation_impl.h',
+      'web_compositor_impl.cc',
+      'web_compositor_impl.h',
       'web_content_layer_impl.cc',
       'web_content_layer_impl.h',
       'web_delegated_renderer_layer_impl.cc',

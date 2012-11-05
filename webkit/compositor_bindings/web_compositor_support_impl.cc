@@ -7,10 +7,9 @@
 
 #include "base/debug/trace_event.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "cc/settings.h"
-#include "cc/thread_impl.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
+#include "webkit/compositor_bindings/web_compositor_impl.h"
 #include "webkit/compositor_bindings/web_content_layer_impl.h"
 #include "webkit/compositor_bindings/web_delegated_renderer_layer_impl.h"
 #include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
@@ -23,7 +22,6 @@
 #include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
 #include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
 #include "webkit/compositor_bindings/web_video_layer_impl.h"
-#include "webkit/glue/webthread_impl.h"
 
 using WebKit::WebAnimation;
 using WebKit::WebAnimationCurve;
@@ -48,6 +46,8 @@ using WebKit::WebTransformAnimationCurve;
 using WebKit::WebVideoFrameProvider;
 using WebKit::WebVideoLayer;
 
+using WebKit::WebCompositorImpl;
+
 namespace webkit {
 
 WebCompositorSupportImpl::WebCompositorSupportImpl() {
@@ -56,22 +56,19 @@ WebCompositorSupportImpl::WebCompositorSupportImpl() {
 WebCompositorSupportImpl::~WebCompositorSupportImpl() {
 }
 
-void WebCompositorSupportImpl::initialize(WebKit::WebThread* impl_thread) {
-  if (impl_thread) {
+void WebCompositorSupportImpl::initialize(WebKit::WebThread* thread) {
+  if (thread) {
     TRACE_EVENT_INSTANT0("test_gpu", "ThreadedCompositingInitialization");
   }
-  if (impl_thread)
-    impl_thread_message_loop_proxy_ =
-        static_cast<webkit_glue::WebThreadImpl*>(impl_thread)->
-            message_loop()->message_loop_proxy();
+  WebCompositorImpl::initialize(thread);
 }
 
 bool WebCompositorSupportImpl::isThreadingEnabled() {
-  return impl_thread_message_loop_proxy_;
+  return WebCompositorImpl::isThreadingEnabled();
 }
 
 void WebCompositorSupportImpl::shutdown() {
-  impl_thread_message_loop_proxy_ = NULL;
+  WebCompositorImpl::shutdown();
 }
 
 void WebCompositorSupportImpl::setPerTilePaintingEnabled(bool enabled) {
@@ -95,11 +92,7 @@ WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(
     const WebLayerTreeView::Settings& settings) {
   scoped_ptr<WebKit::WebLayerTreeViewImpl> layerTreeViewImpl(
       new WebKit::WebLayerTreeViewImpl(client));
-  scoped_ptr<cc::Thread> impl_thread(NULL);
-  if (impl_thread_message_loop_proxy_)
-    impl_thread = cc::ThreadImpl::createForDifferentThread(
-        impl_thread_message_loop_proxy_);
-  if (!layerTreeViewImpl->initialize(settings, impl_thread.Pass()))
+  if (!layerTreeViewImpl->initialize(settings))
     return NULL;
   layerTreeViewImpl->setRootLayer(root);
   return layerTreeViewImpl.release();

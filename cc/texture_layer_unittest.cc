@@ -10,7 +10,6 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/texture_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_client.h"
-#include "cc/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +26,7 @@ public:
     MockLayerImplTreeHost()
         : LayerTreeHost(&m_fakeClient, LayerTreeSettings())
     {
-        initialize(scoped_ptr<Thread>(NULL));
+        initialize();
     }
 
     MOCK_METHOD0(acquireLayerTextures, void());
@@ -98,7 +97,10 @@ TEST_F(TextureLayerTest, syncImplWhenDrawing)
     scoped_refptr<TextureLayer> testLayer = TextureLayer::create(0);
     ASSERT_TRUE(testLayer);
     scoped_ptr<TextureLayerImpl> implLayer;
-    implLayer = TextureLayerImpl::create(1);
+    {
+        DebugScopedSetImplThread setImplThread;
+        implLayer = TextureLayerImpl::create(1);
+    }
     ASSERT_TRUE(implLayer);
 
     EXPECT_CALL(*m_layerTreeHost, acquireLayerTextures()).Times(AnyNumber());
@@ -142,6 +144,11 @@ TEST_F(TextureLayerTest, syncImplWhenDrawing)
     testLayer->willModifyTexture();
     testLayer->setNeedsDisplayRect(dirtyRect);
     Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
+
+    {
+        DebugScopedSetImplThread setImplThread;
+        delete implLayer.release();
+    }
 }
 
 TEST_F(TextureLayerTest, syncImplWhenRemovingFromTree)
