@@ -40,7 +40,7 @@ TEST_F(ResourcesTest, MAYBE_ProductName) {
   std::string expected_product_name = "Chromoting";
 #endif  // !defined(GOOGLE_CHROME_BUILD)
   EXPECT_EQ(expected_product_name,
-            l10n_util::GetStringUTF8(IDR_REMOTING_PRODUCT_NAME));
+            l10n_util::GetStringUTF8(IDR_PRODUCT_NAME));
 }
 
 TEST_F(ResourcesTest, MAYBE_ProductLogo) {
