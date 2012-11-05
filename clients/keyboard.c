@@ -217,6 +217,23 @@ resize_handler(struct widget *widget,
 }
 
 static void
+virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
+{
+	if (!keyboard->preedit_string ||
+	    strlen(keyboard->preedit_string) == 0)
+		return;
+
+	input_method_context_preedit_string(keyboard->context,
+					    "",
+					    0);
+	input_method_context_commit_string(keyboard->context,
+					   keyboard->preedit_string,
+					   strlen(keyboard->preedit_string));
+	free(keyboard->preedit_string);
+	keyboard->preedit_string = strdup("");
+}
+
+static void
 keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 {
 	const char *label = keyboard->state == keyboardstate_default ? key->label : key->alt;
@@ -241,20 +258,14 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 			}
 			break;
 		case keytype_enter:
+			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_key(keyboard->keyboard->context,
 						 XKB_KEY_KP_Enter, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 		case keytype_space:
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
 								    " ");
-			input_method_context_preedit_string(keyboard->keyboard->context,
-							    "",
-							    0);
-			input_method_context_commit_string(keyboard->keyboard->context,
-							   keyboard->keyboard->preedit_string,
-							   strlen(keyboard->keyboard->preedit_string));
-			free(keyboard->keyboard->preedit_string);
-			keyboard->keyboard->preedit_string = strdup("");
+			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			break;
 		case keytype_switch:
 			if (keyboard->state == keyboardstate_default)
@@ -265,22 +276,27 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 		case keytype_symbols:
 			break;
 		case keytype_tab:
+			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_key(keyboard->keyboard->context,
 						 XKB_KEY_Tab, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 		case keytype_arrow_up:
+			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_key(keyboard->keyboard->context,
 						 XKB_KEY_Up, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 		case keytype_arrow_left:
+			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_key(keyboard->keyboard->context,
 						 XKB_KEY_Left, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 		case keytype_arrow_right:
+			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_key(keyboard->keyboard->context,
 						 XKB_KEY_Right, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 		case keytype_arrow_down:
+			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			input_method_context_key(keyboard->keyboard->context,
 						 XKB_KEY_Down, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
