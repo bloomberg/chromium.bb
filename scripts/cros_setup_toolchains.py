@@ -67,6 +67,98 @@ class VariableCache(object):
   pass
 VAR_CACHE = VariableCache()
 
+class Crossdev(object):
+  """Class for interacting with crossdev and caching its output."""
+
+  _CACHE_FILE = os.path.join(CROSSDEV_OVERLAY, '.configured.json')
+  _CACHE = {}
+
+  @classmethod
+  def Load(cls, reconfig):
+    """Load crossdev cache from disk."""
+    crossdev_versions = GetInstalledPackageVersions('sys-devel/crossdev')
+    cls._CACHE = {'crossdev_versions': crossdev_versions}
+    if os.path.exists(cls._CACHE_FILE) and not reconfig:
+      with open(cls._CACHE_FILE) as f:
+        data = json.load(f)
+        if crossdev_versions == data['crossdev_versions']:
+          cls._CACHE = data
+
+  @classmethod
+  def Save(cls):
+    """Store crossdev cache on disk."""
+    # Save the cache from the successful run.
+    with open(cls._CACHE_FILE, 'w') as f:
+      json.dump(cls._CACHE, f)
+
+  @classmethod
+  def GetConfig(cls, target):
+    """Returns a map of crossdev provided variables about a tuple."""
+    CACHE_ATTR = '_target_tuple_map'
+
+    val = cls._CACHE.setdefault(CACHE_ATTR, {})
+    if not target in val:
+      # Find out the crossdev tuple.
+      target_tuple = target
+      if target == 'host':
+        target_tuple = GetHostTuple()
+      # Catch output of crossdev.
+      out = cros_build_lib.RunCommand(['crossdev', '--show-target-cfg',
+                                       '--ex-gdb', target_tuple],
+                print_cmd=False, redirect_stdout=True).output.splitlines()
+      # List of tuples split at the first '=', converted into dict.
+      val[target] = dict([x.split('=', 1) for x in out])
+    return val[target]
+
+  @classmethod
+  def UpdateTargets(cls, targets, usepkg, config_only=False):
+    """Calls crossdev to initialize a cross target.
+
+    Args:
+      targets - the list of targets to initialize using crossdev
+      usepkg - copies the commandline opts
+      config_only - Just update
+    """
+    configured_targets = cls._CACHE.setdefault('configured_targets', [])
+
+    cmdbase = ['crossdev', '--show-fail-log']
+    cmdbase.extend(['--env', 'FEATURES=splitdebug'])
+    # Pick stable by default, and override as necessary.
+    cmdbase.extend(['-P', '--oneshot'])
+    if usepkg:
+      cmdbase.extend(['-P', '--getbinpkg',
+                      '-P', '--usepkgonly',
+                      '--without-headers'])
+
+    overlays = '%s %s' % (CHROMIUMOS_OVERLAY, STABLE_OVERLAY)
+    cmdbase.extend(['--overlays', overlays])
+    cmdbase.extend(['--ov-output', CROSSDEV_OVERLAY])
+
+    for target in targets:
+      if config_only and target in configured_targets:
+        continue
+
+      cmd = cmdbase + ['-t', target]
+
+      for pkg in GetTargetPackages(target):
+        if pkg == 'gdb':
+          # Gdb does not have selectable versions.
+          cmd.append('--ex-gdb')
+          continue
+        # The first of the desired versions is the "primary" one.
+        version = GetDesiredPackageVersions(target, pkg)[0]
+        cmd.extend(['--%s' % pkg, version])
+
+      cmd.extend(targets[target]['crossdev'].split())
+      if config_only:
+        # In this case we want to just quietly reinit
+        cmd.append('--init-target')
+        cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True)
+      else:
+        cros_build_lib.RunCommand(cmd)
+
+      configured_targets.append(target)
+
 
 def GetPackageMap(target):
   """Compiles a package map for the given target from the constants.
@@ -113,29 +205,9 @@ def GetHostTuple():
   return val
 
 
-def GetCrossdevConf(target):
-  """Returns a map of crossdev provided variables about a tuple."""
-  CACHE_ATTR = '_target_tuple_map'
-
-  val = getattr(VAR_CACHE, CACHE_ATTR, {})
-  if not target in val:
-    # Find out the crossdev tuple.
-    target_tuple = target
-    if target == 'host':
-      target_tuple = GetHostTuple()
-    # Catch output of crossdev.
-    out = cros_build_lib.RunCommand(['crossdev', '--show-target-cfg',
-                                     '--ex-gdb', target_tuple],
-              print_cmd=False, redirect_stdout=True).output.splitlines()
-    # List of tuples split at the first '=', converted into dict.
-    val[target] = dict([x.split('=', 1) for x in out])
-    setattr(VAR_CACHE, CACHE_ATTR, val)
-  return val[target]
-
-
 def GetTargetPackages(target):
   """Returns a list of packages for a given target."""
-  conf = GetCrossdevConf(target)
+  conf = Crossdev.GetConfig(target)
   # Undesired packages are denoted by empty ${pkg}_pn variable.
   return [x for x in conf['crosspkgs'].strip("'").split() if conf[x+'_pn']]
 
@@ -143,7 +215,7 @@ def GetTargetPackages(target):
 # Portage helper functions:
 def GetPortagePackage(target, package):
   """Returns a package name for the given target."""
-  conf = GetCrossdevConf(target)
+  conf = Crossdev.GetConfig(target)
   # Portage category:
   if target == 'host':
     category = conf[package + '_category']
@@ -159,7 +231,7 @@ def GetPortagePackage(target, package):
 
 def GetPortageKeyword(target):
   """Returns a portage friendly keyword for a given target."""
-  return GetCrossdevConf(target)['arch']
+  return Crossdev.GetConfig(target)['arch']
 
 
 def IsPackageDisabled(target, package):
@@ -250,17 +322,15 @@ def FilterToolchains(targets, key, value):
   return targets
 
 
-def GetInstalledPackageVersions(target, package):
+def GetInstalledPackageVersions(atom):
   """Extracts the list of current versions of a target, package pair.
 
   args:
-    target, package - the target/package to operate on eg. i686-pc-linux-gnu,gcc
+    atom - the atom to operate on (e.g. sys-devel/gcc)
 
   returns the list of versions of the package currently installed.
   """
   versions = []
-  # This is the package name in terms of portage.
-  atom = GetPortagePackage(target, package)
   for pkg in portage.db['/']['vartree'].dbapi.match(atom):
     version = portage.versions.cpv_getversion(pkg)
     versions.append(version)
@@ -367,9 +437,10 @@ def TargetIsInitialized(target):
   # Check if packages for the given target all have a proper version.
   try:
     for package in GetTargetPackages(target):
+      atom = GetPortagePackage(target, package)
       # Do we even want this package && is it initialized?
       if not IsPackageDisabled(target, package) and \
-          not GetInstalledPackageVersions(target, package):
+          not GetInstalledPackageVersions(atom):
         return False
     return True
   except cros_build_lib.RunCommandError:
@@ -433,45 +504,6 @@ def CreatePackageKeywords(target):
 
 
 # Main functions performing the actual update steps.
-def UpdateCrossdevTargets(targets, usepkg, config_only=False):
-  """Calls crossdev to initialize a cross target.
-  args:
-    targets - the list of targets to initialize using crossdev
-    usepkg - copies the commandline opts
-  """
-  cmdbase = ['crossdev', '--show-fail-log']
-  cmdbase.extend(['--env', 'FEATURES=splitdebug'])
-  # Pick stable by default, and override as necessary.
-  cmdbase.extend(['-P', '--oneshot'])
-  if usepkg:
-    cmdbase.extend(['-P', '--getbinpkg',
-                    '-P', '--usepkgonly',
-                    '--without-headers'])
-
-  cmdbase.extend(['--overlays', '%s %s' % (CHROMIUMOS_OVERLAY, STABLE_OVERLAY)])
-  cmdbase.extend(['--ov-output', CROSSDEV_OVERLAY])
-
-  for target in targets:
-    cmd = cmdbase + ['-t', target]
-
-    for pkg in GetTargetPackages(target):
-      if pkg == 'gdb':
-        # Gdb does not have selectable versions.
-        cmd.append('--ex-gdb')
-        continue
-      # The first of the desired versions is the "primary" one.
-      version = GetDesiredPackageVersions(target, pkg)[0]
-      cmd.extend(['--%s' % pkg, version])
-
-    cmd.extend(targets[target]['crossdev'].split())
-    if config_only:
-      # In this case we want to just quietly reinit
-      cmd.append('--init-target')
-      cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True)
-    else:
-      cros_build_lib.RunCommand(cmd)
-
-
 def UpdateTargets(targets, usepkg):
   """Determines which packages need update/unmerge and defers to portage.
 
@@ -498,7 +530,7 @@ def UpdateTargets(targets, usepkg):
       if IsPackageDisabled(target, package):
         continue
       pkg = GetPortagePackage(target, package)
-      current = GetInstalledPackageVersions(target, package)
+      current = GetInstalledPackageVersions(pkg)
       desired = GetDesiredPackageVersions(target, package)
       desired_num = VersionListToNumeric(target, package, desired, False)
       mergemap[pkg] = set(desired_num).difference(current)
@@ -539,7 +571,7 @@ def CleanTargets(targets):
       if IsPackageDisabled(target, package):
         continue
       pkg = GetPortagePackage(target, package)
-      current = GetInstalledPackageVersions(target, package)
+      current = GetInstalledPackageVersions(pkg)
       desired = GetDesiredPackageVersions(target, package)
       desired_num = VersionListToNumeric(target, package, desired, True)
       if not set(desired_num).issubset(current):
@@ -644,9 +676,9 @@ def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
     if crossdev_targets:
       print 'The following targets need to be re-initialized:'
       print crossdev_targets
-      UpdateCrossdevTargets(crossdev_targets, usepkg)
+      Crossdev.UpdateTargets(crossdev_targets, usepkg)
     # Those that were not initialized may need a config update.
-    UpdateCrossdevTargets(reconfig_targets, usepkg, config_only=True)
+    Crossdev.UpdateTargets(reconfig_targets, usepkg, config_only=True)
 
   # We want host updated.
   targets['host'] = {}
@@ -686,6 +718,8 @@ def main(argv):
   parser.add_option('--show-board-cfg',
                     dest='board_cfg', default=None,
                     help=('Board to list toolchain tuples for'))
+  parser.add_option('--reconfig', default=False, action='store_true',
+                    help=('Reload crossdev config'))
 
   (options, _remaining_arguments) = parser.parse_args(argv)
 
@@ -709,5 +743,7 @@ def main(argv):
   targets = set(options.targets.split(','))
   boards = set(options.include_boards.split(',')) if options.include_boards \
       else set()
+  Crossdev.Load(options.reconfig)
   UpdateToolchains(options.usepkg, options.deleteold, options.hostonly, targets,
                    boards)
+  Crossdev.Save()
