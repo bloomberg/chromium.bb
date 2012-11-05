@@ -16,9 +16,6 @@ class InfoBarContainerView : public views::AccessiblePaneView,
                                 chrome::search::SearchModel* search_model);
   virtual ~InfoBarContainerView();
 
-  // Stacks this view as the top child of its parent.
-  void StackAtTop();
-
  private:
   // AccessiblePaneView:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

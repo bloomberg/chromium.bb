@@ -16,10 +16,6 @@ InfoBarContainerView::InfoBarContainerView(
     chrome::search::SearchModel* search_model)
     : InfoBarContainer(delegate, search_model) {
   set_id(VIEW_ID_INFO_BAR_CONTAINER);
-#if defined(USE_AURA)
-  SetPaintToLayer(true);
-  layer()->SetFillsBoundsOpaquely(false);
-#endif
 }
 
 InfoBarContainerView::~InfoBarContainerView() {
@@ -55,17 +51,7 @@ void InfoBarContainerView::PlatformSpecificAddInfoBar(InfoBar* infobar,
                                                       size_t position) {
   AddChildViewAt(static_cast<InfoBarView*>(infobar),
                  static_cast<int>(position));
-
-  StackAtTop();
 }
-
-void InfoBarContainerView::StackAtTop() {
-#if defined(USE_AURA)
-  if (layer() && layer()->parent())
-    layer()->parent()->StackAtTop(layer());
-#endif
-}
-
 
 void InfoBarContainerView::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
   RemoveChildView(static_cast<InfoBarView*>(infobar));
