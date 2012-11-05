@@ -134,6 +134,9 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   // the center of the nearest display if it's outside of all displays.
   void EnsurePointerInDisplays();
 
+  // Updates |display_names_| by calling platform-dependent functions.
+  void RefreshDisplayNames();
+
   // Update the display's id in the |display_list| to match the ones
   // stored in this display manager's |displays_|. This is used to
   // emulate display change behavior during the test byn creating the
@@ -151,6 +154,9 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
 
   // The mapping from the display ID to its overscan insets.
   std::map<int64, gfx::Insets> overscan_mapping_;
+
+  // The cached display's name for the display ID.
+  std::map<int64, std::string> display_names_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDisplayManager);
 };
