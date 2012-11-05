@@ -129,7 +129,7 @@ ui::EventResult RootView::DispatchKeyEvent(const ui::KeyEvent& event) {
         v->OnKeyPressed(event) : v->OnKeyReleased(event);
   }
 
-  return consumed ? ui::ER_CONSUMED : ui::ER_HANDLED;
+  return consumed ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
 }
 
 ui::EventResult RootView::DispatchScrollEvent(ui::ScrollEvent* event) {

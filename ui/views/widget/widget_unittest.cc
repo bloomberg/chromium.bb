@@ -5,10 +5,12 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/views_delegate.h"
@@ -974,6 +976,31 @@ TEST_F(WidgetTest, ResetCaptureOnGestureEnd) {
   toplevel->Close();
   RunPendingMessages();
 }
+
+#if defined(USE_AURA)
+// The key-event propagation from Widget happens differently on aura and
+// non-aura systems because of the difference in IME. So this test works only on
+// aura.
+TEST_F(WidgetTest, KeyboardInputEvent) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  View* container = new View;
+  toplevel->SetContentsView(container);
+
+  Textfield* textfield = new Textfield();
+  textfield->SetText(ASCIIToUTF16("some text"));
+  container->AddChildView(textfield);
+  toplevel->Show();
+  textfield->RequestFocus();
+
+  // The press gets handled. The release doesn't have an effect.
+  ui::KeyEvent backspace_p(ui::ET_KEY_PRESSED, ui::VKEY_DELETE, 0, false);
+  EXPECT_TRUE(toplevel->OnKeyEvent(backspace_p));
+  ui::KeyEvent backspace_r(ui::ET_KEY_RELEASED, ui::VKEY_DELETE, 0, false);
+  EXPECT_FALSE(toplevel->OnKeyEvent(backspace_r));
+
+  toplevel->Close();
+}
+#endif  // defined(USE_AURA)
 
 }  // namespace
 }  // namespace views

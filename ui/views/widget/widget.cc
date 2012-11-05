@@ -1091,7 +1091,7 @@ int Widget::GetNonClientComponent(const gfx::Point& point) {
 bool Widget::OnKeyEvent(const ui::KeyEvent& event) {
   ScopedEvent scoped(this, event);
   return static_cast<internal::RootView*>(GetRootView())->
-      DispatchKeyEvent(event) == ui::ER_UNHANDLED;
+      DispatchKeyEvent(event) != ui::ER_UNHANDLED;
 }
 
 bool Widget::OnMouseEvent(const ui::MouseEvent& event) {
