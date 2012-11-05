@@ -1,0 +1,61 @@
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+{
+  'targets': [
+    {
+      'target_name': 'android_webview_test_apk',
+      'type': 'none',
+      'dependencies': [
+        '../base/base.gyp:base_java_test_support',
+        '../content/content.gyp:content_java_test_support',
+        'android_webview_java',
+        'libwebviewchromium',
+      ],
+      'variables': {
+        'package_name': 'android_webview_test',
+        'apk_name': 'AndroidWebViewTest',
+        'java_in_dir': '../android_webview/javatests',
+        'resource_dir': 'res',
+      },
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/android_webview_test/assets',
+          'files': [ '<!@(find <(java_in_dir)/assets -type f)' ]
+        },
+      ],
+      'includes': [ '../build/java_apk.gypi' ],
+    },
+    {
+      'target_name': 'android_webview_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '../base/base.gyp:test_support_base',
+        '../testing/android/native_test.gyp:native_test_native_code',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        'android_webview_common',
+      ],
+      'include_dirs': [
+        '..',
+        '../skia/config',
+      ],
+      'sources': [
+        'lib/main/webview_tests.cc',
+        'native/android_stream_reader_url_request_job_unittests.cc',
+      ],
+    },
+    {
+      'target_name': 'android_webview_unittests_apk',
+      'type': 'none',
+      'dependencies': [
+        'android_webview_unittests',
+      ],
+      'variables': {
+        'test_suite_name': 'android_webview_unittests',
+        'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)android_webview_unittests<(SHARED_LIB_SUFFIX)',
+      },
+      'includes': [ '../build/apk_test.gypi' ],
+    },
+  ],
+}

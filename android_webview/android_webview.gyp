@@ -5,11 +5,28 @@
   'variables': {
     'chromium_code': 1,
   },
+  'includes': [
+    'android_webview_tests.gypi',
+  ],
   'targets': [
     {
       'target_name': 'libwebviewchromium',
       'type': 'shared_library',
       'android_unmangled_name': 1,
+      'dependencies': [
+        'android_webview_common',
+      ],
+      'ldflags': [
+        # fix linking to hidden symbols and re-enable this (crbug.com/157326)
+        '-Wl,--no-fatal-warnings'
+      ],
+      'sources': [
+        'lib/main/webview_entry_point.cc',
+      ],
+    },
+    {
+      'target_name': 'android_webview_common',
+      'type': 'static_library',
       'dependencies': [
         '../content/content.gyp:content',
         '../android_webview/native/webview_native.gyp:webview_native',
@@ -21,10 +38,6 @@
       'include_dirs': [
         '..',
         '../skia/config',
-      ],
-      'ldflags': [
-        # fix linking to hidden symbols and re-enable this (crbug.com/157326)
-        '-Wl,--no-fatal-warnings'
       ],
       'sources': [
         'browser/aw_browser_context.cc',
@@ -76,7 +89,6 @@
         'lib/aw_browser_dependency_factory_impl.h',
         'lib/main/aw_main_delegate.cc',
         'lib/main/aw_main_delegate.h',
-        'lib/main/webview_entry_point.cc',
         'public/browser/gl_draw.h',
         'renderer/aw_content_renderer_client.cc',
         'renderer/aw_content_renderer_client.h',
@@ -138,38 +150,6 @@
         {
           'destination': '<(PRODUCT_DIR)/android_webview/assets',
           'files': [ '<@(input_pak_files)' ]
-        },
-      ],
-      'includes': [ '../build/java_apk.gypi' ],
-    },
-    {
-      'target_name': 'android_webview_test_apk',
-      'type': 'none',
-      'dependencies': [
-        '../base/base.gyp:base_java',
-        '../base/base.gyp:base_java_test_support',
-        '../chrome/browser/component/components.gyp:navigation_interception_java',
-        '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
-        '../chrome/chrome_resources.gyp:packed_extra_resources',
-        '../chrome/chrome_resources.gyp:packed_resources',
-        '../content/content.gyp:content_java',
-        '../content/content.gyp:content_java_test_support',
-        '../media/media.gyp:media_java',
-        '../net/net.gyp:net_java',
-        '../ui/ui.gyp:ui_java',
-        'android_webview_java',
-        'libwebviewchromium',
-      ],
-      'variables': {
-        'package_name': 'android_webview_test',
-        'apk_name': 'AndroidWebViewTest',
-        'java_in_dir': '../android_webview/javatests',
-        'resource_dir': 'res',
-      },
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)/android_webview_test/assets',
-          'files': [ '<!@(find <(java_in_dir)/assets -type f -name "*")' ]
         },
       ],
       'includes': [ '../build/java_apk.gypi' ],
