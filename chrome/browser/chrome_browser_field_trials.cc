@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/chrome_gpu_util.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -81,6 +82,27 @@ void SetupSingleUniformityFieldTrial(
   DVLOG(1) << "Chosen Group: " << chosen_group;
 }
 
+// Setup a 50% uniformity trial for new installs only. This is accomplished by
+// disabling the trial on clients that were installed before a specified date.
+void SetupNewInstallUniformityTrial(const base::Time& install_date) {
+  const base::Time::Exploded kStartDate = {
+    2012, 11, 0, 6,  // Nov 6, 2012
+    0, 0, 0, 0       // 00:00:00.000
+  };
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "UMA-New-Install-Uniformity-Trial", 100, "Disabled",
+          2015, 1, 1, NULL));
+  trial->UseOneTimeRandomization();
+  trial->AppendGroup("Control", 50);
+  trial->AppendGroup("Experiment", 50);
+  const base::Time start_date = base::Time::FromLocalExploded(kStartDate);
+  if (install_date < start_date)
+    trial->Disable();
+  else
+    trial->group();
+}
+
 void SetSocketReusePolicy(int warmest_socket_trial_group,
                           const int socket_policy[],
                           int num_groups) {
@@ -101,13 +123,14 @@ ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
 ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
 
-void ChromeBrowserFieldTrials::SetupFieldTrials() {
+void ChromeBrowserFieldTrials::SetupFieldTrials(
+    const base::Time& install_time) {
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
   SpdyFieldTrial();
   WarmConnectionFieldTrial();
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
-  SetupUniformityFieldTrials();
+  SetupUniformityFieldTrials(install_time);
   AutocompleteFieldTrial::Activate();
   DisableNewTabFieldTrialIfNecesssary();
   SetUpSafeBrowsingInterstitialFieldTrial();
@@ -211,7 +234,8 @@ void ChromeBrowserFieldTrials::AutoLaunchChromeFieldTrial() {
   }
 }
 
-void ChromeBrowserFieldTrials::SetupUniformityFieldTrials() {
+void ChromeBrowserFieldTrials::SetupUniformityFieldTrials(
+    const base::Time& install_date) {
   // One field trial will be created for each entry in this array. The i'th
   // field trial will have |trial_sizes[i]| groups in it, including the default
   // group. Each group will have a probability of 1/|trial_sizes[i]|.
@@ -240,6 +264,8 @@ void ChromeBrowserFieldTrials::SetupUniformityFieldTrials() {
       "UMA-Session-Randomized-Uniformity-Trial-%d-Percent";
   SetupSingleUniformityFieldTrial(false, kSessionRandomizedTrialName,
       chrome_variations::kUniformitySessionRandomized5PercentBase, 20);
+
+  SetupNewInstallUniformityTrial(install_date);
 }
 
 void ChromeBrowserFieldTrials::DisableNewTabFieldTrialIfNecesssary() {

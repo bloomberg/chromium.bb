@@ -578,7 +578,11 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
       browser_process_->variations_service();
   variations_service->CreateTrialsFromSeed(browser_process_->local_state());
 
-  browser_field_trials_.SetupFieldTrials();
+  const int64 install_date = local_state_->GetInt64(
+      prefs::kUninstallMetricsInstallDate);
+  // This must be called after the pref is initialized.
+  DCHECK(install_date);
+  browser_field_trials_.SetupFieldTrials(base::Time::FromTimeT(install_date));
 
   SetupPlatformFieldTrials();
 
