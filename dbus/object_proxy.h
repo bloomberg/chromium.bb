@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/string_piece.h"
 #include "base/time.h"
+#include "dbus/dbus_export.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -32,7 +33,8 @@ class Signal;
 // object is is alive when callbacks referencing |this| are called; the
 // bus always holds at least one of those references so object proxies
 // always last as long as the bus that created them.
-class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
+class CHROME_DBUS_EXPORT ObjectProxy
+    : public base::RefCountedThreadSafe<ObjectProxy> {
  public:
   // Client code should use Bus::GetObjectProxy() or
   // Bus::GetObjectProxyWithOptions() instead of this constructor.

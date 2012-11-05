@@ -10,6 +10,7 @@
 #include <dbus/dbus.h>
 
 #include "base/basictypes.h"
+#include "dbus/dbus_export.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 
@@ -35,7 +36,7 @@ class MessageReader;
 // Returns true if Unix FD passing is supported in libdbus.
 // The check is done runtime rather than compile time as the libdbus
 // version used at runtime may be different from the one used at compile time.
-bool IsDBusTypeUnixFdSupported();
+CHROME_DBUS_EXPORT bool IsDBusTypeUnixFdSupported();
 
 // Message is the base class of D-Bus message types. Client code must use
 // sub classes such as MethodCall and Response instead.
@@ -44,7 +45,7 @@ bool IsDBusTypeUnixFdSupported();
 // as the class is inside 'dbus' namespace. We chose to name this way, as
 // libdbus defines lots of types starting with DBus, such as
 // DBusMessage. We should avoid confusion and conflict with these types.
-class Message {
+class CHROME_DBUS_EXPORT Message {
  public:
   // The message type used in D-Bus.  Redefined here so client code
   // doesn't need to use raw D-Bus macros. DBUS_MESSAGE_TYPE_INVALID
@@ -137,7 +138,7 @@ class Message {
 };
 
 // MessageCall is a type of message used for calling a method via D-Bus.
-class MethodCall : public Message {
+class CHROME_DBUS_EXPORT MethodCall : public Message {
  public:
   // Creates a method call message for the specified interface name and
   // the method name.
@@ -166,7 +167,7 @@ class MethodCall : public Message {
 };
 
 // Signal is a type of message used to send a signal.
-class Signal : public Message {
+class CHROME_DBUS_EXPORT Signal : public Message {
  public:
   // Creates a signal message for the specified interface name and the
   // method name.
@@ -196,7 +197,7 @@ class Signal : public Message {
 
 // Response is a type of message used for receiving a response from a
 // method via D-Bus.
-class Response : public Message {
+class CHROME_DBUS_EXPORT Response : public Message {
  public:
   // Returns a newly created Response from the given raw message of the
   // type DBUS_MESSAGE_TYPE_METHOD_RETURN. The caller must delete the
@@ -222,7 +223,7 @@ class Response : public Message {
 
 // ErrorResponse is a type of message used to return an error to the
 // caller of a method.
-class ErrorResponse: public Response {
+class CHROME_DBUS_EXPORT ErrorResponse: public Response {
  public:
   // Returns a newly created Response from the given raw message of the
   // type DBUS_MESSAGE_TYPE_METHOD_RETURN. The caller must delete the
@@ -261,7 +262,7 @@ class ErrorResponse: public Response {
 //
 //   writer.AppendString(str);
 //
-class MessageWriter {
+class CHROME_DBUS_EXPORT MessageWriter {
  public:
   // Data added with Append* will be written to |message|, which may be NULL
   // to create a sub-writer for passing to OpenArray, etc.
@@ -362,7 +363,7 @@ class MessageWriter {
 //
 // MessageReader manages an internal iterator to read data. All functions
 // starting with Pop advance the iterator on success.
-class MessageReader {
+class CHROME_DBUS_EXPORT MessageReader {
  public:
   // The data will be read from the given |message|, which may be NULL to
   // create a sub-reader for passing to PopArray, etc.

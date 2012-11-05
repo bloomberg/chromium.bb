@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "dbus/dbus_export.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 
@@ -194,7 +195,7 @@ class PropertyBase {
 //
 // After creation, client code should call ConnectSignals() and most likely
 // GetAll() to seed initial values and update as changes occur.
-class PropertySet {
+class CHROME_DBUS_EXPORT PropertySet {
  public:
   // Callback for changes to cached values of properties, either notified
   // via signal, or as a result of calls to Get() and GetAll(). The |name|
@@ -349,7 +350,7 @@ class PropertySet {
 // default value. Specializations for basic D-Bus types, strings, object
 // paths and arrays are provided for you.
 template <class T>
-class Property : public PropertyBase {
+class CHROME_DBUS_EXPORT Property : public PropertyBase {
  public:
   Property() {}
 

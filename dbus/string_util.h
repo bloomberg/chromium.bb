@@ -7,10 +7,12 @@
 
 #include <string>
 
+#include "dbus/dbus_export.h"
+
 namespace dbus {
 
 // Returns true if the specified string is a valid object path.
-bool IsValidObjectPath(const std::string& value);
+CHROME_DBUS_EXPORT bool IsValidObjectPath(const std::string& value);
 
 }  // namespace dbus
 

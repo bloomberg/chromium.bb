@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'dbus',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../build/linux/system.gyp:dbus',
@@ -18,9 +18,13 @@
       'export_dependent_settings': [
         '../base/base.gyp:base',
       ],
+      'defines': [
+        'DBUS_IMPLEMENTATION',
+      ],
       'sources': [
         'bus.cc',
         'bus.h',
+        'dbus_export.h',
         'exported_object.cc',
         'exported_object.h',
         'file_descriptor.cc',

@@ -7,13 +7,15 @@
 
 #include <string>
 
+#include "dbus/dbus_export.h"
+
 namespace dbus {
 
 // ObjectPath is a type used to distinguish D-Bus object paths from simple
 // strings, especially since normal practice is that these should be only
 // initialized from static constants or obtained from remote objects and no
 // assumptions about their value made.
-class ObjectPath {
+class CHROME_DBUS_EXPORT ObjectPath {
  public:
   // Permit initialization without a value for passing to
   // dbus::MessageReader::PopObjectPath to fill in and from std::string
@@ -39,6 +41,7 @@ class ObjectPath {
   // observers.
   bool operator==(const ObjectPath&) const;
   bool operator!=(const ObjectPath&) const;
+
  private:
   std::string value_;
 };

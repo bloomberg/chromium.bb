@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
+#include "dbus/dbus_export.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -30,7 +31,8 @@ class Signal;
 //
 // ExportedObject is a ref counted object, to ensure that |this| of the
 // object is alive when callbacks referencing |this| are called.
-class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
+class CHROME_DBUS_EXPORT ExportedObject
+    : public base::RefCountedThreadSafe<ExportedObject> {
  public:
   // Client code should use Bus::GetExportedObject() instead of this
   // constructor.

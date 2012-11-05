@@ -5,6 +5,9 @@
 #ifndef DBUS_FILE_DESCRIPTOR_H_
 #define DBUS_FILE_DESCRIPTOR_H_
 
+#include "base/basictypes.h"
+#include "dbus/dbus_export.h"
+
 namespace dbus {
 
 // FileDescriptor is a type used to encapsulate D-Bus file descriptors
@@ -28,7 +31,7 @@ namespace dbus {
 // directory to reduce the security risks.  Splitting out validation
 // also allows the caller to do this work on the File thread to conform
 // with i/o restrictions.
-class FileDescriptor {
+class CHROME_DBUS_EXPORT FileDescriptor {
  public:
   // Permits initialization without a value for passing to
   // dbus::MessageReader::PopFileDescriptor to fill in and from int values.

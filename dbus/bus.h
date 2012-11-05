@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/tracked_objects.h"
+#include "dbus/dbus_export.h"
 #include "dbus/object_path.h"
 
 class MessageLoop;
@@ -130,7 +131,7 @@ class ObjectProxy;
 // alive when callbacks referencing |this| are called. However, after the
 // bus is shut down, |connection_| can be NULL. Hence, callbacks should
 // not rely on that |connection_| is alive.
-class Bus : public base::RefCountedThreadSafe<Bus> {
+class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
  public:
   // Specifies the bus type. SESSION is used to communicate with per-user
   // services like GNOME applications. SYSTEM is used to communicate with
@@ -157,7 +158,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   };
 
   // Options used to create a Bus object.
-  struct Options {
+  struct CHROME_DBUS_EXPORT Options {
     Options();
     ~Options();
 
