@@ -350,9 +350,7 @@ int GetModifiersFromKeyState() {
 
 // Windows emulates mouse messages for touch events.
 bool IsMouseEventFromTouch(UINT message) {
-  return (message == WM_MOUSEMOVE ||
-      message == WM_LBUTTONDOWN || message == WM_LBUTTONUP ||
-      message == WM_RBUTTONDOWN || message == WM_RBUTTONUP) &&
+  return (message >= WM_MOUSEFIRST) && (message <= WM_MOUSELAST) &&
       (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
       MOUSEEVENTF_FROMTOUCH;
 }
