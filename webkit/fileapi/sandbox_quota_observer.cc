@@ -17,10 +17,10 @@ namespace fileapi {
 SandboxQuotaObserver::SandboxQuotaObserver(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* update_notify_runner,
-    ObfuscatedFileUtil* sandbox_file_util)
+    SandboxMountPointProvider* sandbox_provider)
     : quota_manager_proxy_(quota_manager_proxy),
       update_notify_runner_(update_notify_runner),
-      sandbox_file_util_(sandbox_file_util) {}
+      sandbox_provider_(sandbox_provider) {}
 
 SandboxQuotaObserver::~SandboxQuotaObserver() {}
 
@@ -28,8 +28,6 @@ void SandboxQuotaObserver::OnStartUpdate(const FileSystemURL& url) {
   DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
   FilePath usage_file_path = GetUsageCachePath(url);
-  if (usage_file_path.empty())
-    return;
   FileSystemUsageCache::IncrementDirty(usage_file_path);
 }
 
@@ -38,8 +36,8 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
   DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
   FilePath usage_file_path = GetUsageCachePath(url);
-  if (usage_file_path.empty())
-    return;
+  DCHECK(!usage_file_path.empty());
+  // TODO(dmikurbe): Make sure that usage_file_path is available.
   FileSystemUsageCache::AtomicUpdateUsageByDelta(usage_file_path, delta);
   if (quota_manager_proxy_) {
     quota_manager_proxy_->NotifyStorageModified(
@@ -54,8 +52,6 @@ void SandboxQuotaObserver::OnEndUpdate(const FileSystemURL& url) {
   DCHECK(SandboxMountPointProvider::CanHandleType(url.type()));
   DCHECK(update_notify_runner_->RunsTasksOnCurrentThread());
   FilePath usage_file_path = GetUsageCachePath(url);
-  if (usage_file_path.empty())
-    return;
   FileSystemUsageCache::DecrementDirty(usage_file_path);
 }
 
@@ -70,16 +66,9 @@ void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
 }
 
 FilePath SandboxQuotaObserver::GetUsageCachePath(const FileSystemURL& url) {
-  DCHECK(sandbox_file_util_);
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FilePath path = SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
-      sandbox_file_util_, url.origin(), url.type(), &error);
-  if (error != base::PLATFORM_FILE_OK) {
-    LOG(WARNING) << "Could not get usage cache path for: "
-                 << url.DebugString();
-    return FilePath();
-  }
-  return path;
+  DCHECK(sandbox_provider_);
+  return sandbox_provider_->GetUsageCachePathForOriginAndType(
+      url.origin(), url.type());
 }
 
 }  // namespace fileapi

@@ -339,7 +339,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       quota_observer_(new SandboxQuotaObserver(
                       quota_manager_proxy,
                       file_task_runner,
-                      sandbox_file_util_.get())),
+                      ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Set quota observers.
   UpdateObserverList::Source update_observers_src;
@@ -356,11 +356,8 @@ SandboxMountPointProvider::SandboxMountPointProvider(
 SandboxMountPointProvider::~SandboxMountPointProvider() {
   if (!file_task_runner_->RunsTasksOnCurrentThread()) {
     ObfuscatedFileUtil* sandbox_file_util = sandbox_file_util_.release();
-    SandboxQuotaObserver* quota_observer = quota_observer_.release();
     if (!file_task_runner_->DeleteSoon(FROM_HERE, sandbox_file_util))
       delete sandbox_file_util;
-    if (!file_task_runner_->DeleteSoon(FROM_HERE, quota_observer))
-      delete quota_observer;
   }
 }
 
@@ -652,11 +649,8 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
 void SandboxMountPointProvider::InvalidateUsageCache(
     const GURL& origin_url, fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FilePath usage_file_path = GetUsageCachePathForOriginAndType(
-      sandbox_file_util_.get(), origin_url, type, &error);
-  if (error != base::PLATFORM_FILE_OK)
-    return;
+      origin_url, type);
   FileSystemUsageCache::IncrementDirty(usage_file_path);
 }
 
@@ -735,27 +729,10 @@ SandboxMountPointProvider::CreateFileSystemOperationForSync(
 }
 
 FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
-    const GURL& origin_url,
-    FileSystemType type) const {
-  base::PlatformFileError error;
-  FilePath path = GetUsageCachePathForOriginAndType(
-      sandbox_file_util_.get(), origin_url, type, &error);
-  if (error != base::PLATFORM_FILE_OK)
-    return FilePath();
-  return path;
-}
-
-// static
-FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
-    ObfuscatedFileUtil* sandbox_file_util,
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    base::PlatformFileError* error_out) {
-  DCHECK(error_out);
-  *error_out = base::PLATFORM_FILE_OK;
-  FilePath base_path = sandbox_file_util->GetDirectoryForOriginAndType(
-      origin_url, type, false /* create */, error_out);
-  if (*error_out != base::PLATFORM_FILE_OK)
+    const GURL& origin_url, fileapi::FileSystemType type) const {
+  FilePath base_path =
+      GetBaseDirectoryForOriginAndType(origin_url, type, false);
+  if (base_path.empty())
     return FilePath();
   return base_path.Append(FileSystemUsageCache::kUsageFileName);
 }

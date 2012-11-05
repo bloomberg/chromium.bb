@@ -14,7 +14,6 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/file_change.h"
@@ -74,14 +73,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   // left after the last shutdown (if any).
   SyncStatusCode Initialize(FileSystemContext* file_system_context);
 
-  // This method is (exceptionally) thread-safe.
-  int64 num_changes() const {
-    base::AutoLock lock(num_changes_lock_);
-    return num_changes_;
-  }
-
-  void UpdateNumChanges();
-
  private:
   class TrackerDB;
   friend class CannedSyncableFileSystem;
@@ -128,10 +119,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
   // but they are updated when a new change comes on the same file (as
   // well as Drive's changestamps).
   int64 current_change_seq_;
-
-  // This can be accessed on any threads (with num_changes_lock_).
-  int64 num_changes_;
-  mutable base::Lock num_changes_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileChangeTracker);
 };

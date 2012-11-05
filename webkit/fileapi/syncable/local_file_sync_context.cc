@@ -17,7 +17,6 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
-#include "webkit/fileapi/syncable/local_origin_change_observer.h"
 #include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
@@ -25,7 +24,6 @@ namespace fileapi {
 
 namespace {
 const int kMaxConcurrentSyncableOperation = 3;
-const int kNotifyChangesDurationInSec = 1;
 }  // namespace
 
 LocalFileSyncContext::LocalFileSyncContext(
@@ -33,8 +31,7 @@ LocalFileSyncContext::LocalFileSyncContext(
     base::SingleThreadTaskRunner* io_task_runner)
     : ui_task_runner_(ui_task_runner),
       io_task_runner_(io_task_runner),
-      shutdown_on_ui_(false),
-      mock_notify_changes_duration_in_sec_(-1) {
+      shutdown_on_ui_(false) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 }
 
@@ -167,26 +164,6 @@ void LocalFileSyncContext::ApplyRemoteChange(
   }
 }
 
-void LocalFileSyncContext::AddOriginChangeObserver(
-    LocalOriginChangeObserver* observer) {
-  origin_change_observers_.AddObserver(observer);
-}
-
-void LocalFileSyncContext::RemoveOriginChangeObserver(
-    LocalOriginChangeObserver* observer) {
-  origin_change_observers_.RemoveObserver(observer);
-}
-
-void LocalFileSyncContext::NotifyAvailableChangesOnIOThread() {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LocalFileSyncContext::NotifyAvailableChanges,
-                 this, origins_with_pending_changes_));
-  last_notified_changes_ = base::Time::Now();
-  origins_with_pending_changes_.clear();
-}
-
 base::WeakPtr<SyncableFileOperationRunner>
 LocalFileSyncContext::operation_runner() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
@@ -202,18 +179,9 @@ LocalFileSyncStatus* LocalFileSyncContext::sync_status() const {
 
 void LocalFileSyncContext::OnSyncEnabled(const FileSystemURL& url) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  origins_with_pending_changes_.insert(url.origin());
-  if (base::Time::Now() > last_notified_changes_ + NotifyChangesDuration()) {
-    NotifyAvailableChangesOnIOThread();
-  } else if (!timer_on_io_->IsRunning()) {
-    timer_on_io_->Start(
-        FROM_HERE, NotifyChangesDuration(), this,
-        &LocalFileSyncContext::NotifyAvailableChangesOnIOThread);
-  }
   if (url_syncable_callback_.is_null() ||
-      sync_status()->IsWriting(url_waiting_sync_on_io_)) {
+      sync_status()->IsWriting(url_waiting_sync_on_io_))
     return;
-  }
   // TODO(kinuko): may want to check how many pending tasks we have.
   sync_status()->StartSyncing(url_waiting_sync_on_io_);
   ui_task_runner_->PostTask(FROM_HERE, url_syncable_callback_);
@@ -228,17 +196,10 @@ void LocalFileSyncContext::OnWriteEnabled(const FileSystemURL& url) {
 LocalFileSyncContext::~LocalFileSyncContext() {
 }
 
-void LocalFileSyncContext::NotifyAvailableChanges(
-    const std::set<GURL>& origins) {
-  FOR_EACH_OBSERVER(LocalOriginChangeObserver, origin_change_observers_,
-                    OnChangesAvailableInOrigins(origins));
-}
-
 void LocalFileSyncContext::ShutdownOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   operation_runner_.reset();
   sync_status_.reset();
-  timer_on_io_.reset();
 }
 
 void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
@@ -260,17 +221,15 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
         base::Bind(&LocalFileSyncContext::InitializeChangeTrackerOnFileThread,
                    this, tracker_ptr,
                    make_scoped_refptr(file_system_context)),
-        base::Bind(&LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread,
-                   this, base::Owned(tracker_ptr),
+        base::Bind(&LocalFileSyncContext::DidInitializeChangeTracker, this,
+                   base::Owned(tracker_ptr),
                    source_url, service_name,
                    make_scoped_refptr(file_system_context)));
     return;
   }
   if (!operation_runner_.get()) {
-    DCHECK(!sync_status_);
-    DCHECK(!timer_on_io_);
+    DCHECK(!sync_status_.get());
     sync_status_.reset(new LocalFileSyncStatus);
-    timer_on_io_.reset(new base::OneShotTimer<LocalFileSyncContext>);
     operation_runner_.reset(new SyncableFileOperationRunner(
             kMaxConcurrentSyncableOperation,
             sync_status_.get()));
@@ -291,13 +250,12 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
   return (*tracker_ptr)->Initialize(file_system_context);
 }
 
-void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
+void LocalFileSyncContext::DidInitializeChangeTracker(
     scoped_ptr<LocalFileChangeTracker>* tracker_ptr,
     const GURL& source_url,
     const std::string& service_name,
     FileSystemContext* file_system_context,
     SyncStatusCode status) {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(file_system_context);
   if (status != SYNC_STATUS_OK) {
     DidInitialize(source_url, file_system_context, status);
@@ -399,12 +357,5 @@ void LocalFileSyncContext::DidApplyRemoteChange(
       base::Bind(callback_on_ui,
                  PlatformFileErrorToSyncStatusCode(file_error)));
 }
-
-base::TimeDelta LocalFileSyncContext::NotifyChangesDuration() {
-  if (mock_notify_changes_duration_in_sec_ >= 0)
-    return base::TimeDelta::FromSeconds(mock_notify_changes_duration_in_sec_);
-  return base::TimeDelta::FromSeconds(kNotifyChangesDurationInSec);
-}
-
 
 }  // namespace fileapi
