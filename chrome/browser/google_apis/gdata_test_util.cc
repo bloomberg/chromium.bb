@@ -41,7 +41,8 @@ FilePath GetTestFilePath(const std::string& relative_path) {
   FilePath path;
   std::string error;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.Append(FilePath::FromUTF8Unsafe(relative_path));
+  path = path.AppendASCII("chromeos")
+      .Append(FilePath::FromUTF8Unsafe(relative_path));
   EXPECT_TRUE(file_util::PathExists(path)) <<
       "Couldn't find " << path.value();
   return path;
