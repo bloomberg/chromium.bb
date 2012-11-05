@@ -18,11 +18,10 @@ namespace gfx {
 class QuadF;
 class Rect;
 class RectF;
+class Vector2dF;
 }
 
 namespace cc {
-
-class FloatSize;
 
 struct HomogeneousCoordinate {
     HomogeneousCoordinate(double newX, double newY, double newZ, double newW)
@@ -104,10 +103,10 @@ public:
 
     // Returns the smallest angle between the given two vectors in degrees. Neither vector is
     // assumed to be normalized.
-    static float smallestAngleBetweenVectors(const FloatSize&, const FloatSize&);
+    static float smallestAngleBetweenVectors(gfx::Vector2dF, gfx::Vector2dF);
 
     // Projects the |source| vector onto |destination|. Neither vector is assumed to be normalized.
-    static FloatSize projectVector(const FloatSize& source, const FloatSize& destination);
+    static gfx::Vector2dF projectVector(gfx::Vector2dF source, gfx::Vector2dF destination);
 };
 
 } // namespace cc

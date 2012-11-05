@@ -6,12 +6,14 @@
 
 #include "cc/math_util.h"
 
-#include "FloatSize.h"
+#include <cmath>
+#include <limits>
+
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/rect_f.h"
-#include <cmath>
+#include "ui/gfx/vector2d_f.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;
@@ -378,19 +380,24 @@ gfx::Vector2dF MathUtil::computeTransform2dScaleComponents(const WebTransformati
     return gfx::Vector2dF(xScale, yScale);
 }
 
-float MathUtil::smallestAngleBetweenVectors(const FloatSize& v1, const FloatSize& v2)
+static inline double rad2deg(double r)
 {
-    float dotProduct = (v1.width() * v2.width() + v1.height() * v2.height()) / (v1.diagonalLength() * v2.diagonalLength());
-    // Clamp to compensate for rounding errors.
-    dotProduct = std::max(-1.f, std::min(1.f, dotProduct));
-    return rad2deg(acosf(dotProduct));
+  double pi = 3.14159265358979323846;
+  return r * 180.0 / pi;
 }
 
-FloatSize MathUtil::projectVector(const FloatSize& source, const FloatSize& destination)
+float MathUtil::smallestAngleBetweenVectors(gfx::Vector2dF v1, gfx::Vector2dF v2)
 {
-    float sourceDotDestination = source.width() * destination.width() + source.height() * destination.height();
-    float projectedLength = sourceDotDestination / destination.diagonalLengthSquared();
-    return FloatSize(projectedLength * destination.width(), projectedLength * destination.height());
+    double dotProduct = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
+    // Clamp to compensate for rounding errors.
+    dotProduct = std::max(-1.0, std::min(1.0, dotProduct));
+    return static_cast<float>(rad2deg(std::acos(dotProduct)));
+}
+
+gfx::Vector2dF MathUtil::projectVector(gfx::Vector2dF source, gfx::Vector2dF destination)
+{
+    float projectedLength = gfx::DotProduct(source, destination) / destination.LengthSquared();
+    return gfx::Vector2dF(projectedLength * destination.x(), projectedLength * destination.y());
 }
 
 } // namespace cc

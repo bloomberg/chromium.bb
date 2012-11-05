@@ -86,8 +86,6 @@
       ],
       'sources': [
         '<@(webkit_compositor_bindings_sources)',
-        'webcore_convert.cc',
-        'webcore_convert.h',
       ],
     },
   ],

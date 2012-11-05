@@ -30,9 +30,9 @@ void ScrollbarGeometryFixedThumb::update(WebScrollbar* scrollbar)
     int length = ScrollbarGeometryStub::thumbLength(scrollbar);
 
     if (scrollbar->orientation() == WebScrollbar::Horizontal)
-        m_thumbSize = IntSize(length, scrollbar->size().height);
+        m_thumbSize = gfx::Size(length, scrollbar->size().height);
     else
-        m_thumbSize = IntSize(scrollbar->size().width, length);
+        m_thumbSize = gfx::Size(scrollbar->size().width, length);
 }
 
 WebScrollbarThemeGeometry* ScrollbarGeometryFixedThumb::clone() const
