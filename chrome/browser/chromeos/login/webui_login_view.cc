@@ -140,9 +140,8 @@ WebUILoginView::WebUILoginView()
 }
 
 WebUILoginView::~WebUILoginView() {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
-  if (tray)
-    tray->SetNextFocusableView(NULL);
+  if (ash::Shell::GetInstance()->status_area_widget())
+    ash::Shell::GetInstance()->system_tray()->SetNextFocusableView(NULL);
 }
 
 void WebUILoginView::Init(views::Widget* login_window) {
@@ -243,8 +242,8 @@ void WebUILoginView::OnPostponedShow() {
 }
 
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
-  ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
-  if (tray) {
+  if (ash::Shell::GetInstance()->status_area_widget()) {
+    ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
     if (visible) {
       // Tray may have been initialized being hidden.
       tray->SetVisible(visible);

@@ -216,7 +216,8 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
 }
 
 void DataPromoNotification::CloseNotification() {
-  if (ash::Shell::GetInstance()->system_tray()->network_observer()) {
+  if (ash::Shell::GetInstance()->status_area_widget() &&
+      ash::Shell::GetInstance()->system_tray()->network_observer()) {
     ash::Shell::GetInstance()->system_tray()->network_observer()->
         ClearNetworkMessage(ash::NetworkObserver::MESSAGE_DATA_PROMO);
   }

@@ -111,7 +111,8 @@ void SmsObserver::OnNewMessage(const std::string& modem_device_path,
   base::DictionaryValue dict;
   dict.SetString(ash::kSmsNumberKey, message.number);
   dict.SetString(ash::kSmsTextKey, message.text);
-  ash::Shell::GetInstance()->system_tray()->sms_observer()->AddMessage(dict);
+  if (ash::Shell::GetInstance()->status_area_widget())
+    ash::Shell::GetInstance()->system_tray()->sms_observer()->AddMessage(dict);
 }
 
 }  // namespace chromeos

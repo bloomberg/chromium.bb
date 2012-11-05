@@ -29,6 +29,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/volume_control_delegate.h"
@@ -619,11 +620,15 @@ bool AcceleratorController::PerformAction(int action,
       return HandleRotatePaneFocus(Shell::FORWARD);
     case FOCUS_PREVIOUS_PANE:
       return HandleRotatePaneFocus(Shell::BACKWARD);
-    case FOCUS_SYSTEM_TRAY:
-      if (shell->system_tray())
+    case FOCUS_SYSTEM_TRAY: {
+      internal::StatusAreaWidget* status_area =
+          ash::Shell::GetInstance()->status_area_widget();
+      if (status_area) {
         return shell->focus_cycler()->FocusWidget(
-            shell->system_tray()->GetWidget());
+            status_area->system_tray()->GetWidget());
+      }
       break;
+    }
     case SHOW_KEYBOARD_OVERLAY:
       ash::Shell::GetInstance()->delegate()->ShowKeyboardOverlay();
       return true;

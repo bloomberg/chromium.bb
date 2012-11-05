@@ -365,6 +365,10 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate,
   WebNotificationTray* GetWebNotificationTray();
 
   // Convenience accessor for members of StatusAreaWidget.
+  // NOTE: status_area_widget() may return NULL during shutdown;
+  // tray_delegate() and system_tray() will crash if called after
+  // status_area_widget() has been destroyed; check status_area_widget()
+  // before calling these in destructors.
   internal::StatusAreaWidget* status_area_widget();
   SystemTrayDelegate* tray_delegate();
   SystemTray* system_tray();

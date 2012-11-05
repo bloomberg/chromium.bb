@@ -6,6 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -106,8 +107,12 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   }
 
   virtual ~UpdateNagger() {
-    Shell::GetInstance()->system_tray()->GetWidget()->GetNativeView()->layer()->
-        GetAnimator()->RemoveObserver(this);
+    internal::StatusAreaWidget* status_area =
+        ash::Shell::GetInstance()->status_area_widget();
+    if (status_area) {
+      status_area->system_tray()->GetWidget()->GetNativeView()->layer()->
+          GetAnimator()->RemoveObserver(this);
+    }
   }
 
   void RestartTimer() {

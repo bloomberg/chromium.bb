@@ -171,8 +171,10 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
-  ash::Shell::GetInstance()->system_tray()->locale_observer()->
-      OnLocaleChanged(this, cur_locale, from_locale_, to_locale_);
+  if (ash::Shell::GetInstance()->status_area_widget()) {
+    ash::Shell::GetInstance()->system_tray()->locale_observer()->
+        OnLocaleChanged(this, cur_locale, from_locale_, to_locale_);
+  }
 }
 
 void LocaleChangeGuard::AcceptLocaleChange() {
