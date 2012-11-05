@@ -605,6 +605,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
                                           uint64 surface_handle);
 #endif
+#if defined(OS_ANDROID)
+  void OnMsgUpdateFrameInfo(const gfx::Vector2d& scroll_offset,
+                            float page_scale_factor,
+                            const gfx::Size& content_size);
+#endif
 #if defined(TOOLKIT_GTK)
   void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);

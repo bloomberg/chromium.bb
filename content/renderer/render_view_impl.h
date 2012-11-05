@@ -1105,11 +1105,6 @@ class RenderViewImpl : public RenderWidget,
   bool IsBackForwardToStaleEntry(const ViewMsg_Navigate_Params& params,
                                  bool is_reload);
 
-#if defined(OS_ANDROID)
-  // Launch an Android content intent with the given URL.
-  void LaunchAndroidContentIntent(const GURL& intent_url, size_t request_id);
-#endif
-
   bool MaybeLoadAlternateErrorPage(WebKit::WebFrame* frame,
                                    const WebKit::WebURLError& error,
                                    bool replace);
@@ -1132,6 +1127,15 @@ class RenderViewImpl : public RenderWidget,
   // Processes the command-line flags --enable-pinch and
   // --enable-pinch-in-compositor
   void ProcessAcceleratedPinchZoomFlags(const CommandLine& command_line);
+
+#if defined(OS_ANDROID)
+  // Launch an Android content intent with the given URL.
+  void LaunchAndroidContentIntent(const GURL& intent_url, size_t request_id);
+
+  // Send ViewHostMsg_UpdateFrameInfo to report scale/scroll/size changes.
+  void ScheduleUpdateFrameInfo();
+  void SendUpdateFrameInfo();
+#endif
 
   // Sends a reply to the current find operation handling if it was a
   // synchronous find request.
@@ -1403,6 +1407,9 @@ class RenderViewImpl : public RenderWidget,
   // default background color for filling the screen areas for which we don't
   // have the actual content.
   SkColor body_background_color_;
+
+  // True if SendUpdateFrameInfo is pending.
+  bool update_frame_info_scheduled_;
 
   // Expected id of the next content intent launched. Used to prevent scheduled
   // intents to be launched if aborted.

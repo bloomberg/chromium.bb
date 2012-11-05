@@ -589,6 +589,7 @@ RenderViewImpl::RenderViewImpl(
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       body_background_color_(SK_ColorWHITE),
+      update_frame_info_scheduled_(false),
       expected_content_intent_id_(0),
       media_player_proxy_(NULL),
       synchronous_find_active_match_ordinal_(-1),
@@ -3910,6 +3911,10 @@ void RenderViewImpl::didChangeContentsSize(WebFrame* frame,
     cached_has_main_frame_horizontal_scrollbar_ = has_horizontal_scrollbar;
     cached_has_main_frame_vertical_scrollbar_ = has_vertical_scrollbar;
   }
+
+#if defined(OS_ANDROID)
+  ScheduleUpdateFrameInfo();
+#endif
 }
 
 void RenderViewImpl::UpdateScrollState(WebFrame* frame) {
@@ -3938,6 +3943,11 @@ void RenderViewImpl::didChangeScrollOffset(WebFrame* frame) {
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
+
+#if defined(OS_ANDROID)
+  if (webview()->mainFrame() == frame)
+    ScheduleUpdateFrameInfo();
+#endif
 }
 
 #if defined(OS_ANDROID)
