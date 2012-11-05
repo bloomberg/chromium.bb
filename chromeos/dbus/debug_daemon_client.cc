@@ -246,14 +246,26 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
-  virtual void GetAllLogs(const GetAllLogsCallback& callback)
+  virtual void GetAllLogs(const GetLogsCallback& callback)
       OVERRIDE {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 "GetAllLogs");
+                                 debugd::kGetAllLogs);
     debugdaemon_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&DebugDaemonClientImpl::OnGetAllLogs,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
+  virtual void GetUserLogFiles(
+      const GetLogsCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetUserLogFiles);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetUserLogFiles,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
   }
@@ -395,7 +407,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void OnGetModemStatus(const GetModemStatusCallback& callback,
-                          dbus::Response* response) {
+                        dbus::Response* response) {
     std::string status;
     if (response && dbus::MessageReader(response).PopString(&status))
       callback.Run(true, status);
@@ -412,7 +424,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       callback.Run(false, "");
   }
 
-  void OnGetAllLogs(const GetAllLogsCallback& callback,
+  void OnGetAllLogs(const GetLogsCallback& callback,
                     dbus::Response* response) {
     std::map<std::string, std::string> logs;
     bool broken = false; // did we see a broken (k,v) pair?
@@ -433,6 +445,11 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       logs[key] = value;
     }
     callback.Run(!sub_reader.HasMoreData() && !broken, logs);
+  }
+
+  void OnGetUserLogFiles(const GetLogsCallback& callback,
+                         dbus::Response* response) {
+    return OnGetAllLogs(callback, response);
   }
 
   // Called when a response for StartSystemTracing() is received.
@@ -536,7 +553,11 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
       const GetNetworkInterfacesCallback& callback) OVERRIDE {
     callback.Run(false, "");
   }
-  virtual void GetAllLogs(const GetAllLogsCallback& callback) OVERRIDE {
+  virtual void GetAllLogs(const GetLogsCallback& callback) OVERRIDE {
+    std::map<std::string, std::string> empty;
+    callback.Run(false, empty);
+  }
+  virtual void GetUserLogFiles(const GetLogsCallback& callback) OVERRIDE {
     std::map<std::string, std::string> empty;
     callback.Run(false, empty);
   }

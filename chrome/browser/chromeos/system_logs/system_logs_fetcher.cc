@@ -27,6 +27,7 @@ SystemLogsFetcher::SystemLogsFetcher()
   data_sources_.push_back(new CommandLineLogSource());
   data_sources_.push_back(new LsbReleaseLogSource());
   data_sources_.push_back(new MemoryDetailsLogSource());
+
   num_pending_requests_ = data_sources_.size();
 }
 

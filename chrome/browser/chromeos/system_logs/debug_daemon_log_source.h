@@ -27,12 +27,21 @@ class DebugDaemonLogSource : public SystemLogsSource {
   virtual void Fetch(const SysLogsSourceCallback& callback) OVERRIDE;
 
  private:
-  // Callbacks for the 4 different dbus calls
+  typedef std::map<std::string, std::string> KeyValueMap;
+
+  // Callbacks for the 5 different dbus calls to debugd.
   void OnGetRoutes(bool succeeded, const std::vector<std::string>& routes);
   void OnGetNetworkStatus(bool succeeded, const std::string& status);
   void OnGetModemStatus(bool succeeded, const std::string& status);
   void OnGetLogs(bool succeeded,
-                 const std::map<std::string, std::string>& logs);
+                 const KeyValueMap& logs);
+  void OnGetUserLogFiles(bool succeeded,
+                         const KeyValueMap& logs);
+
+  // Read the contents of the specified user logs files and adds it to
+  // the response.
+  void ReadUserLogFiles(const KeyValueMap& user_log_files);
+
   // Sends the data to the callback_ when all the requests are completed
   void RequestCompleted();
 

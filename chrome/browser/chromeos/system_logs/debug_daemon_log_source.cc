@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -22,6 +23,7 @@ const char kNotAvailable[] = "<not available>";
 const char kRoutesKeyName[] = "routes";
 const char kNetworkStatusKeyName[] = "network-status";
 const char kModemStatusKeyName[] = "modem-status";
+const char kUserLogFileKeyName[] = "user_log_files";
 }  // namespace
 
 namespace chromeos {
@@ -63,6 +65,9 @@ void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
   client->GetAllLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
                                 weak_ptr_factory_.GetWeakPtr()));
   ++num_pending_requests_;
+  client->GetUserLogFiles(base::Bind(&DebugDaemonLogSource::OnGetUserLogFiles,
+                                     weak_ptr_factory_.GetWeakPtr()));
+  ++num_pending_requests_;
 }
 
 void DebugDaemonLogSource::OnGetRoutes(bool succeeded,
@@ -99,8 +104,7 @@ void DebugDaemonLogSource::OnGetModemStatus(bool succeeded,
 }
 
 void DebugDaemonLogSource::OnGetLogs(bool /* succeeded */,
-                                     const std::map<std::string,
-                                                    std::string>& logs) {
+                                     const KeyValueMap& logs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // We ignore 'succeeded' for this callback - we want to display as much of the
@@ -108,6 +112,39 @@ void DebugDaemonLogSource::OnGetLogs(bool /* succeeded */,
   // couldn't fetch any of it, none of the fields will even appear.
   response_->insert(logs.begin(), logs.end());
   RequestCompleted();
+}
+
+void DebugDaemonLogSource::OnGetUserLogFiles(
+    bool succeeded,
+    const KeyValueMap& user_log_files) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (succeeded) {
+    content::BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE,
+        base::Bind(
+            &DebugDaemonLogSource::ReadUserLogFiles,
+            weak_ptr_factory_.GetWeakPtr(),
+            user_log_files),
+        base::Bind(&DebugDaemonLogSource::RequestCompleted,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    (*response_)[kUserLogFileKeyName] = kNotAvailable;
+    RequestCompleted();
+  }
+}
+
+void DebugDaemonLogSource::ReadUserLogFiles(const KeyValueMap& user_log_files) {
+  for (KeyValueMap::const_iterator it = user_log_files.begin();
+       it != user_log_files.end();
+       ++it) {
+    std::string value;
+    bool read_success = file_util::ReadFileToString(
+        FilePath(it->second), &value);
+    if (read_success && !value.empty())
+      (*response_)[it->first] = value;
+    else
+      (*response_)[it->second] = kNotAvailable;
+  }
 }
 
 void DebugDaemonLogSource::RequestCompleted() {
