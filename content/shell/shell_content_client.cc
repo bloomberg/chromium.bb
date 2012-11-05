@@ -17,10 +17,7 @@ ShellContentClient::~ShellContentClient() {
 }
 
 std::string ShellContentClient::GetUserAgent() const {
-  // The "19" is so that sites that sniff for version think that this is
-  // something reasonably current; the "77.34.5" is a hint that this isn't a
-  // standard Chrome.
-  std::string product = "Chrome/19.77.34.5";
+  std::string product = "Chrome/" CONTENT_SHELL_VERSION;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUseMobileUserAgent))
     product += " Mobile";

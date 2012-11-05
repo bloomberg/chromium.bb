@@ -5,12 +5,17 @@
 {
   'variables': {
     'content_shell_product_name': 'Content Shell',
+    # The "19" is so that sites that sniff for version think that this is
+    # something reasonably current; the "77.34.5" is a hint that this isn't a
+    # standard Chrome.
+    'content_shell_version': '19.77.34.5',
   },
   'targets': [
     {
       'target_name': 'content_shell_lib',
       'type': 'static_library',
       'defines!': ['CONTENT_IMPLEMENTATION'],
+      'defines': ['CONTENT_SHELL_VERSION="<(content_shell_version)"'],
       'variables': {
         'chromium_code': 1,
       },
@@ -384,7 +389,8 @@
               # Modify the Info.plist as needed.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['../build/mac/tweak_info_plist.py',
-                         '--scm=1'],
+                         '--scm=1',
+                         '--version=<(content_shell_version)'],
             },
             {
               # This postbuid step is responsible for creating the following
@@ -508,7 +514,8 @@
               'action': ['../build/mac/tweak_info_plist.py',
                          '--breakpad=0',
                          '--keystone=0',
-                         '--scm=0'],
+                         '--scm=0',
+                         '--version=<(content_shell_version)'],
             },
             {
               # Make sure there isn't any Objective-C in the helper app's
