@@ -65,7 +65,7 @@ class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
   float scale_;
 
   // In the plugin, this is the current callback set for Flushes. When the
-  // pointer is non-NULL, we're waiting for a flush ACK.
+  // callback is pending, we're waiting for a flush ACK.
   scoped_refptr<TrackedCallback> current_flush_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Graphics2D);
@@ -167,7 +167,7 @@ int32_t Graphics2D::Flush(scoped_refptr<TrackedCallback> callback,
 }
 
 void Graphics2D::FlushACK(int32_t result_code) {
-  TrackedCallback::ClearAndRun(&current_flush_callback_, result_code);
+  current_flush_callback_->Run(result_code);
 }
 
 PPB_Graphics2D_Proxy::PPB_Graphics2D_Proxy(Dispatcher* dispatcher)

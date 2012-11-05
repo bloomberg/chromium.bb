@@ -108,7 +108,7 @@ void Broker::ConnectComplete(IPC::PlatformFileForTransit socket_handle,
     return;
   }
 
-  TrackedCallback::ClearAndRun(&current_connect_callback_, result);
+  current_connect_callback_->Run(result);
 }
 
 PPB_Broker_Proxy::PPB_Broker_Proxy(Dispatcher* dispatcher)

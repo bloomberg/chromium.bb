@@ -176,7 +176,7 @@ void PPB_Flash_Menu_Impl::CompleteShow(int32_t result,
   }
 
   selected_id_out_ = NULL;
-  TrackedCallback::ClearAndRun(&callback_, rv);
+  callback_->Run(rv);
 }
 
 }  // namespace ppapi

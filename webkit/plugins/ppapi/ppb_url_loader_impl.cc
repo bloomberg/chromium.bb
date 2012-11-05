@@ -445,7 +445,7 @@ void PPB_URLLoader_Impl::RunCallback(int32_t result) {
   // callbacks get called in an unexpected order.
   user_buffer_ = NULL;
   user_buffer_size_ = 0;
-  TrackedCallback::ClearAndRun(&pending_callback_, result);
+  pending_callback_->Run(result);
 }
 
 size_t PPB_URLLoader_Impl::FillUserBuffer() {

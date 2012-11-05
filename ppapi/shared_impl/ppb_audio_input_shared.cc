@@ -140,7 +140,7 @@ void PPB_AudioInput_Shared::OnEnumerateDevicesComplete(
   }
   devices_ = NULL;
 
-  TrackedCallback::ClearAndRun(&enumerate_devices_callback_, result);
+  enumerate_devices_callback_->Run(result);
 }
 
 void PPB_AudioInput_Shared::OnOpenComplete(
@@ -160,7 +160,7 @@ void PPB_AudioInput_Shared::OnOpenComplete(
 
   // The callback may have been aborted by Close().
   if (TrackedCallback::IsPending(open_callback_))
-    TrackedCallback::ClearAndRun(&open_callback_, result);
+    open_callback_->Run(result);
 }
 
 // static

@@ -162,8 +162,7 @@ void UDPSocketPrivateImpl::OnBindCompleted(
 
   bound_addr_ = addr;
 
-  TrackedCallback::ClearAndRun(&bind_callback_,
-      succeeded ? PP_OK : PP_ERROR_FAILED);
+  bind_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void UDPSocketPrivateImpl::OnRecvFromCompleted(
@@ -184,8 +183,7 @@ void UDPSocketPrivateImpl::OnRecvFromCompleted(
   bytes_to_read_ = -1;
   recvfrom_addr_ = addr;
 
-  TrackedCallback::ClearAndRun(&recvfrom_callback_,
-      succeeded ? static_cast<int32_t>(data.size()) :
+  recvfrom_callback_->Run(succeeded ? static_cast<int32_t>(data.size()) :
       static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
@@ -196,7 +194,7 @@ void UDPSocketPrivateImpl::OnSendToCompleted(bool succeeded,
     return;
   }
 
-  TrackedCallback::ClearAndRun(&sendto_callback_,
+  sendto_callback_->Run(
       succeeded ? bytes_written : static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
@@ -218,7 +216,7 @@ void UDPSocketPrivateImpl::Init(uint32 socket_id) {
 
 void UDPSocketPrivateImpl::PostAbortIfNecessary(
     scoped_refptr<TrackedCallback>* callback) {
-  if (callback->get())
+  if (TrackedCallback::IsPending(*callback))
     (*callback)->PostAbort();
 }
 

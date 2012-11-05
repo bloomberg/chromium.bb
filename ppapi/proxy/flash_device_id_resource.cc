@@ -54,7 +54,7 @@ void FlashDeviceIDResource::OnPluginMsgGetDeviceIDReply(
   else
     *dest_ = PP_MakeUndefined();
   dest_ = NULL;
-  TrackedCallback::ClearAndRun(&callback_, params.result());
+  callback_->Run(params.result());
 }
 
 }  // namespace proxy

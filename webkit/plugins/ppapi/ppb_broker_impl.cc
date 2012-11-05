@@ -64,7 +64,7 @@ int32_t PPB_Broker_Impl::Connect(
 
   broker_ = plugin_instance->delegate()->ConnectToBroker(this);
   if (!broker_) {
-    TrackedCallback::ClearAndAbort(&connect_callback_);
+    connect_callback_->Abort();
     return PP_ERROR_FAILED;
   }
 
@@ -95,7 +95,7 @@ void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
   // Synchronous calls are not supported.
   DCHECK(TrackedCallback::IsPending(connect_callback_));
 
-  TrackedCallback::ClearAndRun(&connect_callback_, result);
+  connect_callback_->Run(result);
 }
 
 }  // namespace ppapi

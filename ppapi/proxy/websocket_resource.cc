@@ -371,7 +371,7 @@ void WebSocketResource::OnPluginMsgConnectReply(
     protocol_ = new StringVar(protocol);
     url_ = new StringVar(url);
   }
-  TrackedCallback::ClearAndRun(&connect_callback_, params.result());
+  connect_callback_->Run(params.result());
 }
 
 void WebSocketResource::OnPluginMsgCloseReply(
@@ -412,7 +412,7 @@ void WebSocketResource::OnPluginMsgReceiveTextReply(
   if (!TrackedCallback::IsPending(receive_callback_))
     return;
 
-  TrackedCallback::ClearAndRun(&receive_callback_, DoReceive());
+  receive_callback_->Run(DoReceive());
 }
 
 void WebSocketResource::OnPluginMsgReceiveBinaryReply(
@@ -432,7 +432,7 @@ void WebSocketResource::OnPluginMsgReceiveBinaryReply(
   if (!TrackedCallback::IsPending(receive_callback_))
     return;
 
-  TrackedCallback::ClearAndRun(&receive_callback_, DoReceive());
+  receive_callback_->Run(DoReceive());
 }
 
 void WebSocketResource::OnPluginMsgErrorReply(
@@ -445,7 +445,7 @@ void WebSocketResource::OnPluginMsgErrorReply(
   // No more text or binary messages will be received. If there is ongoing
   // ReceiveMessage(), we must invoke the callback with error code here.
   receive_callback_var_ = NULL;
-  TrackedCallback::ClearAndRun(&receive_callback_, PP_ERROR_FAILED);
+  receive_callback_->Run(PP_ERROR_FAILED);
 }
 
 void WebSocketResource::OnPluginMsgBufferedAmountReply(

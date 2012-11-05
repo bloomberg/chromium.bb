@@ -25,15 +25,12 @@ namespace ppapi {
 TrackedCallback::TrackedCallback(
     Resource* resource,
     const PP_CompletionCallback& callback)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+    : is_scheduled_(false),
       resource_id_(resource ? resource->pp_resource() : 0),
       completed_(false),
       aborted_(false),
       callback_(callback),
       result_for_blocked_callback_(PP_OK) {
-  // We can only track this callback if the resource is valid. It can be NULL
-  // in error conditions in the Enter* classes and for callbacks associated with
-  // an instance.
   // TODO(dmichael): Add tracking at the instance level, for callbacks that only
   // have an instance (e.g. for MouseLock).
   if (resource) {
@@ -53,97 +50,80 @@ TrackedCallback::~TrackedCallback() {
 }
 
 void TrackedCallback::Abort() {
-  if (!completed()) {
-    aborted_ = true;
-    Run(PP_ERROR_ABORTED);
-  }
+  // It doesn't make sense to abort a callback that's not associated with a
+  // resource.
+  DCHECK(resource_id_);
+  Run(PP_ERROR_ABORTED);
 }
 
 void TrackedCallback::PostAbort() {
-  // It doesn't make sense to abort a callback that's not associated with a
-  // resource.
-  // TODO(dmichael): If we allow associating with an instance instead, we must
-  // allow for aborts in the case of the instance being destroyed.
-  DCHECK(resource_id_);
-
-  if (!completed() && !aborted_) {
-    aborted_ = true;
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        RunWhileLocked(base::Bind(&TrackedCallback::Abort,
-                                  weak_ptr_factory_.GetWeakPtr())));
-  }
+  PostRun(PP_ERROR_ABORTED);
 }
 
 void TrackedCallback::Run(int32_t result) {
-  if (!completed()) {
-    // Cancel any pending calls.
-    weak_ptr_factory_.InvalidateWeakPtrs();
+  // Only allow the callback to be run once. Note that this also covers the case
+  // where the callback was previously Aborted because its associated Resource
+  // went away. The callback may live on for a while because of a reference from
+  // a Closure. But when the Closure runs, Run() quietly does nothing, and the
+  // callback will go away when all referring Closures go away.
+  if (completed())
+    return;
+  if (result == PP_ERROR_ABORTED)
+    aborted_ = true;
 
-    // Copy |callback_| and look at |aborted()| now, since |MarkAsCompleted()|
-    // may delete us.
-    PP_CompletionCallback callback = callback_;
-    if (aborted())
-      result = PP_ERROR_ABORTED;
+  // Copy |callback_| and look at |aborted()| now, since |MarkAsCompleted()|
+  // may delete us.
+  PP_CompletionCallback callback = callback_;
+  // Note that this call of Run() may have been scheduled prior to Abort() or
+  // PostAbort() being called. If we have been told to Abort, that always
+  // trumps a result that was scheduled before.
+  if (aborted())
+    result = PP_ERROR_ABORTED;
 
-    if (is_blocking()) {
-      // If the condition variable is invalid, there are two possibilities. One,
-      // we're running in-process, in which case the call should have come in on
-      // the main thread and we should have returned PP_ERROR_BLOCKS_MAIN_THREAD
-      // well before this. Otherwise, this callback was not created as a
-      // blocking callback. Either way, there's some internal error.
-      if (!operation_completed_condvar_.get()) {
-        NOTREACHED();
-        return;
-      }
-      result_for_blocked_callback_ = result;
-      // Retain ourselves, since MarkAsCompleted will remove us from the
-      // tracker. Then MarkAsCompleted before waking up the blocked thread,
-      // which could potentially re-enter.
-      scoped_refptr<TrackedCallback> thiz(this);
-      MarkAsCompleted();
-      // Wake up the blocked thread. See BlockUntilComplete for where the thread
-      // Wait()s.
-      operation_completed_condvar_->Signal();
-    } else {
-      // Do this before running the callback in case of reentrancy (which
-      // shouldn't happen, but avoid strange failures).
-      MarkAsCompleted();
-      // TODO(dmichael): Associate a message loop with the callback; if it's not
-      // the same as the current thread's loop, then post it to the right loop.
-      CallWhileUnlocked(PP_RunCompletionCallback, &callback, result);
+  if (is_blocking()) {
+    // If the condition variable is invalid, there are two possibilities. One,
+    // we're running in-process, in which case the call should have come in on
+    // the main thread and we should have returned PP_ERROR_BLOCKS_MAIN_THREAD
+    // well before this. Otherwise, this callback was not created as a
+    // blocking callback. Either way, there's some internal error.
+    if (!operation_completed_condvar_.get()) {
+      NOTREACHED();
+      return;
     }
+    result_for_blocked_callback_ = result;
+    // Retain ourselves, since MarkAsCompleted will remove us from the
+    // tracker. Then MarkAsCompleted before waking up the blocked thread,
+    // which could potentially re-enter.
+    scoped_refptr<TrackedCallback> thiz(this);
+    MarkAsCompleted();
+    // Wake up the blocked thread. See BlockUntilComplete for where the thread
+    // Wait()s.
+    operation_completed_condvar_->Signal();
+  } else {
+    // Do this before running the callback in case of reentrancy (which
+    // shouldn't happen, but avoid strange failures).
+    MarkAsCompleted();
+    // TODO(dmichael): Associate a message loop with the callback; if it's not
+    // the same as the current thread's loop, then post it to the right loop.
+    CallWhileUnlocked(PP_RunCompletionCallback, &callback, result);
   }
 }
 
 void TrackedCallback::PostRun(int32_t result) {
-  DCHECK(!completed());
-  if (!completed()) {
-    // There should be no pending calls.
-    DCHECK(!weak_ptr_factory_.HasWeakPtrs());
-    weak_ptr_factory_.InvalidateWeakPtrs();
-
-    if (resource_id_) {
-      // If it has a resource_id_, it's in the tracker, and may be aborted if
-      // the resource is destroyed.
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          RunWhileLocked(base::Bind(&TrackedCallback::Run,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    result)));
-    } else {
-      // There is no resource_id_ associated with this callback, so it can't be
-      // aborted. We have the message loop retain the callback to make sure it
-      // gets run. This can happen when EnterBase is given an invalid resource,
-      // and in that case no resource or instance will retain this
-      // TrackedCallback.
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          RunWhileLocked(base::Bind(&TrackedCallback::Run,
-                                    this,
-                                    result)));
-    }
+  if (completed()) {
+    NOTREACHED();
+    return;
   }
+  if (result == PP_ERROR_ABORTED)
+    aborted_ = true;
+  // We might abort when there's already a scheduled callback, but callers
+  // should never try to PostRun more than once otherwise.
+  DCHECK(result == PP_ERROR_ABORTED || !is_scheduled_);
+
+  base::Closure callback_closure(
+      RunWhileLocked(base::Bind(&TrackedCallback::Run, this, result)));
+  MessageLoop::current()->PostTask(FROM_HERE, callback_closure);
+  is_scheduled_ = true;
 }
 
 // static
@@ -152,21 +132,6 @@ bool TrackedCallback::IsPending(
   if (!callback.get())
     return false;
   return !callback->completed();
-}
-
-// static
-void TrackedCallback::ClearAndRun(scoped_refptr<TrackedCallback>* callback,
-                                  int32_t result) {
-  scoped_refptr<TrackedCallback> temp;
-  temp.swap(*callback);
-  temp->Run(result);
-}
-
-// static
-void TrackedCallback::ClearAndAbort(scoped_refptr<TrackedCallback>* callback) {
-  scoped_refptr<TrackedCallback> temp;
-  temp.swap(*callback);
-  temp->Abort();
 }
 
 int32_t TrackedCallback::BlockUntilComplete() {

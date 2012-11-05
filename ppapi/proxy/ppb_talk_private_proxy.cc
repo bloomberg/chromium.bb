@@ -49,7 +49,7 @@ class Talk : public Resource, public thunk::PPB_Talk_Private_API {
   }
 
   void GotCompletion(int32_t result) {
-    TrackedCallback::ClearAndRun(&callback_, result);
+    callback_->Run(result);
   }
 
  private:

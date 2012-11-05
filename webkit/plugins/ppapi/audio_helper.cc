@@ -63,7 +63,7 @@ void AudioHelper::StreamCreated(
     shared_memory_size_for_create_callback_ = shared_memory_size;
     socket_for_create_callback_.reset(new base::SyncSocket(socket_handle));
 
-    ::ppapi::TrackedCallback::ClearAndRun(&create_callback_, PP_OK);
+    create_callback_->Run(PP_OK);
 
     // It might be nice to close the handles here to free up some system
     // resources, but we can't since there's a race condition. The handles must

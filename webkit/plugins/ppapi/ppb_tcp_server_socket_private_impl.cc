@@ -50,8 +50,7 @@ void PPB_TCPServerSocket_Private_Impl::OnAcceptCompleted(
   }
   tcp_socket_buffer_ = NULL;
 
-  ::ppapi::TrackedCallback::ClearAndRun(&accept_callback_,
-                                        succeeded ? PP_OK : PP_ERROR_FAILED);
+  accept_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void PPB_TCPServerSocket_Private_Impl::SendListen(

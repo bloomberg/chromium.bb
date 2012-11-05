@@ -232,8 +232,7 @@ void TCPSocketPrivateImpl::OnConnectCompleted(
     remote_addr_ = remote_addr;
     connection_state_ = CONNECTED;
   }
-  TrackedCallback::ClearAndRun(&connect_callback_,
-                               succeeded ? PP_OK : PP_ERROR_FAILED);
+  connect_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void TCPSocketPrivateImpl::OnSSLHandshakeCompleted(
@@ -251,12 +250,12 @@ void TCPSocketPrivateImpl::OnSSLHandshakeCompleted(
         resource_type_,
         pp_instance(),
         certificate_fields);
-    TrackedCallback::ClearAndRun(&ssl_handshake_callback_, PP_OK);
+    ssl_handshake_callback_->Run(PP_OK);
   } else {
     // The resource might be released in the callback so we need to hold
     // a reference so we can Disconnect() first.
     AddRef();
-    TrackedCallback::ClearAndRun(&ssl_handshake_callback_, PP_ERROR_FAILED);
+    ssl_handshake_callback_->Run(PP_ERROR_FAILED);
     Disconnect();
     Release();
   }
@@ -277,8 +276,7 @@ void TCPSocketPrivateImpl::OnReadCompleted(bool succeeded,
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
 
-  TrackedCallback::ClearAndRun(
-      &read_callback_,
+  read_callback_->Run(
       succeeded ? static_cast<int32_t>(data.size()) :
                   static_cast<int32_t>(PP_ERROR_FAILED));
 }
@@ -291,8 +289,7 @@ void TCPSocketPrivateImpl::OnWriteCompleted(bool succeeded,
     return;
   }
 
-  TrackedCallback::ClearAndRun(
-      &write_callback_,
+  write_callback_->Run(
       succeeded ? bytes_written : static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
@@ -317,7 +314,7 @@ bool TCPSocketPrivateImpl::IsConnected() const {
 
 void TCPSocketPrivateImpl::PostAbortIfNecessary(
     scoped_refptr<TrackedCallback>* callback) {
-  if (callback->get())
+  if (TrackedCallback::IsPending(*callback))
     (*callback)->PostAbort();
 }
 

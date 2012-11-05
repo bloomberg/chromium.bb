@@ -639,8 +639,8 @@ PluginInstance::~PluginInstance() {
        i != plugin_object_copy.end(); ++i)
     delete *i;
 
-  if (lock_mouse_callback_)
-    TrackedCallback::ClearAndAbort(&lock_mouse_callback_);
+  if (TrackedCallback::IsPending(lock_mouse_callback_))
+    lock_mouse_callback_->Abort();
 
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
@@ -2034,7 +2034,7 @@ void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
   if (flash_fullscreen == flash_fullscreen_) {
     // Manually clear callback when fullscreen fails with mouselock pending.
     if (!flash_fullscreen && is_mouselock_pending)
-      TrackedCallback::ClearAndRun(&lock_mouse_callback_, PP_ERROR_FAILED);
+      lock_mouse_callback_->Run(PP_ERROR_FAILED);
     return;
   }
 
@@ -2053,7 +2053,7 @@ void PluginInstance::UpdateFlashFullscreenState(bool flash_fullscreen) {
   flash_fullscreen_ = flash_fullscreen;
   if (is_mouselock_pending && !delegate()->IsMouseLocked(this)) {
     if (!delegate()->LockMouse(this))
-      TrackedCallback::ClearAndRun(&lock_mouse_callback_, PP_ERROR_FAILED);
+      lock_mouse_callback_->Run(PP_ERROR_FAILED);
   }
 
   if (PluginHasFocus() != old_plugin_focus)
@@ -2316,10 +2316,8 @@ bool PluginInstance::IsProcessingUserGesture() {
 }
 
 void PluginInstance::OnLockMouseACK(bool succeeded) {
-  if (TrackedCallback::IsPending(lock_mouse_callback_)) {
-    TrackedCallback::ClearAndRun(&lock_mouse_callback_,
-                                 succeeded ? PP_OK : PP_ERROR_FAILED);
-  }
+  if (TrackedCallback::IsPending(lock_mouse_callback_))
+    lock_mouse_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void PluginInstance::OnMouseLockLost() {

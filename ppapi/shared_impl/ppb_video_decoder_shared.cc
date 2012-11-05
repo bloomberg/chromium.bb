@@ -50,7 +50,7 @@ void PPB_VideoDecoder_Shared::Destroy() {
 
 bool PPB_VideoDecoder_Shared::SetFlushCallback(
     scoped_refptr<TrackedCallback> callback) {
-  if (flush_callback_.get())
+  if (TrackedCallback::IsPending(flush_callback_))
     return false;
   flush_callback_ = callback;
   return true;
@@ -72,11 +72,11 @@ bool PPB_VideoDecoder_Shared::SetBitstreamBufferCallback(
 }
 
 void PPB_VideoDecoder_Shared::RunFlushCallback(int32 result) {
-  TrackedCallback::ClearAndRun(&flush_callback_, result);
+  flush_callback_->Run(result);
 }
 
 void PPB_VideoDecoder_Shared::RunResetCallback(int32 result) {
-  TrackedCallback::ClearAndRun(&reset_callback_, result);
+  reset_callback_->Run(result);
 }
 
 void PPB_VideoDecoder_Shared::RunBitstreamBufferCallback(

@@ -124,7 +124,7 @@ void PPB_VideoCapture_Shared::OnEnumerateDevicesComplete(
   }
   devices_ = NULL;
 
-  TrackedCallback::ClearAndRun(&enumerate_devices_callback_, result);
+  enumerate_devices_callback_->Run(result);
 }
 
 void PPB_VideoCapture_Shared::OnOpenComplete(int32_t result) {
@@ -134,7 +134,7 @@ void PPB_VideoCapture_Shared::OnOpenComplete(int32_t result) {
   // The callback may have been aborted by Close(), or the open operation is
   // completed synchronously.
   if (TrackedCallback::IsPending(open_callback_))
-    TrackedCallback::ClearAndRun(&open_callback_, result);
+    open_callback_->Run(result);
 }
 
 bool PPB_VideoCapture_Shared::SetStatus(PP_VideoCaptureStatus_Dev status,

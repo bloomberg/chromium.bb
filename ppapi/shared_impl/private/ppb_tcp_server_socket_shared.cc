@@ -78,9 +78,9 @@ void PPB_TCPServerSocket_Shared::StopListening() {
   SendStopListening();
   socket_id_ = 0;
 
-  if (listen_callback_.get())
+  if (TrackedCallback::IsPending(listen_callback_))
     listen_callback_->PostAbort();
-  if (accept_callback_.get())
+  if (TrackedCallback::IsPending(accept_callback_))
     accept_callback_->PostAbort();
   tcp_socket_buffer_ = NULL;
 }
@@ -98,7 +98,7 @@ void PPB_TCPServerSocket_Shared::OnListenCompleted(uint32 socket_id,
     state_ = LISTENING;
   }
 
-  TrackedCallback::ClearAndRun(&listen_callback_, status);
+  listen_callback_->Run(status);
 }
 
 }  // namespace ppapi

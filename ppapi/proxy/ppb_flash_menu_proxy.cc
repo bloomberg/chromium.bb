@@ -70,7 +70,7 @@ int32_t FlashMenu::Show(const struct PP_Point* location,
 
 void FlashMenu::ShowACK(int32_t selected_id, int32_t result) {
   *selected_id_ptr_ = selected_id;
-  TrackedCallback::ClearAndRun(&callback_, result);
+  callback_->Run(result);
 }
 
 PPB_Flash_Menu_Proxy::PPB_Flash_Menu_Proxy(Dispatcher* dispatcher)

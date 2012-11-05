@@ -117,7 +117,7 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
     }
 
     void Execute(int32_t result) {
-      ::ppapi::TrackedCallback::ClearAndRun(&callback_, result);
+      callback_->Run(result);
     }
 
     void PostAbort() {

@@ -1171,7 +1171,7 @@ void PPB_Instance_Proxy::OnPluginMsgMouseLockComplete(PP_Instance instance,
     NOTREACHED();
     return;
   }
-  TrackedCallback::ClearAndRun(&(data->mouse_lock_callback), result);
+  data->mouse_lock_callback->Run(result);
 }
 
 void PPB_Instance_Proxy::MouseLockCompleteInHost(int32_t result,

@@ -78,8 +78,7 @@ void TCPServerSocket::OnAcceptCompleted(
   }
   tcp_socket_buffer_ = NULL;
 
-  TrackedCallback::ClearAndRun(&accept_callback_,
-                               succeeded ? PP_OK : PP_ERROR_FAILED);
+  accept_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void TCPServerSocket::SendListen(const PP_NetAddress_Private& addr,

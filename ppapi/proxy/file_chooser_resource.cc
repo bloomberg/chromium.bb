@@ -118,7 +118,7 @@ void FileChooserResource::OnPluginMsgShowReply(
   }
 
   // Notify the plugin of the new data.
-  TrackedCallback::ClearAndRun(&callback_, params.result());
+  callback_->Run(params.result());
   // DANGER: May delete |this|!
 }
 

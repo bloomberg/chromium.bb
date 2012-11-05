@@ -94,7 +94,7 @@ PP_FileSystemType FileSystem::GetType() {
 }
 
 void FileSystem::OpenComplete(int32_t result) {
-  TrackedCallback::ClearAndRun(&current_open_callback_, result);
+  current_open_callback_->Run(result);
 }
 
 PPB_FileSystem_Proxy::PPB_FileSystem_Proxy(Dispatcher* dispatcher)

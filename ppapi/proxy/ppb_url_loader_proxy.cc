@@ -351,11 +351,11 @@ void URLLoader::ReadResponseBodyAck(int32 result, const char* data) {
     result = bytes_to_return;
   }
 
-  TrackedCallback::ClearAndRun(&current_callback_, result);
+  current_callback_->Run(result);
 }
 
 void URLLoader::CallbackComplete(int32_t result) {
-  TrackedCallback::ClearAndRun(&current_callback_, result);
+  current_callback_->Run(result);
 }
 
 void URLLoader::PopBuffer(void* output_buffer, int32_t output_size) {

@@ -84,8 +84,7 @@ void PPB_HostResolver_Shared::OnResolveCompleted(
     net_address_list_.clear();
   }
 
-  TrackedCallback::ClearAndRun(&resolve_callback_,
-                               succeeded ? PP_OK : PP_ERROR_FAILED);
+  resolve_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 uint32 PPB_HostResolver_Shared::GenerateHostResolverID() {

@@ -50,7 +50,7 @@ void PrintingResource::OnPluginMsgGetDefaultPrintSettingsReply(
     *settings_out = settings;
 
   // Notify the plugin of the new data.
-  TrackedCallback::ClearAndRun(&callback, params.result());
+  callback->Run(params.result());
   // DANGER: May delete |this|!
 }
 
