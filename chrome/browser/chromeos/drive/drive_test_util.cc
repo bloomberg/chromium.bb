@@ -123,9 +123,7 @@ void LoadChangeFeed(const std::string& relative_path,
 
   file_system->feed_loader()->UpdateFromFeed(feed_list,
                                              start_changestamp,
-                                             root_feed_changestamp,
-                                             // root_resource_id
-                                             "folder:testroot");
+                                             root_feed_changestamp);
 }
 
 }  // namespace test_util

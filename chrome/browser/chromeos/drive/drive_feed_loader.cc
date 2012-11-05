@@ -377,10 +377,7 @@ void DriveFeedLoader::OnGetAboutResource(
   }
 
   int64 largest_changestamp = about_resource->largest_change_id();
-
-  // Copy the root resource ID for use in UpdateFromFeed().
-  params->root_resource_id = about_resource->root_folder_id();
-  DCHECK(!params->root_resource_id.empty());
+  resource_metadata_->InitializeRootEntry(about_resource->root_folder_id());
 
   if (local_changestamp >= largest_changestamp) {
     if (local_changestamp > largest_changestamp) {
@@ -479,8 +476,7 @@ void DriveFeedLoader::OnFeedFromServerLoaded(scoped_ptr<LoadFeedParams> params,
   if (error == DRIVE_FILE_OK) {
     UpdateFromFeed(params->feed_list,
                    params->start_changestamp,
-                   params->root_feed_changestamp,
-                   params->root_resource_id);
+                   params->root_feed_changestamp);
   }
   refreshing_ = false;
 
@@ -852,24 +848,11 @@ void DriveFeedLoader::SaveFileSystem() {
 void DriveFeedLoader::UpdateFromFeed(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
-    int64 root_feed_changestamp,
-    const std::string& root_resource_id) {
+    int64 root_feed_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "Updating directory with a feed";
 
   std::set<FilePath> changed_dirs;
-
-  if (start_changestamp == 0) {
-    // This is a full fetch and on full fetch the root has to be initialized
-    // before children are added by DriveFeedProcessor.
-    if (google_apis::util::IsDriveV2ApiEnabled()) {
-      DCHECK(!root_resource_id.empty());
-      resource_metadata_->InitializeRootEntry(root_resource_id);
-    } else {
-      // Use fixed root resource ID for WAPI.
-      resource_metadata_->InitializeRootEntry(kWAPIRootDirectoryResourceId);
-    }
-  }
 
   DriveFeedProcessor feed_processor(resource_metadata_);
   feed_processor.ApplyFeeds(
