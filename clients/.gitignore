@@ -10,7 +10,7 @@ gears
 image
 input-method-protocol.c
 input-method-client-protocol.h
-keyboard
+weston-keyboard
 libtoytoolkit.a
 resizor
 screenshooter-client-protocol.h

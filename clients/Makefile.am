@@ -12,7 +12,8 @@ libexec_PROGRAMS =				\
 	$(desktop_shell)			\
 	$(tablet_shell)				\
 	$(screenshooter)			\
-	$(screensaver)
+	$(screensaver)				\
+	$(keyboard)
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
@@ -60,7 +61,6 @@ clients_programs =				\
 	eventdemo				\
 	clickdot				\
 	editor					\
-	keyboard				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
@@ -123,13 +123,14 @@ editor_SOURCES = 				\
 	text-client-protocol.h
 editor_LDADD = $(toolkit_libs)
 
-keyboard_SOURCES = 				\
+keyboard = weston-keyboard
+weston_keyboard_SOURCES = 			\
 	keyboard.c				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	input-method-protocol.c			\
 	input-method-client-protocol.h
-keyboard_LDADD = $(toolkit_libs)
+weston_keyboard_LDADD = $(toolkit_libs)
 
 weston_info_SOURCES =				\
 	weston-info.c				\
