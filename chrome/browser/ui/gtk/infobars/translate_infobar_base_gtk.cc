@@ -139,6 +139,8 @@ bool TranslateInfoBarBase::ShowOptionsMenuButton() const {
 GtkWidget* TranslateInfoBarBase::CreateLanguageCombobox(
     size_t selected_language,
     size_t exclude_language) {
+  DCHECK(selected_language != exclude_language);
+
   GtkListStore* model = gtk_list_store_new(LANGUAGE_COMBO_COLUMN_COUNT,
                                            G_TYPE_INT, G_TYPE_STRING);
   bool set_selection = false;

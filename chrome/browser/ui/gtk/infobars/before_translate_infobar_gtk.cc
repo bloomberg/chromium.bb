@@ -34,9 +34,13 @@ void BeforeTranslateInfoBar::Init() {
   gtk_box_pack_start(GTK_BOX(hbox),
                      CreateLabel(UTF16ToUTF8(text.substr(0, offset))),
                      FALSE, FALSE, 0);
-  GtkWidget* combobox =
-      CreateLanguageCombobox(GetDelegate()->original_language_index(),
-                             GetDelegate()->target_language_index());
+  size_t original_language_index = GetDelegate()->original_language_index();
+  size_t target_language_index = GetDelegate()->target_language_index();
+  bool exclude_the_other = original_language_index != target_language_index;
+  GtkWidget* combobox = CreateLanguageCombobox(
+      original_language_index,
+      exclude_the_other ? target_language_index :
+                          TranslateInfoBarDelegate::kNoIndex);
   Signals()->Connect(combobox, "changed",
                      G_CALLBACK(&OnLanguageModifiedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), combobox, FALSE, FALSE, 0);
