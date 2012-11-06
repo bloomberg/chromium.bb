@@ -263,8 +263,10 @@
       that even if an application passes a new buffer to the
       compositor, only a small part of the buffer may be
       different, like a blinking cursor or a spinner.
-      Hardware Enabling for Wayland
     </para>
+  </section>
+  <section id="sect-Wayland-Architecture-wayland_hw_enabling">
+    <title>Hardware Enabling for Wayland</title>
     <para>
       Typically, hardware enabling includes modesetting/display
       and EGL/GLES2. On top of that Wayland needs a way to share
