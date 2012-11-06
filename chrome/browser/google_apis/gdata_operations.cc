@@ -12,6 +12,7 @@
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 

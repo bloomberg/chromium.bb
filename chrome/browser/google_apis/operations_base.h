@@ -14,11 +14,14 @@
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "googleurl/src/gurl.h"
-#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class OAuth2AccessTokenFetcher;
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace google_apis {
 
@@ -235,7 +238,7 @@ class GetDataOperation : public UrlFetchOperationBase {
  private:
   // Called when ParseJsonOnBlockingPool() is completed.
   void OnDataParsed(google_apis::GDataErrorCode fetch_error_code,
-                    scoped_ptr<base::Value>* value);
+                    scoped_ptr<base::Value> value);
 
   GetDataCallback callback_;
 

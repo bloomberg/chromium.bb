@@ -8,16 +8,17 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_util.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/user_agent/user_agent_util.h"
@@ -43,25 +44,19 @@ const char kGDataVersionHeader[] = "GData-Version: 3.0";
 const int kMaxReAuthenticateAttemptsPerOperation = 1;
 
 // Parse JSON string to base::Value object.
-void ParseJsonOnBlockingPool(const std::string& data,
-                             scoped_ptr<base::Value>* value) {
+scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& data) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   int error_code = -1;
   std::string error_message;
-  value->reset(base::JSONReader::ReadAndReturnError(data,
-                                                    base::JSON_PARSE_RFC,
-                                                    &error_code,
-                                                    &error_message));
+  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+      data, base::JSON_PARSE_RFC, &error_code, &error_message));
 
-  if (!value->get()) {
-    LOG(ERROR) << "Error while parsing entry response: "
-               << error_message
-               << ", code: "
-               << error_code
-               << ", data:\n"
-               << data;
+  if (!value.get()) {
+    LOG(ERROR) << "Error while parsing entry response: " << error_message
+               << ", code: " << error_code << ", data:\n" << data;
   }
+  return value.Pass();
 }
 
 // Returns a user agent string used for communicating with the Drive backend,
@@ -422,41 +417,31 @@ void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
                                      const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Uses this hack to avoid deep-copy of json object because json might be so
-  // big. This pointer of scped_ptr is to ensure a deletion of the parsed json
-  // value object.
-  scoped_ptr<base::Value>* parsed_value = new scoped_ptr<base::Value>();
-
-  BrowserThread::PostBlockingPoolTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(&ParseJsonOnBlockingPool,
-                 data,
-                 parsed_value),
+      base::Bind(&ParseJsonOnBlockingPool, data),
       base::Bind(&GetDataOperation::OnDataParsed,
                  weak_ptr_factory_.GetWeakPtr(),
-                 fetch_error_code,
-                 base::Owned(parsed_value)));
+                 fetch_error_code));
 }
 
 void GetDataOperation::OnDataParsed(
     google_apis::GDataErrorCode fetch_error_code,
-    scoped_ptr<base::Value>* value) {
+    scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool success = true;
-  if (!value->get()) {
+  if (!value.get()) {
     fetch_error_code = google_apis::GDATA_PARSE_ERROR;
     success = false;
   }
 
-  // The ownership of the parsed json object is transfered to RunCallBack(),
-  // keeping the ownership of the |value| here.
-  RunCallback(fetch_error_code, value->Pass());
+  // The ownership of the parsed json object is transfered to RunCallBack().
+  RunCallback(fetch_error_code, value.Pass());
 
-  DCHECK(!value->get());
-
+  DCHECK(!value.get());
   OnProcessURLFetchResultsComplete(success);
-  // |value| will be deleted after return because it is base::Owned()'d.
 }
 
 void GetDataOperation::RunCallback(GDataErrorCode fetch_error_code,
