@@ -87,12 +87,15 @@ bool CHROMEOS_EXPORT PopIBusText(dbus::MessageReader* reader,
 // Returns true on success.
 bool CHROMEOS_EXPORT PopStringFromIBusText(dbus::MessageReader* reader,
                                            std::string* text);
-// Appends a IBusText to |writer|.
+// Appends a IBusText to |writer|. Annotation and description field is not
+// filled with AppendIBusText.
+// TODO(nona): Support annotation/description appending if necessary.
 void CHROMEOS_EXPORT AppendIBusText(const IBusText& ibus_text,
                                     dbus::MessageWriter* writer);
 
 // Appends a string to |writer| as IBusText without any attributes. Use
 // AppendIBusText instead in the case of using any attribute entries.
+// TODO(nona): Support annotation/description appending if necessary.
 void CHROMEOS_EXPORT AppendStringAsIBusText(const std::string& text,
                                             dbus::MessageWriter* writer);
 
@@ -115,7 +118,6 @@ void CHROMEOS_EXPORT AppendStringAsIBusText(const std::string& text,
 //
 // 3. Forward decoration
 //   Not supported in Chrome.
-// TODO(nona): Support attachment for mozc infolist feature(crosbug.com/30653).
 class CHROMEOS_EXPORT IBusText {
  public:
   enum IBusTextUnderlineType {
@@ -139,17 +141,38 @@ class CHROMEOS_EXPORT IBusText {
   IBusText();
   virtual ~IBusText();
 
-  std::string text() const;
-  void set_text(const std::string& text);
+  const std::string& text() const { return text_; }
+  void set_text(const std::string& text) { text_ = text; }
 
-  const std::vector<UnderlineAttribute>& underline_attributes() const;
-  std::vector<UnderlineAttribute>* mutable_underline_attributes();
+  const std::string& annotation() const { return annotation_; }
+  void set_annotation(const std::string& annotation) {
+    annotation_ = annotation;
+  }
 
-  const std::vector<SelectionAttribute>& selection_attributes() const;
-  std::vector<SelectionAttribute>* mutable_selection_attributes();
+  const std::string& description() const { return description_; }
+  void set_description(const std::string& description) {
+    description_ = description;
+  }
+
+  const std::vector<UnderlineAttribute>& underline_attributes() const {
+    return underline_attributes_;
+  }
+
+  std::vector<UnderlineAttribute>* mutable_underline_attributes() {
+    return &underline_attributes_;
+  }
+
+  const std::vector<SelectionAttribute>& selection_attributes() const {
+    return selection_attributes_;
+  }
+  std::vector<SelectionAttribute>* mutable_selection_attributes() {
+    return &selection_attributes_;
+  }
 
  private:
   std::string text_;
+  std::string annotation_;
+  std::string description_;
   std::vector<UnderlineAttribute> underline_attributes_;
   std::vector<SelectionAttribute> selection_attributes_;
 

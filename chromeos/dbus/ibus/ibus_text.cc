@@ -30,6 +30,7 @@ bool PopIBusAttribute(dbus::MessageReader* reader, IBusAttribute* attribute) {
   IBusObjectReader ibus_object_reader("IBusAttribute", reader);
   if (!ibus_object_reader.Init())
     return false;
+
   if (!ibus_object_reader.PopUint32(&attribute->type) ||
       !ibus_object_reader.PopUint32(&attribute->value) ||
       !ibus_object_reader.PopUint32(&attribute->start_index) ||
@@ -102,8 +103,51 @@ void CHROMEOS_EXPORT AppendStringAsIBusText(const std::string& text,
 
 bool PopIBusText(dbus::MessageReader* reader, IBusText* ibus_text) {
   IBusObjectReader ibus_text_reader("IBusText", reader);
-  if (!ibus_text_reader.Init())
+
+  dbus::MessageReader attachment_reader(NULL);
+  if (!ibus_text_reader.InitWithAttachmentReader(&attachment_reader))
     return false;
+
+  while (attachment_reader.HasMoreData()) {
+    dbus::MessageReader dictionary_reader(NULL);
+    if (!attachment_reader.PopDictEntry(&dictionary_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The attachment field is array of dictionary entry.";
+      return false;
+    }
+
+    std::string key;
+    if (!dictionary_reader.PopString(&key)) {
+      LOG(ERROR) << "Invalid attachement structure: "
+                 << "The 1st dictionary entry should be string.";
+      return false;
+    }
+
+    dbus::MessageReader variant_reader(NULL);
+    if (!dictionary_reader.PopVariant(&variant_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The 2nd dictionary entry shuold be variant.";
+      return false;
+    }
+
+    dbus::MessageReader sub_variant_reader(NULL);
+    if (!variant_reader.PopVariant(&sub_variant_reader)) {
+      LOG(ERROR) << "Invalid attachment structure: "
+                 << "The 2nd variant entry should contain variant.";
+      return false;
+    }
+
+    std::string value;
+    if (!sub_variant_reader.PopString(&value))
+      continue;  // Ignore other attachment values.
+
+    if (key == "annotation")
+      ibus_text->set_annotation(value);
+    else if (key == "description")
+      ibus_text->set_description(value);
+    else
+      continue;  // Ignore other fields.
+  }
 
   std::string text;
   if (!ibus_text_reader.PopString(&text)) {
@@ -176,34 +220,6 @@ IBusText::IBusText()
 }
 
 IBusText::~IBusText() {
-}
-
-std::string IBusText::text() const {
-  return text_;
-}
-
-void IBusText::set_text(const std::string& text) {
-  text_.assign(text);
-}
-
-std::vector<IBusText::UnderlineAttribute>*
-    IBusText::mutable_underline_attributes() {
-  return &underline_attributes_;
-}
-
-const std::vector<IBusText::UnderlineAttribute>&
-    IBusText::underline_attributes() const {
-  return underline_attributes_;
-}
-
-std::vector<IBusText::SelectionAttribute>*
-    IBusText::mutable_selection_attributes() {
-  return &selection_attributes_;
-}
-
-const std::vector<IBusText::SelectionAttribute>&
-    IBusText::selection_attributes() const {
-  return selection_attributes_;
 }
 
 }  // namespace ibus
