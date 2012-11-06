@@ -75,7 +75,7 @@ struct CONTENT_EXPORT RendererPreferences {
   SkColor thumb_inactive_color;
   SkColor track_color;
 
-  // The colors used in selection text. Currently only used on Linux.
+  // The colors used in selection text. Currently only used on Linux and Ash.
   SkColor active_selection_bg_color;
   SkColor active_selection_fg_color;
   SkColor inactive_selection_bg_color;

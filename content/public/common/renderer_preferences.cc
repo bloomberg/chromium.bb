@@ -4,6 +4,8 @@
 
 #include "content/public/common/renderer_preferences.h"
 
+#include "third_party/skia/include/core/SkColor.h"
+
 namespace content {
 
 RendererPreferences::RendererPreferences()
@@ -15,14 +17,14 @@ RendererPreferences::RendererPreferences()
       subpixel_rendering(
           RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT),
       use_subpixel_positioning(false),
-      focus_ring_color(0),
-      thumb_active_color(0),
-      thumb_inactive_color(0),
-      track_color(0),
-      active_selection_bg_color(0),
-      active_selection_fg_color(0),
-      inactive_selection_bg_color(0),
-      inactive_selection_fg_color(0),
+      focus_ring_color(SkColorSetARGB(255, 229, 151, 0)),
+      thumb_active_color(SkColorSetRGB(244, 244, 244)),
+      thumb_inactive_color(SkColorSetRGB(234, 234, 234)),
+      track_color(SkColorSetRGB(211, 211, 211)),
+      active_selection_bg_color(SkColorSetRGB(30, 144, 255)),
+      active_selection_fg_color(SK_ColorWHITE),
+      inactive_selection_bg_color(SkColorSetRGB(200, 200, 200)),
+      inactive_selection_fg_color(SkColorSetRGB(50, 50, 50)),
       browser_handles_non_local_top_level_requests(false),
       browser_handles_all_top_level_requests(false),
       caret_blink_interval(0),
