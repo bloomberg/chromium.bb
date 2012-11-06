@@ -353,24 +353,26 @@ class DocumentEntry : public FeedEntry {
   // }
   //
   // The caller should delete the returned object.
-  static DocumentEntry* ExtractAndParse(const base::Value& value);
+  static scoped_ptr<DocumentEntry> ExtractAndParse(const base::Value& value);
 
   // Creates document entry from parsed JSON Value.  You should call
   // this instead of instantiating JSONValueConverter by yourself
   // because this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation for the details.
-  static DocumentEntry* CreateFrom(const base::Value& value);
+  static scoped_ptr<DocumentEntry> CreateFrom(const base::Value& value);
 
   // Creates document entry from parsed XML.
-  static DocumentEntry* CreateFromXml(XmlReader* xml_reader);
+  static scoped_ptr<DocumentEntry> CreateFromXml(XmlReader* xml_reader);
 
   // Creates document entry from FileResource.
   // TODO(kochi): This should go away soon. http://crbug.com/142293
-  static DocumentEntry* CreateFromFileResource(const FileResource& file);
+  static scoped_ptr<DocumentEntry> CreateFromFileResource(
+      const FileResource& file);
 
   // Creates document entry from ChangeResource.
   // Todo(Kochi): This should go away soon. http://crbug.com/142293
-  static DocumentEntry* CreateFromChangeResource(const ChangeResource& change);
+  static scoped_ptr<DocumentEntry> CreateFromChangeResource(
+      const ChangeResource& change);
 
   // Returns name of entry node.
   static std::string GetEntryNodeName();

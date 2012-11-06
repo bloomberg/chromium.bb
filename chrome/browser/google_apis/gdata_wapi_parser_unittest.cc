@@ -46,7 +46,7 @@ class GDataWAPIParserTest : public testing::Test {
     scoped_ptr<DocumentEntry> entry;
     while (reader.Read()) {
       if (reader.NodeName() == "entry") {
-        entry.reset(DocumentEntry::CreateFromXml(&reader));
+        entry = DocumentEntry::CreateFromXml(&reader);
         break;
       }
     }

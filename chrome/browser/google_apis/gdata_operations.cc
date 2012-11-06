@@ -573,7 +573,7 @@ void AuthorizeAppsOperation::ParseResponse(
   if (xml_reader.Load(data)) {
     while (xml_reader.Read()) {
       if (xml_reader.NodeName() == DocumentEntry::GetEntryNodeName()) {
-        entry.reset(DocumentEntry::CreateFromXml(&xml_reader));
+        entry = DocumentEntry::CreateFromXml(&xml_reader);
         break;
       }
     }
@@ -846,7 +846,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     if (xml_reader.Load(response_content)) {
       while (xml_reader.Read()) {
         if (xml_reader.NodeName() == DocumentEntry::GetEntryNodeName()) {
-          entry.reset(DocumentEntry::CreateFromXml(&xml_reader));
+          entry = DocumentEntry::CreateFromXml(&xml_reader);
           break;
         }
       }

@@ -2392,7 +2392,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // Create a google_apis::DocumentEntry, which is needed to mock
   // DriveUploaderInterface::UploadExistingFile().
   // TODO(satorux): This should be cleaned up. crbug.com/134240.
-  google_apis::DocumentEntry* document_entry = NULL;
+  scoped_ptr<google_apis::DocumentEntry> document_entry;
   scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile("gdata/root_feed.json");
   ASSERT_TRUE(value.get());
@@ -2426,7 +2426,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
           google_apis::DRIVE_UPLOAD_OK,
           FilePath::FromUTF8Unsafe("drive/File1"),
           dirty_cache_file_path,
-          document_entry));
+          document_entry.release()));
 
   // We'll notify the directory change to the observer upon completion.
   EXPECT_CALL(*mock_directory_observer_,

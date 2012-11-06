@@ -1015,12 +1015,12 @@ void DriveFileSystem::OnGetDocumentEntry(const GetFileFromCacheParams& params,
 
   scoped_ptr<google_apis::DocumentEntry> doc_entry;
   if (!google_apis::util::IsDriveV2ApiEnabled()) {
-    doc_entry.reset(google_apis::DocumentEntry::ExtractAndParse(*data));
+    doc_entry = google_apis::DocumentEntry::ExtractAndParse(*data);
   } else {
     scoped_ptr<google_apis::FileResource> file_resource =
         google_apis::FileResource::CreateFrom(*data);
-    doc_entry.reset(google_apis::DocumentEntry::CreateFromFileResource(
-        *file_resource));
+    doc_entry = google_apis::DocumentEntry::CreateFromFileResource(
+        *file_resource);
   }
 
   GURL content_url = doc_entry->content_url();

@@ -746,7 +746,7 @@ void DocumentEntry::FillRemainingFields() {
 }
 
 // static
-DocumentEntry* DocumentEntry::ExtractAndParse(
+scoped_ptr<DocumentEntry> DocumentEntry::ExtractAndParse(
     const base::Value& value) {
   const base::DictionaryValue* as_dict = NULL;
   const base::DictionaryValue* entry_dict = NULL;
@@ -754,32 +754,32 @@ DocumentEntry* DocumentEntry::ExtractAndParse(
       as_dict->GetDictionary(kEntryField, &entry_dict)) {
     return DocumentEntry::CreateFrom(*entry_dict);
   }
-  return NULL;
+  return scoped_ptr<DocumentEntry>();
 }
 
 // static
-DocumentEntry* DocumentEntry::CreateFrom(const base::Value& value) {
+scoped_ptr<DocumentEntry> DocumentEntry::CreateFrom(const base::Value& value) {
   base::JSONValueConverter<DocumentEntry> converter;
   scoped_ptr<DocumentEntry> entry(new DocumentEntry());
   if (!converter.Convert(value, entry.get())) {
     DVLOG(1) << "Invalid document entry!";
-    return NULL;
+    return scoped_ptr<DocumentEntry>();
   }
 
   entry->FillRemainingFields();
-  return entry.release();
+  return entry.Pass();
 }
 
 // static.
-DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
+scoped_ptr<DocumentEntry> DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
   if (xml_reader->NodeName() != kEntryNode)
-    return NULL;
+    return scoped_ptr<DocumentEntry>();
 
-  DocumentEntry* entry = new DocumentEntry();
+  scoped_ptr<DocumentEntry> entry(new DocumentEntry);
   xml_reader->NodeAttribute(kETagAttr, &entry->etag_);
 
   if (!xml_reader->Read())
-    return entry;
+    return entry.Pass();
 
   bool skip_read = false;
   do {
@@ -858,11 +858,12 @@ DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
   } while (skip_read || xml_reader->Next());
 
   entry->FillRemainingFields();
-  return entry;
+  return entry.Pass();
 }
 
 // static
-DocumentEntry* DocumentEntry::CreateFromFileResource(const FileResource& file) {
+scoped_ptr<DocumentEntry> DocumentEntry::CreateFromFileResource(
+    const FileResource& file) {
   scoped_ptr<DocumentEntry> entry(new DocumentEntry());
 
   // DocumentEntry
@@ -926,19 +927,19 @@ DocumentEntry* DocumentEntry::CreateFromFileResource(const FileResource& file) {
   entry->last_viewed_time_ = file.last_viewed_by_me_date();
 
   entry->FillRemainingFields();
-  return entry.release();
+  return entry.Pass();
 }
 
 // static
-DocumentEntry*
-DocumentEntry::CreateFromChangeResource(const ChangeResource& change) {
-  DocumentEntry* entry = CreateFromFileResource(change.file());
+scoped_ptr<DocumentEntry> DocumentEntry::CreateFromChangeResource(
+    const ChangeResource& change) {
+  scoped_ptr<DocumentEntry> entry = CreateFromFileResource(change.file());
 
   entry->resource_id_ = change.file_id();
   // If |is_deleted()| returns true, the file is removed from Drive.
   entry->removed_ = change.is_deleted();
 
-  return entry;
+  return entry.Pass();
 }
 
 // static
@@ -1026,7 +1027,8 @@ scoped_ptr<DocumentFeed> DocumentFeed::CreateFromChangeList(
   while (iter != changelist.items().end()) {
     const ChangeResource& change = **iter;
     largest_changestamp = std::max(largest_changestamp, change.change_id());
-    feed->entries_.push_back(DocumentEntry::CreateFromChangeResource(change));
+    feed->entries_.push_back(
+        DocumentEntry::CreateFromChangeResource(change).release());
     ++iter;
   }
   feed->largest_changestamp_ = largest_changestamp;
