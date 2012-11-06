@@ -103,14 +103,14 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
   virtual void TearDown() {
-    // See comment in SetUp().
-    test_rvh()->SetView(old_rwhv_);
-
     // Make sure the rwhv_mac_ is gone once the superclass's |TearDown()| runs.
     rwhv_cocoa_.reset();
     pool_.Recycle();
     MessageLoop::current()->RunAllPending();
     pool_.Recycle();
+
+    // See comment in SetUp().
+    test_rvh()->SetView(old_rwhv_);
 
     RenderViewHostImplTestHarness::TearDown();
   }
