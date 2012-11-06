@@ -115,8 +115,8 @@ class BasicTest(gtalk_base_test.GTalkBaseTest):
     # Wait for the roster iframe to load.
     self.WaitUntilCondition(
         lambda: self.RunInRoster('window.location.href'),
-        lambda url: url and 'prop=aChromeExtension#p' in url,
-        msg='Timed out waiting for prop=aChromeExtension#p in url.')
+        lambda url: url and '/frame' in url,
+        msg='Timed out waiting for /frame in url.')
 
     self.WaitUntilResult(True,
         lambda: self.RunInRoster(
