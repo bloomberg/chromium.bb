@@ -23,6 +23,7 @@
 #include "content/test/content_browser_test_utils.h"
 #include "content/test/layout_browsertest.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/test_data_directory.h"
 #include "net/test/test_server.h"
 
 namespace content {
@@ -451,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
   // Launch WebSocket server.
   net::TestServer ws_server(net::TestServer::TYPE_WS,
                             net::TestServer::kLocalhost,
-                            FilePath(FILE_PATH_LITERAL("net/data/websocket")));
+                            net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
 
   // Generate test URL.

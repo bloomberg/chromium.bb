@@ -42,6 +42,7 @@
 #include "net/base/cert_status_flags.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_data_directory.h"
 #include "net/test/test_server.h"
 
 #if defined(USE_NSS)
@@ -55,7 +56,6 @@ using content::SSLStatus;
 using content::WebContents;
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
-const FilePath::CharType kWsRoot[] = FILE_PATH_LITERAL("net/data/websocket");
 
 namespace {
 
@@ -105,7 +105,7 @@ class SSLUITest : public InProcessBrowserTest {
                                  FilePath(kDocRoot)),
         wss_server_expired_(net::TestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
-                            FilePath(kWsRoot)) {}
+                            net::GetWebSocketTestDataDirectory()) {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // Browser will both run and display insecure content.
@@ -640,10 +640,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSClientCert) {
   net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();
   scoped_refptr<net::CryptoModule> crypt_module = cert_db->GetPublicModule();
   std::string pkcs12_data;
-  FilePath cert_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &cert_path));
-  cert_path = cert_path.Append(
-      FILE_PATH_LITERAL("net/data/ssl/certificates/websocket_client_cert.p12"));
+  FilePath cert_path = net::GetTestCertsDirectory().Append(
+      FILE_PATH_LITERAL("websocket_client_cert.p12"));
   EXPECT_TRUE(file_util::ReadFileToString(cert_path, &pkcs12_data));
   EXPECT_EQ(net::OK, cert_db->ImportFromPKCS12(crypt_module,
                                                pkcs12_data,
@@ -654,21 +652,18 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSClientCert) {
   // Start WebSocket test server with TLS and client cert authentication.
   net::TestServer::SSLOptions options(net::TestServer::SSLOptions::CERT_OK);
   options.request_client_certificate = true;
-  FilePath ca_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &ca_path));
-  ca_path = ca_path.Append(
-      FILE_PATH_LITERAL("net/data/ssl/certificates/websocket_cacert.pem"));
+  FilePath ca_path = net::GetTestCertsDirectory().Append(
+      FILE_PATH_LITERAL("websocket_cacert.pem"));
   options.client_authorities.push_back(ca_path);
   net::TestServer wss_server(net::TestServer::TYPE_WSS,
                              options,
-                             FilePath(FILE_PATH_LITERAL(
-                                 "net/data/websocket")));
+                             net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(wss_server.Start());
   std::string scheme("https");
   GURL::Replacements replacements;
   replacements.SetSchemeStr(scheme);
-  GURL url =
-      wss_server.GetURL("connect_check.html").ReplaceComponents(replacements);
+  GURL url = wss_server.GetURL("connect_check.html").ReplaceComponents(
+      replacements);
 
   // Setup page title observer.
   WebContents* tab = chrome::GetActiveWebContents(browser());

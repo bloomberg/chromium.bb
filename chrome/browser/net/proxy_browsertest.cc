@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/test_data_directory.h"
 #include "net/test/test_server.h"
 
 namespace {
@@ -87,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   // Launch WebSocket server.
   net::TestServer ws_server(net::TestServer::TYPE_WS,
                             net::TestServer::kLocalhost,
-                            FilePath(FILE_PATH_LITERAL("net/data/websocket")));
+                            net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
 
   content::WebContents* tab = chrome::GetActiveWebContents(browser());

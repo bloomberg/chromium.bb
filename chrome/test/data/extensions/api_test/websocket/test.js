@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function echoTest(port) {
-  var url = "ws://localhost:" + port + "/echo";
+  var url = "ws://localhost:" + port + "/echo-with-no-extension";
   var ws = new WebSocket(url);
   var MESSAGE_A = "message a";
   var MESSAGE_B = "message b";

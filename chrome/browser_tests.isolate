@@ -572,7 +572,6 @@
           '../net/data/websocket/close_wsh.py',
           '../net/data/websocket/connect_check.html',
           '../net/data/websocket/echo-with-no-extension_wsh.py',
-          '../net/data/websocket/echo_wsh.py',
           '../net/data/websocket/protocol-test_wsh.py',
           '../net/tools/testserver/asn1der.py',
           '../net/tools/testserver/device_management.py',

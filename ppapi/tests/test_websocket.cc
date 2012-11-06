@@ -33,7 +33,7 @@
 
 // net::TestServer serves WebSocket service for testing.
 // Following URLs are handled by pywebsocket handlers in
-// net/data/websocket/*_wsh.
+// net/data/websocket/*_wsh.py.
 const char kEchoServerURL[] = "echo-with-no-extension";
 const char kCloseServerURL[] = "close";
 const char kCloseWithCodeAndReasonServerURL[] = "close-code-and-reason";

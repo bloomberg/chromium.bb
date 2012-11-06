@@ -34,6 +34,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "media/audio/audio_manager.h"
 #include "net/base/net_util.h"
+#include "net/base/test_data_directory.h"
 #include "net/test/test_server.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -196,7 +197,7 @@ void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
 void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   net::TestServer server(net::TestServer::TYPE_WS,
                          net::TestServer::kLocalhost,
-                         FilePath(FILE_PATH_LITERAL("net/data/websocket")));
+                         net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(server.Start());
   uint16_t port = server.host_port_pair().port();
   FilePath http_document_root;
