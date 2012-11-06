@@ -597,8 +597,15 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 
 void ChromeBrowserMainParts::StartMetricsRecording() {
   MetricsService* metrics = g_browser_process->metrics_service();
+
+  bool enable_benchmarking =
+      parsed_command_line_.HasSwitch(switches::kEnableBenchmarking);
+  // TODO(stevet): This is a temporary histogram used to investigate an issue
+  // with logging. Remove this when investigations are complete.
+  UMA_HISTOGRAM_BOOLEAN("UMA.FieldTrialsEnabledBenchmarking",
+                        enable_benchmarking);
   if (parsed_command_line_.HasSwitch(switches::kMetricsRecordingOnly) ||
-      parsed_command_line_.HasSwitch(switches::kEnableBenchmarking)) {
+      enable_benchmarking) {
     // If we're testing then we don't care what the user preference is, we turn
     // on recording, but not reporting, otherwise tests fail.
     metrics->StartRecordingForTests();
