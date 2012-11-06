@@ -83,8 +83,9 @@ class UnitTestPrerenderManager : public PrerenderManager {
   using PrerenderManager::kMinTimeBetweenPrerendersMs;
   using PrerenderManager::kNavigationRecordWindowMs;
 
-  explicit UnitTestPrerenderManager(PrerenderTracker* prerender_tracker)
-      : PrerenderManager(&profile_, prerender_tracker),
+  explicit UnitTestPrerenderManager(Profile* profile,
+                                    PrerenderTracker* prerender_tracker)
+      : PrerenderManager(profile, prerender_tracker),
         time_(Time::Now()),
         time_ticks_(TimeTicks::Now()),
         next_prerender_contents_(NULL),
@@ -214,8 +215,6 @@ class UnitTestPrerenderManager : public PrerenderManager {
   ScopedVector<PrerenderContents> used_prerender_contents_;
 
   PrerenderTracker* prerender_tracker_;
-
-  TestingProfile profile_;
 };
 
 class RestorePrerenderMode {
@@ -261,8 +260,8 @@ class PrerenderTest : public testing::Test {
   static const int kDefaultRenderViewRouteId = -1;
 
   PrerenderTest() : ui_thread_(BrowserThread::UI, &message_loop_),
-                    prerender_manager_(
-                        new UnitTestPrerenderManager(prerender_tracker())),
+                    prerender_manager_(new UnitTestPrerenderManager(
+                        &profile_, prerender_tracker())),
                     prerender_link_manager_(
                         new PrerenderLinkManager(prerender_manager_.get())),
                     last_prerender_id_(0) {
@@ -310,6 +309,7 @@ class PrerenderTest : public testing::Test {
   }
 
   // Needed to pass PrerenderManager's DCHECKs.
+  TestingProfile profile_;
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<UnitTestPrerenderManager> prerender_manager_;

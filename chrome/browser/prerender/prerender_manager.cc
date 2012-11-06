@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_condition.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/prerender_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
@@ -186,7 +188,8 @@ WouldBePrerenderedWebContentsData(Origin origin)
 
 PrerenderManager::PrerenderManager(Profile* profile,
                                    PrerenderTracker* prerender_tracker)
-    : enabled_(true),
+    : enabled_(profile && profile->GetPrefs() &&
+          profile->GetPrefs()->GetBoolean(prefs::kNetworkPredictionEnabled)),
       profile_(profile),
       prerender_tracker_(prerender_tracker),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
