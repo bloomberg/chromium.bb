@@ -1504,13 +1504,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   params.url = GURL("data:text/html;charset=utf-8,<!doctype html><body>");
   Panel* panel = CreatePanelWithParams(params);
 
+  // Ensure panel has auto resized to original web content size.
+  WaitForStableInitialSize initial_resize(panel);
+  initial_resize.Wait();
+
   int initial_width = panel->GetBounds().width();
   int initial_height = panel->GetBounds().height();
 
   // Inject some HTML content into the panel.
-  content::WindowedNotificationObserver enlarge(
-      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      content::Source<Panel>(panel));
+  WaitForAutoResizeWider enlarge(panel);
   EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
