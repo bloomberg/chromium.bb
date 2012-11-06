@@ -287,6 +287,9 @@ class TouchEventFromWebTouchPoint : public ui::TouchEvent {
     set_radius(touch_point.radiusX, touch_point.radiusY);
     set_rotation_angle(touch_point.rotationAngle);
     set_force(touch_point.force);
+    set_flags((base::win::IsShiftPressed() ? ui::EF_SHIFT_DOWN : 0) |
+              (base::win::IsCtrlPressed() ? ui::EF_CONTROL_DOWN : 0) |
+              (base::win::IsAltPressed() ? ui::EF_ALT_DOWN: 0));
   }
 
   virtual ~TouchEventFromWebTouchPoint() {}
