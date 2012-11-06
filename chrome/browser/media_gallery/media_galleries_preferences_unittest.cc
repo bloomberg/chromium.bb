@@ -370,8 +370,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
   Verify();
 
   // Add the gallery again.
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
+  id = gallery_prefs()->AddGalleryByPath(path);
   EXPECT_EQ(auto_id, id);
   AddGalleryExpectation(id, device_name, device_id, relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);

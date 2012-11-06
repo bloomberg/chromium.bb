@@ -243,7 +243,6 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::LookUpGalleriesByDeviceId(
   return found->second;
 }
 
-
 MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const std::string& device_id, const string16& display_name,
     const FilePath& relative_path, bool user_added) {
@@ -259,7 +258,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
 
     const MediaGalleryPrefInfo& existing = known_galleries_[*it];
     bool update_gallery_type =
-      existing.type == MediaGalleryPrefInfo::kBlackListed;
+        existing.type == MediaGalleryPrefInfo::kBlackListed;
     bool update_gallery_name = existing.display_name != display_name;
     if (update_gallery_name || update_gallery_type) {
       PrefService* prefs = profile_->GetPrefs();
@@ -311,9 +310,10 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
 MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
     const FilePath& path) {
   MediaGalleryPrefInfo gallery_info;
-  if (LookUpGalleryByPath(path, &gallery_info))
+  if (LookUpGalleryByPath(path, &gallery_info) &&
+      gallery_info.type != MediaGalleryPrefInfo::kBlackListed) {
     return gallery_info.pref_id;
-  DCHECK_EQ(kInvalidMediaGalleryPrefId, gallery_info.pref_id);
+  }
   return AddGallery(gallery_info.device_id, gallery_info.display_name,
                     gallery_info.path, true /*user added*/);
 }
