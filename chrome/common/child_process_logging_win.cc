@@ -205,6 +205,9 @@ void SetCommandLine(const CommandLine* command_line) {
       return;
   }
 
+  if (command_line->argv().empty())
+    return;
+
   std::vector<const wchar_t*> cstrings;
   StringVectorToCStringVector(command_line->argv(), &cstrings);
   (set_command_line)(&cstrings[0], cstrings.size());
@@ -225,6 +228,13 @@ void SetExperimentList(const std::vector<string16>& experiments) {
 
   std::vector<string16> chunks;
   chrome_variations::GenerateVariationChunks(experiments, &chunks);
+
+  // If the list is empty, notify the child process of the number of experiments
+  // and exit early.
+  if (chunks.empty()) {
+    (set_experiment_list)(NULL, 0, 0);
+    return;
+  }
 
   std::vector<const wchar_t*> cstrings;
   StringVectorToCStringVector(chunks, &cstrings);
