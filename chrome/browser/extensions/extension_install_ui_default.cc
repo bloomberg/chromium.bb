@@ -115,6 +115,13 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
   if (skip_post_install_ui_)
     return;
 
+  if (!profile_) {
+    // TODO(zelidrag): Figure out what exact conditions cause crash
+    // http://crbug.com/159437 and write browser test to cover it.
+    NOTREACHED();
+    return;
+  }
+
   if (extension->is_theme()) {
     ShowThemeInfoBar(previous_theme_id_, previous_using_native_theme_,
                      extension, profile_);
