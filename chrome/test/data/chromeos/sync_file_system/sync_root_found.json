@@ -1,0 +1,182 @@
+{
+  "encoding":"UTF-8",
+  "feed": {
+    "author": [ {
+      "email": { "$t":"tester@example.com" },
+      "name": { "$t":"testing" }
+    } ],
+    "category": [ {
+      "label":"item",
+      "scheme":"http://schemas.google.com/g/2005#kind",
+      "term":"http://schemas.google.com/docs/2007#item"
+    } ],
+    "entry": [ {
+      "app$edited": {
+        "$t":"2012-10-31T05:00:47.148Z",
+        "xmlns$app":"http://www.w3.org/2007/app"
+      },
+      "author": [ {
+        "email": { "$t":"tester@example.com" },
+        "name": { "$t":"testing" }
+      } ],
+      "category": [ {
+        "label":"folder",
+        "scheme":"http://schemas.google.com/g/2005#kind",
+        "term":"http://schemas.google.com/docs/2007#folder"
+      } ],
+      "content": {
+        "src":"https://sync_root_content_url",
+        "type":"application/atom+xml;type=feed"
+      },
+      "docs$writersCanInvite": { "value":"true" },
+      "gd$etag":"\"UV4ZGUtWGCt7ImBk\"",
+      "gd$feedLink": [ {
+        "href":"https://sync_root_feed_linkurl",
+        "rel":"http://schemas.google.com/acl/2007#accessControlList"
+      } ],
+      "gd$lastModifiedBy": {
+        "email": { "$t":"tester@example.com" },
+        "name": { "$t":"testing" }
+      },
+      "gd$quotaBytesUsed": { "$t":"0" },
+      "gd$resourceId": { "$t":"folder:sync_root_resource_id" },
+      "id": { "$t":"https://sync_root_id" },
+      "link": [ {
+        "href":"https://sync_root_alternate_link",
+        "rel":"alternate",
+        "type":"text/html"
+      }, {
+        "href":"https://sync_root_icon_url",
+        "rel":"http://schemas.google.com/docs/2007#icon",
+        "type":"image/png"
+      }, {
+        "href":"https://sync_root_create_media_link",
+        "rel":"http://schemas.google.com/g/2005#resumable-create-media",
+        "type":"application/atom+xml"
+      }, {
+        "href":"https://sync_root_alt_post_link",
+        "rel":"http://schemas.google.com/docs/2007#alt-post",
+        "type":"application/atom+xml"
+      }, {
+        "href":"https://sync_root_share_link",
+        "rel":"http://schemas.google.com/docs/2007#share",
+        "type":"text/html"
+      }, {
+        "href":"https://sync_root_self_link",
+        "rel":"self",
+        "type":"application/atom+xml"
+      }, {
+        "href":"https://sync_root_edit_link",
+        "rel":"edit",
+        "type":"application/atom+xml"
+      } ],
+      "published": { "$t":"2012-10-31T05:00:47.148Z" },
+      "title": { "$t":"Dummy Chrome Syncable FileSystem" },
+      "updated": { "$t":"2012-10-31T05:00:47.148Z" }
+    }, {
+      "app$edited": {
+        "$t":"2012-10-31T05:00:47.148Z",
+        "xmlns$app":"http://www.w3.org/2007/app"
+      },
+      "author": [ {
+        "email": { "$t":"tester@example.com" },
+        "name": { "$t":"testing" }
+      } ],
+      "category": [ {
+        "label":"folder",
+        "scheme":"http://schemas.google.com/g/2005#kind",
+        "term":"http://schemas.google.com/docs/2007#folder"
+      } ],
+      "content": {
+        "src":"https://sync_root_content_url",
+        "type":"application/atom+xml;type=feed"
+      },
+      "docs$writersCanInvite": { "value":"true" },
+      "gd$etag":"\"UV4ZGUtWGCt7ImBk\"",
+      "gd$feedLink": [ {
+        "href":"https://sync_root_feed_linkurl",
+        "rel":"http://schemas.google.com/acl/2007#accessControlList"
+      } ],
+      "gd$lastModifiedBy": {
+        "email": { "$t":"tester@example.com" },
+        "name": { "$t":"testing" }
+      },
+      "gd$quotaBytesUsed": { "$t":"0" },
+      "gd$resourceId": { "$t":"folder:sync_root_resource_id" },
+      "id": { "$t":"https://sync_root_id" },
+      "link": [ {
+        "href":"https://sync_root_alternate_link",
+        "rel":"alternate",
+        "type":"text/html"
+      }, {
+        "href":"https://sync_root_icon_url",
+        "rel":"http://schemas.google.com/docs/2007#icon",
+        "type":"image/png"
+      }, {
+        "href":"https://sync_root_create_media_link",
+        "rel":"http://schemas.google.com/g/2005#resumable-create-media",
+        "type":"application/atom+xml"
+      }, {
+        "href":"https://sync_root_alt_post_link",
+        "rel":"http://schemas.google.com/docs/2007#alt-post",
+        "type":"application/atom+xml"
+      }, {
+        "href":"https://sync_root_share_link",
+        "rel":"http://schemas.google.com/docs/2007#share",
+        "type":"text/html"
+      }, {
+        "href":"https://sync_root_self_link",
+        "rel":"self",
+        "type":"application/atom+xml"
+      }, {
+        "href":"https://sync_root_edit_link",
+        "rel":"edit",
+        "type":"application/atom+xml"
+      } ],
+      "published": { "$t":"2012-10-31T05:00:47.148Z" },
+      "title": { "$t":"Chrome Syncable FileSystem" },
+      "updated": { "$t":"2012-10-31T05:00:47.148Z" }
+    } ],
+    "gd$etag":"W/\"CkcFQn4yfSt7ImA9WhNSFks.\"",
+    "id": { "$t":"https://docs.google.com/feeds/default/private/full" },
+    "link": [ {
+      "href":"https://docs.google.com",
+      "rel":"alternate",
+      "type":"text/html"
+    }, {
+      "href":"https://docs.google.com/feeds/upload/create-session/default/private/full",
+      "rel":"http://schemas.google.com/g/2005#resumable-create-media",
+      "type":"application/atom+xml"
+    }, {
+      "href":"https://docs.google.com/feeds/upload/file/default/private/full",
+      "rel":"http://schemas.google.com/docs/2007#alt-post",
+      "type":"application/atom+xml"
+    }, {
+      "href":"https://docs.google.com/feeds/default/private/full",
+      "rel":"http://schemas.google.com/g/2005#feed",
+      "type":"application/atom+xml"
+    }, {
+      "href":"https://docs.google.com/feeds/default/private/full",
+      "rel":"http://schemas.google.com/g/2005#post",
+      "type":"application/atom+xml"
+    }, {
+      "href":"https://docs.google.com/feeds/default/private/full/batch",
+      "rel":"http://schemas.google.com/g/2005#batch",
+      "type":"application/atom+xml"
+    }, {
+      "href":"https://docs.google.com/feeds/default/private/full/-/mine?alt=json&q=Chrome+Syncable+FileSystem&max-results=50&include-installed-apps=true&showfolders=true",
+      "rel":"self",
+      "type":"application/atom+xml"
+    } ],
+    "openSearch$itemsPerPage": { "$t":"50" },
+    "openSearch$startIndex": { "$t":"1" },
+    "title": { "$t":"Available Documents - tester@example.com" },
+    "updated": { "$t":"2012-10-31T05:06:53.095Z" },
+    "xmlns":"http://www.w3.org/2005/Atom",
+    "xmlns$batch":"http://schemas.google.com/gdata/batch",
+    "xmlns$docs":"http://schemas.google.com/docs/2007",
+    "xmlns$gd":"http://schemas.google.com/g/2005",
+    "xmlns$openSearch":"http://a9.com/-/spec/opensearch/1.1/"
+  },
+  "version":"1.0"
+}

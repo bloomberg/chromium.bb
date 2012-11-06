@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_SYNC_CLIENT_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_SYNC_CLIENT_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_CLIENT_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_CLIENT_H_
 
 #include <string>
 
@@ -19,18 +19,16 @@ class GURL;
 class Profile;
 
 namespace google_apis {
-class DriveServiceInterface;
-class DriveUploader;
+class DriveUploaderInterface;
 }
 
 namespace sync_file_system {
 
 // This class is responsible for talking to the Drive service to get and put
-// Drive folders, files and metadata.
+// Drive directories, files and metadata.
 // This class is owned by DriveFileSyncService.
-class DriveSyncClient : public google_apis::DriveServiceObserver,
-                        public base::NonThreadSafe,
-                        public base::SupportsWeakPtr<DriveSyncClient> {
+class DriveFileSyncClient : public base::NonThreadSafe,
+                            public base::SupportsWeakPtr<DriveFileSyncClient> {
  public:
   // TODO(tzik): Implement a function to map GDataErrorcode to SyncStatusCode.
   // crbug.com/157837
@@ -43,24 +41,27 @@ class DriveSyncClient : public google_apis::DriveServiceObserver,
                               scoped_ptr<google_apis::DocumentFeed> feed)>
       DocumentFeedCallback;
 
-  explicit DriveSyncClient(Profile* profile);
-  virtual ~DriveSyncClient();
+  explicit DriveFileSyncClient(Profile* profile);
+  virtual ~DriveFileSyncClient();
 
-  // DriveServiceObserver overrides.
-  virtual void OnReadyToPerformOperations() OVERRIDE;
-  virtual void OnAuthenticationFailed(
-      google_apis::GDataErrorCode error) OVERRIDE;
+  static scoped_ptr<DriveFileSyncClient> CreateForTesting(
+      Profile* profile,
+      scoped_ptr<google_apis::DriveServiceInterface> drive_service,
+      scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader);
 
   // Fetches Resource ID of the directory where we should place all files to
   // sync.  Upon completion, invokes |callback|.
-  // If the folder does not exist on the server this also creates the folder.
-  void GetDriveFolderForSyncData(const ResourceIdCallback& callback);
+  // If the directory does not exist on the server this also creates
+  // the directory.
+  void GetDriveDirectoryForSyncRoot(const ResourceIdCallback& callback);
 
   // Fetches Resource ID of the directory for the |origin|.
   // Upon completion, invokes |callback|.
-  // If the folder does not exist on the server this also creates the folder.
-  void GetDriveFolderForOrigin(const GURL& origin,
-                               const ResourceIdCallback& callback);
+  // If the directory does not exist on the server this also creates
+  // the directory.
+  void GetDriveDirectoryForOrigin(const std::string& sync_root_resource_id,
+                                  const GURL& origin,
+                                  const ResourceIdCallback& callback);
 
   // Fetches the largest changestamp for the signed-in account.
   // Upon completion, invokes |callback|.
@@ -71,7 +72,7 @@ class DriveSyncClient : public google_apis::DriveServiceObserver,
   // The result may be chunked and may have successive results. The caller needs
   // to call ContunueListing with the result of GetNextFeedURL to get complete
   // list of files.
-  void ListFiles(const std::string& resource_id,
+  void ListFiles(const std::string& directory_resource_id,
                  const DocumentFeedCallback& callback);
 
   // Lists changes that happened after |start_changestamp|.
@@ -88,12 +89,42 @@ class DriveSyncClient : public google_apis::DriveServiceObserver,
                        const DocumentFeedCallback& callback);
 
  private:
-  scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
-  scoped_ptr<google_apis::DriveUploader> drive_uploader_;
+  // Constructor for test use.
+  DriveFileSyncClient(
+      Profile* profile,
+      scoped_ptr<google_apis::DriveServiceInterface> drive_service,
+      scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader);
 
-  DISALLOW_COPY_AND_ASSIGN(DriveSyncClient);
+  void DidGetDirectory(const std::string& parent_resource_id,
+                       const std::string& directory_name,
+                       const ResourceIdCallback& callback,
+                       google_apis::GDataErrorCode error,
+                       scoped_ptr<google_apis::DocumentFeed> feed);
+
+  void DidGetParentDirectoryForCreateDirectory(
+      const FilePath::StringType& directory_name,
+      const ResourceIdCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<base::Value> data);
+
+  void DidCreateDirectory(const ResourceIdCallback& callback,
+                          google_apis::GDataErrorCode error,
+                          scoped_ptr<base::Value> data);
+
+  void SearchFilesInDirectory(const std::string& directory_resource_id,
+                              const std::string& search_query,
+                              const DocumentFeedCallback& callback);
+
+  void DidGetDocumentFeedData(const DocumentFeedCallback& callback,
+                              google_apis::GDataErrorCode error,
+                              scoped_ptr<base::Value> data);
+
+  scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
+  scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClient);
 };
 
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_SYNC_CLIENT_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_CLIENT_H_
