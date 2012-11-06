@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.2",
+  "version": "4.3",
   "entries": [
     {
       "id": 1,
@@ -912,8 +912,19 @@
       "os": {
         "type": "macosx"
       },
-      "multi_gpu_category": "any",
       "vendor_id": "0x10de",
+      "blacklist": [
+        "multisampling"
+      ]
+    },
+    {
+      "id": 61,
+      "description": "Multisampling is buggy on Mac with Intel gpu.",
+      "cr_bugs": [137303],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
       "blacklist": [
         "multisampling"
       ]
