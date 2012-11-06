@@ -67,7 +67,7 @@ EXTRA_ENV = {
                   # as some uses of asm are borderline legit, e.g.
                   # <prototype> asm("<function-name>");
                   '${NO_ASM ? -Dasm=ASM_FORBIDDEN -D__asm__=ASM_FORBIDDEN} ' +
-                  '-ccc-host-triple ${FRONTEND_TRIPLE}',
+                  '-target ${FRONTEND_TRIPLE}',
 
 
   'ISYSTEM'        : '${ISYSTEM_USER} ${STDINC ? ${ISYSTEM_BUILTIN}}',
