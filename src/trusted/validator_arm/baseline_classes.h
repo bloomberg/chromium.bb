@@ -1394,6 +1394,7 @@ class Binary3RegisterOpAltBNoCondUpdates : public ClassDecoder {
   Binary3RegisterOpAltBNoCondUpdates() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBNoCondUpdates);

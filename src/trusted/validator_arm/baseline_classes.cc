@@ -376,6 +376,10 @@ RegisterList Binary3RegisterOpAltBNoCondUpdates::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
+RegisterList Binary3RegisterOpAltBNoCondUpdates::uses(Instruction i) const {
+  return RegisterList(n.reg(i)).Add(m.reg(i));
+}
+
 // Binary4RegisterDualOp
 SafetyLevel Binary4RegisterDualOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).

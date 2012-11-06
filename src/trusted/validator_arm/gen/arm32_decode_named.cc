@@ -2335,22 +2335,22 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_saturating_addition_and_
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00600000) == 0x00000000 /* op(22:21)=00 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qadd_Rule_124_A1_P250_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QADD_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00200000 /* op(22:21)=01 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qsub_Rule_131_A1_P264_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QSUB_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00400000 /* op(22:21)=10 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qdadd_Rule_128_A1_P258_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QDADD_instance_;
   }
 
   if ((inst.Bits() & 0x00600000) == 0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_Qdsub_Rule_129_A1_P260_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_QDSUB_instance_;
   }
 
   // Catch any attempt to fall through...

@@ -19,6 +19,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary2RegisterImmediateOpDynCodeReplace_instance_()
   , Binary3RegisterOp_instance_()
   , Binary3RegisterOpAltA_instance_()
+  , Binary3RegisterOpAltBNoCondUpdates_instance_()
   , Binary3RegisterShiftedOp_instance_()
   , Binary3RegisterShiftedTest_instance_()
   , Binary4RegisterDualOp_instance_()
@@ -1696,7 +1697,7 @@ const ClassDecoder& Arm32DecoderState::decode_saturating_addition_and_subtractio
 {
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   // Catch any attempt to fall though ...

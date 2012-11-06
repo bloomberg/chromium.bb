@@ -147,6 +147,22 @@ class Binary3RegisterOpAltA_Usad8_Rule_253_A1_P500
     : public Binary3RegisterOpAltA {
 };
 
+class Binary3RegisterOpAltBNoCondUpdates_QADD
+    : public Binary3RegisterOpAltBNoCondUpdates {
+};
+
+class Binary3RegisterOpAltBNoCondUpdates_QDADD
+    : public Binary3RegisterOpAltBNoCondUpdates {
+};
+
+class Binary3RegisterOpAltBNoCondUpdates_QDSUB
+    : public Binary3RegisterOpAltBNoCondUpdates {
+};
+
+class Binary3RegisterOpAltBNoCondUpdates_QSUB
+    : public Binary3RegisterOpAltBNoCondUpdates {
+};
+
 class Binary3RegisterOpAltBNoCondUpdates_Qadd16_Rule_125_A1_P252
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
@@ -155,19 +171,7 @@ class Binary3RegisterOpAltBNoCondUpdates_Qadd8_Rule_126_A1_P254
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
 
-class Binary3RegisterOpAltBNoCondUpdates_Qadd_Rule_124_A1_P250
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
 class Binary3RegisterOpAltBNoCondUpdates_Qasx_Rule_127_A1_P256
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_Qdadd_Rule_128_A1_P258
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_Qdsub_Rule_129_A1_P260
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
 
@@ -180,10 +184,6 @@ class Binary3RegisterOpAltBNoCondUpdates_Qsub16_Rule_132_A1_P266
 };
 
 class Binary3RegisterOpAltBNoCondUpdates_Qsub8_Rule_133_A1_P268
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_Qsub_Rule_131_A1_P264
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
 
@@ -2007,19 +2007,7 @@ class Defs12To15CondsDontCareRnRdRmNotPc_Qadd8_Rule_126_A1_P254
     : public Defs12To15CondsDontCareRnRdRmNotPc {
 };
 
-class Defs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250
-    : public Defs12To15CondsDontCareRnRdRmNotPc {
-};
-
 class Defs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256
-    : public Defs12To15CondsDontCareRnRdRmNotPc {
-};
-
-class Defs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258
-    : public Defs12To15CondsDontCareRnRdRmNotPc {
-};
-
-class Defs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260
     : public Defs12To15CondsDontCareRnRdRmNotPc {
 };
 
@@ -2032,10 +2020,6 @@ class Defs12To15CondsDontCareRnRdRmNotPc_Qsub16_Rule_132_A1_P266
 };
 
 class Defs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268
-    : public Defs12To15CondsDontCareRnRdRmNotPc {
-};
-
-class Defs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264
     : public Defs12To15CondsDontCareRnRdRmNotPc {
 };
 
@@ -3098,6 +3082,54 @@ class NamedBinary3RegisterOpAltA_Usad8_Rule_253_A1_P500
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltA_Usad8_Rule_253_A1_P500);
 };
 
+class NamedBinary3RegisterOpAltBNoCondUpdates_QADD
+    : public NamedClassDecoder {
+ public:
+  NamedBinary3RegisterOpAltBNoCondUpdates_QADD()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QADD")
+  {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QADD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QADD);
+};
+
+class NamedBinary3RegisterOpAltBNoCondUpdates_QDADD
+    : public NamedClassDecoder {
+ public:
+  NamedBinary3RegisterOpAltBNoCondUpdates_QDADD()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QDADD")
+  {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QDADD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QDADD);
+};
+
+class NamedBinary3RegisterOpAltBNoCondUpdates_QDSUB
+    : public NamedClassDecoder {
+ public:
+  NamedBinary3RegisterOpAltBNoCondUpdates_QDSUB()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QDSUB")
+  {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QDSUB decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QDSUB);
+};
+
+class NamedBinary3RegisterOpAltBNoCondUpdates_QSUB
+    : public NamedClassDecoder {
+ public:
+  NamedBinary3RegisterOpAltBNoCondUpdates_QSUB()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QSUB")
+  {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QSUB decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QSUB);
+};
+
 class NamedBinary3RegisterOpAltBNoCondUpdates_Qadd16_Rule_125_A1_P252
     : public NamedClassDecoder {
  public:
@@ -3122,18 +3154,6 @@ class NamedBinary3RegisterOpAltBNoCondUpdates_Qadd8_Rule_126_A1_P254
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_Qadd8_Rule_126_A1_P254);
 };
 
-class NamedBinary3RegisterOpAltBNoCondUpdates_Qadd_Rule_124_A1_P250
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_Qadd_Rule_124_A1_P250()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates Qadd_Rule_124_A1_P250")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_Qadd_Rule_124_A1_P250 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_Qadd_Rule_124_A1_P250);
-};
-
 class NamedBinary3RegisterOpAltBNoCondUpdates_Qasx_Rule_127_A1_P256
     : public NamedClassDecoder {
  public:
@@ -3144,30 +3164,6 @@ class NamedBinary3RegisterOpAltBNoCondUpdates_Qasx_Rule_127_A1_P256
  private:
   nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_Qasx_Rule_127_A1_P256 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_Qasx_Rule_127_A1_P256);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_Qdadd_Rule_128_A1_P258
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_Qdadd_Rule_128_A1_P258()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates Qdadd_Rule_128_A1_P258")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_Qdadd_Rule_128_A1_P258 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_Qdadd_Rule_128_A1_P258);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_Qdsub_Rule_129_A1_P260
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_Qdsub_Rule_129_A1_P260()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates Qdsub_Rule_129_A1_P260")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_Qdsub_Rule_129_A1_P260 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_Qdsub_Rule_129_A1_P260);
 };
 
 class NamedBinary3RegisterOpAltBNoCondUpdates_Qsax_Rule_130_A1_P262
@@ -3204,18 +3200,6 @@ class NamedBinary3RegisterOpAltBNoCondUpdates_Qsub8_Rule_133_A1_P268
  private:
   nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_Qsub8_Rule_133_A1_P268 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_Qsub8_Rule_133_A1_P268);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_Qsub_Rule_131_A1_P264
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_Qsub_Rule_131_A1_P264()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates Qsub_Rule_131_A1_P264")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_Qsub_Rule_131_A1_P264 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_Qsub_Rule_131_A1_P264);
 };
 
 class NamedBinary3RegisterOpAltBNoCondUpdates_Sadd16_Rule_148_A1_P296
@@ -8678,18 +8662,6 @@ class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd8_Rule_126_A1_P254
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd8_Rule_126_A1_P254);
 };
 
-class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250
-    : public NamedClassDecoder {
- public:
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250()
-    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCareRnRdRmNotPc Qadd_Rule_124_A1_P250")
-  {}
-
- private:
-  nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250);
-};
-
 class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256
     : public NamedClassDecoder {
  public:
@@ -8700,30 +8672,6 @@ class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256
  private:
   nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256);
-};
-
-class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258
-    : public NamedClassDecoder {
- public:
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258()
-    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCareRnRdRmNotPc Qdadd_Rule_128_A1_P258")
-  {}
-
- private:
-  nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258);
-};
-
-class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260
-    : public NamedClassDecoder {
- public:
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260()
-    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCareRnRdRmNotPc Qdsub_Rule_129_A1_P260")
-  {}
-
- private:
-  nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260);
 };
 
 class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsax_Rule_130_A1_P262
@@ -8760,18 +8708,6 @@ class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268
  private:
   nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268);
-};
-
-class NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264
-    : public NamedClassDecoder {
- public:
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264()
-    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCareRnRdRmNotPc Qsub_Rule_131_A1_P264")
-  {}
-
- private:
-  nacl_arm_dec::Defs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264);
 };
 
 class NamedDefs12To15CondsDontCareRnRdRmNotPc_Sadd16_Rule_148_A1_P296

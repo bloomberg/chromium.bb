@@ -702,23 +702,27 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 # they only set the APSR's sticky Q bit (for saturation), but we
 # don't model it.
 +-- saturating_addition_and_subtraction (See Section A5.2.6)
+*RdRmRn
+   { Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0) }
+   baseline := Binary3RegisterOpAltBNoCondUpdates;
+   defs := {Rd};
+   safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
+   uses := {Rn, Rm};
+   arch := v5TE;
++--
 | op(22:21)
-| 00        = Binary3RegisterOpAltBNoCondUpdates
-              => Defs12To15CondsDontCareRnRdRmNotPc
-              Qadd_Rule_124_A1_P250
-              cccc00010000nnnndddd00000101mmmm RegsNotPc (v5TE)
-| 01        = Binary3RegisterOpAltBNoCondUpdates
-              => Defs12To15CondsDontCareRnRdRmNotPc
-              Qsub_Rule_131_A1_P264
-              cccc00010010nnnndddd00000101mmmm RegsNotPc (v5TE)
-| 10        = Binary3RegisterOpAltBNoCondUpdates
-              => Defs12To15CondsDontCareRnRdRmNotPc
-              Qdadd_Rule_128_A1_P258
-              cccc00010100nnnndddd00000101mmmm RegsNotPc (v5TE)
-| 11        = Binary3RegisterOpAltBNoCondUpdates
-              => Defs12To15CondsDontCareRnRdRmNotPc
-              Qdsub_Rule_129_A1_P260
-              cccc00010110nnnndddd00000101mmmm RegsNotPc (v5TE)
+| 00        = *RdRmRn
+               pattern := cccc00010000nnnndddd00000101mmmm;
+               rule := QADD;
+| 01        = *RdRmRn
+               pattern := cccc00010010nnnndddd00000101mmmm;
+               rule := QSUB;
+| 10        = *RdRmRn
+               pattern := cccc00010100nnnndddd00000101mmmm;
+               rule := QDADD;
+| 11        = *RdRmRn
+               pattern := cccc00010110nnnndddd00000101mmmm;
+               rule := QDSUB;
 +--
 
 +-- halfword_multiply_and_multiply_accumulate (See Section A5.2.7)
