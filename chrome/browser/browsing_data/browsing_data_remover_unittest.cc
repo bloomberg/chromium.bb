@@ -44,6 +44,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/mock_quota_manager.h"
 #include "webkit/quota/quota_manager.h"
@@ -453,8 +454,7 @@ class RemoveLocalStorageTester {
                    base::Unretained(this)));
   }
   void OnGotLocalStorageUsage(
-      const std::vector<
-          dom_storage::DomStorageContext::LocalStorageUsageInfo>& infos) {
+      const std::vector<dom_storage::LocalStorageUsageInfo>& infos) {
     infos_ = infos;
     await_completion_.Notify();
   }
@@ -463,7 +463,7 @@ class RemoveLocalStorageTester {
   TestingProfile* profile_;
   content::DOMStorageContext* dom_storage_context_;
 
-  std::vector<dom_storage::DomStorageContext::LocalStorageUsageInfo> infos_;
+  std::vector<dom_storage::LocalStorageUsageInfo> infos_;
 
   AwaitCompletionHelper await_completion_;
 

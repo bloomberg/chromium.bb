@@ -20,7 +20,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/dom_storage/dom_storage_context.h"
 #include "webkit/quota/quota_types.h"
 
 class ExtensionSpecialStoragePolicy;
@@ -41,6 +40,11 @@ class URLRequestContextGetter;
 
 namespace quota {
 class QuotaManager;
+}
+
+namespace dom_storage {
+struct LocalStorageUsageInfo;
+struct SessionStorageUsageInfo;
 }
 
 // BrowsingDataRemover is responsible for removing data related to browsing:
@@ -270,16 +274,14 @@ class BrowsingDataRemover : public content::NotificationObserver,
 
   // Callback to deal with the list gathered in ClearLocalStorageOnUIThread.
   void OnGotLocalStorageUsageInfo(
-      const std::vector<
-          dom_storage::DomStorageContext::LocalStorageUsageInfo>& infos);
+      const std::vector<dom_storage::LocalStorageUsageInfo>& infos);
 
   // Invoked on the UI thread to delete session storage.
   void ClearSessionStorageOnUIThread();
 
   // Callback to deal with the list gathered in ClearSessionStorageOnUIThread.
   void OnGotSessionStorageUsageInfo(
-      const std::vector<
-          dom_storage::DomStorageContext::SessionStorageUsageInfo>& infos);
+      const std::vector<dom_storage::SessionStorageUsageInfo>& infos);
 
   // Invoked on the IO thread to delete all storage types managed by the quota
   // system: AppCache, Databases, FileSystems.

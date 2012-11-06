@@ -37,6 +37,8 @@ class DomStorageNamespace;
 class DomStorageSession;
 class DomStorageTaskRunner;
 class SessionStorageDatabase;
+struct LocalStorageUsageInfo;
+struct SessionStorageUsageInfo;
 
 // The Context is the root of an object containment hierachy for
 // Namespaces and Areas related to the owning profile.
@@ -60,23 +62,6 @@ class SessionStorageDatabase;
 class WEBKIT_STORAGE_EXPORT DomStorageContext
     : public base::RefCountedThreadSafe<DomStorageContext> {
  public:
-  struct WEBKIT_STORAGE_EXPORT LocalStorageUsageInfo {
-    GURL origin;
-    size_t data_size;
-    base::Time last_modified;
-
-    LocalStorageUsageInfo();
-    ~LocalStorageUsageInfo();
-  };
-
-  struct WEBKIT_STORAGE_EXPORT SessionStorageUsageInfo {
-    GURL origin;
-    std::string persistent_namespace_id;
-
-    SessionStorageUsageInfo();
-    ~SessionStorageUsageInfo();
-  };
-
   // An interface for observing Local and Session Storage events on the
   // background thread.
   class EventObserver {

@@ -24,13 +24,6 @@ namespace dom_storage {
 
 static const int kSessionStoraceScavengingSeconds = 60;
 
-DomStorageContext::LocalStorageUsageInfo::LocalStorageUsageInfo()
-    : data_size(0) {}
-DomStorageContext::LocalStorageUsageInfo::~LocalStorageUsageInfo() {}
-
-DomStorageContext::SessionStorageUsageInfo::SessionStorageUsageInfo() {}
-DomStorageContext::SessionStorageUsageInfo::~SessionStorageUsageInfo() {}
-
 DomStorageContext::DomStorageContext(
     const FilePath& localstorage_directory,
     const FilePath& sessionstorage_directory,

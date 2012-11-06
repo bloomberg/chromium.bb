@@ -36,7 +36,7 @@ include_rules = [
   "+webkit/appcache",
   "+webkit/blob",
   "+webkit/database",
-  "+webkit/dom_storage",
+  "+webkit/dom_storage/dom_storage_types.h",
   "+webkit/fileapi",
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
   "+webkit/quota",

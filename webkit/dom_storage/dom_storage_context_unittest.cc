@@ -55,7 +55,7 @@ class DomStorageContextTest : public testing::Test {
     // Use a new instance to examine the contexts of temp_dir_.
     scoped_refptr<DomStorageContext> context =
         new DomStorageContext(temp_dir_.path(), FilePath(), NULL, NULL);
-    std::vector<DomStorageContext::LocalStorageUsageInfo> infos;
+    std::vector<LocalStorageUsageInfo> infos;
     context->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
     ASSERT_EQ(1u, infos.size());
     EXPECT_EQ(origin, infos[0].origin);
@@ -83,7 +83,7 @@ TEST_F(DomStorageContextTest, Basics) {
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId));
   EXPECT_FALSE(context_->GetStorageNamespace(kFirstSessionStorageNamespaceId));
   EXPECT_EQ(kFirstSessionStorageNamespaceId, context_->AllocateSessionId());
-  std::vector<DomStorageContext::LocalStorageUsageInfo> infos;
+  std::vector<LocalStorageUsageInfo> infos;
   context_->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
   EXPECT_TRUE(infos.empty());
   context_->Shutdown();
@@ -91,7 +91,7 @@ TEST_F(DomStorageContextTest, Basics) {
 
 TEST_F(DomStorageContextTest, UsageInfo) {
   // Should be empty initially
-  std::vector<DomStorageContext::LocalStorageUsageInfo> infos;
+  std::vector<LocalStorageUsageInfo> infos;
   context_->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
   EXPECT_TRUE(infos.empty());
   context_->GetLocalStorageUsage(&infos, kDoIncludeFileInfo);
@@ -231,7 +231,7 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   EXPECT_EQ(kValue, read_value.string());
   dom_namespace->CloseStorageArea(area);
 
-  DomStorageContext::SessionStorageUsageInfo info;
+  SessionStorageUsageInfo info;
   info.origin = kOrigin;
   info.persistent_namespace_id = kPersistentId;
   context_->DeleteSessionStorage(info);

@@ -25,6 +25,7 @@
       '../dom_storage/dom_storage_session.h',
       '../dom_storage/dom_storage_task_runner.cc',
       '../dom_storage/dom_storage_task_runner.h',
+      '../dom_storage/dom_storage_types.cc',
       '../dom_storage/dom_storage_types.h',
       '../dom_storage/local_storage_database_adapter.cc',
       '../dom_storage/local_storage_database_adapter.h',

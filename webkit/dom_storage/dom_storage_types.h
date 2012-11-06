@@ -10,6 +10,9 @@
 #include "base/basictypes.h"
 #include "base/nullable_string16.h"
 #include "base/string16.h"
+#include "base/time.h"
+#include "googleurl/src/gurl.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace dom_storage {
 
@@ -33,6 +36,23 @@ const int64 kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;
 const int kInvalidAreaId = -1;
 
 typedef std::map<string16, NullableString16> ValuesMap;
+
+struct WEBKIT_STORAGE_EXPORT LocalStorageUsageInfo {
+  GURL origin;
+  size_t data_size;
+  base::Time last_modified;
+
+  LocalStorageUsageInfo();
+  ~LocalStorageUsageInfo();
+};
+
+struct WEBKIT_STORAGE_EXPORT SessionStorageUsageInfo {
+  GURL origin;
+  std::string persistent_namespace_id;
+
+  SessionStorageUsageInfo();
+  ~SessionStorageUsageInfo();
+};
 
 }  // namespace dom_storage
 

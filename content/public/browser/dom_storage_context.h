@@ -5,13 +5,18 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOM_STORAGE_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_DOM_STORAGE_CONTEXT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "webkit/dom_storage/dom_storage_context.h"
 
 class GURL;
+
+namespace dom_storage {
+struct LocalStorageUsageInfo;
+struct SessionStorageUsageInfo;
+}
 
 namespace content {
 
@@ -22,14 +27,12 @@ class SessionStorageNamespace;
 class DOMStorageContext {
  public:
   typedef base::Callback<
-      void(const std::vector<
-          dom_storage::DomStorageContext::LocalStorageUsageInfo>&)>
-              GetLocalStorageUsageCallback;
+      void(const std::vector<dom_storage::LocalStorageUsageInfo>&)>
+          GetLocalStorageUsageCallback;
 
   typedef base::Callback<
-      void(const std::vector<
-          dom_storage::DomStorageContext::SessionStorageUsageInfo>&)>
-              GetSessionStorageUsageCallback;
+      void(const std::vector<dom_storage::SessionStorageUsageInfo>&)>
+          GetSessionStorageUsageCallback;
 
   // Returns a collection of origins using local storage to the given callback.
   virtual void GetLocalStorageUsage(
@@ -45,8 +48,7 @@ class DOMStorageContext {
 
   // Deletes the session storage data identified by |usage_info|.
   virtual void DeleteSessionStorage(
-      const dom_storage::DomStorageContext::SessionStorageUsageInfo& usage_info)
-      = 0;
+      const dom_storage::SessionStorageUsageInfo& usage_info) = 0;
 
   // If this is called, sessionStorage data will be stored on disk, and can be
   // restored after a browser restart (with RecreateSessionStorage). This

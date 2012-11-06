@@ -10,6 +10,10 @@
 
 class FilePath;
 
+namespace dom_storage {
+class DomStorageContext;
+}
+
 namespace quota {
 class SpecialStoragePolicy;
 }
@@ -33,8 +37,7 @@ class CONTENT_EXPORT DOMStorageContextImpl :
       const GetSessionStorageUsageCallback& callback) OVERRIDE;
   virtual void DeleteLocalStorage(const GURL& origin) OVERRIDE;
   virtual void DeleteSessionStorage(
-      const dom_storage::DomStorageContext::SessionStorageUsageInfo& usage_info)
-      OVERRIDE;
+      const dom_storage::SessionStorageUsageInfo& usage_info) OVERRIDE;
   virtual void SetSaveSessionStorageOnDisk() OVERRIDE;
   virtual scoped_refptr<SessionStorageNamespace>
       RecreateSessionStorage(const std::string& persistent_id) OVERRIDE;

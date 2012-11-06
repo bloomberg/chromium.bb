@@ -27,7 +27,7 @@ const char kSessionStorageDirectory[] = "Session Storage";
 
 void InvokeLocalStorageUsageCallbackHelper(
       const DOMStorageContext::GetLocalStorageUsageCallback& callback,
-      const std::vector<DomStorageContext::LocalStorageUsageInfo>* infos) {
+      const std::vector<dom_storage::LocalStorageUsageInfo>* infos) {
   callback.Run(*infos);
 }
 
@@ -35,8 +35,8 @@ void GetLocalStorageUsageHelper(
     base::MessageLoopProxy* reply_loop,
     DomStorageContext* context,
     const DOMStorageContext::GetLocalStorageUsageCallback& callback) {
-  std::vector<DomStorageContext::LocalStorageUsageInfo>* infos =
-      new std::vector<DomStorageContext::LocalStorageUsageInfo>;
+  std::vector<dom_storage::LocalStorageUsageInfo>* infos =
+      new std::vector<dom_storage::LocalStorageUsageInfo>;
   context->GetLocalStorageUsage(infos, true);
   reply_loop->PostTask(
       FROM_HERE,
@@ -46,7 +46,7 @@ void GetLocalStorageUsageHelper(
 
 void InvokeSessionStorageUsageCallbackHelper(
       const DOMStorageContext::GetSessionStorageUsageCallback& callback,
-      const std::vector<DomStorageContext::SessionStorageUsageInfo>* infos) {
+      const std::vector<dom_storage::SessionStorageUsageInfo>* infos) {
   callback.Run(*infos);
 }
 
@@ -54,8 +54,8 @@ void GetSessionStorageUsageHelper(
     base::MessageLoopProxy* reply_loop,
     DomStorageContext* context,
     const DOMStorageContext::GetSessionStorageUsageCallback& callback) {
-  std::vector<DomStorageContext::SessionStorageUsageInfo>* infos =
-      new std::vector<DomStorageContext::SessionStorageUsageInfo>;
+  std::vector<dom_storage::SessionStorageUsageInfo>* infos =
+      new std::vector<dom_storage::SessionStorageUsageInfo>;
   context->GetSessionStorageUsage(infos);
   reply_loop->PostTask(
       FROM_HERE,
@@ -116,7 +116,7 @@ void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin) {
 }
 
 void DOMStorageContextImpl::DeleteSessionStorage(
-    const dom_storage::DomStorageContext::SessionStorageUsageInfo& usage_info) {
+    const dom_storage::SessionStorageUsageInfo& usage_info) {
   DCHECK(context_);
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,

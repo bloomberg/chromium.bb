@@ -64,7 +64,7 @@
 #include "net/http/infinite_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webkit/dom_storage/dom_storage_context.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -802,8 +802,7 @@ void BrowsingDataRemover::ClearLocalStorageOnUIThread() {
 }
 
 void BrowsingDataRemover::OnGotLocalStorageUsageInfo(
-    const std::vector<
-        dom_storage::DomStorageContext::LocalStorageUsageInfo>& infos) {
+    const std::vector<dom_storage::LocalStorageUsageInfo>& infos) {
   DCHECK(waiting_for_clear_local_storage_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -832,8 +831,7 @@ void BrowsingDataRemover::ClearSessionStorageOnUIThread() {
 }
 
 void BrowsingDataRemover::OnGotSessionStorageUsageInfo(
-    const std::vector<
-        dom_storage::DomStorageContext::SessionStorageUsageInfo>& infos) {
+    const std::vector<dom_storage::SessionStorageUsageInfo>& infos) {
   DCHECK(waiting_for_clear_session_storage_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
