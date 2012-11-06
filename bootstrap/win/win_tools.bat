@@ -10,6 +10,7 @@
 :: returned.
 
 set WIN_TOOLS_ROOT_URL=http://src.chromium.org/svn/trunk/tools
+set GIT_BIN_DIR=git-1.8.0_bin
 
 :: Get absolute root directory (.js scripts don't handle relative paths well).
 pushd %~dp0..\..
@@ -24,7 +25,7 @@ if "%1" == "force" (
 
 :GIT_CHECK
 :: If the batch file exists, skip the git check.
-if exist "%WIN_TOOLS_ROOT_DIR%\git.bat" goto :SVN_CHECK
+if not exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%" goto :GIT_INSTALL
 if "%CHROME_HEADLESS%" == "1" goto :SVN_CHECK
 if "%WIN_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
 call git --version 2>nul 1>nul
@@ -36,20 +37,20 @@ goto :SVN_CHECK
 echo Installing git (avg 1-2 min download) ...
 :: git is not accessible; check it out and create 'proxy' files.
 if exist "%~dp0git.zip" del "%~dp0git.zip"
-cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/git_bin.zip "%~dp0git.zip"
+cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/git-1.8.0_bin.zip "%~dp0git.zip"
 if errorlevel 1 goto :GIT_FAIL
 :: Cleanup svn directory if it was existing.
-if exist "%WIN_TOOLS_ROOT_DIR%\git_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\git_bin"
-:: Will create git_bin\...
+if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%"
+:: Will create %GIT_BIN_DIR%\...
 cscript //nologo //e:jscript "%~dp0unzip.js" "%~dp0git.zip" "%WIN_TOOLS_ROOT_DIR%"
 if errorlevel 1 goto :GIT_FAIL
-if not exist "%WIN_TOOLS_ROOT_DIR%\git_bin\." goto :GIT_FAIL
+if not exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\." goto :GIT_FAIL
 del "%~dp0git.zip"
 :: Create the batch files.
-call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\git.bat" "%WIN_TOOLS_ROOT_DIR%\git.bat" 1>nul
-call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\gitk.bat" "%WIN_TOOLS_ROOT_DIR%\gitk.bat" 1>nul
-call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\ssh.bat" "%WIN_TOOLS_ROOT_DIR%\ssh.bat" 1>nul
-call copy /y "%WIN_TOOLS_ROOT_DIR%\git_bin\ssh-keygen.bat" "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat" 1>nul
+call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\git.bat" "%WIN_TOOLS_ROOT_DIR%\git.bat" 1>nul
+call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\gitk.bat" "%WIN_TOOLS_ROOT_DIR%\gitk.bat" 1>nul
+call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh.bat" "%WIN_TOOLS_ROOT_DIR%\ssh.bat" 1>nul
+call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh-keygen.bat" "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat" 1>nul
 :: Ensure autocrlf and filemode are set correctly.
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --global core.autocrlf false
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --global core.filemode false
