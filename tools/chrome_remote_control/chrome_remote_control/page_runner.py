@@ -57,7 +57,8 @@ class PageRunner(object):
         possible_browser.options.wpr_mode = wpr_modes.WPR_REPLAY
       else:
         possible_browser.options.wpr_mode = wpr_modes.WPR_OFF
-        logging.warning("""
+        if not self.page_set.ContainsOnlyFileURLs():
+          logging.warning("""
 The page set archive %s does not exist, benchmarking against live sites!
 Results won't be repeatable or comparable.
 
@@ -147,7 +148,8 @@ http://goto/read-src-internal, or create a new archive using --record.
     parsed_url = urlparse.urlparse(page.url)
     if parsed_url[0] == 'file':
       path = os.path.join(self.page_set.base_dir,
-                          parsed_url.netloc) # pylint: disable=E1101
+                          parsed_url.netloc,
+                          parsed_url.path) # pylint: disable=E1101
       dirname, filename = os.path.split(path)
       tab.browser.SetHTTPServerDirectory(dirname)
       target_side_url = tab.browser.http_server.UrlOf(filename)
@@ -178,5 +180,5 @@ http://goto/read-src-internal, or create a new archive using --record.
   def CleanUpPage(self, page, tab, page_state): # pylint: disable=R0201
     if page.credentials and page_state.did_login:
       tab.browser.credentials.LoginNoLongerNeeded(tab, page.credentials)
-    tab.runtime.Evaluate("""chrome && chrome.benchmarking &&
+    tab.runtime.Evaluate("""window.chrome && chrome.benchmarking &&
                             chrome.benchmarking.closeConnections()""")

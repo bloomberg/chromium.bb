@@ -168,7 +168,7 @@ define([ 'sprites/sources', 'sprites/transformers', 'sprites/renderers', 'util/e
                 rawData.push([ objectCount, results ]);
                 
                 var timePerObjectEstimate = 1/(objectCount*results.fps);
-                var estimatedMaxObjects = Math.floor(1/(targetFramerate * timePerObjectEstimate));
+                var estimatedMaxObjects = Math.min(5000, Math.floor(1/(targetFramerate * timePerObjectEstimate)));
                 
                 var nextObjectCount = nextNumberToTry(fpsResults, estimatedMaxObjects);
                 test(nextObjectCount);

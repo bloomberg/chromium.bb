@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import json
 import os
+import urlparse
 
 from chrome_remote_control import page as page_module
 
@@ -31,9 +32,17 @@ class PageSet(object):
     page_set = cls(file_path, data)
     for page_attributes in data['pages']:
       url = page_attributes.pop('url')
-      page = page_module.Page(url, page_attributes)
+      page = page_module.Page(url, attributes=page_attributes,
+                              base_dir=file_path)
       page_set.pages.append(page)
     return page_set
+
+  def ContainsOnlyFileURLs(self):
+    for page in self.pages:
+      parsed_url = urlparse.urlparse(page.url)
+      if parsed_url.scheme != 'file':
+        return False
+    return True
 
   def __iter__(self):
     return self.pages.__iter__()

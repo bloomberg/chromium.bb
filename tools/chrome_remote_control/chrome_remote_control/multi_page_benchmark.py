@@ -44,7 +44,10 @@ class BenchmarkResults(page_test.PageTestResults):
     self._page = page
     self._page_values = {}
 
-  def Add(self, name, units, value, data_type='default'):
+  def Add(self, trace_name, units, value, chart_name=None, data_type='default'):
+    name = trace_name
+    if chart_name:
+      name = '%s.%s' % (chart_name, trace_name)
     assert name not in self._page_values, 'Result names must be unique'
     assert name != 'url', 'The name url cannot be used'
     if self.field_names:
@@ -75,7 +78,11 @@ results! You must return the same dict keys every time."""
     for measurement_units_type, values in sorted(
         self.results_summary.iteritems()):
       measurement, units, data_type = measurement_units_type
-      trace = measurement + (trace_tag or '')
+      if '.' in measurement:
+        measurement, trace = measurement.split('.', 1)
+        trace += (trace_tag or '')
+      else:
+        trace = measurement + (trace_tag or '')
       PrintPerfResult(measurement, trace, values, units, data_type)
 
 

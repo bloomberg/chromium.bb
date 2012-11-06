@@ -15,16 +15,11 @@ class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
   """unittest.TestCase-derived class to help in the construction of unit tests
   for a benchmark."""
 
-  unittest_data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                      '..', 'unittest_data'))
-
   def CreatePageSetFromFileInUnittestDataDir(self, test_filename):
-    path = os.path.join(self.unittest_data_dir, test_filename)
-    self.assertTrue(os.path.exists(path))
-
-    page = page_module.Page('file://%s' % test_filename)
-
-    ps = page_set.PageSet(base_dir=self.unittest_data_dir)
+    base_dir = os.path.dirname(__file__)
+    page = page_module.Page(os.path.join('..', 'unittest_data', test_filename),
+                            base_dir=base_dir)
+    ps = page_set.PageSet(base_dir=base_dir)
     ps.pages.append(page)
     return ps
 
