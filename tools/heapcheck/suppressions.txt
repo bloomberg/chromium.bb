@@ -1418,13 +1418,6 @@
    fun:TestingProfile::CreateWebDataService
 }
 {
-   bug_129392
-   Heapcheck:Leak
-   fun:::ChromeTestSuiteInitializer::SetUpHostResolver
-   fun:::ChromeTestSuiteInitializer::OnTestStart
-   fun:testing::internal::TestEventRepeater::OnTestStart
-}
-{
   bug_130640_a
   Heapcheck:Leak
   ...
