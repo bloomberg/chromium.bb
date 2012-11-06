@@ -4,11 +4,15 @@
 
 #include "content/renderer/renderer_main_platform_delegate.h"
 
+#include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #include <objc/runtime.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
+#import "base/mac/crash_logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
@@ -39,6 +43,19 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
                              toTarget:string
                            withObject:nil];
   }
+
+  // Debugging for http://crbug.com/152566
+  base::mac::ScopedCFTypeRef<TISInputSourceRef> input_source(
+      TISCopyCurrentKeyboardInputSource());
+  base::mac::ScopedCFTypeRef<CFStringRef> description(
+      CFCopyDescription(input_source));
+  base::mac::SetCrashKeyValue(@"tis_input_source",
+                              base::mac::CFToNSCast(description));
+
+  input_source.reset(TISCopyCurrentKeyboardLayoutInputSource());
+  description.reset(CFCopyDescription(input_source));
+  base::mac::SetCrashKeyValue(@"tis_layout_source",
+                              base::mac::CFToNSCast(description));
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
