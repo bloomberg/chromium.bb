@@ -85,12 +85,12 @@ void CreateNetAddressListFromAddressList(
 
 }  // namespace
 
-PepperMessageFilter::PepperMessageFilter(
-    ProcessType type,
-    int process_id,
-    BrowserContext* browser_context)
+PepperMessageFilter::PepperMessageFilter(ProcessType type,
+                                         int process_id,
+                                         BrowserContext* browser_context)
     : process_type_(type),
       process_id_(process_id),
+      nacl_render_view_id_(0),
       resource_context_(browser_context->GetResourceContext()),
       host_resolver_(NULL),
       next_socket_id_(1) {
@@ -106,11 +106,26 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
                                          net::HostResolver* host_resolver)
     : process_type_(type),
       process_id_(0),
+      nacl_render_view_id_(0),
       resource_context_(NULL),
       host_resolver_(host_resolver),
       next_socket_id_(1),
       incognito_(false) {
-  DCHECK(type == PLUGIN || type == NACL);
+  DCHECK(type == PLUGIN);
+  DCHECK(host_resolver);
+}
+
+PepperMessageFilter::PepperMessageFilter(ProcessType type,
+                                         net::HostResolver* host_resolver,
+                                         int process_id,
+                                         int render_view_id)
+    : process_type_(type),
+      process_id_(process_id),
+      nacl_render_view_id_(render_view_id),
+      resource_context_(NULL),
+      host_resolver_(host_resolver),
+      next_socket_id_(1) {
+  DCHECK(type == NACL);
   DCHECK(host_resolver);
 }
 
@@ -818,6 +833,11 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id,
     // Always allow socket APIs for out-process plugins (except NACL).
     return true;
   }
+  // NACL plugins always get their own PepperMessageFilter, initialized with
+  // a render view id. Use this instead of the one that came with the message,
+  // which is actually an API ID.
+  if (process_type_ == NACL)
+    render_id = nacl_render_view_id_;
 
   RenderViewHostImpl* render_view_host =
       RenderViewHostImpl::FromID(process_id_, render_id);

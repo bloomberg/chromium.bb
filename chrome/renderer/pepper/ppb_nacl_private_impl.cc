@@ -18,12 +18,18 @@
 #include "content/public/common/sandbox_init.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -60,6 +66,18 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
   if (sender == NULL)
     sender = g_background_thread_sender.Pointer()->get();
 
+  webkit::ppapi::PluginInstance* plugin_instance =
+      content::GetHostGlobals()->GetInstance(instance);
+  if (!plugin_instance)
+    return PP_FALSE;
+
+  WebKit::WebView* web_view =
+      plugin_instance->container()->element().document().frame()->view();
+  content::RenderView* render_view =
+      content::RenderView::FromWebView(web_view);
+  if (!render_view)
+    return PP_FALSE;
+
   InstanceInfo instance_info;
   instance_info.url = GURL(alleged_url);
 
@@ -74,6 +92,7 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
 
   if (!sender->Send(new ChromeViewHostMsg_LaunchNaCl(
           instance_info.url,
+          render_view->GetRoutingID(),
           perm_bits,
           socket_count, &sockets,
           &instance_info.channel_handle,

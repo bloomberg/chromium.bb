@@ -133,6 +133,7 @@ bool NaClProcessHost::PluginListener::OnMessageReceived(
 }
 
 NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
+                                 int render_view_id,
                                  uint32 permission_bits,
                                  bool off_the_record)
     : manifest_url_(manifest_url),
@@ -152,7 +153,8 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       enable_debug_stub_(false),
       off_the_record_(off_the_record),
       enable_ipc_proxy_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ipc_plugin_listener_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(ipc_plugin_listener_(this)),
+      render_view_id_(render_view_id) {
   process_.reset(content::BrowserChildProcessHost::Create(
       content::PROCESS_TYPE_NACL_LOADER, this));
 
@@ -760,7 +762,9 @@ void NaClProcessHost::OnPpapiChannelCreated(
     // Enable PPAPI message dispatching to the browser process.
     content::EnablePepperSupportForChannel(
         ipc_proxy_channel_.get(),
-        chrome_render_message_filter_->GetHostResolver());
+        chrome_render_message_filter_->GetHostResolver(),
+        chrome_render_message_filter_->render_process_id(),
+        render_view_id_);
     // Send a message to create the NaCl-Renderer channel. The handle is just
     // a place holder.
     ipc_proxy_channel_->Send(

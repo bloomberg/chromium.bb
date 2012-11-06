@@ -65,15 +65,22 @@ class PepperMessageFilter
   enum ProcessType { PLUGIN, RENDERER, NACL };
 
   // Constructor when used in the context of a render process (the argument is
-  // provided for sanity checking).
+  // provided for sanity checking and must be RENDERER).
   PepperMessageFilter(ProcessType type,
                       int process_id,
                       BrowserContext* browser_context);
 
   // Constructor when used in the context of a PPAPI process (the argument is
-  // provided for sanity checking).
+  // provided for sanity checking and must be PLUGIN).
   PepperMessageFilter(ProcessType type,
                       net::HostResolver* host_resolver);
+
+  // Constructor when used in the context of a NaCl process (the argument is
+  // provided for sanity checking and must be NACL).
+  PepperMessageFilter(ProcessType type,
+                      net::HostResolver* host_resolver,
+                      int process_id,
+                      int render_view_id);
 
   // BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
@@ -248,6 +255,11 @@ class PepperMessageFilter
 
   // Render process ID.
   int process_id_;
+
+  // NACL RenderView id to determine private API access. Normally, we handle
+  // messages coming from multiple RenderViews, but NaClProcessHost always
+  // creates a new PepperMessageFilter for each RenderView.
+  int nacl_render_view_id_;
 
   // When non-NULL, this should be used instead of the host_resolver_.
   ResourceContext* const resource_context_;

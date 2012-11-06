@@ -19,7 +19,9 @@ namespace content {
 // Enables dispatching PPAPI messages from the plugin to the browser.
 CONTENT_EXPORT void EnablePepperSupportForChannel(
     IPC::ChannelProxy* channel,
-    net::HostResolver* host_resolver);
+    net::HostResolver* host_resolver,
+    int process_id,
+    int render_view_id);
 
 }  // namespace content
 

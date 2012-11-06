@@ -42,9 +42,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
  public:
   // manifest_url: the URL of the manifest of the Native Client plugin being
   // executed.
+  // render_view_id: RenderView routing id, to control access to private APIs.
   // permission_bits: controls which interfaces the NaCl plugin can use.
   // off_the_record: was the process launched from an incognito renderer?
   NaClProcessHost(const GURL& manifest_url,
+                  int render_view_id,
                   uint32 permission_bits,
                   bool off_the_record);
   virtual ~NaClProcessHost();
@@ -196,6 +198,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   scoped_ptr<IPC::ChannelProxy> ipc_proxy_channel_;
   // Plugin listener, to forward browser channel messages to us.
   PluginListener ipc_plugin_listener_;
+
+  int render_view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };
