@@ -281,7 +281,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   UserStyleSheetWatcherFactory::GetInstance();
   VisitedLinkMasterFactory::GetInstance();
   WebDataServiceFactory::GetInstance();
+#if defined(ENABLE_WEB_INTENTS)
   WebIntentsRegistryFactory::GetInstance();
+#endif
 
   built_factories_ = true;
 }

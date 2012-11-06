@@ -2667,7 +2667,6 @@
             ['exclude', '^browser/sync/glue/app_'],
             ['exclude', '^browser/sync/glue/extension_'],
             ['exclude', '^browser/themes/'],
-            ['exclude', '^browser/ui/intents/'],
             ['exclude', '^browser/ui/omnibox/'],
             ['exclude', '^browser/ui/panels'],
             ['exclude', '^browser/ui/tabs/'],
@@ -2694,6 +2693,16 @@
             }],
           ],
         }],  # OS == android
+        ['enable_web_intents==0', {
+          'sources/': [
+            ['exclude', '^browser/intents/'],
+            ['exclude', '^browser/ui/intents/'],
+          ],
+          'sources!': [
+            'browser/webdata/web_data_service_unittest.cc',
+            'browser/webdata/web_intents_table_unittest.cc',
+          ],
+        }],
         ['enable_themes==0', {
           'sources!': [
             'browser/ui/webui/theme_source_unittest.cc',

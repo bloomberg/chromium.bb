@@ -919,6 +919,11 @@ const char kPluginsMetadata[] = "plugins.metadata";
 const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
 #endif
 
+#if defined(ENABLE_WEB_INTENTS)
+// Boolean that is true if Web Intents is enabled.
+const char kWebIntentsEnabled[] = "webintents.enabled";
+#endif
+
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";
@@ -2044,9 +2049,6 @@ const char kRecoveryComponentVersion[] = "recovery_component.version";
 // String that stores the component updater last known state. This is used for
 // troubleshooting.
 const char kComponentUpdaterState[] = "component_updater.state";
-
-// Boolean that is true if Web Intents is enabled.
-const char kWebIntentsEnabled[] = "webintents.enabled";
 
 // The next media gallery ID to assign.
 const char kMediaGalleriesUniqueId[] = "media_galleries.gallery_id";

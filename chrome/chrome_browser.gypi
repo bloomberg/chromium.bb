@@ -943,6 +943,7 @@
         'browser/intents/web_intents_reporting.h',
         'browser/intents/web_intents_util.cc',
         'browser/intents/web_intents_util.h',
+        'browser/intents/web_intents_util_stub.cc',
         'browser/internal_auth.cc',
         'browser/internal_auth.h',
         'browser/intranet_redirect_detector.cc',
@@ -2550,6 +2551,16 @@
         ['notifications==0', {
           'sources/': [
             ['exclude', '^browser/notifications/'],
+          ],
+        }],
+        ['enable_web_intents==0', {
+          'sources/': [
+            ['exclude', '^browser/intents/'],
+            ['include', '^browser/intents/web_intents_util_stub.cc'],
+          ],
+        }, {  # enable_web_intents==1
+          'sources!': [
+            'browser/intents/web_intents_util_stub.cc',
           ],
         }],
         ['enable_themes==0', {
