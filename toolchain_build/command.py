@@ -134,7 +134,8 @@ def Remove(path):
   # TODO(mcgrathr): Replace with something less hacky.
   return Command([
       sys.executable, '-c',
-      'import sys, os; os.remove(sys.argv[1])', path
+      'import sys, os\n'
+      'if os.path.exists(sys.argv[1]): os.remove(sys.argv[1])', path
       ])
 
 

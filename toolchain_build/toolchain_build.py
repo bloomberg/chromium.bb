@@ -385,7 +385,7 @@ def AssemblyPackage(target):
 
   # Mac doesn't have GNU cp with its -l functionality, but it has cpio.
   # MinGW doesn't have cpio, but it does have GNU cp.
-  if sys.platform.startswith('mac'):
+  if sys.platform == 'darwin':
     commands = [command.Command(
         'cd %(' + dep + ')s && find . -print0 | cpio -0 -p -l %(abs_output)s',
         shell=True
