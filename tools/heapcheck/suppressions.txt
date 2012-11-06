@@ -1622,3 +1622,36 @@
    fun:SkCanvas::drawText
    fun:media::FakeVideoCaptureDevice::OnCaptureTask
 }
+# Need to figure out if the bug_159551 leaks are intentional or not.
+{
+   bug_159551_message_loop
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   ...
+   fun:testing::internal::TestFactoryImpl::CreateTest
+}
+{
+   bug_159551_bind
+   Heapcheck:Leak
+   fun:base::Bind
+   fun:net::FileStream::Context::CloseAndDelete
+   fun:net::FileStream::Context::Orphan
+   fun:~FileStream
+   fun:~scoped_ptr
+   fun:~LocalFileStreamReader
+   fun:~scoped_ptr
+}
+{
+   bug_159551_filestream_a
+   Heapcheck:Leak
+   fun:FileStream
+   fun:webkit_blob::LocalFileStreamReader::DidVerifyForOpen
+}
+{
+   bug_159551_filestream_b
+   Heapcheck:Leak
+   fun:FileStream
+   fun:fileapi::LocalFileStreamWriter::InitiateOpen
+   fun:fileapi::LocalFileStreamWriter::Write
+   fun:LocalFileStreamWriterTest_CancelWrite_Test::TestBody
+}
