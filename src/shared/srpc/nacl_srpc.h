@@ -492,12 +492,12 @@ int NaClSrpcServerLoop(NaClSrpcImcDescType              imc_socket_desc,
  *  Initializes the SRPC module.
  *  @return Returns one on success, zero otherwise.
  */
-int NaClSrpcModuleInit();
+int NaClSrpcModuleInit(void);
 
 /**
  *  Shuts down the SRPC module.
  */
-void NaClSrpcModuleFini();
+void NaClSrpcModuleFini(void);
 
 /**
  *  @serverSrpc Waits for a connection from a client.  When a client
@@ -597,7 +597,7 @@ extern void NaClSrpcRpcWait(NaClSrpcChannel* channel,
  *  @serverSrpc  Returns whether the srpc server is being run "standalone";
  *  that is, not as a subprocess of sel_universal, the browser plugin, etc.
  */
-int NaClSrpcIsStandalone();
+int NaClSrpcIsStandalone(void);
 
 /**
  * Runs a text-based interpreter given a list of SRPC methods.  This

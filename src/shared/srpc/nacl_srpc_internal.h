@@ -37,10 +37,10 @@ typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
 #endif
 
 /* Initialize the logging facility. Returns 1 on success, 0 on failure. */
-int NaClSrpcLogInit();
+int NaClSrpcLogInit(void);
 
 /* Shut down the logging facility. */
-void NaClSrpcLogFini();
+void NaClSrpcLogFini(void);
 
 /*
  * NaClSrpcLog prints log messages if the detail_level is less than

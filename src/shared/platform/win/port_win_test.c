@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #include "native_client/src/include/portability.h"
-uint64_t test_tls_asm();
+uint64_t test_tls_asm(void);
 
 int loop_ffs(int v) {
   int rv = 1;
@@ -27,7 +27,7 @@ int loop_ffs(int v) {
 /*
  * Selectively test FFS by checking every bit while enabling every other bit.
  */
-int TestFFS() {
+int TestFFS(void) {
   unsigned int errors = 0;
   uint32_t x;
   uint32_t bits;
@@ -61,11 +61,11 @@ int TestFFS() {
 #ifdef _WIN64
 THREAD uint64_t tlsValue;
 
-uint64_t test_tls_c() {
+uint64_t test_tls_c(void) {
   return tlsValue;
 }
 
-int TestTlsAccess() {
+int TestTlsAccess(void) {
   int errors = 0;
   const uint64_t kFoo = 0xF000F000F000F000;
   const uint64_t kBar = 0xBAAABAAABAAABAAA;

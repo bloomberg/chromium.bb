@@ -189,8 +189,8 @@ void NaClLogParseAndSetModuleVerbosityMap(char const *module_verbosity_map);
  * flags, and the default value from the environment as returned by
  * NaClLogDefaultLogVerbosity().
  */
-int NaClLogDefaultLogVerbosity();
-struct Gio *NaClLogDefaultLogGio();
+int NaClLogDefaultLogVerbosity(void);
+struct Gio *NaClLogDefaultLogGio(void);
 
 /*
  * Sets the log file to the named file.  Aborts program if the open

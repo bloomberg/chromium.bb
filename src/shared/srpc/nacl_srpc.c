@@ -239,6 +239,6 @@ void NaClSrpcArgCtor(NaClSrpcArg* arg) {
  */
 const char kSrpcStandalone[] = "NACL_SRPC_STANDALONE";
 
-int NaClSrpcIsStandalone() {
+int NaClSrpcIsStandalone(void) {
   return (NULL != getenv(kSrpcStandalone));
 }

@@ -23,7 +23,7 @@
 
 static struct NaClTimeState gNaClTimeState;
 
-void NaClAllowLowResolutionTimeOfDay() {
+void NaClAllowLowResolutionTimeOfDay(void) {
 /* Always use high resolution timer. */
 }
 

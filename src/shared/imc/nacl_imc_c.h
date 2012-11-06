@@ -170,7 +170,7 @@ int NaClClose(NaClHandle handle);
  * NaClReceiveDatagram() operation would block if NACL_DONT_WAIT was
  * not specified.
  */
-int NaClWouldBlock();
+int NaClWouldBlock(void);
 
 /*
  * Sends a message on a socket.

@@ -7,7 +7,7 @@
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/include/nacl_macros.h"
 
-int64_t NaClGetTimeOfDayMicroseconds() {
+int64_t NaClGetTimeOfDayMicroseconds(void) {
   struct nacl_abi_timeval tv;
   int ret = NaClGetTimeOfDay(&tv);
   if (ret == 0) {

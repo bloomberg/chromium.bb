@@ -29,7 +29,7 @@ static struct NaClMutex log_mu;
 
 static int verbosity;
 
-static void setVerbosityFromEnv() {
+static void setVerbosityFromEnv(void) {
   const char* env_verbosity = getenv("NACL_SRPC_DEBUG");
   verbosity = 0;
   if (NULL != env_verbosity) {
@@ -40,13 +40,13 @@ static void setVerbosityFromEnv() {
   }
 }
 
-int NaClSrpcLogInit() {
+int NaClSrpcLogInit(void) {
   NaClXMutexCtor(&log_mu);
   setVerbosityFromEnv();
   return 1;
 }
 
-void NaClSrpcLogFini() {
+void NaClSrpcLogFini(void) {
   NaClMutexDtor(&log_mu);
 }
 

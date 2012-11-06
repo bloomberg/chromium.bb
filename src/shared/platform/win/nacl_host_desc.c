@@ -81,7 +81,7 @@
  * TODO(bsy, gregoryd): check that _get_errno is indeed a thread-safe way
  * to get the error from the last 'syscall' into the posix layer.
  */
-int GetErrno() {
+int GetErrno(void) {
   int thread_errno;
 
   (void) _get_errno(&thread_errno);

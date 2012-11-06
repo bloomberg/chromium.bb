@@ -83,7 +83,7 @@ static uint64_t NaClFileTimeToMs(FILETIME *ftp) {
 
 #define kCpuInfoPageSize 4  /* Not in bytes, but in sizeof(uint32_t). */
 
-static char* CPU_GetBrandString() {
+static char* CPU_GetBrandString(void) {
   const int kBaseInfoPage = 0x80000000;
   const int kCpuBrandStringPage1 = 0x80000002;
   const int kCpuBrandStringPage2 = 0x80000003;
@@ -100,7 +100,7 @@ static char* CPU_GetBrandString() {
   return (char*)cpu_info;
 }
 
-static int CPU_GetFamily() {
+static int CPU_GetFamily(void) {
   const int kFeaturesPage = 1;
   int cpu_info[kCpuInfoPageSize];
   __cpuid(cpu_info, kFeaturesPage);
@@ -223,7 +223,7 @@ static void NaClCalibrateWindowsClockMu(struct NaClTimeState *ntsp) {
   NaClLog(5, "Leaving NaClCalibrateWindowsClockMu\n");
 }
 
-void NaClAllowLowResolutionTimeOfDay() {
+void NaClAllowLowResolutionTimeOfDay(void) {
   g_NaCl_time_state.allow_low_resolution = 1;
 }
 

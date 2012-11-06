@@ -30,7 +30,7 @@ uint64_t NaClTimerResolutionNanoseconds(void);
 int NaClGetTimeOfDay(struct nacl_abi_timeval *tv);
 
 /* Convenience function */
-int64_t NaClGetTimeOfDayMicroseconds();
+int64_t NaClGetTimeOfDayMicroseconds(void);
 
 int NaClNanosleep(struct nacl_abi_timespec const  *req,
                   struct nacl_abi_timespec        *rem);

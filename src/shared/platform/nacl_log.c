@@ -180,7 +180,7 @@ void NaClLogSetFile(char const *log_file) {
       NaClLogFileIoBufferFromFile(log_file)));
 }
 
-int NaClLogDefaultLogVerbosity() {
+int NaClLogDefaultLogVerbosity(void) {
   char *env_verbosity;
 
   if (NULL != (env_verbosity = getenv("NACLVERBOSITY"))) {
@@ -193,7 +193,7 @@ int NaClLogDefaultLogVerbosity() {
   return 0;
 }
 
-struct Gio *NaClLogDefaultLogGio() {
+struct Gio *NaClLogDefaultLogGio(void) {
   char            *log_file;
   FILE            *log_iob;
 
@@ -365,7 +365,7 @@ void NaClLogUnlock(void) {
   }
 }
 
-static INLINE struct Gio *NaClLogGetGio_mu() {
+static INLINE struct Gio *NaClLogGetGio_mu(void) {
   if (NULL == log_stream) {
     (void) GioFileRefCtor(&log_file_stream, NaClLogDupFileIo(stderr));
     log_stream = (struct Gio *) &log_file_stream;

@@ -9,7 +9,7 @@
 
 nacl_abi_size_t NaClSrpcMaxImcSendmsgSize = 0;
 
-int NaClSrpcModuleInit() {
+int NaClSrpcModuleInit(void) {
 #ifdef __native_client__
   /* TODO(sehr): add call to sysconf. */
   NaClSrpcMaxImcSendmsgSize = 1 << 16;
@@ -20,6 +20,6 @@ int NaClSrpcModuleInit() {
   return NaClSrpcLogInit();
 }
 
-void NaClSrpcModuleFini() {
+void NaClSrpcModuleFini(void) {
   NaClSrpcLogFini();
 }
