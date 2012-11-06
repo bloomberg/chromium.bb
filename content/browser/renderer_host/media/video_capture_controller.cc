@@ -13,7 +13,10 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/yuv_convert.h"
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
 #include "third_party/libyuv/include/libyuv.h"
+#endif
 
 namespace content {
 
@@ -332,7 +335,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
                                frame_info_.width, frame_info_.width / 2);
       break;
     }
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
     case media::VideoCaptureCapability::kMJPEG: {
       int yplane_stride = frame_info_.width;
       int uv_plane_stride = (frame_info_.width + 1) / 2;
