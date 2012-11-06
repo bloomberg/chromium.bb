@@ -1291,8 +1291,9 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
   feed_processor.FeedToEntryProtoMap(
       params->feed_list,
       &entry_proto_map,
-      NULL,
-      NULL);
+      NULL,   // feed_changestamp.
+      NULL,   // root_upload_url.
+      NULL);  // uma_stats.
 
   resource_metadata_->RefreshDirectory(
       params->directory_resource_id,

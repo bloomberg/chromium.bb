@@ -59,15 +59,19 @@ void DriveFeedProcessor::ApplyFeeds(
   int64 delta_feed_changestamp = 0;
   FeedToEntryProtoMapUMAStats uma_stats;
   DriveEntryProtoMap entry_proto_map;
+  GURL root_upload_url;
   FeedToEntryProtoMap(feed_list,
                       &entry_proto_map,
                       &delta_feed_changestamp,
+                      &root_upload_url,
                       &uma_stats);
   ApplyEntryProtoMap(
       entry_proto_map,
       is_delta_feed,
       is_delta_feed ? delta_feed_changestamp : root_feed_changestamp,
       changed_dirs);
+  if (root_upload_url.is_valid())
+    resource_metadata_->root()->set_upload_url(root_upload_url);
 
   // Shouldn't record histograms when processing delta feeds.
   if (!is_delta_feed)
@@ -227,6 +231,7 @@ void DriveFeedProcessor::FeedToEntryProtoMap(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     DriveEntryProtoMap* entry_proto_map,
     int64* feed_changestamp,
+    GURL* root_upload_url,
     FeedToEntryProtoMapUMAStats* uma_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -236,11 +241,12 @@ void DriveFeedProcessor::FeedToEntryProtoMap(
     // Get upload url from the root feed. Links for all other collections will
     // be handled in ConvertDocumentEntryToDriveEntryProto.
     if (i == 0) {
-      const google_apis::Link* root_feed_upload_link =
-          feed->GetLinkByType(google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
-      if (root_feed_upload_link)
-        resource_metadata_->root()->set_upload_url(
-            root_feed_upload_link->href());
+      if (root_upload_url) {
+        const google_apis::Link* root_feed_upload_link =
+            feed->GetLinkByType(google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
+        if (root_feed_upload_link)
+          *root_upload_url = root_feed_upload_link->href();
+      }
       if (feed_changestamp)
         *feed_changestamp = feed->largest_changestamp();
       DCHECK_GE(feed->largest_changestamp(), 0);

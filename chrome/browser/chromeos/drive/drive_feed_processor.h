@@ -49,12 +49,14 @@ class DriveFeedProcessor {
       std::set<FilePath>* changed_dirs);
 
   // Converts list of document feeds from collected feeds into a
-  // DriveEntryProtoMap. |feed_changestamp| and/or |uma_stats| may be NULL.
+  // DriveEntryProtoMap. |feed_changestamp|, |root_upload_url|, and/or
+  // |uma_stats| may be NULL.
   void FeedToEntryProtoMap(
-    const ScopedVector<google_apis::DocumentFeed>& feed_list,
-    DriveEntryProtoMap* entry_proto_map,
-    int64* feed_changestamp,
-    FeedToEntryProtoMapUMAStats* uma_stats);
+      const ScopedVector<google_apis::DocumentFeed>& feed_list,
+      DriveEntryProtoMap* entry_proto_map,
+      int64* feed_changestamp,
+      GURL* root_upload_url,
+      FeedToEntryProtoMapUMAStats* uma_stats);
 
  private:
   typedef std::map<std::string /* resource_id */, DriveEntry*> ResourceMap;
