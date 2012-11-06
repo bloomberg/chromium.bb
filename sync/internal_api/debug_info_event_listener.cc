@@ -149,9 +149,9 @@ void DebugInfoEventListener::GetAndClearDebugInfo(
 }
 
 void DebugInfoEventListener::CreateAndAddEvent(
-    sync_pb::DebugEventInfo::EventType type) {
+    sync_pb::DebugEventInfo::SingletonEventType type) {
   sync_pb::DebugEventInfo event_info;
-  event_info.set_type(type);
+  event_info.set_singleton_event(type);
   AddEventToQueue(event_info);
 }
 

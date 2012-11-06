@@ -75,7 +75,7 @@ class DebugInfoEventListener : public SyncManager::Observer,
   FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyGetAndClearEvents);
 
   void AddEventToQueue(const sync_pb::DebugEventInfo& event_info);
-  void CreateAndAddEvent(sync_pb::DebugEventInfo::EventType type);
+  void CreateAndAddEvent(sync_pb::DebugEventInfo::SingletonEventType type);
   std::queue<sync_pb::DebugEventInfo> events_;
 
   // True indicates we had to drop one or more events to keep our limit of

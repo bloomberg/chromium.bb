@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Common sync protocol for encrypted data.
+// Sync protocol for debug info clients can send to the sync server.
 
 syntax = "proto2";
 
@@ -40,11 +40,36 @@ message SyncCycleCompletedEventInfo {
   optional GetUpdatesCallerInfo caller_info = 10;
 }
 
+// Datatype specifics statistics gathered at association time.
+message DatatypeAssociationStats {
+  // The datatype that was associated.
+  optional int32 data_type_id = 1;
+
+  // The state of the world before association.
+  optional int32 num_local_items_before_association = 2;
+  optional int32 num_sync_items_before_association = 3;
+
+  // The state of the world after association.
+  optional int32 num_local_items_after_association = 4;
+  optional int32 num_sync_items_after_association = 5;
+
+  // The changes that got us from before to after. In a correctly working
+  // system these should be the deltas between before and after.
+  optional int32 num_local_items_added = 6;
+  optional int32 num_local_items_deleted = 7;
+  optional int32 num_local_items_modified = 8;
+  optional int32 num_sync_items_added = 9;
+  optional int32 num_sync_items_deleted = 10;
+  optional int32 num_sync_items_modified = 11;
+
+  // The datatype ran into an error during model association.
+  optional bool had_error = 12;
+}
+
 message DebugEventInfo {
-  // These events are sent by |SyncManager| class. Note: In the code they each
-  // of these events have some additional info but we are not sending them to
-  // server.
-  enum EventType {
+  // Singleton event types. These events have no further information beyond
+  // the fact that the event happened.
+  enum SingletonEventType {
     CONNECTION_STATUS_CHANGE = 1; // Connection status change. Note this
                                   // gets generated even during a successful
                                   // connection.
@@ -65,17 +90,24 @@ message DebugEventInfo {
     PASSPHRASE_TYPE_CHANGED = 10;  // The encryption passphrase state changed.
     KEYSTORE_TOKEN_UPDATED = 11;  // A new keystore encryption token was
                                   // persisted.
+    CONFIGURE_COMPLETE = 12;      // The datatype manager has finished an
+                                  // at least partially successful
+                                  // configuration and is once again syncing
+                                  // with the server.
   }
-  // In a given |DebugEventInfo| only one of the following would be set.
-  optional EventType type = 1;
 
+  // Each of the following fields correspond to different kinds of events. as
+  // a result, only one is set during any single DebugEventInfo.
+  // A singleton event. See enum definition.
+  optional SingletonEventType singleton_event = 1;
+  // A sync cycle completed.
   optional SyncCycleCompletedEventInfo sync_cycle_completed_event_info = 2;
-
-  // Datatype that caused the nudge.
+  // A datatype triggered a nudge.
   optional int32 nudging_datatype = 3;
-
-  // Datatypes that were notified from server.
+  // A notification triggered a nudge.
   repeated int32 datatypes_notified_from_server = 4;
+  // A datatype finished model association.
+  optional DatatypeAssociationStats datatype_association_stats = 5;
 }
 
 message DebugInfo {
