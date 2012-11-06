@@ -1779,11 +1779,11 @@ frame_menu_func(struct window *window, int index, void *data)
 			workspace_manager_move_surface(display->workspace_manager,
 						       window->surface,
 						       display->workspace + 1);
+		break;
 	case 3: /* fullscreen */
 		/* we don't have a way to get out of fullscreen for now */
 		if (window->fullscreen_handler)
 			window->fullscreen_handler(window, window->user_data);
-		break;
 		break;
 	}
 }
