@@ -453,7 +453,7 @@ def UpdateTargets(targets, usepkg):
 
   if not packages:
     print 'Nothing to update!'
-    return False
+    return
 
   print 'Updating packages:'
   print packages
@@ -464,7 +464,6 @@ def UpdateTargets(targets, usepkg):
 
   cmd.extend(packages)
   cros_build_lib.RunCommand(cmd)
-  return True
 
 
 def CleanTargets(targets):
@@ -525,9 +524,10 @@ def SelectActiveToolchains(targets, suffixes):
         if target in suffixes[package]:
           desired += suffixes[package][target]
 
-      cmd = [ package + '-config', '-c', target ]
+      extra_env = {'CHOST': target}
+      cmd = ['%s-config' % package, '-c', target]
       current = cros_build_lib.RunCommand(cmd, print_cmd=False,
-          redirect_stdout=True).output.splitlines()[0]
+          redirect_stdout=True, extra_env=extra_env).output.splitlines()[0]
       # Do not gcc-config when the current is live or nothing needs to be done.
       if current != desired and current != '9999':
         cmd = [ package + '-config', desired ]
@@ -588,11 +588,12 @@ def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
   targets['host'] = {}
 
   # Now update all packages.
-  if UpdateTargets(targets, usepkg):
-    SelectActiveToolchains(targets, CONFIG_TARGET_SUFFIXES)
+  UpdateTargets(targets, usepkg)
 
-    if deleteold:
-      CleanTargets(targets)
+  SelectActiveToolchains(targets, CONFIG_TARGET_SUFFIXES)
+
+  if deleteold:
+    CleanTargets(targets)
 
 
 def main(argv):
