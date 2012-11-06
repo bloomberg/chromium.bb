@@ -1382,16 +1382,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url = params_.link_url;
-      scoped_ptr<content::DownloadSaveInfo> save_info(
-          new content::DownloadSaveInfo());
-      save_info->prompt_for_save_location = true;
       DownloadManager* dlm = BrowserContext::GetDownloadManager(profile_);
       scoped_ptr<DownloadUrlParameters> dl_params(
-          DownloadUrlParameters::FromWebContents(
-              source_web_contents_, url, save_info.Pass()));
+          DownloadUrlParameters::FromWebContents(source_web_contents_, url));
       dl_params->set_referrer(
           content::Referrer(referrer, params_.referrer_policy));
       dl_params->set_referrer_encoding(params_.frame_charset);
+      dl_params->set_prompt(true);
       dlm->DownloadUrl(dl_params.Pass());
       break;
     }
@@ -1403,9 +1400,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url = params_.src_url;
-      scoped_ptr<content::DownloadSaveInfo> save_info(
-          new content::DownloadSaveInfo());
-      save_info->prompt_for_save_location = true;
       int64 post_id = -1;
       if (url == source_web_contents_->GetURL()) {
         const NavigationEntry* entry =
@@ -1415,14 +1409,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       }
       DownloadManager* dlm = BrowserContext::GetDownloadManager(profile_);
       scoped_ptr<DownloadUrlParameters> dl_params(
-          DownloadUrlParameters::FromWebContents(
-              source_web_contents_, url, save_info.Pass()));
+          DownloadUrlParameters::FromWebContents(source_web_contents_, url));
       dl_params->set_referrer(
           content::Referrer(referrer, params_.referrer_policy));
       dl_params->set_post_id(post_id);
       dl_params->set_prefer_cache(true);
       if (post_id >= 0)
         dl_params->set_method("POST");
+      dl_params->set_prompt(true);
       dlm->DownloadUrl(dl_params.Pass());
       break;
     }

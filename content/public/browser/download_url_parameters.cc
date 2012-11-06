@@ -19,8 +19,7 @@ DownloadUrlParameters::DownloadUrlParameters(
     const GURL& url,
     int render_process_host_id,
     int render_view_host_routing_id,
-    ResourceContext* resource_context,
-    scoped_ptr<DownloadSaveInfo> save_info)
+    ResourceContext* resource_context)
     : content_initiated_(false),
       load_flags_(0),
       method_("GET"),
@@ -30,7 +29,6 @@ DownloadUrlParameters::DownloadUrlParameters(
       render_view_host_routing_id_(render_view_host_routing_id),
       resource_context_(resource_context),
       resource_dispatcher_host_(ResourceDispatcherHost::Get()),
-      save_info_(save_info.Pass()),
       url_(url) {
   DCHECK(resource_dispatcher_host_);
 }
@@ -41,18 +39,12 @@ DownloadUrlParameters::~DownloadUrlParameters() {
 // static
 DownloadUrlParameters* DownloadUrlParameters::FromWebContents(
     WebContents* web_contents,
-    const GURL& url,
-    scoped_ptr<DownloadSaveInfo> save_info) {
+    const GURL& url) {
   return new DownloadUrlParameters(
       url,
       web_contents->GetRenderProcessHost()->GetID(),
       web_contents->GetRenderViewHost()->GetRoutingID(),
-      web_contents->GetBrowserContext()->GetResourceContext(),
-      save_info.Pass());
-}
-
-scoped_ptr<DownloadSaveInfo> DownloadUrlParameters::GetSaveInfo() {
-  return save_info_.Pass();
+      web_contents->GetBrowserContext()->GetResourceContext());
 }
 
 }  // namespace content

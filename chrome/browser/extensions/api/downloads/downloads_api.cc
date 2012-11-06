@@ -576,8 +576,17 @@ bool DownloadsDownloadFunction::RunImpl() {
     return false;
   }
 
-  scoped_ptr<content::DownloadSaveInfo> save_info(
-      new content::DownloadSaveInfo());
+  Profile* current_profile = profile();
+  if (include_incognito() && profile()->HasOffTheRecordProfile())
+    current_profile = profile()->GetOffTheRecordProfile();
+
+  scoped_ptr<content::DownloadUrlParameters> download_params(
+      new content::DownloadUrlParameters(
+          download_url,
+          render_view_host()->GetProcess()->GetID(),
+          render_view_host()->GetRoutingID(),
+          current_profile->GetResourceContext()));
+
   if (options.filename.get()) {
     // TODO(benjhayden): Make json_schema_compiler generate string16s instead of
     // std::strings. Can't get filename16 from options.ToValue() because that
@@ -593,23 +602,11 @@ bool DownloadsDownloadFunction::RunImpl() {
     }
     // TODO(benjhayden) Ensure that this filename is interpreted as a path
     // relative to the default downloads directory without allowing '..'.
-    save_info->suggested_name = filename16;
+    download_params->set_suggested_name(filename16);
   }
 
   if (options.save_as.get())
-    save_info->prompt_for_save_location = *options.save_as.get();
-
-  Profile* current_profile = profile();
-  if (include_incognito() && profile()->HasOffTheRecordProfile())
-    current_profile = profile()->GetOffTheRecordProfile();
-
-  scoped_ptr<content::DownloadUrlParameters> download_params(
-      new content::DownloadUrlParameters(
-          download_url,
-          render_view_host()->GetProcess()->GetID(),
-          render_view_host()->GetRoutingID(),
-          current_profile->GetResourceContext(),
-          save_info.Pass()));
+    download_params->set_prompt(*options.save_as.get());
 
   if (options.headers.get()) {
     typedef extensions::api::downloads::HeaderNameValuePair HeaderNameValuePair;

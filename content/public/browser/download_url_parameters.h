@@ -46,15 +46,13 @@ class CONTENT_EXPORT DownloadUrlParameters {
 
   static DownloadUrlParameters* FromWebContents(
       WebContents* web_contents,
-      const GURL& url,
-      scoped_ptr<DownloadSaveInfo> save_info);
+      const GURL& url);
 
   DownloadUrlParameters(
       const GURL& url,
       int render_process_host_id,
       int render_view_host_routing_id,
-      content::ResourceContext* resource_context,
-      scoped_ptr<DownloadSaveInfo> save_info);
+      content::ResourceContext* resource_context);
 
   ~DownloadUrlParameters();
 
@@ -82,9 +80,20 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void set_callback(const OnStartedCallback& callback) {
     callback_ = callback;
   }
-
-  // Note that this nulls the internal copy of the DownloadSaveInfo!
-  scoped_ptr<DownloadSaveInfo> GetSaveInfo();
+  void set_file_path(const FilePath& file_path) {
+    save_info_.file_path = file_path;
+  }
+  void set_suggested_name(const string16& suggested_name) {
+    save_info_.suggested_name = suggested_name;
+  }
+  void set_offset(int64 offset) { save_info_.offset = offset; }
+  void set_hash_state(std::string hash_state) {
+    save_info_.hash_state = hash_state;
+  }
+  void set_prompt(bool prompt) { save_info_.prompt_for_save_location = prompt; }
+  void set_file_stream(scoped_ptr<net::FileStream> file_stream) {
+    save_info_.file_stream = file_stream.Pass();
+  }
 
   const OnStartedCallback& callback() const { return callback_; }
   bool content_initiated() const { return content_initiated_; }
@@ -111,7 +120,18 @@ class CONTENT_EXPORT DownloadUrlParameters {
   ResourceDispatcherHost* resource_dispatcher_host() const {
     return resource_dispatcher_host_;
   }
+  const FilePath& file_path() const { return save_info_.file_path; }
+  const string16& suggested_name() const { return save_info_.suggested_name; }
+  int64 offset() const { return save_info_.offset; }
+  const std::string& hash_state() const { return save_info_.hash_state; }
+  bool prompt() const { return save_info_.prompt_for_save_location; }
   const GURL& url() const { return url_; }
+
+  // Note that this is state changing--the DownloadUrlParameters object
+  // will not have a file_stream attached to it after this call.
+  scoped_ptr<net::FileStream> GetFileStream() {
+    return save_info_.file_stream.Pass();
+  }
 
  private:
   OnStartedCallback callback_;
@@ -128,7 +148,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   int render_view_host_routing_id_;
   ResourceContext* resource_context_;
   ResourceDispatcherHost* resource_dispatcher_host_;
-  scoped_ptr<DownloadSaveInfo> save_info_;
+  DownloadSaveInfo save_info_;
   GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);

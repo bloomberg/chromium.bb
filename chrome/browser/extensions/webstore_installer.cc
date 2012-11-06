@@ -349,10 +349,6 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
     return;
   }
 
-  scoped_ptr<content::DownloadSaveInfo> save_info(
-      new content::DownloadSaveInfo());
-  save_info->file_path = file;
-
   // The download url for the given extension is contained in |download_url_|.
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
@@ -360,7 +356,8 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
       download_util::INITIATED_BY_WEBSTORE_INSTALLER);
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(
-          controller_->GetWebContents(), download_url_, save_info.Pass()));
+          controller_->GetWebContents(), download_url_));
+  params->set_file_path(file);
   if (controller_->GetActiveEntry())
     params->set_referrer(
         content::Referrer(controller_->GetActiveEntry()->GetURL(),

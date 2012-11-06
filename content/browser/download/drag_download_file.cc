@@ -60,18 +60,15 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext());
 
-    scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
-    save_info->file_path = file_path;
-    save_info->file_stream.reset(file_stream.release());
-
     RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
-    scoped_ptr<DownloadUrlParameters> params(
-        DownloadUrlParameters::FromWebContents(
-            web_contents_, url_, save_info.Pass()));
+    scoped_ptr<content::DownloadUrlParameters> params(
+        DownloadUrlParameters::FromWebContents(web_contents_, url_));
     params->set_referrer(referrer_);
     params->set_referrer_encoding(referrer_encoding_);
     params->set_callback(base::Bind(&DragDownloadFileUI::OnDownloadStarted,
                                     weak_ptr_factory_.GetWeakPtr()));
+    params->set_file_path(file_path);
+    params->set_file_stream(file_stream.Pass()); // Nulls file_stream.
     download_manager->DownloadUrl(params.Pass());
   }
 

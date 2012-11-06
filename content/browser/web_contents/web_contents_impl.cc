@@ -3304,15 +3304,14 @@ void WebContentsImpl::SaveURL(const GURL& url,
     if (entry)
       post_id = entry->GetPostID();
   }
-  scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
-  save_info->prompt_for_save_location = true;
   scoped_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(this, url, save_info.Pass()));
+      DownloadUrlParameters::FromWebContents(this, url));
   params->set_referrer(referrer);
   params->set_post_id(post_id);
   params->set_prefer_cache(true);
   if (post_id >= 0)
     params->set_method("POST");
+  params->set_prompt(true);
   dlm->DownloadUrl(params.Pass());
 }
 

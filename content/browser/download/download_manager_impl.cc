@@ -82,6 +82,15 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
     request->SetExtraRequestHeaderByName(
         iter->first, iter->second, false/*overwrite*/);
   }
+
+  scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
+  save_info->file_path = params->file_path();
+  save_info->suggested_name = params->suggested_name();
+  save_info->offset = params->offset();
+  save_info->hash_state = params->hash_state();
+  save_info->prompt_for_save_location = params->prompt();
+  save_info->file_stream = params->GetFileStream();
+
   params->resource_dispatcher_host()->BeginDownload(
       request.Pass(),
       params->content_initiated(),
@@ -89,7 +98,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
       params->render_process_host_id(),
       params->render_view_host_routing_id(),
       params->prefer_cache(),
-      params->GetSaveInfo(),
+      save_info.Pass(),
       params->callback());
 }
 

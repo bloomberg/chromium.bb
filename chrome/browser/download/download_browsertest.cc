@@ -658,17 +658,11 @@ class DownloadTest : public InProcessBrowserTest {
 
     if (download_info.download_method == DOWNLOAD_DIRECT) {
       // Go directly to download.  Don't wait for navigation.
-      scoped_ptr<content::DownloadSaveInfo> save_info(
-          new content::DownloadSaveInfo());
-      // NOTE: |prompt_for_save_location| may change during the download.
-      save_info->prompt_for_save_location = false;
-
       scoped_refptr<content::DownloadTestItemCreationObserver>
           creation_observer(new content::DownloadTestItemCreationObserver);
 
       scoped_ptr<DownloadUrlParameters> params(
-          DownloadUrlParameters::FromWebContents(
-              web_contents, url, save_info.Pass()));
+          DownloadUrlParameters::FromWebContents(web_contents, url));
       params->set_callback(creation_observer->callback());
       DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
 
@@ -1737,12 +1731,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
       new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  scoped_ptr<content::DownloadSaveInfo> save_info(
-      new content::DownloadSaveInfo());
-  save_info->prompt_for_save_location = true;
   scoped_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(
-          web_contents, url, save_info.Pass()));
+      DownloadUrlParameters::FromWebContents(web_contents, url));
+  params->set_prompt(true);
   DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -1766,14 +1757,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   ASSERT_TRUE(other_directory.CreateUniqueTempDir());
   FilePath target_file_full_path
       = other_directory.path().Append(file.BaseName());
-  scoped_ptr<content::DownloadSaveInfo> save_info(
-      new content::DownloadSaveInfo());
-  save_info->file_path = target_file_full_path;
-
   content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   scoped_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(
-          web_contents, url, save_info.Pass()));
+      DownloadUrlParameters::FromWebContents(web_contents, url));
+  params->set_file_path(target_file_full_path);
   DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -2274,15 +2261,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
           download_manager,
           1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  scoped_ptr<content::DownloadSaveInfo> save_info(
-      new content::DownloadSaveInfo());
-  save_info->prompt_for_save_location = false;
 
   // Download and set IsHiddenDownload to true.
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   scoped_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(
-          web_contents, url, save_info.Pass()));
+      DownloadUrlParameters::FromWebContents(web_contents, url));
   params->set_callback(base::Bind(&SetHiddenDownloadCallback));
   download_manager->DownloadUrl(params.Pass());
   observer->WaitForFinished();
