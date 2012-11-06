@@ -28,7 +28,11 @@ static void NaClCrashLogWriter(void *state,
   UNREFERENCED_PARAMETER(state);
   /* we don't need/use the NaClApp object for now */
   (void) fprintf(stdout, "NaClCrashLogWriter: log buffer contents:\n");
-  (void) fwrite(buf, 1, buf_bytes, stdout);
+  /*
+   * TODO(phosek): fwrite is defined with __wur in glibc < 2.15, eliminate
+   * the ignore result macro once glibc >= 2.16 becomes more widespread.
+   */
+  IGNORE_RESULT(fwrite(buf, 1, buf_bytes, stdout));
   (void) fflush(stdout);
 }
 

@@ -37,6 +37,13 @@
 #endif
 
 #if NACL_WINDOWS
+# define IGNORE_RESULT(x) (x)
+#else
+# define IGNORE_RESULT(x) \
+  do { __typeof__(x) z = x; (void) sizeof z; } while (0)
+#endif
+
+#if NACL_WINDOWS
 # define NORETURN __declspec(noreturn)
 #else
 # define NORETURN __attribute__((noreturn))  /* assumes gcc */
