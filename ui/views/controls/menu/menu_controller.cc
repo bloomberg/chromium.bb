@@ -494,7 +494,8 @@ void MenuController::OnMouseReleased(SubmenuView* source,
       SendMouseReleaseToActiveView(source, event);
       return;
     }
-    if (part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
+    if (!part.menu->NonIconChildViewsCount() &&
+        part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
       Accept(part.menu, event.flags());
       return;
     }

@@ -389,7 +389,7 @@ class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
 class ButtonContainerMenuItemView : public MenuItemView {
  public:
   // Constructor for use with button containing menu items which have a
-  // different height then .
+  // different height then normal items.
   ButtonContainerMenuItemView(MenuItemView* parent, int id, int height)
       : MenuItemView(parent, id, MenuItemView::NORMAL),
         height_(height) {
