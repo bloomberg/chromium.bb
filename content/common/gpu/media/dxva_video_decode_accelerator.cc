@@ -534,11 +534,9 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   RETURN_AND_NOTIFY_ON_FAILURE(pre_sandbox_init_done_,
       "PreSandbox initialization not completed", PLATFORM_FAILURE, false);
 
-  std::string use_gl_value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
   RETURN_AND_NOTIFY_ON_FAILURE(
-      use_gl_value !=  gfx::kGLImplementationSwiftShaderName,
-      "Swiftshader is enabled. Cannot support H/W decode",
+      gfx::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle,
+      "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable",
       PLATFORM_FAILURE,
       false);
 
