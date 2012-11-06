@@ -180,7 +180,7 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
   dictionary_saved_ = false;
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&SpellcheckHunspellDictionary::SaveDictionaryData,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(data)),
+                 base::Unretained(this), base::Owned(data)),
       base::Bind(&SpellcheckHunspellDictionary::SaveDictionaryDataComplete,
                  weak_ptr_factory_.GetWeakPtr()));
 }
