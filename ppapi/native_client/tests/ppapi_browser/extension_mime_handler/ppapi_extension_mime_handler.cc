@@ -80,8 +80,8 @@ void ReadCallback(void* user_data, int32_t pp_error_or_bytes) {
                                          buffer + buffer_pos,
                                          kMaxFileSize - buffer_pos,
                                          callback);
+    EXPECT(pp_error_or_bytes == PP_OK_COMPLETIONPENDING);
   }
-  EXPECT(pp_error_or_bytes == PP_OK_COMPLETIONPENDING);
 }
 
 PP_Bool HandleDocumentLoad(PP_Instance instance,
