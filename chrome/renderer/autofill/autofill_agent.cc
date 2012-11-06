@@ -204,14 +204,14 @@ void AutofillAgent::ZoomLevelChanged() {
   // Any time the zoom level changes, the page's content moves, so any Autofill
   // popups should be hidden. This is only needed for the new Autofill UI
   // because WebKit already knows to hide the old UI when this occurs.
-  Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
+  HideHostPopups();
 }
 
 void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
   // Any time the scroll offset changes, the page's content moves, so Autofill
   // popups should be hidden. This is only needed for the new Autofill UI
   // because WebKit already knows to hide the old UI when this occurs.
-  Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
+  HideHostPopups();
 }
 
 void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
@@ -247,7 +247,7 @@ bool AutofillAgent::InputElementClicked(const WebInputElement& element,
 }
 
 bool AutofillAgent::InputElementLostFocus() {
-  Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
+  HideHostPopups();
 
   return false;
 }
@@ -489,15 +489,15 @@ void AutofillAgent::CombineDataListEntriesAndShow(
   i.insert(i.end(), icons.begin(), icons.end());
   ids.insert(ids.end(), item_ids.begin(), item_ids.end());
 
+  if (v.empty()) {
+    // No suggestions, any popup currently showing is obsolete.
+    HidePopups();
+    return;
+  }
+
   WebKit::WebView* web_view = render_view()->GetWebView();
   if (!web_view)
     return;
-
-  if (v.empty()) {
-    // No suggestions, any popup currently showing is obsolete.
-    web_view->hidePopups();
-    return;
-  }
 
   // Send to WebKit for display.
   web_view->applyAutofillSuggestions(element, v, l, i, ids);
@@ -729,6 +729,12 @@ void AutofillAgent::HidePopups() {
   WebKit::WebView* web_view = render_view()->GetWebView();
   if (web_view)
     web_view->hidePopups();
+
+  HideHostPopups();
+}
+
+void AutofillAgent::HideHostPopups() {
+  Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
 }
 
 }  // namespace autofill
