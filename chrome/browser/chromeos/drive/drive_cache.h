@@ -341,13 +341,11 @@ class DriveCache {
 
   // Used to implement Pin.
   DriveFileError PinOnBlockingPool(const std::string& resource_id,
-                                   const std::string& md5,
-                                   FileOperationType file_operation_type);
+                                   const std::string& md5);
 
   // Used to implement Unpin.
   DriveFileError UnpinOnBlockingPool(const std::string& resource_id,
-                                     const std::string& md5,
-                                     FileOperationType file_operation_type);
+                                     const std::string& md5);
 
   // Used to implement SetMountedState.
   scoped_ptr<GetFileResult> SetMountedStateOnBlockingPool(
@@ -360,16 +358,12 @@ class DriveCache {
       const std::string& md5);
 
   // Used to implement CommitDirty.
-  DriveFileError CommitDirtyOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5,
-      FileOperationType file_operation_type);
+  DriveFileError CommitDirtyOnBlockingPool(const std::string& resource_id,
+                                           const std::string& md5);
 
   // Used to implement ClearDirty.
-  DriveFileError ClearDirtyOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5,
-      FileOperationType file_operation_type);
+  DriveFileError ClearDirtyOnBlockingPool(const std::string& resource_id,
+                                          const std::string& md5);
 
   // Used to implement Remove.
   DriveFileError RemoveOnBlockingPool(const std::string& resource_id);

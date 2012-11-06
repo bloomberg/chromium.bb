@@ -366,13 +366,9 @@ void DriveCache::GetCacheEntry(const std::string& resource_id,
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::GetCacheEntryOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 cache_entry),
+                 base::Unretained(this), resource_id, md5, cache_entry),
       base::Bind(&RunGetCacheEntryCallback,
-                 callback,
-                 base::Owned(cache_entry)));
+                 callback, base::Owned(cache_entry)));
 }
 
 void DriveCache::GetResourceIdsOfBacklog(
@@ -385,13 +381,9 @@ void DriveCache::GetResourceIdsOfBacklog(
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::GetResourceIdsOfBacklogOnBlockingPool,
-                 base::Unretained(this),
-                 to_fetch,
-                 to_upload),
+                 base::Unretained(this), to_fetch, to_upload),
       base::Bind(&RunGetResourceIdsOfBacklogCallback,
-                 callback,
-                 base::Owned(to_fetch),
-                 base::Owned(to_upload)));
+                 callback, base::Owned(to_fetch), base::Owned(to_upload)));
 }
 
 void DriveCache::GetResourceIdsOfExistingPinnedFiles(
@@ -403,11 +395,9 @@ void DriveCache::GetResourceIdsOfExistingPinnedFiles(
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::GetResourceIdsOfExistingPinnedFilesOnBlockingPool,
-                 base::Unretained(this),
-                 resource_ids),
+                 base::Unretained(this), resource_ids),
       base::Bind(&RunGetResourceIdsCallback,
-                 callback,
-                 base::Owned(resource_ids)));
+                 callback, base::Owned(resource_ids)));
 }
 
 void DriveCache::GetResourceIdsOfAllFiles(
@@ -419,11 +409,9 @@ void DriveCache::GetResourceIdsOfAllFiles(
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::GetResourceIdsOfAllFilesOnBlockingPool,
-                 base::Unretained(this),
-                 resource_ids),
+                 base::Unretained(this), resource_ids),
       base::Bind(&RunGetResourceIdsCallback,
-                 callback,
-                 base::Owned(resource_ids)));
+                 callback, base::Owned(resource_ids)));
 }
 
 bool DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes) {
@@ -438,7 +426,7 @@ bool DriveCache::FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes) {
   // First remove temporary files from the cache map.
   metadata_->RemoveTemporaryFiles();
   // Then remove all files under "tmp" directory.
-  RemoveAllFiles(GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP));
+  RemoveAllFiles(GetCacheDirectoryPath(CACHE_TYPE_TMP));
 
   // Check the disk space again.
   return HasEnoughSpaceFor(num_bytes);
@@ -470,14 +458,8 @@ void DriveCache::Store(const std::string& resource_id,
       FROM_HERE,
       base::Bind(&DriveCache::StoreOnBlockingPool,
                  base::Unretained(this),
-                 resource_id,
-                 md5,
-                 source_path,
-                 file_operation_type),
-      base::Bind(&RunCacheOperationCallback,
-                 callback,
-                 resource_id,
-                 md5));
+                 resource_id, md5, source_path, file_operation_type),
+      base::Bind(&RunCacheOperationCallback, callback, resource_id, md5));
 }
 
 void DriveCache::Pin(const std::string& resource_id,
@@ -489,15 +471,9 @@ void DriveCache::Pin(const std::string& resource_id,
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::PinOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 DriveCache::FILE_OPERATION_MOVE),
+                 base::Unretained(this), resource_id, md5),
       base::Bind(&DriveCache::OnPinned,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 resource_id,
-                 md5,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
 }
 
 void DriveCache::Unpin(const std::string& resource_id,
@@ -508,15 +484,9 @@ void DriveCache::Unpin(const std::string& resource_id,
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::UnpinOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 DriveCache::FILE_OPERATION_MOVE),
+                 base::Unretained(this), resource_id, md5),
       base::Bind(&DriveCache::OnUnpinned,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 resource_id,
-                 md5,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
 }
 
 void DriveCache::SetMountedState(const FilePath& file_path,
@@ -555,15 +525,9 @@ void DriveCache::CommitDirty(const std::string& resource_id,
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::CommitDirtyOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 DriveCache::FILE_OPERATION_MOVE),
+                 base::Unretained(this), resource_id, md5),
       base::Bind(&DriveCache::OnCommitDirty,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 resource_id,
-                 md5,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
 }
 
 void DriveCache::ClearDirty(const std::string& resource_id,
@@ -575,14 +539,8 @@ void DriveCache::ClearDirty(const std::string& resource_id,
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::ClearDirtyOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 DriveCache::FILE_OPERATION_MOVE),
-      base::Bind(&RunCacheOperationCallback,
-                 callback,
-                 resource_id,
-                 md5));
+                 base::Unretained(this), resource_id, md5),
+      base::Bind(&RunCacheOperationCallback, callback, resource_id, md5));
 }
 
 void DriveCache::Remove(const std::string& resource_id,
@@ -593,12 +551,9 @@ void DriveCache::Remove(const std::string& resource_id,
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveCache::RemoveOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id),
+                 base::Unretained(this), resource_id),
       base::Bind(&RunCacheOperationCallback,
-                 callback,
-                 resource_id,
-                 ""  /* md5 */));
+                 callback, resource_id, ""  /* md5 */));
 }
 
 void DriveCache::ClearAll(const InitializeCacheCallback& callback) {
@@ -666,8 +621,7 @@ void DriveCache::Destroy() {
   // Destroy myself on the blocking pool.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DriveCache::DestroyOnBlockingPool,
-                 base::Unretained(this)));
+      base::Bind(&DriveCache::DestroyOnBlockingPool, base::Unretained(this)));
 }
 
 bool DriveCache::InitializeOnBlockingPool() {
@@ -850,10 +804,8 @@ DriveFileError DriveCache::StoreOnBlockingPool(
   return error;
 }
 
-DriveFileError DriveCache::PinOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    FileOperationType file_operation_type) {
+DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
+                                             const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
   FilePath source_path;
@@ -923,10 +875,9 @@ DriveFileError DriveCache::PinOnBlockingPool(
 
   DriveFileError error = ModifyCacheState(source_path,
                                           dest_path,
-                                          file_operation_type,
+                                          FILE_OPERATION_MOVE,
                                           symlink_path,
                                           create_symlink);
-
   if (error == DRIVE_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
@@ -938,10 +889,8 @@ DriveFileError DriveCache::PinOnBlockingPool(
   return error;
 }
 
-DriveFileError DriveCache::UnpinOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    FileOperationType file_operation_type) {
+DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
+                                               const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
   // Unpinning a file means its entry must exist in cache.
@@ -1003,7 +952,7 @@ DriveFileError DriveCache::UnpinOnBlockingPool(
   DriveFileError error = ModifyCacheState(
       source_path,
       dest_path,
-      file_operation_type,
+      FILE_OPERATION_MOVE,
       symlink_path,  // This will be deleted if it exists.
       false /* don't create symlink*/);
 
@@ -1200,8 +1149,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkDirtyOnBlockingPool(
 
 DriveFileError DriveCache::CommitDirtyOnBlockingPool(
     const std::string& resource_id,
-    const std::string& md5,
-    FileOperationType file_operation_type) {
+    const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
   // If file has already been marked dirty in previous instance of chrome, we
@@ -1249,15 +1197,14 @@ DriveFileError DriveCache::CommitDirtyOnBlockingPool(
   // if source and destination are different.
   return ModifyCacheState(target_path,  // source
                           target_path,  // destination
-                          file_operation_type,
+                          FILE_OPERATION_MOVE,
                           symlink_path,
                           true /* create symlink */);
 }
 
 DriveFileError DriveCache::ClearDirtyOnBlockingPool(
     const std::string& resource_id,
-    const std::string& md5,
-    FileOperationType file_operation_type) {
+    const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
   // |md5| is the new .<md5> extension to rename the file to.
@@ -1310,7 +1257,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
 
   DriveFileError error = ModifyCacheState(source_path,
                                           dest_path,
-                                          file_operation_type,
+                                          FILE_OPERATION_MOVE,
                                           symlink_path,
                                           false /* don't create symlink */);
 
@@ -1326,7 +1273,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
     // if source and destination are different.
     error = ModifyCacheState(dest_path,  // source path
                              dest_path,  // destination path
-                             file_operation_type,
+                             FILE_OPERATION_MOVE,
                              symlink_path,
                              true /* create symlink */);
   }
