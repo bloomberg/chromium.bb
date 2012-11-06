@@ -599,10 +599,10 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.registerInputCommands_ = function(node) {
     var defaultCommand = Commands.defaultCommand;
-    CommandUtil.registerCommand(node, 'cut', defaultCommand, this.document_);
-    CommandUtil.registerCommand(node, 'copy', defaultCommand, this.document_);
-    CommandUtil.registerCommand(node, 'paste', defaultCommand, this.document_);
-    CommandUtil.registerCommand(node, 'delete', defaultCommand, this.document_);
+    CommandUtil.forceDefaultHandler(node, 'cut');
+    CommandUtil.forceDefaultHandler(node, 'copy');
+    CommandUtil.forceDefaultHandler(node, 'paste');
+    CommandUtil.forceDefaultHandler(node, 'delete');
   };
 
   /**

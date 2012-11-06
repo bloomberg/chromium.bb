@@ -62,6 +62,27 @@ CommandUtil.registerCommand = function(node, commandId, handler, var_args) {
   });
 };
 
+/**
+ * Sets Commands.defaultCommand for the commandId and prevents handling
+ * the keydown events for this command. Not doing that breaks relationship
+ * of original keyboard event and the command. WebKit would handle it
+ * differently in some cases.
+ * @param {Node} node to register command handler on.
+ * @param {string} commandId Command id to respond to.
+ */
+CommandUtil.forceDefaultHandler = function(node, commandId) {
+  var doc = node.ownerDocument;
+  var command = doc.querySelector('command[id="' + commandId + '"]');
+  node.addEventListener('keydown', function(e) {
+    if (command.matchesEvent(e)) {
+      // Prevent cr.ui.CommandManager of handling it and leave it
+      // for the default handler.
+      e.stopPropagation();
+    }
+  });
+  CommandUtil.registerCommand(node, commandId, Commands.defaultCommand, doc);
+};
+
 var Commands = {};
 
 /**
