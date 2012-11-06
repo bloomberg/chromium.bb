@@ -148,7 +148,8 @@ void FadeInWindow(aura::Window* window,
 }
 
 // Makes |window| fully transparent instantaneously.
-void HideWindow(aura::Window* window, ui::LayerAnimationObserver* observer) {
+void HideWindowImmediately(aura::Window* window,
+                           ui::LayerAnimationObserver* observer) {
   window->layer()->SetOpacity(0.0);
   if (observer)
     observer->OnLayerAnimationEnded(NULL);
@@ -163,11 +164,12 @@ void RestoreWindow(aura::Window* window, ui::LayerAnimationObserver* observer) {
     observer->OnLayerAnimationEnded(NULL);
 }
 
-void RaiseWindow(aura::Window* window,
-                 base::TimeDelta length,
-                 ui::LayerAnimationObserver* observer) {
+void HideWindow(aura::Window* window,
+                base::TimeDelta length,
+                WorkspaceAnimationDirection direction,
+                ui::LayerAnimationObserver* observer) {
   WorkspaceAnimationDetails details;
-  details.direction = WORKSPACE_ANIMATE_UP;
+  details.direction = direction;
   details.animate = true;
   details.animate_scale = true;
   details.animate_opacity = true;
@@ -186,11 +188,12 @@ void RaiseWindow(aura::Window* window,
   window->layer()->GetAnimator()->ScheduleAnimation(sequence);
 }
 
-void LowerWindow(aura::Window* window,
-                 base::TimeDelta length,
-                 ui::LayerAnimationObserver* observer) {
+void ShowWindow(aura::Window* window,
+                base::TimeDelta length,
+                WorkspaceAnimationDirection direction,
+                ui::LayerAnimationObserver* observer) {
   WorkspaceAnimationDetails details;
-  details.direction = WORKSPACE_ANIMATE_DOWN;
+  details.direction = direction;
   details.animate = true;
   details.animate_scale = true;
   details.animate_opacity = true;
@@ -272,7 +275,7 @@ bool SessionStateAnimator::TestApi::ContainersAreAnimated(
         if (layer->GetTargetOpacity() < 0.9999)
           return false;
         break;
-      case ANIMATION_HIDE:
+      case ANIMATION_HIDE_IMMEDIATELY:
         if (layer->GetTargetOpacity() > 0.0001)
           return false;
         break;
@@ -401,20 +404,34 @@ void SessionStateAnimator::RunAnimationForWindow(
     case ANIMATION_FADE_IN:
       FadeInWindow(window, observer);
       break;
-    case ANIMATION_HIDE:
-      HideWindow(window, observer);
+    case ANIMATION_HIDE_IMMEDIATELY:
+      HideWindowImmediately(window, observer);
       break;
     case ANIMATION_RESTORE:
       RestoreWindow(window, observer);
       break;
-    case ANIMATION_RAISE:
-      RaiseWindow(window,
+    case ANIMATION_LIFT:
+      HideWindow(window,
           base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
+          WORKSPACE_ANIMATE_UP,
           observer);
       break;
-    case ANIMATION_LOWER:
-      LowerWindow(window,
+    case ANIMATION_DROP:
+      ShowWindow(window,
           base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
+          WORKSPACE_ANIMATE_DOWN,
+          observer);
+      break;
+    case ANIMATION_RAISE_TO_SCREEN:
+      ShowWindow(window,
+          base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
+          WORKSPACE_ANIMATE_UP,
+          observer);
+      break;
+    case ANIMATION_LOWER_BELOW_SCREEN:
+      HideWindow(window,
+          base::TimeDelta::FromMilliseconds(kSlowCloseAnimMs),
+          WORKSPACE_ANIMATE_DOWN,
           observer);
       break;
     case ANIMATION_PARTIAL_FADE_IN:
@@ -443,7 +460,7 @@ void SessionStateAnimator::CreateForeground() {
   aura::Window* window = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(),
       internal::kShellWindowId_PowerButtonAnimationContainer);
-  HideWindow(window, NULL);
+  HideWindowImmediately(window, NULL);
   foreground_.reset(
       new ColoredWindowController(window, "SessionStateAnimatorForeground"));
   foreground_->SetColor(SK_ColorWHITE);

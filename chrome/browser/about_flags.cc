@@ -928,6 +928,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshNewLockAnimationsEnabled),
   },
+  {
+    "new-lock-animations-reverse",
+    IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_REVERSE,
+    IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_REVERSE_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshReverseNewLockAnimations),
+  },
 #endif
   {
     "enable-views-textfield",

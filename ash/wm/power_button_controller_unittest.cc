@@ -124,7 +124,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::LAUNCHER,
-          internal::SessionStateAnimator::ANIMATION_HIDE));
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
@@ -132,7 +132,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_HIDE));
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
 
   // Notify that the lock window is visible.  We should make it fade in.
   state_controller_->OnLockStateChanged(true);
@@ -226,7 +226,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::LAUNCHER |
               internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_HIDE));
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllLockScreenContainersMask,
@@ -286,7 +286,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::LAUNCHER,
-          internal::SessionStateAnimator::ANIMATION_HIDE));
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
@@ -294,7 +294,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_HIDE));
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
 
   // Notify that the lock window is visible.  We should make it fade in.
   state_controller_->OnLockStateChanged(true);
@@ -519,7 +519,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWithoutButton) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllContainersMask,
-          internal::SessionStateAnimator::ANIMATION_HIDE));
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
 }
@@ -532,7 +532,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLoginScreen) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_HIDE));
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllLockScreenContainersMask,
@@ -553,7 +553,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_HIDE));
+          internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllLockScreenContainersMask,

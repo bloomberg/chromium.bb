@@ -55,7 +55,7 @@ void SessionStateControllerImpl::OnAppTerminating() {
     shell->cursor_manager()->ShowCursor(false);
     animator_->StartAnimation(
         internal::SessionStateAnimator::kAllContainersMask,
-        internal::SessionStateAnimator::ANIMATION_HIDE);
+        internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY);
   }
 }
 
@@ -91,7 +91,7 @@ void SessionStateControllerImpl::OnStartingLock() {
 
   animator_->StartAnimation(
       internal::SessionStateAnimator::LAUNCHER,
-      internal::SessionStateAnimator::ANIMATION_HIDE);
+      internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY);
 
   animator_->StartAnimation(
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
@@ -100,7 +100,7 @@ void SessionStateControllerImpl::OnStartingLock() {
   // Hide the screen locker containers so we can make them fade in later.
   animator_->StartAnimation(
       internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-      internal::SessionStateAnimator::ANIMATION_HIDE);
+      internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY);
 }
 
 void SessionStateControllerImpl::StartLockAnimationAndLockImmediately() {
@@ -212,7 +212,7 @@ void SessionStateControllerImpl::RequestShutdownImpl() {
     animator_->StartAnimation(
         internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
         internal::SessionStateAnimator::LAUNCHER,
-        internal::SessionStateAnimator::ANIMATION_HIDE);
+        internal::SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY);
     animator_->StartAnimation(
         internal::SessionStateAnimator::kAllLockScreenContainersMask,
         internal::SessionStateAnimator::ANIMATION_FULL_CLOSE);

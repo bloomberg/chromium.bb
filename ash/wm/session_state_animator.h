@@ -34,10 +34,15 @@ class ASH_EXPORT SessionStateAnimator {
     ANIMATION_UNDO_PARTIAL_CLOSE,
     ANIMATION_FULL_CLOSE,
     ANIMATION_FADE_IN,
-    ANIMATION_HIDE,
+    ANIMATION_HIDE_IMMEDIATELY,
     ANIMATION_RESTORE,
-    ANIMATION_RAISE,
-    ANIMATION_LOWER,
+    // Animations that raise/lower windows to/from area "in front" of the
+    // screen.
+    ANIMATION_LIFT,
+    ANIMATION_DROP,
+    // Animations that raise/lower windows from/to area "behind" of the screen.
+    ANIMATION_RAISE_TO_SCREEN,
+    ANIMATION_LOWER_BELOW_SCREEN,
     ANIMATION_PARTIAL_FADE_IN,
     ANIMATION_UNDO_PARTIAL_FADE_IN,
     ANIMATION_FULL_FADE_IN,
