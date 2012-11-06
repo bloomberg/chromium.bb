@@ -41,6 +41,12 @@ MAKE_PARALLEL_CMD = ['make', '-j%(cores)s']
 MAKE_CHECK_CMD = MAKE_PARALLEL_CMD + ['check']
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
+# This file gets installed by multiple packages' install steps, but it is
+# never useful when installed in isolation.  So we remove it from the
+# installation directories before packaging up.
+REMOVE_INFO_DIR = command.Remove(os.path.join('%(output)s',
+                                              'share', 'info', 'dir'))
+
 CONFIGURE_HOST_ARCH = []
 if sys.platform.startswith('linux'):
   # We build the tools for x86-32 hosts so they will run on either x86-32
@@ -211,10 +217,11 @@ def HostTools(target):
               command.Command(MAKE_PARALLEL_CMD),
               # TODO(mcgrathr): Run MAKE_CHECK_CMD here, but
               # check-ld has known failures for ARM targets.
-              command.Command(MAKE_DESTDIR_CMD + ['install-strip'])
+              command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
+              REMOVE_INFO_DIR,
+              ] +
               # The top-level lib* directories contain host libraries
               # that we don't want to include in the distribution.
-              ] +
               [command.RemoveDirectory(os.path.join('%(output)s', name))
                for name in ['lib', 'lib32', 'lib64']],
           },
@@ -247,6 +254,7 @@ def HostTools(target):
               ConfigureGccCommand(target),
               GccCommand(target, MAKE_PARALLEL_CMD + ['all-gcc']),
               GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-gcc']),
+              REMOVE_INFO_DIR,
               ],
           },
       }
@@ -358,10 +366,42 @@ def TargetLibs(target):
                   'all-target',
                   ]),
               GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-target']),
+              REMOVE_INFO_DIR,
               ],
           },
       }
   return libs
+
+
+# TODO(mcgrathr): Drop this after the consumers are updated to take
+# the fine-grained packages directly.
+def AssemblyPackage(target):
+  deps = [
+      'binutils_' + target,
+      'gcc_' + target,
+      'newlib_' + target,
+      'gcc_libs_' + target,
+      ]
+
+  # Mac doesn't have GNU cp with its -l functionality, but it has cpio.
+  # MinGW doesn't have cpio, but it does have GNU cp.
+  if sys.platform.startswith('mac'):
+    commands = [command.Command(
+        'cd %(' + dep + ')s && find . -print0 | cpio -0 -p -l %(abs_output)s',
+        shell=True
+        ) for dep in deps]
+  else:
+    commands = [command.Command('cp -al "%(' + dep + ')s/"* "%(abs_output)s"',
+                                shell=True)
+                for dep in deps]
+
+  assembled = {
+      'toolchain_' + target: {
+          'dependencies': deps,
+          'commands': commands
+          },
+      }
+  return assembled
 
 
 def CollectPackages(targets):
@@ -370,6 +410,7 @@ def CollectPackages(targets):
     packages.update(HostTools(target))
     # TODO(mcgrathr): Eventually build target libraries on only one host type.
     packages.update(TargetLibs(target))
+    packages.update(AssemblyPackage(target))
   return packages
 
 
