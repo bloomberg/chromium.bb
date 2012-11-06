@@ -72,7 +72,7 @@ def GenerateHeader(out, filenode, releases):
       item = node.GetProperty('VALUE')
       # If 'C++' use __cplusplus wrapper
       if node.GetName() == 'cc':
-        item = '#ifdef __cplusplus\n%s\n#endif  // __cplusplus\n\n' % item
+        item = '#ifdef __cplusplus\n%s\n#endif  /* __cplusplus */\n\n' % item
       # If not C++ or C, then skip it
       elif not node.GetName() == 'c':
         continue

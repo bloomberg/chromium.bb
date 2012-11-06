@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_bool.idl modified Wed Aug 10 15:19:02 2011. */
+/* From pp_bool.idl modified Thu Nov  1 13:48:33 2012. */
 
 #ifndef PPAPI_C_PP_BOOL_H_
 #define PPAPI_C_PP_BOOL_H_
@@ -59,7 +59,7 @@ inline bool PP_ToBool(PP_Bool b) {
   return (b != PP_FALSE);
 }
 
-#endif  // __cplusplus
+#endif  /* __cplusplus */
 
 #endif  /* PPAPI_C_PP_BOOL_H_ */
 
