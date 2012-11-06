@@ -425,6 +425,46 @@ class GclientTest(trial_dir.TestCase):
           ],
         sorted(self._get_processed()))
 
+  def testDepsOsOverrideDepsInDepsFile(self):
+    """Verifies that a 'deps_os' path can override a 'deps' path.
+    """
+
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo",\n'
+        '    "url": "svn://example.com/foo",\n'
+        '  },]\n')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'target_os = ["baz"]\n'
+        'deps = {\n'
+        '  "foo/src": "/src",\n' # This path is to be overridden by similar path
+                                 # in deps_os['unix'].
+        '}\n'
+        'deps_os = {\n'
+        '  "unix": { "foo/unix": "/unix",'
+        '            "foo/src": "/src_unix"},\n'
+        '  "baz": { "foo/baz": "/baz", },\n'
+        '  "jaz": { "foo/jaz": "/jaz", },\n'
+        '}')
+
+    parser = gclient.Parser()
+    options, _ = parser.parse_args(['--jobs', '1'])
+    options.deps_os = 'unix'
+
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEqual(['unix'], sorted(obj.enforced_os))
+    self.assertEquals(
+        [
+          'svn://example.com/foo',
+          'svn://example.com/foo/baz',
+          'svn://example.com/foo/src_unix',
+          'svn://example.com/foo/unix',
+          ],
+        sorted(self._get_processed()))
+
   def testRecursionOverride(self):
     """Verifies gclient respects the recursion var syntax.
 

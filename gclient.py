@@ -477,6 +477,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       self.local_target_os = local_scope['target_os']
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
+    target_os_deps = {}
     if 'deps_os' in local_scope:
       for deps_os_key in self.target_os:
         os_deps = local_scope['deps_os'].get(deps_os_key, {})
@@ -485,9 +486,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           # platform, so we collect the broadest set of dependencies
           # available. We may end up with the wrong revision of something for
           # our platform, but this is the best we can do.
-          deps.update([x for x in os_deps.items() if not x[0] in deps])
+          target_os_deps.update(
+              [x for x in os_deps.items() if not x[0] in target_os_deps])
         else:
-          deps.update(os_deps)
+          target_os_deps.update(os_deps)
+
+    # deps_os overrides paths from deps
+    deps.update(target_os_deps)
 
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
