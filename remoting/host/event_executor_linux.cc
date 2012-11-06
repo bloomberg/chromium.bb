@@ -47,8 +47,7 @@ class EventExecutorLinux : public EventExecutor {
   bool Init();
 
   // Clipboard stub interface.
-  virtual void InjectClipboardEvent(const ClipboardEvent& event)
-      OVERRIDE;
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
 
   // InputStub interface.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
@@ -57,48 +56,107 @@ class EventExecutorLinux : public EventExecutor {
   // EventExecutor interface.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void StopAndDelete() OVERRIDE;
 
  private:
-  // Number of buttons we support.
-  // Left, Right, Middle, VScroll Up/Down, HScroll Left/Right.
-  static const int kNumPointerButtons = 7;
+  // The actual implementation resides in EventExecutorWin::Core class.
+  class Core : public base::RefCountedThreadSafe<Core>, public EventExecutor {
+   public:
+    explicit Core(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  void InitClipboard();
+    bool Init();
 
-  // |mode| is one of the AutoRepeatModeOn, AutoRepeatModeOff,
-  // AutoRepeatModeDefault constants defined by the XChangeKeyboardControl()
-  // API.
-  void SetAutoRepeatForKey(int keycode, int mode);
-  void InjectScrollWheelClicks(int button, int count);
-  // Compensates for global button mappings and resets the XTest device mapping.
-  void InitMouseButtonMap();
-  int MouseButtonToX11ButtonNumber(MouseEvent::MouseButton button);
-  int HorizontalScrollWheelToX11ButtonNumber(int dx);
-  int VerticalScrollWheelToX11ButtonNumber(int dy);
+    // Clipboard stub interface.
+    virtual void InjectClipboardEvent(const ClipboardEvent& event)
+        OVERRIDE;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    // InputStub interface.
+    virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+    virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
-  std::set<int> pressed_keys_;
-  SkIPoint latest_mouse_position_;
-  float wheel_ticks_x_;
-  float wheel_ticks_y_;
+    // EventExecutor interface.
+    virtual void Start(
+        scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
 
-  // X11 graphics context.
-  Display* display_;
-  Window root_window_;
+    void Stop();
 
-  int test_event_base_;
-  int test_error_base_;
+   private:
+    friend class base::RefCountedThreadSafe<Core>;
+    virtual ~Core();
 
-  int pointer_button_map_[kNumPointerButtons];
+    void InitClipboard();
 
-  scoped_ptr<Clipboard> clipboard_;
+    // |mode| is one of the AutoRepeatModeOn, AutoRepeatModeOff,
+    // AutoRepeatModeDefault constants defined by the XChangeKeyboardControl()
+    // API.
+    void SetAutoRepeatForKey(int keycode, int mode);
+    void InjectScrollWheelClicks(int button, int count);
+    // Compensates for global button mappings and resets the XTest device
+    // mapping.
+    void InitMouseButtonMap();
+    int MouseButtonToX11ButtonNumber(MouseEvent::MouseButton button);
+    int HorizontalScrollWheelToX11ButtonNumber(int dx);
+    int VerticalScrollWheelToX11ButtonNumber(int dy);
+
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+    std::set<int> pressed_keys_;
+    SkIPoint latest_mouse_position_;
+    float wheel_ticks_x_;
+    float wheel_ticks_y_;
+
+    // X11 graphics context.
+    Display* display_;
+    Window root_window_;
+
+    int test_event_base_;
+    int test_error_base_;
+
+    // Number of buttons we support.
+    // Left, Right, Middle, VScroll Up/Down, HScroll Left/Right.
+    static const int kNumPointerButtons = 7;
+
+    int pointer_button_map_[kNumPointerButtons];
+
+    scoped_ptr<Clipboard> clipboard_;
+
+    DISALLOW_COPY_AND_ASSIGN(Core);
+  };
+
+  scoped_refptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorLinux);
 };
 
 EventExecutorLinux::EventExecutorLinux(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  core_ = new Core(task_runner);
+}
+EventExecutorLinux::~EventExecutorLinux() {
+  core_->Stop();
+}
+
+bool EventExecutorLinux::Init() {
+  return core_->Init();
+}
+
+void EventExecutorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
+  core_->InjectClipboardEvent(event);
+}
+
+void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
+  core_->InjectKeyEvent(event);
+}
+
+void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
+  core_->InjectMouseEvent(event);
+}
+
+void EventExecutorLinux::Start(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  core_->Start(client_clipboard.Pass());
+}
+
+EventExecutorLinux::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       latest_mouse_position_(SkIPoint::Make(-1, -1)),
@@ -107,19 +165,12 @@ EventExecutorLinux::EventExecutorLinux(
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue) {
 #if defined(REMOTING_HOST_LINUX_CLIPBOARD)
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorLinux::InitClipboard, base::Unretained(this)));
-  }
+  if (!task_runner_->BelongsToCurrentThread())
+    task_runner_->PostTask(FROM_HERE, base::Bind(&Core::InitClipboard, this));
 #endif  // REMOTING_HOST_LINUX_CLIPBOARD
 }
 
-EventExecutorLinux::~EventExecutorLinux() {
-  CHECK(pressed_keys_.empty());
-}
-
-bool EventExecutorLinux::Init() {
+bool EventExecutorLinux::Core::Init() {
   CHECK(display_);
 
   root_window_ = RootWindow(display_, DefaultScreen(display_));
@@ -140,13 +191,12 @@ bool EventExecutorLinux::Init() {
   return true;
 }
 
-void EventExecutorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
+void EventExecutorLinux::Core::InjectClipboardEvent(
+    const ClipboardEvent& event) {
 #if defined(REMOTING_HOST_LINUX_CLIPBOARD)
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorLinux::InjectClipboardEvent,
-                   base::Unretained(this), event));
+        FROM_HERE, base::Bind(&Core::InjectClipboardEvent, this, event));
     return;
   }
 
@@ -154,16 +204,14 @@ void EventExecutorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
 #endif  // REMOTING_HOST_LINUX_CLIPBOARD
 }
 
-void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
+void EventExecutorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   DCHECK(event.has_pressed());
   DCHECK(event.has_usb_keycode());
 
   if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorLinux::InjectKeyEvent, base::Unretained(this),
-                   event));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&Core::InjectKeyEvent, this, event));
     return;
   }
 
@@ -201,19 +249,23 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
   XFlush(display_);
 }
 
-void EventExecutorLinux::InitClipboard() {
+EventExecutorLinux::Core::~Core() {
+  CHECK(pressed_keys_.empty());
+}
+
+void EventExecutorLinux::Core::InitClipboard() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   clipboard_ = Clipboard::Create();
 }
 
-void EventExecutorLinux::SetAutoRepeatForKey(int keycode, int mode) {
+void EventExecutorLinux::Core::SetAutoRepeatForKey(int keycode, int mode) {
   XKeyboardControl control;
   control.key = keycode;
   control.auto_repeat_mode = mode;
   XChangeKeyboardControl(display_, KBKey | KBAutoRepeatMode, &control);
 }
 
-void EventExecutorLinux::InjectScrollWheelClicks(int button, int count) {
+void EventExecutorLinux::Core::InjectScrollWheelClicks(int button, int count) {
   if (button < 0) {
     LOG(WARNING) << "Ignoring unmapped scroll wheel button";
     return;
@@ -225,12 +277,10 @@ void EventExecutorLinux::InjectScrollWheelClicks(int button, int count) {
   }
 }
 
-void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
+void EventExecutorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorLinux::InjectMouseEvent,
-                   base::Unretained(this), event));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&Core::InjectMouseEvent, this, event));
     return;
   }
 
@@ -301,7 +351,7 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
   XFlush(display_);
 }
 
-void EventExecutorLinux::InitMouseButtonMap() {
+void EventExecutorLinux::Core::InitMouseButtonMap() {
   // TODO(rmsousa): Run this on global/device mapping change events.
 
   // Do not touch global pointer mapping, since this may affect the local user.
@@ -378,7 +428,7 @@ void EventExecutorLinux::InitMouseButtonMap() {
   XCloseDevice(display_, device);
 }
 
-int EventExecutorLinux::MouseButtonToX11ButtonNumber(
+int EventExecutorLinux::Core::MouseButtonToX11ButtonNumber(
     MouseEvent::MouseButton button) {
   switch (button) {
     case MouseEvent::BUTTON_LEFT:
@@ -396,25 +446,23 @@ int EventExecutorLinux::MouseButtonToX11ButtonNumber(
   }
 }
 
-int EventExecutorLinux::HorizontalScrollWheelToX11ButtonNumber(int dx) {
+int EventExecutorLinux::Core::HorizontalScrollWheelToX11ButtonNumber(int dx) {
   return (dx > 0 ? pointer_button_map_[5] : pointer_button_map_[6]);
 }
 
 
-int EventExecutorLinux::VerticalScrollWheelToX11ButtonNumber(int dy) {
+int EventExecutorLinux::Core::VerticalScrollWheelToX11ButtonNumber(int dy) {
   // Positive y-values are wheel scroll-up events (button 4), negative y-values
   // are wheel scroll-down events (button 5).
   return (dy > 0 ? pointer_button_map_[3] : pointer_button_map_[4]);
 }
 
-void EventExecutorLinux::Start(
+void EventExecutorLinux::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorLinux::Start,
-                   base::Unretained(this),
-                   base::Passed(&client_clipboard)));
+        base::Bind(&Core::Start, this, base::Passed(&client_clipboard)));
     return;
   }
 
@@ -424,8 +472,15 @@ void EventExecutorLinux::Start(
 #endif  // REMOTING_HOST_LINUX_CLIPBOARD
 }
 
-void EventExecutorLinux::StopAndDelete() {
-  delete this;
+void EventExecutorLinux::Core::Stop() {
+#if defined(REMOTING_HOST_LINUX_CLIPBOARD)
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Stop, this));
+    return;
+  }
+
+  clipboard_->Stop();
+#endif  // REMOTING_HOST_LINUX_CLIPBOARD
 }
 
 }  // namespace

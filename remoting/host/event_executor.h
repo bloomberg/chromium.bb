@@ -30,9 +30,6 @@ class EventExecutor : public protocol::ClipboardStub,
   // Initialises any objects needed to execute events.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) = 0;
-
-  // Destroys any objects constructed by Start() and deletes |this|.
-  virtual void StopAndDelete() = 0;
 };
 
 }  // namespace remoting

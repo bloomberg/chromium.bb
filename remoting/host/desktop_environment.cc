@@ -22,7 +22,6 @@ DesktopEnvironment::DesktopEnvironment(
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
-  event_executor_.release()->StopAndDelete();
 }
 
 void DesktopEnvironment::Start(

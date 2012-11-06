@@ -26,8 +26,4 @@ void EventExecutorFake::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
 }
 
-void EventExecutorFake::StopAndDelete() {
-  delete this;
-}
-
 }  // namespace remoting

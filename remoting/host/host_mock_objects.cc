@@ -46,11 +46,6 @@ void MockEventExecutor::Start(
   StartPtr(client_clipboard.get());
 }
 
-void MockEventExecutor::StopAndDelete() {
-  StopAndDeleteMock();
-  delete this;
-}
-
 MockDisconnectWindow::MockDisconnectWindow() {}
 
 MockDisconnectWindow::~MockDisconnectWindow() {}

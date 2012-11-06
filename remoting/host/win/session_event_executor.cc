@@ -4,15 +4,18 @@
 
 #include "remoting/host/win/session_event_executor.h"
 
+#include <set>
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/windows_version.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/win/desktop.h"
+#include "remoting/host/win/scoped_thread_desktop.h"
 #include "remoting/proto/event.pb.h"
 
 namespace {
@@ -40,71 +43,95 @@ using protocol::ClipboardEvent;
 using protocol::MouseEvent;
 using protocol::KeyEvent;
 
-SessionEventExecutorWin::SessionEventExecutorWin(
+class SessionEventExecutorWin::Core
+    : public base::RefCountedThreadSafe<SessionEventExecutorWin::Core>,
+      public EventExecutor {
+ public:
+  Core(
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_ptr<EventExecutor> nested_executor,
+      scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
+      const base::Closure& inject_sas);
+
+  // EventExecutor implementation.
+  virtual void Start(
+      scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
+
+  // protocol::ClipboardStub implementation.
+  virtual void InjectClipboardEvent(
+      const protocol::ClipboardEvent& event) OVERRIDE;
+
+  // protocol::InputStub implementation.
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
+
+ private:
+  friend class base::RefCountedThreadSafe<Core>;
+  virtual ~Core();
+
+  // Switches to the desktop receiving a user input if different from
+  // the current one.
+  void SwitchToInputDesktop();
+
+  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
+
+  // Pointer to the next event executor.
+  scoped_ptr<EventExecutor> nested_executor_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner_;
+
+  ScopedThreadDesktop desktop_;
+
+  // Used to inject Secure Attention Sequence on Vista+.
+  base::Closure inject_sas_;
+
+  // Used to inject Secure Attention Sequence on XP.
+  scoped_ptr<SasInjector> sas_injector_;
+
+  // Keys currently pressed by the client, used to detect Ctrl-Alt-Del.
+  std::set<uint32> pressed_keys_;
+
+  DISALLOW_COPY_AND_ASSIGN(Core);
+};
+
+SessionEventExecutorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_ptr<EventExecutor> nested_executor,
     scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
     const base::Closure& inject_sas)
-    : nested_executor_(nested_executor.Pass()),
-      input_task_runner_(input_task_runner),
+    : input_task_runner_(input_task_runner),
+      nested_executor_(nested_executor.Pass()),
       inject_sas_task_runner_(inject_sas_task_runner),
-      inject_sas_(inject_sas),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
-  // Let |weak_ptr_| be used on the |input_task_runner_| thread.
-  // |weak_ptr_| and |weak_ptr_factory_| share a ThreadChecker, so the
-  // following line affects both of them.
-  weak_ptr_factory_.DetachFromThread();
+      inject_sas_(inject_sas) {
 }
 
-SessionEventExecutorWin::~SessionEventExecutorWin() {
-}
-
-void SessionEventExecutorWin::Start(
+void SessionEventExecutorWin::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SessionEventExecutorWin::Start,
-                   weak_ptr_, base::Passed(&client_clipboard)));
+        base::Bind(&Core::Start, this, base::Passed(&client_clipboard)));
     return;
   }
 
   nested_executor_->Start(client_clipboard.Pass());
 }
 
-void SessionEventExecutorWin::StopAndDelete() {
-  if (!input_task_runner_->BelongsToCurrentThread()) {
-    input_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionEventExecutorWin::StopAndDelete,
-                   weak_ptr_));
-    return;
-  }
-
-  nested_executor_.release()->StopAndDelete();
-  delete this;
-}
-
-void SessionEventExecutorWin::InjectClipboardEvent(
+void SessionEventExecutorWin::Core::InjectClipboardEvent(
     const ClipboardEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionEventExecutorWin::InjectClipboardEvent,
-                   weak_ptr_, event));
+        FROM_HERE, base::Bind(&Core::InjectClipboardEvent, this, event));
     return;
   }
 
   nested_executor_->InjectClipboardEvent(event);
 }
 
-void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
+void SessionEventExecutorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionEventExecutorWin::InjectKeyEvent,
-                   weak_ptr_, event));
+        FROM_HERE, base::Bind(&Core::InjectKeyEvent, this, event));
     return;
   }
 
@@ -138,12 +165,10 @@ void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
   nested_executor_->InjectKeyEvent(event);
 }
 
-void SessionEventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
+void SessionEventExecutorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionEventExecutorWin::InjectMouseEvent,
-                   weak_ptr_, event));
+        FROM_HERE, base::Bind(&Core::InjectMouseEvent, this, event));
     return;
   }
 
@@ -151,7 +176,10 @@ void SessionEventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
   nested_executor_->InjectMouseEvent(event);
 }
 
-void SessionEventExecutorWin::SwitchToInputDesktop() {
+SessionEventExecutorWin::Core::~Core() {
+}
+
+void SessionEventExecutorWin::Core::SwitchToInputDesktop() {
   // Switch to the desktop receiving user input if different from the current
   // one.
   scoped_ptr<Desktop> input_desktop = Desktop::GetInputDesktop();
@@ -160,6 +188,37 @@ void SessionEventExecutorWin::SwitchToInputDesktop() {
     // So we can continue capture screen bits, just from a diffected desktop.
     desktop_.SetThreadDesktop(input_desktop.Pass());
   }
+}
+
+SessionEventExecutorWin::SessionEventExecutorWin(
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_ptr<EventExecutor> nested_executor,
+    scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
+    const base::Closure& inject_sas) {
+  core_ = new Core(input_task_runner, nested_executor.Pass(),
+                   inject_sas_task_runner, inject_sas);
+}
+
+SessionEventExecutorWin::~SessionEventExecutorWin() {
+}
+
+void SessionEventExecutorWin::Start(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  core_->Start(client_clipboard.Pass());
+}
+
+void SessionEventExecutorWin::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {
+  core_->InjectClipboardEvent(event);
+}
+
+void SessionEventExecutorWin::InjectKeyEvent(const protocol::KeyEvent& event) {
+  core_->InjectKeyEvent(event);
+}
+
+void SessionEventExecutorWin::InjectMouseEvent(
+    const protocol::MouseEvent& event) {
+  core_->InjectMouseEvent(event);
 }
 
 }  // namespace remoting

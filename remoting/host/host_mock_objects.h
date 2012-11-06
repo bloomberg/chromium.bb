@@ -145,10 +145,8 @@ class MockEventExecutor : public EventExecutor {
   MOCK_METHOD1(InjectMouseEvent, void(const protocol::MouseEvent& event));
   MOCK_METHOD1(StartPtr,
                void(protocol::ClipboardStub* client_clipboard));
-  MOCK_METHOD0(StopAndDeleteMock, void());
 
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
-  void StopAndDelete();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);

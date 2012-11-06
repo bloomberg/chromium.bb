@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
@@ -46,8 +47,9 @@ SkIRect CGRectToSkIRect(const CGRect& rect) {
 // A class to generate events on Mac.
 class EventExecutorMac : public EventExecutor {
  public:
-  EventExecutorMac(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~EventExecutorMac() {}
+  explicit EventExecutorMac(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  virtual ~EventExecutorMac();
 
   // ClipboardStub interface.
   virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
@@ -59,18 +61,70 @@ class EventExecutorMac : public EventExecutor {
   // EventExecutor interface.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void StopAndDelete() OVERRIDE;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  SkIPoint mouse_pos_;
-  uint32 mouse_button_state_;
-  scoped_ptr<Clipboard> clipboard_;
+  // The actual implementation resides in EventExecutorWin::Core class.
+  class Core : public base::RefCountedThreadSafe<Core>, public EventExecutor {
+   public:
+    explicit Core(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+    // ClipboardStub interface.
+    virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+
+    // InputStub interface.
+    virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+    virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
+
+    // EventExecutor interface.
+    virtual void Start(
+        scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
+
+    void Stop();
+
+   private:
+    friend class base::RefCountedThreadSafe<Core>;
+    virtual ~Core();
+
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+    SkIPoint mouse_pos_;
+    uint32 mouse_button_state_;
+    scoped_ptr<Clipboard> clipboard_;
+
+    DISALLOW_COPY_AND_ASSIGN(Core);
+  };
+
+  scoped_refptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorMac);
 };
 
 EventExecutorMac::EventExecutorMac(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  core_ = new Core(task_runner);
+}
+
+EventExecutorMac::~EventExecutorMac() {
+  core_->Stop();
+}
+
+void EventExecutorMac::InjectClipboardEvent(const ClipboardEvent& event) {
+  core_->InjectClipboardEvent(event);
+}
+
+void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
+  core_->InjectKeyEvent(event);
+}
+
+void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
+  core_->InjectMouseEvent(event);
+}
+
+void EventExecutorMac::Start(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  core_->Start(client_clipboard.Pass());
+}
+
+EventExecutorMac::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       mouse_button_state_(0),
@@ -89,20 +143,17 @@ EventExecutorMac::EventExecutorMac(
 #pragma clang diagnostic pop
 }
 
-void EventExecutorMac::InjectClipboardEvent(const ClipboardEvent& event) {
+void EventExecutorMac::Core::InjectClipboardEvent(const ClipboardEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorMac::InjectClipboardEvent,
-                   base::Unretained(this),
-                   event));
+        FROM_HERE, base::Bind(&Core::InjectClipboardEvent, this, event));
     return;
   }
 
   clipboard_->InjectClipboardEvent(event);
 }
 
-void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
+void EventExecutorMac::Core::InjectKeyEvent(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   DCHECK(event.has_pressed());
   DCHECK(event.has_usb_keycode());
@@ -127,7 +178,7 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
   }
 }
 
-void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
+void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
   if (event.has_x() && event.has_y()) {
     // On multi-monitor systems (0,0) refers to the top-left of the "main"
     // display, whereas our coordinate scheme places (0,0) at the top-left of
@@ -222,31 +273,28 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
   }
 }
 
-void EventExecutorMac::Start(
+void EventExecutorMac::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorMac::Start,
-                   base::Unretained(this),
-                   base::Passed(&client_clipboard)));
+        base::Bind(&Core::Start, this, base::Passed(&client_clipboard)));
     return;
   }
 
   clipboard_->Start(client_clipboard.Pass());
 }
 
-void EventExecutorMac::StopAndDelete() {
+void EventExecutorMac::Core::Stop() {
   if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorMac::StopAndDelete,
-                   base::Unretained(this)));
+    task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Stop, this));
     return;
   }
 
   clipboard_->Stop();
-  delete this;
+}
+
+EventExecutorMac::Core::~Core() {
 }
 
 }  // namespace

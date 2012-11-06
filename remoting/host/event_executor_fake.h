@@ -25,7 +25,6 @@ class EventExecutorFake : public EventExecutor {
 
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void StopAndDelete() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventExecutorFake);

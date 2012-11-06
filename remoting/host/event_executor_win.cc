@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/event.pb.h"
@@ -34,7 +35,7 @@ class EventExecutorWin : public EventExecutor {
  public:
   EventExecutorWin(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
                    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~EventExecutorWin() {}
+  virtual ~EventExecutorWin();
 
   // ClipboardStub interface.
   virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
@@ -46,20 +47,74 @@ class EventExecutorWin : public EventExecutor {
   // EventExecutor interface.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void StopAndDelete() OVERRIDE;
 
  private:
-  void HandleKey(const KeyEvent& event);
-  void HandleMouse(const MouseEvent& event);
+  // The actual implementation resides in EventExecutorWin::Core class.
+  class Core : public base::RefCountedThreadSafe<Core>, public EventExecutor {
+   public:
+    Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+         scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  scoped_ptr<Clipboard> clipboard_;
+    // ClipboardStub interface.
+    virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+
+    // InputStub interface.
+    virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+    virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
+
+    // EventExecutor interface.
+    virtual void Start(
+        scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
+
+    void Stop();
+
+   private:
+    friend class base::RefCountedThreadSafe<Core>;
+    virtual ~Core();
+
+    void HandleKey(const KeyEvent& event);
+    void HandleMouse(const MouseEvent& event);
+
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+    scoped_ptr<Clipboard> clipboard_;
+
+    DISALLOW_COPY_AND_ASSIGN(Core);
+  };
+
+  scoped_refptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);
 };
 
 EventExecutorWin::EventExecutorWin(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+  core_ = new Core(main_task_runner, ui_task_runner);
+}
+
+EventExecutorWin::~EventExecutorWin() {
+  core_->Stop();
+}
+
+void EventExecutorWin::InjectClipboardEvent(const ClipboardEvent& event) {
+  core_->InjectClipboardEvent(event);
+}
+
+void EventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
+  core_->InjectKeyEvent(event);
+}
+
+void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
+  core_->InjectMouseEvent(event);
+}
+
+void EventExecutorWin::Start(
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  core_->Start(client_clipboard.Pass());
+}
+
+EventExecutorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : main_task_runner_(main_task_runner),
@@ -67,71 +122,61 @@ EventExecutorWin::EventExecutorWin(
       clipboard_(Clipboard::Create()) {
 }
 
-void EventExecutorWin::InjectClipboardEvent(const ClipboardEvent& event) {
+void EventExecutorWin::Core::InjectClipboardEvent(const ClipboardEvent& event) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorWin::InjectClipboardEvent,
-                   base::Unretained(this),
-                   event));
+        FROM_HERE, base::Bind(&Core::InjectClipboardEvent, this, event));
     return;
   }
 
   clipboard_->InjectClipboardEvent(event);
 }
 
-void EventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
+void EventExecutorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorWin::InjectKeyEvent, base::Unretained(this),
-                   event));
+    main_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(&Core::InjectKeyEvent, this, event));
     return;
   }
 
   HandleKey(event);
 }
 
-void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
+void EventExecutorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorWin::InjectMouseEvent, base::Unretained(this),
-                   event));
+        FROM_HERE, base::Bind(&Core::InjectMouseEvent, this, event));
     return;
   }
 
   HandleMouse(event);
 }
 
-void EventExecutorWin::Start(
+void EventExecutorWin::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorWin::Start,
-                   base::Unretained(this),
-                   base::Passed(&client_clipboard)));
+        base::Bind(&Core::Start, this, base::Passed(&client_clipboard)));
     return;
   }
 
   clipboard_->Start(client_clipboard.Pass());
 }
 
-void EventExecutorWin::StopAndDelete() {
+void EventExecutorWin::Core::Stop() {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EventExecutorWin::StopAndDelete,
-                   base::Unretained(this)));
+    ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Stop, this));
     return;
   }
 
   clipboard_->Stop();
-  delete this;
 }
 
-void EventExecutorWin::HandleKey(const KeyEvent& event) {
+EventExecutorWin::Core::~Core() {
+}
+
+void EventExecutorWin::Core::HandleKey(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   DCHECK(event.has_pressed());
   DCHECK(event.has_usb_keycode());
@@ -170,7 +215,7 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
   }
 }
 
-void EventExecutorWin::HandleMouse(const MouseEvent& event) {
+void EventExecutorWin::Core::HandleMouse(const MouseEvent& event) {
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
