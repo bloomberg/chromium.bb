@@ -145,19 +145,18 @@ public class AwContents {
     /**
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.
-     * @param contentViewCore requires an existing but not yet initialized instance. Will be
-     *                         initialized on return.
      * @param contentsClient will receive API callbacks from this WebView Contents
      * @param privateBrowsing whether this is a private browsing instance of WebView.
      * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
      */
     public AwContents(ViewGroup containerView,
             ContentViewCore.InternalAccessDelegate internalAccessAdapter,
-            ContentViewCore contentViewCore, AwContentsClient contentsClient,
+            AwContentsClient contentsClient,
             NativeWindow nativeWindow, boolean privateBrowsing,
             boolean isAccessFromFileURLsGrantedByDefault) {
         mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
-        mContentViewCore = contentViewCore;
+        mContentViewCore = new ContentViewCore(containerView.getContext(),
+                ContentViewCore.PERSONALITY_VIEW);
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
         mIoThreadClientHandler = new IoThreadClientHandler();

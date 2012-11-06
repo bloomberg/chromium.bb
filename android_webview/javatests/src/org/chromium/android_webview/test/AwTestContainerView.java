@@ -24,7 +24,6 @@ import org.chromium.content.browser.ContentViewCore;
  * This class takes the place android.webkit.WebView would have in the production configuration.
  */
 class AwTestContainerView extends FrameLayout {
-    private ContentViewCore mContentViewCore;
     private AwContents mAwContents;
     private ContentViewCore.InternalAccessDelegate mInternalAccessDelegate;
 
@@ -33,13 +32,12 @@ class AwTestContainerView extends FrameLayout {
         mInternalAccessDelegate = new InternalAccessAdapter();
     }
 
-    public void initialize(ContentViewCore contentViewCore, AwContents awContents) {
-        mContentViewCore = contentViewCore;
+    public void initialize(AwContents awContents) {
         mAwContents = awContents;
     }
 
     public ContentViewCore getContentViewCore() {
-        return mContentViewCore;
+        return mAwContents.getContentViewCore();
     }
 
     public AwContents getAwContents() {
@@ -58,33 +56,33 @@ class AwTestContainerView extends FrameLayout {
     /*
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        mContentViewCore.onConfigurationChanged(newConfig);
+        mAwContents.getContentViewCore().onConfigurationChanged(newConfig);
     }
 
     @Override
     public void onAttachedToWindow() {
-        mContentViewCore.onAttachedToWindow();
+        mAwContents.getContentViewCore().onAttachedToWindow();
     }
 
     @Override
     public void onDetachedFromWindow() {
-        mContentViewCore.onDetachedFromWindow();
+        mAwContents.getContentViewCore().onDetachedFromWindow();
     }
 
     @Override
     public void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
-        mContentViewCore.onFocusChanged(focused, direction, previouslyFocusedRect);
+        mAwContents.getContentViewCore().onFocusChanged(focused, direction, previouslyFocusedRect);
     }
 
     @Override
     public void onSizeChanged(int w, int h, int ow, int oh) {
-        mContentViewCore.onSizeChanged(w, h, ow, oh);
+        mAwContents.getContentViewCore().onSizeChanged(w, h, ow, oh);
     }
     */
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        return mContentViewCore.onTouchEvent(ev);
+        return mAwContents.getContentViewCore().onTouchEvent(ev);
     }
 
     // TODO: ContentViewCore could define a generic class that holds an implementation similar to

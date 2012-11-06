@@ -192,11 +192,9 @@ public class AndroidWebViewTestBase
     protected AwTestContainerView createAwTestContainerView(final boolean incognito,
             final AwTestContainerView testContainerView,
             final AwContentsClient awContentsClient) {
-        ContentViewCore contentViewCore = new ContentViewCore(
-                getActivity(), ContentViewCore.PERSONALITY_VIEW);
-        testContainerView.initialize(contentViewCore,
-                new AwContents(testContainerView, testContainerView.getInternalAccessDelegate(),
-                contentViewCore, awContentsClient, new ActivityNativeWindow(getActivity()),
+        testContainerView.initialize(new AwContents(testContainerView,
+                testContainerView.getInternalAccessDelegate(),
+                awContentsClient, new ActivityNativeWindow(getActivity()),
                 incognito, false));
         getActivity().addView(testContainerView);
         return testContainerView;
