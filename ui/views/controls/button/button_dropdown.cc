@@ -38,6 +38,7 @@ ButtonDropDown::ButtonDropDown(ButtonListener* listener, ui::MenuModel* model)
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_factory_(this)) {
+  set_context_menu_controller(this);
 }
 
 ButtonDropDown::~ButtonDropDown() {
@@ -99,12 +100,6 @@ void ButtonDropDown::OnMouseReleased(const ui::MouseEvent& event) {
 
   if (IsTriggerableEvent(event))
     show_menu_factory_.InvalidateWeakPtrs();
-
-  if (enabled() && event.IsRightMouseButton() &&
-      HitTestPoint(event.location())) {
-    show_menu_factory_.InvalidateWeakPtrs();
-    ShowDropDownMenu();
-  }
 }
 
 std::string ButtonDropDown::GetClassName() const {
@@ -131,6 +126,15 @@ void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_BUTTONDROPDOWN;
   state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
   state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
+}
+
+void ButtonDropDown::ShowContextMenuForView(View* source,
+                                            const gfx::Point& point) {
+  if (!enabled())
+    return;
+
+  show_menu_factory_.InvalidateWeakPtrs();
+  ShowDropDownMenu();
 }
 
 bool ButtonDropDown::ShouldEnterPushedState(const ui::Event& event) {
