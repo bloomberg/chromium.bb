@@ -1,13 +1,14 @@
+<!-- This is only meant to be copied by chrome.exe in developer builds. -->
 <Application
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <VisualElements
-        DisplayName="Chrome Browser"
+        DisplayName="Developer Chrome"
         Logo="Logo.png"
         SmallLogo="SmallLogo.png"
         ForegroundText="light"
         BackgroundColor="white">
         <DefaultTile
-            ShortName="ChromeBrowser"
+            ShortName="DevChrome"
             ShowName="allLogos"
             />
         <SplashScreen
