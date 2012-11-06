@@ -812,65 +812,93 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
       return;
     }
 
-    if (task.sourceOnGData && task.targetOnGData) {
-      // TODO(benchan): DriveFileSystem has not implemented directory copy,
-      // and thus we only call FileEntry.copyTo() for files. Revisit this
-      // code when DriveFileSystem supports directory copy.
-      if (!sourceEntry.isDirectory) {
-        resolveDirAndBaseName(
-            targetDirEntry, targetRelativePath,
-            function(dirEntry, fileName) {
-              sourceEntry.copyTo(dirEntry, fileName,
-                  onFilesystemCopyComplete.bind(self, sourceEntry),
-                  onFilesystemError);
-            },
-            onFilesystemError);
-        return;
-      }
-    }
-
-    // TODO(benchan): Until DriveFileSystem supports FileWriter, we use the
-    // transferFile API to copy files into or out from a gdata file system.
+    // TODO(benchan): DriveFileSystem has not implemented directory copy,
+    // and thus we only call FileEntry.copyTo() for files. Revisit this
+    // code when DriveFileSystem supports directory copy.
     if (sourceEntry.isFile && (task.sourceOnGData || task.targetOnGData)) {
       var sourceFileUrl = sourceEntry.toURL();
       var targetFileUrl = targetDirEntry.toURL() + '/' +
                           encodeURIComponent(targetRelativePath);
       var transferedBytes = 0;
 
-      function onFileTransferCompleted() {
-        self.cancelCallback_ = null;
+      function onStartTransfer() {
+        chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
+            onFileTransfersUpdated);
+      }
+
+      function onFailTransfer(err) {
         chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
             onFileTransfersUpdated);
+
+        self.log_('Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
+        onFilesystemError(err);
+      }
+
+      function onSuccessTransfer(targetEntry) {
+        chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
+            onFileTransfersUpdated);
+
+        targetEntry.getMetadata(function(metadata) {
+          if (metadata.size > transferedBytes)
+            onCopyProgress(sourceEntry, metadata.size - transferedBytes);
+          onFilesystemCopyComplete(sourceEntry, targetEntry);
+        });
+      }
+
+      var downTransfer = 0;
+      function onFileTransfersUpdated(statusList) {
+        for (var i = 0; i < statusList.length; i++) {
+          var s = statusList[i];
+          if (s.fileUrl == sourceFileUrl || s.fileUrl == targetFileUrl) {
+            var processed = s.processed;
+
+            // It becomes tricky when both the sides are on Drive.
+            // Currently, it is implemented by download followed by upload.
+            // Note, however, download will not happen if the file is cached.
+            if (task.sourceOnGData && task.targetOnGData) {
+              if (s.fileUrl == sourceFileUrl) {
+                // Download transfer is detected. Let's halve the progress.
+                downTransfer = processed = (s.processed >> 1);
+              } else {
+                // If download transfer has been detected, the upload transfer
+                // is stacked on top of it after halving. Otherwise, just use
+                // the upload transfer as-is.
+                processed = downTransfer > 0 ?
+                   downTransfer + (s.processed >> 1) : s.processed;
+              }
+            }
+
+            if (processed > transferedBytes) {
+              onCopyProgress(sourceEntry, processed - transferedBytes);
+              transferedBytes = processed;
+            }
+          }
+        }
+      }
+
+      if (task.sourceOnGData && task.targetOnGData) {
+        resolveDirAndBaseName(
+            targetDirEntry, targetRelativePath,
+            function(dirEntry, fileName) {
+              onStartTransfer();
+              sourceEntry.copyTo(dirEntry, fileName, onSuccessTransfer,
+                                                     onFailTransfer);
+            },
+            onFilesystemError);
+        return;
+      }
+
+      function onFileTransferCompleted() {
+        self.cancelCallback_ = null;
         if (chrome.extension.lastError) {
-          self.log_(
-              'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
-          onFilesystemError({
+          onFailTransfer({
             code: chrome.extension.lastError.message,
             toGDrive: task.targetOnGData,
             sourceFileUrl: sourceFileUrl
           });
         } else {
-          targetDirEntry.getFile(targetRelativePath, {},
-              function(targetEntry) {
-                targetEntry.getMetadata(function(metadata) {
-                  if (metadata.size > transferedBytes)
-                    onCopyProgress(sourceEntry,
-                                   metadata.size - transferedBytes);
-                  onFilesystemCopyComplete(sourceEntry, targetEntry);
-                });
-              },
-              onFilesystemError);
-        }
-      }
-
-      function onFileTransfersUpdated(statusList) {
-        for (var i = 0; i < statusList.length; i++) {
-          var s = statusList[i];
-          if ((s.fileUrl == sourceFileUrl || s.fileUrl == targetFileUrl) &&
-              s.processed > transferedBytes) {
-            onCopyProgress(sourceEntry, s.processed - transferedBytes);
-            transferedBytes = s.processed;
-          }
+          targetDirEntry.getFile(targetRelativePath, {}, onSuccessTransfer,
+                                                         onFailTransfer);
         }
       }
 
@@ -887,8 +915,9 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
         }
       };
 
-      chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
-          onFileTransfersUpdated);
+      // TODO(benchan): Until DriveFileSystem supports FileWriter, we use the
+      // transferFile API to copy files into or out from a gdata file system.
+      onStartTransfer();
       chrome.fileBrowserPrivate.transferFile(
           sourceFileUrl, targetFileUrl, onFileTransferCompleted);
       return;
