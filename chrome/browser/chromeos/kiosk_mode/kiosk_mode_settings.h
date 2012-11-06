@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/app_pack_updater.h"
 
 namespace base {
@@ -73,7 +74,8 @@ class KioskModeSettings {
 
   // Makes sure the browser will switch to kiosk mode if cryptohome was not
   // ready when the browser was starting after a machine reboot.
-  void VerifyModeIsKnown();
+  void VerifyModeIsKnown(DeviceSettingsService::OwnershipStatus status,
+                         bool is_owner);
 
   bool is_initialized_;
   bool is_kiosk_mode_;
