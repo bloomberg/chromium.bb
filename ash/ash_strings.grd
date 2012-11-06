@@ -229,6 +229,9 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_EXIT_KIOSK" desc="The label used for the button in the status tray to terminate a session kiosk mode.">
         Exit session
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_EXIT_PUBLIC" desc="The label used for the button in the status tray to terminate a public account session.">
+        End public session
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock
       </message>
@@ -458,6 +461,7 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_WEB_NOTIFICATION_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the web notification tray (message center).">
         Message Center
       </message>
+
       <message name="IDS_ASH_MAXIMIZE_WINDOW" desc="A help text to show that when the button gets clicked the window get maximized.">
         Maximize
       </message>

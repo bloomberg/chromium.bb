@@ -19,6 +19,9 @@ string16 GetLocalizedSignOutStringForStatus(LoginStatus status) {
     case LOGGED_IN_KIOSK:
       message_id = IDS_ASH_STATUS_TRAY_EXIT_KIOSK;
       break;
+    case LOGGED_IN_PUBLIC:
+      message_id = IDS_ASH_STATUS_TRAY_EXIT_PUBLIC;
+      break;
     default:
       message_id = IDS_ASH_STATUS_TRAY_SIGN_OUT;
       break;

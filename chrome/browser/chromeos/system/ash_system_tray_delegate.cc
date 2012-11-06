@@ -279,6 +279,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       return ash::user::LOGGED_IN_GUEST;
     if (manager->IsLoggedInAsDemoUser())
       return ash::user::LOGGED_IN_KIOSK;
+    if (manager->IsLoggedInAsPublicAccount())
+      return ash::user::LOGGED_IN_PUBLIC;
     return ash::user::LOGGED_IN_USER;
   }
 
