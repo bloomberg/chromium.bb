@@ -747,7 +747,7 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
   gfx::Rect accel_bounds(width() - accel_right_margin - max_accel_width,
                          GetTopMargin(), max_accel_width, available_height);
   accel_bounds.set_x(GetMirroredXForRect(accel_bounds));
-  int flags = GetDrawStringFlags() | gfx::Canvas::TEXT_VALIGN_MIDDLE;
+  int flags = GetDrawStringFlags();
   flags &= ~(gfx::Canvas::TEXT_ALIGN_RIGHT | gfx::Canvas::TEXT_ALIGN_LEFT);
   if (base::i18n::IsRTL())
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;

@@ -89,7 +89,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   int height = this->height() - GetTopMargin() - GetBottomMargin();
-  int flags = gfx::Canvas::TEXT_VALIGN_MIDDLE | GetDrawStringFlags();
+  int flags = GetDrawStringFlags();
   gfx::Rect text_bounds(label_start_, top_margin, width, height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   if (mode == PB_FOR_DRAG) {

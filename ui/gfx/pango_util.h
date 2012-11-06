@@ -84,13 +84,6 @@ void SetupPangoLayoutWithFontDescription(
     base::i18n::TextDirection text_direction,
     int flags);
 
-// Get Pango's calculated size of |layout| and modify |text_rect| within
-// |bounds|.
-void AdjustTextRectBasedOnLayout(PangoLayout* layout,
-                                 const gfx::Rect& bounds,
-                                 int flags,
-                                 gfx::Rect* text_rect);
-
 // Draws the |layout| (pango tuple of font, actual text, etc) onto |cr| using
 // |text_color| as the cairo pattern.
 void DrawPangoLayout(cairo_t* cr,

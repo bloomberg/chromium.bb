@@ -53,9 +53,6 @@ class TextExample : public ExampleBase,
   // Combo box for horizontal text alignment.
   Combobox* h_align_cb_;
 
-  // Combo box for vertical text alignment.
-  Combobox* v_align_cb_;
-
   // Combo box for text eliding style.
   Combobox* eliding_cb_;
 

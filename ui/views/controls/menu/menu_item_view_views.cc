@@ -75,7 +75,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   gfx::Rect text_bounds(label_start_, top_margin, width, available_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
-  int flags = GetDrawStringFlags() | gfx::Canvas::TEXT_VALIGN_MIDDLE;
+  int flags = GetDrawStringFlags();
   if (mode == PB_FOR_DRAG)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
   canvas->DrawStringInt(title(), font, fg_color,

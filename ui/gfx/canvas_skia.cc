@@ -80,20 +80,6 @@ bool PixelShouldGetHalo(const SkBitmap& bitmap,
   return false;
 }
 
-// Apply vertical alignment per |flags|. Returns y-coordinate delta.
-int VAlignText(int text_height,
-               int flags,
-               int available_height) {
-  if (flags & gfx::Canvas::TEXT_VALIGN_TOP)
-    return 0;
-
-  if (flags & gfx::Canvas::TEXT_VALIGN_BOTTOM)
-    return available_height - text_height;
-
-  // Default case: TEXT_VALIGN_MIDDLE.
-  return (available_height - text_height) / 2;
-}
-
 // Strips accelerator character prefixes in |text| if needed, based on |flags|.
 // Returns a range in |text| to underline or ui::Range::InvalidRange() if
 // underlining is not needed.
@@ -262,15 +248,6 @@ void Canvas::DrawStringWithShadows(const string16& text,
 
   flags = AdjustPlatformSpecificFlags(text, flags);
 
-#if defined(OS_WIN)
-  // TODO(asvitkine): On Windows, MULTI_LINE implies top alignment.
-  //                  http://crbug.com/107357
-  if (flags & MULTI_LINE) {
-    flags &= ~(TEXT_VALIGN_MIDDLE | TEXT_VALIGN_BOTTOM);
-    flags |= TEXT_VALIGN_TOP;
-  }
-#endif
-
   gfx::Rect clip_rect(text_bounds);
   clip_rect.Inset(ShadowValue::GetMargin(shadows));
 
@@ -304,16 +281,17 @@ void Canvas::DrawStringWithShadows(const string16& text,
     for (size_t i = 0; i < strings.size(); i++) {
       ui::Range range = StripAcceleratorChars(flags, &strings[i]);
       UpdateRenderText(rect, strings[i], font, flags, color, render_text.get());
-
-      // Apply vertical alignment over the block of text using the height of the
-      // first line. This may not be correct if different lines in the text have
-      // different heights, but avoids needing to do two passes.
       const int line_height = render_text->GetStringSize().height();
+
+      // TODO(msw|asvitkine): Center Windows multi-line text: crbug.com/107357
+#if !defined(OS_WIN)
       if (i == 0) {
-        rect.Offset(0, VAlignText(strings.size() * line_height,
-                                  flags,
-                                  text_bounds.height()));
+        // TODO(msw|asvitkine): Support multi-line text with varied heights.
+        const int aggregate_height = strings.size() * line_height;
+        rect.Offset(0, (text_bounds.height() - aggregate_height) / 2);
       }
+#endif
+
       rect.set_height(line_height);
 
       ApplyUnderlineStyle(range, render_text.get());
@@ -348,7 +326,8 @@ void Canvas::DrawStringWithShadows(const string16& text,
                      render_text.get());
 
     const int line_height = render_text->GetStringSize().height();
-    rect.Offset(0, VAlignText(line_height, flags, text_bounds.height()));
+    // Center the text vertically.
+    rect.Offset(0, (text_bounds.height() - line_height) / 2);
     rect.set_height(line_height);
     render_text->SetDisplayRect(rect);
 
@@ -466,7 +445,8 @@ void Canvas::DrawFadeTruncatingString(
   UpdateRenderText(rect, clipped_text, font, flags, color, render_text.get());
 
   const int line_height = render_text->GetStringSize().height();
-  rect.Offset(0, VAlignText(line_height, flags, display_rect.height()));
+  // Center the text vertically.
+  rect.Offset(0, (display_rect.height() - line_height) / 2);
   rect.set_height(line_height);
   render_text->SetDisplayRect(rect);
 

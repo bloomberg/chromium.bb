@@ -210,7 +210,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
                          SK_ColorBLACK,
                          0, 0, icon_size.width(), icon_size.height(),
                          gfx::Canvas::TEXT_ALIGN_CENTER |
-                             gfx::Canvas::TEXT_VALIGN_MIDDLE |
                              gfx::Canvas::NO_SUBPIXEL_RENDERING);
 
     return gfx::ImageSkia(canvas.ExtractImageRep());

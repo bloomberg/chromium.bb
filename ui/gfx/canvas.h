@@ -50,28 +50,25 @@ class UI_EXPORT Canvas {
   enum {
     TEXT_ALIGN_LEFT = 1 << 0,
     TEXT_ALIGN_CENTER = 1 << 1,
-    TEXT_ALIGN_RIGHT = 1 << 2 ,
-    TEXT_VALIGN_TOP = 1 << 3,
-    TEXT_VALIGN_MIDDLE = 1 << 4,
-    TEXT_VALIGN_BOTTOM = 1 << 5,
+    TEXT_ALIGN_RIGHT = 1 << 2,
 
     // Specifies the text consists of multiple lines.
-    MULTI_LINE = 1 << 6,
+    MULTI_LINE = 1 << 3,
 
     // By default DrawStringInt does not process the prefix ('&') character
     // specially. That is, the string "&foo" is rendered as "&foo". When
     // rendering text from a resource that uses the prefix character for
     // mnemonics, the prefix should be processed and can be rendered as an
     // underline (SHOW_PREFIX), or not rendered at all (HIDE_PREFIX).
-    SHOW_PREFIX = 1 << 7,
-    HIDE_PREFIX = 1 << 8,
+    SHOW_PREFIX = 1 << 4,
+    HIDE_PREFIX = 1 << 5,
 
     // Prevent ellipsizing
-    NO_ELLIPSIS = 1 << 9,
+    NO_ELLIPSIS = 1 << 6,
 
     // Specifies if words can be split by new lines.
     // This only works with MULTI_LINE.
-    CHARACTER_BREAK = 1 << 10,
+    CHARACTER_BREAK = 1 << 7,
 
     // Instructs DrawStringInt() to render the text using RTL directionality.
     // In most cases, passing this flag is not necessary because information
@@ -81,16 +78,16 @@ class UI_EXPORT Canvas {
     // platforms (for example, an English Windows XP with no RTL fonts
     // installed) don't support these characters. Thus, this flag should be
     // used to render text using RTL directionality when the locale is LTR.
-    FORCE_RTL_DIRECTIONALITY = 1 << 11,
+    FORCE_RTL_DIRECTIONALITY = 1 << 8,
 
     // Similar to FORCE_RTL_DIRECTIONALITY, but left-to-right.
     // See FORCE_RTL_DIRECTIONALITY for details.
-    FORCE_LTR_DIRECTIONALITY = 1 << 12,
+    FORCE_LTR_DIRECTIONALITY = 1 << 9,
 
     // Instructs DrawStringInt() to not use subpixel rendering.  This is useful
     // when rendering text onto a fully- or partially-transparent background
     // that will later be blended with another image.
-    NO_SUBPIXEL_RENDERING = 1 << 13,
+    NO_SUBPIXEL_RENDERING = 1 << 10,
   };
 
   // Creates an empty canvas with scale factor of 1x.

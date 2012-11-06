@@ -27,6 +27,8 @@
 #include <gdk/gdk.h>
 #endif
 
+namespace gfx {
+
 namespace {
 
 // Marker for accelerators in the text.
@@ -49,23 +51,23 @@ cairo_font_options_t* GetCairoFontOptions() {
 
   cairo_font_options = cairo_font_options_create();
 
-  const gfx::FontRenderParams& params = gfx::GetDefaultFontRenderParams();
-  gfx::FontRenderParams::SubpixelRendering subpixel = params.subpixel_rendering;
+  const FontRenderParams& params = GetDefaultFontRenderParams();
+  FontRenderParams::SubpixelRendering subpixel = params.subpixel_rendering;
   if (!params.antialiasing) {
     cairo_font_options_set_antialias(cairo_font_options, CAIRO_ANTIALIAS_NONE);
-  } else if (subpixel == gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE) {
+  } else if (subpixel == FontRenderParams::SUBPIXEL_RENDERING_NONE) {
     cairo_font_options_set_antialias(cairo_font_options, CAIRO_ANTIALIAS_GRAY);
   } else {
     cairo_font_options_set_antialias(cairo_font_options,
                                      CAIRO_ANTIALIAS_SUBPIXEL);
     cairo_subpixel_order_t cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_DEFAULT;
-    if (subpixel == gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB)
+    if (subpixel == FontRenderParams::SUBPIXEL_RENDERING_RGB)
       cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_RGB;
-    else if (subpixel == gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR)
+    else if (subpixel == FontRenderParams::SUBPIXEL_RENDERING_BGR)
       cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_BGR;
-    else if (subpixel == gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB)
+    else if (subpixel == FontRenderParams::SUBPIXEL_RENDERING_VRGB)
       cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_VRGB;
-    else if (subpixel == gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR)
+    else if (subpixel == FontRenderParams::SUBPIXEL_RENDERING_VBGR)
       cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_VBGR;
     else
       NOTREACHED() << "Unhandled subpixel rendering type " << subpixel;
@@ -73,7 +75,7 @@ cairo_font_options_t* GetCairoFontOptions() {
                                           cairo_subpixel_order);
   }
 
-  if (params.hinting == gfx::FontRenderParams::HINTING_NONE ||
+  if (params.hinting == FontRenderParams::HINTING_NONE ||
       params.subpixel_positioning) {
     cairo_font_options_set_hint_style(cairo_font_options,
                                       CAIRO_HINT_STYLE_NONE);
@@ -81,11 +83,11 @@ cairo_font_options_t* GetCairoFontOptions() {
                                         CAIRO_HINT_METRICS_OFF);
   } else {
     cairo_hint_style_t cairo_hint_style = CAIRO_HINT_STYLE_DEFAULT;
-    if (params.hinting == gfx::FontRenderParams::HINTING_SLIGHT)
+    if (params.hinting == FontRenderParams::HINTING_SLIGHT)
       cairo_hint_style = CAIRO_HINT_STYLE_SLIGHT;
-    else if (params.hinting == gfx::FontRenderParams::HINTING_MEDIUM)
+    else if (params.hinting == FontRenderParams::HINTING_MEDIUM)
       cairo_hint_style = CAIRO_HINT_STYLE_MEDIUM;
-    else if (params.hinting == gfx::FontRenderParams::HINTING_FULL)
+    else if (params.hinting == FontRenderParams::HINTING_FULL)
       cairo_hint_style = CAIRO_HINT_STYLE_FULL;
     else
       NOTREACHED() << "Unhandled hinting style " << params.hinting;
@@ -108,7 +110,7 @@ float GetPixelsInPoint() {
     // http://goo.gl/UIh5m: "This is a scale factor between points specified in
     // a PangoFontDescription and Cairo units.  The default value is 96, meaning
     // that a 10 point font will be 13 units high. (10 * 96. / 72. = 13.3)."
-    double pango_dpi = gfx::GetPangoResolution();
+    double pango_dpi = GetPangoResolution();
     if (pango_dpi <= 0)
       pango_dpi = 96.0;
     pixels_in_point = pango_dpi / 72.0;  // 72 points in an inch
@@ -119,8 +121,6 @@ float GetPixelsInPoint() {
 }
 
 }  // namespace
-
-namespace gfx {
 
 PangoContext* GetPangoContext() {
 #if defined(USE_AURA)
@@ -153,7 +153,6 @@ void DrawTextOntoCairoSurface(cairo_t* cr,
   PangoLayout* layout = pango_cairo_create_layout(cr);
   base::i18n::TextDirection text_direction =
       base::i18n::GetFirstStrongCharacterDirection(text);
-  Rect text_rect(bounds.x(), bounds.y(), 0, 0);
   DCHECK(!bounds.IsEmpty());
 
   gfx::SetupPangoLayout(
@@ -165,7 +164,11 @@ void DrawTextOntoCairoSurface(cairo_t* cr,
   cairo_rectangle(cr, clip.x(), clip.y(), clip.width(), clip.height());
   cairo_clip(cr);
 
-  AdjustTextRectBasedOnLayout(layout, bounds, flags, &text_rect);
+  int width = 0, height = 0;
+  pango_layout_get_pixel_size(layout, &width, &height);
+  Rect text_rect(bounds.x(), bounds.y(), width, height);
+  // Vertically center |text_rect| in |bounds|.
+  text_rect.Offset(0, (bounds.height() - text_rect.height()) / 2);
 
   DrawPangoLayout(cr, layout, font, bounds, text_rect,
                   text_color, text_direction, flags);
@@ -299,26 +302,6 @@ void SetupPangoLayoutWithFontDescription(
   ScopedPangoFontDescription desc(
       pango_font_description_from_string(font_description.c_str()));
   pango_layout_set_font_description(layout, desc.get());
-}
-
-void AdjustTextRectBasedOnLayout(PangoLayout* layout,
-                                 const gfx::Rect& bounds,
-                                 int flags,
-                                 gfx::Rect* text_rect) {
-  int text_width, text_height;
-  pango_layout_get_pixel_size(layout, &text_width, &text_height);
-  text_rect->set_width(text_width);
-  text_rect->set_height(text_height);
-
-  if (flags & gfx::Canvas::TEXT_VALIGN_TOP) {
-    // Cairo should draw from the top left corner already.
-  } else if (flags & gfx::Canvas::TEXT_VALIGN_BOTTOM) {
-    text_rect->set_y(text_rect->y() + bounds.height() - text_rect->height());
-  } else {
-    // Vertically centered.
-    text_rect->set_y(text_rect->y() +
-                     ((bounds.height() - text_rect->height()) / 2));
-  }
 }
 
 void DrawPangoLayout(cairo_t* cr,
