@@ -62,6 +62,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   // RenderWidgetHost to hide.
   if (is_hidden_)
     host_->WasHidden();
+  texture_layer_->layer()->setOpaque(true);
   texture_layer_->layer()->setDrawsContent(!is_hidden_);
   host_->AttachLayer(texture_layer_->layer());
 }
