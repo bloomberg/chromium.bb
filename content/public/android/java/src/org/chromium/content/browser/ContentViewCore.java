@@ -1775,6 +1775,13 @@ public class ContentViewCore implements MotionEventDelegate {
 
     @SuppressWarnings("unused")
     @CalledByNative
+    private void showDisambiguationPopup(Rect targetRect, Bitmap zoomedBitmap) {
+        mPopupZoomer.setBitmap(zoomedBitmap);
+        mPopupZoomer.show(targetRect);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
     private void onSelectionChanged(String text) {
         mLastSelectedText = text;
     }

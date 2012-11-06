@@ -227,6 +227,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
 #endif
 
 #if defined(OS_ANDROID)
+  virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
+                                       const SkBitmap& zoomed_bitmap) = 0;
   virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
                                               float maximum_scale) = 0;
   virtual void UpdateFrameInfo(const gfx::Vector2d& scroll_offset,

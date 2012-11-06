@@ -494,6 +494,34 @@ void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
                                           jcontent_url.obj());
 }
 
+void ContentViewCoreImpl::ShowDisambiguationPopup(
+    const gfx::Rect& target_rect,
+    const SkBitmap& zoomed_bitmap) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  ScopedJavaLocalRef<jobject> rect_object(env,
+      env->NewObject(java_object_->rect_clazz.obj(),
+                     java_object_->rect_constructor,
+                     target_rect.x(),
+                     target_rect.y(),
+                     target_rect.right(),
+                     target_rect.bottom()));
+  DCHECK(!rect_object.is_null());
+
+  ScopedJavaLocalRef<jobject> java_bitmap =
+      gfx::ConvertToJavaBitmap(&zoomed_bitmap);
+  DCHECK(!java_bitmap.is_null());
+
+  Java_ContentViewCore_showDisambiguationPopup(env,
+                                               obj.obj(),
+                                               rect_object.obj(),
+                                               java_bitmap.obj());
+}
+
 void ContentViewCoreImpl::LoadUrl(
     NavigationController::LoadURLParams& params) {
   GetWebContents()->GetController().LoadURLWithParams(params);

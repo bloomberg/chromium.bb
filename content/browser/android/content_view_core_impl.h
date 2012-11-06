@@ -215,6 +215,12 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void StartContentIntent(const GURL& content_url);
 
+  // Shows the disambiguation popup
+  // |target_rect|   --> window coordinates which |zoomed_bitmap| represents
+  // |zoomed_bitmap| --> magnified image of potential touch targets
+  void ShowDisambiguationPopup(
+      const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap);
+
   // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------

@@ -123,6 +123,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual void UpdateFrameInfo(const gfx::Vector2d& scroll_offset,
                                float page_scale_factor,
                                const gfx::Size& content_size) OVERRIDE;
+  virtual void ShowDisambiguationPopup(const gfx::Rect& target_rect,
+                                       const SkBitmap& zoomed_bitmap) OVERRIDE;
 
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);

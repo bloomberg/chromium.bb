@@ -142,6 +142,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       TransportDIB::Handle transport_dib) OVERRIDE;
 #elif defined(OS_ANDROID)
   virtual void StartContentIntent(const GURL&) OVERRIDE;
+  virtual void ShowDisambiguationPopup(
+      const gfx::Rect& target_rect,
+      const SkBitmap& zoomed_bitmap) OVERRIDE {}
   virtual void SetCachedBackgroundColor(SkColor color) OVERRIDE {}
   virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
                                               float maximum_scale) OVERRIDE {}
