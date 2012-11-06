@@ -254,11 +254,9 @@ ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
 
   // Add a label to show the sync state.
   const int kStateFontDelta = -1;
-  sync_state_label_ = new views::Label();
+  sync_state_label_ = new views::Label(item_.sync_state);
   if (item_.signed_in)
-    sync_state_label_->SetEmail(item.sync_state);
-  else
-    sync_state_label_->SetText(item_.sync_state);
+    sync_state_label_->SetElideBehavior(views::Label::ELIDE_AS_EMAIL);
   sync_state_label_->SetFont(base_font.DeriveFont(kStateFontDelta));
   sync_state_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   sync_state_label_->SetEnabled(false);

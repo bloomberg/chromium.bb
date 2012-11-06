@@ -45,36 +45,24 @@ class VIEWS_EXPORT Label : public View {
   };
 
   enum ElideBehavior {
-    NO_ELIDE,
-    ELIDE_IN_MIDDLE,
-    ELIDE_AT_END,
+    NO_ELIDE,         // Do not elide the label text; truncate as needed.
+    ELIDE_IN_MIDDLE,  // Add ellipsis in the middle of the string as needed.
+    ELIDE_AT_END,     // Add ellipsis at the end of the string as needed.
+    ELIDE_AS_EMAIL,   // Elide while retaining username/domain chars as needed.
   };
-
-  // The view class name.
-  static const char kViewClassName[];
-
-  // The padding for the focus border when rendering focused text.
-  static const int kFocusBorderPadding;
 
   Label();
   explicit Label(const string16& text);
   Label(const string16& text, const gfx::Font& font);
   virtual ~Label();
 
-  // Sets the font.
+  // Get or set the font used by this label.
+  const gfx::Font& font() const { return font_; }
   virtual void SetFont(const gfx::Font& font);
 
-  // Sets the label text.
+  // Get or set the label text.
+  const string16& text() const { return text_; }
   void SetText(const string16& text);
-
-  // Sets the label text to |email|.  Emails have a custom eliding algorithm.
-  void SetEmail(const string16& email);
-
-  // Returns the font used by this label.
-  const gfx::Font& font() const { return font_; }
-
-  // Returns the label text.
-  const string16& text() const { return text_; };
 
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
@@ -125,12 +113,9 @@ class VIEWS_EXPORT Label : public View {
     return directionality_mode_;
   }
 
-  // Sets whether the label text can wrap on multiple lines.
-  // Default is false.
-  void SetMultiLine(bool multi_line);
-
-  // Returns whether the label text can wrap on multiple lines.
+  // Get or set if the label text can wrap on multiple lines; default is false.
   bool is_multi_line() const { return is_multi_line_; }
+  void SetMultiLine(bool multi_line);
 
   // Sets whether the label text can be split on words.
   // Default is false. This only works when is_multi_line is true.
@@ -147,11 +132,6 @@ class VIEWS_EXPORT Label : public View {
   // default behavior, call this with an empty string.
   void SetTooltipText(const string16& tooltip_text);
 
-  // The background color to use when the mouse is over the label. Label
-  // takes ownership of the Background.
-  void SetMouseOverBackground(Background* background);
-  const Background* GetMouseOverBackground() const;
-
   // Resizes the label so its width is set to the width of the longest line and
   // its height deduced accordingly.
   // This is only intended for multi-line labels and is useful when the label's
@@ -166,12 +146,6 @@ class VIEWS_EXPORT Label : public View {
   void set_collapse_when_hidden(bool value) { collapse_when_hidden_ = value; }
   bool collapse_when_hidden() const { return collapse_when_hidden_; }
 
-  // Gets/set whether or not this label is to be painted as a focused element.
-  void set_paint_as_focused(bool paint_as_focused) {
-    paint_as_focused_ = paint_as_focused;
-  }
-  bool paint_as_focused() const { return paint_as_focused_; }
-
   void SetHasFocusBorder(bool has_focus_border);
 
   // Overridden from View:
@@ -185,11 +159,6 @@ class VIEWS_EXPORT Label : public View {
   virtual int GetHeightForWidth(int w) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
-  // Mouse enter/exit are overridden to render mouse over background color.
-  // These invoke SetContainsMouse as necessary.
-  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   // Gets the tooltip text for labels that are wider than their bounds, except
   // when the label is multiline, in which case it just returns false (no
@@ -206,8 +175,6 @@ class VIEWS_EXPORT Label : public View {
                          const gfx::Rect& text_bounds,
                          int flags);
 
-  void invalidate_text_size() { text_size_valid_ = false; }
-
   virtual gfx::Size GetTextSize() const;
 
   SkColor disabled_color() const { return actual_disabled_color_; }
@@ -216,9 +183,6 @@ class VIEWS_EXPORT Label : public View {
   // Overridden to dirty our text bounds if we're multi-line.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  // If the mouse is over the label, and a mouse over background has been
-  // specified, its used. Otherwise super's implementation is invoked.
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // These tests call CalculateDrawStringParams in order to verify the
@@ -237,15 +201,6 @@ class VIEWS_EXPORT Label : public View {
   void Init(const string16& text, const gfx::Font& font);
 
   void RecalculateColors();
-
-  // If the mouse is over the text, SetContainsMouse(true) is invoked, otherwise
-  // SetContainsMouse(false) is invoked.
-  void UpdateContainsMouse(const ui::MouseEvent& event);
-
-  // Updates whether the mouse is contained in the Label. If the new value
-  // differs from the current value, and a mouse over background is specified,
-  // SchedulePaint is invoked.
-  void SetContainsMouse(bool contains_mouse);
 
   // Returns where the text is drawn, in the receivers coordinate system.
   gfx::Rect GetTextBounds() const;
@@ -272,21 +227,14 @@ class VIEWS_EXPORT Label : public View {
   bool is_multi_line_;
   bool allow_character_break_;
   ElideBehavior elide_behavior_;
-  bool is_email_;
   Alignment horiz_alignment_;
   string16 tooltip_text_;
-  // Whether the mouse is over this label.
-  bool contains_mouse_;
-  scoped_ptr<Background> mouse_over_background_;
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_;
   // The following member variable is used to control whether the
   // directionality is auto-detected based on first strong directionality
   // character or is determined by chrome UI's locale.
   DirectionalityMode directionality_mode_;
-  // When embedded in a larger control that is focusable, setting this flag
-  // allows this view to be painted as focused even when it is itself not.
-  bool paint_as_focused_;
   // When embedded in a larger control that is focusable, setting this flag
   // allows this view to reserve space for a focus border that it otherwise
   // might not have because it is not itself focusable.

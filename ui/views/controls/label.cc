@@ -25,12 +25,16 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/background.h"
 
+namespace {
+
+const char kViewClassName[] = "views/Label";
+
+// The padding for the focus border when rendering focused text.
+const int kFocusBorderPadding = 1;
+
+}  // namespace
+
 namespace views {
-
-// static
-const char Label::kViewClassName[] = "views/Label";
-
-const int Label::kFocusBorderPadding = 1;
 
 Label::Label() {
   Init(string16(), GetDefaultFont());
@@ -59,14 +63,8 @@ void Label::SetText(const string16& text) {
     return;
   text_ = text;
   text_size_valid_ = false;
-  is_email_ = false;
   PreferredSizeChanged();
   SchedulePaint();
-}
-
-void Label::SetEmail(const string16& email) {
-  SetText(email);
-  is_email_ = true;
 }
 
 void Label::SetAutoColorReadabilityEnabled(bool enabled) {
@@ -140,7 +138,6 @@ void Label::SetElideBehavior(ElideBehavior elide_behavior) {
   if (elide_behavior != elide_behavior_) {
     elide_behavior_ = elide_behavior;
     text_size_valid_ = false;
-    is_email_ = false;
     PreferredSizeChanged();
     SchedulePaint();
   }
@@ -148,14 +145,6 @@ void Label::SetElideBehavior(ElideBehavior elide_behavior) {
 
 void Label::SetTooltipText(const string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
-}
-
-void Label::SetMouseOverBackground(Background* background) {
-  mouse_over_background_.reset(background);
-}
-
-const Background* Label::GetMouseOverBackground() const {
-  return mouse_over_background_.get();
 }
 
 void Label::SizeToFit(int max_width) {
@@ -189,7 +178,7 @@ void Label::SetHasFocusBorder(bool has_focus_border) {
 
 gfx::Insets Label::GetInsets() const {
   gfx::Insets insets = View::GetInsets();
-  if (focusable() || has_focus_border_)  {
+  if (focusable() || has_focus_border_) {
     insets += gfx::Insets(kFocusBorderPadding, kFocusBorderPadding,
                           kFocusBorderPadding, kFocusBorderPadding);
   }
@@ -233,18 +222,6 @@ bool Label::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 
-void Label::OnMouseMoved(const ui::MouseEvent& event) {
-  UpdateContainsMouse(event);
-}
-
-void Label::OnMouseEntered(const ui::MouseEvent& event) {
-  UpdateContainsMouse(event);
-}
-
-void Label::OnMouseExited(const ui::MouseEvent& event) {
-  SetContainsMouse(false);
-}
-
 bool Label::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   DCHECK(tooltip);
 
@@ -281,7 +258,7 @@ void Label::PaintText(gfx::Canvas* canvas,
       enabled() ? actual_enabled_color_ : actual_disabled_color_,
       text_bounds, flags, shadows);
 
-  if (HasFocus() || paint_as_focused_) {
+  if (HasFocus()) {
     gfx::Rect focus_bounds = text_bounds;
     focus_bounds.Inset(-kFocusBorderPadding, -kFocusBorderPadding);
     canvas->DrawFocusRect(focus_bounds);
@@ -328,21 +305,12 @@ void Label::OnPaint(gfx::Canvas* canvas) {
   PaintText(canvas, paint_text, text_bounds, flags);
 }
 
-void Label::OnPaintBackground(gfx::Canvas* canvas) {
-  const Background* bg = contains_mouse_ ? GetMouseOverBackground() : NULL;
-  if (!bg)
-    bg = background();
-  if (bg)
-    bg->Paint(canvas, this);
-}
-
 // static
 gfx::Font Label::GetDefaultFont() {
   return ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
 }
 
 void Label::Init(const string16& text, const gfx::Font& font) {
-  contains_mouse_ = false;
   font_ = font;
   text_size_valid_ = false;
   requested_enabled_color_ = ui::NativeTheme::instance()->GetSystemColor(
@@ -357,10 +325,8 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   is_multi_line_ = false;
   allow_character_break_ = false;
   elide_behavior_ = NO_ELIDE;
-  is_email_ = false;
   collapse_when_hidden_ = false;
   directionality_mode_ = USE_UI_DIRECTIONALITY;
-  paint_as_focused_ = false;
   has_focus_border_ = false;
   enabled_shadow_color_ = 0;
   disabled_shadow_color_ = 0;
@@ -379,18 +345,6 @@ void Label::RecalculateColors() {
       color_utils::GetReadableColor(requested_disabled_color_,
                                     background_color_) :
       requested_disabled_color_;
-}
-
-void Label::UpdateContainsMouse(const ui::MouseEvent& event) {
-  SetContainsMouse(GetTextBounds().Contains(event.x(), event.y()));
-}
-
-void Label::SetContainsMouse(bool contains_mouse) {
-  if (contains_mouse_ == contains_mouse)
-    return;
-  contains_mouse_ = contains_mouse;
-  if (GetMouseOverBackground())
-    SchedulePaint();
 }
 
 gfx::Rect Label::GetTextBounds() const {
@@ -469,9 +423,8 @@ int Label::ComputeDrawStringFlags() const {
 }
 
 gfx::Rect Label::GetAvailableRect() const {
-  gfx::Rect bounds(gfx::Point(), size());
-  gfx::Insets insets(GetInsets());
-  bounds.Inset(insets.left(), insets.top(), insets.right(), insets.bottom());
+  gfx::Rect bounds(size());
+  bounds.Inset(GetInsets());
   return bounds;
 }
 
@@ -481,7 +434,7 @@ void Label::CalculateDrawStringParams(string16* paint_text,
   DCHECK(paint_text && text_bounds && flags);
 
   // TODO(msw): Use ElideRectangleText to support eliding multi-line text.
-  if (is_email_) {
+  if (elide_behavior_ == ELIDE_AS_EMAIL) {
     *paint_text = ui::ElideEmail(text_, font_, GetAvailableRect().width());
   } else if (elide_behavior_ == ELIDE_IN_MIDDLE) {
     *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
