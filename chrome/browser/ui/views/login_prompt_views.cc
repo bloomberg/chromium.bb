@@ -36,7 +36,7 @@ class LoginHandlerViews : public LoginHandler,
  public:
   LoginHandlerViews(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
-        enable_chrome_style_(chrome::IsFramelessConstrainedDialogEnabled()),
+        enable_chrome_style_(chrome::UseChromeStyleDialogs()),
         login_view_(NULL) {
   }
 

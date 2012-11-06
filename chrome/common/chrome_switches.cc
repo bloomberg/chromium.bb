@@ -510,10 +510,8 @@ const char kExtensionsInActionBox[]         = "extensions-in-action-box";
 // Enables experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
 
-// Applies a new frameless window style to any dialog based on
-// ConstrainedWindowViews.
-const char kEnableFramelessConstrainedDialogs[] =
-    "enable-frameless-constrained-dialogs";
+// Applies the chrome style to any dialog based on ConstrainedWindowViews.
+const char kEnableChromeStyleDialogs[]      = "enable-chrome-style-dialogs";
 
 // By default, cookies are not allowed on file://. They are needed for testing,
 // for example page cycler and layout tests. See bug 1157243.
@@ -1609,15 +1607,15 @@ const char kEnablePrintPreview[]            = "enable-print-preview";
 
 namespace chrome {
 
-bool IsFramelessConstrainedDialogEnabled() {
+bool UseChromeStyleDialogs() {
 #if defined(OS_MACOSX)
   return true;
 #elif defined(OS_WIN)
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFramelessConstrainedDialogs);
+      switches::kEnableChromeStyleDialogs);
 #else
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFramelessConstrainedDialogs);
+      switches::kEnableChromeStyleDialogs);
 #endif
 }
 

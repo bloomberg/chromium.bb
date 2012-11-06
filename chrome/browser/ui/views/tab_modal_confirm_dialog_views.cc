@@ -21,9 +21,7 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents) {
   return new TabModalConfirmDialogViews(
-      delegate,
-      web_contents,
-      chrome::IsFramelessConstrainedDialogEnabled());
+      delegate, web_contents, chrome::UseChromeStyleDialogs());
 }
 
 namespace {

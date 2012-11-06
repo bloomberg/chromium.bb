@@ -54,7 +54,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       accepted_(false),
       // Enable this once chrome style constrained windows work on shell
       // windows. http://crbug.com/156694
-      enable_chrome_style_(IsFramelessConstrainedDialogEnabled()) {
+      enable_chrome_style_(UseChromeStyleDialogs()) {
   InitChildViews();
 
   // Ownership of |contents_| is handed off by this call. |window_| will take

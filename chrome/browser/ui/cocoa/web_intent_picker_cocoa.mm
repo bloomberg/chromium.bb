@@ -72,7 +72,7 @@ void ConstrainedPickerSheetDelegate::DeleteDelegate() {
 WebIntentPicker* WebIntentPicker::Create(content::WebContents* web_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  if (chrome::IsFramelessConstrainedDialogEnabled())
+  if (chrome::UseChromeStyleDialogs())
     return new WebIntentPickerCocoa2(web_contents, delegate, model);
   return new WebIntentPickerCocoa(web_contents, delegate, model);
 }

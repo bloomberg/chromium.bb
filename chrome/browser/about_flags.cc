@@ -944,11 +944,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kOldCheckboxStyle),
   },
   {
-    "enable-frameless-constrained-dialogs",
+    "enable-chrome-style-dialogs",
     IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_NAME,
     IDS_FLAGS_ENABLE_FRAMELESS_DIALOG_DESCRIPTION,
     kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableFramelessConstrainedDialogs),
+    SINGLE_VALUE_TYPE(switches::kEnableChromeStyleDialogs),
   },
   { "disable-accelerated-video-decode",
     IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME,

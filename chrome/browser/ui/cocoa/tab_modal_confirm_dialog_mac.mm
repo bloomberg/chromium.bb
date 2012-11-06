@@ -18,7 +18,7 @@
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents) {
-  if (chrome::IsFramelessConstrainedDialogEnabled()) {
+  if (chrome::UseChromeStyleDialogs()) {
     // Deletes itself when closed.
     return new TabModalConfirmDialogMac2(delegate, web_contents);
   }

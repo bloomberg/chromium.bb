@@ -367,7 +367,7 @@ void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
 #endif
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFramelessConstrainedDialogs)) {
+      switches::kEnableChromeStyleDialogs)) {
     bool already_deemphasized = !!dimmed_color_overlay_.get();
     if (already_deemphasized == deemphasized)
       return;

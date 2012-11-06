@@ -130,30 +130,30 @@ extern const char kDiskCacheSize[];
 extern const char kDnsLogDetails[];
 extern const char kDnsPrefetchDisable[];
 extern const char kDumpHistogramsOnExit[];
+extern const char kDisableSyncTabs[];
+extern const char kEasyOffStoreExtensionInstall[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutologin[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableBundledPpapiFlash[];
+extern const char kEnableChromeStyleDialogs[];
 extern const char kEnableCloudPolicyService[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableContacts[];
 extern const char kEnableCrxlessWebApps[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDriveV2Api[];
-extern const char kEasyOffStoreExtensionInstall[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityUI[];
-extern const char kExtensionsInActionBox[];
 extern const char kEnableExtensionTimelineApi[];
-extern const char kEnableFramelessConstrainedDialogs[];
 extern const char kEnableFileCookies[];
 extern const char kEnableHttpPipelining[];
 extern const char kEnableInstantExtendedAPI[];
-extern const char kEnableIPv6[];
 extern const char kEnableIPCFuzzing[];
 extern const char kEnableIPPooling[];
+extern const char kEnableIPv6[];
 extern const char kEnableManagedStorage[];
 extern const char kEnableMemoryInfo[];
 extern const char kEnableMetricsReportingForTesting[];
@@ -162,10 +162,9 @@ extern const char kEnableNaClDebug[];
 extern const char kEnableNaClExceptionHandling[];
 extern const char kEnableNaClIPCProxy[];
 extern const char kEnableNativeMessaging[];
-extern const char kEnableNewAutofillUi[];
 extern const char kEnableNewAutofillHeuristics[];
+extern const char kEnableNewAutofillUi[];
 extern const char kEnableNpn[];
-extern const char kDisableSyncTabs[];
 extern const char kEnableNpnHttpOnly[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordGeneration[];
@@ -183,6 +182,7 @@ extern const char kEnableSyncHistoryDeleteDirectives[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
+extern const char kExtensionsInActionBox[];
 extern const char kEventPageIdleTime[];
 extern const char kEventPageUnloadingTime[];
 extern const char kExplicitlyAllowedPorts[];
@@ -461,9 +461,9 @@ extern const char kEnablePrintPreview[];
 
 namespace chrome {
 
-// Returns true if the new frameless constrained window style is enabled.
+// Returns true if the chrome style dialog is enabled.
 // TODO(sail): Remove this once the feature is fully baked.
-bool IsFramelessConstrainedDialogEnabled();
+bool UseChromeStyleDialogs();
 
 }  // namespace chrome
 
