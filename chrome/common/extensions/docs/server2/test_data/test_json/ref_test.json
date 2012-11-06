@@ -17,6 +17,36 @@
         "type": "string",
         "description": "$ref:other.type2 != $ref:ref_test.type2"
       }
+    ],
+    "events": [
+      {
+        "name": "event1",
+        "type": "function",
+        "description": "We like $ref:type1",
+        "parameters": [
+          {
+            "name": "param1",
+            "type": "string"
+          }
+        ]
+      }
+    ],
+    "properties": {
+      "prop1": {
+        "$ref": "type3"
+      }
+    },
+    "functions": [
+      {
+        "name": "func1",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "param1",
+            "type": "string"
+          }
+        ]
+      }
     ]
   }
 ]

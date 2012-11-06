@@ -68,8 +68,12 @@ class APIListDataSource(object):
     self._cache = cache
     self._api_path = api_path
 
-  def __getitem__(self, key):
-    return self.get(key)
+  def GetAllNames(self):
+    names = []
+    for i in ['apps', 'extensions']:
+      for j in ['chrome', 'experimental']:
+       names.extend(self.get(i).get(j))
+    return [api_name['name'] for api_name in names]
 
   def get(self, key):
     try:

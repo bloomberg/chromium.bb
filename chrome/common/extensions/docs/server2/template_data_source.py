@@ -132,9 +132,6 @@ class TemplateDataSource(object):
           (template_name, '  \n'.join(render_data.errors)))
     return render_data.text
 
-  def __getitem__(self, key):
-    return self.get(key)
-
   def get(self, key):
     return self.GetTemplate(self._private_template_path, key)
 

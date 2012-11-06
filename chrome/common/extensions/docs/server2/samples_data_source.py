@@ -15,17 +15,6 @@ import url_constants
 
 DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
-def _MakeAPILink(prefix, item, api_list):
-  item = item.replace('chrome.', '')
-  parts = item.split('.')
-  api_name = []
-  for i in range(1, len(parts) + 1):
-    if '.'.join(parts[:i]) in api_list:
-      return '%s.html#%s-%s' % ('.'.join(parts[:i]),
-                                prefix,
-                                '.'.join(parts[i:]))
-  return None
-
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
   """
@@ -40,7 +29,7 @@ class SamplesDataSource(object):
                  github_file_system,
                  cache_factory,
                  github_cache_factory,
-                 api_list_data_source_factory,
+                 ref_resolver_factory,
                  samples_path):
       self._file_system = file_system
       self._github_file_system = github_file_system
@@ -51,7 +40,7 @@ class SamplesDataSource(object):
       self._apps_cache = github_cache_factory.Create(
           lambda x: self._MakeSamplesList(x, is_apps=True),
           compiled_fs.APPS)
-      self._api_list_data_source = api_list_data_source_factory.Create()
+      self._ref_resolver = ref_resolver_factory.Create()
       self._samples_path = samples_path
 
     def Create(self, request):
@@ -61,14 +50,6 @@ class SamplesDataSource(object):
                                self._apps_cache,
                                self._samples_path,
                                request)
-
-    def _GetAllAPINames(self):
-      apis = []
-      for k1 in ['apps', 'extensions']:
-        for k2 in ['chrome', 'experimental']:
-          apis.extend(
-              [api['name'] for api in self._api_list_data_source[k1][k2]])
-      return apis
 
     def _GetAPIItems(self, js_file):
       return set(re.findall('(chrome\.[a-zA-Z0-9\.]+)', js_file))
@@ -108,7 +89,6 @@ class SamplesDataSource(object):
     def _MakeSamplesList(self, files, is_apps=False):
       file_system = self._github_file_system if is_apps else self._file_system
       samples_list = []
-      api_list = self._GetAllAPINames()
       for filename in sorted(files):
         if filename.rsplit('/')[-1] != 'manifest.json':
           continue
@@ -136,22 +116,15 @@ class SamplesDataSource(object):
             continue
           if item.endswith('.addListener'):
             item = item[:-len('.addListener')]
-            link = _MakeAPILink('event', item, api_list)
-            if link is None:
-              continue
-            api_calls.append({
-              'name': item,
-              'link': link
-            })
-          else:
-            # TODO(cduvall): this might be a property or a type.
-            link = _MakeAPILink('method', item, api_list)
-            if link is None:
-              continue
-            api_calls.append({
-              'name': item,
-              'link': link
-            })
+          if item.startswith('chrome.'):
+            item = item[len('chrome.'):]
+          ref_data = self._ref_resolver.GetLink('samples', item)
+          if ref_data is None:
+            continue
+          api_calls.append({
+            'name': ref_data['text'],
+            'link': ref_data['href']
+          })
         try:
           manifest_data = self._GetDataFromManifest(sample_path, file_system)
         except FileNotFoundError as e:
@@ -206,7 +179,7 @@ class SamplesDataSource(object):
     only the samples that use the API |api_name|. |key| is either 'apps' or
     'extensions'.
     """
-    api_search = '_' + api_name + '_'
+    api_search = api_name + '_'
     samples_list = []
     try:
       for sample in self.get(key):
@@ -254,9 +227,6 @@ class SamplesDataSource(object):
       else:
         return_list.append(dict_)
     return return_list
-
-  def __getitem__(self, key):
-    return self.get(key)
 
   def get(self, key):
     return {

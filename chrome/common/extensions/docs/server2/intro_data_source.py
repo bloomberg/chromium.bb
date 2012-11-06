@@ -13,7 +13,7 @@ from third_party.handlebar import Handlebar
 
 # Increment this version if there are changes to the table of contents dict that
 # IntroDataSource caches.
-_VERSION = 1
+_VERSION = 2
 
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
@@ -97,9 +97,6 @@ class IntroDataSource(object):
   def __init__(self, cache, base_paths):
     self._cache = cache
     self._base_paths = base_paths
-
-  def __getitem__(self, key):
-    return self.get(key)
 
   def get(self, key):
     real_path = FormatKey(key)

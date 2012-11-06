@@ -25,6 +25,7 @@ from intro_data_source import IntroDataSource
 from known_issues_data_source import KnownIssuesDataSource
 from local_file_system import LocalFileSystem
 from memcache_file_system import MemcacheFileSystem
+from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
 from server_instance import ServerInstance
 from subversion_file_system import SubversionFileSystem
@@ -131,17 +132,23 @@ def _GetInstanceForBranch(channel_name, local_path):
   intro_data_source_factory = IntroDataSource.Factory(
       cache_factory,
       [INTRO_PATH, ARTICLE_PATH])
+  api_data_source_factory = APIDataSource.Factory(
+      cache_factory,
+      API_PATH)
+  ref_resolver_factory = ReferenceResolver.Factory(
+      api_data_source_factory.Create(None, disable_refs=True),
+      api_list_data_source_factory.Create())
+  api_data_source_factory.SetReferenceResolverFactory(ref_resolver_factory)
   samples_data_source_factory = SamplesDataSource.Factory(
       channel_name,
       file_system,
       GITHUB_FILE_SYSTEM,
       cache_factory,
       GITHUB_COMPILED_FILE_SYSTEM,
-      api_list_data_source_factory,
+      ref_resolver_factory,
       EXAMPLES_PATH)
-  api_data_source_factory = APIDataSource.Factory(cache_factory,
-                                                  API_PATH,
-                                                  samples_data_source_factory)
+  api_data_source_factory.SetSamplesDataSourceFactory(
+      samples_data_source_factory)
   template_data_source_factory = TemplateDataSource.Factory(
       channel_name,
       api_data_source_factory,

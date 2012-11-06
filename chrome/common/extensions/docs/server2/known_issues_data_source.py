@@ -42,9 +42,6 @@ class KnownIssuesDataSource:
     self._object_store.Set(url, issues, object_store.KNOWN_ISSUES)
     return issues
 
-  def __getitem__(self, key):
-    return self.get(key)
-
   def get(self, key):
     return {
       'open': self.GetIssues(OPEN_ISSUES_CSV_URL),

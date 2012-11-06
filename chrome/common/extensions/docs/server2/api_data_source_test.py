@@ -9,14 +9,14 @@ import sys
 import unittest
 
 from api_data_source import (APIDataSource,
-                             _JscModel,
+                             _JSCModel,
                              _FormatValue,
                              _RemoveNoDocs)
 from compiled_file_system import CompiledFileSystem
-from docs_server_utils import GetLinkToRefType
 from file_system import FileNotFoundError
 from in_memory_object_store import InMemoryObjectStore
 from local_file_system import LocalFileSystem
+from reference_resolver import ReferenceResolver
 import third_party.json_schema_compiler.json_comment_eater as comment_eater
 import third_party.json_schema_compiler.model as model
 
@@ -28,9 +28,21 @@ def _GetType(dict_, name):
     if type_['name'] == name:
       return type_
 
-class FakeSamplesDataSource:
+class FakeSamplesDataSource(object):
   def Create(self, request):
     return {}
+
+class FakeAPIAndListDataSource(object):
+  def __init__(self, json_data):
+    self._json = json_data
+
+  def get(self, key):
+    if key not in self._json:
+      raise FileNotFoundError(key)
+    return self._json[key]
+
+  def GetAllNames(self):
+    return self._json.keys()
 
 class APIDataSourceTest(unittest.TestCase):
   def setUp(self):
@@ -40,39 +52,43 @@ class APIDataSourceTest(unittest.TestCase):
     with open(os.path.join(self._base_path, filename), 'r') as f:
       return f.read()
 
+  def _CreateRefResolver(self, filename):
+    data_source = FakeAPIAndListDataSource(
+        self._LoadJSON(filename))
+    return ReferenceResolver.Factory(data_source, data_source).Create()
+
   def DISABLED_testSimple(self):
     cache_factory = CompiledFileSystem.Factory(
         LocalFileSystem(self._base_path),
         InMemoryObjectStore('fake_branch'))
     data_source_factory = APIDataSource.Factory(cache_factory,
-                                                '.',
-                                                FakeSamplesDataSource())
-    data_source = data_source_factory.Create({})
+                                                '.')
+    data_source_factory.SetSamplesDataSourceFactory(FakeSamplesDataSource())
+    data_source = data_source_factory.Create({}, disable_refs=True)
 
     # Take the dict out of the list.
     expected = json.loads(self._ReadLocalFile('expected_test_file.json'))
     expected['permissions'] = None
-    test1 = data_source['test_file']
+    test1 = data_source.get('test_file')
     test1.pop('samples')
     self.assertEqual(expected, test1)
-    test2 = data_source['testFile']
+    test2 = data_source.get('testFile')
     test2.pop('samples')
     self.assertEqual(expected, test2)
-    test3 = data_source['testFile.html']
+    test3 = data_source.get('testFile.html')
     test3.pop('samples')
     self.assertEqual(expected, test3)
     self.assertRaises(FileNotFoundError, data_source.get, 'junk')
 
   def _LoadJSON(self, filename):
-    return json.loads(comment_eater.Nom(self._ReadLocalFile(filename)))[0]
-
-  def _ToDictTest(self, filename):
-    expected_json = json.loads(self._ReadLocalFile('expected_' + filename))
-    gen = _JscModel(self._LoadJSON(filename))
-    self.assertEquals(expected_json, gen.ToDict())
+    return json.loads(comment_eater.Nom(self._ReadLocalFile(filename)))
 
   def testCreateId(self):
-    dict_ = _JscModel(self._LoadJSON('test_file.json')).ToDict()
+    data_source = FakeAPIAndListDataSource(
+        self._LoadJSON('test_file_data_source.json'))
+    dict_ = _JSCModel(self._LoadJSON('test_file.json')[0],
+                      self._CreateRefResolver('test_file_data_source.json'),
+                      False).ToDict()
     self.assertEquals('type-TypeA', dict_['types'][0]['id'])
     self.assertEquals('property-TypeA-b',
                       dict_['types'][0]['properties'][0]['id'])
@@ -80,18 +96,14 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertEquals('event-EventA', dict_['events'][0]['id'])
 
   def testToDict(self):
-    self._ToDictTest('test_file.json')
-
-  def testGetLinkToRefType(self):
-    link = GetLinkToRefType('truthTeller', 'liar.Tab')
-    self.assertEquals('liar.html#type-Tab', link['href'])
-    self.assertEquals('liar.Tab', link['text'])
-    link = GetLinkToRefType('truthTeller', 'Tab')
-    self.assertEquals('#type-Tab', link['href'])
-    self.assertEquals('Tab', link['text'])
-    link = GetLinkToRefType('nay', 'lies.chrome.bookmarks.Tab')
-    self.assertEquals('lies.chrome.bookmarks.html#type-Tab', link['href'])
-    self.assertEquals('lies.chrome.bookmarks.Tab', link['text'])
+    filename = 'test_file.json'
+    expected_json = self._LoadJSON('expected_' + filename)
+    data_source = FakeAPIAndListDataSource(
+        self._LoadJSON('test_file_data_source.json'))
+    dict_ = _JSCModel(self._LoadJSON(filename)[0],
+                      self._CreateRefResolver('test_file_data_source.json'),
+                      False).ToDict()
+    self.assertEquals(expected_json, dict_)
 
   def testFormatValue(self):
     self.assertEquals('1,234,567', _FormatValue(1234567))
@@ -99,7 +111,9 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertEquals('234,567', _FormatValue(234567))
 
   def testFormatDescription(self):
-    dict_ = _JscModel(self._LoadJSON('ref_test.json')).ToDict()
+    dict_ = _JSCModel(self._LoadJSON('ref_test.json')[0],
+                      self._CreateRefResolver('ref_test_data_source.json'),
+                      False).ToDict()
     self.assertEquals(_MakeLink('#type-type2', 'type2'),
                       _GetType(dict_, 'type1')['description'])
     self.assertEquals(
@@ -108,13 +122,13 @@ class APIDataSourceTest(unittest.TestCase):
         _GetType(dict_, 'type2')['description'])
     self.assertEquals(
         '%s != %s' % (_MakeLink('other.html#type-type2', 'other.type2'),
-                      _MakeLink('#type-type2', 'type2')),
+                      _MakeLink('ref_test.html#type-type2', 'type2')),
         _GetType(dict_, 'type3')['description'])
 
   def testRemoveNoDocs(self):
-    d = json.loads(self._ReadLocalFile('nodoc_test.json'))
+    d = self._LoadJSON('nodoc_test.json')
     _RemoveNoDocs(d)
-    self.assertEqual(json.loads(self._ReadLocalFile('expected_nodoc.json')), d)
+    self.assertEqual(self._LoadJSON('expected_nodoc.json'), d)
 
 if __name__ == '__main__':
   unittest.main()
