@@ -63,7 +63,8 @@ class DisplayView : public ash::internal::ActionableView {
         return;
       }
       case chromeos::STATE_DUAL_PRIMARY_ONLY:
-      case chromeos::STATE_DUAL_SECONDARY_ONLY: {
+      case chromeos::STATE_DUAL_SECONDARY_ONLY:
+      case chromeos::STATE_DUAL_UNKNOWN: {
         label_->SetText(l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetExternalDisplayName()));
         SetVisible(true);
