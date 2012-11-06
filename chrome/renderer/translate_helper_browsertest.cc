@@ -395,6 +395,25 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTagCase) {
   EXPECT_EQ("fr", params.a);
 }
 
+// Tests that the language meta tag is converted to Chrome standard of dashes
+// instead of underscores and proper capitalization.
+// http://code.google.com/p/chromium/issues/detail?id=159487
+TEST_F(ChromeRenderViewTest, LanguageCommonMistakesAreCorrected) {
+  // Suppress the normal delay that occurs when the page is loaded before which
+  // the renderer sends the page contents to the browser.
+  SendContentStateImmediately();
+
+  LoadHTML("<html><head><meta http-equiv='Content-Language' content='EN_us'>"
+           "</head><body>A random page with random content.</body></html>");
+  const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
+      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
+  ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
+  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  EXPECT_EQ("en-US", params.a);
+  render_thread_->sink().ClearMessages();
+}
+
 
 // Tests that a back navigation gets a translate language message.
 TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {

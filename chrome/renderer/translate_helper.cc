@@ -81,7 +81,20 @@ void TranslateHelper::PageCaptured(const string16& contents) {
     language = language.substr(0, coma_index);
   }
   TrimWhitespaceASCII(language, TRIM_ALL, &language);
-  language = StringToLowerASCII(language);
+
+  // An underscore instead of a dash is a frequent mistake.
+  size_t underscore_index = language.find('_');
+  if (underscore_index != std::string::npos)
+    language[underscore_index] = '-';
+
+  // Change everything up to a dash to lower-case and everything after to upper.
+  size_t dash_index = language.find('-');
+  if (dash_index != std::string::npos) {
+    language = StringToLowerASCII(language.substr(0, dash_index)) +
+        StringToUpperASCII(language.substr(dash_index));
+  } else {
+    language = StringToLowerASCII(language);
+  }
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
   if (language.empty()) {
