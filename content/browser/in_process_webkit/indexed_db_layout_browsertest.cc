@@ -94,8 +94,8 @@ const char* kIntVersionTests[] = {
   "intversion-abort-in-initial-upgradeneeded.html",
   "intversion-and-setversion.html",
   "intversion-blocked.html",
-  // "intversion-close-between-events.html", // crbug.com/150947
-  // "intversion-close-in-oncomplete.html", // crbug.com/150691
+  "intversion-close-between-events.html",
+  "intversion-close-in-oncomplete.html",
   "intversion-close-in-upgradeneeded.html",
   "intversion-delete-in-upgradeneeded.html",
   // "intversion-gated-on-delete.html", // behaves slightly differently in DRT
