@@ -131,7 +131,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
       bool create,
       const OpenFileSystemCallback& callback);
 
-  // Deletes the filesystem for the given |origin_url| and |type|.
+  // Deletes the filesystem for the given |origin_url| and |type|. This should
+  // be called on the IO Thread.
   void DeleteFileSystem(
       const GURL& origin_url,
       FileSystemType type,

@@ -38,6 +38,48 @@ const char kQuotaError[] = "Quota error %d.";
 
 }  // namespace
 
+bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      BrowserContext::GetStoragePartition(
+          profile(),
+          render_view_host()->GetSiteInstance())->GetFileSystemContext();
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      Bind(&fileapi::FileSystemContext::DeleteFileSystem,
+           file_system_context,
+           source_url().GetOrigin(),
+           fileapi::kFileSystemTypeSyncable,
+           Bind(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem,
+                this)));
+  return true;
+}
+
+void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
+    base::PlatformFileError error) {
+  // Repost to switch from IO thread to UI thread for SendResponse().
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        Bind(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem, this,
+             error));
+    return;
+  }
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (error != base::PLATFORM_FILE_OK) {
+    error_ = base::StringPrintf(kFileError, static_cast<int>(error));
+    SetResult(base::Value::CreateBooleanValue(false));
+    SendResponse(false);
+    return;
+  }
+
+  SetResult(base::Value::CreateBooleanValue(true));
+  SendResponse(true);
+}
+
 bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
   std::string service_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &service_name));

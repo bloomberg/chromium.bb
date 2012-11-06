@@ -16,6 +16,34 @@ class FileSystemContext;
 
 namespace extensions {
 
+class SyncFileSystemDeleteFileSystemFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("syncFileSystem.deleteFileSystem");
+
+ protected:
+  virtual ~SyncFileSystemDeleteFileSystemFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void DidDeleteFileSystem(base::PlatformFileError error);
+};
+
+class SyncFileSystemGetUsageAndQuotaFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("syncFileSystem.getUsageAndQuota");
+
+ protected:
+  virtual ~SyncFileSystemGetUsageAndQuotaFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void DidGetUsageAndQuota(quota::QuotaStatusCode status,
+                           int64 usage,
+                           int64 quota);
+};
+
 class SyncFileSystemRequestFileSystemFunction
     : public AsyncExtensionFunction {
  public:
@@ -36,21 +64,6 @@ class SyncFileSystemRequestFileSystemFunction
   void DidOpenFileSystem(base::PlatformFileError error,
                          const std::string& file_system_name,
                          const GURL& root_url);
-};
-
-class SyncFileSystemGetUsageAndQuotaFunction
-    : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("syncFileSystem.getUsageAndQuota");
-
- protected:
-  virtual ~SyncFileSystemGetUsageAndQuotaFunction() {}
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  void DidGetUsageAndQuota(quota::QuotaStatusCode status,
-                           int64 usage,
-                           int64 quota);
 };
 
 }  // namespace extensions
