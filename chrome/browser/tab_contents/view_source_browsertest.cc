@@ -10,7 +10,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/test/test_server.h"
 
@@ -83,4 +88,34 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest,
   ui_test_utils::NavigateToURL(browser(), url_viewsource);
 
   EXPECT_FALSE(chrome::CanViewSource(browser()));
+}
+
+// Tests that reload initiated by the script on the view-source page leaves
+// the page in view-source mode.
+IN_PROC_BROWSER_TEST_F(ViewSourceTest, TestViewSourceReload) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
+      test_server()->GetURL(kTestHtml).spec());
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURL(browser(), url_viewsource);
+  observer.Wait();
+
+  content::RenderViewHost* rvh =
+      chrome::GetWebContentsAt(browser(), 0)->GetRenderViewHost();
+
+  ASSERT_TRUE(
+      content::ExecuteJavaScript(rvh,
+                                 L"",
+                                 L"window.location.reload();"));
+
+  content::WindowedNotificationObserver observer2(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  observer2.Wait();
+  ASSERT_TRUE(chrome::GetWebContentsAt(browser(), 0)->GetController().
+                  GetActiveEntry()->IsViewSourceMode());
 }

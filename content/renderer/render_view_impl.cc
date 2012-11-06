@@ -2777,7 +2777,8 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     // must be handled by the browser process so that the correct bindings and
     // data sources can be registered.
     // Similarly, navigations to view-source URLs or within ViewSource mode
-    // must be handled by the browser process.
+    // must be handled by the browser process (except for reloads - those are
+    // safe to leave within the renderer).
     // Lastly, access to file:// URLs from non-file:// URL pages must be
     // handled by the browser so that ordinary renderer processes don't get
     // blessed with file permissions.
@@ -2787,7 +2788,8 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
         GetContentClient()->HasWebUIScheme(url) ||
         (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
         url.SchemeIs(chrome::kViewSourceScheme) ||
-        frame->isViewSourceModeEnabled();
+        (frame->isViewSourceModeEnabled() &&
+            type != WebKit::WebNavigationTypeReload);
 
     if (!should_fork && url.SchemeIs(chrome::kFileScheme)) {
       // Fork non-file to file opens.  Check the opener URL if this is the
