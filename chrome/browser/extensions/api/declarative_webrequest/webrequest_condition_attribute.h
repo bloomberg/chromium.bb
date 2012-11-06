@@ -38,7 +38,8 @@ class WebRequestConditionAttribute {
     CONDITION_CONTENT_TYPE,
     CONDITION_RESPONSE_HEADERS,
     CONDITION_THIRD_PARTY,
-    CONDITION_REQUEST_HEADERS
+    CONDITION_REQUEST_HEADERS,
+    CONDITION_STAGES
   };
 
   WebRequestConditionAttribute();
@@ -234,6 +235,35 @@ class WebRequestConditionAttributeThirdParty
   const bool match_third_party_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeThirdParty);
+};
+
+// This condition is used as a filter for request stages. It is true exactly in
+// stages specified on construction.
+class WebRequestConditionAttributeStages
+    : public WebRequestConditionAttribute {
+ public:
+  virtual ~WebRequestConditionAttributeStages();
+
+  static bool IsMatchingType(const std::string& instance_type);
+
+  // Factory method, see WebRequestConditionAttribute::Create.
+  static scoped_ptr<WebRequestConditionAttribute> Create(
+      const std::string& name,
+      const base::Value* value,
+      std::string* error);
+
+  // Implementation of WebRequestConditionAttribute:
+  virtual int GetStages() const OVERRIDE;
+  virtual bool IsFulfilled(
+      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+
+ private:
+  explicit WebRequestConditionAttributeStages(int allowed_stages);
+
+  const int allowed_stages_;  // Composition of RequestStage values.
+
+  DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeStages);
 };
 
 }  // namespace extensions

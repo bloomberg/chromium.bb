@@ -43,6 +43,7 @@ extern const char kResourceTypeKey[];
 extern const char kResponseHeadersKey[];
 extern const char kSecureKey[];
 extern const char kSessionCookieKey[];
+extern const char kStagesKey[];
 extern const char kThirdPartyKey[];
 extern const char kToKey[];
 extern const char kUrlKey[];
@@ -51,6 +52,12 @@ extern const char kValueEqualsKey[];
 extern const char kValueKey[];
 extern const char kValuePrefixKey[];
 extern const char kValueSuffixKey[];
+
+// Enum string values
+extern const char kOnBeforeRequestEnum[];
+extern const char kOnBeforeSendHeadersEnum[];
+extern const char kOnHeadersReceivedEnum[];
+extern const char kOnAuthRequiredEnum[];
 
 // Values of dictionaries, in particular instance types
 extern const char kAddRequestCookieType[];

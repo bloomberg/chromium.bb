@@ -181,13 +181,66 @@ runTests([
              'contentType': ["text/plain"],
              'excludeContentType': ["image/png"],
              'responseHeaders': [{ nameContains: ["content", "type"] }],
-             'excludeResponseHeaders': [{ valueContains: "nonsense" }] })],
+             'excludeResponseHeaders': [{ valueContains: "nonsense" }],
+             'stages': ["onHeadersReceived", "onAuthRequired"] })],
          'actions': [new CancelRequest()]}
       ],
       function() {navigateAndWait(getURLHttpWithHeaders());}
     );
   },
 
+  // Postpone cancelling of the request until onHeadersReceived by using
+  // 'stages'. If not for the stages, the request would be already cancelled
+  // during onBeforeRequest.
+  function testPostponeCancelRequest() {
+    ignoreUnexpected = false;
+    expect(
+      [
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            url: getURLHttpWithHeaders(),
+            frameUrl: getURLHttpWithHeaders()
+          }
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLHttpWithHeaders(),
+          }
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLHttpWithHeaders(),
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            statusLine: "HTTP/1.1 200 OK",
+            url: getURLHttpWithHeaders(),
+          }
+        },
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURLHttpWithHeaders(),
+            fromCache: false,
+            error: "net::ERR_BLOCKED_BY_CLIENT"
+          }
+        },
+      ],
+      [ ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onErrorOccurred"] ]);
+    onRequest.addRules(
+      [ {'conditions': [
+           new RequestMatcher({ 'stages': ["onHeadersReceived"] })],
+         'actions': [new CancelRequest()]}
+      ],
+      function() {navigateAndWait(getURLHttpWithHeaders());}
+    );
+  },
   // Tests that "thirdPartyForCookies: true" matches third party requests.
   function testThirdParty() {
     ignoreUnexpected = false;

@@ -58,7 +58,8 @@ bool WebRequestConditionAttribute::IsKnownType(
           instance_type) ||
       WebRequestConditionAttributeResponseHeaders::IsMatchingType(
           instance_type) ||
-      WebRequestConditionAttributeThirdParty::IsMatchingType(instance_type);
+      WebRequestConditionAttributeThirdParty::IsMatchingType(instance_type) ||
+      WebRequestConditionAttributeStages::IsMatchingType(instance_type);
 }
 
 // static
@@ -82,6 +83,8 @@ WebRequestConditionAttribute::Create(
         name, value, error);
   } else if (WebRequestConditionAttributeThirdParty::IsMatchingType(name)) {
     return WebRequestConditionAttributeThirdParty::Create(name, value, error);
+  } else if (WebRequestConditionAttributeStages::IsMatchingType(name)) {
+    return WebRequestConditionAttributeStages::Create(name, value, error);
   }
 
   *error = ExtensionErrorUtils::FormatErrorMessage(kUnknownConditionAttribute,
@@ -717,6 +720,91 @@ bool WebRequestConditionAttributeThirdParty::IsFulfilled(
 WebRequestConditionAttribute::Type
 WebRequestConditionAttributeThirdParty::GetType() const {
   return CONDITION_THIRD_PARTY;
+}
+
+//
+// WebRequestConditionAttributeStages
+//
+
+WebRequestConditionAttributeStages::
+WebRequestConditionAttributeStages(int allowed_stages)
+    : allowed_stages_(allowed_stages) {}
+
+WebRequestConditionAttributeStages::
+~WebRequestConditionAttributeStages() {}
+
+// static
+bool WebRequestConditionAttributeStages::IsMatchingType(
+    const std::string& instance_type) {
+  return instance_type == keys::kStagesKey;
+}
+
+namespace {
+
+// Reads strings stored in |value|, which is expected to be a ListValue, and
+// sets corresponding bits (see RequestStage) in |out_stages|. Returns true on
+// success, false otherwise.
+bool ParseListOfStages(const Value& value, int* out_stages) {
+  const ListValue* list = NULL;
+  if (!value.GetAsList(&list))
+    return false;
+
+  int stages = 0;
+  std::string stage_name;
+  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
+    if (!((*it)->GetAsString(&stage_name)))
+      return false;
+    if (stage_name == keys::kOnBeforeRequestEnum) {
+      stages |= ON_BEFORE_REQUEST;
+    } else if (stage_name == keys::kOnBeforeSendHeadersEnum) {
+      stages |= ON_BEFORE_SEND_HEADERS;
+    } else if (stage_name == keys::kOnHeadersReceivedEnum) {
+      stages |= ON_HEADERS_RECEIVED;
+    } else if (stage_name == keys::kOnAuthRequiredEnum) {
+      stages |= ON_AUTH_REQUIRED;
+    } else {
+      NOTREACHED();  // JSON schema checks prevent getting here.
+      return false;
+    }
+  }
+
+  *out_stages = stages;
+  return true;
+}
+
+}  // namespace
+
+// static
+scoped_ptr<WebRequestConditionAttribute>
+WebRequestConditionAttributeStages::Create(const std::string& name,
+                                           const Value* value,
+                                           std::string* error) {
+  DCHECK(IsMatchingType(name));
+
+  int allowed_stages = 0;
+  if (!ParseListOfStages(*value, &allowed_stages)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+                                                     keys::kStagesKey);
+    return scoped_ptr<WebRequestConditionAttribute>(NULL);
+  }
+
+  return scoped_ptr<WebRequestConditionAttribute>(
+      new WebRequestConditionAttributeStages(allowed_stages));
+}
+
+int WebRequestConditionAttributeStages::GetStages() const {
+  return allowed_stages_;
+}
+
+bool WebRequestConditionAttributeStages::IsFulfilled(
+    const WebRequestRule::RequestData& request_data) const {
+  // Note: removing '!=' triggers warning C4800 on the VS compiler.
+  return (request_data.stage & GetStages()) != 0;
+}
+
+WebRequestConditionAttribute::Type
+WebRequestConditionAttributeStages::GetType() const {
+  return CONDITION_STAGES;
 }
 
 }  // namespace extensions

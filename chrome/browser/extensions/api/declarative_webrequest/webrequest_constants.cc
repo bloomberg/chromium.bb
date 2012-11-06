@@ -40,6 +40,7 @@ const char kResourceTypeKey[] = "resourceType";
 const char kResponseHeadersKey[] = "responseHeaders";
 const char kSecureKey[] = "secure";
 const char kSessionCookieKey[] = "sessionCookie";
+const char kStagesKey[] = "stages";
 const char kThirdPartyKey[] = "thirdPartyForCookies";
 const char kToKey[] = "to";
 const char kUrlKey[] = "url";
@@ -48,6 +49,12 @@ const char kValueEqualsKey[] = "valueEquals";
 const char kValueKey[] = "value";
 const char kValuePrefixKey[] = "valuePrefix";
 const char kValueSuffixKey[] = "valueSuffix";
+
+// Enum string values
+const char kOnBeforeRequestEnum[] = "onBeforeRequest";
+const char kOnBeforeSendHeadersEnum[] = "onBeforeSendHeaders";
+const char kOnHeadersReceivedEnum[] = "onHeadersReceived";
+const char kOnAuthRequiredEnum[] = "onAuthRequired";
 
 // Values of dictionaries, in particular instance types
 const char kAddRequestCookieType[] = "declarativeWebRequest.AddRequestCookie";
