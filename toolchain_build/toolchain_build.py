@@ -16,7 +16,7 @@ import toolchain_main
 
 GIT_REVISIONS = {
     'binutils': '0d99b0776661ebbf2949c644cb060612ccc11737',
-    'gcc': '878b7a31473da405b8302f3aebdf8e8c343363f2',
+    'gcc': '5f8b41df4ac38e009b4d66754cc728c848353ddb',
     'newlib': '51a8366a0898bc47ee78a7f6ed01e8bd40eee4d0',
     }
 
@@ -162,12 +162,14 @@ HOST_GCC_LIBS = {
         },
     }
 
+HOST_GCC_LIBS_DEPS = ['gmp', 'mpfr', 'mpc']
+
 GCC_GIT_URL = GIT_BASE_URL + '/nacl-gcc.git'
 
 
 def GccCommand(target, cmd):
   return command.Command(
-      cmd, path_dirs=[os.path.join('%(binutils_' + target + ')s', 'bin')])
+      cmd, path_dirs=[os.path.join('%(abs_binutils_' + target + ')s', 'bin')])
 
 
 def ConfigureGccCommand(target, extra_args=[]):
@@ -218,7 +220,7 @@ def HostTools(target):
           },
 
       'gcc_' + target: {
-          'dependencies': ['gmp', 'mpfr', 'mpc', 'binutils_' + target],
+          'dependencies': HOST_GCC_LIBS_DEPS + ['binutils_' + target],
           'git_url': GCC_GIT_URL,
           'git_revision': GIT_REVISIONS['gcc'],
           # Remove all the source directories that are used solely for
@@ -301,6 +303,9 @@ def TargetLibs(target):
   def NewlibFile(subdir, name):
     return os.path.join('%(output)s', target + '-nacl', subdir, name)
 
+  newlib_sysroot = '%(abs_newlib_' + target + ')s'
+  newlib_tooldir = '%s/%s-nacl' % (newlib_sysroot, target)
+
   libs = {
       'newlib_' + target: {
           'dependencies': lib_deps,
@@ -331,7 +336,30 @@ def TargetLibs(target):
                   ],
           },
 
-      # TODO(mcgrathr): gcc_libs
+      'gcc_libs_' + target: {
+          'dependencies': lib_deps + ['newlib_' + target] + HOST_GCC_LIBS_DEPS,
+          'git_url': GCC_GIT_URL,
+          'git_revision': GIT_REVISIONS['gcc'],
+          # This actually builds the compiler again and uses that compiler
+          # to build the target libraries.  That's by far the easiest thing
+          # to get going given the interdependencies of the target
+          # libraries (especially libgcc) on the gcc subdirectory, and
+          # building the compiler doesn't really take all that long in the
+          # grand scheme of things.
+          # TODO(mcgrathr): If upstream ever cleans up all their
+          # interdependencies better, unpack the compiler, configure with
+          # --disable-gcc, and just build all-target.
+          'commands': [
+              ConfigureGccCommand(target, [
+                  '--with-build-sysroot=' + newlib_sysroot,
+                  ]),
+              GccCommand(target, MAKE_PARALLEL_CMD + [
+                  'build_tooldir=' + newlib_tooldir,
+                  'all-target',
+                  ]),
+              GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-target']),
+              ],
+          },
       }
   return libs
 
