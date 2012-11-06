@@ -91,8 +91,7 @@ class DriveSystemService : public ProfileKeyedService,
 
   // Adds back the drive mount point. Used to implement ClearCache().
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
-                              DriveFileError error,
-                              const FilePath& file_path);
+                              bool success);
 
   // Called when cache initialization is done. Continues initialization if
   // the cache initialization is successful.

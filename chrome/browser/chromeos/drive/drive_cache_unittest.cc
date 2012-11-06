@@ -116,12 +116,8 @@ void OnGetResourceIds(std::vector<std::string>* out_resource_ids,
 }
 
 // Copies results from ClearAll.
-void OnClearAll(DriveFileError* out_error,
-                FilePath* out_file_path,
-                DriveFileError error,
-                const FilePath& file_path) {
-  *out_file_path = file_path;
-  *out_error = error;
+void OnClearAll(bool* out_success, bool success) {
+  *out_success = success;
 }
 
 }  // namespace
@@ -1561,14 +1557,13 @@ TEST_F(DriveCacheTest, ClearAll) {
   EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
 
   // Clear cache.
-  DriveFileError error = DRIVE_FILE_OK;
-  FilePath file_path;
-  cache_->ClearAll(base::Bind(&OnClearAll, &error, &file_path));
+  bool success = false;
+  cache_->ClearAll(base::Bind(&OnClearAll, &success));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_TRUE(success);
 
   // Verify that all the cache is removed.
-  VerifyRemoveFromCache(error, resource_id, md5);
+  VerifyRemoveFromCache(DRIVE_FILE_OK, resource_id, md5);
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
 

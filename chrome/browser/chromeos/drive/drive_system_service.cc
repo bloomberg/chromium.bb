@@ -190,15 +190,14 @@ void DriveSystemService::ClearCacheAndRemountFileSystem(
 
 void DriveSystemService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
-    DriveFileError error,
-    const FilePath& file_path) {
+    bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_system_->Initialize();
   AddDriveMountPoint();
 
   if (!callback.is_null())
-    callback.Run(error == DRIVE_FILE_OK);
+    callback.Run(success);
 }
 
 void DriveSystemService::ReloadAndRemountFileSystem() {

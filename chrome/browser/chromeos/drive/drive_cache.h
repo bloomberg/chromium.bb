@@ -29,11 +29,6 @@ class DriveCacheEntry;
 class DriveCacheMetadata;
 class DriveCacheObserver;
 
-// Callback for SetMountedState and ClearAll.
-typedef base::Callback<void(DriveFileError error,
-                            const FilePath& file_path)>
-    ChangeCacheStateCallback;
-
 // Callback for completion of cache operation.
 typedef base::Callback<void(DriveFileError error,
                             const std::string& resource_id,
@@ -137,20 +132,24 @@ class DriveCache {
   // |md5| can be empty if only matching |resource_id| is desired, which may
   // happen when looking for pinned entries where symlinks' filenames have no
   // extension and hence no md5.
+  // |callback| must not be null.
   void GetCacheEntry(const std::string& resource_id,
                      const std::string& md5,
                      const GetCacheEntryCallback& callback);
 
   // Gets the resource IDs of pinned-but-not-fetched files and
   // dirty-but-not-uploaded files.
+  // |callback| must not be null.
   void GetResourceIdsOfBacklog(const GetResourceIdsOfBacklogCallback& callback);
 
   // Gets the resource IDs of all existing (i.e. cached locally) pinned
   // files, including pinned dirty files.
+  // |callback| must not be null.
   void GetResourceIdsOfExistingPinnedFiles(
       const GetResourceIdsCallback& callback);
 
   // Gets the resource IDs of all files in the cache.
+  // |callback| must not be null.
   void GetResourceIdsOfAllFiles(const GetResourceIdsCallback& callback);
 
   // Frees up disk space to store the given number of bytes, while keeping
@@ -159,6 +158,7 @@ class DriveCache {
   bool FreeDiskSpaceOnBlockingPoolIfNeededFor(int64 num_bytes);
 
   // Checks if file corresponding to |resource_id| and |md5| exists in cache.
+  // |callback| must not be null.
   void GetFile(const std::string& resource_id,
                const std::string& md5,
                const GetFileFromCacheCallback& callback);
@@ -200,12 +200,13 @@ class DriveCache {
   //       |dest_path| is the mounted path and |source_path| the unmounted path.
   void SetMountedState(const FilePath& file_path,
                        bool to_mount,
-                       const ChangeCacheStateCallback& callback);
+                       const GetFileFromCacheCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir, where
   //   |source_path| has .<md5> extension and |dest_path| has .local extension
   // - if file is pinned, updates symlink in pinned dir to reference dirty file
+  // |callback| must not be null.
   void MarkDirty(const std::string& resource_id,
                  const std::string& md5,
                  const GetFileFromCacheCallback& callback);
@@ -237,7 +238,8 @@ class DriveCache {
   // Does the following:
   // - remove all the files in the cache directory.
   // - re-create the |metadata_| instance.
-  void ClearAll(const ChangeCacheStateCallback& callback);
+  // |callback| must not be null.
+  void ClearAll(const InitializeCacheCallback& callback);
 
   // Utility method to call Initialize on UI thread. |callback| is called on
   // UI thread when the initialization is complete.
@@ -290,6 +292,8 @@ class DriveCache {
       const DriveCacheEntry& cache_entry);
 
  private:
+  typedef std::pair<DriveFileError, FilePath> GetFileResult;
+
   DriveCache(const FilePath& cache_root_path,
              base::SequencedTaskRunner* blocking_task_runner);
   virtual ~DriveCache();
@@ -298,8 +302,8 @@ class DriveCache {
   // with the right sequence ID. If not, DCHECK will fail.
   void AssertOnSequencedWorkerPool();
 
-  // Initializes the cache. The result will be stored in |success|.
-  void InitializeOnBlockingPool(bool* success);
+  // Initializes the cache. Returns true on success.
+  bool InitializeOnBlockingPool();
 
   // Initializes the cache with in-memory cache for testing.
   // The in-memory cache is used since it's faster than the db.
@@ -325,85 +329,71 @@ class DriveCache {
       std::vector<std::string>* resource_ids);
 
   // Used to implement GetFile.
-  void GetFileOnBlockingPool(const std::string& resource_id,
-                             const std::string& md5,
-                             DriveFileError* error,
-                             FilePath* cache_file_path);
+  scoped_ptr<GetFileResult> GetFileOnBlockingPool(
+      const std::string& resource_id,
+      const std::string& md5);
 
   // Used to implement Store.
-  void StoreOnBlockingPool(const std::string& resource_id,
-                           const std::string& md5,
-                           const FilePath& source_path,
-                           FileOperationType file_operation_type,
-                           DriveFileError* error);
+  DriveFileError StoreOnBlockingPool(const std::string& resource_id,
+                                     const std::string& md5,
+                                     const FilePath& source_path,
+                                     FileOperationType file_operation_type);
 
   // Used to implement Pin.
-  void PinOnBlockingPool(const std::string& resource_id,
-                         const std::string& md5,
-                         FileOperationType file_operation_type,
-                         DriveFileError* error);
+  DriveFileError PinOnBlockingPool(const std::string& resource_id,
+                                   const std::string& md5,
+                                   FileOperationType file_operation_type);
 
   // Used to implement Unpin.
-  void UnpinOnBlockingPool(const std::string& resource_id,
-                           const std::string& md5,
-                           FileOperationType file_operation_type,
-                           DriveFileError* error);
+  DriveFileError UnpinOnBlockingPool(const std::string& resource_id,
+                                     const std::string& md5,
+                                     FileOperationType file_operation_type);
 
   // Used to implement SetMountedState.
-  void SetMountedStateOnBlockingPool(const FilePath& file_path,
-                                     bool to_mount,
-                                     DriveFileError* error,
-                                     FilePath* cache_file_path);
+  scoped_ptr<GetFileResult> SetMountedStateOnBlockingPool(
+      const FilePath& file_path,
+      bool to_mount);
 
   // Used to implement MarkDirty.
-  void MarkDirtyOnBlockingPool(const std::string& resource_id,
-                               const std::string& md5,
-                               FileOperationType file_operation_type,
-                               DriveFileError* error,
-                               FilePath* cache_file_path);
+  scoped_ptr<GetFileResult> MarkDirtyOnBlockingPool(
+      const std::string& resource_id,
+      const std::string& md5);
 
   // Used to implement CommitDirty.
-  void CommitDirtyOnBlockingPool(const std::string& resource_id,
-                                 const std::string& md5,
-                                 FileOperationType file_operation_type,
-                                 DriveFileError* error);
+  DriveFileError CommitDirtyOnBlockingPool(
+      const std::string& resource_id,
+      const std::string& md5,
+      FileOperationType file_operation_type);
 
   // Used to implement ClearDirty.
-  void ClearDirtyOnBlockingPool(const std::string& resource_id,
-                                const std::string& md5,
-                                FileOperationType file_operation_type,
-                                DriveFileError* error);
+  DriveFileError ClearDirtyOnBlockingPool(
+      const std::string& resource_id,
+      const std::string& md5,
+      FileOperationType file_operation_type);
 
   // Used to implement Remove.
-  void RemoveOnBlockingPool(const std::string& resource_id,
-                            DriveFileError* error);
+  DriveFileError RemoveOnBlockingPool(const std::string& resource_id);
 
   // Used to implement ClearAll.
-  void ClearAllOnBlockingPool(DriveFileError* error);
+  bool ClearAllOnBlockingPool();
 
   // Runs callback and notifies the observers when file is pinned.
-  void OnPinned(DriveFileError* error,
-                const std::string& resource_id,
+  void OnPinned(const std::string& resource_id,
                 const std::string& md5,
-                const CacheOperationCallback& callback);
+                const CacheOperationCallback& callback,
+                DriveFileError error);
 
   // Runs callback and notifies the observers when file is unpinned.
-  void OnUnpinned(DriveFileError* error,
-                  const std::string& resource_id,
+  void OnUnpinned(const std::string& resource_id,
                   const std::string& md5,
-                  const CacheOperationCallback& callback);
+                  const CacheOperationCallback& callback,
+                  DriveFileError error);
 
   // Runs callback and notifies the observers when file is committed.
-  void OnCommitDirty(DriveFileError* error,
-                     const std::string& resource_id,
+  void OnCommitDirty(const std::string& resource_id,
                      const std::string& md5,
-                     const CacheOperationCallback& callback);
-
-  // Helper function to implement GetCacheEntry().
-  void GetCacheEntryHelper(const std::string& resource_id,
-                           const std::string& md5,
-                           bool* success,
-                           DriveCacheEntry* cache_entry);
+                     const CacheOperationCallback& callback,
+                     DriveFileError error);
 
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;
