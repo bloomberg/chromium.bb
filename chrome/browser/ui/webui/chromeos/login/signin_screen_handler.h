@@ -235,6 +235,7 @@ class SigninScreenHandler
   void HandleNetworkErrorShown(const base::ListValue* args);
   void HandleOpenProxySettings(const base::ListValue* args);
   void HandleLoginVisible(const base::ListValue* args);
+  void HandleUnlockOnLoginSuccess(const base::ListValue* args);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);

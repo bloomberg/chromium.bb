@@ -361,6 +361,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("loginVisible",
       base::Bind(&SigninScreenHandler::HandleLoginVisible,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("unlockOnLoginSuccess",
+      base::Bind(&SigninScreenHandler::HandleUnlockOnLoginSuccess,
+                 base::Unretained(this)));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -919,6 +922,13 @@ void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
   webui_visible_ = true;
   if (ScreenLocker::default_screen_locker())
     web_ui()->CallJavascriptFunction("login.AccountPickerScreen.setWallpaper");
+}
+
+void SigninScreenHandler::HandleUnlockOnLoginSuccess(
+    const base::ListValue* args) {
+  DCHECK(UserManager::Get()->IsUserLoggedIn());
+  if (ScreenLocker::default_screen_locker())
+    ScreenLocker::default_screen_locker()->UnlockOnLoginSuccess();
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

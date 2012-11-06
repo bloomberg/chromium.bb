@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -51,6 +52,10 @@ class ScreenLocker : public LoginStatusConsumer {
                               const std::string& password,
                               bool pending_requests,
                               bool using_oauth) OVERRIDE;
+
+  // Does actual unlocking once authentication is successful and all blocking
+  // animations are done.
+  void UnlockOnLoginSuccess();
 
   // Authenticates the user with given |password| and authenticator.
   void Authenticate(const string16& password);
@@ -102,6 +107,12 @@ class ScreenLocker : public LoginStatusConsumer {
   friend class test::WebUIScreenLockerTester;
   friend class ScreenLockerDelegate;
 
+  struct AuthenticationParametersCapture {
+    std::string username;
+    bool pending_requests;
+    bool using_oauth;
+  };
+
   virtual ~ScreenLocker();
 
   // Sets the authenticator.
@@ -146,6 +157,12 @@ class ScreenLocker : public LoginStatusConsumer {
 
   // Number of bad login attempts in a row.
   int incorrect_passwords_count_;
+
+  // Copy of parameters passed to last call of OnLoginSuccess for usage in
+  // UnlockOnLoginSuccess().
+  scoped_ptr<AuthenticationParametersCapture> authentication_capture_;
+
+  base::WeakPtrFactory<ScreenLocker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLocker);
 };

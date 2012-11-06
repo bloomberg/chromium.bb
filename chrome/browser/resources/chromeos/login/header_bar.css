@@ -13,11 +13,16 @@
 
 html[oobe=new] #login-header-bar {
   -webkit-padding-before: 7px;
+  -webkit-transition: opacity 200ms ease-out;
   /* Using copy of Ash launcher background with 0.8 opacity applied to it.
      Otherwise if opacity: 0.8 is set here it will affect button text as well.
      Have to position background differently so that opacity is not applied
      to child elements. */
   background-image: url('chrome://theme/IDR_LAUNCHER_BACKGROUND');
+}
+
+html[oobe=new][screen=lock] .login-header-bar-hidden {
+  opacity: 0;
 }
 
 html[oobe=new] .header-bar-item:first-child {

@@ -327,6 +327,20 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Displays animations on successful authentication, that have to happen
+   * before login UI is dismissed.
+   */
+  Oobe.animateAuthenticationSuccess = function() {
+    var launcher = $('login-header-bar');
+    launcher.addEventListener(
+        'webkitTransitionEnd', function f(e) {
+          launcher.removeEventListener('webkitTransitionEnd', f);
+          chrome.send('unlockOnLoginSuccess');
+        });
+    launcher.classList.add('login-header-bar-hidden');
+  };
+
+  /**
    * Handles login success notification.
    */
   Oobe.onLoginSuccess = function(username) {

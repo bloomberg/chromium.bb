@@ -45,6 +45,7 @@ class WebUIScreenLocker : public WebUILoginView,
       int error_msg_id,
       HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
   virtual void ClearErrors() OVERRIDE;
+  virtual void AnimateAuthenticationSuccess() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
 
   // LoginDisplay::Delegate: implementation
