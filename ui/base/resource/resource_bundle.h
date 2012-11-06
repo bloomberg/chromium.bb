@@ -254,18 +254,12 @@ class UI_EXPORT ResourceBundle {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetPathForResourcePack);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetPathForLocalePack);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetImageNamed);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetNativeImageNamed);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateLoadDataResourceBytes);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetRawDataResource);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetLocalizedString);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetFont);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, GetRawDataResource);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LoadDataResourceBytes);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LocaleDataPakExists);
-  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, GetImageNamed);
+  FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetPathForLocalePack);
+  FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetImageNamed);
+  FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetNativeImageNamed);
+
+  friend class ResourceBundleImageTest;
+  friend class ResourceBundleTest;
 
   class ResourceBundleImageSource;
   friend class ResourceBundleImageSource;

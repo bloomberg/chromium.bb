@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -94,9 +95,39 @@ void CreateDataPackWithSingleBitmap(const FilePath& path,
 
 }  // namespace
 
-TEST(ResourceBundle, DelegateGetPathForResourcePack) {
+class ResourceBundleTest : public testing::Test {
+ public:
+  ResourceBundleTest() : resource_bundle_(NULL) {
+  }
+
+  virtual ~ResourceBundleTest() {
+  }
+
+  // Overridden from testing::Test:
+  virtual void TearDown() OVERRIDE {
+    delete resource_bundle_;
+  }
+
+  // Returns new ResoureBundle with the specified |delegate|. The
+  // ResourceBundleTest class manages the lifetime of the returned
+  // ResourceBundle.
+  ResourceBundle* CreateResourceBundle(ResourceBundle::Delegate* delegate) {
+    DCHECK(!resource_bundle_);
+
+    resource_bundle_ = new ResourceBundle(delegate);
+    return resource_bundle_;
+  }
+
+ protected:
+  ResourceBundle* resource_bundle_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResourceBundleTest);
+};
+
+TEST_F(ResourceBundleTest, DelegateGetPathForResourcePack) {
   MockResourceBundleDelegate delegate;
-  ResourceBundle resource_bundle(&delegate);
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
   FilePath pack_path(FILE_PATH_LITERAL("/path/to/test_path.pak"));
   ui::ScaleFactor pack_scale_factor = ui::SCALE_FACTOR_200P;
@@ -108,12 +139,12 @@ TEST(ResourceBundle, DelegateGetPathForResourcePack) {
       .Times(1)
       .WillOnce(Return(pack_path));
 
-  resource_bundle.AddDataPackFromPath(pack_path, pack_scale_factor);
+  resource_bundle->AddDataPackFromPath(pack_path, pack_scale_factor);
 }
 
-TEST(ResourceBundle, DelegateGetPathForLocalePack) {
+TEST_F(ResourceBundleTest, DelegateGetPathForLocalePack) {
   MockResourceBundleDelegate delegate;
-  ResourceBundle resource_bundle(&delegate);
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
   std::string locale = "en-US";
 
@@ -123,38 +154,38 @@ TEST(ResourceBundle, DelegateGetPathForLocalePack) {
       .WillRepeatedly(Return(FilePath()))
       .RetiresOnSaturation();
 
-  EXPECT_FALSE(resource_bundle.LocaleDataPakExists(locale));
-  EXPECT_EQ("", resource_bundle.LoadLocaleResources(locale));
+  EXPECT_FALSE(resource_bundle->LocaleDataPakExists(locale));
+  EXPECT_EQ("", resource_bundle->LoadLocaleResources(locale));
 
   // Allow the load to proceed.
   EXPECT_CALL(delegate, GetPathForLocalePack(_, locale))
       .Times(2)
       .WillRepeatedly(ReturnArg<0>());
 
-  EXPECT_TRUE(resource_bundle.LocaleDataPakExists(locale));
-  EXPECT_EQ(locale, resource_bundle.LoadLocaleResources(locale));
+  EXPECT_TRUE(resource_bundle->LocaleDataPakExists(locale));
+  EXPECT_EQ(locale, resource_bundle->LoadLocaleResources(locale));
 }
 
-TEST(ResourceBundle, DelegateGetImageNamed) {
+TEST_F(ResourceBundleTest, DelegateGetImageNamed) {
   MockResourceBundleDelegate delegate;
-  ResourceBundle resource_bundle(&delegate);
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
-  gfx::Image empty_image = resource_bundle.GetEmptyImage();
+  gfx::Image empty_image = resource_bundle->GetEmptyImage();
   int resource_id = 5;
 
   EXPECT_CALL(delegate, GetImageNamed(resource_id))
       .Times(1)
       .WillOnce(Return(empty_image));
 
-  gfx::Image result = resource_bundle.GetImageNamed(resource_id);
+  gfx::Image result = resource_bundle->GetImageNamed(resource_id);
   EXPECT_EQ(empty_image.ToSkBitmap(), result.ToSkBitmap());
 }
 
-TEST(ResourceBundle, DelegateGetNativeImageNamed) {
+TEST_F(ResourceBundleTest, DelegateGetNativeImageNamed) {
   MockResourceBundleDelegate delegate;
-  ResourceBundle resource_bundle(&delegate);
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
-  gfx::Image empty_image = resource_bundle.GetEmptyImage();
+  gfx::Image empty_image = resource_bundle->GetEmptyImage();
   int resource_id = 5;
 
   // Some platforms delegate GetNativeImageNamed calls to GetImageNamed.
@@ -166,13 +197,13 @@ TEST(ResourceBundle, DelegateGetNativeImageNamed) {
       .Times(Between(0, 1))
       .WillOnce(Return(empty_image));
 
-  gfx::Image result = resource_bundle.GetNativeImageNamed(resource_id);
+  gfx::Image result = resource_bundle->GetNativeImageNamed(resource_id);
   EXPECT_EQ(empty_image.ToSkBitmap(), result.ToSkBitmap());
 }
 
-TEST(ResourceBundle, DelegateLoadDataResourceBytes) {
+TEST_F(ResourceBundleTest, DelegateLoadDataResourceBytes) {
   MockResourceBundleDelegate delegate;
-  ResourceBundle resource_bundle(&delegate);
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
   // Create the data resource for testing purposes.
   unsigned char data[] = "My test data";
@@ -187,13 +218,13 @@ TEST(ResourceBundle, DelegateLoadDataResourceBytes) {
       .WillOnce(Return(static_memory));
 
   scoped_refptr<base::RefCountedStaticMemory> result =
-      resource_bundle.LoadDataResourceBytesForScale(resource_id, scale_factor);
+      resource_bundle->LoadDataResourceBytesForScale(resource_id, scale_factor);
   EXPECT_EQ(static_memory, result);
 }
 
-TEST(ResourceBundle, DelegateGetRawDataResource) {
+TEST_F(ResourceBundleTest, DelegateGetRawDataResource) {
   MockResourceBundleDelegate delegate;
-  ResourceBundle resource_bundle(&delegate);
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
   // Create the string piece for testing purposes.
   char data[] = "My test data";
@@ -206,14 +237,14 @@ TEST(ResourceBundle, DelegateGetRawDataResource) {
       .Times(1)
       .WillOnce(Return(string_piece));
 
-  base::StringPiece result = resource_bundle.GetRawDataResource(
+  base::StringPiece result = resource_bundle->GetRawDataResource(
       resource_id);
   EXPECT_EQ(string_piece.data(), result.data());
 }
 
-TEST(ResourceBundle, DelegateGetLocalizedString) {
+TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
   MockResourceBundleDelegate delegate;
-  ResourceBundle resource_bundle(&delegate);
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
   string16 data = ASCIIToUTF16("My test data");
   int resource_id = 5;
@@ -222,13 +253,13 @@ TEST(ResourceBundle, DelegateGetLocalizedString) {
       .Times(1)
       .WillOnce(Return(data));
 
-  string16 result = resource_bundle.GetLocalizedString(resource_id);
+  string16 result = resource_bundle->GetLocalizedString(resource_id);
   EXPECT_EQ(data, result);
 }
 
-TEST(ResourceBundle, DelegateGetFont) {
+TEST_F(ResourceBundleTest, DelegateGetFont) {
   MockResourceBundleDelegate delegate;
-  ResourceBundle resource_bundle(&delegate);
+  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
   // Should be called once for each font type. When we return NULL the default
   // font will be created.
@@ -238,134 +269,142 @@ TEST(ResourceBundle, DelegateGetFont) {
       .WillRepeatedly(Return(test_font));
 
   const gfx::Font* font =
-      &resource_bundle.GetFont(ui::ResourceBundle::BaseFont);
+      &resource_bundle->GetFont(ui::ResourceBundle::BaseFont);
   EXPECT_TRUE(font);
 }
 
-TEST(ResourceBundle, LoadDataResourceBytes) {
-  // On Windows, the default data is compiled into the binary so this does
-  // nothing.
-  ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
-
-  // Put the ResourceBundle in a different scope so that it's destroyed before
-  // the ScopedTempDir.
-  {
-    // Verify that we don't crash when trying to load a resource that is not
-    // found.  In some cases, we fail to mmap resources.pak, but try to keep
-    // going anyway.
-    ResourceBundle resource_bundle(NULL);
-
-    // Dump contents into the pak file.
-    ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents,
-                                   kSamplePakSize),
-              static_cast<int>(kSamplePakSize));
-
-    // Create a resource bundle from the file.
-    resource_bundle.LoadTestResources(data_path, data_path);
-
-    const int kUnfoundResourceId = 10000;
-    EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(
-        kUnfoundResourceId));
-
-    // Give a .pak file that doesn't exist so we will fail to load it.
-    resource_bundle.AddDataPackFromPath(
-        FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
-        ui::SCALE_FACTOR_NONE);
-    EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(
-        kUnfoundResourceId));
-  }
-}
-
-TEST(ResourceBundle, GetRawDataResource) {
-
-  // On Windows, the default data is compiled into the binary so this does
-  // nothing.
-  ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath locale_path = dir.path().Append(FILE_PATH_LITERAL("empty.pak"));
-  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
-  FilePath data_2x_path = dir.path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
-
-  {
-    ResourceBundle resource_bundle(NULL);
-    // Dump contents into the pak files.
-    ASSERT_EQ(file_util::WriteFile(locale_path, kEmptyPakContents,
-        kEmptyPakSize), static_cast<int>(kEmptyPakSize));
-    ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents,
-        kSamplePakSize), static_cast<int>(kSamplePakSize));
-    ASSERT_EQ(file_util::WriteFile(data_2x_path, kSamplePakContents2x,
-        kSamplePakSize2x), static_cast<int>(kSamplePakSize2x));
-
-    // Load the regular and 2x pak files.
-    resource_bundle.LoadTestResources(data_path, locale_path);
-    resource_bundle.AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
-
-    // Resource ID 4 exists in both 1x and 2x paks, so we expect a different
-    // result when requesting the 2x scale.
-    EXPECT_EQ("this is id 4", resource_bundle.GetRawDataResourceForScale(4,
-        SCALE_FACTOR_100P));
-    EXPECT_EQ("this is id 4 2x", resource_bundle.GetRawDataResourceForScale(4,
-        SCALE_FACTOR_200P));
-
-    // Resource ID 6 only exists in the 1x pak so we expect the same resource
-    // for both scale factor requests.
-    EXPECT_EQ("this is id 6", resource_bundle.GetRawDataResourceForScale(6,
-        SCALE_FACTOR_100P));
-    EXPECT_EQ("this is id 6", resource_bundle.GetRawDataResourceForScale(6,
-        SCALE_FACTOR_200P));
-  }
-}
-
-TEST(ResourceBundle, LocaleDataPakExists) {
-  ResourceBundle resource_bundle(NULL);
+TEST_F(ResourceBundleTest, LocaleDataPakExists) {
+  ResourceBundle* resource_bundle = CreateResourceBundle(NULL);
 
   // Check that ResourceBundle::LocaleDataPakExists returns the correct results.
-  EXPECT_TRUE(resource_bundle.LocaleDataPakExists("en-US"));
-  EXPECT_FALSE(resource_bundle.LocaleDataPakExists("not_a_real_locale"));
+  EXPECT_TRUE(resource_bundle->LocaleDataPakExists("en-US"));
+  EXPECT_FALSE(resource_bundle->LocaleDataPakExists("not_a_real_locale"));
+}
+
+class ResourceBundleImageTest : public ResourceBundleTest {
+ public:
+  ResourceBundleImageTest() : locale_pack_(NULL) {
+  }
+
+  virtual ~ResourceBundleImageTest() {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    // Create a temporary directory to write test resource bundles to.
+    ASSERT_TRUE(dir_.CreateUniqueTempDir());
+  }
+
+  // Returns resource bundle which uses an empty data pak for locale data.
+  ui::ResourceBundle* CreateResourceBundleWithEmptyLocalePak() {
+    // Write an empty data pak for locale data.
+    const FilePath& locale_path = dir_path().Append(
+        FILE_PATH_LITERAL("locale.pak"));
+    EXPECT_EQ(file_util::WriteFile(locale_path, kEmptyPakContents,
+                                   kEmptyPakSize),
+              static_cast<int>(kEmptyPakSize));
+
+    ui::ResourceBundle* resource_bundle = CreateResourceBundle(NULL);
+
+    // Load the empty locale data pak.
+    resource_bundle->LoadTestResources(FilePath(), locale_path);
+    return resource_bundle;
+  }
+
+  // Returns the path of temporary directory to write test data packs into.
+  const FilePath& dir_path() { return dir_.path(); }
+
+ private:
+  scoped_ptr<DataPack> locale_pack_;
+  ScopedTempDir dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceBundleImageTest);
+};
+
+// Verify that we don't crash when trying to load a resource that is not found.
+// In some cases, we fail to mmap resources.pak, but try to keep going anyway.
+TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
+  FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+
+  // Dump contents into the pak files.
+  ASSERT_EQ(file_util::WriteFile(data_path, kEmptyPakContents,
+      kEmptyPakSize), static_cast<int>(kEmptyPakSize));
+
+  // Create a resource bundle from the file.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
+
+  const int kUnfoundResourceId = 10000;
+  EXPECT_EQ(NULL, resource_bundle->LoadDataResourceBytes(
+      kUnfoundResourceId));
+
+  // Give a .pak file that doesn't exist so we will fail to load it.
+  resource_bundle->AddDataPackFromPath(
+      FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
+      ui::SCALE_FACTOR_NONE);
+  EXPECT_EQ(NULL, resource_bundle->LoadDataResourceBytes(
+      kUnfoundResourceId));
+}
+
+TEST_F(ResourceBundleImageTest, GetRawDataResource) {
+  FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+  FilePath data_2x_path = dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
+
+  // Dump contents into the pak files.
+  ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents,
+      kSamplePakSize), static_cast<int>(kSamplePakSize));
+  ASSERT_EQ(file_util::WriteFile(data_2x_path, kSamplePakContents2x,
+      kSamplePakSize2x), static_cast<int>(kSamplePakSize2x));
+
+  // Load the regular and 2x pak files.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
+  resource_bundle->AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
+
+  // Resource ID 4 exists in both 1x and 2x paks, so we expect a different
+  // result when requesting the 2x scale.
+  EXPECT_EQ("this is id 4", resource_bundle->GetRawDataResourceForScale(4,
+      SCALE_FACTOR_100P));
+  EXPECT_EQ("this is id 4 2x", resource_bundle->GetRawDataResourceForScale(4,
+      SCALE_FACTOR_200P));
+
+  // Resource ID 6 only exists in the 1x pak so we expect the same resource
+  // for both scale factor requests.
+  EXPECT_EQ("this is id 6", resource_bundle->GetRawDataResourceForScale(6,
+      SCALE_FACTOR_100P));
+  EXPECT_EQ("this is id 6", resource_bundle->GetRawDataResourceForScale(6,
+      SCALE_FACTOR_200P));
 }
 
 // Test requesting image reps at various scale factors from the image returned
 // via ResourceBundle::GetImageNamed().
-TEST(ResourceBundle, GetImageNamed) {
-  // On Windows, the default data is compiled into the binary so this does
-  // nothing.
-  ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
+TEST_F(ResourceBundleImageTest, GetImageNamed) {
+  FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+  FilePath data_2x_path = dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
 
-  FilePath locale_path = dir.path().Append(FILE_PATH_LITERAL("empty.pak"));
-  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
-  FilePath data_2x_path = dir.path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
+  // Create the pak files.
+  CreateDataPackWithSingleBitmap(data_path, 10);
+  CreateDataPackWithSingleBitmap(data_2x_path, 20);
 
-  {
-    // Create the pak files.
-    ASSERT_EQ(file_util::WriteFile(locale_path, kEmptyPakContents,
-        kEmptyPakSize), static_cast<int>(kEmptyPakSize));
-    CreateDataPackWithSingleBitmap(data_path, 10);
-    CreateDataPackWithSingleBitmap(data_2x_path, 20);
+  // Load the regular and 2x pak files.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
+  resource_bundle->AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
 
-    // Load the regular and 2x pak files.
-    ResourceBundle resource_bundle(NULL);
-    resource_bundle.LoadTestResources(data_path, locale_path);
-    resource_bundle.AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
+  gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
 
-    gfx::ImageSkia* image_skia = resource_bundle.GetImageSkiaNamed(3);
+  // Resource ID 3 exists in both 1x and 2x paks. Image reps should be
+  // available for both scale factors in |image_skia|.
+  gfx::ImageSkiaRep image_rep =
+      image_skia->GetRepresentation(ui::SCALE_FACTOR_100P);
+  EXPECT_EQ(ui::SCALE_FACTOR_100P, image_rep.scale_factor());
+  image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_200P);
+  EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep.scale_factor());
 
-    // Resource ID 3 exists in both 1x and 2x paks. Image reps should be
-    // available for both scale factors in |image_skia|.
-    gfx::ImageSkiaRep image_rep =
-        image_skia->GetRepresentation(ui::SCALE_FACTOR_100P);
-    EXPECT_EQ(ui::SCALE_FACTOR_100P, image_rep.scale_factor());
-    image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_200P);
-    EXPECT_EQ(ui::SCALE_FACTOR_200P, image_rep.scale_factor());
-
-    // The 1.4x pack was not loaded. Requesting the 1.4x resource should return
-    // either the 1x or the 2x resource.
-    image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_140P);
-    EXPECT_TRUE(image_rep.scale_factor() == ui::SCALE_FACTOR_100P ||
-                image_rep.scale_factor() == ui::SCALE_FACTOR_200P);
-  }
+  // The 1.4x pack was not loaded. Requesting the 1.4x resource should return
+  // either the 1x or the 2x resource.
+  image_rep = image_skia->GetRepresentation(ui::SCALE_FACTOR_140P);
+  EXPECT_TRUE(image_rep.scale_factor() == ui::SCALE_FACTOR_100P ||
+              image_rep.scale_factor() == ui::SCALE_FACTOR_200P);
 }
 
 }  // namespace ui
