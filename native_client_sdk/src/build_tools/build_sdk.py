@@ -368,6 +368,7 @@ def GypNinjaBuild_X86(pepperdir, platform, toolchains):
   tools_files = [
     ('sel_ldr', 'sel_ldr_x86_32', True),
     ('ncval_x86_32', 'ncval_x86_32', True),
+    ('ncval_arm', 'ncval_arm', True),
     ('irt_core_newlib_x32.nexe', 'irt_core_newlib_x32.nexe', False),
     ('irt_core_newlib_x64.nexe', 'irt_core_newlib_x64.nexe', False),
   ]
@@ -425,6 +426,7 @@ def GypNinjaBuild_X86_Nacl(platform, rel_out_dir):
   out_dir = MakeNinjaRelPath(rel_out_dir)
   GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir)
   GypNinjaBuild('ia32', gyp_py, all_gyp, 'ncval_x86_32', out_dir)
+  GypNinjaBuild(None, gyp_py, all_gyp, 'ncval_arm', out_dir)
 
   if platform == 'win':
     NinjaBuild('sel_ldr64', out_dir)
@@ -477,7 +479,8 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
 def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
   gyp_env = copy.copy(os.environ)
   gyp_env['GYP_GENERATORS'] = 'ninja'
-  gyp_env['GYP_DEFINES'] = 'target_arch=%s' % (arch,)
+  if arch:
+    gyp_env['GYP_DEFINES'] = 'target_arch=%s' % (arch,)
   gyp_generator_flags = ['-G', 'output_dir=%s' % (out_dir,)]
   gyp_depth = '--depth=.'
   buildbot_common.Run(
