@@ -113,6 +113,27 @@ void SetBoundsAnimated(aura::Window* window, const gfx::Rect& bounds) {
   window->SetBounds(bounds);
 }
 
+// Move |window| into the center of the screen - or restore it to the previous
+// position.
+void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
+  gfx::Rect work_area = GetWorkAreaForWindow(window);
+  gfx::Rect bounds = window->bounds();
+  const gfx::Rect* user_defined_area =
+      ash::wm::GetPreAutoManageWindowBounds(window);
+  if (user_defined_area) {
+    bounds = *user_defined_area;
+    ash::wm::AdjustBoundsToEnsureWindowVisibility(&bounds, work_area);
+  } else {
+    // Center the window (only in x).
+    bounds.set_x((work_area.width() - bounds.width()) / 2);
+  }
+
+  if (animated)
+    SetBoundsAnimated(window, bounds);
+  else
+    window->SetBounds(bounds);
+}
+
 } // namespace
 
 void RearrangeVisibleWindowOnHideOrRemove(const aura::Window* removed_window) {
@@ -124,11 +145,7 @@ void RearrangeVisibleWindowOnHideOrRemove(const aura::Window* removed_window) {
                                           &other_shown_window) ||
       !WindowPositionCanBeManaged(other_shown_window))
     return;
-  // Center the window (only in x).
-  gfx::Rect work_area = GetWorkAreaForWindow(removed_window);
-  gfx::Rect bounds = other_shown_window->bounds();
-  bounds.set_x((work_area.width() - bounds.width()) / 2);
-  SetBoundsAnimated(other_shown_window, bounds);
+  AutoPlaceSingleWindow(other_shown_window, true);
 }
 
 void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
@@ -143,12 +160,9 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
     // It could be that this window is the first window joining the workspace.
     if (!WindowPositionCanBeManaged(added_window) || other_shown_window)
       return;
-
-    // If so we have to make sure it is centered.
-    gfx::Rect work_area = GetWorkAreaForWindow(added_window);
-    gfx::Rect bounds = added_window->bounds();
-    bounds.set_x((work_area.width() - bounds.width()) / 2);
-    added_window->SetBounds(bounds);
+    // Since we might be going from 0 to 1 window, we have to arrange the new
+    // window to a good default.
+    AutoPlaceSingleWindow(added_window, false);
     return;
   }
 
@@ -160,15 +174,19 @@ void RearrangeVisibleWindowOnShow(aura::Window* added_window) {
   if (WindowPositionCanBeManaged(other_shown_window)) {
     gfx::Rect work_area = GetWorkAreaForWindow(added_window);
 
-    // Push away the other window.
+    // Push away the other window after remembering its current position.
     gfx::Rect other_bounds = other_shown_window->bounds();
+    ash::wm::SetPreAutoManageWindowBounds(other_shown_window, other_bounds);
+
     bool move_right = other_bounds.CenterPoint().x() < work_area.width() / 2;
     if (MoveRectToOneSide(work_area.width(), move_right, &other_bounds))
       SetBoundsAnimated(other_shown_window, other_bounds);
 
-    // Push the new window also to the opposite location (if needed).
+    // Remember the current location of the new window and push it also to the
+    // opposite location (if needed).
     // Since it is just coming into view, we do not need to animate it.
     gfx::Rect added_bounds = added_window->bounds();
+    ash::wm::SetPreAutoManageWindowBounds(added_window, added_bounds);
     if (MoveRectToOneSide(work_area.width(), !move_right, &added_bounds))
       added_window->SetBounds(added_bounds);
   }

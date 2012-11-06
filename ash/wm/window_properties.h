@@ -11,6 +11,10 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui_controls {
 class UIControlsAura;
 }
@@ -70,6 +74,12 @@ extern const aura::WindowProperty<ui_controls::UIControlsAura*>* const
 // user.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
     kUserChangedWindowPositionOrSizeKey;
+
+// A property to remember the window position which was set before the
+// auto window position manager changed the window bounds, so that it can get
+// restored when only this one window gets shown.
+ASH_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
+    kPreAutoManagedWindowBoundsKey;
 
 // Property to tell if the container uses the screen coordinates.
 extern const aura::WindowProperty<bool>* const kUsesScreenCoordinatesKey;

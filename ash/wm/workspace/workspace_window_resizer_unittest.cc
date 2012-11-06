@@ -15,10 +15,10 @@
 #include "ash/wm/cursor_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "ui/aura/root_window.h"
@@ -1406,6 +1406,37 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_CursorDeviceScaleFactor) {
     EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
     resizer->CompleteDrag(0);
     EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+  }
+}
+
+// Test that the user user moved window flag is getting properly set.
+TEST_F(WorkspaceWindowResizerTest, CheckUserWindowMangedFlags) {
+  window_->SetBounds(gfx::Rect( 0,  50, 400, 200));
+
+  std::vector<aura::Window*> no_attached_windows;
+  // Check that an abort doesn't change anything.
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, no_attached_windows));
+    ASSERT_TRUE(resizer.get());
+    // Move it 100 to the bottom.
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 100), 0);
+    EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
+    resizer->RevertDrag();
+
+    EXPECT_FALSE(ash::wm::HasUserChangedWindowPositionOrSize(window_.get()));
+  }
+
+  // Check that a completed move / size does change the user coordinates.
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, no_attached_windows));
+    ASSERT_TRUE(resizer.get());
+    // Move it 100 to the bottom.
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 100), 0);
+    EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
+    resizer->CompleteDrag(0);
+    EXPECT_TRUE(ash::wm::HasUserChangedWindowPositionOrSize(window_.get()));
   }
 }
 

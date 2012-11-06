@@ -14,11 +14,18 @@ class RootWindow;
 class Window;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui {
 class Layer;
 }
 
 namespace ash {
+// We force at least this many DIPs for any window on the screen.
+const int kMinimumOnScreenArea = 10;
+
 namespace wm {
 
 // Convenience setters/getters for |aura::client::kRootWindowActiveWindow|.
@@ -98,6 +105,21 @@ ASH_EXPORT bool HasUserChangedWindowPositionOrSize(const aura::Window* window);
 // Marks a |window|'s coordinates to be changed by a user.
 ASH_EXPORT void SetUserHasChangedWindowPositionOrSize(aura::Window* window,
                                                       bool changed);
+
+// Get |window| bounds of the window before it was moved by the auto window
+// management. As long as it was not managed, it will return NULL.
+ASH_EXPORT const gfx::Rect* GetPreAutoManageWindowBounds(
+    const aura::Window* window);
+
+// Remember the |bounds| of a |window| before an automated window management
+// operation takes place.
+ASH_EXPORT void SetPreAutoManageWindowBounds(aura::Window* window,
+                                             const gfx::Rect& bounds);
+
+// Move the given bounds inside the given work area, including a safety margin.
+ASH_EXPORT void AdjustBoundsToEnsureWindowVisibility(
+    gfx::Rect* bounds,
+    const gfx::Rect& work_area);
 
 }  // namespace wm
 }  // namespace ash

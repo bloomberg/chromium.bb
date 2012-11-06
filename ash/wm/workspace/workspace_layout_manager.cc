@@ -299,27 +299,8 @@ void WorkspaceLayoutManager::AdjustWindowSizeForScreenChange(
       bounds.AdjustToFit(work_area_);
       window->SetBounds(bounds);
     } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
-      // Make sure the window isn't bigger than the display work area and that
-      // at least a portion of it is visible.
       gfx::Rect bounds = window->bounds();
-      bounds.set_width(std::min(bounds.width(), work_area_.width()));
-      bounds.set_height(std::min(bounds.height(), work_area_.height()));
-      if (!work_area_.Intersects(bounds)) {
-        int y_offset = 0;
-        if (work_area_.bottom() < bounds.y()) {
-          y_offset = work_area_.bottom() - bounds.y() - kMinimumOnScreenArea;
-        } else if (bounds.bottom() < work_area_.y()) {
-          y_offset = work_area_.y() - bounds.bottom() + kMinimumOnScreenArea;
-        }
-
-        int x_offset = 0;
-        if (work_area_.right() < bounds.x()) {
-          x_offset = work_area_.right() - bounds.x() - kMinimumOnScreenArea;
-        } else if (bounds.right() < work_area_.x()) {
-          x_offset = work_area_.x() - bounds.right() + kMinimumOnScreenArea;
-        }
-        bounds.Offset(x_offset, y_offset);
-      }
+      ash::wm::AdjustBoundsToEnsureWindowVisibility(&bounds, work_area_);
       if (window->bounds() != bounds)
         window->SetBounds(bounds);
     }

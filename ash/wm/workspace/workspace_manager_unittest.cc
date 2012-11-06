@@ -1262,6 +1262,44 @@ TEST_F(WorkspaceManagerTest, TestUserMovedWindowRepositioning) {
   EXPECT_TRUE(ash::wm::HasUserChangedWindowPositionOrSize(window1.get()));
 }
 
+// Test that user placed windows go back to their user placement after the user
+// closes all other windows.
+TEST_F(WorkspaceManagerTest, TestUserHandledWindowRestore) {
+  scoped_ptr<aura::Window> window1(
+      aura::test::CreateTestWindowWithId(0, NULL));
+  gfx::Rect user_pos = gfx::Rect(16, 42, 640, 320);
+  window1->SetBounds(user_pos);
+  ash::wm::SetPreAutoManageWindowBounds(window1.get(), user_pos);
+  gfx::Rect desktop_area = window1->parent()->bounds();
+
+  // Create a second window to let the auto manager kick in.
+  scoped_ptr<aura::Window> window2(
+      aura::test::CreateTestWindowWithId(1, NULL));
+  window2->SetBounds(gfx::Rect(32, 48, 256, 512));
+  window1->Hide();
+  window2->Hide();
+  ash::wm::SetWindowPositionManaged(window1.get(), true);
+  ash::wm::SetWindowPositionManaged(window2.get(), true);
+  window1->Show();
+  EXPECT_EQ(user_pos.ToString(), window1->bounds().ToString());
+  window2->Show();
+
+  // |window1| should be flush right and |window2| flush left.
+  EXPECT_EQ(base::IntToString(
+                desktop_area.width() - window1->bounds().width()) + "," +
+            base::IntToString(user_pos.y()) +
+            " 640x320", window1->bounds().ToString());
+  EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
+  window2->Hide();
+
+  // After the other window get hidden the window has to move back to the
+  // previous position and the bounds should still be set and unchanged.
+  EXPECT_EQ(user_pos.ToString(), window1->bounds().ToString());
+  ASSERT_TRUE(ash::wm::GetPreAutoManageWindowBounds(window1.get()));
+  EXPECT_EQ(user_pos.ToString(),
+            ash::wm::GetPreAutoManageWindowBounds(window1.get())->ToString());
+}
+
 // Test that a window from normal to minimize will repos the remaining.
 TEST_F(WorkspaceManagerTest, ToMinimizeRepositionsRemaining) {
   scoped_ptr<aura::Window> window1(
@@ -1326,7 +1364,7 @@ TEST_F(WorkspaceManagerTest, NormToMaxToMinRepositionsRemaining) {
   scoped_ptr<aura::Window> window2(
       aura::test::CreateTestWindowWithId(1, NULL));
   ash::wm::SetWindowPositionManaged(window2.get(), true);
-  window2->SetBounds(gfx::Rect(32, 48, 256, 512));
+  window2->SetBounds(gfx::Rect(32, 40, 256, 512));
 
   // Trigger the auto window placement function by showing (and hiding) it.
   window1->Hide();
@@ -1336,7 +1374,7 @@ TEST_F(WorkspaceManagerTest, NormToMaxToMinRepositionsRemaining) {
   EXPECT_EQ(base::IntToString(
                 desktop_area.width() - window1->bounds().width()) +
             ",32 640x320", window1->bounds().ToString());
-  EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
+  EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
 
   ash::wm::MaximizeWindow(window1.get());
   ash::wm::MinimizeWindow(window1.get());
@@ -1346,7 +1384,7 @@ TEST_F(WorkspaceManagerTest, NormToMaxToMinRepositionsRemaining) {
   EXPECT_TRUE(ash::wm::IsWindowNormal(window2.get()));
   EXPECT_EQ(base::IntToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
-            ",48 256x512", window2->bounds().ToString());
+            ",40 256x512", window2->bounds().ToString());
 }
 
 // Test that nomral, maximize, normal will repos the remaining.
@@ -1360,7 +1398,7 @@ TEST_F(WorkspaceManagerTest, NormToMaxToNormRepositionsRemaining) {
   scoped_ptr<aura::Window> window2(
       aura::test::CreateTestWindowWithId(1, NULL));
   ash::wm::SetWindowPositionManaged(window2.get(), true);
-  window2->SetBounds(gfx::Rect(32, 48, 256, 512));
+  window2->SetBounds(gfx::Rect(32, 40, 256, 512));
 
   // Trigger the auto window placement function by showing (and hiding) it.
   window1->Hide();
@@ -1370,7 +1408,7 @@ TEST_F(WorkspaceManagerTest, NormToMaxToNormRepositionsRemaining) {
   EXPECT_EQ(base::IntToString(
                 desktop_area.width() - window1->bounds().width()) +
             ",32 640x320", window1->bounds().ToString());
-  EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
+  EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
 
   ash::wm::MaximizeWindow(window1.get());
   ash::wm::RestoreWindow(window1.get());
@@ -1379,7 +1417,7 @@ TEST_F(WorkspaceManagerTest, NormToMaxToNormRepositionsRemaining) {
   EXPECT_EQ(base::IntToString(
                 desktop_area.width() - window1->bounds().width()) +
             ",32 640x320", window1->bounds().ToString());
-  EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
+  EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
 }
 
 // Test that animations are triggered.

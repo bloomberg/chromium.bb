@@ -337,7 +337,6 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
     window()->SetBounds(snap_sizer_->target_bounds());
     return;
   }
-
   gfx::Rect bounds(GetFinalBounds(window()->bounds()));
 
   // Check if the destination is another display.

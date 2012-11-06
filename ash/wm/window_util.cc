@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -170,6 +171,38 @@ bool HasUserChangedWindowPositionOrSize(const aura::Window* window) {
 void SetUserHasChangedWindowPositionOrSize(aura::Window* window, bool changed) {
   window->SetProperty(ash::internal::kUserChangedWindowPositionOrSizeKey,
                       changed);
+}
+
+const gfx::Rect* GetPreAutoManageWindowBounds(const aura::Window* window) {
+  return window->GetProperty(ash::internal::kPreAutoManagedWindowBoundsKey);
+}
+
+void SetPreAutoManageWindowBounds(aura::Window* window,
+                                const gfx::Rect& bounds) {
+  window->SetProperty(ash::internal::kPreAutoManagedWindowBoundsKey,
+                      new gfx::Rect(bounds));
+}
+
+void AdjustBoundsToEnsureWindowVisibility(gfx::Rect* bounds,
+                                          const gfx::Rect& work_area) {
+  bounds->set_width(std::min(bounds->width(), work_area.width()));
+  bounds->set_height(std::min(bounds->height(), work_area.height()));
+  if (!work_area.Intersects(*bounds)) {
+    int y_offset = 0;
+    if (work_area.bottom() < bounds->y()) {
+      y_offset = work_area.bottom() - bounds->y() - kMinimumOnScreenArea;
+    } else if (bounds->bottom() < work_area.y()) {
+      y_offset = work_area.y() - bounds->bottom() + kMinimumOnScreenArea;
+    }
+
+    int x_offset = 0;
+    if (work_area.right() < bounds->x()) {
+      x_offset = work_area.right() - bounds->x() - kMinimumOnScreenArea;
+    } else if (bounds->right() < work_area.x()) {
+      x_offset = work_area.x() - bounds->right() + kMinimumOnScreenArea;
+    }
+    bounds->Offset(x_offset, y_offset);
+  }
 }
 
 }  // namespace wm

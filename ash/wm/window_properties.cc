@@ -9,6 +9,7 @@
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/shadow_types.h"
 #include "ui/aura/window_property.h"
+#include "ui/gfx/rect.h"
 #include "ui/ui_controls/ui_controls_aura.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::AlwaysOnTopController*);
@@ -39,6 +40,9 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(ui_controls::UIControlsAura,
                                  NULL);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUserChangedWindowPositionOrSizeKey, false);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect,
+                                 kPreAutoManagedWindowBoundsKey,
+                                 NULL);
 DEFINE_WINDOW_PROPERTY_KEY(ash::WindowPersistsAcrossAllWorkspacesType,
                            kWindowPersistsAcrossAllWorkspacesKey,
                            WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT);
