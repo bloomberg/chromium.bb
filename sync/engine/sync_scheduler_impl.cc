@@ -643,6 +643,9 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
     job = pending_nudge_->CloneAndAbandon();
     unscheduled_nudge_storage_.reset();
     pending_nudge_ = NULL;
+    // It's also possible we took a canary job, since we allow one nudge
+    // per backoff interval.
+    DCHECK(!wait_interval_ || !wait_interval_->had_nudge);
   }
 
   // TODO(zea): Consider adding separate throttling/backoff for datatype
@@ -1007,6 +1010,14 @@ void SyncSchedulerImpl::DoCanaryJob(scoped_ptr<SyncSessionJob> to_be_canary) {
   to_be_canary->GrantCanaryPrivilege();
 
   if (to_be_canary->purpose() == SyncSessionJob::NUDGE) {
+    // TODO(tim): Bug 158313.  Remove this check.
+    if (pending_nudge_ == NULL ||
+        pending_nudge_->session() != to_be_canary->session()) {
+      // |job| is abandoned.
+      SDVLOG(2) << "Dropping a nudge in "
+                << "DoSyncSessionJob because another nudge was scheduled";
+      return;
+    }
     DCHECK_EQ(pending_nudge_->session(), to_be_canary->session());
     // TODO(tim): We should be able to remove this...
     scoped_ptr<SyncSession> temp = CreateSyncSession(

@@ -113,6 +113,8 @@ class SyncSchedulerImpl : public SyncScheduler {
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, GetInitialBackoffDelay);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest,
                            ServerConnectionChangeDuringBackoff);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest,
+                           ConnectionChangeCanaryPreemptedByNudge);
 
   struct WaitInterval {
     enum Mode {
