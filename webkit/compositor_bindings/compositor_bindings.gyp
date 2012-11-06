@@ -25,6 +25,8 @@
       'web_image_layer_impl.h',
       'web_layer_impl.cc',
       'web_layer_impl.h',
+      'web_nine_patch_layer_impl.cc',
+      'web_nine_patch_layer_impl.h',
       'web_to_ccinput_handler_adapter.cc',
       'web_to_ccinput_handler_adapter.h',
       'web_layer_tree_view_impl.cc',

@@ -7,76 +7,12 @@
 #include "cc/image_layer.h"
 
 #include "base/compiler_specific.h"
+#include "cc/image_layer_updater.h"
 #include "cc/layer_updater.h"
 #include "cc/layer_tree_host.h"
 #include "cc/resource_update_queue.h"
 
 namespace cc {
-
-class ImageLayerUpdater : public LayerUpdater {
-public:
-    class Resource : public LayerUpdater::Resource {
-    public:
-        Resource(ImageLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
-            : LayerUpdater::Resource(texture.Pass())
-            , m_updater(updater)
-        {
-        }
-
-        virtual void update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE
-        {
-            updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
-        }
-
-    private:
-        ImageLayerUpdater* updater() { return m_updater; }
-
-        ImageLayerUpdater* m_updater;
-    };
-
-    static scoped_refptr<ImageLayerUpdater> create()
-    {
-        return make_scoped_refptr(new ImageLayerUpdater());
-    }
-
-    virtual scoped_ptr<LayerUpdater::Resource> createResource(
-        PrioritizedTextureManager* manager) OVERRIDE
-    {
-        return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
-    }
-
-    void updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
-    {
-        // Source rect should never go outside the image pixels, even if this
-        // is requested because the texture extends outside the image.
-        gfx::Rect clippedSourceRect = sourceRect;
-        gfx::Rect imageRect = gfx::Rect(0, 0, m_bitmap.width(), m_bitmap.height());
-        clippedSourceRect.Intersect(imageRect);
-
-        gfx::Vector2d clippedDestOffset = destOffset + (clippedSourceRect.origin() - sourceRect.origin());
-
-        ResourceUpdate upload = ResourceUpdate::Create(texture,
-                                                       &m_bitmap,
-                                                       imageRect,
-                                                       clippedSourceRect,
-                                                       clippedDestOffset);
-        if (partialUpdate)
-            queue.appendPartialUpload(upload);
-        else
-            queue.appendFullUpload(upload);
-    }
-
-    void setBitmap(const SkBitmap& bitmap)
-    {
-        m_bitmap = bitmap;
-    }
-
-private:
-    ImageLayerUpdater() { }
-    virtual ~ImageLayerUpdater() { }
-
-    SkBitmap m_bitmap;
-};
 
 scoped_refptr<ImageLayer> ImageLayer::create()
 {

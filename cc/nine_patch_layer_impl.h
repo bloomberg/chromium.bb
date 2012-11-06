@@ -1,0 +1,51 @@
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef NinePatchLayerImpl_h
+#define NinePatchLayerImpl_h
+
+#include "cc/cc_export.h"
+#include "cc/layer_impl.h"
+#include "cc/resource_provider.h"
+#include "ui/gfx/size.h"
+#include "ui/gfx/rect.h"
+
+namespace cc {
+
+class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
+public:
+    static scoped_ptr<NinePatchLayerImpl> create(int id)
+    {
+        return make_scoped_ptr(new NinePatchLayerImpl(id));
+    }
+    virtual ~NinePatchLayerImpl();
+
+    void setResourceId(unsigned id) { m_resourceId = id; }
+    void setLayout(const gfx::Size& imageBounds, const gfx::Rect& aperture);
+
+    virtual void willDraw(ResourceProvider*) OVERRIDE;
+    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
+    virtual void didDraw(ResourceProvider*) OVERRIDE;
+    virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
+    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
+    virtual void didLoseContext() OVERRIDE;
+
+protected:
+    explicit NinePatchLayerImpl(int id);
+
+private:
+    virtual const char* layerTypeAsString() const OVERRIDE;
+
+    // The size of the NinePatch bitmap in pixels.
+    gfx::Size m_imageBounds;
+
+    // The transparent center region that shows the parent layer's contents in image space.
+    gfx::Rect m_imageAperture;
+
+    ResourceProvider::ResourceId m_resourceId;
+};
+
+}
+
+#endif
