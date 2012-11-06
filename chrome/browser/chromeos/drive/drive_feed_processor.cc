@@ -85,7 +85,7 @@ void DriveFeedProcessor::ApplyEntryProtoMap(
   if (!is_delta_feed) {  // Full update.
     resource_metadata_->root()->RemoveChildren();
     changed_dirs->insert(resource_metadata_->root()->GetFilePath());
-    resource_metadata_->set_initialized(true);
+    resource_metadata_->set_loaded(true);
   }
   resource_metadata_->set_largest_changestamp(feed_changestamp);
 

@@ -167,8 +167,9 @@ function updateAccountMetadata(accountMetadata) {
 function updateLocalMetadata(localMetadata) {
   $('account-largest-changestamp-local').textContent =
       localMetadata['account-largest-changestamp-local'];
-  $('account-metadata-origin').textContent =
-      localMetadata['account-metadata-origin'];
+  $('account-metadata-loaded').textContent =
+      localMetadata['account-metadata-loaded'].toString() +
+      (localMetadata['account-metadata-refreshing'] ? ' (refreshing)' : '');
 }
 
 /**

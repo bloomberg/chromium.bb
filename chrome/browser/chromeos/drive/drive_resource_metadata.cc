@@ -184,7 +184,7 @@ DriveResourceMetadata::DriveResourceMetadata()
     : blocking_task_runner_(NULL),
       serialized_size_(0),
       largest_changestamp_(0),
-      initialized_(false),
+      loaded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   root_ = CreateDriveDirectory().Pass();
   if (!google_apis::util::IsDriveV2ApiEnabled())
@@ -747,7 +747,7 @@ void DriveResourceMetadata::InitResourceMap(
   DCHECK_EQ(resource_map.size(), resource_map_.size());
   DCHECK_EQ(resource_map.size(), serialized_resources->size());
 
-  initialized_ = true;
+  loaded_ = true;
 
   callback.Run(DRIVE_FILE_OK);
 }
@@ -816,7 +816,7 @@ bool DriveResourceMetadata::ParseFromString(
 
   root_->FromProto(proto.drive_directory());
 
-  initialized_ = true;
+  loaded_ = true;
   largest_changestamp_ = proto.largest_changestamp();
 
   return true;

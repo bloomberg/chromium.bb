@@ -415,7 +415,8 @@ void DriveInternalsWebUIHandler::UpdateLocalMetadataSection(
       GetSystemService()->file_system()->GetMetadata();
   local_metadata.SetDouble("account-largest-changestamp-local",
                            metadata.largest_changestamp);
-  local_metadata.SetString("account-metadata-origin", metadata.origin);
+  local_metadata.SetBoolean("account-metadata-loaded", metadata.loaded);
+  local_metadata.SetBoolean("account-metadata-refreshing", metadata.refreshing);
   web_ui()->CallJavascriptFunction("updateLocalMetadata", local_metadata);
 }
 

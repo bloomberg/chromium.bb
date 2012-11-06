@@ -136,8 +136,9 @@ class DriveResourceMetadata {
   int64 largest_changestamp() const { return largest_changestamp_; }
   void set_largest_changestamp(int64 value) { largest_changestamp_ = value; }
 
-  bool initialized() const { return initialized_; }
-  void set_initialized(bool initialized) { initialized_ = initialized; }
+  // True if the file system feed is loaded from the cache or from the server.
+  bool loaded() const { return loaded_; }
+  void set_loaded(bool loaded) { loaded_ = loaded; }
 
   // Creates a DriveFile instance.
   scoped_ptr<DriveFile> CreateDriveFile();
@@ -306,7 +307,7 @@ class DriveResourceMetadata {
   base::Time last_serialized_;
   size_t serialized_size_;
   int64 largest_changestamp_;  // Stored in the serialized proto.
-  bool initialized_;
+  bool loaded_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.

@@ -22,9 +22,11 @@ struct DriveFileSystemMetadata {
   // from the one on the server)
   int64 largest_changestamp;
 
-  // The origin of the file system metadata like "INITIALIZED".
-  // See ContentOrigin in drive_resource_metadata.h.
-  std::string origin;
+  // True if the file system feed is loaded from the cache or from the server.
+  bool loaded;
+
+  // True if the feed is now being fetched from the server.
+  bool refreshing;
 
   // True if push notification is enabled.
   bool push_notification_enabled;

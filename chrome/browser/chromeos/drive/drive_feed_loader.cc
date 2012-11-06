@@ -245,7 +245,7 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
   DCHECK(!callback.is_null());
   DVLOG(1) << "ReloadFromServerIfNeeded local_changestamp="
            << resource_metadata_->largest_changestamp()
-           << ", initialized=" << resource_metadata_->initialized();
+           << ", loaded=" << resource_metadata_->loaded();
 
   // Sets the refreshing flag, so that the caller does not send refresh requests
   // in parallel (see DriveFileSystem::CheckForUpdates).
@@ -757,7 +757,7 @@ void DriveFeedLoader::OnNotifyDocumentFeedFetched(
 void DriveFeedLoader::LoadFromCache(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK(!resource_metadata_->initialized());
+  DCHECK(!resource_metadata_->loaded());
 
   // Sets the refreshing flag, so that the caller does not send refresh requests
   // in parallel (see DriveFileSystem::LoadFeedIfNeeded).

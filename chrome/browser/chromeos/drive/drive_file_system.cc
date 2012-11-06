@@ -394,7 +394,7 @@ void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
-  if (resource_metadata_->initialized() && !feed_loader_->refreshing()) {
+  if (resource_metadata_->loaded() && !feed_loader_->refreshing()) {
     feed_loader_->ReloadFromServerIfNeeded(
         base::Bind(&DriveFileSystem::OnUpdateChecked, ui_weak_ptr_));
   }
@@ -523,7 +523,7 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (resource_metadata_->initialized()) {
+  if (resource_metadata_->loaded()) {
     // The feed has already been loaded, so we have nothing to do, but post a
     // task to the same thread, rather than calling it here, as
     // LoadFeedIfNeeded() is asynchronous.
@@ -534,7 +534,7 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
   }
 
   if (feed_loader_->refreshing()) {
-    // If root feed is not initialized but the initialization process has
+    // If root feed is not loaded but the initialization process has
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
     // The observer deletes itself after OnInitialLoadFinished() gets called.
@@ -1859,7 +1859,7 @@ void DriveFileSystem::OnFeedCacheLoaded(const FileOperationCallback& callback,
 
   // If successfully loaded from the server, notify the success, and check for
   // the latest feed from the server.
-  DCHECK(resource_metadata_->initialized());
+  DCHECK(resource_metadata_->loaded());
   NotifyInitialLoadFinishedAndRun(callback, DRIVE_FILE_OK);
   CheckForUpdates();
 }
@@ -1870,7 +1870,7 @@ void DriveFileSystem::NotifyInitialLoadFinishedAndRun(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Notify the observers that root directory has been initialized.
+  // Notify the observers that root directory has been loaded.
   FOR_EACH_OBSERVER(DriveFileSystemObserver,
                     observers_,
                     OnInitialLoadFinished(error));
@@ -2126,10 +2126,8 @@ void DriveFileSystem::UpdateCacheEntryOnUIThread(
 DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
   DriveFileSystemMetadata metadata;
   metadata.largest_changestamp = resource_metadata_->largest_changestamp();
-  metadata.origin = resource_metadata_->initialized() ?
-      "INITIALIZED" : "UNINITIALIZED";
-  if (feed_loader_->refreshing())
-    metadata.origin += " (refreshing)";
+  metadata.loaded = resource_metadata_->loaded();
+  metadata.refreshing = feed_loader_->refreshing();
 
   // Metadata related to delta update.
   metadata.push_notification_enabled = push_notification_enabled_;
