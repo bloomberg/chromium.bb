@@ -5,10 +5,13 @@
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 
 #include "base/stl_util.h"
+#include "chrome/browser/sync_file_system/change_observer_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/file_change.h"
+#include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 
 using content::BrowserThread;
@@ -23,6 +26,7 @@ LocalFileSyncService::LocalFileSyncService()
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  sync_context_->AddOriginChangeObserver(this);
 }
 
 LocalFileSyncService::~LocalFileSyncService() {
@@ -30,6 +34,7 @@ LocalFileSyncService::~LocalFileSyncService() {
 }
 
 void LocalFileSyncService::Shutdown() {
+  sync_context_->RemoveOriginChangeObserver(this);
   sync_context_->ShutdownOnUIThread();
 }
 
@@ -41,7 +46,12 @@ void LocalFileSyncService::MaybeInitializeFileSystemContext(
   sync_context_->MaybeInitializeFileSystemContext(
       app_origin, service_name, file_system_context,
       base::Bind(&LocalFileSyncService::DidInitializeFileSystemContext,
-                 AsWeakPtr(), app_origin, file_system_context, callback));
+                 AsWeakPtr(), app_origin,
+                 make_scoped_refptr(file_system_context), callback));
+}
+
+void LocalFileSyncService::AddChangeObserver(LocalChangeObserver* observer) {
+  change_observers_.AddObserver(observer);
 }
 
 void LocalFileSyncService::ProcessLocalChange(
@@ -69,6 +79,25 @@ void LocalFileSyncService::ApplyRemoteChange(
   sync_context_->ApplyRemoteChange(
       origin_to_contexts_[url.origin()],
       change, local_path, url, callback);
+}
+
+void LocalFileSyncService::OnChangesAvailableInOrigins(
+    const std::set<GURL>& origins) {
+  for (std::set<GURL>::const_iterator iter = origins.begin();
+       iter != origins.end(); ++iter) {
+    const GURL& origin = *iter;
+    DCHECK(ContainsKey(origin_to_contexts_, origin));
+    fileapi::FileSystemContext* context = origin_to_contexts_[origin];
+    DCHECK(context->change_tracker());
+    per_origin_changes_[origin] = context->change_tracker()->num_changes();
+  }
+  int64 num_changes = 0;
+  for (std::map<GURL, int64>::iterator iter = per_origin_changes_.begin();
+       iter != per_origin_changes_.end(); ++iter) {
+    num_changes += iter->second;
+  }
+  FOR_EACH_OBSERVER(LocalChangeObserver, change_observers_,
+                    OnLocalChangeAvailable(num_changes));
 }
 
 void LocalFileSyncService::DidInitializeFileSystemContext(

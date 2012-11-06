@@ -12,7 +12,9 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
+#include "webkit/fileapi/syncable/local_origin_change_observer.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
@@ -25,12 +27,14 @@ class LocalFileSyncContext;
 
 namespace sync_file_system {
 
+class LocalChangeObserver;
 class LocalChangeProcessor;
 
 // Maintains local file change tracker and sync status.
 // Owned by SyncFileSystemService (which is a per-profile object).
 class LocalFileSyncService
     : public RemoteChangeProcessor,
+      public fileapi::LocalOriginChangeObserver,
       public base::SupportsWeakPtr<LocalFileSyncService> {
  public:
   LocalFileSyncService();
@@ -43,6 +47,8 @@ class LocalFileSyncService
       const std::string& service_name,
       fileapi::FileSystemContext* file_system_context,
       const fileapi::SyncStatusCallback& callback);
+
+  void AddChangeObserver(LocalChangeObserver* observer);
 
   // Synchronize one (or a set of) local change(s) to the remote server
   // using |processor|.
@@ -60,6 +66,10 @@ class LocalFileSyncService
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
 
+  // LocalOriginChangeObserver override.
+  virtual void OnChangesAvailableInOrigins(
+      const std::set<GURL>& origins) OVERRIDE;
+
  private:
   void DidInitializeFileSystemContext(
       const GURL& app_origin,
@@ -72,6 +82,11 @@ class LocalFileSyncService
   // Origin to context map. (Assuming that as far as we're in the same
   // profile single origin wouldn't belong to multiple FileSystemContexts.)
   std::map<GURL, fileapi::FileSystemContext*> origin_to_contexts_;
+
+  // Per-origin change count (cached info, could be stale).
+  std::map<GURL, int64> per_origin_changes_;
+
+  ObserverList<LocalChangeObserver> change_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncService);
 };

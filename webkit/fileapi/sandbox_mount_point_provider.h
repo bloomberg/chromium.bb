@@ -181,6 +181,13 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType type) const;
 
+  // Returns a path to the usage cache file (static version).
+  static FilePath GetUsageCachePathForOriginAndType(
+      ObfuscatedFileUtil* sandbox_file_util,
+      const GURL& origin_url,
+      FileSystemType type,
+      base::PlatformFileError* error_out);
+
   FilePath OldCreateFileSystemRootPath(
       const GURL& origin_url, FileSystemType type);
 
