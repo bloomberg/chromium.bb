@@ -1637,9 +1637,6 @@
    fun:net::FileStream::Context::CloseAndDelete
    fun:net::FileStream::Context::Orphan
    fun:~FileStream
-   fun:~scoped_ptr
-   fun:~LocalFileStreamReader
-   fun:~scoped_ptr
 }
 {
    bug_159551_filestream_a
