@@ -736,6 +736,14 @@ chromium_info.add_config('amd64-generic-tot-chrome-pfq-informational',
   chrome_tests=True,
 )
 
+chrome_info.add_config('alex-tot-chrome-pfq-informational',
+  boards=['x86-alex'],
+)
+
+chrome_info.add_config('lumpy-tot-chrome-pfq-informational',
+  boards=['lumpy'],
+)
+
 arm_generic_full = \
 full.add_config('arm-generic-full', arm,
   boards=['arm-generic'],
