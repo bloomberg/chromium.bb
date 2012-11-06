@@ -961,6 +961,11 @@ def main(args):
     pepper_ver = options.release
   print 'Building PEPPER %s at %s' % (pepper_ver, clnumber)
 
+  if 'NACL_SDK_ROOT' in os.environ:
+    # We don't want the currently configured NACL_SDK_ROOT to have any effect
+    # of the build.
+    del os.environ['NACL_SDK_ROOT']
+
   if options.only_examples:
     BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental,
                           options.clobber_examples)
