@@ -9,7 +9,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
-#include "content/renderer/media/peer_connection_handler_jsep.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
@@ -170,20 +169,6 @@ MediaStreamDependencyFactory::MediaStreamDependencyFactory(
 
 MediaStreamDependencyFactory::~MediaStreamDependencyFactory() {
   CleanupPeerConnectionFactory();
-}
-
-WebKit::WebPeerConnection00Handler*
-MediaStreamDependencyFactory::CreatePeerConnectionHandlerJsep(
-    WebKit::WebPeerConnection00HandlerClient* client) {
-  // Save histogram data so we can see how much PeerConnetion is used.
-  // The histogram counts the number of calls to the JS API
-  // webKitPeerConnection00.
-  UpdateWebRTCMethodCount(WEBKIT_PEER_CONNECTION);
-
-  if (!EnsurePeerConnectionFactory())
-    return NULL;
-
-  return new PeerConnectionHandlerJsep(client, this);
 }
 
 WebKit::WebRTCPeerConnectionHandler*

@@ -15,13 +15,11 @@
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebICECandidateDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSourcesRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSessionDescriptionDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
@@ -122,58 +120,6 @@ void MediaStreamCenter::didCreateMediaStream(
   if (!rtc_factory_)
     return;
   rtc_factory_->CreateNativeLocalMediaStream(&stream);
-}
-
-WebKit::WebString MediaStreamCenter::constructSDP(
-    const WebKit::WebICECandidateDescriptor& candidate) {
-  int m_line_index = -1;
-  if (!base::StringToInt(UTF16ToUTF8(candidate.label()), &m_line_index)) {
-    LOG(ERROR) << "Invalid candidate label: " << UTF16ToUTF8(candidate.label());
-    return WebKit::WebString();
-  }
-  // TODO(ronghuawu): Get sdp_mid from WebKit when is available.
-  const std::string sdp_mid;
-  scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
-      webrtc::CreateIceCandidate(sdp_mid,
-                                 m_line_index,
-                                 UTF16ToUTF8(candidate.candidateLine())));
-  std::string sdp;
-  if (!native_candidate->ToString(&sdp))
-    LOG(ERROR) << "Could not create SDP string";
-  return UTF8ToUTF16(sdp);
-}
-
-WebKit::WebString MediaStreamCenter::constructSDP(
-    const WebKit::WebSessionDescriptionDescriptor& description) {
-  scoped_ptr<webrtc::SessionDescriptionInterface> native_desc(
-      webrtc::CreateSessionDescription(UTF16ToUTF8(description.initialSDP())));
-  if (!native_desc.get())
-    return WebKit::WebString();
-
-  for (size_t i = 0; i < description.numberOfAddedCandidates(); ++i) {
-    WebKit::WebICECandidateDescriptor candidate = description.candidate(i);
-    int m_line_index = -1;
-    if (!base::StringToInt(UTF16ToUTF8(candidate.label()), &m_line_index)) {
-      LOG(ERROR) << "Invalid candidate label: "
-                 << UTF16ToUTF8(candidate.label());
-      continue;
-    }
-    // TODO(ronghuawu): Get sdp_mid from WebKit when is available.
-    const std::string sdp_mid;
-    scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
-        webrtc::CreateIceCandidate(sdp_mid,
-                                   m_line_index,
-                                   UTF16ToUTF8(candidate.candidateLine())));
-    if (!native_desc->AddCandidate(native_candidate.get())) {
-      LOG(ERROR) << "Failed to add candidate to SessionDescription.";
-      continue;
-    }
-  }
-
-  std::string sdp;
-  if (!native_desc->ToString(&sdp))
-    LOG(ERROR) << "Could not create SDP string";
-  return UTF8ToUTF16(sdp);
 }
 
 }  // namespace content

@@ -302,10 +302,6 @@ const char kDisableMediaSource[]             = "disable-media-source";
 // media stream.
 const char kDisableWebMediaPlayerMS[]       = "disable-web-media-player-ms";
 
-// Enables the deprecated PeerConnection functionality.
-const char kEnableDeprecatedPeerConnection[] =
-    "enable-deprecated-peer-connection";
-
 // Use fake device for MediaStream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 

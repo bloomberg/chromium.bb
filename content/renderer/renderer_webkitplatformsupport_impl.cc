@@ -86,8 +86,6 @@ using WebKit::WebIDBFactory;
 using WebKit::WebKitPlatformSupport;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
-using WebKit::WebPeerConnection00Handler;
-using WebKit::WebPeerConnection00HandlerClient;
 using WebKit::WebRTCPeerConnectionHandler;
 using WebKit::WebRTCPeerConnectionHandlerClient;
 using WebKit::WebStorageNamespace;
@@ -671,22 +669,6 @@ void RendererWebKitPlatformSupportImpl::GetPlugins(
 }
 
 //------------------------------------------------------------------------------
-
-WebPeerConnection00Handler*
-RendererWebKitPlatformSupportImpl::createPeerConnection00Handler(
-    WebPeerConnection00HandlerClient* client) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  DCHECK(render_thread);
-  if (!render_thread)
-    return NULL;
-#if defined(ENABLE_WEBRTC)
-  MediaStreamDependencyFactory* rtc_dependency_factory =
-      render_thread->GetMediaStreamDependencyFactory();
-  return rtc_dependency_factory->CreatePeerConnectionHandlerJsep(client);
-#else
-  return NULL;
-#endif  // defined(ENABLE_WEBRTC)
-}
 
 WebRTCPeerConnectionHandler*
 RendererWebKitPlatformSupportImpl::createRTCPeerConnectionHandler(

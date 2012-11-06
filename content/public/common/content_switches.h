@@ -106,7 +106,6 @@ extern const char kEnableGpuBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kDisableMediaSource[];
 extern const char kDisableWebMediaPlayerMS[];
-extern const char kEnableDeprecatedPeerConnection[];
 CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableUIReleaseFrontSurface[];
