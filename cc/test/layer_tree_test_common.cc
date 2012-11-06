@@ -28,7 +28,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
-#include <public/WebThread.h>
 
 using namespace cc;
 using namespace WebKit;

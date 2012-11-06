@@ -12,13 +12,11 @@
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <public/WebThread.h>
 
 using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 using testing::Test;
-
 
 namespace {
 
@@ -185,7 +183,6 @@ protected:
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
     scoped_ptr<PrioritizedTexture> m_textures[4];
-    scoped_ptr<WebThread> m_thread;
     scoped_ptr<PrioritizedTextureManager> m_textureManager;
     SkBitmap m_bitmap;
 
