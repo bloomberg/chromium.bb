@@ -90,8 +90,12 @@ class CHROMEOS_EXPORT IBusLookupTable {
   // field is represented as IBusText, but attributes are not used in Chrome.
   // So just simple string is sufficient in this case.
   struct Entry {
+    Entry();
+    virtual ~Entry();
     std::string value;
     std::string label;
+    std::string annotation;
+    std::string description;
   };
 
   IBusLookupTable();

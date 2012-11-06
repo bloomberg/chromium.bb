@@ -151,15 +151,17 @@ bool PopIBusLookupTable(dbus::MessageReader* reader, IBusLookupTable* table) {
 
   std::vector<IBusLookupTable::Entry>* candidates = table->mutable_candidates();
   while (text_array_reader.HasMoreData()) {
-    std::string candidate_text;
+    ibus::IBusText candidate_text;
     // The attributes in IBusText are not used in Chrome.
-    if (!PopStringFromIBusText(&text_array_reader, &candidate_text)) {
+    if (!PopIBusText(&text_array_reader, &candidate_text)) {
       LOG(ERROR) << "Invalid variant structure[IBusLookupTable]: "
                  << "6th argument should be array of IBusText.";
       return false;
     }
     IBusLookupTable::Entry entry;
-    entry.value = candidate_text;
+    entry.value = candidate_text.text();
+    entry.annotation = candidate_text.annotation();
+    entry.description = candidate_text.description();
     candidates->push_back(entry);
   }
 
@@ -204,6 +206,12 @@ IBusLookupTable::IBusLookupTable()
 }
 
 IBusLookupTable::~IBusLookupTable() {
+}
+
+IBusLookupTable::Entry::Entry() {
+}
+
+IBusLookupTable::Entry::~Entry() {
 }
 
 }  // namespace ibus
