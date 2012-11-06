@@ -26,5 +26,8 @@ const char kEnablePinchInCompositor[]       = "enable-pinch-in-compositor";
 // content (i.e. jank) instead of showing checkerboards for missing content.
 const char kJankInsteadOfCheckerboard[] = "jank-instead-of-checkerboard";
 
+// Paint content on the compositor thread instead of the main thread.
+const char kImplSidePainting[] = "impl-side-painting";
+
 }  // namespace switches
 }  // namespace cc
