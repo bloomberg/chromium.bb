@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,7 +25,15 @@ namespace sync_file_system {
 
 namespace {
 
+const char kOrigin[] = "http://www.example.com";
+const char kServiceName[] = "test";
+
 typedef DriveMetadataStore::ResourceIDMap ResourceIDMap;
+
+fileapi::FileSystemURL URL(const FilePath& path) {
+  return fileapi::CreateSyncableFileSystemURL(
+      GURL(kOrigin), kServiceName, path);
+}
 
 std::string GetResourceID(const ResourceIDMap& sync_origins,
                           const GURL& origin) {
@@ -34,15 +43,24 @@ std::string GetResourceID(const ResourceIDMap& sync_origins,
   return itr->second;
 }
 
+DriveMetadata CreateMetadata(const std::string& resource_id,
+                             const std::string& md5_checksum,
+                             bool conflicted) {
+  DriveMetadata metadata;
+  metadata.set_resource_id(resource_id);
+  metadata.set_md5_checksum(md5_checksum);
+  metadata.set_conflicted(conflicted);
+  return metadata;
+}
+
 }  // namespace
 
 class DriveMetadataStoreTest : public testing::Test {
  public:
-  DriveMetadataStoreTest() {
-  }
+  DriveMetadataStoreTest()
+      : created_(false) {}
 
-  virtual ~DriveMetadataStoreTest() {
-  }
+  virtual ~DriveMetadataStoreTest() {}
 
   virtual void SetUp() OVERRIDE {
     file_thread_.reset(new base::Thread("Thread_File"));
@@ -52,12 +70,11 @@ class DriveMetadataStoreTest : public testing::Test {
     file_task_runner_ = file_thread_->message_loop_proxy();
 
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
-
-    ASSERT_TRUE(fileapi::RegisterSyncableFileSystem("test"));
+    ASSERT_TRUE(fileapi::RegisterSyncableFileSystem(kServiceName));
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(fileapi::RevokeSyncableFileSystem("test"));
+    EXPECT_TRUE(fileapi::RevokeSyncableFileSystem(kServiceName));
 
     DropDatabase();
     file_thread_->Stop();
@@ -65,16 +82,29 @@ class DriveMetadataStoreTest : public testing::Test {
   }
 
  protected:
-  void InitializeDatabase(bool* done, SyncStatusCode* status, bool* created) {
+  void InitializeDatabase() {
     EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
 
-    *done = false;
+    bool done = false;
+    SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
+    bool created = false;
+
     drive_metadata_store_.reset(
         new DriveMetadataStore(base_dir_.path(), file_task_runner_));
     drive_metadata_store_->Initialize(
         base::Bind(&DriveMetadataStoreTest::DidInitializeDatabase,
-                   base::Unretained(this), done, status, created));
+                   base::Unretained(this), &done, &status, &created));
     message_loop_.Run();
+
+    EXPECT_TRUE(done);
+    EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
+
+    if (created) {
+      EXPECT_FALSE(created_);
+      created_ = created;
+      return;
+    }
+    EXPECT_TRUE(created_);
   }
 
   void DropDatabase() {
@@ -127,12 +157,12 @@ class DriveMetadataStoreTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  void DidRestoreSyncRootDirectory(fileapi::SyncStatusCode status) {
+  void DidRestoreSyncRootDirectory(SyncStatusCode status) {
     EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
     message_loop_.Quit();
   }
 
-  void DidRestoreSyncOrigins(fileapi::SyncStatusCode status) {
+  void DidRestoreSyncOrigins(SyncStatusCode status) {
     EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
     message_loop_.Quit();
   }
@@ -147,50 +177,30 @@ class DriveMetadataStoreTest : public testing::Test {
 
   scoped_ptr<DriveMetadataStore> drive_metadata_store_;
 
+  bool created_;
+
   DISALLOW_COPY_AND_ASSIGN(DriveMetadataStoreTest);
 };
 
 TEST_F(DriveMetadataStoreTest, InitializationTest) {
-  bool done = false;
-  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
-  bool created = false;
-  InitializeDatabase(&done, &status, &created);
-  EXPECT_TRUE(done);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
-  EXPECT_TRUE(created);
+  InitializeDatabase();
 }
 
 TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
-  const GURL kOrigin("http://example.com");
+  InitializeDatabase();
 
-  bool done = false;
-  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
-  bool created = false;
-  InitializeDatabase(&done, &status, &created);
-  EXPECT_TRUE(done);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
-  EXPECT_TRUE(created);
-
-  fileapi::FileSystemURL url(
-      fileapi::CreateSyncableFileSystemURL(kOrigin, "test", FilePath()));
+  const fileapi::FileSystemURL url = URL(FilePath());
   DriveMetadata metadata;
   EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
             drive_metadata_store()->ReadEntry(url, &metadata));
 
-  metadata.set_resource_id("1234567890");
-  metadata.set_md5_checksum("9876543210");
+  metadata = CreateMetadata("1234567890", "09876543210", true);
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
             drive_metadata_store()->UpdateEntry(url, metadata));
   drive_metadata_store()->SetLargestChangeStamp(1);
 
   DropDatabase();
-  done = false;
-  status = fileapi::SYNC_STATUS_UNKNOWN;
-  created = true;
-  InitializeDatabase(&done, &status, &created);
-  EXPECT_TRUE(done);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
-  EXPECT_FALSE(created);
+  InitializeDatabase();
 
   EXPECT_EQ(1, drive_metadata_store()->GetLargestChangeStamp());
 
@@ -199,6 +209,7 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
             drive_metadata_store()->ReadEntry(url, &metadata2));
   EXPECT_EQ(metadata.resource_id(), metadata2.resource_id());
   EXPECT_EQ(metadata.md5_checksum(), metadata2.md5_checksum());
+  EXPECT_EQ(metadata.conflicted(), metadata2.conflicted());
 
   EXPECT_EQ(fileapi::SYNC_STATUS_OK, drive_metadata_store()->DeleteEntry(url));
   EXPECT_EQ(fileapi::SYNC_DATABASE_ERROR_NOT_FOUND,
@@ -207,16 +218,39 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
             drive_metadata_store()->DeleteEntry(url));
 }
 
+TEST_F(DriveMetadataStoreTest, GetConflictURLsTest) {
+  InitializeDatabase();
+
+  fileapi::FileSystemURLSet urls;
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            drive_metadata_store()->GetConflictURLs(&urls));
+  EXPECT_EQ(0U, urls.size());
+
+  const FilePath path1(FPL("file1"));
+  const FilePath path2(FPL("file2"));
+  const FilePath path3(FPL("file3"));
+
+  // Populate metadata in DriveMetadataStore. The metadata identified by "file2"
+  // and "file3" are marked as conflicted.
+  DriveMetadataStore* store = drive_metadata_store();
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            store->UpdateEntry(URL(path1), CreateMetadata("1", "1", false)));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            store->UpdateEntry(URL(path2), CreateMetadata("2", "2", true)));
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK,
+            store->UpdateEntry(URL(path3), CreateMetadata("3", "3", true)));
+
+  EXPECT_EQ(fileapi::SYNC_STATUS_OK, store->GetConflictURLs(&urls));
+  EXPECT_EQ(2U, urls.size());
+  EXPECT_FALSE(ContainsKey(urls, URL(path1)));
+  EXPECT_TRUE(ContainsKey(urls, URL(path2)));
+  EXPECT_TRUE(ContainsKey(urls, URL(path3)));
+}
+
 TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
   const std::string kResourceID("hoge");
 
-  bool done = false;
-  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
-  bool created = false;
-  InitializeDatabase(&done, &status, &created);
-  EXPECT_TRUE(done);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
-  EXPECT_TRUE(created);
+  InitializeDatabase();
 
   EXPECT_TRUE(drive_metadata_store()->sync_root_directory().empty());
 
@@ -236,14 +270,7 @@ TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
   const std::string kResourceID1("hoge");
   const std::string kResourceID2("fuga");
 
-  bool done = false;
-  SyncStatusCode status = fileapi::SYNC_STATUS_UNKNOWN;
-  bool created = false;
-  InitializeDatabase(&done, &status, &created);
-  EXPECT_TRUE(done);
-  EXPECT_EQ(fileapi::SYNC_STATUS_OK, status);
-  EXPECT_TRUE(created);
-
+  InitializeDatabase();
   DriveMetadataStore* store = drive_metadata_store();
 
   // Make sure origins have not been marked yet.

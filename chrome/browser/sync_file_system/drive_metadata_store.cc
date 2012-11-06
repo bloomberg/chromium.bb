@@ -368,6 +368,21 @@ void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {
   db_status_ = fileapi::SYNC_STATUS_OK;
 }
 
+SyncStatusCode DriveMetadataStore::GetConflictURLs(
+    fileapi::FileSystemURLSet* urls) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(fileapi::SYNC_STATUS_OK, db_status_);
+
+  urls->clear();
+  for (MetadataMap::const_iterator itr = metadata_map_.begin();
+       itr != metadata_map_.end();
+       ++itr) {
+    if ((*itr).second.conflicted())
+      urls->insert((*itr).first);
+  }
+  return fileapi::SYNC_STATUS_OK;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 DriveMetadataDB::DriveMetadataDB(const FilePath& base_dir,
@@ -416,7 +431,7 @@ SyncStatusCode DriveMetadataDB::ReadContents(
     } else if (StartsWithASCII(key, kDriveMetadataKeyPrefix, true)) {
       std::string url_string(
           key.begin() + kDriveMetadataKeyPrefixLength - 1, key.end());
-      fileapi::FileSystemURL url;
+      FileSystemURL url;
       bool success = fileapi::DeserializeSyncableFileSystemURL(
           url_string, &url);
       DCHECK(success);
@@ -475,7 +490,7 @@ SyncStatusCode DriveMetadataDB::GetSyncRootDirectory(std::string* resource_id) {
   return fileapi::LevelDBStatusToSyncStatusCode(status);
 }
 
-SyncStatusCode DriveMetadataDB::UpdateEntry(const fileapi::FileSystemURL& url,
+SyncStatusCode DriveMetadataDB::UpdateEntry(const FileSystemURL& url,
                                             const DriveMetadata& metadata) {
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
@@ -495,7 +510,7 @@ SyncStatusCode DriveMetadataDB::UpdateEntry(const fileapi::FileSystemURL& url,
   return fileapi::LevelDBStatusToSyncStatusCode(status);
 }
 
-SyncStatusCode DriveMetadataDB::DeleteEntry(const fileapi::FileSystemURL& url) {
+SyncStatusCode DriveMetadataDB::DeleteEntry(const FileSystemURL& url) {
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
 

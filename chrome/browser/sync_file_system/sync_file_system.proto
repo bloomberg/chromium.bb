@@ -13,4 +13,5 @@ package sync_file_system;
 message DriveMetadata {
   required string resource_id = 1;
   required string md5_checksum = 2;
+  required bool conflicted = 3;
 }

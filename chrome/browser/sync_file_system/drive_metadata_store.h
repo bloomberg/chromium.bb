@@ -87,6 +87,9 @@ class DriveMetadataStore
   // It is invalid to overwrite the directory.
   void SetSyncRootDirectory(const std::string& resource_id);
 
+  // Returns a set of URLs for files in conflict.
+  fileapi::SyncStatusCode GetConflictURLs(fileapi::FileSystemURLSet* urls);
+
   const std::string& sync_root_directory() const {
     DCHECK(CalledOnValidThread());
     return sync_root_directory_resource_id_;
