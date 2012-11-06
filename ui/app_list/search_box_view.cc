@@ -22,6 +22,7 @@ const int kIconDimension = 32;
 const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
 const int kFontSize = 14;
+const int kEditHeight = 19;
 
 const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 
@@ -82,6 +83,7 @@ void SearchBoxView::Layout() {
   gfx::Rect edit_frame(rect);
   edit_frame.set_x(icon_frame.right());
   edit_frame.set_width(rect.width() - icon_frame.width() - kPadding);
+  edit_frame.ClampToCenteredSize(gfx::Size(edit_frame.width(), kEditHeight));
   search_box_->SetBoundsRect(edit_frame);
 }
 
