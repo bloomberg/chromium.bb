@@ -16,6 +16,7 @@ var LogLevelType = null;
 var ClientInfo = null;
 var NetError = null;
 var LoadFlag = null;
+var LoadState = null;
 var AddressFamily = null;
 
 /**
@@ -260,6 +261,7 @@ ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
   LoadFlag = Constants.loadFlag;
   NetError = Constants.netError;
   AddressFamily = Constants.addressFamily;
+  LoadState = Constants.loadState;
 
   timeutil.setTimeTickOffset(Constants.timeTickOffset);
 };

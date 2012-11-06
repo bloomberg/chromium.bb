@@ -53,6 +53,13 @@ var EventsTracker = (function() {
      * Adds captured events, and broadcasts them to any observers.
      */
     addLogEntries: function(logEntries) {
+      // When reloading a page, it's possible to receive events before
+      // Constants.  Discard those events, as they can cause the fake
+      // "REQUEST_ALIVE" events for pre-existing requests not be the first
+      // events for those requests.
+      if (Constants == null)
+        return;
+
       this.capturedEvents_ = this.capturedEvents_.concat(logEntries);
       for (var i = 0; i < this.observers_.length; ++i) {
         this.observers_[i].onReceivedLogEntries(logEntries);

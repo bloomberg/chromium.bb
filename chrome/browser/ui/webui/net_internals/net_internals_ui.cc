@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 
+#include <algorithm>
 #include <list>
 #include <string>
 #include <utility>
@@ -49,6 +50,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -104,6 +106,42 @@ const int kLogFormatVersion = 1;
 // there is none.
 net::HostCache* GetHostResolverCache(net::URLRequestContext* context) {
   return context->host_resolver()->GetHostCache();
+}
+
+// Returns a Value representing the state of a pre-existing URLRequest when
+// net-internals was opened.
+Value* RequestStateToValue(const net::URLRequest* request,
+                           net::NetLog::LogLevel log_level) {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString("url", request->original_url().possibly_invalid_spec());
+
+  const std::vector<GURL>& url_chain = request->url_chain();
+  if (url_chain.size() > 1) {
+    ListValue* list = new ListValue();
+    for (std::vector<GURL>::const_iterator url = url_chain.begin();
+         url != url_chain.end(); ++url) {
+      list->AppendString(url->spec());
+    }
+    dict->Set("url_chain", list);
+  }
+
+  dict->SetInteger("load_flags", request->load_flags());
+
+  net::LoadStateWithParam load_state = request->GetLoadState();
+  dict->SetInteger("load_state", load_state.state);
+  if (!load_state.param.empty())
+    dict->SetString("load_state_param", load_state.param);
+
+  dict->SetString("method", request->method());
+  dict->SetBoolean("has_upload", request->has_upload());
+  dict->SetBoolean("is_pending", request->is_pending());
+  return dict;
+}
+
+// Returns true if |request1| was created before |request2|.
+bool RequestCreatedBefore(const net::URLRequest* request1,
+                          const net::URLRequest* request2) {
+  return request1->creation_time() < request2->creation_time();
 }
 
 // Returns the disk cache backend for |context| if there is one, or NULL.
@@ -429,7 +467,11 @@ class NetInternalsMessageHandler::IOThreadImpl
   IOThreadImpl(
       const base::WeakPtr<NetInternalsMessageHandler>& handler,
       IOThread* io_thread,
-      net::URLRequestContextGetter* context_getter);
+      net::URLRequestContextGetter* main_context_getter);
+
+  // Called on UI thread just after creation, to add a ContextGetter to
+  // |context_getters_|.
+  void AddRequestContextGetter(net::URLRequestContextGetter* context_getter);
 
   // Helper method to enable a callback that will be executed on the IO thread.
   static void CallbackHelper(MessageHandler method,
@@ -498,6 +540,9 @@ class NetInternalsMessageHandler::IOThreadImpl
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<IOThreadImpl>;
 
+  typedef std::list<scoped_refptr<net::URLRequestContextGetter> >
+      ContextGetterList;
+
   ~IOThreadImpl();
 
   // Adds |entry| to the queue of pending log entries to be sent to the page via
@@ -511,6 +556,13 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Must be called on the IO Thread.
   void PostPendingEntries();
 
+  // Adds entries with the states of ongoing URL requests.
+  void PrePopulateEventList();
+
+  net::URLRequestContext* GetMainContext() {
+    return main_context_getter_->GetURLRequestContext();
+  }
+
   // Pointer to the UI-thread message handler. Only access this from
   // the UI thread.
   base::WeakPtr<NetInternalsMessageHandler> handler_;
@@ -518,7 +570,8 @@ class NetInternalsMessageHandler::IOThreadImpl
   // The global IOThread, which contains the global NetLog to observer.
   IOThread* io_thread_;
 
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  // The main URLRequestContextGetter for the tab's profile.
+  scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
 
   // Helper that runs the suite of connection tests.
   scoped_ptr<ConnectionTester> connection_tester_;
@@ -535,6 +588,13 @@ class NetInternalsMessageHandler::IOThreadImpl
   // when and only when there is a pending delayed task to call
   // PostPendingEntries.  Read and written to exclusively on the IO Thread.
   scoped_ptr<ListValue> pending_entries_;
+
+  // Used for getting current status of URLRequests when net-internals is
+  // opened.  |main_context_getter_| is automatically added on construction.
+  // Duplicates are allowed.
+  ContextGetterList context_getters_;
+
+  DISALLOW_COPY_AND_ASSIGN(IOThreadImpl);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -561,6 +621,8 @@ void NetInternalsMessageHandler::RegisterMessages() {
 
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             profile->GetRequestContext());
+  proxy_->AddRequestContextGetter(profile->GetMediaRequestContext());
+  proxy_->AddRequestContextGetter(profile->GetRequestContextForExtensions());
 #if defined(OS_CHROMEOS)
   syslogs_getter_.reset(new SystemLogsGetter(this,
       chromeos::system::SyslogsProvider::GetInstance()));
@@ -865,16 +927,23 @@ void NetInternalsMessageHandler::SystemLogsGetter::SendLogs(
 NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
     const base::WeakPtr<NetInternalsMessageHandler>& handler,
     IOThread* io_thread,
-    net::URLRequestContextGetter* context_getter)
+    net::URLRequestContextGetter* main_context_getter)
     : handler_(handler),
       io_thread_(io_thread),
-      context_getter_(context_getter),
+      main_context_getter_(main_context_getter),
       was_webui_deleted_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  AddRequestContextGetter(main_context_getter);
 }
 
 NetInternalsMessageHandler::IOThreadImpl::~IOThreadImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::AddRequestContextGetter(
+    net::URLRequestContextGetter* context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  context_getters_.push_back(context_getter);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
@@ -912,8 +981,15 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     const ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  SendJavascriptCommand("receivedConstants",
-                        NetInternalsUI::GetConstants());
+  // If we have any pending entries, go ahead and get rid of them, so they won't
+  // appear before the REQUEST_ALIVE events we add for currently active
+  // URLRequests.
+  PostPendingEntries();
+
+  SendJavascriptCommand("receivedConstants", NetInternalsUI::GetConstants());
+
+  // Add entries for ongoing URL requests.
+  PrePopulateEventList();
 
   if (!net_log()) {
     // Register with network stack to observe events.
@@ -925,8 +1001,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
     const ListValue* list) {
   DCHECK(!list);
-  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
-  net::ProxyService* proxy_service = context->proxy_service();
+  net::ProxyService* proxy_service = GetMainContext()->proxy_service();
 
   DictionaryValue* dict = new DictionaryValue();
   if (proxy_service->fetched_config().is_valid())
@@ -940,8 +1015,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
     const ListValue* list) {
   DCHECK(!list);
-  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
-  context->proxy_service()->ForceReloadProxyConfig();
+  GetMainContext()->proxy_service()->ForceReloadProxyConfig();
 
   // Cause the renderer to be notified of the new values.
   OnGetProxySettings(NULL);
@@ -950,10 +1024,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
 void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
     const ListValue* list) {
   DCHECK(!list);
-  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
 
   const net::ProxyRetryInfoMap& bad_proxies_map =
-      context->proxy_service()->proxy_retry_info();
+      GetMainContext()->proxy_service()->proxy_retry_info();
 
   ListValue* dict_list = new ListValue();
 
@@ -976,8 +1049,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
 void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
     const ListValue* list) {
   DCHECK(!list);
-  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
-  context->proxy_service()->ClearBadProxiesCache();
+  GetMainContext()->proxy_service()->ClearBadProxiesCache();
 
   // Cause the renderer to be notified of the new values.
   OnGetBadProxies(NULL);
@@ -986,7 +1058,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
     const ListValue* list) {
   DCHECK(!list);
-  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::URLRequestContext* context = GetMainContext();
   net::HostCache* cache = GetHostResolverCache(context);
 
   if (!cache) {
@@ -1049,8 +1121,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
 void NetInternalsMessageHandler::IOThreadImpl::OnRunIPv6Probe(
     const ListValue* list) {
   DCHECK(!list);
-  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
-  net::HostResolver* resolver = context->host_resolver();
+  net::HostResolver* resolver = GetMainContext()->host_resolver();
 
   // Have to set the default address family manually before calling
   // ProbeIPv6Support.
@@ -1061,8 +1132,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRunIPv6Probe(
 void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
     const ListValue* list) {
   DCHECK(!list);
-  net::HostCache* cache =
-      GetHostResolverCache(context_getter_->GetURLRequestContext());
+  net::HostCache* cache = GetHostResolverCache(GetMainContext());
 
   if (cache)
     cache->clear();
@@ -1074,8 +1144,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
 void NetInternalsMessageHandler::IOThreadImpl::OnEnableIPv6(
     const ListValue* list) {
   DCHECK(!list);
-  net::URLRequestContext* context = context_getter_->GetURLRequestContext();
-  net::HostResolver* host_resolver = context->host_resolver();
+  net::HostResolver* host_resolver = GetMainContext()->host_resolver();
 
   host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_UNSPECIFIED);
 
@@ -1126,7 +1195,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
     result->SetString("error", "non-ASCII domain name");
   } else {
     net::TransportSecurityState* transport_security_state =
-        context_getter_->GetURLRequestContext()->transport_security_state();
+        GetMainContext()->transport_security_state();
     if (!transport_security_state) {
       result->SetString("error", "no TransportSecurityState active");
     } else {
@@ -1173,7 +1242,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
   CHECK(list->GetString(2, &hashes_str));
 
   net::TransportSecurityState* transport_security_state =
-      context_getter_->GetURLRequestContext()->transport_security_state();
+      GetMainContext()->transport_security_state();
   if (!transport_security_state)
     return;
 
@@ -1208,7 +1277,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(
     return;
   }
   net::TransportSecurityState* transport_security_state =
-      context_getter_->GetURLRequestContext()->transport_security_state();
+      GetMainContext()->transport_security_state();
   if (!transport_security_state)
     return;
 
@@ -1221,8 +1290,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
   DictionaryValue* info_dict = new DictionaryValue();
   DictionaryValue* stats_dict = new DictionaryValue();
 
-  disk_cache::Backend* disk_cache = GetDiskCacheBackend(
-      context_getter_->GetURLRequestContext());
+  disk_cache::Backend* disk_cache = GetDiskCacheBackend(GetMainContext());
 
   if (disk_cache) {
     // Extract the statistics key/value pairs from the backend.
@@ -1243,7 +1311,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
     const ListValue* list) {
   DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+      GetHttpNetworkSession(GetMainContext());
 
   Value* socket_pool_info = NULL;
   if (http_network_session)
@@ -1256,7 +1324,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSessionNetworkStats(
     const ListValue* list) {
   DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+      GetHttpNetworkSession(main_context_getter_->GetURLRequestContext());
 
   Value* network_info = NULL;
   if (http_network_session) {
@@ -1274,7 +1342,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnFlushSocketPools(
     const ListValue* list) {
   DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+      GetHttpNetworkSession(GetMainContext());
 
   if (http_network_session)
     http_network_session->CloseAllConnections();
@@ -1284,7 +1352,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnCloseIdleSockets(
     const ListValue* list) {
   DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+      GetHttpNetworkSession(GetMainContext());
 
   if (http_network_session)
     http_network_session->CloseIdleConnections();
@@ -1294,7 +1362,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdySessionInfo(
     const ListValue* list) {
   DCHECK(!list);
   net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+      GetHttpNetworkSession(GetMainContext());
 
   Value* spdy_info = http_network_session ?
       http_network_session->SpdySessionPoolInfoToValue() : NULL;
@@ -1339,7 +1407,7 @@ NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyAlternateProtocolMappings(
   ListValue* dict_list = new ListValue();
 
   const net::HttpServerProperties& http_server_properties =
-      *context_getter_->GetURLRequestContext()->http_server_properties();
+      *GetMainContext()->http_server_properties();
 
   const net::AlternateProtocolMap& map =
       http_server_properties.alternate_protocol_map();
@@ -1485,7 +1553,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpPipeliningStatus(
   DictionaryValue* status_dict = new DictionaryValue();
 
   net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+      GetHttpNetworkSession(GetMainContext());
   status_dict->Set("pipelining_enabled", Value::CreateBooleanValue(
       http_network_session->params().http_pipelining_enabled));
   Value* pipelined_connection_info = NULL;
@@ -1496,7 +1564,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpPipeliningStatus(
   status_dict->Set("pipelined_connection_info", pipelined_connection_info);
 
   const net::HttpServerProperties& http_server_properties =
-      *context_getter_->GetURLRequestContext()->http_server_properties();
+      *GetMainContext()->http_server_properties();
 
   // TODO(simonjam): This call is slow.
   const net::PipelineCapabilityMap pipeline_capability_map =
@@ -1560,23 +1628,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
       base::Bind(&IOThreadImpl::AddEntryToQueue, this, entry.ToValue()));
 }
 
-void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(Value* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!pending_entries_.get()) {
-    pending_entries_.reset(new ListValue());
-    BrowserThread::PostDelayedTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&IOThreadImpl::PostPendingEntries, this),
-        base::TimeDelta::FromMilliseconds(kNetLogEventDelayMilliseconds));
-  }
-  pending_entries_->Append(entry);
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::PostPendingEntries() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  SendJavascriptCommand("receivedLogEntries", pending_entries_.release());
-}
-
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTestSuite() {
   SendJavascriptCommand("receivedStartConnectionTestSuite", NULL);
 }
@@ -1629,6 +1680,76 @@ void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
       base::Bind(&IOThreadImpl::SendJavascriptCommand, this, command, arg))) {
     // Failed posting the task, avoid leaking.
     delete arg;
+  }
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(Value* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!pending_entries_.get()) {
+    pending_entries_.reset(new ListValue());
+    BrowserThread::PostDelayedTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&IOThreadImpl::PostPendingEntries, this),
+        base::TimeDelta::FromMilliseconds(kNetLogEventDelayMilliseconds));
+  }
+  pending_entries_->Append(entry);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::PostPendingEntries() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (pending_entries_.get())
+    SendJavascriptCommand("receivedLogEntries", pending_entries_.release());
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::PrePopulateEventList() {
+  // Use a set to prevent duplicates.
+  std::set<net::URLRequestContext*> contexts;
+  for (ContextGetterList::const_iterator getter = context_getters_.begin();
+       getter != context_getters_.end(); ++getter) {
+    contexts.insert((*getter)->GetURLRequestContext());
+  }
+  contexts.insert(io_thread_->globals()->proxy_script_fetcher_context.get());
+  contexts.insert(io_thread_->globals()->system_request_context.get());
+
+  // Put together the list of all requests.
+  std::vector<const net::URLRequest*> requests;
+  for (std::set<net::URLRequestContext*>::const_iterator context =
+           contexts.begin();
+       context != contexts.end(); ++context) {
+    std::set<const net::URLRequest*>* context_requests =
+        (*context)->url_requests();
+    for (std::set<const net::URLRequest*>::const_iterator request_it =
+             context_requests->begin();
+         request_it != context_requests->end(); ++request_it) {
+      DCHECK_EQ(io_thread_->net_log(), (*request_it)->net_log().net_log());
+      requests.push_back(*request_it);
+    }
+  }
+
+  // Sort by creation time.
+  std::sort(requests.begin(), requests.end(), RequestCreatedBefore);
+
+  // Create fake events.
+  for (std::vector<const net::URLRequest*>::const_iterator request_it =
+           requests.begin();
+       request_it != requests.end(); ++request_it) {
+    const net::URLRequest* request = *request_it;
+    net::NetLog::ParametersCallback callback =
+        base::Bind(&RequestStateToValue, base::Unretained(request));
+
+    // Create and add the entry directly, to avoid sending it to any other
+    // NetLog observers.
+    net::NetLog::Entry entry(net::NetLog::TYPE_REQUEST_ALIVE,
+                             request->net_log().source(),
+                             net::NetLog::PHASE_BEGIN,
+                             request->creation_time(),
+                             &callback,
+                             request->net_log().GetLogLevel());
+
+    // Have to add |entry| to the queue synchronously, as there may already
+    // be posted tasks queued up to add other events for |request|, which we
+    // want |entry| to precede.
+    AddEntryToQueue(entry.ToValue());
   }
 }
 
@@ -1690,6 +1811,19 @@ Value* NetInternalsUI::GetConstants() {
 #undef LOAD_FLAG
 
     constants_dict->Set("loadFlag", dict);
+  }
+
+  // Add a dictionary with information about the relationship between load state
+  // enums and their symbolic names.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+#define LOAD_STATE(label) \
+    dict->SetInteger(# label, net::LOAD_STATE_ ## label);
+#include "net/base/load_states_list.h"
+#undef LOAD_STATE
+
+    constants_dict->Set("loadState", dict);
   }
 
   // Add information on the relationship between net error codes and their

@@ -255,9 +255,8 @@ var ParameterOutputter = (function() {
 })();  // end of ParameterOutputter
 
 /**
- * Formats the parameters for |entry| to |out| using a custom.
- *
- * Certain event types will have custom pretty printers. Everything else will
+ * Formats the parameters for |entry| and writes them to |out|.
+ * Certain event types have custom pretty printers. Everything else will
  * default to a JSON-like format.
  */
 function writeParameters(entry, privacyStripping, out) {
@@ -346,6 +345,12 @@ function defaultWriteParameter(key, value, out) {
 
   if (key == 'load_flags' && typeof value == 'number') {
     var valueStr = value + ' (' + getLoadFlagSymbolicString(value) + ')';
+    out.writeArrowKeyValue(key, valueStr);
+    return;
+  }
+
+  if (key == 'load_state' && typeof value == 'number') {
+    var valueStr = value + ' (' + getKeyWithValue(LoadState, value) + ')';
     out.writeArrowKeyValue(key, valueStr);
     return;
   }

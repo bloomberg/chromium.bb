@@ -59,6 +59,7 @@ void AddStartEntry(LoadTimingObserver& observer,
   net::NetLog::Entry entry(type,
                            source,
                            NetLog::PHASE_BEGIN,
+                           base::TimeTicks::Now(),
                            NULL,
                            NetLog::LOG_BASIC);
   observer.OnAddEntry(entry);
@@ -71,6 +72,7 @@ void AddStartEntry(LoadTimingObserver& observer,
   net::NetLog::Entry entry(type,
                            source,
                            NetLog::PHASE_BEGIN,
+                           base::TimeTicks::Now(),
                            &params_callback,
                            NetLog::LOG_BASIC);
   observer.OnAddEntry(entry);
@@ -82,6 +84,7 @@ void AddEndEntry(LoadTimingObserver& observer,
   net::NetLog::Entry entry(type,
                            source,
                            NetLog::PHASE_END,
+                           base::TimeTicks::Now(),
                            NULL,
                            NetLog::LOG_BASIC);
   observer.OnAddEntry(entry);
