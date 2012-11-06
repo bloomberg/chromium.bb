@@ -257,10 +257,13 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
     ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resourceId());
     const SkBitmap* bitmap = lock.skBitmap();
     gfx::RectF uvRect = gfx::ScaleRect(quad->uvRect(), bitmap->width(), bitmap->height());
-    SkIRect skUvRect = toSkIRect(gfx::ToEnclosingRect(uvRect));
+    SkRect skUvRect = toSkRect(uvRect);
+
     if (quad->flipped())
         m_skCurrentCanvas->scale(1, -1);
-    m_skCurrentCanvas->drawBitmapRect(*bitmap, &skUvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
+    m_skCurrentCanvas->drawBitmapRectToRect(*bitmap, &skUvRect,
+                                            toSkRect(quadVertexRect()),
+                                            &m_skCurrentPaint);
 }
 
 void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* quad)
@@ -268,8 +271,14 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
     DCHECK(isSoftwareResource(quad->resourceId()));
     ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resourceId());
 
-    SkIRect uvRect = toSkIRect(gfx::Rect(gfx::PointAtOffsetFromOrigin(quad->textureOffset()), quad->quadRect().size()));
-    m_skCurrentCanvas->drawBitmapRect(*lock.skBitmap(), &uvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
+    SkRect uvRect = SkRect::MakeXYWH(
+        quad->textureOffset().x(), quad->textureOffset().y(),
+        quad->quadRect().width(), quad->quadRect().height());
+    if (quad->textureFilter() != GL_NEAREST)
+        m_skCurrentPaint.setFilterBitmap(true);
+    m_skCurrentCanvas->drawBitmapRectToRect(*lock.skBitmap(), &uvRect,
+                                            toSkRect(quadVertexRect()),
+                                            &m_skCurrentPaint);
 }
 
 void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const RenderPassDrawQuad* quad)
