@@ -631,4 +631,9 @@ hooks = [
     "pattern": ".",
     "action": ["python", "src/build/gyp_chromium"],
   },
+  {
+    # Check for landmines (reasons to clobber the build).
+    "pattern": ".",
+    "action": ["python", "src/build/landmines.py"],
+  },
 ]
