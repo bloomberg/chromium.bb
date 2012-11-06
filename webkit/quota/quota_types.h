@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "webkit/quota/quota_status_code.h"
 
 class GURL;
 
@@ -23,17 +24,6 @@ enum StorageType {
   kStorageTypePersistent,
   kStorageTypeSyncable,
   kStorageTypeUnknown,
-};
-
-// The numbers should match with the error code defined in
-// third_party/WebKit/Source/WebCore/dom/ExceptionCode.h.
-enum QuotaStatusCode {
-  kQuotaStatusOk = 0,
-  kQuotaErrorNotSupported = 9,          // NOT_SUPPORTED_ERR
-  kQuotaErrorInvalidModification = 13,  // INVALID_MODIFICATION_ERR
-  kQuotaErrorInvalidAccess = 15,        // INVALID_ACCESS_ERR
-  kQuotaErrorAbort = 20,                // ABORT_ERR
-  kQuotaStatusUnknown = -1,
 };
 
 struct UsageInfo;

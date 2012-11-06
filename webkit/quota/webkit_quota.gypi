@@ -10,6 +10,8 @@
       '../quota/quota_database.h',
       '../quota/quota_manager.cc',
       '../quota/quota_manager.h',
+      '../quota/quota_status_code.cc',
+      '../quota/quota_status_code.h',
       '../quota/quota_task.cc',
       '../quota/quota_task.h',
       '../quota/quota_temporary_storage_evictor.cc',

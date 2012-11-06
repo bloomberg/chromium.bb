@@ -188,10 +188,8 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // TODO(calvinlo): Convert QuotaStatusCode to error string
-  // (http://crbug.com/156791).
   if (status != quota::kQuotaStatusOk) {
-    error_ = base::StringPrintf(kQuotaError, static_cast<int>(status));
+    error_ = QuotaStatusCodeToString(status);
     SendResponse(false);
     return;
   }
