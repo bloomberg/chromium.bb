@@ -108,7 +108,6 @@ class SpellCheckHost {
       const std::string& dictionary_language,
       std::vector<std::string>* languages);
 
- protected:
   // Signals the event attached by AttachTestEvent() to report the specified
   // event to browser tests. This function is called by this class and its
   // derived classes to report their status. This function does not do anything

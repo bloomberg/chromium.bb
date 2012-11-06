@@ -1782,6 +1782,8 @@
         'browser/spellchecker/spellcheck_host_impl.h',
         'browser/spellchecker/spellcheck_host_metrics.cc',
         'browser/spellchecker/spellcheck_host_metrics.h',
+        'browser/spellchecker/spellcheck_hunspell_dictionary.cc',
+        'browser/spellchecker/spellcheck_hunspell_dictionary.h',
         'browser/spellchecker/spellcheck_message_filter.cc',
         'browser/spellchecker/spellcheck_message_filter.h',
         'browser/spellchecker/spellcheck_message_filter_mac.cc',

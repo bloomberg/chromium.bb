@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_DICTIONARY_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_DICTIONARY_H_
 
+#include "base/basictypes.h"
+
 class Profile;
 
 // Defines a dictionary for use in the spellchecker system and provides access
