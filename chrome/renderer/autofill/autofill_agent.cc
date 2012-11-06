@@ -631,13 +631,16 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
 
   element_ = element;
 
-  // If autocomplete is disabled at the form level, then we might want to show
-  // a warning in place of suggestions. However, if autocomplete is disabled
-  // specifically for this field, we never want to show a warning. Otherwise,
-  // we might interfere with custom popups (e.g. search suggestions) used by
-  // the website. Also, if the field has no name, then we won't have values.
-  const WebFormElement form = element.form();
-  if ((!element.autoComplete() && (form.isNull() || form.autoComplete())) ||
+  // If autocomplete is disabled at the form level, then we might want to show a
+  // warning in place of suggestions.  However, if autocomplete is disabled
+  // specifically for this field, we never want to show a warning.  Otherwise,
+  // we might interfere with custom popups (e.g. search suggestions) used by the
+  // website.  Note that we cannot use the WebKit method element.autoComplete()
+  // as it does not allow us to distinguish the case where autocomplete is
+  // disabled for *both* the element and for the form.
+  // Also, if the field has no name, then we won't have values.
+  const string16 autocomplete_attribute = element.getAttribute("autocomplete");
+  if (LowerCaseEqualsASCII(autocomplete_attribute, "off") ||
       element.nameForAutofill().isEmpty()) {
     CombineDataListEntriesAndShow(element, std::vector<string16>(),
                                   std::vector<string16>(),
@@ -655,10 +658,20 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   autofill_query_id_ = query_counter++;
   display_warning_if_disabled_ = display_warning_if_disabled;
 
+  // If autocomplete is disabled at the form level, we want to see if there
+  // would have been any suggestions were it enabled, so that we can show a
+  // warning.  Otherwise, we want to ignore fields that disable autocomplete, so
+  // that the suggestions list does not include suggestions for these form
+  // fields -- see comment 1 on http://crbug.com/69914
+  // Rather than testing the form's autocomplete enabled state, we test the
+  // element's state.  The DCHECK below ensures that this is equivalent.
+  DCHECK(element.autoComplete() || !element.form().autoComplete());
+  const RequirementsMask requirements =
+      element.autoComplete() ? REQUIRE_AUTOCOMPLETE : REQUIRE_NONE;
+
   FormData form;
   FormFieldData field;
-  if (!FindFormAndFieldForInputElement(element, &form, &field,
-                                       REQUIRE_AUTOCOMPLETE)) {
+  if (!FindFormAndFieldForInputElement(element, &form, &field, requirements)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
     WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
