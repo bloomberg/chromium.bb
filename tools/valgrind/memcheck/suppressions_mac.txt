@@ -2389,17 +2389,6 @@
    fun:_ZN19SkScalerContext_Mac13generateImageERK7SkGlyph
 }
 {
-   bug_159287
-   Memcheck:Uninitialized
-   fun:_ZSt13__int_to_charIcyEiPT_T0_PKS0_St13_Ios_Fmtflagsb
-   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIyEES3_S3_RSt8ios_basecT_
-   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES3_RSt8ios_basecy
-   fun:_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE3putES3_RSt8ios_basecy
-   fun:_ZNSo9_M_insertIyEERSoT_
-   fun:_ZN3net14QuicConnection16OnPacketCompleteEv
-   fun:_ZN3net10QuicFramer20ProcessRevivedPacketERKNS_16QuicPacketHeaderEN4base16BasicStringPieceISsEE
-}
-{
    bug_159468
    Memcheck:Leak
    fun:_Znw*
