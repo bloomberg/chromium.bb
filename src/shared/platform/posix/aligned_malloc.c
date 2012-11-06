@@ -10,10 +10,21 @@
 
 
 void *NaClAlignedMalloc(size_t size, size_t alignment) {
+  /*
+   * Bionic in Android ICS (4.0) and earlier doesn't have
+   * posix_memalign(), so we shall use memalign(), which
+   * luckily, in Bionic, returns free()'able memory, although it is not
+   * required to in general.
+   * TODO(olonho): once/if we'll obsolete 4.0 support remove this #ifdef.
+   */
+#if NACL_ANDROID
+  return memalign(alignment, size);
+#else
   void *block;
   if (posix_memalign(&block, alignment, size) != 0)
     return NULL;
   return block;
+#endif
 }
 
 void NaClAlignedFree(void *block) {
