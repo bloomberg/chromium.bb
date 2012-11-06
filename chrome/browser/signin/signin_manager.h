@@ -48,6 +48,13 @@ struct GoogleServiceSigninSuccessDetails {
   std::string password;
 };
 
+// Details for the Notification type NOTIFICATION_GOOGLE_SIGNED_OUT.
+struct GoogleServiceSignoutDetails {
+  explicit GoogleServiceSignoutDetails(const std::string& in_username)
+      : username(in_username) {}
+  std::string username;
+};
+
 class SigninManager : public GaiaAuthConsumer,
                       public content::NotificationObserver,
                       public PrefObserver,

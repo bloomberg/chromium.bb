@@ -359,6 +359,8 @@ void SigninManager::SignOut() {
     return;
   }
 
+  GoogleServiceSignoutDetails details(authenticated_username_);
+
   ClearTransientSigninData();
   authenticated_username_.clear();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
@@ -369,7 +371,7 @@ void SigninManager::SignOut() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
-      content::NotificationService::NoDetails());
+      content::Details<const GoogleServiceSignoutDetails>(&details));
 }
 
 bool SigninManager::AuthInProgress() const {

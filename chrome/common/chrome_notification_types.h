@@ -922,7 +922,8 @@ enum NotificationType {
   NOTIFICATION_GOOGLE_SIGNIN_FAILED,
 
   // Sent when the currently signed-in user for a user has been signed out.
-  // The source is the Profile. There are no details.
+  // The source is the Profile. The details are a
+  // GoogleServiceSignoutDetails object.
   NOTIFICATION_GOOGLE_SIGNED_OUT,
 
   // Autofill Notifications --------------------------------------------------
