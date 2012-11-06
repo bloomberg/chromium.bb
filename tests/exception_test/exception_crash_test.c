@@ -58,7 +58,7 @@ void test_bad_handler() {
 
 char recovery_stack[0x1000] __attribute__((aligned(16)));
 
-void bad_stack_exception_handler();
+void bad_stack_exception_handler(struct NaClExceptionContext *context);
 asm(".pushsection .text, \"ax\", @progbits\n"
     ".p2align 5\n"
     "bad_stack_exception_handler:\n"
