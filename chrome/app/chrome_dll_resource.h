@@ -30,7 +30,6 @@
 #define IDI_THROBBER_23                 124
 #define IDI_THROBBER_24                 125
 #define IDR_SXS                         126
-#define IDI_APP_LIST                    127
 
 // Values around 1600 are used by installer/setup/build/
 

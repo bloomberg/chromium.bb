@@ -308,6 +308,7 @@ extern const char kSearchInOmniboxHint[];
 extern const char kSideloadWipeout[];
 extern const char kSetToken[];
 extern const char kShowAppList[];
+extern const char kShowAppListShortcut[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kShowComponentExtensionOptions[];
 extern const char kShowIcons[];

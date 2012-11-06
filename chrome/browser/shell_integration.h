@@ -141,6 +141,9 @@ class ShellIntegration {
   // calling GetAppModelIdForProfile() with ShellUtil::GetAppId() as app_name.
   static string16 GetChromiumModelIdForProfile(const FilePath& profile_path);
 
+  // Get the AppUserModelId for the App List, for the profile in |profile_path|.
+  static string16 GetAppListAppModelIdForProfile(const FilePath& profile_path);
+
   // Returns the path to the Chromium icon. This is used to specify the icon
   // to use for the taskbar group on Win 7.
   static string16 GetChromiumIconPath();

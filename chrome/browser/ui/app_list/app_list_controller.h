@@ -56,6 +56,13 @@ namespace app_list_controller {
 // Show the app list.
 void ShowAppList();
 
+// Check that the presence of the app list shortcut matches the flag
+// kShowAppListShortcut. This will either create or delete a shortcut
+// file in the user data directory.
+// TODO(benwells): Remove this and the flag once the app list installation
+// is implemented.
+void CheckAppListTaskbarShortcut();
+
 }  // namespace app_list_controller
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_H_

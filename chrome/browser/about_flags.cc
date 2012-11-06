@@ -1078,6 +1078,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kWebIntentsInvocationEnabled)
   },
+  {
+    "show-app-list-shortcut",
+    IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME,
+    IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kShowAppListShortcut)
+  },
 };
 
 const Experiment* experiments = kExperiments;

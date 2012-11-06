@@ -6833,7 +6833,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION" desc="Description for the flag to enable Performance Monitor.">
         Enable passive gathering of performance-related metrics and events and provide the option to view this data in a graphical fashion.
       </message>
-
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
         Crashes
@@ -15060,9 +15059,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
       Unpin from Launcher
-    </message>
-    <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the App List to appear in the taskbar and in any shortcuts to it.">
-      Chrome Apps Launcher
     </message>
     <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
       Uninstall

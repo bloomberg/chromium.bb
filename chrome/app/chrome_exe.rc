@@ -40,10 +40,17 @@ IDR_MAINFRAME           ICON                    "theme\google_chrome\chrome.ico"
 IDR_MAINFRAME_2         ICON                    "theme\google_chrome\chrome2.ico"
 IDR_MAINFRAME_3         ICON                    "theme\google_chrome\chrome3.ico"
 IDR_MAINFRAME_4         ICON                    "theme\google_chrome\chrome4.ico"
+// The SXS icon must have an index of 4, the constant is used in Chrome code to
+// identify it.
 IDR_SXS                 ICON                    "theme\google_chrome\chrome_sxs.ico"
 #else
 IDR_MAINFRAME           ICON                    "theme\chromium\chromium.ico"
 #endif
+// Icon for the App Lancher. Named with a leading X to keep the name
+// alphabetically after IDR_SXS.
+// The SXS icon must have an index of 5 for Chrome and 1 for Chromium, these
+// constants are used in Chrome code to identify it.
+IDR_X_APP_LIST          ICON                    "theme\\app_list.ico"
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

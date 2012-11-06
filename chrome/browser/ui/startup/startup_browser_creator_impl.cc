@@ -362,6 +362,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     }
   }
 
+  app_list_controller::CheckAppListTaskbarShortcut();
   if (command_line_.HasSwitch(switches::kShowAppList)) {
     app_list_controller::ShowAppList();
     return true;

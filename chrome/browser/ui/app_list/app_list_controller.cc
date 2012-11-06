@@ -34,6 +34,9 @@ namespace app_list_controller {
 #if !defined(OS_WIN)
 // Default implementation for ports which do not have this implemented.
 void ShowAppList() {}
+
+// Default implementation for ports which do not have this implemented.
+void CheckAppListTaskbarShortcut() {}
 #endif
 
 }  // namespace app_list_controller
