@@ -120,7 +120,7 @@ void* GLContextOSMesa::GetHandle() {
 
 void GLContextOSMesa::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
-  LOG(WARNING) << "GLContextOSMesa::SetSwapInterval is ignored.";
+  DLOG(INFO) << "GLContextOSMesa::SetSwapInterval is ignored.";
 }
 
 GLContextOSMesa::~GLContextOSMesa() {
