@@ -16,14 +16,19 @@ class MenuItemView;
 class MenuSeparator : public View {
  public:
   MenuSeparator(MenuItemView* parent, ui::MenuSeparatorType type)
-    : type_(type),
-      parent_menu_item_(parent) {}
+      : type_(type),
+        parent_menu_item_(parent) {}
 
   // View overrides.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
+#if defined(USE_AURA)
+  void OnPaintAura(gfx::Canvas* canvas);
+  gfx::Size GetPreferredSizeAura();
+#endif
+
   // The type of the separator.
   const ui::MenuSeparatorType type_;
 

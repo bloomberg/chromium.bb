@@ -52,6 +52,10 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/base/native_theme/native_theme_aura.h"
+#endif
+
 using content::HostZoomMap;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -87,16 +91,6 @@ const int kHorizontalTouchPadding = 15;
 // Menu items which have embedded buttons should have this height in pixel.
 const int kMenuItemContainingButtonsHeight = 43;
 
-// Returns true when the new menu style is used.
-// TODO(skuhne): Remove when only the new menu style is left.
-bool IsNewMenu() {
-#if defined(USE_AURA)
-  return true;
-#else
-  return ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
-#endif
-}
-
 // Subclass of ImageButton whose preferred size includes the size of the border.
 class FullscreenButton : public ImageButton {
  public:
@@ -121,8 +115,8 @@ class FullscreenButton : public ImageButton {
 // insets, the actual painting is done in MenuButtonBackground.
 class MenuButtonBorder : public views::Border {
  public:
-  explicit MenuButtonBorder(const MenuConfig& config)
-      : horizontal_padding_(IsNewMenu() ?
+  MenuButtonBorder(const MenuConfig& config, bool use_new_menu)
+      : horizontal_padding_(use_new_menu ?
                             kHorizontalTouchPadding : kHorizontalPadding),
         insets_(config.item_top_margin, horizontal_padding_,
                 config.item_bottom_margin, horizontal_padding_) {
@@ -158,8 +152,9 @@ class MenuButtonBackground : public views::Background {
     SINGLE_BUTTON,
   };
 
-  explicit MenuButtonBackground(ButtonType type)
+  MenuButtonBackground(ButtonType type, bool use_new_menu)
       : type_(type),
+        use_new_menu_(use_new_menu),
         left_button_(NULL),
         right_button_(NULL) {}
 
@@ -182,10 +177,9 @@ class MenuButtonBackground : public views::Background {
         CustomButton::BS_NORMAL : static_cast<CustomButton*>(view)->state();
     int w = view->width();
     int h = view->height();
-    // Windows is drawing its own separators and we cannot use the touch button
-    // for that.
-#if !defined(OS_WIN)
-    if (IsNewMenu()) {
+#if defined(USE_AURA)
+    if (use_new_menu_ &&
+        view->GetNativeTheme() == ui::NativeThemeAura::instance()) {
       // Normal buttons get a border drawn on the right side and the rest gets
       // filled in. The left button however does not get a line to combine
       // buttons.
@@ -291,6 +285,7 @@ class MenuButtonBackground : public views::Background {
   }
 
   const ButtonType type_;
+  const bool use_new_menu_;
 
   // See description above setter for details.
   CustomButton* left_button_;
@@ -337,7 +332,8 @@ string16 GetAccessibleNameForWrenchMenuItem(
 class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
  public:
   WrenchMenuView(WrenchMenu* menu, MenuModel* menu_model)
-      : menu_(menu), menu_model_(menu_model) {}
+      : menu_(menu),
+        menu_model_(menu_model) {}
 
   TextButton* CreateAndConfigureButton(int string_id,
                                        MenuButtonBackground::ButtonType type,
@@ -361,13 +357,15 @@ class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
     button->set_tag(index);
     button->SetEnabled(menu_model_->IsEnabledAt(index));
     button->set_prefix_type(TextButton::PREFIX_HIDE);
-    MenuButtonBackground* bg = new MenuButtonBackground(type);
+    MenuButtonBackground* bg =
+        new MenuButtonBackground(type, menu_->use_new_menu());
     button->set_background(bg);
     const MenuConfig& menu_config = menu_->GetMenuConfig();
     button->SetEnabledColor(menu_config.text_color);
     if (background)
       *background = bg;
-    button->set_border(new MenuButtonBorder(menu_config));
+    button->set_border(
+        new MenuButtonBorder(menu_config, menu_->use_new_menu()));
     button->set_alignment(TextButton::ALIGN_CENTER);
     button->SetFont(menu_config.font);
     button->ClearMaxTextSize();
@@ -413,6 +411,13 @@ class ButtonContainerMenuItemView : public MenuItemView {
   DISALLOW_COPY_AND_ASSIGN(ButtonContainerMenuItemView);
 };
 
+bool IsAuraTheme(const ui::NativeTheme* theme) {
+#if defined(USE_AURA)
+  return theme == ui::NativeThemeAura::instance();
+#endif
+  return false;
+}
+
 }  // namespace
 
 // CutCopyPasteView ------------------------------------------------------------
@@ -434,17 +439,14 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
         IDS_COPY, MenuButtonBackground::CENTER_BUTTON, copy_index,
         &copy_background);
 
-    bool is_new_menu = IsNewMenu();
-
     TextButton* paste = CreateAndConfigureButton(
         IDS_PASTE,
-#if !defined(OS_WIN)
-        is_new_menu ? MenuButtonBackground::CENTER_BUTTON :
-#endif
+        menu_->use_new_menu() && menu_->supports_new_separators_ ?
+            MenuButtonBackground::CENTER_BUTTON :
             MenuButtonBackground::RIGHT_BUTTON,
         paste_index,
         NULL);
-    if (is_new_menu) {
+    if (menu_->use_new_menu()) {
       cut->SetEnabledColor(kTouchButtonText);
       copy->SetEnabledColor(kTouchButtonText);
       paste->SetEnabledColor(kTouchButtonText);
@@ -517,16 +519,15 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     zoom_label_->SetAutoColorReadabilityEnabled(false);
     zoom_label_->SetHorizontalAlignment(Label::ALIGN_RIGHT);
 
-    bool is_new_menu = IsNewMenu();
-
     MenuButtonBackground* center_bg = new MenuButtonBackground(
-#if !defined(OS_WIN)
-        is_new_menu ? MenuButtonBackground::RIGHT_BUTTON :
-#endif
-            MenuButtonBackground::CENTER_BUTTON);
+        menu_->use_new_menu() && menu_->supports_new_separators_ ?
+            MenuButtonBackground::RIGHT_BUTTON :
+            MenuButtonBackground::CENTER_BUTTON,
+        menu_->use_new_menu());
     zoom_label_->set_background(center_bg);
     const MenuConfig& menu_config(menu->GetMenuConfig());
-    zoom_label_->set_border(new MenuButtonBorder(menu_config));
+    zoom_label_->set_border(
+        new MenuButtonBorder(menu_config, menu->use_new_menu()));
     zoom_label_->SetFont(menu_config.font);
 
     AddChildView(zoom_label_);
@@ -543,7 +544,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_FULLSCREEN_MENU_BUTTON);
     fullscreen_button_->SetImage(ImageButton::BS_NORMAL, full_screen_image);
-    if (is_new_menu) {
+    if (menu_->use_new_menu()) {
       zoom_label_->SetEnabledColor(kTouchButtonText);
       decrement_button_->SetEnabledColor(kTouchButtonText);
       increment_button_->SetEnabledColor(kTouchButtonText);
@@ -556,12 +557,13 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     fullscreen_button_->set_tag(fullscreen_index);
     fullscreen_button_->SetImageAlignment(
         ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
-    int horizontal_padding = IsNewMenu() ?
-                                 kHorizontalTouchPadding : kHorizontalPadding;
+    int horizontal_padding =
+        menu_->use_new_menu() ? kHorizontalTouchPadding : kHorizontalPadding;
     fullscreen_button_->set_border(views::Border::CreateEmptyBorder(
         0, horizontal_padding, 0, horizontal_padding));
     fullscreen_button_->set_background(
-        new MenuButtonBackground(MenuButtonBackground::SINGLE_BUTTON));
+        new MenuButtonBackground(MenuButtonBackground::SINGLE_BUTTON,
+                                 menu_->use_new_menu()));
     fullscreen_button_->SetAccessibleName(
         GetAccessibleNameForWrenchMenuItem(
             menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
@@ -580,7 +582,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     // The increment/decrement button are forced to the same width.
     int button_width = std::max(increment_button_->GetPreferredSize().width(),
                                 decrement_button_->GetPreferredSize().width());
-    int zoom_padding = IsNewMenu() ? kTouchZoomPadding : kZoomPadding;
+    int zoom_padding = menu_->use_new_menu() ? kTouchZoomPadding : kZoomPadding;
     int fullscreen_width = fullscreen_button_->GetPreferredSize().width() +
                            zoom_padding;
     // Returned height doesn't matter as MenuItemView forces everything to the
@@ -608,11 +610,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     bounds.set_width(button_width);
     increment_button_->SetBoundsRect(bounds);
 
-    bool is_new_menu = IsNewMenu();
-    x += bounds.width() + (is_new_menu ? 0 : kZoomPadding);
+    x += bounds.width() + (menu_->use_new_menu() ? 0 : kZoomPadding);
     bounds.set_x(x);
     bounds.set_width(fullscreen_button_->GetPreferredSize().width() +
-                     (is_new_menu ? kTouchZoomPadding : 0));
+                     (menu_->use_new_menu() ? kTouchZoomPadding : 0));
     fullscreen_button_->SetBoundsRect(bounds);
   }
 
@@ -714,14 +715,18 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
 // WrenchMenu ------------------------------------------------------------------
 
-WrenchMenu::WrenchMenu(Browser* browser)
+WrenchMenu::WrenchMenu(Browser* browser,
+                       bool use_new_menu,
+                       bool supports_new_separators)
     : root_(NULL),
       browser_(browser),
       selected_menu_model_(NULL),
       selected_index_(0),
       bookmark_menu_(NULL),
       feedback_menu_item_(NULL),
-      first_bookmark_command_id_(0) {
+      first_bookmark_command_id_(0),
+      use_new_menu_(use_new_menu),
+      supports_new_separators_(supports_new_separators) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
 }
@@ -973,8 +978,6 @@ void WrenchMenu::Observe(int type,
 void WrenchMenu::PopulateMenu(MenuItemView* parent,
                               MenuModel* model,
                               int* next_id) {
-  bool is_new_menu = IsNewMenu();
-
   int index_offset = model->GetFirstItemIndex(NULL);
   for (int i = 0, max = model->GetItemCount(); i < max; ++i) {
     int index = i + index_offset;
@@ -982,7 +985,7 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
     // The button container menu items have a special height which we have to
     // use instead of the normal height.
     int height = 0;
-    if (is_new_menu &&
+    if (use_new_menu_ &&
         (model->GetCommandIdAt(index) == IDC_CUT ||
          model->GetCommandIdAt(index) == IDC_ZOOM_MINUS))
       height = kMenuItemContainingButtonsHeight;
@@ -1055,9 +1058,8 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
   }
 
   if (menu_item) {
-    bool is_new_menu = IsNewMenu();
     // Flush all buttons to the right side of the menu for the new menu type.
-    menu_item->set_use_right_margin(!is_new_menu);
+    menu_item->set_use_right_margin(!use_new_menu_);
     menu_item->SetVisible(model->IsVisibleAt(index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {

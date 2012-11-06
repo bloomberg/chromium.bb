@@ -18,7 +18,17 @@ const int kSeparatorHeight = 1;
 
 namespace views {
 
+#if !defined(OS_WIN)
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
+  OnPaintAura(canvas);
+}
+
+gfx::Size MenuSeparator::GetPreferredSize() {
+  return GetPreferredSizeAura();
+}
+#endif
+
+void MenuSeparator::OnPaintAura(gfx::Canvas* canvas) {
   int pos = 0;
   switch (type_) {
     case ui::LOWER_SEPARATOR:
@@ -37,7 +47,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
                        ui::NativeTheme::kColorId_MenuSeparatorColor));
 }
 
-gfx::Size MenuSeparator::GetPreferredSize() {
+gfx::Size MenuSeparator::GetPreferredSizeAura() {
   const MenuConfig& menu_config = parent_menu_item_->GetMenuConfig();
   int height = menu_config.separator_height;
   switch(type_) {

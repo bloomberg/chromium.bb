@@ -15,7 +15,6 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -87,11 +86,6 @@ class MenuScrollButton : public View {
     GetNativeTheme()->Paint(canvas->sk_canvas(),
                             NativeTheme::kMenuItemBackground,
                             NativeTheme::kNormal, item_bounds, extra);
-#if defined(OS_WIN)
-    SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
-#else
-    SkColor arrow_color = SK_ColorBLACK;
-#endif
 
     // Then the arrow.
     int x = width() / 2;
@@ -116,7 +110,7 @@ class MenuScrollButton : public View {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-    paint.setColor(arrow_color);
+    paint.setColor(config.arrow_color);
     canvas->DrawPath(path, paint);
   }
 
@@ -198,16 +192,10 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
     return;
   }
 
-#if defined(OS_WIN)
-  HDC dc = canvas->BeginPlatformPaint();
-#endif
   gfx::Rect bounds(0, 0, width(), height());
   NativeTheme::ExtraParams extra;
   GetNativeTheme()->Paint(canvas->sk_canvas(),
       NativeTheme::kMenuPopupBackground, NativeTheme::kNormal, bounds, extra);
-#if defined(OS_WIN)
-  canvas->EndPlatformPaint();
-#endif
 }
 
 void MenuScrollViewContainer::Layout() {

@@ -53,7 +53,7 @@ void MenuConfig::InitAura() {
 const MenuConfig& MenuConfig::instance(const ui::NativeTheme* theme) {
   static MenuConfig* views_instance = NULL;
   if (!views_instance)
-    views_instance = new MenuConfig(theme);
+    views_instance = new MenuConfig(ui::NativeTheme::instance());
   return *views_instance;
 }
 #endif

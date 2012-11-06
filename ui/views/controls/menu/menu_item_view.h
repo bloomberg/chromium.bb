@@ -345,6 +345,8 @@ class VIEWS_EXPORT MenuItemView : public View {
  private:
   friend class internal::MenuRunnerImpl;  // For access to ~MenuItemView.
 
+  enum PaintButtonMode { PB_NORMAL, PB_FOR_DRAG };
+
   // Calculates all sizes that we can from the OS.
   //
   // This is invoked prior to Running a menu.
@@ -382,7 +384,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Actual paint implementation. If mode is PB_FOR_DRAG, portions of the menu
   // are not rendered.
-  enum PaintButtonMode { PB_NORMAL, PB_FOR_DRAG };
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
 #if defined(OS_WIN)
@@ -393,6 +394,10 @@ class VIEWS_EXPORT MenuItemView : public View {
                   ui::NativeTheme::State state,
                   SelectionState selection_state,
                   const MenuConfig& config);
+#endif
+
+#if defined(USE_AURA)
+  void PaintButtonAura(gfx::Canvas* canvas, PaintButtonMode mode);
 #endif
 
   // Paints the accelerator.

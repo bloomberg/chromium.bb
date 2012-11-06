@@ -77,7 +77,11 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
                         public TabStripModelObserver,
                         public content::NotificationObserver {
  public:
-  WrenchMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
+  // TODO: remove |is_new_menu| and |supports_new_separators|.
+  WrenchMenuModel(ui::AcceleratorProvider* provider,
+                  Browser* browser,
+                  bool is_new_menu,
+                  bool supports_new_separators);
   virtual ~WrenchMenuModel();
 
   // Overridden for ButtonMenuItemModel::Delegate:
@@ -127,7 +131,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   friend class ::MockWrenchMenuModel;
   WrenchMenuModel();
 
-  void Build();
+  void Build(bool is_new_menu, bool supports_new_separators);
 
   void AddGlobalErrorMenuItems();
 

@@ -18,7 +18,13 @@
 
 namespace views {
 
+#if !defined(OS_WIN)
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
+  PaintButtonAura(canvas, mode);
+}
+#endif
+
+void MenuItemView::PaintButtonAura(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = GetMenuConfig();
   bool render_selection =
       (mode == PB_NORMAL && IsSelected() &&

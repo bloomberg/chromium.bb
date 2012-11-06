@@ -11,10 +11,13 @@ namespace ui {
 enum MenuSeparatorType {
   // Normal - top to bottom: Spacing, line, spacing
   NORMAL_SEPARATOR,
+
   // Upper - top to bottom: Line, spacing
   UPPER_SEPARATOR,
+
   // Lower - top to bottom: Spacing, line
   LOWER_SEPARATOR,
+
   // Spacing - top to bottom: Spacing only.
   SPACING_SEPARATOR
 };

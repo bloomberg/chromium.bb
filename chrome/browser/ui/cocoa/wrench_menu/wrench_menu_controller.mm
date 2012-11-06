@@ -242,7 +242,7 @@ class ZoomLevelObserver : public content::NotificationObserver {
 
 - (void)createModel {
   wrenchMenuModel_.reset(
-      new WrenchMenuModel(acceleratorDelegate_.get(), browser_));
+      new WrenchMenuModel(acceleratorDelegate_.get(), browser_, false, false));
   [self setModel:wrenchMenuModel_.get()];
 
   buttonViewController_.reset(

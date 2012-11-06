@@ -12,6 +12,7 @@ namespace views {
 
 MenuConfig::MenuConfig(const ui::NativeTheme* theme)
     : text_color(SK_ColorBLACK),
+      arrow_color(SK_ColorBLACK),
       submenu_horizontal_margin_size(3),
       submenu_vertical_margin_size(3),
       submenu_horizontal_inset(3),
@@ -43,7 +44,8 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       show_accelerators(true),
       always_use_icon_to_label_padding(false),
       align_arrow_and_shortcut(false),
-      offset_context_menus(false) {
+      offset_context_menus(false),
+      native_theme(theme) {
   // Use 40px tall menu items when running in touch optimized mode.
   // For Windows use 40px tall menu items when running in touch optimized mode.
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {

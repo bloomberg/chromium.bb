@@ -29,6 +29,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Normal text color.
   SkColor text_color;
 
+  // Color for the arrow to scroll bookmarks.
+  SkColor arrow_color;
+
   // Submenu horizontal margin size.
   int submenu_horizontal_margin_size;
 
@@ -120,6 +123,8 @@ struct VIEWS_EXPORT MenuConfig {
 
   // True if the context menu's should be offset from the cursor position.
   bool offset_context_menus;
+
+  const ui::NativeTheme* native_theme;
 
  private:
   // Configures a MenuConfig as appropriate for the current platform.

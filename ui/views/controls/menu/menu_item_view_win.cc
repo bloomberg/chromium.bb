@@ -13,12 +13,23 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
+#if defined(USE_AURA)
+#include "ui/base/native_theme/native_theme_aura.h"
+#endif
+
 using ui::NativeTheme;
 
 namespace views {
 
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const MenuConfig& config = GetMenuConfig();
+
+#if defined(USE_AURA)
+  if (config.native_theme == ui::NativeThemeAura::instance()) {
+    PaintButtonAura(canvas, mode);
+    return;
+  }
+#endif
 
   bool render_selection =
       (mode == PB_NORMAL && IsSelected() &&
@@ -53,11 +64,11 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                             height());
     AdjustBoundsForRTLUI(&gutter_bounds);
     NativeTheme::ExtraParams extra;
-    native_theme->Paint(canvas->sk_canvas(),
-                        NativeTheme::kMenuPopupGutter,
-                        NativeTheme::kNormal,
-                        gutter_bounds,
-                        extra);
+    config.native_theme->Paint(canvas->sk_canvas(),
+                               NativeTheme::kMenuPopupGutter,
+                               NativeTheme::kNormal,
+                               gutter_bounds,
+                               extra);
   }
 
   // Render the background.
@@ -66,7 +77,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     NativeTheme::ExtraParams extra;
     extra.menu_item.is_selected = render_selection;
     AdjustBoundsForRTLUI(&item_bounds);
-    native_theme->Paint(canvas->sk_canvas(),
+    config.native_theme->Paint(canvas->sk_canvas(),
         NativeTheme::kMenuItemBackground, control_state, item_bounds, extra);
   }
 
@@ -121,7 +132,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     ui::NativeTheme::ExtraParams extra;
     extra.menu_arrow.pointing_right = !base::i18n::IsRTL();
     extra.menu_arrow.is_selected = render_selection;
-    native_theme->Paint(canvas->sk_canvas(),
+    config.native_theme->Paint(canvas->sk_canvas(),
         ui::NativeTheme::kMenuPopupArrow, control_state, arrow_bounds, extra);
   }
 }

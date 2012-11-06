@@ -68,6 +68,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#include "ui/base/native_theme/native_theme_aura.h"
 #include "ui/compositor/layer.h"
 #endif
 
@@ -422,8 +423,22 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
                                       const gfx::Point& point) {
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
 
-  wrench_menu_.reset(new WrenchMenu(browser_));
-  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
+  bool use_new_menu = false;
+  bool supports_new_separators = false;
+  // TODO: remove this.
+#if defined(USE_AURA)
+  supports_new_separators =
+      GetNativeTheme() == ui::NativeThemeAura::instance();
+  use_new_menu = supports_new_separators;
+#endif
+#if defined(OS_WIN)
+  use_new_menu = use_new_menu || ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
+#endif
+
+  wrench_menu_.reset(new WrenchMenu(browser_, use_new_menu,
+                                    supports_new_separators));
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_, use_new_menu,
+                                               supports_new_separators));
   wrench_menu_->Init(wrench_menu_model_.get());
 
   FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());

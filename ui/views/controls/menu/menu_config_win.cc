@@ -13,6 +13,7 @@
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/native_theme/native_theme_win.h"
+#include "ui/gfx/color_utils.h"
 
 #if defined(USE_AURA)
 #include "ui/base/native_theme/native_theme_aura.h"
@@ -33,6 +34,8 @@ void MenuConfig::Init(const NativeTheme* theme) {
   text_color = NativeThemeWin::instance()->GetThemeColorWithDefault(
       NativeThemeWin::MENU, MENU_POPUPITEM, MPI_NORMAL, TMT_TEXTCOLOR,
       COLOR_MENUTEXT);
+
+  arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 
   NONCLIENTMETRICS metrics;
   base::win::GetNonClientMetrics(&metrics);
@@ -113,7 +116,7 @@ const MenuConfig& MenuConfig::instance(const ui::NativeTheme* theme) {
   if (!theme || theme == NativeThemeWin::instance()) {
     static MenuConfig* win_instance = NULL;
     if (!win_instance)
-      win_instance = new MenuConfig(theme);
+      win_instance = new MenuConfig(NativeThemeWin::instance());
     return *win_instance;
   }
   static MenuConfig* views_instance = NULL;

@@ -486,6 +486,8 @@
         ['use_aura==1 and OS=="win"', {
           'sources/': [
             ['include', 'controls/menu/menu_config_win.cc'],
+            ['include', 'controls/menu/menu_item_view_win.cc'],
+            ['include', 'controls/menu/menu_separator_win.cc'],
           ],
         }],
         ['OS=="win"', {
