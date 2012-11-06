@@ -12,6 +12,10 @@
 class Profile;
 class WebIntentPickerModel;
 
+namespace net {
+  class URLFetcher;
+}
+
 namespace web_intents {
 
 class IconLoader {
@@ -22,12 +26,23 @@ class IconLoader {
   // Load the favicon associated with |url|.
   void LoadFavicon(const GURL& url);
 
+  // Load an extension icon
+  void LoadExtensionIcon(const GURL& url, const std::string& extension_id);
+
  private:
   // Called when a favicon is returned from the FaviconService.
   void OnFaviconDataAvailable(
       const GURL& url,
       FaviconService::Handle handle,
       const history::FaviconImageResult& image_result);
+
+  // Called when a suggested extension's icon is fetched.
+  void OnExtensionIconURLFetchComplete(const std::string& extension_id,
+                                       const net::URLFetcher* source);
+
+  // Called when an extension's icon is successfully decoded and resized.
+  void OnExtensionIconAvailable(const std::string& extension_id,
+                                const gfx::Image& icon_image);
 
   // A weak pointer to the profile for the web contents.
   Profile* profile_;

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -418,6 +419,10 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
 
   controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
+  // Flush all pending worker tasks for PNG decoding.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  // Flush all tasks posted from the worker tasks.
+  MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_icons_changed_);
   EXPECT_EQ(1, picker_.num_extension_icons_changed_);
