@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/request_media_access_permission_helper.h"
@@ -46,6 +47,8 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/renderer_preferences.h"
 #include "third_party/skia/include/core/SkRegion.h"
+
+namespace app_window = extensions::api::app_window;
 
 using content::BrowserThread;
 using content::ConsoleMessageLevel;
@@ -462,8 +465,28 @@ void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
       rvh->GetRoutingID(), level, message));
 }
 
-void ShellWindow::SaveWindowPosition()
-{
+void ShellWindow::SendBoundsUpdate() {
+  if (!native_window_ || !web_contents_)
+    return;
+  gfx::Rect bounds = native_window_->GetBounds();
+  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  ListValue args;
+  app_window::Bounds update;
+  update.left.reset(new int(bounds.x()));
+  update.top.reset(new int(bounds.y()));
+  update.width.reset(new int(bounds.width()));
+  update.height.reset(new int(bounds.height()));
+  args.Append(update.ToValue().release());
+  rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),
+                                           extension_->id(),
+                                           "updateAppWindowBounds",
+                                           args,
+                                           GURL(),
+                                           false));
+}
+
+void ShellWindow::SaveWindowPosition() {
+  SendBoundsUpdate();
   if (window_key_.empty())
     return;
   if (!native_window_)

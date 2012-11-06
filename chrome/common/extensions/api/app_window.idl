@@ -59,6 +59,13 @@ namespace app.window {
   callback CreateWindowCallback =
       void ([instanceOf=AppWindow] object created_window);
 
+  dictionary Bounds {
+    long? left;
+    long? top;
+    long? width;
+    long? height;
+  };
+
   dictionary AppWindow {
     // Focus the window.
     static void focus();
@@ -72,8 +79,8 @@ namespace app.window {
     // Restore the window.
     static void restore();
 
-    // Move the window to the position (|x|, |y|).
-    static void moveTo(long x, long y);
+    // Move the window to the position (|left|, |top|).
+    static void moveTo(long left, long top);
 
     // Resize the window to |width|x|height| pixels in size.
     static void resizeTo(long width, long height);
@@ -127,6 +134,10 @@ namespace app.window {
                        optional CreateWindowOptions options,
                        optional CreateWindowCallback callback);
 
+    // Returns an <a href="#type-AppWindow">AppWindow</a> object for the
+    // current script context (ie JavaScript 'window' object). This can also be
+    // called on a handle to a script context for another page, for example:
+    // otherWindow.chrome.app.window.current().
     [nocompile] static AppWindow current();
     [nocompile, nodoc] static void initializeAppWindow(object state);
   };

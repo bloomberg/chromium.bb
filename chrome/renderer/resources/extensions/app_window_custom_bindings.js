@@ -83,14 +83,30 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
     AppWindow.prototype.close = function() {
       this.contentWindow.close();
     };
+    AppWindow.prototype.getBounds = function() {
+      var bounds = chromeHidden.appWindowData.bounds;
+      return { left: bounds.left, top: bounds.top,
+               width: bounds.width, height: bounds.height };
+    };
 
     Object.defineProperty(AppWindow.prototype, 'id', {get: function() {
       return chromeHidden.appWindowData.id;
     }});
 
     chromeHidden.appWindowData = {
-      id: params.id || ''
+      id: params.id || '',
+      bounds: { left: 0, top: 0, width: 0, height: 0 }
     };
     chromeHidden.currentAppWindow = new AppWindow;
   });
 });
+
+chromeHidden.updateAppWindowBounds = function(info) {
+  var data = chromeHidden.appWindowData;
+  if (!data)
+    return;
+  data.bounds.left = info.left;
+  data.bounds.top = info.top;
+  data.bounds.width = info.width;
+  data.bounds.height = info.height;
+};
