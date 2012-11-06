@@ -156,10 +156,8 @@ IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
                     kFileNamePattern);
 }
 
-// Has been failing on Mac since http://trac.webkit.org/changeset/105029
-// (WebKit roll http://crrev.com/117847).
 IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest,
-    DISABLED_DataDrivenHeuristics07) {
+    MAYBE_DataDrivenHeuristics(07)) {
   const FilePath::CharType kFileNamePattern[] = FILE_PATH_LITERAL("07_*.html");
   RunDataDrivenTest(GetInputDirectory(kTestName),
                     GetOutputDirectory(kTestName),
