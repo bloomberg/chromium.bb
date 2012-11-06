@@ -379,10 +379,14 @@ def url_open(url, data=None, max_retries=MAX_UPLOAD_ATTEMPTS):
     The response from the url, or it raises an exception it it failed to get
     a response.
   """
+  request = urllib2.Request(url, data=data)
+  if data is not None:
+    request.add_header('content-type', 'application/octet-stream')
+    request.add_header('content-length', len(data))
   response = None
   for _ in range(max_retries):
     try:
-      response = urllib2.urlopen(url, data=data)
+      response = urllib2.urlopen(request)
     except urllib2.URLError as e:
       logging.warning('Unable to connect to %s, error msg: %s', url, e)
       time.sleep(1)
@@ -407,18 +411,21 @@ def update_files_to_upload(query_url, queries, files_to_upload):
   """
   body = ''.join(
       (binascii.unhexlify(meta_data['sha-1']) for (_, meta_data) in queries))
+  assert (len(body) % 20) == 0, repr(body)
+
   response = url_open(query_url, data=body).read()
   if len(queries) != len(response):
     raise run_isolated.MappingError(
         'Got an incorrect number of responses from the server. Expected %d, '
         'but got %d' % (len(queries), len(response)))
 
+  hit = 0
   for i in range(len(response)):
     if response[i] == chr(0):
       files_to_upload.append(queries[i])
     else:
-      logging.debug('Hash for %s already exists on the server, no need '
-                    'to upload again', queries[i][0])
+      hit += 1
+  logging.info('Queried %d files, %d cache hit', len(queries), hit)
 
 
 def upload_sha1_tree(base_url, indir, infiles):
@@ -471,7 +478,28 @@ def upload_sha1_tree(base_url, indir, infiles):
   exception = remote_uploader.next_exception()
   if exception:
     raise exception[0], exception[1], exception[2]
-
+  total = len(infiles)
+  total_size = sum(metadata.get('size', 0) for metadata in infiles.itervalues())
+  logging.info(
+      'Total:      %6d, %9.1fkb',
+      total,
+      sum(m.get('size', 0) for m in infiles.itervalues()) / 1024.)
+  cache_hit = set(infiles.iterkeys()) - set(x[0] for x in to_upload)
+  cache_hit_size = sum(infiles[i].get('size', 0) for i in cache_hit)
+  logging.info(
+      'cache hit:  %6d, %9.1fkb, %6.2f%% files, %6.2f%% size',
+      len(cache_hit),
+      cache_hit_size / 1024.,
+      len(cache_hit) * 100. / total,
+      cache_hit_size * 100. / total_size)
+  cache_miss = to_upload
+  cache_miss_size = sum(infiles[i[0]].get('size', 0) for i in cache_miss)
+  logging.info(
+      'cache miss: %6d, %9.1fkb, %6.2f%% files, %6.2f%% size',
+      len(cache_miss),
+      cache_miss_size / 1024.,
+      len(cache_miss) * 100. / total,
+      cache_miss_size * 100. / total_size)
 
 def process_input(filepath, prevdict, read_only):
   """Processes an input file, a dependency, and return meta data about it.
