@@ -99,6 +99,12 @@ enum IBusMouseButton {
   IBUS_MOUSE_BUTTON_RIGHT = 3U,
 };
 
+namespace config {
+const char kServicePath[] = "/org/freedesktop/IBus/Config";
+const char kServiceInterface[] = "org.freedesktop.IBus.Config";
+const char kSetValueMethod[] = "SetValue";
+}  // namespace config
+
 }  // namespace ibus
 }  // namespace chromeos
 

@@ -259,6 +259,7 @@
         'dbus/shill_service_client_unittest.cc',
         'dbus/gsm_sms_client_unittest.cc',
         'dbus/ibus/ibus_client_unittest.cc',
+        'dbus/ibus/ibus_config_client_unittest.cc',
         'dbus/ibus/ibus_component_unittest.cc',
         'dbus/ibus/ibus_engine_factory_service_unittest.cc',
         'dbus/ibus/ibus_engine_service_unittest.cc',
