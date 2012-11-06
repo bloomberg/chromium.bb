@@ -69,9 +69,24 @@ bool QuadF::IsRectilinear() const {
 }
 
 bool QuadF::IsCounterClockwise() const {
-  // Compute if the first three points turn counter-clockwise. If the quad is
-  // convex, this will match the result for all other triples of points as well.
-  return CrossProduct(p2_ - p1_, p3_ - p2_) < 0;
+  // This math computes the signed area of the quad. Positive area
+  // indicates the quad is clockwise; negative area indicates the quad is
+  // counter-clockwise. Note carefully: this is backwards from conventional
+  // math because our geometric space uses screen coordiantes with y-axis
+  // pointing downards.
+  // Reference: http://mathworld.wolfram.com/PolygonArea.html
+
+  // Up-cast to double so this cannot overflow.
+  double determinant1 = static_cast<double>(p1_.x()) * p2_.y()
+      - static_cast<double>(p2_.x()) * p1_.y();
+  double determinant2 = static_cast<double>(p2_.x()) * p3_.y()
+      - static_cast<double>(p3_.x()) * p2_.y();
+  double determinant3 = static_cast<double>(p3_.x()) * p4_.y()
+      - static_cast<double>(p4_.x()) * p3_.y();
+  double determinant4 = static_cast<double>(p4_.x()) * p1_.y()
+      - static_cast<double>(p1_.x()) * p4_.y();
+
+  return determinant1 + determinant2 + determinant3 + determinant4 < 0;
 }
 
 static inline bool PointIsInTriangle(const PointF& point,

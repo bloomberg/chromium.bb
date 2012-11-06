@@ -188,14 +188,52 @@ TEST(QuadTest, IsCounterClockwise) {
   PointF c1(2, 2);
   PointF d1(1, 2);
   EXPECT_FALSE(QuadF(a1, b1, c1, d1).IsCounterClockwise());
+  EXPECT_FALSE(QuadF(b1, c1, d1, a1).IsCounterClockwise());
   EXPECT_TRUE(QuadF(a1, d1, c1, b1).IsCounterClockwise());
+  EXPECT_TRUE(QuadF(c1, b1, a1, d1).IsCounterClockwise());
 
+  // Slightly more complicated quads should work just as easily.
   PointF a2(1.3f, 1.4f);
   PointF b2(-0.7f, 4.9f);
   PointF c2(1.8f, 6.2f);
   PointF d2(2.1f, 1.6f);
   EXPECT_TRUE(QuadF(a2, b2, c2, d2).IsCounterClockwise());
+  EXPECT_TRUE(QuadF(b2, c2, d2, a2).IsCounterClockwise());
   EXPECT_FALSE(QuadF(a2, d2, c2, b2).IsCounterClockwise());
+  EXPECT_FALSE(QuadF(c2, b2, a2, d2).IsCounterClockwise());
+
+  // Quads with 3 collinear points should work correctly, too.
+  PointF a3(0, 0);
+  PointF b3(1, 0);
+  PointF c3(2, 0);
+  PointF d3(1, 1);
+  EXPECT_FALSE(QuadF(a3, b3, c3, d3).IsCounterClockwise());
+  EXPECT_FALSE(QuadF(b3, c3, d3, a3).IsCounterClockwise());
+  EXPECT_TRUE(QuadF(a3, d3, c3, b3).IsCounterClockwise());
+  // The next expectation in particular would fail for an implementation
+  // that incorrectly uses only a cross product of the first 3 vertices.
+  EXPECT_TRUE(QuadF(c3, b3, a3, d3).IsCounterClockwise());
+
+  // Non-convex quads should work correctly, too.
+  PointF a4(0, 0);
+  PointF b4(1, 1);
+  PointF c4(2, 0);
+  PointF d4(1, 3);
+  EXPECT_FALSE(QuadF(a4, b4, c4, d4).IsCounterClockwise());
+  EXPECT_FALSE(QuadF(b4, c4, d4, a4).IsCounterClockwise());
+  EXPECT_TRUE(QuadF(a4, d4, c4, b4).IsCounterClockwise());
+  EXPECT_TRUE(QuadF(c4, b4, a4, d4).IsCounterClockwise());
+
+  // A quad with huge coordinates should not fail this check due to
+  // single-precision overflow.
+  PointF a5(1e30f, 1e30f);
+  PointF b5(1e35f, 1e30f);
+  PointF c5(1e35f, 1e35f);
+  PointF d5(1e30f, 1e35f);
+  EXPECT_FALSE(QuadF(a5, b5, c5, d5).IsCounterClockwise());
+  EXPECT_FALSE(QuadF(b5, c5, d5, a5).IsCounterClockwise());
+  EXPECT_TRUE(QuadF(a5, d5, c5, b5).IsCounterClockwise());
+  EXPECT_TRUE(QuadF(c5, b5, a5, d5).IsCounterClockwise());
 }
 
 TEST(QuadTest, BoundingBox) {
