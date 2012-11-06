@@ -70,6 +70,8 @@ results! You must return the same dict keys every time."""
       self.results_summary[(name, units, data_type)].append(value)
 
   def PrintSummary(self, trace_tag):
+    if self.page_failures:
+      return
     for measurement_units_type, values in sorted(
         self.results_summary.iteritems()):
       measurement, units, data_type = measurement_units_type
