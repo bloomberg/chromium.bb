@@ -157,7 +157,7 @@ TEST_F(SignalSenderVerificationTest, TestSignalRejected) {
   EXPECT_EQ(samples1->TotalCount() + 1, samples2->TotalCount());
 }
 
-TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {
+TEST_F(SignalSenderVerificationTest, DISABLED_TestOwnerChanged) {
   const char kMessage[] = "hello, world";
 
   // Send the test signal from the exported object.
