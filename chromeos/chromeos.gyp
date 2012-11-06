@@ -265,6 +265,7 @@
         'dbus/ibus/ibus_input_context_client_unittest.cc',
         'dbus/ibus/ibus_lookup_table_unittest.cc',
         'dbus/ibus/ibus_object_unittest.cc',
+        'dbus/ibus/ibus_panel_service_unittest.cc',
         'dbus/ibus/ibus_property_unittest.cc',
         'dbus/ibus/ibus_text_unittest.cc',
         'dbus/introspectable_client_unittest.cc',
