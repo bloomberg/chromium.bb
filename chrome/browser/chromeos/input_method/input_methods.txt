@@ -49,9 +49,13 @@
 #   and update the following files by running this script.
 #
 #    * chrome/app/generated_resources.grd
-#    * chrome/browser/chromeos/input_method/xkeyboard_data.h
 #    * chrome/browser/resources/keyboard_overlay_data.js
 #    * chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.cc
+#
+#   If you add an XKB layout which depends on X11's Mod3Mask (e.g. Germany Neo2
+#   XKB layout), you should also update IsMod3UsedByCurrentInputMethod() method
+#   in chrome/browser/ui/ash/event_rewriter.cc. Otherwise, Mod3Mask might be
+#   removed unexpectedly by the rewriter.
 
 # U.S. English
 xkb:us::eng	us	en-US
