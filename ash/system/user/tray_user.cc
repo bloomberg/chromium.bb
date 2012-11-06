@@ -129,16 +129,8 @@ class UserView : public views::View,
 
   // Create container for buttons.
   void AddButtonContainer() {
-    bool guest = login_ == ash::user::LOGGED_IN_GUEST;
-    bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
-
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-
-    TrayPopupTextButton* button =
-        new TrayPopupTextButton(this, bundle.GetLocalizedString(
-          guest ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
-          kiosk ? IDS_ASH_STATUS_TRAY_EXIT_KIOSK :
-                  IDS_ASH_STATUS_TRAY_SIGN_OUT));
+    TrayPopupTextButton* button = new TrayPopupTextButton(this,
+        ash::user::GetLocalizedSignOutStringForStatus(login_));
     container_->AddTextButton(button);
     signout_ = button;
   }

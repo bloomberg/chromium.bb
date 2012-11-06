@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_USER_LOGIN_STATUS_H_
 #define ASH_SYSTEM_USER_LOGIN_STATUS_H_
 
+#include "base/string16.h"
+
 namespace ash {
 namespace user {
 
@@ -16,6 +18,8 @@ enum LoginStatus {
   LOGGED_IN_KIOSK,  // Is in kiosk mode.
   LOGGED_IN_NONE,   // Not logged in.
 };
+
+string16 GetLocalizedSignOutStringForStatus(LoginStatus status);
 
 }  // namespace user
 }  // namespace ash
