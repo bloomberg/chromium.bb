@@ -55,13 +55,6 @@ void AppListView::InitAsBubble(
     views::View* anchor,
     const gfx::Point& anchor_point,
     views::BubbleBorder::ArrowLocation arrow_location) {
-#if defined(OS_WIN)
-  set_background(views::Background::CreateSolidBackground(
-      kContentsBackgroundColor));
-#else
-  set_background(NULL);
-#endif
-
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kInnerPadding,
                                         kInnerPadding,
@@ -96,6 +89,11 @@ void AppListView::InitAsBubble(
   contents_view_->SetPaintToLayer(true);
   contents_view_->SetFillsBoundsOpaquely(false);
   contents_view_->layer()->SetMasksToBounds(true);
+  set_background(NULL);
+#else
+  set_background(new AppListBackground(
+      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
+      search_box_view_));
 #endif
 
   CreateModel();

@@ -47,8 +47,6 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
 
-// TODO(benwells): Get these details painting on Windows.
-#if !defined(OS_WIN)
   const gfx::Rect search_box_view_bounds =
       search_box_view_->ConvertRectToWidget(search_box_view_->GetLocalBounds());
   gfx::Rect search_box_rect(bounds.x(),
@@ -68,9 +66,6 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
                           seperator_rect.bottom(),
                           bounds.width(),
                           bounds.bottom() - seperator_rect.bottom());
-#else
-  gfx::Rect contents_rect(bounds);
-#endif
 
   paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);
