@@ -835,6 +835,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     ReleaseDC(window_, dc);
   }
 
+  // Early out if failed to reset device.
+  if (!present_thread_->device())
+    return;
+
   hidden_ = false;
 
   D3DDISPLAYMODE display_mode;
