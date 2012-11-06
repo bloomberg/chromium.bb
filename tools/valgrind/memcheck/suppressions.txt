@@ -1001,6 +1001,19 @@
    fun:error_get_my_stack
 }
 {
+   FileStream::Context can leak through WorkerPool by design
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net10FileStreamC1EPNS_6NetLogE
+}
+{
+   Tasks posted to WorkerPool can leak by design
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
+}
+{
    bug_61585b (Intentional)
    Memcheck:Leak
    fun:malloc
@@ -5881,21 +5894,6 @@
    fun:_ZN7WebCore34CanvasRenderingContext2DV8InternalL11*CallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
-   FileStream::Context can leak through WorkerPool by design
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net10FileStreamC1EPNS_6NetLogE
-   ...
-}
-{
-   Tasks posted to WorkerPool can leak by design
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
-   ...
 }
 {
    bug_149748b
