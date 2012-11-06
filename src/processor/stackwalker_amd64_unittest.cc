@@ -172,6 +172,24 @@ TEST_F(GetContextFrame, Simple) {
   EXPECT_EQ(0, memcmp(&raw_context, &frame->context, sizeof(raw_context)));
 }
 
+// The stackwalker should be able to produce the context frame even
+// without stack memory present.
+TEST_F(GetContextFrame, NoStackMemory) {
+  raw_context.rip = 0x40000000c0000200ULL;
+  raw_context.rbp = 0x8000000080000000ULL;
+
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
+  StackwalkerAMD64 walker(&system_info, &raw_context, NULL, &modules,
+                          &frame_symbolizer);
+  ASSERT_TRUE(walker.Walk(&call_stack));
+  frames = call_stack.frames();
+  ASSERT_GE(1U, frames->size());
+  StackFrameAMD64 *frame = static_cast<StackFrameAMD64 *>(frames->at(0));
+  // Check that the values from the original raw context made it
+  // through to the context in the stack frame.
+  EXPECT_EQ(0, memcmp(&raw_context, &frame->context, sizeof(raw_context)));
+}
+
 class GetCallerFrame: public StackwalkerAMD64Fixture, public Test { };
 
 TEST_F(GetCallerFrame, ScanWithoutSymbols) {

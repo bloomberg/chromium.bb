@@ -1354,14 +1354,14 @@ bool MinidumpThread::Read() {
   if (thread_.stack.memory.data_size == 0 ||
       thread_.stack.memory.data_size > numeric_limits<u_int64_t>::max() -
                                        thread_.stack.start_of_memory_range) {
+    // This is ok, but log an error anyway.
     BPLOG(ERROR) << "MinidumpThread has a memory region problem, " <<
                     HexString(thread_.stack.start_of_memory_range) << "+" <<
                     HexString(thread_.stack.memory.data_size);
-    return false;
+  } else {
+    memory_ = new MinidumpMemoryRegion(minidump_);
+    memory_->SetDescriptor(&thread_.stack);
   }
-
-  memory_ = new MinidumpMemoryRegion(minidump_);
-  memory_->SetDescriptor(&thread_.stack);
 
   valid_ = true;
   return true;

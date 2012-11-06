@@ -50,7 +50,7 @@ StackwalkerPPC::StackwalkerPPC(const SystemInfo* system_info,
                                StackFrameSymbolizer* resolver_helper)
     : Stackwalker(system_info, memory, modules, resolver_helper),
       context_(context) {
-  if (memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
+  if (memory_ && memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
     // This implementation only covers 32-bit ppc CPUs.  The limits of the
     // supplied stack are invalid.  Mark memory_ = NULL, which will cause
     // stackwalking to fail.
@@ -63,8 +63,8 @@ StackwalkerPPC::StackwalkerPPC(const SystemInfo* system_info,
 
 
 StackFrame* StackwalkerPPC::GetContextFrame() {
-  if (!context_ || !memory_) {
-    BPLOG(ERROR) << "Can't get context frame without context or memory";
+  if (!context_) {
+    BPLOG(ERROR) << "Can't get context frame without context";
     return NULL;
   }
 

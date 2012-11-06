@@ -137,6 +137,9 @@ static string StripSeparator(const string &original) {
 // frame printed is also output, if available.
 static void PrintStack(const CallStack *stack, const string &cpu) {
   int frame_count = stack->frames()->size();
+  if (frame_count == 0) {
+    printf(" <no frames>\n");
+  }
   for (int frame_index = 0; frame_index < frame_count; ++frame_index) {
     const StackFrame *frame = stack->frames()->at(frame_index);
     printf("%2d  ", frame_index);

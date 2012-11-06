@@ -86,7 +86,7 @@ StackwalkerX86::StackwalkerX86(const SystemInfo* system_info,
       context_(context),
       cfi_walker_(cfi_register_map_,
                   (sizeof(cfi_register_map_) / sizeof(cfi_register_map_[0]))) {
-  if (memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
+  if (memory_ && memory_->GetBase() + memory_->GetSize() - 1 > 0xffffffff) {
     // The x86 is a 32-bit CPU, the limits of the supplied stack are invalid.
     // Mark memory_ = NULL, which will cause stackwalking to fail.
     BPLOG(ERROR) << "Memory out of range for stackwalking: " <<
@@ -106,8 +106,8 @@ StackFrameX86::~StackFrameX86() {
 }
 
 StackFrame* StackwalkerX86::GetContextFrame() {
-  if (!context_ || !memory_) {
-    BPLOG(ERROR) << "Can't get context frame without context or memory";
+  if (!context_) {
+    BPLOG(ERROR) << "Can't get context frame without context";
     return NULL;
   }
 

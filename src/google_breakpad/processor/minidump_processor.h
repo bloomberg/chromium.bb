@@ -73,15 +73,6 @@ enum ProcessResult {
                                               // one requesting
                                               // thread.
 
-  PROCESS_ERROR_NO_MEMORY_FOR_THREAD,         // A thread had no
-                                              // memory region.
-
-  PROCESS_ERROR_NO_STACKWALKER_FOR_THREAD,    // We couldn't
-                                              // determine the
-                                              // StackWalker to walk
-                                              // the minidump's
-                                              // threads.
-
   PROCESS_SYMBOL_SUPPLIER_INTERRUPTED         // The minidump
                                               // processing was
                                               // interrupted by the

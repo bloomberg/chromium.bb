@@ -59,8 +59,8 @@ StackwalkerARM::StackwalkerARM(const SystemInfo* system_info,
 
 
 StackFrame* StackwalkerARM::GetContextFrame() {
-  if (!context_ || !memory_) {
-    BPLOG(ERROR) << "Can't get context frame without context or memory";
+  if (!context_) {
+    BPLOG(ERROR) << "Can't get context frame without context";
     return NULL;
   }
 

@@ -298,6 +298,93 @@ TEST(Dump, OneThread) {
   EXPECT_EQ(0x2e951ef7U, raw_context.ss);
 }
 
+TEST(Dump, ThreadMissingMemory) {
+  Dump dump(0, kLittleEndian);
+  Memory stack(dump, 0x2326a0fa);
+  // Stack has no contents.
+
+  MDRawContextX86 raw_context;
+  memset(&raw_context, 0, sizeof(raw_context));
+  raw_context.context_flags = MD_CONTEXT_X86_INTEGER | MD_CONTEXT_X86_CONTROL;
+  Context context(dump, raw_context);
+
+  Thread thread(dump, 0xa898f11b, stack, context,
+                0x9e39439f, 0x4abfc15f, 0xe499898a, 0x0d43e939dcfd0372ULL);
+
+  dump.Add(&stack);
+  dump.Add(&context);
+  dump.Add(&thread);
+  dump.Finish();
+
+  string contents;
+  ASSERT_TRUE(dump.GetContents(&contents));
+
+  istringstream minidump_stream(contents);
+  Minidump minidump(minidump_stream);
+  ASSERT_TRUE(minidump.Read());
+  ASSERT_EQ(2U, minidump.GetDirectoryEntryCount());
+
+  // This should succeed even though the thread has no stack memory.
+  MinidumpThreadList* thread_list = minidump.GetThreadList();
+  ASSERT_TRUE(thread_list != NULL);
+  ASSERT_EQ(1U, thread_list->thread_count());
+
+  MinidumpThread* md_thread = thread_list->GetThreadAtIndex(0);
+  ASSERT_TRUE(md_thread != NULL);
+
+  u_int32_t thread_id;
+  ASSERT_TRUE(md_thread->GetThreadID(&thread_id));
+  ASSERT_EQ(0xa898f11bU, thread_id);
+
+  MinidumpContext* md_context = md_thread->GetContext();
+  ASSERT_NE(reinterpret_cast<MinidumpContext*>(NULL), md_context);
+
+  MinidumpMemoryRegion* md_stack = md_thread->GetMemory();
+  ASSERT_EQ(reinterpret_cast<MinidumpMemoryRegion*>(NULL), md_stack);
+}
+
+TEST(Dump, ThreadMissingContext) {
+  Dump dump(0, kLittleEndian);
+  Memory stack(dump, 0x2326a0fa);
+  stack.Append("stack for thread");
+
+  // Context is empty.
+  Context context(dump);
+
+  Thread thread(dump, 0xa898f11b, stack, context,
+                0x9e39439f, 0x4abfc15f, 0xe499898a, 0x0d43e939dcfd0372ULL);
+
+  dump.Add(&stack);
+  dump.Add(&context);
+  dump.Add(&thread);
+  dump.Finish();
+
+  string contents;
+  ASSERT_TRUE(dump.GetContents(&contents));
+
+  istringstream minidump_stream(contents);
+  Minidump minidump(minidump_stream);
+  ASSERT_TRUE(minidump.Read());
+  ASSERT_EQ(2U, minidump.GetDirectoryEntryCount());
+
+  // This should succeed even though the thread has no stack memory.
+  MinidumpThreadList* thread_list = minidump.GetThreadList();
+  ASSERT_TRUE(thread_list != NULL);
+  ASSERT_EQ(1U, thread_list->thread_count());
+
+  MinidumpThread* md_thread = thread_list->GetThreadAtIndex(0);
+  ASSERT_TRUE(md_thread != NULL);
+
+  u_int32_t thread_id;
+  ASSERT_TRUE(md_thread->GetThreadID(&thread_id));
+  ASSERT_EQ(0xa898f11bU, thread_id);
+  MinidumpMemoryRegion* md_stack = md_thread->GetMemory();
+  ASSERT_NE(reinterpret_cast<MinidumpMemoryRegion*>(NULL), md_stack);
+
+  MinidumpContext* md_context = md_thread->GetContext();
+  ASSERT_EQ(reinterpret_cast<MinidumpContext*>(NULL), md_context);
+}
+
 TEST(Dump, OneModule) {
   static const MDVSFixedFileInfo fixed_file_info = {
     0xb2fba33a,                           // signature

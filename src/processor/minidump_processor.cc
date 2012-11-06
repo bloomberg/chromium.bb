@@ -208,7 +208,6 @@ ProcessResult MinidumpProcessor::Process(
     MinidumpMemoryRegion *thread_memory = thread->GetMemory();
     if (!thread_memory) {
       BPLOG(ERROR) << "No memory region for " << thread_string;
-      return PROCESS_ERROR_NO_MEMORY_FOR_THREAD;
     }
 
     // Use process_state->modules_ instead of module_list, because the
@@ -225,16 +224,19 @@ ProcessResult MinidumpProcessor::Process(
                                        thread_memory,
                                        process_state->modules_,
                                        frame_symbolizer_));
-    if (!stackwalker.get()) {
-      BPLOG(ERROR) << "No stackwalker for " << thread_string;
-      return PROCESS_ERROR_NO_STACKWALKER_FOR_THREAD;
-    }
 
     scoped_ptr<CallStack> stack(new CallStack());
-    if (!stackwalker->Walk(stack.get())) {
-      BPLOG(INFO) << "Stackwalker interrupt (missing symbols?) at " <<
+    if (stackwalker.get()) {
+      if (!stackwalker->Walk(stack.get())) {
+        BPLOG(INFO) << "Stackwalker interrupt (missing symbols?) at " <<
           thread_string;
-      interrupted = true;
+        interrupted = true;
+      }
+    } else {
+      // Threads with missing CPU contexts will hit this, but
+      // don't abort processing the rest of the dump just for
+      // one bad thread.
+      BPLOG(ERROR) << "No stackwalker for " << thread_string;
     }
     process_state->threads_.push_back(stack.release());
     process_state->thread_memory_regions_.push_back(thread_memory);
