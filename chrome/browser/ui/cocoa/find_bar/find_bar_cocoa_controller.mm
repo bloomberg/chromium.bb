@@ -76,8 +76,7 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)dealloc {
-  // All animations should be explicitly stopped by the TabContents
-  // before a tab is closed.
+  // All animations should have been explicitly stopped before a tab is closed.
   DCHECK(!showHideAnimation_.get());
   DCHECK(!moveAnimation_.get());
   [[NSNotificationCenter defaultCenter] removeObserver:self];

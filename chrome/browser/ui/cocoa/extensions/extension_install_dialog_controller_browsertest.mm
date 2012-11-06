@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -26,14 +25,14 @@ public:
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
-  TabContents* tab = browser()->tab_strip_model()->GetTabContentsAt(0);
+  content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
 
   chrome::MockExtensionInstallPromptDelegate delegate;
   ExtensionInstallPrompt::Prompt prompt =
       chrome::BuildExtensionInstallPrompt(extension_);
 
   ExtensionInstallDialogController* controller =
-      new ExtensionInstallDialogController(tab->web_contents(),
+      new ExtensionInstallDialogController(tab,
                                            &delegate,
                                            prompt);
 

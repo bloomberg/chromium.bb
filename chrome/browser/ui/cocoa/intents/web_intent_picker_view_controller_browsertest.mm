@@ -20,7 +20,6 @@
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/spinner_progress_indicator.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate_mock.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -41,9 +40,9 @@ class WebIntentPickerViewControllerTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    TabContents* tab = browser()->tab_strip_model()->GetTabContentsAt(0);
-    picker_ =
-        new WebIntentPickerCocoa2(tab->web_contents(), &delegate_, &model_);
+    content::WebContents* tab =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+    picker_ = new WebIntentPickerCocoa2(tab, &delegate_, &model_);
     controller_ = picker_->view_controller();
   }
 

@@ -140,7 +140,7 @@
 - (TabAppleScript*)activeTab {
   TabAppleScript* currentTab =
       [[[TabAppleScript alloc]
-          initWithTabContent:chrome::GetActiveTabContents(browser_)]
+          initWithWebContents:chrome::GetActiveWebContents(browser_)]
               autorelease];
   [currentTab setContainer:self
                   property:AppleScript::kTabsProperty];
@@ -153,13 +153,13 @@
 
   for (int i = 0; i < browser_->tab_count(); ++i) {
     // Check to see if tab is closing.
-    TabContents* tab_contents = chrome::GetTabContentsAt(browser_, i);
-    if (tab_contents->in_destructor()) {
+    content::WebContents* webContents = chrome::GetWebContentsAt(browser_, i);
+    if (webContents->IsBeingDestroyed()) {
       continue;
     }
 
     scoped_nsobject<TabAppleScript> tab(
-        [[TabAppleScript alloc] initWithTabContent:tab_contents]);
+        [[TabAppleScript alloc] initWithWebContents:webContents]);
     [tab setContainer:self
              property:AppleScript::kTabsProperty];
     [tabs addObject:tab];
@@ -180,7 +180,7 @@
       GURL(chrome::kChromeUINewTabURL),
       content::PAGE_TRANSITION_TYPED);
   contents->web_contents()->SetNewTabStartTime(newTabStartTime);
-  [aTab setTabContent:contents];
+  [aTab setWebContents:contents->web_contents()];
 }
 
 - (void)insertInTabs:(TabAppleScript*)aTab atIndex:(int)index {
@@ -199,7 +199,7 @@
   params.target_contents->web_contents()->SetNewTabStartTime(
       newTabStartTime);
 
-  [aTab setTabContent:params.target_contents];
+  [aTab setWebContents:params.target_contents->web_contents()];
 }
 
 - (void)removeFromTabsAtIndex:(int)index {
