@@ -79,6 +79,11 @@ bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
                               event->flags() & kModifierFlagMask);
   accelerator.set_type(type);
 
+  // Fill out context object so AcceleratorController will know what
+  // was the previous accelerator or if the current accelerator is repeated.
+  Shell::GetInstance()->accelerator_controller()->context()->
+      UpdateContext(accelerator);
+
   if (!ShouldProcessAcceleratorsNow(accelerator, target))
     return false;
   return Shell::GetInstance()->accelerator_controller()->Process(accelerator);

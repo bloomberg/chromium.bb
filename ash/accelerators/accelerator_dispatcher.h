@@ -12,7 +12,8 @@
 
 namespace ash {
 
-// Dispatcher for handling accelerators in ash.
+// Dispatcher for handling accelerators from menu.
+//
 // Wraps a nested dispatcher to which control is passed if no accelerator key
 // has been pressed.
 // TODO(pkotwicz): Port AcceleratorDispatcher to mac.

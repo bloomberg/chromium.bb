@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "ui/base/accelerators/accelerator_manager_context.h"
 
 namespace ui {
 
@@ -92,7 +91,6 @@ bool AcceleratorManager::Process(const Accelerator& accelerator) {
       }
     }
   }
-  context_.last_event_type_ = accelerator.type();
   return result;
 }
 
@@ -117,10 +115,6 @@ bool AcceleratorManager::HasPriorityHandler(
   // If the priority handler says it cannot handle the accelerator, we must not
   // count it as one.
   return map_iter->second.second.front()->CanHandleAccelerators();
-}
-
-const AcceleratorManagerContext& AcceleratorManager::GetContext() const {
-  return context_;
 }
 
 }  // namespace ui

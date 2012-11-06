@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accelerators/accelerator_manager_context.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/ui_export.h"
 
@@ -71,9 +70,6 @@ class UI_EXPORT AcceleratorManager {
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const Accelerator& accelerator) const;
 
-  // Returns part of state which is available for accelerator handlers.
-  const AcceleratorManagerContext& GetContext() const;
-
  private:
   // The accelerators and associated targets.
   typedef std::list<AcceleratorTarget*> AcceleratorTargetList;
@@ -82,9 +78,6 @@ class UI_EXPORT AcceleratorManager {
   typedef std::pair<bool, AcceleratorTargetList> AcceleratorTargets;
   typedef std::map<Accelerator, AcceleratorTargets> AcceleratorMap;
   AcceleratorMap accelerators_;
-
-  // State of the accelerator passed to accelerator handlers.
-  AcceleratorManagerContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorManager);
 };

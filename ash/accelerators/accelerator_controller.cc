@@ -339,15 +339,28 @@ bool HandlePrintWindowHierarchy() {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// AcceleratorControllerContext, public:
+
+AcceleratorControllerContext::AcceleratorControllerContext()
+    : repeated_(false),
+      previous_event_type_(ui::ET_UNKNOWN) {
+}
+
+void AcceleratorControllerContext::UpdateContext(
+    const ui::Accelerator& accelerator) {
+  const ui::Accelerator previous_accelerator = current_accelerator_;
+  current_accelerator_ = accelerator;
+
+  // Compute contextual information.
+  repeated_ = previous_accelerator == current_accelerator_;
+  previous_event_type_ = previous_accelerator.type();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, public:
 
 AcceleratorController::AcceleratorController()
-    : accelerator_manager_(new ui::AcceleratorManager),
-      toggle_maximized_suppressed_(false),
-      cycle_backward_linear_suppressed_(false),
-      cycle_forward_linear_suppressed_(false),
-      cycle_backward_mru_suppressed_(false),
-      cycle_forward_mru_suppressed_(false) {
+    : accelerator_manager_(new ui::AcceleratorManager) {
   Init();
 }
 
@@ -367,6 +380,8 @@ void AcceleratorController::Init() {
     actions_allowed_at_modal_window_.insert(kActionsAllowedAtModalWindow[i]);
   for (size_t i = 0; i < kReservedActionsLength; ++i)
     reserved_actions_.insert(kReservedActions[i]);
+  for (size_t i = 0; i < kNonrepeatableActionsLength; ++i)
+    nonrepeatable_actions_.insert(kNonrepeatableActions[i]);
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
@@ -448,62 +463,43 @@ bool AcceleratorController::PerformAction(int action,
     return true;
   }
   const ui::KeyboardCode key_code = accelerator.key_code();
+  // PerformAction() is performed from gesture controllers and passes
+  // empty Accelerator() instance as the second argument. Such events
+  // should never be suspended.
+  const bool gesture_event = key_code == ui::VKEY_UNKNOWN;
 
-  const ui::AcceleratorManagerContext& context =
-      accelerator_manager_->GetContext();
-  const ui::EventType last_event_type = context.GetLastEventType();
+  // Ignore accelerators invoked as repeated (while holding a key for a long
+  // time, if their handling is nonrepeatable.
+  if (nonrepeatable_actions_.find(action) != nonrepeatable_actions_.end() &&
+      context_.repeated() && !gesture_event) {
+    return true;
+  }
+  // Type of the previous accelerator. Used by NEXT_IME and DISABLE_CAPS_LOCK.
+  const ui::EventType previous_event_type = context_.previous_event_type();
 
   // You *MUST* return true when some action is performed. Otherwise, this
   // function might be called *twice*, via BrowserView::PreHandleKeyboardEvent
   // and BrowserView::HandleKeyboardEvent, for a single accelerator press.
   switch (action) {
-    case CYCLE_BACKWARD_MRU_PRESSED:
-      if (cycle_backward_mru_suppressed_)
-        return true;
-      // Temporarily disable the feature until crbug.com/158213 is fixed.
-      // TODO(mtomasz): Reenable the feature.
-      // cycle_backward_mru_suppressed_ = true;
+    case CYCLE_BACKWARD_MRU:
       if (key_code == ui::VKEY_TAB && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
                                   accelerator.IsAltDown());
-    case CYCLE_BACKWARD_MRU_RELEASED:
-      cycle_backward_mru_suppressed_ = false;
-      return true;
-    case CYCLE_FORWARD_MRU_PRESSED:
-      if (cycle_forward_mru_suppressed_)
-        return true;
-      // Temporarily disable the feature until crbug.com/158213 is fixed.
-      // TODO(mtomasz): Reenable the feature.
-      // cycle_forward_mru_suppressed_ = true;
+    case CYCLE_FORWARD_MRU:
       if (key_code == ui::VKEY_TAB && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
-    case CYCLE_FORWARD_MRU_RELEASED:
-      cycle_forward_mru_suppressed_ = false;
-      return true;
-    case CYCLE_BACKWARD_LINEAR_PRESSED:
-      if (cycle_backward_linear_suppressed_)
-        return true;
-      cycle_backward_linear_suppressed_ = true;
+    case CYCLE_BACKWARD_LINEAR:
       if (key_code == ui::VKEY_F5 && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_BACKWARD);
       return true;
-    case CYCLE_BACKWARD_LINEAR_RELEASED:
-      cycle_backward_linear_suppressed_ = false;
-      return true;
-    case CYCLE_FORWARD_LINEAR_PRESSED:
-      if (cycle_forward_linear_suppressed_)
-        return true;
-      cycle_forward_linear_suppressed_ = true;
+    case CYCLE_FORWARD_LINEAR:
       if (key_code == ui::VKEY_F5 && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_FORWARD);
-      return true;
-    case CYCLE_FORWARD_LINEAR_RELEASED:
-      cycle_forward_linear_suppressed_ = false;
       return true;
 #if defined(OS_CHROMEOS)
     case CYCLE_DISPLAY_MODE:
@@ -570,7 +566,7 @@ bool AcceleratorController::PerformAction(int action,
       return true;
     case DISABLE_CAPS_LOCK:
       // See: case NEXT_IME.
-      if (last_event_type == ui::ET_KEY_RELEASED) {
+      if (previous_event_type == ui::ET_KEY_RELEASED) {
         // We totally ignore this accelerator.
         return false;
       }
@@ -646,8 +642,9 @@ bool AcceleratorController::PerformAction(int action,
       // ET_KEY_RELEASED accelerator for Chrome OS (see ash/accelerators/
       // accelerator_controller.cc) when Shift+Alt+Tab is pressed and then Tab
       // is released.
-      if (last_event_type == ui::ET_KEY_RELEASED) {
+      if (previous_event_type == ui::ET_KEY_RELEASED) {
         // We totally ignore this accelerator.
+        // TODO(mazda): Fix crbug.com/158217
         return false;
       }
       if (ime_control_delegate_.get())
@@ -735,21 +732,12 @@ bool AcceleratorController::PerformAction(int action,
       }
       break;
     }
-    case TOGGLE_MAXIMIZED_PRESSED: {
-      // We do not want to toggle maximization on the acceleration key
-      // repeating.
-      if (toggle_maximized_suppressed_)
-        return true;
-      toggle_maximized_suppressed_ = true;
+    case TOGGLE_MAXIMIZED: {
       if (key_code == ui::VKEY_F4 && shell->delegate()) {
         shell->delegate()->RecordUserMetricsAction(
             UMA_ACCEL_MAXIMIZE_RESTORE_F4);
       }
       shell->delegate()->ToggleMaximized();
-      return true;
-    }
-    case TOGGLE_MAXIMIZED_RELEASED: {
-      toggle_maximized_suppressed_ = false;
       return true;
     }
     case WINDOW_POSITION_CENTER: {

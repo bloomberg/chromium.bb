@@ -28,6 +28,33 @@ class KeyboardBrightnessControlDelegate;
 class ScreenshotDelegate;
 class VolumeControlDelegate;
 
+// Stores information about accelerator context, eg. previous accelerator
+// or if the current accelerator is repeated or not.
+class ASH_EXPORT AcceleratorControllerContext {
+ public:
+  AcceleratorControllerContext();
+  ~AcceleratorControllerContext() {}
+
+  // Updates context - determines if the accelerator is repeated, as well as
+  // event type of the previous accelerator.
+  void UpdateContext(const ui::Accelerator& accelerator);
+
+  ui::EventType previous_event_type() const { return previous_event_type_; }
+  bool repeated() const { return repeated_; }
+
+ private:
+  ui::Accelerator current_accelerator_;
+
+  // If the current accelerator was repeated.
+  bool repeated_;
+
+  // Event type of the previous accelerator. Used for NEXT_IME and
+  // DISABLE_CAPS_LOCK accelerator actions.
+  ui::EventType previous_event_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerContext);
+};
+
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.
@@ -83,6 +110,11 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
     return brightness_control_delegate_.get();
   }
 
+  // Provides access to an object holding contextual information.
+  AcceleratorControllerContext* context() {
+    return &context_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest, GlobalAccelerators);
 
@@ -111,6 +143,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
       keyboard_brightness_control_delegate_;
   scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
 
+  // Contextual information, eg. if the current accelerator is repeated.
+  AcceleratorControllerContext context_;
+
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.
   std::map<ui::Accelerator, int> accelerators_;
@@ -123,13 +158,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   std::set<int> actions_allowed_at_modal_window_;
   // Reserved actions. See accelerator_table.h for details.
   std::set<int> reserved_actions_;
-
-  // Used to suppress accelerator handling on key repeat.
-  bool toggle_maximized_suppressed_;
-  bool cycle_backward_linear_suppressed_;
-  bool cycle_forward_linear_suppressed_;
-  bool cycle_backward_mru_suppressed_;
-  bool cycle_forward_mru_suppressed_;
+  // Actions which will not be repeated while holding the accelerator key.
+  std::set<int> nonrepeatable_actions_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };

@@ -17,14 +17,10 @@ namespace ash {
 enum AcceleratorAction {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
-  CYCLE_BACKWARD_LINEAR_PRESSED,
-  CYCLE_BACKWARD_LINEAR_RELEASED,
-  CYCLE_BACKWARD_MRU_PRESSED,
-  CYCLE_BACKWARD_MRU_RELEASED,
-  CYCLE_FORWARD_LINEAR_PRESSED,
-  CYCLE_FORWARD_LINEAR_RELEASED,
-  CYCLE_FORWARD_MRU_PRESSED,
-  CYCLE_FORWARD_MRU_RELEASED,
+  CYCLE_BACKWARD_LINEAR,
+  CYCLE_BACKWARD_MRU,
+  CYCLE_FORWARD_LINEAR,
+  CYCLE_FORWARD_MRU,
   DISABLE_CAPS_LOCK,
   DISPLAY_TOGGLE_SCALE,
   EXIT,
@@ -72,8 +68,7 @@ enum AcceleratorAction {
   TOGGLE_CAPS_LOCK,
   TOGGLE_CAPS_LOCK_BY_ALT_LWIN,
   TOGGLE_DESKTOP_BACKGROUND_MODE,
-  TOGGLE_MAXIMIZED_PRESSED,
-  TOGGLE_MAXIMIZED_RELEASED,
+  TOGGLE_MAXIMIZED,
   TOGGLE_ROOT_WINDOW_FULL_SCREEN,
   TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
@@ -143,6 +138,12 @@ ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtModalWindow[];
 
 // The number of elements in kActionsAllowedAtModalWindow.
 ASH_EXPORT extern const size_t kActionsAllowedAtModalWindowLength;
+
+// Actions which will not be repeated while holding an accelerator key.
+ASH_EXPORT extern const AcceleratorAction kNonrepeatableActions[];
+
+// The number of elements in kNonrepeatableActions.
+ASH_EXPORT extern const size_t kNonrepeatableActionsLength;
 
 }  // namespace ash
 

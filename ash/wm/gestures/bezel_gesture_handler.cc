@@ -140,15 +140,10 @@ bool BezelGestureHandler::HandleApplicationControl(
   ash::AcceleratorController* accelerator =
       ash::Shell::GetInstance()->accelerator_controller();
   if (start_location_ == BEZEL_START_LEFT && event.details().scroll_x() > 0) {
-    accelerator->PerformAction(CYCLE_BACKWARD_LINEAR_PRESSED,
-                               ui::Accelerator());
-    accelerator->PerformAction(CYCLE_BACKWARD_LINEAR_RELEASED,
-                               ui::Accelerator());
+    accelerator->PerformAction(CYCLE_BACKWARD_LINEAR, ui::Accelerator());
   } else if (start_location_ == BEZEL_START_RIGHT &&
       event.details().scroll_x() < 0) {
-    accelerator->PerformAction(CYCLE_FORWARD_LINEAR_PRESSED, ui::Accelerator());
-    accelerator->PerformAction(CYCLE_FORWARD_LINEAR_RELEASED,
-                               ui::Accelerator());
+    accelerator->PerformAction(CYCLE_FORWARD_LINEAR, ui::Accelerator());
   } else {
     return false;
   }
