@@ -28,7 +28,7 @@ class ReplayServer(object):
     if self._is_record_mode:
       options.append('--record')
     if not browser_backend.options.wpr_make_javascript_deterministic:
-      options.append('--inject_scripts=/dev/null')
+      options.append('--inject_scripts=')
     self._web_page_replay = webpagereplay.ReplayServer(path, options)
     self._web_page_replay.StartServer()
 
