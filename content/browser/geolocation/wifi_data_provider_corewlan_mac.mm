@@ -11,6 +11,7 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
 
 // Define a subset of the CoreWLAN interfaces we require. We can't depend on
@@ -119,6 +120,8 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
       continue;
     }
 
+    const base::TimeTicks start_time = base::TimeTicks::Now();
+
     NSError* err = nil;
     NSArray* scan = [corewlan_interface scanForNetworksWithParameters:params
                                                                 error:&err];
@@ -132,6 +135,16 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
       ++interface_error_count;
       continue;
     }
+
+    const base::TimeDelta duration = base::TimeTicks::Now() - start_time;
+
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.Wifi.ScanLatency",
+        duration,
+        base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromMinutes(1),
+        100);
+
     DVLOG(1) << interface_name << ": found " << count << " wifi APs";
 
     for (CWNetwork* network in scan) {
