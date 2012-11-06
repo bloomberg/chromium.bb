@@ -15,15 +15,12 @@ http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
 import os
 import re
-import signal
 import subprocess
 import sys
-import time
 
 # ======================================================================
 VERBOSE = 0
 LIMIT = 5
-TIMEOUT = 10
 
 # These programs are likely not available/working on windows.
 
@@ -75,21 +72,11 @@ def RunCommand(cmd):
   """Run a shell command given an argv style vector."""
   Debug(str(cmd))
 
-  start = time.time()
   p = subprocess.Popen(cmd,
                        bufsize=1000*1000,
                        stderr=subprocess.PIPE,
                        stdout=subprocess.PIPE)
-  while p.poll() is None:
-    time.sleep(1)
-    now = time.time()
-    if now - start > TIMEOUT:
-      Debug('Error: timeout')
-      os.kill(p.pid, signal.SIGKILL)
-      os.waitpid(-1, os.WNOHANG)
-      return -666, "", ""
-  stdout = p.stdout.read()
-  stderr = p.stderr.read()
+  stdout, stderr = p.communicate()
   retcode = p.wait()
 
   return retcode, stdout, stderr
@@ -112,9 +99,6 @@ class ExternalChecker(object):
           str(self._commandline), str(err))
       return []
     if retcode == 0:
-      return []
-    if retcode == 666:
-      print 'command %s timed out' % str(self._commandline)
       return []
     if self._use_stderr:
       return [stderr]
