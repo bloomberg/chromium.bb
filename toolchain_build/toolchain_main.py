@@ -12,6 +12,7 @@ import logging
 import optparse
 import os
 import sys
+import textwrap
 
 import file_tools
 import gsd_storage
@@ -230,8 +231,11 @@ class PackageBuilder(object):
       packages: A list of package names to build.
       args: sys.argv[1:] or equivalent.
     """
+    package_list = sorted(packages.keys())
     parser = optparse.OptionParser(
-        usage='USAGE: %prog [options]')
+        usage='USAGE: %prog [options] [targets...]\n\n'
+              'Available targets:\n' +
+              '\n'.join(textwrap.wrap(' '.join(package_list))))
     parser.add_option(
         '-v', '--verbose', dest='verbose',
         default=False, action='store_true',
