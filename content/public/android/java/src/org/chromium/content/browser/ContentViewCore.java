@@ -748,7 +748,7 @@ public class ContentViewCore implements MotionEventDelegate {
             // components as well.
             if (mContainerView.getChildCount() > 0) {
                 Canvas c = new Canvas(b);
-                c.scale(1, -1, width / 2, height / 2);
+                c.scale(1.0f, -1.0f, width / 2.0f, height / 2.0f);
                 c.scale(width / (float) getWidth(), height / (float) getHeight());
                 mContainerView.draw(c);
             }
