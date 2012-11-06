@@ -12,6 +12,7 @@
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 
 using namespace cc;
 using namespace WebKit;
@@ -52,6 +53,8 @@ public:
         return WebString("");
     }
 
+    virtual void getQueryObjectuivEXT(WebGLId, WGC3Denum, WGC3Duint*);
+
 private:
     ResourceUpdateControllerTest* m_test;
     bool m_supportShallowFlush;
@@ -71,6 +74,7 @@ public:
         , m_numDanglingUploads(0)
         , m_numTotalUploads(0)
         , m_numTotalFlushes(0)
+        , m_queryResultsAvailable(0)
     {
     }
 
@@ -103,6 +107,15 @@ public:
         m_numConsecutiveFlushes = 0;
         m_numDanglingUploads++;
         m_numTotalUploads++;
+    }
+
+    bool isQueryResultAvailable()
+    {
+        if (!m_queryResultsAvailable)
+            return false;
+
+        m_queryResultsAvailable--;
+        return true;
     }
 
 protected:
@@ -177,6 +190,11 @@ protected:
         updateController->finalize();
     }
 
+    void makeQueryResultAvailable()
+    {
+        m_queryResultsAvailable++;
+    }
+
 protected:
     // Classes required to interact and test the ResourceUpdateController
     scoped_ptr<GraphicsContext> m_context;
@@ -185,6 +203,7 @@ protected:
     scoped_ptr<PrioritizedTexture> m_textures[4];
     scoped_ptr<PrioritizedTextureManager> m_textureManager;
     SkBitmap m_bitmap;
+    int m_queryResultsAvailable;
 
     // Properties / expectations of this test
     int m_fullUploadCountExpected;
@@ -220,6 +239,14 @@ void WebGraphicsContext3DForUploadTest::texSubImage2D(WGC3Denum target,
                                                       const void* pixels)
 {
     m_test->onUpload();
+}
+
+void WebGraphicsContext3DForUploadTest::getQueryObjectuivEXT(
+    WebGLId,
+    WGC3Denum pname,
+    WGC3Duint* params) {
+    if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
+        *params = m_test->isQueryResultAvailable();
 }
 
 // ZERO UPLOADS TESTS
@@ -381,9 +408,11 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
     // Only enough time for 1 update.
     controller->performMoreUpdates(
         controller->now() + base::TimeDelta::FromMilliseconds(120));
-    runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_EQ(1, m_numTotalUploads);
+
+    // Complete one upload.
+    makeQueryResultAvailable();
 
     controller->setUpdateMoreTexturesTime(
         base::TimeDelta::FromMilliseconds(100));
@@ -391,7 +420,6 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
     // Enough time for 2 updates.
     controller->performMoreUpdates(
         controller->now() + base::TimeDelta::FromMilliseconds(220));
-    runPendingTask(&thread, controller.get());
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_TRUE(client.readyToFinalizeCalled());
@@ -419,7 +447,6 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
     // Enough time for 3 updates but only 2 necessary.
     controller->performMoreUpdates(
         controller->now() + base::TimeDelta::FromMilliseconds(310));
-    runPendingTask(&thread, controller.get());
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_TRUE(client.readyToFinalizeCalled());

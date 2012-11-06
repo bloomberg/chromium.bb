@@ -54,6 +54,7 @@ private:
     static size_t maxFullUpdatesPerTick(ResourceProvider*);
 
     size_t maxBlockingUpdates() const;
+    base::TimeDelta pendingUpdateTime() const;
 
     void updateTexture(ResourceUpdate);
 

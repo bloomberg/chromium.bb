@@ -95,18 +95,19 @@ void ResourceUpdateController::performMoreUpdates(
     // Call updateMoreTexturesNow() directly unless it's the first update
     // attempt. This ensures that we empty the update queue in a finite
     // amount of time.
-    if (m_firstUpdateAttempt) {
-        // Post a 0-delay task when no updates were left. When it runs,
-        // readyToFinalizeTextureUpdates() will be called.
-        if (!updateMoreTexturesIfEnoughTimeRemaining()) {
-            m_taskPosted = true;
-            m_thread->postTask(base::Bind(&ResourceUpdateController::onTimerFired,
-                                          m_weakFactory.GetWeakPtr()));
-        }
-
-        m_firstUpdateAttempt = false;
-    } else
+    if (!m_firstUpdateAttempt)
         updateMoreTexturesNow();
+
+    // Post a 0-delay task when no updates were left. When it runs,
+    // readyToFinalizeTextureUpdates() will be called.
+    if (!updateMoreTexturesIfEnoughTimeRemaining()) {
+        m_taskPosted = true;
+        m_thread->postTask(
+            base::Bind(&ResourceUpdateController::onTimerFired,
+                       m_weakFactory.GetWeakPtr()));
+    }
+
+    m_firstUpdateAttempt = false;
 }
 
 void ResourceUpdateController::discardUploadsToEvictedResources()
@@ -240,27 +241,38 @@ size_t ResourceUpdateController::maxBlockingUpdates() const
     return updateMoreTexturesSize() * maxBlockingUpdateIntervals;
 }
 
+base::TimeDelta ResourceUpdateController::pendingUpdateTime() const
+{
+    base::TimeDelta updateOneResourceTime =
+        updateMoreTexturesTime() / updateMoreTexturesSize();
+    return updateOneResourceTime * m_resourceProvider->numBlockingUploads();
+}
+
 bool ResourceUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
 {
-    // Blocking uploads will increase when we're too aggressive in our upload
-    // time estimate. We use a different timeout here to prevent unnecessary
-    // amounts of idle time when blocking uploads have reached the max.
-    if (m_resourceProvider->numBlockingUploads() >= maxBlockingUpdates()) {
-        m_taskPosted = true;
-        m_thread->postDelayedTask(base::Bind(&ResourceUpdateController::onTimerFired,
-                                             m_weakFactory.GetWeakPtr()),
-                                 uploaderBusyTickRate * 1000);
-        return true;
+    while (m_resourceProvider->numBlockingUploads() < maxBlockingUpdates()) {
+        if (!m_queue->fullUploadSize())
+            return false;
+
+        if (!m_timeLimit.is_null()) {
+            // Estimated completion time of all pending updates.
+            base::TimeTicks completionTime = this->now() + pendingUpdateTime();
+
+            // Time remaining based on current completion estimate.
+            base::TimeDelta timeRemaining = m_timeLimit - completionTime;
+
+            if (timeRemaining < updateMoreTexturesTime())
+                return true;
+        }
+
+        updateMoreTexturesNow();
     }
 
-    if (!m_queue->fullUploadSize())
-        return false;
-
-    bool hasTimeRemaining = m_timeLimit.is_null() ||
-        this->now() < m_timeLimit - updateMoreTexturesTime();
-    if (hasTimeRemaining)
-        updateMoreTexturesNow();
-
+    m_taskPosted = true;
+    m_thread->postDelayedTask(
+        base::Bind(&ResourceUpdateController::onTimerFired,
+                   m_weakFactory.GetWeakPtr()),
+        uploaderBusyTickRate * 1000);
     return true;
 }
 
@@ -268,10 +280,6 @@ void ResourceUpdateController::updateMoreTexturesNow()
 {
     size_t uploads = std::min(
         m_queue->fullUploadSize(), updateMoreTexturesSize());
-    m_taskPosted = true;
-    m_thread->postDelayedTask(base::Bind(&ResourceUpdateController::onTimerFired,
-                                         m_weakFactory.GetWeakPtr()),
-                              updateMoreTexturesTime().InSecondsF() / updateMoreTexturesSize() * uploads * 1000);
 
     if (!uploads)
         return;
