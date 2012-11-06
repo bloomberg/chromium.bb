@@ -2311,8 +2311,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       NSRectFill(dirtyRect);
     }
 
-    // TODO(thakis): Register for backing scale factor change events and pass
-    // that on.
     renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
         self, ScaleFactor(self));
     return;
