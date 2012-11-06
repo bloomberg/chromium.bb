@@ -71,8 +71,10 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
   store_ = new MockCloudPolicyStore();
   store_->NotifyStoreLoaded();
   EXPECT_CALL(*store_, Load());
-  return new CloudPolicyManager(scoped_ptr<CloudPolicyStore>(store_));
+  ConfigurationPolicyProvider* provider =
+      new CloudPolicyManager(scoped_ptr<CloudPolicyStore>(store_));
   Mock::VerifyAndClearExpectations(store_);
+  return provider;
 }
 
 void TestHarness::InstallEmptyPolicy() {}
