@@ -1,0 +1,92 @@
+{
+    "managed-network-repaired": {
+        "Recommended": [],
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "managed-network-unknown-fieldname": {
+        "abc": "def",
+        "Recommended": [],
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "managed-network-unknown-type": {
+        "GUID": "guid",
+        "Type": "LTE",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "managed-network-unknown-recommended": {
+        "Recommended": ["abc"],
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "managed-network-dict-recommended": {
+        "Recommended": ["Ethernet"],
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "managed-network-missing-required": {
+        "Recommended": [],
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "network-repaired": {
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "network-unknown-fieldname": {
+        "abc": "def",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "network-unknown-type": {
+        "Type": "LTE",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "network-missing-required": {
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+    "network-illegal-recommended": {
+        "Recommended": [],
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+}

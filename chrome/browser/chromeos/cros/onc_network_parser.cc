@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/onc_constants.h"
+#include "chrome/browser/chromeos/network_settings/onc_signature.h"
+#include "chrome/browser/chromeos/network_settings/onc_validator.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/net/x509_certificate_model.h"
@@ -303,6 +305,26 @@ OncNetworkParser::OncNetworkParser(const std::string& onc_blob,
     // Decryption failed, errors will be in parse_error_;
     if (!root_dict_.get())
       return;
+
+    // Validate the ONC dictionary. We are liberal and ignore unknown field
+    // names and ignore invalid field names in kRecommended arrays.
+    bool is_managed = onc_source == NetworkUIData::ONC_SOURCE_USER_POLICY ||
+        onc_source == NetworkUIData::ONC_SOURCE_DEVICE_POLICY;
+    scoped_ptr<onc::Validator> validator(
+        new onc::Validator(false, // Ignore unknown fields.
+                           false, // Ignore invalid recommended field names.
+                           true, // Fail on missing fields.
+                           is_managed));
+
+    // Unknown fields are removed from the result.
+    root_dict_ = validator->ValidateAndRepairObject(
+        &onc::kUnencryptedConfigurationSignature,
+        *root_dict_);
+
+    if (!root_dict_.get()) {
+      LOG(WARNING) << "Provided ONC is invalid and couldn't be repaired";
+      return;
+    }
 
     // At least one of NetworkConfigurations or Certificates is required.
     bool has_network_configurations =

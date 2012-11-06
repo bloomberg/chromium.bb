@@ -1,0 +1,33 @@
+{
+    "ethernet-and-vpn": {
+        "Recommended": [],
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "VPN": {
+            "Type": "L2TP-IPsec",
+            "Host": "some.host.org",
+            "IPsec": {
+                "AuthenticationType": "PSK",
+                "IKEVersion": 1,
+                "PSK": "some_preshared_key",
+                "SaveCredentials": true
+            },
+            "L2TP": {
+                "Username": "some username",
+                "Password": "some password"
+            }
+        }
+    },
+    "ethernet-and-vpn-normalized": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
+}
