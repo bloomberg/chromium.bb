@@ -102,20 +102,22 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
   const TextButton* button = static_cast<const TextButton*>(&view);
   int state = button->state();
 
-  const BorderImages* set = &normal_set_;
+  BorderImages* set = const_cast<BorderImages*>(&normal_set_);
   if (button->show_multiple_icon_states() &&
-      ((state == TextButton::BS_HOT) || (state == TextButton::BS_PUSHED)))
-    set = (state == TextButton::BS_HOT) ? &hot_set_ : &pushed_set_;
-  if (!set->top_left.isNull()) {
+      ((state == TextButton::BS_HOT) || (state == TextButton::BS_PUSHED))) {
+    set = const_cast<BorderImages*>(
+        (state == TextButton::BS_HOT) ? &hot_set_ :  &pushed_set_);
+  }
+  if (!set->IsEmpty()) {
     if (button->GetAnimation()->is_animating()) {
       // TODO(pkasting): Really this should crossfade between states so it could
       // handle the case of having a non-NULL |normal_set_|.
       canvas->SaveLayerAlpha(static_cast<uint8>(
           button->GetAnimation()->CurrentValueBetween(0, 255)));
-      set->Paint(view.GetLocalBounds(), canvas);
+      set->Paint(canvas, view.size());
       canvas->Restore();
     } else {
-      set->Paint(view.GetLocalBounds(), canvas);
+      set->Paint(canvas, view.size());
     }
   }
 }

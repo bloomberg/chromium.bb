@@ -61,18 +61,18 @@ void LabelButtonBorder::SetImages(CustomButton::ButtonState state,
 
 void LabelButtonBorder::PaintImages(const LabelButton* button,
                                     gfx::Canvas* canvas) const {
-  const BorderImages& set = images_[button->state()];
-  if (!set.top_left.isNull()) {
+  BorderImages* set = const_cast<BorderImages*>(&images_[button->state()]);
+  if (!set->IsEmpty()) {
     const ui::Animation* animation =
         static_cast<const NativeThemeDelegate*>(button)->GetThemeAnimation();
     if (animation && animation->is_animating()) {
       // TODO(msw): Crossfade between image sets; no-op for equivalent images.
       const int alpha = animation->CurrentValueBetween(0, 255);
       canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
-      set.Paint(button->GetLocalBounds(), canvas);
+      set->Paint(canvas, button->size());
       canvas->Restore();
     } else {
-      set.Paint(button->GetLocalBounds(), canvas);
+      set->Paint(canvas, button->size());
     }
   }
 }
