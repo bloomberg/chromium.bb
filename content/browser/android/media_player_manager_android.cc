@@ -167,7 +167,10 @@ void MediaPlayerManagerAndroid::OnExitFullscreen(int player_id) {
 
 void MediaPlayerManagerAndroid::OnReleaseResources(int player_id) {
   MediaPlayerBridge* player = GetPlayer(player_id);
-  if (player)
+  // Don't release the fullscreen player when tab visibility changes,
+  // it will be released when user hit the back/home button or when
+  // OnDestroyPlayer is called.
+  if (player && player_id != fullscreen_player_id_)
     player->Release();
 }
 
