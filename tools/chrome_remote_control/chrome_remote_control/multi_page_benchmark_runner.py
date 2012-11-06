@@ -26,7 +26,7 @@ def _Discover(start_dir, clazz):
   Returns:
     dict of {module_name: class}.
   """
-  top_level_dir = os.path.join(os.path.dirname(__file__), '..')
+  top_level_dir = os.path.join(start_dir, '..')
   classes = {}
   for dirpath, _, filenames in os.walk(start_dir):
     for filename in filenames:
@@ -49,13 +49,13 @@ def _Discover(start_dir, clazz):
   return classes
 
 
-def Main():
+def Main(benchmark_dir):
   """Turns a MultiPageBenchmark into a command-line program.
 
-  If args is not specified, sys.argv[1:] is used.
+  Args:
+    benchmark_dir: Path to directory containing MultiPageBenchmarks.
   """
-  start_dir = os.path.dirname(__file__)
-  benchmarks = _Discover(start_dir, multi_page_benchmark.MultiPageBenchmark)
+  benchmarks = _Discover(benchmark_dir, multi_page_benchmark.MultiPageBenchmark)
 
   # Naively find the benchmark. If we use the browser options parser, we run
   # the risk of failing to parse if we use a benchmark-specific parameter.
@@ -78,9 +78,10 @@ def Main():
     parser.print_usage()
     import page_sets # pylint: disable=F0401
     print >> sys.stderr, 'Available benchmarks:\n%s\n' % ',\n'.join(
-        benchmarks.keys())
+        sorted(benchmarks.keys()))
     print >> sys.stderr, 'Available page_sets:\n%s\n' % ',\n'.join(
-        [os.path.relpath(f) for f in page_sets.GetAllPageSetFilenames()])
+        sorted([os.path.relpath(f)
+                for f in page_sets.GetAllPageSetFilenames()]))
     sys.exit(1)
 
   ps = page_set.PageSet.FromFile(args[1])
