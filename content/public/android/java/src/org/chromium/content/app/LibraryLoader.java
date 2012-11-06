@@ -29,7 +29,8 @@ public class LibraryLoader {
 
     private static String sLibrary = null;
 
-    // This object's lock guards its assignment and also the library load.
+    // This object's lock guards sLoaded assignment and also the library load.
+    private static Object sLoadedLock = new Object();
     private static Boolean sLoaded = false;
 
     private static boolean sInitialized = false;
@@ -109,10 +110,10 @@ public class LibraryLoader {
             // Already initialized.
             return;
         }
-        synchronized(LibraryLoader.class) {
+        synchronized (sLoadedLock) {
             try {
                 while (!sLoaded) {
-                    LibraryLoader.class.wait();
+                    sLoadedLock.wait();
                 }
                 // If the UI thread blocked waiting for the task it will already
                 // have handled the library load completion, so don't duplicate that work here.
@@ -196,7 +197,7 @@ public class LibraryLoader {
         if (sLibrary == null) {
             assert false : "No library specified to load.  Call setLibraryToLoad before first.";
         }
-        synchronized(sLoaded) {
+        synchronized (sLoadedLock) {
             if (!sLoaded) {
                 assert !sInitialized;
                 Log.i(TAG, "loading: " + sLibrary);
