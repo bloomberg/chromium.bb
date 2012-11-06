@@ -310,7 +310,6 @@ void BaseFile::Close() {
     // theres not much we can do.  But we might in the future.
     file_stream_->FlushSync();
 #endif
-    file_stream_->CloseSync();
     ClearStream();
   }
 }

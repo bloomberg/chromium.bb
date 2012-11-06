@@ -71,16 +71,6 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
 }
 
 RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
-  // It is possible for |file_stream_| to be NULL if the URLRequest was closed
-  // before the temporary file creation finished.
-  if (file_stream_.get()) {
-    // We require this explicit call to Close since file_stream_ was constructed
-    // directly from a PlatformFile.
-    // Close() performs file IO. crbug.com/112474.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    file_stream_->CloseSync();
-    file_stream_.reset();
-  }
 }
 
 bool RedirectToFileResourceHandler::OnResponseStarted(

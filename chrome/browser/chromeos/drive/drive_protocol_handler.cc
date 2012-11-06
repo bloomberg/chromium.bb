@@ -77,10 +77,6 @@ std::string FixupMimeType(const std::string& type) {
   return type;
 }
 
-// Empty callback for net::FileStream::Close().
-void EmptyCompletionCallback(int) {
-}
-
 // Helper function that extracts and unescapes resource_id from drive urls
 // (drive:<resource_id>).
 bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
@@ -833,12 +829,7 @@ void DriveURLRequestJob::RecordBytesRead(int bytes_read) {
 }
 
 void DriveURLRequestJob::CloseFileStream() {
-  if (!stream_.get())
-    return;
-  stream_->Close(base::Bind(&EmptyCompletionCallback));
-  // net::FileStream::Close blocks until stream is closed, so it's safe to
-  // release the pointer here.
-  stream_.reset(NULL);
+  stream_.reset();
 }
 
 void DriveURLRequestJob::NotifySuccess() {

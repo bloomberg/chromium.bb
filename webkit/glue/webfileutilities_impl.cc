@@ -118,16 +118,16 @@ long long WebFileUtilitiesImpl::seekFile(base::PlatformFile handle,
                                          int origin) {
   if (handle == base::kInvalidPlatformFileValue)
     return -1;
-  net::FileStream file_stream(handle, 0, NULL);
-  return file_stream.SeekSync(static_cast<net::Whence>(origin), offset);
+  return base::SeekPlatformFile(handle,
+                                static_cast<base::PlatformFileWhence>(origin),
+                                offset);
 }
 
 bool WebFileUtilitiesImpl::truncateFile(base::PlatformFile handle,
                                         long long offset) {
   if (handle == base::kInvalidPlatformFileValue || offset < 0)
     return false;
-  net::FileStream file_stream(handle, base::PLATFORM_FILE_WRITE, NULL);
-  return file_stream.Truncate(offset) >= 0;
+  return base::TruncatePlatformFile(handle, offset);
 }
 
 int WebFileUtilitiesImpl::readFromFile(base::PlatformFile handle,
@@ -135,10 +135,7 @@ int WebFileUtilitiesImpl::readFromFile(base::PlatformFile handle,
                                        int length) {
   if (handle == base::kInvalidPlatformFileValue || !data || length <= 0)
     return -1;
-  std::string buffer;
-  buffer.resize(length);
-  net::FileStream file_stream(handle, base::PLATFORM_FILE_READ, NULL);
-  return file_stream.ReadSync(data, length);
+  return base::ReadPlatformFileCurPosNoBestEffort(handle, data, length);
 }
 
 int WebFileUtilitiesImpl::writeToFile(base::PlatformFile handle,
@@ -146,8 +143,7 @@ int WebFileUtilitiesImpl::writeToFile(base::PlatformFile handle,
                                       int length) {
   if (handle == base::kInvalidPlatformFileValue || !data || length <= 0)
     return -1;
-  net::FileStream file_stream(handle, base::PLATFORM_FILE_WRITE, NULL);
-  return file_stream.WriteSync(data, length);
+  return base::WritePlatformFileCurPosNoBestEffort(handle, data, length);
 }
 
 }  // namespace webkit_glue

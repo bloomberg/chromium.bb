@@ -229,7 +229,6 @@ bool ZipReader::ExtractCurrentEntryToFilePath(
     }
   }
 
-  stream.CloseSync();
   unzCloseCurrentFile(zip_file_);
   return success;
 }

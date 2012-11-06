@@ -97,8 +97,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
       : bookmarks_(bookmarks),
         path_(path),
         favicons_map_(favicons_map),
-        observer_(observer),
-        file_stream_(NULL) {
+        observer_(observer) {
   }
 
   // Writing bookmarks and favicons data to file.
@@ -149,7 +148,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     Write(kFolderChildrenEnd);
     Write(kNewline);
     // File stream close is forced so that unit test could read it.
-    file_stream_.CloseSync();
+    file_stream_.reset();
 
     NotifyOnFinish();
   }
@@ -172,8 +171,9 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
   // Opens the file, returning true on success.
   bool OpenFile() {
+    file_stream_.reset(new net::FileStream(NULL));
     int flags = base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE;
-    return (file_stream_.OpenSync(path_, flags) == net::OK);
+    return (file_stream_->OpenSync(path_, flags) == net::OK);
   }
 
   // Increments the indent.
@@ -197,7 +197,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   // Writes raw text out returning true on success. This does not escape
   // the text in anyway.
   bool Write(const std::string& text) {
-    size_t wrote = file_stream_.WriteSync(text.c_str(), text.length());
+    size_t wrote = file_stream_->WriteSync(text.c_str(), text.length());
     bool result = (wrote == text.length());
     DCHECK(result);
     return result;
@@ -374,7 +374,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   BookmarksExportObserver* observer_;
 
   // File we're writing to.
-  net::FileStream file_stream_;
+  scoped_ptr<net::FileStream> file_stream_;
 
   // How much we indent when writing a bookmark/folder. This is modified
   // via IncrementIndent and DecrementIndent.

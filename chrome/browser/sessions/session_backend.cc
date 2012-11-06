@@ -349,9 +349,10 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
 
 SessionBackend::~SessionBackend() {
   if (current_session_file_.get()) {
-    // Close() performs file IO. crbug.com/112512.
+    // Destructor performs file IO because file is open in sync mode.
+    // crbug.com/112512.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    current_session_file_->CloseSync();
+    current_session_file_.reset();
   }
 }
 

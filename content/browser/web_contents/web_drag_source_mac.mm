@@ -86,9 +86,6 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   DCHECK(file_stream);
   file_stream->WriteSync(drop_data.file_contents.data(),
                          drop_data.file_contents.length());
-
-  if (file_stream)
-    file_stream->CloseSync();
 }
 
 }  // namespace
