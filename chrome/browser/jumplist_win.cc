@@ -486,7 +486,8 @@ bool UpdateJumpList(const wchar_t* app_id,
 }  // namespace
 
 JumpList::JumpList()
-    : profile_(NULL),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      profile_(NULL),
       handle_(NULL) {
 }
 
@@ -547,9 +548,8 @@ void JumpList::Observe(int type,
       history::TopSites* top_sites = profile_->GetTopSites();
       if (top_sites) {
         top_sites->GetMostVisitedURLs(
-            &topsites_consumer_,
             base::Bind(&JumpList::OnMostVisitedURLsAvailable,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
       }
       break;
     }

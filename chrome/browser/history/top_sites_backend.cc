@@ -5,6 +5,7 @@
 #include "chrome/browser/history/top_sites_backend.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -68,16 +69,13 @@ void TopSitesBackend::ResetDatabase() {
       base::Bind(&TopSitesBackend::ResetDatabaseOnDBThread, this, db_path_));
 }
 
-TopSitesBackend::Handle TopSitesBackend::DoEmptyRequest(
-    CancelableRequestConsumerBase* consumer,
-    const EmptyRequestCallback& callback) {
-  EmptyRequestRequest* request = new EmptyRequestRequest(callback);
-  AddRequest(request, consumer);
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&TopSitesBackend::DoEmptyRequestOnDBThread, this,
-                 make_scoped_refptr(request)));
-  return request->handle();
+void TopSitesBackend::DoEmptyRequest(const base::Closure& reply,
+                                     CancelableTaskTracker* tracker) {
+  tracker->PostTaskAndReply(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      FROM_HERE,
+      base::Bind(&base::DoNothing),
+      reply);
 }
 
 TopSitesBackend::~TopSitesBackend() {
@@ -140,11 +138,6 @@ void TopSitesBackend::ResetDatabaseOnDBThread(const FilePath& file_path) {
   file_util::Delete(db_path_, false);
   db_.reset(new TopSitesDatabase());
   InitDBOnDBThread(db_path_);
-}
-
-void TopSitesBackend::DoEmptyRequestOnDBThread(
-    scoped_refptr<EmptyRequestRequest> request) {
-  request->ForwardResult(request->handle());
 }
 
 }  // namespace history

@@ -1372,9 +1372,7 @@ class AutomationMouseEventProcessor : public content::RenderViewHostObserver,
 
 class NTPInfoObserver : public content::NotificationObserver {
  public:
-  NTPInfoObserver(AutomationProvider* automation,
-                  IPC::Message* reply_message,
-                  CancelableRequestConsumer* consumer);
+  NTPInfoObserver(AutomationProvider* automation, IPC::Message* reply_message);
   virtual ~NTPInfoObserver();
 
   // Overridden from content::NotificationObserver:
@@ -1388,7 +1386,6 @@ class NTPInfoObserver : public content::NotificationObserver {
 
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  CancelableRequestConsumer* consumer_;
   CancelableRequestProvider::Handle request_;
   scoped_ptr<base::DictionaryValue> ntp_info_;
   history::TopSites* top_sites_;

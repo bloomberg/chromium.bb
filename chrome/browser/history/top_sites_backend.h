@@ -9,7 +9,6 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 
 class CancelableTaskTracker;
@@ -22,9 +21,7 @@ class TopSitesDatabase;
 // Service used by TopSites to have db interaction happen on the DB thread.  All
 // public methods are invoked on the ui thread and get funneled to the DB
 // thread.
-class TopSitesBackend
-    : public base::RefCountedThreadSafe<TopSitesBackend>,
-      public CancelableRequestProvider {
+class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
  public:
   // The boolean parameter indicates if the DB existed on disk or needs to be
   // migrated.
@@ -55,15 +52,11 @@ class TopSitesBackend
   // Deletes the database and recreates it.
   void ResetDatabase();
 
-  typedef base::Callback<void(Handle)> EmptyRequestCallback;
-  typedef CancelableRequest<TopSitesBackend::EmptyRequestCallback>
-      EmptyRequestRequest;
-
   // Schedules a request that does nothing on the DB thread, but then notifies
-  // the callback on the calling thread. This is used to make sure the db has
+  // the the calling thread with a reply. This is used to make sure the db has
   // finished processing a request.
-  Handle DoEmptyRequest(CancelableRequestConsumerBase* consumer,
-                        const EmptyRequestCallback& callback);
+  void DoEmptyRequest(const base::Closure& reply,
+                      CancelableTaskTracker* tracker);
 
  private:
   friend class base::RefCountedThreadSafe<TopSitesBackend>;
@@ -91,9 +84,6 @@ class TopSitesBackend
 
   // Resets the database.
   void ResetDatabaseOnDBThread(const FilePath& file_path);
-
-  // Notifies the request.
-  void DoEmptyRequestOnDBThread(scoped_refptr<EmptyRequestRequest> request);
 
   FilePath db_path_;
 

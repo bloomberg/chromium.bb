@@ -4553,7 +4553,7 @@ void TestingAutomationProvider::GetNTPInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   // This observer will delete itself.
-  new NTPInfoObserver(this, reply_message, &consumer_);
+  new NTPInfoObserver(this, reply_message);
 }
 
 void TestingAutomationProvider::RemoveNTPMostVisitedThumbnail(

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_TOP_SITES_EXTENSION_API_H_
 #define CHROME_BROWSER_HISTORY_TOP_SITES_EXTENSION_API_H_
 
-#include "chrome/browser/common/cancelable_request.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history_types.h"
 
@@ -22,10 +22,10 @@ class GetTopSitesFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void OnMostVisitedURLsAvailable(
-      const history::MostVisitedURLList& data);
+  void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
 
-  CancelableRequestConsumer topsites_consumer_;
+  // For callbacks may be run after destruction.
+  base::WeakPtrFactory<GetTopSitesFunction> weak_ptr_factory_;
 };
 
 #endif  // CHROME_BROWSER_HISTORY_TOP_SITES_EXTENSION_API_H_

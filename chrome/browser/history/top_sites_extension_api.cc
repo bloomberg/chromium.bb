@@ -10,7 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 
-GetTopSitesFunction::GetTopSitesFunction() {}
+GetTopSitesFunction::GetTopSitesFunction()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
 GetTopSitesFunction::~GetTopSitesFunction() {}
 
@@ -20,8 +21,8 @@ bool GetTopSitesFunction::RunImpl() {
     return false;
 
   ts->GetMostVisitedURLs(
-      &topsites_consumer_,
-      base::Bind(&GetTopSitesFunction::OnMostVisitedURLsAvailable, this));
+      base::Bind(&GetTopSitesFunction::OnMostVisitedURLsAvailable,
+                 weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 

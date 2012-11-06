@@ -27,7 +27,6 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
     // before we get to the conditional below. Otherwise, we'll run a nested
     // message loop until the async callback.
     top_sites->GetMostVisitedURLs(
-        &consumer_,
         base::Bind(&TopSitesExtensionTest::OnTopSitesAvailable, this));
 
     if (!top_sites_inited_) {
@@ -47,7 +46,6 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
     top_sites_inited_ = true;
   }
 
-  CancelableRequestConsumer consumer_;
   bool top_sites_inited_;
   bool waiting_;
 };

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history.h"
@@ -200,10 +201,11 @@ class JumpList : public TabRestoreServiceObserver,
   friend class base::RefCountedThreadSafe<JumpList>;
   ~JumpList();
 
+  // For callbacks may be run after destruction.
+  base::WeakPtrFactory<JumpList> weak_ptr_factory_;
+
   // Our consumers for HistoryService.
-  CancelableRequestConsumer most_visited_consumer_;
   CancelableRequestConsumer favicon_consumer_;
-  CancelableRequestConsumer topsites_consumer_;
 
   // The Profile object is used to listen for events
   Profile* profile_;

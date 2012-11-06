@@ -110,7 +110,9 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
   ui::OwnedWidgetGtk history_menu_;
 
   history::TopSites* top_sites_;
-  CancelableRequestConsumer top_sites_consumer_;
+
+  // For callbacks may be run after destruction.
+  base::WeakPtrFactory<GlobalHistoryMenu> weak_ptr_factory_;
 
   TabRestoreService* tab_restore_service_;  // weak
 

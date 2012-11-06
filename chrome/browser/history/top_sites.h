@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -51,8 +52,7 @@ class TopSitesTest;
 // db using TopSitesBackend.
 class TopSites
     : public base::RefCountedThreadSafe<TopSites>,
-      public content::NotificationObserver,
-      public CancelableRequestProvider {
+      public content::NotificationObserver {
  public:
   explicit TopSites(Profile* profile);
 
@@ -66,16 +66,16 @@ class TopSites
                         const gfx::Image& thumbnail,
                         const ThumbnailScore& score);
 
-  // Callback for GetMostVisitedURLs.
-  typedef base::Callback<void(const MostVisitedURLList&)> GetTopSitesCallback;
-  typedef std::set<scoped_refptr<CancelableRequest<GetTopSitesCallback> > >
-      PendingCallbackSet;
+  typedef base::Callback<void(const MostVisitedURLList&)>
+      GetMostVisitedURLsCallback;
+  typedef std::vector<GetMostVisitedURLsCallback> PendingCallbacks;
 
-  // Returns a list of most visited URLs via a callback.
-  // This may be invoked on any thread.
-  // NOTE: the callback is called immediately if we have the data cached.
-  void GetMostVisitedURLs(CancelableRequestConsumer* consumer,
-                          const GetTopSitesCallback& callback);
+  // Returns a list of most visited URLs via a callback. This may be invoked on
+  // any thread.
+  // NOTE: the callback is called immediately if we have the data cached. If
+  // data is not available yet, callback will later be posted to the thread
+  // called this function.
+  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback);
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   // This may be invoked on any thread.
@@ -265,12 +265,6 @@ class TopSites
   // Uses num_urls_changed
   base::TimeDelta GetUpdateDelay();
 
-  // Executes all of the callbacks in |pending_callbacks|. This is used after
-  // we finish loading if any requests came in before we loaded.
-  static void ProcessPendingCallbacks(
-      const PendingCallbackSet& pending_callbacks,
-      const MostVisitedURLList& urls);
-
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -298,8 +292,7 @@ class TopSites
 
   // Callback after TopSitesBackend has finished migration. This tells history
   // to finish it's side of migration (nuking thumbnails on disk).
-  void OnHistoryMigrationWrittenToDisk(
-      CancelableRequestProvider::Handle handle);
+  void OnHistoryMigrationWrittenToDisk();
 
   // Callback from TopSites with the top sites/thumbnails.
   void OnGotMostVisitedThumbnails(
@@ -328,7 +321,6 @@ class TopSites
   // Need a separate consumer for each CancelableRequestProvider we interact
   // with (HistoryService and TopSitesBackend).
   CancelableRequestConsumer history_consumer_;
-  CancelableRequestConsumer top_sites_consumer_;
   CancelableTaskTracker cancelable_task_tracker_;
 
   // Timer that asks history for the top sites. This is used to make sure our
@@ -343,10 +335,10 @@ class TopSites
   // The number of URLs changed on the last update.
   size_t last_num_urls_changed_;
 
-  // The map of requests for the top sites list. Can only be
-  // non-empty at startup. After we read the top sites from the DB, we'll
-  // always have a cached list.
-  PendingCallbackSet pending_callbacks_;
+  // The pending requests for the top sites list. Can only be non-empty at
+  // startup. After we read the top sites from the DB, we'll always have a
+  // cached list and be able to run callbacks immediately.
+  PendingCallbacks pending_callbacks_;
 
   // Stores thumbnails for unknown pages. When SetPageThumbnail is
   // called, if we don't know about that URL yet and we don't have

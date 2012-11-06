@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -95,6 +96,7 @@ GlobalHistoryMenu::GlobalHistoryMenu(Browser* browser)
     : browser_(browser),
       profile_(browser_->profile()),
       top_sites_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       tab_restore_service_(NULL) {
 }
 
@@ -134,9 +136,8 @@ void GlobalHistoryMenu::GetTopSitesData() {
   DCHECK(top_sites_);
 
   top_sites_->GetMostVisitedURLs(
-      &top_sites_consumer_,
       base::Bind(&GlobalHistoryMenu::OnTopSitesReceived,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GlobalHistoryMenu::OnTopSitesReceived(

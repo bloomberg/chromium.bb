@@ -12,7 +12,9 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_util.h"
+#include "base/task_runner.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/history/history_backend.h"
@@ -52,6 +54,20 @@ using content::BrowserThread;
 using content::NavigationController;
 
 namespace history {
+
+namespace {
+
+void RunOrPostGetMostVisitedURLsCallback(
+    base::TaskRunner* task_runner,
+    const TopSites::GetMostVisitedURLsCallback& callback,
+    const MostVisitedURLList& urls) {
+  if (task_runner->RunsTasksOnCurrentThread())
+    callback.Run(urls);
+  else
+    task_runner->PostTask(FROM_HERE, base::Bind(callback, urls));
+}
+
+}  // namespace
 
 // How many top sites to store in the cache.
 static const size_t kTopSitesNumber = 20;
@@ -267,27 +283,23 @@ bool TopSites::SetPageThumbnail(const GURL& url,
   return SetPageThumbnailEncoded(url, thumbnail_data, score);
 }
 
-void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
-                                  const GetTopSitesCallback& callback) {
-  // WARNING: this may be invoked on any thread.
-  scoped_refptr<CancelableRequest<GetTopSitesCallback> > request(
-      new CancelableRequest<GetTopSitesCallback>(callback));
-  // This ensures cancellation of requests when either the consumer or the
-  // provider is deleted. Deletion of requests is also guaranteed.
-  AddRequest(request, consumer);
+// WARNING: this function may be invoked on any thread.
+void TopSites::GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback) {
   MostVisitedURLList filtered_urls;
   {
     base::AutoLock lock(lock_);
     if (!loaded_) {
-      // A request came in before we finished loading. Put the request in
-      // pending_callbacks_ and we'll notify it when we finish loading.
-      pending_callbacks_.insert(request);
+      // A request came in before we finished loading. Store the callback and
+      // we'll run it on current thread when we finish loading.
+      pending_callbacks_.push_back(
+          base::Bind(&RunOrPostGetMostVisitedURLsCallback,
+                     base::MessageLoopProxy::current(),
+                     callback));
       return;
     }
-
     filtered_urls = thread_safe_cache_->top_sites();
   }
-  request->ForwardResult(filtered_urls);
+  callback.Run(filtered_urls);
 }
 
 bool TopSites::GetPageThumbnail(const GURL& url,
@@ -386,9 +398,9 @@ void TopSites::FinishHistoryMigration(const ThumbnailMigration& data) {
   // that notifies us when done. When done we'll know everything was written and
   // we can tell history to finish its part of migration.
   backend_->DoEmptyRequest(
-      &top_sites_consumer_,
       base::Bind(&TopSites::OnHistoryMigrationWrittenToDisk,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      &cancelable_task_tracker_);
 }
 
 void TopSites::HistoryLoaded() {
@@ -479,7 +491,6 @@ void TopSites::Shutdown() {
   // invoked Shutdown (this could happen if we have a pending request and
   // Shutdown is invoked).
   history_consumer_.CancelAllRequests();
-  top_sites_consumer_.CancelAllRequests();
   backend_->Shutdown();
 }
 
@@ -710,19 +721,6 @@ base::TimeDelta TopSites::GetUpdateDelay() {
   return base::TimeDelta::FromMinutes(minutes);
 }
 
-// static
-void TopSites::ProcessPendingCallbacks(
-    const PendingCallbackSet& pending_callbacks,
-    const MostVisitedURLList& urls) {
-  PendingCallbackSet::const_iterator i;
-  for (i = pending_callbacks.begin();
-       i != pending_callbacks.end(); ++i) {
-    scoped_refptr<CancelableRequest<GetTopSitesCallback> > request = *i;
-    if (!request->canceled())
-      request->ForwardResult(urls);
-  }
-}
-
 void TopSites::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
@@ -836,7 +834,7 @@ void TopSites::MoveStateToLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   MostVisitedURLList filtered_urls;
-  PendingCallbackSet pending_callbacks;
+  PendingCallbacks pending_callbacks;
   {
     base::AutoLock lock(lock_);
 
@@ -852,7 +850,8 @@ void TopSites::MoveStateToLoaded() {
     }
   }
 
-  ProcessPendingCallbacks(pending_callbacks, filtered_urls);
+  for (size_t i = 0; i < pending_callbacks.size(); i++)
+    pending_callbacks[i].Run(filtered_urls);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOP_SITES_LOADED,
@@ -890,7 +889,7 @@ void TopSites::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
   timer_.Start(FROM_HERE, delta, this, &TopSites::TimerFired);
 }
 
-void TopSites::OnHistoryMigrationWrittenToDisk(TopSitesBackend::Handle handle) {
+void TopSites::OnHistoryMigrationWrittenToDisk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!profile_)

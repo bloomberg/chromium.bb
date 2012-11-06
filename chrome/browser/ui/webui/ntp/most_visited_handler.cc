@@ -47,7 +47,8 @@
 using content::UserMetricsAction;
 
 MostVisitedHandler::MostVisitedHandler()
-    : got_first_most_visited_request_(false),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      got_first_most_visited_request_(false),
       most_visited_viewed_(false),
       user_action_logged_(false) {
 }
@@ -153,9 +154,8 @@ void MostVisitedHandler::StartQueryForMostVisited() {
   history::TopSites* ts = Profile::FromWebUI(web_ui())->GetTopSites();
   if (ts) {
     ts->GetMostVisitedURLs(
-        &topsites_consumer_,
         base::Bind(&MostVisitedHandler::OnMostVisitedUrlsAvailable,
-                   base::Unretained(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

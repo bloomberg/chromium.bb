@@ -1943,13 +1943,10 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
 
 }  // namespace
 
-NTPInfoObserver::NTPInfoObserver(
-    AutomationProvider* automation,
-    IPC::Message* reply_message,
-    CancelableRequestConsumer* consumer)
+NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
+                                 IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
-      consumer_(consumer),
       request_(0),
       ntp_info_(new DictionaryValue) {
   top_sites_ = automation_->profile()->GetTopSites();
@@ -2044,7 +2041,6 @@ void NTPInfoObserver::Observe(int type,
           details);
     if (request_ == *request_details.ptr()) {
       top_sites_->GetMostVisitedURLs(
-          consumer_,
           base::Bind(&NTPInfoObserver::OnTopSitesReceived,
                      base::Unretained(this)));
     }
