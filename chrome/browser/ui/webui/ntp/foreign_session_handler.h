@@ -31,11 +31,15 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  static void OpenForeignSession(content::WebUI* web_ui,
-                                 const std::string& session_string_value,
-                                 SessionID::id_type window_num,
-                                 SessionID::id_type tab_id,
-                                 const WindowOpenDisposition& disposition);
+  static void OpenForeignSessionTab(content::WebUI* web_ui,
+                                    const std::string& session_string_value,
+                                    SessionID::id_type window_num,
+                                    SessionID::id_type tab_id,
+                                    const WindowOpenDisposition& disposition);
+
+  static void OpenForeignSessionWindows(content::WebUI* web_ui,
+                                        const std::string& session_string_value,
+                                        SessionID::id_type window_num);
 
   // Helper method to create JSON compatible objects from Session objects.
   static bool SessionTabToValue(const SessionTab& tab,

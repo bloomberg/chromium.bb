@@ -135,11 +135,15 @@ void OtherDeviceMenuController::ExecuteCommand(int command_id,
   int window_id = browser_sync::ForeignSessionHandler::kInvalidId;
   tab_data->GetInteger("windowId", &window_id);
 
-  WindowOpenDisposition disposition =
-      chrome::DispositionFromEventFlags(event_flags);
-  browser_sync::ForeignSessionHandler::OpenForeignSession(
-      web_ui_, session_id_, window_id, tab_id, disposition);
-
+  if (tab_id != browser_sync::ForeignSessionHandler::kInvalidId) {
+    WindowOpenDisposition disposition =
+        chrome::DispositionFromEventFlags(event_flags);
+    browser_sync::ForeignSessionHandler::OpenForeignSessionTab(
+        web_ui_, session_id_, window_id, tab_id, disposition);
+  } else {
+    browser_sync::ForeignSessionHandler::OpenForeignSessionWindows(
+        web_ui_, session_id_, window_id);
+  }
   ItemType itemType = tab_id ==
       browser_sync::ForeignSessionHandler::kInvalidId ? OPEN_ALL : TAB;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.OtherDeviceMenu",

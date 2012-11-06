@@ -62,33 +62,39 @@ void ForeignSessionHandler::RegisterUserPrefs(PrefService* prefs) {
 }
 
 // static
-void ForeignSessionHandler::OpenForeignSession(
+void ForeignSessionHandler::OpenForeignSessionTab(
     content::WebUI* web_ui,
     const std::string& session_string_value,
     SessionID::id_type window_num,
     SessionID::id_type tab_id,
     const WindowOpenDisposition& disposition) {
-
   SessionModelAssociator* associator = GetModelAssociator(web_ui);
   if (!associator)
     return;
 
-  if (tab_id != kInvalidId) {
-    // We don't actually care about |window_num|, this is just a sanity check.
-    DCHECK_LT(kInvalidId, window_num);
-    const SessionTab* tab;
-    if (!associator->GetForeignTab(session_string_value, tab_id, &tab)) {
-      LOG(ERROR) << "Failed to load foreign tab.";
-      return;
-    }
-    if (tab->navigations.empty()) {
-      LOG(ERROR) << "Foreign tab no longer has valid navigations.";
-      return;
-    }
-    SessionRestore::RestoreForeignSessionTab(
-        web_ui->GetWebContents(), *tab, disposition);
+  // We don't actually care about |window_num|, this is just a sanity check.
+  DCHECK_LT(kInvalidId, window_num);
+  const SessionTab* tab;
+  if (!associator->GetForeignTab(session_string_value, tab_id, &tab)) {
+    LOG(ERROR) << "Failed to load foreign tab.";
     return;
   }
+  if (tab->navigations.empty()) {
+    LOG(ERROR) << "Foreign tab no longer has valid navigations.";
+    return;
+  }
+  SessionRestore::RestoreForeignSessionTab(
+      web_ui->GetWebContents(), *tab, disposition);
+}
+
+// static
+void ForeignSessionHandler::OpenForeignSessionWindows(
+    content::WebUI* web_ui,
+    const std::string& session_string_value,
+    SessionID::id_type window_num) {
+  SessionModelAssociator* associator = GetModelAssociator(web_ui);
+  if (!associator)
+    return;
 
   std::vector<const SessionWindow*> windows;
   // Note: we don't own the ForeignSessions themselves.
@@ -306,11 +312,14 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
     return;
   }
 
-  WindowOpenDisposition disposition =
-      web_ui_util::GetDispositionFromClick(args, 3);
-
-  OpenForeignSession(
-      web_ui(), session_string_value, window_num, tab_id, disposition);
+  if (tab_id != kInvalidId) {
+    WindowOpenDisposition disposition =
+        web_ui_util::GetDispositionFromClick(args, 3);
+    OpenForeignSessionTab(
+        web_ui(), session_string_value, window_num, tab_id, disposition);
+  } else {
+    OpenForeignSessionWindows(web_ui(), session_string_value, window_num);
+  }
 }
 
 void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
