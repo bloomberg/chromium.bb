@@ -461,14 +461,5 @@ hooks = [
 ],
     'pattern':
          '.'
-},
-    {
-    'action':
-         [
-    'python',
-    'src/build/landmines.py'
-],
-    'pattern':
-         '.'
 }
 ]
