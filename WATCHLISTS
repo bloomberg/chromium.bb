@@ -113,6 +113,9 @@
     'chromeos': {
       'filepath': 'chromeos/',
     },
+    'chromeos_calculator': {
+      'filepath': 'chrome/common/extensions/docs/examples/apps/calculator/',
+    },
     'chromeos_login': {
       'filepath': 'chrome/browser/chromeos/login/|'\
                   'chrome/browser/ui/webui/chromeos/login/|'\
@@ -510,6 +513,7 @@
     'chromedriver': ['kkania@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
                   'stevenjb+watch@chromium.org'],
+    'chromeos_calculator' : ['dharcourt@chromium.org'],
     'chromeos_net' : ['gauravsh+watch@chromium.org',
                       'gspencer+watch@chromium.org',
                       'stevenjb+watch@chromium.org'],
