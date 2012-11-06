@@ -160,6 +160,7 @@ void DriveMetadataStore::DidInitialize(const InitializationCallback& callback,
 
   largest_changestamp_ = contents->largest_changestamp;
   metadata_map_.swap(contents->metadata_map);
+  sync_root_directory_resource_id_ = contents->sync_root_directory_resource_id;
   batch_sync_origins_.swap(contents->batch_sync_origins);
   incremental_sync_origins_.swap(contents->incremental_sync_origins);
   // |largest_changestamp_| is set to 0 for a fresh empty database.
