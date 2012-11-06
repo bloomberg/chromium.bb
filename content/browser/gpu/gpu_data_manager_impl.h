@@ -105,6 +105,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, SoftwareRendering2);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuInfoUpdate);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
+                           NoGpuInfoUpdateWithSoftwareRendering);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
                            GPUVideoMemoryUsageStatsUpdate);
 
   GpuDataManagerImpl();

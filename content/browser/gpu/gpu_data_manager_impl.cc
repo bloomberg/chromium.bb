@@ -185,6 +185,10 @@ bool GpuDataManagerImpl::IsCompleteGpuInfoAvailable() const {
 }
 
 void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
+  // No further update of gpu_info if falling back to software renderer.
+  if (software_rendering_)
+    return;
+
   GetContentClient()->SetGpuInfo(gpu_info);
 
   if (gpu_blacklist_.get()) {

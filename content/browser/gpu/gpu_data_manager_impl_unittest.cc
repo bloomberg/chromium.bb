@@ -224,14 +224,53 @@ TEST_F(GpuDataManagerImplTest, GpuInfoUpdate) {
   TestObserver observer;
   manager->AddObserver(&observer);
 
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
   EXPECT_FALSE(observer.gpu_info_updated());
 
   GPUInfo gpu_info;
   manager->UpdateGpuInfo(gpu_info);
-
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
   EXPECT_TRUE(observer.gpu_info_updated());
+
+  delete manager;
+}
+
+TEST_F(GpuDataManagerImplTest, NoGpuInfoUpdateWithSoftwareRendering) {
+  GpuDataManagerImpl* manager = new GpuDataManagerImpl();
+  ASSERT_TRUE(manager);
+
+  manager->BlacklistCard();
+  const FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
+  manager->RegisterSwiftShaderPath(test_path);
+  EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+
+  TestObserver observer;
+  manager->AddObserver(&observer);
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+  EXPECT_FALSE(observer.gpu_info_updated());
+
+  GPUInfo gpu_info;
+  manager->UpdateGpuInfo(gpu_info);
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+  EXPECT_FALSE(observer.gpu_info_updated());
 
   delete manager;
 }
@@ -243,13 +282,18 @@ TEST_F(GpuDataManagerImplTest, GPUVideoMemoryUsageStatsUpdate) {
   TestObserver observer;
   manager->AddObserver(&observer);
 
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
   EXPECT_FALSE(observer.video_memory_usage_stats_updated());
 
   GPUVideoMemoryUsageStats vram_stats;
   manager->UpdateVideoMemoryUsageStats(vram_stats);
-
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
   EXPECT_TRUE(observer.video_memory_usage_stats_updated());
 
   delete manager;
