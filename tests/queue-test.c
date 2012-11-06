@@ -66,6 +66,94 @@ static const struct wl_registry_listener registry_listener = {
 	NULL
 };
 
+/* Test that destroying a proxy object doesn't result in any more
+ * callback being invoked, even though were many queued. */
+static int
+client_test_proxy_destroy(void)
+{
+	struct wl_display *display;
+	struct wl_registry *registry;
+	int counter = 0;
+
+	display = wl_display_connect(SOCKET_NAME);
+	client_assert(display);
+
+	registry = wl_display_get_registry(display);
+	wl_registry_add_listener(registry, &registry_listener,
+				 &counter);
+	wl_display_roundtrip(display);
+
+	client_assert(counter == 1);
+
+	wl_display_disconnect(display);
+
+	return 0;
+}
+
+struct multiple_queues_state {
+	struct wl_display *display;
+	struct wl_callback* callback2;
+	bool done;
+};
+
+static void
+sync_callback(void *data, struct wl_callback *callback, uint32_t serial)
+{
+	struct multiple_queues_state *state = data;
+
+	state->done = true;
+	wl_callback_destroy(callback);
+
+	wl_display_dispatch_pending(state->display);
+
+	wl_callback_destroy(state->callback2);
+}
+
+static const struct wl_callback_listener sync_listener = {
+	sync_callback
+};
+
+/* Test that when receiving the first of two synchronization
+ * callback events, destroying the second one doesn't cause any
+ * errors even if the delete_id event is handled out of order. */
+static int
+client_test_multiple_queues(void)
+{
+	struct wl_event_queue *queue;
+	struct wl_callback *callback1;
+	struct multiple_queues_state state;
+	int ret = 0;
+
+	state.display = wl_display_connect(SOCKET_NAME);
+	client_assert(state.display);
+
+	/* Make the current thread the display thread. This is because
+	 * wl_display_dispatch_queue() will only read the display fd if
+	 * the main display thread has been set. */
+	wl_display_dispatch_pending(state.display);
+
+	queue = wl_display_create_queue(state.display);
+	client_assert(queue);
+
+	state.done = false;
+	callback1 = wl_display_sync(state.display);
+	wl_callback_add_listener(callback1, &sync_listener, &state);
+	wl_proxy_set_queue((struct wl_proxy *) callback1, queue);
+
+	state.callback2 = wl_display_sync(state.display);
+	wl_callback_add_listener(state.callback2, &sync_listener, NULL);
+	wl_proxy_set_queue((struct wl_proxy *) state.callback2, queue);
+
+	wl_display_flush(state.display);
+
+	while (!state.done && !ret)
+		ret = wl_display_dispatch_queue(state.display, queue);
+
+	wl_display_disconnect(state.display);
+
+	return ret == -1 ? -1 : 0;
+}
+
 static void
 client_alarm_handler(int sig)
 {
@@ -83,9 +171,6 @@ client_sigsegv_handler(int sig)
 static int
 client_main(int fd)
 {
-	struct wl_display *display;
-	struct wl_registry *registry;
-	int counter = 0;
 	bool cont = false;
 
 	signal(SIGSEGV, client_sigsegv_handler);
@@ -101,16 +186,15 @@ client_main(int fd)
 	if (!cont)
 		return EXIT_FAILURE;
 
-	display = wl_display_connect(SOCKET_NAME);
-	client_assert(display);
+	if (client_test_proxy_destroy() != 0) {
+		fprintf(stderr, "proxy destroy test failed\n");
+		return EXIT_FAILURE;
+	}
 
-	registry = wl_display_get_registry(display);
-	wl_registry_add_listener(registry, &registry_listener, &counter);
-	wl_display_roundtrip(display);
-
-	client_assert(counter == 1);
-
-	wl_display_disconnect(display);
+	if (client_test_multiple_queues() != 0) {
+		fprintf(stderr, "multiple proxy test failed\n");
+		return EXIT_FAILURE;
+	}
 
 	return EXIT_SUCCESS;
 }
