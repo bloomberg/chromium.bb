@@ -564,25 +564,14 @@ DirectoryModel.prototype.findIndexByName_ = function(name) {
 DirectoryModel.prototype.renameEntry = function(entry, newName,
                                                 errorCallback,
                                                 opt_successCallback) {
-  var self = this;
   var currentDirPath = this.getCurrentDirPath();
-  function onSuccess(newEntry) {
-    self.currentDirContents_.prefetchMetadata([newEntry], function() {
-      // Do not change anything or call the callback if current
-      // directory changed.
-      if (currentDirPath != self.getCurrentDirPath())
-        return;
-
-      var index = self.findIndexByName_(entry.name);
-      if (index >= 0)
-        self.getFileList().splice(index, 1, newEntry);
-      self.selectEntry(newEntry.name);
-      // If the entry doesn't exist in the list it mean that it updated from
-      // outside (probably by directory rescan).
-      if (opt_successCallback)
+  var onSuccess = function(newEntry) {
+    this.currentDirContents_.prefetchMetadata([newEntry], function() {
+      // Do not call the callback if current directory has changed.
+      if (currentDirPath == this.getCurrentDirPath() && opt_successCallback)
         opt_successCallback();
-    });
-  }
+    }.bind(this));
+  }.bind(this);
 
   function onParentFound(parentEntry) {
     entry.moveTo(parentEntry, newName, onSuccess, errorCallback);
