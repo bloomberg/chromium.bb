@@ -25,7 +25,7 @@ if "%1" == "force" (
 
 :GIT_CHECK
 :: If the batch file exists, skip the git check.
-if not exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%" goto :GIT_INSTALL
+if exist "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%" goto :SVN_CHECK
 if "%CHROME_HEADLESS%" == "1" goto :SVN_CHECK
 if "%WIN_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
 call git --version 2>nul 1>nul
