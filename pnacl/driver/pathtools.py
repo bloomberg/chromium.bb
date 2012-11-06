@@ -66,6 +66,9 @@ def tosys(npath):
       components = components[3:]
       return '%s:\\%s' % (drive.upper(), '\\'.join(components))
     else:
+      # Work around for an issue that windows has opening long
+      # relative paths.  http://bugs.python.org/issue4071
+      npath = os.path.abspath(unicode(npath))
       return npath.replace('/', '\\')
   else:
     return npath
