@@ -27,7 +27,7 @@ const int kSizes[] = { 1280, 1024, 768, 640 };
 // . The mouse is against the edge of the screen and the mouse is moved
 //   |kMovesBeforeAdjust| times.
 const int kDelayBeforeIncreaseMS = 500;
-const int kMovesBeforeAdjust = 50;
+const int kMovesBeforeAdjust = 25;
 const int kPixelsBeforeAdjust = 100;
 
 // When the smallest resolution does not fit on the screen, we take this
