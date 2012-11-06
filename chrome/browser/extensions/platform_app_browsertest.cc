@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/app_restore_service.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -741,6 +743,39 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DevToolsOpenedWithReload) {
   rvh = window->web_contents()->GetRenderViewHost();
   ASSERT_TRUE(rvh);
   ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
+  CloseShellWindowsAndWaitForAppToExit();
+}
+
+// Test that showing a permission request as a constrained window works and is
+// correctly parented.
+#if defined(OS_MACOSX)
+#define MAYBE_ConstrainedWindowRequest ConstrainedWindowRequest
+#else
+// TODO(sail): Enable this on other platforms once http://crbug.com/95455 is
+// fixed.
+#define MAYBE_ConstrainedWindowRequest DISABLED_ConstrainedWindowRequest
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
+  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
+  const Extension* extension =
+      LoadAndLaunchPlatformApp("optional_permission_request");
+  ASSERT_TRUE(extension) << "Failed to load extension.";
+
+  WebContents* web_contents = GetFirstShellWindowWebContents();
+  ASSERT_TRUE(web_contents);
+
+  // Verify that the shell window has a constrained window attached.
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents);
+  EXPECT_EQ(1u, constrained_window_tab_helper->constrained_window_count());
+
+  // Close the constrained window and wait for the reply to the permission
+  // request.
+  ExtensionTestMessageListener listener("PermissionRequestDone", false);
+  constrained_window_tab_helper->CloseConstrainedWindows();
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
   CloseShellWindowsAndWaitForAppToExit();
 }
 

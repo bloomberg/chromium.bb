@@ -168,6 +168,7 @@ class ShellWindow : public content::NotificationObserver,
   // ExtensionFunctionDispatcher::Delegate implementation.
   virtual extensions::WindowController* GetExtensionWindowController() const
       OVERRIDE;
+  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);

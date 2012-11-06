@@ -447,6 +447,10 @@ ShellWindow::GetExtensionWindowController() const {
   return NULL;
 }
 
+content::WebContents* ShellWindow::GetAssociatedWebContents() const {
+  return web_contents_.get();
+}
+
 extensions::ActiveTabPermissionGranter*
     ShellWindow::GetActiveTabPermissionGranter() {
   // Shell windows don't support the activeTab permission.
