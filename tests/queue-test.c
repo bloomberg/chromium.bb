@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -50,20 +51,6 @@ struct display {
 	int child_exit_status;
 };
 
-static int
-sigchld_handler(int signal_number, void *data)
-{
-	struct display *display = data;
-	int status;
-
-	waitpid(-1, &status, 0);
-	display->child_exit_status = WEXITSTATUS(status);
-
-	wl_display_terminate(display->display);
-
-	return 0;
-}
-
 static void
 registry_handle_global(void *data, struct wl_registry *registry,
 		       uint32_t id, const char *interface, uint32_t version)
@@ -82,25 +69,37 @@ static const struct wl_registry_listener registry_listener = {
 static void
 client_alarm_handler(int sig)
 {
+	fprintf(stderr, "Received SIGALRM signal, aborting.\n");
 	exit(EXIT_FAILURE);
 }
 
 static void
-client_continue_handler(int sig)
+client_sigsegv_handler(int sig)
 {
+	fprintf(stderr, "Received SIGSEGV signal, aborting.\n");
+	exit(EXIT_FAILURE);
 }
 
 static int
-client_main(void)
+client_main(int fd)
 {
 	struct wl_display *display;
 	struct wl_registry *registry;
 	int counter = 0;
+	bool cont = false;
 
+	signal(SIGSEGV, client_sigsegv_handler);
 	signal(SIGALRM, client_alarm_handler);
-	signal(SIGCONT, client_continue_handler);
-	alarm(20);
-	pause();
+	alarm(2);
+
+	if (read(fd, &cont, sizeof cont) != 1) {
+		close(fd);
+		return EXIT_FAILURE;
+	}
+	close(fd);
+
+	if (!cont)
+		return EXIT_FAILURE;
 
 	display = wl_display_connect(SOCKET_NAME);
 	client_assert(display);
@@ -122,7 +121,31 @@ dummy_bind(struct wl_client *client,
 {
 }
 
-TEST(queue_destroy_proxy)
+static int
+sigchld_handler(int signal_number, void *data)
+{
+	struct display *display = data;
+	int status;
+
+	waitpid(-1, &status, 0);
+	display->child_exit_status = WEXITSTATUS(status);
+
+	wl_display_terminate(display->display);
+
+	return 0;
+}
+
+static void
+signal_client(int fd, bool cont)
+{
+	int ret;
+
+	ret = write(fd, &cont, sizeof cont);
+	close(fd);
+	assert(ret == sizeof cont);
+}
+
+TEST(queue)
 {
 	struct display display;
 	struct wl_event_loop *loop;
@@ -135,19 +158,28 @@ TEST(queue_destroy_proxy)
 	};
 	unsigned int i;
 	pid_t pid;
+	int fds[2];
 	int ret;
+
+	ret = pipe(fds);
+	assert(ret == 0);
 
 	pid = fork();
 	if (pid == -1) {
 		perror("fork");
 		exit(EXIT_FAILURE);
 	} else if (pid == 0) {
-		exit(client_main());
+		close(fds[1]);
+		exit(client_main(fds[0]));
 	}
+	close(fds[0]);
 
 	display.child_exit_status = EXIT_FAILURE;
 	display.display = wl_display_create();
-	assert(display.display);
+	if (!display.display) {
+		signal_client(fds[1], false);
+		abort();
+	}
 
 	for (i = 0; i < ARRAY_LENGTH(dummy_interfaces); i++)
 		wl_display_add_global(display.display, dummy_interfaces[i],
@@ -160,7 +192,7 @@ TEST(queue_destroy_proxy)
 	signal_source = wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler,
 						 &display);
 
-	kill(pid, SIGCONT);
+	signal_client(fds[1], true);
 	wl_display_run(display.display);
 
 	wl_event_source_remove(signal_source);
@@ -168,4 +200,3 @@ TEST(queue_destroy_proxy)
 
 	assert(display.child_exit_status == EXIT_SUCCESS);
 }
-
