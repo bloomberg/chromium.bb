@@ -361,6 +361,17 @@
    ...
    fun:ssl_InitSessionCacheLocks
 }
+{
+   FileStream::Context can leak through WorkerPool by design
+   Heapcheck:Leak
+   fun:net::FileStream::FileStream
+}
+{
+   Tasks posted to WorkerPool can leak by design
+   Heapcheck:Leak
+   fun:base::internal::PostTaskAndReplyImpl::PostTaskAndReply
+   fun:base::WorkerPool::PostTaskAndReply
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
