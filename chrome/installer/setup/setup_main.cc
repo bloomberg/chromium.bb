@@ -1098,6 +1098,54 @@ void ActivateMetroChrome() {
                             << "hr=" << std::hex << hr;
 }
 
+installer::InstallStatus RegisterDevChrome(
+    const InstallerState& installer_state,
+    const CommandLine& cmd_line) {
+  FilePath chrome_exe(
+      cmd_line.GetSwitchValuePath(installer::switches::kRegisterDevChrome));
+  if (chrome_exe.empty())
+    chrome_exe = cmd_line.GetProgram().DirName().Append(installer::kChromeExe);
+  if (!chrome_exe.IsAbsolute())
+    file_util::AbsolutePath(&chrome_exe);
+
+  installer::InstallStatus status = installer::FIRST_INSTALL_SUCCESS;
+  if (file_util::PathExists(chrome_exe)) {
+    Product chrome(BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BROWSER));
+
+    // Create the Start menu shortcut and pin it to the taskbar.
+    ShellUtil::ChromeShortcutProperties shortcut_properties(
+        ShellUtil::CURRENT_USER);
+    shortcut_properties.set_chrome_exe(chrome_exe);
+    shortcut_properties.set_dual_mode(true);
+    shortcut_properties.set_pin_to_taskbar(true);
+    ShellUtil::CreateOrUpdateChromeShortcut(
+        ShellUtil::SHORTCUT_START_MENU, chrome.distribution(),
+        shortcut_properties, ShellUtil::SHORTCUT_CREATE_ALWAYS);
+
+    // Register Chrome at user-level and make it default.
+    scoped_ptr<WorkItemList> delegate_execute_list(
+        WorkItem::CreateWorkItemList());
+    installer::AddDelegateExecuteWorkItems(
+        installer_state, chrome_exe.DirName(), Version(), chrome,
+        delegate_execute_list.get());
+    delegate_execute_list->Do();
+    if (ShellUtil::CanMakeChromeDefaultUnattended()) {
+      ShellUtil::MakeChromeDefault(
+          chrome.distribution(), ShellUtil::CURRENT_USER, chrome_exe.value(),
+          true);
+    } else {
+      ShellUtil::ShowMakeChromeDefaultSystemUI(chrome.distribution(),
+                                               chrome_exe.value());
+    }
+  } else {
+    LOG(ERROR) << "Path not found (make sure it is absolute): "
+               << chrome_exe.value();
+    status = installer::INSTALL_FAILED;
+  }
+  return status;
+}
+
 // This method processes any command line options that make setup.exe do
 // various tasks other than installation (renaming chrome.exe, showing eula
 // among others). This function returns true if any such command line option
@@ -1188,6 +1236,10 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       LOG(DFATAL) << "chrome_install:" << chrome_install
                   << ", system_install:" << installer_state->system_install();
     }
+    *exit_code = InstallUtil::GetInstallReturnCode(status);
+  } else if (cmd_line.HasSwitch(installer::switches::kRegisterDevChrome)) {
+    installer::InstallStatus status = RegisterDevChrome(
+        *installer_state, cmd_line);
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;

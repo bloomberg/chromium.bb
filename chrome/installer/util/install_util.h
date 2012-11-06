@@ -102,11 +102,6 @@ class InstallUtil {
   // by either --chrome-sxs or the executable path).
   static bool IsChromeSxSProcess();
 
-  // Returns true if the Chrome installed at |chrome_exe| has a Windows shell
-  // DelegateExecute verb handler.
-  static bool HasDelegateExecuteHandler(BrowserDistribution* dist,
-                                        const string16& chrome_exe);
-
   // Populates |path| with the path to |file| in the sentinel directory. This is
   // the application directory for user-level installs, and the default user
   // data dir for system-level installs. Returns false on error.

@@ -160,6 +160,7 @@ extern const char kNewSetupExe[];
 extern const char kOnOsUpgrade[];
 extern const char kRegisterChromeBrowser[];
 extern const char kRegisterChromeBrowserSuffix[];
+extern const char kRegisterDevChrome[];
 extern const char kRegisterURLProtocol[];
 extern const char kRenameChromeExe[];
 extern const char kRemoveChromeRegistration[];

@@ -380,25 +380,6 @@ bool InstallUtil::IsChromeSxSProcess() {
   return sxs;
 }
 
-bool InstallUtil::HasDelegateExecuteHandler(BrowserDistribution* dist,
-                                            const string16& chrome_exe) {
-  bool found = false;
-  bool system_install = !IsPerUserInstall(chrome_exe.c_str());
-  Version version;
-  GetChromeVersion(dist, system_install, &version);
-  if (!version.IsValid()) {
-    LOG(ERROR) << __FUNCTION__ << " failed to determine version of "
-               << dist->GetAppShortCutName() << " installed at " << chrome_exe;
-  } else {
-    FilePath handler(
-        FilePath(chrome_exe).DirName()
-            .AppendASCII(version.GetString())
-            .Append(installer::kDelegateExecuteExe));
-    found = file_util::PathExists(handler);
-  }
-  return found;
-}
-
 bool InstallUtil::GetSentinelFilePath(const FilePath::CharType* file,
                                       BrowserDistribution* dist,
                                       FilePath* path) {

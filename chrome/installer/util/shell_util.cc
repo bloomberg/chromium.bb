@@ -226,12 +226,9 @@ class RegistryEntry {
         ShellUtil::GetBrowserModelId(
             dist, InstallUtil::IsPerUserInstall(chrome_exe.c_str())));
     string16 delegate_guid;
-    // TODO(grt): remove HasDelegateExecuteHandler when the exe is ever-present;
-    // see also install_worker.cc's AddDelegateExecuteWorkItems.
     bool set_delegate_execute =
         IsChromeMetroSupported() &&
-        dist->GetCommandExecuteImplClsid(&delegate_guid) &&
-        InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe);
+        dist->GetCommandExecuteImplClsid(&delegate_guid);
 
     // DelegateExecute ProgId. Needed for Chrome Metro in Windows 8.
     if (set_delegate_execute) {

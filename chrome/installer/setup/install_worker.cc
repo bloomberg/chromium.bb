@@ -1099,7 +1099,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
     AddVersionKeyWorkItems(root, product.distribution(), new_version,
                            add_language_identifier, install_list);
 
-    AddDelegateExecuteWorkItems(installer_state, src_path, new_version,
+    AddDelegateExecuteWorkItems(installer_state, target_path, new_version,
                                 product, install_list);
 
     AddActiveSetupWorkItems(installer_state, setup_path, new_version, product,
@@ -1303,7 +1303,7 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
 }
 
 void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
-                                 const FilePath& src_path,
+                                 const FilePath& target_path,
                                  const Version& new_version,
                                  const Product& product,
                                  WorkItemList* list) {
@@ -1342,12 +1342,8 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                 );
 
   // Add work items to register the handler iff it is present.
-  // TODO(grt): Remove the extra check for the .exe when it is no longer
-  // possible to build Chrome without the DelegateExecute verb handler.
   // See also shell_util.cc's GetProgIdEntries.
-  if (installer_state.operation() != InstallerState::UNINSTALL &&
-      file_util::PathExists(src_path.AppendASCII(new_version.GetString())
-          .Append(kDelegateExecuteExe))) {
+  if (installer_state.operation() != InstallerState::UNINSTALL) {
     VLOG(1) << "Adding registration items for DelegateExecute verb handler.";
 
     // Force COM to flush its cache containing the path to the old handler.
@@ -1355,8 +1351,9 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                          handler_class_uuid));
 
     // The path to the exe (in the version directory).
-    FilePath delegate_execute(
-        installer_state.target_path().AppendASCII(new_version.GetString()));
+    FilePath delegate_execute(target_path);
+    if (new_version.IsValid())
+      delegate_execute = delegate_execute.AppendASCII(new_version.GetString());
     delegate_execute = delegate_execute.Append(kDelegateExecuteExe);
 
     // Command-line featuring the quoted path to the exe.

@@ -132,6 +132,12 @@ const char kRegisterChromeBrowser[] = "register-chrome-browser";
 // registration work.
 const char kRegisterChromeBrowserSuffix[] = "register-chrome-browser-suffix";
 
+// Specify the path to the dev build of chrome.exe the user wants to install
+// (register and install Start menu shortcut for) on the system. This will
+// always result in a user-level install and will make this install default
+// browser.
+const char kRegisterDevChrome[] = "register-dev-chrome";
+
 // Switch to allow an extra URL protocol to be registered. This option is used
 // in conjunction with kRegisterChromeBrowser to specify an extra protocol
 // in addition to the standard set of protocols.

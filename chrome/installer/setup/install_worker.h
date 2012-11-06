@@ -140,8 +140,10 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
 
 // Called for either installation or uninstallation. This method adds or
 // removes COM registration for a product's DelegateExecute verb handler.
+// If |new_version| is empty, the registrations will point to
+// delegate_execute.exe directly in |target_path|.
 void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
-                                 const FilePath& src_path,
+                                 const FilePath& target_path,
                                  const Version& new_version,
                                  const Product& product,
                                  WorkItemList* list);
