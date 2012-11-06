@@ -15,16 +15,14 @@
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/extension_utils.h"
+#include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_icon_loader.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
@@ -54,9 +52,6 @@
 using extensions::Extension;
 
 namespace {
-
-// Max loading animation time in milliseconds.
-const int kMaxLoadingTimeMs = 60 * 1000;
 
 // Item controller for an app shortcut. Shortcuts track app and launcher ids,
 // but do not have any associated windows (opening a shortcut will replace the
@@ -157,22 +152,15 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
                                                    ash::LauncherModel* model)
     : model_(model),
       profile_(profile),
-      observed_sync_service_(NULL) {
+      app_sync_ui_state_(NULL) {
   if (!profile_) {
     // Use the original profile as on chromeos we may get a temporary off the
     // record profile.
     profile_ = ProfileManager::GetDefaultProfile()->GetOriginalProfile();
 
-    // Monitor app sync on chromeos.
-    PrefService* prefs = profile_->GetPrefs();
-    if (!IsLoggedInAsGuest() &&
-        prefs->GetBoolean(prefs::kLauncherShouldRunSyncAnimation)) {
-      prefs->SetBoolean(prefs::kLauncherShouldRunSyncAnimation, false);
-      observed_sync_service_ =
-          ProfileSyncServiceFactory::GetForProfile(profile_);
-      if (observed_sync_service_)
-        observed_sync_service_->AddObserver(this);
-    }
+    app_sync_ui_state_ = AppSyncUIState::Get(profile_);
+    if (app_sync_ui_state_)
+      app_sync_ui_state_->AddObserver(this);
   }
 
   instance_ = this;
@@ -208,8 +196,8 @@ ChromeLauncherController::~ChromeLauncherController() {
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->RemoveShellObserver(this);
 
-  if (observed_sync_service_)
-    observed_sync_service_->RemoveObserver(this);
+  if (app_sync_ui_state_)
+    app_sync_ui_state_->RemoveObserver(this);
 
   profile_->GetPrefs()->RemoveObserver(this);
 }
@@ -772,7 +760,6 @@ void ChromeLauncherController::Observe(
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       UpdateAppLaunchersFromPref();
-      CheckAppSync();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
@@ -823,11 +810,6 @@ void ChromeLauncherController::OnShelfAlignmentChanged() {
   profile_->GetPrefs()->SetString(prefs::kShelfAlignment, pref_value);
 }
 
-void ChromeLauncherController::OnStateChanged() {
-  DCHECK(observed_sync_service_);
-  CheckAppSync();
-}
-
 void ChromeLauncherController::OnIsSyncingChanged() {
   MaybePropagatePrefToLocal(profile_->GetPrefs(),
                             prefs::kShelfAlignmentLocal,
@@ -835,6 +817,13 @@ void ChromeLauncherController::OnIsSyncingChanged() {
   MaybePropagatePrefToLocal(profile_->GetPrefs(),
                             prefs::kShelfAutoHideBehaviorLocal,
                             prefs::kShelfAutoHideBehavior);
+}
+
+void ChromeLauncherController::OnAppSyncUIStatusChanged() {
+  if (app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING)
+    model_->SetStatus(ash::LauncherModel::STATUS_LOADING);
+  else
+    model_->SetStatus(ash::LauncherModel::STATUS_NORMAL);
 }
 
 void ChromeLauncherController::PersistPinnedState() {
@@ -1089,41 +1078,4 @@ ash::LauncherID ChromeLauncherController::CreateAppShortcutLauncherItem(
 bool ChromeLauncherController::HasItemController(ash::LauncherID id) const {
   return id_to_item_controller_map_.find(id) !=
          id_to_item_controller_map_.end();
-}
-
-void ChromeLauncherController::CheckAppSync() {
-  if (!observed_sync_service_ ||
-      !observed_sync_service_->HasSyncSetupCompleted()) {
-    return;
-  }
-
-  const bool synced = observed_sync_service_->ShouldPushChanges();
-  const bool has_pending_extension = profile_->GetExtensionService()->
-      pending_extension_manager()->HasPendingExtensionFromSync();
-
-  if (synced && !has_pending_extension)
-    StopLoadingAnimation();
-  else
-    StartLoadingAnimation();
-}
-
-void ChromeLauncherController::StartLoadingAnimation() {
-  DCHECK(observed_sync_service_);
-  if (model_->status() == ash::LauncherModel::STATUS_LOADING)
-    return;
-
-  loading_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kMaxLoadingTimeMs),
-      this, &ChromeLauncherController::StopLoadingAnimation);
-  model_->SetStatus(ash::LauncherModel::STATUS_LOADING);
-}
-
-void ChromeLauncherController::StopLoadingAnimation() {
-  DCHECK(observed_sync_service_);
-
-  model_->SetStatus(ash::LauncherModel::STATUS_NORMAL);
-  loading_timer_.Stop();
-  observed_sync_service_->RemoveObserver(this);
-  observed_sync_service_ = NULL;
 }

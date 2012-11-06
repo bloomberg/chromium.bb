@@ -756,8 +756,6 @@ extern const char kShelfAutoHideBehaviorLocal[];
 extern const char kUseDefaultPinnedApps[];
 extern const char kPinnedLauncherApps[];
 
-extern const char kLauncherShouldRunSyncAnimation[];
-
 extern const char kLongPressTimeInSeconds[];
 extern const char kMaxDistanceBetweenTapsForDoubleTap[];
 extern const char kMaxDistanceForTwoFingerTapInPixels[];

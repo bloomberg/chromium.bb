@@ -62,9 +62,6 @@ void RegisterChromeLauncherUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kShelfAlignmentLocal,
                                  std::string(),
                                  PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kLauncherShouldRunSyncAnimation,
-                                  true,
-                                  PrefService::UNSYNCABLE_PREF);
 }
 
 base::DictionaryValue* CreateAppDict(const std::string& app_id) {

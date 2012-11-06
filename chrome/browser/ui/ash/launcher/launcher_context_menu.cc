@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
+#include <string>
+
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"

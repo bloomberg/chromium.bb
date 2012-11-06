@@ -19,10 +19,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/prefs/public/pref_observer.h"
-#include "base/timer.h"
-#include "chrome/browser/api/sync/profile_sync_service_observer.h"
-#include "chrome/browser/prefs/pref_service_observer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/prefs/pref_service_observer.h"
+#include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
@@ -35,12 +34,12 @@ namespace aura {
 class Window;
 }
 
+class AppSyncUIState;
 class Browser;
 class BrowserLauncherItemControllerTest;
 class LauncherItemController;
 class PrefService;
 class Profile;
-class ProfileSyncService;
 class ShellWindowLauncherController;
 class TabContents;
 
@@ -57,8 +56,8 @@ class ChromeLauncherController
       public ash::ShellObserver,
       public content::NotificationObserver,
       public PrefObserver,
-      public ProfileSyncServiceObserver,
-      public PrefServiceObserver {
+      public PrefServiceObserver,
+      public AppSyncUIStateObserver {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -272,11 +271,11 @@ class ChromeLauncherController
   // Overridden from ash::ShellObserver:
   virtual void OnShelfAlignmentChanged() OVERRIDE;
 
-  // Overridden from ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
-
-  // Overriden from PrefServiceObserver:
+  // Overridden from PrefServiceObserver:
   virtual void OnIsSyncingChanged() OVERRIDE;
+
+  // Overridden from AppSyncUIStateObserver
+  virtual void OnAppSyncUIStatusChanged() OVERRIDE;
 
  private:
   friend class BrowserLauncherItemControllerTest;
@@ -333,15 +332,6 @@ class ChromeLauncherController
 
   bool HasItemController(ash::LauncherID id) const;
 
-  // Checks whether app sync status and starts/stops loading animation
-  // accordingly. If sync has not setup, do nothing. If sync is completed and
-  // there is no pending synced extension install, call StopLoadingAnimation.
-  // Otherwise, call StartLoadingAnimation.
-  void CheckAppSync();
-
-  void StartLoadingAnimation();
-  void StopLoadingAnimation();
-
   static ChromeLauncherController* instance_;
 
   ash::LauncherModel* model_;
@@ -371,8 +361,7 @@ class ChromeLauncherController
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  ProfileSyncService* observed_sync_service_;
-  base::OneShotTimer<ChromeLauncherController> loading_timer_;
+  AppSyncUIState* app_sync_ui_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };
