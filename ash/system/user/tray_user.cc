@@ -33,6 +33,7 @@ namespace {
 
 const int kUserInfoVerticalPadding = 10;
 const int kUserIconSize = 27;
+const int kProfileRoundedCornerRadius = 2;
 
 }  // namespace
 
@@ -82,6 +83,7 @@ class RoundedImageView : public views::View {
     SkPath path;
     path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius, kRadius);
     SkPaint paint;
+    paint.setAntiAlias(true);
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     canvas->DrawImageInPath(resized_, image_bounds.x(), image_bounds.y(),
                             path, paint);
@@ -155,7 +157,7 @@ class UserView : public views::View,
       return;
     }
 
-    RoundedImageView* image = new RoundedImageView(kTrayRoundedBorderRadius);
+    RoundedImageView* image = new RoundedImageView(kProfileRoundedCornerRadius);
     image->SetImage(ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
         gfx::Size(kUserIconSize, kUserIconSize));
     user_info_->AddChildView(image);
@@ -259,7 +261,7 @@ views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
     label_->SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
     SetupLabelForTray(label_);
   } else {
-    avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius);
+    avatar_ = new tray::RoundedImageView(kProfileRoundedCornerRadius);
   }
   UpdateAfterLoginStatusChange(status);
   return avatar_ ? static_cast<views::View*>(avatar_)
@@ -316,7 +318,13 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 
 void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (avatar_) {
-    SetTrayImageItemBorder(avatar_, alignment);
+    if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+      avatar_->set_border(views::Border::CreateEmptyBorder(
+          0, kTrayImageItemHorizontalPaddingBottomAlignment + 2,
+          0, kTrayImageItemHorizontalPaddingBottomAlignment));
+    } else {
+        SetTrayImageItemBorder(avatar_, alignment);
+    }
   } else {
     if (alignment == SHELF_ALIGNMENT_BOTTOM) {
       label_->set_border(views::Border::CreateEmptyBorder(

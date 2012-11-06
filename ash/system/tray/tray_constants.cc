@@ -8,7 +8,7 @@
 
 namespace ash {
 
-const int kPaddingFromRightEdgeOfScreenBottomAlignment = 15;
+const int kPaddingFromRightEdgeOfScreenBottomAlignment = 7;
 const int kPaddingFromBottomOfScreenBottomAlignment = 7;
 const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment = 8;
 const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment = 9;

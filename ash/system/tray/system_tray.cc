@@ -144,12 +144,12 @@ void SystemTray::CreateItems() {
   internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
   internal::TrayDate* tray_date = new internal::TrayDate();
   internal::TrayPower* tray_power = new internal::TrayPower();
+  internal::TrayIME* tray_ime = new internal::TrayIME;
   internal::TrayUser* tray_user = new internal::TrayUser;
   internal::TrayAccessibility* tray_accessibility =
       new internal::TrayAccessibility;
   internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
   internal::TrayDrive* tray_drive = new internal::TrayDrive;
-  internal::TrayIME* tray_ime = new internal::TrayIME;
   internal::TrayLocale* tray_locale = new internal::TrayLocale;
   internal::TrayUpdate* tray_update = new internal::TrayUpdate;
   internal::TraySettings* tray_settings = new internal::TraySettings();
@@ -179,6 +179,7 @@ void SystemTray::CreateItems() {
 #endif
 
   AddTrayItem(tray_user);
+  AddTrayItem(tray_ime);
   AddTrayItem(tray_power);
 #if defined(OS_CHROMEOS)
   AddTrayItem(tray_network);
@@ -187,7 +188,6 @@ void SystemTray::CreateItems() {
 #endif
   AddTrayItem(tray_bluetooth);
   AddTrayItem(tray_drive);
-  AddTrayItem(tray_ime);
   AddTrayItem(tray_locale);
 #if defined(OS_CHROMEOS)
   AddTrayItem(tray_display);
