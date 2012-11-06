@@ -97,7 +97,8 @@ bool VisibilityMatches(aura::Window* window, ActivateVisibilityType type) {
       window->TargetVisibility();
   return visible || wm::IsWindowMinimized(window) ||
       (window->TargetVisibility() &&
-       window->parent()->id() == kShellWindowId_WorkspaceContainer);
+        (window->parent()->id() == kShellWindowId_WorkspaceContainer ||
+         window->parent()->id() == kShellWindowId_LockScreenContainer));
 }
 
 // Returns true if |window| can be activated or deactivated.

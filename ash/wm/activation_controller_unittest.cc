@@ -502,5 +502,19 @@ TEST_F(ActivationControllerTest, DontActivateWindowWhenInSystemModalDialog) {
   EXPECT_TRUE(wm::IsActiveWindow(normal_window.get()));
 }
 
+// Verifies that a lock window can get focus even if lock
+// container is not visible (e.g. before animating it).
+TEST_F(ActivationControllerTest, ActivateLockScreen) {
+  aura::Window* lock_container =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(), c3);
+  aura::test::TestWindowDelegate wd;
+  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
+    &wd, -1, gfx::Rect(50, 50, 50, 50), lock_container));
+
+  lock_container->layer()->SetVisible(false);
+  w1->Focus();
+  EXPECT_TRUE(w1->HasFocus());
+}
+
 }  // namespace test
 }  // namespace ash

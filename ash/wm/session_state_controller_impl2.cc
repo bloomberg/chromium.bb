@@ -153,7 +153,8 @@ void SessionStateControllerImpl2::CancelLockAnimation() {
     return;
   shutdown_after_lock_ = false;
   animator_->StartAnimation(
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
+      internal::SessionStateAnimator::LAUNCHER,
       internal::SessionStateAnimator::ANIMATION_LOWER);
   lock_timer_.Stop();
 }
