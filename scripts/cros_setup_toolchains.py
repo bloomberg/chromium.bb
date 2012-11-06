@@ -453,7 +453,7 @@ def UpdateTargets(targets, usepkg):
 
   if not packages:
     print 'Nothing to update!'
-    return
+    return False
 
   print 'Updating packages:'
   print packages
@@ -464,6 +464,7 @@ def UpdateTargets(targets, usepkg):
 
   cmd.extend(packages)
   cros_build_lib.RunCommand(cmd)
+  return True
 
 
 def CleanTargets(targets):
@@ -534,14 +535,14 @@ def SelectActiveToolchains(targets, suffixes):
         cros_build_lib.RunCommand(cmd, print_cmd=False)
 
 
-def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
-                     boards_wanted):
+def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
+                     targets_wanted, boards_wanted):
   """Performs all steps to create a synchronized toolchain enviroment.
 
   args:
     arguments correspond to the given commandline flags
   """
-  targets = {}
+  targets, crossdev_targets, reconfig_targets = {}, {}, {}
   if not hostonly:
     # For hostonly, we can skip most of the below logic, much of which won't
     # work on bare systems where this is useful.
@@ -570,8 +571,6 @@ def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
       targets.update(GetToolchainsForBoard(board))
 
     # First check and initialize all cross targets that need to be.
-    crossdev_targets = {}
-    reconfig_targets = {}
     for target in targets:
       if TargetIsInitialized(target):
         reconfig_targets[target] = targets[target]
@@ -588,9 +587,8 @@ def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted,
   targets['host'] = {}
 
   # Now update all packages.
-  UpdateTargets(targets, usepkg)
-
-  SelectActiveToolchains(targets, CONFIG_TARGET_SUFFIXES)
+  if UpdateTargets(targets, usepkg) or crossdev_targets or reconfig:
+    SelectActiveToolchains(targets, CONFIG_TARGET_SUFFIXES)
 
   if deleteold:
     CleanTargets(targets)
@@ -624,7 +622,7 @@ def main(argv):
                     dest='board_cfg', default=None,
                     help=('Board to list toolchain tuples for'))
   parser.add_option('--reconfig', default=False, action='store_true',
-                    help=('Reload crossdev config'))
+                    help=('Reload crossdev config and reselect toolchains.'))
 
   (options, _remaining_arguments) = parser.parse_args(argv)
 
@@ -649,6 +647,6 @@ def main(argv):
   boards = set(options.include_boards.split(',')) if options.include_boards \
       else set()
   Crossdev.Load(options.reconfig)
-  UpdateToolchains(options.usepkg, options.deleteold, options.hostonly, targets,
-                   boards)
+  UpdateToolchains(options.usepkg, options.deleteold, options.hostonly,
+                   options.reconfig, targets, boards)
   Crossdev.Save()
