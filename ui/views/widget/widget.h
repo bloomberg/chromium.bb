@@ -456,7 +456,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void RunShellDrag(View* view,
                     const ui::OSExchangeData& data,
                     const gfx::Point& location,
-                    int operation);
+                    int operation,
+                    ui::DragDropTypes::DragEventSource source);
 
   // Returns the view that requested the current drag operation via
   // RunShellDrag(), or NULL if there is no such view or drag operation.

@@ -56,10 +56,13 @@ DragDropController::~DragDropController() {
     drag_image_.reset();
 }
 
-int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
-                                         aura::RootWindow* root_window,
-                                         const gfx::Point& root_location,
-                                         int operation) {
+int DragDropController::StartDragAndDrop(
+    const ui::OSExchangeData& data,
+    aura::RootWindow* root_window,
+    aura::Window* source_window,
+    const gfx::Point& root_location,
+    int operation,
+    ui::DragDropTypes::DragEventSource source) {
   DCHECK(!IsDragDropInProgress());
 
   drag_drop_tracker_.reset(new DragDropTracker);

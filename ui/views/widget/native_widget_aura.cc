@@ -559,8 +559,9 @@ bool NativeWidgetAura::IsAccessibleWidget() const {
 void NativeWidgetAura::RunShellDrag(View* view,
                                     const ui::OSExchangeData& data,
                                     const gfx::Point& location,
-                                    int operation) {
-  views::RunShellDrag(window_, data, location, operation);
+                                    int operation,
+                                    ui::DragDropTypes::DragEventSource source) {
+  views::RunShellDrag(window_, data, location, operation, source);
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {

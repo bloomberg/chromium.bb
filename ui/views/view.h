@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_target.h"
@@ -1338,7 +1339,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // supported drag operations. When done, OnDragDone is invoked. |press_pt| is
   // in the view's coordinate system.
   // Returns true if a drag was started.
-  bool DoDrag(const ui::LocatedEvent& event, const gfx::Point& press_pt);
+  bool DoDrag(const ui::LocatedEvent& event,
+              const gfx::Point& press_pt,
+              ui::DragDropTypes::DragEventSource source);
 
   //////////////////////////////////////////////////////////////////////////////
 

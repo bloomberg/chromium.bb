@@ -6,6 +6,7 @@
 #define UI_AURA_CLIENT_DRAG_DROP_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -32,8 +33,10 @@ class AURA_EXPORT DragDropClient {
   // RootWindow's coordinate system.
   virtual int StartDragAndDrop(const ui::OSExchangeData& data,
                                aura::RootWindow* root_window,
+                               aura::Window* source_window,
                                const gfx::Point& root_location,
-                               int operation) = 0;
+                               int operation,
+                               ui::DragDropTypes::DragEventSource source) = 0;
 
   // Called when mouse is dragged during a drag and drop.
   virtual void DragUpdate(aura::Window* target,

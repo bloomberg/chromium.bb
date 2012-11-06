@@ -1962,8 +1962,10 @@ bool View::ProcessMouseDragged(const ui::MouseEvent& event,
       ExceededDragThreshold(drag_info->start_pt - event.location())) {
     if (!drag_controller_ ||
         drag_controller_->CanStartDragForView(
-            this, drag_info->start_pt, event.location()))
-      DoDrag(event, drag_info->start_pt);
+            this, drag_info->start_pt, event.location())) {
+      DoDrag(event, drag_info->start_pt,
+          ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+    }
   } else {
     if (OnMouseDragged(event))
       return true;
@@ -2131,7 +2133,9 @@ void View::UpdateTooltip() {
 
 // Drag and drop ---------------------------------------------------------------
 
-bool View::DoDrag(const ui::LocatedEvent& event, const gfx::Point& press_pt) {
+bool View::DoDrag(const ui::LocatedEvent& event,
+                  const gfx::Point& press_pt,
+                  ui::DragDropTypes::DragEventSource source) {
 #if !defined(OS_MACOSX)
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)
@@ -2144,7 +2148,8 @@ bool View::DoDrag(const ui::LocatedEvent& event, const gfx::Point& press_pt) {
   // the RootView can detect it and avoid calling us back.
   gfx::Point widget_location(event.location());
   ConvertPointToWidget(this, &widget_location);
-  GetWidget()->RunShellDrag(this, data, widget_location, drag_operations);
+  GetWidget()->RunShellDrag(this, data, widget_location, drag_operations,
+      source);
   return true;
 #else
   return false;

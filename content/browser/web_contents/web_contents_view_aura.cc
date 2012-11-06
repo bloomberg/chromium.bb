@@ -462,11 +462,13 @@ void WebContentsViewAura::StartDragging(
     // always start from a mouse-event (e.g. a touch or gesture event could
     // initiate the drag). The location information should be carried over from
     // webkit. http://crbug.com/114754
+    // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
     gfx::Point location(
         gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint());
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, root_window, location, ConvertFromWeb(operations));
+        data, root_window, GetContentNativeView(), location,
+        ConvertFromWeb(operations), ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   }
 
   // Bail out immediately if the contents view window is gone. Note that it is

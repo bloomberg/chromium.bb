@@ -371,7 +371,8 @@ bool DesktopNativeWidgetAura::IsAccessibleWidget() const {
 void DesktopNativeWidgetAura::RunShellDrag(View* view,
                             const ui::OSExchangeData& data,
                             const gfx::Point& location,
-                            int operation) {
+                            int operation,
+                            ui::DragDropTypes::DragEventSource source) {
 }
 
 void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {

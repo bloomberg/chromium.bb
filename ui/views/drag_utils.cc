@@ -44,14 +44,15 @@ namespace views {
 void RunShellDrag(gfx::NativeView view,
                   const ui::OSExchangeData& data,
                   const gfx::Point& location,
-                  int operation) {
+                  int operation,
+                  ui::DragDropTypes::DragEventSource source) {
 #if defined(USE_AURA)
   gfx::Point root_location(location);
   aura::RootWindow* root_window = view->GetRootWindow();
   aura::Window::ConvertPointToTarget(view, root_window, &root_location);
   if (aura::client::GetDragDropClient(root_window)) {
     aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, root_window, root_location, operation);
+        data, root_window, view, root_location, operation, source);
   }
 #elif defined(OS_WIN)
   scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);

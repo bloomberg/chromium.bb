@@ -33,12 +33,15 @@ void DragBookmarks(Profile* profile,
                   ui::DragDropTypes::DRAG_MOVE |
                   ui::DragDropTypes::DRAG_LINK;
   views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
+  // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
   if (widget) {
-    widget->RunShellDrag(NULL, data, gfx::Point(), operation);
+    widget->RunShellDrag(NULL, data, gfx::Point(), operation,
+        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   } else {
     // We hit this case when we're using WebContentsViewWin or
     // WebContentsViewAura, instead of TabContentsViewViews.
-    views::RunShellDrag(view, data, gfx::Point(), operation);
+    views::RunShellDrag(view, data, gfx::Point(), operation,
+        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   }
 
   MessageLoop::current()->SetNestableTasksAllowed(was_nested);

@@ -866,7 +866,9 @@ void MenuController::StartDrag(SubmenuView* source,
   StopScrolling();
   int drag_ops = item->GetDelegate()->GetDragOperations(item);
   drag_in_progress_ = true;
-  item->GetWidget()->RunShellDrag(NULL, data, widget_loc, drag_ops);
+  // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
+  item->GetWidget()->RunShellDrag(NULL, data, widget_loc, drag_ops,
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   drag_in_progress_ = false;
 
   if (GetActiveInstance() == this) {

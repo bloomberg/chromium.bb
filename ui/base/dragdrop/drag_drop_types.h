@@ -19,6 +19,11 @@ class UI_EXPORT DragDropTypes {
     DRAG_LINK = 1 << 2
   };
 
+  enum DragEventSource {
+    DRAG_EVENT_SOURCE_MOUSE,
+    DRAG_EVENT_SOURCE_TOUCH,
+  };
+
 #if defined(OS_WIN)
   static uint32 DragOperationToDropEffect(int drag_operation);
   static int DropEffectToDragOperation(uint32 effect);

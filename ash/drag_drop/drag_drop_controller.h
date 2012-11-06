@@ -49,10 +49,13 @@ class ASH_EXPORT DragDropController
   }
 
   // Overridden from aura::client::DragDropClient:
-  virtual int StartDragAndDrop(const ui::OSExchangeData& data,
-                               aura::RootWindow* root_window,
-                               const gfx::Point& root_location,
-                               int operation) OVERRIDE;
+  virtual int StartDragAndDrop(
+      const ui::OSExchangeData& data,
+      aura::RootWindow* root_window,
+      aura::Window* source_window,
+      const gfx::Point& root_location,
+      int operation,
+      ui::DragDropTypes::DragEventSource source) OVERRIDE;
   virtual void DragUpdate(aura::Window* target,
                           const ui::LocatedEvent& event) OVERRIDE;
   virtual void Drop(aura::Window* target,

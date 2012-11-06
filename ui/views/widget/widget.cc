@@ -708,9 +708,10 @@ InputMethod* Widget::GetInputMethod() {
 void Widget::RunShellDrag(View* view,
                           const ui::OSExchangeData& data,
                           const gfx::Point& location,
-                          int operation) {
+                          int operation,
+                          ui::DragDropTypes::DragEventSource source) {
   dragged_view_ = view;
-  native_widget_->RunShellDrag(view, data, location, operation);
+  native_widget_->RunShellDrag(view, data, location, operation, source);
   // If the view is removed during the drag operation, dragged_view_ is set to
   // NULL.
   if (view && dragged_view_ == view) {

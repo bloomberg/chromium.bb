@@ -447,8 +447,9 @@ bool NativeWidgetWin::IsAccessibleWidget() const {
 void NativeWidgetWin::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    const gfx::Point& location,
-                                   int operation) {
-  views::RunShellDrag(NULL, data, location, operation);
+                                   int operation,
+                                   ui::DragDropTypes::DragEventSource source) {
+  views::RunShellDrag(NULL, data, location, operation, source);
 }
 
 void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
