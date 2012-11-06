@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/draw_delegate_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
@@ -116,12 +115,7 @@ void RenderWidgetHostViewAndroid::WasHidden() {
 }
 
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
-  // Update the size of the RWH.
-  if (requested_size_.width() != size.width() ||
-      requested_size_.height() != size.height()) {
-    requested_size_ = gfx::Size(size.width(), size.height());
-    host_->WasResized();
-  }
+  host_->WasResized();
 }
 
 void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
@@ -243,11 +237,10 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
-  gfx::Size bounds = DrawDelegateImpl::GetInstance()->GetBounds();
-  if (!bounds.IsEmpty())
-    return gfx::Rect(bounds);
+  if (!content_view_core_)
+    return gfx::Rect();
 
-  return gfx::Rect(requested_size_);
+  return content_view_core_->GetBounds();
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {

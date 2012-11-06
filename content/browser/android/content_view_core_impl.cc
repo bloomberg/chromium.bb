@@ -522,6 +522,15 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
                                                java_bitmap.obj());
 }
 
+gfx::Rect ContentViewCoreImpl::GetBounds() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return gfx::Rect();
+  return gfx::Rect(Java_ContentViewCore_getWidth(env, j_obj.obj()),
+                   Java_ContentViewCore_getHeight(env, j_obj.obj()));
+}
+
 void ContentViewCoreImpl::LoadUrl(
     NavigationController::LoadURLParams& params) {
   GetWebContents()->GetController().LoadURLWithParams(params);
@@ -963,6 +972,17 @@ jboolean ContentViewCoreImpl::PopulateBitmapFromCompositor(JNIEnv* env,
     return false;
 
   return view->PopulateBitmapWithContents(jbitmap);
+}
+
+void ContentViewCoreImpl::SetSize(JNIEnv* env,
+                                  jobject obj,
+                                  jint width,
+                                  jint height) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  if (!view)
+    return;
+
+  view->SetSize(gfx::Size(width, height));
 }
 
 void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,

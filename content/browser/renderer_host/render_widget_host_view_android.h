@@ -153,10 +153,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;
 
-  // The size that we want the renderer to be.  We keep this in a separate
-  // variable because resizing is async.
-  gfx::Size requested_size_;
-
   ImeAdapterAndroid ime_adapter_android_;
 
   // Body background color of the underlying document.

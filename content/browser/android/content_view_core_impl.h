@@ -181,6 +181,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   jboolean PopulateBitmapFromCompositor(JNIEnv* env,
                                         jobject obj,
                                         jobject jbitmap);
+  void SetSize(JNIEnv* env, jobject obj, jint width, jint height);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI

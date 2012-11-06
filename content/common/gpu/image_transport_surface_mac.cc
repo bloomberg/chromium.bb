@@ -235,6 +235,7 @@ bool IOSurfaceImageTransportSurface::SwapBuffers() {
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_handle = io_surface_handle_;
+  params.size = GetSize();
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   DCHECK(!is_swap_buffers_pending_);
@@ -255,6 +256,7 @@ bool IOSurfaceImageTransportSurface::PostSubBuffer(
   params.y = y;
   params.width = width;
   params.height = height;
+  params.surface_size = GetSize();
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
 
   DCHECK(!is_swap_buffers_pending_);

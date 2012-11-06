@@ -168,6 +168,10 @@ public class ContentViewCore implements MotionEventDelegate {
     private int mContentWidth;
     private int mContentHeight;
 
+    // Cached size of the viewport
+    private int mViewportWidth;
+    private int mViewportHeight;
+
     // Cached page scale factor from native
     private float mNativePageScaleFactor = 1.0f;
     private float mNativeMinimumScale = 1.0f;
@@ -711,12 +715,14 @@ public class ContentViewCore implements MotionEventDelegate {
         return null;
     }
 
+    @CalledByNative
     public int getWidth() {
-        return mContainerView.getWidth();
+        return mViewportWidth;
     }
 
+    @CalledByNative
     public int getHeight() {
-        return mContainerView.getHeight();
+        return mViewportHeight;
     }
 
     /**
@@ -1152,6 +1158,14 @@ public class ContentViewCore implements MotionEventDelegate {
         // Update the content size to make sure it is at least the View size
         if (mContentWidth < w) mContentWidth = w;
         if (mContentHeight < h) mContentHeight = h;
+
+        if (mViewportWidth != w || mViewportHeight != h) {
+            mViewportWidth = w;
+            mViewportHeight = h;
+            if (mNativeContentViewCore != 0) {
+                nativeSetSize(mNativeContentViewCore, mViewportWidth, mViewportHeight);
+            }
+        }
     }
 
     public void updateAfterSizeChanged() {
@@ -2326,4 +2340,6 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private native boolean nativePopulateBitmapFromCompositor(int nativeContentViewCoreImpl,
             Bitmap bitmap);
+
+    private native void nativeSetSize(int nativeContentViewCoreImpl, int width, int height);
 }

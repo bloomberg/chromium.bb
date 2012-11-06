@@ -123,10 +123,9 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
   // TRACE_EVENT for gpu tests:
   TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers",
                        "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
-                       "width", surface_->GetSize().width());
+                       "width", params.size.width());
   params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
-  params.size = surface_->GetSize();
 #if defined(OS_MACOSX)
   params.window = handle_;
 #endif
@@ -137,7 +136,6 @@ void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params) {
   params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
-  params.surface_size = surface_->GetSize();
 #if defined(OS_MACOSX)
   params.window = handle_;
 #endif
@@ -285,6 +283,7 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
     // SwapBuffers message.
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
     params.surface_handle = 0;
+    params.size = surface()->GetSize();
     helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
     helper_->SetScheduled(false);
@@ -302,6 +301,7 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
     // PostSubBuffer message.
     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
     params.surface_handle = 0;
+    params.surface_size = surface()->GetSize();
     params.x = x;
     params.y = y;
     params.width = width;

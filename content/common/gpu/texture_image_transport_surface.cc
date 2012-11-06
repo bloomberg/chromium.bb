@@ -268,6 +268,7 @@ bool TextureImageTransportSurface::SwapBuffers() {
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_handle = textures_[front()].client_id;
+  params.size = textures_[front()].size;
   params.protection_state_id = protection_state_id_;
   params.skip_ack = false;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
@@ -336,6 +337,7 @@ bool TextureImageTransportSurface::PostSubBuffer(
 
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
   params.surface_handle = textures_[front()].client_id;
+  params.surface_size = textures_[front()].size;
   params.x = x;
   params.y = y;
   params.width = width;
@@ -386,6 +388,7 @@ void TextureImageTransportSurface::OnSetFrontSurfaceIsProtected(
       textures_[front()].sent_to_client) {
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
     params.surface_handle = textures_[front()].client_id;
+    params.size = textures_[front()].size;
     params.protection_state_id = protection_state_id_;
     params.skip_ack = true;
     helper_->SendAcceleratedSurfaceBuffersSwapped(params);
