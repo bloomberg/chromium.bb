@@ -1847,6 +1847,37 @@ bool ShellUtil::RemoveChromeShortcut(
   return true;
 }
 
+void ShellUtil::RemoveChromeTaskbarShortcuts(const string16& chrome_exe) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
+  FilePath taskbar_pins_path;
+  if (!PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_pins_path) ||
+      !file_util::PathExists(taskbar_pins_path)) {
+    LOG(ERROR) << "Couldn't find path to taskbar pins.";
+    return;
+  }
+
+  file_util::FileEnumerator shortcuts_enum(
+      taskbar_pins_path, false,
+      file_util::FileEnumerator::FILES, FILE_PATH_LITERAL("*.lnk"));
+
+  FilePath chrome_path(chrome_exe);
+  InstallUtil::ProgramCompare chrome_compare(chrome_path);
+  for (FilePath shortcut_path = shortcuts_enum.Next(); !shortcut_path.empty();
+       shortcut_path = shortcuts_enum.Next()) {
+    FilePath read_target;
+    if (!base::win::ResolveShortcut(shortcut_path, &read_target, NULL)) {
+      LOG(ERROR) << "Couldn't resolve shortcut at " << shortcut_path.value();
+      continue;
+    }
+    if (chrome_compare.Evaluate(read_target.value())) {
+      // Unpin this shortcut if it points to |chrome_exe|.
+      base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str());
+    }
+  }
+}
+
 void ShellUtil::RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
                                                  const string16& chrome_exe) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
