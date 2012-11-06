@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/field_trial.h"
-#include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -86,32 +85,23 @@ void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
   scoped_ptr<ListValue> variations_list(new ListValue());
   std::vector<std::string> variations;
 #if !defined(NDEBUG)
-  std::string variation_state;
-  base::FieldTrialList::StatesToString(&variation_state);
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
 
-  std::vector<std::string> tokens;
-  base::SplitString(variation_state,
-                    base::FieldTrialList::kPersistentStringSeparator,
-                    &tokens);
-  // Since StatesToString appends a separator at the end, SplitString will
-  // append an extra empty string in the vector. Drop it. There should
-  // always be an even number of tokens left.
-  tokens.pop_back();
-  DCHECK_EQ(0U, tokens.size() % 2);
   const unsigned char kNonBreakingHyphenUTF8[] = { 0xE2, 0x80, 0x91, '\0' };
   const std::string kNonBreakingHyphenUTF8String(
       reinterpret_cast<const char*>(kNonBreakingHyphenUTF8));
-  for (size_t i = 0; i < tokens.size(); i += 2) {
-    std::string line = tokens[i] + ":" + tokens[i + 1];
+  for (size_t i = 0; i < active_groups.size(); ++i) {
+    std::string line = active_groups[i].trial + ":" + active_groups[i].group;
     ReplaceChars(line, "-", kNonBreakingHyphenUTF8String, &line);
     variations.push_back(line);
   }
 #else
   // In release mode, display the hashes only.
-  std::vector<string16> selected_groups;
-  chrome_variations::GetFieldTrialSelectedGroupIdsAsStrings(&selected_groups);
-  for (size_t i = 0; i < selected_groups.size(); ++i)
-    variations.push_back(UTF16ToASCII(selected_groups[i]));
+  std::vector<string16> active_groups;
+  chrome_variations::GetFieldTrialActiveGroupIdsAsStrings(&active_groups);
+  for (size_t i = 0; i < active_groups.size(); ++i)
+    variations.push_back(UTF16ToASCII(active_groups[i]));
 #endif
 
   for (std::vector<std::string>::const_iterator it = variations.begin();

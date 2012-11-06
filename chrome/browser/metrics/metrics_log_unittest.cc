@@ -37,7 +37,7 @@ const int kScreenWidth = 1024;
 const int kScreenHeight = 768;
 const int kScreenCount = 3;
 const float kScreenScaleFactor = 2;
-const chrome_variations::SelectedGroupId kFieldTrialIds[] = {
+const chrome_variations::ActiveGroupId kFieldTrialIds[] = {
   {37, 43},
   {13, 47},
   {23, 17}
@@ -76,7 +76,7 @@ class TestMetricsLog : public MetricsLog {
   }
 
   virtual void GetFieldTrialIds(
-      std::vector<chrome_variations::SelectedGroupId>* field_trial_ids) const
+      std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const
       OVERRIDE {
     ASSERT_TRUE(field_trial_ids->empty());
 

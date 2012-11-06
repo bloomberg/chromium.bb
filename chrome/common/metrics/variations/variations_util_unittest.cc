@@ -55,26 +55,26 @@ class VariationsUtilTest : public ::testing::Test {
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 };
 
-TEST_F(VariationsUtilTest, GetFieldTrialSelectedGroups) {
-  typedef std::set<SelectedGroupId, SelectedGroupIdCompare> SelectedGroupIdSet;
+TEST_F(VariationsUtilTest, GetFieldTrialActiveGroups) {
+  typedef std::set<ActiveGroupId, ActiveGroupIdCompare> ActiveGroupIdSet;
   std::string trial_one("trial one");
   std::string group_one("group one");
   std::string trial_two("trial two");
   std::string group_two("group two");
 
-  base::FieldTrial::SelectedGroups selected_groups;
-  base::FieldTrial::SelectedGroup selected_group;
-  selected_group.trial = trial_one;
-  selected_group.group = group_one;
-  selected_groups.push_back(selected_group);
+  base::FieldTrial::ActiveGroups active_groups;
+  base::FieldTrial::ActiveGroup active_group;
+  active_group.trial = trial_one;
+  active_group.group = group_one;
+  active_groups.push_back(active_group);
 
-  selected_group.trial = trial_two;
-  selected_group.group = group_two;
-  selected_groups.push_back(selected_group);
+  active_group.trial = trial_two;
+  active_group.group = group_two;
+  active_groups.push_back(active_group);
 
   // Create our expected groups of IDs.
-  SelectedGroupIdSet expected_groups;
-  SelectedGroupId name_group_id;
+  ActiveGroupIdSet expected_groups;
+  ActiveGroupId name_group_id;
   name_group_id.name = metrics::HashName(trial_one);
   name_group_id.group = metrics::HashName(group_one);
   expected_groups.insert(name_group_id);
@@ -82,13 +82,12 @@ TEST_F(VariationsUtilTest, GetFieldTrialSelectedGroups) {
   name_group_id.group = metrics::HashName(group_two);
   expected_groups.insert(name_group_id);
 
-  std::vector<SelectedGroupId> selected_group_ids;
-  testing::TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
-      selected_groups, &selected_group_ids);
-  EXPECT_EQ(2U, selected_group_ids.size());
-  for (size_t i = 0; i < selected_group_ids.size(); ++i) {
-    SelectedGroupIdSet::iterator expected_group =
-        expected_groups.find(selected_group_ids[i]);
+  std::vector<ActiveGroupId> active_group_ids;
+  testing::TestGetFieldTrialActiveGroupIds(active_groups, &active_group_ids);
+  EXPECT_EQ(2U, active_group_ids.size());
+  for (size_t i = 0; i < active_group_ids.size(); ++i) {
+    ActiveGroupIdSet::iterator expected_group =
+        expected_groups.find(active_group_ids[i]);
     EXPECT_FALSE(expected_group == expected_groups.end());
     expected_groups.erase(expected_group);
   }

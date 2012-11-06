@@ -63,7 +63,7 @@ using metrics::OmniboxEventProto;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
-typedef chrome_variations::SelectedGroupId SelectedGroupId;
+typedef chrome_variations::ActiveGroupId ActiveGroupId;
 typedef SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
 
 namespace {
@@ -199,9 +199,9 @@ void SetPluginInfo(const webkit::WebPluginInfo& plugin_info,
     plugin->set_is_disabled(!plugin_prefs->IsPluginEnabled(plugin_info));
 }
 
-void WriteFieldTrials(const std::vector<SelectedGroupId>& field_trial_ids,
+void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
                       SystemProfileProto* system_profile) {
-  for (std::vector<SelectedGroupId>::const_iterator it =
+  for (std::vector<ActiveGroupId>::const_iterator it =
        field_trial_ids.begin(); it != field_trial_ids.end(); ++it) {
     SystemProfileProto::FieldTrial* field_trial =
         system_profile->add_field_trial();
@@ -364,8 +364,8 @@ int MetricsLog::GetScreenCount() const {
 }
 
 void MetricsLog::GetFieldTrialIds(
-    std::vector<SelectedGroupId>* field_trial_ids) const {
-  chrome_variations::GetFieldTrialSelectedGroupIds(field_trial_ids);
+    std::vector<ActiveGroupId>* field_trial_ids) const {
+  chrome_variations::GetFieldTrialActiveGroupIds(field_trial_ids);
 }
 
 void MetricsLog::WriteStabilityElement(
@@ -815,7 +815,7 @@ void MetricsLog::RecordEnvironmentProto(
   bool write_as_xml = false;
   WritePluginList(plugin_list, write_as_xml);
 
-  std::vector<SelectedGroupId> field_trial_ids;
+  std::vector<ActiveGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);
   WriteFieldTrials(field_trial_ids, system_profile);
 }

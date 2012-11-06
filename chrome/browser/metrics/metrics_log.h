@@ -29,7 +29,7 @@ struct ProcessDataSnapshot;
 }
 
 namespace chrome_variations {
-struct SelectedGroupId;
+struct ActiveGroupId;
 }
 
 namespace webkit {
@@ -135,7 +135,7 @@ class MetricsLog : public MetricsLogBase {
   // Fills |field_trial_ids| with the list of initialized field trials name and
   // group ids.
   virtual void GetFieldTrialIds(
-    std::vector<chrome_variations::SelectedGroupId>* field_trial_ids) const;
+    std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);

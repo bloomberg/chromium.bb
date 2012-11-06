@@ -436,9 +436,9 @@ void ChromeResourceDispatcherHostDelegate::InitVariationIDsCacheIfNeeded() {
   // that could cause registered FieldTrials to be missed.
   base::FieldTrialList::AddObserver(this);
 
-  base::FieldTrial::SelectedGroups initial_groups;
-  base::FieldTrialList::GetFieldTrialSelectedGroups(&initial_groups);
-  for (base::FieldTrial::SelectedGroups::const_iterator it =
+  base::FieldTrial::ActiveGroups initial_groups;
+  base::FieldTrialList::GetActiveFieldTrialGroups(&initial_groups);
+  for (base::FieldTrial::ActiveGroups::const_iterator it =
        initial_groups.begin(); it != initial_groups.end(); ++it) {
     chrome_variations::VariationID id =
         chrome_variations::GetGoogleVariationID(it->trial, it->group);
