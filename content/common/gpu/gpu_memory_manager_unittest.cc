@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
@@ -23,58 +22,73 @@ namespace content {
 
 // This class is used to collect all stub assignments during a
 // Manage() call.
-class StubAssignmentCollector {
+class ClientAssignmentCollector {
  public:
-  struct StubMemoryStat {
+  struct ClientMemoryStat {
     GpuMemoryAllocation allocation;
   };
-  typedef base::hash_map<GpuCommandBufferStubBase*, StubMemoryStat>
-      StubMemoryStatMap;
+  typedef base::hash_map<GpuMemoryManagerClient*, ClientMemoryStat>
+      ClientMemoryStatMap;
 
-  static const StubMemoryStatMap& GetStubStatsForLastManage() {
-    return stub_memory_stats_for_last_manage_;
+  static const ClientMemoryStatMap& GetClientStatsForLastManage() {
+    return client_memory_stats_for_last_manage_;
   }
   static void ClearAllStats() {
-    stub_memory_stats_for_last_manage_.clear();
+    client_memory_stats_for_last_manage_.clear();
   }
-  static void AddStubStat(GpuCommandBufferStubBase* stub,
-                   const GpuMemoryAllocation& allocation) {
-    DCHECK(!stub_memory_stats_for_last_manage_.count(stub));
-    stub_memory_stats_for_last_manage_[stub].allocation = allocation;
+  static void AddClientStat(GpuMemoryManagerClient* client,
+                          const GpuMemoryAllocation& allocation) {
+    DCHECK(!client_memory_stats_for_last_manage_.count(client));
+    client_memory_stats_for_last_manage_[client].allocation = allocation;
   }
 
  private:
-  static StubMemoryStatMap stub_memory_stats_for_last_manage_;
+  static ClientMemoryStatMap client_memory_stats_for_last_manage_;
 };
 
-StubAssignmentCollector::StubMemoryStatMap
-    StubAssignmentCollector::stub_memory_stats_for_last_manage_;
+ClientAssignmentCollector::ClientMemoryStatMap
+    ClientAssignmentCollector::client_memory_stats_for_last_manage_;
 
-class FakeCommandBufferStubBase : public GpuCommandBufferStubBase {
+class FakeClient : public GpuMemoryManagerClient {
  public:
-  MemoryManagerState memory_manager_state_;
+  GpuMemoryManager& memmgr_;
   GpuMemoryAllocation allocation_;
   size_t total_gpu_memory_;
   scoped_refptr<gpu::gles2::MemoryTracker> memory_tracker_;
   gpu::gles2::MemoryTracker* overridden_memory_tracker_;
+  gfx::Size surface_size_;
 
-  FakeCommandBufferStubBase()
-      : memory_manager_state_(0, false, base::TimeTicks())
+  // This will create a client with no surface
+  FakeClient(GpuMemoryManager& memmgr)
+      : memmgr_(memmgr)
       , total_gpu_memory_(0)
       , memory_tracker_(new FakeMemoryTracker())
       , overridden_memory_tracker_(0) {
-    memory_manager_state_.client_has_memory_allocation_changed_callback = true;
+    memmgr_.AddClient(this, false, true, base::TimeTicks());
   }
 
-  virtual const MemoryManagerState& memory_manager_state() const {
-    return memory_manager_state_;
+  // This will create a client with a surface
+  FakeClient(GpuMemoryManager& memmgr,
+             int32 surface_id,
+             bool visible,
+             base::TimeTicks last_used_time)
+      : memmgr_(memmgr)
+      , total_gpu_memory_(0)
+      , memory_tracker_(new FakeMemoryTracker())
+      , overridden_memory_tracker_(0) {
+    memmgr_.AddClient(this, surface_id != 0, visible, last_used_time);
   }
-  virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
+
+  ~FakeClient() {
+    memmgr_.RemoveClient(this);
+  }
+
+  void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
     allocation_ = alloc;
-    StubAssignmentCollector::AddStubStat(this, alloc);
+    ClientAssignmentCollector::AddClientStat(this, alloc);
   }
 
-  virtual bool GetTotalGpuMemory(size_t* bytes) {
+  bool GetTotalGpuMemory(size_t* bytes) {
     if (total_gpu_memory_) {
       *bytes = total_gpu_memory_;
       return true;
@@ -83,58 +97,21 @@ class FakeCommandBufferStubBase : public GpuCommandBufferStubBase {
   }
   void SetTotalGpuMemory(size_t bytes) { total_gpu_memory_ = bytes; }
 
-  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE {
+  gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE {
     if (overridden_memory_tracker_)
       return overridden_memory_tracker_;
     return memory_tracker_.get();
   }
 
-  void SetInSameShareGroup(GpuCommandBufferStubBase* stub) {
+  void SetInSameShareGroup(GpuMemoryManagerClient* stub) {
     overridden_memory_tracker_ = stub->GetMemoryTracker();
   }
-};
 
-class FakeCommandBufferStub : public FakeCommandBufferStubBase {
- public:
-  gfx::Size surface_size_;
-
-  FakeCommandBufferStub() {
-  }
-
-  FakeCommandBufferStub(int32 surface_id,
-                        bool visible,
-                        base::TimeTicks last_used_time) {
-    memory_manager_state_.has_surface = (surface_id != 0);
-    memory_manager_state_.visible = visible;
-    memory_manager_state_.last_used_time = last_used_time;
-  }
-
-  virtual gfx::Size GetSurfaceSize() const {
+  gfx::Size GetSurfaceSize() const {
     return surface_size_;
   }
   void SetSurfaceSize(gfx::Size size) { surface_size_ = size; }
-};
 
-class FakeCommandBufferStubWithoutSurface : public FakeCommandBufferStubBase {
- public:
-  FakeCommandBufferStubWithoutSurface() {
-    memory_manager_state_.has_surface = false;
-    memory_manager_state_.visible = true;
-  }
-
-  virtual gfx::Size GetSurfaceSize() const {
-    return gfx::Size();
-  }
-};
-
-class FakeClient : public GpuMemoryManagerClient {
- public:
-  std::vector<GpuCommandBufferStubBase*> stubs_;
-
-  virtual void AppendAllCommandBufferStubs(
-      std::vector<GpuCommandBufferStubBase*>& stubs) {
-    stubs.insert(stubs.end(), stubs_.begin(), stubs_.end());
-  }
 };
 
 class GpuMemoryManagerTest : public testing::Test {
@@ -142,7 +119,8 @@ class GpuMemoryManagerTest : public testing::Test {
   static const size_t kFrontbufferLimitForTest = 3;
 
   GpuMemoryManagerTest()
-      : memory_manager_(&client_, kFrontbufferLimitForTest) {
+      : memmgr_(kFrontbufferLimitForTest) {
+    memmgr_.TestingDisableScheduleManage();
   }
 
   virtual void SetUp() {
@@ -154,11 +132,6 @@ class GpuMemoryManagerTest : public testing::Test {
   static int32 GenerateUniqueSurfaceId() {
     static int32 surface_id_ = 1;
     return surface_id_++;
-  }
-
-  static bool IsMoreImportant(GpuCommandBufferStubBase* lhs,
-                              GpuCommandBufferStubBase* rhs) {
-    return GpuMemoryManager::StubWithSurfaceComparator()(lhs, rhs);
   }
 
   bool IsAllocationForegroundForSurfaceYes(
@@ -202,8 +175,8 @@ class GpuMemoryManagerTest : public testing::Test {
   }
 
   void Manage() {
-    StubAssignmentCollector::ClearAllStats();
-    memory_manager_.Manage();
+    ClientAssignmentCollector::ClearAllStats();
+    memmgr_.Manage();
   }
 
   size_t CalcAvailableFromGpuTotal(size_t bytes) {
@@ -215,84 +188,84 @@ class GpuMemoryManagerTest : public testing::Test {
   }
 
   size_t CalcAvailableClamped(size_t bytes) {
-    bytes = std::max(bytes, memory_manager_.GetDefaultAvailableGpuMemory());
-    bytes = std::min(bytes, memory_manager_.GetMaximumTotalGpuMemory());
+    bytes = std::max(bytes, memmgr_.GetDefaultAvailableGpuMemory());
+    bytes = std::min(bytes, memmgr_.GetMaximumTotalGpuMemory());
     return bytes;
   }
 
   size_t GetAvailableGpuMemory() {
-    return memory_manager_.GetAvailableGpuMemory();
+    return memmgr_.GetAvailableGpuMemory();
   }
 
   size_t GetMaximumTabAllocation() {
-    return memory_manager_.GetMaximumTabAllocation();
+    return memmgr_.GetMaximumTabAllocation();
   }
 
   size_t GetMinimumTabAllocation() {
-    return memory_manager_.GetMinimumTabAllocation();
+    return memmgr_.GetMinimumTabAllocation();
   }
 
   base::TimeTicks older_, newer_, newest_;
-  FakeClient client_;
-  GpuMemoryManager memory_manager_;
+  GpuMemoryManager memmgr_;
 };
 
 // Create fake stubs with every combination of {visibilty,last_use_time}
 // and make sure they compare correctly.  Only compare stubs with surfaces.
 // Expect {more visible, newer} surfaces to be more important, in that order.
 TEST_F(GpuMemoryManagerTest, ComparatorTests) {
-  FakeCommandBufferStub stub_true1(GenerateUniqueSurfaceId(), true, older_),
-                        stub_true2(GenerateUniqueSurfaceId(), true, newer_),
-                        stub_true3(GenerateUniqueSurfaceId(), true, newest_),
-                        stub_false1(GenerateUniqueSurfaceId(), false, older_),
-                        stub_false2(GenerateUniqueSurfaceId(), false, newer_),
-                        stub_false3(GenerateUniqueSurfaceId(), false, newest_);
+  FakeClient
+      stub_true1(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+      stub_true2(memmgr_, GenerateUniqueSurfaceId(), true, newer_),
+      stub_true3(memmgr_, GenerateUniqueSurfaceId(), true, newest_),
+      stub_false1(memmgr_, GenerateUniqueSurfaceId(), false, older_),
+      stub_false2(memmgr_, GenerateUniqueSurfaceId(), false, newer_),
+      stub_false3(memmgr_, GenerateUniqueSurfaceId(), false, newest_);
 
   // Should never be more important than self:
-  EXPECT_FALSE(IsMoreImportant(&stub_true1, &stub_true1));
-  EXPECT_FALSE(IsMoreImportant(&stub_true2, &stub_true2));
-  EXPECT_FALSE(IsMoreImportant(&stub_true3, &stub_true3));
-  EXPECT_FALSE(IsMoreImportant(&stub_false1, &stub_false1));
-  EXPECT_FALSE(IsMoreImportant(&stub_false2, &stub_false2));
-  EXPECT_FALSE(IsMoreImportant(&stub_false3, &stub_false3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_true1, &stub_true1));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_true2, &stub_true2));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_true3, &stub_true3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false1, &stub_false1));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false2, &stub_false2));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false3, &stub_false3));
 
   // Visible should always be more important than non visible:
-  EXPECT_TRUE(IsMoreImportant(&stub_true1, &stub_false1));
-  EXPECT_TRUE(IsMoreImportant(&stub_true1, &stub_false2));
-  EXPECT_TRUE(IsMoreImportant(&stub_true1, &stub_false3));
-  EXPECT_TRUE(IsMoreImportant(&stub_true2, &stub_false1));
-  EXPECT_TRUE(IsMoreImportant(&stub_true2, &stub_false2));
-  EXPECT_TRUE(IsMoreImportant(&stub_true2, &stub_false3));
-  EXPECT_TRUE(IsMoreImportant(&stub_true3, &stub_false1));
-  EXPECT_TRUE(IsMoreImportant(&stub_true3, &stub_false2));
-  EXPECT_TRUE(IsMoreImportant(&stub_true3, &stub_false3));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true1, &stub_false1));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true1, &stub_false2));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true1, &stub_false3));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true2, &stub_false1));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true2, &stub_false2));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true2, &stub_false3));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true3, &stub_false1));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true3, &stub_false2));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true3, &stub_false3));
 
   // Not visible should never be more important than visible:
-  EXPECT_FALSE(IsMoreImportant(&stub_false1, &stub_true1));
-  EXPECT_FALSE(IsMoreImportant(&stub_false1, &stub_true2));
-  EXPECT_FALSE(IsMoreImportant(&stub_false1, &stub_true3));
-  EXPECT_FALSE(IsMoreImportant(&stub_false2, &stub_true1));
-  EXPECT_FALSE(IsMoreImportant(&stub_false2, &stub_true2));
-  EXPECT_FALSE(IsMoreImportant(&stub_false2, &stub_true3));
-  EXPECT_FALSE(IsMoreImportant(&stub_false3, &stub_true1));
-  EXPECT_FALSE(IsMoreImportant(&stub_false3, &stub_true2));
-  EXPECT_FALSE(IsMoreImportant(&stub_false3, &stub_true3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false1, &stub_true1));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false1, &stub_true2));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false1, &stub_true3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false2, &stub_true1));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false2, &stub_true2));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false2, &stub_true3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false3, &stub_true1));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false3, &stub_true2));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false3, &stub_true3));
 
   // Newer should always be more important than older:
-  EXPECT_TRUE(IsMoreImportant(&stub_true2, &stub_true1));
-  EXPECT_TRUE(IsMoreImportant(&stub_true3, &stub_true1));
-  EXPECT_TRUE(IsMoreImportant(&stub_true3, &stub_true2));
-  EXPECT_TRUE(IsMoreImportant(&stub_false2, &stub_false1));
-  EXPECT_TRUE(IsMoreImportant(&stub_false3, &stub_false1));
-  EXPECT_TRUE(IsMoreImportant(&stub_false3, &stub_false2));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true2, &stub_true1));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true3, &stub_true1));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_true3, &stub_true2));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_false2, &stub_false1));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_false3, &stub_false1));
+  EXPECT_TRUE(memmgr_.TestingCompareClients(&stub_false3, &stub_false2));
 
   // Older should never be more important than newer:
-  EXPECT_FALSE(IsMoreImportant(&stub_true1, &stub_true2));
-  EXPECT_FALSE(IsMoreImportant(&stub_true1, &stub_true3));
-  EXPECT_FALSE(IsMoreImportant(&stub_true2, &stub_true3));
-  EXPECT_FALSE(IsMoreImportant(&stub_false1, &stub_false2));
-  EXPECT_FALSE(IsMoreImportant(&stub_false1, &stub_false3));
-  EXPECT_FALSE(IsMoreImportant(&stub_false2, &stub_false3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_true1, &stub_true2));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_true1, &stub_true3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_true2, &stub_true3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false1, &stub_false2));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false1, &stub_false3));
+  EXPECT_FALSE(memmgr_.TestingCompareClients(&stub_false2, &stub_false3));
 }
 
 // Test GpuMemoryManager::Manage basic functionality.
@@ -302,21 +275,17 @@ TEST_F(GpuMemoryManagerTest, ComparatorTests) {
 // without a surface.
 TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
   // Test stubs with surface.
-  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_),
-                        stub2(GenerateUniqueSurfaceId(), false, older_);
-  client_.stubs_.push_back(&stub1);
-  client_.stubs_.push_back(&stub2);
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+             stub2(memmgr_, GenerateUniqueSurfaceId(), false, older_);
 
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub1.allocation_));
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceYes(stub2.allocation_));
 
   // Test stubs without surface, with share group of 1 stub.
-  FakeCommandBufferStubWithoutSurface stub3, stub4;
+  FakeClient stub3(memmgr_), stub4(memmgr_);
   stub3.SetInSameShareGroup(&stub1);
   stub4.SetInSameShareGroup(&stub2);
-  client_.stubs_.push_back(&stub3);
-  client_.stubs_.push_back(&stub4);
 
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub1.allocation_));
@@ -325,9 +294,8 @@ TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub4.allocation_));
 
   // Test stub without surface, with share group of multiple stubs.
-  FakeCommandBufferStubWithoutSurface stub5;
+  FakeClient stub5(memmgr_);
   stub5.SetInSameShareGroup(&stub2);
-  client_.stubs_.push_back(&stub5);
 
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceNo(stub4.allocation_));
@@ -339,20 +307,15 @@ TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
 // Expect memory allocation to be shared according to share groups for stubs
 // without a surface.
 TEST_F(GpuMemoryManagerTest, TestManageChangingVisibility) {
-  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_),
-                        stub2(GenerateUniqueSurfaceId(), false, older_);
-  client_.stubs_.push_back(&stub1);
-  client_.stubs_.push_back(&stub2);
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+             stub2(memmgr_, GenerateUniqueSurfaceId(), false, older_);
 
-  FakeCommandBufferStubWithoutSurface stub3, stub4;
+  FakeClient stub3(memmgr_), stub4(memmgr_);
   stub3.SetInSameShareGroup(&stub1);
   stub4.SetInSameShareGroup(&stub2);
-  client_.stubs_.push_back(&stub3);
-  client_.stubs_.push_back(&stub4);
 
-  FakeCommandBufferStubWithoutSurface stub5;
+  FakeClient stub5(memmgr_);
   stub5.SetInSameShareGroup(&stub2);
-  client_.stubs_.push_back(&stub5);
 
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub1.allocation_));
@@ -361,8 +324,8 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingVisibility) {
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub4.allocation_));
   EXPECT_TRUE(IsAllocationForegroundForSurfaceNo(stub5.allocation_));
 
-  stub1.memory_manager_state_.visible = false;
-  stub2.memory_manager_state_.visible = true;
+  memmgr_.TestingSetClientVisible(&stub1, false);
+  memmgr_.TestingSetClientVisible(&stub2, true);
 
   Manage();
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceYes(stub1.allocation_));
@@ -376,24 +339,17 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingVisibility) {
 // of visible stubs.
 // Expect all allocations to continue to have frontbuffer.
 TEST_F(GpuMemoryManagerTest, TestManageManyVisibleStubs) {
-  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_),
-                        stub2(GenerateUniqueSurfaceId(), true, older_),
-                        stub3(GenerateUniqueSurfaceId(), true, older_),
-                        stub4(GenerateUniqueSurfaceId(), true, older_);
-  client_.stubs_.push_back(&stub1);
-  client_.stubs_.push_back(&stub2);
-  client_.stubs_.push_back(&stub3);
-  client_.stubs_.push_back(&stub4);
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+             stub2(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+             stub3(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+             stub4(memmgr_, GenerateUniqueSurfaceId(), true, older_);
 
-  FakeCommandBufferStubWithoutSurface stub5, stub6;
+  FakeClient stub5(memmgr_), stub6(memmgr_);
   stub5.SetInSameShareGroup(&stub1);
   stub6.SetInSameShareGroup(&stub2);
-  client_.stubs_.push_back(&stub5);
-  client_.stubs_.push_back(&stub6);
 
-  FakeCommandBufferStubWithoutSurface stub7;
+  FakeClient stub7(memmgr_);
   stub7.SetInSameShareGroup(&stub2);
-  client_.stubs_.push_back(&stub7);
 
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub1.allocation_));
@@ -409,24 +365,17 @@ TEST_F(GpuMemoryManagerTest, TestManageManyVisibleStubs) {
 // of not visible stubs.
 // Expect the stubs surpassing the threshold to not have a backbuffer.
 TEST_F(GpuMemoryManagerTest, TestManageManyNotVisibleStubs) {
-  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), false, newer_),
-                        stub2(GenerateUniqueSurfaceId(), false, newer_),
-                        stub3(GenerateUniqueSurfaceId(), false, newer_),
-                        stub4(GenerateUniqueSurfaceId(), false, older_);
-  client_.stubs_.push_back(&stub1);
-  client_.stubs_.push_back(&stub2);
-  client_.stubs_.push_back(&stub3);
-  client_.stubs_.push_back(&stub4);
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), false, newer_),
+             stub2(memmgr_, GenerateUniqueSurfaceId(), false, newer_),
+             stub3(memmgr_, GenerateUniqueSurfaceId(), false, newer_),
+             stub4(memmgr_, GenerateUniqueSurfaceId(), false, older_);
 
-  FakeCommandBufferStubWithoutSurface stub5, stub6;
+  FakeClient stub5(memmgr_), stub6(memmgr_);
   stub5.SetInSameShareGroup(&stub1);
   stub6.SetInSameShareGroup(&stub4);
-  client_.stubs_.push_back(&stub5);
-  client_.stubs_.push_back(&stub6);
 
-  FakeCommandBufferStubWithoutSurface stub7;
+  FakeClient stub7(memmgr_);
   stub7.SetInSameShareGroup(&stub1);
-  client_.stubs_.push_back(&stub7);
 
   Manage();
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceYes(stub1.allocation_));
@@ -442,24 +391,17 @@ TEST_F(GpuMemoryManagerTest, TestManageManyNotVisibleStubs) {
 // time of stubs when doing so causes change in which stubs surpass threshold.
 // Expect frontbuffer to be dropped for the older stub.
 TEST_F(GpuMemoryManagerTest, TestManageChangingLastUsedTime) {
-  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), false, newer_),
-                        stub2(GenerateUniqueSurfaceId(), false, newer_),
-                        stub3(GenerateUniqueSurfaceId(), false, newer_),
-                        stub4(GenerateUniqueSurfaceId(), false, older_);
-  client_.stubs_.push_back(&stub1);
-  client_.stubs_.push_back(&stub2);
-  client_.stubs_.push_back(&stub3);
-  client_.stubs_.push_back(&stub4);
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), false, newer_),
+             stub2(memmgr_, GenerateUniqueSurfaceId(), false, newer_),
+             stub3(memmgr_, GenerateUniqueSurfaceId(), false, newer_),
+             stub4(memmgr_, GenerateUniqueSurfaceId(), false, older_);
 
-  FakeCommandBufferStubWithoutSurface stub5, stub6;
+  FakeClient stub5(memmgr_), stub6(memmgr_);
   stub5.SetInSameShareGroup(&stub3);
   stub6.SetInSameShareGroup(&stub4);
-  client_.stubs_.push_back(&stub5);
-  client_.stubs_.push_back(&stub6);
 
-  FakeCommandBufferStubWithoutSurface stub7;
+  FakeClient stub7(memmgr_);
   stub7.SetInSameShareGroup(&stub3);
-  client_.stubs_.push_back(&stub7);
 
   Manage();
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceYes(stub1.allocation_));
@@ -470,8 +412,8 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingLastUsedTime) {
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceNo(stub6.allocation_));
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub7.allocation_));
 
-  stub3.memory_manager_state_.last_used_time = older_;
-  stub4.memory_manager_state_.last_used_time = newer_;
+  memmgr_.TestingSetClientLastUsedTime(&stub3, older_);
+  memmgr_.TestingSetClientLastUsedTime(&stub4, newer_);
 
   Manage();
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceYes(stub1.allocation_));
@@ -488,22 +430,15 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingLastUsedTime) {
 // Expect memory allocation of the stubs without surface to share memory
 // allocation with the most visible stub in share group.
 TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
-  FakeCommandBufferStub stubIgnoreA(GenerateUniqueSurfaceId(), true, newer_),
-                        stubIgnoreB(GenerateUniqueSurfaceId(), false, newer_),
-                        stubIgnoreC(GenerateUniqueSurfaceId(), false, newer_);
-  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, newest_),
-                        stub2(GenerateUniqueSurfaceId(), true, newest_);
-  client_.stubs_.push_back(&stubIgnoreA);
-  client_.stubs_.push_back(&stubIgnoreB);
-  client_.stubs_.push_back(&stubIgnoreC);
-  client_.stubs_.push_back(&stub1);
-  client_.stubs_.push_back(&stub2);
+  FakeClient stubIgnoreA(memmgr_, GenerateUniqueSurfaceId(), true, newer_),
+             stubIgnoreB(memmgr_, GenerateUniqueSurfaceId(), false, newer_),
+             stubIgnoreC(memmgr_, GenerateUniqueSurfaceId(), false, newer_);
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, newest_),
+             stub2(memmgr_, GenerateUniqueSurfaceId(), true, newest_);
 
-  FakeCommandBufferStubWithoutSurface stub3, stub4;
+  FakeClient stub3(memmgr_), stub4(memmgr_);
   stub3.SetInSameShareGroup(&stub2);
   stub4.SetInSameShareGroup(&stub2);
-  client_.stubs_.push_back(&stub3);
-  client_.stubs_.push_back(&stub4);
 
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub1.allocation_));
@@ -511,7 +446,7 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   EXPECT_TRUE(IsAllocationForegroundForSurfaceNo(stub3.allocation_));
   EXPECT_TRUE(IsAllocationForegroundForSurfaceNo(stub4.allocation_));
 
-  stub1.memory_manager_state_.visible = false;
+  memmgr_.TestingSetClientVisible(&stub1, false);
 
   Manage();
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceYes(stub1.allocation_));
@@ -519,7 +454,7 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub3.allocation_));
   EXPECT_TRUE(IsAllocationForegroundForSurfaceNo(stub4.allocation_));
 
-  stub2.memory_manager_state_.visible = false;
+  memmgr_.TestingSetClientVisible(&stub2, false);
 
   Manage();
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceYes(stub1.allocation_));
@@ -527,7 +462,7 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub3.allocation_));
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub4.allocation_));
 
-  stub1.memory_manager_state_.last_used_time = older_;
+  memmgr_.TestingSetClientLastUsedTime(&stub1, older_);
 
   Manage();
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceYes(stub1.allocation_));
@@ -535,7 +470,7 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub3.allocation_));
   EXPECT_TRUE(IsAllocationBackgroundForSurfaceNo(stub4.allocation_));
 
-  stub2.memory_manager_state_.last_used_time = older_;
+  memmgr_.TestingSetClientLastUsedTime(&stub2, older_);
 
   Manage();
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceYes(stub1.allocation_));
@@ -553,45 +488,42 @@ TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocation) {
   size_t max_stubs_before_no_bonus =
       GetAvailableGpuMemory() / (GetMinimumTabAllocation() + 1);
 
-  std::vector<FakeCommandBufferStub> stubs;
+  std::vector<FakeClient*> stubs;
   for (size_t i = 0; i < max_stubs_before_no_bonus; ++i) {
     stubs.push_back(
-        FakeCommandBufferStub(GenerateUniqueSurfaceId(), true, older_));
-  }
-  for (size_t i = 0; i < stubs.size(); ++i) {
-    client_.stubs_.push_back(&stubs[i]);
+        new FakeClient(memmgr_, GenerateUniqueSurfaceId(), true, older_));
   }
 
   Manage();
   for (size_t i = 0; i < stubs.size(); ++i) {
-    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i].allocation_));
+    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i]->allocation_));
     EXPECT_GT(
-        stubs[i].allocation_.renderer_allocation.bytes_limit_when_visible,
+        stubs[i]->allocation_.renderer_allocation.bytes_limit_when_visible,
         static_cast<size_t>(GetMinimumTabAllocation()));
   }
 
-  FakeCommandBufferStub extra_stub(GenerateUniqueSurfaceId(), true, older_);
-  client_.stubs_.push_back(&extra_stub);
+  FakeClient extra_stub(memmgr_, GenerateUniqueSurfaceId(), true, older_);
 
   Manage();
   for (size_t i = 0; i < stubs.size(); ++i) {
-    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i].allocation_));
+    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i]->allocation_));
     EXPECT_EQ(
-        stubs[i].allocation_.renderer_allocation.bytes_limit_when_visible,
+        stubs[i]->allocation_.renderer_allocation.bytes_limit_when_visible,
         GetMinimumTabAllocation());
+  }
+
+  for (size_t i = 0; i < max_stubs_before_no_bonus; ++i) {
+    delete stubs[i];
   }
 }
 
 // Test GpuMemoryManager::UpdateAvailableGpuMemory functionality
 TEST_F(GpuMemoryManagerTest, TestUpdateAvailableGpuMemory) {
-  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_),
-                        stub2(GenerateUniqueSurfaceId(), false, older_),
-                        stub3(GenerateUniqueSurfaceId(), true, older_),
-                        stub4(GenerateUniqueSurfaceId(), false, older_);
-  client_.stubs_.push_back(&stub1);
-  client_.stubs_.push_back(&stub2);
-  client_.stubs_.push_back(&stub3);
-  client_.stubs_.push_back(&stub4);
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+             stub2(memmgr_, GenerateUniqueSurfaceId(), false, older_),
+             stub3(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+             stub4(memmgr_, GenerateUniqueSurfaceId(), false, older_);
+
 #if defined(OS_ANDROID)
   // We use the largest visible surface size to calculate the limit
   stub1.SetSurfaceSize(gfx::Size(1024, 512)); // Surface size
@@ -662,27 +594,25 @@ TEST_F(GpuMemoryManagerTest, GpuMemoryAllocationCompareTests) {
 // Creats various surface/non-surface stubs and switches stub visibility and
 // tests to see that stats data structure values are correct.
 TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
-  StubAssignmentCollector::StubMemoryStatMap stats;
+  ClientAssignmentCollector::ClientMemoryStatMap stats;
 
   Manage();
-  stats = StubAssignmentCollector::GetStubStatsForLastManage();
+  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
   EXPECT_EQ(stats.size(), 0ul);
 
-  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_);
-  client_.stubs_.push_back(&stub1);
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, older_);
   Manage();
-  stats = StubAssignmentCollector::GetStubStatsForLastManage();
+  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
   size_t stub1allocation1 =
       stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 1ul);
   EXPECT_GT(stub1allocation1, 0ul);
 
-  FakeCommandBufferStubWithoutSurface stub2;
-  client_.stubs_.push_back(&stub2);
+  FakeClient stub2(memmgr_);
   stub2.SetInSameShareGroup(&stub1);
   Manage();
-  stats = StubAssignmentCollector::GetStubStatsForLastManage();
+  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
   EXPECT_EQ(stats.count(&stub1), 1ul);
   size_t stub1allocation2 =
       stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
@@ -696,10 +626,9 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   if (stub1allocation2 != GetMaximumTabAllocation())
     EXPECT_LT(stub1allocation2, stub1allocation1);
 
-  FakeCommandBufferStub stub3(GenerateUniqueSurfaceId(), true, older_);
-  client_.stubs_.push_back(&stub3);
+  FakeClient stub3(memmgr_, GenerateUniqueSurfaceId(), true, older_);
   Manage();
-  stats = StubAssignmentCollector::GetStubStatsForLastManage();
+  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
   size_t stub1allocation3 =
       stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
   size_t stub2allocation3 =
@@ -714,9 +643,10 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   if (stub1allocation3 != GetMaximumTabAllocation())
     EXPECT_LT(stub1allocation3, stub1allocation2);
 
-  stub1.memory_manager_state_.visible = false;
+  memmgr_.TestingSetClientVisible(&stub1, false);
+
   Manage();
-  stats = StubAssignmentCollector::GetStubStatsForLastManage();
+  stats = ClientAssignmentCollector::GetClientStatsForLastManage();
   size_t stub1allocation4 =
       stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
   size_t stub2allocation4 =

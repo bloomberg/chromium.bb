@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
+#include "content/common/gpu/gpu_memory_manager.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -45,45 +46,10 @@ namespace content {
 class GpuChannel;
 class GpuVideoDecodeAccelerator;
 class GpuWatchdog;
-struct GpuMemoryAllocation;
-
-// This Base class is used to expose methods of GpuCommandBufferStub used for
-// testability.
-class CONTENT_EXPORT GpuCommandBufferStubBase {
- public:
-  struct CONTENT_EXPORT MemoryManagerState {
-    // Offscreen commandbuffers will not have a surface.
-    bool has_surface;
-    bool visible;
-    bool client_has_memory_allocation_changed_callback;
-    // The last used time is determined by the last time that visibility
-    // was changed.
-    base::TimeTicks last_used_time;
-    GpuManagedMemoryStats managed_memory_stats;
-
-    MemoryManagerState(
-       bool has_surface,
-       bool visible,
-       base::TimeTicks last_used_time);
-  };
-
- public:
-  virtual ~GpuCommandBufferStubBase() {}
-
-  virtual const MemoryManagerState& memory_manager_state() const = 0;
-
-  virtual gfx::Size GetSurfaceSize() const = 0;
-
-  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const = 0;
-
-  virtual void SetMemoryAllocation(
-      const GpuMemoryAllocation& allocation) = 0;
-
-  virtual bool GetTotalGpuMemory(size_t* bytes) = 0;
-};
+class GpuMemoryManagerClient;
 
 class GpuCommandBufferStub
-    : public GpuCommandBufferStubBase,
+    : public GpuMemoryManagerClient,
       public IPC::Listener,
       public IPC::Sender,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
@@ -122,23 +88,11 @@ class GpuCommandBufferStub
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // GpuCommandBufferStubBase implementation:
-  virtual const GpuCommandBufferStubBase::MemoryManagerState&
-      memory_manager_state() const OVERRIDE;
-
-  // Returns surface size.
+  // GpuMemoryManagerClient implementation:
   virtual gfx::Size GetSurfaceSize() const OVERRIDE;
-
-  // Returns the memory tracker for this stub.
   virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE;
-
-  // Sets buffer usage depending on Memory Allocation
   virtual void SetMemoryAllocation(
       const GpuMemoryAllocation& allocation) OVERRIDE;
-
-  // Returns in bytes the total amount of GPU memory for the GPU which this
-  // context is currently rendering on. Returns false if no extension exists
-  // to get the exact amount of GPU memory.
   virtual bool GetTotalGpuMemory(size_t* bytes) OVERRIDE;
 
   // Whether this command buffer can currently handle IPC messages.
@@ -180,6 +134,7 @@ class GpuCommandBufferStub
   void SetPreemptByCounter(scoped_refptr<gpu::RefCountedCounter> counter);
 
  private:
+  GpuMemoryManager* GetMemoryManager();
   bool MakeCurrent();
   void Destroy();
 
@@ -263,7 +218,6 @@ class GpuCommandBufferStub
   int32 surface_id_;
   bool software_;
   uint32 last_flush_count_;
-  scoped_ptr<MemoryManagerState> memory_manager_state_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;

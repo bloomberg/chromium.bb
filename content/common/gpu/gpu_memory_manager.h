@@ -12,22 +12,24 @@
 
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/public/common/gpu_memory_stats.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gfx/size.h"
 
 namespace content {
-class GpuCommandBufferStubBase;
+class GpuMemoryManagerClient;
 }
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
 template<>
-struct hash<content::GpuCommandBufferStubBase*> {
-  size_t operator()(content::GpuCommandBufferStubBase* ptr) const {
+struct hash<content::GpuMemoryManagerClient*> {
+  size_t operator()(content::GpuMemoryManagerClient* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
@@ -35,24 +37,15 @@ struct hash<content::GpuCommandBufferStubBase*> {
 #endif // COMPILER
 
 namespace content {
+class GpuMemoryManagerClient;
 class GpuMemoryTrackingGroup;
-
-class CONTENT_EXPORT GpuMemoryManagerClient {
-public:
-  virtual ~GpuMemoryManagerClient() {}
-
-  virtual void AppendAllCommandBufferStubs(
-      std::vector<GpuCommandBufferStubBase*>& stubs) = 0;
-};
 
 class CONTENT_EXPORT GpuMemoryManager :
     public base::SupportsWeakPtr<GpuMemoryManager> {
  public:
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
-  typedef std::vector<GpuCommandBufferStubBase*> StubVector;
 
-  GpuMemoryManager(GpuMemoryManagerClient* client,
-                   size_t max_surfaces_with_frontbuffer_soft_limit);
+  explicit GpuMemoryManager(size_t max_surfaces_with_frontbuffer_soft_limit);
   ~GpuMemoryManager();
 
   // Schedule a Manage() call. If immediate is true, we PostTask without delay.
@@ -67,6 +60,16 @@ class CONTENT_EXPORT GpuMemoryManager :
       content::GPUVideoMemoryUsageStats& video_memory_usage_stats) const;
   void SetWindowCount(uint32 count);
 
+  // Add and remove clients
+  void AddClient(GpuMemoryManagerClient* client,
+                 bool has_surface,
+                 bool visible,
+                 base::TimeTicks last_used_time);
+  void RemoveClient(GpuMemoryManagerClient* client);
+  void SetClientVisible(GpuMemoryManagerClient* client, bool visible);
+  void SetClientManagedMemoryStats(GpuMemoryManagerClient* client,
+                                   const GpuManagedMemoryStats& stats);
+
   // Add and remove structures to track context groups' memory consumption
   void AddTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
   void RemoveTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
@@ -76,15 +79,67 @@ class CONTENT_EXPORT GpuMemoryManager :
 
  private:
   friend class GpuMemoryManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           ComparatorTests);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestManageBasicFunctionality);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestManageChangingVisibility);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestManageManyVisibleStubs);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestManageManyNotVisibleStubs);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestManageChangingLastUsedTime);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestManageChangingImportanceShareGroup);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestForegroundStubsGetBonusAllocation);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestUpdateAvailableGpuMemory);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           GpuMemoryAllocationCompareTests);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           StubMemoryStatsForLastManageTests);
+
+  struct ClientState {
+    ClientState(GpuMemoryManagerClient* client,
+                bool has_surface,
+                bool visible,
+                base::TimeTicks last_used_time);
+    // The client to send allocations to.
+    GpuMemoryManagerClient* client;
+
+    // Offscreen commandbuffers will not have a surface.
+    bool has_surface;
+
+    // The last used time is determined by the last time that visibility
+    // was changed.
+    bool visible;
+    base::TimeTicks last_used_time;
+
+    // Statistics about memory usage.
+    GpuManagedMemoryStats managed_memory_stats;
+  };
+
+  class CONTENT_EXPORT ClientsWithSurfaceComparator {
+   public:
+    bool operator()(ClientState* lhs,
+                    ClientState* rhs);
+  };
+
+  typedef std::map<GpuMemoryManagerClient*, ClientState*> ClientMap;
+
+  typedef std::vector<ClientState*> ClientStateVector;
 
   void Manage();
 
-  // The context groups' tracking structures
-  std::set<GpuMemoryTrackingGroup*> tracking_groups_;
+  void AssignMemoryAllocations(const ClientStateVector& clients,
+                               const GpuMemoryAllocation& allocation);
 
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
-  void UpdateAvailableGpuMemory(const StubVector& stubs);
+  void UpdateAvailableGpuMemory(const ClientStateVector& clients);
 
   // The amount of video memory which is available for allocation
   size_t GetAvailableGpuMemory() const {
@@ -140,13 +195,22 @@ class CONTENT_EXPORT GpuMemoryManager :
 #endif
   }
 
-  class CONTENT_EXPORT StubWithSurfaceComparator {
-   public:
-    bool operator()(GpuCommandBufferStubBase* lhs,
-                    GpuCommandBufferStubBase* rhs);
-  };
+  // Interfaces for testing
+  void TestingSetClientVisible(GpuMemoryManagerClient* client, bool visible);
+  void TestingSetClientLastUsedTime(GpuMemoryManagerClient* client,
+                                    base::TimeTicks last_used_time);
+  void TestingSetClientHasSurface(GpuMemoryManagerClient* client,
+                                  bool has_surface);
+  bool TestingCompareClients(GpuMemoryManagerClient* lhs,
+                             GpuMemoryManagerClient* rhs) const;
+  void TestingDisableScheduleManage() { disable_schedule_manage_ = true; }
 
-  GpuMemoryManagerClient* client_;
+  // All clients of this memory manager which have callbacks we
+  // can use to adjust memory usage
+  ClientMap clients_;
+
+  // All context groups' tracking structures
+  std::set<GpuMemoryTrackingGroup*> tracking_groups_;
 
   base::CancelableClosure delayed_manage_callback_;
   bool manage_immediate_scheduled_;
@@ -167,7 +231,30 @@ class CONTENT_EXPORT GpuMemoryManager :
   bool window_count_has_been_received_;
   uint32 window_count_;
 
+  // Used to disable automatic changes to Manage() in testing.
+  bool disable_schedule_manage_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
+};
+
+class CONTENT_EXPORT GpuMemoryManagerClient {
+ public:
+  virtual ~GpuMemoryManagerClient() {}
+
+  // Returns surface size.
+  virtual gfx::Size GetSurfaceSize() const = 0;
+
+  // Returns the memory tracker for this stub.
+  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const = 0;
+
+  // Sets buffer usage depending on Memory Allocation
+  virtual void SetMemoryAllocation(
+      const GpuMemoryAllocation& allocation) = 0;
+
+  // Returns in bytes the total amount of GPU memory for the GPU which this
+  // context is currently rendering on. Returns false if no extension exists
+  // to get the exact amount of GPU memory.
+  virtual bool GetTotalGpuMemory(size_t* bytes) = 0;
 };
 
 }  // namespace content

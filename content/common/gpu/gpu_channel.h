@@ -90,9 +90,6 @@ class GpuChannel : public IPC::Listener,
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  virtual void AppendAllCommandBufferStubs(
-      std::vector<GpuCommandBufferStubBase*>& stubs);
-
   // This is called when a command buffer transitions from the unscheduled
   // state to the scheduled state, which potentially means the channel
   // transitions from the unscheduled to the scheduled state. When this occurs

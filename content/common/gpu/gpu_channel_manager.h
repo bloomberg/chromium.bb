@@ -58,8 +58,7 @@ class SyncPointManager;
 // IPC messages to the browser process IO thread on the GpuChannelManager's
 // behalf.
 class GpuChannelManager : public IPC::Listener,
-                          public IPC::Sender,
-                          public GpuMemoryManagerClient {
+                          public IPC::Sender {
  public:
   GpuChannelManager(ChildThread* gpu_child_thread,
                     GpuWatchdog* watchdog,
@@ -75,10 +74,6 @@ class GpuChannelManager : public IPC::Listener,
 
   // Sender overrides.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
-
-  // GpuMemoryManagerClient overrides.
-  virtual void AppendAllCommandBufferStubs(
-      std::vector<GpuCommandBufferStubBase*>& stubs) OVERRIDE;
 
   void LoseAllContexts();
 
