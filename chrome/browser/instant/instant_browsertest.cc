@@ -1038,3 +1038,24 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
                            "onvisibilitycalls", &active_tab_onvisibilitycalls));
   EXPECT_EQ(1, active_tab_onvisibilitycalls);
 }
+
+// Test that suggestions are reusable.
+IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'instant' } ];"
+                            "behavior = 'never';"));
+
+  SetOmniboxTextAndWaitForInstantToShow("in");
+  EXPECT_EQ(ASCIIToUTF16("stant"), omnibox()->GetInstantSuggestion());
+
+  SetOmniboxText("ins");
+  EXPECT_EQ(ASCIIToUTF16("tant"), omnibox()->GetInstantSuggestion());
+
+  SetOmniboxText("in");
+  EXPECT_EQ(ASCIIToUTF16("stant"), omnibox()->GetInstantSuggestion());
+
+  SetOmniboxText("insane");
+  EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
+}

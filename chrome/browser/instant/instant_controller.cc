@@ -224,16 +224,32 @@ bool InstantController::Update(const AutocompleteMatch& match,
   last_transition_type_ = match.transition;
   last_match_was_search_ = AutocompleteMatch::IsSearchType(match.type);
 
-  // In EXTENDED mode, we send only |user_text| as the query text. In all other
-  // modes, we use the entire |full_text|.
-  const string16& query_text = mode_ == EXTENDED ? user_text : full_text;
-  string16 last_query_text = mode_ == EXTENDED ?
-      last_user_text_ : last_full_text_;
+  // The last suggestion and its associated parameters can be preserved if the
+  // user continues typing the same query as the suggested text is showing.
+  // Suggestions are only reused with INSTANT_COMPLETE_NEVER behavior.
+  bool reused_suggestion = false;
+  bool user_text_changed = user_text != last_user_text_;
+  if (last_suggestion_.behavior == INSTANT_COMPLETE_NEVER &&
+      user_text_changed) {
+    if (StartsWith(user_text, last_user_text_, false)) {
+      // If the new user text is longer than the last user text, we need
+      // to normalize any added characters.
+      reused_suggestion = NormalizeAndStripPrefix(&last_suggestion_.text,
+          string16(user_text, last_user_text_.size()));
+    } else if (StartsWith(last_user_text_, user_text, false)) {
+      // If the new user text is a prefix of the last user text, no
+      // normalization is necessary.
+      last_suggestion_.text.insert(0, last_user_text_, user_text.size(),
+          last_user_text_.size() - user_text.size());
+      reused_suggestion = true;
+    }
+  }
+
   last_user_text_ = user_text;
   last_full_text_ = full_text;
 
   // Don't send an update to the loader if the query text hasn't changed.
-  if (query_text == last_query_text && verbatim == last_verbatim_) {
+  if (!user_text_changed && verbatim == last_verbatim_) {
     // Reuse the last suggestion, as it's still valid.
     browser_->SetInstantSuggestion(last_suggestion_);
 
@@ -250,21 +266,23 @@ bool InstantController::Update(const AutocompleteMatch& match,
 
   last_verbatim_ = verbatim;
   loader_processed_last_update_ = false;
-  last_suggestion_ = InstantSuggestion();
+  if (!reused_suggestion)
+    last_suggestion_ = InstantSuggestion();
   if (model_.preview_state() == InstantModel::NOT_READY) {
     model_.SetPreviewState(InstantModel::AWAITING_SUGGESTIONS,
                            0, INSTANT_SIZE_PERCENT);
   }
 
-  loader_->Update(query_text, verbatim);
+  loader_->Update(mode_ == EXTENDED ? user_text : full_text, verbatim);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
       content::Source<InstantController>(this),
       content::NotificationService::NoDetails());
 
-  // We don't have suggestions yet, but need to reset any existing "gray text".
-  browser_->SetInstantSuggestion(InstantSuggestion());
+  // We don't have new suggestions yet, but we can either reuse the existing
+  // suggestion or reset the existing "gray text".
+  browser_->SetInstantSuggestion(last_suggestion_);
 
   // Though we may have handled a URL match above, we return false here, so that
   // omnibox prerendering can kick in. TODO(sreeram): Remove this (and always
