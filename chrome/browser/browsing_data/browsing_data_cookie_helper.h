@@ -77,8 +77,17 @@ class BrowsingDataCookieHelper
 };
 
 // This class is a thin wrapper around BrowsingDataCookieHelper that does not
-// fetch its information from the persistent cookie store, but gets them passed
-// as a parameter during construction.
+// fetch its information from the persistent cookie store. It is a simple
+// container for CanonicalCookies. Clients that use this container can add
+// cookies that are sent to a server via the AddReadCookies method and cookies
+// that are received from a server or set via JavaScript using the method
+// AddChangedCookie.
+// Cookies are distinguished by the tuple cookie name (called cookie-name in
+// RFC 6265), cookie domain (called cookie-domain in RFC 6265), cookie path
+// (called cookie-path in RFC 6265) and host-only-flag (see RFC 6265 section
+// 5.3). Cookies with same tuple (cookie-name, cookie-domain, cookie-path,
+// host-only-flag) as cookie that are already stored, will replace the stored
+// cookies.
 class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
  public:
   typedef std::map<GURL, net::CookieList*> OriginCookieListMap;
@@ -91,14 +100,24 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   // everytime we instantiate a cookies tree model for it.
   CannedBrowsingDataCookieHelper* Clone();
 
-  // Adds cookies and delete the current cookies with the same Name, Domain,
-  // and Path as the newly created ones.
+  // Adds the cookies from |cookie_list|. Current cookies that have the same
+  // cookie name, cookie domain, cookie path, host-only-flag tuple as passed
+  // cookies are replaced by the passed cookies.
   void AddReadCookies(const GURL& frame_url,
                       const GURL& request_url,
                       const net::CookieList& cookie_list);
 
-  // Adds cookies that will be stored by the CookieMonster. Designed to mirror
-  // the logic of SetCookieWithOptions.
+  // Adds a CanonicalCookie that is created from the passed |cookie_line|
+  // (called set-cookie-string in RFC 6225). The |cookie_line| is parsed,
+  // normalized and validated. Invalid |cookie_line|s are ignored. The logic
+  // for parsing, normalizing an validating the |cookie_line| mirrors the logic
+  // of CookieMonster's method SetCookieWithOptions. If the |cookie_line| does
+  // not include a cookie domain attribute (called domain-av in RFC 6265) or a
+  // cookie path (called path-av in RFC 6265), then the host and the
+  // default-path of the request-uri are used as domain-value and path-value
+  // for the cookie. CanonicalCookies created from a |cookie_line| with no
+  // cookie domain attribute are host only cookies.
+  // TODO(markusheintz): Remove the dublicated logic.
   void AddChangedCookie(const GURL& frame_url,
                         const GURL& request_url,
                         const std::string& cookie_line,
