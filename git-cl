@@ -6,7 +6,7 @@
 # git-cl -- a git-command for integrating reviews on Rietveld
 # Copyright (C) 2008 Evan Martin <martine@danga.com>
 
-base_dir=$(dirname "$0")
+base_dir="${0%\\*}"
 
 # Uncomment this line if you never use gclient.
 # "$base_dir"/update_depot_tools
