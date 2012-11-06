@@ -4,6 +4,7 @@
 
 package org.chromium.content.common;
 
+import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
 import android.util.Printer;
@@ -42,25 +43,28 @@ public class TraceEvent {
      */
     public static void setEnabledToMatchNative() {
         boolean enabled = nativeTraceEnabled();
-        try {
-            Class<?> traceClass = Class.forName("android.os.Trace");
-            Method m = traceClass.getDeclaredMethod("isTagEnabled", Long.TYPE);
-            Field f = traceClass.getField("TRACE_TAG_VIEW");
-            boolean atraceEnabled = (Boolean) m.invoke(traceClass, f.getLong(null));
-            if (atraceEnabled) nativeInitATrace();
-            enabled = enabled || atraceEnabled;
-        } catch (ClassNotFoundException e) {
-            Log.e("TraceEvent", "setEnabledToMatchNative", e);
-        } catch (NoSuchMethodException e) {
-            Log.e("TraceEvent", "setEnabledToMatchNative", e);
-        } catch (NoSuchFieldException e) {
-            Log.e("TraceEvent", "setEnabledToMatchNative", e);
-        } catch (IllegalArgumentException e) {
-            Log.e("TraceEvent", "setEnabledToMatchNative", e);
-        } catch (IllegalAccessException e) {
-            Log.e("TraceEvent", "setEnabledToMatchNative", e);
-        } catch (InvocationTargetException e) {
-            Log.e("TraceEvent", "setEnabledToMatchNative", e);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            try {
+                Class<?> traceClass = Class.forName("android.os.Trace");
+                Method m = traceClass.getDeclaredMethod("isTagEnabled", Long.TYPE);
+                Field f = traceClass.getField("TRACE_TAG_VIEW");
+                boolean atraceEnabled = (Boolean) m.invoke(traceClass, f.getLong(null));
+                if (atraceEnabled) nativeInitATrace();
+                enabled = enabled || atraceEnabled;
+            } catch (ClassNotFoundException e) {
+                Log.e("TraceEvent", "setEnabledToMatchNative", e);
+            } catch (NoSuchMethodException e) {
+                Log.e("TraceEvent", "setEnabledToMatchNative", e);
+            } catch (NoSuchFieldException e) {
+                Log.e("TraceEvent", "setEnabledToMatchNative", e);
+            } catch (IllegalArgumentException e) {
+                Log.e("TraceEvent", "setEnabledToMatchNative", e);
+            } catch (IllegalAccessException e) {
+                Log.e("TraceEvent", "setEnabledToMatchNative", e);
+            } catch (InvocationTargetException e) {
+                Log.e("TraceEvent", "setEnabledToMatchNative", e);
+            }
         }
 
         setEnabled(enabled);
