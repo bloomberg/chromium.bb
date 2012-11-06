@@ -55,7 +55,6 @@ struct CC_EXPORT LayerTreeSettings {
     ~LayerTreeSettings();
 
     bool acceleratePainting;
-    bool showFPSCounter;
     bool showPlatformLayerTree;
     bool showPaintRects;
     bool showPropertyChangedRects;
@@ -70,7 +69,7 @@ struct CC_EXPORT LayerTreeSettings {
     gfx::Size maxUntiledLayerSize;
     gfx::Size minimumOcclusionTrackingSize;
 
-    bool showDebugInfo() const { return showPlatformLayerTree || showFPSCounter || showDebugRects(); }
+    bool showDebugInfo() const { return showPlatformLayerTree || showDebugRects(); }
     bool showDebugRects() const { return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects; }
 };
 
@@ -208,6 +207,7 @@ public:
     void setDeviceScaleFactor(float);
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
+    void setShowFPSCounter(bool show);
     void setFontAtlas(scoped_ptr<FontAtlas>);
 
     HeadsUpDisplayLayer* hudLayer() const { return m_hudLayer.get(); }
@@ -237,6 +237,8 @@ private:
     bool animateLayersRecursive(Layer* current, base::TimeTicks time);
     void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, base::Time wallClockTime);
 
+    void createHUDLayerIfNeeded();
+
     bool m_animating;
     bool m_needsAnimateLayers;
 
@@ -255,7 +257,6 @@ private:
 
     scoped_refptr<Layer> m_rootLayer;
     scoped_refptr<HeadsUpDisplayLayer> m_hudLayer;
-    scoped_ptr<FontAtlas> m_fontAtlas;
 
     scoped_ptr<PrioritizedTextureManager> m_contentsTextureManager;
     scoped_ptr<PrioritizedTexture> m_surfaceMemoryPlaceholder;

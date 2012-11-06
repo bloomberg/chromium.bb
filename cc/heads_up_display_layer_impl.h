@@ -31,6 +31,7 @@ public:
     virtual ~HeadsUpDisplayLayerImpl();
 
     void setFontAtlas(scoped_ptr<FontAtlas>);
+    void setShowFPSCounter(bool);
 
     virtual void willDraw(ResourceProvider*) OVERRIDE;
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
@@ -60,6 +61,8 @@ private:
     double m_stdDeviation;
 
     base::TimeTicks textUpdateTime;
+
+    bool m_showFPSCounter;
 };
 
 }  // namespace cc

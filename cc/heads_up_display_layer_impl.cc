@@ -46,6 +46,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(int id)
     : LayerImpl(id)
     , m_averageFPS(0)
     , m_stdDeviation(0)
+    , m_showFPSCounter(false)
 {
 }
 
@@ -56,6 +57,11 @@ HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl()
 void HeadsUpDisplayLayerImpl::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
 {
     m_fontAtlas = fontAtlas.Pass();
+}
+
+void HeadsUpDisplayLayerImpl::setShowFPSCounter(bool show)
+{
+    m_showFPSCounter = show;
 }
 
 void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
@@ -148,7 +154,7 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 
     int platformLayerTreeTop = 0;
 
-    if (settings.showFPSCounter)
+    if (m_showFPSCounter)
         platformLayerTreeTop = drawFPSCounter(canvas, layerTreeHostImpl()->fpsCounter());
 
     if (settings.showPlatformLayerTree && m_fontAtlas.get()) {

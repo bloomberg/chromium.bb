@@ -39,7 +39,6 @@ bool LayerTreeHost::s_needsFilterContext = false;
 
 LayerTreeSettings::LayerTreeSettings()
     : acceleratePainting(false)
-    , showFPSCounter(false)
     , showPlatformLayerTree(false)
     , showPaintRects(false)
     , showPropertyChangedRects(false)
@@ -280,25 +279,33 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     m_commitNumber++;
 }
 
+void LayerTreeHost::createHUDLayerIfNeeded()
+{
+    if (!m_hudLayer)
+        m_hudLayer = HeadsUpDisplayLayer::create();
+}
+
+void LayerTreeHost::setShowFPSCounter(bool show)
+{
+    createHUDLayerIfNeeded();
+    m_hudLayer->setShowFPSCounter(show);
+}
+
 void LayerTreeHost::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
 {
-    m_fontAtlas = fontAtlas.Pass();
-    setNeedsCommit();
+    createHUDLayerIfNeeded();
+    m_hudLayer->setFontAtlas(fontAtlas.Pass());
 }
 
 void LayerTreeHost::willCommit()
 {
     m_client->willCommit();
-    if (m_rootLayer && m_settings.showDebugInfo()) {
-        if (!m_hudLayer)
-            m_hudLayer = HeadsUpDisplayLayer::create();
 
-        if (m_fontAtlas.get())
-            m_hudLayer->setFontAtlas(m_fontAtlas.Pass());
+    if (m_settings.showDebugInfo())
+        createHUDLayerIfNeeded();
 
-        if (!m_hudLayer->parent())
-            m_rootLayer->addChild(m_hudLayer);
-    }
+    if (m_rootLayer && m_hudLayer && !m_hudLayer->parent())
+        m_rootLayer->addChild(m_hudLayer);
 }
 
 void LayerTreeHost::commitComplete()

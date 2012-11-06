@@ -19,8 +19,8 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::create()
 
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
     : Layer()
+    , m_showFPSCounter(false)
 {
-
     setBounds(gfx::Size(256, 128));
 }
 
@@ -56,6 +56,12 @@ void HeadsUpDisplayLayer::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
     setNeedsCommit();
 }
 
+void HeadsUpDisplayLayer::setShowFPSCounter(bool show)
+{
+    m_showFPSCounter = show;
+    setNeedsCommit();
+}
+
 scoped_ptr<LayerImpl> HeadsUpDisplayLayer::createLayerImpl()
 {
     return HeadsUpDisplayLayerImpl::create(m_layerId).PassAs<LayerImpl>();
@@ -65,11 +71,11 @@ void HeadsUpDisplayLayer::pushPropertiesTo(LayerImpl* layerImpl)
 {
     Layer::pushPropertiesTo(layerImpl);
 
-    if (!m_fontAtlas.get())
-        return;
-
     HeadsUpDisplayLayerImpl* hudLayerImpl = static_cast<HeadsUpDisplayLayerImpl*>(layerImpl);
-    hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
+    hudLayerImpl->setShowFPSCounter(m_showFPSCounter);
+
+    if (m_fontAtlas.get())
+        hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
 }
 
 }  // namespace cc

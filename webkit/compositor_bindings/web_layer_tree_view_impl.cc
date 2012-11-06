@@ -45,7 +45,6 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
 {
     LayerTreeSettings settings;
     settings.acceleratePainting = webSettings.acceleratePainting;
-    settings.showFPSCounter = webSettings.showFPSCounter;
     settings.showPlatformLayerTree = webSettings.showPlatformLayerTree;
     settings.showPaintRects = webSettings.showPaintRects;
     settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;
@@ -55,6 +54,9 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     m_layerTreeHost = LayerTreeHost::create(this, settings);
     if (!m_layerTreeHost.get())
         return false;
+
+    if (webSettings.showFPSCounter)
+        setShowFPSCounter(true);
     return true;
 }
 
@@ -190,6 +192,11 @@ void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
     stats.totalCommitCount = ccStats.totalCommitCount;
     stats.numImplThreadScrolls = ccStats.numImplThreadScrolls;
     stats.numMainThreadScrolls = ccStats.numMainThreadScrolls;
+}
+
+void WebLayerTreeViewImpl::setShowFPSCounter(bool show)
+{
+    m_layerTreeHost->setShowFPSCounter(show);
 }
 
 void WebLayerTreeViewImpl::setFontAtlas(SkBitmap bitmap, WebRect asciiToWebRectTable[128], int fontHeight) {

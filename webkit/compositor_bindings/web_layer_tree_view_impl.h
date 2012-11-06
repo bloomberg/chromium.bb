@@ -49,6 +49,7 @@ public:
     virtual void finishAllRendering() OVERRIDE;
     virtual void setDeferCommits(bool deferCommits) OVERRIDE;
     virtual void renderingStats(WebRenderingStats&) const OVERRIDE;
+    virtual void setShowFPSCounter(bool show);
     virtual void setFontAtlas(SkBitmap, WebRect asciiToRectTable[128], int fontHeight);
     virtual void setFontAtlas(WebRect asciiToRectTable[128], const SkBitmap&, int fontHeight);
     virtual void loseCompositorContext(int numTimes) OVERRIDE;
