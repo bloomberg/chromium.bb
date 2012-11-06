@@ -42,6 +42,8 @@ class PanelFrameView : public views::NonClientFrameView,
   // the size of the client area.
   gfx::Size NonClientAreaSize() const;
 
+  int BorderThickness() const;
+
   PaintState paint_state() const { return paint_state_; }
   views::ImageButton* close_button() const { return close_button_; }
   views::ImageButton* minimize_button() const { return minimize_button_; }
@@ -104,6 +106,7 @@ class PanelFrameView : public views::NonClientFrameView,
 
   static const char kViewClassName[];
 
+  bool is_frameless_;
   PanelView* panel_view_;
   PaintState paint_state_;
   views::ImageButton* close_button_;

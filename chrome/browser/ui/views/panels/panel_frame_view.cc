@@ -24,15 +24,20 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace {
+
+// The thickness of the border when Aero is not enabled. In this case, the
+// shadow around the window will not be painted by the system and we need to
+// paint a frame in order to differentiate the client area from the background.
+const int kNonAeroBorderThickness = 1;
 
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-
-// Colors used to draw client edges. These are experimental values.
-const SkColor kClientEdgeColor = SkColorSetRGB(210, 225, 246);
-const SkColor kContentsBorderShadow = SkColorSetARGB(51, 0, 0, 0);
 
 // The spacing in pixels between the icon and the left border.
 const int kIconAndBorderSpacing = 4;
@@ -167,7 +172,8 @@ const char PanelFrameView::kViewClassName[] =
     "browser/ui/panels/PanelFrameView";
 
 PanelFrameView::PanelFrameView(PanelView* panel_view)
-    : panel_view_(panel_view),
+    : is_frameless_(false),
+      panel_view_(panel_view),
       paint_state_(NOT_PAINTED),
       close_button_(NULL),
       minimize_button_(NULL),
@@ -254,20 +260,44 @@ void PanelFrameView::UpdateTitlebarMinimizeRestoreButtonVisibility() {
 }
 
 gfx::Rect PanelFrameView::GetBoundsForClientView() const {
+  // The origin of client-area bounds starts after left border and titlebar and
+  // spans until hitting the right and bottom borders.
+  //    +------------------------------+
+  //    |         Top Titlebar         |
+  //    |-+--------------------------+-|
+  //    |L|                          |R|
+  //    |e|                          |i|
+  //    |f|                          |g|
+  //    |t|                          |h|
+  //    | |         Client           |t|
+  //    | |                          | |
+  //    |B|          Area            |B|
+  //    |o|                          |o|
+  //    |r|                          |r|
+  //    |d|                          |d|
+  //    |e|                          |e|
+  //    |r|                          |r|
+  //    | +--------------------------+ |
+  //    |        Bottom Border         |
+  //    +------------------------------+
   int titlebar_height = TitlebarHeight();
-  return gfx::Rect(0,
+  int border_thickness = BorderThickness();
+  return gfx::Rect(border_thickness,
                    titlebar_height,
-                   std::max(0, width()),
-                   std::max(0, height() - titlebar_height));
+                   std::max(0, width() - border_thickness * 2),
+                   std::max(0, height() - titlebar_height - border_thickness));
 }
 
 gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const {
   int titlebar_height = TitlebarHeight();
-  return gfx::Rect(std::max(0, client_bounds.x()),
-                   std::max(0, client_bounds.y() - titlebar_height),
-                   client_bounds.width(),
-                   client_bounds.height() + titlebar_height);
+  int border_thickness = BorderThickness();
+  // The window bounds include both client area and non-client area (titlebar
+  // and left, right and bottom borders).
+  return gfx::Rect(client_bounds.x() - border_thickness,
+                   client_bounds.y() - titlebar_height,
+                   client_bounds.width() + border_thickness * 2,
+                   client_bounds.height() + titlebar_height + border_thickness);
 }
 
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
@@ -371,6 +401,19 @@ ui::ThemeProvider* PanelFrameView::GetThemeProvider() const {
 }
 
 void PanelFrameView::Layout() {
+  // Frameless is only supported when Aero is enabled and shadow effect is
+  // present.
+#if defined(OS_WIN) && !defined(USE_AURA)
+  is_frameless_ = ui::win::IsAeroGlassEnabled();
+
+  if (is_frameless_) {
+    BOOL shadow_enabled = FALSE;
+    if (::SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow_enabled, 0) &&
+        !shadow_enabled)
+      is_frameless_ = false;
+  }
+#endif
+
   // Layout the close button.
   int right = width();
   gfx::Size close_button_size = close_button_->GetPreferredSize();
@@ -496,11 +539,21 @@ gfx::ImageSkia PanelFrameView::GetFaviconForTabIconView() {
 }
 
 gfx::Size PanelFrameView::NonClientAreaSize() const {
-  return gfx::Size(0, TitlebarHeight());
+  if (is_frameless_)
+    return gfx::Size(0, TitlebarHeight());
+  // When the frame is present, the width of non-client area consists of
+  // left and right borders, while the height consists of the top area
+  // (titlebar) and the bottom border.
+  return gfx::Size(2 * kNonAeroBorderThickness,
+                   TitlebarHeight() + kNonAeroBorderThickness);
 }
 
 int PanelFrameView::TitlebarHeight() const {
   return panel::kTitlebarHeight;
+}
+
+int PanelFrameView::BorderThickness() const {
+  return is_frameless_ ? 0 : kNonAeroBorderThickness;
 }
 
 bool PanelFrameView::UsingDefaultTheme(PaintState paint_state) const {
@@ -576,8 +629,37 @@ void PanelFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
   // We only need to paint the title-bar since no resizing border is shown.
   // Instead, we allow part of the inner content area be used to trigger the
   // mouse resizing.
+  int titlebar_height = TitlebarHeight();
   const gfx::ImageSkia* image = GetFrameBackground(paint_state_);
-  canvas->TileImageInt(*image, 0, 0, width(), TitlebarHeight());
+  canvas->TileImageInt(*image, 0, 0, width(), titlebar_height);
+
+  if (is_frameless_)
+    return;
+
+  // For all the non-client area below titlebar, we paint it by using the last
+  // line from the theme image, instead of using the frame color provided
+  // in the theme because the frame color in some themes is very different from
+  // the tab colors we use to render the titlebar and it can produce abrupt
+  // transition which looks bad.
+
+  // Left border, below title-bar.
+  canvas->DrawImageInt(
+      *image, 0, titlebar_height - 1, kNonAeroBorderThickness, 1,
+      0, titlebar_height, kNonAeroBorderThickness, height() - titlebar_height,
+      false);
+
+  // Right border, below title-bar.
+  canvas->DrawImageInt(
+      *image, (width() % image->width()) - kNonAeroBorderThickness,
+      titlebar_height - 1, kNonAeroBorderThickness, 1,
+      width() - kNonAeroBorderThickness, titlebar_height,
+      kNonAeroBorderThickness, height() - titlebar_height, false);
+
+  // Bottom border.
+  canvas->DrawImageInt(
+      *image, 0, titlebar_height - 1, image->width(), 1,
+      0, height() - kNonAeroBorderThickness, width(), kNonAeroBorderThickness,
+      false);
 }
 
 void PanelFrameView::PaintFrameEdge(gfx::Canvas* canvas) {

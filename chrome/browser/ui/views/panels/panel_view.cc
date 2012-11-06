@@ -884,14 +884,21 @@ void PanelView::OnViewWasResized() {
   if (!web_view_ || !web_contents)
     return;
 
-  // Make part of the inner area be used for mouse resizing.
+  // When the panel is frameless or has thin frame, the mouse resizing should
+  // also be triggered from the part of client area that is close to the window
+  // frame.
   int width = web_view_->size().width();
   int height = web_view_->size().height();
+  // Compute the thickness of the client area that needs to be counted towards
+  // mouse resizing.
+  int thickness_for_mouse_resizing =
+      kResizeInsideBoundsSize - GetFrameView()->BorderThickness();
+  DCHECK(thickness_for_mouse_resizing > 0);
   SkRegion* region = new SkRegion;
-  region->op(0, 0, kResizeInsideBoundsSize, height, SkRegion::kUnion_Op);
-  region->op(width - kResizeInsideBoundsSize, 0, width, height,
+  region->op(0, 0, thickness_for_mouse_resizing, height, SkRegion::kUnion_Op);
+  region->op(width - thickness_for_mouse_resizing, 0, width, height,
       SkRegion::kUnion_Op);
-  region->op(0, height - kResizeInsideBoundsSize, width, height,
+  region->op(0, height - thickness_for_mouse_resizing, width, height,
       SkRegion::kUnion_Op);
   web_contents->GetRenderViewHost()->GetView()->SetClickthroughRegion(region);
 #endif
