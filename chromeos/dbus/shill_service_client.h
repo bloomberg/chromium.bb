@@ -37,10 +37,11 @@ class CHROMEOS_EXPORT ShillServiceClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
+  typedef ShillClientHelper::ListValueCallback ListValueCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
 
-  // Interface for setting up services for testing.
-  // Accessed through GetTestInterface(), only implemented in the Stub Impl.
+  // Interface for setting up services for testing. Accessed through
+  // GetTestInterface(), only implemented in the stub implementation.
   class TestInterface {
    public:
     virtual void AddService(const std::string& service_path,
@@ -92,6 +93,13 @@ class CHROMEOS_EXPORT ShillServiceClient {
                              const std::string& name,
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) = 0;
+
+  // Calls ClearProperties method.
+  // |callback| is called after the method call succeeds.
+  virtual void ClearProperties(const dbus::ObjectPath& service_path,
+                               const std::vector<std::string>& names,
+                               const ListValueCallback& callback,
+                               const ErrorCallback& error_callback) = 0;
 
   // Calls Connect method.
   // |callback| is called after the method call succeeds.

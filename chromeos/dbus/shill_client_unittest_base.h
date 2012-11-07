@@ -69,13 +69,21 @@ class ShillClientUnittestBase : public testing::Test {
     base::Closure GetCallback();
   };
 
+  class MockListValueCallback {
+   public:
+    MockListValueCallback();
+    ~MockListValueCallback();
+    MOCK_METHOD1(Run, void(const base::ListValue& list));
+    ShillClientHelper::ListValueCallback GetCallback();
+  };
+
   // A mock ErrorCallback.
   class MockErrorCallback {
    public:
     MockErrorCallback();
     ~MockErrorCallback();
     MOCK_METHOD2(Run, void(const std::string& error_name,
-                           const std::string& error_mesage));
+                           const std::string& error_message));
     ShillClientHelper::ErrorCallback GetCallback();
   };
 
@@ -121,6 +129,10 @@ class ShillClientUnittestBase : public testing::Test {
   // Expects the reader to have a string.
   static void ExpectStringArgument(const std::string& expected_string,
                                    dbus::MessageReader* reader);
+
+  static void ExpectArrayOfStringsArgument(
+      const std::vector<std::string>& expected_strings,
+      dbus::MessageReader* reader);
 
   // Expects the reader to have a Value.
   static void ExpectValueArgument(const base::Value* expected_value,

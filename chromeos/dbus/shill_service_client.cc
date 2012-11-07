@@ -100,6 +100,21 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
+
+  virtual void ClearProperties(const dbus::ObjectPath& service_path,
+                               const std::vector<std::string>& names,
+                               const ListValueCallback& callback,
+                               const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
+                                 shill::kClearPropertiesFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfStrings(names);
+    GetHelper(service_path)->CallListValueMethodWithErrorCallback(
+        &method_call,
+        callback,
+        error_callback);
+  }
+
   virtual void Connect(const dbus::ObjectPath& service_path,
                        const base::Closure& callback,
                        const ErrorCallback& error_callback) OVERRIDE {
@@ -250,6 +265,40 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
     }
     dict->Remove(name, NULL);
     MessageLoop::current()->PostTask(FROM_HERE, callback);
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ShillServiceClientStubImpl::NotifyObserversPropertyChanged,
+                   weak_ptr_factory_.GetWeakPtr(), service_path, name));
+  }
+
+  virtual void ClearProperties(const dbus::ObjectPath& service_path,
+                               const std::vector<std::string>& names,
+                               const ListValueCallback& callback,
+                               const ErrorCallback& error_callback) OVERRIDE {
+    base::DictionaryValue* dict = NULL;
+    if (!stub_services_.GetDictionaryWithoutPathExpansion(
+            service_path.value(), &dict)) {
+      error_callback.Run("StubError", "Service not found");
+      return;
+    }
+    scoped_ptr<base::ListValue> results(new base::ListValue);
+    for (std::vector<std::string>::const_iterator iter = names.begin();
+         iter != names.end(); ++iter) {
+      dict->Remove(*iter, NULL);
+      results->AppendBoolean(true);
+    }
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ShillServiceClientStubImpl::PassStubListValue,
+                   callback, base::Owned(results.release())));
+    for (std::vector<std::string>::const_iterator iter = names.begin();
+         iter != names.end(); ++iter) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &ShillServiceClientStubImpl::NotifyObserversPropertyChanged,
+              weak_ptr_factory_.GetWeakPtr(), service_path, *iter));
+    }
   }
 
   virtual void Connect(const dbus::ObjectPath& service_path,
@@ -365,6 +414,11 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
       return;
     }
     callback.Run(DBUS_METHOD_CALL_SUCCESS, *dict);
+  }
+
+  static void PassStubListValue(const ListValueCallback& callback,
+                                base::ListValue* value) {
+    callback.Run(*value);
   }
 
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& service_path,

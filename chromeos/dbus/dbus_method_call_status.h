@@ -40,7 +40,7 @@ typedef base::Callback<void(
     const dbus::ObjectPath& result)> ObjectPathDBusMethodCallback;
 
 // A callback to handle responses of methods returning a ObjectPath value that
-// doens't get call status.
+// doesn't get call status.
 typedef base::Callback<void(const dbus::ObjectPath& result)> ObjectPathCallback;
 
 }  // namespace chromeos

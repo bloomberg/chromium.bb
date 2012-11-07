@@ -125,6 +125,22 @@ void ShillClientHelper::CallDictionaryValueMethodWithErrorCallback(
                  error_callback));
 }
 
+void ShillClientHelper::CallListValueMethodWithErrorCallback(
+    dbus::MethodCall* method_call,
+    const ListValueCallback& callback,
+    const ErrorCallback& error_callback) {
+  proxy_->CallMethodWithErrorCallback(
+      method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(
+          &ShillClientHelper::OnListValueMethodWithErrorCallback,
+          weak_ptr_factory_.GetWeakPtr(),
+          callback,
+          error_callback),
+      base::Bind(&ShillClientHelper::OnError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_callback));
+}
+
 bool ShillClientHelper::CallVoidMethodAndBlock(
     dbus::MethodCall* method_call) {
   scoped_ptr<dbus::Response> response(
@@ -306,6 +322,20 @@ void ShillClientHelper::OnDictionaryValueMethodWithErrorCallback(
   scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   base::DictionaryValue* result = NULL;
   if (!value.get() || !value->GetAsDictionary(&result)) {
+    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    return;
+  }
+  callback.Run(*result);
+}
+
+void ShillClientHelper::OnListValueMethodWithErrorCallback(
+    const ListValueCallback& callback,
+    const ErrorCallback& error_callback,
+    dbus::Response* response) {
+  dbus::MessageReader reader(response);
+  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+  base::ListValue* result = NULL;
+  if (!value.get() || !value->GetAsList(&result)) {
     error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }

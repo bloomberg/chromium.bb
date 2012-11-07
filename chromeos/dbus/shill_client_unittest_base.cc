@@ -54,12 +54,23 @@ void ValueMatcher::DescribeNegationTo(::std::ostream* os) const {
   *os << "value does not equal " << expected_value_str;
 }
 
+
 ShillClientUnittestBase::MockClosure::MockClosure() {}
 
 ShillClientUnittestBase::MockClosure::~MockClosure() {}
 
 base::Closure ShillClientUnittestBase::MockClosure::GetCallback() {
   return base::Bind(&MockClosure::Run, base::Unretained(this));
+}
+
+
+ShillClientUnittestBase::MockListValueCallback::MockListValueCallback() {}
+
+ShillClientUnittestBase::MockListValueCallback::~MockListValueCallback() {}
+
+ShillClientHelper::ListValueCallback
+ShillClientUnittestBase::MockListValueCallback::GetCallback() {
+  return base::Bind(&MockListValueCallback::Run, base::Unretained(this));
 }
 
 
@@ -183,6 +194,16 @@ void ShillClientUnittestBase::ExpectStringArgument(
   std::string str;
   ASSERT_TRUE(reader->PopString(&str));
   EXPECT_EQ(expected_string, str);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// static
+void ShillClientUnittestBase::ExpectArrayOfStringsArgument(
+    const std::vector<std::string>& expected_strings,
+    dbus::MessageReader* reader) {
+  std::vector<std::string> strs;
+  ASSERT_TRUE(reader->PopArrayOfStrings(&strs));
+  EXPECT_EQ(expected_strings, strs);
   EXPECT_FALSE(reader->HasMoreData());
 }
 
