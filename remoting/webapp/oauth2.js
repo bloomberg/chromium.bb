@@ -313,7 +313,7 @@ remoting.OAuth2.prototype.interpretUnexpectedXhrStatus_ = function(xhrStatus) {
   // recover from an unexpected failure by signing in again.
   /** @type {remoting.Error} */
   var error = remoting.Error.AUTHENTICATION_FAILED;
-  if (xhrStatus == 503) {
+  if (xhrStatus == 502 || xhrStatus == 503) {
     error = remoting.Error.SERVICE_UNAVAILABLE;
   } else if (xhrStatus == 0) {
     error = remoting.Error.NETWORK_FAILURE;

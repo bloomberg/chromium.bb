@@ -416,7 +416,7 @@ function parseServerResponse_(xhr) {
     errorMsg = remoting.Error.INVALID_ACCESS_CODE;
   } else if (xhr.status == 0) {
     errorMsg = remoting.Error.NO_RESPONSE;
-  } else if (xhr.status == 503) {
+  } else if (xhr.status == 502 || xhr.status == 503) {
     errorMsg = remoting.Error.SERVICE_UNAVAILABLE;
   } else {
     console.error('The server responded: ' + xhr.responseText);
