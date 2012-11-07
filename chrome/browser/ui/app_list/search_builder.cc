@@ -305,13 +305,13 @@ SearchBuilder::SearchBuilder(
   search_box_->SetIcon(*ui::ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
 
-  // TODO(xiyuan): Consider requesting fewer providers in the non-apps-only
-  // case.
-  int providers =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          app_list::switches::kAppListShowAppsOnly) ?
-      AutocompleteProvider::TYPE_EXTENSION_APP :
-      AutocompleteClassifier::kDefaultOmniboxProviders;
+  int providers = AutocompleteProvider::TYPE_EXTENSION_APP;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      app_list::switches::kAppListShowAppsOnly)) {
+    // TODO(xiyuan): Consider requesting fewer providers in the non-apps-only
+    // case.
+    providers |= AutocompleteClassifier::kDefaultOmniboxProviders;
+  }
 #if defined(OS_CHROMEOS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableContacts))
     providers |= AutocompleteProvider::TYPE_CONTACT;
