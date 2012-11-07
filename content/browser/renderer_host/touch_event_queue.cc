@@ -132,7 +132,8 @@ const WebKit::WebTouchEvent& TouchEventQueue::GetLatestEvent() const {
 }
 
 void TouchEventQueue::PopTouchEventToView(bool processed) {
-  CHECK(!touch_queue_.empty());
+  if (touch_queue_.empty())
+    return;
   scoped_ptr<CoalescedWebTouchEvent> acked_event(touch_queue_.front());
   touch_queue_.pop_front();
 

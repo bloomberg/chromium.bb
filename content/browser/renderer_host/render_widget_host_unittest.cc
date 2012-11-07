@@ -1583,6 +1583,47 @@ TEST_F(RenderWidgetHostTest, TouchEventQueueMultiTouch) {
   EXPECT_EQ(WebTouchPoint::StateMoved, event.touches[1].state);
 }
 
+// Tests that if a touch-event queue is destroyed in response to a touch-event
+// in the renderer, then there is no crash when the ACK for that touch-event
+// comes back.
+TEST_F(RenderWidgetHostTest, TouchEventAckAfterQueueFlushed) {
+  // First, install a touch-event handler and send some touch-events to the
+  // renderer.
+  process_->sink().ClearMessages();
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->ShouldForwardTouchEvent());
+
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  process_->sink().ClearMessages();
+
+  MoveTouchPoint(0, 10, 10);
+  SendTouchEvent();
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(2U, host_->TouchEventQueueSize());
+
+  // Receive an ACK for the press. This should cause the queued touch-move to
+  // be sent to the renderer.
+  SendInputEventACK(WebInputEvent::TouchStart, true);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  process_->sink().ClearMessages();
+
+  // Uninstall the touch-event handler. This will cause the queue to be flushed.
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+
+  // Now receive an ACK for the move.
+  SendInputEventACK(WebInputEvent::TouchMove, true);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+}
+
 #if defined(OS_WIN) || defined(USE_AURA)
 // Tests that the acked events have correct state. (ui::Events are used only on
 // windows and aura)
