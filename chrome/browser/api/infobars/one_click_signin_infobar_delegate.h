@@ -31,10 +31,10 @@ class OneClickSigninInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void GetAlternateColors(AlternateColors* alt_colors);
 
  private:
-#if defined(OS_WIN)
-   // Because the experiment is only running on windows, only override this
-   // function on that platform.  Other platforms that support one-click sign in
-   // will create a regular confirm infobar with no support for colour changes.
+#if defined(TOOLKIT_VIEWS)
+   // Because the experiment is only running for views, only override this
+   // function there.  Other platforms that support one-click sign in will
+   // create a regular confirm infobar with no support for colour changes.
 
   // InfoBarDelegate:
   virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;
