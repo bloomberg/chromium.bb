@@ -24,16 +24,18 @@ View.prototype.clearDisplay = function(values) {
 };
 
 View.prototype.addResults = function(values) {
-  this.appendChild_(this.display, 'div', 'hr');
+  this.appendChild_(this.display, null, 'div', 'hr');
   this.addValues(values);
 };
 
 View.prototype.addValues = function(values) {
   var equation = this.makeElement_('div', 'equation');
-  this.appendChild_(equation, 'div', 'accumulator', values.accumulator);
-  this.appendChild_(equation, 'div', 'operation');
-  this.appendChild_(equation.children[1], 'span', 'operator', values.operator);
-  this.appendChild_(equation.children[1], 'span', 'operand', values.operand);
+  this.appendChild_(equation, null, 'span', 'accumulator', values.accumulator);
+  this.appendChild_(equation, null, 'span', 'operation');
+  this.appendChild_(equation, '.operation', 'span', 'operator');
+  this.appendChild_(equation, '.operation', 'span', 'operand', values.operand);
+  this.appendChild_(equation, '.operator', 'div', 'spacer');
+  this.appendChild_(equation, '.operator', 'div', 'value', values.operator);
   this.setAttribute_(equation, '.accumulator', 'aria-hidden', 'true');
   this.display.appendChild(equation).scrollIntoView();
 };
@@ -41,7 +43,7 @@ View.prototype.addValues = function(values) {
 View.prototype.setValues = function(values) {
   var equation = this.display.lastElementChild;
   this.setContent_(equation, '.accumulator', values.accumulator || '');
-  this.setContent_(equation, '.operator', values.operator || '');
+  this.setContent_(equation, '.operator .value', values.operator || '');
   this.setContent_(equation, '.operand', values.operand || '');
 };
 
@@ -49,7 +51,7 @@ View.prototype.getValues = function() {
   var equation = this.display.lastElementChild;
   return {
     accumulator: this.getContent_(equation, '.accumulator') || null,
-    operator: this.getContent_(equation, '.operator') || null,
+    operator: this.getContent_(equation, '.operator .value') || null,
     operand: this.getContent_(equation, '.operand') || null,
   };
 };
@@ -125,7 +127,8 @@ View.prototype.makeElement_ = function(tag, classes, content) {
 };
 
 /** @private */
-View.prototype.appendChild_ = function(parent, tag, classes, content) {
+View.prototype.appendChild_ = function(root, selector, tag, classes, content) {
+  var parent = (root && selector) ? root.querySelector(selector) : root;
   parent.appendChild(this.makeElement_(tag, classes, content));
 };
 

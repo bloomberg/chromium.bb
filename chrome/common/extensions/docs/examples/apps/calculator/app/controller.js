@@ -17,7 +17,7 @@ if (typeof chrome !== 'undefined' && chrome.app && chrome.app.runtime) {
       id: 'calculator'
     }, function(appWindow) {
       appWindow.contentWindow.onload = function() {
-        new Controller(new Model(8), new View(appWindow.contentWindow));
+        new Controller(new Model(9), new View(appWindow.contentWindow));
       };
     });
   });
