@@ -10,8 +10,6 @@ syntax = "proto2";
 import "control.proto";
 import "event.proto";
 
-option optimize_for = LITE_RUNTIME;
-
 package remoting.protocol;
 
 // Represents a message being sent on the control channel.

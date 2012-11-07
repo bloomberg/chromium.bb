@@ -7,8 +7,6 @@
 
 syntax = "proto2";
 
-option optimize_for = LITE_RUNTIME;
-
 package userfeedback;
 
 import "math.proto";
