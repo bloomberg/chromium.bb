@@ -99,6 +99,7 @@ void CopyResultFromInitializeCacheCallback(bool* out_success,
 
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos.
+// TODO(satorux): Should return a bool. crbug.com/159762
 void LoadChangeFeed(const std::string& relative_path,
                     DriveFileSystem* file_system,
                     int64 start_changestamp,
