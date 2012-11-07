@@ -15,6 +15,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -81,9 +82,8 @@ HttpBridge::RequestContext::RequestContext(
         network_task_runner,
     const std::string& user_agent)
     : baseline_context_(baseline_context),
-      network_task_runner_(network_task_runner),
-      user_agent_(user_agent) {
-  DCHECK(!user_agent_.empty());
+      network_task_runner_(network_task_runner) {
+  DCHECK(!user_agent.empty());
 
   // Create empty, in-memory cookie store.
   set_cookie_store(new net::CookieMonster(NULL, NULL));
@@ -109,8 +109,11 @@ HttpBridge::RequestContext::RequestContext(
   // should be tied to whatever the sync servers expect (if anything). These
   // fields should probably just be settable by sync backend; though we should
   // figure out if we need to give the user explicit control over policies etc.
-  set_accept_language(baseline_context->accept_language());
-  set_accept_charset(baseline_context->accept_charset());
+  http_user_agent_settings_.reset(new net::StaticHttpUserAgentSettings(
+      baseline_context->GetAcceptLanguage(),
+      baseline_context->GetAcceptCharset(),
+      user_agent));
+  set_http_user_agent_settings(http_user_agent_settings_.get());
 
   set_net_log(baseline_context->net_log());
 }
@@ -118,11 +121,6 @@ HttpBridge::RequestContext::RequestContext(
 HttpBridge::RequestContext::~RequestContext() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delete http_transaction_factory();
-}
-
-const std::string& HttpBridge::RequestContext::GetUserAgent(
-    const GURL& url) const {
-  return user_agent_;
 }
 
 HttpBridge::URLFetchState::URLFetchState() : url_poster(NULL),

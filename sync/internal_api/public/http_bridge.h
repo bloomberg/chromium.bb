@@ -25,6 +25,7 @@ class HttpBridgeTest;
 
 namespace net {
 class HttpResponseHeaders;
+class HttpUserAgentSettings;
 class URLFetcher;
 }
 
@@ -58,12 +59,10 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // The destructor MUST be called on the IO thread.
     virtual ~RequestContext();
 
-    virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
-
    private:
     net::URLRequestContext* const baseline_context_;
     const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-    const std::string user_agent_;
+    scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
 
     DISALLOW_COPY_AND_ASSIGN(RequestContext);
   };

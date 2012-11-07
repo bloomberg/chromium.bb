@@ -31,6 +31,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
+#include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
@@ -145,13 +146,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
 
-  // Set up Accept-Language and Accept-Charset header values
-  params->accept_language = net::HttpUtil::GenerateAcceptLanguageHeader(
-      pref_service->GetString(prefs::kAcceptLanguages));
-  std::string default_charset = pref_service->GetString(prefs::kDefaultCharset);
-  params->accept_charset =
-      net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
-
   params->io_thread = g_browser_process->io_thread();
 
   params->cookie_settings = CookieSettings::Factory::GetForProfile(profile);
@@ -204,6 +198,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   printing_enabled_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif
+  chrome_http_user_agent_settings_.reset(
+      new ChromeHttpUserAgentSettings(pref_service));
 
   // The URLBlacklistManager has to be created on the UI thread to register
   // observers of |pref_service|, and it also has to clean up on
@@ -583,8 +579,8 @@ void ProfileIOData::LazyInitialize() const {
 void ProfileIOData::ApplyProfileParamsToContext(
     ChromeURLRequestContext* context) const {
   context->set_is_incognito(is_incognito());
-  context->set_accept_language(profile_params_->accept_language);
-  context->set_accept_charset(profile_params_->accept_charset);
+  context->set_http_user_agent_settings(
+      chrome_http_user_agent_settings_.get());
   context->set_ssl_config_service(profile_params_->ssl_config_service);
 }
 
@@ -668,6 +664,8 @@ void ProfileIOData::ShutdownOnUIThread() {
   if (url_blacklist_manager_.get())
     url_blacklist_manager_->ShutdownOnUIThread();
 #endif
+  if (chrome_http_user_agent_settings_.get())
+    chrome_http_user_agent_settings_->CleanupOnUIThread();
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)
     delete this;

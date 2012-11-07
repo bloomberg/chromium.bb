@@ -17,6 +17,7 @@ struct AutomationURLResponse;
 namespace net {
 class HttpResponseHeaders;
 class HttpResponseInfo;
+class HttpUserAgentSettings;
 class HostPortPair;
 }
 
@@ -28,12 +29,14 @@ class Message;
 // automation.
 class URLRequestAutomationJob : public net::URLRequestJob {
  public:
-  URLRequestAutomationJob(net::URLRequest* request,
-                          net::NetworkDelegate* network_delegate,
-                          int tab,
-                          int request_id,
-                          AutomationResourceMessageFilter* filter,
-                          bool is_pending);
+  URLRequestAutomationJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const net::HttpUserAgentSettings* http_user_agent_settings,
+      int tab,
+      int request_id,
+      AutomationResourceMessageFilter* filter,
+      bool is_pending);
 
   // Register our factory for HTTP/HTTPs requests.
   static void EnsureProtocolFactoryRegistered();
@@ -97,6 +100,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   // function, which completes the job.
   void NotifyJobCompletionTask();
 
+  const net::HttpUserAgentSettings* http_user_agent_settings_;
   int id_;
   int tab_;
   scoped_refptr<AutomationResourceMessageFilter> message_filter_;

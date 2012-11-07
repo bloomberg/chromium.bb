@@ -34,8 +34,6 @@ class TestShellRequestContext : public net::URLRequestContext {
 
   virtual ~TestShellRequestContext();
 
-  virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
-
   webkit_blob::BlobStorageController* blob_storage_controller() const {
     return blob_storage_controller_.get();
   }

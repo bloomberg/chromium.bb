@@ -100,22 +100,6 @@ FilePath CookieFilePath() {
 
 }  // namespace
 
-// Custom URLRequestContext used by SafeBrowsing requests, which are not
-// associated with a particular profile. We need to use a subclass of
-// URLRequestContext in order to provide the correct User-Agent.
-class SafeBrowsingURLRequestContext : public net::URLRequestContext {
- public:
-  virtual const std::string& GetUserAgent(
-      const GURL& url) const OVERRIDE {
-    return content::GetUserAgent(url);
-  }
-
- private:
-  virtual ~SafeBrowsingURLRequestContext() {}
-
-  base::debug::LeakTracker<SafeBrowsingURLRequestContext> leak_tracker_;
-};
-
 class SafeBrowsingURLRequestContextGetter
     : public net::URLRequestContextGetter {
  public:
@@ -624,11 +608,12 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
       new SQLitePersistentCookieStore(CookieFilePath(), false, NULL),
       NULL);
 
-  url_request_context_.reset(new SafeBrowsingURLRequestContext);
+  url_request_context_.reset(new net::URLRequestContext);
   // |system_url_request_context_getter| may be NULL during tests.
-  if (system_url_request_context_getter)
+  if (system_url_request_context_getter) {
     url_request_context_->CopyFrom(
         system_url_request_context_getter->GetURLRequestContext());
+  }
   url_request_context_->set_cookie_store(cookie_store);
 }
 

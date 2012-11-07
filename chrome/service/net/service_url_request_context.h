@@ -41,11 +41,7 @@ class ServiceURLRequestContext : public net::URLRequestContext {
 
   virtual ~ServiceURLRequestContext();
 
-  // Overridden from net::URLRequestContext:
-  virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
-
  private:
-  std::string user_agent_;
   net::URLRequestContextStorage storage_;
 };
 

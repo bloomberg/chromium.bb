@@ -47,19 +47,6 @@ OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
 
 OffTheRecordProfileIOData::Handle::~Handle() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (main_request_context_getter_)
-    main_request_context_getter_->CleanupOnUIThread();
-  if (extensions_request_context_getter_)
-    extensions_request_context_getter_->CleanupOnUIThread();
-
-  // Clean up all isolated app request contexts.
-  for (ChromeURLRequestContextGetterMap::iterator iter =
-           app_request_context_getter_map_.begin();
-       iter != app_request_context_getter_map_.end();
-       ++iter) {
-    iter->second->CleanupOnUIThread();
-  }
-
   io_data_->ShutdownOnUIThread();
 }
 

@@ -20,6 +20,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -53,11 +54,13 @@ net::URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
 URLRequestAutomationJob::URLRequestAutomationJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
+    const net::HttpUserAgentSettings* http_user_agent_settings,
     int tab,
     int request_id,
     AutomationResourceMessageFilter* filter,
     bool is_pending)
     : net::URLRequestJob(request, network_delegate),
+      http_user_agent_settings_(http_user_agent_settings),
       id_(0),
       tab_(tab),
       message_filter_(filter),
@@ -113,6 +116,7 @@ net::URLRequestJob* URLRequestAutomationJob::Factory(
               child_id, route_id, &details)) {
         URLRequestAutomationJob* job = new URLRequestAutomationJob(
             request, network_delegate,
+            request->context()->http_user_agent_settings(),
             details.tab_handle, info->GetRequestID(), details.filter,
             details.is_pending_render_view);
         return job;
@@ -423,15 +427,22 @@ void URLRequestAutomationJob::StartAsync() {
   // didn't have them specified.
   if (!new_request_headers.HasHeader(
       net::HttpRequestHeaders::kAcceptLanguage) &&
-      !request_->context()->accept_language().empty()) {
-    new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
-                                  request_->context()->accept_language());
+      http_user_agent_settings_) {
+    std::string accept_language =
+        http_user_agent_settings_->GetAcceptLanguage();
+    if (!accept_language.empty()) {
+      new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
+                                    accept_language);
+    }
   }
   if (!new_request_headers.HasHeader(
       net::HttpRequestHeaders::kAcceptCharset) &&
-      !request_->context()->accept_charset().empty()) {
-    new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptCharset,
-                                  request_->context()->accept_charset());
+      http_user_agent_settings_) {
+    std::string accept_charset = http_user_agent_settings_->GetAcceptCharset();
+    if (!accept_charset.empty()) {
+      new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptCharset,
+                                    accept_charset);
+    }
   }
 
   // Ensure that we do not send username and password fields in the referrer.

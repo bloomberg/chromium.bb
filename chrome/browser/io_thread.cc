@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/net/async_dns_field_trial.h"
+#include "chrome/browser/net/basic_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -36,7 +37,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_client.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/default_server_bound_cert_store.h"
 #include "net/base/host_cache.h"
@@ -83,24 +83,8 @@ void ObserveKeychainEvents() {
 }
 #endif
 
-// Custom URLRequestContext used by requests which aren't associated with a
-// particular profile. We need to use a subclass of URLRequestContext in order
-// to provide the correct User-Agent.
-class URLRequestContextWithUserAgent : public net::URLRequestContext {
- public:
-  virtual const std::string& GetUserAgent(
-      const GURL& url) const OVERRIDE {
-    return content::GetUserAgent(url);
-  }
-
- protected:
-  virtual ~URLRequestContextWithUserAgent() {}
-};
-
-// Used for the "system" URLRequestContext. If this grows more complicated, then
-// consider inheriting directly from URLRequestContext rather than using
-// implementation inheritance.
-class SystemURLRequestContext : public URLRequestContextWithUserAgent {
+// Used for the "system" URLRequestContext.
+class SystemURLRequestContext : public net::URLRequestContext {
  public:
   SystemURLRequestContext() {
 #if defined(USE_NSS)
@@ -194,7 +178,7 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
 net::URLRequestContext*
 ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
                                    net::NetLog* net_log) {
-  net::URLRequestContext* context = new URLRequestContextWithUserAgent;
+  net::URLRequestContext* context = new net::URLRequestContext;
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());
@@ -211,6 +195,8 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_server_bound_cert_service(
       globals->system_server_bound_cert_service.get());
   context->set_network_delegate(globals->system_network_delegate.get());
+  context->set_http_user_agent_settings(
+      globals->http_user_agent_settings.get());
   // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
   // system URLRequestContext too. There's no reason this should be tied to a
   // profile.
@@ -238,6 +224,8 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
       globals->system_server_bound_cert_service.get());
   context->set_throttler_manager(globals->throttler_manager.get());
   context->set_network_delegate(globals->system_network_delegate.get());
+  context->set_http_user_agent_settings(
+      globals->http_user_agent_settings.get());
   return context;
 }
 
@@ -476,6 +464,8 @@ void IOThread::Init() {
           base::WorkerPool::GetTaskRunner(true)));
   globals_->load_time_stats.reset(new chrome_browser_net::LoadTimeStats());
   globals_->host_mapping_rules.reset(new net::HostMappingRules());
+  globals_->http_user_agent_settings.reset(
+      new BasicHttpUserAgentSettings(EmptyString(), EmptyString()));
   if (command_line.HasSwitch(switches::kHostRules)) {
     globals_->host_mapping_rules->SetRulesFromString(
         command_line.GetSwitchValueASCII(switches::kHostRules));

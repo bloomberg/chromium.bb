@@ -23,6 +23,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
@@ -33,6 +34,27 @@
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/user_agent/user_agent.h"
+
+class TestShellHttpUserAgentSettings : public net::HttpUserAgentSettings {
+ public:
+  TestShellHttpUserAgentSettings() {}
+  virtual ~TestShellHttpUserAgentSettings() {}
+
+  // hard-code A-L and A-C for test shells
+  virtual std::string GetAcceptLanguage() const OVERRIDE {
+    return "en-us,en";
+  }
+  virtual std::string GetAcceptCharset() const OVERRIDE {
+    return "iso-8859-1,*,utf-8";
+  }
+
+  virtual std::string GetUserAgent(const GURL& url) const OVERRIDE {
+    return webkit_glue::GetUserAgent(url);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestShellHttpUserAgentSettings);
+};
 
 TestShellRequestContext::TestShellRequestContext()
     : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
@@ -56,9 +78,7 @@ void TestShellRequestContext::Init(
       new net::DefaultServerBoundCertStore(NULL),
       base::WorkerPool::GetTaskRunner(true)));
 
-  // hard-code A-L and A-C for test shells
-  set_accept_language("en-us,en");
-  set_accept_charset("iso-8859-1,*,utf-8");
+  storage_.set_http_user_agent_settings(new TestShellHttpUserAgentSettings);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Use no proxy to avoid ProxyConfigServiceLinux.
@@ -131,9 +151,4 @@ void TestShellRequestContext::Init(
 }
 
 TestShellRequestContext::~TestShellRequestContext() {
-}
-
-const std::string& TestShellRequestContext::GetUserAgent(
-    const GURL& url) const {
-  return webkit_glue::GetUserAgent(url);
 }

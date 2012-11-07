@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/basic_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -185,12 +186,13 @@ class DeviceManagementRequestContext : public net::URLRequestContext {
   virtual ~DeviceManagementRequestContext();
 
  private:
-  // Overridden from net::URLRequestContext:
-  virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
+  BasicHttpUserAgentSettings basic_http_user_agent_settings_;
 };
 
 DeviceManagementRequestContext::DeviceManagementRequestContext(
-    net::URLRequestContext* base_context) {
+    net::URLRequestContext* base_context)
+    // Use sane Accept-Language and Accept-Charset values for our purposes.
+    : basic_http_user_agent_settings_("*", "*") {
   // Share resolver, proxy service and ssl bits with the baseline context. This
   // is important so we don't make redundant requests (e.g. when resolving proxy
   // auto configuration).
@@ -207,18 +209,11 @@ DeviceManagementRequestContext::DeviceManagementRequestContext(
   // No cookies, please.
   set_cookie_store(new net::CookieMonster(NULL, NULL));
 
-  // Initialize these to sane values for our purposes.
-  set_accept_language("*");
-  set_accept_charset("*");
+  set_http_user_agent_settings(&basic_http_user_agent_settings_);
 }
 
 DeviceManagementRequestContext::~DeviceManagementRequestContext() {
   delete http_transaction_factory();
-}
-
-const std::string& DeviceManagementRequestContext::GetUserAgent(
-    const GURL& url) const {
-  return content::GetUserAgent(url);
 }
 
 // Request context holder.

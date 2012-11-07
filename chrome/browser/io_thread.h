@@ -41,6 +41,7 @@ class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;
+class HttpUserAgentSettings;
 class NetworkDelegate;
 class ServerBoundCertService;
 class ProxyConfigService;
@@ -115,6 +116,7 @@ class IOThread : public content::BrowserThreadDelegate {
         http_pipelining_compatibility_client;
     scoped_ptr<chrome_browser_net::LoadTimeStats> load_time_stats;
     scoped_ptr<net::HostMappingRules> host_mapping_rules;
+    scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     bool ignore_certificate_errors;
     bool http_pipelining_enabled;
     uint16 testing_fixed_http_port;

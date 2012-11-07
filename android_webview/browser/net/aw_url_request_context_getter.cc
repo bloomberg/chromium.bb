@@ -84,6 +84,13 @@ void AwURLRequestContextGetter::Init() {
   builder.set_network_delegate(new AwNetworkDelegate());
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
   builder.set_proxy_config_service(proxy_config_service_.release());
+  builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
+      content::GetContentClient()->browser()->GetAcceptLangs(
+          browser_context_)));
+
+  // TODO(boliu): Values from chrome/app/resources/locale_settings_en-GB.xtb
+  builder.set_accept_charset(
+      net::HttpUtil::GenerateAcceptCharsetHeader("ISO-8859-1"));
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
   cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::DISK;
@@ -93,15 +100,6 @@ void AwURLRequestContextGetter::Init() {
   builder.EnableHttpCache(cache_params);
 
   url_request_context_.reset(builder.Build());
-
-  url_request_context_->set_accept_language(
-      net::HttpUtil::GenerateAcceptLanguageHeader(
-          content::GetContentClient()->browser()->GetAcceptLangs(
-              browser_context_)));
-
-  // TODO(boliu): Values from chrome/app/resources/locale_settings_en-GB.xtb
-  url_request_context_->set_accept_charset(
-      net::HttpUtil::GenerateAcceptCharsetHeader("ISO-8859-1"));
 
   job_factory_.reset(new AwURLRequestJobFactory);
   bool set_protocol = job_factory_->SetProtocolHandler(

@@ -560,7 +560,10 @@ std::string GoogleStreamingRemoteEngine::GetAcceptedLanguages() const {
     net::URLRequestContext* request_context =
         url_context_->GetURLRequestContext();
     DCHECK(request_context);
-    std::string accepted_language_list = request_context->accept_language();
+    // TODO(pauljensen): GoogleStreamingRemoteEngine should be constructed with
+    // a reference to the HttpUserAgentSettings rather than accessing the
+    // accept language through the URLRequestContext.
+    std::string accepted_language_list = request_context->GetAcceptLanguage();
     size_t separator = accepted_language_list.find_first_of(",;");
     if (separator != std::string::npos)
       langs = accepted_language_list.substr(0, separator);

@@ -264,9 +264,10 @@ void FilterDisabledTests() {
     "URLRequestTestHTTP.ProxyTunnelRedirectTest",
     "URLRequestTestHTTP.UnexpectedServerAuthTest",
 
-    // This test is disabled as it expects an empty UA to be echoed back from
-    // the server which is not the case in ChromeFrame.
+    // These tests are disabled as they expect an empty UA to be echoed back
+    // from the server which is not the case in ChromeFrame.
     "URLRequestTestHTTP.DefaultUserAgent",
+    "URLRequestTestHTTP.EmptyHttpUserAgentSettings",
     // This test modifies the UploadData object after it has been marshaled to
     // ChromeFrame. We don't support this.
     "URLRequestTestHTTP.TestPostChunkedDataAfterStart",
