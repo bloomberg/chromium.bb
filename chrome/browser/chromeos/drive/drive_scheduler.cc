@@ -33,21 +33,14 @@ DriveScheduler::JobInfo::JobInfo(JobType in_job_type, FilePath in_file_path)
 }
 
 DriveScheduler::QueueEntry::QueueEntry(JobType in_job_type,
-                                       FilePath in_file_path)
-    : job_info(TYPE_REMOVE, in_file_path) {
+                                       FilePath in_file_path,
+                                       FileOperationCallback in_callback)
+    : job_info(in_job_type, in_file_path),
+      callback(in_callback),
+      is_recursive(false) {
 }
 
 DriveScheduler::QueueEntry::~QueueEntry() {
-}
-
-DriveScheduler::RemoveJobPrivate::RemoveJobPrivate(
-    bool in_is_recursive,
-    FileOperationCallback in_callback)
-    : is_recursive(in_is_recursive),
-      callback(in_callback) {
-}
-
-DriveScheduler::RemoveJobPrivate::~RemoveJobPrivate() {
 }
 
 DriveScheduler::DriveScheduler(Profile* profile,
@@ -81,20 +74,35 @@ void DriveScheduler::Initialize() {
   initialized_ = true;
 }
 
+void DriveScheduler::Move(const FilePath& src_file_path,
+                          const FilePath& dest_file_path,
+                          const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(
+      new QueueEntry(TYPE_MOVE, src_file_path, callback));
+  new_job->dest_file_path = dest_file_path;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop();
+}
+
 void DriveScheduler::Remove(const FilePath& file_path,
                             bool is_recursive,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  QueueEntry* new_job = new QueueEntry(TYPE_REMOVE, file_path);
-  new_job->remove_private.reset(new RemoveJobPrivate(is_recursive, callback));
+  scoped_ptr<QueueEntry> new_job(
+      new QueueEntry(TYPE_REMOVE, file_path, callback));
+  new_job->is_recursive = is_recursive;
 
-  QueueJob(new_job);
+  QueueJob(new_job.Pass());
 
   StartJobLoop();
 }
 
-int DriveScheduler::QueueJob(QueueEntry* job) {
+int DriveScheduler::QueueJob(scoped_ptr<QueueEntry> job) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   int job_id = next_job_id_;
@@ -103,8 +111,8 @@ int DriveScheduler::QueueJob(QueueEntry* job) {
 
   queue_.push_back(job_id);
 
-  DCHECK(job_info_.find(job_id) == job_info_.end());
-  job_info_[job_id] = make_linked_ptr(job);
+  DCHECK(job_info_map_.find(job_id) == job_info_map_.end());
+  job_info_map_[job_id] = make_linked_ptr(job.release());
 
   return job_id;
 }
@@ -130,26 +138,36 @@ void DriveScheduler::DoJobLoop() {
   int job_id = queue_.front();
   queue_.pop_front();
 
-  JobMap::iterator job_iter = job_info_.find(job_id);
-  DCHECK(job_iter != job_info_.end());
+  JobMap::iterator job_iter = job_info_map_.find(job_id);
+  DCHECK(job_iter != job_info_map_.end());
 
   JobInfo& job_info = job_iter->second->job_info;
   job_info.state = STATE_RUNNING;
 
   switch (job_info.job_type) {
-    case TYPE_REMOVE: {
-      DCHECK(job_iter->second->remove_private.get());
-
-      drive_operations_->Remove(
+    case TYPE_MOVE: {
+      drive_operations_->Move(
           job_info.file_path,
-          job_iter->second->remove_private->is_recursive,
-          base::Bind(&DriveScheduler::OnRemoveDone,
+          job_iter->second->dest_file_path,
+          base::Bind(&DriveScheduler::OnJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
     break;
-  }
 
+    case TYPE_REMOVE: {
+      drive_operations_->Remove(
+          job_info.file_path,
+          job_iter->second->is_recursive,
+          base::Bind(&DriveScheduler::OnJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     job_id));
+    }
+    break;
+
+    // There is no default case so that there will be a compiler error if a type
+    // is added but unhandled.
+  }
 }
 
 bool DriveScheduler::ShouldStopJobLoop() {
@@ -203,9 +221,9 @@ void DriveScheduler::ResetThrottleAndContinueJobLoop() {
   DoJobLoop();
 }
 
-void DriveScheduler::OnRemoveDone(int job_id, DriveFileError error) {
-  JobMap::iterator job_iter = job_info_.find(job_id);
-  DCHECK(job_iter != job_info_.end());
+void DriveScheduler::OnJobDone(int job_id, DriveFileError error) {
+  JobMap::iterator job_iter = job_info_map_.find(job_id);
+  DCHECK(job_iter != job_info_map_.end());
 
   // Retry, depending on the error.
   if (error == DRIVE_FILE_ERROR_THROTTLED ||
@@ -216,16 +234,14 @@ void DriveScheduler::OnRemoveDone(int job_id, DriveFileError error) {
     queue_.push_back(job_id);
     ThrottleAndContinueJobLoop();
   } else {
-    DCHECK(job_iter->second->remove_private.get());
-
     // Handle the callback.
-    if (!job_iter->second->remove_private->callback.is_null()) {
+    if (!job_iter->second->callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(job_iter->second->remove_private->callback, error));
+          base::Bind(job_iter->second->callback, error));
     }
 
     // Delete the job.
-    job_info_.erase(job_id);
+    job_info_map_.erase(job_id);
     ResetThrottleAndContinueJobLoop();
   }
 }

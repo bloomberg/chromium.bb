@@ -32,6 +32,7 @@ class DriveScheduler
 
   // Enum representing the type of job.
   enum JobType {
+    TYPE_MOVE,
     TYPE_REMOVE,
   };
 
@@ -78,6 +79,11 @@ class DriveScheduler
   // other functions.
   void Initialize();
 
+  // Adds a move operation to the queue.
+  void Move(const FilePath& src_file_path,
+            const FilePath& dest_file_path,
+            const FileOperationCallback& callback);
+
   // Adds a remove operation to the queue.
   void Remove(const FilePath& file_path,
               bool is_recursive,
@@ -86,27 +92,28 @@ class DriveScheduler
  private:
   friend class DriveSchedulerTest;
 
-  // Data specific to a remove operation.
-  struct RemoveJobPrivate  {
-    RemoveJobPrivate(bool in_is_recursive, FileOperationCallback in_callback);
-    ~RemoveJobPrivate();
-
-    bool is_recursive;
-    FileOperationCallback callback;
-  };
-
   // Represents a single entry in the job queue.
   struct QueueEntry {
-    QueueEntry(JobType in_job_type, FilePath in_file_path);
+    QueueEntry(JobType in_job_type,
+               FilePath in_file_path,
+               FileOperationCallback in_callback);
     ~QueueEntry();
 
     JobInfo job_info;
 
-    scoped_ptr<RemoveJobPrivate> remove_private;
+    // Callback for when the operation completes.
+    // Used by: TYPE_MOVE, TYPE_REMOVE
+    FileOperationCallback callback;
+
+    // Destination of the operation.  Used by: TYPE_MOVE
+    FilePath dest_file_path;
+
+    // Whether the operation is recursive.  Used by: TYPE_REMOVE
+    bool is_recursive;
   };
 
   // Adds the specified job to the queue.  Takes ownership of |job|
-  int QueueJob(QueueEntry* job);
+  int QueueJob(scoped_ptr<QueueEntry> job);
 
   // Starts the job loop, if it is not already running.
   void StartJobLoop();
@@ -127,10 +134,9 @@ class DriveScheduler
   // Resets the throttle delay to the initial value, and continues the job loop.
   void ResetThrottleAndContinueJobLoop();
 
-  // Callback for job of TYPE_REMOVE finishing.  Retries the job if needed,
-  // otherwise cleans up the job, invokes the callback, and continues the job
-  // loop.
-  void OnRemoveDone(int job_id, DriveFileError error);
+  // Callback for job finishing.  Retries the job if needed, otherwise cleans up
+  // the job, invokes the callback, and continues the job loop.
+  void OnJobDone(int job_id, DriveFileError error);
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
   virtual void OnConnectionTypeChanged(
@@ -156,7 +162,7 @@ class DriveScheduler
 
   // Mapping of id to QueueEntry.
   typedef std::map<int, linked_ptr<QueueEntry> > JobMap;
-  JobMap job_info_;
+  JobMap job_info_map_;
 
   // The queue of jobs id.  Sorted by priority.
   std::deque<int> queue_;

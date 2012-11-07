@@ -8,6 +8,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
+#include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -30,6 +31,17 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
   MOCK_CONST_METHOD0(GetCurrentConnectionType,
                      net::NetworkChangeNotifier::ConnectionType());
+};
+
+class MockMoveOperation : public file_system::MoveOperation {
+ public:
+  MockMoveOperation()
+      : file_system::MoveOperation(NULL, NULL, NULL) {
+  }
+
+  MOCK_METHOD3(Move, void(const FilePath& src_file_path,
+                          const FilePath& dest_file_path,
+                          const FileOperationCallback& callback));
 };
 
 class MockRemoveOperation : public file_system::RemoveOperation {
@@ -62,8 +74,11 @@ class DriveSchedulerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
+    mock_move_operation_ = new StrictMock<MockMoveOperation>();
     mock_remove_operation_ = new StrictMock<MockRemoveOperation>();
-    drive_operations_.InitForTesting(NULL, NULL, mock_remove_operation_);
+    drive_operations_.InitForTesting(NULL,
+                                     mock_move_operation_,
+                                     mock_remove_operation_);
     scheduler_.reset(new DriveScheduler(profile_.get(),
                                         &drive_operations_));
 
@@ -118,8 +133,46 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
 
   file_system::DriveOperations drive_operations_;
+  StrictMock<MockMoveOperation>* mock_move_operation_;
   StrictMock<MockRemoveOperation>* mock_remove_operation_;
 };
+
+TEST_F(DriveSchedulerTest, MoveFile) {
+  ConnectToWifi();
+
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
+  EXPECT_CALL(*mock_move_operation_, Move(file_in_root, dest_file, _))
+      .WillOnce(MockRemove(DRIVE_FILE_OK));
+
+  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
+  scheduler_->Move(
+      file_in_root, dest_file,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+}
+
+TEST_F(DriveSchedulerTest, MoveFileRetry) {
+  ConnectToWifi();
+
+  // This will fail once with a throttled message.  It tests that the scheduler
+  // will retry in this case.
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_file(FILE_PATH_LITERAL("drive/File 1.txt"));
+  EXPECT_CALL(*mock_move_operation_, Move(file_in_root, dest_file, _))
+      .WillOnce(MockRemove(DRIVE_FILE_ERROR_THROTTLED))
+      .WillOnce(MockRemove(DRIVE_FILE_OK));
+
+  DriveFileError error(DRIVE_FILE_ERROR_FAILED);
+  scheduler_->Move(
+      file_in_root, dest_file,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+}
 
 TEST_F(DriveSchedulerTest, RemoveFile) {
   ConnectToWifi();
@@ -140,6 +193,8 @@ TEST_F(DriveSchedulerTest, RemoveFile) {
 TEST_F(DriveSchedulerTest, RemoveFileRetry) {
   ConnectToWifi();
 
+  // This will fail once with a throttled message.  It tests that the scheduler
+  // will retry in this case.
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   EXPECT_CALL(*mock_remove_operation_, Remove(file_in_root, _, _))
       .WillOnce(MockRemove(DRIVE_FILE_ERROR_THROTTLED))

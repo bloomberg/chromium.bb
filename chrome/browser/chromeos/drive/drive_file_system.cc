@@ -584,7 +584,7 @@ void DriveFileSystem::Move(const FilePath& src_file_path,
 void DriveFileSystem::MoveOnUIThread(const FilePath& src_file_path,
                                      const FilePath& dest_file_path,
                                      const FileOperationCallback& callback) {
-  drive_operations_.Move(src_file_path, dest_file_path, callback);
+  scheduler_->Move(src_file_path, dest_file_path, callback);
 }
 
 void DriveFileSystem::Remove(const FilePath& file_path,
