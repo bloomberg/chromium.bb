@@ -905,7 +905,8 @@ static void
 surface_accumulate_damage(struct weston_surface *surface,
 			  pixman_region32_t *opaque)
 {
-	if (surface->buffer && wl_buffer_is_shm(surface->buffer))
+	if (pixman_region32_not_empty(&surface->damage) &&
+	    surface->buffer && wl_buffer_is_shm(surface->buffer))
 		surface->compositor->renderer->flush_damage(surface);
 
 	if (surface->transform.enabled) {
