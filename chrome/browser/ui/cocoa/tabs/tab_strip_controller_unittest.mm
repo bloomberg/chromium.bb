@@ -4,8 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <vector>
-
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -48,7 +46,7 @@ using content::WebContents;
 
 @implementation TabView (Test)
 
-- (TabController*)getController {
+- (TabController*)controller {
   return controller_;
 }
 
@@ -104,6 +102,15 @@ class TabStripControllerTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
+  TabView* CreateTab() {
+    SiteInstance* instance = SiteInstance::Create(profile());
+    TabContents* tab_contents = chrome::TabContentsFactory(
+        profile(), instance, MSG_ROUTING_NONE, NULL);
+    model_->AppendTabContents(tab_contents, true);
+    const NSUInteger tab_count = [controller_.get() viewsCount];
+    return static_cast<TabView*>([controller_.get() viewAtIndex:tab_count - 1]);
+  }
+
   scoped_ptr<TestTabStripModelDelegate> delegate_;
   TabStripModel* model_;
   scoped_nsobject<TestTabStripControllerDelegate> controller_delegate_;
@@ -115,10 +122,7 @@ class TabStripControllerTest : public CocoaProfileTest {
 // the tab strip.
 TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_TRUE(model_->empty());
-  SiteInstance* instance = SiteInstance::Create(profile());
-  TabContents* tab_contents = chrome::TabContentsFactory(
-      profile(), instance, MSG_ROUTING_NONE, NULL);
-  model_->AppendTabContents(tab_contents, true);
+  CreateTab();
   EXPECT_EQ(model_->count(), 1);
 }
 
@@ -131,28 +135,16 @@ TEST_F(TabStripControllerTest, RearrangeTabs) {
 }
 
 TEST_F(TabStripControllerTest, CorrectToolTipText) {
-  // Create tab 1.
-  SiteInstance* instance = SiteInstance::Create(profile());
-  TabContents* tab_contents = chrome::TabContentsFactory(
-      profile(), instance, MSG_ROUTING_NONE, NULL);
-  model_->AppendTabContents(tab_contents, true);
-
-  // Create tab 2.
-  SiteInstance* instance2 = SiteInstance::Create(profile());
-  TabContents* tab_contents2 = chrome::TabContentsFactory(
-      profile(), instance2, MSG_ROUTING_NONE, NULL);
-  model_->AppendTabContents(tab_contents2, true);
-
   // Set tab 1 tooltip.
-  TabView* tab1 = (TabView*)[controller_.get() viewAtIndex:0];
+  TabView* tab1 = CreateTab();
   [tab1 setToolTip:@"Tab1"];
 
   // Set tab 2 tooltip.
-  TabView* tab2 = (TabView*)[controller_.get() viewAtIndex:1];
+  TabView* tab2 = CreateTab();
   [tab2 setToolTip:@"Tab2"];
 
-  EXPECT_FALSE([tab1 getController].selected);
-  EXPECT_TRUE([tab2 getController].selected);
+  EXPECT_FALSE([tab1 controller].selected);
+  EXPECT_TRUE([tab2 controller].selected);
 
   // Check that there's no tooltip yet.
   EXPECT_FALSE([controller_ view:nil
@@ -223,6 +215,42 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
         stringForToolTip:nil
                    point:NSMakePoint(0,0)
                 userData:nil] cStringUsingEncoding:NSASCIIStringEncoding]);
+}
+
+TEST_F(TabStripControllerTest, ViewAccessibility_Contents) {
+  NSArray* attrs = [tab_strip_ accessibilityAttributeNames];
+  ASSERT_TRUE([attrs containsObject:NSAccessibilityContentsAttribute]);
+
+  // Create two tabs and ensure they exist in the contents array.
+  TabView* tab1 = CreateTab();
+  TabView* tab2 = CreateTab();
+  NSObject* contents =
+      [tab_strip_ accessibilityAttributeValue:NSAccessibilityContentsAttribute];
+  DCHECK([contents isKindOfClass:[NSArray class]]);
+  NSArray* contentsArray = static_cast<NSArray*>(contents);
+  ASSERT_TRUE([contentsArray containsObject:tab1]);
+  ASSERT_TRUE([contentsArray containsObject:tab2]);
+}
+
+TEST_F(TabStripControllerTest, ViewAccessibility_Value) {
+  NSArray* attrs = [tab_strip_ accessibilityAttributeNames];
+  ASSERT_TRUE([attrs containsObject:NSAccessibilityValueAttribute]);
+
+  // Create two tabs and ensure the active one gets returned.
+  TabView* tab1 = CreateTab();
+  TabView* tab2 = CreateTab();
+  EXPECT_FALSE([tab1 controller].selected);
+  EXPECT_TRUE([tab2 controller].selected);
+  NSObject* value =
+      [tab_strip_ accessibilityAttributeValue:NSAccessibilityValueAttribute];
+  EXPECT_EQ(tab2, value);
+
+  model_->ActivateTabAt(0, false);
+  EXPECT_TRUE([tab1 controller].selected);
+  EXPECT_FALSE([tab2 controller].selected);
+  value =
+      [tab_strip_ accessibilityAttributeValue:NSAccessibilityValueAttribute];
+  EXPECT_EQ(tab1, value);
 }
 
 }  // namespace

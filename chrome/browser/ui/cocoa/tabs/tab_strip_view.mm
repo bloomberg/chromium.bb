@@ -174,9 +174,7 @@
 
 // (URLDropTarget protocol)
 - (id<URLDropTargetController>)urlDropController {
-  BrowserWindowController* windowController = [[self window] windowController];
-  DCHECK([windowController isKindOfClass:[BrowserWindowController class]]);
-  return [windowController tabStripController];
+  return controller_;
 }
 
 // (URLDropTarget protocol)
@@ -218,6 +216,10 @@
     }
     return tabs;
   }
+  if ([attribute isEqual:NSAccessibilityContentsAttribute])
+    return [self accessibilityAttributeValue:NSAccessibilityChildrenAttribute];
+  if ([attribute isEqual:NSAccessibilityValueAttribute])
+    return [controller_ activeTabView];
 
   return [super accessibilityAttributeValue:attribute];
 }
@@ -226,6 +228,8 @@
   NSMutableArray* attributes =
       [[super accessibilityAttributeNames] mutableCopy];
   [attributes addObject:NSAccessibilityTabsAttribute];
+  [attributes addObject:NSAccessibilityContentsAttribute];
+  [attributes addObject:NSAccessibilityValueAttribute];
 
   return [attributes autorelease];
 }
@@ -240,6 +244,10 @@
 
 - (void)setNewTabButton:(NewTabButton*)button {
   newTabButton_ = button;
+}
+
+- (void)setController:(TabStripController*)controller {
+  controller_ = controller;
 }
 
 @end

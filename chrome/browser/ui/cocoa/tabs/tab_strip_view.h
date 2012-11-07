@@ -11,12 +11,15 @@
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
 @class NewTabButton;
+@class TabStripController;
 
 // A view class that handles rendering the tab strip and drops of URLS with
 // a positioning locator for drop feedback.
 
 @interface TabStripView : NSView<URLDropTarget> {
  @private
+  TabStripController* controller_;  // Weak; owns us.
+
   NSTimeInterval lastMouseUp_;
 
   // Handles being a drag-and-drop target.
@@ -40,14 +43,19 @@
 
 @end
 
+// Interface for the controller to set and clear the weak reference to itself.
+@interface TabStripView (TabStripControllerInterface)
+- (void)setController:(TabStripController*)controller;
+@end
+
 // Protected methods subclasses can override to alter behavior. Clients should
 // not call these directly.
-@interface TabStripView(Protected)
+@interface TabStripView (Protected)
 - (void)drawBottomBorder:(NSRect)bounds;
 - (BOOL)doubleClickMinimizesWindow;
 @end
 
-@interface TabStripView(TestingAPI)
+@interface TabStripView (TestingAPI)
 - (void)setNewTabButton:(NewTabButton*)button;
 @end
 

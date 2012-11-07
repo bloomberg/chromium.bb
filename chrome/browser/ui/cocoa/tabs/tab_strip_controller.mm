@@ -357,6 +357,7 @@ private:
   DCHECK(view && switchView && browser && delegate);
   if ((self = [super init])) {
     tabStripView_.reset([view retain]);
+    [tabStripView_ setController:self];
     switchView_ = switchView;
     browser_ = browser;
     tabStripModel_ = browser_->tab_strip_model();
@@ -490,6 +491,8 @@ private:
 }
 
 - (void)dealloc {
+  [tabStripView_ setController:nil];
+
   if (trackingArea_.get())
     [tabStripView_ removeTrackingArea:trackingArea_.get()];
 
