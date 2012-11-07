@@ -25,7 +25,21 @@ import scm
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+class Unbuffered(object):
+  """Disable buffering on a file object."""
+  def __init__(self, stream):
+    self.stream = stream
+
+  def write(self, data):
+    self.stream.write(data)
+    self.stream.flush()
+
+  def __getattr__(self, attr):
+    return getattr(self.stream, attr)
+
+
 def main():
+  sys.stdout = Unbuffered(sys.stdout)
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '-v', '--verbose', action='count', default=0,
