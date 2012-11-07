@@ -101,6 +101,8 @@ class CONTENT_EXPORT GpuMemoryManager :
                            GpuMemoryAllocationCompareTests);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            StubMemoryStatsForLastManageTests);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           TestManagedUsageTracking);
 
   struct ClientState {
     ClientState(GpuMemoryManagerClient* client,
@@ -141,59 +143,23 @@ class CONTENT_EXPORT GpuMemoryManager :
   // on what the stubs' contexts report.
   void UpdateAvailableGpuMemory(const ClientStateVector& clients);
 
-  // The amount of video memory which is available for allocation
-  size_t GetAvailableGpuMemory() const {
-    return bytes_available_gpu_memory_;
-  }
+  // The amount of video memory which is available for allocation.
+  size_t GetAvailableGpuMemory() const;
 
   // Default per-OS value for the amount of available GPU memory, used
   // if we can't query the driver for an exact value.
-  size_t GetDefaultAvailableGpuMemory() const {
-#if defined(OS_ANDROID)
-    return 32 * 1024 * 1024;
-#elif defined(OS_CHROMEOS)
-    return 1024 * 1024 * 1024;
-#else
-    return 256 * 1024 * 1024;
-#endif
-  }
+  size_t GetDefaultAvailableGpuMemory() const;
+
+  // Maximum cap on total GPU memory, no matter how much the GPU reports.
+  size_t GetMaximumTotalGpuMemory() const;
+
+  // The maximum and minimum amount of memory that a tab may be assigned.
+  size_t GetMaximumTabAllocation() const;
+  size_t GetMinimumTabAllocation() const;
 
   // Get a reasonable memory limit from a viewport's surface area.
   static size_t CalcAvailableFromViewportArea(int viewport_area);
   static size_t CalcAvailableFromGpuTotal(size_t total_gpu_memory);
-
-  // Maximum cap on total GPU memory, no matter how much
-  // the GPU reports to have.
-  static size_t GetMaximumTotalGpuMemory() {
-#if defined(OS_ANDROID)
-    return 256 * 1024 * 1024;
-#else
-    return 1024 * 1024 * 1024;
-#endif
-  }
-
-  // The maximum amount of memory that a tab may be assigned
-  size_t GetMaximumTabAllocation() const {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    return bytes_available_gpu_memory_;
-#else
-    // This is to avoid allowing a single page on to use a full 256MB of memory
-    // (the current total limit). Long-scroll pages will hit this limit,
-    // resulting in instability on some platforms (e.g, issue 141377).
-    return bytes_available_gpu_memory_ / 2;
-#endif
-  }
-
-  // The minimum non-zero amount of memory that a tab may be assigned
-  static size_t GetMinimumTabAllocation() {
-#if defined(OS_ANDROID)
-    return 32 * 1024 * 1024;
-#elif defined(OS_CHROMEOS)
-    return 64 * 1024 * 1024;
-#else
-    return 64 * 1024 * 1024;
-#endif
-  }
 
   // Interfaces for testing
   void TestingSetClientVisible(GpuMemoryManagerClient* client, bool visible);
@@ -223,7 +189,8 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // The current total memory usage, and historical maximum memory usage
   size_t bytes_allocated_current_;
-  size_t bytes_allocated_historical_max_;
+  size_t bytes_allocated_managed_visible_;
+  size_t bytes_allocated_managed_backgrounded_;
 
   // The number of browser windows that exist. If we ever receive a
   // GpuMsg_SetVideoMemoryWindowCount, then we use this to compute memory

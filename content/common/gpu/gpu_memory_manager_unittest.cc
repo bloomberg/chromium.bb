@@ -662,4 +662,100 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
     EXPECT_GT(stub3allocation4, stub3allocation3);
 }
 
+// Test GpuMemoryManager's managed memory tracking
+TEST_F(GpuMemoryManagerTest, TestManagedUsageTracking) {
+  FakeClient stub1(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+             stub2(memmgr_, GenerateUniqueSurfaceId(), false, older_);
+  EXPECT_EQ(0ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(0ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Set memory allocations and verify the results are reflected.
+  memmgr_.SetClientManagedMemoryStats(
+     &stub1, GpuManagedMemoryStats(0, 0, 5, false));
+  memmgr_.SetClientManagedMemoryStats(
+     &stub2, GpuManagedMemoryStats(0, 0, 7, false));
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Redundantly add a client and make sure nothing changes
+  memmgr_.AddClient(&stub1, true, true, older_);
+  memmgr_.AddClient(&stub2, true, true, older_);
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Remove a visible client
+  memmgr_.RemoveClient(&stub1);
+  EXPECT_EQ(0ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+  memmgr_.SetClientManagedMemoryStats(
+     &stub1, GpuManagedMemoryStats(0, 0, 99, false));
+  EXPECT_EQ(0ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+  memmgr_.AddClient(&stub1, true, true, older_);
+  EXPECT_EQ(0ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+  memmgr_.SetClientManagedMemoryStats(
+     &stub1, GpuManagedMemoryStats(0, 0, 5, false));
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Remove a backgrounded client
+  memmgr_.RemoveClient(&stub2);
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(0ul, memmgr_.bytes_allocated_managed_backgrounded_);
+  memmgr_.SetClientManagedMemoryStats(
+     &stub2, GpuManagedMemoryStats(0, 0, 99, false));
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(0ul, memmgr_.bytes_allocated_managed_backgrounded_);
+  memmgr_.AddClient(&stub2, true, false, older_);
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(0ul, memmgr_.bytes_allocated_managed_backgrounded_);
+  memmgr_.SetClientManagedMemoryStats(
+     &stub2, GpuManagedMemoryStats(0, 0, 7, false));
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Create and then destroy some stubs, and verify their allocations go away.
+  {
+    FakeClient stub3(memmgr_, GenerateUniqueSurfaceId(), true, older_),
+               stub4(memmgr_, GenerateUniqueSurfaceId(), false, older_);
+    memmgr_.SetClientManagedMemoryStats(
+       &stub3, GpuManagedMemoryStats(0, 0, 1, false));
+    memmgr_.SetClientManagedMemoryStats(
+       &stub4, GpuManagedMemoryStats(0, 0, 2, false));
+    EXPECT_EQ(6ul, memmgr_.bytes_allocated_managed_visible_);
+    EXPECT_EQ(9ul, memmgr_.bytes_allocated_managed_backgrounded_);
+  }
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Do no-op changes to stubs' visibility and make sure nothing chnages.
+  memmgr_.SetClientVisible(&stub1, true);
+  memmgr_.SetClientVisible(&stub2, false);
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Change visbility state.
+  memmgr_.SetClientVisible(&stub1, false);
+  memmgr_.SetClientVisible(&stub2, true);
+  EXPECT_EQ(7ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(5ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Increase allocation amounts.
+  memmgr_.SetClientManagedMemoryStats(
+     &stub1, GpuManagedMemoryStats(0, 0, 6, false));
+  memmgr_.SetClientManagedMemoryStats(
+     &stub2, GpuManagedMemoryStats(0, 0, 8, false));
+  EXPECT_EQ(8ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(6ul, memmgr_.bytes_allocated_managed_backgrounded_);
+
+  // Decrease allocation amounts.
+  memmgr_.SetClientManagedMemoryStats(
+     &stub1, GpuManagedMemoryStats(0, 0, 4, false));
+  memmgr_.SetClientManagedMemoryStats(
+     &stub2, GpuManagedMemoryStats(0, 0, 6, false));
+  EXPECT_EQ(6ul, memmgr_.bytes_allocated_managed_visible_);
+  EXPECT_EQ(4ul, memmgr_.bytes_allocated_managed_backgrounded_);
+}
+
 }  // namespace content

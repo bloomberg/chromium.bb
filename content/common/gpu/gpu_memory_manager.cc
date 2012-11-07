@@ -24,6 +24,11 @@ namespace {
 
 const int kDelayedScheduleManageTimeoutMs = 67;
 
+void TrackValueChanged(size_t old_size, size_t new_size, size_t* total_size) {
+  DCHECK(new_size > old_size || *total_size >= (old_size - new_size));
+  *total_size += (new_size - old_size);
+}
+
 }
 
 void GpuMemoryManager::AssignMemoryAllocations(
@@ -44,7 +49,8 @@ GpuMemoryManager::GpuMemoryManager(
       bytes_available_gpu_memory_(0),
       bytes_available_gpu_memory_overridden_(false),
       bytes_allocated_current_(0),
-      bytes_allocated_historical_max_(0),
+      bytes_allocated_managed_visible_(0),
+      bytes_allocated_managed_backgrounded_(0),
       window_count_has_been_received_(false),
       window_count_(0),
       disable_schedule_manage_(false)
@@ -63,6 +69,52 @@ GpuMemoryManager::GpuMemoryManager(
 GpuMemoryManager::~GpuMemoryManager() {
   DCHECK(tracking_groups_.empty());
   DCHECK(clients_.empty());
+  DCHECK(!bytes_allocated_current_);
+  DCHECK(!bytes_allocated_managed_visible_);
+  DCHECK(!bytes_allocated_managed_backgrounded_);
+}
+
+size_t GpuMemoryManager::GetAvailableGpuMemory() const {
+  return bytes_available_gpu_memory_;
+}
+
+size_t GpuMemoryManager::GetDefaultAvailableGpuMemory() const {
+#if defined(OS_ANDROID)
+  return 32 * 1024 * 1024;
+#elif defined(OS_CHROMEOS)
+  return 1024 * 1024 * 1024;
+#else
+  return 256 * 1024 * 1024;
+#endif
+}
+
+size_t GpuMemoryManager::GetMaximumTotalGpuMemory() const {
+#if defined(OS_ANDROID)
+  return 256 * 1024 * 1024;
+#else
+  return 1024 * 1024 * 1024;
+#endif
+}
+
+size_t GpuMemoryManager::GetMaximumTabAllocation() const {
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  return bytes_available_gpu_memory_;
+#else
+  // This is to avoid allowing a single page on to use a full 256MB of memory
+  // (the current total limit). Long-scroll pages will hit this limit,
+  // resulting in instability on some platforms (e.g, issue 141377).
+  return bytes_available_gpu_memory_ / 2;
+#endif
+}
+
+size_t GpuMemoryManager::GetMinimumTabAllocation() const {
+#if defined(OS_ANDROID)
+  return 32 * 1024 * 1024;
+#elif defined(OS_CHROMEOS)
+  return 64 * 1024 * 1024;
+#else
+  return 64 * 1024 * 1024;
+#endif
 }
 
 size_t GpuMemoryManager::CalcAvailableFromViewportArea(int viewport_area) {
@@ -186,17 +238,7 @@ void GpuMemoryManager::ScheduleManage(bool immediate) {
 
 void GpuMemoryManager::TrackMemoryAllocatedChange(size_t old_size,
                                                   size_t new_size) {
-  if (new_size < old_size) {
-    size_t delta = old_size - new_size;
-    DCHECK(bytes_allocated_current_ >= delta);
-    bytes_allocated_current_ -= delta;
-  } else {
-    size_t delta = new_size - old_size;
-    bytes_allocated_current_ += delta;
-    if (bytes_allocated_current_ > bytes_allocated_historical_max_) {
-      bytes_allocated_historical_max_ = bytes_allocated_current_;
-    }
-  }
+  TrackValueChanged(old_size, new_size, &bytes_allocated_current_);
   if (new_size != old_size) {
     TRACE_COUNTER1("gpu",
                    "GpuMemoryUsage",
@@ -210,11 +252,13 @@ void GpuMemoryManager::AddClient(GpuMemoryManagerClient* client,
                                  base::TimeTicks last_used_time) {
   if (clients_.count(client))
     return;
-  std::pair<GpuMemoryManagerClient*, ClientState*> entry(
-     client,
-     new ClientState(client, has_surface, visible, last_used_time));
-  clients_.insert(entry);
-
+  ClientState* client_state =
+      new ClientState(client, has_surface, visible, last_used_time);
+  TrackValueChanged(0, client_state->managed_memory_stats.bytes_allocated,
+                    client_state->visible ?
+                        &bytes_allocated_managed_visible_ :
+                        &bytes_allocated_managed_backgrounded_);
+  clients_.insert(std::make_pair(client, client_state));
   ScheduleManage(true);
 }
 
@@ -222,9 +266,13 @@ void GpuMemoryManager::RemoveClient(GpuMemoryManagerClient* client) {
   ClientMap::iterator it = clients_.find(client);
   if (it == clients_.end())
     return;
-  delete it->second;
+  ClientState* client_state = it->second;
+  TrackValueChanged(client_state->managed_memory_stats.bytes_allocated, 0,
+                    client_state->visible ?
+                        &bytes_allocated_managed_visible_ :
+                        &bytes_allocated_managed_backgrounded_);
+  delete client_state;
   clients_.erase(it);
-
   ScheduleManage(false);
 }
 
@@ -235,8 +283,17 @@ void GpuMemoryManager::SetClientVisible(GpuMemoryManagerClient* client,
   if (it == clients_.end())
     return;
   ClientState* client_state = it->second;
-
+  if (client_state->visible == visible)
+    return;
   client_state->visible = visible;
+  TrackValueChanged(client_state->managed_memory_stats.bytes_allocated, 0,
+                    client_state->visible ?
+                        &bytes_allocated_managed_backgrounded_ :
+                        &bytes_allocated_managed_visible_);
+  TrackValueChanged(0, client_state->managed_memory_stats.bytes_allocated,
+                    client_state->visible ?
+                        &bytes_allocated_managed_visible_ :
+                        &bytes_allocated_managed_backgrounded_);
   ScheduleManage(visible);
 }
 
@@ -248,7 +305,11 @@ void GpuMemoryManager::SetClientManagedMemoryStats(
   if (it == clients_.end())
     return;
   ClientState* client_state = it->second;
-
+  TrackValueChanged(client_state->managed_memory_stats.bytes_allocated,
+                    stats.bytes_allocated,
+                    client_state->visible ?
+                        &bytes_allocated_managed_visible_ :
+                        &bytes_allocated_managed_backgrounded_);
   client_state->managed_memory_stats = stats;
 }
 
