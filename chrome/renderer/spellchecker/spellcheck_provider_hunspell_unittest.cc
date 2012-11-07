@@ -16,10 +16,8 @@
 namespace {
 
 TEST_F(SpellCheckProviderTest, UsingHunspell) {
-  int document_tag = 123;
   FakeTextCheckingCompletion completion;
   provider_.RequestTextChecking(WebKit::WebString("hello"),
-                                document_tag,
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(provider_.messages_.size(), 0U);
@@ -34,28 +32,28 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
 
   // Verify that the SpellCheckProvider class does not spellcheck empty text.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString(), 0, &completion);
+  provider_.RequestTextChecking(WebKit::WebString(), &completion);
   EXPECT_EQ(-1, provider_.offset_);
   EXPECT_TRUE(provider_.text_.empty());
 
   // Verify that the SpellCheckProvider class does not spellcheck text while we
   // are typing a word.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString("First"), 0, &completion);
+  provider_.RequestTextChecking(WebKit::WebString("First"), &completion);
   EXPECT_EQ(-1, provider_.offset_);
   EXPECT_TRUE(provider_.text_.empty());
 
   // Verify that the SpellCheckProvider class spellcheck the first word when we
   // type a space key, i.e. when we finish typing a word.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString("First "), 0, &completion);
+  provider_.RequestTextChecking(WebKit::WebString("First "), &completion);
   EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First "), provider_.text_);
 
   // Verify that the SpellCheckProvider class spellcheck the first line when we
   // type a return key, i.e. when we finish typing a line.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString("First Second\n"), 0,
+  provider_.RequestTextChecking(WebKit::WebString("First Second\n"),
                                 &completion);
   EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First Second\n"), provider_.text_);
@@ -63,7 +61,7 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   // Verify that the SpellCheckProvider class spellcheck the lines when we
   // finish typing a word "Third" to the second line.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString("First Second\nThird "), 0,
+  provider_.RequestTextChecking(WebKit::WebString("First Second\nThird "),
                                 &completion);
   EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird "), provider_.text_);
@@ -71,7 +69,7 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   // Verify that the SpellCheckProvider class does not send a spellcheck request
   // when a user inserts whitespace characters.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString("First Second\nThird   "), 0,
+  provider_.RequestTextChecking(WebKit::WebString("First Second\nThird   "),
                                 &completion);
   EXPECT_EQ(-1, provider_.offset_);
   EXPECT_TRUE(provider_.text_.empty());
@@ -80,7 +78,7 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   // a period.
   provider_.ResetResult();
   provider_.RequestTextChecking(
-      WebKit::WebString("First Second\nThird   Fourth."), 0, &completion);
+      WebKit::WebString("First Second\nThird   Fourth."), &completion);
   EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird   Fourth."), provider_.text_);
 }
@@ -88,10 +86,8 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
 // Tests that the SpellCheckProvider class cancels incoming spellcheck requests
 // when it does not need to handle them.
 TEST_F(SpellCheckProviderTest,CancelUnnecessaryRequests) {
-  int document_tag = 123;
   FakeTextCheckingCompletion completion;
   provider_.RequestTextChecking(WebKit::WebString("hello."),
-                                document_tag,
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(completion.cancellation_count_, 0U);
@@ -99,7 +95,6 @@ TEST_F(SpellCheckProviderTest,CancelUnnecessaryRequests) {
   // Test that the SpellCheckProvider class cancels an incoming request with the
   // text same as above.
   provider_.RequestTextChecking(WebKit::WebString("hello."),
-                                document_tag,
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 2U);
   EXPECT_EQ(completion.cancellation_count_, 1U);
@@ -107,7 +102,6 @@ TEST_F(SpellCheckProviderTest,CancelUnnecessaryRequests) {
   // Test that the SpellCheckProvider class cancels an incoming request that
   // does not include any words.
   provider_.RequestTextChecking(WebKit::WebString(":-)"),
-                                document_tag,
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 3U);
   EXPECT_EQ(completion.cancellation_count_, 2U);
@@ -116,7 +110,6 @@ TEST_F(SpellCheckProviderTest,CancelUnnecessaryRequests) {
   // Russian word.
   const wchar_t kRussianWord[] = L"\x0431\x0451\x0434\x0440\x0430";
   provider_.RequestTextChecking(WebKit::WebString(WideToUTF16(kRussianWord)),
-                                document_tag,
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 4U);
   EXPECT_EQ(completion.cancellation_count_, 2U);

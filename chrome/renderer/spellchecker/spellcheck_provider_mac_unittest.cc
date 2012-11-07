@@ -18,12 +18,10 @@ class SpellCheckProviderMacTest : public SpellCheckProviderTest {};
 struct MessageParameters {
   MessageParameters()
       : router_id(0),
-        request_id(0),
-        document_tag(0) { }
+        request_id(0) {}
 
   int router_id;
   int request_id;
-  int document_tag;
   string16 text;
 };
 
@@ -33,7 +31,6 @@ MessageParameters ReadRequestTextCheck(IPC::Message* message) {
       message,
       &parameters.router_id,
       &parameters.request_id,
-      &parameters.document_tag,
       &parameters.text);
   EXPECT_TRUE(ok);
   return parameters;
@@ -46,17 +43,14 @@ void FakeMessageArrival(SpellCheckProvider* provider,
       SpellCheckMsg_RespondTextCheck(
           0,
           parameters.request_id,
-          parameters.document_tag,
           fake_result));
   EXPECT_TRUE(handled);
 }
 
 TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   FakeTextCheckingCompletion completion;
-  int document_tag = 123;
 
   provider_.RequestTextChecking(WebKit::WebString("hello"),
-                                document_tag,
                                 &completion);
   EXPECT_EQ(completion.completion_count_, 0U);
   EXPECT_EQ(provider_.messages_.size(), 1U);
@@ -72,15 +66,11 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
 }
 
 TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
-  int document_tag = 123;
-
   FakeTextCheckingCompletion completion1;
   provider_.RequestTextChecking(WebKit::WebString("hello"),
-                                document_tag,
                                 &completion1);
   FakeTextCheckingCompletion completion2;
   provider_.RequestTextChecking(WebKit::WebString("bye"),
-                                document_tag,
                                 &completion2);
 
   EXPECT_EQ(completion1.completion_count_, 0U);

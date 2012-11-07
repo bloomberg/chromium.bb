@@ -63,66 +63,26 @@ void CreateTextCheckingResults(
 
 }  // namespace
 
-SpellCheckProvider::DocumentTag::DocumentTag(IPC::Sender* sender,
-                                             int routing_id)
-    : has_tag_(false),
-      tag_(0),
-      sender_(sender),
-      routing_id_(routing_id) {
-}
-
-#if defined(OS_MACOSX)
-SpellCheckProvider::DocumentTag::~DocumentTag() {
-  // Tell the spellchecker that the document is closed.
-  if (has_tag_) {
-    sender_->Send(new SpellCheckHostMsg_DocumentWithTagClosed(
-        routing_id_, tag_));
-  }
-}
-
-// Gets document tag, initializes |tag| if necessary.
-int SpellCheckProvider::DocumentTag::GetTag() {
-  // TODO(darin): There's actually no reason for this to be here.  We should
-  // have the browser side manage the document tag.
-  if (!has_tag_) {
-    // Make the call to get the tag.
-    sender_->Send(new SpellCheckHostMsg_GetDocumentTag(
-        routing_id_, &tag_));
-    has_tag_ = true;
-  }
-
-  return tag_;
-}
-#else
-SpellCheckProvider::DocumentTag::~DocumentTag() {}
-int SpellCheckProvider::DocumentTag::GetTag() {
-  // Quiet compiler about unused variables.
-  (void)sender_;
-  (void)routing_id_;
-  (void)has_tag_;
-
-  return tag_;
-}
-#endif
-
-
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
     SpellCheck* spellcheck)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<SpellCheckProvider>(render_view),
-      document_tag_(this, this->routing_id()),
       spelling_panel_visible_(false),
       spellcheck_(spellcheck) {
   if (render_view)  // NULL in unit tests.
     render_view->GetWebView()->setSpellCheckClient(this);
 }
 
-SpellCheckProvider::~SpellCheckProvider() {}
+SpellCheckProvider::~SpellCheckProvider() {
+#if defined(OS_MACOSX)
+  Send(new SpellCheckHostMsg_DocumentClosed(
+      routing_id(), routing_id()));
+#endif
+}
 
 void SpellCheckProvider::RequestTextChecking(
     const WebString& text,
-    int document_tag,
     WebTextCheckingCompletion* completion) {
 #if defined(OS_MACOSX)
   // Text check (unified request for grammar and spell check) is only
@@ -132,7 +92,6 @@ void SpellCheckProvider::RequestTextChecking(
   Send(new SpellCheckHostMsg_RequestTextCheck(
       routing_id(),
       text_check_completions_.Add(completion),
-      document_tag,
       text));
 #else
   // Ignore invalid requests.
@@ -208,7 +167,7 @@ void SpellCheckProvider::spellCheck(
   if (spellcheck_) {
     std::vector<string16> suggestions;
     spellcheck_->SpellCheckWord(
-        word.c_str(), word.size(), document_tag_.GetTag(),
+        word.c_str(), word.size(), routing_id(),
         &offset, &length, optional_suggestions ? & suggestions : NULL);
     if (optional_suggestions)
       *optional_suggestions = suggestions;
@@ -233,8 +192,6 @@ void SpellCheckProvider::checkTextOfParagraph(
   if (!(mask & WebKit::WebTextCheckingTypeSpelling))
     return;
 
-  document_tag_.GetTag();
-
   // Will be NULL during unit tets.
   if (!spellcheck_)
     return;
@@ -246,7 +203,7 @@ void SpellCheckProvider::checkTextOfParagraph(
 void SpellCheckProvider::requestCheckingOfText(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
-  RequestTextChecking(text, document_tag_.GetTag(), completion);
+  RequestTextChecking(text, completion);
 }
 
 WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
@@ -254,7 +211,7 @@ WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
   if (command_line.HasSwitch(switches::kEnableSpellingAutoCorrect)) {
     // Will be NULL during unit tests.
     if (spellcheck_) {
-      return spellcheck_->GetAutoCorrectionWord(word, document_tag_.GetTag());
+      return spellcheck_->GetAutoCorrectionWord(word, routing_id());
     }
   }
   return string16();
@@ -342,7 +299,6 @@ void SpellCheckProvider::OnAdvanceToNextMisspelling() {
 
 void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
-    int tag,
     const std::vector<SpellCheckResult>& results) {
   WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);

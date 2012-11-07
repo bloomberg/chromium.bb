@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
       new TestingSpellCheckMessageFilter(MessageLoopForUI::current()));
 
   SpellCheckHostMsg_RequestTextCheck to_be_received(
-      123, 456, 789, UTF8ToUTF16("zz."));
+      123, 456, UTF8ToUTF16("zz."));
   bool handled = false;
   target->OnMessageReceived(to_be_received, &handled);
   EXPECT_TRUE(handled);
@@ -54,10 +54,9 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
   EXPECT_EQ(1U, target->sent_messages_.size());
 
   int sent_identifier;
-  int sent_tag;
   std::vector<SpellCheckResult> sent_results;
   bool ok = SpellCheckMsg_RespondTextCheck::Read(
-      target->sent_messages_[0], &sent_identifier, &sent_tag, &sent_results);
+      target->sent_messages_[0], &sent_identifier, &sent_results);
   EXPECT_TRUE(ok);
   EXPECT_EQ(1U, sent_results.size());
   EXPECT_EQ(sent_results[0].location, 0);

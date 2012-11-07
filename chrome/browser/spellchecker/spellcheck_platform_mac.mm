@@ -81,7 +81,6 @@ void TextCheckingCallback(
   destination->Send(
       new SpellCheckMsg_RespondTextCheck(route_id,
                                          identifier,
-                                         document_tag,
                                          check_results));
 }
 

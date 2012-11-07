@@ -63,9 +63,8 @@ IPC_MESSAGE_ROUTED0(SpellCheckMsg_AdvanceToNextMisspelling)
 
 // Sends when NSSpellChecker finishes checking text received by a preceeding
 // SpellCheckHostMsg_RequestTextCheck message.
-IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondTextCheck,
+IPC_MESSAGE_ROUTED2(SpellCheckMsg_RespondTextCheck,
                     int        /* request identifier given by WebKit */,
-                    int        /* document tag */,
                     std::vector<SpellCheckResult>)
 
 IPC_MESSAGE_ROUTED1(SpellCheckMsg_ToggleSpellPanel,
@@ -96,15 +95,10 @@ IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_CallSpellingService,
 #endif
 
 #if defined(OS_MACOSX)
-// Asks the browser for a unique document tag.
-IPC_SYNC_MESSAGE_ROUTED0_1(SpellCheckHostMsg_GetDocumentTag,
-                           int /* the tag */)
-
-// This message tells the spellchecker that a document, identified by an int
-// tag, has been closed and all of the ignored words for that document can be
-// forgotten.
-IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_DocumentWithTagClosed,
-                    int /* the tag */)
+// This message tells the spellchecker that a document has been closed and all
+// of the ignored words for that document can be forgotten.
+IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_DocumentClosed,
+                    int /* route_id to identify document */)
 
 // Tells the browser to display or not display the SpellingPanel
 IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_ShowSpellingPanel,
@@ -114,19 +108,19 @@ IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_ShowSpellingPanel,
 IPC_MESSAGE_ROUTED1(SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord,
                     string16 /* the word to update the panel with */)
 
+// TODO(groby): This needs to originate from SpellcheckProvider.
 IPC_SYNC_MESSAGE_CONTROL2_1(SpellCheckHostMsg_CheckSpelling,
                             string16 /* word */,
-                            int /* document tag */,
+                            int /* route_id */,
                             bool /* correct */)
 
 IPC_SYNC_MESSAGE_CONTROL1_1(SpellCheckHostMsg_FillSuggestionList,
                             string16 /* word */,
                             std::vector<string16> /* suggestions */)
 
-IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_RequestTextCheck,
+IPC_MESSAGE_CONTROL3(SpellCheckHostMsg_RequestTextCheck,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     int /* document tag */,
                      string16 /* sentence */)
 
 IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_ToggleSpellCheck,

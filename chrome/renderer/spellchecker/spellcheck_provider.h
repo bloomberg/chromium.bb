@@ -39,7 +39,6 @@ class SpellCheckProvider
   // checker, which is available on the browser process.
   void RequestTextChecking(
       const WebKit::WebString& text,
-      int document_tag,
       WebKit::WebTextCheckingCompletion* completion);
 
   // The number of ongoing IPC requests.
@@ -56,20 +55,6 @@ class SpellCheckProvider
 
  private:
   friend class TestingSpellCheckProvider;
-
-  // Helper class to encapsulate handling of document tags across platforms.
-  // TODO(groby): As per Darins comment, this should move browser side.
-  class DocumentTag {
-   public:
-    DocumentTag(IPC::Sender* sender, int routing_id);
-    ~DocumentTag();
-    int GetTag();
-   private:
-    bool has_tag_;
-    int tag_;
-    IPC::Sender* sender_;  // Weak ptr to SpellCheckProvider.
-    int routing_id_;  // ID for RenderView observed by SpellCheckProvider.
-  };
 
 #if !defined(OS_MACOSX)
   // Tries to satisfy a spell check request from the cache in |last_request_|.
@@ -115,7 +100,6 @@ class SpellCheckProvider
   void OnAdvanceToNextMisspelling();
   void OnRespondTextCheck(
       int identifier,
-      int tag,
       const std::vector<SpellCheckResult>& results);
   void OnToggleSpellPanel(bool is_currently_visible);
 #endif
@@ -130,8 +114,6 @@ class SpellCheckProvider
   string16 last_request_;
   WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
 #endif
-
-  DocumentTag document_tag_;
 
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;

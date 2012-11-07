@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_MAC_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_MAC_H_
 
+#include <map>
+
 #include "content/public/browser/browser_message_filter.h"
 
 // A message filter implementation that receives
@@ -22,17 +24,19 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
 
   virtual ~SpellCheckMessageFilterMac();
 
-  void OnCheckSpelling(const string16& word, int tag, bool* correct);
+  void OnCheckSpelling(const string16& word, int route_id, bool* correct);
   void OnFillSuggestionList(const string16& word,
                             std::vector<string16>* suggestions);
-  void OnGetDocumentTag(int* tag);
-  void OnDocumentWithTagClosed(int tag);
+  void OnDocumentClosed(int route_id);
   void OnShowSpellingPanel(bool show);
   void OnUpdateSpellingPanelWithMisspelledWord(const string16& word);
   void OnRequestTextCheck(int route_id,
                           int identifier,
-                          int document_tag,
                           const string16& text);
+
+  int ToDocumentTag(int route_id);
+  void RetireDocumentTag(int route_id);
+  std::map<int,int> tag_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckMessageFilterMac);
 };

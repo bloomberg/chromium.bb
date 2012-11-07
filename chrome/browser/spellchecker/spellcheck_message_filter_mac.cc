@@ -19,9 +19,8 @@ bool SpellCheckMessageFilterMac::OnMessageReceived(const IPC::Message& message,
                         OnCheckSpelling)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_FillSuggestionList,
                         OnFillSuggestionList)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_GetDocumentTag, OnGetDocumentTag)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_DocumentWithTagClosed,
-                        OnDocumentWithTagClosed)
+    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_DocumentClosed,
+                        OnDocumentClosed)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ShowSpellingPanel,
                         OnShowSpellingPanel)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord,
@@ -36,9 +35,9 @@ bool SpellCheckMessageFilterMac::OnMessageReceived(const IPC::Message& message,
 SpellCheckMessageFilterMac::~SpellCheckMessageFilterMac() {}
 
 void SpellCheckMessageFilterMac::OnCheckSpelling(const string16& word,
-                                                 int tag,
+                                                 int route_id,
                                                  bool* correct) {
-  *correct = spellcheck_mac::CheckSpelling(word, tag);
+  *correct = spellcheck_mac::CheckSpelling(word, ToDocumentTag(route_id));
 }
 
 void SpellCheckMessageFilterMac::OnFillSuggestionList(
@@ -47,12 +46,10 @@ void SpellCheckMessageFilterMac::OnFillSuggestionList(
   spellcheck_mac::FillSuggestionList(word, suggestions);
 }
 
-void SpellCheckMessageFilterMac::OnGetDocumentTag(int* tag) {
-  *tag = spellcheck_mac::GetDocumentTag();
-}
 
-void SpellCheckMessageFilterMac::OnDocumentWithTagClosed(int tag) {
-  spellcheck_mac::CloseDocumentWithTag(tag);
+void SpellCheckMessageFilterMac::OnDocumentClosed(int route_id) {
+  spellcheck_mac::CloseDocumentWithTag(ToDocumentTag(route_id));
+  RetireDocumentTag(route_id);
 }
 
 void SpellCheckMessageFilterMac::OnShowSpellingPanel(bool show) {
@@ -67,8 +64,18 @@ void SpellCheckMessageFilterMac::OnUpdateSpellingPanelWithMisspelledWord(
 void SpellCheckMessageFilterMac::OnRequestTextCheck(
     int route_id,
     int identifier,
-    int document_tag,
     const string16& text) {
   spellcheck_mac::RequestTextCheck(
-      route_id, identifier, document_tag, text, this);
+      route_id, identifier, ToDocumentTag(route_id), text, this);
 }
+
+int SpellCheckMessageFilterMac::ToDocumentTag(int route_id) {
+  if (!tag_map_.count(route_id))
+    tag_map_[route_id] = spellcheck_mac::GetDocumentTag();
+  return tag_map_[route_id];
+}
+
+void SpellCheckMessageFilterMac::RetireDocumentTag(int route_id) {
+  tag_map_.erase(route_id);
+}
+
