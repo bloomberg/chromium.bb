@@ -15,8 +15,8 @@ import command
 import toolchain_main
 
 GIT_REVISIONS = {
-    'binutils': '0d99b0776661ebbf2949c644cb060612ccc11737',
-    'gcc': '5f8b41df4ac38e009b4d66754cc728c848353ddb',
+    'binutils': '5f524c958e77b54084218205ea9abf1f2fa74d99',
+    'gcc': '35b21a071cb9b7b8eaf1fd78c8f147cf0f976fff',
     'newlib': '51a8366a0898bc47ee78a7f6ed01e8bd40eee4d0',
     }
 
@@ -208,10 +208,8 @@ def HostTools(target):
                   ConfigureTargetArgs(target) + [
                       '--disable-shared',
                       '--enable-deterministic-archives',
+                      '--enable-gold',
                       ] + ([] if sys.platform == 'win32' else [
-                          # TODO(mcgrathr): gold will build again on mingw32
-                          # after some simple fixes get merged in.
-                          '--enable-gold',
                           '--enable-plugins',
                           ])),
               command.Command(MAKE_PARALLEL_CMD),
