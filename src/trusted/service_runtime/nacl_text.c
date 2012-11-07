@@ -70,14 +70,17 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
           "NaClMakeDynamicTextShared: shm_vaddr_base = %08"NACL_PRIxPTR"\n",
           shm_vaddr_base);
 
+  /*
+   * Default is that there is no usable dynamic code area.
+   */
+  nap->dynamic_text_start = shm_vaddr_base;
+  nap->dynamic_text_end = shm_vaddr_base;
   if (!nap->use_shm_for_dynamic_text) {
     NaClLog(4,
             "NaClMakeDynamicTextShared:"
             "  rodata / data segments not allocation aligned\n");
     NaClLog(4,
             " not using shm for text\n");
-    nap->dynamic_text_start = shm_vaddr_base;
-    nap->dynamic_text_end = shm_vaddr_base;
     return LOAD_OK;
   }
 
@@ -93,8 +96,6 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   if (0 == shm_upper_bound) {
     shm_upper_bound = shm_vaddr_base;
   }
-  nap->dynamic_text_start = shm_vaddr_base;
-  nap->dynamic_text_end = shm_upper_bound;
 
   NaClLog(4, "shm_upper_bound = %08"NACL_PRIxPTR"\n", shm_upper_bound);
 
@@ -110,13 +111,15 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
 
   shm = (struct NaClDescImcShm *) malloc(sizeof *shm);
   if (NULL == shm) {
+    NaClLog(4, "NaClMakeDynamicTextShared: shm object allocation failed\n");
+    retval = LOAD_NO_MEMORY;
     goto cleanup;
   }
   if (!NaClDescImcShmAllocCtor(shm, dynamic_text_size, /* executable= */ 1)) {
     /* cleanup invariant is if ptr is non-NULL, it's fully ctor'd */
     free(shm);
     shm = NULL;
-    NaClLog(4, "NaClMakeDynamicTextShared: shm creation for text failed\n");
+    NaClLog(4, "NaClMakeDynamicTextShared: shm alloc ctor for text failed\n");
     retval = LOAD_NO_MEMORY;
     goto cleanup;
   }
@@ -190,6 +193,8 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
     NaClLog(LOG_FATAL, "NaClMakeDynamicTextShared: BitmapAllocate() failed\n");
   }
 
+  nap->dynamic_text_start = shm_vaddr_base;
+  nap->dynamic_text_end = shm_upper_bound;
   nap->text_shm = &shm->base;
   retval = LOAD_OK;
 
