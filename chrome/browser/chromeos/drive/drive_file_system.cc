@@ -1263,18 +1263,12 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
     return;
   }
 
-  DriveFeedProcessor::DriveEntryProtoMap entry_proto_map;
   DriveFeedProcessor feed_processor(resource_metadata_.get());
-  feed_processor.FeedToEntryProtoMap(
-      params->feed_list,
-      &entry_proto_map,
-      NULL,   // feed_changestamp.
-      NULL,   // root_upload_url.
-      NULL);  // uma_stats.
+  feed_processor.FeedToEntryProtoMap(params->feed_list, NULL, NULL, NULL);
 
   resource_metadata_->RefreshDirectory(
       params->directory_resource_id,
-      entry_proto_map,
+      feed_processor.entry_proto_map(),
       base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
                  ui_weak_ptr_,
                  FileOperationCallback()));

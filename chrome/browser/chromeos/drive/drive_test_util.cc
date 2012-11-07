@@ -14,6 +14,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
+namespace {
+
+void OnUpdateFromFeed() {
+}
+
+}  // namespace
+
 namespace test_util {
 
 DriveCacheEntry ToCacheEntry(int cache_state) {
@@ -121,9 +128,13 @@ void LoadChangeFeed(const std::string& relative_path,
   ScopedVector<google_apis::DocumentFeed> feed_list;
   feed_list.push_back(document_feed.release());
 
-  file_system->feed_loader()->UpdateFromFeed(feed_list,
-                                             start_changestamp,
-                                             root_feed_changestamp);
+  file_system->feed_loader()->UpdateFromFeed(
+      feed_list,
+      start_changestamp,
+      root_feed_changestamp,
+      base::Bind(&OnUpdateFromFeed));
+  // DriveFeedLoader::UpdateFromFeed is asynchronous, so wait for it to finish.
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 }  // namespace test_util

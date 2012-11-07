@@ -473,27 +473,18 @@ void DriveFeedLoader::OnFeedFromServerLoaded(scoped_ptr<LoadFeedParams> params,
   DCHECK(!params->load_finished_callback.is_null());
   DCHECK(refreshing_);
 
-  if (error == DRIVE_FILE_OK) {
-    UpdateFromFeed(params->feed_list,
-                   params->start_changestamp,
-                   params->root_feed_changestamp);
-  }
-  refreshing_ = false;
-
   if (error != DRIVE_FILE_OK) {
+    refreshing_ = false;
     params->load_finished_callback.Run(error);
     return;
   }
 
-  // Save file system metadata to disk.
-  SaveFileSystem();
-
-  // Tell the client that the loading was successful.
-  params->load_finished_callback.Run(DRIVE_FILE_OK);
-
-  FOR_EACH_OBSERVER(DriveFeedLoaderObserver,
-                    observers_,
-                    OnFeedFromServerLoaded());
+  UpdateFromFeed(params->feed_list,
+                 params->start_changestamp,
+                 params->root_feed_changestamp,
+                 base::Bind(&DriveFeedLoader::OnUpdateFromFeed,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            params->load_finished_callback));
 }
 
 void DriveFeedLoader::OnGetDocuments(scoped_ptr<LoadFeedParams> params,
@@ -848,29 +839,62 @@ void DriveFeedLoader::SaveFileSystem() {
 void DriveFeedLoader::UpdateFromFeed(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
-    int64 root_feed_changestamp) {
+    int64 root_feed_changestamp,
+    const base::Closure& update_finished_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "Updating directory with a feed";
 
-  std::set<FilePath> changed_dirs;
-
-  DriveFeedProcessor feed_processor(resource_metadata_);
-  feed_processor.ApplyFeeds(
+  feed_processor_.reset(new DriveFeedProcessor(resource_metadata_));
+  // Don't send directory content change notification while performing
+  // the initial content retrieval.
+  const bool should_notify_changed_directories = (start_changestamp != 0);
+  feed_processor_->ApplyFeeds(
       feed_list,
       start_changestamp,
       root_feed_changestamp,
-      &changed_dirs);
+      base::Bind(&DriveFeedLoader::NotifyDirectoryChanged,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 should_notify_changed_directories,
+                 update_finished_callback));
+}
 
-  // Don't send directory content change notification while performing
-  // the initial content retrieval.
-  const bool should_notify_directory_changed = (start_changestamp != 0);
-  if (should_notify_directory_changed) {
-    for (std::set<FilePath>::iterator dir_iter = changed_dirs.begin();
-        dir_iter != changed_dirs.end(); ++dir_iter) {
+void DriveFeedLoader::NotifyDirectoryChanged(
+    bool should_notify_changed_directories,
+    const base::Closure& update_finished_callback) {
+  DCHECK(feed_processor_.get());
+  DCHECK(!update_finished_callback.is_null());
+
+  if (should_notify_changed_directories) {
+    for (std::set<FilePath>::iterator dir_iter =
+            feed_processor_->changed_dirs().begin();
+        dir_iter != feed_processor_->changed_dirs().end();
+        ++dir_iter) {
       FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
                         OnDirectoryChanged(*dir_iter));
     }
   }
+
+  update_finished_callback.Run();
+
+  // Cannot delete feed_processor_ yet because we are in on_complete_callback_,
+  // which is owned by feed_processor_.
+}
+
+void DriveFeedLoader::OnUpdateFromFeed(
+    const FileOperationCallback& load_finished_callback) {
+  DCHECK(!load_finished_callback.is_null());
+
+  refreshing_ = false;
+
+  // Save file system metadata to disk.
+  SaveFileSystem();
+
+  // Run the callback now that the filesystem is ready.
+  load_finished_callback.Run(DRIVE_FILE_OK);
+
+  FOR_EACH_OBSERVER(DriveFeedLoaderObserver,
+                    observers_,
+                    OnFeedFromServerLoaded());
 }
 
 }  // namespace drive

@@ -30,6 +30,7 @@ namespace drive {
 
 class DriveCache;
 class DriveFeedLoaderObserver;
+class DriveFeedProcessor;
 class DriveWebAppsRegistryInterface;
 struct GetDocumentsUiState;
 struct LoadFeedParams;
@@ -141,7 +142,8 @@ class DriveFeedLoader {
   void UpdateFromFeed(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
-    int64 root_feed_changestamp);
+    int64 root_feed_changestamp,
+    const base::Closure& update_finished_callback);
 
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing() const { return refreshing_; }
@@ -218,12 +220,21 @@ class DriveFeedLoader {
   void OnNotifyDocumentFeedFetched(
       base::WeakPtr<GetDocumentsUiState> ui_state);
 
+  // Callback for DriveFeedProcessor::ApplyFeeds.
+  void NotifyDirectoryChanged(
+      bool should_notify,
+      const base::Closure& update_finished_callback);
+
+  // Callback for UpdateFromFeed.
+  void OnUpdateFromFeed(const FileOperationCallback& load_finished_callback);
+
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   google_apis::DriveServiceInterface* drive_service_;  // Not owned.
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ObserverList<DriveFeedLoaderObserver> observers_;
+  scoped_ptr<DriveFeedProcessor> feed_processor_;
 
   // Indicates whether there is a feed refreshing server request is in flight.
   bool refreshing_;
