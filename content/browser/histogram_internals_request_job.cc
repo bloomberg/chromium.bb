@@ -46,8 +46,8 @@ void AboutHistogram(std::string* data, const std::string& path) {
 
   data->append("<!DOCTYPE html>\n<html>\n<head>\n");
   data->append(
-      "<meta http-equiv=\"X-WebKit-CSP\" content=\"object-src 'none'; "
-      "script-src 'none' 'unsafe-eval'\">");
+      "<meta http-equiv=\"Content-Security-Policy\" "
+      "content=\"object-src 'none'; script-src 'none' 'unsafe-eval'\">");
   data->append("<title>");
   data->append(net::EscapeForHTML(unescaped_title));
   data->append("</title>\n");

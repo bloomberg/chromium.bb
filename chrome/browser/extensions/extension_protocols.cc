@@ -48,7 +48,7 @@ net::HttpResponseHeaders* BuildHttpHeaders(
   raw_headers.append("HTTP/1.1 200 OK");
   if (!content_security_policy.empty()) {
     raw_headers.append(1, '\0');
-    raw_headers.append("X-WebKit-CSP: ");
+    raw_headers.append("Content-Security-Policy: ");
     raw_headers.append(content_security_policy);
   }
 

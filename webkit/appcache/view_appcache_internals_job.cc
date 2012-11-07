@@ -54,7 +54,7 @@ void EmitPageStart(std::string* out) {
   out->append(
       "<!DOCTYPE HTML>\n"
       "<html><title>AppCache Internals</title>\n"
-      "<meta http-equiv=\"X-WebKit-CSP\""
+      "<meta http-equiv=\"Content-Security-Policy\""
       "  content=\"object-src 'none'; script-src 'none'\">\n"
       "<style>\n"
       "body { font-family: sans-serif; font-size: 0.8em; }\n"

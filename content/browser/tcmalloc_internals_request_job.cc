@@ -73,8 +73,8 @@ void RequestTcmallocStatsFromChildRenderProcesses() {
 void AboutTcmalloc(std::string* data) {
   data->append("<!DOCTYPE html>\n<html>\n<head>\n");
   data->append(
-      "<meta http-equiv=\"X-WebKit-CSP\" content=\"object-src 'none'; "
-      "script-src 'none' 'unsafe-eval'\">");
+      "<meta http-equiv=\"Content-Security-Policy\" "
+      "content=\"object-src 'none'; script-src 'none' 'unsafe-eval'\">");
   data->append("<title>tcmalloc stats</title>");
   data->append("</head><body>");
 

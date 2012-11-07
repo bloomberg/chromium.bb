@@ -272,7 +272,7 @@ class SpecialTabsTest(pyauto.PyUITest):
       exclude_list = []
       no_csp = 'CSP' in properties and not properties['CSP']
       if no_csp:
-        exclude_list.extend(['X-WebKit-CSP'])
+        exclude_list.extend(['Content-Security-Policy'])
       else:
         exclude_list.extend(['<script>', 'onclick=', 'onload=',
                              'onchange=', 'onsubmit=', 'javascript:'])

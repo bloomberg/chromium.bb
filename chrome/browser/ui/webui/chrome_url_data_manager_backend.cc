@@ -40,14 +40,10 @@ using content::BrowserThread;
 
 namespace {
 
-// X-WebKit-CSP is our development name for Content-Security-Policy.
-// TODO(tsepez) rename when Content-security-policy is done.
 // TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
-// TODO(tsepez) chrome-extension: permits the ChromeVox screen reader
-//     extension to function on these pages.  Remove it when the extension
-//     is updated to stop injecting script into the pages.
 const char kChromeURLContentSecurityPolicyHeaderBase[] =
-    "X-WebKit-CSP: script-src chrome://resources 'self' 'unsafe-eval'; ";
+    "Content-Security-Policy: script-src chrome://resources "
+    "'self' 'unsafe-eval'; ";
 
 // TODO(tsepez) The following should be replaced with a centralized table.
 // See crbug.com/104631.
