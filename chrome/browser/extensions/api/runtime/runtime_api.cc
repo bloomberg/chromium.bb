@@ -153,4 +153,15 @@ void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
   }
 }
 
+bool RuntimeReloadFunction::RunImpl() {
+  // We can't call ReloadExtension directly, since when this method finishes
+  // it tries to decrease the reference count for the extension, which fails
+  // if the extension has already been reloaded; so instead we post a task.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&ExtensionService::ReloadExtension,
+                 profile()->GetExtensionService()->AsWeakPtr(),
+                 extension_id()));
+  return true;
+}
+
 }   // namespace extensions

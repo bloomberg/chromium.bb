@@ -805,4 +805,24 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
   CloseShellWindowsAndWaitForAppToExit();
 }
 
+// Tests that an app calling chrome.runtime.reload will reload the app and
+// relaunch it if it was running.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
+  ExtensionTestMessageListener launched_listener("Launched", true);
+  const Extension* extension = LoadPlatformApp("reload");
+  ASSERT_TRUE(extension);
+  application_launch::OpenApplication(application_launch::LaunchParams(
+      browser()->profile(), extension, extension_misc::LAUNCH_NONE,
+      NEW_WINDOW));
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(GetFirstShellWindow());
+
+  // Now tell the app to reload itself
+  ExtensionTestMessageListener launched_listener2("Launched", false);
+  launched_listener.Reply("reload");
+  ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
+  ASSERT_TRUE(GetFirstShellWindow());
+  CloseShellWindowsAndWaitForAppToExit();
+}
+
 }  // namespace extensions

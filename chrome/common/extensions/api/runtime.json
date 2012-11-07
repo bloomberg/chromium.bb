@@ -79,6 +79,13 @@
           "type": "string",
           "description": "The fully-qualified URL to the resource."
         }
+      },
+      {
+        "name": "reload",
+        "description": "Reloads the app or extension.",
+        "type": "function",
+        "unprivileged": true,
+        "parameters": []
       }
     ],
     "events": [

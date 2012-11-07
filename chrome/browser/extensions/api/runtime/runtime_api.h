@@ -45,6 +45,15 @@ class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {
   void OnPageLoaded(ExtensionHost*);
 };
 
+class RuntimeReloadFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("runtime.reload");
+
+ protected:
+  virtual ~RuntimeReloadFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_
