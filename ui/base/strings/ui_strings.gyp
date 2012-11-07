@@ -40,6 +40,13 @@
         'type': 'none',
         'variables': {
           'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
+          'conditions': [
+            ['OS == "ios"', {
+              'pak_output': '<(PRODUCT_DIR)/ui_unittests_strings/en.lproj/locale.pak',
+            }, {
+              'pak_output': '<(PRODUCT_DIR)/ui_unittests_strings/en-US.pak',
+            }],
+          ],
         },
         'actions': [
           {
@@ -55,7 +62,7 @@
               '<@(pak_inputs)',
             ],
             'outputs': [
-              '<(PRODUCT_DIR)/ui_unittests_strings/en-US.pak',
+              '<(pak_output)',
             ],
             'action': ['python', '<(repack_path)', '<@(_outputs)',
                        '<@(pak_inputs)'],

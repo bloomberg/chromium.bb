@@ -68,6 +68,7 @@
         'base/models/tree_node_iterator_unittest.cc',
         'base/resource/data_pack_literal.cc',
         'base/resource/data_pack_unittest.cc',
+        'base/resource/resource_bundle_unittest.cc',
         'base/text/text_elider_unittest.cc',
         'gfx/codec/png_codec_unittest.cc',
         'gfx/color_utils_unittest.cc',
@@ -116,7 +117,6 @@
         'base/range/range_mac_unittest.mm',
         'base/range/range_unittest.cc',
         'base/range/range_win_unittest.cc',
-        'base/resource/resource_bundle_unittest.cc',
         'base/test/data/resource.h',
         'base/text/bytes_formatting_unittest.cc',
         'base/text/utf16_indexing_unittest.cc',
@@ -145,6 +145,12 @@
         }, {  # OS=="ios"
           'sources' : [
             '<@(_common_sources)',
+          ],
+          # The ResourceBundle unittest expects a locale.pak file to exist in
+          # the bundle for English-US. Copy it in from where it was generated
+          # by ui_strings.gyp:ui_unittest_strings.
+          'mac_bundle_resources': [
+            '<(PRODUCT_DIR)/ui_unittests_strings/en.lproj/locale.pak',
           ],
         }],
         ['OS == "win"', {
@@ -200,11 +206,15 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
+        ['use_glib == 1 or OS == "ios"', {
+          'dependencies': [
+            'base/strings/ui_strings.gyp:ui_unittest_strings',
+          ],
+        }],
         ['use_glib == 1', {
           'dependencies': [
             '../build/linux/system.gyp:pangocairo',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-            'base/strings/ui_strings.gyp:ui_unittest_strings',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {
