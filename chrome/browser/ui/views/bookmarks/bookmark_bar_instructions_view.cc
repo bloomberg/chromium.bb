@@ -53,7 +53,7 @@ void BookmarkBarInstructionsView::UpdateBackgroundColor(
       SkColorSetARGB(0, 255, 255, 255);
   instructions_->SetBackgroundColor(search_mode.is_ntp() ?
       kTransparentBackgroundColorForNTPMode :
-      ui::NativeTheme::instance()->GetSystemColor(
+      GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_LabelBackgroundColor));
 }
 
