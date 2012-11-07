@@ -24,6 +24,8 @@ class TimeDelta;
 
 namespace ui {
 
+class Event;
+
 // Updates the list of devices for cached properties.
 UI_EXPORT void UpdateDeviceList();
 
@@ -124,6 +126,10 @@ UI_EXPORT int GetModifiersFromKeyState();
 // result of a touch event.
 UI_EXPORT bool IsMouseEventFromTouch(UINT message);
 #endif
+
+// Returns true if default post-target handling was canceled for |event| after
+// its dispatch to its target.
+UI_EXPORT bool EventCanceledDefaultHandling(const Event& event);
 
 }  // namespace ui
 

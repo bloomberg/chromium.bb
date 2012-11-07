@@ -21,7 +21,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events/event.h"
-#include "ui/base/events/event_functions.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
