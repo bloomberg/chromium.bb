@@ -364,10 +364,11 @@ cr.define('performance_monitor', function() {
      *     to display; this does not include the '#'.
      */
     hideWarning: function(warningId) {
-      if ($('#' + warningId)[0].style.display == 'none')
+      var index = this.activeWarnings_.indexOf(warningId);
+      if (index == -1)
         return;
       $('#' + warningId)[0].style.display = 'none';
-      this.activeWarnings_.splice(this.activeWarnings_.indexOf(warningId), 1);
+      this.activeWarnings_.splice(index, 1);
 
       if (this.activeWarnings_.length == 0)
         $('#warnings-box')[0].style.display = 'none';
