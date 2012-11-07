@@ -17,14 +17,6 @@ Import(['pre_base_env'])
 # Underlay things migrating to ppapi repo.
 Dir('#/..').addRepository(Dir('#/../ppapi'))
 
-# Load a config file from the Chrome repo. This allows scons files to be added
-# and removed in Chrome without requiring a DEPS roll.
-ppapi_scons_files = {}
-execfile(
-    File('#/../ppapi/native_client/ppapi_scons_files.py').abspath,
-    {}, # Globals
-    ppapi_scons_files)
-
 # Append a list of files to another, filtering out the files that already exist.
 # Filtering helps migrate declarations between repos by preventing redundant
 # declarations from causing an error.
@@ -37,30 +29,43 @@ def ExtendFileList(existing, additional):
     combined.add(file_name)
   return sorted(combined)
 
-ppapi_scons_files['nonvariant_test_scons_files'] = ExtendFileList(
-    ppapi_scons_files.get('nonvariant_test_scons_files', []), [
-        'tests/nacl_browser/browser_dynamic_library/nacl.scons',
-        'tests/nacl_browser/inbrowser_test_runner/nacl.scons',
-        'tests/nacl_browser/manifest_file/nacl.scons',
-        'tests/nacl_browser/nameservice/nacl.scons',
-        'tests/nacl_browser/postmessage_redir/nacl.scons',
-    ])
 
-ppapi_scons_files['irt_variant_test_scons_files'] = ExtendFileList(
-    ppapi_scons_files.get('irt_variant_test_scons_files', []), [
-        # Disabled by Brad Chen 4 Sep to try to green Chromium
-        # nacl_integration tests
-        #'tests/nacl_browser/fault_injection/nacl.scons',
-        'tests/nacl_browser/pnacl_client_translator/nacl.scons',
-    ])
+ppapi_scons_files = {}
+ppapi_scons_files['trusted_scons_files'] = []
+ppapi_scons_files['untrusted_irt_scons_files'] = []
 
-ppapi_scons_files['untrusted_scons_files'] = ExtendFileList(
-    ppapi_scons_files.get('untrusted_scons_files', []), [
-        'src/untrusted/irt_stub/nacl.scons',
-        'src/untrusted/nacl_ppapi_util/nacl.scons',
-        'src/untrusted/pnacl_irt_shim/nacl.scons',
-        'src/untrusted/pnacl_support_extension/nacl.scons',
-    ])
+ppapi_scons_files['nonvariant_test_scons_files'] = [
+    'tests/breakpad_crash_test/nacl.scons',
+    'tests/nacl_browser/browser_dynamic_library/nacl.scons',
+    'tests/nacl_browser/inbrowser_test_runner/nacl.scons',
+    'tests/nacl_browser/manifest_file/nacl.scons',
+    'tests/nacl_browser/nameservice/nacl.scons',
+    'tests/nacl_browser/postmessage_redir/nacl.scons',
+    'tests/ppapi/nacl.scons',
+    'tests/ppapi_browser/bad/nacl.scons',
+    'tests/ppapi_browser/crash/nacl.scons',
+    'tests/ppapi_browser/extension_mime_handler/nacl.scons',
+    'tests/ppapi_browser/manifest/nacl.scons',
+    'tests/ppapi_browser/ppb_instance/nacl.scons',
+    'tests/ppapi_browser/ppp_instance/nacl.scons',
+    'tests/ppapi_test_lib/nacl.scons',
+]
+
+ppapi_scons_files['irt_variant_test_scons_files'] = [
+    # Disabled by Brad Chen 4 Sep to try to green Chromium
+    # nacl_integration tests
+    #'tests/nacl_browser/fault_injection/nacl.scons',
+    'tests/nacl_browser/pnacl_client_translator/nacl.scons',
+]
+
+ppapi_scons_files['untrusted_scons_files'] = [
+    'src/shared/ppapi/nacl.scons',
+    'src/untrusted/irt_stub/nacl.scons',
+    'src/untrusted/nacl_ppapi_util/nacl.scons',
+    'src/untrusted/pnacl_irt_shim/nacl.scons',
+    'src/untrusted/pnacl_support_extension/nacl.scons',
+]
+
 
 EXTRA_ENV = ['XAUTHORITY', 'HOME', 'DISPLAY', 'SSH_TTY', 'KRB5CCNAME']
 
