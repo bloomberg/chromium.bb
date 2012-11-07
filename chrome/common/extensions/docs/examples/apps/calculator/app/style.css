@@ -32,14 +32,6 @@ body {
   width: 243px;
 }
 
-#calculator-buttons div .a-workaround-for-151985 {
-  bottom: 0;           /* .a-workaround-for-151985 styles and elements hide */
-  left: 243px;         /* the column of dead pixels at the right edge of the */
-  position: absolute;  /* screen on OS X where http://crbug.com/151985 makes */
-  top: 0;              /* the calculator window one pixels too wide. They can */
-  width: 1px;          /* all be removed when that issue is fixed. */
-}
-
 #calculator-buttons button {
   border: none;
   height: 45px;
@@ -68,20 +60,6 @@ body {
 #calculator-buttons button.add[data-active="touch"],
 #calculator-buttons button.add[data-active="mouse"]:active {
   background-position: -426px -90px;
-}
-
-#calculator-buttons button.add + .a-workaround-for-151985 {
-  background: -webkit-linear-gradient(rgb(71, 71, 71), rgb(51, 51, 51));
-  box-shadow: inset 0 1px 0 0 rgb(30, 30, 30),
-              inset 0 2px 0 0 rgb(87, 87, 87);
-}
-
-#calculator-buttons button.add[data-active="touch"] + .a-workaround-for-151985,
-#calculator-buttons button.add[data-active="mouse"]:active
-                    + .a-workaround-for-151985 {
-  background: -webkit-linear-gradient(rgb(51, 51, 51), rgb(45, 45, 45));
-  box-shadow: inset 0 1px 0 0 rgb(30, 30, 30),
-              inset 0 2px 0 0 rgb(43, 43, 43);
 }
 
 #calculator-buttons button.clear {
@@ -123,23 +101,6 @@ body {
   background-position: -426px -135px;
 }
 
-#calculator-buttons button.equals + .a-workaround-for-151985 {
-  background: -webkit-linear-gradient(rgb(94, 162, 252), rgb(70, 118, 252));
-  box-shadow: inset 0 1px 0 0 rgb(29, 29, 29),
-              inset 0 2px 0 0 rgb(115, 175, 253);
-  height: 90px;
-}
-
-#calculator-buttons button.equals[data-active="touch"]
-                    + .a-workaround-for-151985,
-#calculator-buttons button.equals[data-active="mouse"]:active
-                    + .a-workaround-for-151985 {
-  background: -webkit-linear-gradient(rgb(66, 114, 185), rgb(49, 86, 185));
-  box-shadow: inset 0 1px 0 0 rgb(29, 29, 29),
-              inset 0 2px 0 0 rgb(48, 82, 136);
-  height: 90px;
-}
-
 #calculator-buttons button.five {
   background-position: -61px -90px;
 }
@@ -166,21 +127,6 @@ body {
 #calculator-buttons button.multiply[data-active="touch"],
 #calculator-buttons button.multiply[data-active="mouse"]:active {
   background-position: -426px 0;
-}
-
-#calculator-buttons button.multiply + .a-workaround-for-151985 {
-  background: -webkit-linear-gradient(rgb(76, 76, 76), rgb(67, 67, 67));
-  box-shadow: inset 0 1px 0 0 rgb(30, 30, 30),
-              inset 0 2px 0 0 rgb(105, 105, 105);
-}
-
-#calculator-buttons button.multiply[data-active="touch"]
-                    + .a-workaround-for-151985,
-#calculator-buttons button.multiply[data-active="mouse"]:active
-                    + .a-workaround-for-151985 {
-  background: -webkit-linear-gradient(rgb(53, 53, 53), rgb(53, 53, 53));
-  box-shadow: inset 0 1px 0 0 rgb(30, 30, 30),
-              inset 0 2px 0 0 rgb(45, 45, 45);
 }
 
 #calculator-buttons button.negate {
@@ -245,21 +191,6 @@ body {
 #calculator-buttons button.subtract[data-active="touch"],
 #calculator-buttons button.subtract[data-active="mouse"]:active {
   background-position: -426px -45px;
-}
-
-#calculator-buttons button.subtract + .a-workaround-for-151985 {
-  background: -webkit-linear-gradient(rgb(75, 75, 75), rgb(60, 60, 60));
-  box-shadow: inset 0 1px 0 0 rgb(30, 30, 30),
-              inset 0 2px 0 0 rgb(96, 96, 96);
-}
-
-#calculator-buttons button.subtract[data-active="touch"]
-                    + .a-workaround-for-151985,
-#calculator-buttons button.subtract[data-active="mouse"]:active
-                    + .a-workaround-for-151985 {
-  background: -webkit-linear-gradient(rgb(53, 53, 53), rgb(50, 50, 50));
-  box-shadow: inset 0 1px 0 0 rgb(30, 30, 30),
-              inset 0 2px 0 0 rgb(48, 48, 48);
 }
 
 #calculator-buttons button.three {
