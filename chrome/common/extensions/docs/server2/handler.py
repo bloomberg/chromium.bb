@@ -28,6 +28,7 @@ from memcache_file_system import MemcacheFileSystem
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
 from server_instance import ServerInstance
+from sidenav_data_source import SidenavDataSource
 from subversion_file_system import SubversionFileSystem
 from template_data_source import TemplateDataSource
 from third_party.json_schema_compiler.model import UnixName
@@ -64,6 +65,7 @@ ARTICLE_PATH = TEMPLATE_PATH + '/articles'
 PUBLIC_TEMPLATE_PATH = TEMPLATE_PATH + '/public'
 PRIVATE_TEMPLATE_PATH = TEMPLATE_PATH + '/private'
 EXAMPLES_PATH = DOCS_PATH + '/examples'
+JSON_PATH = TEMPLATE_PATH + '/json'
 
 # Global cache of instances because Handler is recreated for every request.
 SERVER_INSTANCES = {}
@@ -149,6 +151,8 @@ def _GetInstanceForBranch(channel_name, local_path):
       EXAMPLES_PATH)
   api_data_source_factory.SetSamplesDataSourceFactory(
       samples_data_source_factory)
+  sidenav_data_source_factory = SidenavDataSource.Factory(cache_factory,
+                                                          JSON_PATH)
   template_data_source_factory = TemplateDataSource.Factory(
       channel_name,
       api_data_source_factory,
@@ -156,6 +160,7 @@ def _GetInstanceForBranch(channel_name, local_path):
       intro_data_source_factory,
       samples_data_source_factory,
       KNOWN_ISSUES_DATA_SOURCE,
+      sidenav_data_source_factory,
       cache_factory,
       PUBLIC_TEMPLATE_PATH,
       PRIVATE_TEMPLATE_PATH)

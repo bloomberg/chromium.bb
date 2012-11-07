@@ -36,6 +36,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._fake_api_list_data_source_factory = _FakeFactory()
     self._fake_intro_data_source_factory = _FakeFactory()
     self._fake_samples_data_source_factory = _FakeFactory()
+    self._fake_sidenav_data_source_factory = _FakeFactory()
     self._fake_known_issues_data_source = {}
     self._object_store = InMemoryObjectStore('fake_branch')
 
@@ -57,6 +58,7 @@ class TemplateDataSourceTest(unittest.TestCase):
                                        self._fake_intro_data_source_factory,
                                        self._fake_samples_data_source_factory,
                                        self._fake_known_issues_data_source,
+                                       self._fake_sidenav_data_source_factory,
                                        cache_factory,
                                        '.',
                                        '.')

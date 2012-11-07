@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Bob",
+    "fileName": "www.bob.com"
+  },
+  {
+    "title": "Jim",
+    "fileName": "www.jim.com",
+    "items": [
+      {
+        "title": "A",
+        "fileName": "www.a.com"
+      },
+      {
+        "title": "B",
+        "fileName": "www.b.com",
+        "items": [
+          {
+            "title": "C",
+            "fileName": "www.c.com",
+            "items": [
+              {
+                "title": "D",
+                "fileName": "www.d.com"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

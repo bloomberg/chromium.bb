@@ -24,6 +24,7 @@ JSON_NO_REFS              = 'JSONNoRefs'
 LIST                      = 'List'
 NAMES                     = 'Names'
 PERMS                     = 'Perms'
+SIDENAV                   = 'Sidenav'
 STATIC                    = 'Static'
 ZIP                       = 'Zip'
 
