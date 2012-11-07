@@ -554,12 +554,14 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
 
   if (!db_->Open(path_)) {
     NOTREACHED() << "Unable to open cookie DB.";
+    meta_table_.Reset();
     db_.reset();
     return false;
   }
 
   if (!EnsureDatabaseVersion() || !InitTable(db_.get())) {
     NOTREACHED() << "Unable to open cookie DB.";
+    meta_table_.Reset();
     db_.reset();
     return false;
   }
@@ -577,6 +579,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
     "SELECT DISTINCT host_key FROM cookies"));
 
   if (!smt.is_valid()) {
+    meta_table_.Reset();
     db_.reset();
     return false;
   }
@@ -660,6 +663,7 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
   }
   if (!smt.is_valid()) {
     smt.Clear();  // Disconnect smt_ref from db_.
+    meta_table_.Reset();
     db_.reset();
     return false;
   }
@@ -980,6 +984,7 @@ void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
     DeleteSessionCookiesOnShutdown();
   }
 
+  meta_table_.Reset();
   db_.reset();
 }
 
@@ -1033,6 +1038,7 @@ void SQLitePersistentCookieStore::Backend::KillDatabase() {
     bool success = db_->Raze();
     UMA_HISTOGRAM_BOOLEAN("Cookie.KillDatabaseResult", success);
     db_->Close();
+    meta_table_.Reset();
     db_.reset();
   }
 }
