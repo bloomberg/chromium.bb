@@ -40,7 +40,7 @@
 #include "content/browser/plugin_loader_posix.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
 using ::base::files::FilePathWatcher;
 #endif
 
@@ -71,7 +71,7 @@ static void NotifyPluginsOfActivation() {
     iter->OnAppActivation();
 }
 #endif
-#if defined(OS_POSIX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
 // Delegate class for monitoring directories.
 class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
   virtual void OnFilePathChanged(const FilePath& path) OVERRIDE {
@@ -182,7 +182,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
     }
   }
 #endif
-#if defined(OS_POSIX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
 // On ChromeOS the user can't install plugins anyway and on Windows all
 // important plugins register themselves in the registry so no need to do that.
   file_watcher_delegate_ = new PluginDirWatcherDelegate();
@@ -594,7 +594,7 @@ PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
   return &ppapi_plugins_[ppapi_plugins_.size() - 1];
 }
 
-#if defined(OS_POSIX) && !defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
 // static
 void PluginServiceImpl::RegisterFilePathWatcher(
     FilePathWatcher* watcher,
