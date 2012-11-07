@@ -152,6 +152,12 @@ class GpuChannelHost : public IPC::Sender,
   base::ProcessId gpu_pid() const { return channel_->peer_pid(); }
   int client_id() const { return client_id_; }
 
+  // Generates n unique mailbox names that can be used with
+  // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
+  // handled only on the GPU process' IO thread, and so is not effectively
+  // a finish.
+  bool GenerateMailboxNames(unsigned num, std::vector<std::string>* names);
+
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   virtual ~GpuChannelHost();

@@ -461,6 +461,13 @@ bool CommandBufferProxyImpl::SignalSyncPoint(uint32 sync_point,
   return true;
 }
 
+
+bool CommandBufferProxyImpl::GenerateMailboxNames(
+    unsigned num,
+    std::vector<std::string>* names) {
+  return channel_->GenerateMailboxNames(num, names);
+}
+
 bool CommandBufferProxyImpl::SetParent(
     CommandBufferProxy* parent_command_buffer,
     uint32 parent_texture_id) {

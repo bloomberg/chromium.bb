@@ -13,12 +13,14 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop_proxy.h"
 #include "base/process_util.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_switches.h"
+#include "crypto/hmac.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
@@ -143,6 +145,70 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
   scoped_refptr<gpu::RefCountedCounter> unprocessed_messages_;
 };
 
+// Generates mailbox names for clients of the GPU process on the IO thread.
+class MailboxMessageFilter : public IPC::ChannelProxy::MessageFilter {
+ public:
+  explicit MailboxMessageFilter(const std::string& private_key)
+      : channel_(NULL),
+        hmac_(crypto::HMAC::SHA256) {
+    bool success = hmac_.Init(base::StringPiece(private_key));
+    DCHECK(success);
+  }
+
+  virtual void OnFilterAdded(IPC::Channel* channel) {
+    DCHECK(!channel_);
+    channel_ = channel;
+  }
+
+  virtual void OnFilterRemoved() {
+    DCHECK(channel_);
+    channel_ = NULL;
+  }
+
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    DCHECK(channel_);
+
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(MailboxMessageFilter, message)
+      IPC_MESSAGE_HANDLER(GpuChannelMsg_GenerateMailboxNames,
+                          OnGenerateMailboxNames)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+
+    return handled;
+  }
+
+  bool Send(IPC::Message* message) {
+    return channel_->Send(message);
+  }
+
+ private:
+  ~MailboxMessageFilter() {
+  }
+
+  // Message handlers.
+  void OnGenerateMailboxNames(unsigned num, std::vector<std::string>* result) {
+    TRACE_EVENT1("gpu", "OnGenerateMailboxNames", "num", num);
+
+    result->resize(num);
+
+    for (unsigned i = 0; i < num; ++i) {
+      char name[GL_MAILBOX_SIZE_CHROMIUM];
+      base::RandBytes(name, sizeof(name) / 2);
+
+      bool success = hmac_.Sign(
+          base::StringPiece(name, sizeof(name) / 2),
+          reinterpret_cast<unsigned char*>(name) + sizeof(name) / 2,
+          sizeof(name) / 2);
+      DCHECK(success);
+
+      (*result)[i].assign(name, sizeof(name));
+    }
+  }
+
+  IPC::Channel* channel_;
+  crypto::HMAC hmac_;
+};
 }  // anonymous namespace
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -197,6 +263,9 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
       base::MessageLoopProxy::current(),
       unprocessed_messages_));
   channel_->AddFilter(filter);
+
+  channel_->AddFilter(
+      new MailboxMessageFilter(mailbox_manager_->private_key()));
 
   return true;
 }

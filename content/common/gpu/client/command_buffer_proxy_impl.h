@@ -110,6 +110,12 @@ class CommandBufferProxyImpl
   bool SignalSyncPoint(uint32 sync_point,
                        const base::Closure& callback);
 
+  // Generates n unique mailbox names that can be used with
+  // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
+  // handled only on the GPU process' IO thread, and so is not effectively
+  // a finish.
+  bool GenerateMailboxNames(unsigned num, std::vector<std::string>* names);
+
   // Set a task that will be invoked the next time the window becomes invalid
   // and needs to be repainted. Takes ownership of task.
   void SetNotifyRepaintTask(const base::Closure& callback);

@@ -56,6 +56,10 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
   // manager.
   void DestroyOwnedTextures(TextureManager* owner, bool have_context);
 
+  std::string private_key() {
+    return std::string(private_key_, sizeof(private_key_));
+  }
+
  private:
   friend class base::RefCounted<MailboxManager>;
 
@@ -86,6 +90,7 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
       std::pointer_to_binary_function<
           const TargetName&, const TargetName&, bool> > TextureDefinitionMap;
 
+  char private_key_[GL_MAILBOX_SIZE_CHROMIUM / 2];
   crypto::HMAC hmac_;
   TextureDefinitionMap textures_;
 

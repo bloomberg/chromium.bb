@@ -15,9 +15,9 @@ namespace gles2 {
 MailboxManager::MailboxManager()
     : hmac_(crypto::HMAC::SHA256),
       textures_(std::ptr_fun(&MailboxManager::TargetNameLess)) {
-  unsigned char private_key[GL_MAILBOX_SIZE_CHROMIUM / 2];
-  base::RandBytes(private_key, sizeof(private_key));
-  bool success = hmac_.Init(private_key, sizeof(private_key));
+  base::RandBytes(private_key_, sizeof(private_key_));
+  bool success = hmac_.Init(
+      base::StringPiece(private_key_, sizeof(private_key_)));
   DCHECK(success);
 }
 

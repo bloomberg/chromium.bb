@@ -242,6 +242,13 @@ void GpuChannelHost::RemoveRoute(int route_id) {
                                channel_filter_.get(), route_id));
 }
 
+bool GpuChannelHost::GenerateMailboxNames(unsigned num,
+                                          std::vector<std::string>* names) {
+  TRACE_EVENT0("gpu", "GenerateMailboxName");
+  AutoLock lock(context_lock_);
+  return Send(new GpuChannelMsg_GenerateMailboxNames(num, names));
+}
+
 GpuChannelHost::~GpuChannelHost() {}
 
 
