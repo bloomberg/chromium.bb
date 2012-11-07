@@ -39,7 +39,6 @@ class FilePath;
 class LocationBar;
 class Profile;
 class SkBitmap;
-class TabContents;
 class TemplateURLService;
 
 namespace chrome {
@@ -138,7 +137,7 @@ AppModalDialog* WaitForAppModalDialog();
 // matches found.  |ordinal| is an optional parameter which is set to the index
 // of the current match. |selection_rect| is an optional parameter which is set
 // to the location of the current match.
-int FindInPage(TabContents* tab,
+int FindInPage(content::WebContents* tab,
                const string16& search_string,
                bool forward,
                bool case_sensitive,

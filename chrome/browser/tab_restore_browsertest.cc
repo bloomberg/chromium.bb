@@ -504,8 +504,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURL) {
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
-  TabContents* tab = chrome::GetTabContentsAt(browser(), 1);
-  EnsureTabFinishedRestoring(tab->web_contents());
+  content::WebContents* tab = chrome::GetWebContentsAt(browser(), 1);
+  EnsureTabFinishedRestoring(tab);
 
   // See if content is as expected.
   EXPECT_GT(
@@ -534,9 +534,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURLOnBack) {
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
-  TabContents* tab = chrome::GetTabContentsAt(browser(), 1);
-  EnsureTabFinishedRestoring(tab->web_contents());
-  ASSERT_EQ(http_url, tab->web_contents()->GetURL());
+  content::WebContents* tab = chrome::GetWebContentsAt(browser(), 1);
+  EnsureTabFinishedRestoring(tab);
+  ASSERT_EQ(http_url, tab->GetURL());
 
   // Go back, and see if content is as expected.
   GoBack(browser());

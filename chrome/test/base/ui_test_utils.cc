@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -97,15 +96,14 @@ namespace {
 
 class FindInPageNotificationObserver : public content::NotificationObserver {
  public:
-  explicit FindInPageNotificationObserver(TabContents* parent_tab)
-      : parent_tab_(parent_tab),
-        active_match_ordinal_(-1),
+  explicit FindInPageNotificationObserver(WebContents* parent_tab)
+      : active_match_ordinal_(-1),
         number_of_matches_(0) {
     FindTabHelper* find_tab_helper =
-        FindTabHelper::FromWebContents(parent_tab->web_contents());
+        FindTabHelper::FromWebContents(parent_tab);
     current_find_request_id_ = find_tab_helper->current_find_request_id();
     registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                   content::Source<WebContents>(parent_tab_->web_contents()));
+                   content::Source<WebContents>(parent_tab));
     message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
   }
@@ -139,7 +137,6 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
 
  private:
   content::NotificationRegistrar registrar_;
-  TabContents* parent_tab_;
   // We will at some point (before final update) be notified of the ordinal and
   // we need to preserve it so we can send it later.
   int active_match_ordinal_;
@@ -377,13 +374,12 @@ AppModalDialog* WaitForAppModalDialog() {
   return content::Source<AppModalDialog>(observer.source()).ptr();
 }
 
-int FindInPage(TabContents* tab_contents, const string16& search_string,
+int FindInPage(WebContents* tab, const string16& search_string,
                bool forward, bool match_case, int* ordinal,
                gfx::Rect* selection_rect) {
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(tab_contents->web_contents());
+  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(tab);
   find_tab_helper->StartFinding(search_string, forward, match_case);
-  FindInPageNotificationObserver observer(tab_contents);
+  FindInPageNotificationObserver observer(tab);
   if (ordinal)
     *ordinal = observer.active_match_ordinal();
   if (selection_rect)

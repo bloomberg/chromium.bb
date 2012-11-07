@@ -8,7 +8,6 @@
 
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -68,18 +67,16 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
       return false;
   }
 
-  TabContents* contents = find_bar_controller_->tab_contents();
+  content::WebContents* contents = find_bar_controller_->web_contents();
   if (!contents)
     return false;
 
-  content::RenderViewHost* render_view_host =
-      contents->web_contents()->GetRenderViewHost();
+  content::RenderViewHost* render_view_host = contents->GetRenderViewHost();
 
   // Make sure we don't have a text field element interfering with keyboard
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
   render_view_host->ClearFocusedNode();
-  NativeWebKeyboardEvent event = GetKeyboardEvent(contents->web_contents(),
-                                                  key_event);
+  NativeWebKeyboardEvent event = GetKeyboardEvent(contents, key_event);
   render_view_host->ForwardKeyboardEvent(event);
   return true;
 }
@@ -117,12 +114,11 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
   // We only move the window if one is active for the current WebContents. If we
   // don't check this, then SetWidgetPosition below will end up making the Find
   // Bar visible.
-  TabContents* tab_contents = find_bar_controller_->tab_contents();
-  if (!tab_contents)
+  content::WebContents* web_contents = find_bar_controller_->web_contents();
+  if (!web_contents)
     return;
 
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(tab_contents->web_contents());
+  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
   if (!find_tab_helper || !find_tab_helper->find_ui_active())
     return;
 
@@ -162,8 +158,8 @@ bool FindBarHost::IsFindBarVisible() {
 
 void FindBarHost::RestoreSavedFocus() {
   if (focus_tracker() == NULL) {
-    // TODO(brettw) Focus() should be on WebContentsView.
-    find_bar_controller_->tab_contents()->web_contents()->Focus();
+    // TODO(brettw): Focus() should be on WebContentsView.
+    find_bar_controller_->web_contents()->Focus();
   } else {
     focus_tracker()->FocusLastFocusedExternalView();
   }
@@ -337,7 +333,7 @@ void FindBarHost::UnregisterAccelerators() {
 void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   gfx::Rect frame_rect = host()->GetTopLevelWidget()->GetWindowBoundsInScreen();
   content::WebContentsView* tab_view =
-      find_bar_controller_->tab_contents()->web_contents()->GetView();
+      find_bar_controller_->web_contents()->GetView();
   gfx::Rect webcontents_rect = tab_view->GetViewBounds();
   avoid_overlapping_rect->Offset(0, webcontents_rect.y() - frame_rect.y());
 }

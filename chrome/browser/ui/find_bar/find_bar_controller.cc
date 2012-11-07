@@ -9,11 +9,11 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,17 +30,17 @@ static const int kMinFindWndDistanceFromSelection = 5;
 
 FindBarController::FindBarController(FindBar* find_bar)
     : find_bar_(find_bar),
-      tab_contents_(NULL),
+      web_contents_(NULL),
       last_reported_matchcount_(0) {
 }
 
 FindBarController::~FindBarController() {
-  DCHECK(!tab_contents_);
+  DCHECK(!web_contents_);
 }
 
 void FindBarController::Show() {
   FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(tab_contents_->web_contents());
+      FindTabHelper::FromWebContents(web_contents_);
 
   // Only show the animation if we're not already showing a find bar for the
   // selected WebContents.
@@ -57,11 +57,11 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
                                        ResultAction result_action) {
   find_bar_->Hide(true);
 
-  // |tab_contents_| can be NULL for a number of reasons, for example when the
+  // |web_contents_| can be NULL for a number of reasons, for example when the
   // tab is closing. We must guard against that case. See issue 8030.
-  if (tab_contents_) {
+  if (web_contents_) {
     FindTabHelper* find_tab_helper =
-        FindTabHelper::FromWebContents(tab_contents_->web_contents());
+        FindTabHelper::FromWebContents(web_contents_);
 
     // When we hide the window, we need to notify the renderer that we are done
     // for now, so that we can abort the scoping effort and clear all the
@@ -76,16 +76,15 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
   }
 }
 
-void FindBarController::ChangeTabContents(TabContents* contents) {
-  if (tab_contents_) {
+void FindBarController::ChangeWebContents(WebContents* contents) {
+  if (web_contents_) {
     registrar_.RemoveAll();
     find_bar_->StopAnimation();
   }
 
-  tab_contents_ = contents;
+  web_contents_ = contents;
   FindTabHelper* find_tab_helper =
-      tab_contents_ ? FindTabHelper::FromWebContents(
-                          tab_contents_->web_contents())
+      web_contents_ ? FindTabHelper::FromWebContents(web_contents_)
                     : NULL;
 
   // Hide any visible find window from the previous tab if a NULL tab contents
@@ -95,17 +94,16 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
     find_bar_->Hide(false);
   }
 
-  if (!tab_contents_)
+  if (!web_contents_)
     return;
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                 content::Source<WebContents>(tab_contents_->web_contents()));
+                 content::Source<WebContents>(web_contents_));
   registrar_.Add(
       this,
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(
-          &tab_contents_->web_contents()->GetController()));
+      content::Source<NavigationController>(&web_contents_->GetController()));
 
   MaybeSetPrepopulateText();
 
@@ -128,12 +126,11 @@ void FindBarController::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(tab_contents_->web_contents());
+      FindTabHelper::FromWebContents(web_contents_);
   if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
     // Don't update for notifications from TabContentses other than the one we
     // are actively tracking.
-    if (content::Source<WebContents>(source).ptr() ==
-        tab_contents_->web_contents()) {
+    if (content::Source<WebContents>(source).ptr() == web_contents_) {
       UpdateFindBarForCurrentResult();
       if (find_tab_helper->find_result().final_update() &&
           find_tab_helper->find_result().number_of_matches() == 0) {
@@ -146,7 +143,7 @@ void FindBarController::Observe(int type,
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
         content::Source<NavigationController>(source).ptr();
-    if (source_controller == &tab_contents_->web_contents()->GetController()) {
+    if (source_controller == &web_contents_->GetController()) {
       content::LoadCommittedDetails* commit_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();
       content::PageTransition transition_type =
@@ -213,7 +210,7 @@ gfx::Rect FindBarController::GetLocationForFindbarView(
 
 void FindBarController::UpdateFindBarForCurrentResult() {
   FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(tab_contents_->web_contents());
+      FindTabHelper::FromWebContents(web_contents_);
   const FindNotificationDetails& find_result = find_tab_helper->find_result();
 
   // Avoid bug 894389: When a new search starts (and finds something) it reports
@@ -240,13 +237,14 @@ void FindBarController::MaybeSetPrepopulateText() {
   // the last search in this tab, but if no search has been issued in this tab
   // we use the last search string (from any tab).
   FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(tab_contents_->web_contents());
+      FindTabHelper::FromWebContents(web_contents_);
   string16 find_string = find_tab_helper->find_text();
   if (find_string.empty())
     find_string = find_tab_helper->previous_find_text();
   if (find_string.empty()) {
-    find_string =
-        FindBarStateFactory::GetLastPrepopulateText(tab_contents_->profile());
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+    find_string = FindBarStateFactory::GetLastPrepopulateText(profile);
   }
 
   // Update the find bar with existing results and search text, regardless of

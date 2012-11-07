@@ -1707,7 +1707,7 @@ IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
 // Confirm about:version contains some expected content.
 IN_PROC_BROWSER_TEST_F(BrowserTest, AboutVersion) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutVersionURL));
-  TabContents* tab = chrome::GetActiveTabContents(browser());
+  WebContents* tab = chrome::GetActiveWebContents(browser());
   ASSERT_GT(ui_test_utils::FindInPage(tab, ASCIIToUTF16("WebKit"), true, true,
                                       NULL, NULL),
             0);

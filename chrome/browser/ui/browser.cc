@@ -526,7 +526,7 @@ FindBarController* Browser::GetFindBarController() {
     FindBar* find_bar = window_->CreateFindBar();
     find_bar_controller_.reset(new FindBarController(find_bar));
     find_bar->SetFindBarController(find_bar_controller_.get());
-    find_bar_controller_->ChangeTabContents(chrome::GetActiveTabContents(this));
+    find_bar_controller_->ChangeWebContents(chrome::GetActiveWebContents(this));
     find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
   }
   return find_bar_controller_.get();
@@ -1123,7 +1123,7 @@ void Browser::ActiveTabChanged(TabContents* old_contents,
   }
 
   if (HasFindBarController()) {
-    find_bar_controller_->ChangeTabContents(new_contents);
+    find_bar_controller_->ChangeWebContents(new_contents->web_contents());
     find_bar_controller_->find_bar()->MoveWindowIfNecessary(gfx::Rect(), true);
   }
 
@@ -2184,7 +2184,7 @@ void Browser::TabDetachedAtImpl(TabContents* contents, int index,
   RemoveScheduledUpdatesFor(contents->web_contents());
 
   if (find_bar_controller_.get() && index == active_index()) {
-    find_bar_controller_->ChangeTabContents(NULL);
+    find_bar_controller_->ChangeWebContents(NULL);
   }
 
   // Stop observing search model changes for this tab.

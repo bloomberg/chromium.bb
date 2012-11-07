@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   chrome::Find(browser());
-  ui_test_utils::FindInPage(chrome::GetActiveTabContents(browser()),
+  ui_test_utils::FindInPage(chrome::GetActiveWebContents(browser()),
                             ASCIIToUTF16("a"), true, false, NULL, NULL);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 

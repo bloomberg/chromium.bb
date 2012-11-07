@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -363,8 +362,7 @@ void FindBarView::ButtonPressed(
     case FIND_NEXT_TAG:
       if (!find_text_->text().empty()) {
         FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
-            find_bar_host()->GetFindBarController()->
-                tab_contents()->web_contents());
+            find_bar_host()->GetFindBarController()->web_contents());
         find_tab_helper->StartFinding(find_text_->text(),
                                       sender->tag() == FIND_NEXT_TAG,
                                       false);  // Not case sensitive.
@@ -396,13 +394,13 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
                                   const string16& new_contents) {
   FindBarController* controller = find_bar_host()->GetFindBarController();
   DCHECK(controller);
+  content::WebContents* web_contents = controller->web_contents();
   // We must guard against a NULL tab_contents, which can happen if the text
   // in the Find box is changed right after the tab is destroyed. Otherwise, it
   // can lead to crashes, as exposed by automation testing in issue 8048.
-  if (!controller->tab_contents())
+  if (!web_contents)
     return;
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
-      controller->tab_contents()->web_contents());
+  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
 
   // When the user changes something in the text box we check the contents and
   // if the textbox contains something we set it as the new search string and
@@ -420,9 +418,9 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
     // deleted. We can't do this on ChromeOS yet because we get ContentsChanged
     // sent for a lot more things than just the user nulling out the search
     // terms. See http://crbug.com/45372.
-    FindBarState* find_bar_state =
-        FindBarStateFactory::GetForProfile(
-            controller->tab_contents()->profile());
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    FindBarState* find_bar_state = FindBarStateFactory::GetForProfile(profile);
     find_bar_state->set_last_prepopulate_text(string16());
   }
 }
@@ -441,8 +439,8 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
     string16 find_string = find_text_->text();
     if (!find_string.empty()) {
       FindBarController* controller = find_bar_host()->GetFindBarController();
-      FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
-          controller->tab_contents()->web_contents());
+      FindTabHelper* find_tab_helper =
+          FindTabHelper::FromWebContents(controller->web_contents());
       // Search forwards for enter, backwards for shift-enter.
       find_tab_helper->StartFinding(find_string,
                                     !key_event.IsShiftDown(),

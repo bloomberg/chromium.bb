@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Simple) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   int matches = ui_test_utils::FindInPage(
-      chrome::GetActiveTabContents(browser()),
+      chrome::GetActiveWebContents(browser()),
       string16(ASCIIToUTF16("1")),
       true /* forward */, false /* match case */, NULL /* ordinal */,
       NULL /* selection_rect */);
@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Redirect) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   int matches = ui_test_utils::FindInPage(
-      chrome::GetActiveTabContents(browser()),
+      chrome::GetActiveWebContents(browser()),
       string16(ASCIIToUTF16("1")),
       true /* forward */, false /* match case */, NULL /* ordinal */,
       NULL /* selection_rect */);
