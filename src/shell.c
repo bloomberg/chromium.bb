@@ -2780,8 +2780,9 @@ show_input_panels(struct wl_listener *listener, void *data)
 
 	shell->showing_input_panels = true;
 
-	wl_list_insert(&shell->panel_layer.link,
-		       &shell->input_panel_layer.link);
+	if (!shell->locked)
+		wl_list_insert(&shell->panel_layer.link,
+			       &shell->input_panel_layer.link);
 
 	wl_list_for_each_safe(surface, next,
 			      &shell->input_panel.surfaces, link) {
