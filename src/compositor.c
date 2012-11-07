@@ -1260,8 +1260,13 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 				   surface->pending.sy);
 
 	/* wl_surface.damage */
+	pixman_region32_init_rect(&opaque, 0, 0,
+				  surface->geometry.width,
+				  surface->geometry.height);
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &surface->pending.damage);
+	pixman_region32_intersect(&surface->damage, &surface->damage,
+				  &opaque);
 	empty_region(&surface->pending.damage);
 
 	/* wl_surface.set_opaque_region */
