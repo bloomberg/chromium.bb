@@ -536,7 +536,6 @@ int DownloadManagerImpl::RemoveDownloadItems(
     delete download;
     downloads_.erase(download_id);
   }
-  NotifyModelChanged();
   return static_cast<int>(pending_deletes.size());
 }
 
@@ -605,10 +604,6 @@ void DownloadManagerImpl::DownloadUrl(
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
-  // TODO: It is the responsibility of the observers to query the
-  // DownloadManager. Remove the following call from here and update all
-  // observers.
-  observer->ModelChanged(this);
 }
 
 void DownloadManagerImpl::RemoveObserver(Observer* observer) {
@@ -636,7 +631,6 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
              << " download = " << download->DebugString(true);
   }
-  NotifyModelChanged();
   CheckForHistoryFilesRemoval();
 }
 
@@ -655,9 +649,6 @@ void DownloadManagerImpl::AddDownloadItemToHistory(DownloadItemImpl* download,
   // Show in the appropriate browser UI.
   // This includes buttons to save or cancel, for a dangerous download.
   ShowDownloadInBrowser(download);
-
-  // Inform interested objects about the new download.
-  NotifyModelChanged();
 }
 
 void DownloadManagerImpl::OnItemAddedToPersistentStore(int32 download_id,
@@ -732,10 +723,6 @@ int DownloadManagerImpl::InProgressCount() const {
       ++count;
   }
   return count;
-}
-
-void DownloadManagerImpl::NotifyModelChanged() {
-  FOR_EACH_OBSERVER(Observer, observers_, ModelChanged(this));
 }
 
 DownloadItem* DownloadManagerImpl::GetDownload(int download_id) {

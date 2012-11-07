@@ -456,22 +456,6 @@ class DownloadContentTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
-  // TODO(rdsmith): Fragile code warning!  The code below relies on
-  // the DownloadTestObserverInProgress only finishing when the new
-  // download has reached the state of being entered into the history
-  // and being user-visible (that's what's required for the Remove to
-  // be valid).  By the pure semantics of
-  // DownloadTestObserverInProgress, that's not guaranteed;
-  // DownloadItems are created in the IN_PROGRESS state and made known
-  // to the DownloadManager immediately, so any ModelChanged event on
-  // the DownloadManager after navigation would allow the observer to
-  // return.  However, the only ModelChanged() event the code will
-  // currently fire is in OnCreateDownloadEntryComplete, at which
-  // point the download item will be in the state we need.
-  // The right way to fix this is to create finer grained states on the
-  // DownloadItem, and wait for the state that indicates the item has been
-  // entered in the history and made visible in the UI.
-
   SetupEnsureNoPendingDownloads();
 
   // Create a download, wait until it's started, and confirm
@@ -484,6 +468,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->GetState());
+
+  // Wait for it to be persisted.
+  DownloadUpdatedObserver(
+      downloads[0], base::Bind(&WasPersisted)).WaitForEvent();
 
   // Cancel the download and wait for download system quiesce.
   downloads[0]->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);

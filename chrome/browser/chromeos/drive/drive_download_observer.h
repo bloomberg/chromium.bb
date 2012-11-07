@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/download_item.h"
@@ -29,8 +30,7 @@ class DriveFileSystemInterface;
 
 // Observes downloads to temporary local drive folder. Schedules these
 // downloads for upload to drive service.
-class DriveDownloadObserver : public content::DownloadManager::Observer,
-                              public content::DownloadItem::Observer {
+class DriveDownloadObserver : public AllDownloadItemNotifier::Observer {
  public:
   DriveDownloadObserver(google_apis::DriveUploader* uploader,
                         DriveFileSystemInterface* file_system);
@@ -113,21 +113,9 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
     google_apis::UploadCompletionCallback completion_callback;
   };
 
-  // DownloadManager overrides.
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
-
-  // DownloadItem overrides.
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
-
-  // Adds/Removes |download| to pending_downloads_.
-  // Also start/stop observing |download|.
-  void AddPendingDownload(content::DownloadItem* download);
-  void RemovePendingDownload(content::DownloadItem* download);
-
-  // Remove our external data and remove our observers from |download|
-  void DetachFromDownload(content::DownloadItem* download);
+  // AllDownloadItemNotifier::Observer
+  virtual void OnDownloadUpdated(content::DownloadManager* manager,
+                                 content::DownloadItem* download) OVERRIDE;
 
   // Starts the upload of a downloaded/downloading file.
   void UploadDownloadItem(content::DownloadItem* download);
@@ -201,14 +189,10 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   // The file system owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;
   // Observe the DownloadManager for new downloads.
-  content::DownloadManager* download_manager_;
+  scoped_ptr<AllDownloadItemNotifier> notifier_;
 
   // Temporary download location directory.
   FilePath drive_tmp_download_path_;
-
-  // Map of pending downloads.
-  typedef std::map<int32, content::DownloadItem*> DownloadMap;
-  DownloadMap pending_downloads_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

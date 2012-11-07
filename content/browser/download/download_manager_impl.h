@@ -117,9 +117,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Does nothing if the download is not in the history DB.
   void RemoveFromActiveList(DownloadItemImpl* download);
 
-  // Inform observers that the model has changed.
-  void NotifyModelChanged();
-
   // Debugging routine to confirm relationship between below
   // containers; no-op if NDEBUG.
   void AssertContainersConsistent() const;

@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #endif  // defined(OS_CHROMEOS)
 #include "chrome/browser/common/cancelable_request.h"
+#include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -1066,7 +1067,7 @@ class AutomationProviderDownloadUpdatedObserver
 // Allows the automation provider to wait until the download model has changed
 // (because a new download has been added or removed).
 class AutomationProviderDownloadModelChangedObserver
-    : public content::DownloadManager::Observer {
+    : public AllDownloadItemNotifier::Observer {
  public:
   AutomationProviderDownloadModelChangedObserver(
       AutomationProvider* provider,
@@ -1074,12 +1075,17 @@ class AutomationProviderDownloadModelChangedObserver
       content::DownloadManager* download_manager);
   virtual ~AutomationProviderDownloadModelChangedObserver();
 
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
+  virtual void OnDownloadCreated(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadRemoved(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
 
  private:
+  void ModelChanged();
+
   base::WeakPtr<AutomationProvider> provider_;
   scoped_ptr<IPC::Message> reply_message_;
-  content::DownloadManager* download_manager_;
+  AllDownloadItemNotifier notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadModelChangedObserver);
 };

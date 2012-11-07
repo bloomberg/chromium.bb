@@ -139,14 +139,13 @@ class DownloadTestObserver : public DownloadManager::Observer,
   // The number of downloads to wait on completing.
   size_t wait_count_;
 
-  // The number of downloads entered in final state in initial
-  // ModelChanged().  We use |finished_downloads_| to track the incoming
-  // transitions to final state we should ignore, and to track the
-  // number of final state transitions that occurred between
-  // construction and return from wait.  But some downloads may be in our
-  // final state (and thus be entered into |finished_downloads_|) when we
-  // construct this class.  We don't want to count those in our transition
-  // to finished.
+  // The number of downloads entered in final state in Init().  We use
+  // |finished_downloads_| to track the incoming transitions to final state we
+  // should ignore, and to track the number of final state transitions that
+  // occurred between construction and return from wait.  But some downloads may
+  // be in our final state (and thus be entered into |finished_downloads_|) when
+  // we construct this class.  We don't want to count those in our transition to
+  // finished.
   int finished_downloads_at_construction_;
 
   // Whether an internal message loop has been started and must be quit upon
@@ -222,7 +221,9 @@ class DownloadTestFlushObserver
   void WaitForFlush();
 
   // DownloadsManager observer methods.
-  virtual void ModelChanged(DownloadManager* manager) OVERRIDE;
+  virtual void OnDownloadCreated(
+      DownloadManager* manager,
+      DownloadItem* item) OVERRIDE;
 
   // DownloadItem observer methods.
   virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;

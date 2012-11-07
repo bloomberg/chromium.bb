@@ -40,7 +40,9 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
         base::Bind(&URLRequestFailedJob::AddUrlHandler));
   }
 
-  virtual void ModelChanged(DownloadManager* manager) OVERRIDE {
+  virtual void OnDownloadCreated(
+      DownloadManager* manager,
+      DownloadItem* item) OVERRIDE {
     if (!got_downloads_)
       got_downloads_ = !!manager->InProgressCount();
   }

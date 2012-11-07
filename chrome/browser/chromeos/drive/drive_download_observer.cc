@@ -35,6 +35,18 @@ const int64 kStreamingFileSize = 1 << 20;  // 1MB
 const char kUploadingKey[] = "Uploading";
 const char kGDataPathKey[] = "GDataPath";
 
+void ResetDownloadUserData(DownloadItem* download) {
+  download->SetUserData(&kUploadingKey, NULL);
+  download->SetUserData(&kGDataPathKey, NULL);
+}
+
+DownloadItem* GetDownload(
+    AllDownloadItemNotifier* notifier,
+    int32 download_id) {
+  return ((notifier && notifier->GetManager()) ?
+      notifier->GetManager()->GetDownload(download_id) : NULL);
+}
+
 // User Data stored in DownloadItem for ongoing uploads.
 class UploadingUserData : public DownloadCompletionBlocker {
  public:
@@ -206,27 +218,18 @@ DriveDownloadObserver::DriveDownloadObserver(
     DriveFileSystemInterface* file_system)
     : drive_uploader_(uploader),
       file_system_(file_system),
-      download_manager_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 DriveDownloadObserver::~DriveDownloadObserver() {
-  if (download_manager_)
-    download_manager_->RemoveObserver(this);
-
-  for (DownloadMap::iterator iter = pending_downloads_.begin();
-       iter != pending_downloads_.end(); ++iter) {
-    DetachFromDownload(iter->second);
-  }
 }
 
 void DriveDownloadObserver::Initialize(
     DownloadManager* download_manager,
     const FilePath& drive_tmp_download_path) {
   DCHECK(!drive_tmp_download_path.empty());
-  download_manager_ = download_manager;
-  if (download_manager_)
-    download_manager_->AddObserver(this);
+  if (download_manager)
+    notifier_.reset(new AllDownloadItemNotifier(download_manager, this));
   drive_tmp_download_path_ = drive_tmp_download_path;
 }
 
@@ -339,91 +342,39 @@ int DriveDownloadObserver::PercentComplete(const DownloadItem* download) {
   return -1;
 }
 
-void DriveDownloadObserver::ManagerGoingDown(
-    DownloadManager* download_manager) {
-  download_manager->RemoveObserver(this);
-  download_manager_ = NULL;
-}
-
-void DriveDownloadObserver::ModelChanged(DownloadManager* download_manager) {
+void DriveDownloadObserver::OnDownloadUpdated(
+    DownloadManager* manager, DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DownloadManager::DownloadVector downloads;
-  // Drive downloads are considered temporary downloads.
-  download_manager->GetAllDownloads(&downloads);
-  for (size_t i = 0; i < downloads.size(); ++i) {
-    // Only accept downloads that have the Drive meta data associated with
-    // them. Otherwise we might trip over non-Drive downloads being saved to
-    // drive_tmp_download_path_.
-    if (downloads[i]->IsTemporary() &&
-        (downloads[i]->GetTargetFilePath().DirName() ==
-         drive_tmp_download_path_) &&
-        IsDriveDownload(downloads[i]))
-      OnDownloadUpdated(downloads[i]);
-  }
-}
-
-void DriveDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Drive downloads are considered temporary downloads. Only accept downloads
+  // that have the Drive meta data associated with them. Otherwise we might trip
+  // over non-Drive downloads being saved to drive_tmp_download_path_.
+  if (!download->IsTemporary() ||
+      (download->GetTargetFilePath().DirName() != drive_tmp_download_path_) ||
+      !IsDriveDownload(download))
+    return;
 
   const DownloadItem::DownloadState state = download->GetState();
   switch (state) {
     case DownloadItem::IN_PROGRESS:
-      AddPendingDownload(download);
       UploadDownloadItem(download);
       break;
 
     case DownloadItem::COMPLETE:
       UploadDownloadItem(download);
       MoveFileToDriveCache(download);
-      RemovePendingDownload(download);
+      ResetDownloadUserData(download);
       break;
 
     // TODO(achuith): Stop the pending upload and delete the file.
     case DownloadItem::CANCELLED:
     case DownloadItem::INTERRUPTED:
-      RemovePendingDownload(download);
+      ResetDownloadUserData(download);
       break;
 
     default:
       NOTREACHED();
   }
-
-  DVLOG(1) << "Number of pending downloads=" << pending_downloads_.size();
-}
-
-void DriveDownloadObserver::OnDownloadDestroyed(DownloadItem* download) {
-  RemovePendingDownload(download);
-}
-
-void DriveDownloadObserver::AddPendingDownload(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Add ourself as an observer of this download if we've never seen it before.
-  if (pending_downloads_.count(download->GetId()) == 0) {
-    pending_downloads_[download->GetId()] = download;
-    download->AddObserver(this);
-    DVLOG(1) << "new download total bytes=" << download->GetTotalBytes()
-             << ", full path=" << download->GetFullPath().value()
-             << ", mime type=" << download->GetMimeType();
-  }
-}
-
-void DriveDownloadObserver::RemovePendingDownload(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!download->IsInProgress());
-
-  DownloadMap::iterator it = pending_downloads_.find(download->GetId());
-  if (it != pending_downloads_.end()) {
-    DetachFromDownload(download);
-    pending_downloads_.erase(it);
-  }
-}
-
-void DriveDownloadObserver::DetachFromDownload(DownloadItem* download) {
-  download->SetUserData(&kUploadingKey, NULL);
-  download->SetUserData(&kGDataPathKey, NULL);
-  download->RemoveObserver(this);
 }
 
 void DriveDownloadObserver::UploadDownloadItem(DownloadItem* download) {
@@ -457,11 +408,12 @@ void DriveDownloadObserver::UpdateUpload(DownloadItem* download) {
 bool DriveDownloadObserver::ShouldUpload(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Upload if the item is in pending_downloads_,
+  // Upload if the item is either in progress or complete,
   // has a filename,
   // is complete or large enough to stream, and,
   // is not already being uploaded.
-  return (pending_downloads_.count(download->GetId()) != 0) &&
+  return ((download->GetState() == DownloadItem::IN_PROGRESS) ||
+          (download->GetState() == DownloadItem::COMPLETE)) &&
          !download->GetFullPath().empty() &&
          (download->AllDataSaved() ||
           download->GetReceivedBytes() > kStreamingFileSize) &&
@@ -532,14 +484,11 @@ void DriveDownloadObserver::CreateUploaderParamsAfterCheckExistence(
     uploader_params->upload_location = GURL(entry_proto->upload_url());
     uploader_params->title = "";
 
-    // Look up the DownloadItem for the |download_id|.
-    DownloadMap::iterator iter = pending_downloads_.find(download_id);
-    if (iter == pending_downloads_.end()) {
+    DownloadItem* download_item = GetDownload(notifier_.get(), download_id);
+    if (!download_item) {
       DVLOG(1) << "Pending download not found" << download_id;
       return;
     }
-    DownloadItem* download_item = iter->second;
-
     UploadingUserData* upload_data = GetUploadingUserData(download_item);
     DCHECK(upload_data);
 
@@ -589,14 +538,12 @@ void DriveDownloadObserver::StartUpload(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(uploader_params.get());
 
-  // Look up the DownloadItem for the |download_id|.
-  DownloadMap::iterator iter = pending_downloads_.find(download_id);
-  if (iter == pending_downloads_.end()) {
+  DownloadItem* download_item = GetDownload(notifier_.get(), download_id);
+  if (!download_item) {
     DVLOG(1) << "Pending download not found" << download_id;
     return;
   }
   DVLOG(1) << "Starting upload for download ID " << download_id;
-  DownloadItem* download_item = iter->second;
 
   UploadingUserData* upload_data = GetUploadingUserData(download_item);
   DCHECK(upload_data);
@@ -628,15 +575,13 @@ void DriveDownloadObserver::StartUpload(
 
 void DriveDownloadObserver::OnUploaderReady(int32 download_id,
                                             int32 upload_id) {
-  // Look up the DownloadItem for the |download_id|.
-  DownloadMap::iterator iter = pending_downloads_.find(download_id);
-  if (iter == pending_downloads_.end()) {
+  DownloadItem* download_item = GetDownload(notifier_.get(), download_id);
+  if (!download_item) {
     DVLOG(1) << "Pending download not found" << download_id;
     return;
   }
   DVLOG(1) << "Uploader for download id: " << download_id
            << "ready with the upload id: " << upload_id;
-  DownloadItem* download_item = iter->second;
 
   UploadingUserData* upload_data = GetUploadingUserData(download_item);
   DCHECK(upload_data);
@@ -657,14 +602,12 @@ void DriveDownloadObserver::OnUploadComplete(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(document_entry.get());
 
-  // Look up the DownloadItem for the |download_id|.
-  DownloadMap::iterator iter = pending_downloads_.find(download_id);
-  if (iter == pending_downloads_.end()) {
+  DownloadItem* download_item = GetDownload(notifier_.get(), download_id);
+  if (!download_item) {
     DVLOG(1) << "Pending download not found" << download_id;
     return;
   }
   DVLOG(1) << "Completing upload for download ID " << download_id;
-  DownloadItem* download_item = iter->second;
 
   UploadingUserData* upload_data = GetUploadingUserData(download_item);
   DCHECK(upload_data);

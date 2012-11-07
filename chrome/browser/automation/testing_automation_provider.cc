@@ -2713,14 +2713,12 @@ void TestingAutomationProvider::PerformActionOnDownload(
       prefs->DisableAutoOpenBasedOnExtension(path);
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   } else if (action == "remove") {
-    download_manager->AddObserver(
-        new AutomationProviderDownloadModelChangedObserver(
-            this, reply_message, download_manager));
+    new AutomationProviderDownloadModelChangedObserver(
+        this, reply_message, download_manager);
     selected_item->Remove();
   } else if (action == "decline_dangerous_download") {
-    download_manager->AddObserver(
-        new AutomationProviderDownloadModelChangedObserver(
-            this, reply_message, download_manager));
+    new AutomationProviderDownloadModelChangedObserver(
+        this, reply_message, download_manager);
     selected_item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   } else if (action == "save_dangerous_download") {
     selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(

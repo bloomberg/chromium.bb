@@ -228,16 +228,9 @@ class MockDownloadOpeningObserver : public DownloadManager::Observer {
     download_manager_->RemoveObserver(this);
   }
 
-  // DownloadManager::Observer
-  virtual void ModelChanged(DownloadManager* manager) OVERRIDE {
-    DCHECK_EQ(manager, download_manager_);
-    std::vector<DownloadItem*> downloads;
-    download_manager_->GetAllDownloads(&downloads);
-
-    for (std::vector<DownloadItem*>::iterator it = downloads.begin();
-         it != downloads.end(); ++it) {
-      (*it)->MockDownloadOpenForTesting();
-    }
+  virtual void OnDownloadCreated(
+      DownloadManager* manager, DownloadItem* item) OVERRIDE {
+    item->MockDownloadOpenForTesting();
   }
 
  private:

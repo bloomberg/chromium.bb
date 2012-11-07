@@ -1392,21 +1392,26 @@ AutomationProviderDownloadModelChangedObserver(
     DownloadManager* download_manager)
     : provider_(provider->AsWeakPtr()),
       reply_message_(reply_message),
-      download_manager_(download_manager) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(notifier_(download_manager, this)) {
 }
 
 AutomationProviderDownloadModelChangedObserver::
     ~AutomationProviderDownloadModelChangedObserver() {}
 
-void AutomationProviderDownloadModelChangedObserver::ModelChanged(
-    DownloadManager* manager) {
-  DCHECK_EQ(manager, download_manager_);
-
-  download_manager_->RemoveObserver(this);
-
+void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
   if (provider_)
     AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
   delete this;
+}
+
+void AutomationProviderDownloadModelChangedObserver::OnDownloadCreated(
+    DownloadManager* manager, DownloadItem* item) {
+  ModelChanged();
+}
+
+void AutomationProviderDownloadModelChangedObserver::OnDownloadRemoved(
+    DownloadManager* manager, DownloadItem* item) {
+  ModelChanged();
 }
 
 AllDownloadsCompleteObserver::AllDownloadsCompleteObserver(
