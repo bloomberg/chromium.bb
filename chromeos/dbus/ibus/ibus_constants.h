@@ -69,6 +69,7 @@ const char kCommitTextSignal[] = "CommitText";
 }  // namespace engine
 
 namespace panel {
+const char kServiceName[] = "org.freedesktop.IBus.Panel";
 const char kServicePath[] = "/org/freedesktop/IBus/Panel";
 const char kServiceInterface[] = "org.freedesktop.IBus.Panel";
 const char kUpdateLookupTableMethod[] = "UpdateLookupTable";
