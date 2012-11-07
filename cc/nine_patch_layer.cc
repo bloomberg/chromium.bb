@@ -63,7 +63,7 @@ void NinePatchLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* 
 {
     createUpdaterIfNeeded();
 
-    if (m_resource && (m_bitmapDirty || m_resource->texture()->backingResourceWasEvicted())) {
+    if (m_resource && (m_bitmapDirty || m_resource->texture()->resourceId() == 0)) {
         gfx::Rect contentRect(gfx::Point(), gfx::Size(m_bitmap.width(), m_bitmap.height()));
         ResourceUpdate upload = ResourceUpdate::Create(m_resource->texture(), &m_bitmap, contentRect, contentRect, gfx::Vector2d());
         queue.appendFullUpload(upload);
@@ -90,10 +90,11 @@ void NinePatchLayer::pushPropertiesTo(LayerImpl* layer)
     Layer::pushPropertiesTo(layer);
     NinePatchLayerImpl* layerImpl = static_cast<NinePatchLayerImpl*>(layer);
 
-    DCHECK(!m_bitmap.isNull());
-    DCHECK(m_resource);
-    layerImpl->setResourceId(m_resource->texture()->resourceId());
-    layerImpl->setLayout(gfx::Size(m_bitmap.width(), m_bitmap.height()), m_imageAperture);
+    if (m_resource) {
+        DCHECK(!m_bitmap.isNull());
+        layerImpl->setResourceId(m_resource->texture()->resourceId());
+        layerImpl->setLayout(gfx::Size(m_bitmap.width(), m_bitmap.height()), m_imageAperture);
+    }
 }
 
 }

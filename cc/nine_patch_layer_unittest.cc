@@ -116,10 +116,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
 
     // Nothing changed, so no repeated upload.
     testLayer->setTexturePriorities(calculator);
-    {
-        DebugScopedSetImplThread implThread;
-        testLayer->update(queue, &occlusionTracker, stats);
-    }
+    testLayer->update(queue, &occlusionTracker, stats);
     EXPECT_EQ(queue.fullUploadSize(), 0);
     EXPECT_EQ(queue.partialUploadSize(), 0);
 
@@ -131,10 +128,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
 
     // Reupload after eviction
     testLayer->setTexturePriorities(calculator);
-    {
-        DebugScopedSetImplThread implThread;
-        testLayer->update(queue, &occlusionTracker, stats);
-    }
+    testLayer->update(queue, &occlusionTracker, stats);
     EXPECT_EQ(queue.fullUploadSize(), 1);
     EXPECT_EQ(queue.partialUploadSize(), 0);
 }
