@@ -82,6 +82,12 @@ module_LTLIBRARIES =				\
 # The real backend is built by the Android build system.
 noinst_LTLIBRARIES = $(android_backend)
 
+if INSTALL_RPI_COMPOSITOR
+module_LTLIBRARIES += $(rpi_backend)
+else
+noinst_LTLIBRARIES += $(rpi_backend)
+endif
+
 if ENABLE_X11_COMPOSITOR
 x11_backend = x11-backend.la
 x11_backend_la_LDFLAGS = -module -avoid-version
@@ -143,6 +149,27 @@ android_backend_la_SOURCES =			\
 	evdev-touchpad.c			\
 	android-framebuffer.cpp			\
 	android-framebuffer.h
+endif
+
+if ENABLE_RPI_COMPOSITOR
+rpi_backend = rpi-backend.la
+rpi_backend_la_LDFLAGS = -module -avoid-version
+rpi_backend_la_LIBADD = $(COMPOSITOR_LIBS)	\
+	$(RPI_COMPOSITOR_LIBS)			\
+	$(RPI_BCM_HOST_LIBS)			\
+	../shared/libshared.la
+rpi_backend_la_CFLAGS =				\
+	$(GCC_CFLAGS)				\
+	$(COMPOSITOR_CFLAGS)			\
+	$(RPI_COMPOSITOR_CFLAGS)		\
+	$(RPI_BCM_HOST_CFLAGS)
+rpi_backend_la_SOURCES =			\
+	compositor-rpi.c			\
+	rpi-bcm-stubs.h 			\
+	tty.c					\
+	evdev.c					\
+	evdev.h					\
+	evdev-touchpad.c
 endif
 
 if ENABLE_HEADLESS_COMPOSITOR
