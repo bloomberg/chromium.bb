@@ -143,13 +143,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void SendLoadFontReply(IPC::Message* reply, FontLoader::Result* result);
 #endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // On Windows, we handle these on the IO thread to avoid a deadlock with
-  // plugins.  On non-Windows systems, we need to handle them on the UI thread.
-  void OnGetWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
-  void OnGetRootWindowRect(gfx::NativeViewId window, gfx::Rect* rect);
-#endif
-
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void GetPluginsCallback(IPC::Message* reply_msg,
                           const std::vector<webkit::WebPluginInfo>& plugins);

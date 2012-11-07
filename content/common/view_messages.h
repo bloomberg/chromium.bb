@@ -1240,6 +1240,10 @@ IPC_MESSAGE_ROUTED0(ViewMsg_MoveOrResizeStarted)
 IPC_MESSAGE_ROUTED1(ViewMsg_ScreenInfoChanged,
                     WebKit::WebScreenInfo /* screen_info */)
 
+IPC_MESSAGE_ROUTED2(ViewMsg_UpdateScreenRects,
+                    gfx::Rect /* view_screen_rect */,
+                    gfx::Rect /* window_screen_rect */)
+
 // Reply to ViewHostMsg_RequestMove, ViewHostMsg_ShowView, and
 // ViewHostMsg_ShowWidget to inform the renderer that the browser has
 // processed the move.  The browser may have ignored the move, but it finished
@@ -1520,6 +1524,10 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_RenderViewGone,
 // message to close the view.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Close)
 
+// Send in response to a ViewMsg_UpdateScreenRects so that the renderer can
+// throttle these messages.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateScreenRects_ACK)
+
 // Sent by the renderer process to request that the browser move the view.
 // This corresponds to the window.resizeTo() and window.moveTo() APIs, and
 // the browser may ignore this message.
@@ -1738,13 +1746,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)
 // keyboard input (true for textfields, text areas and content editable divs).
 IPC_MESSAGE_ROUTED1(ViewHostMsg_FocusedNodeChanged,
     bool /* is_editable_node */)
-
-// Returns the window location of the given window.
-// TODO(shess): Provide a mapping from reply_msg->routing_id() to
-// HWND so that we can eliminate the NativeViewId parameter.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetWindowRect,
-                           gfx::NativeViewId /* window */,
-                           gfx::Rect /* Out: Window location */)
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetCursor,
                     WebCursor)
@@ -2054,13 +2055,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_EnumerateDirectory,
 // true) focusable element.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
                     bool /* reverse */)
-
-// Returns the window location of the window this widget is embeded.
-// TODO(shess): Provide a mapping from reply_msg->routing_id() to
-// HWND so that we can eliminate the NativeViewId parameter.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
-                           gfx::NativeViewId /* window */,
-                           gfx::Rect /* Out: Window location */)
 
 // Required for updating text input state.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,

@@ -213,11 +213,9 @@ void TestRenderWidgetHostView::WillWmDestroy() {
 void TestRenderWidgetHostView::StartContentIntent(const GURL&) {}
 #endif
 
-#if defined(OS_POSIX) || defined(USE_AURA)
 gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
   return gfx::Rect();
 }
-#endif
 
 #if defined(TOOLKIT_GTK)
 GdkEventButton* TestRenderWidgetHostView::GetLastMouseDown() {

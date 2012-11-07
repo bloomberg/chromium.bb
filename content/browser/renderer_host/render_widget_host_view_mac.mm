@@ -139,7 +139,7 @@ static float ScaleFactor(NSView* view) {
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
-- (void)windowChangedScreen:(NSNotification*)notification;
+- (void)windowChangedGlobalFrame:(NSNotification*)notification;
 - (void)checkForPluginImeCancellation;
 - (void)updateTabBackingStoreScaleFactor;
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
@@ -1569,13 +1569,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
            selector:@selector(globalFrameDidChange:)
                name:NSViewGlobalFrameDidChangeNotification
              object:self];
-    if ([self window]) {
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(windowChangedScreen:)
-                 name:NSWindowDidChangeScreenNotification
-               object:[self window]];
-    }
   }
   return self;
 }
@@ -2130,28 +2123,40 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
   // We're messing with the window, so do this to ensure no flashes. This one
   // prevents a flash when the current tab is closed.
-  [[self window] disableScreenUpdatesUntilFlush];
+  NSWindow* oldWindow = [self window];
+  [oldWindow disableScreenUpdatesUntilFlush];
 
-  if ([self window]) {
-    [[NSNotificationCenter defaultCenter]
+  NSNotificationCenter* notificationCenter =
+      [NSNotificationCenter defaultCenter];
+  if (oldWindow) {
+    [notificationCenter
         removeObserver:self
                   name:NSWindowDidChangeBackingPropertiesNotification
-                object:[self window]];
-    [[NSNotificationCenter defaultCenter]
+                object:oldWindow];
+    [notificationCenter
         removeObserver:self
-                  name:NSWindowDidChangeScreenNotification
-                object:[self window]];
+                  name:NSWindowDidMoveNotification
+                object:oldWindow];
+    [notificationCenter
+        removeObserver:self
+                  name:NSWindowDidEndLiveResizeNotification
+                object:oldWindow];
   }
   if (newWindow) {
-    [[NSNotificationCenter defaultCenter]
+    [notificationCenter
         addObserver:self
            selector:@selector(windowDidChangeBackingProperties:)
                name:NSWindowDidChangeBackingPropertiesNotification
              object:newWindow];
-    [[NSNotificationCenter defaultCenter]
+    [notificationCenter
         addObserver:self
-           selector:@selector(windowChangedScreen:)
-               name:NSWindowDidChangeScreenNotification
+           selector:@selector(windowChangedGlobalFrame:)
+               name:NSWindowDidMoveNotification
+             object:newWindow];
+    [notificationCenter
+        addObserver:self
+           selector:@selector(windowChangedGlobalFrame:)
+               name:NSWindowDidEndLiveResizeNotification
              object:newWindow];
   }
 }
@@ -2206,7 +2211,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   handlingGlobalFrameDidChange_ = NO;
 }
 
-- (void)windowChangedScreen:(NSNotification*)notification {
+- (void)windowChangedGlobalFrame:(NSNotification*)notification {
   renderWidgetHostView_->UpdateScreenInfo(
       renderWidgetHostView_->GetNativeView());
 }

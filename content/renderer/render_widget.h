@@ -285,6 +285,8 @@ class CONTENT_EXPORT RenderWidget
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
   void OnScreenInfoChanged(const WebKit::WebScreenInfo& screen_info);
+  void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
+                           const gfx::Rect& window_screen_rect);
 
   // Override points to notify derived classes that a paint has happened.
   // WillInitiatePaint happens when we're about to generate a new bitmap and
@@ -564,10 +566,14 @@ class CONTENT_EXPORT RenderWidget
   // A custom background for the widget.
   SkBitmap background_;
 
-  // While we are waiting for the browser to update window sizes,
-  // we track the pending size temporarily.
+  // While we are waiting for the browser to update window sizes, we track the
+  // pending size temporarily.
   int pending_window_rect_count_;
   WebKit::WebRect pending_window_rect_;
+
+  // The screen rects of the view and the window that contains it.
+  gfx::Rect view_screen_rect_;
+  gfx::Rect window_screen_rect_;
 
   scoped_ptr<IPC::Message> pending_input_event_ack_;
 

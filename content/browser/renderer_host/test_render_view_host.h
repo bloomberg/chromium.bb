@@ -157,8 +157,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #endif
 #if defined(OS_POSIX) || defined(USE_AURA)
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
-  virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
 #endif
+  virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE { }
   virtual void SetScrollOffsetPinning(

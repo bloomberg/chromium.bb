@@ -261,6 +261,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_ScreenInfoChanged, OnScreenInfoChanged)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1364,14 +1365,7 @@ WebRect RenderWidget::windowRect() {
   if (pending_window_rect_count_)
     return pending_window_rect_;
 
-#if defined(OS_ANDROID)
-  // Short circuit of the sync RPC call.
-  return gfx::Rect(size_);
-#else
-  gfx::Rect rect;
-  Send(new ViewHostMsg_GetWindowRect(routing_id_, host_window_, &rect));
-  return rect;
-#endif
+  return view_screen_rect_;
 }
 
 void RenderWidget::setToolTipText(const WebKit::WebString& text,
@@ -1403,14 +1397,7 @@ WebRect RenderWidget::rootWindowRect() {
     return pending_window_rect_;
   }
 
-#if defined(OS_ANDROID)
-  // Short circuit of the sync RPC call.
-  return gfx::Rect(size_);
-#else
-  gfx::Rect rect;
-  Send(new ViewHostMsg_GetRootWindowRect(routing_id_, host_window_, &rect));
-  return rect;
-#endif
+  return window_screen_rect_;
 }
 
 WebRect RenderWidget::windowResizerRect() {
@@ -1621,6 +1608,13 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
 void RenderWidget::OnScreenInfoChanged(
     const WebKit::WebScreenInfo& screen_info) {
   screen_info_ = screen_info;
+}
+
+void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
+                                       const gfx::Rect& window_screen_rect) {
+  view_screen_rect_ = view_screen_rect;
+  window_screen_rect_ = window_screen_rect;
+  Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
 }
 
 webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(

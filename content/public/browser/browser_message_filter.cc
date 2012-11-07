@@ -99,7 +99,7 @@ base::TaskRunner* BrowserMessageFilter::OverrideTaskRunnerForMessage(
 
 bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
                                                 IPC::Sender* sender) {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // On Windows there's a potential deadlock with sync messsages going in
   // a circle from browser -> plugin -> renderer -> browser.
   // On Linux we can avoid this by avoiding sync messages from browser->plugin.

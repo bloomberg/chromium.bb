@@ -406,6 +406,13 @@ void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
 }
 
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
+  RenderWidgetHostImpl* impl = NULL;
+  if (GetRenderWidgetHost())
+    impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
+
+  if (impl)
+    impl->SendScreenRects();
+
   gfx::Display display =
       gfx::Screen::GetScreenFor(view)->GetDisplayNearestPoint(
           GetViewBounds().origin());
@@ -414,12 +421,9 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
     return;
   current_display_area_ = display.bounds();
   current_device_scale_factor_ = display.device_scale_factor();
-  if (GetRenderWidgetHost()) {
-    RenderWidgetHostImpl* impl =
-        RenderWidgetHostImpl::From(GetRenderWidgetHost());
+  if (impl)
     impl->NotifyScreenInfoChanged();
   }
-}
 
 class BasicMouseWheelSmoothScrollGesture
     : public SmoothScrollGesture {

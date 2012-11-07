@@ -2375,6 +2375,23 @@ void RenderWidgetHostViewWin::AcceleratedPaint(HDC dc) {
     accelerated_surface_->Present(dc);
 }
 
+gfx::Rect RenderWidgetHostViewWin::GetBoundsInRootWindow() {
+  RECT window_rect = {0};
+  HWND root_window = GetAncestor(m_hWnd, GA_ROOT);
+  ::GetWindowRect(root_window, &window_rect);
+  gfx::Rect rect(window_rect);
+
+  // Maximized windows are outdented from the work area by the frame thickness
+  // even though this "frame" is not painted.  This confuses code (and people)
+  // that think of a maximized window as corresponding exactly to the work area.
+  // Correct for this by subtracting the frame thickness back off.
+  if (::IsZoomed(root_window)) {
+    rect.Inset(GetSystemMetrics(SM_CXSIZEFRAME),
+               GetSystemMetrics(SM_CYSIZEFRAME));
+  }
+  return rect;
+}
+
 // Creates a HWND within the RenderWidgetHostView that will serve as a host
 // for a HWND that the GPU process will create. The host window is used
 // to Z-position the GPU's window relative to other plugin windows.

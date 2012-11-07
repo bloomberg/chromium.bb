@@ -133,6 +133,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
       should_auto_resize_(false),
+      waiting_for_screen_rects_ack_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
       select_range_pending_(false),
@@ -251,6 +252,26 @@ void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
   in_flight_size_.SetSize(0, 0);
 }
 
+void RenderWidgetHostImpl::SendScreenRects() {
+  if (waiting_for_screen_rects_ack_)
+    return;
+
+  if (is_hidden_) {
+    // On GTK, this comes in for backgrounded tabs. Ignore, to match what
+    // happens on Win & Mac, and when the view is shown it'll call this again.
+    return;
+  }
+
+  if (!view_)
+    return;
+
+  last_view_screen_rect_ = view_->GetViewBounds();
+  last_window_screen_rect_ = view_->GetBoundsInRootWindow();
+  Send(new ViewMsg_UpdateScreenRects(
+      GetRoutingID(), last_view_screen_rect_, last_window_screen_rect_));
+  waiting_for_screen_rects_ack_ = true;
+}
+
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->HasConnection());
 
@@ -293,6 +314,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnMsgRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateScreenRects_ACK,
+                        OnMsgUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnMsgPaintAtSizeAck)
@@ -320,10 +343,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnMsgUnlockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
                         OnMsgShowDisambiguationPopup)
-#if defined(OS_POSIX) || defined(USE_AURA)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
-#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PluginFocusChanged,
                         OnMsgPluginFocusChanged)
@@ -396,6 +415,8 @@ void RenderWidgetHostImpl::WasShown() {
   if (!is_hidden_)
     return;
   is_hidden_ = false;
+
+  SendScreenRects();
 
   BackingStore* backing_store = BackingStoreManager::Lookup(this);
   // If we already have a backing store for this widget, then we don't need to
@@ -1142,6 +1163,8 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // from a crashed renderer.
   renderer_initialized_ = false;
 
+  waiting_for_screen_rects_ack_ = false;
+
   // Must reset these to ensure that mouse move/wheel events work with a new
   // renderer.
   mouse_move_pending_ = false;
@@ -1329,6 +1352,7 @@ void RenderWidgetHostImpl::RendererIsResponsive() {
 }
 
 void RenderWidgetHostImpl::OnMsgRenderViewReady() {
+  SendScreenRects();
   WasResized();
 }
 
@@ -1373,6 +1397,19 @@ void RenderWidgetHostImpl::OnMsgSetTooltipText(
   }
   if (GetView())
     view_->SetTooltipText(wrapped_tooltip_text);
+}
+
+void RenderWidgetHostImpl::OnMsgUpdateScreenRectsAck() {
+  waiting_for_screen_rects_ack_ = false;
+  if (!view_)
+    return;
+
+  if (view_->GetViewBounds() == last_view_screen_rect_ &&
+      view_->GetBoundsInRootWindow() == last_window_screen_rect_) {
+    return;
+  }
+
+  SendScreenRects();
 }
 
 void RenderWidgetHostImpl::OnMsgRequestMove(const gfx::Rect& pos) {
@@ -1875,20 +1912,6 @@ void RenderWidgetHostImpl::OnMsgShowDisambiguationPopup(
   Send(new ViewMsg_ReleaseDisambiguationPopupDIB(GetRoutingID(),
                                                  dib->handle()));
 }
-
-#if defined(OS_POSIX) || defined(USE_AURA)
-void RenderWidgetHostImpl::OnMsgGetWindowRect(gfx::NativeViewId window_id,
-                                              gfx::Rect* results) {
-  if (view_)
-    *results = view_->GetViewBounds();
-}
-
-void RenderWidgetHostImpl::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
-                                                  gfx::Rect* results) {
-  if (view_)
-    *results = view_->GetBoundsInRootWindow();
-}
-#endif
 
 #if defined(OS_WIN)
 void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowCreated(

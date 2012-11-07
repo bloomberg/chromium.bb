@@ -440,6 +440,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   void DetachDelegate();
 
+  // Update the renderer's cache of the screen rect of the view and window.
+  void SendScreenRects();
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 
@@ -499,7 +502,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // as opposed to visa versa.
   void SetShouldAutoResize(bool enable);
 
- protected:
   // Expose increment/decrement of the in-flight event count, so
   // RenderViewHostImpl can account for in-flight beforeunload/unload events.
   int increment_in_flight_event_count() { return ++in_flight_event_count_; }
@@ -543,6 +545,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgRenderViewReady();
   void OnMsgRenderViewGone(int status, int error_code);
   void OnMsgClose();
+  void OnMsgUpdateScreenRectsAck();
   void OnMsgRequestMove(const gfx::Rect& pos);
   void OnMsgSetTooltipText(const string16& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);
@@ -583,10 +586,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                     const gfx::Size& size,
                                     const TransportDIB::Id& id);
 
-#if defined(OS_POSIX) || defined(USE_AURA)
-  void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
-  void OnMsgGetRootWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
-#endif
 #if defined(OS_MACOSX)
   void OnMsgPluginFocusChanged(bool focused, int plugin_id);
   void OnMsgStartPluginIme();
@@ -724,6 +723,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // True if the render widget host should track the render widget's size as
   // opposed to visa versa.
   bool should_auto_resize_;
+
+  bool waiting_for_screen_rects_ack_;
+  gfx::Rect last_view_screen_rect_;
+  gfx::Rect last_window_screen_rect_;
 
   // True if a mouse move event was sent to the render view and we are waiting
   // for a corresponding ViewHostMsg_HandleInputEvent_ACK message.
