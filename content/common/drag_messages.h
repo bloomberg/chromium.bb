@@ -5,6 +5,7 @@
 // IPC messages for drag and drop.
 // Multiply-included message file, hence no include guard.
 
+#include "content/common/drag_event_source_info.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -54,11 +55,12 @@ IPC_MESSAGE_ROUTED0(DragMsg_SourceSystemDragEnded)
 // WebDropData struct contains contextual information about the pieces of the
 // page the user dragged. The parent uses this notification to initiate a
 // drag session at the OS level.
-IPC_MESSAGE_ROUTED4(DragHostMsg_StartDragging,
+IPC_MESSAGE_ROUTED5(DragHostMsg_StartDragging,
                     WebDropData /* drop_data */,
                     WebKit::WebDragOperationsMask /* ops_allowed */,
                     SkBitmap /* image */,
-                    gfx::Vector2d /* image_offset */)
+                    gfx::Vector2d /* image_offset */,
+                    content::DragEventSourceInfo /* event_info */)
 
 // The page wants to update the mouse cursor during a drag & drop operation.
 // |is_drop_target| is true if the mouse is over a valid drop target.

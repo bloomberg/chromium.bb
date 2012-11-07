@@ -163,6 +163,7 @@
     'common/device_orientation_messages.h',
     'common/devtools_messages.h',
     'common/dom_storage_messages.h',
+    'common/drag_event_source_info.h',
     'common/drag_messages.h',
     'common/drag_traits.h',
     'common/edit_command.h',

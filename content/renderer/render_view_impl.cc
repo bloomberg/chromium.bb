@@ -2246,7 +2246,8 @@ void RenderViewImpl::startDragging(WebFrame* frame,
                                      drop_data,
                                      mask,
                                      image.getSkBitmap(),
-                                     imageOffset));
+                                     imageOffset,
+                                     possible_drag_event_info_));
 }
 
 bool RenderViewImpl::acceptsLoadDrops() {
@@ -5653,11 +5654,24 @@ void RenderViewImpl::DidHandleKeyEvent() {
 }
 
 bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+  possible_drag_event_info_.event_source =
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  possible_drag_event_info_.event_location =
+      gfx::Point(event.globalX, event.globalY);
   pepper_delegate_.WillHandleMouseEvent();
 
   // If the mouse is locked, only the current owner of the mouse lock can
   // process mouse events.
   return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
+}
+
+bool RenderViewImpl::WillHandleGestureEvent(
+    const WebKit::WebGestureEvent& event) {
+  possible_drag_event_info_.event_source =
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+  possible_drag_event_info_.event_location =
+      gfx::Point(event.globalX, event.globalY);
+  return false;
 }
 
 void RenderViewImpl::DidHandleMouseEvent(const WebMouseEvent& event) {

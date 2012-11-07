@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/drag_event_source_info.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
@@ -30,4 +31,11 @@ IPC_STRUCT_TRAITS_BEGIN(WebDropData)
   IPC_STRUCT_TRAITS_MEMBER(file_description_filename)
   IPC_STRUCT_TRAITS_MEMBER(file_contents)
   IPC_STRUCT_TRAITS_MEMBER(custom_data)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(ui::DragDropTypes::DragEventSource)
+
+IPC_STRUCT_TRAITS_BEGIN(content::DragEventSourceInfo)
+  IPC_STRUCT_TRAITS_MEMBER(event_location)
+  IPC_STRUCT_TRAITS_MEMBER(event_source)
 IPC_STRUCT_TRAITS_END()

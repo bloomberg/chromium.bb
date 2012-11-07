@@ -342,7 +342,8 @@ void WebContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
 void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,
                                        WebDragOperationsMask ops,
                                        const gfx::ImageSkia& image,
-                                       const gfx::Vector2d& image_offset) {
+                                       const gfx::Vector2d& image_offset,
+                                       const DragEventSourceInfo& event_info) {
   DCHECK(GetContentNativeView());
 
   RenderWidgetHostViewGtk* view_gtk = static_cast<RenderWidgetHostViewGtk*>(

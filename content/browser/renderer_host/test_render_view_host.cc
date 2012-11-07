@@ -355,7 +355,9 @@ void TestRenderViewHost::SimulateWasShown() {
 void TestRenderViewHost::TestOnMsgStartDragging(
     const WebDropData& drop_data) {
   WebKit::WebDragOperationsMask drag_operation = WebKit::WebDragOperationEvery;
-  OnMsgStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Vector2d());
+  DragEventSourceInfo event_info;
+  OnMsgStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Vector2d(),
+                     event_info);
 }
 
 void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {

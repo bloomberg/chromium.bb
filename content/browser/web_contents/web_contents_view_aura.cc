@@ -438,7 +438,8 @@ void WebContentsViewAura::StartDragging(
     const WebDropData& drop_data,
     WebKit::WebDragOperationsMask operations,
     const gfx::ImageSkia& image,
-    const gfx::Vector2d& image_offset) {
+    const gfx::Vector2d& image_offset,
+    const DragEventSourceInfo& event_info) {
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
   if (!aura::client::GetDragDropClient(root_window))
     return;
@@ -458,17 +459,11 @@ void WebContentsViewAura::StartDragging(
   // updates while in the system DoDragDrop loop.
   int result_op = 0;
   {
-    // TODO(sad): Avoid using GetCursorScreenPoint here, since the drag may not
-    // always start from a mouse-event (e.g. a touch or gesture event could
-    // initiate the drag). The location information should be carried over from
-    // webkit. http://crbug.com/114754
-    // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
-    gfx::Point location(
-        gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint());
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, root_window, GetContentNativeView(), location,
-        ConvertFromWeb(operations), ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+        data, root_window, GetContentNativeView(),
+        event_info.event_location, ConvertFromWeb(operations),
+        event_info.event_source);
   }
 
   // Bail out immediately if the contents view window is gone. Note that it is

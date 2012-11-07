@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/accessibility_node_data.h"
+#include "content/common/drag_event_source_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/javascript_message_type.h"
@@ -541,7 +542,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,
                           const SkBitmap& bitmap,
-                          const gfx::Vector2d& bitmap_offset_in_dip);
+                          const gfx::Vector2d& bitmap_offset_in_dip,
+                          const DragEventSourceInfo& event_info);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
