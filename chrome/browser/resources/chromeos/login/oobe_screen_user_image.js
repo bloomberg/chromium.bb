@@ -379,10 +379,17 @@ cr.define('oobe', function() {
       imageGrid.addEventListener('activate',
                                  this.handleImageActivated_.bind(this));
 
+      // Set the title for camera item in the grid.
+      imageGrid.setCameraTitles(
+          localStrings.getString('takePhoto'),
+          localStrings.getString('capturedPhoto'));
+
       // Profile image data (if present).
       this.profileImage_ = imageGrid.addItem(
-          ButtonImages.PROFILE_PICTURE,
-          undefined, undefined, undefined,
+          ButtonImages.PROFILE_PICTURE,  // Image URL.
+          localStrings.getString('profilePhoto'),  // Title.
+          undefined,  // Click handler.
+          undefined,  // Position.
           function(el) {  // Custom decorator for Profile image element.
             var spinner = el.ownerDocument.createElement('div');
             spinner.className = 'spinner';

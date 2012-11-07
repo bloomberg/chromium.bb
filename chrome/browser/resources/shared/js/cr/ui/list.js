@@ -598,7 +598,7 @@ cr.define('cr.ui', function() {
         if (listItem) {
           listItem.selected = change.selected;
           if (change.selected) {
-            listItem.setAttribute('aria-posinset', change.index);
+            listItem.setAttribute('aria-posinset', change.index + 1);
             listItem.setAttribute('aria-setsize', this.dataModel.length);
             this.setAttribute('aria-activedescendant', listItem.id);
           } else {

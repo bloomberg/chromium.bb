@@ -73,6 +73,8 @@ void UserImageScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("authorCredit",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
+  localized_strings->SetString("capturedPhoto",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_CAPTURED_PHOTO));
   if (!CommandLine::ForCurrentProcess()->
           HasSwitch(switches::kDisableHtml5Camera)) {
     localized_strings->SetString("cameraType", "webrtc");
