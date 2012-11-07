@@ -371,44 +371,20 @@ def TargetLibs(target):
   return libs
 
 
-# TODO(mcgrathr): Drop this after the consumers are updated to take
-# the fine-grained packages directly.
-def AssemblyPackage(target):
-  deps = [
-      'binutils_' + target,
-      'gcc_' + target,
-      'newlib_' + target,
-      'gcc_libs_' + target,
-      ]
-
-  # Mac doesn't have GNU cp with its -l functionality, but it has cpio.
-  # MinGW doesn't have cpio, but it does have GNU cp.
-  if sys.platform == 'darwin':
-    commands = [command.Command(
-        'cd %(' + dep + ')s && find . -print0 | cpio -0 -p -l %(abs_output)s',
-        shell=True
-        ) for dep in deps]
-  else:
-    commands = [command.Command('cp -al "%(' + dep + ')s/"* "%(abs_output)s"',
-                                shell=True)
-                for dep in deps]
-
-  assembled = {
-      'toolchain_' + target: {
-          'dependencies': deps,
-          'commands': commands
-          },
-      }
-  return assembled
-
-
 def CollectPackages(targets):
   packages = HOST_GCC_LIBS.copy()
   for target in targets:
     packages.update(HostTools(target))
-    # TODO(mcgrathr): Eventually build target libraries on only one host type.
-    packages.update(TargetLibs(target))
-    packages.update(AssemblyPackage(target))
+    # We build target libraries only on Linux for two reasons:
+    # 1. We only need to build them once.
+    # 2. Linux is the fastest to build.
+    # TODO(mcgrathr): In future set up some scheme whereby non-Linux
+    # bots can build target libraries but not archive them, only verifying
+    # that the results came out the same as the ones archived by the
+    # official builder bot.  That will serve as a test of the host tools
+    # on the other host platforms.
+    if sys.platform.startswith('linux'):
+      packages.update(TargetLibs(target))
   return packages
 
 
