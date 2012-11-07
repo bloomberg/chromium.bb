@@ -45,7 +45,11 @@ ExtensionWebRequestTest.*
 TemplateURLServiceSyncTest.*
 EventRouterForwarderTest.*
 
+# http://crbug.com/159860 - hangs during these tests.
+MenuManagerTest.*
+
 # Don't run FLAKY or FAILS tests under the heapchecker.
 # They may cause flaky leak reports and timeouts.
 *FLAKY_*
 *FAILS_*
+
