@@ -1258,6 +1258,8 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	if (surface->buffer && surface->configure)
 		surface->configure(surface, surface->pending.sx,
 				   surface->pending.sy);
+	surface->pending.sx = 0;
+	surface->pending.sy = 0;
 
 	/* wl_surface.damage */
 	pixman_region32_init_rect(&opaque, 0, 0,
