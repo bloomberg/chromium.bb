@@ -162,6 +162,14 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
       data->insert(access_point_data);
     }
   }
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Net.Wifi.InterfaceCount",
+      [supported_interfaces count] - interface_error_count,
+      1,
+      5,
+      5);
+
   // Return true even if some interfaces failed to scan, so long as at least
   // one interface did not fail.
   return interface_error_count == 0 ||
