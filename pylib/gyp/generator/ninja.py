@@ -509,7 +509,7 @@ class NinjaWriter:
       outputs += self.WriteRules(spec['rules'], extra_sources, prebuild,
                                  extra_mac_bundle_resources)
     if 'copies' in spec:
-      outputs += self.WriteCopies(spec['copies'], prebuild)
+      outputs += self.WriteCopies(spec['copies'], prebuild, mac_bundle_depends)
 
     if 'sources' in spec and self.flavor == 'win':
       outputs += self.WriteWinIdlFiles(spec, prebuild)
@@ -664,7 +664,7 @@ class NinjaWriter:
 
     return all_outputs
 
-  def WriteCopies(self, copies, prebuild):
+  def WriteCopies(self, copies, prebuild, mac_bundle_depends):
     outputs = []
     env = self.GetSortedXcodeEnv()
     for copy in copies:
@@ -676,6 +676,15 @@ class NinjaWriter:
         dst = self.GypPathToNinja(os.path.join(copy['destination'], basename),
                                   env)
         outputs += self.ninja.build(dst, 'copy', src, order_only=prebuild)
+        if self.is_mac_bundle:
+          # gyp has mac_bundle_resources to copy things into a bundle's
+          # Resources folder, but there's no built-in way to copy files to other
+          # places in the bundle. Hence, some targets use copies for this. Check
+          # if this file is copied into the current bundle, and if so add it to
+          # the bundle depends so that dependent targets get rebuilt if the copy
+          # input changes.
+          if dst.startswith(self.xcode_settings.GetBundleContentsFolderPath()):
+            mac_bundle_depends.append(dst)
 
     return outputs
 
