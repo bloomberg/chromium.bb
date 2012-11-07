@@ -270,7 +270,9 @@ void TrayBackgroundView::SetBorder() {
   // Change the border padding for different shelf alignment.
   if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
     set_border(views::Border::CreateEmptyBorder(
-        0, 0, kPaddingFromBottomOfScreenBottomAlignment,
+        0, 0,
+        on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
+                  kPaddingFromBottomOfScreenBottomAlignment - 1,
         on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
   } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
     set_border(views::Border::CreateEmptyBorder(
