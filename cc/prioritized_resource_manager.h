@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_PRIORITIZED_TEXTURE_MANAGER_H_
-#define CC_PRIORITIZED_TEXTURE_MANAGER_H_
+#ifndef CC_PRIORITIZED_RESOURCE_MANAGER_H_
+#define CC_PRIORITIZED_RESOURCE_MANAGER_H_
 
 #include <list>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
-#include "cc/prioritized_texture.h"
+#include "cc/prioritized_resource.h"
 #include "cc/priority_calculator.h"
 #include "cc/texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -21,8 +21,8 @@
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
 template<>
-struct hash<cc::PrioritizedTexture*> {
-  size_t operator()(cc::PrioritizedTexture* ptr) const {
+struct hash<cc::PrioritizedResource*> {
+  size_t operator()(cc::PrioritizedResource* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
@@ -33,19 +33,19 @@ namespace cc {
 
 class PriorityCalculator;
 
-class CC_EXPORT PrioritizedTextureManager {
+class CC_EXPORT PrioritizedResourceManager {
 public:
-    static scoped_ptr<PrioritizedTextureManager> create(size_t maxMemoryLimitBytes, int maxTextureSize, int pool)
+    static scoped_ptr<PrioritizedResourceManager> create(size_t maxMemoryLimitBytes, int maxTextureSize, int pool)
     {
-        return make_scoped_ptr(new PrioritizedTextureManager(maxMemoryLimitBytes, maxTextureSize, pool));
+        return make_scoped_ptr(new PrioritizedResourceManager(maxMemoryLimitBytes, maxTextureSize, pool));
     }
-    scoped_ptr<PrioritizedTexture> createTexture(gfx::Size size, GLenum format)
+    scoped_ptr<PrioritizedResource> createTexture(gfx::Size size, GLenum format)
     {
-        return make_scoped_ptr(new PrioritizedTexture(this, size, format));
+        return make_scoped_ptr(new PrioritizedResource(this, size, format));
     }
-    ~PrioritizedTextureManager();
+    ~PrioritizedResourceManager();
 
-    typedef std::list<PrioritizedTexture::Backing*> BackingList;
+    typedef std::list<PrioritizedResource::Backing*> BackingList;
 
     // FIXME (http://crbug.com/137094): This 64MB default is a straggler from the
     // old texture manager and is just to give us a default memory allocation before
@@ -91,16 +91,16 @@ public:
     // before updating layers.
     void unlinkEvictedBackings(const BackingList& evictedBackings);
 
-    bool requestLate(PrioritizedTexture*);
+    bool requestLate(PrioritizedResource*);
 
     void reduceMemory(ResourceProvider*);
     void clearAllMemory(ResourceProvider*);
 
-    void acquireBackingTextureIfNeeded(PrioritizedTexture*, ResourceProvider*);
+    void acquireBackingTextureIfNeeded(PrioritizedResource*, ResourceProvider*);
 
-    void registerTexture(PrioritizedTexture*);
-    void unregisterTexture(PrioritizedTexture*);
-    void returnBackingTexture(PrioritizedTexture*);
+    void registerTexture(PrioritizedResource*);
+    void unregisterTexture(PrioritizedResource*);
+    void returnBackingTexture(PrioritizedResource*);
 
     // Update all backings' priorities from their owning texture.
     void pushTexturePrioritiesToBackings();
@@ -109,7 +109,7 @@ public:
     void updateBackingsInDrawingImplTree();
 
 private:
-    friend class PrioritizedTextureTest;
+    friend class PrioritizedResourceTest;
 
     enum EvictionPolicy {
         EvictOnlyRecyclable,
@@ -117,14 +117,14 @@ private:
     };
 
     // Compare textures. Highest priority first.
-    static inline bool compareTextures(PrioritizedTexture* a, PrioritizedTexture* b)
+    static inline bool compareTextures(PrioritizedResource* a, PrioritizedResource* b)
     {
         if (a->requestPriority() == b->requestPriority())
             return a < b;
         return PriorityCalculator::priorityIsHigher(a->requestPriority(), b->requestPriority());
     }
     // Compare backings. Lowest priority first.
-    static inline bool compareBackings(PrioritizedTexture::Backing* a, PrioritizedTexture::Backing* b)
+    static inline bool compareBackings(PrioritizedResource::Backing* a, PrioritizedResource::Backing* b)
     {
         // Make textures that can be recycled appear first
         if (a->canBeRecycled() != b->canBeRecycled())
@@ -142,10 +142,10 @@ private:
         return a < b;
     }
 
-    PrioritizedTextureManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool);
+    PrioritizedResourceManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool);
 
     bool evictBackingsToReduceMemory(size_t limitBytes, int priorityCutoff, EvictionPolicy, ResourceProvider*);
-    PrioritizedTexture::Backing* createBacking(gfx::Size, GLenum format, ResourceProvider*);
+    PrioritizedResource::Backing* createBacking(gfx::Size, GLenum format, ResourceProvider*);
     void evictFirstBackingResource(ResourceProvider*);
     void deleteUnlinkedEvictedBackings();
     void sortBackings();
@@ -165,8 +165,8 @@ private:
     size_t m_memoryAvailableBytes;
     int m_pool;
 
-    typedef base::hash_set<PrioritizedTexture*> TextureSet;
-    typedef std::vector<PrioritizedTexture*> TextureVector;
+    typedef base::hash_set<PrioritizedResource*> TextureSet;
+    typedef std::vector<PrioritizedResource*> TextureVector;
 
     TextureSet m_textures;
     // This list is always sorted in eviction order, with the exception the
@@ -186,9 +186,9 @@ private:
     size_t m_memoryVisibleLastPushedBytes;
     size_t m_memoryVisibleAndNearbyLastPushedBytes;
 
-    DISALLOW_COPY_AND_ASSIGN(PrioritizedTextureManager);
+    DISALLOW_COPY_AND_ASSIGN(PrioritizedResourceManager);
 };
 
 }  // namespace cc
 
-#endif  // CC_PRIORITIZED_TEXTURE_MANAGER_H_
+#endif  // CC_PRIORITIZED_RESOURCE_MANAGER_H_

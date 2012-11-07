@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_PRIORITIZED_TEXTURE_H_
-#define CC_PRIORITIZED_TEXTURE_H_
+#ifndef CC_PRIORITIZED_RESOURCE_H_
+#define CC_PRIORITIZED_RESOURCE_H_
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -19,35 +19,35 @@
 
 namespace cc {
 
-class PrioritizedTextureManager;
+class PrioritizedResourceManager;
 
-class CC_EXPORT PrioritizedTexture {
+class CC_EXPORT PrioritizedResource {
 public:
-    static scoped_ptr<PrioritizedTexture> create(PrioritizedTextureManager* manager, gfx::Size size, GLenum format)
+    static scoped_ptr<PrioritizedResource> create(PrioritizedResourceManager* manager, gfx::Size size, GLenum format)
     {
-        return make_scoped_ptr(new PrioritizedTexture(manager, size, format));
+        return make_scoped_ptr(new PrioritizedResource(manager, size, format));
     }
-    static scoped_ptr<PrioritizedTexture> create(PrioritizedTextureManager* manager)
+    static scoped_ptr<PrioritizedResource> create(PrioritizedResourceManager* manager)
     {
-        return make_scoped_ptr(new PrioritizedTexture(manager, gfx::Size(), 0));
+        return make_scoped_ptr(new PrioritizedResource(manager, gfx::Size(), 0));
     }
-    ~PrioritizedTexture();
+    ~PrioritizedResource();
 
     // Texture properties. Changing these causes the backing texture to be lost.
     // Setting these to the same value is a no-op.
-    void setTextureManager(PrioritizedTextureManager*);
-    PrioritizedTextureManager* textureManager() { return m_manager; }
+    void setTextureManager(PrioritizedResourceManager*);
+    PrioritizedResourceManager* resourceManager() { return m_manager; }
     void setDimensions(gfx::Size, GLenum format);
     GLenum format() const { return m_format; }
     gfx::Size size() const { return m_size; }
     size_t bytes() const { return m_bytes; }
     bool contentsSwizzled() const { return m_contentsSwizzled; }
 
-    // Set priority for the requested texture. 
+    // Set priority for the requested texture.
     void setRequestPriority(int priority) { m_priority = priority; }
     int requestPriority() const { return m_priority; }
 
-    // After PrioritizedTexture::prioritizeTextures() is called, this returns
+    // After PrioritizedResource::prioritizeTextures() is called, this returns
     // if the the request succeeded and this texture can be acquired for use.
     bool canAcquireBackingTexture() const { return m_isAbovePriorityCutoff; }
 
@@ -88,8 +88,8 @@ public:
     void returnBackingTexture();
 
 private:
-    friend class PrioritizedTextureManager;
-    friend class PrioritizedTextureTest;
+    friend class PrioritizedResourceManager;
+    friend class PrioritizedResourceTest;
 
     class Backing : public Texture {
     public:
@@ -98,7 +98,7 @@ private:
         void updatePriority();
         void updateInDrawingImplTree();
 
-        PrioritizedTexture* owner() { return m_owner; }
+        PrioritizedResource* owner() { return m_owner; }
         bool canBeRecycled() const;
         int requestPriorityAtLastPriorityUpdate() const { return m_priorityAtLastPriorityUpdate; }
         bool wasAbovePriorityCutoffAtLastPriorityUpdate() const { return m_wasAbovePriorityCutoffAtLastPriorityUpdate; }
@@ -108,8 +108,8 @@ private:
         bool resourceHasBeenDeleted() const;
 
     private:
-        friend class PrioritizedTexture;
-        PrioritizedTexture* m_owner;
+        friend class PrioritizedResource;
+        PrioritizedResource* m_owner;
         int m_priorityAtLastPriorityUpdate;
         bool m_wasAbovePriorityCutoffAtLastPriorityUpdate;
 
@@ -124,11 +124,11 @@ private:
         DISALLOW_COPY_AND_ASSIGN(Backing);
     };
 
-    PrioritizedTexture(PrioritizedTextureManager*, gfx::Size, GLenum format);
+    PrioritizedResource(PrioritizedResourceManager*, gfx::Size, GLenum format);
 
     bool isAbovePriorityCutoff() { return m_isAbovePriorityCutoff; }
     void setAbovePriorityCutoff(bool isAbovePriorityCutoff) { m_isAbovePriorityCutoff = isAbovePriorityCutoff; }
-    void setManagerInternal(PrioritizedTextureManager* manager) { m_manager = manager; }
+    void setManagerInternal(PrioritizedResourceManager* manager) { m_manager = manager; }
 
     Backing* backing() const { return m_backing; }
     void link(Backing*);
@@ -144,11 +144,11 @@ private:
     bool m_isSelfManaged;
 
     Backing* m_backing;
-    PrioritizedTextureManager* m_manager;
+    PrioritizedResourceManager* m_manager;
 
-    DISALLOW_COPY_AND_ASSIGN(PrioritizedTexture);
+    DISALLOW_COPY_AND_ASSIGN(PrioritizedResource);
 };
 
 }  // namespace cc
 
-#endif  // CC_PRIORITIZED_TEXTURE_H_
+#endif  // CC_PRIORITIZED_RESOURCE_H_

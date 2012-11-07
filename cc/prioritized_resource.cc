@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "cc/prioritized_texture.h"
+#include "cc/prioritized_resource.h"
 
 #include "cc/platform_color.h"
-#include "cc/prioritized_texture_manager.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/priority_calculator.h"
 #include "cc/proxy.h"
 #include <algorithm>
@@ -16,7 +16,7 @@ using namespace std;
 
 namespace cc {
 
-PrioritizedTexture::PrioritizedTexture(PrioritizedTextureManager* manager, gfx::Size size, GLenum format)
+PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager, gfx::Size size, GLenum format)
     : m_size(size)
     , m_format(format)
     , m_bytes(0)
@@ -35,13 +35,13 @@ PrioritizedTexture::PrioritizedTexture(PrioritizedTextureManager* manager, gfx::
         manager->registerTexture(this);
 }
 
-PrioritizedTexture::~PrioritizedTexture()
+PrioritizedResource::~PrioritizedResource()
 {
     if (m_manager)
         m_manager->unregisterTexture(this);
 }
 
-void PrioritizedTexture::setTextureManager(PrioritizedTextureManager* manager)
+void PrioritizedResource::setTextureManager(PrioritizedResourceManager* manager)
 {
     if (m_manager == manager)
         return;
@@ -51,7 +51,7 @@ void PrioritizedTexture::setTextureManager(PrioritizedTextureManager* manager)
         manager->registerTexture(this);
 }
 
-void PrioritizedTexture::setDimensions(gfx::Size size, GLenum format)
+void PrioritizedResource::setDimensions(gfx::Size size, GLenum format)
 {
     if (m_format != format || m_size != size) {
         m_isAbovePriorityCutoff = false;
@@ -64,33 +64,33 @@ void PrioritizedTexture::setDimensions(gfx::Size size, GLenum format)
     }
 }
 
-bool PrioritizedTexture::requestLate()
+bool PrioritizedResource::requestLate()
 {
     if (!m_manager)
         return false;
     return m_manager->requestLate(this);
 }
 
-bool PrioritizedTexture::backingResourceWasEvicted() const
+bool PrioritizedResource::backingResourceWasEvicted() const
 {
     return m_backing ? m_backing->resourceHasBeenDeleted() : false;
 }
 
-void PrioritizedTexture::acquireBackingTexture(ResourceProvider* resourceProvider)
+void PrioritizedResource::acquireBackingTexture(ResourceProvider* resourceProvider)
 {
     DCHECK(m_isAbovePriorityCutoff);
     if (m_isAbovePriorityCutoff)
         m_manager->acquireBackingTextureIfNeeded(this, resourceProvider);
 }
 
-ResourceProvider::ResourceId PrioritizedTexture::resourceId() const
+ResourceProvider::ResourceId PrioritizedResource::resourceId() const
 {
     if (m_backing)
         return m_backing->id();
     return 0;
 }
 
-void PrioritizedTexture::setPixels(ResourceProvider* resourceProvider,
+void PrioritizedResource::setPixels(ResourceProvider* resourceProvider,
                                    const uint8_t* image, const gfx::Rect& imageRect,
                                    const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset)
 {
@@ -106,7 +106,7 @@ void PrioritizedTexture::setPixels(ResourceProvider* resourceProvider,
     m_contentsSwizzled = !PlatformColor::sameComponentOrder(m_format);
 }
 
-void PrioritizedTexture::link(Backing* backing)
+void PrioritizedResource::link(Backing* backing)
 {
     DCHECK(backing);
     DCHECK(!backing->m_owner);
@@ -116,7 +116,7 @@ void PrioritizedTexture::link(Backing* backing)
     m_backing->m_owner = this;
 }
 
-void PrioritizedTexture::unlink()
+void PrioritizedResource::unlink()
 {
     DCHECK(m_backing);
     DCHECK(m_backing->m_owner == this);
@@ -125,14 +125,14 @@ void PrioritizedTexture::unlink()
     m_backing = 0;
 }
 
-void PrioritizedTexture::setToSelfManagedMemoryPlaceholder(size_t bytes)
+void PrioritizedResource::setToSelfManagedMemoryPlaceholder(size_t bytes)
 {
     setDimensions(gfx::Size(), GL_RGBA);
     setIsSelfManaged(true);
     m_bytes = bytes;
 }
 
-PrioritizedTexture::Backing::Backing(unsigned id, ResourceProvider* resourceProvider, gfx::Size size, GLenum format)
+PrioritizedResource::Backing::Backing(unsigned id, ResourceProvider* resourceProvider, gfx::Size size, GLenum format)
     : Texture(id, size, format)
     , m_owner(0)
     , m_priorityAtLastPriorityUpdate(PriorityCalculator::lowestPriority())
@@ -145,13 +145,13 @@ PrioritizedTexture::Backing::Backing(unsigned id, ResourceProvider* resourceProv
 {
 }
 
-PrioritizedTexture::Backing::~Backing()
+PrioritizedResource::Backing::~Backing()
 {
     DCHECK(!m_owner);
     DCHECK(m_resourceHasBeenDeleted);
 }
 
-void PrioritizedTexture::Backing::deleteResource(ResourceProvider* resourceProvider)
+void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProvider)
 {
     DCHECK(Proxy::isImplThread());
     DCHECK(!m_resourceHasBeenDeleted);
@@ -164,19 +164,19 @@ void PrioritizedTexture::Backing::deleteResource(ResourceProvider* resourceProvi
     m_resourceHasBeenDeleted = true;
 }
 
-bool PrioritizedTexture::Backing::resourceHasBeenDeleted() const
+bool PrioritizedResource::Backing::resourceHasBeenDeleted() const
 {
     DCHECK(Proxy::isImplThread());
     return m_resourceHasBeenDeleted;
 }
 
-bool PrioritizedTexture::Backing::canBeRecycled() const
+bool PrioritizedResource::Backing::canBeRecycled() const
 {
     DCHECK(Proxy::isImplThread());
     return !m_wasAbovePriorityCutoffAtLastPriorityUpdate && !m_inDrawingImplTree;
 }
 
-void PrioritizedTexture::Backing::updatePriority()
+void PrioritizedResource::Backing::updatePriority()
 {
     DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
     if (m_owner) {
@@ -188,7 +188,7 @@ void PrioritizedTexture::Backing::updatePriority()
     }
 }
 
-void PrioritizedTexture::Backing::updateInDrawingImplTree()
+void PrioritizedResource::Backing::updateInDrawingImplTree()
 {
     DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
     m_inDrawingImplTree = !!owner();
@@ -196,7 +196,7 @@ void PrioritizedTexture::Backing::updateInDrawingImplTree()
         DCHECK(m_priorityAtLastPriorityUpdate == PriorityCalculator::lowestPriority());
 }
 
-void PrioritizedTexture::returnBackingTexture()
+void PrioritizedResource::returnBackingTexture()
 {
     DCHECK(m_manager || !m_backing);
     if (m_manager)

@@ -21,12 +21,12 @@ scoped_refptr<ImageLayerUpdater> ImageLayerUpdater::create()
 }
 
 scoped_ptr<LayerUpdater::Resource> ImageLayerUpdater::createResource(
-    PrioritizedTextureManager* manager)
+    PrioritizedResourceManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
-void ImageLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
+void ImageLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedResource* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
 {
     // Source rect should never go outside the image pixels, even if this
     // is requested because the texture extends outside the image.

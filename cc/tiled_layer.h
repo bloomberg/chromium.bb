@@ -64,7 +64,7 @@ protected:
     bool skipsDraw() const { return m_skipsDraw; }
 
     // Virtual for testing
-    virtual PrioritizedTextureManager* textureManager() const;
+    virtual PrioritizedResourceManager* resourceManager() const;
 
 private:
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;

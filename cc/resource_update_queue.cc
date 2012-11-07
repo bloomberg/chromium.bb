@@ -6,7 +6,7 @@
 
 #include "cc/resource_update_queue.h"
 
-#include "cc/prioritized_texture.h"
+#include "cc/prioritized_resource.h"
 
 namespace cc {
 

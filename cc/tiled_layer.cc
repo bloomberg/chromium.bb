@@ -39,7 +39,7 @@ public:
     }
 
     LayerUpdater::Resource* updaterResource() { return m_updaterResource.get(); }
-    PrioritizedTexture* managedTexture() { return m_updaterResource->texture(); }
+    PrioritizedResource* managedResource() { return m_updaterResource->texture(); }
 
     bool isDirty() const { return !dirtyRect.IsEmpty(); }
 
@@ -205,7 +205,7 @@ void TiledLayer::pushPropertiesTo(LayerImpl* layer)
         if (!tile)
             continue;
 
-        if (!tile->managedTexture()->haveBackingTexture()) {
+        if (!tile->managedResource()->haveBackingTexture()) {
             // Evicted tiles get deleted from both layers
             invalidTiles.push_back(tile);
             continue;
@@ -217,13 +217,13 @@ void TiledLayer::pushPropertiesTo(LayerImpl* layer)
             continue;
         }
 
-        tiledLayer->pushTileProperties(i, j, tile->managedTexture()->resourceId(), tile->opaqueRect(), tile->managedTexture()->contentsSwizzled());
+        tiledLayer->pushTileProperties(i, j, tile->managedResource()->resourceId(), tile->opaqueRect(), tile->managedResource()->contentsSwizzled());
     }
     for (std::vector<UpdatableTile*>::const_iterator iter = invalidTiles.begin(); iter != invalidTiles.end(); ++iter)
         m_tiler->takeTile((*iter)->i(), (*iter)->j());
 }
 
-PrioritizedTextureManager* TiledLayer::textureManager() const
+PrioritizedResourceManager* TiledLayer::resourceManager() const
 {
     if (!layerTreeHost())
         return 0;
@@ -238,7 +238,7 @@ void TiledLayer::setLayerTreeHost(LayerTreeHost* host)
             // FIXME: This should not ever be null.
             if (!tile)
                 continue;
-            tile->managedTexture()->setTextureManager(host->contentsTextureManager());
+            tile->managedResource()->setTextureManager(host->contentsTextureManager());
         }
     }
     ContentsScalingLayer::setLayerTreeHost(host);
@@ -253,8 +253,8 @@ UpdatableTile* TiledLayer::createTile(int i, int j)
 {
     createUpdaterIfNeeded();
 
-    scoped_ptr<UpdatableTile> tile(UpdatableTile::create(updater()->createResource(textureManager())));
-    tile->managedTexture()->setDimensions(m_tiler->tileSize(), m_textureFormat);
+    scoped_ptr<UpdatableTile> tile(UpdatableTile::create(updater()->createResource(resourceManager())));
+    tile->managedResource()->setDimensions(m_tiler->tileSize(), m_textureFormat);
 
     UpdatableTile* addedTile = tile.get();
     m_tiler->addTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
@@ -311,7 +311,7 @@ void TiledLayer::invalidateContentRect(const gfx::Rect& contentRect)
 // Returns true if tile is dirty and only part of it needs to be updated.
 bool TiledLayer::tileOnlyNeedsPartialUpdate(UpdatableTile* tile)
 {
-    return !tile->dirtyRect.Contains(m_tiler->tileRect(tile)) && tile->managedTexture()->haveBackingTexture();
+    return !tile->dirtyRect.Contains(m_tiler->tileRect(tile)) && tile->managedResource()->haveBackingTexture();
 }
 
 bool TiledLayer::updateTiles(int left, int top, int right, int bottom, ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats, bool& didPaint)
@@ -361,7 +361,7 @@ void TiledLayer::markOcclusionsAndRequestTextures(int left, int top, int right, 
                 tile->occluded = true;
                 occludedTileCount++;
             } else {
-                succeeded &= tile->managedTexture()->requestLate();
+                succeeded &= tile->managedResource()->requestLate();
             }
         }
     }
@@ -383,7 +383,7 @@ bool TiledLayer::haveTexturesForTiles(int left, int top, int right, int bottom, 
                 continue;
 
             // Ensure the entire tile is dirty if we don't have the texture.
-            if (!tile->managedTexture()->haveBackingTexture())
+            if (!tile->managedResource()->haveBackingTexture())
                 tile->dirtyRect = m_tiler->tileRect(tile);
 
             // If using occlusion and the visible region of the tile is occluded,
@@ -391,7 +391,7 @@ bool TiledLayer::haveTexturesForTiles(int left, int top, int right, int bottom, 
             if (tile->occluded && !ignoreOcclusions)
                 continue;
 
-            if (!tile->managedTexture()->canAcquireBackingTexture())
+            if (!tile->managedResource()->canAcquireBackingTexture())
                 return false;
         }
     }
@@ -421,7 +421,7 @@ gfx::Rect TiledLayer::markTilesForUpdate(int left, int top, int right, int botto
                     tile->partialUpdate = true;
                 else {
                     tile->dirtyRect = m_tiler->tileRect(tile);
-                    tile->managedTexture()->returnBackingTexture();
+                    tile->managedResource()->returnBackingTexture();
                 }
             }
 
@@ -536,7 +536,7 @@ void setPriorityForTexture(const gfx::Rect& visibleRect,
                            const gfx::Rect& tileRect,
                            bool drawsToRoot,
                            bool isSmallAnimatedLayer,
-                           PrioritizedTexture* texture)
+                           PrioritizedResource* texture)
 {
     int priority = PriorityCalculator::lowestPriority();
     if (!visibleRect.IsEmpty())
@@ -582,7 +582,7 @@ void TiledLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
         if (!tile)
             continue;
         gfx::Rect tileRect = m_tiler->tileRect(tile);
-        setPriorityForTexture(m_predictedVisibleRect, tileRect, drawsToRoot, smallAnimatedLayer, tile->managedTexture());
+        setPriorityForTexture(m_predictedVisibleRect, tileRect, drawsToRoot, smallAnimatedLayer, tile->managedResource());
     }
 }
 
@@ -759,8 +759,8 @@ bool TiledLayer::needsIdlePaint()
                 continue;
 
             bool updated = !tile->updateRect.IsEmpty();
-            bool canAcquire = tile->managedTexture()->canAcquireBackingTexture();
-            bool dirty = tile->isDirty() || !tile->managedTexture()->haveBackingTexture();
+            bool canAcquire = tile->managedResource()->canAcquireBackingTexture();
+            bool dirty = tile->isDirty() || !tile->managedResource()->haveBackingTexture();
             if (!updated && canAcquire && dirty)
                 return true;
         }

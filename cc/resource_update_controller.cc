@@ -7,7 +7,7 @@
 #include "cc/resource_update_controller.h"
 
 #include "base/debug/trace_event.h"
-#include "cc/prioritized_texture.h"
+#include "cc/prioritized_resource.h"
 #include "cc/proxy.h"
 #include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
@@ -122,7 +122,7 @@ void ResourceUpdateController::discardUploadsToEvictedResources()
 void ResourceUpdateController::updateTexture(ResourceUpdate update)
 {
     if (update.picture) {
-        PrioritizedTexture* texture = update.texture;
+        PrioritizedResource* texture = update.texture;
         gfx::Rect pictureRect = update.content_rect;
         gfx::Rect sourceRect = update.source_rect;
         gfx::Vector2d destOffset = update.dest_offset;

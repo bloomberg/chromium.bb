@@ -337,7 +337,7 @@ bool SingleThreadProxy::commitAndComposite()
         return false;
 
     // Unlink any texture backings that were deleted
-    PrioritizedTextureManager::BackingList evictedContentsTexturesBackings;
+    PrioritizedResourceManager::BackingList evictedContentsTexturesBackings;
     {
         DebugScopedSetImplThread implThread;
         m_layerTreeHost->contentsTextureManager()->getEvictedBackings(evictedContentsTexturesBackings);

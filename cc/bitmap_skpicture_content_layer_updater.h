@@ -16,7 +16,7 @@ class BitmapSkPictureContentLayerUpdater : public SkPictureContentLayerUpdater {
 public:
     class Resource : public ContentLayerUpdater::Resource {
     public:
-        Resource(BitmapSkPictureContentLayerUpdater*, scoped_ptr<PrioritizedTexture>);
+        Resource(BitmapSkPictureContentLayerUpdater*, scoped_ptr<PrioritizedResource>);
 
         virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
@@ -29,7 +29,7 @@ public:
 
     static scoped_refptr<BitmapSkPictureContentLayerUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedResourceManager*) OVERRIDE;
     void paintContentsRect(SkCanvas*, const gfx::Rect& sourceRect, RenderingStats&);
 
 private:

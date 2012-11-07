@@ -10,7 +10,7 @@ using namespace cc;
 
 namespace WebKitTests {
 
-FakeLayerUpdater::Resource::Resource(FakeLayerUpdater* layer, scoped_ptr<PrioritizedTexture> texture)
+FakeLayerUpdater::Resource::Resource(FakeLayerUpdater* layer, scoped_ptr<PrioritizedResource> texture)
     : LayerUpdater::Resource(texture.Pass())
     , m_layer(layer)
 {
@@ -63,9 +63,9 @@ void FakeLayerUpdater::setRectToInvalidate(const gfx::Rect& rect, FakeTiledLayer
     m_layer = layer;
 }
 
-scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::createResource(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::createResource(PrioritizedResourceManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
 FakeTiledLayerImpl::FakeTiledLayerImpl(int id)
@@ -77,10 +77,10 @@ FakeTiledLayerImpl::~FakeTiledLayerImpl()
 {
 }
 
-FakeTiledLayer::FakeTiledLayer(PrioritizedTextureManager* textureManager)
+FakeTiledLayer::FakeTiledLayer(PrioritizedResourceManager* resourceManager)
     : TiledLayer()
     , m_fakeUpdater(make_scoped_refptr(new FakeLayerUpdater))
-    , m_textureManager(textureManager)
+    , m_resourceManager(resourceManager)
 {
     setTileSize(tileSize());
     setTextureFormat(GL_RGBA);
@@ -88,8 +88,8 @@ FakeTiledLayer::FakeTiledLayer(PrioritizedTextureManager* textureManager)
     setIsDrawable(true); // So that we don't get false positives if any of these tests expect to return false from drawsContent() for other reasons.
 }
 
-FakeTiledLayerWithScaledBounds::FakeTiledLayerWithScaledBounds(PrioritizedTextureManager* textureManager)
-    : FakeTiledLayer(textureManager)
+FakeTiledLayerWithScaledBounds::FakeTiledLayerWithScaledBounds(PrioritizedResourceManager* resourceManager)
+    : FakeTiledLayer(resourceManager)
 {
 }
 
@@ -124,9 +124,9 @@ void FakeTiledLayer::setTexturePriorities(const PriorityCalculator& calculator)
     }
 }
 
-cc::PrioritizedTextureManager* FakeTiledLayer::textureManager() const
+cc::PrioritizedResourceManager* FakeTiledLayer::resourceManager() const
 {
-    return m_textureManager;
+    return m_resourceManager;
 }
 
 cc::LayerUpdater* FakeTiledLayer::updater() const

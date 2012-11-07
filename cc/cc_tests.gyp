@@ -32,7 +32,7 @@
       'nine_patch_layer_impl_unittest.cc',
       'nine_patch_layer_unittest.cc',
       'occlusion_tracker_unittest.cc',
-      'prioritized_texture_unittest.cc',
+      'prioritized_resource_unittest.cc',
       'quad_culler_unittest.cc',
       'render_pass_unittest.cc',
       'render_surface_filters_unittest.cc',

@@ -22,7 +22,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
 public:
     class Resource : public LayerUpdater::Resource {
     public:
-        Resource(BitmapContentLayerUpdater*, scoped_ptr<PrioritizedTexture>);
+        Resource(BitmapContentLayerUpdater*, scoped_ptr<PrioritizedResource>);
         virtual ~Resource();
 
         virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
@@ -35,9 +35,9 @@ public:
 
     static scoped_refptr<BitmapContentLayerUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedResourceManager*) OVERRIDE;
     virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
-    void updateTexture(ResourceUpdateQueue&, PrioritizedTexture*, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate);
+    void updateTexture(ResourceUpdateQueue&, PrioritizedResource*, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate);
 
     virtual void setOpaque(bool) OVERRIDE;
 

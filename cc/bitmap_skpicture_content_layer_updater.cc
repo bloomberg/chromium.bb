@@ -15,7 +15,7 @@
 
 namespace cc {
 
-BitmapSkPictureContentLayerUpdater::Resource::Resource(BitmapSkPictureContentLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+BitmapSkPictureContentLayerUpdater::Resource::Resource(BitmapSkPictureContentLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture)
     : ContentLayerUpdater::Resource(texture.Pass())
     , m_updater(updater)
 {
@@ -54,9 +54,9 @@ BitmapSkPictureContentLayerUpdater::~BitmapSkPictureContentLayerUpdater()
 {
 }
 
-scoped_ptr<LayerUpdater::Resource> BitmapSkPictureContentLayerUpdater::createResource(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Resource> BitmapSkPictureContentLayerUpdater::createResource(PrioritizedResourceManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
 void BitmapSkPictureContentLayerUpdater::paintContentsRect(SkCanvas* canvas, const gfx::Rect& sourceRect, RenderingStats& stats)

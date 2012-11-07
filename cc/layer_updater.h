@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
-#include "cc/prioritized_texture.h"
+#include "cc/prioritized_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace gfx {
@@ -28,21 +28,21 @@ public:
     public:
         virtual ~Resource();
 
-        PrioritizedTexture* texture() { return m_texture.get(); }
-        void swapTextureWith(scoped_ptr<PrioritizedTexture>& texture) { m_texture.swap(texture); }
+        PrioritizedResource* texture() { return m_texture.get(); }
+        void swapTextureWith(scoped_ptr<PrioritizedResource>& texture) { m_texture.swap(texture); }
         // TODO(reveman): partialUpdate should be a property of this class
         // instead of an argument passed to update().
         virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) = 0;
     protected:
-        explicit Resource(scoped_ptr<PrioritizedTexture> texture);
+        explicit Resource(scoped_ptr<PrioritizedResource> texture);
 
     private:
-        scoped_ptr<PrioritizedTexture> m_texture;
+        scoped_ptr<PrioritizedResource> m_texture;
     };
 
     LayerUpdater() { }
 
-    virtual scoped_ptr<Resource> createResource(PrioritizedTextureManager*) = 0;
+    virtual scoped_ptr<Resource> createResource(PrioritizedResourceManager*) = 0;
     // The |resultingOpaqueRect| gives back a region of the layer that was painted opaque. If the layer is marked opaque in the updater,
     // then this region should be ignored in preference for the entire layer's area.
     virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats&) { }

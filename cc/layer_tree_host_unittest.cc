@@ -2637,12 +2637,12 @@ private:
     {
         if (m_texture.get())
             return;
-        m_texture = PrioritizedTexture::create(layerTreeHost()->contentsTextureManager());
+        m_texture = PrioritizedResource::create(layerTreeHost()->contentsTextureManager());
         m_texture->setDimensions(gfx::Size(10, 10), GL_RGBA);
         m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     }
 
-    scoped_ptr<PrioritizedTexture> m_texture;
+    scoped_ptr<PrioritizedResource> m_texture;
     SkBitmap m_bitmap;
 };
 

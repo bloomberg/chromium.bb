@@ -13,7 +13,7 @@
 
 namespace cc {
 
-BitmapContentLayerUpdater::Resource::Resource(BitmapContentLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+BitmapContentLayerUpdater::Resource::Resource(BitmapContentLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture)
     : LayerUpdater::Resource(texture.Pass())
     , m_updater(updater)
 {
@@ -43,9 +43,9 @@ BitmapContentLayerUpdater::~BitmapContentLayerUpdater()
 {
 }
 
-scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::createResource(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::createResource(PrioritizedResourceManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedResource::create(manager)));
 }
 
 void BitmapContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size& tileSize, float contentsWidthScale, float contentsHeightScale, gfx::Rect& resultingOpaqueRect, RenderingStats& stats)
@@ -58,7 +58,7 @@ void BitmapContentLayerUpdater::prepareToUpdate(const gfx::Rect& contentRect, co
     paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
 }
 
-void BitmapContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
+void BitmapContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedResource* texture, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate)
 {
     ResourceUpdate upload = ResourceUpdate::Create(
         texture,

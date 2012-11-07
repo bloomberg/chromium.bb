@@ -23,7 +23,7 @@
 #include "cc/math_util.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/page_scale_animation.h"
-#include "cc/prioritized_texture_manager.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/rendering_stats.h"
 #include "cc/scrollbar_animation_controller.h"
@@ -216,7 +216,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_deviceScaleFactor(1)
     , m_visible(true)
     , m_contentsTexturesPurged(false)
-    , m_managedMemoryPolicy(PrioritizedTextureManager::defaultMemoryAllocationLimit(), 
+    , m_managedMemoryPolicy(PrioritizedResourceManager::defaultMemoryAllocationLimit(),
                             PriorityCalculator::allowEverythingCutoff(),
                             0,
                             PriorityCalculator::allowNothingCutoff())

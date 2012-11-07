@@ -13,7 +13,7 @@
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "cc/texture.h"
-#include "cc/prioritized_texture.h"
+#include "cc/prioritized_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"

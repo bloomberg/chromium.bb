@@ -14,15 +14,15 @@ class SkPicture;
 
 namespace cc {
 
-class PrioritizedTexture;
+class PrioritizedResource;
 
 struct CC_EXPORT ResourceUpdate {
-    static ResourceUpdate Create(PrioritizedTexture*,
+    static ResourceUpdate Create(PrioritizedResource*,
                                  const SkBitmap*,
                                  gfx::Rect content_rect,
                                  gfx::Rect source_rect,
                                  gfx::Vector2d dest_offset);
-    static ResourceUpdate CreateFromPicture(PrioritizedTexture*,
+    static ResourceUpdate CreateFromPicture(PrioritizedResource*,
                                             SkPicture*,
                                             gfx::Rect content_rect,
                                             gfx::Rect source_rect,
@@ -31,7 +31,7 @@ struct CC_EXPORT ResourceUpdate {
     ResourceUpdate();
     virtual ~ResourceUpdate();
 
-    PrioritizedTexture* texture;
+    PrioritizedResource* texture;
     const SkBitmap* bitmap;
     SkPicture* picture;
     gfx::Rect content_rect;

@@ -65,7 +65,7 @@ class ResourceUpdateControllerTest : public Test {
 public:
     ResourceUpdateControllerTest()
         : m_queue(make_scoped_ptr(new ResourceUpdateQueue))
-        , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool))
+        , m_resourceManager(PrioritizedResourceManager::create(60*1024*1024, 1024, Renderer::ContentPool))
         , m_fullUploadCountExpected(0)
         , m_partialCountExpected(0)
         , m_totalUploadCountExpected(0)
@@ -82,7 +82,7 @@ public:
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
             implThreadAndMainThreadBlocked;
-        m_textureManager->clearAllMemory(m_resourceProvider.get());
+        m_resourceManager->clearAllMemory(m_resourceProvider.get());
     }
 
 public:
@@ -126,12 +126,12 @@ protected:
         m_bitmap.allocPixels();
 
         for (int i = 0; i < 4; i++) {
-            m_textures[i] = PrioritizedTexture::create(
-                m_textureManager.get(), gfx::Size(300, 150), GL_RGBA);
+            m_textures[i] = PrioritizedResource::create(
+                m_resourceManager.get(), gfx::Size(300, 150), GL_RGBA);
             m_textures[i]->setRequestPriority(
                 PriorityCalculator::visiblePriority(true));
         }
-        m_textureManager->prioritizeTextures();
+        m_resourceManager->prioritizeTextures();
 
         DebugScopedSetImplThread implThread;
         m_resourceProvider = ResourceProvider::create(m_context.get());
@@ -200,8 +200,8 @@ protected:
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
     scoped_ptr<ResourceUpdateQueue> m_queue;
-    scoped_ptr<PrioritizedTexture> m_textures[4];
-    scoped_ptr<PrioritizedTextureManager> m_textureManager;
+    scoped_ptr<PrioritizedResource> m_textures[4];
+    scoped_ptr<PrioritizedResourceManager> m_resourceManager;
     SkBitmap m_bitmap;
     int m_queryResultsAvailable;
 

@@ -6,7 +6,7 @@
 #include "cc/gl_renderer.h"
 
 #include "cc/draw_quad.h"
-#include "cc/prioritized_texture_manager.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/resource_provider.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
@@ -61,7 +61,7 @@ public:
         : m_setFullRootLayerDamageCount(0)
         , m_lastCallWasSetVisibility(0)
         , m_rootLayer(LayerImpl::create(1))
-        , m_memoryAllocationLimitBytes(PrioritizedTextureManager::defaultMemoryAllocationLimit())
+        , m_memoryAllocationLimitBytes(PrioritizedResourceManager::defaultMemoryAllocationLimit())
     {
         m_rootLayer->createRenderSurface();
         RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();

@@ -7,7 +7,7 @@
 
 #include "Region.h"
 #include "cc/layer_updater.h"
-#include "cc/prioritized_texture.h"
+#include "cc/prioritized_resource.h"
 #include "cc/resource_provider.h"
 #include "cc/resource_update_queue.h"
 #include "cc/texture_copier.h"
@@ -25,7 +25,7 @@ class FakeLayerUpdater : public cc::LayerUpdater {
 public:
     class Resource : public cc::LayerUpdater::Resource {
     public:
-        Resource(FakeLayerUpdater*, scoped_ptr<cc::PrioritizedTexture>);
+        Resource(FakeLayerUpdater*, scoped_ptr<cc::PrioritizedResource>);
         virtual ~Resource();
 
         virtual void update(cc::ResourceUpdateQueue&, const gfx::Rect&, const gfx::Vector2d&, bool, cc::RenderingStats&) OVERRIDE;
@@ -37,7 +37,7 @@ public:
 
     FakeLayerUpdater();
 
-    virtual scoped_ptr<cc::LayerUpdater::Resource> createResource(cc::PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<cc::LayerUpdater::Resource> createResource(cc::PrioritizedResourceManager*) OVERRIDE;
 
     virtual void prepareToUpdate(const gfx::Rect& contentRect, const gfx::Size&, float, float, gfx::Rect& resultingOpaqueRect, cc::RenderingStats&) OVERRIDE;
     // Sets the rect to invalidate during the next call to prepareToUpdate(). After the next
@@ -80,7 +80,7 @@ public:
 
 class FakeTiledLayer : public cc::TiledLayer {
 public:
-    explicit FakeTiledLayer(cc::PrioritizedTextureManager*);
+    explicit FakeTiledLayer(cc::PrioritizedResourceManager*);
 
     static gfx::Size tileSize() { return gfx::Size(100, 100); }
 
@@ -95,7 +95,7 @@ public:
 
     virtual void setTexturePriorities(const cc::PriorityCalculator&) OVERRIDE;
 
-    virtual cc::PrioritizedTextureManager* textureManager() const OVERRIDE;
+    virtual cc::PrioritizedResourceManager* resourceManager() const OVERRIDE;
     FakeLayerUpdater* fakeLayerUpdater() { return m_fakeUpdater.get(); }
     gfx::RectF updateRect() { return m_updateRect; }
 
@@ -106,13 +106,13 @@ protected:
 
 private:
     scoped_refptr<FakeLayerUpdater> m_fakeUpdater;
-    cc::PrioritizedTextureManager* m_textureManager;
+    cc::PrioritizedResourceManager* m_resourceManager;
     gfx::RectF m_lastNeedsDisplayRect;
 };
 
 class FakeTiledLayerWithScaledBounds : public FakeTiledLayer {
 public:
-    explicit FakeTiledLayerWithScaledBounds(cc::PrioritizedTextureManager*);
+    explicit FakeTiledLayerWithScaledBounds(cc::PrioritizedResourceManager*);
 
     void setContentBounds(const gfx::Size& contentBounds) { m_forcedContentBounds = contentBounds; }
     virtual gfx::Size contentBounds() const OVERRIDE;

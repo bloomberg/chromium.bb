@@ -163,7 +163,7 @@ void LayerTreeHost::initializeRenderer()
     // Update m_settings based on partial update capability.
     m_settings.maxPartialTextureUpdates = min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
 
-    m_contentsTextureManager = PrioritizedTextureManager::create(0, m_proxy->rendererCapabilities().maxTextureSize, Renderer::ContentPool);
+    m_contentsTextureManager = PrioritizedResourceManager::create(0, m_proxy->rendererCapabilities().maxTextureSize, Renderer::ContentPool);
     m_surfaceMemoryPlaceholder = m_contentsTextureManager->createTexture(gfx::Size(), GL_RGBA);
 
     m_rendererInitialized = true;
@@ -470,7 +470,7 @@ void LayerTreeHost::loseContext(int numTimes)
     m_proxy->loseContext();
 }
 
-PrioritizedTextureManager* LayerTreeHost::contentsTextureManager() const
+PrioritizedResourceManager* LayerTreeHost::contentsTextureManager() const
 {
     return m_contentsTextureManager.get();
 }

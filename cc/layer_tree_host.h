@@ -19,7 +19,7 @@
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/occlusion_tracker.h"
-#include "cc/prioritized_texture_manager.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/proxy.h"
 #include "cc/rate_limiter.h"
 #include "cc/rendering_stats.h"
@@ -44,7 +44,7 @@ class FontAtlas;
 class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
-class PrioritizedTextureManager;
+class PrioritizedResourceManager;
 class ResourceUpdateQueue;
 class HeadsUpDisplayLayer;
 class Region;
@@ -184,7 +184,7 @@ public:
 
     void setHasTransparentBackground(bool transparent) { m_hasTransparentBackground = transparent; }
 
-    PrioritizedTextureManager* contentsTextureManager() const;
+    PrioritizedResourceManager* contentsTextureManager() const;
 
     bool visible() const { return m_visible; }
     void setVisible(bool);
@@ -258,8 +258,8 @@ private:
     scoped_refptr<Layer> m_rootLayer;
     scoped_refptr<HeadsUpDisplayLayer> m_hudLayer;
 
-    scoped_ptr<PrioritizedTextureManager> m_contentsTextureManager;
-    scoped_ptr<PrioritizedTexture> m_surfaceMemoryPlaceholder;
+    scoped_ptr<PrioritizedResourceManager> m_contentsTextureManager;
+    scoped_ptr<PrioritizedResource> m_surfaceMemoryPlaceholder;
 
     LayerTreeSettings m_settings;
 
@@ -280,7 +280,7 @@ private:
     SkColor m_backgroundColor;
     bool m_hasTransparentBackground;
 
-    typedef ScopedPtrVector<PrioritizedTexture> TextureList;
+    typedef ScopedPtrVector<PrioritizedResource> TextureList;
     size_t m_partialTextureUpdateRequests;
 
     static bool s_needsFilterContext;
