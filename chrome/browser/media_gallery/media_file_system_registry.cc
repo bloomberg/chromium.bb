@@ -240,10 +240,10 @@ class ExtensionGalleriesHost
     pref_id_map_.erase(gallery);
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-    MediaDeviceEntryReferencesMap::iterator MTP_device_host =
+    MediaDeviceEntryReferencesMap::iterator mtp_device_host =
         media_device_map_references_.find(id);
-    if (MTP_device_host != media_device_map_references_.end())
-      media_device_map_references_.erase(MTP_device_host);
+    if (mtp_device_host != media_device_map_references_.end())
+      media_device_map_references_.erase(mtp_device_host);
 #endif
   }
 
@@ -358,11 +358,11 @@ class ExtensionGalleriesHost
             device_id, path);
       } else {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-        scoped_refptr<ScopedMTPDeviceMapEntry> MTP_device_host;
+        scoped_refptr<ScopedMTPDeviceMapEntry> mtp_device_host;
         fsid = file_system_context_->RegisterFileSystemForMTPDevice(
-            device_id, path, &MTP_device_host);
-        DCHECK(MTP_device_host.get());
-        media_device_map_references_[pref_id] = MTP_device_host;
+            device_id, path, &mtp_device_host);
+        DCHECK(mtp_device_host.get());
+        media_device_map_references_[pref_id] = mtp_device_host;
 #else
         NOTIMPLEMENTED();
         continue;
@@ -719,12 +719,12 @@ MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
       mtp_delegate_map_.find(device_location);
   if (delegate_it != mtp_delegate_map_.end() && delegate_it->second.get())
     return delegate_it->second;
-  ScopedMTPDeviceMapEntry* MTP_device_host = new ScopedMTPDeviceMapEntry(
+  ScopedMTPDeviceMapEntry* mtp_device_host = new ScopedMTPDeviceMapEntry(
       device_location, base::Bind(
           &MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry,
           base::Unretained(this), device_location));
-  mtp_delegate_map_[device_location] = MTP_device_host->AsWeakPtr();
-  return MTP_device_host;
+  mtp_delegate_map_[device_location] = mtp_device_host->AsWeakPtr();
+  return mtp_device_host;
 }
 
 void MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry(
