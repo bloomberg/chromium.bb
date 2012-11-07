@@ -14,24 +14,22 @@ GeneratorList = []
 Option('release', 'Which release to generate.', default='')
 Option('range', 'Which ranges in the form of MIN,MAX.', default='start,end')
 
-
-#
-# Generator
-#
-# Base class for generators.  This class provides a mechanism for
-# adding new generator objects to the IDL driver.  To use this class
-# override the GenerateRelease and GenerateRange members, and
-# instantiate one copy of the class in the same module which defines it to
-# register the generator.  After the AST is generated, call the static Run
-# member which will check every registered generator to see which ones have
-# been enabled through command-line options.  To enable a generator use the
-# switches:
-#  --<sname> : To enable with defaults
-#  --<sname>_opt=<XXX,YYY=y> : To enable with generator specific options.
-#
-# NOTE:  Generators still have access to global options
-
 class Generator(object):
+  """Base class for generators.
+
+  This class provides a mechanism for adding new generator objects to the IDL
+  driver.  To use this class override the GenerateRelease and GenerateRange
+  members, and instantiate one copy of the class in the same module which
+  defines it to register the generator.  After the AST is generated, call the
+  static Run member which will check every registered generator to see which
+  ones have been enabled through command-line options.  To enable a generator
+  use the switches:
+    --<sname> : To enable with defaults
+    --<sname>_opt=<XXX,YYY=y> : To enable with generator specific options.
+
+  NOTE:  Generators still have access to global options
+  """
+
   def __init__(self, name, sname, desc):
     self.name = name
     self.run_switch = Option(sname, desc)
@@ -152,20 +150,21 @@ class Generator(object):
     return fail_count
 
 
-#
-# GeneratorByFile
-#
-# A subclass of Generator for use of generators which have a one to one
-# mapping between IDL sources and output files. To use, derive a new class
-# which defines:
-#
-#  GetOutFile - Returns an IDLOutFile based on filenode (name) and options
-#  GenerateHead - Writes the first part of the file (includes, etc...)
-#  GenerateBody - Writes the body of the file (definitions)
-#  GenerateTail - Writes the end of the file (closing include guard, etc...)
-#
 class GeneratorByFile(Generator):
+  """A simplified generator that generates one output file per IDL source file.
+
+  A subclass of Generator for use of generators which have a one to one
+  mapping between IDL sources and output files.
+
+  Derived classes should define GenerateFile.
+  """
+
   def GenerateFile(self, filenode, releases, options):
+    """Generates an output file from the IDL source.
+
+    Returns true if the generated file is different than the previously
+    generated file.
+    """
     __pychecker__ = 'unusednames=filenode,releases,options'
     self.Error("Undefined release generator.")
     return 0
@@ -275,4 +274,3 @@ def Main(args):
 if __name__ == '__main__':
   GeneratorReleaseTest('Test Gen', 'testgen', 'Generator Class Test.')
   sys.exit(Main(sys.argv[1:]))
-
