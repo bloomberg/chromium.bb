@@ -56,7 +56,7 @@
 #include "chrome/common/extensions/api/generated_api.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/extensions/extension_input_api.h"
+#include "chrome/browser/extensions/api/input/input.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -284,7 +284,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
 #if defined(TOOLKIT_VIEWS)
   // Input.
-  RegisterFunction<SendKeyboardEventInputFunction>();
+  RegisterFunction<extensions::SendKeyboardEventInputFunction>();
 #endif
 
 #if defined(OS_CHROMEOS)

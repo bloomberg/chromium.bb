@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_input_api.h"
+#include "chrome/browser/extensions/api/input/input.h"
 
 #include <string>
 
@@ -15,6 +15,8 @@
 #include "ui/base/events/event.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/widget/widget.h"
+
+namespace extensions {
 
 namespace {
 
@@ -128,3 +130,5 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   return true;
 }
+
+}  // namespace extensions

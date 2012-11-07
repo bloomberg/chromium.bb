@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_INPUT_INPUT_H_
+#define CHROME_BROWSER_EXTENSIONS_API_INPUT_INPUT_H_
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
+
+namespace extensions {
 
 // Note that this experimental API is currently only available for
 // TOOLKIT_VIEWS (see chrome/chrome_browser.gypi).
@@ -25,4 +27,6 @@ class SendKeyboardEventInputFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_INPUT_INPUT_H_

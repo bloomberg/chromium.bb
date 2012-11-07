@@ -182,6 +182,8 @@
         'browser/extensions/api/idle/idle_api_constants.h',
         'browser/extensions/api/idltest/idltest_api.cc',
         'browser/extensions/api/idltest/idltest_api.h',
+        'browser/extensions/api/input/input.cc',
+        'browser/extensions/api/input/input.h',
         'browser/extensions/api/input_ime/input_ime_api.cc',
         'browser/extensions/api/input_ime/input_ime_api.h',
         'browser/extensions/api/managed_mode/managed_mode_api.cc',
@@ -447,8 +449,6 @@
         'browser/extensions/extension_info_map.h',
         'browser/extensions/extension_infobar_delegate.cc',
         'browser/extensions/extension_infobar_delegate.h',
-        'browser/extensions/extension_input_api.cc',
-        'browser/extensions/extension_input_api.h',
         'browser/extensions/extension_input_method_api.cc',
         'browser/extensions/extension_input_method_api.h',
         'browser/extensions/extension_input_module_constants.cc',
@@ -798,8 +798,8 @@
             # (Required because of the '^browser/extensions/' include above)
             ['toolkit_views==0', {
               'sources/': [
-                ['exclude', '^browser/extensions/extension_input_api.cc'],
-                ['exclude', '^browser/extensions/extension_input_api.h'],
+                ['exclude', '^browser/extensions/api/input/input.cc'],
+                ['exclude', '^browser/extensions/api/input/input.h'],
                 ['exclude', '^browser/extensions/key_identifier_conversion_views.cc'],
                 ['exclude', '^browser/extensions/key_identifier_conversion_views.h'],
               ],

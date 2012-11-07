@@ -2968,6 +2968,7 @@
         'browser/extensions/api/identity/identity_apitest.cc',
         'browser/extensions/api/idle/idle_apitest.cc',
         'browser/extensions/api/idltest/idltest_apitest.cc',
+        'browser/extensions/api/input/input_apitest.cc',
         'browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc',
         'browser/extensions/api/managed_mode/managed_mode_apitest.cc',
         'browser/extensions/api/management/management_api_browsertest.cc',
@@ -3040,7 +3041,6 @@
         'browser/extensions/extension_get_views_apitest.cc',
         'browser/extensions/extension_icon_source_apitest.cc',
         'browser/extensions/extension_incognito_apitest.cc',
-        'browser/extensions/extension_input_apitest.cc',
         'browser/extensions/extension_input_method_apitest_chromeos.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',
@@ -3566,9 +3566,9 @@
           ],
         }, { # else: toolkit_views == 0
           'sources/': [
-            ['exclude', '^browser/ui/views/'],
             ['exclude', '^../ui/views/'],
-            ['exclude', '^browser/extensions/extension_input_apitest.cc'],
+            ['exclude', '^browser/extensions/api/input/input_apitest.cc'],
+            ['exclude', '^browser/ui/views/'],
           ],
         }],
         ['target_arch!="arm"', {
