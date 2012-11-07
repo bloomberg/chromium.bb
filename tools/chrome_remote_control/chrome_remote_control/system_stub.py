@@ -92,7 +92,8 @@ class OsModuleStub(object):
         tmp = os.path.join(*args)
         return tmp.replace('/', '\\')
       else:
-        return os.path.join(*args)
+        tmp = os.path.join(*args)
+        return tmp.replace('\\', '/')
 
     def dirname(self, filename): # pylint: disable=R0201
       return os.path.dirname(filename)
@@ -101,13 +102,19 @@ class OsModuleStub(object):
     self.path = OsModuleStub.OsPathModuleStub(sys_module)
     self.display = ':0'
     self.local_app_data = None
+    self.program_files = None
+    self.program_files_x86 = None
     self.devnull = os.devnull
 
   def getenv(self, name):
     if name == 'DISPLAY':
       return self.display
-    if name == 'LOCALAPPDATA':
+    elif name == 'LOCALAPPDATA':
       return self.local_app_data
+    elif name == 'PROGRAMFILES':
+      return self.program_files
+    elif name == 'PROGRAMFILES(X86)':
+      return self.program_files_x86
     raise Exception('Unsupported getenv')
 
 class SubprocessModuleStub(object):

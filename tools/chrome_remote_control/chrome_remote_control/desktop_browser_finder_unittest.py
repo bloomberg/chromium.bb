@@ -37,6 +37,50 @@ class FindTestBase(unittest.TestCase):
 def has_type(array, browser_type):
   return len([x for x in array if x.browser_type == browser_type]) != 0
 
+class FindSystemTest(FindTestBase):
+  def setUp(self):
+    super(FindSystemTest, self).setUp()
+    self._stubs.sys.platform = 'win32'
+
+  def testFindProgramFiles(self):
+    self._files.append(
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
+    self._stubs.os.program_files = 'C:\\Program Files'
+    self.assertTrue('system' in self.DoFindAllTypes())
+
+  def testFindProgramFilesX86(self):
+    self._files.append(
+        'C:\\Program Files(x86)\\Google\\Chrome\\Application\\chrome.exe')
+    self._stubs.os.program_files_x86 = 'C:\\Program Files(x86)'
+    self.assertTrue('system' in self.DoFindAllTypes())
+
+  def testFindLocalAppData(self):
+    self._files.append(
+        'C:\\Local App Data\\Google\\Chrome\\Application\\chrome.exe')
+    self._stubs.os.local_app_data = 'C:\\Local App Data'
+    self.assertTrue('system' in self.DoFindAllTypes())
+
+class FindLocalBuildsTest(FindTestBase):
+  def setUp(self):
+    super(FindLocalBuildsTest, self).setUp()
+    self._stubs.sys.platform = 'win32'
+
+  def testFindBuild(self):
+    self._files.append('..\\..\\..\\build\\Release\\chrome.exe')
+    self.assertTrue('release' in self.DoFindAllTypes())
+
+  def testFindOut(self):
+    self._files.append('..\\..\\..\\out\\Release\\chrome.exe')
+    self.assertTrue('release' in self.DoFindAllTypes())
+
+  def testFindSconsbuild(self):
+    self._files.append('..\\..\\..\\sconsbuild\\Release\\chrome.exe')
+    self.assertTrue('release' in self.DoFindAllTypes())
+
+  def testFindXcodebuild(self):
+    self._files.append('..\\..\\..\\xcodebuild\\Release\\chrome.exe')
+    self.assertTrue('release' in self.DoFindAllTypes())
+
 class OSXFindTest(FindTestBase):
   def setUp(self):
     super(OSXFindTest, self).setUp()

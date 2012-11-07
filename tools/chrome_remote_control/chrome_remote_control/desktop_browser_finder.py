@@ -76,14 +76,16 @@ def FindAllAvailableBrowsers(options):
                 'sconsbuild',
                 'xcodebuild']
 
-  # Add local builds
   def AddIfFound(browser_type, type_dir, app_name, content_shell):
     for build_dir in build_dirs:
       app = os.path.join(chrome_root, build_dir, type_dir, app_name)
       if os.path.exists(app):
         browsers.append(PossibleDesktopBrowser(browser_type, options,
                                                app, content_shell))
-        break
+        return True
+    return False
+
+  # Add local builds
   AddIfFound('debug', 'Debug', chromium_app_name, False)
   AddIfFound('content-shell-debug', 'Debug', content_shell_app_name, True)
   AddIfFound('release', 'Release', chromium_app_name, False)
@@ -118,19 +120,27 @@ def FindAllAvailableBrowsers(options):
                                  'google-chrome', False))
 
   # Win32-specific options.
-  if sys.platform.startswith('win') and os.getenv('LOCALAPPDATA'):
-    local_app_data = os.getenv('LOCALAPPDATA')
-    win_canary = os.path.join(local_app_data,
-                              'Google\\Chrome SxS\\Application\\chrome.exe')
-    win_system = os.path.join(local_app_data,
-                              'Google\\Chrome\\Application\\chrome.exe')
-    if os.path.exists(win_canary):
-      browsers.append(PossibleDesktopBrowser('canary', options,
-                                             win_canary, False))
+  if sys.platform.startswith('win'):
+    system_path = os.path.join('Google', 'Chrome', 'Application')
+    canary_path = os.path.join('Google', 'Chrome SxS', 'Application')
 
-    if os.path.exists(win_system):
-      browsers.append(PossibleDesktopBrowser('system', options,
-                                             win_system, False))
+    win_search_paths = [os.getenv('PROGRAMFILES(X86)'),
+                        os.getenv('PROGRAMFILES'),
+                        os.getenv('LOCALAPPDATA')]
+
+    for path in win_search_paths:
+      if not path:
+        continue
+      if AddIfFound('canary', os.path.join(path, canary_path),
+                    chromium_app_name, False):
+        break
+
+    for path in win_search_paths:
+      if not path:
+        continue
+      if AddIfFound('system', os.path.join(path, system_path),
+                    chromium_app_name, False):
+        break
 
   if len(browsers) and not has_display:
     logging.warning(
