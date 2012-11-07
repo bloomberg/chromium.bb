@@ -5,7 +5,6 @@
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 
 #include "base/stl_util.h"
-#include "chrome/browser/sync_file_system/change_observer_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -50,7 +49,7 @@ void LocalFileSyncService::MaybeInitializeFileSystemContext(
                  make_scoped_refptr(file_system_context), callback));
 }
 
-void LocalFileSyncService::AddChangeObserver(LocalChangeObserver* observer) {
+void LocalFileSyncService::AddChangeObserver(Observer* observer) {
   change_observers_.AddObserver(observer);
 }
 
@@ -96,7 +95,7 @@ void LocalFileSyncService::OnChangesAvailableInOrigins(
        iter != per_origin_changes_.end(); ++iter) {
     num_changes += iter->second;
   }
-  FOR_EACH_OBSERVER(LocalChangeObserver, change_observers_,
+  FOR_EACH_OBSERVER(Observer, change_observers_,
                     OnLocalChangeAvailable(num_changes));
 }
 

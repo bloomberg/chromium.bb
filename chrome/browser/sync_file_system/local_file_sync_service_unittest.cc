@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/sync_file_system/change_observer_interface.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,7 +64,7 @@ void DidPrepareForProcessRemoteChange(const tracked_objects::Location& where,
 
 class LocalFileSyncServiceTest
     : public testing::Test,
-      public LocalChangeObserver {
+      public LocalFileSyncService::Observer {
  protected:
   LocalFileSyncServiceTest()
       : file_thread_(new base::Thread("Thread_File")),

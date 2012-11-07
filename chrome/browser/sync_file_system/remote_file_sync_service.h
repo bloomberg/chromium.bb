@@ -12,7 +12,6 @@ class GURL;
 
 namespace sync_file_system {
 
-class RemoteChangeObserver;
 class RemoteChangeProcessor;
 class LocalChangeProcessor;
 
@@ -20,11 +19,25 @@ class LocalChangeProcessor;
 // Owned by SyncFileSystemService.
 class RemoteFileSyncService {
  public:
+  class Observer {
+   public:
+    Observer() {}
+    virtual ~Observer() {}
+
+    // This is called when there're one or more remote changes available.
+    // |pending_changes_hint| indicates the pending queue length to help sync
+    // scheduling but the value may not be accurately reflect the real-time
+    // value.
+    virtual void OnRemoteChangeAvailable(int64 pending_changes_hint) = 0;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
   RemoteFileSyncService() {}
   virtual ~RemoteFileSyncService() {}
 
-  virtual void AddObserver(RemoteChangeObserver* observer) = 0;
-  virtual void RemoveObserver(RemoteChangeObserver* observer) = 0;
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Registers |origin| to track remote side changes for the |origin|.
   virtual void RegisterOriginForTrackingChanges(const GURL& origin) = 0;

@@ -27,7 +27,6 @@ class LocalFileSyncContext;
 
 namespace sync_file_system {
 
-class LocalChangeObserver;
 class LocalChangeProcessor;
 
 // Maintains local file change tracker and sync status.
@@ -37,6 +36,21 @@ class LocalFileSyncService
       public fileapi::LocalOriginChangeObserver,
       public base::SupportsWeakPtr<LocalFileSyncService> {
  public:
+  class Observer {
+   public:
+    Observer() {}
+    virtual ~Observer() {}
+
+    // This is called when there're one or more local changes available.
+    // |pending_changes_hint| indicates the pending queue length to help sync
+    // scheduling but the value may not be accurately reflect the real-time
+    // value.
+    virtual void OnLocalChangeAvailable(int64 pending_changes_hint) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
   LocalFileSyncService();
   virtual ~LocalFileSyncService();
 
@@ -48,7 +62,7 @@ class LocalFileSyncService
       fileapi::FileSystemContext* file_system_context,
       const fileapi::SyncStatusCallback& callback);
 
-  void AddChangeObserver(LocalChangeObserver* observer);
+  void AddChangeObserver(Observer* observer);
 
   // Synchronize one (or a set of) local change(s) to the remote server
   // using |processor|.
@@ -86,7 +100,7 @@ class LocalFileSyncService
   // Per-origin change count (cached info, could be stale).
   std::map<GURL, int64> per_origin_changes_;
 
-  ObserverList<LocalChangeObserver> change_observers_;
+  ObserverList<Observer> change_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncService);
 };

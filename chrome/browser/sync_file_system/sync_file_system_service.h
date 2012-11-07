@@ -13,7 +13,8 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/sync_file_system/change_observer_interface.h"
+#include "chrome/browser/sync_file_system/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
@@ -25,15 +26,10 @@ class FileSystemContext;
 
 namespace sync_file_system {
 
-class LocalFileSyncService;
-class LocalChangeObserver;
-class RemoteChangeObserver;
-class RemoteFileSyncService;
-
 class SyncFileSystemService
     : public ProfileKeyedService,
-      public LocalChangeObserver,
-      public RemoteChangeObserver {
+      public LocalFileSyncService::Observer,
+      public RemoteFileSyncService::Observer {
  public:
   // ProfileKeyedService overrides.
   virtual void Shutdown() OVERRIDE;
@@ -53,10 +49,10 @@ class SyncFileSystemService
   void Initialize(scoped_ptr<LocalFileSyncService> local_file_service,
                   scoped_ptr<RemoteFileSyncService> remote_file_service);
 
-  // RemoteChangeObserver overrides.
+  // RemoteFileSyncService::Observer overrides.
   virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
 
-  // LocalChangeObserver overrides.
+  // LocalFileSyncService::Observer overrides.
   virtual void OnRemoteChangeAvailable(int64 pending_changes) OVERRIDE;
 
   Profile* profile_;
