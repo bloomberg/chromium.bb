@@ -25,10 +25,7 @@ nonvariant_test_scons_files = [
     'tests/ppapi_browser/crash/nacl.scons',
     'tests/ppapi_browser/extension_mime_handler/nacl.scons',
     'tests/ppapi_browser/manifest/nacl.scons',
-    'tests/ppapi_browser/ppb_file_system/nacl.scons',
-    'tests/ppapi_browser/ppb_image_data/nacl.scons',
     'tests/ppapi_browser/ppb_instance/nacl.scons',
-    'tests/ppapi_browser/ppp_input_event/nacl.scons',
     'tests/ppapi_browser/ppp_instance/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
 ]
