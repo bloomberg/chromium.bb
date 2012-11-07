@@ -247,7 +247,6 @@ bool RenderViewHostImpl::CreateRenderView(
     next_page_id = max_page_id + 1;
 
   ViewMsg_New_Params params;
-  params.parent_window = GetNativeViewId();
   params.renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
   params.web_preferences = delegate_->GetWebkitPrefs();

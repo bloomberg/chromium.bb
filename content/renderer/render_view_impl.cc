@@ -537,7 +537,6 @@ int64 ExtractPostId(const WebHistoryItem& item) {
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(
-    gfx::NativeViewId parent_hwnd,
     int32 opener_id,
     const RendererPreferences& renderer_prefs,
     const WebPreferences& webkit_prefs,
@@ -659,7 +658,7 @@ RenderViewImpl::RenderViewImpl(
   // completing initialization.  Otherwise, we can finish it now.
   if (opener_id_ == MSG_ROUTING_NONE) {
     did_show_ = true;
-    CompleteInit(parent_hwnd);
+    CompleteInit();
   }
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
@@ -673,8 +672,6 @@ RenderViewImpl::RenderViewImpl(
           webkit_glue::kForegroundTabTimerInterval);
 
   OnSetRendererPrefs(renderer_prefs);
-
-  host_window_ = parent_hwnd;
 
 #if defined(ENABLE_WEBRTC)
   if (!media_stream_dispatcher_)
@@ -782,7 +779,6 @@ void RenderView::ForEach(RenderViewVisitor* visitor) {
 
 /*static*/
 RenderViewImpl* RenderViewImpl::Create(
-    gfx::NativeViewId parent_hwnd,
     int32 opener_id,
     const RendererPreferences& renderer_prefs,
     const WebPreferences& webkit_prefs,
@@ -798,7 +794,6 @@ RenderViewImpl* RenderViewImpl::Create(
     AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderViewImpl(
-      parent_hwnd,
       opener_id,
       renderer_prefs,
       webkit_prefs,
@@ -1754,7 +1749,6 @@ WebView* RenderViewImpl::createView(
     return NULL;
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      0,
       routing_id_,
       renderer_preferences_,
       webkit_preferences_,

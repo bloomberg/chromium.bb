@@ -160,7 +160,6 @@ void RenderViewTest::SetUp() {
 
   // This needs to pass the mock render thread to the view.
   RenderViewImpl* view = RenderViewImpl::Create(
-      0,
       kOpenerId,
       RendererPreferences(),
       webkit_glue::WebPreferences(),

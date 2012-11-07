@@ -196,14 +196,11 @@ class RenderViewImpl : public RenderWidget,
                        public WebGraphicsContext3DSwapBuffersClient,
                        public base::SupportsWeakPtr<RenderViewImpl> {
  public:
-  // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
-  // parent of the WebView HWND that will be created.  If this is a blocked
-  // popup or as a new tab, opener_id is the routing ID of the RenderView
-  // responsible for creating this RenderView (corresponding to parent_hwnd).
-  // |counter| is either a currently initialized counter, or NULL (in which case
-  // we treat this RenderView as a top level window).
+  // Creates a new RenderView. If this is a blocked popup or as a new tab,
+  // opener_id is the routing ID of the RenderView responsible for creating this
+  // RenderView. |counter| is either a currently initialized counter, or NULL
+  // (in which case we treat this RenderView as a top level window).
   CONTENT_EXPORT static RenderViewImpl* Create(
-      gfx::NativeViewId parent_hwnd,
       int32 opener_id,
       const RendererPreferences& renderer_prefs,
       const webkit_glue::WebPreferences& webkit_prefs,
@@ -817,8 +814,7 @@ class RenderViewImpl : public RenderWidget,
     CONNECTION_ERROR,
   };
 
-  RenderViewImpl(gfx::NativeViewId parent_hwnd,
-                 int32 opener_id,
+  RenderViewImpl(int32 opener_id,
                  const RendererPreferences& renderer_prefs,
                  const webkit_glue::WebPreferences& webkit_prefs,
                  SharedRenderViewCounter* counter,

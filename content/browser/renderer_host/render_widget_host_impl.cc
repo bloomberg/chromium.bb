@@ -281,7 +281,7 @@ void RenderWidgetHostImpl::Init() {
       surface_id_, GetCompositingSurface());
 
   // Send the ack along with the information on placement.
-  Send(new ViewMsg_CreatingNew_ACK(routing_id_, GetNativeViewId()));
+  Send(new ViewMsg_CreatingNew_ACK(routing_id_));
   GetProcess()->ResumeRequestsForView(routing_id_);
 
   WasResized();

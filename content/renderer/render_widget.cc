@@ -83,8 +83,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       surface_id_(0),
       webwidget_(NULL),
       opener_id_(MSG_ROUTING_NONE),
-      host_window_(0),
-      host_window_set_(false),
+      init_complete_(false),
       current_paint_buf_(NULL),
       next_paint_flags_(0),
       filtered_time_per_frame_(0.0f),
@@ -202,14 +201,11 @@ void RenderWidget::DoInit(int32 opener_id,
   }
 }
 
-// This is used to complete pending inits and non-pending inits. For non-
-// pending cases, the parent will be the same as the current parent. This
-// indicates we do not need to reparent or anything.
-void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd) {
+// This is used to complete pending inits and non-pending inits.
+void RenderWidget::CompleteInit() {
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
 
-  host_window_ = parent_hwnd;
-  host_window_set_ = true;
+  init_complete_ = true;
 
   if (webwidget_) {
     webwidget_->setCompositorSurfaceReady();
@@ -363,11 +359,10 @@ void RenderWidget::OnClose() {
 
 // Got a response from the browser after the renderer decided to create a new
 // view.
-void RenderWidget::OnCreatingNewAck(
-    gfx::NativeViewId parent) {
+void RenderWidget::OnCreatingNewAck() {
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
 
-  CompleteInit(parent);
+  CompleteInit();
 }
 
 void RenderWidget::OnResize(const gfx::Size& new_size,
@@ -869,8 +864,8 @@ void RenderWidget::DoDeferredUpdate() {
   if (!webwidget_)
     return;
 
-  if (!host_window_set_) {
-    TRACE_EVENT0("renderer", "EarlyOut_NoHostWindow");
+  if (!init_complete_) {
+    TRACE_EVENT0("renderer", "EarlyOut_InitNotComplete");
     return;
   }
   if (update_reply_pending_) {

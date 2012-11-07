@@ -79,7 +79,6 @@ void RenderViewFakeResourcesTest::SetUp() {
   // RenderProcess's lazy initialization of WebKit.
   view_ = NULL;
   ViewMsg_New_Params params;
-  params.parent_window = 0;
   params.view_id = kViewId;
   params.opener_route_id = MSG_ROUTING_NONE;
   params.session_storage_namespace_id =

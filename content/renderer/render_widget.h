@@ -101,7 +101,6 @@ class CONTENT_EXPORT RenderWidget
   // May return NULL when the window is closing.
   WebKit::WebWidget* webwidget() const { return webwidget_; }
 
-  gfx::NativeViewId host_window() const { return host_window_; }
   gfx::Size size() const { return size_; }
   bool has_focus() const { return has_focus_; }
   bool is_fullscreen() const { return is_fullscreen_; }
@@ -213,7 +212,7 @@ class CONTENT_EXPORT RenderWidget
               IPC::SyncMessage* create_widget_message);
 
   // Finishes creation of a pending view started with Init.
-  void CompleteInit(gfx::NativeViewId parent);
+  void CompleteInit();
 
   // Sets whether this RenderWidget has been swapped out to be displayed by
   // a RenderWidget in a different process.  If so, no new IPC messages will be
@@ -252,7 +251,7 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidget IPC message handlers
   void OnClose();
-  void OnCreatingNewAck(gfx::NativeViewId parent);
+  void OnCreatingNewAck();
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect,
                         bool is_fullscreen);
@@ -455,9 +454,7 @@ class CONTENT_EXPORT RenderWidget
   // The position where this view should be initially shown.
   gfx::Rect initial_pos_;
 
-  // The window we are embedded within.  TODO(darin): kill this.
-  gfx::NativeViewId host_window_;
-  bool host_window_set_;
+  bool init_complete_;
 
   // We store the current cursor object so we can avoid spamming SetCursor
   // messages.
