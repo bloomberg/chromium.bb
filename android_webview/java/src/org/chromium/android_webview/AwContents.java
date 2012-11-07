@@ -154,9 +154,11 @@ public class AwContents {
             AwContentsClient contentsClient,
             NativeWindow nativeWindow, boolean privateBrowsing,
             boolean isAccessFromFileURLsGrantedByDefault) {
-        mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
+        // Note that ContentViewCore must be set up before AwContents, as ContentViewCore
+        // setup performs process initialisation work needed by AwContents.
         mContentViewCore = new ContentViewCore(containerView.getContext(),
                 ContentViewCore.PERSONALITY_VIEW);
+        mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
         mIoThreadClientHandler = new IoThreadClientHandler();
@@ -192,10 +194,11 @@ public class AwContents {
     }
 
     public void destroy() {
-        if (mContentViewCore != null) {
-            mContentViewCore.destroy();
-            mContentViewCore = null;
-        }
+        mContentViewCore.destroy();
+        // We explicitly do not null out the mContentViewCore reference here
+        // because ContentViewCore already has code to deal with the case
+        // methods are called on it after it's been destroyed, and other
+        // code relies on AwContents.getContentViewCore to return non-null.
         mCleanupReference.cleanupNow();
     }
 
