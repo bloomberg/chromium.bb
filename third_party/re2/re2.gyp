@@ -8,7 +8,7 @@
   'targets': [
     {
       'target_name': 're2',
-      'type': '<(library)',
+      'type': 'static_library',
       'include_dirs': [
         '.',
         '<(DEPTH)',
