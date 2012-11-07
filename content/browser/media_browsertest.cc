@@ -34,14 +34,6 @@ class MediaTest : public testing::WithParamInterface<bool>,
     ASSERT_NO_FATAL_FAILURE(PlayMedia("video", media_file, http));
   }
 
- protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // TODO(dalecurtis): Not all Buildbots have viable audio devices, so disable
-    // audio to prevent tests from hanging; e.g., a device which is hardware
-    // muted.  See http://crbug.com/120749
-    command_line->AppendSwitch(switches::kDisableAudio);
-  }
-
  private:
   GURL GetTestURL(const char* tag, const char* media_file, bool http) {
     if (http) {
@@ -168,14 +160,6 @@ class MediaLayoutTest : public InProcessBrowserLayoutTest {
       FilePath(), FilePath().AppendASCII("media")) {
   }
   virtual ~MediaLayoutTest() {}
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserLayoutTest::SetUpCommandLine(command_line);
-    // TODO(dalecurtis): Not all Buildbots have viable audio devices, so disable
-    // audio to prevent tests from hanging; e.g., a device which is hardware
-    // muted.  See http://crbug.com/120749
-    command_line->AppendSwitch(switches::kDisableAudio);
-  }
 };
 
 // Each browser test can only correspond to a single layout test, otherwise the
