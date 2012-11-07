@@ -19,10 +19,11 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual TabContents* AddBlankTab(bool foreground) OVERRIDE;
   virtual TabContents* AddBlankTabAt(int index,
                                      bool foreground) OVERRIDE;
-  virtual Browser* CreateNewStripWithContents(TabContents* contents,
-                                              const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info,
-                                              bool maximize) OVERRIDE;
+  virtual Browser* CreateNewStripWithContents(
+      const std::vector<NewStripContents>& contentses,
+      const gfx::Rect& window_bounds,
+      const DockInfo& dock_info,
+      bool maximize) OVERRIDE;
   virtual int GetDragActions() const OVERRIDE;
   virtual TabContents* CreateTabContentsForURL(
       const GURL& url,

@@ -27,7 +27,7 @@ TabContents* TestTabStripModelDelegate::AddBlankTabAt(int index,
 }
 
 Browser* TestTabStripModelDelegate::CreateNewStripWithContents(
-    TabContents* contents,
+    const std::vector<NewStripContents>& contentses,
     const gfx::Rect& window_bounds,
     const DockInfo& dock_info,
     bool maximize) {
@@ -39,12 +39,12 @@ int TestTabStripModelDelegate::GetDragActions() const {
 }
 
 TabContents* TestTabStripModelDelegate::CreateTabContentsForURL(
-      const GURL& url,
-      const content::Referrer& referrer,
-      Profile* profile,
-      content::PageTransition transition,
-      bool defer_load,
-      SiteInstance* instance) const {
+    const GURL& url,
+    const content::Referrer& referrer,
+    Profile* profile,
+    content::PageTransition transition,
+    bool defer_load,
+    SiteInstance* instance) const {
   return NULL;
 }
 

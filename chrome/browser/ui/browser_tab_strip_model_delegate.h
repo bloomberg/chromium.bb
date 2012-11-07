@@ -35,7 +35,7 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
   virtual TabContents* AddBlankTab(bool foreground) OVERRIDE;
   virtual TabContents* AddBlankTabAt(int index, bool foreground) OVERRIDE;
   virtual Browser* CreateNewStripWithContents(
-      TabContents* detached_contents,
+      const std::vector<NewStripContents>& contentses,
       const gfx::Rect& window_bounds,
       const DockInfo& dock_info,
       bool maximize) OVERRIDE;

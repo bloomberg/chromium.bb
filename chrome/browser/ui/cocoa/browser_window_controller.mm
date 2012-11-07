@@ -1348,12 +1348,15 @@ enum {
   // Create the new window with a single tab in its model, the one being
   // dragged.
   DockInfo dockInfo;
+  TabStripModelDelegate::NewStripContents item;
+  item.web_contents = contents->web_contents();
+  item.add_types = TabStripModel::ADD_ACTIVE |
+                   (isPinned ? TabStripModel::ADD_PINNED
+                             : TabStripModel::ADD_NONE);
+  std::vector<TabStripModelDelegate::NewStripContents> contentses;
+  contentses.push_back(item);
   Browser* newBrowser = browser_->tab_strip_model()->delegate()->
-      CreateNewStripWithContents(contents, browserRect, dockInfo, false);
-
-  // Propagate the tab pinned state of the new tab (which is the only tab in
-  // this new window).
-  newBrowser->tab_strip_model()->SetTabPinned(0, isPinned);
+      CreateNewStripWithContents(contentses, browserRect, dockInfo, false);
 
   // Get the new controller by asking the new window for its delegate.
   BrowserWindowController* controller =

@@ -14,10 +14,13 @@ class DockInfo;
 class GURL;
 class Profile;
 class TabContents;
+
 namespace content {
 class SiteInstance;
+class WebContents;
 struct Referrer;
 }
+
 namespace gfx {
 class Rect;
 }
@@ -47,16 +50,27 @@ class TabStripModelDelegate {
   virtual TabContents* AddBlankTab(bool foreground) = 0;
   virtual TabContents* AddBlankTabAt(int index, bool foreground) = 0;
 
-  // Asks for a new TabStripModel to be created and the given tab contents to
+  // Asks for a new TabStripModel to be created and the given web contentses to
   // be added to it. Its size and position are reflected in |window_bounds|.
   // If |dock_info|'s type is other than NONE, the newly created window should
   // be docked as identified by |dock_info|. Returns the Browser object
   // representing the newly created window and tab strip. This does not
-  // show the window, it's up to the caller to do so.
-  virtual Browser* CreateNewStripWithContents(TabContents* contents,
-                                              const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info,
-                                              bool maximize) = 0;
+  // show the window; it's up to the caller to do so.
+  //
+  // TODO(avi): This is a layering violation; the TabStripModel should not know
+  // about the Browser type. At least fix so that this returns a
+  // TabStripModelDelegate, or perhaps even move this code elsewhere.
+  struct NewStripContents {
+    // The WebContents to add.
+    content::WebContents* web_contents;
+    // A bitmask of TabStripModel::AddTabTypes to apply to the added contents.
+    int add_types;
+  };
+  virtual Browser* CreateNewStripWithContents(
+      const std::vector<NewStripContents>& contentses,
+      const gfx::Rect& window_bounds,
+      const DockInfo& dock_info,
+      bool maximize) = 0;
 
   // Determines what drag actions are possible for the specified strip.
   virtual int GetDragActions() const = 0;

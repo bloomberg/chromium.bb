@@ -757,26 +757,23 @@ bool DraggedTabControllerGtk::CompleteDrag() {
     destroy_immediately = false;
   } else {
     // Compel the model to construct a new window for the detached
-    // TabContents.
+    // WebContentses.
     BrowserWindowGtk* window = source_tabstrip_->window();
     gfx::Rect window_bounds = window->GetRestoredBounds();
     window_bounds.set_origin(GetWindowCreatePoint());
+
+    std::vector<TabStripModelDelegate::NewStripContents> contentses;
+    for (size_t i = 0; i < drag_data_->size(); ++i) {
+      TabStripModelDelegate::NewStripContents item;
+      item.web_contents = drag_data_->get(i)->contents_->web_contents();
+      item.add_types = drag_data_->GetAddTypesForDraggedTabAt(i);
+      contentses.push_back(item);
+    };
+
     Browser* new_browser =
         source_tabstrip_->model()->delegate()->CreateNewStripWithContents(
-            drag_data_->get(0)->contents_,
-            window_bounds,
-            dock_info_,
-            window->IsMaximized());
-    TabStripModel* new_model = new_browser->tab_strip_model();
-    new_model->SetTabPinned(
-        new_model->GetIndexOfTabContents(drag_data_->get(0)->contents_),
-        drag_data_->get(0)->pinned_);
-    for (size_t i = 1; i < drag_data_->size(); ++i) {
-      new_model->InsertTabContentsAt(static_cast<int>(i),
-                                     drag_data_->get(i)->contents_,
-                                     drag_data_->GetAddTypesForDraggedTabAt(i));
-    }
-    RestoreSelection(new_model);
+            contentses, window_bounds, dock_info_, window->IsMaximized());
+    RestoreSelection(new_browser->tab_strip_model());
     new_browser->window()->Show();
     CleanUpHiddenFrame();
   }

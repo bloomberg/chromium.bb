@@ -184,18 +184,21 @@ class TabStripModel : public content::NotificationObserver {
   // in the foreground inherit the group of the previously active tab.
   void AppendTabContents(TabContents* contents, bool foreground);
 
-  // Adds the specified TabContents at the specified location.
-  // |add_types| is a bitmask of AddTypes; see it for details.
+  // Adds the specified WebContents at the specified location.
+  // |add_types| is a bitmask of AddTabTypes; see it for details.
   //
   // All append/insert methods end up in this method.
   //
   // NOTE: adding a tab using this method does NOT query the order controller,
-  // as such the ADD_FORCE_INDEX AddType is meaningless here.  The only time the
-  // |index| is changed is if using the index would result in breaking the
+  // as such the ADD_FORCE_INDEX AddTabTypes is meaningless here.  The only time
+  // the |index| is changed is if using the index would result in breaking the
   // constraint that all mini-tabs occur before non-mini-tabs.
   // See also AddTabContents.
   void InsertTabContentsAt(int index,
                            TabContents* contents,
+                           int add_types);
+  void InsertWebContentsAt(int index,
+                           content::WebContents* contents,
                            int add_types);
 
   // Closes the TabContents at the specified index. This causes the
@@ -410,7 +413,7 @@ class TabStripModel : public content::NotificationObserver {
 
   // Adds a TabContents at the best position in the TabStripModel given
   // the specified insertion index, transition, etc. |add_types| is a bitmask of
-  // AddTypes; see it for details. This method ends up calling into
+  // AddTabTypes; see it for details. This method ends up calling into
   // InsertTabContentsAt to do the actual insertion.
   void AddTabContents(TabContents* contents,
                       int index,

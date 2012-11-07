@@ -1787,10 +1787,12 @@ void TabDragController::CompleteDrag() {
           break;
       }
     }
-    // Compel the model to construct a new window for the detached WebContents.
+    // Compel the model to construct a new window for the detached
+    // WebContentses.
     views::Widget* widget = source_tabstrip_->GetWidget();
     gfx::Rect window_bounds(widget->GetRestoredBounds());
     window_bounds.set_origin(GetWindowCreatePoint(last_point_in_screen_));
+
     // When modifying the following if statement, please make sure not to
     // introduce issue listed in http://crbug.com/6223 comment #11.
     bool rtl_ui = base::i18n::IsRTL();
@@ -1801,21 +1803,19 @@ void TabDragController::CompleteDrag() {
       window_bounds.set_x(window_bounds.x() - window_bounds.width());
     }
     AutoReset<bool> setter(&is_mutating_, true);
+
+    std::vector<TabStripModelDelegate::NewStripContents> contentses;
+    for (size_t i = 0; i < drag_data_.size(); ++i) {
+      TabStripModelDelegate::NewStripContents item;
+      item.web_contents = drag_data_[i].contents->web_contents();
+      item.add_types = drag_data_[i].pinned ? TabStripModel::ADD_PINNED
+                                            : TabStripModel::ADD_NONE;
+      contentses.push_back(item);
+    };
+
     Browser* new_browser =
         GetModel(source_tabstrip_)->delegate()->CreateNewStripWithContents(
-            drag_data_[0].contents, window_bounds, dock_info_,
-            widget->IsMaximized());
-    TabStripModel* new_model = new_browser->tab_strip_model();
-    new_model->SetTabPinned(
-        new_model->GetIndexOfTabContents(drag_data_[0].contents),
-        drag_data_[0].pinned);
-    for (size_t i = 1; i < drag_data_.size(); ++i) {
-      new_model->InsertTabContentsAt(
-          static_cast<int>(i),
-          drag_data_[i].contents,
-          drag_data_[i].pinned ? TabStripModel::ADD_PINNED :
-                                 TabStripModel::ADD_NONE);
-    }
+            contentses, window_bounds, dock_info_, widget->IsMaximized());
     ResetSelection(new_browser->tab_strip_model());
     new_browser->window()->Show();
   }

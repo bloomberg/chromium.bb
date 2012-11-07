@@ -50,7 +50,7 @@ TabContents* BrowserTabStripModelDelegate::AddBlankTabAt(int index,
 }
 
 Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
-    TabContents* detached_contents,
+    const std::vector<NewStripContents>& contentses,
     const gfx::Rect& window_bounds,
     const DockInfo& dock_info,
     bool maximize) {
@@ -66,12 +66,25 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
   params.initial_show_state =
       maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
   Browser* browser = new Browser(params);
-  browser->tab_strip_model()->AppendTabContents(detached_contents, true);
-  // Make sure the loading state is updated correctly, otherwise the throbber
-  // won't start if the page is loading.
-  // TODO(beng): find a better way of doing this.
-  static_cast<content::WebContentsDelegate*>(browser)->
-      LoadingStateChanged(detached_contents->web_contents());
+  TabStripModel* new_model = browser->tab_strip_model();
+
+  for (size_t i = 0; i < contentses.size(); ++i) {
+    NewStripContents item = contentses[i];
+
+    // Enforce that there is an active tab in the strip at all times by forcing
+    // the first web contents to be marked as active.
+    if (i == 0)
+      item.add_types |= TabStripModel::ADD_ACTIVE;
+
+    new_model->InsertWebContentsAt(
+        static_cast<int>(i), item.web_contents, item.add_types);
+    // Make sure the loading state is updated correctly, otherwise the throbber
+    // won't start if the page is loading.
+    // TODO(beng): find a better way of doing this.
+    static_cast<content::WebContentsDelegate*>(browser)->
+        LoadingStateChanged(item.web_contents);
+  }
+
   return browser;
 }
 
