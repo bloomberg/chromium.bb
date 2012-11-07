@@ -5,8 +5,6 @@
 
 """A list of known bad NEXEs and CRXs in the corpus."""
 
-import os
-
 import corpus_utils
 
 
@@ -16,6 +14,7 @@ BAD_NEXES = set([
     '41c4a2e842da16de1c1be9e89fbfee5e695e2f4b',
     '903d3e5f29b909db162f2679363685144f61e3cc',
     'bb127ff5b58caa8b875b19c05b9ade8c0881a5ed',
+    'f4814677d321785f3bcd65f16bafa728b5dbc883',
     'fac308d79f5c2d3a7f1f27112cfe19bf8431acfa',
 ])
 
