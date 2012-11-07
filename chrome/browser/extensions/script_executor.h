@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/user_script.h"
 
 class GURL;
@@ -28,7 +29,11 @@ namespace extensions {
 // caller when responded with ExtensionHostMsg_ExecuteCodeFinished.
 class ScriptExecutor {
  public:
-  explicit ScriptExecutor(content::WebContents* web_contents);
+  ScriptExecutor(
+      content::WebContents* web_contents,
+      // |script_observers| is assumed to be owned by |this|'s owner, and in
+      // such a way that |this| is destroyed first.
+      ObserverList<TabHelper::ScriptExecutionObserver>* script_observers);
 
   ~ScriptExecutor();
 
@@ -56,22 +61,6 @@ class ScriptExecutor {
                               const base::ListValue&)>
       ExecuteScriptCallback;
 
-  class Observer {
-   public:
-    // Automatically observes and unobserves *script_executor on construction
-    // and destruction. *script_executor must outlive *this.
-    explicit Observer(ScriptExecutor* script_executor);
-    virtual ~Observer();
-
-    virtual void OnExecuteScriptFinished(const std::string& extension_id,
-                                         const std::string& error,
-                                         int32 on_page_id,
-                                         const GURL& on_url,
-                                         const base::ListValue&) = 0;
-   private:
-    ScriptExecutor& script_executor_;
-  };
-
   // Executes a script. The arguments match ExtensionMsg_ExecuteCode_Params in
   // extension_messages.h (request_id is populated automatically).
   //
@@ -86,22 +75,13 @@ class ScriptExecutor {
                      WorldType world_type,
                      const ExecuteScriptCallback& callback);
 
-  void AddObserver(Observer* obs) {
-    observer_list_.AddObserver(obs);
-  }
-
-  void RemoveObserver(Observer* obs) {
-    observer_list_.RemoveObserver(obs);
-  }
-
  private:
   // The next value to use for request_id in ExtensionMsg_ExecuteCode_Params.
   int next_request_id_;
 
-  // The WebContents this is bound to.
   content::WebContents* web_contents_;
 
-  ObserverList<Observer> observer_list_;
+  ObserverList<TabHelper::ScriptExecutionObserver>* script_observers_;
 };
 
 }  // namespace extensions

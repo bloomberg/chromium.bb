@@ -18,7 +18,7 @@ namespace extensions {
 class Extension;
 
 // A utility for tracing interesting activity for each extension.
-class ActivityLog : public TabHelper::ContentScriptObserver {
+class ActivityLog : public TabHelper::ScriptExecutionObserver {
  public:
   enum Activity {
     ACTIVITY_EXTENSION_API_CALL,   // Extension API invocation is called.
@@ -58,8 +58,8 @@ class ActivityLog : public TabHelper::ContentScriptObserver {
   ActivityLog();
   friend struct DefaultSingletonTraits<ActivityLog>;
 
-  // TabHelper::ContentScriptObserver implementation.
-  virtual void OnContentScriptsExecuting(
+  // TabHelper::ScriptExecutionObserver implementation.
+  virtual void OnScriptsExecuted(
       const content::WebContents* web_contents,
       const ExecutingScriptsMap& extension_ids,
       int32 page_id,

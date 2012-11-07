@@ -19,7 +19,7 @@ class ExtensionSystem;
 // Controls the script bubble in the omnibox, which displays information about
 // extensions which are interacting with the current tab.
 class ScriptBubbleController
-    : public TabHelper::ContentScriptObserver,
+    : public TabHelper::ScriptExecutionObserver,
       public content::WebContentsObserver {
  public:
   // Helper that gets the popup URL to use when the given set of extension ids
@@ -31,8 +31,8 @@ class ScriptBubbleController
                          TabHelper* tab_helper);
   virtual ~ScriptBubbleController();
 
-  // TabHelper::ContentScriptObserver implementation
-  virtual void OnContentScriptsExecuting(
+  // TabHelper::ScriptExecutionObserver implementation
+  virtual void OnScriptsExecuted(
       const content::WebContents* web_contents,
       const ExecutingScriptsMap& extension_ids,
       int32 page_id,

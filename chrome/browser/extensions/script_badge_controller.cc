@@ -30,10 +30,8 @@
 namespace extensions {
 
 ScriptBadgeController::ScriptBadgeController(content::WebContents* web_contents,
-                                             ScriptExecutor* script_executor,
                                              TabHelper* tab_helper)
-    : ScriptExecutor::Observer(script_executor),
-      TabHelper::ContentScriptObserver(tab_helper),
+    : TabHelper::ScriptExecutionObserver(tab_helper),
       content::WebContentsObserver(web_contents) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -125,34 +123,6 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
   return ACTION_NONE;
 }
 
-void ScriptBadgeController::OnExecuteScriptFinished(
-    const std::string& extension_id,
-    const std::string& error,
-    int32 on_page_id,
-    const GURL& on_url,
-    const base::ListValue& script_results) {
-  if (!error.empty())
-    return;
-
-  int32 current_page_id = GetPageID();
-
-  if (on_page_id == current_page_id) {
-    if (MarkExtensionExecuting(extension_id))
-      NotifyChange();
-  } else if (current_page_id < 0) {
-    // Tracking down http://crbug.com/138323.
-    std::string message = base::StringPrintf(
-        "Expected a page ID of %d but there was no navigation entry. "
-        "Extension ID is %s.",
-        on_page_id,
-        extension_id.c_str());
-    char buf[1024];
-    base::snprintf(buf, arraysize(buf), "%s", message.c_str());
-    LOG(ERROR) << message;
-    return;
-  }
-}
-
 namespace {
 std::string JoinExtensionIDs(const ExecutingScriptsMap& ids) {
   std::vector<std::string> as_vector;
@@ -164,7 +134,7 @@ std::string JoinExtensionIDs(const ExecutingScriptsMap& ids) {
 }
 }  // namespace
 
-void ScriptBadgeController::OnContentScriptsExecuting(
+void ScriptBadgeController::OnScriptsExecuted(
     const content::WebContents* web_contents,
     const ExecutingScriptsMap& extension_ids,
     int32 on_page_id,

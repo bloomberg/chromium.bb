@@ -93,8 +93,18 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
                    .Set("manifest_version", 2))
       .Build();
 
+  scoped_refptr<const Extension> extension3 =
+      ExtensionBuilder()
+      .SetPath(root.AppendASCII("f3"))
+      .SetManifest(DictionaryBuilder()
+                   .Set("name", "ex3")
+                   .Set("version", "1")
+                   .Set("manifest_version", 2))
+      .Build();
+
   extension_service_->AddExtension(extension1);
   extension_service_->AddExtension(extension2);
+  extension_service_->AddExtension(extension3);
 
   const Extension* script_bubble =
       extension_service_->component_loader()->GetScriptBubble();
@@ -109,9 +119,9 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
   EXPECT_EQ(GURL(), script_bubble_action->GetPopupUrl(tab_id()));
 
   // Running a script on the tab causes the bubble to be visible.
-  TabHelper::ContentScriptObserver::ExecutingScriptsMap executing_scripts;
+  TabHelper::ScriptExecutionObserver::ExecutingScriptsMap executing_scripts;
   executing_scripts[extension1->id()].insert("script1");
-  script_bubble_controller_->OnContentScriptsExecuting(
+  script_bubble_controller_->OnScriptsExecuted(
       web_contents(),
       executing_scripts,
       web_contents()->GetController().GetActiveEntry()->GetPageID(),
@@ -126,7 +136,7 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
   // Running a script from another extension increments the count.
   executing_scripts.clear();
   executing_scripts[extension2->id()].insert("script2");
-  script_bubble_controller_->OnContentScriptsExecuting(
+  script_bubble_controller_->OnScriptsExecuted(
       web_contents(),
       executing_scripts,
       web_contents()->GetController().GetActiveEntry()->GetPageID(),
@@ -141,13 +151,35 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
   // count.
   executing_scripts.clear();
   executing_scripts[extension2->id()].insert("script3");
-  script_bubble_controller_->OnContentScriptsExecuting(
+  script_bubble_controller_->OnScriptsExecuted(
       web_contents(),
       executing_scripts,
       web_contents()->GetController().GetActiveEntry()->GetPageID(),
       web_contents()->GetController().GetActiveEntry()->GetURL());
   EXPECT_TRUE(script_bubble_action->GetIsVisible(tab_id()));
   EXPECT_EQ("2", script_bubble_action->GetBadgeText(tab_id()));
+  EXPECT_EQ(ScriptBubbleController::GetPopupUrl(script_bubble, extension_ids),
+            script_bubble_action->GetPopupUrl(tab_id()));
+
+  // Running tabs.executeScript from an already-seen extension does not affect
+  // count.
+  executing_scripts.clear();
+  executing_scripts[extension1->id()] = std::set<std::string>();
+  script_bubble_controller_->OnScriptsExecuted(
+      web_contents(), executing_scripts, 0, GURL());
+  EXPECT_TRUE(script_bubble_action->GetIsVisible(tab_id()));
+  EXPECT_EQ("2", script_bubble_action->GetBadgeText(tab_id()));
+  EXPECT_EQ(ScriptBubbleController::GetPopupUrl(script_bubble, extension_ids),
+            script_bubble_action->GetPopupUrl(tab_id()));
+
+  // Running tabs.executeScript from a new extension increments the count.
+  executing_scripts.clear();
+  executing_scripts[extension3->id()] = std::set<std::string>();
+  script_bubble_controller_->OnScriptsExecuted(
+      web_contents(), executing_scripts, 0, GURL());
+  EXPECT_TRUE(script_bubble_action->GetIsVisible(tab_id()));
+  extension_ids.insert(extension3->id());
+  EXPECT_EQ("3", script_bubble_action->GetBadgeText(tab_id()));
   EXPECT_EQ(ScriptBubbleController::GetPopupUrl(script_bubble, extension_ids),
             script_bubble_action->GetPopupUrl(tab_id()));
 

@@ -13,7 +13,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
-#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -36,26 +35,18 @@ namespace extensions {
 class Extension;
 
 // A LocationBarController which displays icons whenever a script is executing
-// in a tab. It accomplishes this two different ways:
-//
-// - For content_script declarations, this receives IPCs from the renderer
-//   notifying that a content script is running (either on this tab or one of
-//   its frames), which is recorded.
-// - Observes a ScriptExecutor so that successfully-executed scripts
-//   can cause a script badge to appear.
+// in a tab.
 //
 // When extension IDs are recorded a NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED
 // is sent, and those extensions will be returned from GetCurrentActions until
 // the next page navigation.
 class ScriptBadgeController
     : public LocationBarController,
-      public ScriptExecutor::Observer,
-      public TabHelper::ContentScriptObserver,
+      public TabHelper::ScriptExecutionObserver,
       public content::WebContentsObserver,
       public content::NotificationObserver {
  public:
   explicit ScriptBadgeController(content::WebContents* web_contents,
-                                 ScriptExecutor* script_executor,
                                  TabHelper* tab_helper);
   virtual ~ScriptBadgeController();
 
@@ -66,16 +57,8 @@ class ScriptBadgeController
                            int mouse_button) OVERRIDE;
   virtual void NotifyChange() OVERRIDE;
 
-  // ScriptExecutor::Observer implementation.
-  virtual void OnExecuteScriptFinished(
-      const std::string& extension_id,
-      const std::string& error,
-      int32 on_page_id,
-      const GURL& on_url,
-      const base::ListValue& script_result) OVERRIDE;
-
-  // TabHelper::ContentScriptObserver implementation.
-  virtual void OnContentScriptsExecuting(
+  // TabHelper::ScriptExecutionObserver implementation.
+  virtual void OnScriptsExecuted(
       const content::WebContents* web_contents,
       const ExecutingScriptsMap& extension_ids,
       int32 on_page_id,

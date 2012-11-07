@@ -159,6 +159,8 @@ void UserScriptScheduler::ExecuteCodeImpl(
   if (params.all_frames)
     GetAllChildFrames(frame_, &frame_vector);
 
+  std::string error;
+
   for (std::vector<WebFrame*>::iterator frame_it = frame_vector.begin();
        frame_it != frame_vector.end(); ++frame_it) {
     WebFrame* child_frame = *frame_it;
@@ -181,16 +183,10 @@ void UserScriptScheduler::ExecuteCodeImpl(
         if (child_frame->parent()) {
           continue;
         } else {
-          render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-              render_view->GetRoutingID(),
-              params.request_id,
-              ExtensionErrorUtils::FormatErrorMessage(
-                  extension_manifest_errors::kCannotAccessPage,
-                  child_frame->document().url().spec()),
-              -1,
-              GURL(""),
-              execution_results));
-          return;
+          error = ExtensionErrorUtils::FormatErrorMessage(
+              extension_manifest_errors::kCannotAccessPage,
+              child_frame->document().url().spec());
+          break;
         }
       }
 
@@ -239,7 +235,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
   render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
       render_view->GetRoutingID(),
       params.request_id,
-      "",  // no error
+      error,
       render_view->GetPageId(),
       UserScriptSlave::GetDataSourceURLForFrame(frame_),
       execution_results));

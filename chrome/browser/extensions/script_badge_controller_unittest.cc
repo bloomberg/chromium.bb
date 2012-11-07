@@ -132,13 +132,13 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
               testing::ElementsAre());
 
-  ListValue val;
-  script_badge_controller_->OnExecuteScriptFinished(
-      extension->id(),
-      "",  // no error
+  TabHelper::ScriptExecutionObserver::ExecutingScriptsMap id_map;
+  id_map[extension->id()] = std::set<std::string>();
+  script_badge_controller_->OnScriptsExecuted(
+      web_contents(),
+      id_map,
       web_contents()->GetController().GetActiveEntry()->GetPageID(),
-      GURL(""),
-      val);
+      GURL(""));
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
               testing::ElementsAre(GetScriptBadge(*extension)));
   EXPECT_THAT(location_bar_updated.events, testing::Gt(0));
@@ -161,13 +161,13 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
         chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
         content::Source<Profile>(profile));
 
-    ListValue val;
-    script_badge_controller_->OnExecuteScriptFinished(
-        extension->id(),
-        "",  // no error
+    TabHelper::ScriptExecutionObserver::ExecutingScriptsMap id_map;
+    id_map[extension->id()] = std::set<std::string>();
+    script_badge_controller_->OnScriptsExecuted(
+        web_contents(),
+        id_map,
         web_contents()->GetController().GetActiveEntry()->GetPageID(),
-        GURL(""),
-        val);
+        GURL(""));
 
     EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
                 testing::ElementsAre(GetScriptBadge(*extension)));

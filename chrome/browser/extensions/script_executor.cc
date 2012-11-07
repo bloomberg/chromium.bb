@@ -29,12 +29,12 @@ const char* kRendererDestroyed = "The tab was closed.";
 // corresponding response comes from the renderer, or the renderer is destroyed.
 class Handler : public content::WebContentsObserver {
  public:
-  Handler(ObserverList<ScriptExecutor::Observer>* observer_list,
+  Handler(ObserverList<TabHelper::ScriptExecutionObserver>* script_observers,
           content::WebContents* web_contents,
           const ExtensionMsg_ExecuteCode_Params& params,
           const ScriptExecutor::ExecuteScriptCallback& callback)
           : content::WebContentsObserver(web_contents),
-            observer_list_(AsWeakPtr(observer_list)),
+            script_observers_(AsWeakPtr(script_observers)),
             extension_id_(params.extension_id),
             request_id_(params.request_id),
             callback_(callback) {
@@ -76,18 +76,22 @@ class Handler : public content::WebContentsObserver {
                              int32 on_page_id,
                              const GURL& on_url,
                              const base::ListValue& script_result) {
-    if (observer_list_) {
-      FOR_EACH_OBSERVER(ScriptExecutor::Observer, *observer_list_,
-                        OnExecuteScriptFinished(extension_id_, error,
-                                                on_page_id, on_url,
-                                                script_result));
+    if (script_observers_ && error.empty()) {
+      TabHelper::ScriptExecutionObserver::ExecutingScriptsMap id_map;
+      id_map[extension_id_] = std::set<std::string>();
+      FOR_EACH_OBSERVER(TabHelper::ScriptExecutionObserver, *script_observers_,
+                        OnScriptsExecuted(web_contents(),
+                                          id_map,
+                                          on_page_id,
+                                          on_url));
     }
 
     callback_.Run(error, on_page_id, on_url, script_result);
     delete this;
   }
 
-  base::WeakPtr<ObserverList<ScriptExecutor::Observer> > observer_list_;
+  base::WeakPtr<ObserverList<TabHelper::ScriptExecutionObserver> >
+      script_observers_;
   std::string extension_id_;
   int request_id_;
   ScriptExecutor::ExecuteScriptCallback callback_;
@@ -95,18 +99,12 @@ class Handler : public content::WebContentsObserver {
 
 }  // namespace
 
-ScriptExecutor::Observer::Observer(ScriptExecutor* script_executor)
-    : script_executor_(*script_executor) {
-  script_executor_.AddObserver(this);
-}
-
-ScriptExecutor::Observer::~Observer() {
-  script_executor_.RemoveObserver(this);
-}
-
-ScriptExecutor::ScriptExecutor(content::WebContents* web_contents)
+ScriptExecutor::ScriptExecutor(
+    content::WebContents* web_contents,
+    ObserverList<TabHelper::ScriptExecutionObserver>* script_observers)
     : next_request_id_(0),
-      web_contents_(web_contents) {}
+      web_contents_(web_contents),
+      script_observers_(script_observers) {}
 
 ScriptExecutor::~ScriptExecutor() {}
 
@@ -128,7 +126,7 @@ void ScriptExecutor::ExecuteScript(
   params.in_main_world = (world_type == MAIN_WORLD);
 
   // Handler handles IPCs and deletes itself on completion.
-  new Handler(&observer_list_, web_contents_, params, callback);
+  new Handler(script_observers_, web_contents_, params, callback);
 }
 
 }  // namespace extensions

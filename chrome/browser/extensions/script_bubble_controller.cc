@@ -27,7 +27,7 @@ const SkColor kBadgeBackgroundColor = 0xEEEEDD00;
 
 ScriptBubbleController::ScriptBubbleController(
     content::WebContents* web_contents, TabHelper* tab_helper)
-    : TabHelper::ContentScriptObserver(tab_helper),
+    : TabHelper::ScriptExecutionObserver(tab_helper),
       content::WebContentsObserver(web_contents) {
 }
 
@@ -43,13 +43,14 @@ GURL ScriptBubbleController::GetPopupUrl(
                                           extension_ids.end()), ','));
 }
 
-void ScriptBubbleController::OnContentScriptsExecuting(
+void ScriptBubbleController::OnScriptsExecuted(
       const content::WebContents* web_contents,
       const ExecutingScriptsMap& executing_scripts,
       int32 page_id,
       const GURL& on_url) {
   DCHECK_EQ(this->web_contents(), web_contents);
 
+  bool changed = false;
   ExtensionService* extension_service = GetExtensionService();
   for (ExecutingScriptsMap::const_iterator i = executing_scripts.begin();
        i != executing_scripts.end(); ++i) {
@@ -58,10 +59,11 @@ void ScriptBubbleController::OnContentScriptsExecuting(
     const Extension* extension =
         extension_service->extensions()->GetByID(i->first);
     if (extension->ShouldDisplayInExtensionSettings())
-      executing_extension_ids_.insert(i->first);
+      changed |= executing_extension_ids_.insert(i->first).second;
   }
 
-  UpdateScriptBubble();
+  if (changed)
+    UpdateScriptBubble();
 }
 
 void ScriptBubbleController::DidNavigateMainFrame(

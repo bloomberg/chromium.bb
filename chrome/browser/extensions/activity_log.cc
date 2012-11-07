@@ -83,7 +83,7 @@ void ActivityLog::Log(const Extension* extension,
   }
 }
 
-void ActivityLog::OnContentScriptsExecuting(
+void ActivityLog::OnScriptsExecuted(
     const content::WebContents* web_contents,
     const ExecutingScriptsMap& extension_ids,
     int32 on_page_id,

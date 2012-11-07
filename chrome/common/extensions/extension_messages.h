@@ -476,8 +476,10 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
 IPC_MESSAGE_ROUTED5(ExtensionHostMsg_ExecuteCodeFinished,
                     int /* request id */,
                     std::string /* error; empty implies success */,
-                    int32 /* page_id the code executed on, if successful */,
-                    GURL /* URL of the code executed on, if successful */,
+                    int32 /* page_id the code executed on.
+                             May be -1 if unsuccessful */,
+                    GURL /* URL of the code executed on.
+                            May be empty if unsuccessful. */,
                     ListValue /* result of the script */)
 
 // Sent from the renderer to the browser to notify that content scripts are

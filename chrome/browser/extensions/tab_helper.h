@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -31,6 +30,7 @@ class Extension;
 class LocationBarController;
 class ScriptBadgeController;
 class ScriptBubbleController;
+class ScriptExecutor;
 
 // Per-tab extension helper. Also handles non-extension apps.
 class TabHelper : public content::WebContentsObserver,
@@ -49,38 +49,44 @@ class TabHelper : public content::WebContentsObserver,
     UPDATE_SHORTCUT   // Update icon for app shortcut.
   };
 
-  // Observer base class for classes listening for content script messages
-  // from the renderer.
-  class ContentScriptObserver {
+  // Observer base class for classes that need to be notified when content
+  // scripts and/or tabs.executeScript calls run on a page.
+  class ScriptExecutionObserver {
    public:
     // Map of extensions IDs to the executing script paths.
     typedef std::map<std::string, std::set<std::string> > ExecutingScriptsMap;
 
     // Automatically observes and unobserves |tab_helper| on construction
     // and destruction. |tab_helper| must outlive |this|.
-    explicit ContentScriptObserver(TabHelper* tab_helper);
-    ContentScriptObserver();
+    explicit ScriptExecutionObserver(TabHelper* tab_helper);
+    ScriptExecutionObserver();
 
-    virtual void OnContentScriptsExecuting(
+    // Called when script(s) have executed on a page.
+    //
+    // |executing_scripts_map| contains all extensions that are executing
+    // scripts, mapped to the paths for those scripts. This may be an empty set
+    // if the script has no path associated with it (e.g. in the case of
+    // tabs.executeScript).
+    virtual void OnScriptsExecuted(
         const content::WebContents* web_contents,
         const ExecutingScriptsMap& executing_scripts_map,
         int32 on_page_id,
         const GURL& on_url) = 0;
 
    protected:
-    virtual ~ContentScriptObserver();
+    virtual ~ScriptExecutionObserver();
 
     TabHelper* tab_helper_;
   };
 
   virtual ~TabHelper();
 
-  void AddContentScriptObserver(ContentScriptObserver* observer) {
-    content_script_observers_.AddObserver(observer);
+  void AddScriptExecutionObserver(ScriptExecutionObserver* observer) {
+    script_execution_observers_.AddObserver(observer);
   }
 
-  void RemoveContentScriptObserver(ContentScriptObserver* observer) {
-    content_script_observers_.RemoveObserver(observer);
+  void RemoveScriptExecutionObserver(ScriptExecutionObserver* observer) {
+    script_execution_observers_.RemoveObserver(observer);
   }
 
   void CreateApplicationShortcuts();
@@ -127,7 +133,7 @@ class TabHelper : public content::WebContentsObserver,
   }
 
   ScriptExecutor* script_executor() {
-    return &script_executor_;
+    return script_executor_.get();
   }
 
   LocationBarController* location_bar_controller() {
@@ -182,7 +188,7 @@ class TabHelper : public content::WebContentsObserver,
                             int callback_id);
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
   void OnContentScriptsExecuting(
-      const ContentScriptObserver::ExecutingScriptsMap& extension_ids,
+      const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
       int32 page_id,
       const GURL& on_url);
 
@@ -226,7 +232,7 @@ class TabHelper : public content::WebContentsObserver,
 
   // Our content script observers. Declare at top so that it will outlive all
   // other members, since they might add themselves as observers.
-  ObserverList<ContentScriptObserver> content_script_observers_;
+  ObserverList<ScriptExecutionObserver> script_execution_observers_;
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.
@@ -251,7 +257,7 @@ class TabHelper : public content::WebContentsObserver,
 
   content::NotificationRegistrar registrar_;
 
-  ScriptExecutor script_executor_;
+  scoped_ptr<ScriptExecutor> script_executor_;
 
   scoped_ptr<LocationBarController> location_bar_controller_;
 
