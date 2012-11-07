@@ -125,3 +125,21 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(NULL_NODE, file);
   EXPECT_EQ(errno, ENOENT);
 }
+
+TEST(MountTest, MemMountRemove) {
+  MountMock* mnt = new MountMock();
+  MountNode* file;
+
+  EXPECT_EQ(0, mnt->Mkdir(Path("/dir"), O_RDWR));
+  file = mnt->Open(Path("/file"), O_RDWR | O_CREAT | O_EXCL);
+  EXPECT_NE(NULL_NODE, file);
+  EXPECT_EQ(0, mnt->Close(file));
+
+  EXPECT_EQ(0, mnt->Remove(Path("/dir")));
+  EXPECT_EQ(0, mnt->Remove(Path("/file")));
+
+  EXPECT_EQ(NULL_NODE, mnt->Open(Path("/dir/foo"), O_CREAT | O_RDWR));
+  EXPECT_EQ(ENOENT, errno);
+  EXPECT_EQ(NULL_NODE, mnt->Open(Path("/file"), O_RDONLY));
+  EXPECT_EQ(ENOENT, errno);
+}

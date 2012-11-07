@@ -39,8 +39,15 @@ class MountMem : public Mount {
   virtual int Unlink(const Path& path);
   virtual int Mkdir(const Path& path, int perm);
   virtual int Rmdir(const Path& path);
+  virtual int Remove(const Path& path);
 
 private:
+  static const int REMOVE_DIR = 1;
+  static const int REMOVE_FILE = 2;
+  static const int REMOVE_ALL = REMOVE_DIR | REMOVE_FILE;
+
+  int RemoveInternal(const Path& path, int remove_type);
+
   MountNode* root_;
   INOList_t inos_;
   size_t max_ino_;

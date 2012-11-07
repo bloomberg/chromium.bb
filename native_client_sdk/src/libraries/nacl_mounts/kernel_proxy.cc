@@ -334,24 +334,44 @@ int KernelProxy::isatty(int fd) {
   return ret;
 }
 
+off_t KernelProxy::lseek(int fd, off_t offset, int whence) {
+  KernelHandle* handle = AcquireHandle(fd);
+
+  // check if fd is valid and handle exists
+  if (NULL == handle) return -1;
+  int ret = handle->Seek(offset, whence);
+
+  ReleaseHandle(handle);
+  return ret;
+}
+
+int KernelProxy::unlink(const char* path) {
+  Path rel;
+  Mount* mnt = AcquireMountAndPath(path, &rel);
+  if (mnt == NULL) return -1;
+
+  int val = mnt->Unlink(rel);
+  ReleaseMount(mnt);
+  return val;
+}
+
+int KernelProxy::remove(const char* path) {
+  Path rel;
+  Mount* mnt = AcquireMountAndPath(path, &rel);
+  if (mnt == NULL) return -1;
+
+  int val = mnt->Remove(rel);
+  ReleaseMount(mnt);
+  return val;
+}
+
 // TODO(noelallen): Needs implementation.
 int KernelProxy::fchmod(int fd, int mode) {
   errno = EINVAL;
   return -1;
 }
-int KernelProxy::remove(const char* path) {
-  errno = EINVAL;
-  return -1;
-}
-int KernelProxy::unlink(const char* path) {
-  errno = EINVAL;
-  return -1;
-}
+
 int KernelProxy::access(const char* path, int amode) {
-  errno = EINVAL;
-  return -1;
-}
-off_t KernelProxy::lseek(int fd, off_t offset, int whence) {
   errno = EINVAL;
   return -1;
 }

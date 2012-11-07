@@ -60,6 +60,7 @@ class Mount : public RefObject {
   virtual int Unlink(const Path& path) = 0;
   virtual int Mkdir(const Path& path, int permissions) = 0;
   virtual int Rmdir(const Path& path) = 0;
+  virtual int Remove(const Path& path) = 0;
 
   // Convert from R,W,R/W open flags to STAT permission flags
   static int OpenModeToPermission(int mode);

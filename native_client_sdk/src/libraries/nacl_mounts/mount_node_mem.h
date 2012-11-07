@@ -11,11 +11,11 @@ class MountNodeMem : public MountNode {
  public:
   MountNodeMem(Mount* mount, int ino, int dev);
 
-protected:
+ protected:
   virtual ~MountNodeMem();
   virtual bool Init(int mode, short uid, short gid);
 
-public:
+ public:
   // Normal read/write operations on a file
   virtual int Read(size_t offs, void* buf, size_t count);
   virtual int Write(size_t offs, const void* buf, size_t count);

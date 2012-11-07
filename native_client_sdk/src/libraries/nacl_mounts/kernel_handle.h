@@ -7,6 +7,7 @@
 
 #include <pthread.h>
 
+#include "nacl_mounts/ostypes.h"
 #include "utils/macros.h"
 #include "utils/ref_object.h"
 
@@ -19,6 +20,8 @@ class MountNode;
 class KernelHandle : public RefObject {
  public:
   KernelHandle(Mount* mnt, MountNode* node, int oflags);
+
+  off_t Seek(off_t offset, int whence);
 
   Mount* mount_;
   MountNode* node_;

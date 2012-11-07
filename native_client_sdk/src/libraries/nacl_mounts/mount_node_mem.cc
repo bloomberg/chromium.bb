@@ -66,6 +66,10 @@ int MountNodeMem::Truncate(size_t size) {
   // Attempt to realloc the block
   char *newdata = static_cast<char *>(realloc(data_, need));
   if (newdata != NULL) {
+    // Zero out new space.
+    if (size > GetSize())
+      memset(newdata + GetSize(), 0, size - GetSize());
+
     data_ = newdata;
     capacity_ = need;
     stat_.st_size = static_cast<off_t>(size);

@@ -188,24 +188,6 @@ int MountMem::Close(MountNode* node) {
   return 0;
 }
 
-int MountMem::Unlink(const Path& path) {
-  AutoLock lock(&lock_);
-  MountNode* parent = FindNode(path.Parent(), S_IFDIR);
-
-  if (NULL == parent) return -1;
-
-  MountNode* child = parent->FindChild(path.Basename());
-  if (NULL == child) {
-    errno = ENOENT;
-    return -1;
-  }
-  if (child->IsaDir()) {
-    errno = EISDIR;
-    return -1;
-  }
-  return parent->RemoveChild(path.Basename());
-}
-
 int MountMem::Mkdir(const Path& path, int mode) {
   AutoLock lock(&lock_);
 
@@ -251,38 +233,58 @@ int MountMem::Mkdir(const Path& path, int mode) {
   return 0;
 }
 
+int MountMem::Unlink(const Path& path) {
+  return RemoveInternal(path, REMOVE_FILE);
+}
+
 int MountMem::Rmdir(const Path& path) {
+  return RemoveInternal(path, REMOVE_DIR);
+}
+
+int MountMem::Remove(const Path& path) {
+  return RemoveInternal(path, REMOVE_ALL);
+}
+
+int MountMem::RemoveInternal(const Path& path, int remove_type) {
   AutoLock lock(&lock_);
+  bool dir_only = remove_type == REMOVE_DIR;
+  bool file_only = remove_type == REMOVE_FILE;
+  bool remove_dir = (remove_type & REMOVE_DIR) != 0;
 
-  // We expect a Mount "absolute" path
-  if (!path.IsAbsolute()) {
-    errno = ENOENT;
-    return -1;
-  }
+  if (dir_only) {
+    // We expect a Mount "absolute" path
+    if (!path.IsAbsolute()) {
+      errno = ENOENT;
+      return -1;
+    }
 
-  // The root of the mount is already created by the mount
-  if (path.Size() == 1) {
-    errno = EEXIST;
-    return -1;
+    // The root of the mount is already created by the mount
+    if (path.Size() == 1) {
+      errno = EEXIST;
+      return -1;
+    }
   }
 
   MountNode* parent = FindNode(path.Parent(), S_IFDIR);
-  MountNode* node;
 
   // If we failed to find the parent, the error code is already set.
   if (NULL == parent) return -1;
 
-  // Verify we find a child which is also a directory
-  node = parent->FindChild(path.Basename());
-  if (NULL == node) {
+  // Verify we find a child which is a directory.
+  MountNode* child = parent->FindChild(path.Basename());
+  if (NULL == child) {
     errno = ENOENT;
     return -1;
   }
-  if (!node->IsaDir()) {
+  if (dir_only && !child->IsaDir()) {
     errno = ENOTDIR;
     return -1;
   }
-  if (node->ChildCount() > 0) {
+  if (file_only && child->IsaDir()) {
+    errno = EISDIR;
+    return -1;
+  }
+  if (remove_dir && child->ChildCount() > 0) {
     errno = ENOTEMPTY;
     return -1;
   }

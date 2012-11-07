@@ -32,6 +32,7 @@ class MountRefMock : public Mount {
   int Unlink(const Path& path) { return 0; }
   int Mkdir(const Path& path, int permissions) { return 0; }
   int Rmdir(const Path& path) { return 0; }
+  int Remove(const Path& path) { return 0; }
 };
 
 class KernelHandleRefMock : public KernelHandle {
