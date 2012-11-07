@@ -5,6 +5,7 @@
 package org.chromium.android_webview;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -46,7 +47,6 @@ public class AwContents {
     private static final String TAG = AwContents.class.getSimpleName();
 
     private static final String WEB_ARCHIVE_EXTENSION = ".mht";
-
 
     private int mNativeAwContents;
     private ContentViewCore mContentViewCore;
@@ -197,6 +197,29 @@ public class AwContents {
             mContentViewCore = null;
         }
         mCleanupReference.cleanupNow();
+    }
+
+    public static int getAwGLDrawFunction() {
+        return nativeGetAwGLDrawFunction();
+    }
+
+    public int getAwGLDrawViewContext() {
+        // Using the native pointer as the returned viewContext. This is matched by the
+        // reinterpret_cast back to AwContents pointer in the native GLDrawFunction.
+        return mNativeAwContents;
+    }
+
+    public boolean onPrepareGLDraw(Canvas canvas) {
+        // TODO(joth): Ensure the HW path is setup and read any required params out of canvas.
+        Log.e(TAG, "Not implemented: AwContents.onPrepareGlDraw()");
+
+        // returning false will cause a fallback to SW path.
+        return true;
+    }
+
+    public void onDraw(Canvas canvas) {
+        // TODO(joth): Implement.
+        Log.e(TAG, "Not implemented: AwContents.onDraw()");
     }
 
     public int findAllSync(String searchString) {
@@ -448,6 +471,7 @@ public class AwContents {
     private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate,
             boolean privateBrowsing);
     private static native void nativeDestroy(int nativeAwContents);
+    private static native int nativeGetAwGLDrawFunction();
 
     private native int nativeGetWebContents(int nativeAwContents);
 

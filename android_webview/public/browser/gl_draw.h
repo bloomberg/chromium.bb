@@ -11,6 +11,11 @@ extern "C" {
 
 // Holds the information required to trigger an OpenGL drawing operation.
 struct AwGLDrawInfo {
+  // Input: Tells the Draw function what action to perform.
+  enum Mode {
+    kModeDraw,
+    kModeProcess,
+  } mode;
 
   // Input: current clip rect.
   int clip_left;
@@ -28,6 +33,14 @@ struct AwGLDrawInfo {
   // Input: current transform matrix, in OpenGL format.
   float transform[16];
 
+  // Output: tells the caller what to do next.
+  enum StatusMask {
+    kStatusMaskDone = 0x0,
+    kStatusMaskDraw = 0x1,
+    kStatusMaskInvoke = 0x2,
+    kStatusMaskDrew = 0x4,
+  } status_mask;
+
   // Output: dirty region to redraw.
   float dirty_left;
   float dirty_top;
@@ -37,13 +50,13 @@ struct AwGLDrawInfo {
 
 // Function to invoke a direct GL draw into the client's pre-configured
 // GL context. Obtained via AwContents.getGLDrawFunction() (static).
-// |view_context| is an opaque pointer that was returned by the corresponding
-// call to AwContents.onPrepareGlDraw().
+// |view_context| is an opaque identifier that was returned by the corresponding
+// call to AwContents.getAwGLDrawViewContext().
 // |draw_info| carries the in and out parameters for this draw.
 // |spare| ignored; pass NULL.
-typedef void (*AwGLDrawFunction)(void* view_context,
-                                 const GLDrawInfo* draw_info,
-                                 void* spare);
+typedef void (AwGLDrawFunction)(int view_context,
+                                AwGLDrawInfo* draw_info,
+                                void* spare);
 
 #ifdef __cplusplus
 }  // extern "C"

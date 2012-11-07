@@ -9,6 +9,7 @@
 #include <string>
 
 #include "android_webview/browser/find_helper.h"
+#include "android_webview/public/browser/gl_draw.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
@@ -40,6 +41,8 @@ class AwContents : public FindHelper::Listener {
              jobject web_contents_delegate,
              bool private_browsing);
   virtual ~AwContents();
+
+  void GLDraw(AwGLDrawInfo* draw_info);
 
   void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,

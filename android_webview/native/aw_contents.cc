@@ -38,6 +38,18 @@ using content::ContentViewCore;
 using content::WebContents;
 using navigation_interception::InterceptNavigationDelegate;
 
+extern "C" {
+static AwGLDrawFunction GLDrawFunction;
+static void GLDrawFunction(int view_context,
+                           AwGLDrawInfo* draw_info,
+                           void* spare) {
+  // |view_context| is the value that was returned from the java
+  // AwContents.onPrepareGlDraw; this cast must match the code there.
+  reinterpret_cast<android_webview::AwContents*>(view_context)->GLDraw(
+      draw_info);
+}
+}
+
 namespace android_webview {
 
 namespace {
@@ -94,12 +106,21 @@ AwContents::~AwContents() {
     find_helper_->SetListener(NULL);
 }
 
+void AwContents::GLDraw(AwGLDrawInfo* draw_info) {
+  // TODO(joth): Do some drawing.
+}
+
 jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(web_contents_.get());
 }
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
   delete this;
+}
+
+// static
+jint GetAwGLDrawFunction(JNIEnv* env, jclass) {
+  return reinterpret_cast<jint>(&GLDrawFunction);
 }
 
 namespace {
