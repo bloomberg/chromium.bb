@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
+
 class GURL;
 class SkBitmap;
 struct FaviconURL;
@@ -22,12 +24,12 @@ class FaviconDownloadHelperDelegate {
       const GURL& image_url,
       bool errored,
       int requested_size,
-      const std::vector<SkBitmap>& bitmaps) = 0;
+      const std::vector<SkBitmap>& bitmaps) {}
 
   // Message Handler.
   virtual void OnUpdateFaviconURL(
       int32 page_id,
-      const std::vector<FaviconURL>& candidates) = 0;
+      const std::vector<FaviconURL>& candidates) {}
 
  protected:
   virtual ~FaviconDownloadHelperDelegate() {}

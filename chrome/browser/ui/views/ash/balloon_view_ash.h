@@ -5,10 +5,16 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_BALLOON_VIEW_ASH_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_BALLOON_VIEW_ASH_H_
 
+#include <map>
+
+#include "chrome/browser/favicon/favicon_download_helper_delegate.h"
 #include "chrome/browser/notifications/balloon.h"
 
+class FaviconDownloadHelper;
+
 // On Ash, a "BalloonView" is just a wrapper for ash notification entries.
-class BalloonViewAsh : public BalloonView {
+class BalloonViewAsh : public BalloonView,
+                       public FaviconDownloadHelperDelegate {
  public:
   explicit BalloonViewAsh(BalloonCollection* collection);
   virtual ~BalloonViewAsh();
@@ -21,17 +27,27 @@ class BalloonViewAsh : public BalloonView {
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual BalloonHost* GetHost() const OVERRIDE;
 
- private:
-  class IconFetcher;
+  // FaviconDownloadHelperDelegate interface:
+  virtual void OnDidDownloadFavicon(
+      int id,
+      const GURL& image_url,
+      bool errored,
+      int requested_size,
+      const std::vector<SkBitmap>& bitmaps) OVERRIDE;
 
+ private:
   void FetchIcon(const Notification& notification);
   std::string GetExtensionId(Balloon* balloon);
 
   BalloonCollection* collection_;
   Balloon* balloon_;
-  scoped_ptr<IconFetcher> icon_fetcher_;
-  // Track the current notification id so that it can be updated properly.
+  scoped_ptr<FaviconDownloadHelper> icon_fetcher_;
+
+  // Track the current notification id and download id so that it can be updated
+  // properly.
+  int current_download_id_;
   std::string current_notification_id_;
+  std::string cached_notification_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewAsh);
 };

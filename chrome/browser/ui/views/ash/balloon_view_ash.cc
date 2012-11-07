@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/favicon/favicon_download_helper.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
@@ -35,51 +36,6 @@ message_center::MessageCenter* GetMessageCenter() {
 }
 
 }  // namespace
-
-class BalloonViewAsh::IconFetcher : public content::WebContentsObserver {
- public:
-  IconFetcher(content::WebContents* web_contents,
-              const std::string& notification_id,
-              const GURL& icon_url)
-      : content::WebContentsObserver(web_contents),
-        request_id_(0),
-        notification_id_(notification_id),
-        icon_url_(icon_url) {
-    Observe(web_contents);
-    content::RenderViewHost* host = web_contents->GetRenderViewHost();
-    request_id_ = FaviconUtil::DownloadFavicon(host,
-                                               icon_url,
-                                               kNotificationIconImageSize);
-  }
-
-  // content::WebContentsObserver override.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    bool message_handled = false;   // Allow other handlers to receive these.
-    IPC_BEGIN_MESSAGE_MAP(IconFetcher, message)
-      IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
-      IPC_MESSAGE_UNHANDLED(message_handled = false)
-    IPC_END_MESSAGE_MAP()
-    return message_handled;
-  }
-
-  void OnDidDownloadFavicon(int id,
-                            const GURL& image_url,
-                            bool errored,
-                            int requested_size,
-                            const std::vector<SkBitmap>& bitmaps) {
-    if (image_url != icon_url_ || id != request_id_ || bitmaps.empty())
-      return;
-    GetMessageCenter()->SetNotificationImage(
-        notification_id_, gfx::ImageSkia(bitmaps[0]));
-  }
-
- private:
-  int request_id_;
-  std::string notification_id_;
-  GURL icon_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(IconFetcher);
-};
 
 BalloonViewAsh::BalloonViewAsh(BalloonCollection* collection)
     : collection_(collection),
@@ -153,9 +109,24 @@ void BalloonViewAsh::FetchIcon(const Notification& notification) {
     LOG(WARNING) << "Notification has icon url but no WebContents";
     return;
   }
-  icon_fetcher_.reset(new IconFetcher(web_contents,
-                                      notification.notification_id(),
-                                      notification.icon_url()));
+  icon_fetcher_.reset(new FaviconDownloadHelper(web_contents, this));
+  current_download_id_ = icon_fetcher_->DownloadFavicon(
+      notification.icon_url(), kNotificationIconImageSize);
+  cached_notification_id_ = notification.notification_id();
+}
+
+void BalloonViewAsh::OnDidDownloadFavicon(
+    int id,
+    const GURL& image_url,
+    bool errored,
+    int requested_size,
+    const std::vector<SkBitmap>& bitmaps) {
+  if (id != current_download_id_ || bitmaps.empty())
+    return;
+  GetMessageCenter()->SetNotificationImage(
+      cached_notification_id_, gfx::ImageSkia(bitmaps[0]));
+  current_download_id_ = -1;
+  cached_notification_id_.clear();
 }
 
 std::string BalloonViewAsh::GetExtensionId(Balloon* balloon) {
