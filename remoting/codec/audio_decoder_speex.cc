@@ -15,6 +15,13 @@
 
 namespace remoting {
 
+namespace {
+
+// Hosts will never generate more than 100 frames in a single packet.
+const int kMaxFramesPerPacket = 100;
+
+}  // namespace
+
 AudioDecoderSpeex::AudioDecoderSpeex() {
   // Create and initialize the Speex structures.
   speex_bits_.reset(new SpeexBits());
@@ -67,6 +74,10 @@ scoped_ptr<AudioPacket> AudioDecoderSpeex::Decode(
       (packet->channels() != AudioPacket::CHANNELS_STEREO)) {
     LOG(WARNING) << "Received an unsupported packet.";
     return scoped_ptr<AudioPacket>(NULL);
+  }
+  if (packet->data_size() > kMaxFramesPerPacket) {
+    LOG(WARNING) << "Received an packet with too many frames.";
+    return scoped_ptr<AudioPacket>();
   }
 
   // Create a new packet of decoded data.

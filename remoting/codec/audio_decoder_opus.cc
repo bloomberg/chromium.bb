@@ -14,7 +14,11 @@ namespace remoting {
 
 namespace {
 
-const int kMaxPacketSizeMs = 120;
+// Maximum size of an Opus frame in milliseconds.
+const int kMaxFrameSizeMs = 120;
+
+// Hosts will never generate more than 100 frames in a single packet.
+const int kMaxFramesPerPacket = 100;
 
 const AudioPacket::SamplingRate kSamplingRate =
     AudioPacket::SAMPLING_RATE_48000;
@@ -75,8 +79,12 @@ bool AudioDecoderOpus::ResetForPacket(AudioPacket* packet) {
 scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
     scoped_ptr<AudioPacket> packet) {
   if (packet->encoding() != AudioPacket::ENCODING_OPUS) {
-    LOG(WARNING) << "Received a packet with encoding " << packet->encoding()
-                 << "when an OPUS packet was expected.";
+    LOG(WARNING) << "Received an audio packet with encoding "
+                 << packet->encoding() << " when an OPUS packet was expected.";
+    return scoped_ptr<AudioPacket>();
+  }
+  if (packet->data_size() > kMaxFramesPerPacket) {
+    LOG(WARNING) << "Received an packet with too many frames.";
     return scoped_ptr<AudioPacket>();
   }
 
@@ -91,7 +99,7 @@ scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
   decoded_packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
   decoded_packet->set_channels(packet->channels());
 
-  int max_frame_samples = kMaxPacketSizeMs * kSamplingRate /
+  int max_frame_samples = kMaxFrameSizeMs * kSamplingRate /
       base::Time::kMillisecondsPerSecond;
   int max_frame_bytes = max_frame_samples * channels_ *
       decoded_packet->bytes_per_sample();
