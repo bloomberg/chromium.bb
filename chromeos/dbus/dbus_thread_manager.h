@@ -56,6 +56,11 @@ class ShillServiceClient;
 class SpeechSynthesizerClient;
 class UpdateEngineClient;
 
+// TODO(nona): Remove ibus namespace after complete libibus removal.
+namespace ibus {
+class IBusPanelService;
+}  // namespace ibus
+
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
 // handling asynchronous D-Bus operations.
 //
@@ -257,6 +262,10 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // Removes the ibus engine services for |object_path|.
   virtual void RemoveIBusEngineService(const dbus::ObjectPath& object_path) = 0;
+
+  // Returns the ibus panel service, owned by DBusThreadManager. Do not cache
+  // this pointer and use it after DBusThreadManager is shut down.
+  virtual ibus::IBusPanelService* GetIBusPanelService() = 0;
 
   virtual ~DBusThreadManager();
 

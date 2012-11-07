@@ -25,6 +25,8 @@ using testing::Return;
 using testing::_;
 
 namespace chromeos {
+// TODO(nona): Remove ibus namespace after complete libibus removal.
+namespace ibus {
 
 namespace {
 
@@ -461,4 +463,5 @@ TEST_F(IBusPanelServiceTest, PageDownTest) {
   service_->PageDown();
 }
 
+}  // namespace ibus
 }  // namespace chromeos

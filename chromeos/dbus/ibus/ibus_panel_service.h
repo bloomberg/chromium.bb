@@ -26,7 +26,6 @@ class IBusLookupTable;
 class IBusProperty;
 class IBusText;
 typedef ScopedVector<IBusProperty> IBusPropertyList;
-}  // namespace
 
 // A interface to handle the panel client method call.
 class CHROMEOS_EXPORT IBusPanelHandlerInterface {
@@ -101,6 +100,7 @@ class CHROMEOS_EXPORT IBusPanelService {
   DISALLOW_COPY_AND_ASSIGN(IBusPanelService);
 };
 
+}  // namespace ibus
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_IBUS_IBUS_PANEL_SERVICE_H_

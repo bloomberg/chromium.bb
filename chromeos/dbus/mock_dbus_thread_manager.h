@@ -93,6 +93,7 @@ class MockDBusThreadManager : public DBusThreadManager {
                IBusEngineService*(const dbus::ObjectPath& object_path));
   MOCK_METHOD1(RemoveIBusEngineService,
                void(const dbus::ObjectPath& object_path));
+  MOCK_METHOD0(GetIBusPanelService, ibus::IBusPanelService*(void));
 
   MockBluetoothAdapterClient* mock_bluetooth_adapter_client() {
     return mock_bluetooth_adapter_client_.get();

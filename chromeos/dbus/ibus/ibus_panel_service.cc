@@ -18,6 +18,8 @@
 #include "dbus/object_proxy.h"
 
 namespace chromeos {
+// TODO(nona): Remove ibus namespace after complete libibus removal.
+namespace ibus {
 
 class IBusPanelServiceImpl : public IBusPanelService {
  public:
@@ -288,4 +290,5 @@ IBusPanelService* IBusPanelService::Create(DBusClientImplementationType type,
   }
 }
 
+}  // namespace ibus
 }  // namespace chromeos

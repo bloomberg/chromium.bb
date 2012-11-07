@@ -12,7 +12,8 @@ MockIBusPanelService::MockIBusPanelService() {
 MockIBusPanelService::~MockIBusPanelService() {
 }
 
-void MockIBusPanelService::Initialize(IBusPanelHandlerInterface* handler) {
+void MockIBusPanelService::Initialize(
+    ibus::IBusPanelHandlerInterface* handler) {
 }
 
 void MockIBusPanelService::CandidateClicked(uint32 index,
