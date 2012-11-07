@@ -2126,6 +2126,69 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	    handle_bound_key(terminal, input, sym, time))
 		return;
 
+	/* Map keypad symbols to 'normal' equivalents before processing */
+	switch (sym) {
+	case XKB_KEY_KP_Space:
+		sym = XKB_KEY_space;
+		break;
+	case XKB_KEY_KP_Tab:
+		sym = XKB_KEY_Tab;
+		break;
+	case XKB_KEY_KP_Enter:
+		sym = XKB_KEY_Return;
+		break;
+	case XKB_KEY_KP_Left:
+		sym = XKB_KEY_Left;
+		break;
+	case XKB_KEY_KP_Up:
+		sym = XKB_KEY_Up;
+		break;
+	case XKB_KEY_KP_Right:
+		sym = XKB_KEY_Right;
+		break;
+	case XKB_KEY_KP_Down:
+		sym = XKB_KEY_Down;
+		break;
+	case XKB_KEY_KP_Equal:
+		sym = XKB_KEY_equal;
+		break;
+	case XKB_KEY_KP_Multiply:
+		sym = XKB_KEY_asterisk;
+		break;
+	case XKB_KEY_KP_Add:
+		sym = XKB_KEY_plus;
+		break;
+	case XKB_KEY_KP_Separator:
+		/* Note this is actually locale-dependent and should mostly be
+		 * a comma.  But leave it as period until we one day start
+		 * doing the right thing. */
+		sym = XKB_KEY_period;
+		break;
+	case XKB_KEY_KP_Subtract:
+		sym = XKB_KEY_minus;
+		break;
+	case XKB_KEY_KP_Decimal:
+		sym = XKB_KEY_period;
+		break;
+	case XKB_KEY_KP_Divide:
+		sym = XKB_KEY_slash;
+		break;
+	case XKB_KEY_KP_0:
+	case XKB_KEY_KP_1:
+	case XKB_KEY_KP_2:
+	case XKB_KEY_KP_3:
+	case XKB_KEY_KP_4:
+	case XKB_KEY_KP_5:
+	case XKB_KEY_KP_6:
+	case XKB_KEY_KP_7:
+	case XKB_KEY_KP_8:
+	case XKB_KEY_KP_9:
+		sym = (sym - XKB_KEY_KP_0) + XKB_KEY_0;
+		break;
+	default:
+		break;
+	}
+
 	switch (sym) {
 	case XKB_KEY_BackSpace:
 		if (modifiers & MOD_ALT_MASK)
