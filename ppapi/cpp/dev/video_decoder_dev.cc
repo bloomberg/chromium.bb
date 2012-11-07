@@ -35,7 +35,6 @@ VideoDecoder_Dev::VideoDecoder_Dev(PP_Resource resource) : Resource(resource) {
 }
 
 VideoDecoder_Dev::~VideoDecoder_Dev() {
-  get_interface<PPB_VideoDecoder_Dev>()->Destroy(pp_resource());
 }
 
 void VideoDecoder_Dev::AssignPictureBuffers(

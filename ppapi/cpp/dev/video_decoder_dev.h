@@ -27,8 +27,8 @@ class VideoDecoder_Dev : public Resource {
   VideoDecoder_Dev(const InstanceHandle& instance,
                    const Graphics3D& context,
                    PP_VideoDecoder_Profile profile);
-
   explicit VideoDecoder_Dev(PP_Resource resource);
+
   virtual ~VideoDecoder_Dev();
 
   // PPB_VideoDecoder_Dev implementation.
@@ -38,10 +38,6 @@ class VideoDecoder_Dev : public Resource {
   void ReusePictureBuffer(int32_t picture_buffer_id);
   int32_t Flush(const CompletionCallback& callback);
   int32_t Reset(const CompletionCallback& callback);
-
- private:
-  // Disallow copy-construction to ensure Destroy() is called exactly once.
-  VideoDecoder_Dev(const VideoDecoder_Dev&);
 };
 
 }  // namespace pp
