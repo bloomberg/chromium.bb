@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/cookies_tree_model.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 class CookiesTreeModelUtil;

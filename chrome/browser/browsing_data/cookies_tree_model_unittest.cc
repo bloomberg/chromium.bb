@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cookies_tree_model.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
 
 #include <string>
 
 #include "base/message_loop.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/content_settings/mock_settings_observer.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_database_helper.h"
@@ -20,6 +16,10 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_server_bound_cert_helper.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/mock_settings_observer.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
@@ -47,7 +47,7 @@ class CookiesTreeModelTest : public testing::Test {
     // Avoid memory leaks.
     special_storage_policy_ = NULL;
     profile_.reset();
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   virtual void SetUp() OVERRIDE {
@@ -97,7 +97,7 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_local_storage_helper_ = NULL;
     mock_browsing_data_database_helper_ = NULL;
     mock_browsing_data_flash_lso_helper_ = NULL;
-    message_loop_.RunAllPending();
+    message_loop_.RunUntilIdle();
   }
 
   scoped_ptr<CookiesTreeModel> CreateCookiesTreeModelWithInitialSample(

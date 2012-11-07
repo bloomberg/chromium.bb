@@ -8,8 +8,8 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/cookies_tree_model.h"
 #include "net/cookies/canonical_cookie.h"
 
 ///////////////////////////////////////////////////////////////////////////////

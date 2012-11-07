@@ -6,11 +6,11 @@
 
 #import "base/i18n/time_formatting.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "grit/generated_resources.h"
-#include "chrome/browser/cookies_tree_model.h"
+#include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/text/bytes_formatting.h"
-#include "net/cookies/canonical_cookie.h"
 #include "webkit/appcache/appcache_service.h"
 
 #pragma mark Cocoa Cookie Details

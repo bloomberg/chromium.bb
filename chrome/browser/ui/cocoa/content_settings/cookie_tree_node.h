@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/cookies_tree_model.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 
 @interface CocoaCookieTreeNode : NSObject {

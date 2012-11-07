@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COOKIES_TREE_MODEL_H_
-#define CHROME_BROWSER_COOKIES_TREE_MODEL_H_
+#ifndef CHROME_BROWSER_BROWSING_DATA_COOKIES_TREE_MODEL_H_
+#define CHROME_BROWSER_BROWSING_DATA_COOKIES_TREE_MODEL_H_
 
 // TODO(viettrungluu): This header file #includes far too much and has too much
 // inline code (which shouldn't be inline).
@@ -744,4 +744,4 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   int batch_update_;
 };
 
-#endif  // CHROME_BROWSER_COOKIES_TREE_MODEL_H_
+#endif  // CHROME_BROWSER_BROWSING_DATA_COOKIES_TREE_MODEL_H_

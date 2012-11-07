@@ -12,7 +12,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/cookies_tree_model.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util.h"
