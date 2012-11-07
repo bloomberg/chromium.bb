@@ -4,3 +4,5 @@ AudioBusTest.*
 AudioRendererAlgorithmTest.*
 VectorMathTest.*
 VideoFrame.*
+PipelineTest.*
+PipelineTeardownTest.*
