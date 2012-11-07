@@ -84,6 +84,7 @@ void CreateDataPackWithSingleBitmap(const FilePath& path,
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, edge_size, edge_size);
   bitmap.allocPixels();
+  bitmap.eraseColor(SK_ColorWHITE);
   std::vector<unsigned char> bitmap_data;
   EXPECT_TRUE(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data));
 
