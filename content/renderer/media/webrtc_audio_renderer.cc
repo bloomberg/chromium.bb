@@ -26,6 +26,11 @@ namespace {
 int kValidOutputRates[] = {96000, 48000, 44100};
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
 int kValidOutputRates[] = {48000, 44100};
+#elif defined(OS_ANDROID)
+// On Android, the most popular sampling rate is 16000.
+int kValidOutputRates[] = {48000, 44100, 16000};
+#else
+int kValidOutputRates[] = {44100};
 #endif
 
 // TODO(xians): Merge the following code to WebRtcAudioCapturer, or remove.
