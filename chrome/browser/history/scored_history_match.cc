@@ -36,34 +36,16 @@ const int kMaxTotalScore = 1425;
 // final calculation.
 const int kScoreRank[] = { 1450, 1200, 900, 400 };
 
-// When doing HistoryURL-provider-like scoring (when
-// also_do_hup_like_scoring is true), assign results with non-zero
-// typed counts this score, which then gets modified slightly.  This
-// number is derived from the score of 1410 used in
-// HistoryURL provider's CalculateRelevance() function for matches
-// that are worthy of being inline autocompleted.
-const int kBaseScoreForTypedResultsInHUPLikeScoring = 1410;
-
-// When doing HistoryURL-provider-like scoring (when
-// also_do_hup_like_scoring is true), assign results with zero typed
-// counts this score, which then gets modified slightly.  This number
-// is derived from the score of 900 + kMaxMatches used in HistoryURL
-// provider's CalculateRelevance() function for matches that are not
-// worthy of being inline autopleted.
-const int kBaseScoreForUntypedResultsInHUPLikeScoring = 900;
-
 // ScoredHistoryMatch ----------------------------------------------------------
 
 bool ScoredHistoryMatch::initialized_ = false;
 bool ScoredHistoryMatch::use_new_scoring = false;
-bool ScoredHistoryMatch::also_do_hup_like_scoring = false;
 
 ScoredHistoryMatch::ScoredHistoryMatch()
     : raw_score(0),
       can_inline(false) {
   if (!initialized_) {
     InitializeNewScoringField();
-    InitializeAlsoDoHUPLikeScoringField();
     initialized_ = true;
   }
 }
@@ -79,7 +61,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
       can_inline(false) {
   if (!initialized_) {
     InitializeNewScoringField();
-    InitializeAlsoDoHUPLikeScoringField();
     initialized_ = true;
   }
 
@@ -196,63 +177,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
                   kVisitCountRelevance + kTypedCountRelevance);
     raw_score = std::min(kMaxTotalScore, raw_score);
   }
-
-  if (also_do_hup_like_scoring && can_inline) {
-    // HistoryURL-provider-like scoring gives any result that is
-    // inlineable a certain minimum score.  This derives from the
-    // first test in HistoryURLProvider::CompareHistoryMatch() that
-    // says that anything with a typed count is better than anything
-    // without.
-    int hup_like_score = (row.typed_count() > 0) ?
-        kBaseScoreForTypedResultsInHUPLikeScoring :
-        kBaseScoreForUntypedResultsInHUPLikeScoring;
-
-    // In low-typed-count ranges, give non-host-only results (i.e.,
-    // http://www.foo.com/bar.html vs. http://www.foo.com/) enough of
-    // a penalty so that the host-only result outscores all the other
-    // results that would normally have the same base score.  This
-    // roughly approximates the code in
-    // HistoryURLProvider::PromoteOrCreateShorterSuggestion().  The
-    // The value of this penalty (-5) has to be greater in magnitude
-    // than the maximum boost applied by all other boosts.  As we have
-    // only one other boost--a boost (below) based on the number of
-    // components that can be part of an inline completion--the this
-    // value simply has to be greater in magnitude than the maximum
-    // number of components.  Right now that maximum boost is 2 (see
-    // chrome/browser/autocomplete/url_prefix.cc) so using 5 should be
-    // safe.
-    if ((row.typed_count() <= 1) && !IsHostOnly())
-      hup_like_score -= 5;
-
-    // Calculate num_components_in_best_inlineable_url_prefix_match in
-    // order to tweak the hup_like_score by it.  It represents the
-    // number of components in the best URL prefix that allows us to
-    // inline the match.  For instance, suppose the user types "http".
-    // The URL http://htaccess.com is inlineable for this text, but
-    // the best prefix match is empty.  The num_components is 0.  The
-    // URL http://http.com is also inlineable for the input text
-    // "http".  In this case, the best prefix match that makes the URL
-    // inlineable has "http" matching the "http" in "http.com".  The
-    // best prefix match in this case is "http://".  The
-    // num_components is 1.  This boost roughly corresponds to the
-    // second test in HistoryURLProvider::CompareHistoryMatch() which
-    // looks for what it calls innermost matches.  (Innermost match, a
-    // boolean, is the same idea as the number of components in
-    // inlineable prefix, just a less nuanced form.)
-    // If it's inlineable, we must have a match.  Note the prefix that
-    // makes it inlineable may be empty.
-    DCHECK(best_prefix != NULL);
-    const int num_components_in_best_inlineable_url_prefix_match =
-        best_prefix->num_components;
-
-    hup_like_score += num_components_in_best_inlineable_url_prefix_match;
-
-    // All the other logic to goes into hup-like-scoring happens in
-    // the tie-breaker case of MatchScoreGreater().
-
-    // Finally, incorporate hup_like_score into raw_score.
-    raw_score = std::max(raw_score, hup_like_score);
-  }
 }
 
 ScoredHistoryMatch::~ScoredHistoryMatch() {}
@@ -340,33 +264,10 @@ int ScoredHistoryMatch::ScoreForValue(int value, const int* value_ranks) {
   return score;
 }
 
-// Comparison function for sorting ScoredMatches by their scores with
-// intelligent tie-breaking.
+// Comparison function for sorting ScoredMatches by their scores.
 bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
                                            const ScoredHistoryMatch& m2) {
-  if (m1.raw_score != m2.raw_score)
-    return m1.raw_score > m2.raw_score;
-
-  // This tie-breaking logic is inspired by / largely copied from the
-  // ordering logic in history_url_provider.cc CompareHistoryMatch().
-
-  // URLs that have been typed more often are better.
-  if (m1.url_info.typed_count() != m2.url_info.typed_count())
-    return m1.url_info.typed_count() > m2.url_info.typed_count();
-
-  // For URLs that have each been typed once, a host (alone) is better
-  // than a page inside.
-  if (m1.url_info.typed_count() == 1) {
-    if (m1.IsHostOnly() != m2.IsHostOnly())
-      return m1.IsHostOnly();
-  }
-
-  // URLs that have been visited more often are better.
-  if (m1.url_info.visit_count() != m2.url_info.visit_count())
-    return m1.url_info.visit_count() > m2.url_info.visit_count();
-
-  // URLs that have been visited more recently are better.
-  return m1.url_info.last_visit() > m2.url_info.last_visit();
+  return m1.raw_score > m2.raw_score;
 }
 
 // static
@@ -632,12 +533,7 @@ void ScoredHistoryMatch::InitializeNewScoringField() {
   UMA_HISTOGRAM_ENUMERATION(
       "Omnibox.HistoryQuickProviderNewScoringFieldTrialBeacon",
       new_scoring_option, NUM_OPTIONS);
-}
 
-void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringField() {
-  also_do_hup_like_scoring =
-      AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrial() &&
-      AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup();
 }
 
 }  // namespace history

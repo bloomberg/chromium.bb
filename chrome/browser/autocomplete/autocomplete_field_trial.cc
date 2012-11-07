@@ -25,8 +25,6 @@ static const char kHQPNewScoringFieldTrialName[] = "OmniboxHQPNewScoring";
 static const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 static const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
-static const char kHQPReplaceHUPScoringFieldTrialName[] =
-    "OmniboxHQPReplaceHUP";
 
 // Field trial experiment probabilities.
 
@@ -65,16 +63,6 @@ const base::FieldTrial::Probability
 const base::FieldTrial::Probability
     kHUPCreateShorterMatchFieldTrialExperimentFraction = 0;
 
-// For the field trial that removes searching/scoring URLs from
-// HistoryURL provider and adds a HistoryURL-provider-like scoring
-// mode to HistoryQuick provider, put 25% ( = 25/100 ) of the users in
-// the experiment group.
-const base::FieldTrial::Probability
-    kHQPReplaceHUPScoringFieldTrialDivisor = 100;
-const base::FieldTrial::Probability
-    kHQPReplaceHUPScoringFieldTrialExperimentFraction = 25;
-
-
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
 // Activate() below.
@@ -92,10 +80,6 @@ int hup_dont_cull_redirects_experiment_group = 0;
 // Field trial ID for the HistoryURL provider create shorter match
 // experiment group.
 int hup_dont_create_shorter_match_experiment_group = 0;
-
-// Field trial ID for the HistoryQuick provider replaces HistoryURL provider
-// experiment group.
-int hqp_replace_hup_scoring_experiment_group = 0;
 
 }
 
@@ -173,17 +157,6 @@ void AutocompleteFieldTrial::Activate() {
   hup_dont_create_shorter_match_experiment_group =
       trial->AppendGroup("DontCreateShorterMatch",
                          kHUPCreateShorterMatchFieldTrialExperimentFraction);
-
-  // Create the field trial that makes HistoryQuick provider score
-  // some results like HistoryURL provider and simultaneously disable
-  // HistoryURL provider from searching the URL database.  Make it
-  // expire on June 23, 2013.
-  trial = base::FieldTrialList::FactoryGetFieldTrial(
-    kHQPReplaceHUPScoringFieldTrialName, kHQPReplaceHUPScoringFieldTrialDivisor,
-      "Standard", 2013, 6, 23, NULL);
-  trial->UseOneTimeRandomization();
-  hqp_replace_hup_scoring_experiment_group = trial->AppendGroup("HQPReplaceHUP",
-      kHQPReplaceHUPScoringFieldTrialExperimentFraction);
 }
 
 bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrial() {
@@ -268,18 +241,4 @@ bool AutocompleteFieldTrial::
   const int group = base::FieldTrialList::FindValue(
       kHUPCreateShorterMatchFieldTrialName);
   return group == hup_dont_create_shorter_match_experiment_group;
-}
-
-bool AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrial() {
-  return base::FieldTrialList::TrialExists(kHQPReplaceHUPScoringFieldTrialName);
-}
-
-bool AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup() {
-  if (!InHQPReplaceHUPScoringFieldTrial())
-    return false;
-
-  // Return true if we're in the experiment group.
-  const int group = base::FieldTrialList::FindValue(
-      kHQPReplaceHUPScoringFieldTrialName);
-  return group == hqp_replace_hup_scoring_experiment_group;
 }

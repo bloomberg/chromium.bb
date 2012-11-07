@@ -88,22 +88,6 @@ class AutocompleteFieldTrial {
   // HistoryURL provider.
   static bool InHUPCreateShorterMatchFieldTrialExperimentGroup();
 
-  // ---------------------------------------------------------
-  // For the HistoryQuick provider replace HistoryURL provider field trial.
-
-  // Returns whether the user is in any field trial group for this
-  // field trial.  False indicates that the field trial wasn't
-  // successfully created for some reason.
-  static bool InHQPReplaceHUPScoringFieldTrial();
-
-  // Returns whether the user should get the experimental setup or the
-  // default setup for this field trial.  The experiment group
-  // simultaneously disables HistoryURL provider from searching the
-  // URL database and directs HistoryQuick provider to calculate both
-  // HUP-style and HQP-style scores for matches, then return whichever
-  // is larger.
-  static bool InHQPReplaceHUPScoringFieldTrialExperimentGroup();
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutocompleteFieldTrial);
 };
