@@ -148,6 +148,32 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         }
     }
 
+    private class FullScreenMediaController extends MediaController {
+
+        View mVideoView;
+
+        public FullScreenMediaController(Context context, View video) {
+            super(context);
+            mVideoView = video;
+        }
+
+        @Override
+        public void show() {
+            super.show();
+            if (mVideoView != null) {
+                mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+            }
+        }
+
+        @Override
+        public void hide() {
+            if (mVideoView != null) {
+                mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+            }
+            super.hide();
+        }
+    }
+
     private Runnable mExitFullscreenRunnable = new Runnable() {
         @Override
         public void run() {
@@ -306,6 +332,7 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
                 // ensure the controller will get repositioned later
                 mMediaController.hide();
             }
+            mMediaController.show();
         }
     }
 
@@ -346,7 +373,7 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
     public void openVideo() {
         if (mSurfaceHolder != null) {
             mCurrentState = STATE_IDLE;
-            setMediaController(new MediaController(getChromeActivity()));
+            setMediaController(new FullScreenMediaController(getChromeActivity(), this));
             if (mNativeContentVideoView != 0) {
                 nativeUpdateMediaMetadata(mNativeContentVideoView);
             }
@@ -355,8 +382,6 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
                 nativeSetSurface(mNativeContentVideoView,
                                  mSurfaceHolder.getSurface());
             }
-            requestLayout();
-            invalidate();
         }
     }
 
