@@ -436,7 +436,7 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     gs_changed_time_ = hwstate->timestamp;
 
   UpdateStartedMovingTime(*hwstate, gs_fingers);
-  UpdateButtons(*hwstate);
+  UpdateButtons(*hwstate, timeout);
   UpdateTapGesture(hwstate,
                    gs_fingers,
                    same_fingers,
@@ -455,6 +455,9 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
 
 Gesture* ImmediateInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
   result_.type = kGestureTypeNull;
+  // Tap-to-click always aborts when real button(s) are being used, so we
+  // don't need to worry about conflicts with these two types of callback.
+  UpdateButtonsTimeout(now);
   UpdateTapGesture(NULL,
                    set<short, kMaxGesturingFingers>(),
                    false,
@@ -1562,7 +1565,8 @@ bool ImmediateInterpreter::PointInLiftoffBrush(const FingerState& fs) const {
   return false;
 }
 
-void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
+void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate,
+                                         stime_t* timeout) {
   // TODO(miletus): To distinguish between left/right buttons down
   bool prev_button_down = prev_state_.buttons_down;
   bool button_down = hwstate.buttons_down;
@@ -1595,6 +1599,9 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
                         button_type_,
                         0);
       sent_button_down_ = true;
+    } else if (button_type_ == GESTURES_BUTTON_LEFT &&
+               hwstate.timestamp < button_down_timeout_ && timeout) {
+      *timeout = button_down_timeout_ - hwstate.timestamp;
     }
   }
   if (phys_up_edge) {
@@ -1612,6 +1619,23 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
     button_down_timeout_ = 0;
     sent_button_down_ = false;
   }
+}
+
+void ImmediateInterpreter::UpdateButtonsTimeout(stime_t now) {
+  if (sent_button_down_) {
+    Err("How is sent_button_down_ set?");
+    return;
+  }
+  if (button_type_ != GESTURES_BUTTON_LEFT) {
+    Err("How is button_type_ not GESTURES_BUTTON_LEFT?");
+    return;
+  }
+  sent_button_down_ = true;
+  result_ = Gesture(kGestureButtonsChange,
+                    prev_state_.timestamp,
+                    now,
+                    GESTURES_BUTTON_LEFT,
+                    0);
 }
 
 namespace {

@@ -2379,6 +2379,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
 
 struct ClickTestHardwareStateAndExpectations {
   HardwareState hs;
+  stime_t timeout;
   unsigned expected_down;
   unsigned expected_up;
 };
@@ -2417,25 +2418,32 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     {0, 0, 0, 0, 10, 0, 51.2, 70, 2, 0},
   };
   ClickTestHardwareStateAndExpectations records[] = {
-    { { 0,    0, 0, 0, NULL },              0, 0 },
-    { { 1,    1, 0, 0, NULL },              0, 0 },
-    { { 1.01, 1, 2, 3, &finger_states[0] }, GESTURES_BUTTON_RIGHT, 0 },
-    { { 3,    0, 0, 0, NULL },              0, GESTURES_BUTTON_RIGHT },
-    { { 4,    1, 0, 0, NULL },              0, 0 },
-    { { 4.01, 1, 2, 2, &finger_states[0] }, GESTURES_BUTTON_RIGHT, 0 },
-    { { 6,    0, 0, 0, NULL },              0, GESTURES_BUTTON_RIGHT },
-    { { 7,    1, 0, 0, NULL },              0, 0 },
-    { { 7.01, 1, 2, 2, &finger_states[2] }, 0, 0 },
-    { { 7.05, 1, 2, 2, &finger_states[2] }, GESTURES_BUTTON_LEFT, 0 },
-    { { 8,    0, 0, 0, NULL },              0, GESTURES_BUTTON_LEFT },
-    { { 9,    0, 0, 0, NULL },              0, 0 },
-    { { 9.01, 1, 2, 2, &finger_states[4] }, 0, 0 },
-    { { 9.05, 1, 2, 2, &finger_states[4] }, GESTURES_BUTTON_LEFT, 0 },
-    { { 10,   0, 0, 0, NULL },              0, GESTURES_BUTTON_LEFT },
+    { { 0,    0, 0, 0, NULL },              -1, 0, 0 },
+    { { 1,    1, 0, 0, NULL },              -1, 0, 0 },
+    { { 1.01, 1, 2, 3, &finger_states[0] }, -1, GESTURES_BUTTON_RIGHT, 0 },
+    { { 3,    0, 0, 0, NULL },              -1, 0, GESTURES_BUTTON_RIGHT },
+    { { 4,    1, 0, 0, NULL },              -1, 0, 0 },
+    { { 4.01, 1, 2, 2, &finger_states[0] }, -1, GESTURES_BUTTON_RIGHT, 0 },
+    { { 6,    0, 0, 0, NULL },              -1, 0, GESTURES_BUTTON_RIGHT },
+    { { 7,    1, 0, 0, NULL },              -1, 0, 0 },
+    { { 7.01, 1, 2, 2, &finger_states[2] }, -1, 0, 0 },
+    { { 7.05, 1, 2, 2, &finger_states[2] }, -1, GESTURES_BUTTON_LEFT, 0 },
+    { { 8,    0, 0, 0, NULL },              -1, 0, GESTURES_BUTTON_LEFT },
+    { { 9,    0, 0, 0, NULL },              -1, 0, 0 },
+    { { 9.01, 1, 2, 2, &finger_states[4] }, -1, 0, 0 },
+    { { 9.05, 1, 2, 2, &finger_states[4] }, -1, GESTURES_BUTTON_LEFT, 0 },
+    { { 10,   0, 0, 0, NULL },              -1, 0, GESTURES_BUTTON_LEFT },
+    { { 11,   1, 0, 0, NULL },              -1, 0, 0 },
+    { { 0,    0, 0, 0, NULL },              11.1, GESTURES_BUTTON_LEFT, 0 },
+    { { 12,   0, 0, 0, NULL },              -1, 0, GESTURES_BUTTON_LEFT },
   };
 
   for (size_t i = 0; i < arraysize(records); ++i) {
-    Gesture* result = ii.SyncInterpret(&records[i].hs, NULL);
+    Gesture* result = NULL;
+    if (records[i].timeout < 0.0)
+      result = ii.SyncInterpret(&records[i].hs, NULL);
+    else
+      result = ii.HandleTimer(records[i].timeout, NULL);
     if (records[i].expected_down == 0 && records[i].expected_up == 0) {
       EXPECT_EQ(static_cast<Gesture*>(NULL), result) << "i=" << i;
     } else {

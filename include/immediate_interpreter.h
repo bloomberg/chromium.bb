@@ -288,7 +288,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   bool PointInLiftoffBrush(const FingerState& fs) const;
 
   // Updates the internal button state based on the passed in |hwstate|.
-  void UpdateButtons(const HardwareState& hwstate);
+  // Can optionally request a timeout by setting *timeout.
+  void UpdateButtons(const HardwareState& hwstate, stime_t* timeout);
+
+  // Called when the timeout is fired for UpdateButtons.
+  void UpdateButtonsTimeout(stime_t now);
 
   // By looking at |hwstate| and internal state, determins if a button down
   // at this time would correspond to a left/middle/right click. Returns
