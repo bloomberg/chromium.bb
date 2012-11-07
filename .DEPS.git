@@ -336,7 +336,7 @@ deps_os = {
         'src/third_party/mtpd/source':
             Var('git_url') + '/chromiumos/platform/mtpd.git@47f8e78eefbeeda76ec43cac3d2bdc54a010115c',
         'src/third_party/openssl':
-            Var('git_url') + '/chromium/deps/openssl.git@89348cf48391742cdbeb1aee3932fde25ff50e5a',
+            Var('git_url') + '/chromium/deps/openssl.git@2c4508dfe2bc5b6296c01114ed11ddc64b7718c6',
         'src/third_party/swig/linux':
             Var('git_url') + '/chromium/deps/swig/linux.git@866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
         'src/third_party/xdg-utils':
