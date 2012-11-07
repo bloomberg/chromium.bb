@@ -527,6 +527,7 @@ class VIEWS_EXPORT MenuController
   MenuDelegate::DropPosition drop_position_;
 
   // Owner of child windows.
+  // WARNING: this may be NULL.
   Widget* owner_;
 
 #if defined(USE_AURA)

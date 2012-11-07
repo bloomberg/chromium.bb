@@ -29,6 +29,7 @@ class MenuHost : public Widget {
   virtual ~MenuHost();
 
   // Initializes and shows the MenuHost.
+  // WARNING: |parent| may be NULL.
   void InitMenuHost(Widget* parent,
                     const gfx::Rect& bounds,
                     View* contents_view,

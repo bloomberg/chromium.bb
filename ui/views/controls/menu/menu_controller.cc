@@ -331,6 +331,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   message_loop_depth_++;
   DCHECK_LE(message_loop_depth_, 2);
 #if defined(USE_AURA)
+  // TODO(sky): deal with NULL |parent|. NULL only happens on win.
   root_window_ = parent->GetNativeWindow()->GetRootWindow();
 
   // Observe activation changes to close the window if another window is
@@ -1157,7 +1158,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   gfx::NativeWindow window_under_mouse =
       GetScreen()->GetWindowAtCursorScreenPoint();
   // TODO(oshima): Replace with views only API.
-  if (window_under_mouse != owner_->GetNativeWindow())
+  if (!owner_ || window_under_mouse != owner_->GetNativeWindow())
     return false;
 
   // The user moved the mouse outside the menu and over the owning window. See

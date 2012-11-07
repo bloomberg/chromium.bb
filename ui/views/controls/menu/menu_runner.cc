@@ -164,7 +164,9 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
   owns_controller_ = false;
   if (!controller) {
     // No menus are showing, show one.
-    controller = new MenuController(parent->GetNativeTheme(), !for_drop_, this);
+    ui::NativeTheme* theme = parent ? parent->GetNativeTheme() :
+        ui::NativeTheme::instance();
+    controller = new MenuController(theme, !for_drop_, this);
     owns_controller_ = true;
   }
   controller_ = controller;
