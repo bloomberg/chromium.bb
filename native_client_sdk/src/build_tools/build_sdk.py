@@ -566,6 +566,7 @@ EXAMPLE_LIST = [
   'fullscreen_tumbler',
   'gamepad',
   'geturl',
+  'hello_nacl_mounts',
   'hello_world_interactive',
   'hello_world',
   'hello_world_gles',

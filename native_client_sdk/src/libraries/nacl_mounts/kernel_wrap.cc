@@ -4,6 +4,9 @@
  */
 
 #include <sys/types.h>  // Include something that will define __GLIBC__.
+#include "utils/macros.h"
+
+FORCE_LINK_THIS(kernel_wrap)
 
 #if defined(__native_client__)
 #  if defined(__GLIBC__)

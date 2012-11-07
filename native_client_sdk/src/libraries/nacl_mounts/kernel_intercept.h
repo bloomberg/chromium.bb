@@ -46,3 +46,4 @@ int ki_access(const char* path, int amode);
 EXTERN_C_END
 
 #endif  // LIBRARIES_NACL_MOUNTS_KERNEL_INTERCEPT_H_
+

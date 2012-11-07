@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="-1">
+  <title><TITLE></title>
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="example.js"></script>
+</head>
+<body data-name="<NAME>" data-tc="<tc>" data-path="<path>">
+  <h1><TITLE></h1>
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <div>
+    <span>
+      <input type="radio" id="radiofopen" name="group" checked="checked">fopen
+      <input type="radio" id="radiofclose" name="group">fclose
+      <input type="radio" id="radiofread" name="group">fread
+      <input type="radio" id="radiofwrite" name="group">fwrite
+      <input type="radio" id="radiofseek" name="group">fseek
+    </span>
+  </div>
+  <div class="function" id="fopen">
+    <span>
+      Filename:
+      <input type="text" id="fopenFilename">
+      Write:
+      <input type="checkbox" id="fopenWrite">
+      Read:
+      <input type="checkbox" id="fopenRead">
+      <button id="fopenExecute">fopen</button>
+    </span>
+  </div>
+  <div class="function" id="fclose" hidden>
+    <span>
+      <select class="file-handle" id="fcloseHandle"></select>
+      <button id="fcloseExecute">fclose</button>
+    </span>
+  </div>
+  <div class="function" id="fread" hidden>
+    <span>
+      <select class="file-handle" id="freadHandle"></select>
+      Count:
+      <input type="text" id="freadBytes">
+      <button id="freadExecute">fread</button>
+    </span>
+  </div>
+  <div class="function" id="fwrite" hidden>
+    <span>
+      <select class="file-handle" id="fwriteHandle"></select>
+      Data:
+      <input type="text" id="fwriteData">
+      <button id="fwriteExecute">fwrite</button>
+    </span>
+  </div>
+  <div class="function" id="fseek" hidden>
+    <span>
+      <select class="file-handle" id="fseekHandle"></select>
+      Offset:
+      <input type="text" id="fseekOffset">
+      Whence:
+      <select id="fseekWhence">
+        <option value="SEEK_SET">SEEK_SET</option>
+        <option value="SEEK_CUR">SEEK_CUR</option>
+        <option value="SEEK_END">SEEK_END</option>
+      </select>
+      <button id="fseekExecute">fseek</button>
+    </span>
+  </div>
+  <!-- The NaCl plugin will be embedded inside the element with id "listener".
+      See common.js.-->
+  <div id="listener"></div>
+  <div id="log"></div>
+</body>
+</html>
