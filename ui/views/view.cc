@@ -1402,29 +1402,29 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
   // Node characteristics.
   char p[kMaxPointerStringLength];
 
-  size_t baseNameIndex = GetClassName().find_last_of('/');
-  if (baseNameIndex == std::string::npos)
-    baseNameIndex = 0;
+  size_t base_name_index = GetClassName().find_last_of('/');
+  if (base_name_index == std::string::npos)
+    base_name_index = 0;
   else
-    baseNameIndex++;
+    base_name_index++;
 
   char bounds_buffer[512];
 
   // Information about current node.
   base::snprintf(p, arraysize(bounds_buffer), "%p", view_with_children);
   result.append("  N");
-  result.append(p+2);
+  result.append(p + 2);
   result.append(" [label=\"");
 
-  result.append(GetClassName().substr(baseNameIndex).c_str());
+  result.append(GetClassName().substr(base_name_index).c_str());
 
   base::snprintf(bounds_buffer,
                  arraysize(bounds_buffer),
                  "\\n bounds: (%d, %d), (%dx%d)",
-                 this->bounds().x(),
-                 this->bounds().y(),
-                 this->bounds().width(),
-                 this->bounds().height());
+                 bounds().x(),
+                 bounds().y(),
+                 bounds().width(),
+                 bounds().height());
   result.append(bounds_buffer);
 
   if (GetTransform().HasChange()) {
@@ -1435,7 +1435,7 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
                                              &translation,
                                              &rotation,
                                              &scale)) {
-      if (translation != gfx::Point(0, 0)) {
+      if (!translation.IsOrigin()) {
         base::snprintf(bounds_buffer,
                        arraysize(bounds_buffer),
                        "\\n translation: (%d, %d)",
@@ -1482,9 +1482,9 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
 
     base::snprintf(pp, kMaxPointerStringLength, "%p", parent_);
     result.append("  N");
-    result.append(pp+2);
+    result.append(pp + 2);
     result.append(" -> N");
-    result.append(p+2);
+    result.append(p + 2);
     result.append("\n");
   }
 
