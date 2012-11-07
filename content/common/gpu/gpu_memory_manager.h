@@ -122,9 +122,13 @@ class CONTENT_EXPORT GpuMemoryManager :
 
     // Statistics about memory usage.
     GpuManagedMemoryStats managed_memory_stats;
+
+    // Set to disable allocating a frontbuffer or to disable allocations
+    // for clients that don't have surfaces.
+    bool hibernated;
   };
 
-  class CONTENT_EXPORT ClientsWithSurfaceComparator {
+  class CONTENT_EXPORT ClientsComparator {
    public:
     bool operator()(ClientState* lhs,
                     ClientState* rhs);
@@ -135,9 +139,8 @@ class CONTENT_EXPORT GpuMemoryManager :
   typedef std::vector<ClientState*> ClientStateVector;
 
   void Manage();
-
-  void AssignMemoryAllocations(const ClientStateVector& clients,
-                               const GpuMemoryAllocation& allocation);
+  void SetClientsHibernatedState(const ClientStateVector& clients) const;
+  size_t GetVisibleClientAllocation(const ClientStateVector& clients) const;
 
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.

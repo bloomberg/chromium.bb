@@ -31,16 +31,6 @@ void TrackValueChanged(size_t old_size, size_t new_size, size_t* total_size) {
 
 }
 
-void GpuMemoryManager::AssignMemoryAllocations(
-    const ClientStateVector& clients,
-    const GpuMemoryAllocation& allocation) {
-  for (GpuMemoryManager::ClientStateVector::const_iterator it = clients.begin();
-      it != clients.end();
-      ++it) {
-    (*it)->client->SetMemoryAllocation(allocation);
-  }
-}
-
 GpuMemoryManager::GpuMemoryManager(
     size_t max_surfaces_with_frontbuffer_soft_limit)
     : manage_immediate_scheduled_(false),
@@ -202,14 +192,16 @@ void GpuMemoryManager::UpdateAvailableGpuMemory(
                                          GetMaximumTotalGpuMemory());
 }
 
-bool GpuMemoryManager::ClientsWithSurfaceComparator::operator()(
+bool GpuMemoryManager::ClientsComparator::operator()(
     ClientState* lhs,
     ClientState* rhs) {
-  DCHECK(lhs->has_surface && rhs->has_surface);
-  if (lhs->visible)
-    return !rhs->visible || (lhs->last_used_time > rhs->last_used_time);
-  else
-    return !rhs->visible && (lhs->last_used_time > rhs->last_used_time);
+  if (lhs->has_surface != rhs->has_surface)
+    return lhs->has_surface > rhs->has_surface;
+  if (lhs->visible != rhs->visible)
+    return lhs->visible > rhs->visible;
+  if (lhs->last_used_time != rhs->last_used_time)
+    return lhs->last_used_time > rhs->last_used_time;
+  return lhs > rhs;
 };
 
 void GpuMemoryManager::ScheduleManage(bool immediate) {
@@ -337,7 +329,7 @@ bool GpuMemoryManager::TestingCompareClients(
   ClientMap::const_iterator it_rhs = clients_.find(rhs);
   DCHECK(it_lhs != clients_.end());
   DCHECK(it_rhs != clients_.end());
-  ClientsWithSurfaceComparator comparator;
+  ClientsComparator comparator;
   return comparator.operator()(it_lhs->second, it_rhs->second);
 }
 
@@ -411,77 +403,112 @@ void GpuMemoryManager::Manage() {
   manage_immediate_scheduled_ = false;
   delayed_manage_callback_.Cancel();
 
-  // Create client lists by separating out the two types received from client
-  ClientStateVector clients_with_surface;
-  ClientStateVector clients_without_surface;
-  {
-    for (ClientMap::iterator it = clients_.begin();
-         it != clients_.end(); ++it) {
-      ClientState* client_state = it->second;
-      if (client_state->has_surface)
-        clients_with_surface.push_back(client_state);
-      else
-        clients_without_surface.push_back(client_state);
-    }
+  // Create a vector of clients, sorted by
+  // - visible clients with surfaces, sorted in MRU order
+  // - backgrounded clients with surfaces, sorted in MRU order
+  // - clients without surfaces
+  ClientStateVector clients;
+  for (ClientMap::iterator it = clients_.begin(); it != clients_.end(); ++it) {
+    clients.push_back(it->second);
   }
-
-  // Sort clients with surface into {visibility,last_used_time} order using
-  // custom comparator
-  std::sort(clients_with_surface.begin(),
-            clients_with_surface.end(),
-            ClientsWithSurfaceComparator());
-  DCHECK(
-      std::unique(clients_with_surface.begin(), clients_with_surface.end()) ==
-          clients_with_surface.end());
-
-  std::set<gpu::gles2::MemoryTracker*> memory_trackers_not_hibernated;
-
-  // Separate the clients with surfaces into the ones that will get a
-  // frontbuffer (the ones that are visible, and then the most recently
-  // used, up to a limit) and those that do not get a frontbuffer.
-  size_t clients_with_surface_visible_count = 0;
-  ClientStateVector clients_with_surface_not_hibernated;
-  ClientStateVector clients_with_surface_hibernated;
-  for (size_t i = 0; i < clients_with_surface.size(); ++i) {
-    ClientState* client_state = clients_with_surface[i];
-    DCHECK(client_state->has_surface);
-
-    if (client_state->visible)
-      clients_with_surface_visible_count++;
-
-    if (client_state->visible ||
-        i < max_surfaces_with_frontbuffer_soft_limit_) {
-      memory_trackers_not_hibernated.insert(
-          client_state->client->GetMemoryTracker());
-      clients_with_surface_not_hibernated.push_back(client_state);
-    } else {
-      clients_with_surface_hibernated.push_back(client_state);
-    }
-  }
-
-  // Separate the clients without surfaces into the ones that will be given a
-  // memory allocation (the ones that are in a share group with a client with
-  // a surface that has a frontbuffer) and those that won't.
-  ClientStateVector clients_without_surface_not_hibernated;
-  ClientStateVector clients_without_surface_hibernated;
-  for (ClientStateVector::const_iterator it = clients_without_surface.begin();
-      it != clients_without_surface.end(); ++it) {
-    ClientState* client_state = *it;
-    DCHECK(!client_state->has_surface);
-    if (memory_trackers_not_hibernated.count(
-        client_state->client->GetMemoryTracker()))
-      clients_without_surface_not_hibernated.push_back(client_state);
-    else
-      clients_without_surface_hibernated.push_back(client_state);
-  }
+  std::sort(clients.begin(), clients.end(), ClientsComparator());
+  DCHECK(std::unique(clients.begin(), clients.end()) == clients.end());
 
   // Update the amount of GPU memory available on the system.
-  UpdateAvailableGpuMemory(clients_with_surface);
+  UpdateAvailableGpuMemory(clients);
+
+  // Determine which clients are "hibernated" (which determines the
+  // distribution of frontbuffers and memory among clients that don't have
+  // surfaces).
+  SetClientsHibernatedState(clients);
+
+  // Determine how much memory to assign to give to visible clients
+  size_t bytes_limit_when_visible = GetVisibleClientAllocation(clients);
+
+  // Now give out allocations to everyone.
+  for (ClientStateVector::iterator it = clients.begin();
+       it != clients.end();
+       ++it) {
+    ClientState* client_state = *it;
+
+    GpuMemoryAllocation allocation;
+    if (client_state->has_surface) {
+      allocation.browser_allocation.suggest_have_frontbuffer =
+          !client_state->hibernated;
+      allocation.renderer_allocation.bytes_limit_when_visible =
+          bytes_limit_when_visible;
+      allocation.renderer_allocation.priority_cutoff_when_visible =
+          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+      allocation.renderer_allocation.bytes_limit_when_not_visible =
+          0;
+      allocation.renderer_allocation.priority_cutoff_when_not_visible =
+          GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNothing;
+    } else {
+      if (!client_state->hibernated) {
+        allocation.renderer_allocation.bytes_limit_when_visible =
+            GetMinimumTabAllocation();
+        allocation.renderer_allocation.priority_cutoff_when_visible =
+            GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+      }
+    }
+    client_state->client->SetMemoryAllocation(allocation);
+  }
+}
+
+void GpuMemoryManager::SetClientsHibernatedState(
+    const ClientStateVector& clients) const {
+  std::set<gpu::gles2::MemoryTracker*> memory_trackers_not_hibernated;
+  size_t non_hibernated_clients = 0;
+  for (ClientStateVector::const_iterator it = clients.begin();
+       it != clients.end();
+       ++it) {
+    ClientState* client_state = *it;
+    if (client_state->has_surface) {
+      // All clients with surfaces that are visible are non-hibernated. Then
+      // an additional few clients with surfaces are non-hibernated too, up to
+      // a fixed limit.
+      if (client_state->visible) {
+        client_state->hibernated = false;
+      } else {
+        client_state->hibernated = non_hibernated_clients >=
+                                   max_surfaces_with_frontbuffer_soft_limit_;
+      }
+      if (!client_state->hibernated) {
+        non_hibernated_clients++;
+        memory_trackers_not_hibernated.insert(
+            client_state->client->GetMemoryTracker());
+      }
+    } else {
+      // Clients that don't have surfaces are non-hibernated if they are
+      // in a GL share group with a non-hibernated surface.
+      client_state->hibernated = !memory_trackers_not_hibernated.count(
+          client_state->client->GetMemoryTracker());
+    }
+  }
+}
+
+size_t GpuMemoryManager::GetVisibleClientAllocation(
+    const ClientStateVector& clients) const {
+  // Count how many clients will get allocations.
+  size_t clients_with_surface_visible_count = 0;
+  size_t clients_without_surface_not_hibernated_count = 0;
+  for (ClientStateVector::const_iterator it = clients.begin();
+       it != clients.end();
+       ++it) {
+    ClientState* client_state = *it;
+    if (client_state->has_surface &&
+        client_state->visible &&
+        !client_state->hibernated)
+      clients_with_surface_visible_count++;
+    if (!client_state->has_surface &&
+        !client_state->hibernated)
+      clients_without_surface_not_hibernated_count++;
+  }
 
   // Calculate bonus allocation by splitting remainder of global limit equally
   // after giving out the minimum to those that need it.
   size_t num_clients_need_mem = clients_with_surface_visible_count +
-                                clients_without_surface_not_hibernated.size();
+                                clients_without_surface_not_hibernated_count;
   size_t base_allocation_size = GetMinimumTabAllocation() *
                                 num_clients_need_mem;
   size_t bonus_allocation = 0;
@@ -490,39 +517,21 @@ void GpuMemoryManager::Manage() {
     bonus_allocation = (GetAvailableGpuMemory() - base_allocation_size) /
                        clients_with_surface_visible_count;
   size_t clients_allocation_when_visible = GetMinimumTabAllocation() +
-                                         bonus_allocation;
+                                           bonus_allocation;
 
   // If we have received a window count message, then override the client-based
   // scheme with a per-window scheme
   if (window_count_has_been_received_) {
     clients_allocation_when_visible = std::max(
-       clients_allocation_when_visible,
-       GetAvailableGpuMemory()/std::max(window_count_, 1u));
+        clients_allocation_when_visible,
+        GetAvailableGpuMemory() / std::max(window_count_, 1u));
   }
 
   // Limit the memory per client to its maximum allowed level.
   if (clients_allocation_when_visible >= GetMaximumTabAllocation())
     clients_allocation_when_visible = GetMaximumTabAllocation();
 
-  // Now give out allocations to everyone.
-  AssignMemoryAllocations(
-      clients_with_surface_not_hibernated,
-      GpuMemoryAllocation(clients_allocation_when_visible,
-                          GpuMemoryAllocation::kHasFrontbuffer));
-
-  AssignMemoryAllocations(
-      clients_with_surface_hibernated,
-      GpuMemoryAllocation(clients_allocation_when_visible,
-                          GpuMemoryAllocation::kHasNoFrontbuffer));
-
-  AssignMemoryAllocations(
-      clients_without_surface_not_hibernated,
-      GpuMemoryAllocation(GetMinimumTabAllocation(),
-                          GpuMemoryAllocation::kHasNoFrontbuffer));
-
-  AssignMemoryAllocations(
-      clients_without_surface_hibernated,
-      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoFrontbuffer));
+  return clients_allocation_when_visible;
 }
 
 GpuMemoryManager::ClientState::ClientState(
@@ -533,7 +542,8 @@ GpuMemoryManager::ClientState::ClientState(
     : client(client),
       has_surface(has_surface),
       visible(visible),
-      last_used_time(last_used_time) {
+      last_used_time(last_used_time),
+      hibernated(false) {
 }
 
 }  // namespace content
