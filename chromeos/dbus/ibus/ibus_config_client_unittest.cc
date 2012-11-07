@@ -71,9 +71,9 @@ class SetValueVerifierBase {
 
     EXPECT_FALSE(reader.HasMoreData());
     if (behavior_ == HANDLER_SUCCESS) {
-      dbus::Response* response =
-          dbus::Response::FromMethodCall(method_call);
-      callback.Run(response);
+      scoped_ptr<dbus::Response> response(
+          dbus::Response::FromMethodCall(method_call));
+      callback.Run(response.get());
     } else {
       scoped_ptr<dbus::ErrorResponse> error_response(
           dbus::ErrorResponse::FromMethodCall(method_call, "Error",

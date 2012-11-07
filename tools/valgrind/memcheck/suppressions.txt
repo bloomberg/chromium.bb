@@ -6125,18 +6125,6 @@
    fun:_ZN7WebCore12RenderObject8setStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
 }
 {
-   bug_159726
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4dbus8Response14FromMethodCallEPNS_10MethodCallE
-   fun:_ZN8chromeos20SetValueVerifierBase3RunEPN4dbus10MethodCallEiRKN4base8CallbackIFvPNS1_8ResponseEEEERKNS5_IFvPNS1_13ErrorResponseEEEE
-   fun:_ZN7testing8internal12InvokeHelperIvNSt3tr15tupleIIPN4dbus10MethodCallEiN4base8CallbackIFvPNS4_8ResponseEEEENS8_IFvPNS4_13ErrorResponseEEEEEEEE12InvokeMethodIN8chromeos*
-   fun:_ZNK7testing8internal18InvokeMethodActionIN8chromeos*
-   ...
-   fun:_ZN4dbus15MockObjectProxy27CallMethodWithErrorCallbackEPNS_10MethodCallEiN4base8CallbackIFvPNS_8ResponseEEEENS4_IFvPNS_13ErrorResponseEEEE
-   fun:_ZN8chromeos12_GLOBAL__N_120IBusConfigClientImpl23CallWithDefaultCallbackEPN4dbus10MethodCallERKN4base8CallbackIFvvEEE
-}
-{
    bug_159725
    Memcheck:Uninitialized
    ...
