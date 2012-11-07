@@ -162,10 +162,10 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Deny) {
   GURL url = GetTestFileUrl("Broker_ConnectPermissionDenied");
   RunTestURL(url);
 
-  // It should *not* set a content settings exception for the site.
+  // It should also set a content settings exception for the site.
   HostContentSettingsMap* content_settings =
       browser()->profile()->GetHostContentSettingsMap();
-  EXPECT_EQ(CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
             content_settings->GetContentSetting(
                 url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
 }

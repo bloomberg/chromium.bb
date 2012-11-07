@@ -66,6 +66,8 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual gfx::Image* GetIcon() const OVERRIDE;
 
  private:
+  void DispatchCallback(bool result);
+
   const GURL url_;
   const FilePath plugin_path_;
   const std::string languages_;
@@ -127,23 +129,12 @@ string16 PepperBrokerInfoBarDelegate::GetButtonLabel(
 }
 
 bool PepperBrokerInfoBarDelegate::Accept() {
-  content::RecordAction(
-      content::UserMetricsAction("PPAPI.BrokerInfobarClickedAllow"));
-  callback_.Run(true);
-  callback_ = base::Callback<void(bool)>();
-  content_settings_->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url_),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-      std::string(), CONTENT_SETTING_ALLOW);
+  DispatchCallback(true);
   return true;
 }
 
 bool PepperBrokerInfoBarDelegate::Cancel() {
-  content::RecordAction(
-      content::UserMetricsAction("PPAPI.BrokerInfobarClickedDeny"));
-  callback_.Run(false);
-  callback_ = base::Callback<void(bool)>();
+  DispatchCallback(false);
   return true;
 }
 
@@ -165,6 +156,19 @@ bool PepperBrokerInfoBarDelegate::LinkClicked(
 gfx::Image* PepperBrokerInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_INSTALL);
+}
+
+void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {
+  content::RecordAction(result ?
+      content::UserMetricsAction("PPAPI.BrokerInfobarClickedAllow") :
+      content::UserMetricsAction("PPAPI.BrokerInfobarClickedDeny"));
+  callback_.Run(result);
+  callback_ = base::Callback<void(bool)>();
+  content_settings_->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(url_),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+      std::string(), result ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
 }  // namespace
