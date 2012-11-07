@@ -39,6 +39,7 @@ using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnNull;
+using ::testing::Sequence;
 using ::testing::WithArg;
 
 namespace chromeos {
@@ -282,6 +283,10 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
+  // The UI should not be disabled if the enrollment screen is shown after
+  // the user signs in.
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(_))
+      .Times(0);
   existing_user_controller()->DoAutoEnrollment();
   existing_user_controller()->CompleteLogin(kUsername, kPassword);
   content::RunAllPendingInMessageLoop();
@@ -316,6 +321,17 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
   EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(true));
+
+  // The order of these expected calls matters: the UI if first disabled
+  // during the login sequence, and is enabled again after login completion.
+  Sequence uiEnabledSequence;
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
+      .Times(1)
+      .InSequence(uiEnabledSequence);
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
+      .Times(1)
+      .InSequence(uiEnabledSequence);
+
   existing_user_controller()->CompleteLogin(kNewUsername, kPassword);
   content::RunAllPendingInMessageLoop();
 }
