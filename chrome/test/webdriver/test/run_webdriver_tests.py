@@ -10,8 +10,11 @@ import sys
 import types
 import unittest
 
+sys.path.append(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, 'pylib'))
+
 from chromedriver_launcher import ChromeDriverLauncher
-import py_unittest_util
+from common import unittest_util
 import test_paths
 
 # Add the PYTHON_BINDINGS first so that our 'test' module is found instead of
@@ -228,11 +231,11 @@ class Main(object):
     test_names = self._GetTestNamesFrom(
         os.path.join(os.path.dirname(__file__), self.TESTS_FILENAME))
     all_tests_suite = unittest.defaultTestLoader.loadTestsFromNames(test_names)
-    filtered_suite = py_unittest_util.FilterTestSuite(
+    filtered_suite = unittest_util.FilterTestSuite(
         all_tests_suite, self._options.filter)
 
     if self._options.list is True:
-      print '\n'.join(py_unittest_util.GetTestNamesFromSuite(filtered_suite))
+      print '\n'.join(unittest_util.GetTestNamesFromSuite(filtered_suite))
       sys.exit(0)
 
     # The tests expect to run with preset 'driver' and 'webserver' class
@@ -259,14 +262,14 @@ class Main(object):
       pass
     webserver = DummyWebserver()
     webserver.port = server.GetPort()
-    for test in py_unittest_util.GetTestsFromSuite(filtered_suite):
+    for test in unittest_util.GetTestsFromSuite(filtered_suite):
       test.__class__.driver = driver
       test.__class__.webserver = webserver
 
     verbosity = 1
     if self._options.verbose:
       verbosity = 2
-    result = py_unittest_util.GTestTextTestRunner(verbosity=verbosity).run(
+    result = unittest_util.TextTestRunner(verbosity=verbosity).run(
         filtered_suite)
     server.Kill()
     sys.exit(not result.wasSuccessful())

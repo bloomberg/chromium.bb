@@ -1,16 +1,15 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Utilities for dealing with the py unittest module."""
+"""Utilities for dealing with the python unittest module."""
 
 import fnmatch
-import optparse
 import sys
 import unittest
 
 
-class _GTestTextTestResult(unittest._TextTestResult):
+class _TextTestResult(unittest._TextTestResult):
   """A test result class that can print formatted text results to a stream.
 
   Results printed in conformance with gtest output format, like:
@@ -26,9 +25,6 @@ class _GTestTextTestResult(unittest._TextTestResult):
     self._fails = set()
 
   def _GetTestURI(self, test):
-    if sys.version_info[:2] <= (2, 4):
-      return '%s.%s' % (unittest._strclass(test.__class__),
-                        test._TestCase__testMethodName)
     return '%s.%s.%s' % (test.__class__.__module__,
                          test.__class__.__name__,
                          test._testMethodName)
@@ -58,18 +54,18 @@ class _GTestTextTestResult(unittest._TextTestResult):
     return ':'.join(self._fails)
 
 
-class GTestTextTestRunner(unittest.TextTestRunner):
-  """Test runner for python unittests that displays results in textual format.
+class TextTestRunner(unittest.TextTestRunner):
+  """Test Runner for displaying test results in textual format.
 
-  Results are displayed in conformance with gtest output.
+  Results are displayed in conformance with google test output.
   """
+
   def __init__(self, verbosity=1):
-    unittest.TextTestRunner.__init__(self,
-                                     stream=sys.stderr,
+    unittest.TextTestRunner.__init__(self, stream=sys.stderr,
                                      verbosity=verbosity)
 
   def _makeResult(self):
-    return _GTestTextTestResult(self.stream, self.descriptions, self.verbosity)
+    return _TextTestResult(self.stream, self.descriptions, self.verbosity)
 
 
 def GetTestsFromSuite(suite):
@@ -90,7 +86,8 @@ def GetTestNamesFromSuite(suite):
 
 def GetTestName(test):
   """Gets the test name of the given unittest test."""
-  return '.'.join([test.__module__, test.__class__.__name__,
+  return '.'.join([test.__class__.__module__,
+                   test.__class__.__name__,
                    test._testMethodName])
 
 

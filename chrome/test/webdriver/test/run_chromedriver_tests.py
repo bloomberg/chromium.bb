@@ -16,11 +16,12 @@ import unittest
 import test_paths
 
 sys.path += [test_paths.PYTHON_BINDINGS]
-sys.path += [test_paths.SRC_THIRD_PARTY]
+sys.path.append(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, 'pylib'))
 
 from chromedriver_test import ChromeDriverTest
 import chromedriver_tests
-import py_unittest_util
+from common import unittest_util
 
 
 def main():
@@ -41,11 +42,11 @@ def main():
 
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       chromedriver_tests)
-  filtered_suite = py_unittest_util.FilterTestSuite(
+  filtered_suite = unittest_util.FilterTestSuite(
       all_tests_suite, options.filter)
 
   if options.list is True:
-    print '\n'.join(py_unittest_util.GetTestNamesFromSuite(filtered_suite))
+    print '\n'.join(unittest_util.GetTestNamesFromSuite(filtered_suite))
     return 0
 
   driver_exe = options.driver_exe
@@ -55,7 +56,7 @@ def main():
   if chrome_exe is not None:
     chrome_exe = os.path.expanduser(options.chrome_exe)
   ChromeDriverTest.GlobalSetUp(driver_exe, chrome_exe)
-  result = py_unittest_util.GTestTextTestRunner(verbosity=1).run(filtered_suite)
+  result = unittest_util.TextTestRunner(verbosity=1).run(filtered_suite)
   ChromeDriverTest.GlobalTearDown()
   if not result.wasSuccessful():
     print "Rerun failing tests using --f=" + result.getRetestFilter()

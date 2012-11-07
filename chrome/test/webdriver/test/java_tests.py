@@ -8,7 +8,7 @@ import os
 import shutil
 import xml.dom.minidom as minidom
 
-import util
+from common import util
 
 
 class TestResult(object):

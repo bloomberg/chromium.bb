@@ -15,10 +15,13 @@ import optparse
 import os
 import sys
 
+sys.path.append(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, 'pylib'))
+
+from common import chrome_paths
+from common import util
 import continuous_archive
 import java_tests
-import test_paths
-import util
 
 
 def main():
@@ -45,7 +48,7 @@ def main():
       revision, temp_dir)
 
   PrintTestResults(java_tests.Run(
-      src_dir=test_paths.SRC_PATH,
+      src_dir=chrome_paths.GetSrc(),
       test_filter=options.filter,
       chromedriver_path=chromedriver_path,
       chrome_path=chrome_path))
@@ -53,7 +56,7 @@ def main():
   print '@@@BUILD_STEP java_stable_tests@@@'
   print '@@@STEP_TEXT@chromedriver r%s@@@' % revision
   PrintTestResults(java_tests.Run(
-      src_dir=test_paths.SRC_PATH,
+      src_dir=chrome_paths.GetSrc(),
       test_filter=options.filter,
       chromedriver_path=chromedriver_path,
       chrome_path=None))
