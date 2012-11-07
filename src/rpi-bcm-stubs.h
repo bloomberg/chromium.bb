@@ -63,6 +63,14 @@ typedef enum {
 	VC_IMAGE_ROT0,
 } VC_IMAGE_TRANSFORM_T;
 
+typedef enum
+{
+	VC_IMAGE_MIN = 0,
+	/* these are not the right values: */
+	VC_IMAGE_ARGB8888,
+	VC_IMAGE_XRGB8888,
+} VC_IMAGE_TYPE_T;
+
 /* from /opt/vc/include/interface/vmcs_host/vc_dispmanx_types.h */
 
 typedef uint32_t DISPMANX_DISPLAY_HANDLE_T;
@@ -107,6 +115,9 @@ typedef struct {
 	uint32_t dummy;
 } DISPMANX_CLAMP_T;
 
+typedef void (*DISPMANX_CALLBACK_FUNC_T)(DISPMANX_UPDATE_HANDLE_T u,
+					 void *arg);
+
 /* from /opt/vc/include/interface/vmcs_host/vc_dispmanx.h */
 
 static inline int
@@ -120,10 +131,45 @@ vc_dispmanx_rect_set(VC_RECT_T *rect, uint32_t x_offset, uint32_t y_offset,
 	return 0;
 }
 
+static inline DISPMANX_RESOURCE_HANDLE_T
+vc_dispmanx_resource_create(VC_IMAGE_TYPE_T type, uint32_t width,
+			    uint32_t height, uint32_t *native_image_handle)
+{
+	return DISPMANX_NO_HANDLE;
+}
+
+static inline int
+vc_dispmanx_resource_write_data(DISPMANX_RESOURCE_HANDLE_T res,
+				VC_IMAGE_TYPE_T src_type,
+				int src_pitch,
+				void *src_address,
+				const VC_RECT_T *rect)
+{
+	return -1;
+}
+
+static inline int
+vc_dispmanx_resource_write_data_rect(DISPMANX_RESOURCE_HANDLE_T handle,
+				     VC_IMAGE_TYPE_T src_type,
+				     int src_pitch,
+				     void *src_address,
+				     const VC_RECT_T *src_rect,
+				     uint32_t dst_x,
+				     uint32_t dst_y)
+{
+	return -1;
+}
+
+static inline int
+vc_dispmanx_resource_delete(DISPMANX_RESOURCE_HANDLE_T res)
+{
+	return -1;
+}
+
 static inline DISPMANX_DISPLAY_HANDLE_T
 vc_dispmanx_display_open(uint32_t device)
 {
-	return -1;
+	return DISPMANX_NO_HANDLE;
 }
 
 static inline int
@@ -142,7 +188,7 @@ vc_dispmanx_display_get_info(DISPMANX_DISPLAY_HANDLE_T display,
 static inline DISPMANX_UPDATE_HANDLE_T
 vc_dispmanx_update_start(int32_t priority)
 {
-	return -1;
+	return DISPMANX_NO_HANDLE;
 }
 
 static inline DISPMANX_ELEMENT_HANDLE_T
@@ -157,6 +203,22 @@ vc_dispmanx_element_add(DISPMANX_UPDATE_HANDLE_T update,
 			DISPMANX_CLAMP_T *clamp,
 			DISPMANX_TRANSFORM_T transform)
 {
+	return DISPMANX_NO_HANDLE;
+}
+
+static inline int
+vc_dispmanx_element_change_source(DISPMANX_UPDATE_HANDLE_T update,
+				  DISPMANX_ELEMENT_HANDLE_T element,
+				  DISPMANX_RESOURCE_HANDLE_T src)
+{
+	return -1;
+}
+
+static inline int
+vc_dispmanx_element_modified(DISPMANX_UPDATE_HANDLE_T update,
+			     DISPMANX_ELEMENT_HANDLE_T element,
+			     const VC_RECT_T *rect)
+{
 	return -1;
 }
 
@@ -168,7 +230,28 @@ vc_dispmanx_element_remove(DISPMANX_UPDATE_HANDLE_T update,
 }
 
 static inline int
+vc_dispmanx_update_submit(DISPMANX_UPDATE_HANDLE_T update,
+			  DISPMANX_CALLBACK_FUNC_T cb_func, void *cb_arg)
+{
+	return -1;
+}
+
+static inline int
 vc_dispmanx_update_submit_sync(DISPMANX_UPDATE_HANDLE_T update)
+{
+	return -1;
+}
+
+static inline int
+vc_dispmanx_element_change_attributes(DISPMANX_UPDATE_HANDLE_T update,
+				      DISPMANX_ELEMENT_HANDLE_T element,
+				      uint32_t change_flags,
+				      int32_t layer,
+				      uint8_t opacity,
+				      const VC_RECT_T *dest_rect,
+				      const VC_RECT_T *src_rect,
+				      DISPMANX_RESOURCE_HANDLE_T mask,
+				      VC_IMAGE_TRANSFORM_T transform)
 {
 	return -1;
 }
