@@ -6101,3 +6101,13 @@
    fun:_ZN7WebCore11RenderBlock14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
    fun:_ZN7WebCore12RenderObject8setStyleEN3WTF10PassRefPtrINS_11RenderStyleEEE
 }
+{
+   bug_159854
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt3mapIN4dbus10ObjectPathEP12ObserverListIN8chromeos28ShillPropertyChangedObserverELb0EESt4lessIS1_ESaISt4pairIKS1_S6_EEEixERSA_
+   fun:_ZN8chromeos12_GLOBAL__N_126ShillServiceClientStubImpl15GetObserverListERKN4dbus10ObjectPathE
+   fun:_ZN8chromeos12_GLOBAL__N_126ShillServiceClientStubImpl30NotifyObserversPropertyChangedERKN4dbus10ObjectPathERKSs
+}
+
