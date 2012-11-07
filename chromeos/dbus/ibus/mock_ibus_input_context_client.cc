@@ -16,7 +16,8 @@ MockIBusInputContextClient::MockIBusInputContextClient()
       focus_out_call_count_(0),
       reset_call_count_(0),
       set_cursor_location_call_count_(0),
-      process_key_event_call_count_(0) {
+      process_key_event_call_count_(0),
+      set_surrounding_text_call_count_(0) {
 }
 
 MockIBusInputContextClient::~MockIBusInputContextClient() {}
@@ -112,6 +113,8 @@ void MockIBusInputContextClient::SetSurroundingText(
     const std::string& text,
     uint32 cursor_pos,
     uint32 anchor_pos) {
+  set_surrounding_text_call_count_++;
+  set_surrounding_text_handler_.Run(text, cursor_pos, anchor_pos);
 }
 
 void MockIBusInputContextClient::PropertyActivate(

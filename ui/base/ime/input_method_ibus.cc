@@ -228,32 +228,31 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
   // This function runs asynchronously.
   ibus_client_->SetCursorLocation(rect, composition_head);
 
+  ui::Range text_range;
   ui::Range selection_range;
-  if (!GetTextInputClient()->GetSelectionRange(&selection_range)) {
-    previous_selected_text_.clear();
+  string16 surrounding_text;
+  if (!GetTextInputClient()->GetTextRange(&text_range) ||
+      !GetTextInputClient()->GetTextFromRange(text_range, &surrounding_text) ||
+      !GetTextInputClient()->GetSelectionRange(&selection_range)) {
+    previous_surrounding_text_.clear();
+    previous_selection_range_ = ui::Range::InvalidRange();
     return;
   }
 
-  string16 selection_text;
-  if (!GetTextInputClient()->GetTextFromRange(selection_range,
-                                              &selection_text)) {
-    previous_selected_text_.clear();
-    return;
-  }
-
-  if (previous_selected_text_ == selection_text)
+  if (previous_selection_range_ == selection_range &&
+      previous_surrounding_text_ == surrounding_text)
     return;
 
-  previous_selected_text_ = selection_text;
+  previous_selection_range_ = selection_range;
+  previous_surrounding_text_ = surrounding_text;
 
   // In the original meaning of SetSurroundingText is not just selection text,
   // but currently there are no way to retrieve surrounding text in
   // TextInputClient.
-  // TODO(nona): Implement fully surrounding text retrieval.
   GetInputContextClient()->SetSurroundingText(
-      UTF16ToUTF8(selection_text),
-      0UL, /* cursor position. */
-      selection_range.length()); /* selection anchor position. */
+      UTF16ToUTF8(surrounding_text),
+      selection_range.start(), /* cursor position. */
+      selection_range.end()); /* selection anchor position. */
 }
 
 void InputMethodIBus::CancelComposition(const TextInputClient* client) {

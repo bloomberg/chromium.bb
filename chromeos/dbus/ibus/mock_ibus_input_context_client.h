@@ -18,6 +18,9 @@ class MockIBusInputContextClient : public IBusInputContextClient {
                                const ProcessKeyEventCallback& callback,
                                const ErrorCallback& error_callback)>
       ProcessKeyEventHandler;
+  typedef base::Callback<void (const std::string& text, uint32 cursor_pos,
+                               uint32 anchor_pos)>
+      SetSurroundingTextHandler;
   MockIBusInputContextClient();
   virtual ~MockIBusInputContextClient();
 
@@ -93,6 +96,16 @@ class MockIBusInputContextClient : public IBusInputContextClient {
     process_key_event_handler_ = handler;
   }
 
+  // Call count of SetSurroundingText().
+  int set_surrounding_text_call_count() const {
+    return set_surrounding_text_call_count_;
+  }
+
+  void set_set_surrounding_text_handler(
+      const SetSurroundingTextHandler& handler) {
+    set_surrounding_text_handler_ = handler;
+  }
+
  private:
   int initialize_call_count_;
   bool is_initialized_;
@@ -103,7 +116,9 @@ class MockIBusInputContextClient : public IBusInputContextClient {
   int reset_call_count_;
   int set_cursor_location_call_count_;
   int process_key_event_call_count_;
+  int set_surrounding_text_call_count_;
   ProcessKeyEventHandler process_key_event_handler_;
+  SetSurroundingTextHandler set_surrounding_text_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MockIBusInputContextClient);
 };

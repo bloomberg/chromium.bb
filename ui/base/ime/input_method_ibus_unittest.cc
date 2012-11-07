@@ -291,6 +291,31 @@ class AsynchronousKeyEventHandler {
   DISALLOW_COPY_AND_ASSIGN(AsynchronousKeyEventHandler);
 };
 
+class SetSurroundingTextVerifier {
+ public:
+  SetSurroundingTextVerifier(const std::string& expected_surrounding_text,
+                             uint32 expected_cursor_position,
+                             uint32 expected_anchor_position)
+      : expected_surrounding_text_(expected_surrounding_text),
+        expected_cursor_position_(expected_cursor_position),
+        expected_anchor_position_(expected_anchor_position) {}
+
+  void Verify(const std::string& text,
+              uint32 cursor_pos,
+              uint32 anchor_pos) {
+    EXPECT_EQ(expected_surrounding_text_, text);
+    EXPECT_EQ(expected_cursor_position_, cursor_pos);
+    EXPECT_EQ(expected_anchor_position_, anchor_pos);
+  }
+
+ private:
+  const std::string expected_surrounding_text_;
+  const uint32 expected_cursor_position_;
+  const uint32 expected_anchor_position_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetSurroundingTextVerifier);
+};
+
 class InputMethodIBusTest : public internal::InputMethodDelegate,
                             public testing::Test,
                             public TextInputClient {
@@ -377,13 +402,22 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     CompositionText empty;
     return composition_text_ != empty;
   }
-  virtual bool GetTextRange(Range* range) OVERRIDE { return false; }
+  virtual bool GetTextRange(Range* range) OVERRIDE {
+    *range = text_range_;
+    return true;
+  }
   virtual bool GetCompositionTextRange(Range* range) OVERRIDE { return false; }
-  virtual bool GetSelectionRange(Range* range) OVERRIDE { return false; }
+  virtual bool GetSelectionRange(Range* range) OVERRIDE {
+    *range = selection_range_;
+    return true;
+  }
+
   virtual bool SetSelectionRange(const Range& range) OVERRIDE { return false; }
   virtual bool DeleteRange(const Range& range) OVERRIDE { return false; }
-  virtual bool GetTextFromRange(const Range& range,
-                                string16* text) OVERRIDE { return false; }
+  virtual bool GetTextFromRange(const Range& range, string16* text) OVERRIDE {
+    *text = surrounding_text_.substr(range.GetMin(), range.length());
+    return true;
+  }
   virtual void OnInputMethodChanged() OVERRIDE {
     ++on_input_method_changed_call_count_;
   }
@@ -449,6 +483,9 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   TextInputType input_type_;
   bool can_compose_inline_;
   gfx::Rect caret_bounds_;
+  ui::Range text_range_;
+  ui::Range selection_range_;
+  string16 surrounding_text_;
 
   // Variables for mock dbus connections.
   chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
@@ -1066,6 +1103,66 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SelectionEndWithCursor) {
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
+}
+
+TEST_F(InputMethodIBusTest, SurroundingText_NoSelectionTest) {
+  SetCreateContextSuccessHandler();
+  ime_->Init(true);
+  // Click a text input form.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+  // Start the daemon.
+  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  ime_->OnConnected();
+
+  // Set the TextInputClient behaviors.
+  surrounding_text_ = UTF8ToUTF16("abcdef");
+  text_range_ = ui::Range(0, 6);
+  selection_range_ = ui::Range(3, 3);
+
+  // Set the verifier for SetSurroundingText mock call.
+  SetSurroundingTextVerifier verifier(UTF16ToUTF8(surrounding_text_),
+                                      selection_range_.start(),
+                                      selection_range_.end());
+
+  mock_ibus_input_context_client_->set_set_surrounding_text_handler(
+      base::Bind(&SetSurroundingTextVerifier::Verify,
+                 base::Unretained(&verifier)));
+  ime_->OnCaretBoundsChanged(this);
+
+  // Check the call count.
+  EXPECT_EQ(1,
+            mock_ibus_input_context_client_->set_surrounding_text_call_count());
+}
+
+TEST_F(InputMethodIBusTest, SurroundingText_SelectionTest) {
+  SetCreateContextSuccessHandler();
+  ime_->Init(true);
+  // Click a text input form.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+  // Start the daemon.
+  chromeos::DBusThreadManager::Get()->InitIBusBus("dummy address");
+  ime_->OnConnected();
+
+  // Set the TextInputClient behaviors.
+  surrounding_text_ = UTF8ToUTF16("abcdef");
+  text_range_ = ui::Range(0, 6);
+  selection_range_ = ui::Range(2, 5);
+
+  // Set the verifier for SetSurroundingText mock call.
+  SetSurroundingTextVerifier verifier(UTF16ToUTF8(surrounding_text_),
+                                      selection_range_.start(),
+                                      selection_range_.end());
+
+  mock_ibus_input_context_client_->set_set_surrounding_text_handler(
+      base::Bind(&SetSurroundingTextVerifier::Verify,
+                 base::Unretained(&verifier)));
+  ime_->OnCaretBoundsChanged(this);
+
+  // Check the call count.
+  EXPECT_EQ(1,
+            mock_ibus_input_context_client_->set_surrounding_text_call_count());
 }
 
 class InputMethodIBusKeyEventTest : public InputMethodIBusTest {
