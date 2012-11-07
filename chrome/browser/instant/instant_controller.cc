@@ -578,9 +578,13 @@ void InstantController::SetSuggestions(
     // Suggestion text should be a full URL for URL suggestions, or the
     // completion of a query for query suggestions.
     if (suggestion.type == INSTANT_SUGGESTION_URL) {
-      if (!StartsWith(suggestion.text, ASCIIToUTF16("http://"), false) &&
-          !StartsWith(suggestion.text, ASCIIToUTF16("https://"), false))
-        suggestion.text = ASCIIToUTF16("http://") + suggestion.text;
+      // If the suggestion is not a valid URL, perhaps it's something like
+      // "foo.com". Try prefixing "http://". If it still isn't valid, drop it.
+      if (!GURL(suggestion.text).is_valid()) {
+        suggestion.text.insert(0, ASCIIToUTF16("http://"));
+        if (!GURL(suggestion.text).is_valid())
+          suggestion = InstantSuggestion();
+      }
     } else if (StartsWith(suggestion.text, last_user_text_, true)) {
       // The user typed an exact prefix of the suggestion.
       suggestion.text.erase(0, last_user_text_.size());
@@ -590,7 +594,7 @@ void InstantController::SetSuggestions(
       // for instance, if the user types 'i' and the suggestion is 'INSTANT',
       // suggestion 'nstant'. Otherwise, the user text really isn't a prefix,
       // so suggest nothing.
-      suggestion.text.clear();
+      suggestion = InstantSuggestion();
     }
 
     last_suggestion_ = suggestion;
