@@ -11,8 +11,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
-#elif defined(OS_WIN)
-#include "device/bluetooth/bluetooth_adapter_win.h"
 #endif
 
 namespace {
@@ -36,9 +34,6 @@ scoped_refptr<BluetoothAdapter> BluetoothAdapterFactory::DefaultAdapter() {
         new chromeos::BluetoothAdapterChromeOs;
     new_adapter->TrackDefaultAdapter();
     default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
-#elif defined(OS_WIN)
-    BluetoothAdapterWin* new_adapter = new BluetoothAdapterWin;
-    default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
 #endif
   }
 
@@ -53,8 +48,6 @@ BluetoothAdapter* BluetoothAdapterFactory::Create(const std::string& address) {
       new chromeos::BluetoothAdapterChromeOs;
   adapter_chromeos->FindAdapter(address);
   adapter = adapter_chromeos;
-#elif defined(OS_WIN)
-  adapter = new BluetoothAdapterWin;
 #endif
   return adapter;
 }
