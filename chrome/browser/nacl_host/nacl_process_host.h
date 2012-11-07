@@ -15,6 +15,7 @@
 #include "base/process.h"
 #include "chrome/common/nacl_types.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
+#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/tcp_listen_socket.h"
@@ -26,6 +27,7 @@ class ExtensionInfoMap;
 
 namespace content {
 class BrowserChildProcessHost;
+class BrowserPpapiHost;
 }
 
 namespace IPC {
@@ -69,6 +71,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 #endif
 
   bool Send(IPC::Message* msg);
+
+  content::BrowserChildProcessHost* process() { return process_.get(); }
+  content::BrowserPpapiHost* browser_ppapi_host() { return ppapi_host_.get(); }
 
  private:
   friend class PluginListener;
@@ -198,6 +203,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   scoped_ptr<IPC::ChannelProxy> ipc_proxy_channel_;
   // Plugin listener, to forward browser channel messages to us.
   PluginListener ipc_plugin_listener_;
+  // Browser host for plugin process.
+  scoped_ptr<content::BrowserPpapiHost> ppapi_host_;
 
   int render_view_id_;
 

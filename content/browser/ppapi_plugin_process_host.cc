@@ -171,16 +171,16 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   filter_ = new PepperMessageFilter(PepperMessageFilter::PLUGIN,
                                     host_resolver);
 
-  host_impl_ = new BrowserPpapiHostImpl(this, permissions_);
+  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_));
 
   file_filter_ = new PepperTrustedFileMessageFilter(
       process_->GetData().id, info.name, profile_data_directory);
 
   process_->GetHost()->AddFilter(filter_.get());
   process_->GetHost()->AddFilter(file_filter_.get());
-  process_->GetHost()->AddFilter(host_impl_.get());
+  process_->GetHost()->AddFilter(host_impl_->message_filter());
 
-  GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_);
+  GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_.get());
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
@@ -189,7 +189,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
       PROCESS_TYPE_PPAPI_BROKER, this));
 
   ppapi::PpapiPermissions permissions;  // No permissions.
-  host_impl_ = new BrowserPpapiHostImpl(this, permissions);
+  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions));
 }
 
 bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {

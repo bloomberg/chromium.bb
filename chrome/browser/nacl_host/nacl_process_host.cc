@@ -35,8 +35,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/pepper_helper.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
@@ -759,8 +759,12 @@ void NaClProcessHost::OnPpapiChannelCreated(
                               IPC::Channel::MODE_CLIENT,
                               &ipc_plugin_listener_,
                               base::MessageLoopProxy::current()));
-    // Enable PPAPI message dispatching to the browser process.
-    content::EnablePepperSupportForChannel(
+    // Create the browser ppapi host and enable PPAPI message dispatching to the
+    // browser process.
+    content::BrowserPpapiHost::CreateExternalPluginProcess(
+        process_.get(),  // sender
+        permissions_,
+        process_->GetData().handle,
         ipc_proxy_channel_.get(),
         chrome_render_message_filter_->GetHostResolver(),
         chrome_render_message_filter_->render_process_id(),

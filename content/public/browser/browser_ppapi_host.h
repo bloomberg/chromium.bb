@@ -12,7 +12,18 @@
 #include "content/public/browser/render_view_host.h"
 #include "ppapi/c/pp_instance.h"
 
+namespace IPC {
+class ChannelProxy;
+struct ChannelHandle;
+class Sender;
+}
+
+namespace net {
+class HostResolver;
+}
+
 namespace ppapi {
+class PpapiPermissions;
 namespace host {
 class PpapiHost;
 }
@@ -27,6 +38,19 @@ namespace content {
 // lives entirely on the I/O thread.
 class CONTENT_EXPORT BrowserPpapiHost {
  public:
+  // Creates a browser host and sets up an out-of-process proxy for an external
+  // pepper plugin process.
+  static BrowserPpapiHost* CreateExternalPluginProcess(
+      IPC::Sender* sender,
+      ppapi::PpapiPermissions permissions,
+      base::ProcessHandle plugin_child_process,
+      IPC::ChannelProxy* channel,
+      net::HostResolver* host_resolver,
+      int render_process_id,
+      int render_view_id);
+
+  virtual ~BrowserPpapiHost() {}
+
   // Returns the PpapiHost object.
   virtual ppapi::host::PpapiHost* GetPpapiHost() = 0;
 
@@ -48,9 +72,6 @@ class CONTENT_EXPORT BrowserPpapiHost {
   virtual bool GetRenderViewIDsForInstance(PP_Instance instance,
                                            int* render_process_id,
                                            int* render_view_id) const = 0;
-
- protected:
-  virtual ~BrowserPpapiHost() {}
 };
 
 }  // namespace content

@@ -162,9 +162,11 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                    IPC::Message* reply_msg);
   void OnDidCreateOutOfProcessPepperInstance(int plugin_child_id,
                                              int32 pp_instance,
-                                             int render_view_id);
+                                             int render_view_id,
+                                             bool is_external);
   void OnDidDeleteOutOfProcessPepperInstance(int plugin_child_id,
-                                             int32 pp_instance);
+                                             int32 pp_instance,
+                                             bool is_external);
   void OnOpenChannelToPpapiBroker(int routing_id,
                                   int request_id,
                                   const FilePath& path);

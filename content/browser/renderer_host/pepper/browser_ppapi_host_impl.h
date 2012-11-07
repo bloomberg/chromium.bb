@@ -15,24 +15,16 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ppapi/host/ppapi_host.h"
 
-namespace IPC {
-class Sender;
-}
-
 namespace content {
 
-class CONTENT_EXPORT BrowserPpapiHostImpl
-    : public BrowserPpapiHost,
-      public IPC::ChannelProxy::MessageFilter {
+class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
  public:
   // The creator is responsible for calling set_plugin_process_handle as soon
   // as it is known (we start the process asynchronously so it won't be known
   // when this object is created).
   BrowserPpapiHostImpl(IPC::Sender* sender,
                        const ppapi::PpapiPermissions& permissions);
-
-  // IPC::ChannelProxy::MessageFilter.
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual ~BrowserPpapiHostImpl();
 
   // BrowserPpapiHost.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
@@ -54,6 +46,10 @@ class CONTENT_EXPORT BrowserPpapiHostImpl
                           int render_view_id);
   void DeleteInstanceForView(PP_Instance instance);
 
+  scoped_refptr<IPC::ChannelProxy::MessageFilter> message_filter() {
+    return message_filter_;
+  }
+
  private:
   friend class BrowserPpapiHostTest;
 
@@ -63,7 +59,23 @@ class CONTENT_EXPORT BrowserPpapiHostImpl
   };
   typedef std::map<PP_Instance, RenderViewIDs> InstanceToViewMap;
 
-  virtual ~BrowserPpapiHostImpl();
+  // Implementing MessageFilter on BrowserPpapiHostImpl makes it ref-counted,
+  // preventing us from returning these to embedders without holding a
+  // reference. To avoid that, define a message filter object.
+  class HostMessageFilter : public IPC::ChannelProxy::MessageFilter {
+   public:
+    explicit HostMessageFilter(ppapi::host::PpapiHost* ppapi_host)
+        : ppapi_host_(ppapi_host) {}
+    // IPC::ChannelProxy::MessageFilter.
+    virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+    void OnHostDestroyed();
+
+   private:
+    virtual ~HostMessageFilter() {}
+
+    ppapi::host::PpapiHost* ppapi_host_;
+  };
 
   ppapi::host::PpapiHost ppapi_host_;
   base::ProcessHandle plugin_process_handle_;
@@ -71,6 +83,8 @@ class CONTENT_EXPORT BrowserPpapiHostImpl
   // Tracks all PP_Instances in this plugin and maps them to
   // RenderProcess/RenderView IDs.
   InstanceToViewMap instance_to_view_;
+
+  scoped_refptr<HostMessageFilter> message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPpapiHostImpl);
 };

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -10,28 +11,41 @@
 
 namespace content {
 
+// static
+BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
+    IPC::Sender* sender,
+    ppapi::PpapiPermissions permissions,
+    base::ProcessHandle plugin_child_process,
+    IPC::ChannelProxy* channel,
+    net::HostResolver* host_resolver,
+    int render_process_id,
+    int render_view_id) {
+  BrowserPpapiHostImpl* browser_ppapi_host =
+      new BrowserPpapiHostImpl(sender, permissions);
+  browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
+
+  channel->AddFilter(
+      new PepperMessageFilter(PepperMessageFilter::NACL,
+                              host_resolver,
+                              render_process_id,
+                              render_view_id));
+
+  return browser_ppapi_host;
+}
+
 BrowserPpapiHostImpl::BrowserPpapiHostImpl(
     IPC::Sender* sender,
     const ppapi::PpapiPermissions& permissions)
     : ppapi_host_(sender, permissions),
       plugin_process_handle_(base::kNullProcessHandle) {
+  message_filter_ = new HostMessageFilter(&ppapi_host_);
   ppapi_host_.AddHostFactoryFilter(scoped_ptr<ppapi::host::HostFactory>(
       new ContentBrowserPepperHostFactory(this)));
 }
 
 BrowserPpapiHostImpl::~BrowserPpapiHostImpl() {
-}
-
-bool BrowserPpapiHostImpl::OnMessageReceived(const IPC::Message& msg) {
-  /* TODO(brettw) when we add messages, here, the code should look like this:
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(BrowserPpapiHostImpl, msg)
-    // Add necessary message handlers here.
-    IPC_MESSAGE_UNHANDLED(handled = ppapi_host_.OnMessageReceived(msg))
-  IPC_END_MESSAGE_MAP();
-  return handled;
-  */
-  return ppapi_host_.OnMessageReceived(msg);
+  // Notify the filter so it won't foward messages to us.
+  message_filter_->OnHostDestroyed();
 }
 
 ppapi::host::PpapiHost* BrowserPpapiHostImpl::GetPpapiHost() {
@@ -82,6 +96,28 @@ void BrowserPpapiHostImpl::DeleteInstanceForView(PP_Instance instance) {
     return;
   }
   instance_to_view_.erase(found);
+}
+
+bool BrowserPpapiHostImpl::HostMessageFilter::OnMessageReceived(
+    const IPC::Message& msg) {
+  // Don't forward messages if our owner object has been destroyed.
+  if (!ppapi_host_)
+    return false;
+
+  /* TODO(brettw) when we add messages, here, the code should look like this:
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(BrowserPpapiHostImpl, msg)
+    // Add necessary message handlers here.
+    IPC_MESSAGE_UNHANDLED(handled = ppapi_host_->OnMessageReceived(msg))
+  IPC_END_MESSAGE_MAP();
+  return handled;
+  */
+  return ppapi_host_->OnMessageReceived(msg);
+}
+
+void BrowserPpapiHostImpl::HostMessageFilter::OnHostDestroyed() {
+  DCHECK(ppapi_host_);
+  ppapi_host_ = NULL;
 }
 
 }  // namespace content

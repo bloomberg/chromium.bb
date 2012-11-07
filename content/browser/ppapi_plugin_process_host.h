@@ -138,7 +138,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   scoped_refptr<PepperMessageFilter> filter_;
 
   ppapi::PpapiPermissions permissions_;
-  scoped_refptr<BrowserPpapiHostImpl> host_impl_;
+  scoped_ptr<BrowserPpapiHostImpl> host_impl_;
 
   // Handles filesystem requests from flash plugins. May be NULL.
   scoped_refptr<PepperFileMessageFilter> file_filter_;

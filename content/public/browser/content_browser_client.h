@@ -436,10 +436,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // else we should do with the file.
   virtual std::string GetDefaultDownloadName();
 
-  // Notifification that a pepper plugin has just been spawned. This allows the
+  // Notification that a pepper plugin has just been spawned. This allows the
   // embedder to add filters onto the host to implement interfaces.
   // This is called on the IO thread.
   virtual void DidCreatePpapiPlugin(BrowserPpapiHost* browser_host) {}
+
+  // Gets the host for an external out-of-process plugin.
+  virtual content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
+      int plugin_child_id);
 
   // Returns true if renderer processes can use Pepper TCP/UDP sockets from
   // the given origin and connection type.

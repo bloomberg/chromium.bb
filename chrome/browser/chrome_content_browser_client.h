@@ -205,6 +205,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual std::string GetDefaultDownloadName() OVERRIDE;
   virtual void DidCreatePpapiPlugin(
       content::BrowserPpapiHost* browser_host) OVERRIDE;
+  virtual content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
+      int plugin_process_id) OVERRIDE;
   virtual bool AllowPepperSocketAPI(
       content::BrowserContext* browser_context,
       const GURL& url,

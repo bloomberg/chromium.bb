@@ -232,6 +232,11 @@ std::string ContentBrowserClient::GetDefaultDownloadName() {
   return std::string();
 }
 
+BrowserPpapiHost*
+    ContentBrowserClient::GetExternalBrowserPpapiHost(int plugin_process_id) {
+  return NULL;
+}
+
 bool ContentBrowserClient::AllowPepperSocketAPI(
     BrowserContext* browser_context,
     const GURL& url,

@@ -40,6 +40,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/media/media_internals.h"
+#include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -89,6 +90,7 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_url_handler.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/compositor_util.h"
 #include "content/public/browser/render_process_host.h"
@@ -147,6 +149,7 @@
 
 using base::FileDescriptor;
 using content::AccessTokenStore;
+using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::ChildProcessSecurityPolicy;
@@ -1710,6 +1713,22 @@ void ChromeContentBrowserClient::DidCreatePpapiPlugin(
   browser_host->GetPpapiHost()->AddHostFactoryFilter(
       scoped_ptr<ppapi::host::HostFactory>(
           new ChromeBrowserPepperHostFactory(browser_host)));
+}
+
+content::BrowserPpapiHost*
+    ChromeContentBrowserClient::GetExternalBrowserPpapiHost(
+        int plugin_process_id) {
+  BrowserChildProcessHostIterator iter(content::PROCESS_TYPE_NACL_LOADER);
+  while (!iter.Done()) {
+    NaClProcessHost* host = static_cast<NaClProcessHost*>(iter.GetDelegate());
+    if (host->process() &&
+        host->process()->GetData().id == plugin_process_id) {
+      // Found the plugin.
+      return host->browser_ppapi_host();
+    }
+    ++iter;
+  }
+  return NULL;
 }
 
 bool ChromeContentBrowserClient::AllowPepperSocketAPI(

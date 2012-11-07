@@ -107,17 +107,18 @@ class HostDispatcherWrapper
  public:
   HostDispatcherWrapper(webkit::ppapi::PluginModule* module,
                         int plugin_child_id,
-                        const ppapi::PpapiPermissions& perms)
+                        const ppapi::PpapiPermissions& perms,
+                        bool is_external)
       : module_(module),
         plugin_child_id_(plugin_child_id),
-        permissions_(perms) {
+        permissions_(perms),
+        is_external_(is_external) {
   }
   virtual ~HostDispatcherWrapper() {}
 
   bool Init(const IPC::ChannelHandle& channel_handle,
             PP_GetInterface_Func local_get_interface,
             const ppapi::Preferences& preferences,
-            const ppapi::PpapiPermissions& permissions,
             PepperHungPluginFilter* filter) {
     if (channel_handle.name.empty())
       return false;
@@ -163,7 +164,8 @@ class HostDispatcherWrapper
       render_view->Send(new ViewHostMsg_DidCreateOutOfProcessPepperInstance(
           plugin_child_id_,
           instance,
-          render_view->GetRoutingID()));
+          render_view->GetRoutingID(),
+          is_external_));
     }
   }
   virtual void RemoveInstance(PP_Instance instance) {
@@ -176,7 +178,8 @@ class HostDispatcherWrapper
       RenderView* render_view = host->GetRenderViewForInstance(instance);
       render_view->Send(new ViewHostMsg_DidDeleteOutOfProcessPepperInstance(
           plugin_child_id_,
-          instance));
+          instance,
+          is_external_));
     }
   }
 
@@ -191,6 +194,7 @@ class HostDispatcherWrapper
   int plugin_child_id_;
 
   ppapi::PpapiPermissions permissions_;
+  bool is_external_;
 
   scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
   scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
@@ -392,10 +396,14 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
       permissions);
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
 
-  if (!CreateOutOfProcessModule(
-           module, path, permissions, channel_handle, plugin_child_id)) {
+  if (!CreateOutOfProcessModule(module,
+                                path,
+                                permissions,
+                                channel_handle,
+                                plugin_child_id,
+                                false))  // is_external = false
     return scoped_refptr<webkit::ppapi::PluginModule>();
-  }
+
   return module;
 }
 
@@ -407,10 +415,12 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
     int plugin_child_id) {
   // We don't call PepperPluginRegistry::AddLiveModule, as this module is
   // managed externally.
-  // TODO(bbudge) pass plugin_child_id when PpapiPluginProcessHost receives
-  // a message notifying it that the external plugin process has been created.
-  return CreateOutOfProcessModule(
-    module, path, permissions, channel_handle, 0);
+  return CreateOutOfProcessModule(module,
+                                  path,
+                                  permissions,
+                                  channel_handle,
+                                  plugin_child_id,
+                                  true);  // is_external = true
 }
 
 scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
@@ -445,18 +455,21 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
     const FilePath& path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
-    int plugin_child_id) {
+    int plugin_child_id,
+    bool is_external) {
   scoped_refptr<PepperHungPluginFilter> hung_filter(
       new PepperHungPluginFilter(path,
                                  render_view_->routing_id(),
                                  plugin_child_id));
   scoped_ptr<HostDispatcherWrapper> dispatcher(
-      new HostDispatcherWrapper(module, plugin_child_id, permissions));
+      new HostDispatcherWrapper(module,
+                                plugin_child_id,
+                                permissions,
+                                is_external));
   if (!dispatcher->Init(
           channel_handle,
           webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
           GetPreferences(),
-          permissions,
           hung_filter.get()))
     return NULL;
 
