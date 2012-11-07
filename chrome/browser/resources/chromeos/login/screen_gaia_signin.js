@@ -156,6 +156,7 @@ cr.define('login', function() {
      *                      page.
      */
     onBeforeShow: function(data) {
+      chrome.send('loginUIStateChanged', ['gaia', true]);
       // Announce the name of the screen, if accessibility is on.
       $('gaia-signin-aria-label').setAttribute(
           'aria-label', localStrings.getString('signinScreenTitle'));
@@ -163,6 +164,13 @@ cr.define('login', function() {
       // Button header is always visible when sign in is presented.
       // Header is hidden once GAIA reports on successful sign in.
       Oobe.getInstance().headerHidden = false;
+    },
+
+    /**
+     * Event handler that is invoked just before the screen is hidden.
+     */
+    onBeforeHide: function() {
+      chrome.send('loginUIStateChanged', ['gaia', false]);
     },
 
     /**

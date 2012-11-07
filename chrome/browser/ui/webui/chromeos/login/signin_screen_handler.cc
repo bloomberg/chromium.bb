@@ -125,7 +125,8 @@ SigninScreenHandler::SigninScreenHandler(
       network_state_informer_(network_state_informer),
       cookie_remover_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      webui_visible_(false) {
+      webui_visible_(false),
+      login_ui_active_(false) {
   DCHECK(network_state_informer_);
   network_state_informer_->AddObserver(this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
@@ -361,6 +362,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("loginVisible",
       base::Bind(&SigninScreenHandler::HandleLoginVisible,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("loginUIStateChanged",
+      base::Bind(&SigninScreenHandler::HandleLoginUIStateChanged,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("unlockOnLoginSuccess",
       base::Bind(&SigninScreenHandler::HandleUnlockOnLoginSuccess,
                  base::Unretained(this)));
@@ -394,6 +398,13 @@ void SigninScreenHandler::OnUserImageChanged(const User& user) {
 }
 
 void SigninScreenHandler::OnPreferencesChanged() {
+  // Make sure that one of the login UI is active now, otherwise
+  // preferences update would be picked up next time it will be shown.
+  if (!login_ui_active_) {
+    LOG(WARNING) << "Login UI is not active - ignoring prefs change.";
+    return;
+  }
+
   if (delegate_ && !delegate_->IsShowUsers()) {
     HandleShowAddUser(NULL);
   } else {
@@ -922,6 +933,19 @@ void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
   webui_visible_ = true;
   if (ScreenLocker::default_screen_locker())
     web_ui()->CallJavascriptFunction("login.AccountPickerScreen.setWallpaper");
+}
+
+void SigninScreenHandler::HandleLoginUIStateChanged(
+    const base::ListValue* args) {
+  std::string source;
+  bool new_value;
+  if (!args->GetString(0, &source) || !args->GetBoolean(1, &new_value)) {
+    NOTREACHED();
+    return;
+  }
+  LOG(INFO) << "Login WebUI >> active: " << new_value
+            << ", source: " << source;
+  login_ui_active_ = new_value;
 }
 
 void SigninScreenHandler::HandleUnlockOnLoginSuccess(

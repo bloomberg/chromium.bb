@@ -235,6 +235,7 @@ class SigninScreenHandler
   void HandleNetworkErrorShown(const base::ListValue* args);
   void HandleOpenProxySettings(const base::ListValue* args);
   void HandleLoginVisible(const base::ListValue* args);
+  void HandleLoginUIStateChanged(const base::ListValue* args);
   void HandleUnlockOnLoginSuccess(const base::ListValue* args);
 
   // Sends user list to account picker.
@@ -317,6 +318,9 @@ class SigninScreenHandler
 
   // Set to true once |LOGIN_WEBUI_VISIBLE| notification is observed.
   bool webui_visible_;
+
+  // True when signin UI is shown to user (either sign in form or user pods).
+  bool login_ui_active_;
 
   // Sign-in screen WebUI observers of network state.
   WebUIObservers observers_;
