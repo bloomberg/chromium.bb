@@ -43,6 +43,9 @@ EGLApi::~EGLApi() {
 RealEGLApi::RealEGLApi() {
 }
 
+RealEGLApi::~RealEGLApi() {
+}
+
 void RealEGLApi::Initialize(DriverEGL* driver) {
   driver_ = driver;
 }

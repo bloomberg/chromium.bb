@@ -120,6 +120,7 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  SetRealGLApi();
   return true;
 }
 

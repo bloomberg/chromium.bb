@@ -10,6 +10,7 @@
 #include "base/threading/thread_local.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
@@ -87,6 +88,10 @@ void GLContext::SetCurrent(GLContext* context, GLSurface* surface) {
   GLSurface::SetCurrent(surface);
 }
 
+GLStateRestorer* GLContext::GetGLStateRestorer() {
+  return NULL;
+}
+
 bool GLContext::WasAllocatedUsingRobustnessExtension() {
   return false;
 }
@@ -100,6 +105,23 @@ bool GLContext::InitializeExtensionBindings() {
   if (!initialized)
     LOG(ERROR) << "Could not initialize extension bindings.";
   return initialized;
+}
+
+void GLContext::SetupForVirtualization() {
+  if (!virtual_gl_api_) {
+    virtual_gl_api_.reset(new VirtualGLApi());
+    virtual_gl_api_->Initialize(&g_driver_gl, this);
+  }
+}
+
+bool GLContext::MakeVirtuallyCurrent(
+    GLContext* virtual_context, GLSurface* surface) {
+  DCHECK(virtual_gl_api_);
+  return virtual_gl_api_->MakeCurrent(virtual_context, surface);
+}
+
+void GLContext::SetRealGLApi() {
+  SetGLToRealGLApi();
 }
 
 }  // namespace gfx

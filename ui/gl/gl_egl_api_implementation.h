@@ -21,6 +21,7 @@ void ClearGLBindingsEGL();
 class GL_EXPORT RealEGLApi : public EGLApi {
  public:
   RealEGLApi();
+  virtual ~RealEGLApi();
   void Initialize(DriverEGL* driver);
 
   // Include the auto-generated part of this class. We split this because

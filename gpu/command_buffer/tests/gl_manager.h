@@ -40,6 +40,7 @@ class GLManager {
   ~GLManager();
 
   void Initialize(const gfx::Size& size);
+  void InitializeVirtual(const gfx::Size& size, GLManager* real_gl_manager);
   void InitializeShared(const gfx::Size& size, GLManager* gl_manager);
   void InitializeSharedMailbox(const gfx::Size& size, GLManager* gl_manager);
   void Destroy();
@@ -58,13 +59,18 @@ class GLManager {
     return gles2_implementation_.get();
   }
 
+  gfx::GLContext* context() {
+    return context_.get();
+  }
+
  private:
   void Setup(
       const gfx::Size& size,
       gles2::MailboxManager* mailbox_manager,
       gfx::GLShareGroup* share_group,
       gles2::ContextGroup* context_group,
-      gles2::ShareGroup* client_share_group);
+      gles2::ShareGroup* client_share_group,
+      gfx::GLContext* real_gl_context);
   void PumpCommands();
   bool GetBufferChanged(int32 transfer_buffer_id);
 

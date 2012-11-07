@@ -21,6 +21,7 @@ void ClearGLBindingsWGL();
 class GL_EXPORT RealWGLApi : public WGLApi {
  public:
   RealWGLApi();
+  virtual ~RealWGLApi();
   void Initialize(DriverWGL* driver);
 
   // Include the auto-generated part of this class. We split this because

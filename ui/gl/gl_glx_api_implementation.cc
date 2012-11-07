@@ -43,6 +43,9 @@ GLXApi::~GLXApi() {
 RealGLXApi::RealGLXApi() {
 }
 
+RealGLXApi::~RealGLXApi() {
+}
+
 void RealGLXApi::Initialize(DriverGLX* driver) {
   driver_ = driver;
 }

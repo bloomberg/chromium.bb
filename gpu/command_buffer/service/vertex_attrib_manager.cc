@@ -63,8 +63,7 @@ bool VertexAttribManager::VertexAttribInfo::CanAccess(GLuint index) const {
 }
 
 VertexAttribManager::VertexAttribManager()
-    : max_vertex_attribs_(0),
-      num_fixed_attribs_(0),
+    : num_fixed_attribs_(0),
       element_array_buffer_(NULL),
       manager_(NULL),
       deleted_(false),
@@ -73,8 +72,7 @@ VertexAttribManager::VertexAttribManager()
 
 VertexAttribManager::VertexAttribManager(
     VertexArrayManager* manager, GLuint service_id, uint32 num_vertex_attribs)
-    : max_vertex_attribs_(0),
-      num_fixed_attribs_(0),
+    : num_fixed_attribs_(0),
       element_array_buffer_(NULL),
       manager_(manager),
       deleted_(false),
@@ -96,13 +94,11 @@ VertexAttribManager::~VertexAttribManager() {
 
 void VertexAttribManager::Initialize(
     uint32 max_vertex_attribs, bool init_attribs) {
-  max_vertex_attribs_ = max_vertex_attribs;
-  vertex_attrib_infos_.reset(
-      new VertexAttribInfo[max_vertex_attribs]);
+  vertex_attrib_infos_.resize(max_vertex_attribs);
   bool disable_workarounds = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuDriverBugWorkarounds);
 
-  for (uint32 vv = 0; vv < max_vertex_attribs; ++vv) {
+  for (uint32 vv = 0; vv < vertex_attrib_infos_.size(); ++vv) {
     vertex_attrib_infos_[vv].set_index(vv);
     vertex_attrib_infos_[vv].SetList(&disabled_vertex_attribs_);
 
@@ -113,7 +109,7 @@ void VertexAttribManager::Initialize(
 }
 
 bool VertexAttribManager::Enable(GLuint index, bool enable) {
-  if (index >= max_vertex_attribs_) {
+  if (index >= vertex_attrib_infos_.size()) {
     return false;
   }
   VertexAttribInfo& info = vertex_attrib_infos_[index];
@@ -128,7 +124,7 @@ void VertexAttribManager::Unbind(BufferManager::BufferInfo* buffer) {
   if (element_array_buffer_ == buffer) {
     element_array_buffer_ = NULL;
   }
-  for (uint32 vv = 0; vv < max_vertex_attribs_; ++vv) {
+  for (uint32 vv = 0; vv < vertex_attrib_infos_.size(); ++vv) {
     vertex_attrib_infos_[vv].Unbind(buffer);
   }
 }

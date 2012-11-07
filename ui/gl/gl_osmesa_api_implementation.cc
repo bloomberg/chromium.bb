@@ -43,6 +43,9 @@ OSMESAApi::~OSMESAApi() {
 RealOSMESAApi::RealOSMESAApi() {
 }
 
+RealOSMESAApi::~RealOSMESAApi() {
+}
+
 void RealOSMESAApi::Initialize(DriverOSMESA* driver) {
   driver_ = driver;
 }

@@ -21,6 +21,7 @@ void ClearGLBindingsGLX();
 class GL_EXPORT RealGLXApi : public GLXApi {
  public:
   RealGLXApi();
+  virtual ~RealGLXApi();
   void Initialize(DriverGLX* driver);
 
   // Include the auto-generated part of this class. We split this because

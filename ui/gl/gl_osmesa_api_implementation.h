@@ -21,6 +21,7 @@ void ClearGLBindingsOSMESA();
 class GL_EXPORT RealOSMESAApi : public OSMESAApi {
  public:
   RealOSMESAApi();
+  virtual ~RealOSMESAApi();
   void Initialize(DriverOSMESA* driver);
 
   // Include the auto-generated part of this class. We split this because

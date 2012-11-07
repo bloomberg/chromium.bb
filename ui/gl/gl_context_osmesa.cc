@@ -76,6 +76,7 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  SetRealGLApi();
   return true;
 }
 

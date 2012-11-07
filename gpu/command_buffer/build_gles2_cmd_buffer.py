@@ -6529,14 +6529,14 @@ class GLGenerator(object):
     file.Write("}\n")
 
     file.Write("""
-void ContextState::InitCapabilities() {
+void ContextState::InitCapabilities() const {
 """)
     for capability in _CAPABILITY_FLAGS:
       file.Write("  EnableDisable(GL_%s, enable_flags.%s);\n" %
                  (capability['name'].upper(), capability['name']))
     file.Write("""}
 
-void ContextState::InitState() {
+void ContextState::InitState() const {
 """)
 
     # We need to sort the keys so the expectations match

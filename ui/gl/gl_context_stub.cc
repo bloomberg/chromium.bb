@@ -17,6 +17,7 @@ void GLContextStub::Destroy() {}
 
 bool GLContextStub::MakeCurrent(GLSurface* surface) {
   SetCurrent(this, surface);
+  SetRealGLApi();
   return true;
 }
 

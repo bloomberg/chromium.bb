@@ -78,7 +78,7 @@ void ContextState::Initialize() {
   viewport_height = 1;
 }
 
-void ContextState::InitCapabilities() {
+void ContextState::InitCapabilities() const {
   EnableDisable(GL_BLEND, enable_flags.blend);
   EnableDisable(GL_CULL_FACE, enable_flags.cull_face);
   EnableDisable(GL_DEPTH_TEST, enable_flags.depth_test);
@@ -91,7 +91,7 @@ void ContextState::InitCapabilities() {
   EnableDisable(GL_STENCIL_TEST, enable_flags.stencil_test);
 }
 
-void ContextState::InitState() {
+void ContextState::InitState() const {
   glBlendColor(
       blend_color_red, blend_color_green, blend_color_blue, blend_color_alpha);
   glBlendEquationSeparate(blend_equation_rgb, blend_equation_alpha);

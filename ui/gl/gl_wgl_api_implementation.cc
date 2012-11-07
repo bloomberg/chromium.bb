@@ -43,6 +43,9 @@ WGLApi::~WGLApi() {
 RealWGLApi::RealWGLApi() {
 }
 
+RealWGLApi::~RealWGLApi() {
+}
+
 void RealWGLApi::Initialize(DriverWGL* driver) {
   driver_ = driver;
 }

@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +31,7 @@ GLManager::~GLManager() {
 }
 
 void GLManager::Initialize(const gfx::Size& size) {
-  Setup(size, NULL, NULL, NULL, NULL);
+  Setup(size, NULL, NULL, NULL, NULL, NULL);
 }
 
 void GLManager::InitializeShared(
@@ -41,7 +42,8 @@ void GLManager::InitializeShared(
       gl_manager->mailbox_manager(),
       gl_manager->share_group(),
       gl_manager->decoder_->GetContextGroup(),
-      gl_manager->gles2_implementation()->share_group());
+      gl_manager->gles2_implementation()->share_group(),
+      NULL);
 }
 
 void GLManager::InitializeSharedMailbox(
@@ -52,7 +54,20 @@ void GLManager::InitializeSharedMailbox(
       gl_manager->mailbox_manager(),
       gl_manager->share_group(),
       NULL,
+      NULL,
       NULL);
+}
+
+void GLManager::InitializeVirtual(
+    const gfx::Size& size, GLManager* real_gl_manager) {
+  DCHECK(real_gl_manager);
+  Setup(
+      size,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      real_gl_manager->context());
 }
 
 void GLManager::Setup(
@@ -60,7 +75,8 @@ void GLManager::Setup(
     gles2::MailboxManager* mailbox_manager,
     gfx::GLShareGroup* share_group,
     gles2::ContextGroup* context_group,
-    gles2::ShareGroup* client_share_group) {
+    gles2::ShareGroup* client_share_group,
+    gfx::GLContext* real_gl_context) {
   const int32 kCommandBufferSize = 1024 * 1024;
   const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
   const size_t kMinTransferBufferSize = 1 * 256 * 1024;
@@ -119,9 +135,16 @@ void GLManager::Setup(
   surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, size);
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
 
-  context_ = gfx::GLContext::CreateGLContext(share_group_.get(),
-                                             surface_.get(),
-                                             gpu_preference);
+  if (real_gl_context) {
+    context_ = scoped_refptr<gfx::GLContext>(new gpu::GLContextVirtual(
+        share_group_.get(), real_gl_context, decoder_.get()));
+    ASSERT_TRUE(context_->Initialize(
+        surface_.get(), gfx::PreferIntegratedGpu));
+  } else {
+    context_ = gfx::GLContext::CreateGLContext(share_group_.get(),
+                                               surface_.get(),
+                                               gpu_preference);
+  }
   ASSERT_TRUE(context_.get() != NULL) << "could not create GL context";
 
   ASSERT_TRUE(context_->MakeCurrent(surface_.get()));

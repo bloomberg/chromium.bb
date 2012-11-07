@@ -135,6 +135,9 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
   // Gets the associated ContextGroup
   virtual ContextGroup* GetContextGroup() = 0;
 
+  // Gets the service id for any simulated backbuffer fbo.
+  virtual void RestoreState() const = 0;
+
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
 
